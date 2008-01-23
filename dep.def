@@ -1,0 +1,165 @@
+SHELL=/bin/bash
+
+#project name
+ifndef PROJECTNAME
+PROJECTNAME=mms4l
+endif
+
+#output directory
+LIBDIR=../../lib
+
+#check dependencies
+
+#libxml2
+ifndef LIBXML_FOUND
+    $(info check for libxml2 version >= 2.6)
+    ASK=$(shell pkg-config --atleast-version=2.6 libxml-2.0 && echo "1")
+    ifeq ($(ASK),)
+        $(error libxml-2.0 was not found or version is older than 2.6. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export LIBXML_FOUND=1
+        export LIBXML_INC=$(shell pkg-config --cflags libxml-2.0)
+        export LIBXML_LIBS=$(shell pkg-config --libs libxml-2.0)
+    endif
+endif
+
+#sqlite3
+ifndef SQLITE3_FOUND
+    $(info check for sqlite3)
+    export SQLITE3_INC=$(shell pkg-config --cflags sqlite3)
+    ifeq ($(SQLITE3_INC),)
+        $(info sqlite3 was not found. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export SQLITE3_FOUND=1
+        export CFLAGS+=-D__ENABLE_SQLITE__ 
+        export SQLITE3_LIBS=$(shell pkg-config --libs sqlite3)
+    endif
+endif
+
+#unix-odbc
+ifndef ODBC_FOUND
+    $(info check for unix-odbc)
+    ASK=$(shell ls $(DESTDIR)/usr/include/sql.h)
+    ifeq ($(ASK),)
+        ASK=$(shell ls $(DESTDIR)/usr/local/include/sql.h)
+        ifeq ($(ASK),)
+            $(info unix-odbc not found)
+        else
+            export ODBC_FOUND=1
+            export FREETDS_PREFIX=$(DESTIR)/usr/local
+        endif
+    else
+        export ODBC_FOUND=1
+        export FREETDS_PREFIX=$(DESTIR)/usr/
+    endif
+    ifdef ODBC_FOUND
+        export FREETDS_INC=-I$(FREETDS_PREFIX)/include 
+        export CFLAGS+=-D__ENABLE_FREETDS__ 
+        export FREETDS_LIBS=-L$(FREETDS_PREFIX)/lib/ -lodbc
+    endif
+endif
+
+#database?
+ifndef SQLITE3_FOUND
+    ifndef ODBC_FOUND
+        $(error No database backend found. Please install either sqlite3 or unix odbc and a fitting driver)
+    endif
+endif
+
+#curl
+ifndef CURL_FOUND 
+    $(info check for libcurl)
+    export CURL_INC=$(shell pkg-config --cflags libcurl)
+    ifeq ($(CURL_INC),)
+        $(error libcurl was not found. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export CURL_FOUND=1
+        export CURL_LIBS=$(shell pkg-config --libs libcurl)
+    endif
+endif
+
+#directfb
+ifndef DIRECTFB_FOUND
+    $(info check for directfb)
+    export DIRECTFB_INC=$(shell pkg-config --cflags directfb)
+    ifeq ($(DIRECTFB_INC),)
+        $(error directfb was not found. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export DIRECTFB_FOUND=1
+        export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
+    endif
+endif
+
+#sigc++
+ifndef SIGC_FOUND
+    $(info check for sigc++)
+    export SIGC_INC=$(shell pkg-config --cflags sigc++-2.0)
+    ifeq ($(SIGC_INC),)
+        $(error sigc++-2.0 was not found. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export SIGC_FOUND=1
+        export SIGC_LIBS=$(shell pkg-config --libs sigc++-2.0)
+    endif
+endif
+
+#my includes
+ifndef INC
+    export INC= -I../../inc -I../../inc/mmsbase -I../../inc/mmsconfig -I../../inc/mmscore -I../../inc/mmsdata -I../../inc/mmsgui -I../../inc/mmsinput -I../../inc/mmsmedia -I../../inc/mmstools
+endif 
+
+#libs
+ifndef LIBS 
+    export LIBS=-L../../lib
+endif
+
+#ar
+ifndef AR
+    export AR=ar
+endif
+
+#ranlib
+ifndef RANLIB
+    export RANLIB=ranlib
+endif
+
+#helper
+ifndef SQLITEBIN_FOUND
+    $(info check for sqlite3 binary)
+    SQLITE_BIN=$(shell which sqlite)
+    ifeq ($(SQLITE_BIN),)
+        SQLITE_BIN=$(shell which sqlite3)
+        ifeq ($(SQLITE_BIN),)
+            $(error sqlite not found)
+        else
+            export SQLITEBIN_FOUND=1
+        endif
+        export SQLITEBIN_FOUND=1
+    endif
+endif
+
+#directories
+ifeq ($(prefix),)
+    export prefix=$(HOME)/$(PROJECTNAME)
+else
+    export prefix
+endif
+
+ifeq ($(bindir),)
+    export bindir=$(prefix)/bin
+endif
+
+ifeq ($(incdir),)
+    export incdir=$(prefix)/inc
+endif
+
+ifeq ($(libdir),)
+    export libdir=$(prefix)/lib
+endif
+
+ifeq ($(datadir),)
+    export datadir=$(prefix)/share/
+endif
+
+ifeq ($(sysconfir),)
+    export sysconfdir=$(prefix)/etc
+endif

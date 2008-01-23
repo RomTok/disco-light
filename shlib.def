@@ -1,0 +1,38 @@
+SRC=$(shell find . -name '*.cpp')
+OBJ=$(SRC:%.cpp=%.o)
+
+all: $(OBJ)
+	@mkdir -p $(LIBDIR)
+	@echo " [LD]        ($(TARGET))"
+	@$(CXX) -shared $(LDFLAGS) -o $(LIBDIR)/$(TARGET) $(OBJ) $(LOCAL_LIBS) $(LIBS)
+	@if [ -n "$(STATIC_TARGET)" ]; then \
+		echo " [AR]        ($(STATIC_TARGET))"; \
+		$(AR) cru $(LIBDIR)/$(STATIC_TARGET) $(OBJ); \
+		echo " [RANLIB]    ($(STATIC_TARGET))"; \
+		$(RANLIB) $(LIBDIR)/$(STATIC_TARGET); \
+	fi 
+
+clean:
+	@echo " Cleaning $(SUBPACKAGE)"
+	@rm -f $(OBJ)
+	@rm -f $(LIBDIR)/$(TARGET)
+	@if [ -n "$(STATIC_TARGET)" ]; then \
+		rm -f $(LIBDIR)/$(STATIC_TARGET); \
+	fi
+	
+install: all
+	@echo " [INSTALL]   ($(SUBPACKAGE))"
+	@install -d $(DESTDIR)$(incdir)/$(SUBPACKAGE)
+	@cp -R ../../inc/$(SUBPACKAGE)/* $(DESTDIR)$(incdir)/$(SUBPACKAGE)/
+	@install -d $(DESTDIR)$(libdir)
+	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
+
+update: 
+	@echo " [UPDATE]    ($(SUBPACKAGE))"
+	@install -d -m 644 ../../inc/$(SUBPACKAGE) $(DESTDIR)$(incdir)/
+	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
+	
+%.o : %.cpp
+	@echo " [CXX]       ($@)"
+	@$(CXX) $(CFLAGS) $(INC) $(LOCAL_INC) -shared -c $< -o $@
+

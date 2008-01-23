@@ -1,0 +1,958 @@
+#include "mmsav.h"
+#include <directfb_version.h>
+
+MMS_CREATEERROR(MMSAVError);
+#define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
+
+/**
+ * Callback, that will be called before a frame is drawn.
+ * 
+ * It checks if the ratio has changed and sets some variables if so.
+ * 
+ * @param   cdata       [in/out]    pointer to VODESC structure
+ * @param   width       [in]        width of dvd stream
+ * @param   height      [in]        height of dvd stream
+ * @param   ratio       [in]        ratio of dvd stream
+ * @param   format      [in]        pixel format of dvd stream
+ * @param   dest_rect   [out]       the current rectangle will be returned
+ */
+static void output_cb(void *cdata, int width, int height, double ratio,
+                      DFBSurfacePixelFormat format, DFBRectangle* dest_rect) {
+    VODESC *vodesc = (VODESC *) cdata;
+
+	//printf("\noutput_cp %d:%d:%f",width,height,ratio);
+    if (vodesc->ratio != ratio) {
+    
+        /* ratio has changed */
+        if (ratio<1.0) {
+            vodesc->rect.w = (int)((double)(vodesc->windsc.height) / ratio + 0.5);
+            vodesc->rect.h = vodesc->windsc.height;
+            vodesc->rect.x = (vodesc->windsc.width - vodesc->rect.w) / 2;
+            vodesc->rect.y = 0;
+        } else {
+            vodesc->rect.w = vodesc->windsc.width;
+            vodesc->rect.h = (int)((double)(vodesc->windsc.width) / ratio + 0.5);
+            vodesc->rect.x = 0;
+            vodesc->rect.y = (vodesc->windsc.height - vodesc->rect.h) / 2;
+        }
+        /* save other infos */
+        vodesc->format = format;
+        vodesc->ratio  = ratio;
+        vodesc->width  = width;
+        vodesc->height = height;
+        /* clear surface */
+        vodesc->winsurface->clear();
+        vodesc->winsurface->flip();
+        vodesc->winsurface->clear();
+    }
+    
+    /* return the current rect */
+    *dest_rect=vodesc->rect;
+    //printf("\nrect %d:%d:%d:%d",dest_rect->x,dest_rect->y,dest_rect->w,dest_rect->h);
+    
+}
+
+/**
+ * Callback, that will be called after a frame is drawn.
+ * 
+ * It sets clipping areas and does the flipping.
+ * 
+ * @param   cdata       [in/out]    pointer to VODESC structure
+ */
+#if DIRECTFB_MAJOR_VERSION == 1
+static void frame_cb(void *cdata) {
+#else
+static int frame_cb(void *cdata) {
+#endif
+    VODESC *vodesc = (VODESC *) cdata;
+/* this was for GUI optimization which is currently not active
+
+    if (vodesc->rect.y > 0) {
+        DFBRegion reg;
+        reg.x1=0;
+        reg.y1=0;
+        reg.x2=vodesc->rect.w-1;
+        reg.y2=vodesc->rect.y-1;
+        vodesc->winsurface->setClip(&reg);
+        vodesc->winsurface->clear();
+        vodesc->winsurface->setClip(NULL);
+    }
+
+    if (vodesc->rect.h < vodesc->windsc.height) {
+        DFBRegion reg;
+        reg.x1=0;
+        reg.y1=vodesc->rect.y+vodesc->rect.h;
+        reg.x2=vodesc->rect.w-1;
+        reg.y2=vodesc->windsc.height-1;
+        vodesc->winsurface->setClip(&reg);
+        vodesc->winsurface->clear();
+        vodesc->winsurface->setClip(NULL);
+    }
+
+    vodesc->winsurface->flip(NULL, (MMSFBSurfaceFlipFlags)(DSFLIP_ONSYNC));
+*/ 
+
+    /*DFBRegion reg;
+    reg.x1=vodesc->rect.x;
+    reg.y1=vodesc->rect.y;
+    reg.x2=reg.x1 + vodesc->rect.w-1;
+    reg.y2=reg.y1 + vodesc->rect.h-1;*/
+    vodesc->winsurface->flip(NULL, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC));
+    //vodesc->winsurface->lock();
+    
+    /*          frame->surface->Unlock( frame->surface );
+    
+          frame->surface->Lock( frame->surface, DSLF_WRITE,
+                               (void*)&frame->vo_frame.base[0],
+                               (int *)&frame->vo_frame.pitches[0] );
+*/
+        
+    //vodesc->winsurface->flip(NULL, (MMSFBSurfaceFlipFlags)(DSFLIP_ONSYNC));
+    //vodesc->winsurface->flip(NULL, (MMSFBSurfaceFlipFlags)DSFLIP_NONE);
+
+    //vodesc->winsurface->unlock();
+    
+#if DIRECTFB_MAJOR_VERSION < 1
+    return 0;
+#endif
+}
+
+/**
+ * Initializes some xine stuff.
+ * 
+ * It creates the xine object that is used for
+ * audio/video stream creation.
+ * Then it loads the user's xine configuration and sets
+ * the given verbosity.
+ * 
+ * @exception   MMSAVError  cannot get a new xine object
+ */
+void MMSAV::xineInit() {
+    /* get a new xine object */
+    if (!(this->xine = xine_new()))
+        throw new MMSAVError(0, "Cannot get a new xine object");
+
+    /* load xine config */
+    string cfg;
+    if(getenv("XINERC"))
+        cfg = getenv("XINERC");
+    else {
+        if (getenv("HOME"))
+            cfg = string(getenv("HOME")) + "/.xine";
+        else
+            cfg = "~/.xine";
+        mkdir(cfg.c_str(), 755);
+        cfg = cfg + "/config";
+    }
+    xine_config_load(this->xine, cfg.c_str());
+
+    /* init xine */
+    xine_init(this->xine);
+
+    /* set verbosity */
+    if(this->verbose)
+        xine_engine_set_param(this->xine, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_DEBUG);
+    else
+        xine_engine_set_param(this->xine, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_NONE);
+}
+
+/**
+ * Initializes everything that is needed my MMSAV.
+ *
+ * First it initializes xine.
+ * Then it sets some internal variables and does some surface
+ * flipping.
+ *  
+ * @param   verbose [in]    if true the xine engine writes debug messages to stdout
+ * @param   window  [in]    window that will be used for video output
+ *  
+ * @see MMSAV::xineInit()
+ *
+ * @exception   MMSAVError  Cannot get a new xine object
+ * @exception   MMSAVError  MMSFBSurface::clear() failed
+ * @exception   MMSAVError  MMSFBSurface::flip() failed
+ * @exception   MMSAVError  Cannot open the DFB video driver
+ */
+void MMSAV::initialize(const bool verbose, MMSWindow *window) {
+    DFBResult   dfbres;
+    
+    this->verbose          = verbose;
+
+    logger.writeLog("xineInit()...");
+
+    /* initialize xine */
+    xineInit();
+
+    logger.writeLog("xineInit() done.");
+
+    if(window) {
+        this->window           = window;
+        this->vodesc.format    = DSPF_UNKNOWN;
+        this->vodesc.ratio     = 1.25;
+        this->vodesc.width     = 720;
+        this->vodesc.height    = 576;
+        this->vodesc.rect.x    = 0;
+        this->vodesc.rect.y    = 0;
+
+        window->getSurface()->getSize(&(this->vodesc.windsc.width), &(this->vodesc.windsc.height));
+        this->vodesc.winsurface = window->getSurface();
+    
+        /* clear surface */
+        if(!this->vodesc.winsurface->clear())
+            THROW_DFB_ERROR(dfbres, "MMSFBSurface::clear() failed");
+        if(!this->vodesc.winsurface->flip(NULL, (DFBSurfaceFlipFlags)0))
+            THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
+    
+        if(vodesc.winsurface->getDFBSurface()->SetBlittingFlags(vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+            logger.writeLog("set blitting failed");
+
+        /* fill the visual structure for the video output driver */
+        this->visual.destination  = vodesc.winsurface->getDFBSurface();
+        this->visual.subpicture   = NULL;
+        this->visual.output_cb    = output_cb;
+        this->visual.output_cdata = (void*) &(this->vodesc);
+        this->visual.frame_cb     = frame_cb;
+        this->visual.frame_cdata  = (void*) &(this->vodesc);
+        //this->visual.destination->SetField( this->visual.destination, 0 );
+
+        logger.writeLog("opening video driver...");
+
+        /* open the video output driver */
+        if (!(this->vo = xine_open_video_driver(this->xine, "DFB",
+                            XINE_VISUAL_TYPE_DFB, (void*) &this->visual)))
+            throw new MMSAVError(0, "Cannot open the DFB video driver");
+
+        logger.writeLog("opening video driver done.");
+    }
+    
+    /* open the audio output driver */
+    const char* const *ao_list;
+    int i = 0;
+    if(!(ao_list = xine_list_audio_output_plugins(this->xine))) {
+        this->logger.writeLog("No audio output plugins found");
+        xine_engine_set_param(this->xine, XINE_PARAM_IGNORE_AUDIO, 1);
+        this->ao=NULL;
+        return;
+    }
+    do {
+        logger.writeLog(std::string("checking audio output '") + ao_list[i] + "'...");
+
+    	/* ignore file output */
+        if(strcmp(ao_list[i], "file") == 0) {
+        	i++;
+        	continue;
+        }
+        else if(strcmp(ao_list[i], "none") == 0)
+        {
+            /* disable audio */
+            xine_engine_set_param(this->xine, XINE_PARAM_IGNORE_AUDIO, 1);
+            this->logger.writeLog("Could not open audio driver, sound disabled!");
+            break;
+        }
+
+        logger.writeLog(std::string("opening audio output '") + ao_list[i] + "'...");
+    }
+    while(!(this->ao = xine_open_audio_driver(this->xine, ao_list[i++], NULL)));
+    
+    logger.writeLog("Using audio driver " + string(ao_list[i-1]));
+}
+
+/**
+ * Constructor
+ * 
+ * Initializes private variables
+ */ 
+MMSAV::MMSAV() : window(NULL),
+                 verbose(false),
+                 status(STATUS_NONE),
+                 pos(0),
+                 xine(NULL),
+                 vo(NULL),
+                 ao(NULL),
+                 stream(NULL),
+                 queue(NULL) {
+    this->onError          = new sigc::signal<void, string>;
+    this->onStatusChange   = new sigc::signal<void, const unsigned short, const unsigned short>;
+}
+
+/**
+ * Destructor
+ * 
+ * Deletes sigc++-callbacks and closes all xine related
+ * stuff.
+ */ 
+MMSAV::~MMSAV() {
+    if(this->onError) {
+        this->onError->clear();
+        delete this->onError;
+    }    
+    
+    if(this->onStatusChange) {
+        this->onStatusChange->clear();
+        delete this->onStatusChange;
+    }    
+    
+    if(this->queue)
+        xine_event_dispose_queue(this->queue);
+    if(this->stream)
+        xine_dispose(this->stream);
+    if(this->ao)
+        xine_close_audio_driver(this->xine, this->ao);
+    if(this->vo)
+        xine_close_video_driver(this->xine, this->vo);
+        
+    // dispose all registered post plugins
+    map<string, xine_post_t*>::const_iterator i;
+    for(i = audioPostPlugins.begin(); i != audioPostPlugins.end(); ++i)
+        xine_post_dispose(this->xine, i->second);
+    audioPostPlugins.erase(audioPostPlugins.begin(), audioPostPlugins.end());
+
+    for(i = videoPostPlugins.begin(); i != videoPostPlugins.end(); ++i)
+        xine_post_dispose(this->xine, i->second);
+    videoPostPlugins.erase(videoPostPlugins.begin(), videoPostPlugins.end());
+    
+    // exit xine
+    xine_exit(this->xine);
+    
+}
+
+/**
+ * Opens an audio/video object.
+ * 
+ * It creates the xine stream, wires all registered
+ * audio/video post plugins, sets the verbosity and
+ * registers the event queue if given.
+ *
+ * @note    You have to register post plugins before
+ * calling open(). 
+ * 
+ * @param   queue_cb    [in]    xine event queue callback
+ * 
+ * @see MMSAV::registerAudioPostPlugin
+ * @see MMSAV::registerVideoPostPlugin
+ *
+ * @exception   MMSAVError  Cannot get a new stream
+ */
+void MMSAV::open(xine_event_listener_cb_t queue_cb) {
+    /* open stream */
+    if (!(this->stream = xine_stream_new(this->xine, this->ao, this->vo)))
+        throw new MMSAVError(0, "Cannot get a new stream");
+
+    /* wire all post plugins */
+    for(map<string, xine_post_t*>::const_iterator i = videoPostPlugins.begin(); i != videoPostPlugins.end(); ++i)
+        xine_post_wire_video_port(xine_get_video_source(stream), i->second->video_input[0]);
+    for(map<string, xine_post_t*>::const_iterator i = audioPostPlugins.begin(); i != audioPostPlugins.end(); ++i)
+        xine_post_wire_audio_port(xine_get_audio_source(stream), i->second->audio_input[0]);
+
+    /* set verbosity */
+    if(this->verbose)
+        xine_set_param(this->stream, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_DEBUG);
+    else
+        xine_set_param(this->stream, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_NONE);
+
+    /*if(this->vo)
+         xine_set_param(this->stream, XINE_PARAM_VO_DEINTERLACE, false);
+*/
+    if(this->ao) {
+        xine_set_param(this->stream, XINE_PARAM_AUDIO_MUTE, false);
+        xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, -1);
+    }
+
+    /* create event listener thread */
+    if(queue_cb) {
+        this->queue = xine_event_new_queue(this->stream);
+        xine_event_create_listener_thread(this->queue, queue_cb, (void*)this);
+    }
+}
+
+/**
+ * Registers a xine audio post plugin.
+ * 
+ * Post plugin will be initialized. 
+ * 
+ * @param   name    [in]    name of the post plugin
+ * 
+ * @return  true if plugin could be initialized correctly
+ */
+bool MMSAV::registerAudioPostPlugin(string name) {
+    xine_post_t *p;
+
+    if(!(p = xine_post_init(this->xine, name.c_str(), 1, &this->ao, NULL)))
+        logger.writeLog("Could not initialize audio post plugin " + name);
+    else {
+        audioPostPlugins[name] = p;
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Registers a xine video post plugin.
+ * 
+ * Post plugin will be initialized. 
+ * 
+ * @param   name    [in]    name of the post plugin
+ * 
+ * @return  true if plugin could be initialized correctly
+ */
+bool MMSAV::registerVideoPostPlugin(string name) {
+    xine_post_t *p;
+
+    if(!(p = xine_post_init(this->xine, name.c_str(), 1, NULL, &this->vo)))
+        logger.writeLog("Could not initialize video post plugin " + name);
+    else {
+        videoPostPlugins[name] = p;
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Sets post plugin parameter.
+ * 
+ * @param   plugins     [in]    map of post plugins
+ * @param   name        [in]    name of post plugin that will be affected
+ * @param   parameter   [in]    parameter to set
+ * @param   value       [in]    value for the parameter
+ * 
+ * @return  true if the parameter could be set
+ */
+bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value) {
+    xine_post_in_t              *postIn;
+    xine_post_api_t             *postApi;
+    xine_post_api_descr_t       *postApiDesc;
+    xine_post_api_parameter_t   *postApiParam;
+    char                        *data;
+ 
+    // search for plugin
+    if(!(postIn = (xine_post_in_t *)xine_post_input(plugins[name], "parameters"))) {
+        logger.writeLog("Could not set parameter for post plugin " + name + ": Plugin not registered");
+        return false;
+    }
+ 
+    postApi      = (xine_post_api_t *)postIn->data;
+    postApiDesc  = postApi->get_param_descr();
+    postApiParam = postApiDesc->parameter;
+    data         = new char[postApiDesc->struct_size];
+    postApi->get_parameters(plugins[name], (void*)data);
+    
+    while(postApiParam->type != POST_PARAM_TYPE_LAST)
+    {
+        if(strToUpr(string(postApiParam->name)) == strToUpr(parameter)) {
+            if(postApiParam->type == POST_PARAM_TYPE_INT) {
+                int iValue = atoi(value.c_str());
+                
+                // check if the name of an enumeration is used
+                if(iValue == 0 && value.at(0) != '0') {
+                    for(int i = 0; postApiParam->enum_values[i]; i++) {
+                        if(value == postApiParam->enum_values[i]) {
+                            iValue = i;
+                            break;
+                        }
+                    }
+                } else {
+                    // check if value is out of range
+                    if(iValue < postApiParam->range_min || iValue > postApiParam->range_max) {
+                        logger.writeLog("Could not set " + name + "'s " + parameter + " to " + value + ": Out of range");
+                        return false;
+                    }
+                }
+                
+                // set value
+                *(int *)(data + postApiParam->offset) = iValue;
+                logger.writeLog(name + ": " + parameter + " = " + postApiParam->enum_values[*(int *)(data + postApiParam->offset)]);
+            }
+            else if(postApiParam->type == POST_PARAM_TYPE_DOUBLE) {
+                double dValue = atof(value.c_str()); 
+
+                // check if value is out of range
+                if(dValue < postApiParam->range_min || dValue > postApiParam->range_max) {
+                    logger.writeLog("Could not set " + name + "'s " + parameter + " to " + value + ": Out of range");
+                    return false;
+                }
+                
+                // set value
+               *(double *)(data + postApiParam->offset) = dValue;
+               logger.writeLog(name + ": " + parameter + " = " + value.c_str());
+            }
+            else if(postApiParam->type == POST_PARAM_TYPE_BOOL) {
+                bool bValue = false;
+                if(value == "1" || strToUpr(value) == "TRUE")
+                    bValue = true; 
+               *(bool *)(data + postApiParam->offset) = bValue;
+               logger.writeLog(name + ": " + parameter + " = " + (bValue ? "true" : "false"));
+            }
+            else if(postApiParam->type == POST_PARAM_TYPE_CHAR) {
+                char cValue = value.at(0);                
+               *(char *)(data + postApiParam->offset) = cValue;
+               logger.writeLog(name + ": " + parameter + " = " + cValue);
+            }
+            else if(postApiParam->type == POST_PARAM_TYPE_STRING) {
+                char *sValue = (char*)value.c_str();                
+               *(char **)(data + postApiParam->offset) = sValue;
+               logger.writeLog(name + ": " + parameter + " = " + sValue);
+            }
+            break;
+        }
+        postApiParam++;
+    }
+    
+    if(!postApi->set_parameters(plugins[name], (void *)data))
+        logger.writeLog("Error setting post plugin parameter");
+         
+    delete[] data;
+   
+    return true;
+}
+
+/**
+ * Sets audio post plugin parameter.
+ * 
+ * @param   name        [in]    name of post plugin that will be affected
+ * @param   parameter   [in]    parameter to set
+ * @param   value       [in]    value for the parameter
+ * 
+ * @return  true if the parameter could be set
+ * 
+ * @see     MMSAV::setPostPluginParameter
+ * @see     MMSAV::setVideoPostPluginParameter
+ */
+bool MMSAV::setAudioPostPluginParameter(string name, string parameter, string value) {
+    return setPostPluginParameter(this->audioPostPlugins, name, parameter, value);    
+}
+
+/**
+ * Sets video post plugin parameter.
+ * 
+ * @param   name        [in]    name of post plugin that will be affected
+ * @param   parameter   [in]    parameter to set
+ * @param   value       [in]    value for the parameter
+ * 
+ * @return  true if the parameter could be set
+ * 
+ * @see     MMSAV::setPostPluginParameter
+ * @see     MMSAV::setAudioPostPluginParameter
+ */
+bool MMSAV::setVideoPostPluginParameter(string name, string parameter, string value) {
+    return setPostPluginParameter(this->videoPostPlugins, name, parameter, value);
+}
+
+/**
+ * Sets internal status of sound/video playback.
+ * 
+ * It also emits a signal, which can be handled using the
+ * sigc++ connectors.
+ * 
+ * @param   status  [in]    status to set
+ * 
+ * @see MMSAV::onStatusChange
+ */
+void MMSAV::setStatus(int status) {
+    switch(status) {
+        case STATUS_PLAYING :
+            if(this->status != this->STATUS_NONE)
+                this->onStatusChange->emit(this->status, status);
+            this->status = status;
+            return;
+        case STATUS_PAUSED  :
+        case STATUS_STOPPED :
+        case STATUS_FFWD    :
+        case STATUS_FFWD2   :
+        case STATUS_SLOW    :
+        case STATUS_SLOW2   :
+            this->onStatusChange->emit(this->status, status);
+            this->status = status;
+            return;
+        default:
+            break;
+    }   
+
+    this->onStatusChange->emit(status, status);
+}
+
+/**
+ * Determines if a stream is currently being played.
+ * 
+ * @return true if stream is being played
+ */
+bool MMSAV::isPlaying() {
+	if(this->status == STATUS_PLAYING) {
+		if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
+	    	this->setStatus(STATUS_STOPPED);
+	    	return false;
+		}
+		else return true;
+	}
+	return false;
+}
+
+/**
+ * Starts playing.
+ *
+ * If the continue flag is set it tries to continue
+ * at the position where it was stopped before. 
+ * 
+ * @param   mrl     [in]    mrl to play
+ * @param   cont    [in]    if true it tries to continue at a position stopped before
+ * 
+ * @exception   MMSAVError stream could not be opened
+ */
+void MMSAV::play(const string mrl, const bool cont) {
+    static string currentMRL = "";
+    
+    if(!this->stream)
+        this->open();
+    
+    if(currentMRL != mrl) {
+        xine_close(this->stream);
+    
+        if(!xine_open(this->stream, mrl.c_str())) {
+            string msg;
+            switch(xine_get_error(this->stream)) {
+                case XINE_ERROR_NO_INPUT_PLUGIN :
+                    msg = "No input plugin";
+                    break;
+                case XINE_ERROR_NO_DEMUX_PLUGIN :
+                    msg = "No demux plugin";
+                    break;
+                case XINE_ERROR_DEMUX_FAILED :
+                    msg = "Error in demux plugin";
+                    break;
+                case XINE_ERROR_INPUT_FAILED :
+                    msg = "Error in input plugin";
+                    break;
+                default:
+                    msg = "Cannot play stream";
+                    break;
+            }    
+            throw new MMSAVError(0, msg);
+        }
+
+        currentMRL = mrl;
+    }
+    else if(this->isPlaying())
+        return;
+
+    /* playing... */
+    if(!cont)
+        this->pos = 0;
+    if (!xine_play(this->stream, this->pos, 0)) 
+        throw new MMSAVError(0,"cannot start playing");
+
+    this->setStatus(this->STATUS_PLAYING);
+}
+
+/**
+ * Stops playing.
+ * 
+ * It saves the position, so if you call MMSAV::play()
+ * afterwards with the continue flag set, it will continue
+ * at this position.
+ */
+void MMSAV::stop() {
+    /* save position */
+    xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
+    
+    /* stop streaming */
+    xine_stop(this->stream);
+    this->setStatus(this->STATUS_STOPPED);
+}
+
+/**
+ * Toggles playing/pausing.
+ */
+void MMSAV::pause() {
+    if(this->status == this->STATUS_PLAYING) {
+        this->setStatus(this->STATUS_PAUSED);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+    }
+    else if(this->status == this->STATUS_PAUSED || 
+            this->status == this->STATUS_SLOW    ||
+            this->status == this->STATUS_SLOW2   ||
+            this->status == this->STATUS_FFWD    ||
+            this->status == this->STATUS_FFWD2) {
+        this->setStatus(this->STATUS_PLAYING);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+    }
+}
+
+/**
+ * Playback will be switched to slow motion.
+ * 
+ * There are two different speed settings for slow motion.
+ * Twice as slow and four times as slow.
+ * 
+ * @see MMSAV::ffwd()
+ * @see MMSAV::rewind()
+ */
+void MMSAV::slow() {
+    if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
+        this->setStatus(this->STATUS_SLOW);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
+    }
+    else if(this->status == this->STATUS_SLOW) {
+        this->setStatus(this->STATUS_SLOW2);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_4);
+    }
+    else if(this->status == this->STATUS_FFWD) {
+        this->setStatus(this->STATUS_PLAYING);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+    }
+    else if(this->status == this->STATUS_FFWD2) {
+        this->setStatus(this->STATUS_FFWD);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
+    }
+}
+
+/**
+ * Playback will be switched to fast forward.
+ * 
+ * There are two different speed settings for fast forward.
+ * Twice as fast and four times as fast.
+ * 
+ * @see MMSAV::slow()
+ * @see MMSAV::rewind()
+ */
+void MMSAV::ffwd() {
+    if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
+        this->setStatus(this->STATUS_FFWD);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
+    }
+    else if(this->status == this->STATUS_FFWD) {
+        this->setStatus(this->STATUS_FFWD2);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
+    }
+    else if(this->status == this->STATUS_SLOW) {
+        this->setStatus(this->STATUS_PLAYING);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+    }
+    else if(this->status == this->STATUS_SLOW2) {
+        this->setStatus(this->STATUS_SLOW);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
+    }
+}
+
+/**
+ * Gets information about the length of the actual title
+ * and the time of the current position in seconds.
+ * 
+ * @param   pos     [out]   time in seconds of current position
+ * @param   length  [out]   time in seconds of title length
+ */
+bool MMSAV::getTimes(int *pos, int *length) {
+    if(xine_get_pos_length(this->stream, NULL, pos, length)) {
+        if(pos)    (*pos)    /= 1000;
+        if(length) (*length) /= 1000;
+        return true;
+    }
+    else
+       return false;
+}
+
+/**
+ * Sets the brightness if video output is done.
+ * 
+ * @param   count   [in]    amount of brightness
+ * 
+ * @see     MMSAV::brightnessUp()
+ * @see     MMSAV::brightnessDown()
+ */
+void MMSAV::setBrightness(int count) {
+    if(this->vo)
+        xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, count);
+}
+
+/**
+ * Increases the brightness if video output is done.
+ * 
+ * @param   count   [in]    amount of brightness to increase
+ * 
+ * @see     MMSAV::setBrightness()
+ * @see     MMSAV::brightnessDown()
+ */
+void MMSAV::brightnessUp(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
+        xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value + count*500);
+    }
+}
+
+/**
+ * Decreases the brightness if video output is done.
+ * 
+ * @param   count   [in]    amount of brightness to decrease
+ * 
+ * @see     MMSAV::setBrightness()
+ * @see     MMSAV::brightnessUp()
+ */
+void MMSAV::brightnessDown(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
+        xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value - count*500);
+    }
+}
+
+/**
+ * Sets the contrast if video output is done.
+ * 
+ * @param   count   [in]    amount of contrast
+ * 
+ * @see     MMSAV::contrastUp()
+ * @see     MMSAV::contrastDown()
+ */
+void MMSAV::setContrast(int count) {
+    if(this->vo)
+        xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, count);
+}
+
+/**
+ * Increases the contrast if video output is done.
+ * 
+ * @param   count   [in]    amount of contrast to increase
+ * 
+ * @see     MMSAV::setContrast()
+ * @see     MMSAV::contrastDown()
+ */
+void MMSAV::contrastUp(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
+        xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value + count*500);
+    }
+}
+
+/**
+ * Decreases the contrast if video output is done.
+ * 
+ * @param   count   [in]    amount of contrast to decrease
+ * 
+ * @see     MMSAV::setContrast()
+ * @see     MMSAV::contrastUp()
+ */
+void MMSAV::contrastDown(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
+        xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value - count*500);
+    }
+}
+
+/**
+ * Sets the saturation if video output is done.
+ * 
+ * @param   count   [in]    amount of saturation
+ * 
+ * @see     MMSAV::saturationUp()
+ * @see     MMSAV::saturationDown()
+ */
+void MMSAV::setSaturation(int count) {
+    if(this->vo)
+        xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, count);
+}
+
+/**
+ * Increases the saturation if video output is done.
+ * 
+ * @param   count   [in]    amount of saturation to increase
+ * 
+ * @see     MMSAV::setSaturation()
+ * @see     MMSAV::saturationDown()
+ */
+void MMSAV::saturationUp(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
+        xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value + count*500);
+    }
+}
+
+/**
+ * Decreases the saturation if video output is done.
+ * 
+ * @param   count   [in]    amount of saturation to decrease
+ * 
+ * @see     MMSAV::setSaturation()
+ * @see     MMSAV::saturationUp()
+ */
+void MMSAV::saturationDown(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
+        xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value - count*500);
+    }
+}
+
+/**
+ * Sets the hue if video output is done.
+ * 
+ * @param   count   [in]    amount of hue
+ * 
+ * @see     MMSAV::hueUp()
+ * @see     MMSAV::hueDown()
+ */
+void MMSAV::setHue(int count) {
+    if(this->vo)
+        xine_set_param(this->stream, XINE_PARAM_VO_HUE, count);
+}
+
+/**
+ * Increases the hue if video output is done.
+ * 
+ * @param   count   [in]    amount of hue to increase
+ * 
+ * @see     MMSAV::setHue()
+ * @see     MMSAV::hueDown()
+ */
+void MMSAV::hueUp(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
+        xine_set_param(this->stream, XINE_PARAM_VO_HUE, value + count*500);
+    }
+}
+
+/**
+ * Decreases the hue if video output is done.
+ * 
+ * @param   count   [in]    amount of hue to decrease
+ * 
+ * @see     MMSAV::setHue()
+ * @see     MMSAV::hueUp()
+ */
+void MMSAV::hueDown(int count) {
+    if(this->vo) {
+        int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
+        xine_set_param(this->stream, XINE_PARAM_VO_HUE, value - count*500);
+    }
+}
+
+/**
+ * Send a xine event to the engine
+ * 
+ * @param   type    [in]    type of event
+ */
+void MMSAV::sendEvent(int type) {
+    xine_event_t evt;
+    
+    evt.stream      = this->stream;
+    evt.data        = NULL;
+    evt.data_length = 0;
+    evt.type        = type;
+
+    xine_event_send(this->stream, &evt);
+}
+
+/**
+ * Returns true if stream contains a video stream.
+ * 
+ * @return true if video stream
+ */
+bool MMSAV::hasVideo() {
+	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_VIDEO) == 1);
+}
+
+/**
+ * Returns true if stream contains an audio stream.
+ * 
+ * @return true if audio stream
+ */
+bool MMSAV::hasAudio() {
+	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_AUDIO) == 1);
+}

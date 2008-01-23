@@ -1,0 +1,212 @@
+/***************************************************************************
+ *   Copyright (C) 2005-2007 by                                            *
+ *                                                                         *
+ *      Stefan Schwarzer <sxs@morphine.tv>                                 *
+ *      Guido Madaus     <bere@morphine.tv>                                *
+ *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License.        *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
+/**
+ * @file  mmsdbsqlite.cpp
+ * 
+ * @brief Source file for sqlite3 database functions.
+ * 
+ * @author Stefan Schwarzer <sschwarzer@berlinux-solutions.de>
+ * @author Guido Madaus     <gmadaus@berlinux-solutions.de>
+ * @author Jens Schneider   <pupeider@morphine.tv>
+ * 
+ * @ingroup mmstools
+ */
+#ifdef __ENABLE_SQLITE__
+
+#include "mmsdbsqlite.h" 
+#include "mmslogger.h"
+
+/**
+ * @brief ????
+ * 
+ */
+MMSDBSQLite::~MMSDBSQLite() {
+    this->disconnect();
+}
+
+/**
+ * @brief ????
+ * 
+ */
+int MMSDBSQLite::getResults(void *rs, int numCols, char **results, char **columnNames)
+{
+    int             i=0;
+    MMSRecordSet   *myrs;
+
+    myrs = (MMSRecordSet *) rs;
+    myrs->addRow();
+    for(i=0; i < numCols; i++)
+    {
+        if(results[i] != NULL)
+            (*myrs)[columnNames[i]]=results[i];
+    }
+
+    return 0;
+}
+
+/**
+ * @brief ????
+ * 
+ */
+void MMSDBSQLite::commit() {
+    int     rc=0;
+    char    *errmsg=NULL;
+
+    //open transaction
+    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "COMMIT TRANSACTION", NULL, NULL, &errmsg)) != SQLITE_OK)
+    {        
+        throw(new MMSError(rc, errmsg));
+    }
+
+    return;
+}
+
+/**
+ * @brief ????
+ * 
+ */
+void MMSDBSQLite::rollback() {
+    int     rc=0;
+    char    *errmsg=NULL;
+
+    //open transaction
+    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "ROLLBACK TRANSACTION", NULL, NULL, &errmsg)) != SQLITE_OK)
+    {        
+        throw(new MMSError(rc, errmsg));
+    }
+
+    return;
+}
+
+/**
+ * @brief Opens connection to database.
+ * 
+ * @param datasource DataSource object which contains required information for database
+ * 
+ * @return void
+ */
+void MMSDBSQLite::connect(DataSource *datasource) {
+   int     rc=0;
+
+   // Open database connection
+   if((rc = sqlite3_open(datasource->getDatabaseName().c_str(), &this->dbhandle)) != SQLITE_OK)
+   {
+       this->disconnect();
+       string err = sqlite3_errmsg(dbhandle);
+       sqlite3_close(this->dbhandle);
+       throw new MMSError(rc, err);
+   }
+
+   connected = true;
+
+   return;
+}
+
+/**
+ * @brief Close connection to database.
+ * 
+ * @return void
+ */
+void MMSDBSQLite::disconnect() {
+    
+    if(connected) {
+        sqlite3_close((sqlite3 *)dbhandle);
+        this->connected = false;
+    }
+
+    this->dbname = "";
+
+    return;    
+}
+
+/**
+ * @brief Returns the name of the connected database
+ * 
+ * @return The name of the connected database
+ */
+string MMSDBSQLite::getDBName() {
+
+    return this->dbname;
+}
+
+/**
+ * @brief This function executes given database query and puts the results in MMSRecordSet. 
+ *        This method is used for select statements
+ * 
+ * @param statement buffer with database query
+ * 
+ * @return Returns the number of affected rows
+ */
+int MMSDBSQLite::query(string statement, MMSRecordSet *rs) {
+    int     rc=0;
+    char    *errmsg=NULL;
+
+    rs->reset();
+
+    if((rc = sqlite3_exec((sqlite3 *)dbhandle, statement.c_str(), &(this->getResults), (void *) rs, &errmsg)) != SQLITE_OK)
+    {
+        string message;
+        message = string(errmsg) + string(" [query was: ") + statement + string("]");
+        sqlite3_free(errmsg);
+        throw(new MMSError(rc, message));
+    }
+
+    //rewind
+    rs->setRecordNum(0);
+
+    return (sqlite3_changes((sqlite3 *)dbhandle));
+}
+
+/**
+ * @brief This function executes given database query. 
+ *        This method is used for insert, update and delete statements
+ * 
+ * @param statement buffer with database query
+ * 
+ * @return Returns the number of affected rows
+ */
+int MMSDBSQLite::query(string statement) {
+
+    int     rc=0;
+    char    *errmsg=NULL;
+
+    if((rc = sqlite3_exec((sqlite3 *)dbhandle, statement.c_str(), NULL, NULL, &errmsg)) != SQLITE_OK)
+    {        
+        string message;
+        message = string(errmsg) + string(" [query was: ") + statement + string("]");
+        throw(new MMSError(rc, message));
+    }
+
+    // return the number of affected rows
+    return (sqlite3_changes((sqlite3 *)dbhandle));
+}
+
+/**
+ * @brief Returns the ID of the last inserted record
+ * 
+ * @return Returns the ID of the last inserted record
+ */
+int MMSDBSQLite::getLastInsertedID() {
+    return sqlite3_last_insert_rowid((sqlite3 *)this->dbhandle);
+}
+
+#endif /*__ENABLE_SQLITE__*/

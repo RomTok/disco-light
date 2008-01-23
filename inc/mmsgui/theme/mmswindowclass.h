@@ -1,0 +1,400 @@
+/***************************************************************************
+ *   Copyright (C) 2005-2007 by                                            *
+ *                                                                         *
+ *      Stefan Schwarzer <sxs@morphine.tv>                                 *
+ *      Guido Madaus     <bere@morphine.tv>                                *
+ *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License.        *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
+
+#ifndef MMSWINDOWCLASS_H_
+#define MMSWINDOWCLASS_H_
+
+#include "theme/mmsborderclass.h"
+
+
+class MMSWindowClass {
+    private:
+    	struct {
+	        bool         isalignment;
+	        MMSALIGNMENT alignment;
+	        bool         isdx;
+	        bool         isdy;
+	        bool         iswidth;
+	        bool         isheight;
+	        bool         isbgcolor;
+	        DFBColor     bgcolor;
+	        bool         isbgimagepath;
+	        bool         isbgimagename;
+	        bool         isopacity;
+	        unsigned int opacity;
+	        bool         isfadein;
+	        bool         fadein;
+	        bool         isfadeout;
+	        bool         fadeout;
+	        bool         isdebug;
+	        bool         debug;
+	        bool         ismargin;
+	        unsigned int margin;
+	        bool         isuparrow;         //! is the uparrow set?
+	        bool         isdownarrow;       //! is the downarrow set?
+	        bool         isleftarrow;       //! is the leftarrow set?
+	        bool         isrightarrow;      //! is the rightarrow set?
+	        bool         isnavigateup;      //! is the navigateup set?
+	        bool         isnavigatedown;    //! is the navigatedown set?
+	        bool         isnavigateleft;    //! is the navigateleft set?
+	        bool         isnavigateright;   //! is the navigateright set?
+	        bool         isownsurface;
+	        bool		 ownsurface;
+	        bool         ismovein;
+	        MMSDIRECTION movein;
+	        bool         ismoveout;
+	        MMSDIRECTION moveout;
+    	} id;
+    	
+        struct {
+	        string       *dx;
+	        string       *dy;
+	        string       *width;
+	        string       *height;
+	        string       *bgimagepath;
+	        string       *bgimagename;
+	        string       *uparrow;          //! the name of the widget which represents the scroll up arrow
+	        string       *downarrow;        //! the name of the widget which represents the scroll down arrow
+	        string       *leftarrow;        //! the name of the widget which represents the scroll left arrow
+	        string       *rightarrow;       //! the name of the widget which represents the scroll right arrow
+	        string       *navigateup;       //! the name of the window to which should navigate up
+	        string       *navigatedown;     //! the name of the window to which should navigate down
+	        string       *navigateleft;     //! the name of the window to which should navigate left
+	        string       *navigateright;   	//! the name of the window to which should navigate right
+		} ed;
+
+    	/* init routines */
+        void initAlignment();
+        void initDx();
+        void initDy();
+        void initWidth();
+        void initHeight();
+        void initBgColor();
+        void initBgImagePath();
+        void initBgImageName();
+        void initOpacity();
+        void initFadeIn();
+        void initFadeOut();
+        void initDebug();
+        void initMargin();
+        void initUpArrow();
+        void initDownArrow();
+        void initLeftArrow();
+        void initRightArrow();
+        void initNavigateUp();
+        void initNavigateDown();
+        void initNavigateLeft();
+        void initNavigateRight();
+        void initOwnSurface();
+        void initMoveIn();
+        void initMoveOut();
+
+    	/* free routines */
+        void freeAlignment();
+        void freeDx();
+        void freeDy();
+        void freeWidth();
+        void freeHeight();
+        void freeBgColor();
+        void freeBgImagePath();
+        void freeBgImageName();
+        void freeOpacity();
+        void freeFadeIn();
+        void freeFadeOut();
+        void freeDebug();
+        void freeMargin();
+        void freeUpArrow();
+        void freeDownArrow();
+        void freeLeftArrow();
+        void freeRightArrow();
+        void freeNavigateUp();
+        void freeNavigateDown();
+        void freeNavigateLeft();
+        void freeNavigateRight();
+        void freeOwnSurface();
+        void freeMoveIn();
+        void freeMoveOut();
+
+    public:
+        MMSBorderClass border;
+
+        MMSWindowClass();
+        ~MMSWindowClass();
+        MMSWindowClass &operator=(const MMSWindowClass &c); 
+        //
+        void unsetAll();
+        //
+        void setAttributesFromXMLNode(xmlNode* node, string path = "");
+        //
+        bool isAlignment();
+        void unsetAlignment();
+        void setAlignment(MMSALIGNMENT alignment);
+        bool getAlignment(MMSALIGNMENT &alignment);
+        //
+        bool isDx();
+        void unsetDx();
+        void setDx(const string &dx);
+        bool getDx(string &dx);
+        //
+        bool isDy();
+        void unsetDy();
+        void setDy(const string &dy);
+        bool getDy(string &dy);
+        //
+        bool isWidth();
+        void unsetWidth();
+        void setWidth(const string &width);
+        bool getWidth(string &width);
+        //
+        bool isHeight();
+        void unsetHeight();
+        void setHeight(const string &height);
+        bool getHeight(string &height);
+        //
+        bool isBgColor();
+        void unsetBgColor();
+        void setBgColor(const DFBColor &bgcolor);
+        bool getBgColor(DFBColor &bgcolor);
+        //
+        bool isBgImagePath();
+        void unsetBgImagePath();
+        void setBgImagePath(const string &bgimagepath);
+        bool getBgImagePath(string &bgimagepath);
+        //
+        bool isBgImageName();
+        void unsetBgImageName();
+        void setBgImageName(const string &bgimagename);
+        bool getBgImageName(string &bgimagename);
+        //
+        bool isOpacity();
+        void unsetOpacity();
+        void setOpacity(unsigned int opacity);
+        bool getOpacity(unsigned int &opacity);
+        //
+        bool isFadeIn();
+        void unsetFadeIn();
+        void setFadeIn(bool fadein);
+        bool getFadeIn(bool &fadein);
+        //
+        bool isFadeOut();
+        void unsetFadeOut();
+        void setFadeOut(bool fadeout);
+        bool getFadeOut(bool &fadeout);
+        //
+        bool isDebug();
+        void unsetDebug();
+        void setDebug(bool debug);
+        bool getDebug(bool &debug);
+        //
+        bool isMargin();
+        void unsetMargin();
+        void setMargin(unsigned int margin);
+        bool getMargin(unsigned int &margin);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the uparrow is set.
+        bool isUpArrow();
+
+        //! Mark the uparrow as not set.
+        void unsetUpArrow();
+
+        //! Set the uparrow.
+        /*!
+        \param uparrow  the name of the widget which represents the navigate up arrow
+        */
+        void setUpArrow(const string &uparrow);
+
+
+        //! Get the uparrow.
+        /*!
+        \param uparrow  the name of the widget which represents the navigate up arrow
+        \return true if set
+        */
+        bool getUpArrow(string &uparrow);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the downarrow is set.
+        bool isDownArrow();
+
+        //! Mark the downarrow as not set.
+        void unsetDownArrow();
+
+        //! Set the downarrow.
+        /*!
+        \param downarrow  the name of the widget which represents the navigate down arrow
+        */
+        void setDownArrow(const string &downarrow);
+
+        //! Get the downarrow.
+        /*!
+        \param downarrow  the name of the widget which represents the navigate down arrow
+        \return true if set
+        */
+        bool getDownArrow(string &downarrow);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the leftarrow is set.
+        bool isLeftArrow();
+
+        //! Mark the leftarrow as not set.
+        void unsetLeftArrow();
+
+        //! Set the leftarrow.
+        /*!
+        \param leftarrow  the name of the widget which represents the navigate left arrow
+        */
+        void setLeftArrow(const string &leftarrow);
+
+        //! Get the leftarrow.
+        /*!
+        \param leftarrow  the name of the widget which represents the navigate left arrow
+        \return true if set
+        */
+        bool getLeftArrow(string &leftarrow);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the rightarrow is set.
+        bool isRightArrow();
+
+        //! Mark the rightarrow as not set.
+        void unsetRightArrow();
+
+        //! Set the rightarrow.
+        /*!
+        \param rightarrow  the name of the widget which represents the navigate right arrow
+        */
+        void setRightArrow(const string &rightarrow);
+
+        //! Get the rightarrow.
+        /*!
+        \param rightarrow  the name of the widget which represents the navigate right arrow
+        \return true if set
+        */
+        bool getRightArrow(string &rightarrow);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the navigateup is set.
+        bool isNavigateUp();
+
+        //! Mark the navigateup as not set.
+        void unsetNavigateUp();
+
+        //! Set the navigateup window.
+        /*!
+        \param navigateup  the name of the window to which should navigate up
+        */
+        void setNavigateUp(const string &navigateup);
+
+        //! Get the navigateup window.
+        /*!
+        \param navigateup  the name of the window to which should navigate up
+        \return true if set
+        */
+        bool getNavigateUp(string &navigateup);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the navigatedown is set.
+        bool isNavigateDown();
+
+        //! Mark the navigatedown as not set.
+        void unsetNavigateDown();
+
+        //! Set the navigatedown window.
+        /*!
+        \param navigatedown  the name of the window to which should navigate down
+        */
+        void setNavigateDown(const string &navigatedown);
+
+        //! Get the navigatedown window.
+        /*!
+        \param navigatedown  the name of the window to which should navigate down
+        \return true if set
+        */
+        bool getNavigateDown(string &navigatedown);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the navigateleft is set.
+        bool isNavigateLeft();
+
+        //! Mark the navigateleft as not set.
+        void unsetNavigateLeft();
+
+        //! Set the navigateleft window.
+        /*!
+        \param navigateleft  the name of the window to which should navigate left
+        */
+        void setNavigateLeft(const string &navigateleft);
+
+        //! Get the navigateleft window.
+        /*!
+        \param navigateleft  the name of the window to which should navigate left
+        \return true if set
+        */
+        bool getNavigateLeft(string &navigateleft);
+
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Check if the navigateright is set.
+        bool isNavigateRight();
+
+        //! Mark the navigateright as not set.
+        void unsetNavigateRight();
+
+        //! Set the navigateright.
+        /*!
+        \param navigateright  the name of the window to which should navigate right
+        */
+        void setNavigateRight(const string &navigateright);
+
+        //! Get the navigateright window.
+        /*!
+        \param navigateright  the name of the window to which should navigate right
+        \return true if set
+        */
+        bool getNavigateRight(string &navigateright);
+
+        //
+        bool isOwnSurface();
+        void unsetOwnSurface();
+        void setOwnSurface(bool ownsurface);
+        bool getOwnSurface(bool &ownsurface);
+
+
+        bool isMoveIn();
+        void unsetMoveIn();
+        void setMoveIn(MMSDIRECTION movein);
+        bool getMoveIn(MMSDIRECTION &movein);
+
+        bool isMoveOut();
+        void unsetMoveOut();
+        void setMoveOut(MMSDIRECTION moveout);
+        bool getMoveOut(MMSDIRECTION &moveout);
+};
+
+#endif /*MMSWINDOWCLASS_H_*/
