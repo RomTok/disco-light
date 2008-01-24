@@ -343,8 +343,16 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 			
 			// walk trough the child node, until found the correct map node
 			for (walkNode = pNode; walkNode; walkNode = walkNode->next) {
+				xmlChar *mapName;
 
-				if(!xmlStrcmp(walkNode->name, (const xmlChar *) name.c_str())) {
+				if(xmlStrcmp(walkNode->name, (const xmlChar*) "map"))
+					continue;
+
+				mapName   = xmlGetProp(walkNode, (const xmlChar*)"name");
+				if(!mapName)
+				    continue;
+				
+				if(!xmlStrcmp(mapName, (const xmlChar *) name.c_str())) {
 					logger.writeLog("using mapping set of " + name + " node");
 							
 					walkNode = walkNode->xmlChildrenNode;
@@ -363,8 +371,10 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 				}
 				else {
 					//ignore this node
-					logger.writeLog("Ignore mapping set of " + name + " node");
+					logger.writeLog("Ignore mapping set of " + string((const char *) mapName) + " node");
 				}
+				
+				xmlFree(mapName);
 			}
         }
 	}

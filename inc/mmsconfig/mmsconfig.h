@@ -27,5 +27,6 @@
 #include "mmsconfig/mmsimportsourcedata.h"
 #include "mmsconfig/mmsimportsourceservice.h"
 #include "mmsconfig/mmsrcparser.h"
+#include "mmsconfig/mmspluginparameterparser.h"
 
 #endif /*MMSCONFIG_H_*/
