@@ -79,7 +79,6 @@ void MMSRcParser::parseFile(string filename) {
 		if(parser) {
 			//Walk the tree:
 			xmlNode* pNode = xmlDocGetRootElement(parser);
-			std::cout << string((char*)pNode->name);
 	  		if(xmlStrcmp(pNode->name, (const xmlChar *) "mmsrc")) {
 	  			std::cout << "invalid configuration file (" << filename << ") - does not contain mmsrc root node" << std::endl;
 	  			throw new MMSRcParserError(1, "invalid file");
