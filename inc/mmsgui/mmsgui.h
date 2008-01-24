@@ -23,26 +23,25 @@
 #ifndef MMSGUI_H_
 #define MMSGUI_H_
 
-#include "mmsimagemanager.h"
-#include "theme/mmstheme.h"
-#include "theme/mmsthememanager.h"
+#include "mmsgui/mmsimagemanager.h"
+#include "mmsgui/theme/mmstheme.h"
+#include "mmsgui/theme/mmsthememanager.h"
 
-#include "mmsmainwindow.h"
-#include "mmspopupwindow.h"
-#include "mmsrootwindow.h"
-#include "mmsdialogmanager.h"
-#include "mmswindowmanager.h"
+#include "mmsgui/mmsmainwindow.h"
+#include "mmsgui/mmspopupwindow.h"
+#include "mmsgui/mmsrootwindow.h"
+#include "mmsgui/mmsdialogmanager.h"
+#include "mmsgui/mmswindowmanager.h"
 
-#include "mmshbox.h"
-#include "mmsvbox.h"
-#include "mmsbutton.h"
-#include "mmslabel.h"
-#include "mmsimage.h"
-#include "mmsarrow.h"
-#include "mmsprogressbar.h"
-#include "mmsmenu.h"
-#include "mmstextbox.h"
-#include "mmsslider.h"
-
+#include "mmsgui/mmshbox.h"
+#include "mmsgui/mmsvbox.h"
+#include "mmsgui/mmsbutton.h"
+#include "mmsgui/mmslabel.h"
+#include "mmsgui/mmsimage.h"
+#include "mmsgui/mmsarrow.h"
+#include "mmsgui/mmsprogressbar.h"
+#include "mmsgui/mmsmenu.h"
+#include "mmsgui/mmstextbox.h"
+#include "mmsgui/mmsslider.h"
 
 #endif /*MMSGUI_H_*/

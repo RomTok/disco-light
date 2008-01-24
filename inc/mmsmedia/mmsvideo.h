@@ -23,7 +23,7 @@
 #ifndef MMSVIDEO_H_
 #define MMSVIDEO_H_
 
-#include "mmsav.h"
+#include "mmsmedia/mmsav.h"
 
 /**
  * @brief   Handles Video playback.

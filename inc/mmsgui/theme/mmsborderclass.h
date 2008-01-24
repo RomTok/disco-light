@@ -23,7 +23,7 @@
 #ifndef MMSBORDERCLASS_H_
 #define MMSBORDERCLASS_H_
 
-#include "theme/mmsthemebase.h"
+#include "mmsgui/theme/mmsthemebase.h"
 #include <directfb.h>
 
 class MMSBorderClass {

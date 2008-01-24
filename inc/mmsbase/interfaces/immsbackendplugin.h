@@ -23,9 +23,9 @@
 #ifndef IMMSBACKENDPLUGIN_H_
 #define IMMSBACKENDPLUGIN_H_
 
-#include "interfaces/immsevent.h"
-#include "interfaces/immsswitcher.h"
-#include "mmsplugindata.h"
+#include "mmsbase/interfaces/immsevent.h"
+#include "mmsbase/interfaces/immsswitcher.h"
+#include "mmsconfig/mmsplugindata.h"
 
 class IMMSBackendPlugin {
     public:

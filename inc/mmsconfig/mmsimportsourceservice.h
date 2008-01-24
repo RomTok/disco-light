@@ -23,9 +23,9 @@
 #ifndef MMSIMPORTSOURCESERVICE_H_
 #define MMSIMPORTSOURCESERVICE_H_
 
-#include "mmstools.h"
-#include "mmsplugindata.h" 
-#include "mmsimportsourcedata.h" 
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmsplugindata.h" 
+#include "mmsconfig/mmsimportsourcedata.h" 
 
 class MMSImportSourceService {
     private:

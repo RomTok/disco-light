@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsthread.h"
-#include "mmserror.h"
-#include "tools.h"
+#include "mmstools/mmsthread.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/tools.h"
 
 extern "C" {
 #include <direct/debug.h>

@@ -23,7 +23,7 @@
 #ifndef MMSCORESERVICEMANAGER_H_
 #define MMSCORESERVICEMANAGER_H_
 
-#include "interfaces/immsimportscheduler.h"
+#include "mmsbase/interfaces/immsimportscheduler.h"
 
 class MMSCoreServiceManager {
 	private:

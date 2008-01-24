@@ -23,7 +23,7 @@
 #ifndef MMSLABELCLASS_H_
 #define MMSLABELCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the label widget.
 /*!

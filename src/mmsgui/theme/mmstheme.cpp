@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "theme/mmstheme.h"
+#include "mmsgui/theme/mmstheme.h"
 
 /* initialize the theme object which stores the global theme */
 MMSTheme *globalTheme = new MMSTheme();

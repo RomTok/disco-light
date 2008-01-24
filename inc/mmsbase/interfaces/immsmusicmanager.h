@@ -21,9 +21,11 @@
  ***************************************************************************/
 #ifndef IMMSMUSICMANAGER_H_
 #define IMMSMUSICMANAGER_H_
-#include "base.h"
+
+#include "mmstools/base.h"
 #include <vector>
 #include <sigc++/sigc++.h>
+
 typedef vector<string> PLAYLIST;
 
 class IMMSMusicManager {

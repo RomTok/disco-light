@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmswindow.h"
-#include "tools.h"
-#include "mmsborder.h"
+#include "mmsgui/mmswindow.h"
+#include "mmstools/tools.h"
+#include "mmsgui/mmsborder.h"
 #include <math.h>
 
 #include <fcntl.h>

@@ -25,7 +25,7 @@
 
 #include <directfb.h>
 
-#include "mmstools.h"
+#include "mmstools/mmstools.h"
 
 /**
  * @brief   Controls the video device.

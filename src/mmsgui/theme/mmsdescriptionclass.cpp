@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "theme/mmsdescriptionclass.h"
+#include "mmsgui/theme/mmsdescriptionclass.h"
 
 MMSDescriptionClass::MMSDescriptionClass() {
     unsetAll();

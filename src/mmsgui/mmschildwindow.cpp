@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmschildwindow.h"
+#include "mmsgui/mmschildwindow.h"
 
 MMSChildWindow::MMSChildWindow(string className, MMSWindow *parent,
                                string dx, string dy, string w, string h, MMSALIGNMENT alignment,

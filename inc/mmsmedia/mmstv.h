@@ -24,7 +24,7 @@
 #ifndef MMSTV_H_
 #define MMSTV_H_
 
-#include "mmsav.h"
+#include "mmsmedia/mmsav.h"
 
 /**
  * @brief   Handles TV playback.

@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsbutton.h"
+#include "mmsgui/mmsbutton.h"
 
 MMSButton::MMSButton(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
     create(root, className, theme);

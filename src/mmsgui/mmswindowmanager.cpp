@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmswindowmanager.h"
-#include "fb/mmsfbwindowmanager.h"
+#include "mmsgui/mmswindowmanager.h"
+#include "mmsgui/fb/mmsfbwindowmanager.h"
 
 
 MMSWindowManager::MMSWindowManager(DFBRectangle vrect) {

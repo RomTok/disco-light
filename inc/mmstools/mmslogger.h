@@ -23,7 +23,7 @@
 #ifndef MMSLOGGER_H_
 #define MMSLOGGER_H_
 
-#include "mmslogbackend.h"
+#include "mmstools/mmslogbackend.h"
 
 class MMSLogger
 {

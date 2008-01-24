@@ -23,9 +23,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "mmsimagemanager.h"
-#include "mmsguilogger.h"
-#include "mmsgifloader.h"
+#include "mmsgui/mmsimagemanager.h"
+#include "mmsgui/mmsguilogger.h"
+#include "mmsgui/mmsgifloader.h"
 
 MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
     this->layer = layer;

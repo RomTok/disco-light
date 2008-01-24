@@ -23,8 +23,8 @@
 #ifndef MMSFBWINDOWMANAGER_H_
 #define MMSFBWINDOWMANAGER_H_
 
-#include "fb/mmsfblayer.h"
-#include "fb/mmsfbwindowmanagerthread.h"
+#include "mmsgui/fb/mmsfblayer.h"
+#include "mmsgui/fb/mmsfbwindowmanagerthread.h"
 
 typedef struct {
     MMSFBWindow     *window;        /* window */

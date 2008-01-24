@@ -23,8 +23,8 @@
 #ifndef MMSFB_H_
 #define MMSFB_H_
 
-#include "mmsfblayer.h"
-#include "mmsfbwindowmanager.h"
+#include "mmsgui/fb/mmsfblayer.h"
+#include "mmsgui/fb/mmsfbwindowmanager.h"
 
 class MMSFB {
     private:

@@ -23,9 +23,9 @@
 #ifndef MMSFBMANAGER_H_
 #define MMSFBMANAGER_H_
 
-#include "fb/mmsfb.h"
-#include "mmsconfigdata.h"
-#include "mmsguilogger.h"
+#include "mmsgui/fb/mmsfb.h"
+#include "mmsconfig/mmsconfigdata.h"
+#include "mmsgui/mmsguilogger.h"
 
 #define MMS_OT_VESAFB       "vesafb"
 #define MMS_OT_MATROXFB     "matroxfb"

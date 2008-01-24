@@ -23,11 +23,11 @@
 #ifndef MMSMEDIA_H_
 #define MMSMEDIA_H_
 
-#include "mmsvideo.h"
-#include "mmssound.h"
-#include "mmstv.h"
-#include "mmsdvd.h"
-#include "mmsvideoctrl.h"
-#include "mmsaudioctrl.h"
+#include "mmsmedia/mmsvideo.h"
+#include "mmsmedia/mmssound.h"
+#include "mmsmedia/mmstv.h"
+#include "mmsmedia/mmsdvd.h"
+#include "mmsmedia/mmsvideoctrl.h"
+#include "mmsmedia/mmsaudioctrl.h"
 
 #endif /*MMSMEDIA_H_*/

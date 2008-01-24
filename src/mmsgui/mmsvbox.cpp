@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsvbox.h"
+#include "mmsgui/mmsvbox.h"
 
 MMSVBox::MMSVBox(MMSWindow *root) : MMSWidget::MMSWidget() {
     create(root);

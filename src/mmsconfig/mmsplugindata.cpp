@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsplugindata.h"
+#include "mmsconfig/mmsplugindata.h"
 
 MMSPluginData::MMSPluginData() :
     id(-1), type(NULL), name(""), title(""), description(""), path(""), filename(""),

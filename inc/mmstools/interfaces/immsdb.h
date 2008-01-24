@@ -22,8 +22,8 @@
 #ifndef IMMSDB_H_
 #define IMMSDB_H_
 
-#include "mmsrecordset.h"
-#include "datasource.h"
+#include "mmstools/mmsrecordset.h"
+#include "mmstools/datasource.h"
 
 typedef map<string, string> MMSDB_SP_ARGLIST;
 

@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "fb/mmsfbwindowmanagerthread.h"
-#include "fb/mmsfbwindowmanager.h"
+#include "mmsgui/fb/mmsfbwindowmanagerthread.h"
+#include "mmsgui/fb/mmsfbwindowmanager.h"
 
 MMSFBWindowManagerThread::MMSFBWindowManagerThread(MMSFBSurface **high_freq_surface,
                                                    MMSFBSurface **high_freq_saved_surface,

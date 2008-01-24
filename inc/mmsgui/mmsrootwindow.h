@@ -23,7 +23,7 @@
 #ifndef MMSROOTWINDOW_H_
 #define MMSROOTWINDOW_H_
 
-#include "mmswindow.h"
+#include "mmsgui/mmswindow.h"
 
 class MMSRootWindow : public MMSWindow {
     private:

@@ -23,8 +23,9 @@
 #ifndef MMSINPUTSUBSCRIPTION_H_
 #define MMSINPUTSUBSCRIPTION_H_
 
+#include "mmsinput/mmsinputmanager.h"
+
 #include <directfb.h>
-#include "mmsinputmanager.h"
 #include <sigc++/sigc++.h>
 
 typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);

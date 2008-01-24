@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "theme/mmsprogressbarclass.h"
+#include "mmsgui/theme/mmsprogressbarclass.h"
 
 MMSProgressBarClass::MMSProgressBarClass() {
     unsetAll();

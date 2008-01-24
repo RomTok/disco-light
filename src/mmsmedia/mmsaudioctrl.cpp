@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsaudioctrl.h"
+#include "mmsmedia/mmsaudioctrl.h"
 
 snd_mixer_t         *MMSAudioCtrl::handle = NULL;
 string              MMSAudioCtrl::card = "default";

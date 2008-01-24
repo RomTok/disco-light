@@ -36,11 +36,12 @@
 
 #ifdef __ENABLE_SQLITE__
 
-#include "base.h"
-#include "mmserror.h"
-#include "mmsrecordset.h"
-#include "datasource.h"
-#include "interfaces/immsdb.h"
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/mmsrecordset.h"
+#include "mmstools/datasource.h"
+#include "mmstools/interfaces/immsdb.h"
+
 #include <sqlite3.h>
 
 #define DBMS_SQLITE3	"SQLITE3"

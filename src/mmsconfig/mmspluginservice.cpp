@@ -20,11 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmspluginservice.h"
-#include "interfaces/immsdb.h"
-#include "mmsplugindao.h"
-#include "mmspluginpropertydao.h"
-#include "mmsimportpropertydao.h"
+#include "mmsconfig/mmspluginservice.h"
+#include "mmstools/interfaces/immsdb.h"
+#include "mmsconfig/mmsplugindao.h"
+#include "mmsconfig/mmspluginpropertydao.h"
+#include "mmsconfig/mmsimportpropertydao.h"
 
 MMSPluginService::MMSPluginService(DataSource *datasource) {
 

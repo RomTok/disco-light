@@ -23,7 +23,7 @@
 #ifndef MMSTEXTBOXCLASS_H_
 #define MMSTEXTBOXCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the textbox widget.
 /*!

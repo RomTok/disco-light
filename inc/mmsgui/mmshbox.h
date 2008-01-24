@@ -23,7 +23,7 @@
 #ifndef MMSHBOX_H_
 #define MMSHBOX_H_
 
-#include "mmswidget.h"
+#include "mmsgui/mmswidget.h"
 
 //! With this class you can get a horizontal box. 
 /*!

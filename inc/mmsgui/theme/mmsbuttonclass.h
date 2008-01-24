@@ -23,7 +23,7 @@
 #ifndef MMSBUTTONCLASS_H_
 #define MMSBUTTONCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the button widget.
 /*!

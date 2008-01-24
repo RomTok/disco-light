@@ -22,7 +22,7 @@
 #ifndef MMSMUSICINTERFACE_H_
 #define MMSMUSICINTERFACE_H_
 
-#include "interfaces/immsmusicmanager.h"
+#include "mmsbase/interfaces/immsmusicmanager.h"
 #include <sigc++/sigc++.h>
 
 class MMSMusicInterface {

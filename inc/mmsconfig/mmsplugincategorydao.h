@@ -23,11 +23,11 @@
 #ifndef MMSPLUGINCATEGORYDAO_H_
 #define MMSPLUGINCATEGORYDAO_H_
 
-#include "base.h"
-#include "tools.h"
-#include "mmsplugincategorydata.h"
-#include "interfaces/immsdb.h"
-#include "mmserror.h"
+#include "mmstools/base.h"
+#include "mmstools/tools.h"
+#include "mmstools/mmserror.h"
+#include "mmsconfig/mmsplugincategorydata.h"
+#include "mmstools/interfaces/immsdb.h"
 
 MMS_CREATEERROR(MMSPluginCategoryDAOError);
 

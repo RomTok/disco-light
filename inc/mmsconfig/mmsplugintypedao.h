@@ -23,11 +23,11 @@
 #ifndef MMSPLUGINTYPEDAO_H_
 #define MMSPLUGINTYPEDAO_H_
 
-#include "base.h"
-#include "tools.h"
-#include "mmsplugintypedata.h"
-#include "interfaces/immsdb.h"
-#include "mmserror.h"
+#include "mmstools/base.h"
+#include "mmstools/tools.h"
+#include "mmstools/mmserror.h"
+#include "mmsconfig/mmsplugintypedata.h"
+#include "mmstools/interfaces/immsdb.h"
 
 MMS_CREATEERROR(MMSPluginTypeDAOError);
 

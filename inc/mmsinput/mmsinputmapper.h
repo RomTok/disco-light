@@ -23,14 +23,15 @@
 #ifndef MMSINPUTMAPPER_H_
 #define MMSINPUTMAPPER_H_
 
-#include <base.h>
+#include "mmstools/base.h"
+#include "mmsbase/mmsbase.h"
+#include "mmsinput/mmsinputhandler.h"
+
 #include <directfb.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <directfb_keynames.h> 
 #include <map>
-#include "mmsbase.h"
-#include "mmsinputhandler.h"
 
 typedef vector<DFBInputDeviceKeySymbol> MMS_KEYSET;
 

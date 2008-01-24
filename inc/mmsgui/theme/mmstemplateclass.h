@@ -23,7 +23,7 @@
 #ifndef MMSTEMPLATECLASS_H_
 #define MMSTEMPLATECLASS_H_
 
-#include "theme/mmsthemebase.h"
+#include "mmsgui/theme/mmsthemebase.h"
 
 class MMSTemplateClass {
     private:

@@ -23,7 +23,7 @@
 #ifndef MMSGIFLOADER_H_
 #define MMSGIFLOADER_H_
 
-#include "mmsimagemanager.h"
+#include "mmsgui/mmsimagemanager.h"
 #include <sigc++/sigc++.h>
 
 class MMSGIFLoader : public MMSThread {

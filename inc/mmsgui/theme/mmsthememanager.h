@@ -23,8 +23,8 @@
 #ifndef MMSTHEMEMANAGER_H_
 #define MMSTHEMEMANAGER_H_
 
-#include "theme/mmstheme.h"
-#include "mmsguilogger.h"
+#include "mmsgui/theme/mmstheme.h"
+#include "mmsgui/mmsguilogger.h"
 
 #define DEFAULT_THEME   "default"
 

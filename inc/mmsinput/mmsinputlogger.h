@@ -23,7 +23,7 @@
 #ifndef MMSINPUTLOGGER_H_
 #define MMSINPUTLOGGER_H_
 
-#include "mmslogger.h"
+#include "mmstools/mmslogger.h"
 
 class MMSInputLogger : public MMSLogger {
     public:

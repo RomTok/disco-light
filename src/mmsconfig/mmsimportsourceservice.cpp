@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsimportsourceservice.h"
-#include "mmsimportsourcedao.h"
+#include "mmsconfig/mmsimportsourceservice.h"
+#include "mmsconfig/mmsimportsourcedao.h"
 
 MMSImportSourceService::MMSImportSourceService(DataSource *datasource) {
 

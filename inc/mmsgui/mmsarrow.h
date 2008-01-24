@@ -23,7 +23,7 @@
 #ifndef MMSARROW_H_
 #define MMSARROW_H_
 
-#include "mmswidget.h"
+#include "mmsgui/mmswidget.h"
 
 //! With this class you can draw an arrow. 
 /*!

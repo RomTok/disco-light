@@ -23,7 +23,7 @@
 #ifndef MMSPOPUPWINDOWCLASS_H_
 #define MMSPOPUPWINDOWCLASS_H_
 
-#include "theme/mmswindowclass.h"
+#include "mmsgui/theme/mmswindowclass.h"
 
 class MMSPopupWindowClass {
     private:

@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsrecordset.h"
+#include "mmstools/mmsrecordset.h"
 
 MMSRecordSet::~MMSRecordSet() {
     rows.erase(rows.begin(), rows.end());

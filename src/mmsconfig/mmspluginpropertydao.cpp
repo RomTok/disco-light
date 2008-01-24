@@ -20,10 +20,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmspluginpropertydao.h"
-#include "mmslogger.h"
-#include "tools.h"
-#include "mmsconfigqueries.h"
+#include "mmsconfig/mmspluginpropertydao.h"
+#include "mmstools/mmslogger.h"
+#include "mmstools/tools.h"
+#include "mmsconfig/mmsconfigqueries.h"
 
 MMSPluginPropertyDAO::MMSPluginPropertyDAO(IMMSDB *myConnection) {
     MMSPluginPropertyDAO::setMMSDBConnection(myConnection);

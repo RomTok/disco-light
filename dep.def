@@ -104,7 +104,7 @@ endif
 
 #my includes
 ifndef INC
-    export INC= -I../../inc -I../../inc/mmsbase -I../../inc/mmsconfig -I../../inc/mmscore -I../../inc/mmsdata -I../../inc/mmsgui -I../../inc/mmsinput -I../../inc/mmsmedia -I../../inc/mmstools
+    export INC= -I../../inc 
 endif 
 
 #libs

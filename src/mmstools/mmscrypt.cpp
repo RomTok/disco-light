@@ -24,8 +24,8 @@
 #include <openssl/rand.h>
 #include <openssl/aes.h>
 
-#include "mmscrypt.h"
-#include "mmsfile.h"
+#include "mmstools/mmscrypt.h"
+#include "mmstools/mmsfile.h"
 
 unsigned char* MMSCrypt::createUserKey(string keyfile) {
     MMSFile        *file;

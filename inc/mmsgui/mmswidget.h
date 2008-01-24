@@ -23,9 +23,9 @@
 #ifndef MMSWIDGET_H_
 #define MMSWIDGET_H_
 
-#include "theme/mmstheme.h"
-#include "mmsguilogger.h"
-#include "mmsguitools.h"
+#include "mmsgui/theme/mmstheme.h"
+#include "mmsgui/mmsguilogger.h"
+#include "mmsgui/mmsguitools.h"
 #include <sigc++/sigc++.h>
 
 

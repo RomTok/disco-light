@@ -23,7 +23,7 @@
 #ifndef MMSFONTMANAGER_H_
 #define MMSFONTMANAGER_H_
 
-#include "mmsguitools.h"
+#include "mmsgui/mmsguitools.h"
 
 typedef struct {
     string          fontfile;

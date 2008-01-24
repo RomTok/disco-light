@@ -29,7 +29,7 @@ install: all
 
 update: 
 	@echo " [UPDATE]    ($(SUBPACKAGE))"
-	@install -d -m 644 ../../inc/$(SUBPACKAGE) $(DESTDIR)$(incdir)/
+	@cp -R ../../inc/$(SUBPACKAGE)/* $(DESTDIR)$(incdir)/$(SUBPACKAGE)/
 	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
 	
 %.o : %.cpp

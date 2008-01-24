@@ -22,15 +22,15 @@
 #ifndef MMSDBCONNMGR_H_
 #define MMSDBCONNMGR_H_
 
-#include "datasource.h"
-#include "interfaces/immsdb.h"
+#include "mmstools/datasource.h"
+#include "mmstools/interfaces/immsdb.h"
 
 
 #ifdef __ENABLE_SQLITE__
-#include "mmsdbsqlite.h"
+#include "mmstools/mmsdbsqlite.h"
 #endif
 #ifdef __ENABLE_FREETDS__
-#include "mmsdbfreetds.h"
+#include "mmstools/mmsdbfreetds.h"
 #endif
 
 

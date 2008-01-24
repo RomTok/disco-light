@@ -23,7 +23,7 @@
 #ifndef MMSPLUGINMANAGER_H_
 #define MMSPLUGINMANAGER_H_
 
-#include "mmsbase.h"
+#include "mmsbase/mmsbase.h"
 
 MMS_CREATEERROR(MMSPluginManagerError);
 

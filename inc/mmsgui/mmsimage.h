@@ -23,8 +23,8 @@
 #ifndef MMSIMAGE_H_
 #define MMSIMAGE_H_
 
-#include "mmswidget.h"
-#include "mmsimagethread.h"
+#include "mmsgui/mmswidget.h"
+#include "mmsgui/mmsimagethread.h"
 
 //! With this class you can display pictures and animations.
 /*!

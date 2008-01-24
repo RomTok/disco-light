@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsplugincategorydao.h"
-#include "iostream"
+#include "mmsconfig/mmsplugincategorydao.h"
+#include <iostream>
 
 MMSPluginCategoryDAO::MMSPluginCategoryDAO(IMMSDB *myConnection) {
     MMSPluginCategoryDAO::setMMSDBConnection(myConnection);

@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsimagemanager.h"
+#include "mmsgui/mmsimagemanager.h"
 
 #ifndef MMSBORDER_H_
 #define MMSBORDER_H_

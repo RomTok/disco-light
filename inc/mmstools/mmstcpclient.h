@@ -23,7 +23,7 @@
 #ifndef MMSTCPCLIENT_H_
 #define MMSTCPCLIENT_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 class MMSTCPClient {
 	private:

@@ -23,8 +23,8 @@
 #ifndef MMSFBWINDOWMANAGERTHREAD_H_
 #define MMSFBWINDOWMANAGERTHREAD_H_
 
-#include "mmstools.h"
-#include "fb/mmsfbsurface.h"
+#include "mmstools/mmstools.h"
+#include "mmsgui/fb/mmsfbsurface.h"
 #include <sigc++/sigc++.h>
 
 class MMSFBWindowManagerThread : public MMSThread {

@@ -23,7 +23,7 @@
 #ifndef MMSROOTWINDOWCLASS_H_
 #define MMSROOTWINDOWCLASS_H_
 
-#include "theme/mmswindowclass.h"
+#include "mmsgui/theme/mmswindowclass.h"
 
 class MMSRootWindowClass {
     private:

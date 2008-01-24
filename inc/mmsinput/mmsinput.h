@@ -23,12 +23,12 @@
 #ifndef MMSINPUT_H_
 #define MMSINPUT_H_
 
-#include "mmsinputhandler.h"
-#include "mmsinputlogger.h"
-#include "mmsinputmanager.h"
-#include "mmsinputsubscription.h"
-#include "mmsinputthread.h"
-#include "mmsinputmapper.h"
+#include "mmsinput/mmsinputhandler.h"
+#include "mmsinput/mmsinputlogger.h"
+#include "mmsinput/mmsinputmanager.h"
+#include "mmsinput/mmsinputsubscription.h"
+#include "mmsinput/mmsinputthread.h"
+#include "mmsinput/mmsinputmapper.h"
 
 
 #endif /*MMSINPUT_H_*/

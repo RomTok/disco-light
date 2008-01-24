@@ -23,7 +23,7 @@
 #ifndef MMSIMPORTSOURCEDATA_H_
 #define MMSIMPORTSOURCEDATA_H_
 
-#include "mmstools.h"
+#include "mmstools/mmstools.h"
 
 class MMSImportSourceData {
     friend class MMSImportSourceDAO;

@@ -23,7 +23,7 @@
 #ifndef MMSLOGBACKEND_H_
 #define MMSLOGBACKEND_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 class MMSLogBackend
 {

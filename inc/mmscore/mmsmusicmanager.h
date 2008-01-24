@@ -22,9 +22,9 @@
 #ifndef MMSMUSICMANAGER_H_
 #define MMSMUSICMANAGER_H_
 
-#include "mmsmusicinterface.h"
-#include "mmssound.h"
-#include "mmsmutex.h"
+#include "mmsbase/mmsmusicinterface.h"
+#include "mmsmedia/mmssound.h"
+#include "mmstools/mmsmutex.h"
 
 class MMSMusicManager : public IMMSMusicManager {
 	private: 

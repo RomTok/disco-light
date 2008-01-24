@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmspropertydata.h"
+#include "mmsconfig/mmspropertydata.h"
 
 MMSPropertyData::MMSPropertyData() {
     this->id = -1;

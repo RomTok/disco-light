@@ -23,7 +23,7 @@
 #ifndef MMSIDFACTORY_H_
 #define MMSIDFACTORY_H_
 
-#include "mmsmutex.h"
+#include "mmstools/mmsmutex.h"
 
 class MMSIdFactory {
     private:

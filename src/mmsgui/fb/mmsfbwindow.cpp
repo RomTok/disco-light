@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "fb/mmsfbwindow.h"
-#include "fb/mmsfbwindowmanager.h"
+#include "mmsgui/fb/mmsfbwindow.h"
+#include "mmsgui/fb/mmsfbwindowmanager.h"
 
 /*****************************************************************************/
 /* Use DFB Window Manager                                                    */

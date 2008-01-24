@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsimportpropertyservice.h"
-#include "interfaces/immsdb.h"
-#include "mmsimportpropertydao.h"
+#include "mmsconfig/mmsimportpropertyservice.h"
+#include "mmstools/interfaces/immsdb.h"
+#include "mmsconfig/mmsimportpropertydao.h"
 
 MMSImportPropertyService::MMSImportPropertyService(DataSource *datasource) {
     this->setDataSource(datasource);

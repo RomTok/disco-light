@@ -22,7 +22,7 @@
 
 #ifndef IMMSEVENTDISPATCHER_H_
 #define IMMSEVENTDISPATCHER_H_
-#include "interfaces/immsevent.h"
+#include "mmsbase/interfaces/immsevent.h"
 
 class IMMSEventDispatcher {
     public:

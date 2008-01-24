@@ -28,9 +28,9 @@
 #include <sigc++/sigc++.h>
 #include <xine.h>
 #include <map>
-#include "mmsgui.h"
-#include "mmsfbmanager.h"
-#include "mmstools.h"
+
+#include "mmsgui/mmsgui.h"
+#include "mmstools/mmstools.h"
 
 /**
  * @brief   Video output description structure.

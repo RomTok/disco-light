@@ -23,7 +23,7 @@
 #ifndef MMSMENU_H_
 #define MMSMENU_H_
 
-#include "mmswidget.h"
+#include "mmsgui/mmswidget.h"
 
 //! With this class you can display a list of items.
 /*!

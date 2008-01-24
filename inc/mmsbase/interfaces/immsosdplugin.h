@@ -23,10 +23,10 @@
 #ifndef IMMSOSDPLUGIN_H_
 #define IMMSOSDPLUGIN_H_
 
-#include "mmserror.h"
-#include "mmsplugindata.h"
-#include "interfaces/immsevent.h"
-#include "interfaces/immsswitcher.h"
+#include "mmstools/mmserror.h"
+#include "mmsconfig/mmsplugindata.h"
+#include "mmsbase/interfaces/immsevent.h"
+#include "mmsbase/interfaces/immsswitcher.h"
 
 class IMMSOSDPlugin {
     public:

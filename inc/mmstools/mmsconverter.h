@@ -22,12 +22,12 @@
 #ifndef MMSCONVERTER_H_
 #define MMSCONVERTER_H_
 
-#include "base.h"
-#include "mmserror.h"
-#include "iconv.h"
-#include "mmslogger.h"
-#include "mmsmutex.h"
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/mmslogger.h"
+#include "mmstools/mmsmutex.h"
 
+#include <iconv.h>
 #include <map>
 
 class MMSConverter {

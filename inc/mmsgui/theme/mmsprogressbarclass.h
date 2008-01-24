@@ -23,7 +23,7 @@
 #ifndef MMSPROGRESSBARCLASS_H_
 #define MMSPROGRESSBARCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the progressbar widget.
 /*!

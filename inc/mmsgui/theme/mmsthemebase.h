@@ -23,9 +23,8 @@
 #ifndef MMSTHEMEBASE_H_
 #define MMSTHEMEBASE_H_
 
-#include "mmstools.h"
-#include "mmsguitools.h"
-//#include <libxml++/libxml++.h>
+#include "mmstools/mmstools.h"
+#include "mmsgui/mmsguitools.h"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>

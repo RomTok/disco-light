@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsimportscheduler.h"
+#include "mmscore/mmsimportscheduler.h"
 
 #define SCHEDULER_SLEEP_TIME 10 /* sleep time in seconds */
 

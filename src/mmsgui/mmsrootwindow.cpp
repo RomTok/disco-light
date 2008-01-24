@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsrootwindow.h"
+#include "mmsgui/mmsrootwindow.h"
 
 MMSRootWindow::MMSRootWindow(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
                              MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface) {

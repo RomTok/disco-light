@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmslogger.h"
-#include "mmsfile.h"
-#include "tools.h"
+#include "mmstools/mmslogger.h"
+#include "mmstools/mmsfile.h"
+#include "mmstools/tools.h"
 #include <stdio.h>
 
 MMSLogger::MMSLogger() {

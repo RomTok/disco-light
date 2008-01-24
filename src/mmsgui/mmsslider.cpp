@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsslider.h"
+#include "mmsgui/mmsslider.h"
 
 MMSSlider::MMSSlider(MMSWindow *root, string className, MMSTheme *theme) {
     create(root, className, theme);

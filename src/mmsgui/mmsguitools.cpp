@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsguitools.h"
-#include "mmsguilogger.h"
+#include "mmsgui/mmsguitools.h"
+#include "mmsgui/mmsguilogger.h"
 
 
 bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis) {

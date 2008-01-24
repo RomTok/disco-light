@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmscoreservicemanager.h"
+#include "mmsbase/mmscoreservicemanager.h"
 #include <stdlib.h>
 
 IMMSImportScheduler *MMSCoreServiceManager::importscheduler = NULL;

@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsconfig.h"
-#include "mmspluginmanager.h"
-#include "interfaces/immsswitcher.h"
+#include "mmsconfig/mmsconfig.h"
+#include "mmscore/mmspluginmanager.h"
+#include "mmsbase/interfaces/immsswitcher.h"
 
 MMSPluginManager::MMSPluginManager() {
     MMSConfigData *config = new MMSConfigData();

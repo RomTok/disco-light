@@ -32,8 +32,8 @@
  */
 #ifdef __ENABLE_FREETDS__
 
-#include "mmsdbfreetds.h" 
-#include "mmstools.h"
+#include "mmstools/mmsdbfreetds.h" 
+#include "mmstools/mmstools.h"
 
 /**
  * @brief ????

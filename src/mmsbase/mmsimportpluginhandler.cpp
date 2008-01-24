@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsimportpluginhandler.h"
+#include "mmsbase/mmsimportpluginhandler.h"
 
 MMSImportPluginHandler::MMSImportPluginHandler(MMSPluginData plugindata, bool autoload) {
     this->loaded = false;

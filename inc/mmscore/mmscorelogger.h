@@ -23,8 +23,8 @@
 #ifndef MMSCORELOGGER_H_
 #define MMSCORELOGGER_H_
 
-#include "mmsbase.h"
-#include "mmslogger.h"
+#include "mmsbase/mmsbase.h"
+#include "mmstools/mmslogger.h"
 
 class MMSCoreLogger : public MMSLogger {
     public:

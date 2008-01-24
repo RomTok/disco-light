@@ -23,20 +23,20 @@
 #ifndef MMSTHEME_H_
 #define MMSTHEME_H_
 
-#include "theme/mmsdescriptionclass.h"
-#include "theme/mmstemplateclass.h"
-#include "theme/mmsmainwindowclass.h"
-#include "theme/mmspopupwindowclass.h"
-#include "theme/mmsrootwindowclass.h"
-#include "theme/mmschildwindowclass.h"
-#include "theme/mmslabelclass.h"
-#include "theme/mmsimageclass.h"
-#include "theme/mmsbuttonclass.h"
-#include "theme/mmsprogressbarclass.h"
-#include "theme/mmsmenuclass.h"
-#include "theme/mmstextboxclass.h"
-#include "theme/mmsarrowclass.h"
-#include "theme/mmssliderclass.h"
+#include "mmsgui/theme/mmsdescriptionclass.h"
+#include "mmsgui/theme/mmstemplateclass.h"
+#include "mmsgui/theme/mmsmainwindowclass.h"
+#include "mmsgui/theme/mmspopupwindowclass.h"
+#include "mmsgui/theme/mmsrootwindowclass.h"
+#include "mmsgui/theme/mmschildwindowclass.h"
+#include "mmsgui/theme/mmslabelclass.h"
+#include "mmsgui/theme/mmsimageclass.h"
+#include "mmsgui/theme/mmsbuttonclass.h"
+#include "mmsgui/theme/mmsprogressbarclass.h"
+#include "mmsgui/theme/mmsmenuclass.h"
+#include "mmsgui/theme/mmstextboxclass.h"
+#include "mmsgui/theme/mmsarrowclass.h"
+#include "mmsgui/theme/mmssliderclass.h"
 
 
 MMS_CREATEERROR(MMSThemeError);

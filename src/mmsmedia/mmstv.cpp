@@ -21,8 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmstv.h"
-#include "xine/xineutils.h"
+#include "mmsmedia/mmstv.h"
+#include <xine/xineutils.h>
 
 #ifdef __HAVE_INPUT_DVB_MORPHINE__
 #include "input_dvb_morphine.h"

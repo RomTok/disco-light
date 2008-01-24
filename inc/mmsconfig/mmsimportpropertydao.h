@@ -23,9 +23,9 @@
 #ifndef MMSIMPORTPROPERTYDAO_H_
 #define MMSIMPORTPROPERTYDAO_H_
 
-#include "mmstools.h"
-#include "mmsimportpropertydata.h"
-#include "mmsplugindata.h"
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmsimportpropertydata.h"
+#include "mmsconfig/mmsplugindata.h"
 
 MMS_CREATEERROR(MMSImportPropertyDAOError);
 

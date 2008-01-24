@@ -23,7 +23,7 @@
 #ifndef MMSPROPERTYDATA_H_
 #define MMSPROPERTYDATA_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 #define MMSPROPERTYTYPE_STRING  "string" 
 #define MMSPROPERTYTYPE_INTEGER "integer" 

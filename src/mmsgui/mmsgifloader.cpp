@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsgifloader.h"
-#include "fb/mmsfbsurface.h"
+#include "mmsgui/mmsgifloader.h"
+#include "mmsgui/fb/mmsfbsurface.h"
 
 //#define GIFTRACE
 

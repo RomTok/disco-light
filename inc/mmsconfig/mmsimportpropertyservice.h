@@ -23,10 +23,10 @@
 #ifndef MMSIMPORTPROPERTYSERVICE_H_
 #define MMSIMPORTPROPERTYSERVICE_H_
 
-#include "base.h"
-#include "mmsplugindata.h" 
-#include "mmsimportpropertydata.h" 
-#include "datasource.h"
+#include "mmstools/base.h"
+#include "mmstools/datasource.h"
+#include "mmsconfig/mmsplugindata.h" 
+#include "mmsconfig/mmsimportpropertydata.h" 
 
 class MMSImportPropertyService {
     private:

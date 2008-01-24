@@ -23,9 +23,9 @@
 #ifndef MMSIMPORTSOURCEDAO_H_
 #define MMSIMPORTSOURCEDAO_H_
 
-#include "mmstools.h"
-#include "mmsimportsourcedata.h"
-#include "mmsplugindata.h"
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmsimportsourcedata.h"
+#include "mmsconfig/mmsplugindata.h"
 
 class MMSImportSourceDAO {
     

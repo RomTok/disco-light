@@ -22,8 +22,9 @@
 
 #ifndef MMSGUILOGGER_H_
 #define MMSGUILOGGER_H_
-#include "mmstools.h"
-#include "mmslogger.h"
+
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 
 class MMSGuiLogger : public MMSLogger {
     public:

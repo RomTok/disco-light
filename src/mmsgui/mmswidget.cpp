@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmswidget.h"
-#include "mmsborder.h"
-#include "mmsslider.h"
+#include "mmsgui/mmswidget.h"
+#include "mmsgui/mmsborder.h"
+#include "mmsgui/mmsslider.h"
 
 /* static variables */
 MMSGuiLogger 	MMSWidget::logger;

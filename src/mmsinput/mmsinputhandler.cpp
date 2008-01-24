@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsinputhandler.h"
-#include "directfb_keynames.h"
+#include "mmsinput/mmsinputhandler.h"
+#include <directfb_keynames.h>
 
 //static  DirectFBKeySymbolNames(keynames);
 //static  DirectFBKeyIdentifierNames(idnames);

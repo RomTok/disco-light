@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "fb/mmsfbsurfacemanager.h"
-#include "fb/mmsfb.h"
+#include "mmsgui/fb/mmsfbsurfacemanager.h"
+#include "mmsgui/fb/mmsfb.h"
 
 /* initialize the mmsfbsurfacemanager object */ 
 MMSFBSurfaceManager *mmsfbsurfacemanager = new MMSFBSurfaceManager();

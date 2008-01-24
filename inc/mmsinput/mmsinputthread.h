@@ -23,8 +23,8 @@
 #ifndef MMSINPUTTHREAD_H_
 #define MMSINPUTTHREAD_H_
 
-#include "mmstools.h"
-#include "mmsinputhandler.h"
+#include "mmstools/mmstools.h"
+#include "mmsinput/mmsinputhandler.h"
 
 class MMSInputThread : public MMSThread {
 	private:

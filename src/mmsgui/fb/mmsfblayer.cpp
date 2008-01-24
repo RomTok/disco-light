@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "fb/mmsfblayer.h"
-#include "fb/mmsfb.h"
+#include "mmsgui/fb/mmsfblayer.h"
+#include "mmsgui/fb/mmsfb.h"
 
 
 D_DEBUG_DOMAIN( MMS_Layer, "MMS/Layer", "MMS Layer" );

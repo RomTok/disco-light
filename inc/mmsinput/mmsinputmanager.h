@@ -23,11 +23,11 @@
 #ifndef MMSINPUTMANAGER_
 #define MMSINPUTMANAGER_
 
-#include "mmstools.h"
-#include "mmsinputhandler.h"
-#include "mmsinputthread.h"
-#include "interfaces/immswindowmanager.h"
-#include "mmsinputmapper.h"
+#include "mmstools/mmstools.h"
+#include "mmsinput/mmsinputhandler.h"
+#include "mmsinput/mmsinputthread.h"
+#include "mmsgui/interfaces/immswindowmanager.h"
+#include "mmsinput/mmsinputmapper.h"
 
 #include <vector>
 

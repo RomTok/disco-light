@@ -24,7 +24,7 @@
 #define MMSTHREAD_H_
 
 #include <pthread.h>
-#include "mmslogger.h"
+#include "mmstools/mmslogger.h"
 
 class MMSThread {
 

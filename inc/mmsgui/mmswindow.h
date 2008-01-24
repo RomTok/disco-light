@@ -23,13 +23,13 @@
 #ifndef MMSWINDOW_H_
 #define MMSWINDOW_H_
 
-#include "mmswidget.h"
-#include "mmswindowaction.h"
-#include "mmsimagemanager.h"
-#include "mmsfontmanager.h"
-#include "mmsfbmanager.h"
-#include "interfaces/immswindowmanager.h"
-#include "mmsmutex.h"
+#include "mmsgui/mmswidget.h"
+#include "mmsgui/mmswindowaction.h"
+#include "mmsgui/mmsimagemanager.h"
+#include "mmsgui/mmsfontmanager.h"
+#include "mmsgui/mmsfbmanager.h"
+#include "mmsgui/interfaces/immswindowmanager.h"
+#include "mmstools/mmsmutex.h"
 
 /*
 MMS_CREATEERROR(MMSWindowError);

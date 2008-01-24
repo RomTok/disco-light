@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "theme/mmsthemebase.h"
+#include "mmsgui/theme/mmsthemebase.h"
 
 MMSALIGNMENT getAlignmentFromString(string inputstr) {
     MMSALIGNMENT alignment;

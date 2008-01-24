@@ -23,8 +23,8 @@
 #ifndef MMSWINDOWMANAGER_H_
 #define MMSWINDOWMANAGER_H_
 
-#include "interfaces/immswindowmanager.h"
-#include "mmstools.h"
+#include "mmsgui/interfaces/immswindowmanager.h"
+#include "mmstools/mmstools.h"
 
 class MMSWindowManager : public IMMSWindowManager {
 	private:

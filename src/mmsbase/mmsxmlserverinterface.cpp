@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsxmlserverinterface.h"
-#include "mmsevent.h"
+#include "mmsbase/mmsxmlserverinterface.h"
+#include "mmsbase/mmsevent.h"
 
 MMSXMLServerInterface::MMSXMLServerInterface() : MMSServerInterface("MMSXMLServerInterface") {
     LIBXML_TEST_VERSION;

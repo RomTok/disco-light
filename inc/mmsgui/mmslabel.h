@@ -23,7 +23,7 @@
 #ifndef MMSLABEL_H_
 #define MMSLABEL_H_
 
-#include "mmswidget.h"
+#include "mmsgui/mmswidget.h"
 
 //! With this class you can display one line text.
 /*!

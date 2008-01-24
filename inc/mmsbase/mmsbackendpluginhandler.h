@@ -23,13 +23,13 @@
 #ifndef MMSBACKENDPLUGINHANDLER_H_
 #define MMSBACKENDPLUGINHANDLER_H_
 
-#include "base.h"
-#include "mmsplugindata.h"
-#include "interfaces/immsbackendplugin.h"
-#include "mmserror.h"
-#include "mmsshlhandler.h"
-#include "interfaces/immsevent.h"
-#include "mmsmutex.h"
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/mmsshlhandler.h"
+#include "mmstools/mmsmutex.h"
+#include "mmsconfig/mmsplugindata.h"
+#include "mmsbase/interfaces/immsbackendplugin.h"
+#include "mmsbase/interfaces/immsevent.h"
 
 class MMSBackendPluginHandler {
     private:

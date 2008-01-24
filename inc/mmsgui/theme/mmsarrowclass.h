@@ -23,7 +23,7 @@
 #ifndef MMSARROWCLASS_H_
 #define MMSARROWCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the arrow widget.
 /*!

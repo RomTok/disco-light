@@ -23,7 +23,7 @@
 #ifndef IMMSEVENTSIGNUPMANAGER_H_
 #define IMMSEVENTSIGNUPMANAGER_H_
 
-#include "immseventsignup.h"
+#include "mmsbase/interfaces/immseventsignup.h"
 
 class IMMSEventSignupManager {
     public:

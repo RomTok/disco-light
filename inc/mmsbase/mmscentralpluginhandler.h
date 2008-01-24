@@ -23,10 +23,10 @@
 #ifndef MMSCENTRALPLUGINHANDLER_H_
 #define MMSCENTRALPLUGINHANDLER_H_
 
-#include "mmstools.h"
-#include "mmsconfig.h"
-#include "interfaces/immscentralplugin.h"
-#include "mmsshlhandler.h"
+#include "mmstools/mmstools.h"
+#include "mmstools/mmsshlhandler.h"
+#include "mmsconfig/mmsconfig.h"
+#include "mmsbase/interfaces/immscentralplugin.h"
 
 MMS_CREATEERROR(MMSCentralPluginError);
 

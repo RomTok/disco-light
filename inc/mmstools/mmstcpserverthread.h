@@ -23,8 +23,8 @@
 #ifndef MMSTCPSERVERTHREAD_H_
 #define MMSTCPSERVERTHREAD_H_
 
-#include "mmsthread.h"
-#include "mmsserverinterface.h"
+#include "mmstools/mmsthread.h"
+#include "mmstools/mmsserverinterface.h"
 
 class MMSTCPServerThread : public MMSThread {
 	private:

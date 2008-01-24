@@ -17,7 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include "mmsmutex.h"
+#include "mmstools/mmsmutex.h"
 
 MMSMutex::MMSMutex() {
     pthread_mutexattr_t mutex_attr;

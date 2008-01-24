@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsborder.h"
-#include "mmsguitools.h"
+#include "mmsgui/mmsborder.h"
+#include "mmsgui/mmsguitools.h"
 #include <math.h>
 
 void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface *borderimages[],

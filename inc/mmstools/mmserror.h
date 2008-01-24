@@ -23,7 +23,7 @@
 #ifndef MMSERROR_H_
 #define MMSERROR_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 class MMSError {
     private:

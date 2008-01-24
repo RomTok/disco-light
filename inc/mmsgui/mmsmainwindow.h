@@ -23,7 +23,7 @@
 #ifndef MMSMAINWINDOW_H_
 #define MMSMAINWINDOW_H_
 
-#include "mmswindow.h"
+#include "mmsgui/mmswindow.h"
 
 class MMSMainWindow : public MMSWindow {
 	private:

@@ -23,7 +23,7 @@
 #ifndef MMSPLUGINCATEGORYDATA_H_
 #define MMSPLUGINCATEGORYDATA_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 class MMSPluginCategoryData {
     

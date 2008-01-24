@@ -22,7 +22,7 @@
 
 #ifndef IMMSEVENT_H_
 #define IMMSEVENT_H_
-#include "base.h"
+#include "mmstools/base.h"
 
 class IMMSEvent {
     public:

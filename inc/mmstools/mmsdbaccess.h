@@ -23,8 +23,8 @@
 #ifndef MMSDBACCESS_H
 #define MMSDBACCESS_H
 
-#include "mmsrecordset.h"
-#include "mmsdbconnmgr.h"
+#include "mmstools/mmsrecordset.h"
+#include "mmstools/mmsdbconnmgr.h"
 
 typedef struct {
     string name;

@@ -23,7 +23,7 @@
 #ifndef MMSTEXTBOX_H_
 #define MMSTEXTBOX_H_
 
-#include "mmswidget.h"
+#include "mmsgui/mmswidget.h"
 
 
 //! With this class you can display text with more than one line.

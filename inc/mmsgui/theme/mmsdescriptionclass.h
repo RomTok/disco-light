@@ -23,7 +23,7 @@
 #ifndef MMSDESCRIPTIONCLASS_H_
 #define MMSDESCRIPTIONCLASS_H_
 
-#include "theme/mmsthemebase.h"
+#include "mmsgui/theme/mmsthemebase.h"
 
 class MMSDescriptionClass {
     private:

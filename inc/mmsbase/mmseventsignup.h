@@ -23,10 +23,10 @@
 #ifndef MMSEVENTSIGNUP_H_
 #define MMSEVENTSIGNUP_H_
 
-#include "interfaces/immseventsignup.h"
-#include "interfaces/immseventsignupmanager.h"
-#include "mmsplugindata.h"
-#include "mmserror.h"
+#include "mmsbase/interfaces/immseventsignup.h"
+#include "mmsbase/interfaces/immseventsignupmanager.h"
+#include "mmsconfig/mmsplugindata.h"
+#include "mmstools/mmserror.h"
 
 MMS_CREATEERROR(MMSEventSignupError);
 

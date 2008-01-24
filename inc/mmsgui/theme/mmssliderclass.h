@@ -23,7 +23,7 @@
 #ifndef MMSSLIDERCLASS_H_
 #define MMSSLIDERCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the slider widget.
 /*!

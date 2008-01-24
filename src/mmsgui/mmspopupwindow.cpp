@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmspopupwindow.h"
+#include "mmsgui/mmspopupwindow.h"
 
 MMSPopupWindow::MMSPopupWindow(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
                                MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, unsigned int duration) {

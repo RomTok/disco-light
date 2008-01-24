@@ -23,8 +23,9 @@
 #ifndef MMSCONFIG_H_
 #define MMSCONFIG_H_
 
-#include "mmsconfigdata.h"
-#include "mmsimportsourcedata.h"
-#include "mmsimportsourceservice.h"
+#include "mmsconfig/mmsconfigdata.h"
+#include "mmsconfig/mmsimportsourcedata.h"
+#include "mmsconfig/mmsimportsourceservice.h"
+#include "mmsconfig/mmsrcparser.h"
 
 #endif /*MMSCONFIG_H_*/

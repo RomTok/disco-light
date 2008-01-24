@@ -23,7 +23,7 @@
 #ifndef MMSCHILDWINDOWCLASS_H_
 #define MMSCHILDWINDOWCLASS_H_
 
-#include "theme/mmswindowclass.h"
+#include "mmsgui/theme/mmswindowclass.h"
 
 class MMSChildWindowClass {
     private:

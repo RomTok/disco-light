@@ -37,7 +37,7 @@ install:
 	@echo "Version: 1.1.0" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 	@echo "Requires: directfb" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 	@echo "Libs: -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsdata -lmmsgui -lmmsinput -lmmsmedia -lmmstools $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(SIGC_LIBS)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_CFLAGS) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(SIGC_INC)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(SIGC_INC)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 
 check:
 	@echo check for libxml++

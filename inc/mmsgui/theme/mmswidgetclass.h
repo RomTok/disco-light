@@ -23,7 +23,7 @@
 #ifndef MMSWIDGETCLASS_H_
 #define MMSWIDGETCLASS_H_
 
-#include "theme/mmsborderclass.h"
+#include "mmsgui/theme/mmsborderclass.h"
 
 //! A data access class as base for all widgets.
 /*!

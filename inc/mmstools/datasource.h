@@ -23,7 +23,7 @@
 #ifndef DATASOURCE_H_
 #define DATASOURCE_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 #define DBMS_SQLITE		"SQLITE"
 #define DBMS_FREETDS	"FREETDS"

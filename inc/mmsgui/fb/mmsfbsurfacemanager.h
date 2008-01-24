@@ -23,7 +23,7 @@
 #ifndef MMSFBSURFACEMANAGER_H_
 #define MMSFBSURFACEMANAGER_H_
 
-#include "fb/mmsfbsurface.h"
+#include "mmsgui/fb/mmsfbsurface.h"
 
 typedef struct {
     MMSFBSurface    *surface;

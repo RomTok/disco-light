@@ -20,22 +20,22 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsdialogmanager.h"
-#include "mmsmainwindow.h"
-#include "mmspopupwindow.h"
-#include "mmsrootwindow.h"
-#include "mmschildwindow.h"
-#include "mmsvbox.h"
-#include "mmshbox.h"
-#include "mmslabel.h"
-#include "mmsbutton.h"
-#include "mmsimage.h"
-#include "mmsprogressbar.h"
-#include "mmsmenu.h"
-#include "mmstextbox.h"
-#include "mmsarrow.h"
-#include "mmsslider.h"
-#include "theme/mmsthememanager.h"
+#include "mmsgui/mmsdialogmanager.h"
+#include "mmsgui/mmsmainwindow.h"
+#include "mmsgui/mmspopupwindow.h"
+#include "mmsgui/mmsrootwindow.h"
+#include "mmsgui/mmschildwindow.h"
+#include "mmsgui/mmsvbox.h"
+#include "mmsgui/mmshbox.h"
+#include "mmsgui/mmslabel.h"
+#include "mmsgui/mmsbutton.h"
+#include "mmsgui/mmsimage.h"
+#include "mmsgui/mmsprogressbar.h"
+#include "mmsgui/mmsmenu.h"
+#include "mmsgui/mmstextbox.h"
+#include "mmsgui/mmsarrow.h"
+#include "mmsgui/mmsslider.h"
+#include "mmsgui/theme/mmsthememanager.h"
 
 
 MMSDialogManager::MMSDialogManager() {

@@ -25,7 +25,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include "mmstools.h"
+#include "mmstools/mmstools.h"
 
 MMS_CREATEERROR(MMSAudioCtrlError);
 

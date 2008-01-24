@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "fb/mmsfbsurface.h"
-#include "fb/mmsfb.h"
-#include "fb/mmsfbsurfacemanager.h"
+#include "mmsgui/fb/mmsfbsurface.h"
+#include "mmsgui/fb/mmsfb.h"
+#include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <math.h>
 
 

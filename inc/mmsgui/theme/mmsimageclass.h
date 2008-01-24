@@ -23,7 +23,7 @@
 #ifndef MMSIMAGECLASS_H_
 #define MMSIMAGECLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the image widget.
 /*!

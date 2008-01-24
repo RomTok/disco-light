@@ -23,7 +23,7 @@
 #ifndef MMSWINDOWCLASS_H_
 #define MMSWINDOWCLASS_H_
 
-#include "theme/mmsborderclass.h"
+#include "mmsgui/theme/mmsborderclass.h"
 
 
 class MMSWindowClass {

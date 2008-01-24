@@ -24,7 +24,7 @@
 #define MMSCRYPT_H_
 
 #include <openssl/evp.h>
-#include "mmserror.h"
+#include "mmstools/mmserror.h"
 
 MMS_CREATEERROR(MMSCryptError);
 

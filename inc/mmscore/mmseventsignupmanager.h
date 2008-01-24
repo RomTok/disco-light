@@ -23,13 +23,13 @@
 #ifndef MMSSIGNUPMANAGER_H_
 #define MMSSIGNUPMANAGER_H_
 
-#include "interfaces/immseventsignupmanager.h"
-#include "mmsplugindata.h"
-#include "mmseventsignup.h" 
-#include "mmsevent.h" 
-#include "mmserror.h"
-#include "mmslogger.h"
-#include "mmsmutex.h"
+#include "mmsbase/interfaces/immseventsignupmanager.h"
+#include "mmsbase/mmseventsignup.h" 
+#include "mmsbase/mmsevent.h" 
+#include "mmsconfig/mmsplugindata.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/mmslogger.h"
+#include "mmstools/mmsmutex.h"
 
 MMS_CREATEERROR(MMSEventSignupManagerError);
 

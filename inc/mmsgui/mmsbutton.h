@@ -23,7 +23,7 @@
 #ifndef MMSBUTTON_H_
 #define MMSBUTTON_H_
 
-#include "mmswidget.h"
+#include "mmsgui/mmswidget.h"
 
 //! With this class you can get a focusable button. 
 /*!

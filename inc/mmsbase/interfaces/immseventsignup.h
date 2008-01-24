@@ -23,7 +23,7 @@
 #ifndef IMMSEVENTSIGNUP_H_
 #define IMMSEVENTSIGNUP_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 class IMMSEventSignup {
     public:

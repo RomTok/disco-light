@@ -23,7 +23,7 @@
 #ifndef MMSIMAGETHREAD_H_
 #define MMSIMAGETHREAD_H_
 
-#include "mmsimage.h"
+#include "mmsgui/mmsimage.h"
 #include <sigc++/sigc++.h>
 
 class MMSImageThread : public MMSThread {

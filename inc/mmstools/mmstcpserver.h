@@ -23,7 +23,7 @@
 #ifndef MMSTCPSERVER_H_
 #define MMSTCPSERVER_H_
 
-#include "mmstcpserverthread.h"
+#include "mmstools/mmstcpserverthread.h"
 
 class MMSTCPServer : public MMSThread {
 	private:

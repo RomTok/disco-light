@@ -23,7 +23,8 @@
 #ifndef MMSFILE_H_
 #define MMSFILE_H_
 
-#include "base.h"
+#include "mmstools/base.h"
+
 #include <curl/curl.h> 
 #include <sys/stat.h>
 

@@ -23,10 +23,10 @@
 #ifndef MMSEVENTDISPATCHER_H_
 #define MMSEVENTDISPATCHER_H_
 
-#include "mmsbase.h"
-#include "interfaces/immseventdispatcher.h"
-#include "mmspluginmanager.h"
-#include "mmseventsignupmanager.h"
+#include "mmsbase/mmsbase.h"
+#include "mmsbase/interfaces/immseventdispatcher.h"
+#include "mmscore/mmspluginmanager.h"
+#include "mmscore/mmseventsignupmanager.h"
 
 MMS_CREATEERROR(MMSEventDispatcherError);
 

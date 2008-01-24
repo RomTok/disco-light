@@ -22,7 +22,7 @@
 
 //#define TRACETRACE
 
-#include "mmsinputthread.h"
+#include "mmsinput/mmsinputthread.h"
 
 MMSInputThread::MMSInputThread(class MMSInputManager *manager, DFBInputDeviceID device, int inputinterval) {
 	this->manager = manager;

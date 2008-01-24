@@ -23,9 +23,9 @@
 #ifndef MMSEVENT_H_
 #define MMSEVENT_H_
 
-#include "base.h"
-#include "interfaces/immsevent.h"
-#include "interfaces/immseventdispatcher.h"
+#include "mmstools/base.h"
+#include "mmsbase/interfaces/immsevent.h"
+#include "mmsbase/interfaces/immseventdispatcher.h"
 #include <map>
 
 class MMSEvent : public IMMSEvent {

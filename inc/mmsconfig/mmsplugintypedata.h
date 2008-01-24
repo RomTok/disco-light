@@ -23,7 +23,7 @@
 #ifndef MMSPLUGINTYPEDATA_H_
 #define MMSPLUGINTYPEDATA_H_
 
-#include "base.h"
+#include "mmstools/base.h"
 
 class MMSPluginTypeData {
     

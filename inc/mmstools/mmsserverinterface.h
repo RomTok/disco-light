@@ -23,7 +23,7 @@
 #ifndef MMSSERVERINTERFACE_H_
 #define MMSSERVERINTERFACE_H_
 
-#include "mmslogger.h"
+#include "mmstools/mmslogger.h"
 
 class MMSServerInterface {
 	public:

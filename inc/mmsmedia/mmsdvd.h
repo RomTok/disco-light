@@ -24,7 +24,7 @@
 #ifndef MMSDVD_H_
 #define MMSDVD_H_
 
-#include "mmsav.h"
+#include "mmsmedia/mmsav.h"
 
 /**
  * @brief   Handles DVD playback.

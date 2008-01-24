@@ -23,8 +23,9 @@
 #ifndef MMSFILESEARCH_H_
 #define MMSFILESEARCH_H_
 
-#include <base.h>
-#include <mmserror.h>
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
+
 #include <list>
 #include <sys/types.h>
 #include <dirent.h>

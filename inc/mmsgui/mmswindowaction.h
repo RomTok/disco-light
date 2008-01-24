@@ -23,7 +23,7 @@
 #ifndef MMSWINDOWACTION_H_
 #define MMSWINDOWACTION_H_
 
-#include "mmstools.h"
+#include "mmstools/mmstools.h"
 #include <sigc++/sigc++.h>
 
 typedef enum {

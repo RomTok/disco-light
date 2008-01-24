@@ -23,9 +23,9 @@
 #ifndef MMSPLUGINPROPERTYDAO_H_
 #define MMSPLUGINPROPERTYDAO_H_
 
-#include "mmstools.h"
-#include "mmspropertydata.h"
-#include "mmsplugindata.h"
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmspropertydata.h"
+#include "mmsconfig/mmsplugindata.h"
 
 class MMSPluginPropertyDAO {
 

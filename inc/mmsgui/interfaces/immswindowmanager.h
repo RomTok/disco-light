@@ -23,7 +23,7 @@
 #ifndef IMMSWINDOWMANAGER_H_
 #define IMMSWINDOWMANAGER_H_
 
-#include "mmswindow.h"
+#include "mmsgui/mmswindow.h"
 
 
 class IMMSWindowManager {

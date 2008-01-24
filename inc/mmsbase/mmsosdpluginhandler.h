@@ -23,11 +23,11 @@
 #ifndef MMSOSDPLUGINHANDLER_H_
 #define MMSOSDPLUGINHANDLER_H_
 
-#include "base.h"
-#include "mmsplugindata.h"
-#include "interfaces/immsosdplugin.h"
-#include "mmserror.h"
-#include "mmsshlhandler.h"
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/mmsshlhandler.h"
+#include "mmsconfig/mmsplugindata.h"
+#include "mmsbase/interfaces/immsosdplugin.h"
 
 MMS_CREATEERROR(MMSOSDPluginError);
 

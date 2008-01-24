@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsinputmapper.h"
-#include "mmstools.h"
+#include "mmsinput/mmsinputmapper.h"
+#include "mmstools/mmstools.h"
 #include <iostream>
 #include <stdlib.h>
 #include <cerrno>

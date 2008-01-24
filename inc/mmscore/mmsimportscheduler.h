@@ -23,10 +23,10 @@
 #ifndef MMSIMPORTSCHEDULER_H_
 #define MMSIMPORTSCHEDULER_H_
 
-#include "interfaces/immsimportscheduler.h"
-#include "mmsbase.h"
-#include "mmsconfig.h"
-#include "mmspluginmanager.h"
+#include "mmsbase/interfaces/immsimportscheduler.h"
+#include "mmsbase/mmsbase.h"
+#include "mmsconfig/mmsconfig.h"
+#include "mmscore/mmspluginmanager.h"
 
 typedef struct {
     MMSPluginData           *plugin;

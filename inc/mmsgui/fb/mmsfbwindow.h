@@ -23,8 +23,8 @@
 #ifndef MMSFBWINDOW_H_
 #define MMSFBWINDOW_H_
 
-#include "fb/mmsfbbase.h"
-#include "fb/mmsfbsurface.h"
+#include "mmsgui/fb/mmsfbbase.h"
+#include "mmsgui/fb/mmsfbsurface.h"
 
 typedef struct {
     MMSFBSurfaceConfig  surface_config; /* windows surface config */

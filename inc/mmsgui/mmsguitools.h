@@ -23,8 +23,8 @@
 #ifndef MMSGUITOOLS_H_
 #define MMSGUITOOLS_H_
 
-#include "mmstools.h"
-#include "fb/mmsfb.h"
+#include "mmstools/mmstools.h"
+#include "mmsgui/fb/mmsfb.h"
 
 typedef enum {
 	MMSINPUTEVENTTYPE_NONE = 0,

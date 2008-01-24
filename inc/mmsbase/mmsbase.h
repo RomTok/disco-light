@@ -23,15 +23,15 @@
 #ifndef MMSBASE_H_
 #define MMSBASE_H_
 
-#include "mmspluginservice.h"
-#include "mmsosdpluginhandler.h"
-#include "mmscentralpluginhandler.h"
-#include "mmsimportpluginhandler.h"
-#include "mmsbackendpluginhandler.h"
-#include "mmsimportpropertyservice.h"
-#include "mmsevent.h"
-#include "mmsxmlserverinterface.h"
-#include "mmsxmlclientinterface.h"
-#include "mmseventsignup.h"
+#include "mmsconfig/mmspluginservice.h"
+#include "mmsconfig/mmsimportpropertyservice.h"
+#include "mmsbase/mmsosdpluginhandler.h"
+#include "mmsbase/mmscentralpluginhandler.h"
+#include "mmsbase/mmsimportpluginhandler.h"
+#include "mmsbase/mmsbackendpluginhandler.h"
+#include "mmsbase/mmsevent.h"
+#include "mmsbase/mmsxmlserverinterface.h"
+#include "mmsbase/mmsxmlclientinterface.h"
+#include "mmsbase/mmseventsignup.h"
 
 #endif /*MMSBASE_H_*/

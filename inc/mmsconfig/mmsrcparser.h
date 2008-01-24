@@ -23,8 +23,8 @@
 #ifndef MMSMORPHINERCPARSER_H_
 #define MMSMORPHINERCPARSER_H_
 
-#include "mmstools.h"
-#include "mmsconfigdata.h"
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmsconfigdata.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 

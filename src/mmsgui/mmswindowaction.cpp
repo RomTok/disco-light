@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmswindowaction.h"
+#include "mmsgui/mmswindowaction.h"
 
 MMSWindowAction::MMSWindowAction(class MMSWindow* destination) : MMSThread("MMSWindowAction") {
 	this->window = destination;

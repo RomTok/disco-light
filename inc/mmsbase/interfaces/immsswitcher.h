@@ -23,8 +23,8 @@
 #ifndef IMMSSWITCHER_H_
 #define IMMSSWITCHER_H_
 
-#include "mmschildwindow.h"
-#include "mmsplugindata.h"
+#include "mmsgui/mmschildwindow.h"
+#include "mmsconfig/mmsplugindata.h"
 
 
 class IMMSSwitcher {

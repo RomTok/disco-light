@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmseventthread.h"
+#include "mmscore/mmseventthread.h"
 
 MMSEventThread::MMSEventThread(MMSOSDPluginHandler *handler, IMMSEvent *event) {
     this->osdHandler = handler;

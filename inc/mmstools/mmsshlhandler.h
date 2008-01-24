@@ -23,8 +23,8 @@
 #ifndef MMSSHLHANDLER_H_
 #define MMSSHLHANDLER_H_
 
-#include "base.h"
-#include "mmserror.h"
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
 
 MMS_CREATEERROR(MMSShlError);
 

@@ -23,11 +23,11 @@
 #ifndef MMSPLUGINDATA_H_
 #define MMSPLUGINDATA_H_
 
-#include "base.h"
-#include "mmspropertydata.h"
-#include "mmsplugincategorydata.h"
-#include "mmsplugintypedata.h"
-#include "mmsimportpropertydata.h"
+#include "mmstools/base.h"
+#include "mmsconfig/mmspropertydata.h"
+#include "mmsconfig/mmsplugincategorydata.h"
+#include "mmsconfig/mmsplugintypedata.h"
+#include "mmsconfig/mmsimportpropertydata.h"
 
 /* plugin types */
 #define PT_OSD_PLUGIN       "OSD_PLUGIN"

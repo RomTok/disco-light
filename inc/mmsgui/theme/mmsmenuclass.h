@@ -23,7 +23,7 @@
 #ifndef MMSMENUCLASS_H_
 #define MMSMENUCLASS_H_
 
-#include "theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
 //! A data access class for the menu widget.
 /*!

@@ -22,7 +22,7 @@
 #ifndef MMSXMLCLIENTINTERFACE_H_
 #define MMSXMLCLIENTINTERFACE_H_
 
-#include "mmstools.h"
+#include "mmstools/mmstools.h"
 #include <libxml/xmlreader.h>
 
 class MMSXMLClientInterface {

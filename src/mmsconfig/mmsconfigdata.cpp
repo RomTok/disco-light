@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmstools.h"
-#include "mmsconfigdata.h"
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmsconfigdata.h"
 
 MMSConfigDataDB::MMSConfigDataDB (const string database) :
     dbms(DBMS_SQLITE),

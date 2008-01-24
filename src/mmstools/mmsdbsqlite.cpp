@@ -32,8 +32,8 @@
  */
 #ifdef __ENABLE_SQLITE__
 
-#include "mmsdbsqlite.h" 
-#include "mmslogger.h"
+#include "mmstools/mmsdbsqlite.h" 
+#include "mmstools/mmslogger.h"
 
 /**
  * @brief ????

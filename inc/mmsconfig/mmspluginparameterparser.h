@@ -24,9 +24,9 @@
 #define MMSPLUGINPARAMETERPARSER_H_
 
 
-#include "mmstools.h"
-#include "mmsconfigdata.h"
-#include "mmsplugindata.h"
+#include "mmstools/mmstools.h"
+#include "mmsconfig/mmsconfigdata.h"
+#include "mmsconfig/mmsplugindata.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 

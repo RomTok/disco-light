@@ -23,7 +23,7 @@
 #ifndef MMSEVENTTHREAD_H_
 #define MMSEVENTTHREAD_H_
 
-#include "mmsbase.h"
+#include "mmsbase/mmsbase.h"
 
 class MMSEventThread : public MMSThread {
     private:

@@ -25,7 +25,7 @@
 
 //#define MMSGUI_STDOUT_TRACE
 
-#include "mmsguilogger.h"
+#include "mmsgui/mmsguilogger.h"
 
 extern "C" {
 #include <direct/debug.h>

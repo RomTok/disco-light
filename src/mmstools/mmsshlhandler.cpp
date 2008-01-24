@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsshlhandler.h"
-#include "mmsfile.h"
+#include "mmstools/mmsshlhandler.h"
+#include "mmstools/mmsfile.h"
 #include <dlfcn.h>
 
 MMSShlHandler::~MMSShlHandler() {

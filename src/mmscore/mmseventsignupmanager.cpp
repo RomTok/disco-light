@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmseventsignupmanager.h"
-#include "tools.h"
+#include "mmscore/mmseventsignupmanager.h"
+#include "mmstools/tools.h"
 
 MMSEventSignupManager::MMSEventSignupManager() {
 	logger.setIdentity("MMSEeventSignupManager");

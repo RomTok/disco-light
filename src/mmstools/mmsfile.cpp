@@ -25,10 +25,9 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <errno.h>
-
 #include <curl/curl.h>
-#include "mmsfile.h"
-#include "tools.h" 
+#include "mmstools/mmsfile.h"
+#include "mmstools/tools.h" 
 
 /* curl calls this c-routine to transfer data to the object */
 size_t c_write_cb(char *buffer, size_t size, size_t nitems, void *outstream) {
