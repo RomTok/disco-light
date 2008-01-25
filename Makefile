@@ -3,7 +3,14 @@ ifeq ($(shell uname -m),x86_64)
 export CFLAGS += -fPIC
 endif
 
+ifeq ($(nodep),)
 include dep.def
+endif
+
+#project name
+ifndef PROJECTNAME
+export PROJECTNAME=mms4l
+endif
 
 all clean update:
 	@+make -C  ./src/mmstools  $@

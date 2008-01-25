@@ -1,10 +1,5 @@
 SHELL=/bin/bash
 
-#project name
-ifndef PROJECTNAME
-PROJECTNAME=mms4l
-endif
-
 #output directory
 LIBDIR=../../lib
 
