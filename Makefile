@@ -21,7 +21,7 @@ all clean update:
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
 	@+make -C  ./src/mmscore   $@
-	
+
 install:
 	@+make -C  ./src/mmstools  $@
 	@+make -C  ./src/mmsdata   $@

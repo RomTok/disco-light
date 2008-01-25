@@ -158,3 +158,11 @@ endif
 ifeq ($(sysconfir),)
     export sysconfdir=$(prefix)/etc
 endif
+
+#set debug flags
+ifndef DEBUG_FLAG_SET
+    ifneq ($(debug),)
+	    export CFLAGS+=-O0 -g
+	    export DEBUG_FLAG_SET=1
+    endif
+endif
