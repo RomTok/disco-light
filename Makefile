@@ -50,3 +50,7 @@ check:
 	@pkg-config --print-errors --exists directfb
 	@echo check for libsigc++
 	@pkg-config --print-errors --exists sigc++-2.0
+	
+dox:
+	@doxygen ./doc/conf/$(PROJECTNAME).conf
+	
