@@ -42,9 +42,15 @@ install:
 	@echo "Name: $(PROJECTNAME)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 	@echo "Version: 1.1.0" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: libxml-2.0 >= 2.6" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: sqlite3" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: libcurl" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 	@echo "Requires: directfb" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Libs: -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsdata -lmmsgui -lmmsinput -lmmsmedia -lmmstools $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(SIGC_LIBS)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(SIGC_INC)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: sigc++-2.0" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: libxine" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: alsa" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Libs: -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsdata -lmmsgui -lmmsinput -lmmsmedia -lmmstools $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(XINE_LIBS) $(SIGC_LIBS)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(XINE_INC) $(SIGC_INC)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
 
 check:
 	@echo check for libxml++
