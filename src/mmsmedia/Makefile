@@ -1,35 +1,25 @@
 include ../../dep.def
 
 #check private dependencies
-$(info check for alsa)
-ASK=$(shell pkg-config --list-all |grep alsa)
-ifeq ($(ASK),)
-$(error alsa was not found. Either adjust PKG_CONFIG_PATH or install the package)
-endif
-$(info check for xine-lib)
-ASK=$(shell pkg-config --list-all |grep libxine)
-ifeq ($(ASK),)
-$(error xine-lib was not found. Either adjust PKG_CONFIG_PATH or install the package)
-endif
 
 #libxine
 ifndef XINE_LIBS
-export XINE_LIBS=$(shell pkg-config --libs libxine)
-endif
-
-#libxine includes
-ifndef XINE_INC
-export XINE_INC=$(shell pkg-config --cflags libxine)
+    export XINE_LIBS=$(shell pkg-config --libs libxine)
+    ifeq ($(XINE_LIBS),)
+        $(error libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export XINE_INC=$(shell pkg-config --cflags libxine)
+    endif
 endif
 
 #alsa
 ifndef ALSA_LIBS
-export ALSA_LIBS=$(shell pkg-config --libs alsa)
-endif
-
-#alsa includes
-ifndef ALSA_INC
-export ALSA_INC=$(shell pkg-config --cflags alsa)
+    export ALSA_LIBS=$(shell pkg-config --libs alsa)
+    ifeq ($(ALSA_LIBS),)
+        $(error alsa was not found. Either adjust PKG_CONFIG_PATH or install the package)
+    else
+        export ALSA_INC=$(shell pkg-config --cflags alsa)
+    endif
 endif
 
 SUBPACKAGE=mmsmedia
