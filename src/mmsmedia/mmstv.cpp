@@ -222,14 +222,20 @@ void MMSTV::setRecordDir(const string dir) {
         xine_config_update_entry(this->xine, &conf);
     }
     else
+#ifdef XINE_CONFIG_STRING_IS_DIRECTORY_NAME
         xine_config_register_filename(this->xine, 
                 "media.capture.save_dir", 
                 dir.c_str(), 
                 XINE_CONFIG_STRING_IS_DIRECTORY_NAME, 
+#else
+        xine_config_register_string(this->xine, 
+                "media.capture.save_dir", 
+                dir.c_str(), 
+#endif
                 "directory for saving streams", 
                 NULL, 
                 XINE_CONFIG_SECURITY, 
-                NULL, 
+                NULL , 
                 NULL);
 }
 
