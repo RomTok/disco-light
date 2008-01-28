@@ -4,6 +4,7 @@ include ../../dep.def
 
 #libxine
 ifndef XINE_LIBS
+    $(info check for libxine)
     export XINE_LIBS=$(shell pkg-config --libs libxine)
     ifeq ($(XINE_LIBS),)
         $(error libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
@@ -14,6 +15,7 @@ endif
 
 #alsa
 ifndef ALSA_LIBS
+    $(info check for alsa)
     export ALSA_LIBS=$(shell pkg-config --libs alsa)
     ifeq ($(ALSA_LIBS),)
         $(error alsa was not found. Either adjust PKG_CONFIG_PATH or install the package)
