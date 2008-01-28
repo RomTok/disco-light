@@ -23,36 +23,26 @@
 #include "mmsconfig/mmsimportsourceservice.h"
 #include "mmsconfig/mmsimportsourcedao.h"
 
-MMSImportSourceService::MMSImportSourceService(DataSource *datasource) {
-
-	this->setDataSource(datasource);
-    
+MMSImportSourceService::MMSImportSourceService(DataSource *datasource) :
+    dbconn(NULL) {
     MMSDBConnMgr connMgr(datasource); 
-    this->dbconn = connMgr.getConnection();
+    if((this->dbconn = connMgr.getConnection()))
+    	this->dbconn->connect();
 }
 
-void MMSImportSourceService::setDataSource(DataSource *datasource) {
-    this->datasource = datasource;
-}
-
-DataSource *MMSImportSourceService::getDataSource() {
-    return this->datasource;
+MMSImportSourceService::~MMSImportSourceService() {	
+	if(this->dbconn) {
+		this->dbconn->disconnect();
+		delete this->dbconn;
+	}
 }
 
 void MMSImportSourceService::setImportSource(vector<MMSImportSourceData *> dataList) {
-
-	this->dbconn->connect(this->datasource);
-    
     MMSImportSourceDAO myImportSourceDAO(this->dbconn);
     myImportSourceDAO.saveOrUpdate(dataList);
-    
-    this->dbconn->disconnect();
 }
 
 vector<MMSImportSourceData *> MMSImportSourceService::getImportSourcesByPlugin(MMSPluginData *plugin) {
-
-	this->dbconn->connect(this->datasource);
-    
     MMSImportSourceDAO myImportSourceDAO(this->dbconn);
     vector<MMSImportSourceData *> importSources;
     importSources = myImportSourceDAO.findImportSourcesByPlugin(plugin);
@@ -62,33 +52,15 @@ vector<MMSImportSourceData *> MMSImportSourceService::getImportSourcesByPlugin(M
         importSources.at(i)->setSource(substituteEnvVars(importSources.at(i)->getSource()));
     }
 
-    this->dbconn->disconnect();
-    
     return importSources;
 }
 
 MMSImportSourceData * MMSImportSourceService::getImportSourcesByID(int id) {
-    MMSImportSourceData *source;
-
-    this->dbconn->connect(this->datasource);
-    
     MMSImportSourceDAO myImportSourceDAO(this->dbconn);
-    source = myImportSourceDAO.findImportSourcesByID(id);
-    
-    this->dbconn->disconnect();
-    
-    return source;
+    return myImportSourceDAO.findImportSourcesByID(id);
 }
 
 MMSImportSourceData * MMSImportSourceService::getImportSourcesByName(string name) {
-    MMSImportSourceData *source;
-
-    this->dbconn->connect(this->datasource);
-    
     MMSImportSourceDAO myImportSourceDAO(this->dbconn);
-    source = myImportSourceDAO.findImportSourcesByName(name);
-    
-    this->dbconn->disconnect();
-    
-    return source;
+    return myImportSourceDAO.findImportSourcesByName(name);
 }

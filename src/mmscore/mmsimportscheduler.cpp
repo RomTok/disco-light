@@ -166,7 +166,7 @@ void MMSImportScheduler::threadMain() {
     	        curr_time = time(NULL);
     	
     	        /* through all my import plugins */
-    	        for(int i=0; i<importPlugins.size(); i++) {
+    	        for(unsigned int i=0; i<importPlugins.size(); i++) {
     	            /* check something */
     	            if (!importPlugins.at(i)->nextTime) continue;
     	            if (importPlugins.at(i)->nextTime > curr_time) continue;
@@ -197,7 +197,7 @@ void MMSImportScheduler::threadMain() {
 }
 
 void MMSImportScheduler::executeImport(int pluginID) {
-	for(int i = 0;i<importPlugins.size();i++) {
+	for(unsigned int i = 0;i<importPlugins.size();i++) {
 		if(importPlugins.at(i)->plugin->getId()==pluginID) {
 			importPlugins.at(i)->pluginHandler->invokeExecute();
 			return;

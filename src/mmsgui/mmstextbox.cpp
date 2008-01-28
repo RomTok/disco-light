@@ -162,9 +162,9 @@ bool MMSTextBox::calcWordGeom(string text, unsigned int startWidth, unsigned int
 
         if ((wrap)&&(splitwords)) {
             /* split words in wrap mode */
-            if ((index > 1)&&(mywordgeom->geom.w > *realWidth)) {
+            if ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
                 /* recalculate index */
-                while ((index > 1)&&(mywordgeom->geom.w > *realWidth)) {
+                while ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
                     index--;
                     mywordgeom->word = text.substr(0, index);
                     this->font->GetStringWidth(this->font, mywordgeom->word.c_str(), -1, &mywordgeom->geom.w);
@@ -219,7 +219,7 @@ bool MMSTextBox::calcWordGeom(string text, unsigned int startWidth, unsigned int
         wordgeom.push_back(mywordgeom);
 
         if (gotonext) {
-            if (index + 1 < text.size())
+            if (index + 1 < (int)text.size())
                 text = text.substr(index + 1);
             else 
                 text = ""; 

@@ -87,6 +87,8 @@ bool MMSFBManager::init(int argc, char **argv) {
 
     /* set on exit handler */
     on_exit(mmsfbmanager_onexit, this);
+    
+    return true;
 }
 
 void MMSFBManager::release() {

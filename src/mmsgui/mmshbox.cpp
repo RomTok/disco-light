@@ -53,9 +53,9 @@ void MMSHBox::add(MMSWidget *widget) {
 
 void MMSHBox::recalculateChildren() {
     unsigned int nextx;
-    int safechildren;
-    int lastsafechild;
-    int safepix;
+    unsigned int safechildren;
+    unsigned int lastsafechild;
+    unsigned int safepix;
 
     /* check something */
     if(this->children.empty())

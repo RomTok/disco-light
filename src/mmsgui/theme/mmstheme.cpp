@@ -29,7 +29,7 @@ MMSTheme *globalTheme = new MMSTheme();
 bool MMSTheme::addTemplateClass(MMSTemplateClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < templateClasses.size(); i++)
+    for (unsigned int i = 0; i < templateClasses.size(); i++)
         if (templateClasses.at(i)->getClassName() == className)
             return false;
     templateClasses.push_back(themeClass);
@@ -39,7 +39,7 @@ bool MMSTheme::addTemplateClass(MMSTemplateClass *themeClass) {
 bool MMSTheme::addMainWindowClass(MMSMainWindowClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < mainWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < mainWindowClasses.size(); i++)
         if (mainWindowClasses.at(i)->getClassName() == className)
             return false;
     mainWindowClasses.push_back(themeClass);
@@ -49,7 +49,7 @@ bool MMSTheme::addMainWindowClass(MMSMainWindowClass *themeClass) {
 bool MMSTheme::addPopupWindowClass(MMSPopupWindowClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < popupWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < popupWindowClasses.size(); i++)
         if (popupWindowClasses.at(i)->getClassName() == className)
             return false;
     popupWindowClasses.push_back(themeClass);
@@ -59,7 +59,7 @@ bool MMSTheme::addPopupWindowClass(MMSPopupWindowClass *themeClass) {
 bool MMSTheme::addRootWindowClass(MMSRootWindowClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < rootWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < rootWindowClasses.size(); i++)
         if (rootWindowClasses.at(i)->getClassName() == className)
             return false;
     rootWindowClasses.push_back(themeClass);
@@ -69,7 +69,7 @@ bool MMSTheme::addRootWindowClass(MMSRootWindowClass *themeClass) {
 bool MMSTheme::addChildWindowClass(MMSChildWindowClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < childWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < childWindowClasses.size(); i++)
         if (childWindowClasses.at(i)->getClassName() == className)
             return false;
     childWindowClasses.push_back(themeClass);
@@ -79,7 +79,7 @@ bool MMSTheme::addChildWindowClass(MMSChildWindowClass *themeClass) {
 bool MMSTheme::addLabelClass(MMSLabelClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < labelClasses.size(); i++)
+    for (unsigned int i = 0; i < labelClasses.size(); i++)
         if (labelClasses.at(i)->getClassName() == className)
             return false;
     labelClasses.push_back(themeClass);
@@ -89,7 +89,7 @@ bool MMSTheme::addLabelClass(MMSLabelClass *themeClass) {
 bool MMSTheme::addImageClass(MMSImageClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < imageClasses.size(); i++)
+    for (unsigned int i = 0; i < imageClasses.size(); i++)
         if (imageClasses.at(i)->getClassName() == className)
             return false;
     imageClasses.push_back(themeClass);
@@ -99,7 +99,7 @@ bool MMSTheme::addImageClass(MMSImageClass *themeClass) {
 bool MMSTheme::addButtonClass(MMSButtonClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < buttonClasses.size(); i++)
+    for (unsigned int i = 0; i < buttonClasses.size(); i++)
         if (buttonClasses.at(i)->getClassName() == className)
             return false;
     buttonClasses.push_back(themeClass);
@@ -109,7 +109,7 @@ bool MMSTheme::addButtonClass(MMSButtonClass *themeClass) {
 bool MMSTheme::addProgressBarClass(MMSProgressBarClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < progressBarClasses.size(); i++)
+    for (unsigned int i = 0; i < progressBarClasses.size(); i++)
         if (progressBarClasses.at(i)->getClassName() == className)
             return false;
     progressBarClasses.push_back(themeClass);
@@ -119,7 +119,7 @@ bool MMSTheme::addProgressBarClass(MMSProgressBarClass *themeClass) {
 bool MMSTheme::addMenuClass(MMSMenuClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < menuClasses.size(); i++)
+    for (unsigned int i = 0; i < menuClasses.size(); i++)
         if (menuClasses.at(i)->getClassName() == className)
             return false;
     menuClasses.push_back(themeClass);
@@ -129,7 +129,7 @@ bool MMSTheme::addMenuClass(MMSMenuClass *themeClass) {
 bool MMSTheme::addTextBoxClass(MMSTextBoxClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < textBoxClasses.size(); i++)
+    for (unsigned int i = 0; i < textBoxClasses.size(); i++)
         if (textBoxClasses.at(i)->getClassName() == className)
             return false;
     textBoxClasses.push_back(themeClass);
@@ -139,7 +139,7 @@ bool MMSTheme::addTextBoxClass(MMSTextBoxClass *themeClass) {
 bool MMSTheme::addArrowClass(MMSArrowClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < arrowClasses.size(); i++)
+    for (unsigned int i = 0; i < arrowClasses.size(); i++)
         if (arrowClasses.at(i)->getClassName() == className)
             return false;
     arrowClasses.push_back(themeClass);
@@ -149,7 +149,7 @@ bool MMSTheme::addArrowClass(MMSArrowClass *themeClass) {
 bool MMSTheme::addSliderClass(MMSSliderClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (int i = 0; i < sliderClasses.size(); i++)
+    for (unsigned int i = 0; i < sliderClasses.size(); i++)
         if (sliderClasses.at(i)->getClassName() == className)
             return false;
     sliderClasses.push_back(themeClass);
@@ -207,7 +207,7 @@ void MMSTheme::addTextboxClass(MMSTEXTBOX_THEME *textboxClass, const string name
 
 MMSTemplateClass* MMSTheme::getTemplateClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < templateClasses.size(); i++)
+    for (unsigned int i = 0; i < templateClasses.size(); i++)
         if (templateClasses.at(i)->getClassName() == className)
             return templateClasses.at(i);
     return NULL;
@@ -215,7 +215,7 @@ MMSTemplateClass* MMSTheme::getTemplateClass(string className) {
 
 MMSMainWindowClass* MMSTheme::getMainWindowClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < mainWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < mainWindowClasses.size(); i++)
         if (mainWindowClasses.at(i)->getClassName() == className)
             return mainWindowClasses.at(i);
     return NULL;
@@ -223,7 +223,7 @@ MMSMainWindowClass* MMSTheme::getMainWindowClass(string className) {
 
 MMSPopupWindowClass* MMSTheme::getPopupWindowClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < popupWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < popupWindowClasses.size(); i++)
         if (popupWindowClasses.at(i)->getClassName() == className)
             return popupWindowClasses.at(i);
     return NULL;
@@ -231,7 +231,7 @@ MMSPopupWindowClass* MMSTheme::getPopupWindowClass(string className) {
 
 MMSRootWindowClass* MMSTheme::getRootWindowClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < rootWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < rootWindowClasses.size(); i++)
         if (rootWindowClasses.at(i)->getClassName() == className)
             return rootWindowClasses.at(i);
     return NULL;
@@ -239,7 +239,7 @@ MMSRootWindowClass* MMSTheme::getRootWindowClass(string className) {
 
 MMSChildWindowClass* MMSTheme::getChildWindowClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < childWindowClasses.size(); i++)
+    for (unsigned int i = 0; i < childWindowClasses.size(); i++)
         if (childWindowClasses.at(i)->getClassName() == className)
             return childWindowClasses.at(i);
     return NULL;
@@ -247,7 +247,7 @@ MMSChildWindowClass* MMSTheme::getChildWindowClass(string className) {
 
 MMSLabelClass* MMSTheme::getLabelClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < labelClasses.size(); i++)
+    for (unsigned int i = 0; i < labelClasses.size(); i++)
         if (labelClasses.at(i)->getClassName() == className)
             return labelClasses.at(i);
     return NULL;
@@ -255,7 +255,7 @@ MMSLabelClass* MMSTheme::getLabelClass(string className) {
 
 MMSImageClass* MMSTheme::getImageClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < imageClasses.size(); i++)
+    for (unsigned int i = 0; i < imageClasses.size(); i++)
         if (imageClasses.at(i)->getClassName() == className)
             return imageClasses.at(i);
     return NULL;
@@ -263,7 +263,7 @@ MMSImageClass* MMSTheme::getImageClass(string className) {
 
 MMSButtonClass* MMSTheme::getButtonClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < buttonClasses.size(); i++)
+    for (unsigned int i = 0; i < buttonClasses.size(); i++)
         if (buttonClasses.at(i)->getClassName() == className)
             return buttonClasses.at(i);
     return NULL;
@@ -271,7 +271,7 @@ MMSButtonClass* MMSTheme::getButtonClass(string className) {
 
 MMSProgressBarClass* MMSTheme::getProgressBarClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < progressBarClasses.size(); i++)
+    for (unsigned int i = 0; i < progressBarClasses.size(); i++)
         if (progressBarClasses.at(i)->getClassName() == className)
             return progressBarClasses.at(i);
     return NULL;
@@ -279,7 +279,7 @@ MMSProgressBarClass* MMSTheme::getProgressBarClass(string className) {
 
 MMSMenuClass* MMSTheme::getMenuClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < menuClasses.size(); i++)
+    for (unsigned int i = 0; i < menuClasses.size(); i++)
         if (menuClasses.at(i)->getClassName() == className)
             return menuClasses.at(i);
     return NULL;
@@ -287,7 +287,7 @@ MMSMenuClass* MMSTheme::getMenuClass(string className) {
 
 MMSTextBoxClass* MMSTheme::getTextBoxClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < textBoxClasses.size(); i++)
+    for (unsigned int i = 0; i < textBoxClasses.size(); i++)
         if (textBoxClasses.at(i)->getClassName() == className)
             return textBoxClasses.at(i);
     return NULL;
@@ -295,7 +295,7 @@ MMSTextBoxClass* MMSTheme::getTextBoxClass(string className) {
 
 MMSArrowClass* MMSTheme::getArrowClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < arrowClasses.size(); i++)
+    for (unsigned int i = 0; i < arrowClasses.size(); i++)
         if (arrowClasses.at(i)->getClassName() == className)
             return arrowClasses.at(i);
     return NULL;
@@ -303,7 +303,7 @@ MMSArrowClass* MMSTheme::getArrowClass(string className) {
 
 MMSSliderClass* MMSTheme::getSliderClass(string className) {
     if (className=="") return NULL;
-    for (int i = 0; i < sliderClasses.size(); i++)
+    for (unsigned int i = 0; i < sliderClasses.size(); i++)
         if (sliderClasses.at(i)->getClassName() == className)
             return sliderClasses.at(i);
     return NULL;

@@ -45,6 +45,7 @@ class DataSource {
     			   const unsigned int port = 0,
     			   const string user       = "",
     			   const string password   = "");
+    	DataSource(const DataSource& d);
     	~DataSource();
     
         void setDBMS(const string dbms);

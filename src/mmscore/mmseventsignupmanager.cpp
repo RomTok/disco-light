@@ -38,8 +38,8 @@ void MMSEventSignupManager::signup(IMMSEventSignup *signup) {
 vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(MMSEvent *event) {
     vector<MMSPluginData *> mydata;
 
-    for(int i=0;i<this->signups.size();i++) {
-        for(int y=0;y<this->signups.at(i)->getSubScriptions().size();y++) {
+    for(unsigned int i=0;i<this->signups.size();i++) {
+        for(unsigned int y=0;y<this->signups.at(i)->getSubScriptions().size();y++) {
       		 logger.writeLog("compare " +  *(this->signups.at(i)->getSubScriptions().at(y)) + " to " + event->getHeading() + "size: " + iToStr(this->signups.at(i)->getSubScriptions().at(y)->size())); 
             /*compare heading of event with subsciptions */
             if(strncmp(this->signups.at(i)->getSubScriptions().at(y)->c_str(),

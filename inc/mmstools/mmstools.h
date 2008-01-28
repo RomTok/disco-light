@@ -39,5 +39,6 @@
 #include "mmstools/mmstcpserverthread.h"
 #include "mmstools/mmstcpclient.h"
 #include "mmstools/mmsmutex.h"
+#include "mmstools/mmsconverter.h"
 
 #endif  /*MMSTOOLS_H_*/

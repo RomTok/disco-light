@@ -187,7 +187,7 @@ void MMSDialogManager::throughDoc(xmlNode* node, MMSWidget *currentWidget, MMSWi
 
             if(widgetName != "") { 
                 /* search for duplicate names for the same parent */
-                for (int i = 0; i < widgetNames.size(); i++)
+                for (unsigned int i = 0; i < widgetNames.size(); i++)
                     if (widgetNames.at(i) == widgetName)
                         throw new MMSDialogManagerError(1, "duplicate widget name: " + widgetName);
                 widgetNames.push_back(widgetName);

@@ -44,7 +44,7 @@ void MMSMusicManager::setPlayList(PLAYLIST list,int offset) {
 	this->playlist = list;
 	this->offset = offset;
     this->alreadyPlayed.clear();
-    for(int i = 0; i < playlist.size(); i++)
+    for(unsigned int i = 0; i < playlist.size(); i++)
         this->alreadyPlayed.push_back(false);
     
 	logger.writeLog("got playlist size: " + iToStr(list.size()) + " offset: " + iToStr(offset));

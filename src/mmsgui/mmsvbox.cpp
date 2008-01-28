@@ -53,9 +53,9 @@ void MMSVBox::add(MMSWidget *widget) {
 
 void MMSVBox::recalculateChildren() {
     unsigned int nexty;
-    int safechildren;
-    int lastsafechild;
-    int safepix;
+    unsigned int safechildren;
+    unsigned int lastsafechild;
+    unsigned int safepix;
 
     /* check something */
     if(this->children.empty())

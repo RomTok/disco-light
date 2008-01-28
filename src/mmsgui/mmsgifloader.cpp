@@ -94,7 +94,7 @@ bool MMSGIFLoader::loadHeader() {
             return false;
         }
 
-        if (count < 3 * this->gif_gct.size) {
+        if (count < size_t(3 * this->gif_gct.size)) {
             /* bad format */
             return false;
         }
@@ -296,7 +296,7 @@ bool MMSGIFLoader::loadBlocks() {
                         return false;
                     }
 
-                    if (count < 3 * gif_lct.size) {
+                    if (count < (size_t)(3 * gif_lct.size)) {
                         /* bad format */
                         return false;
                     }

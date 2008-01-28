@@ -504,7 +504,7 @@ bool MMSFile::setFilePos(long offset, MMSFilePosOrigin origin) {
                 this->lasterror = EINVAL;
                 return false;
             }
-            if (newfpos>this->cache_fsize) {
+            if (newfpos>(long)this->cache_fsize) {
                 this->lasterror = EINVAL;
                 return false;
             }
@@ -651,7 +651,7 @@ bool MMSFile::readBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems) 
         /* work with separate cache */
         if (this->cache) {
             /* calc available data */
-            long availdata=(long)this->cache_fsize-(long)this->cache_fpos;
+            size_t availdata=this->cache_fsize-this->cache_fpos;
             if (availdata <= 0) {
                 availdata=0;
                 this->lasterror=EOF;
@@ -659,7 +659,7 @@ bool MMSFile::readBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems) 
 
             /* calc bytes to copy */
             *ritems = nitems * size;
-            if (availdata < *ritems) *ritems=(size_t)availdata;
+            if (availdata < *ritems) *ritems=availdata;
 
             /* copy from cache to callers buffer */
             memcpy(ptr, &(this->cache[this->cache_fpos]), *ritems);
@@ -835,7 +835,7 @@ bool MMSFile::getString(char *ptr, size_t size) {
         /* work with separate cache */
         if (this->cache) {
             /* calc available data */
-            long availdata=(long)this->cache_fsize-(long)this->cache_fpos;
+            size_t availdata=this->cache_fsize-this->cache_fpos;
             if (availdata <= 0) {
                 availdata=0;
                 this->lasterror=EOF;
@@ -846,10 +846,10 @@ bool MMSFile::getString(char *ptr, size_t size) {
             *ptr=0;
 
             /* calc bytes to copy */
-            if (availdata < toget) toget=(size_t)availdata;
+            if (availdata < toget) toget=availdata;
 
             /* through the cache */
-            for(int loop=this->cache_fpos; loop < this->cache_fpos + toget; loop++) {
+            for(unsigned int loop=this->cache_fpos; loop < this->cache_fpos + toget; loop++) {
                 if (this->cache[loop] == '\n') {
                     toget=loop+1-this->cache_fpos;/* include newline */
                     break;
@@ -908,7 +908,7 @@ bool MMSFile::getString(char *ptr, size_t size) {
                     toget = this->buf_pos;
 
                 /* through the buffer */
-                for(int loop=0; loop < toget; loop++) {
+                for(unsigned int loop=0; loop < toget; loop++) {
                     if (this->buffer[loop] == '\n') {
                         toget=loop+1;/* include newline */
                         break;
@@ -1034,7 +1034,6 @@ bool MMSFile::getChar(char *ptr) {
 
 bool MMSFile::writeBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems) {
     size_t  myri;
-    char    *newcache;
 
     /* clear error */
     this->lasterror = 0;

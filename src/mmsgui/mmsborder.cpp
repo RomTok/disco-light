@@ -256,7 +256,7 @@ pixelformat=DSPF_ALUT44;
                             int j1 = bordergeom[0].w - 1;
                             int j2 = j1-1;
                             borderimages[0]->drawCircle(j1, j1, j1, 6, 7);
-                            for (int i = 1; i < borderThickness; i++) {
+                            for (unsigned int i = 1; i < borderThickness; i++) {
                                 int j3 = j1-i;
                                 borderimages[0]->drawCircle(j2, j1, j3, 6, 7);
                                 borderimages[0]->drawCircle(j1, j2, j3, 6, 7);
@@ -296,7 +296,7 @@ pixelformat=DSPF_ALUT44;
                             int j1 = bordergeom[2].w - 1;
                             int j2 = j1-1;
                             borderimages[2]->drawCircle(0, j1, j1, 0, 1);
-                            for (int i = 1; i < borderThickness; i++) {
+                            for (unsigned int i = 1; i < borderThickness; i++) {
                                 int j3 = j1-i;
                                 borderimages[2]->drawCircle(1, j1, j3, 0, 1);
                                 borderimages[2]->drawCircle(0, j2, j3, 0, 1);
@@ -331,7 +331,7 @@ pixelformat=DSPF_ALUT44;
                         if (bordergeom[4].w > 1) {
                             int j1 = bordergeom[4].w - 1;
                             borderimages[4]->drawCircle(0, 0, j1, 2, 3);
-                            for (int i = 1; i < borderThickness; i++) {
+                            for (unsigned int i = 1; i < borderThickness; i++) {
                                 int j3 = j1-i;
                                 borderimages[4]->drawCircle(1, 0, j3, 2, 3);
                                 borderimages[4]->drawCircle(0, 1, j3, 2, 3);
@@ -367,7 +367,7 @@ pixelformat=DSPF_ALUT44;
                             int j1 = bordergeom[6].w - 1;
                             int j2 = j1-1;
                             borderimages[6]->drawCircle(j1, 0, j1, 4, 5);
-                            for (int i = 1; i < borderThickness; i++) {
+                            for (unsigned int i = 1; i < borderThickness; i++) {
                                 int j3 = j1-i;
                                 borderimages[6]->drawCircle(j2, 0, j3, 4, 5);
                                 borderimages[6]->drawCircle(j1, 1, j3, 4, 5);

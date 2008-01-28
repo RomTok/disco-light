@@ -205,6 +205,8 @@ string getDayOfWeek(time_t *clock) {
         case 6:
             return "Saturday";
     }
+    
+    return "";
 }
 
 static void bufferDestroy(void *buffer) {

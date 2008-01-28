@@ -57,13 +57,14 @@ class MMSDBFreeTDS : public IMMSDB {
         SQLHDBC 	*dbhandle;
         SQLHENV 	henv;
    	 	SQLHSTMT	hstmt;
+   	 	DataSource  *datasource;
         bool    	connected;
 
     public:
-    	MMSDBFreeTDS() : connected(false) {};
+    	MMSDBFreeTDS(DataSource *datasource);
         virtual ~MMSDBFreeTDS();
     
-        void connect(DataSource *datasource);
+        void connect();
         void disconnect();
         void commit();
         void rollback();

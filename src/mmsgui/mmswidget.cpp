@@ -120,7 +120,6 @@ MMSWidget::~MMSWidget() {
 
 bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
                        bool canhavechildren, bool canselectchildren) {
-    DFBResult 	rc;
     bool		b;
     
 //    logger.writeLog("Create MMSWidget");
@@ -174,7 +173,7 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     newWidget->id = factory.getId();
 
     /* copy my children */
-    for (int i = 0; i < children.size(); i++)
+    for (unsigned int i = 0; i < children.size(); i++)
         newWidget->children.at(i) = children.at(i)->copyWidget();
 
     /* initialize the callbacks */
@@ -291,11 +290,11 @@ void MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
 
     mygeom.x = 0;
     mygeom.y = 0;
-    if (width > this->innerGeom.w)
+    if ((int)width > this->innerGeom.w)
         mygeom.w = width;
     else
         mygeom.w = this->innerGeom.w;
-    if (height > this->innerGeom.h)
+    if ((int)height > this->innerGeom.h)
         mygeom.h = height;
     else
         mygeom.h = this->innerGeom.h;
@@ -366,11 +365,11 @@ void MMSWidget::setInnerGeometry() {
         diff = margin + borderthickness + bordermargin;
     }
 
-    if (2*diff >= mygeom.w) {
+    if ((int)(2*diff) >= mygeom.w) {
         diff = mygeom.w / 2 - 1;
     }
 
-    if (2*diff >= mygeom.h) {
+    if ((int)(2*diff) >= mygeom.h) {
         diff = mygeom.h / 2 - 1;
     }
 
@@ -556,7 +555,7 @@ void MMSWidget::switchArrowWidgets() {
             this->upArrowWidget->setSelected(true);
 
     if (this->downArrowWidget)
-        if (this->surfaceGeom.h - this->surfaceGeom.y - this->scrollPosY > this->innerGeom.h)
+        if (this->surfaceGeom.h - this->surfaceGeom.y - (int)this->scrollPosY > this->innerGeom.h)
             this->downArrowWidget->setSelected(true);
         else
             this->downArrowWidget->setSelected(false);
@@ -568,16 +567,17 @@ void MMSWidget::switchArrowWidgets() {
             this->leftArrowWidget->setSelected(true);
 
     if (this->rightArrowWidget)
-        if (this->surfaceGeom.w - this->surfaceGeom.x - this->scrollPosX > this->innerGeom.w)
+        if (this->surfaceGeom.w - this->surfaceGeom.x - (int)this->scrollPosX > this->innerGeom.w)
             this->rightArrowWidget->setSelected(true);
         else
             this->rightArrowWidget->setSelected(false);
 }
 
-
 bool MMSWidget::setScrollSize(unsigned int dX, unsigned int dY) {
     this->scrollDX = dX;
     this->scrollDY = dY;
+    
+    return true;
 }
 
 bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
@@ -600,7 +600,7 @@ bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
             return false;
 
     if (posX + innerGeom.w > surfaceGeom.w)
-        if (this->scrollPosX + innerGeom.w < surfaceGeom.w)
+        if ((int)this->scrollPosX + innerGeom.w < surfaceGeom.w)
             posX = surfaceGeom.w - innerGeom.w;
         else
             return false;
@@ -612,7 +612,7 @@ bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
             return false;
 
     if (posY + innerGeom.h > surfaceGeom.h)
-        if (this->scrollPosY + innerGeom.h < surfaceGeom.h)
+        if ((int)this->scrollPosY + innerGeom.h < surfaceGeom.h)
             posY = surfaceGeom.h - innerGeom.h;
         else
             return false;
@@ -1140,7 +1140,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
 
             /* the widget found can be to far away from this widget */
             /* if wlist is filled, i can search for a better parent which has already a own surface */ 
-            for (int i=0; i < wlist.size(); i++) {
+            for (unsigned int i=0; i < wlist.size(); i++) {
                 MMSWidget *w = wlist.at(i);
                 if ((w->drawable)&&(w->geomset)&&(w->visible)) {
                     widget = w;
@@ -1505,7 +1505,7 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
             }
             else {
             	getBgColor_p(c);
-                if (c.a=255)
+                if (c.a==255)
                     return false;
             }
         }
@@ -1518,7 +1518,7 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
         }
         else {
         	getBgColor_i(c);
-            if (c.a=255)
+            if (c.a==255)
                 return false;
         }
     }
@@ -1668,7 +1668,7 @@ void MMSWidget::setSelected(bool set, bool refresh) {
     if (this->selected == set) {
         /* refresh my children */
         if (canSelectChildren()) {
-            for (int i=0; i < children.size(); i++)
+            for (unsigned int i=0; i < children.size(); i++)
                 children.at(i)->setSelected(set, false);
             if (refresh)
                 this->refresh();
@@ -1688,7 +1688,7 @@ void MMSWidget::setSelected(bool set, bool refresh) {
 
     /* refresh my children */
     if (canselchildren)
-        for (int i=0; i < children.size(); i++)
+        for (unsigned int i=0; i < children.size(); i++)
             children.at(i)->setSelected(set, false);
 
     /* refresh widget */
@@ -1717,7 +1717,7 @@ void MMSWidget::setActivated(bool set, bool refresh) {
     /* check if activated status already set */
     if (this->activated == set) {
         /* refresh my children */
-        for (int i=0; i < children.size(); i++)
+        for (unsigned int i=0; i < children.size(); i++)
             children.at(i)->setActivated(set, false);
         if (refresh)
             this->refresh();
@@ -1728,7 +1728,7 @@ void MMSWidget::setActivated(bool set, bool refresh) {
     this->activated = set;
 
     /* refresh my children */
-    for (int i=0; i < children.size(); i++)
+    for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setActivated(set, false);
 
     /* refresh widget */
@@ -1745,7 +1745,7 @@ void MMSWidget::setPressed(bool set, bool refresh) {
     /* check if pressed status already set */
     if (this->pressed == set) {
         /* refresh my children */
-        for (int i=0; i < children.size(); i++)
+        for (unsigned int i=0; i < children.size(); i++)
             children.at(i)->setPressed(set, false);
         if (refresh)
             this->refresh();
@@ -1756,7 +1756,7 @@ void MMSWidget::setPressed(bool set, bool refresh) {
     this->pressed = set;
 
     /* refresh my children */
-    for (int i=0; i < children.size(); i++)
+    for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setPressed(set, false);
 
     /* refresh widget */

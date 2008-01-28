@@ -29,13 +29,11 @@
 
 class MMSImportSourceService {
     private:
-        DataSource 	*datasource;
         IMMSDB		*dbconn;
     
     public:
         MMSImportSourceService(DataSource *datasource);
-        void setDataSource(DataSource *datasource);
-        DataSource *getDataSource();
+        virtual ~MMSImportSourceService();
 
         void setImportSource(vector<MMSImportSourceData *> dataList);
 

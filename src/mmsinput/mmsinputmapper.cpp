@@ -35,12 +35,14 @@ static int compare_symbol( const void *a, const void *b ) {
      return *symbol - symname->symbol;
 }
 
+#if 0
 static int compare_symbol_byname( const void *a, const void *b ) {
      char *symbol  = (char *) a;
      struct DFBKeySymbolName *symname = (struct DFBKeySymbolName *) b;
 
      return strcmp(symbol,symname->name);
 }
+#endif
 
 string MMSInputMapper::lookUpKeyName(DFBInputDeviceKeySymbol key) {
     struct DFBKeySymbolName     *symbol_name;

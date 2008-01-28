@@ -24,40 +24,29 @@
 #include "mmstools/interfaces/immsdb.h"
 #include "mmsconfig/mmsimportpropertydao.h"
 
-MMSImportPropertyService::MMSImportPropertyService(DataSource *datasource) {
-    this->setDataSource(datasource);
+MMSImportPropertyService::MMSImportPropertyService(DataSource *datasource) :
+    dbconn(NULL) {
+    MMSDBConnMgr connMgr(datasource); 
+    if((this->dbconn = connMgr.getConnection()))
+        this->dbconn->connect();
 }
 
-void MMSImportPropertyService::setDataSource(DataSource *datasource) {
-    this->datasource = datasource;
-}
-
-DataSource *MMSImportPropertyService::getDataSource() {
-    return this->datasource;
+MMSImportPropertyService::~MMSImportPropertyService() {
+	if(this->dbconn) {
+		this->dbconn->disconnect();
+		delete this->dbconn;
+	}
 }
 
 void MMSImportPropertyService::setImportProperty(MMSImportPropertyData *data) {
-    IMMSDB   *myDB;
-
-    myDB->connect(this->datasource);
-    
-    MMSImportPropertyDAO myImportPropertyDAO(myDB);
+    MMSImportPropertyDAO myImportPropertyDAO(this->dbconn);
     myImportPropertyDAO.saveOrUpdate(data);
-    
-    myDB->disconnect();
 }
 
 MMSImportPropertyData *MMSImportPropertyService::getImportPropertyByPlugin(MMSPluginData *plugin) {
-
-    IMMSDB	*myDB;
-
-    myDB->connect(this->datasource);
-    
-    MMSImportPropertyDAO myImportPropertyDAO(myDB);
+    MMSImportPropertyDAO myImportPropertyDAO(this->dbconn);
     MMSImportPropertyData *importProperty = new MMSImportPropertyData();
     importProperty = myImportPropertyDAO.findImportPropertyByPlugin(plugin);
     
-    myDB->disconnect();
-
     return importProperty;
 }

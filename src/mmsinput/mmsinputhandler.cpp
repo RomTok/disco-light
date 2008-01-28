@@ -232,6 +232,8 @@ void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 				       	 	}
 		    			}
 		    			break;
+                    default:
+	        		    break;
 		    	}
 			}
 	    }

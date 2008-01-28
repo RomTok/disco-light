@@ -100,10 +100,6 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 }
 
 bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer) {
-    DFBResult               dfbres;
-    IDirectFBSurface        *dfbsurface;
-    DFBSurfaceDescription   surface_desc;
-
     /* check if initialized */
     INITCHECK;
 
@@ -116,6 +112,9 @@ bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelform
         return false;
 
 #ifdef sfsfsdfdsf
+    DFBResult               dfbres;
+    IDirectFBSurface        *dfbsurface;
+    DFBSurfaceDescription   surface_desc;
 
     /* create surface description */
     surface_desc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);

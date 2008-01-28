@@ -39,6 +39,17 @@
  * @brief ????
  * 
  */
+MMSDBSQLite::MMSDBSQLite(DataSource *_datasource) :
+	datasource(_datasource),
+	connected(false) {
+	if(!this->datasource)
+		throw new MMSError(0, "Cannot instantiate MMSDBSQLite without datasource");
+};
+
+/**
+ * @brief ????
+ * 
+ */
 MMSDBSQLite::~MMSDBSQLite() {
     this->disconnect();
 }
@@ -104,7 +115,7 @@ void MMSDBSQLite::rollback() {
  * 
  * @return void
  */
-void MMSDBSQLite::connect(DataSource *datasource) {
+void MMSDBSQLite::connect() {
    int     rc=0;
 
    // Open database connection

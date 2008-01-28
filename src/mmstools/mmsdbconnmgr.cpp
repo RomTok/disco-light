@@ -31,12 +31,12 @@ IMMSDB *MMSDBConnMgr::getConnection() {
 
 	#ifdef __ENABLE_SQLITE__
 		if((datasource->getDBMS()==DBMS_SQLITE) || datasource->getDBMS()=="") 
-			return new MMSDBSQLite();
+			return new MMSDBSQLite(datasource);
 	#endif
 
 	#ifdef __ENABLE_FREETDS__
 		if(datasource->getDBMS()==DBMS_FREETDS)
-			return new MMSDBFreeTDS();
+			return new MMSDBFreeTDS(datasource);
 	#endif
        
 	return NULL;

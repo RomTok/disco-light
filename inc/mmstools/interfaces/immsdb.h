@@ -30,7 +30,9 @@ typedef map<string, string> MMSDB_SP_ARGLIST;
 class IMMSDB {
 	
 public:
-	virtual void connect(DataSource *datasource) = 0;
+	virtual ~IMMSDB() {};
+	
+	virtual void connect() = 0;
 	virtual void disconnect() = 0;
 	virtual int query(string statement, MMSRecordSet *rs) = 0;
 	virtual int query(string statement) = 0;

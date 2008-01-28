@@ -609,7 +609,7 @@ void MMSMenu::recalculateChildren() {
             /* through all items */
             for(int i = 0; i < (int)this->children.size(); i++) {
 
-                if (i >= cols) {
+                if (i >= (int)cols) {
                     /* out of first row */
                     this->children.at(i)->setVisible(false, false);
                     continue;
@@ -919,14 +919,14 @@ void MMSMenu::switchArrowWidgets() {
         unsigned int columns = cols;
         if (columns > children.size())
             columns = children.size();
-        if (columns - this->px > this->h_items)
+        if ((int)(columns - this->px) > this->h_items)
             this->rightArrowWidget->setSelected(true);
         else
             this->rightArrowWidget->setSelected(false);
     }
 
     if (this->downArrowWidget) {
-        if (children.size() / cols + ((children.size() % cols)?1:0) - this->py > this->v_items)
+        if ((int)(children.size() / cols + ((children.size() % cols)?1:0) - this->py) > this->v_items)
             this->downArrowWidget->setSelected(true);
         else
             this->downArrowWidget->setSelected(false);
@@ -949,7 +949,7 @@ void MMSMenu::setSliders() {
     if ((this->hSliderWidget)&&(cols>1)) {
         unsigned int pos = 0;
         int size = (int)children.size() - 1;
-        if (size >= cols) size = cols - 1;
+        if (size >= (int)cols) size = cols - 1;
         if (size > 0)
             pos = (this->x * 100) / size;
         ((MMSSlider *)this->hSliderWidget)->setPosition(pos);
@@ -978,7 +978,7 @@ bool MMSMenu::scrollDownEx(unsigned int count, bool refresh, bool test) {
     fixedpos = getFixedPos();
 
     /* test for deactivated items */
-    while(int(this->x + (this->y + count) * cols) < children.size()) {
+    while((this->x + (this->y + count) * cols) < children.size()) {
         if(children.at(this->x + (this->y + count) * cols)->isActivated()) break;
         count++;
     }
@@ -1032,7 +1032,7 @@ bool MMSMenu::scrollDownEx(unsigned int count, bool refresh, bool test) {
         this->y+=count;
 
         /* recalculate scroll position */    
-        if (this->y - this->py >= this->v_items) {
+        if ((int)(this->y - this->py) >= this->v_items) {
             this->py = this->y - this->v_items + 1;
             pyChanged = true;
         }
@@ -1332,7 +1332,7 @@ bool MMSMenu::scrollRightEx(unsigned int count, bool refresh, bool test) {
         this->x+=count;
     
         /* recalculate scroll position */    
-        if (this->x - this->px >= this->h_items) {
+        if ((int)(this->x - this->px) >= this->h_items) {
             this->px = this->x - this->h_items + 1;
             pxChanged = true;
         }

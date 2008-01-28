@@ -172,9 +172,10 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
 //fills properites from the db whith unset properties from xml
 void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
     string parameterfile;   
-	xmlDoc *parser = NULL;
 #ifdef __NOT_USED__
-    logger.writeLog("Fillproperies");
+	xmlDoc *parser = NULL;
+
+	logger.writeLog("Fillproperies");
 
     if(plugin== NULL)
         throw new MMSPluginParameterParserError(0,"no plugin given");

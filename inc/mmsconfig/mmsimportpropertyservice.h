@@ -24,18 +24,17 @@
 #define MMSIMPORTPROPERTYSERVICE_H_
 
 #include "mmstools/base.h"
-#include "mmstools/datasource.h"
 #include "mmsconfig/mmsplugindata.h" 
 #include "mmsconfig/mmsimportpropertydata.h" 
+#include "mmstools/interfaces/immsdb.h"
 
 class MMSImportPropertyService {
     private:
-        DataSource *datasource;
+    	IMMSDB     *dbconn;
     
     public:
         MMSImportPropertyService(DataSource *datasource);
-        void setDataSource(DataSource *datasource);
-        DataSource *getDataSource();
+        virtual ~MMSImportPropertyService();
 
         void setImportProperty(MMSImportPropertyData *data);
 

@@ -44,7 +44,6 @@ void MMSPluginDAO::deletePlugin(MMSPluginData *plugin) {
 
 void MMSPluginDAO::save(MMSPluginData *data) {
     MMSRecordSet    rs;
-    int             cnt;
 
     /* do the insert */
     this->getMMSDBConnection()->query(PLUGINDAO_SAVE(iToStr(data->getType()->getID()), 
@@ -271,13 +270,13 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(char *typeName, const
 
     this->getMMSDBConnection()->query(query, &rs);
 
+    logger.writeLog("Found " + iToStr(rs.getCount()) + " records.");
+
     /* check if result is empty */
     if (rs.getCount()==0) return pluginList;
     
     // rewind the resultset
     rs.setRecordNum(0);
-    
-    logger.writeLog("Found " + iToStr(pluginList.size()) + " records.");
     
     /* for each result record */
     do {

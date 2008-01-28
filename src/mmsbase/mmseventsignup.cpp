@@ -43,7 +43,7 @@ void MMSEventSignup::add(string subscription) {
 
    /* check for doublettes */
    if (this->subscriptions.size() > 0) {
-        for(int i; i<this->subscriptions.size();i++) {
+        for(unsigned int i; i<this->subscriptions.size();i++) {
             //subscriptions.at(i)->
             if(subscription.compare(*(subscriptions.at(i)))==0)
                 throw new MMSEventSignupError(0,"subscription already made");

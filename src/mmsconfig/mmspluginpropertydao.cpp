@@ -50,8 +50,6 @@ void MMSPluginPropertyDAO::saveOrUpdate(MMSPluginData *plugin) {
     string                      tmpValList = "";
     
     vector <string>             vallist;
-    unsigned int                tmpBegin;
-    unsigned int                tmpEnd;
 
     pluginPropertyList = plugin->getProperties();
     for(vector<MMSPropertyData *>::iterator it = pluginPropertyList.begin(); it!=pluginPropertyList.end();it++) {
@@ -114,7 +112,6 @@ vector <MMSPropertyData *> MMSPluginPropertyDAO::findAllPluginPropertiesByPlugin
     string 						query;
     vector<MMSPropertyData *> 	pluginPropertyList;
     MMSRecordSet            	rs;
-    MMSLogger 					logger;
     string						tmpValList = "";
     
     vector <string>             vallist;
@@ -125,10 +122,8 @@ vector <MMSPropertyData *> MMSPluginPropertyDAO::findAllPluginPropertiesByPlugin
         /* check if result is empty */
     
     if (rs.getCount()==0) {
-    	logger.writeLog("have NO property results");
     	return pluginPropertyList;
     }
-	logger.writeLog("have property results");    
 
 	/* for each result record */
     do {
@@ -139,7 +134,6 @@ vector <MMSPropertyData *> MMSPluginPropertyDAO::findAllPluginPropertiesByPlugin
         pluginProperty->setParameter(rs["Parameter"]);
         pluginProperty->setValue(rs["Value"]);
         pluginProperty->setType(rs["TYPE"]);
-        logger.writeLog("got parameter type" + rs["TYPE"]);
         if(!rs["MAX"].empty())
 	        pluginProperty->setMax(atoi(rs["MAX"].c_str()));
 		else

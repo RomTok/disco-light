@@ -49,16 +49,17 @@
 
 class MMSDBSQLite : public IMMSDB {
     private:
-        string  dbname;
-        sqlite3 *dbhandle;
-        bool    connected;
+        string     dbname;
+        sqlite3    *dbhandle;
+        DataSource *datasource;
+        bool       connected;
         static int getResults(void *rs, int numCols, char **results, char **columnNames);
 
     public:
-    	MMSDBSQLite() : connected(false) {};
+    	MMSDBSQLite(DataSource *datasource = NULL);
         virtual ~MMSDBSQLite();
     
-        void connect(DataSource *datasource);
+        void connect();
         void disconnect();
         void commit();
         void rollback();

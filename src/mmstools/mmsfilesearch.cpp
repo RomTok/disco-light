@@ -38,8 +38,7 @@ MMSFileSearch::MMSFileSearch(string directory, string mask, bool recursive, bool
 }
 
 bool MMSFileSearch::match(char *entry) {
-
-	for(int i=0;i<singlemask.size();i++) {
+	for(unsigned int i=0;i<singlemask.size();i++) {
 		if(this->caseinsensitive == false) {
 			if(fnmatch(singlemask.at(i).c_str(),entry,FNM_PATHNAME)==0) {
 				return true;
@@ -96,9 +95,8 @@ void MMSFileSearch::seperateMask() {
 
 
 list<MMSFILE_ENTRY *> MMSFileSearch::execute() {
-	 list<MMSFILE_ENTRY *> result;
-	struct dirent **namelist;
-	int count; 
+    list<MMSFILE_ENTRY *> result;
+
 	this->dirhandle = opendir(this->directory.c_str());
 	string cwd = this->directory; 
 	scanDir(&result,this->dirhandle,cwd);

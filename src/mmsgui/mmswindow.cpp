@@ -1502,54 +1502,56 @@ bool MMSWindow::showAction(bool *stopaction) {
     	    unsigned int opacity_step;
     	    int move_step;
     	    
-    	    if (movein!=MMSDIRECTION_NOTSET)
-        	    switch (movein) {
-	    	    	case MMSDIRECTION_LEFT:
-	            	    move_step = (vrect.w-rect.x+vrect.x) / (steps+1);
-	    	    		break;
-	    	    	case MMSDIRECTION_RIGHT:
-	            	    move_step = (rect.w-vrect.x+rect.x) / (steps+1);
-	    	    		break;
-	    	    	case MMSDIRECTION_UP:
-	            	    move_step = (vrect.h-rect.y+vrect.y) / (steps+1);
-	            	    break;
-	    	    	case MMSDIRECTION_DOWN:
-	            	    move_step = (rect.h-vrect.y+rect.y) / (steps+1);
-	    	    		break;
-        	    }
+    	    switch (movein) {
+    	    	case MMSDIRECTION_LEFT:
+            	    move_step = (vrect.w-rect.x+vrect.x) / (steps+1);
+    	    		break;
+    	    	case MMSDIRECTION_RIGHT:
+            	    move_step = (rect.w-vrect.x+rect.x) / (steps+1);
+    	    		break;
+    	    	case MMSDIRECTION_UP:
+            	    move_step = (vrect.h-rect.y+vrect.y) / (steps+1);
+            	    break;
+    	    	case MMSDIRECTION_DOWN:
+            	    move_step = (rect.h-vrect.y+rect.y) / (steps+1);
+    	    		break;
+    	    	default:
+    	    		break;
+    	    }
 
     	    if (fadein)
     	    	opacity_step = opacity / (steps+1);
 
     	    for (int i = steps; i > 0; i--) {
 
-        	    if (movein!=MMSDIRECTION_NOTSET)
-	        	    switch (movein) {
-	        	    	case MMSDIRECTION_LEFT:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x + i * move_step, rect.y);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x + i * move_step, rect.y);
-	        	    		break;
-	        	    	case MMSDIRECTION_RIGHT:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x - i * move_step, rect.y);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x - i * move_step, rect.y);
-	        	    		break;
-	        	    	case MMSDIRECTION_UP:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x, rect.y + i * move_step);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x, rect.y + i * move_step);
-	        	    		break;
-	        	    	case MMSDIRECTION_DOWN:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x, rect.y - i * move_step);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x, rect.y - i * move_step);
-	        	    		break;
-	        	    }
+        	    switch (movein) {
+        	    	case MMSDIRECTION_LEFT:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x + i * move_step, rect.y);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x + i * move_step, rect.y);
+        	    		break;
+        	    	case MMSDIRECTION_RIGHT:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x - i * move_step, rect.y);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x - i * move_step, rect.y);
+        	    		break;
+        	    	case MMSDIRECTION_UP:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x, rect.y + i * move_step);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x, rect.y + i * move_step);
+        	    		break;
+        	    	case MMSDIRECTION_DOWN:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x, rect.y - i * move_step);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x, rect.y - i * move_step);
+        	    		break;
+        	    	default:
+        	    		break;
+        	    }
 	        	
         	    if (fadein) {
     	    		if (!parent)
@@ -1696,54 +1698,56 @@ printf("-----%u: hide action started\n", pthread_self());
     	    unsigned int opacity_step;
     	    int move_step;
     	    
-    	    if (moveout!=MMSDIRECTION_NOTSET)
-        	    switch (moveout) {
-	    	    	case MMSDIRECTION_LEFT:
-	            	    move_step = (rect.w-vrect.x+rect.x) / (steps+1);
-	    	    		break;
-	    	    	case MMSDIRECTION_RIGHT:
-	            	    move_step = (vrect.w-rect.x+vrect.x) / (steps+1);
-	    	    		break;
-	    	    	case MMSDIRECTION_UP:
-	            	    move_step = (rect.h-vrect.y+rect.y) / (steps+1);
-	            	    break;
-	    	    	case MMSDIRECTION_DOWN:
-	            	    move_step = (vrect.h-rect.y+vrect.y) / (steps+1);
-	    	    		break;
-        	    }
+    	    switch (moveout) {
+    	    	case MMSDIRECTION_LEFT:
+            	    move_step = (rect.w-vrect.x+rect.x) / (steps+1);
+    	    		break;
+    	    	case MMSDIRECTION_RIGHT:
+            	    move_step = (vrect.w-rect.x+vrect.x) / (steps+1);
+    	    		break;
+    	    	case MMSDIRECTION_UP:
+            	    move_step = (rect.h-vrect.y+rect.y) / (steps+1);
+            	    break;
+    	    	case MMSDIRECTION_DOWN:
+            	    move_step = (vrect.h-rect.y+vrect.y) / (steps+1);
+    	    		break;
+    	    	default:
+    	    		break;
+    	    }
 
     	    if (fadeout)
     	    	opacity_step = opacity / (steps+1);
 
        	    for (int i = 1; i <= steps; i++) {
 
-        	    if (moveout!=MMSDIRECTION_NOTSET)
-	        	    switch (moveout) {
-	        	    	case MMSDIRECTION_LEFT:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x - i * move_step, rect.y);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x - i * move_step, rect.y);
-	        	    		break;
-	        	    	case MMSDIRECTION_RIGHT:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x + i * move_step, rect.y);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x + i * move_step, rect.y);
-	        	    		break;
-	        	    	case MMSDIRECTION_UP:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x, rect.y - i * move_step);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x, rect.y - i * move_step);
-	        	    		break;
-	        	    	case MMSDIRECTION_DOWN:
-	        	    		if (!parent)
-	        	    			this->window->moveTo(rect.x, rect.y + i * move_step);
-	        	    		else
-	        	    			this->parent->moveChildWindow(this, rect.x, rect.y + i * move_step);
-	        	    		break;
-	        	    }
+        	    switch (moveout) {
+        	    	case MMSDIRECTION_LEFT:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x - i * move_step, rect.y);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x - i * move_step, rect.y);
+        	    		break;
+        	    	case MMSDIRECTION_RIGHT:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x + i * move_step, rect.y);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x + i * move_step, rect.y);
+        	    		break;
+        	    	case MMSDIRECTION_UP:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x, rect.y - i * move_step);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x, rect.y - i * move_step);
+        	    		break;
+        	    	case MMSDIRECTION_DOWN:
+        	    		if (!parent)
+        	    			this->window->moveTo(rect.x, rect.y + i * move_step);
+        	    		else
+        	    			this->parent->moveChildWindow(this, rect.x, rect.y + i * move_step);
+        	    		break;
+        	    	default:
+        	    		break;
+        	    }
 	        	
         	    if (fadeout) {
     	    		if (!parent)
@@ -2458,7 +2462,6 @@ double MMSWindow::calculateDistGradCode_Right(DFBRectangle currPos, DFBRectangle
 
 bool MMSWindow::handleNavigationForWidgets(MMSInputEvent *inputevent) {
     MMSWidget *candidate = NULL;
-    double dgcode = MAXDGCODE;
 
     /* if no focused widget then return */    
     if (!this->focusedwidget)
@@ -2616,7 +2619,7 @@ void MMSWindow::setFocus() {
     if (me < 0) return;
 
     /* i am the currently focused child window */
-    if (this->parent->focusedChildWin == me) return;
+    if ((int)this->parent->focusedChildWin == me) return;
 
     /* save focused widget from current window and remove the focus */
     this->parent->removeChildWinFocus();
@@ -2648,7 +2651,7 @@ bool MMSWindow::getFocus() {
     if (me < 0) return false;
     
     /* i am the currently focused child window? */
-    if (this->parent->focusedChildWin == me)
+    if ((int)this->parent->focusedChildWin == me)
     	return true;
     else
     	return false;
@@ -2657,7 +2660,6 @@ bool MMSWindow::getFocus() {
 bool MMSWindow::handleNavigationForChildWins(MMSInputEvent *inputevent) {
     MMSWindow *candidate = NULL;
     int cand=-1;
-    double dgcode = MAXDGCODE;
 
     /* check if I have child windows */
     if (!(this->childwins.size() > this->focusedChildWin))

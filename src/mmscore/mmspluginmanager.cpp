@@ -44,7 +44,7 @@ MMSPluginManager::~MMSPluginManager() {
 
 void MMSPluginManager::loadOSDPlugins() {
     vector<MMSPluginData *> data;
-    int i;
+
     MMSLogger logger("MMSCORE");
 
     if (this->osdPluginHandlers.size() > 0) {
@@ -54,7 +54,7 @@ void MMSPluginManager::loadOSDPlugins() {
     logger.writeLog("getOSDPlugins from service");
     data = this->service->getOSDPlugins();
     
-    for(i=0;i<data.size();i++) {
+    for(unsigned int i=0;i<data.size();i++) {
         MMSOSDPluginHandler *myhandler;
         myhandler = new MMSOSDPluginHandler(*(data.at(i)),true);
         this->osdPluginHandlers.push_back(myhandler);
@@ -64,7 +64,7 @@ void MMSPluginManager::loadOSDPlugins() {
 
 void MMSPluginManager::loadCentralPlugins() {
     vector<MMSPluginData *> data;
-    int i;
+
     MMSLogger logger("MMSCORE");
 
     if (this->centralPluginHandlers.size() > 0) {
@@ -73,7 +73,7 @@ void MMSPluginManager::loadCentralPlugins() {
 
     data = this->service->getCentralPlugins();
     
-    for(i=0;i<data.size();i++) {
+    for(unsigned int i=0;i<data.size();i++) {
         MMSCentralPluginHandler *myhandler;
         myhandler = new MMSCentralPluginHandler(*(data.at(i)),true);
         this->centralPluginHandlers.push_back(myhandler);
@@ -83,7 +83,7 @@ void MMSPluginManager::loadCentralPlugins() {
 
 void MMSPluginManager::loadImportPlugins() {
     vector<MMSPluginData *> data;
-    int i;
+
     MMSLogger logger("MMSCORE");
 
     if (this->importPluginHandlers.size() > 0) {
@@ -92,7 +92,7 @@ void MMSPluginManager::loadImportPlugins() {
 
     data = this->service->getImportPlugins();
     
-    for(i=0;i<data.size();i++) {
+    for(unsigned int i=0;i<data.size();i++) {
         MMSImportPluginHandler *myhandler;
         myhandler = new MMSImportPluginHandler(*(data.at(i)),true);
         this->importPluginHandlers.push_back(myhandler);
@@ -102,7 +102,7 @@ void MMSPluginManager::loadImportPlugins() {
 
 void MMSPluginManager::loadBackendPlugins() {
     vector<MMSPluginData *> data;
-    int i;
+
     MMSLogger logger("MMSCORE");
 
     if (this->backendPluginHandlers.size() > 0) {
@@ -111,7 +111,7 @@ void MMSPluginManager::loadBackendPlugins() {
 
     data = this->service->getBackendPlugins();
     
-    for(i=0;i<data.size();i++) {
+    for(unsigned int i=0;i<data.size();i++) {
         MMSBackendPluginHandler *myhandler;
         myhandler = new MMSBackendPluginHandler(*(data.at(i)),true);
         this->backendPluginHandlers.push_back(myhandler);
@@ -120,43 +120,30 @@ void MMSPluginManager::loadBackendPlugins() {
 }
 
 void MMSPluginManager::initializeOSDPlugins() {
-    int i;
-    
-    for(int i=0;i<this->osdPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<this->osdPluginHandlers.size();i++) {
         MMSPluginData pd = this->osdPluginHandlers.at(i)->getPluginData();
-/*        MMSSwitcher *switcher = new MMSSwitcher(&pd);
-        this->osdPluginHandlers.at(i)->setSwitcherInterface((IMMSSwitcher *)switcher);*/
         this->osdPluginHandlers.at(i)->setSwitcherInterface(switcher->newSwitcher(&pd));
-        
         this->osdPluginHandlers.at(i)->invokeInitialize();
     }
 }
 
 void MMSPluginManager::initializeCentralPlugins() {
-    int i;
-    
-    for(int i=0;i<this->centralPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<this->centralPluginHandlers.size();i++) {
         MMSPluginData pd = this->centralPluginHandlers.at(i)->getPluginData();
-        //MMSSwitcher *switcher = new MMSSwitcher(&pd);
         this->centralPluginHandlers.at(i)->setSwitcherInterface(switcher->newSwitcher(&pd));
         this->centralPluginHandlers.at(i)->invokeInitialize();
     }
 }
 
 void MMSPluginManager::initializeImportPlugins() {
-    int i;
-    
-    for(int i=0;i<this->importPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<this->importPluginHandlers.size();i++) {
         this->importPluginHandlers.at(i)->invokeInitialize();
     }
 }
 
 void MMSPluginManager::initializeBackendPlugins() {
-    int i;
-    
-    for(int i=0;i<this->backendPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<this->backendPluginHandlers.size();i++) {
         MMSPluginData pd = this->backendPluginHandlers.at(i)->getPluginData();
-        //MMSSwitcher *switcher = new MMSSwitcher(&pd);
         this->backendPluginHandlers.at(i)->setSwitcherInterface(switcher->newSwitcher(&pd));
         this->backendPluginHandlers.at(i)->invokeInitialize();
     }
@@ -165,8 +152,8 @@ void MMSPluginManager::initializeBackendPlugins() {
 vector<MMSOSDPluginHandler *> MMSPluginManager::getOSDPluginHandlers(vector <MMSPluginData *> data) {
     vector<MMSOSDPluginHandler *> myhandlers;
 
-    for(int y=0; y<data.size();y++) {
-        for(int i = 0; i<osdPluginHandlers.size();i++) {
+    for(unsigned int y=0; y<data.size();y++) {
+        for(unsigned int i = 0; i<osdPluginHandlers.size();i++) {
             if(this->osdPluginHandlers.at(i)->getPluginData().getId() == data.at(y)->getId()) {
                 if (this->osdPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_OSD_PLUGIN)
                     myhandlers.push_back(this->osdPluginHandlers.at(i));
@@ -179,9 +166,7 @@ vector<MMSOSDPluginHandler *> MMSPluginManager::getOSDPluginHandlers(vector <MMS
 }
 
 MMSOSDPluginHandler *MMSPluginManager::getOSDPluginHandler(int pluginid) {
-    int i;
-    
-    for(int i=0;i<osdPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<osdPluginHandlers.size();i++) {
         if(this->osdPluginHandlers.at(i)->getPluginData().getId() == pluginid)
             if (this->osdPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_OSD_PLUGIN)
                 return this->osdPluginHandlers.at(i);
@@ -195,8 +180,8 @@ MMSOSDPluginHandler *MMSPluginManager::getOSDPluginHandler(int pluginid) {
 vector<MMSCentralPluginHandler *> MMSPluginManager::getCentralPluginHandlers(vector <MMSPluginData *> data) {
     vector<MMSCentralPluginHandler *> myhandlers;
 
-    for(int y=0; y<data.size();y++) {
-        for(int i = 0; i<centralPluginHandlers.size();i++) {
+    for(unsigned int y=0; y<data.size();y++) {
+        for(unsigned int i = 0; i<centralPluginHandlers.size();i++) {
             if(this->centralPluginHandlers.at(i)->getPluginData().getId() == data.at(y)->getId()) {
                 if (this->centralPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_CENTRAL_PLUGIN)
                     myhandlers.push_back(this->centralPluginHandlers.at(i));
@@ -209,9 +194,7 @@ vector<MMSCentralPluginHandler *> MMSPluginManager::getCentralPluginHandlers(vec
 }
 
 MMSCentralPluginHandler *MMSPluginManager::getCentralPluginHandler(int pluginid) {
-    int i;
-    
-    for(int i=0;i<centralPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<centralPluginHandlers.size();i++) {
         if(this->centralPluginHandlers.at(i)->getPluginData().getId() == pluginid)
             if (this->centralPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_CENTRAL_PLUGIN)
                 return this->centralPluginHandlers.at(i);
@@ -225,8 +208,8 @@ MMSCentralPluginHandler *MMSPluginManager::getCentralPluginHandler(int pluginid)
 vector<MMSImportPluginHandler *> MMSPluginManager::getImportPluginHandlers(vector <MMSPluginData *> data) {
     vector<MMSImportPluginHandler *> myhandlers;
 
-    for(int y=0; y<data.size();y++) {
-        for(int i = 0; i<this->importPluginHandlers.size();i++) {
+    for(unsigned int y=0; y<data.size();y++) {
+        for(unsigned int i = 0; i<this->importPluginHandlers.size();i++) {
             if(this->importPluginHandlers.at(i)->getPluginData().getId() == data.at(y)->getId()) {
                 if (this->importPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_IMPORT_PLUGIN)
                     myhandlers.push_back(this->importPluginHandlers.at(i));
@@ -239,9 +222,7 @@ vector<MMSImportPluginHandler *> MMSPluginManager::getImportPluginHandlers(vecto
 }
 
 MMSImportPluginHandler *MMSPluginManager::getImportPluginHandler(int pluginid) {
-    int i;
-    
-    for(int i=0;i<this->importPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<this->importPluginHandlers.size();i++) {
         if(this->importPluginHandlers.at(i)->getPluginData().getId() == pluginid)
             if (this->importPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_IMPORT_PLUGIN)
                 return this->importPluginHandlers.at(i);
@@ -255,8 +236,8 @@ MMSImportPluginHandler *MMSPluginManager::getImportPluginHandler(int pluginid) {
 vector<MMSBackendPluginHandler *> MMSPluginManager::getBackendPluginHandlers(vector <MMSPluginData *> data) {
     vector<MMSBackendPluginHandler *> myhandlers;
 
-    for(int y=0; y<data.size();y++) {
-        for(int i = 0; i<this->backendPluginHandlers.size();i++) {
+    for(unsigned int y=0; y<data.size();y++) {
+        for(unsigned int i = 0; i<this->backendPluginHandlers.size();i++) {
             if(this->backendPluginHandlers.at(i)->getPluginData().getId() == data.at(y)->getId()) {
                 if (this->backendPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_BACKEND_PLUGIN)
                     myhandlers.push_back(this->backendPluginHandlers.at(i));
@@ -269,9 +250,7 @@ vector<MMSBackendPluginHandler *> MMSPluginManager::getBackendPluginHandlers(vec
 }
 
 MMSBackendPluginHandler *MMSPluginManager::getBackendPluginHandler(int pluginid) {
-    int i;
-    
-    for(int i=0;i<this->backendPluginHandlers.size();i++) {
+    for(unsigned int i=0;i<this->backendPluginHandlers.size();i++) {
         if(this->backendPluginHandlers.at(i)->getPluginData().getId() == pluginid)
             if (this->backendPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_BACKEND_PLUGIN)
                 return this->backendPluginHandlers.at(i);

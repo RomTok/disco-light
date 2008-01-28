@@ -34,7 +34,7 @@ MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
 MMSImageManager::~MMSImageManager() {
     /* free all surfaces */
     for (unsigned int i = 0; i < this->images.size(); i++) {
-        for (unsigned int j = 0; j < this->images.at(i)->sufcount; j++)
+        for (int j = 0; j < this->images.at(i)->sufcount; j++)
             if (this->images.at(i)->suf[j].surface)
                 delete this->images.at(i)->suf[j].surface;
         delete this->images.at(i);
@@ -326,7 +326,7 @@ void MMSImageManager::releaseImage(const string &path, const string &filename) {
                 /* this surface is not used anymore */
                 logger.writeLog("ImageManager deletes: '" + this->images.at(i)->imagefile + "'");
 
-                for (unsigned int j = 0; j < this->images.at(i)->sufcount; j++)
+                for (int j = 0; j < this->images.at(i)->sufcount; j++)
                     if (this->images.at(i)->suf[j].surface)
                         delete this->images.at(i)->suf[j].surface;
 
@@ -351,7 +351,7 @@ void MMSImageManager::releaseImage(MMSFBSurface *surface) {
                 /* this surface is not used anymore */
                 logger.writeLog("ImageManager deletes: '" + this->images.at(i)->imagefile + "'");
 
-                for (unsigned int j = 0; j < this->images.at(i)->sufcount; j++)
+                for (int j = 0; j < this->images.at(i)->sufcount; j++)
                     if (this->images.at(i)->suf[j].surface)
                         delete this->images.at(i)->suf[j].surface;
 

@@ -39,6 +39,17 @@
  * @brief ????
  * 
  */
+MMSDBFreeTDS::MMSDBFreeTDS(DataSource *_datasource) : 
+    datasource(_datasource),
+    connected(false) {
+	if(!this->datasource)
+		throw new MMSError(0, "Cannot instantiate MMSDBFReeTDS without datasource");
+}
+
+/**
+ * @brief ????
+ * 
+ */
 MMSDBFreeTDS::~MMSDBFreeTDS() {
     this->disconnect();
 }
@@ -79,7 +90,7 @@ string errmsg(SQLRETURN rc, SQLSMALLINT htype, SQLHANDLE handle) {
  * 
  * @return void
  */
-void MMSDBFreeTDS::connect(DataSource *datasource) {
+void MMSDBFreeTDS::connect() {
 	int rc;
 	char connection_string[256] = "";
 	MMSLogger logger("MMSFREETDS");

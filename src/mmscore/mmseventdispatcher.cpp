@@ -58,7 +58,7 @@ void MMSEventDispatcher::raise(IMMSEvent *event, int id) {
 	    	logger.writeLog("filter the osd handler");
 	        /* get all osd handlers */
 	        osdHandlers = getManager()->getOSDPluginHandlers(plugins);
-	        for(int i=0; i<osdHandlers.size();i++) {
+	        for(unsigned int i=0; i<osdHandlers.size();i++) {
 	            logger.writeLog("create new event thread");
 	            /* start the threads */
 	            thread = new MMSEventThread(osdHandlers.at(i),event);
@@ -68,7 +68,7 @@ void MMSEventDispatcher::raise(IMMSEvent *event, int id) {
 	    	logger.writeLog("filter the central handler");
 	        /* get all central handlers */
 	        centralHandlers = getManager()->getCentralPluginHandlers(plugins);
-	        for(int i=0; i<centralHandlers.size();i++) {
+	        for(unsigned int i=0; i<centralHandlers.size();i++) {
 	            logger.writeLog("create new event thread");
 	            /* start the threads */
 	            thread = new MMSEventThread(centralHandlers.at(i),event);
@@ -78,7 +78,7 @@ void MMSEventDispatcher::raise(IMMSEvent *event, int id) {
 	    	logger.writeLog("filter the backend handler");
 	        /* get all central handlers */
 	        backendHandlers = getManager()->getBackendPluginHandlers(plugins);
-	        for(int i=0; i<backendHandlers.size();i++) {
+	        for(unsigned int i=0; i<backendHandlers.size();i++) {
 	            /* start the threads */
 	            logger.writeLog("create new event thread");
 	            thread = new MMSEventThread(backendHandlers.at(i),event);

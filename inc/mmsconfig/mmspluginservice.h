@@ -23,19 +23,16 @@
 #ifndef MMSPLUGINSERVICE_H_
 #define MMSPLUGINSERVICE_H_
 
-#include "mmstools/base.h"
-#include "mmstools/mmsdbconnmgr.h"
-#include "mmstools/datasource.h"
+#include "mmstools/mmstools.h"
 #include "mmsconfig/mmsplugindata.h" 
 #include "mmsconfig/mmspropertydata.h"
 #include "mmsconfig/mmsplugintypedata.h"
 #include "mmsconfig/mmsplugincategorydao.h"
 #include "mmsconfig/mmsplugintypedao.h"
-#include "mmstools/interfaces/immsdb.h"
 
 class MMSPluginService {
     private:
-        DataSource 	*datasource;
+    	MMSLogger   *logger;
         IMMSDB 		*dbconn;
     
     public:

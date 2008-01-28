@@ -29,17 +29,27 @@ DataSource::DataSource(const string _dbms,
     			       const string _user,
     			       const string _password) :
     dbms(_dbms),
-    dbName(_dbName),
     address(_address),
     port(_port),
+    dbName(_dbName),
     user(_user),
     password(_password) {
 	
 }
 
+DataSource::DataSource(const DataSource& d) :
+    dbms(d.dbms),
+    address(d.address),
+    port(d.port),
+    dbName(d.dbName),
+    user(d.user),
+    password(d.password) {
+}
+
 DataSource::~DataSource() {
 	
 }
+
 
 void DataSource::setDBMS(const string dbms) {
     this->dbms = dbms;
