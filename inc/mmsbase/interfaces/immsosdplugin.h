@@ -31,7 +31,7 @@
 class IMMSOSDPlugin {
     public:
         virtual bool initialize(MMSPluginData data, IMMSSwitcher *switcher) = 0;
-        virtual bool onEvent(IMMSEvent *event) = 0;
+        virtual bool onEvent(IMMSEvent event) = 0;
         virtual bool shutdown() = 0;
         virtual bool showPreview(void *data) = 0;
         virtual bool show(void *data) = 0;

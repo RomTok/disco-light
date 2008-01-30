@@ -51,7 +51,7 @@ class MMSBackendPluginHandler {
         void setPluginData(MMSPluginData plugindata);
         void setSwitcherInterface(IMMSSwitcher *switcher);
         void invokeInitialize(void *data = NULL);
-        void invokeOnEvent(void *data = NULL);
+        void invokeOnEvent(IMMSEvent event);
         void invokeShutdown(void *data = NULL);
         
 };

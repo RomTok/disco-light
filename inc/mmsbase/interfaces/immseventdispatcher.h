@@ -27,7 +27,7 @@
 class IMMSEventDispatcher {
     public:
         virtual ~IMMSEventDispatcher() {};
-        virtual void raise(IMMSEvent* event, int id= -1) = 0;
+        virtual void raise(_IMMSEvent *event, int id= -1) = 0;
 };
 
 #endif /*IMMSEVENTDISPATCHER_H_*/

@@ -23,10 +23,11 @@
 #ifndef IMMSEVENT_H_
 #define IMMSEVENT_H_
 #include "mmstools/base.h"
+#include "mmstools/mmshandle.h"
 
-class IMMSEvent {
+class _IMMSEvent {
     public:
-        virtual ~IMMSEvent() {}; 
+        virtual ~_IMMSEvent() {}; 
         virtual void setHeading(string heading) = 0;
         virtual string getHeading() = 0;
         virtual string getData(string key) = 0;
@@ -35,4 +36,7 @@ class IMMSEvent {
         virtual void send() = 0;
     
 };
+
+typedef MMSHandle<_IMMSEvent> IMMSEvent;
+
 #endif /*IMMSEVENT_H_*/

@@ -44,7 +44,7 @@ class MMSEventSignupManager : public IMMSEventSignupManager {
         MMSEventSignupManager();
         virtual ~MMSEventSignupManager() {};
         void signup(IMMSEventSignup *signup);
-        vector<MMSPluginData *> getReceiverPlugins(MMSEvent *event);
+        vector<MMSPluginData *> getReceiverPlugins(_IMMSEvent *event);
 
 };
 

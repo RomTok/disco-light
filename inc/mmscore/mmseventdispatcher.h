@@ -41,7 +41,7 @@ class MMSEventDispatcher : public IMMSEventDispatcher {
     public:
         MMSEventDispatcher(MMSPluginManager *manager,MMSEventSignupManager *signupmanager);
         virtual ~MMSEventDispatcher();
-        void raise(IMMSEvent* event, int id = -1);
+        void raise(_IMMSEvent *event, int id = -1);
 };
 
 #endif /*MMSEVENTDISPATCHER_H_*/

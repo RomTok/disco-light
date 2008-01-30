@@ -49,11 +49,11 @@ void MMSCentralPluginHandler::invokeInitialize(void *data) {
     this->calllock.unlock();
 }
 
-void MMSCentralPluginHandler::invokeOnEvent(void *data) {
+void MMSCentralPluginHandler::invokeOnEvent(IMMSEvent event) {
     if (this->loaded == false)
         throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
     this->calllock.lock();
-    this->plugin->onEvent((IMMSEvent *)data);
+    this->plugin->onEvent(event);
     this->calllock.unlock();
 }
 

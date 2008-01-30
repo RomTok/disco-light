@@ -33,35 +33,35 @@ MMSEventDispatcher::MMSEventDispatcher(MMSPluginManager *manager,MMSEventSignupM
 MMSEventDispatcher::~MMSEventDispatcher() {
 }
 
-void MMSEventDispatcher::raise(IMMSEvent *event, int id) {
+void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
     MMSEventThread *thread;
     vector <MMSOSDPluginHandler *> osdHandlers;
     vector <MMSCentralPluginHandler *> centralHandlers;
     vector <MMSBackendPluginHandler *> backendHandlers;
     vector <MMSPluginData *> plugins;
-
+    IMMSEvent e(event);
 
     if (id > 0) {
     	logger.writeLog("have a direct receiver");
     	try {
-    		thread = new MMSEventThread(this->getManager()->getOSDPluginHandler(id),event);
+    		thread = new MMSEventThread(this->getManager()->getOSDPluginHandler(id), e);
 	    } catch(MMSError *error) {
-    		thread = new MMSEventThread(this->getManager()->getCentralPluginHandler(id),event);
+    		thread = new MMSEventThread(this->getManager()->getCentralPluginHandler(id), e);
 	    }
         thread->start();
     } else {
     	logger.writeLog("get receiver plugins");
         /* get all receiver plugins */
         try {
-        	plugins = this->getSignupManager()->getReceiverPlugins((MMSEvent *)event);
+        	plugins = this->getSignupManager()->getReceiverPlugins(event);
 
 	    	logger.writeLog("filter the osd handler");
 	        /* get all osd handlers */
 	        osdHandlers = getManager()->getOSDPluginHandlers(plugins);
 	        for(unsigned int i=0; i<osdHandlers.size();i++) {
-	            logger.writeLog("create new event thread");
+	            logger.writeLog((osdHandlers.at(i))->getPluginData().getName() + "--> create new event thread for " + event->getHeading());
 	            /* start the threads */
-	            thread = new MMSEventThread(osdHandlers.at(i),event);
+	            thread = new MMSEventThread(osdHandlers.at(i), e);
 	            thread->start();
 	        }
 	
@@ -69,9 +69,9 @@ void MMSEventDispatcher::raise(IMMSEvent *event, int id) {
 	        /* get all central handlers */
 	        centralHandlers = getManager()->getCentralPluginHandlers(plugins);
 	        for(unsigned int i=0; i<centralHandlers.size();i++) {
-	            logger.writeLog("create new event thread");
+	            logger.writeLog((centralHandlers.at(i))->getPluginData().getName() + "--> create new event thread for " + event->getHeading());
 	            /* start the threads */
-	            thread = new MMSEventThread(centralHandlers.at(i),event);
+	            thread = new MMSEventThread(centralHandlers.at(i), e);
 	            thread->start();
 	        }
 	
@@ -80,8 +80,8 @@ void MMSEventDispatcher::raise(IMMSEvent *event, int id) {
 	        backendHandlers = getManager()->getBackendPluginHandlers(plugins);
 	        for(unsigned int i=0; i<backendHandlers.size();i++) {
 	            /* start the threads */
-	            logger.writeLog("create new event thread");
-	            thread = new MMSEventThread(backendHandlers.at(i),event);
+	            logger.writeLog((backendHandlers.at(i))->getPluginData().getName() + "--> create new event thread for " + event->getHeading());
+	            thread = new MMSEventThread(backendHandlers.at(i), e);
 	            thread->start();
 	        }
 

@@ -30,13 +30,12 @@ class MMSEventThread : public MMSThread {
         MMSOSDPluginHandler     *osdHandler;
         MMSCentralPluginHandler *centralHandler;
         MMSBackendPluginHandler *backendHandler;
-        IMMSEvent               *event;
-        IMMSEvent               *getEvent();
+        IMMSEvent               event;
                         
     public:
-        MMSEventThread(MMSOSDPluginHandler *handler, IMMSEvent *event);
-        MMSEventThread(MMSCentralPluginHandler *handler, IMMSEvent *event);
-        MMSEventThread(MMSBackendPluginHandler *handler, IMMSEvent *event);
+        MMSEventThread(MMSOSDPluginHandler     *handler, IMMSEvent event);
+        MMSEventThread(MMSCentralPluginHandler *handler, IMMSEvent event);
+        MMSEventThread(MMSBackendPluginHandler *handler, IMMSEvent event);
         virtual ~MMSEventThread();
         virtual void threadMain();
 };

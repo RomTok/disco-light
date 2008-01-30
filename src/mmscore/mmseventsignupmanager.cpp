@@ -35,7 +35,7 @@ void MMSEventSignupManager::signup(IMMSEventSignup *signup) {
     this->signupmutex.unlock();
 }
 
-vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(MMSEvent *event) {
+vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *event) {
     vector<MMSPluginData *> mydata;
 
     for(unsigned int i=0;i<this->signups.size();i++) {

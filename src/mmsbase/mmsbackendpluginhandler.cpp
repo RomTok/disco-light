@@ -44,23 +44,23 @@ MMSBackendPluginHandler::~MMSBackendPluginHandler() {
 
 void MMSBackendPluginHandler::invokeInitialize(void *data) {
     if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw new MMSBackendPluginHandlerError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
     this->calllock.lock();
     this->plugin->initialize(this->plugindata, this->switcher);
     this->calllock.unlock();
 }
 
-void MMSBackendPluginHandler::invokeOnEvent(void *data) {
+void MMSBackendPluginHandler::invokeOnEvent(IMMSEvent event) {
     if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw new MMSBackendPluginHandlerError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
     this->calllock.lock();
-    this->plugin->onEvent((IMMSEvent *)data);
+    this->plugin->onEvent(event);
     this->calllock.unlock();
 } 
 
 void MMSBackendPluginHandler::invokeShutdown(void *data) {
     if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw new MMSBackendPluginHandlerError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
     this->calllock.lock();
     this->plugin->shutdown();
     this->calllock.unlock();

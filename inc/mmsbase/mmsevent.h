@@ -28,7 +28,7 @@
 #include "mmsbase/interfaces/immseventdispatcher.h"
 #include <map>
 
-class MMSEvent : public IMMSEvent {
+class MMSEvent : public _IMMSEvent {
     private:
         static IMMSEventDispatcher *dispatcher;
         string heading;
@@ -36,7 +36,6 @@ class MMSEvent : public IMMSEvent {
         
     public:
         MMSEvent(string heading = "noreceiver");
-        ~MMSEvent();
         virtual void setHeading(string heading);
         virtual string getHeading();
         virtual string getData(string key);

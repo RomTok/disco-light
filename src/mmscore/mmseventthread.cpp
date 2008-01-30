@@ -22,31 +22,31 @@
 
 #include "mmscore/mmseventthread.h"
 
-MMSEventThread::MMSEventThread(MMSOSDPluginHandler *handler, IMMSEvent *event) {
-    this->osdHandler = handler;
-    this->centralHandler = NULL;
-    this->backendHandler = NULL;
-    this->event = event;
+MMSEventThread::MMSEventThread(MMSOSDPluginHandler *handler, IMMSEvent _event) :
+    osdHandler(handler),
+    centralHandler(NULL),
+    backendHandler(NULL),
+    event(_event) {
 }
 
-MMSEventThread::MMSEventThread(MMSCentralPluginHandler *handler, IMMSEvent *event) {
-    this->osdHandler = NULL;
-    this->backendHandler = NULL;
-    this->centralHandler = handler;
-    this->event = event;
+MMSEventThread::MMSEventThread(MMSCentralPluginHandler *handler, IMMSEvent _event) :
+    osdHandler(NULL),
+    centralHandler(handler),
+    backendHandler(NULL),
+    event(_event) {
 }
-MMSEventThread::MMSEventThread(MMSBackendPluginHandler *handler, IMMSEvent *event) {
-    this->osdHandler = NULL;
-    this->centralHandler = NULL;
-    this->backendHandler = handler;
-    this->event = event;
+    
+MMSEventThread::MMSEventThread(MMSBackendPluginHandler *handler, IMMSEvent _event) :
+    osdHandler(NULL),
+    centralHandler(NULL),
+    backendHandler(handler),
+    event(_event) {
 }
 
 
 MMSEventThread::~MMSEventThread() {
-	delete this->event;
 }
-
+ 
 void MMSEventThread::threadMain() {
     if (this->osdHandler)
         this->osdHandler->invokeOnEvent(this->event);
@@ -56,8 +56,3 @@ void MMSEventThread::threadMain() {
         this->backendHandler->invokeOnEvent(this->event);
     delete this;
 }
-
-IMMSEvent *MMSEventThread::getEvent() {
-    return this->event;
-}
-

@@ -49,11 +49,11 @@ void MMSOSDPluginHandler::invokeInitialize(void *data) {
     this->calllock.unlock();
 }
 
-void MMSOSDPluginHandler::invokeOnEvent(void *data) {
+void MMSOSDPluginHandler::invokeOnEvent(IMMSEvent event) {
     if (this->loaded == false)
         throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
     this->calllock.lock();
-    this->plugin->onEvent((IMMSEvent *)data);
+    this->plugin->onEvent(event);
     this->calllock.unlock();
 }
 
