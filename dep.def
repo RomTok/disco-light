@@ -34,9 +34,9 @@ endif
 #unix-odbc
 ifndef ODBC_FOUND
     $(info check for unix-odbc)
-    ASK=$(shell ls $(DESTDIR)/usr/include/sql.h)
+    ASK=$(shell ls $(DESTDIR)/usr/include/sql.h 2>/dev/null)
     ifeq ($(ASK),)
-        ASK=$(shell ls $(DESTDIR)/usr/local/include/sql.h)
+        ASK=$(shell ls $(DESTDIR)/usr/local/include/sql.h 2>/dev/null)
         ifeq ($(ASK),)
             $(info unix-odbc not found)
         else
