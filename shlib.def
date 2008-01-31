@@ -24,12 +24,14 @@ install: all
 	@echo " [INSTALL]   ($(SUBPACKAGE))"
 	@install -d $(DESTDIR)$(incdir)/$(SUBPACKAGE)
 	@cp -R ../../inc/$(SUBPACKAGE)/* $(DESTDIR)$(incdir)/$(SUBPACKAGE)/
+	@find $(DESTDIR)$(incdir)/$(SUBPACKAGE)/ -name *.h | xargs chmod 644
 	@install -d $(DESTDIR)$(libdir)
 	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
 
 update: 
 	@echo " [UPDATE]    ($(SUBPACKAGE))"
 	@cp -R ../../inc/$(SUBPACKAGE)/* $(DESTDIR)$(incdir)/$(SUBPACKAGE)/
+	@find $(DESTDIR)$(incdir)/$(SUBPACKAGE)/ -name *.h | xargs chmod 644
 	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
 	
 %.o : %.cpp
