@@ -170,12 +170,17 @@ string MMSDBSQLite::getDBName() {
 int MMSDBSQLite::query(string statement, MMSRecordSet *rs) {
     int     rc=0;
     char    *errmsg=NULL;
+    string 	message;
 
     rs->reset();
+    
+    if(!this->connected) {
+    	message = "Query called but no connection established." + string(" [query was: ") + statement + string("]");
+        throw(new MMSError(rc, message));
+    }    
 
     if((rc = sqlite3_exec((sqlite3 *)dbhandle, statement.c_str(), &(this->getResults), (void *) rs, &errmsg)) != SQLITE_OK)
     {
-        string message;
         message = string(errmsg) + string(" [query was: ") + statement + string("]");
         sqlite3_free(errmsg);
         throw(new MMSError(rc, message));
@@ -199,11 +204,17 @@ int MMSDBSQLite::query(string statement) {
 
     int     rc=0;
     char    *errmsg=NULL;
+    string 	message;
+
+    if(!this->connected) {
+    	message = "Query called but no connection established." + string(" [query was: ") + statement + string("]");
+        throw(new MMSError(rc, message));
+    }    
 
     if((rc = sqlite3_exec((sqlite3 *)dbhandle, statement.c_str(), NULL, NULL, &errmsg)) != SQLITE_OK)
     {        
-        string message;
         message = string(errmsg) + string(" [query was: ") + statement + string("]");
+        sqlite3_free(errmsg);
         throw(new MMSError(rc, message));
     }
 
