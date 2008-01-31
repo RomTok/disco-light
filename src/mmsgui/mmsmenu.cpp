@@ -1785,11 +1785,10 @@ MMSWidget *MMSMenu::newItem() {
     widget->setRootWindow(this->rootwindow);
     this->children.push_back(widget);
 
-
     recalculateChildren();
 
-    this->refresh();
-
+    if (widget->isVisible())
+	    this->refresh();
 
 //    if (isFocused())
 //        if (this->children.size()==1)
