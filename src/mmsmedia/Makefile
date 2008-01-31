@@ -2,17 +2,6 @@ include ../../dep.def
 
 #check private dependencies
 
-#libxine
-ifndef XINE_LIBS
-    $(info check for libxine)
-    export XINE_LIBS=$(shell pkg-config --libs libxine)
-    ifeq ($(XINE_LIBS),)
-        $(error libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
-    else
-        export XINE_INC=$(shell pkg-config --cflags libxine)
-    endif
-endif
-
 #alsa
 ifndef ALSA_LIBS
     $(info check for alsa)
