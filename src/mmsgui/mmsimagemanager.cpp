@@ -110,7 +110,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
 
         if (reload_image < 0) {
             /* load it */
-            MMSGIFLoader *gifloader = new MMSGIFLoader(im_desc);
+            MMSGIFLoader *gifloader = new MMSGIFLoader(im_desc, this->layer);
             im_desc->loading = true;
             gifloader->start();
    

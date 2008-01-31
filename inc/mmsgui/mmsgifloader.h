@@ -73,6 +73,9 @@ class MMSGIFLoader : public MMSThread {
         //name of gif file
         MMSIM_DESC *desc;
 
+        //display layer
+        MMSFBLayer *layer;
+        
         //file pointer
         MMSFile     *myfile;
 
@@ -88,7 +91,7 @@ class MMSGIFLoader : public MMSThread {
         void threadMain();
 
     public:
-        MMSGIFLoader(MMSIM_DESC *desc);
+        MMSGIFLoader(MMSIM_DESC *desc, MMSFBLayer *layer);
 };
 
 bool isGIF(string file);

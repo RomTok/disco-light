@@ -36,6 +36,7 @@ typedef struct {
     bool        alphachannel;   /* the pixel format has alphachannel */
     MMSFBColor  color;          /* color for drawing/blitting */
     int         backbuffer;     /* 0-none, 1-double, 2-triple buffered */
+    bool		systemonly;		/* true, if surface is stored in system memory */
     bool        iswinsurface;   /* the surface is a window surface */
     bool        islayersurface; /* the surface is the layer surface */
                                 /* note: for example it is possible to have */
@@ -76,6 +77,7 @@ class MMSFBSurface {
 
         bool getPixelFormat(string *pf);
         bool getSize(int *w, int *h);
+        bool getMemSize(int *size);
 
         bool clear(unsigned char r = 0, unsigned char g = 0,
                    unsigned char b = 0, unsigned char a = 0);

@@ -45,7 +45,7 @@ class MMSFB {
 
         bool getLayer(int id, MMSFBLayer **layer);
 
-        bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0);
+        bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0, bool systemonly = false);
 
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
         bool createFont(IDirectFBFont **font, string filename, DFBFontDescription *desc);

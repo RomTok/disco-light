@@ -36,8 +36,10 @@ MMSFBLayer::MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer) {
     this->surface = NULL;
 
     /* get the current config */
-    if (this->dfblayer)
-        getConfiguration();
+    if (this->dfblayer) {
+    	MMSFBLayerConfig config;
+    	getConfiguration(&config);
+    }
 }
 
 MMSFBLayer::~MMSFBLayer() {
@@ -97,6 +99,23 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     this->config.buffermode = getDFBLayerBufferModeString(dlc.buffermode);
     this->config.options = getDFBLayerOptionsString(dlc.options);
 
+    if (!config) {
+    	logger.writeLog("Layer properties:");
+	    logger.writeLog(" size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+	
+	    logger.writeLog(" pixelformat: " + this->config.pixelformat);
+	
+	    if (this->config.buffermode!="")
+	    	logger.writeLog(" buffermode:  " + this->config.buffermode);
+	    else
+	    	logger.writeLog(" buffermode:  NONE");
+	
+	    if (this->config.options!="")
+	    	logger.writeLog(" options:     " + this->config.options);
+	    else
+	    	logger.writeLog(" options:     NONE");
+    }
+
     /* fill return config */
     if (config)
         *config = this->config;
@@ -110,7 +129,8 @@ bool MMSFBLayer::getResolution(int *w, int *h) {
     INITCHECK;
 
     /* get configuration */
-    if (!getConfiguration())
+	MMSFBLayerConfig config;
+    if (!getConfiguration(&config))
         return false;
 
     /* fill return values */
@@ -126,7 +146,8 @@ bool MMSFBLayer::getPixelformat(string *pixelformat) {
     INITCHECK;
 
     /* get configuration */
-    if (!getConfiguration())
+	MMSFBLayerConfig config;
+    if (!getConfiguration(&config))
         return false;
 
     /* fill return values */
@@ -143,7 +164,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     INITCHECK;
 
     /* get configuration */
-    if (!getConfiguration())
+	MMSFBLayerConfig config;
+    if (!getConfiguration(&config))
         return false;
 
    
@@ -167,6 +189,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
         printf("\nSET OPTIONS 0x%08x!!!!\n", dlc.options);
         dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_OPTIONS);
   //  }
+
+        
     /* set configuration */
     if ((dfbres=this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
         /* check if desired resolution is unsupported */
@@ -291,7 +315,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
             pixelformat = MMSFB_PF_ARGB;
     }
 
-    return mmsfb->createSurface(surface, w, h, pixelformat, backbuffer);
+    return mmsfb->createSurface(surface, w, h, pixelformat, backbuffer, (this->config.buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
@@ -390,7 +414,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 
     if (!usels) {
         /* create a window surface with one backbuffer (double buffered) */
-        if (!mmsfb->createSurface(&surface, w, h, pixelformat, 1))
+        if (!mmsfb->createSurface(&surface, w, h, pixelformat, 1, (this->config.buffermode == MMSFB_BM_BACKSYSTEM)))
             return false;
     }
     else {

@@ -28,12 +28,13 @@ MMSFBSurfaceManager *mmsfbsurfacemanager = new MMSFBSurfaceManager();
 
 MMSFBSurfaceManager::MMSFBSurfaceManager() {
     this->tempsuf = NULL;
+    this->surface_mem_cnt = 0;
 }
 
 MMSFBSurfaceManager::~MMSFBSurfaceManager() {
 }
 
-MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelformat, int backbuffer) {
+MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly) {
     DFBResult               dfbres;
     IDirectFBSurface        *dfbsurface;
     DFBSurfaceDescription   surface_desc;
@@ -81,10 +82,10 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     if (surface_desc.pixelformat==DSPF_UNKNOWN)
         surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags & ~DSDESC_PIXELFORMAT); 
 
-    /* we work only in system memory because of alphachannel blitting */
+    /* we use premultiplied surfaces because of alphachannel blitting with better performance */
     surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags | DSDESC_CAPS);
     surface_desc.caps = DSCAPS_PREMULTIPLIED;
-     
+    
     switch (backbuffer) {
         case 1: /* front + one back buffer (double) */
             surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_DOUBLE);
@@ -94,8 +95,13 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
             break;
     }
 
+    /* surface should stored in system memory only? */
+    if (systemonly)
+    	surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_SYSTEMONLY);
+    
     /* create the surface */
     if ((dfbres=mmsfb->dfb->CreateSurface(mmsfb->dfb, &surface_desc, &dfbsurface)) != DFB_OK) {
+        logger.writeLog("ERROR");
         MMSFB_SetError(dfbres, "IDirectFB::CreateSurface(" + iToStr(w) + "x" + iToStr(h) + ") failed");
         return NULL;
     }
@@ -108,6 +114,12 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
         return NULL;
     }
 
+    /* add size of the surface to my global counter */
+    int size;
+    surface->getMemSize(&size);
+    this->surface_mem_cnt+=size;
+    logger.writeLog("Allocated surface memory: " + iToStr(this->surface_mem_cnt) + " Byte");
+    
     /* add to used surfaces */
 /* TRACE
     this->used_surfaces.push_back(surface);
@@ -165,9 +177,9 @@ return;*/
 
 
 
-bool MMSFBSurfaceManager::createTemporarySurface(int w, int h, string pixelformat) {
+bool MMSFBSurfaceManager::createTemporarySurface(int w, int h, string pixelformat, bool systemonly) {
 	if (!this->tempsuf)
-		mmsfb->createSurface(&this->tempsuf, w, h, pixelformat, 0);
+		mmsfb->createSurface(&this->tempsuf, w, h, pixelformat, 0, systemonly);
 	if (!this->tempsuf)
 		return false;
 	return true;

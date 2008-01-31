@@ -99,64 +99,17 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
     return true;
 }
 
-bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer) {
+bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {
     /* check if initialized */
     INITCHECK;
 
     /* create or reuse a surface */
-    *surface = mmsfbsurfacemanager->createSurface(w, h, pixelformat, backbuffer);
+    *surface = mmsfbsurfacemanager->createSurface(w, h, pixelformat, backbuffer, systemonly);
 
     if (*surface)
         return true;
     else
         return false;
-
-#ifdef sfsfsdfdsf
-    DFBResult               dfbres;
-    IDirectFBSurface        *dfbsurface;
-    DFBSurfaceDescription   surface_desc;
-
-    /* create surface description */
-    surface_desc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
-    surface_desc.width = w;
-    surface_desc.height = h;
-    surface_desc.pixelformat = getDFBPixelFormatFromString(pixelformat);
-
-    if (surface_desc.pixelformat==DSPF_UNKNOWN)
-        surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags & ~DSDESC_PIXELFORMAT); 
-
-    /* we work only in system memory because of alphachannel blitting */
-    surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags | DSDESC_CAPS);
-    surface_desc.caps = DSCAPS_SYSTEMONLY;
-     
-    switch (backbuffer) {
-        case 1: /* front + one back buffer (double) */
-            surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_DOUBLE);
-            break;
-        case 2: /* front + two back buffer (triple) */
-            surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_TRIPLE);
-            break;
-    }
-
-    /* create the surface */
-    if ((dfbres=this->dfb->CreateSurface(this->dfb, &surface_desc, &dfbsurface)) != DFB_OK) {
-        MMSFB_SetError(dfbres, "IDirectFB::CreateSurface(" + iToStr(w) + "x" + iToStr(h) + ") failed");
-        return false;
-    }
-
-    /* create a new surface instance */
-    *surface = new MMSFBSurface(dfbsurface);
-    if (!*surface) {
-        dfbsurface->Release(dfbsurface);
-        MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
-        return false;
-    }
-
-    /* add the new surface to the manager */
-    mmsfbsurfacemanager->addSurface(*surface);
-    
-    return true;
-#endif
 }
 
 bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filename) {

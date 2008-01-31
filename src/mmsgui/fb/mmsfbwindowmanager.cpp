@@ -69,6 +69,8 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer) {
     /* save layer */
     this->layer = layer;
 
+    logger.writeLog("MMSFBWindowManager: get layer surface");
+    
     /* get the surface of the layer */
     if (!this->layer->getSurface(&this->layer_surface))
         return false;

@@ -38,14 +38,16 @@ class MMSFBSurfaceManager {
         vector<MMSFBSURMANLIST> free_surfaces;
 
         MMSFBSurface *tempsuf;
+        
+        int surface_mem_cnt;
 
     public:
         MMSFBSurfaceManager();
         ~MMSFBSurfaceManager();
-        MMSFBSurface *createSurface(int w, int h, string pixelformat, int backbuffer);
+        MMSFBSurface *createSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly);
         void releaseSurface(MMSFBSurface *surface);
 
-        bool createTemporarySurface(int w, int h, string pixelformat);
+        bool createTemporarySurface(int w, int h, string pixelformat, bool systemonly);
         MMSFBSurface *getTemporarySurface(int w, int h);
         void releaseTemporarySurface(MMSFBSurface *tempsuf);
 };

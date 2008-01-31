@@ -121,9 +121,41 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     if (caps & DSCAPS_TRIPLE)
         this->config.backbuffer = 2;
 
+    /* system only? */
+	this->config.systemonly = false;
+    if (caps & DSCAPS_SYSTEMONLY)
+    	this->config.systemonly = true;
+    
     /* fill return config */
     if (config)
         *config = this->config;
+
+    /* log some infos */
+    if ((!config)&&(!(caps & DSCAPS_SUBSURFACE))) {
+       	logger.writeLog("Surface properties:");
+
+	    logger.writeLog(" size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+
+	    if (this->config.alphachannel)
+	    	logger.writeLog(" pixelformat:  " + this->config.pixelformat + ",ALPHACHANNEL");
+	    else
+	    	logger.writeLog(" pixelformat:  " + this->config.pixelformat);
+	    
+       	logger.writeLog(" capabilities:");
+	
+	    if (caps & DSCAPS_PRIMARY)
+	    	logger.writeLog("  PRIMARY");
+	    if (caps & DSCAPS_SYSTEMONLY)
+	    	logger.writeLog("  SYSTEMONLY");
+	    if (caps & DSCAPS_VIDEOONLY)
+	    	logger.writeLog("  VIDEOONLY");
+	    if (caps & DSCAPS_DOUBLE)
+	    	logger.writeLog("  DOUBLE");
+	    if (caps & DSCAPS_TRIPLE)
+	    	logger.writeLog("  TRIPLE");
+	    if (caps & DSCAPS_PREMULTIPLIED)
+	    	logger.writeLog("  PREMULTIPLIED");
+    }
 
     return true;
 }
@@ -181,6 +213,84 @@ bool MMSFBSurface::getSize(int *w, int *h) {
 
     return true;
 }
+
+bool MMSFBSurface::getMemSize(int *size) {
+	
+	/* check if initialized */
+    INITCHECK;
+
+    /* init size */
+    if (!size)
+    	return false;
+    *size = 0;
+ 
+    string pf = config.pixelformat;
+    int    px = config.w * config.h * (config.backbuffer+1);
+    
+    if(pf == MMSFB_PF_ARGB1555)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_RGB16)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_RGB24)
+    	*size = px * 3;
+    else
+    if(pf == MMSFB_PF_RGB32)
+    	*size = px * 4;
+    else
+    if(pf == MMSFB_PF_ARGB)
+    	*size = px * 4;
+    else
+    if(pf == MMSFB_PF_A8)
+    	*size = px;
+    else
+    if(pf == MMSFB_PF_YUY2)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_RGB332)
+    	*size = px;
+    else
+    if(pf == MMSFB_PF_UYVY)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_I420)
+    	*size = (px * 3) / 2;
+    else
+    if(pf == MMSFB_PF_YV12)
+    	*size = (px * 3) / 2;
+    else
+    if(pf == MMSFB_PF_LUT8)
+    	*size = px;
+    else
+    if(pf == MMSFB_PF_ALUT44)
+    	*size = px;
+    else
+    if(pf == MMSFB_PF_AiRGB)
+    	*size = px * 4;
+    else
+    if(pf == MMSFB_PF_A1)
+    	*size = px / 8;
+    else
+    if(pf == MMSFB_PF_NV12)
+    	*size = (px * 3) / 2;
+    else
+    if(pf == MMSFB_PF_NV16)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_ARGB2554)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_ARGB4444)
+    	*size = px * 2;
+    else
+    if(pf == MMSFB_PF_NV21)
+    	*size = (px * 3) / 2;
+
+    return true;
+}
+
+
 
 bool MMSFBSurface::clear(unsigned char r, unsigned char g,
                          unsigned char b, unsigned char a) {
@@ -680,7 +790,7 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
 
     /* create new surface */
     if (!mmsfb->createSurface(dstsurface, w, h, this->config.pixelformat,
-                             (withbackbuffer)?this->config.backbuffer:0)) {
+                             (withbackbuffer)?this->config.backbuffer:0,this->config.systemonly)) {
         if (*dstsurface)
             delete *dstsurface;
         *dstsurface = NULL;

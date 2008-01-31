@@ -25,8 +25,9 @@
 
 //#define GIFTRACE
 
-MMSGIFLoader::MMSGIFLoader(MMSIM_DESC *desc) {
+MMSGIFLoader::MMSGIFLoader(MMSIM_DESC *desc, MMSFBLayer *layer) {
     this->desc = desc;
+    this->layer = layer;
     this->myfile = NULL;
 }
 
@@ -335,7 +336,7 @@ bool MMSGIFLoader::loadBlocks() {
 
                 /* create the surface */
                 MMSFBSurface *newsuf;
-                if (!mmsfb->createSurface(&newsuf, gif_lsd.width, gif_lsd.height, "ARGB", 0)) {
+                if (!this->layer->createSurface(&newsuf, gif_lsd.width, gif_lsd.height)) {
                     /* cannot create surface */
                     return false; 
                 }

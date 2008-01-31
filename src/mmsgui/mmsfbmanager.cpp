@@ -173,9 +173,10 @@ void MMSFBManager::applySettings() {
         /* so switch all indexed pixelformats to ARGB */
         pixelformat = MMSFB_PF_ARGB;
 
+    string buffermode = config.getGraphicsLayerBufferMode(); 
     logger.writeLog("creating temporary surface: " + iToStr(config.getXres()) + "x" + iToStr(config.getYres())
       		                                       + ", " + pixelformat.c_str());
-    mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat);
+    mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 
