@@ -34,7 +34,7 @@ class MMSMusicManager : public IMMSMusicManager {
 		sigc::signal<void, int> *onPrevSong;
 		PLAYLIST playlist;
 		MMSSound player;		
-		unsigned int offset;
+		int      offset;
 		MMSLogger logger;
 		bool cont, repeat, shuffle;
         vector<bool> alreadyPlayed;
