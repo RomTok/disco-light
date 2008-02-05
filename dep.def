@@ -6,33 +6,33 @@ LIBDIR=../../lib
 #check dependencies
 
 #libxml2
-ifndef LIBXML_FOUND
+ifndef LIBXML_CHECKED
     $(info check for libxml2 version >= 2.6)
     ASK=$(shell pkg-config --atleast-version=2.6 libxml-2.0 && echo "1")
     ifeq ($(ASK),)
         $(error libxml-2.0 was not found or version is older than 2.6. Either adjust PKG_CONFIG_PATH or install the package)
     else
-        export LIBXML_FOUND=1
         export LIBXML_INC=$(shell pkg-config --cflags libxml-2.0)
         export LIBXML_LIBS=$(shell pkg-config --libs libxml-2.0)
     endif
+    export LIBXML_CHECKED=1
 endif
 
 #sqlite3
-ifndef SQLITE3_FOUND
+ifndef SQLITE3_CHECKED
     $(info check for sqlite3)
     export SQLITE3_INC=$(shell pkg-config --cflags sqlite3)
     ifeq ($(SQLITE3_INC),)
         $(info sqlite3 was not found. Either adjust PKG_CONFIG_PATH or install the package)
     else
-        export SQLITE3_FOUND=1
         export CFLAGS+=-D__ENABLE_SQLITE__ 
         export SQLITE3_LIBS=$(shell pkg-config --libs sqlite3)
     endif
+    export SQLITE3_CHECKED=1
 endif
 
 #unix-odbc
-ifndef ODBC_FOUND
+ifndef ODBC_CHECKED
     $(info check for unix-odbc)
     ASK=$(shell ls $(DESTDIR)/usr/include/sql.h 2>/dev/null)
     ifeq ($(ASK),)
@@ -40,72 +40,81 @@ ifndef ODBC_FOUND
         ifeq ($(ASK),)
             $(info unix-odbc not found)
         else
-            export ODBC_FOUND=1
             export FREETDS_PREFIX=$(DESTIR)/usr/local
         endif
     else
-        export ODBC_FOUND=1
         export FREETDS_PREFIX=$(DESTIR)/usr/
     endif
-    ifdef ODBC_FOUND
+    ifdef FREETDS_PREFIX
         export FREETDS_INC=-I$(FREETDS_PREFIX)/include 
         export CFLAGS+=-D__ENABLE_FREETDS__ 
         export FREETDS_LIBS=-L$(FREETDS_PREFIX)/lib/ -lodbc
     endif
+    export ODBC_CHECKED=1
 endif
 
 #database?
-ifndef SQLITE3_FOUND
-    ifndef ODBC_FOUND
+ifndef SQLITE3_INC
+    ifndef FREETDS_INC
         $(error No database backend found. Please install either sqlite3 or unix odbc and a fitting driver)
     endif
 endif
 
 #curl
-ifndef CURL_FOUND 
+ifndef CURL_CHECKED
     $(info check for libcurl)
     export CURL_INC=$(shell pkg-config --cflags libcurl)
     ifeq ($(CURL_INC),)
         $(error libcurl was not found. Either adjust PKG_CONFIG_PATH or install the package)
     else
-        export CURL_FOUND=1
         export CURL_LIBS=$(shell pkg-config --libs libcurl)
     endif
+    export CURL_CHECKED=1
 endif
 
 #directfb
-ifndef DIRECTFB_FOUND
+ifndef DIRECTFB_CHECKED
     $(info check for directfb)
     export DIRECTFB_INC=$(shell pkg-config --cflags directfb)
     ifeq ($(DIRECTFB_INC),)
         $(error directfb was not found. Either adjust PKG_CONFIG_PATH or install the package)
     else
-        export DIRECTFB_FOUND=1
         export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
     endif
+    export DIRECTFB_CHECKED=1
 endif
+
 #libxine
-ifndef XINE_LIBS
+ifndef XINE_CHECKED
     $(info check for libxine)
     export XINE_LIBS=$(shell pkg-config --libs libxine)
     ifeq ($(XINE_LIBS),)
         $(error libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
     else
+        # have to do some extra checks because openSuse 10.3 installs libxine.pc even if no
+        # development package is installed :-(
         export XINE_INC=$(shell pkg-config --cflags libxine)
+        ifeq ($(strip $(XINE_INC)),)
+            ASK=$(shell ls /usr/include/xine.h 2>/dev/null)
+            ifeq ($(ASK),)
+                $(error xine headers were not found. Please install libxine-dev.)
+            endif
+        endif
     endif
+    export XINE_CHECKED=1
 endif
 
 
 #sigc++
-ifndef SIGC_FOUND
+ifndef SIGC_CHECKED
     $(info check for sigc++)
     export SIGC_INC=$(shell pkg-config --cflags sigc++-2.0)
     ifeq ($(SIGC_INC),)
         $(error sigc++-2.0 was not found. Either adjust PKG_CONFIG_PATH or install the package)
     else
-        export SIGC_FOUND=1
         export SIGC_LIBS=$(shell pkg-config --libs sigc++-2.0)
     endif
+    export SIGC_CHECKED=1
 endif
 
 #my includes
@@ -131,9 +140,9 @@ endif
 #helper
 ifndef SQLITEBIN_FOUND
     $(info check for sqlite3 binary)
-    SQLITE_BIN=$(shell which sqlite)
+    SQLITE_BIN=$(shell which sqlite 2>/dev/null)
     ifeq ($(SQLITE_BIN),)
-        SQLITE_BIN=$(shell which sqlite3)
+        SQLITE_BIN=$(shell which sqlite3 2>/dev/null)
         ifeq ($(SQLITE_BIN),)
             $(error sqlite not found)
         else
