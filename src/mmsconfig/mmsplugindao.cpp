@@ -256,7 +256,7 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(MMSPluginTypeData *ty
     return this->findAllPluginsByType((char *)type->getName().c_str(), inactiveToo);
 }
 
-vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(char *typeName, const bool inactiveToo) {
+vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, const bool inactiveToo) {
     string                  query;    
     vector<MMSPluginData *> pluginList;
     MMSRecordSet            rs;
@@ -264,9 +264,9 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(char *typeName, const
     
     // select all plugins
     if(!inactiveToo)
-    	query = PLUGINDAO_F_ACTIVE_PLUGINS_BY_TYPE(string(typeName));
+    	query = PLUGINDAO_F_ACTIVE_PLUGINS_BY_TYPE(typeName);
     else
-    	query = PLUGINDAO_F_ALL_PLUGINS_BY_TYPE(string(typeName));
+    	query = PLUGINDAO_F_ALL_PLUGINS_BY_TYPE(typeName);
 
     this->getMMSDBConnection()->query(query, &rs);
 

@@ -243,7 +243,7 @@ void initLogging(char *Iam, char *logfile) {
 void writeMessage(const char *ctrl,...) {
     char *iam;
     char *logname;
-    char    currTimebuffer[128];
+    char currTimebuffer[128];
     FILE *File;
     char line[10000];
 
@@ -254,10 +254,10 @@ void writeMessage(const char *ctrl,...) {
     logname = (char *)pthread_getspecific(key_logfile);
 
     if(logname == NULL) {
-        logname ="/var/log/mms4l/logfile";
+        logname = (char*)"/var/log/mms4l/logfile";
     }
     if(iam == NULL) {
-        iam ="unkown";
+        iam = (char*)"unkown";
     }
 
     getCurrentTimeBuffer(currTimebuffer);

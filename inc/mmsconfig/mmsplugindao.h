@@ -53,7 +53,7 @@ class MMSPluginDAO {
         vector<MMSPluginData *> findAllPlugins(const bool inactiveToo = "false");
         vector<MMSPluginData *> findAllPluginsByCategory(MMSPluginCategoryData *category, const bool inactiveToo = "false");
         vector<MMSPluginData *> findAllPluginsByType(MMSPluginTypeData *type, const bool inactiveToo = "false");
-        vector<MMSPluginData *> findAllPluginsByType(char *typeName, const bool inactiveToo = "false");
+        vector<MMSPluginData *> findAllPluginsByType(string typeName, const bool inactiveToo = "false");
 };
 
 #endif /*MMSPLUGINDAO_H_*/
