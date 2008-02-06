@@ -99,8 +99,24 @@ void MMSFBManager::release() {
 } 
 
 void MMSFBManager::applySettings() {
- 
+    logger.writeLog("configure graphics layer");
+
+    logger.writeLog("set exclusive access");
+    /* set exclusive access to the graphics layer */
+    if (!this->graphicslayer->setExclusiveAccess())
+        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+
+    if (!this->graphicslayer->setConfiguration(config.getXres(), config.getYres(),
+                                               config.getGraphicsLayerPixelformat(),
+                                               config.getGraphicsLayerBufferMode(),
+                                               config.getGraphicsLayerOptions()))
+        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+
     if (this->videolayerid != this->graphicslayerid) {
+        if(config.getOutputType() == MMS_OT_X11FB) 
+        //give a little time to window routines 
+        usleep(300000); 
+
         /* use both layers */
         logger.writeLog("configure video layer");
 
@@ -116,18 +132,6 @@ void MMSFBManager::applySettings() {
                                                 config.getVideoLayerOptions()))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 		//this->videolayer->dfblayer->SetFieldParity(this->videolayer->dfblayer,0);
-        logger.writeLog("configure graphics layer");
-
-        /* set exclusive access to the graphics layer */
-        if (!this->graphicslayer->setExclusiveAccess())
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
-    
-        /* set graphics layer's config */
-        if (!this->graphicslayer->setConfiguration(config.getXres(), config.getYres(),
-                                                   config.getGraphicsLayerPixelformat(),
-                                                   config.getGraphicsLayerBufferMode(),
-                                                   config.getGraphicsLayerOptions()))
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
         /* set the full opacity of the graphics layer */    
         this->graphicslayer->setOpacity(255);
@@ -137,25 +141,6 @@ void MMSFBManager::applySettings() {
             logger.writeLog("set the video layer behind the graphics layer");
             this->videolayer->setLevel(-1);
         }
-    }
-    else {
-        /* use only the graphics layer */
-        logger.writeLog("configure graphics layer");
-
-        /* set exclusive access to the graphics layer */
-        if (!this->graphicslayer->setExclusiveAccess())
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
-    
-        /* set graphics layer's config */
-        if(config.getOutputType() == MMS_OT_X11FB) 
-        //give a little time to window routines 
-        usleep(300000); 
-        if (!this->graphicslayer->setConfiguration(config.getXres(), config.getYres(),
-                                                   config.getGraphicsLayerPixelformat(),
-                                                   config.getGraphicsLayerBufferMode(),
-                                                   config.getGraphicsLayerOptions()))
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
-        //}
     }
 
     /* init the mmsfbwindowmanager */

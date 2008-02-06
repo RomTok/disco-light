@@ -190,17 +190,41 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
         dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_OPTIONS);
   //  }
 
-        
-    /* set configuration */
-    if ((dfbres=this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
+    /* test configuration */
+    DFBDisplayLayerConfigFlags failedFlags;
+    if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
+    	if(failedFlags & DLCONF_PIXELFORMAT) {
+            MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+            logger.writeLog("Your configuration contains a pixelformat that is not supported.");
+            return false;
+        }
+    	if(failedFlags & DLCONF_BUFFERMODE) {
+            MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+            logger.writeLog("Your configuration contains a buffermode that is not supported.");
+            return false;
+        }
+    	if(failedFlags & DLCONF_OPTIONS) {
+            MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+            logger.writeLog("Your configuration contains options that are not supported.");
+            return false;
+        }
+    	
         /* check if desired resolution is unsupported */
-        dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_WIDTH);
-        dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_HEIGHT);
-        if ((dfbres=this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
-            MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+    	if(failedFlags & DLCONF_WIDTH)
+            dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_WIDTH);
+    	if(failedFlags & DLCONF_HEIGHT)
+            dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_HEIGHT);
+        if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
+            MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
             return false;
         }
         logger.writeLog("Your configuration contains a resolution that is not supported.");
+    }
+    
+    /* set configuration */
+    if((dfbres = this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
+        MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+    	return false;
     }
 
     /* get configuration */
