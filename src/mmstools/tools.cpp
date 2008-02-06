@@ -65,7 +65,7 @@ string *strToUpr(string *src) {
     unsigned int i;
     dest=strdup(src->c_str());
 
-    for(i=0;i<strlen(dest);i++) {
+    for(i=strlen(dest)-1;i>=0;i--) {
         if((dest[i] >= 'a') && (dest[i] <= 'z'))
             dest[i]-=32;
     }
