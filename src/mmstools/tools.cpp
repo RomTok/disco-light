@@ -62,11 +62,13 @@ string maskChars(string str) {
 
 string *strToUpr(string *src) {
     char *dest;
-    unsigned int i;
+    unsigned int i, len;
     dest=strdup(src->c_str());
 
-    for(i=strlen(dest)-1;i>=0;i--) {
-        if((dest[i] >= 'a') && (dest[i] <= 'z'))
+    len = strlen(dest);
+    for(i=0; i<=len; i++) {
+        
+    	if((dest[i] >= 'a') && (dest[i] <= 'z'))
             dest[i]-=32;
     }
     *src = dest;
