@@ -365,7 +365,7 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 						keyName = xmlGetProp(curNode, (const xmlChar*)"name");
 						mapTo   = xmlGetProp(curNode, (const xmlChar*)"mapto");
 					    
-					    this->keyMap.insert(pair<string, string> (string((const char *) keyName), string((const char *)mapTo)));
+					    this->keyMap.insert(pair<string, string> (strToUpr(string((const char *) keyName)), strToUpr(string((const char *)mapTo))));
 					    	
 						xmlFree(keyName);
 						xmlFree(mapTo);
