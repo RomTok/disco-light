@@ -550,10 +550,10 @@ void executeCmd(string cmd) {
 }
 
 
-bool file_exist( char *filename ) {
+bool file_exist( string filename ) {
 	struct stat buffer ;
 	
-	if ( stat( filename, &buffer ) ) 
+	if ( stat( filename.c_str(), &buffer ) ) 
 		return true;
 
 	return false;
