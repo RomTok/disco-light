@@ -81,4 +81,6 @@ bool strToBool(string s);
 
 void executeCmd(string cmd);
 
+bool file_exist( string filename );
+
 #endif /*TOOLS_H_*/
