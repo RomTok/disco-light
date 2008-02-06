@@ -555,7 +555,7 @@ void executeCmd(string cmd) {
 bool file_exist( string filename ) {
 	struct stat buffer ;
 	
-	if ( stat( filename.c_str(), &buffer ) ) 
+	if ( stat( filename.c_str(), &buffer ) == 0) 
 		return true;
 
 	return false;
