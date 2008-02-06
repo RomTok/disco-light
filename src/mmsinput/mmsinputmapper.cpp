@@ -398,17 +398,18 @@ void MMSInputMapper::mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *in
     MMSInputEvent evt; 
 
 	/* parse the result nodes */
-    for( multimap<string, string>::iterator iter = this->keyMap.begin(); iter != this->keyMap.end(); ++iter ) {
-    	if(strToUpr(iter->first) == symbol) {
-    		string foundkeyname = iter->second;
-    	    DFBInputDeviceKeySymbol foundkey = lookUpKeySymbol(foundkeyname);
-    	    if(foundkey) {
-    	    	logger.writeLog("mapped to key '" + foundkeyname + "', id: " + iToStr(foundkey));
-    	        evt.type = MMSINPUTEVENTTYPE_KEYPRESS;
-    	        evt.key = foundkey;
-    	        inputeventset->push_back(evt);
-    	    }
-    	}
+    typedef multimap<string, string>::iterator MI;
+    pair<MI,MI> iter = this->keyMap.equal_range(symbol);
+    
+    for( MI run = iter.first; run != iter.second; ++run ) {
+   		string foundkeyname = run->second;
+   	    DFBInputDeviceKeySymbol foundkey = lookUpKeySymbol(foundkeyname);
+   	    if(foundkey) {
+   	    	logger.writeLog("mapped to key '" + foundkeyname + "', id: " + iToStr(foundkey));
+   	        evt.type = MMSINPUTEVENTTYPE_KEYPRESS;
+   	        evt.key = foundkey;
+   	        inputeventset->push_back(evt);
+   	    }
     }
 
     if(inputeventset->empty()) {
