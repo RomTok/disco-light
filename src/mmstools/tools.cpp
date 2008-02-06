@@ -24,6 +24,7 @@
 #include <wordexp.h>
 #include <strings.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 /* Once-only initialisation of the key */
 static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;
@@ -546,4 +547,14 @@ void executeCmd(string cmd) {
 			exit(1);
 		}
 	}
+}
+
+
+bool file_exist( char *filename ) {
+	struct stat buffer ;
+	
+	if ( stat( filename, &buffer ) ) 
+		return true;
+
+	return false;
 }
