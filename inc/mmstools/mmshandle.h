@@ -24,8 +24,6 @@
 
 /**
  * Handler class that implements reference counting.
- * 
- * @note: This class ist not thread-safe.
  */
 template<class X> class MMSHandle {
     private:
