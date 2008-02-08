@@ -80,7 +80,7 @@ MMSInputHandler::MMSInputHandler(DFBInputDeviceID device) {
 }
 
 MMSInputHandler::~MMSInputHandler()  {
-	delete this->config;
+	if(this->config) delete this->config;
 }
 
 void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {

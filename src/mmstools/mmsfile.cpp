@@ -298,8 +298,10 @@ bool MMSFile::closeFile() {
         case MMSFT_URL:
             /* free curl */
             if (this->curl) {
-                curl_multi_remove_handle(this->mhandle, this->curl);
-                curl_multi_cleanup(this->mhandle); 
+            	if(this->mhandle) {
+	                curl_multi_remove_handle(this->mhandle, this->curl);
+	                curl_multi_cleanup(this->mhandle);
+            	}
                 curl_easy_cleanup(this->curl);
             }
             else {
@@ -326,12 +328,11 @@ bool MMSFile::closeFile() {
 }
 
 
-MMSFile::MMSFile(string name, MMSFileMode mode, bool usecache) {
-    /* init me */
-    this->name=name;
-    this->mode=mode;
-    this->usecache=usecache;
-    this->lasterror=0;
+MMSFile::MMSFile(string _name, MMSFileMode _mode, bool _usecache) :
+    name(_name),
+    mode(_mode),
+    usecache(_usecache),
+    lasterror(0) {
 
     /* reset values */
     resetAll();

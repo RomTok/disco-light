@@ -29,6 +29,7 @@ MMSPluginData::MMSPluginData() :
 }        
 
 MMSPluginData::~MMSPluginData() {
+	this->properties.clear();
 }
 
 int MMSPluginData::getId() {

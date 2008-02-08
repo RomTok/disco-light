@@ -23,12 +23,15 @@
 #include "mmsinput/mmsinputmanager.h"
 
 MMSInputManager::MMSInputManager(string file, string name) {
-	mapper = new MMSInputMapper(file, name);
-	config = new MMSConfigData();
+	this->mapper = new MMSInputMapper(file, name);
+	this->config = new MMSConfigData();
 }
 
 MMSInputManager::~MMSInputManager() {
-    this->threads.erase(this->threads.begin(), this->threads.end());
+    this->threads.clear();
+    this->subscriptions.clear();
+    if(this->mapper) delete this->mapper;
+    if(this->config) delete this->config;
 }
 
 void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
