@@ -9,7 +9,8 @@ endif
 
 #project name
 ifndef PROJECTNAME
-export PROJECTNAME=mms4l
+    export PROJECTNAME=disko
+    export PROJECTVERSION=1.1.0
 endif
 
 all clean update:
@@ -61,3 +62,5 @@ check:
 dox:
 	@doxygen ./doc/conf/$(PROJECTNAME).conf
 	
+srcpkg:
+	@source ./scripts/create_src_pkg.sh
