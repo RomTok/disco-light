@@ -37,7 +37,7 @@ class MMSPluginService {
     
     public:
         MMSPluginService (DataSource *datasource);
-        ~MMSPluginService();
+        virtual ~MMSPluginService();
         
         void setDataSource(DataSource *datasource);
         DataSource *getDataSource();
