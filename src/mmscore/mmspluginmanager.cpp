@@ -38,7 +38,7 @@ MMSPluginManager::MMSPluginManager() {
 }
 
 MMSPluginManager::~MMSPluginManager() {
-    delete this->service;
+    if(this->service) delete this->service;
     this->osdPluginHandlers.erase(this->osdPluginHandlers.begin(), this->osdPluginHandlers.end());
 }
 
