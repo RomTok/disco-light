@@ -1,0 +1,81 @@
+/** \mainpage Disko
+ *
+ * \htmlonly
+ * <div align="center">
+ * <a href="start.html"><img src="DISKO_logo_ball.JPG" alt="More..." border="0"></a>
+ * </div>
+ * \endhtmlonly
+ */
+
+/** \page start Disko API Reference
+ *
+ * \section intro_sec Introduction
+ *
+ * Disko is a GPL-licensed application framework, that can be used to develop GUI applications for
+ * embedded devices. It is closely connected to the DirectFB hardware abstraction library and it is
+ * specialised in touchscreen and remote control navigation. It provides a plugin based management 
+ * component, which enables easy writing and extending embedded applications. 
+ * Media playback (DVD, DVB, IPTV and audio streams) is provided by the well known xine media library.
+ * Disko has been ported to the TI Davinci chipset together with DirectFB and runs on x86 as well.
+ * The goal is to have Disko up and running on every single platform DirectFB is working on.
+ * 
+ * Currently the following features are supported:
+ *
+ * - Input-Handling for Touchscreens and Remote-Controls
+ * - Event-based communication
+ * - flexible GUI development:
+ * - XML-based dialog descriptions
+ * - Themeable and skinnable
+ * - Streaming of media content through xine library
+ * - SQLite3 and ODBC database support
+ *
+ * \section install_sec Installation
+ *
+ * \subsection required_sec Required packages
+ *
+ * The following development packages are required to build disko:
+ * - libsqlite3
+ * - libxine
+ * - libpng
+ * - libjpeg
+ * - libx11
+ * - libmpeg
+ * - libcurl
+ * - libasound
+ * - libhal-storage
+ * - libdbus-glib
+ * - libdirectfb
+ *
+ * On Debian based systems you can install them like this:
+ * \code
+ * sudo aptitude install libsqlite3-dev     \
+ *                       sqlite3            \
+ *                       libxine-dev        \
+ *                       libpng12-dev       \
+ *                       libjpeg62-dev      \
+ *                       libx11-dev         \
+ *                       libxext-dev        \
+ *                       libmpeg3-dev       \
+ *                       libcurl3-dev       \
+ *                       libasound2-dev     \
+ *                       libtag1-dev        \
+ *                       libhal-storage-dev \
+ *                       libdbus-glib-1-dev \
+ *                       libdirectfb-dev
+ * \endcode
+ *
+ * \subsection build_sec Building and installing
+ *
+ * Download the sources from <a href="http://www.directfb.org/?path=Main%2FDownloads&page=2">DirectFB</a> and build them.
+ *
+ * \code
+ * wget http://www.directfb.org/downloads/Libs/disko-1.1.0.tar.bz2
+ * cd <path-to-disko-1.1.0.tar.bz2>
+ * tar jxf disko-1.1.0.tar.bz2
+ * cd disko
+ * make [prefix=<path>]
+ * make install
+ * \endcode
+ *
+ * If you don't specify prefix the default location will be \c $HOME/disko.
+ */
