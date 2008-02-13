@@ -43,6 +43,10 @@ void MMSThemeManager::loadTheme(string path, string themeName, MMSTheme *theme) 
     
     theme->setTheme(path, themeName);
 
+    //check for file
+    if(!file_exist(theme->getThemeFile()))
+    	throw new MMSThemeManagerError(1, "theme file (" + theme->getThemeFile() + ") not found");
+    
     xmlDoc *parser = NULL;
 	
 	LIBXML_TEST_VERSION
