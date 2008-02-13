@@ -138,6 +138,18 @@ void MMSDVD::play(const bool cont) {
 }
 
 /**
+ * Toggles playing/pausing.
+ * 
+ * If DVD was stopped, start from beginning.
+ */
+void MMSDVD::pause() {
+	if(this->status == this->STATUS_STOPPED)
+		play(false);
+	else
+		MMSAV::pause();
+}
+
+/**
  * Playback will be switched to rewind.
  * 
  * @see MMSDVD::slow()
@@ -332,15 +344,14 @@ void MMSDVD::showMainMenu() {
 /**
  * Determines if the dvd menu is currently shown.
  *
- * @note It assumes that title 0 is the dvd root menu, 
- * which may not always be true.
+ * @note It assumes that menus don't have chapters.
  * 
  * @return  true if in dvd menu
  *
- * @see MMSDVD::getTitleNumber()
+ * @see MMSDVD::getChapterNumber()
  */
 bool MMSDVD::inMenu() {
-	return (this->getTitleNumber() == 0);
+	return (this->getChapterNumber() == 0);
 }
 
 /**

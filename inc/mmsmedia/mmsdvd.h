@@ -69,6 +69,7 @@ class MMSDVD : public MMSAV {
         
         void open();
         void play(const bool cont = true);
+        void pause();
         void rewind();
         void previous();
         void next();
