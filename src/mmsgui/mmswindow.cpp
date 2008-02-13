@@ -3003,7 +3003,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                        switchArrowWidgets();
 
                         default:
-                            return false;
+                            break;
 	                }
 	
 	                return true;
@@ -3048,7 +3048,8 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                        break;
 	                    default:
 	                        /* input is no navigation */
-	                        return false;
+	                        ret = false;
+	                        break;
 	                }
 	
 	                /* call handle input callback */
