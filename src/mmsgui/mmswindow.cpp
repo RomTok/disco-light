@@ -2491,7 +2491,6 @@ bool MMSWindow::handleNavigationForWidgets(MMSInputEvent *inputevent) {
 	}
 	else {
 		/* other inputs */
-		
 	}
 
     if (candidate) {
@@ -3004,7 +3003,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                        switchArrowWidgets();
 
                         default:
-                            break;
+                            return false;
 	                }
 	
 	                return true;
@@ -3012,9 +3011,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            else 
 	            if (this->childwins.size() > this->focusedChildWin) {
 	                /* get the focus to my focused child window */
+//	                logger.writeLog("try to execute input on childwindow");
 	                if (!this->childwins.at(this->focusedChildWin).window->handleInput(inputeventset)) {
 	                    /* childwin cannot navigate further, so try to find the next childwin */
+//		                logger.writeLog("try to execute input on another childwindow");
 	                    this->handleNavigationForChildWins(&(inputeventset->at(i)));
+
 	                    return false; 
 	                }
 	
@@ -3037,16 +3039,16 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                    case DIKS_CURSOR_LEFT:
 	                    case DIKS_CURSOR_RIGHT:
 	                    case DIKS_CURSOR_UP:
-	                        logger.writeLog("widget threw a exception so try to navigate");
+//	                        logger.writeLog("widget threw a exception so try to navigate");
 	                        ret = this->handleNavigationForWidgets(&(inputeventset->at(i)));
-	
+
 	                        /* set the arrow widgets */
 	                        switchArrowWidgets();
 	
 	                        break;
 	                    default:
 	                        /* input is no navigation */
-	                        break;
+	                        return false;
 	                }
 	
 	                /* call handle input callback */
