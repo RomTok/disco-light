@@ -46,7 +46,6 @@ static void queue_cb(void *userData, const xine_event_t *event) {
  * @see MMSAV::initialize()
  */
 MMSSound::MMSSound(const bool verbose) {
-    logger.setIdentity("MMSSound");
     MMSAV::initialize(verbose);
     this->onPlaybackFinished = new sigc::signal<void>;
 }

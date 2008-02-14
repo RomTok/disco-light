@@ -200,12 +200,12 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     
     this->verbose          = verbose;
 
-    logger.writeLog("xineInit()...");
+    DEBUGMSG("MMSMedia", "xineInit()...");
 
     /* initialize xine */
     xineInit();
 
-    logger.writeLog("xineInit() done.");
+    DEBUGMSG("MMSMedia", "xineInit() done.");
 
     if(window) {
         this->window           = window;
@@ -226,7 +226,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
     
         if(vodesc.winsurface->getDFBSurface()->SetBlittingFlags(vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
-            logger.writeLog("set blitting failed");
+            DEBUGMSG("MMSMedia", "set blitting failed");
 
         /* fill the visual structure for the video output driver */
         this->visual.destination  = vodesc.winsurface->getDFBSurface();
@@ -237,27 +237,27 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         this->visual.frame_cdata  = (void*) &(this->vodesc);
         //this->visual.destination->SetField( this->visual.destination, 0 );
 
-        logger.writeLog("opening video driver...");
+        DEBUGMSG("MMSMedia", "opening video driver...");
 
         /* open the video output driver */
         if (!(this->vo = xine_open_video_driver(this->xine, "DFB",
                             XINE_VISUAL_TYPE_DFB, (void*) &this->visual)))
             throw new MMSAVError(0, "Cannot open the DFB video driver");
 
-        logger.writeLog("opening video driver done.");
+        DEBUGMSG("MMSMedia", "opening video driver done.");
     }
     
     /* open the audio output driver */
     const char* const *ao_list;
     int i = 0;
     if(!(ao_list = xine_list_audio_output_plugins(this->xine))) {
-        this->logger.writeLog("No audio output plugins found");
+        DEBUGMSG("MMSMedia", "No audio output plugins found");
         xine_engine_set_param(this->xine, XINE_PARAM_IGNORE_AUDIO, 1);
         this->ao=NULL;
         return;
     }
     do {
-        logger.writeLog(std::string("checking audio output '") + ao_list[i] + "'...");
+        DEBUGMSG("MMSMedia", "checking audio output '%s'...", ao_list[i]);
 
     	/* ignore file output */
         if(strcmp(ao_list[i], "file") == 0) {
@@ -268,15 +268,15 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         {
             /* disable audio */
             xine_engine_set_param(this->xine, XINE_PARAM_IGNORE_AUDIO, 1);
-            this->logger.writeLog("Could not open audio driver, sound disabled!");
+            DEBUGMSG("MMSMedia", "Could not open audio driver, sound disabled!");
             break;
         }
 
-        logger.writeLog(std::string("opening audio output '") + ao_list[i] + "'...");
+        DEBUGMSG("MMSMedia", "opening audio output '%s'", ao_list[i]);
     }
     while(!(this->ao = xine_open_audio_driver(this->xine, ao_list[i++], NULL)));
     
-    logger.writeLog("Using audio driver " + string(ao_list[i-1]));
+    DEBUGMSG("MMSMedia", "Using audio driver '%s'", ao_list[i-1]);
 }
 
 /**
@@ -400,7 +400,7 @@ bool MMSAV::registerAudioPostPlugin(string name) {
     xine_post_t *p;
 
     if(!(p = xine_post_init(this->xine, name.c_str(), 1, &this->ao, NULL)))
-        logger.writeLog("Could not initialize audio post plugin " + name);
+        DEBUGMSG("MMSMedia", "Could not initialize audio post plugin %s", name.c_str());
     else {
         audioPostPlugins[name] = p;
         return true;
@@ -422,7 +422,7 @@ bool MMSAV::registerVideoPostPlugin(string name) {
     xine_post_t *p;
 
     if(!(p = xine_post_init(this->xine, name.c_str(), 1, NULL, &this->vo)))
-        logger.writeLog("Could not initialize video post plugin " + name);
+        DEBUGMSG("MMSMedia", "Could not initialize video post plugin %s", name.c_str());
     else {
         videoPostPlugins[name] = p;
         return true;
@@ -450,7 +450,7 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
  
     // search for plugin
     if(!(postIn = (xine_post_in_t *)xine_post_input(plugins[name], "parameters"))) {
-        logger.writeLog("Could not set parameter for post plugin " + name + ": Plugin not registered");
+        DEBUGMSG("MMSMedia", "Could not set parameter for post plugin %s: Plugin not registered", name.c_str());
         return false;
     }
  
@@ -477,44 +477,44 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
                 } else {
                     // check if value is out of range
                     if(iValue < postApiParam->range_min || iValue > postApiParam->range_max) {
-                        logger.writeLog("Could not set " + name + "'s " + parameter + " to " + value + ": Out of range");
+                        DEBUGMSG("MMSMedia", "Could not set %s's %s to %s: Out of range", name.c_str(), parameter.c_str(), value.c_str());
                         return false;
                     }
                 }
                 
                 // set value
                 *(int *)(data + postApiParam->offset) = iValue;
-                logger.writeLog(name + ": " + parameter + " = " + postApiParam->enum_values[*(int *)(data + postApiParam->offset)]);
+                DEBUGMSG("MMSMedia", "%s: %s = %s"name.c_str(), parameter.c_str(), postApiParam->enum_values[*(int *)(data + postApiParam->offset)]);
             }
             else if(postApiParam->type == POST_PARAM_TYPE_DOUBLE) {
                 double dValue = atof(value.c_str()); 
 
                 // check if value is out of range
                 if(dValue < postApiParam->range_min || dValue > postApiParam->range_max) {
-                    logger.writeLog("Could not set " + name + "'s " + parameter + " to " + value + ": Out of range");
+                    DEBUGMSG("MMSMedia", "Could not set %s's %s to %s: Out of range", name.c_str(), parameter.c_str(), value.c_str());
                     return false;
                 }
                 
                 // set value
                *(double *)(data + postApiParam->offset) = dValue;
-               logger.writeLog(name + ": " + parameter + " = " + value.c_str());
+               DEBUGMSG("MMSMedia", "%s: %s = %s", name.c_str(), parameter.c_str(), value.c_str());
             }
             else if(postApiParam->type == POST_PARAM_TYPE_BOOL) {
                 bool bValue = false;
                 if(value == "1" || strToUpr(value) == "TRUE")
                     bValue = true; 
                *(bool *)(data + postApiParam->offset) = bValue;
-               logger.writeLog(name + ": " + parameter + " = " + (bValue ? "true" : "false"));
+               DEBUGMSG("MMSMedia", "%s: = %s", name.c_str(), parameter.c_str(), (bValue ? "true" : "false"));
             }
             else if(postApiParam->type == POST_PARAM_TYPE_CHAR) {
                 char cValue = value.at(0);                
                *(char *)(data + postApiParam->offset) = cValue;
-               logger.writeLog(name + ": " + parameter + " = " + cValue);
+               DEBUGMSG("MMSMedia", "%s: %s = %c", name.c_str(), parameter.c_str(), cValue);
             }
             else if(postApiParam->type == POST_PARAM_TYPE_STRING) {
                 char *sValue = (char*)value.c_str();                
                *(char **)(data + postApiParam->offset) = sValue;
-               logger.writeLog(name + ": " + parameter + " = " + sValue);
+               DEBUGMSG("MMSMedia", "%s: %s = %s", name.c_str(), parameter.c_str(), sValue);
             }
             break;
         }
@@ -522,7 +522,7 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
     }
     
     if(!postApi->set_parameters(plugins[name], (void *)data))
-        logger.writeLog("Error setting post plugin parameter");
+        DEBUGMSG("MMSMedia", "Error setting post plugin parameter");
          
     delete[] data;
    

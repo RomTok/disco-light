@@ -86,7 +86,7 @@ void MMSDVD::checkDevice(const string device) {
     }
 
     this->device = d;
-    logger.writeLog("Using " + this->device + " as DVD device");
+    DEBUGMSG("MMSMedia", "Using " + this->device + " as DVD device");
 }
 
 /**
@@ -105,7 +105,6 @@ MMSDVD::MMSDVD(MMSWindow *window, const string device, const bool verbose) :
             spuChannel(0),
             maxAudioChannels(0),
             maxSpuChannels(0) {
-    logger.setIdentity("MMSDVD");
     MMSAV::initialize(verbose, window);
 
     /* at first check for DVD device */
@@ -156,7 +155,7 @@ void MMSDVD::pause() {
  * @see MMSDVD::ffwd()
  */
 void MMSDVD::rewind() {
-    this->logger.writeLog("MMSDVD::rewind() not yet implemented");
+    DEBUGMSG("MMSMedia", "MMSDVD::rewind() not yet implemented");
 #if 0
     if(this->status != this->STATUS_NONE) {
         this->setStatus(this->STATUS_REWIND);

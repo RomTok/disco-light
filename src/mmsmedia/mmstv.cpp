@@ -76,7 +76,6 @@ MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose) :
 #else
             usingInputDVBMorphine(false) {
 #endif
-    logger.setIdentity("MMSTV");
     MMSAV::initialize(verbose, window);
 }
 
@@ -112,8 +111,8 @@ void MMSTV::play(const string channel) {
         catch(MMSError *e) {
             /* now use the xine input plugin */
             this->usingInputDVBMorphine = false;
-            logger.writeLog("Error while using Morphine's DVB input plugin [" + e->getMessage() + "]");
-            logger.writeLog("Using xine's plugin. Not all features will be available.");
+            DEBUGMSG("MMSMedia", "Error while using Morphine's DVB input plugin [" + e->getMessage() + "]");
+            DEBUGMSG("MMSMedia", "Using xine's plugin. Not all features will be available.");
             delete e;
             MMSAV::play("dvb://" + channel, false);
         }

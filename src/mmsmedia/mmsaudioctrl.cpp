@@ -44,8 +44,7 @@ snd_mixer_elem_t    *MMSAudioCtrl::elem = NULL;
  */
 MMSAudioCtrl::MMSAudioCtrl(string channel) {
     int     err;
-    logger.setIdentity("MMSAudioCtrl");
-    
+
     if(this->channel=="") {
         this->channel=channel;
     }
@@ -84,7 +83,7 @@ MMSAudioCtrl::MMSAudioCtrl(string channel) {
              this->elem = snd_mixer_elem_next(this->elem)) {
     
             string mix = snd_mixer_selem_get_name(this->elem);
-            logger.writeLog("got mixer channel: " + mix);
+            DEBUGMSG("MMSMedia", "got mixer channel: %s" + mix.c_str());
             /* is active? */
             if (!snd_mixer_selem_is_active(this->elem))
                 continue;

@@ -35,7 +35,6 @@ MMS_CREATEERROR(MMSVideoError);
  * @see MMSAV::initialize()
  */
 MMSVideo::MMSVideo(MMSWindow *window, const bool verbose) {
-    logger.setIdentity("MMSVideo");
     MMSAV::initialize(verbose, window);
 }
 
