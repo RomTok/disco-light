@@ -31,6 +31,8 @@ static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;
 /* contains the key to the thread specific memory */
 static pthread_key_t  key_iam;
 static pthread_key_t  key_logfile;
+static MMSLogBackend  backend;
+static FILE			  *fp=NULL;
 
 string substituteEnvVars(string input) {
     wordexp_t p;
@@ -559,4 +561,38 @@ bool file_exist( string filename ) {
 		return true;
 
 	return false;
+}
+
+void writeDebugMessage(string identity, const char *filename, const int lineno, const char *msg, ...) {
+	va_list arglist;
+	struct  timeval tv;
+	char    timebuf[12];
+	char 	buffer[1024]={0};
+	char 	buffer2[1024]={0};
+	int		num;
+	
+	
+	memset(buffer, 0, 1024);
+	memset(buffer2, 0, 1024);
+	
+	if((fp=fopen(backend.getLogFile().c_str(), "a+"))==NULL)
+		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
+		
+	va_start(arglist, (char *)msg);
+	vsprintf (buffer, msg, arglist);
+    
+	gettimeofday(&tv, NULL);
+    
+    getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
+    
+	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %s: %s [%s:%d]\n", timebuf,
+	                    tv.tv_usec/10000, identity.c_str(), buffer, filename, lineno);
+	
+	fwrite(buffer2, 1, num, fp);
+	
+	va_end(arglist);
+	
+	fclose(fp);
+	
+	return;
 }

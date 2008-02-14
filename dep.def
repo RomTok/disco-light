@@ -192,7 +192,7 @@ endif
 ifndef DEBUG_FLAG_SET
     export DEBUG_FLAG_SET=1
     ifneq ($(debug),)
-	    export CFLAGS+=-O0 -g -Wall
+	    export CFLAGS+=-O0 -g -Wall -D__ENABLE_DEBUG__
     else
         export CFLAGS+=-O3
     endif
