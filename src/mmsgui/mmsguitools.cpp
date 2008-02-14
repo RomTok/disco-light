@@ -21,8 +21,6 @@
  ***************************************************************************/
 
 #include "mmsgui/mmsguitools.h"
-#include "mmsgui/mmsguilogger.h"
-
 
 bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis) {
     std::string::size_type pos;
@@ -122,7 +120,6 @@ bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer, IDirectFB *dfb
 	IDirectFB 				*mydfb = NULL;
 	IDirectFBDisplayLayer 	*mylayer;
     DFBDisplayLayerConfig 	cfg;
-    MMSGuiLogger logger;
 
 	if (!dfb) {
 		if(DirectFBCreate(&mydfb)!= DFB_OK)
@@ -149,7 +146,6 @@ bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer, IDirectFB *dfb
 }
 
 bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
-    MMSGuiLogger           logger;
 //    IDirectFB              *mydfb = NULL;
     IDirectFBImageProvider *myimage = NULL;
     string                 imagefile;
@@ -201,7 +197,6 @@ bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
 
 
 bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int size) {
-    MMSGuiLogger    logger;
 //    IDirectFB       *mydfb = NULL;
     IDirectFBFont   *myfont = NULL;
     string          fontfile;

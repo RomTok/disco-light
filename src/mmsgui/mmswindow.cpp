@@ -31,7 +31,6 @@ D_DEBUG_DOMAIN( MMS_Window, "MMS/Window", "MMS Window" );
 
 
 /* static variables */
-MMSGuiLogger		MMSWindow::logger;
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
 
