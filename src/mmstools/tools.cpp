@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmstools/tools.h"
+#include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsconfigdata.h"
 #include <wordexp.h>
 #include <strings.h>
@@ -34,6 +35,7 @@ static pthread_key_t  key_iam;
 static pthread_key_t  key_logfile;
 static MMSConfigData  config;
 static FILE			  *fp=NULL;
+static MMSMutex       debugMsgMutex;
 
 string substituteEnvVars(string input) {
     wordexp_t p;
@@ -572,6 +574,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	char 	buffer2[1024]={0};
 	int		num;
 	
+    debugMsgMutex.lock();
 	if((fp=fopen(config.getLogfile().c_str(), "a+"))==NULL)
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
@@ -590,6 +593,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	va_end(arglist);
 	
 	fclose(fp);
+    debugMsgMutex.unlock();
 	
 	return;
 }
@@ -600,6 +604,7 @@ void writeDebugMessage(const string &identity, const char *filename, const int l
 	char 	buffer[1024]={0};
 	int		num;
 	
+    debugMsgMutex.lock();
 	if((fp=fopen(config.getLogfile().c_str(), "a+"))==NULL)
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 		
@@ -611,6 +616,7 @@ void writeDebugMessage(const string &identity, const char *filename, const int l
 	
 	fwrite(buffer, 1, num, fp);
 	fclose(fp);
+    debugMsgMutex.unlock();
 	
 	return;
 }
