@@ -23,7 +23,6 @@
 #include "mmstools/mmsserverinterface.h"
 
 MMSServerInterface::MMSServerInterface(string identity) {
-    logger.setIdentity(identity);
 }
 
 MMSServerInterface::~MMSServerInterface() {

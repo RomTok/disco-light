@@ -45,7 +45,6 @@ MMSThread::MMSThread(string identity) {
 
     this->identity = identity;
 
-    logger.setIdentity(identity);
     this->isrunning=false;
 }
 
@@ -59,7 +58,7 @@ void MMSThread::run() {
 
 	} catch(MMSError *error) {
         this->isrunning = false;
-	    logger.writeLog("Abort due to: " + error->getMessage());
+	    DEBUGMSG(this->identity.c_str(), "Abort due to: %s", error->getMessage().c_str());
 	}
 }
 
