@@ -23,10 +23,6 @@
 #ifndef MMSFBBASE_H_
 #define MMSFBBASE_H_
 
-//#define MMSGUI_STDOUT_TRACE
-
-#include "mmsgui/mmsguilogger.h"
-
 extern "C" {
 #include <direct/debug.h>
 #include <direct/trace.h>

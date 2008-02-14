@@ -25,7 +25,6 @@
 
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
-#include "mmsgui/mmsguilogger.h"
 #include "mmstools/mmstools.h"
 
 /* string constants for xml identifiers */
@@ -35,8 +34,6 @@
 
 class MMSDialogManager {
 	private:
-        MMSGuiLogger logger;
-
         MMSWindow               *rootWindow;
 
         vector<MMSChildWindow*> childWins;

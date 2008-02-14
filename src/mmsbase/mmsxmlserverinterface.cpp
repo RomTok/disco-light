@@ -46,7 +46,7 @@ bool MMSXMLServerInterface::processRequest(string *request, string *answer) {
                           XML_PARSE_NOBLANKS)  /* remove blank nodes */
      == -1) {
         *answer = "<ret error=\"Problems with xml request.\"/>";
-        logger.writeLog("Error initializing xmlReader()");
+        DEBUGMSG("MMSXMLServerInterface", "Error initializing xmlReader()");
         return false;
     }
     
@@ -68,7 +68,7 @@ bool MMSXMLServerInterface::throughDoc(xmlTextReaderPtr reader, string *answer) 
     /* check root element */
     name = (xmlChar*)xmlTextReaderConstName(reader);
     if(!name || !xmlStrEqual(name, (const xmlChar*)"func")) {
-        logger.writeLog("The root element must be <func> and not <" + string((const char*)name) + ">.");
+        DEBUGMSG("MMSXMLServerInterface", "The root element must be <func> and not <%s>.", name);
         return false;
     }
 
@@ -85,7 +85,7 @@ bool MMSXMLServerInterface::throughFunc(xmlTextReaderPtr reader, string *answer)
     if(!name) {
 		/* function not specified */
         *answer = "<ret error=\"Function not specified.\"/>";
-        logger.writeLog("Function not specified.");
+        DEBUGMSG("MMSXMLServerInterface", "Function not specified.");
 		return false;
 	}
     
@@ -93,7 +93,7 @@ bool MMSXMLServerInterface::throughFunc(xmlTextReaderPtr reader, string *answer)
     if(!xmlStrEqual(name, (const xmlChar*)"SendEvent")) {
 		/* unknown function */
         *answer = "<ret error=\"Unknown function '" + string((const char*)name) + "'.\"/>";
-        logger.writeLog("Unknown function '" + string((const char*)name) + "'.");
+        DEBUGMSG("MMSXMLServerInterface", "Unknown function '%s'.", name);
 		return false;
 	}
 

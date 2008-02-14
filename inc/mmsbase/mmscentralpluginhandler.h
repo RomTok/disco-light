@@ -33,12 +33,12 @@ MMS_CREATEERROR(MMSCentralPluginError);
 
 class MMSCentralPluginHandler {
     private:
-        bool loaded;
-        MMSPluginData plugindata;
-        IMMSCentralPlugin *plugin;
-        MMSShlHandler *handler;
-        MMSMutex calllock;
-        IMMSSwitcher *switcher;
+        bool 				loaded;
+        MMSPluginData 		plugindata;
+        IMMSCentralPlugin 	*plugin;
+        MMSShlHandler 		*handler;
+        MMSMutex 			calllock;
+        IMMSSwitcher 		*switcher;
        
     public:
         MMSCentralPluginHandler(MMSPluginData plugindata, bool autoload = false);

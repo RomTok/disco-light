@@ -32,10 +32,10 @@ MMS_CREATEERROR(MMSEventSignupError);
 
 class MMSEventSignup : public IMMSEventSignup  {
     private:
-        static IMMSEventSignupManager *manager;
-        IMMSEventSignupManager *getManager();
-        MMSPluginData          data;
-        vector<string *>       subscriptions;     
+        static IMMSEventSignupManager 	*manager;
+        IMMSEventSignupManager 			*getManager();
+        MMSPluginData          			data;
+        vector<string *>       			subscriptions;     
     public: 
         MMSEventSignup(MMSPluginData data);
         virtual ~MMSEventSignup();

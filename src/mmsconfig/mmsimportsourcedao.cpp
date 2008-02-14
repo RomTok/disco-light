@@ -120,7 +120,6 @@ vector<MMSImportSourceData *> MMSImportSourceDAO::findImportSourcesByPlugin(MMSP
 }
 MMSImportSourceData *   MMSImportSourceDAO::findImportSourcesByID(int id) {
     MMSRecordSet                    rs;
-    MMSLogger logger;
     
     /* do query */
     this->getMMSDBConnection()->query(

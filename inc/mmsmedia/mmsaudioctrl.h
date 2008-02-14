@@ -48,7 +48,6 @@ class MMSAudioCtrl {
         static bool             muteFlag;   /**< if true sound is muted         */
         static long             pmin, pmax; /**< range (not in percent)         */
         static string           channel;    /**< current audio channel          */
-        MMSLogger               logger;     /**< logging facility               */
 
     public:
         /* constructor */

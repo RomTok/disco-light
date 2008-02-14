@@ -57,7 +57,7 @@ void MMSWindowAction::threadMain() {
     	this->stopaction = false;
 
     } catch(MMSError *error) {
-        logger.writeLog("Abort due to: " + error->getMessage());
+    	DEBUGMSG("MMSGUI", "Error: %s", error->getMessage().c_str());
     }
 }
 

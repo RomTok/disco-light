@@ -46,8 +46,6 @@ typedef struct {
 
 class MMSImageManager {
     private:
-        MMSGuiLogger        logger;
-
         MMSFBLayer          *layer;     // this is the default graphics layer
 
         vector<MMSIM_DESC*> images;

@@ -28,16 +28,15 @@
 
 class MMSMusicManager : public IMMSMusicManager {
 	private: 
-		MMSMusicInterface interface;
-		MMSMutex mutex;
+		MMSMusicInterface 		interface;
+		MMSMutex 				mutex;
 		sigc::signal<void, int> *onNextSong;
 		sigc::signal<void, int> *onPrevSong;
-		PLAYLIST playlist;
-		MMSSound player;		
-		int      offset;
-		MMSLogger logger;
-		bool cont, repeat, shuffle;
-        vector<bool> alreadyPlayed;
+		PLAYLIST 				playlist;
+		MMSSound 				player;		
+		int      				offset;
+		bool 					cont, repeat, shuffle;
+        vector<bool> 			alreadyPlayed;
 	public:
 		MMSMusicManager();
 		virtual ~MMSMusicManager();

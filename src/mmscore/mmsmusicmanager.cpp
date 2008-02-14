@@ -29,8 +29,6 @@ MMSMusicManager::MMSMusicManager() :
     shuffle(false) {
 	/* register myself to the music interface */
 	this->interface.setManager(this);
-	logger.setIdentity("MMSMusicManager");
-	//logger.setStdout(true);
     this->player.onPlaybackFinished->connect(sigc::mem_fun(this, &MMSMusicManager::next));
 }
 
@@ -47,7 +45,7 @@ void MMSMusicManager::setPlayList(PLAYLIST list,int offset) {
     for(unsigned int i = 0; i < playlist.size(); i++)
         this->alreadyPlayed.push_back(false);
     
-	logger.writeLog("got playlist size: " + iToStr(list.size()) + " offset: " + iToStr(offset));
+	DEBUGMSG("MMSMusicManager", "got playlist size: %d offset: %d", list.size(), offset);
 	string file = this->playlist.at(this->offset);
 	if(player.isPlaying())
 		player.stop();

@@ -36,7 +36,6 @@ class MMSEventDispatcher : public IMMSEventDispatcher {
         MMSPluginManager *getManager();
         MMSEventSignupManager *signupmanager;
         MMSEventSignupManager *getSignupManager();
-        MMSLogger logger;
 
     public:
         MMSEventDispatcher(MMSPluginManager *manager,MMSEventSignupManager *signupmanager);

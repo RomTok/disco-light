@@ -37,7 +37,6 @@ typedef struct {
 
 class MMSImportScheduler : public MMSThread {
     private:
-        MMSLogger                   logger;
         MMSPluginManager            *pluginManager;
         MMSPluginService            *pluginService;
         MMSImportPropertyService    *importPropertyService;

@@ -27,8 +27,6 @@
 MMSXMLClientInterface::MMSXMLClientInterface(string host, unsigned int port) {
     LIBXML_TEST_VERSION;
 
-	logger.setIdentity("MMSXMLClientInterface");
-
 	this->tcl = new MMSTCPClient(host, port);
 }
 
@@ -43,7 +41,7 @@ bool MMSXMLClientInterface::parseAnswer(string *answer, int *rc, string *error) 
                           NULL,                /* encoding           */
                           XML_PARSE_NOBLANKS)  /* remove blank nodes */
      == -1) {
-        logger.writeLog("Error initializing xmlReader()");
+        DEBUGMSG("MMSXMLClientInterface", "Error initializing xmlReader()");
         return false;
     }
     
@@ -65,7 +63,7 @@ bool MMSXMLClientInterface::checkRoot(xmlTextReaderPtr reader, int *rc, string *
     /* check root element */
     name = (xmlChar*)xmlTextReaderConstName(reader);
     if(!name || !xmlStrEqual(name, (const xmlChar*)"ret")) {
-        logger.writeLog("The root element must be <ret> and not <" + string((const char*)name) + ">.");
+        DEBUGMSG("MMSXMLClientInterface", "The root element must be <ret> and not <%s>.", name);
         return false;
     }
 

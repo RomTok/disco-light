@@ -43,7 +43,6 @@ class MMSDBAccess {
         bool   previusDB();
         bool   createDB(string dbname);
         bool   removeDB(string dbname);
-        //MMSDBConnMgr  *connectDB(string dbname);
 };
 
 #endif /* MMSDBACCESS_H */

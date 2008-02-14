@@ -32,7 +32,6 @@
 
 class MMSPluginService {
     private:
-    	MMSLogger   *logger;
         IMMSDB 		*dbconn;
     
     public:

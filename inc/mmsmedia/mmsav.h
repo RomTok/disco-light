@@ -89,7 +89,6 @@ class MMSAV
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
     
     protected:
-        MMSLogger                       logger;                                 /**< logging object                     */
         bool                            verbose;                                /**< should logging be verbose?         */
         short                           status;                                 /**< current playback status            */
         int                             pos;                                    /**< remember position where the stream stopped last time */

@@ -37,8 +37,6 @@ typedef struct {
 
 class MMSFBLayer {
     private:
-        MMSGuiLogger    logger;
-
         IDirectFB               *dfb;       /* interface to dfb */
         IDirectFBDisplayLayer   *dfblayer;  /* interface to the layer */
 

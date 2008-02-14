@@ -27,13 +27,10 @@
 #include "mmsconfig/mmsimportpropertydao.h"
 
 MMSPluginService::MMSPluginService(DataSource *datasource) :
-    logger(NULL),
     dbconn(NULL) {
     MMSDBConnMgr connMgr(datasource);
     if((this->dbconn = connMgr.getConnection()))
         this->dbconn->connect();
-    
-    this->logger = new MMSLogger("MMSCONFIG");
 }
 
 MMSPluginService::~MMSPluginService() {
@@ -41,8 +38,6 @@ MMSPluginService::~MMSPluginService() {
 	    this->dbconn->disconnect();
 	    delete this->dbconn;
 	}
-	if(this->logger)
-	    delete this->logger;
 }
 
 void MMSPluginService::setPlugin(MMSPluginData *data) {
@@ -91,13 +86,13 @@ MMSPluginData *MMSPluginService::getPluginByID(int id) {
 
 vector<MMSPluginData*> MMSPluginService::getAllPlugins(const bool inactiveToo) {
     MMSPluginDAO myPluginDAO(this->dbconn);
-	logger->writeLog("create property dao");
+	DEBUGMSG("PLUGINSERVICE", "create property dao");
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
 
-	logger->writeLog("get all plugins");
+    DEBUGMSG("PLUGINSERVICE", "get all plugins");
     vector <MMSPluginData *> pluginList = myPluginDAO.findAllPlugins(inactiveToo);
 
-	logger->writeLog("go through");
+    DEBUGMSG("PLUGINSERVICE", "go through");
     for(unsigned i=0; i<pluginList.size(); i++) {
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
@@ -108,22 +103,24 @@ vector<MMSPluginData*> MMSPluginService::getAllPlugins(const bool inactiveToo) {
 }
 
 vector<MMSPluginData *> MMSPluginService::getOSDPlugins(const bool inactiveToo) {
-	logger->writeLog("create dao");
+	
+	DEBUGMSG("PLUGINSERVICE", "create dao");
     MMSPluginDAO myPluginDAO(this->dbconn);
-	logger->writeLog("create property dao");
+    
+    DEBUGMSG("PLUGINSERVICE", "create property dao");
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
 
-	logger->writeLog("get all OSD plugins");
+    DEBUGMSG("PLUGINSERVICE", "get all OSD plugins");
     vector <MMSPluginData *> pluginList = myPluginDAO.findAllPluginsByType(PT_OSD_PLUGIN, inactiveToo);
 
     for(unsigned i=0; i<pluginList.size(); i++) {
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
-    	logger->writeLog("get the properties of: " + pluginList.at(i)->getName() + iToStr(pluginList.at(i)->getId()));
+        DEBUGMSG("PLUGINSERVICE", "get the properties of: %s (%d)", pluginList.at(i)->getName().c_str(), pluginList.at(i)->getId());
         pluginList.at(i)->setProperties(properties);
     }    
     
-    logger->writeLog("Working with " + iToStr(pluginList.size()) + " OSD plugins");
+    DEBUGMSG("PLUGINSERVICE", "Working with %d OSD plugins", pluginList.size());
     
     return pluginList;    
 }
@@ -134,7 +131,7 @@ vector<MMSPluginData *> MMSPluginService::getCentralPlugins(const bool inactiveT
 
     vector <MMSPluginData *> pluginList = myPluginDAO.findAllPluginsByType(PT_CENTRAL_PLUGIN, inactiveToo);
 
-	logger->writeLog("get the properties of the central plugins.");
+    DEBUGMSG("PLUGINSERVICE", "get the properties of the central plugins.");
     for(unsigned i=0; i<pluginList.size(); i++) {
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
@@ -150,7 +147,7 @@ vector<MMSPluginData *> MMSPluginService::getImportPlugins(const bool inactiveTo
 
     vector <MMSPluginData *> pluginList = myPluginDAO.findAllPluginsByType(PT_IMPORT_PLUGIN, inactiveToo);
 
-	logger->writeLog("get the properties of the import plugins.");
+    DEBUGMSG("PLUGINSERVICE", "get the properties of the import plugins.");
     for(unsigned i=0; i<pluginList.size(); i++) {
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));

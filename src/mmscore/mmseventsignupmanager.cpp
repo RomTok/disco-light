@@ -24,7 +24,6 @@
 #include "mmstools/tools.h"
 
 MMSEventSignupManager::MMSEventSignupManager() {
-	logger.setIdentity("MMSEventSignupManager");
 }
 
 void MMSEventSignupManager::signup(IMMSEventSignup *signup) {
@@ -40,7 +39,7 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
 
     for(unsigned int i=0;i<this->signups.size();i++) {
         for(unsigned int y=0;y<this->signups.at(i)->getSubScriptions().size();y++) {
-      		 logger.writeLog("compare " +  *(this->signups.at(i)->getSubScriptions().at(y)) + " to " + event->getHeading() + " - size: " + iToStr(this->signups.at(i)->getSubScriptions().at(y)->size())); 
+      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: ", *(this->signups.at(i)->getSubScriptions().at(y)), event->getHeading().c_str(), this->signups.at(i)->getSubScriptions().at(y)->size()); 
             /*compare heading of event with subsciptions */
             if(strncmp(this->signups.at(i)->getSubScriptions().at(y)->c_str(),
                        event->getHeading().c_str(),

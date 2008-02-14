@@ -28,8 +28,6 @@
 
 class MMSFB {
     private:
-        MMSGuiLogger    logger;
-
         int             argc;       /* commandline arguments */
         char            **argv;
 

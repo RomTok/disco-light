@@ -25,7 +25,6 @@
 #define SCHEDULER_SLEEP_TIME 10 /* sleep time in seconds */
 
 MMSImportScheduler::MMSImportScheduler(MMSPluginManager *pluginManager) {
-    logger.setIdentity("IMPORTSCHEDULER");
 
     MMSConfigData *config = new MMSConfigData();
     DataSource    *source = new DataSource(config->getConfigDBDBMS(), 
@@ -61,7 +60,7 @@ MMSImportScheduler::~MMSImportScheduler() {
 void MMSImportScheduler::getImportPlugins() {
     vector<MMSPluginData *> pluginList;
 
-    logger.writeLog("getImportPlugins()");
+    DEBUGMSG("IMPORTSCHEDULER", "getImportPlugins()");
     /* get all import plugins */
     pluginList = this->pluginService->getImportPlugins();
 
@@ -72,7 +71,8 @@ void MMSImportScheduler::getImportPlugins() {
         /* check if entry is in pluginList */
         bool found=false;
         unsigned j=0;
-        logger.writeLog("work with " + importPlugins.at(i)->plugin->getName());
+
+        DEBUGMSG("IMPORTSCHEDULER", "Work with %s", importPlugins.at(i)->plugin->getName().c_str());
         while(j<pluginList.size()) {
             if (importPlugins.at(i)->plugin->getId() == pluginList.at(j)->getId()) {
                 found=true;
@@ -82,16 +82,11 @@ void MMSImportScheduler::getImportPlugins() {
         }
 
         if (!found) {
-            /* delete old entry from importPlugins */
-            logger.writeLog("delete " + importPlugins.at(i)->plugin->getName());
+
+        	/* delete old entry from importPlugins */
+        	DEBUGMSG("IMPORTSCHEDULER", "delete %s", importPlugins.at(i)->plugin->getName().c_str());
             importPlugins.erase(importPlugins.begin()+i);
         }
-        if (!importPlugins.at(i)->plugin->getActive()) {
-            /* delete incactive plugin */
-            logger.writeLog("delete inactive" + importPlugins.at(i)->plugin->getName());
-            importPlugins.erase(importPlugins.begin()+i);
-        }
-        
     }
 
     /* go through the new plugin list -> get import properties for each import plugin */
@@ -180,7 +175,7 @@ void MMSImportScheduler::threadMain() {
                     try {
     	                importPlugins.at(i)->pluginHandler->invokeExecute(NULL);
                     } catch(MMSError *error) { 
-                         logger.writeLog("Abort import due to: " + error->getMessage());
+                    	DEBUGMSG("IMPORTSCHEDULER", "Abort import due to: %s", error->getMessage().c_str());
                     }
                     
     	        }
@@ -188,7 +183,7 @@ void MMSImportScheduler::threadMain() {
     	        sleep(SCHEDULER_SLEEP_TIME);
 	    }
     } catch(MMSError *error) {
-        logger.writeLog("Abort due to: " + error->getMessage());
+    	DEBUGMSG("IMPORTSCHEDULER", "Abort import due to: %s", error->getMessage().c_str());
         delete error;
     }
 

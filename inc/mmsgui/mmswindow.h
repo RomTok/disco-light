@@ -65,8 +65,6 @@ class MMSWindow {
             unsigned int    focusedWidget;  /* save the last focused widget here */
         } CHILDWINS;
 
-        static MMSGuiLogger   	logger;
-
         MMSTheme                *theme;             /* access to the theme which is used */
         MMSWindowClass          *baseWindowClass;
         MMSWindowClass          *windowClass;

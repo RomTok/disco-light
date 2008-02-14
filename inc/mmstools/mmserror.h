@@ -27,8 +27,8 @@
 
 class MMSError {
     private:
-        string message;
-        int code;
+        string 	message;
+        int 	code;
     
     public:
         MMSError(int code, string message);

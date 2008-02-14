@@ -21,7 +21,6 @@
  ***************************************************************************/
 
 #include "mmsbase/mmsevent.h"
-#include "mmstools/mmslogger.h"
 
 MMSEvent::MMSEvent(string heading) {
     this->heading = heading;

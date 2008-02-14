@@ -24,7 +24,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/mmsguilogger.h"
 #include "mmsgui/mmsgifloader.h"
 
 MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
@@ -123,7 +122,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             }
 
             if (im_desc->sufcount > 0) {
-                logger.writeLog("ImageManager has loaded: '" + imagefile + "'");
+            	DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
         
                 /* add to images list and return the surface */
                 im_desc->usecount = 1;
@@ -134,7 +133,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             }
             else {
                 /* failed to load */
-                logger.writeLog("cannot load image file '" + imagefile + "'");
+            	DEBUGMSG("MMSGUI", "cannot load image file '%s'",imagefile.c_str());
                 delete im_desc;
                 return NULL;
             }
@@ -153,7 +152,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     else {
         /* failed, try it with DFB providers */
         if (!loadImage(&imageprovider, "", imagefile)) {
-            logger.writeLog("cannot load image file '" + imagefile + "'");
+        	DEBUGMSG("MMSGUI", "cannot load image file '%s'", imagefile.c_str());
             if (reload_image < 0) {
                 delete im_desc;
                 return NULL;
@@ -181,7 +180,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
         if (imageprovider->GetSurfaceDescription(imageprovider, &surface_desc)!=DFB_OK) {
             /* release imageprovider */
             imageprovider->Release(imageprovider);
-            logger.writeLog("cannot read surface desciption from image file '" + imagefile + "'");
+            DEBUGMSG("MMSGUI", "cannot read surface desciption from image file '%s'", imagefile.c_str());
             if (reload_image < 0) {
                 delete im_desc;
                 return NULL;
@@ -200,7 +199,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             if (!this->layer->createSurface(&(im_desc->suf[0].surface), surface_desc.width, surface_desc.height)) { 
                 /* release imageprovider */
                 imageprovider->Release(imageprovider);
-                logger.writeLog("cannot create surface for image file '" + imagefile + "'");
+                DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
                 delete im_desc;
                 return NULL;
             }
@@ -211,7 +210,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
                 /* release imageprovider */
                 imageprovider->Release(imageprovider);
                 delete im_desc->suf[0].surface;
-                logger.writeLog("cannot render image file '" + imagefile + "'");
+                DEBUGMSG("MMSGUI", "cannot render image file '%s'", imagefile.c_str());
                 delete im_desc;
                 return NULL;
             }
@@ -219,7 +218,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             /* release imageprovider */
             imageprovider->Release(imageprovider);
         
-            logger.writeLog("ImageManager has loaded: '" + imagefile + "'");
+            DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
     
             /* add to images list and return the surface */
             im_desc->usecount = 1;
@@ -242,7 +241,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             if (imageprovider->RenderTo(imageprovider, this->images.at(reload_image)->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
                 /* release imageprovider */
                 imageprovider->Release(imageprovider);
-                logger.writeLog("cannot render image file '" + imagefile + "'");
+                DEBUGMSG("MMSGUI", "cannot render image file '%s'", imagefile.c_str());
                 delete im_desc;
                 if (surfdesc)
                     *surfdesc = this->images.at(reload_image)->suf;
@@ -252,7 +251,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             /* release imageprovider */
             imageprovider->Release(imageprovider);
         
-            logger.writeLog("ImageManager has reloaded: '" + imagefile + "'");
+            DEBUGMSG("MMSGUI", "ImageManager has reloaded: '%s'", imagefile.c_str());
     
             /* return the surface */
             delete im_desc;
@@ -324,7 +323,7 @@ void MMSImageManager::releaseImage(const string &path, const string &filename) {
             this->images.at(i)->usecount--;
             if (this->images.at(i)->usecount <= 0) {
                 /* this surface is not used anymore */
-                logger.writeLog("ImageManager deletes: '" + this->images.at(i)->imagefile + "'");
+            	DEBUGMSG("MMSGUI", "ImageManager deletes: '%s'", this->images.at(i)->imagefile.c_str());
 
                 for (int j = 0; j < this->images.at(i)->sufcount; j++)
                     if (this->images.at(i)->suf[j].surface)
@@ -349,7 +348,7 @@ void MMSImageManager::releaseImage(MMSFBSurface *surface) {
             this->images.at(i)->usecount--;
             if (this->images.at(i)->usecount <= 0) {
                 /* this surface is not used anymore */
-                logger.writeLog("ImageManager deletes: '" + this->images.at(i)->imagefile + "'");
+            	DEBUGMSG("MMSGUI", "ImageManager deletes: '%s'" + this->images.at(i)->imagefile + "'");
 
                 for (int j = 0; j < this->images.at(i)->sufcount; j++)
                     if (this->images.at(i)->suf[j].surface)

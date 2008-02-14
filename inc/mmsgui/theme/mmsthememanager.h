@@ -24,7 +24,6 @@
 #define MMSTHEMEMANAGER_H_
 
 #include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/mmsguilogger.h"
 
 #define DEFAULT_THEME   "default"
 
@@ -35,7 +34,6 @@
 
 class MMSThemeManager {
     private:
-        MMSGuiLogger        logger; 
         string				themepath;
         vector<MMSTheme*>   localThemes;    /* list of themes which are currently loaded (without global theme) */
 

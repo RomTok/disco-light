@@ -28,10 +28,10 @@
 
 class MMSInputThread : public MMSThread {
 	private:
-		MMSInputHandler *handler;
-		class MMSInputManager *manager;
-		DFBInputDeviceID device;
-        int inputinterval;
+		MMSInputHandler 		*handler;
+		class MMSInputManager 	*manager;
+		DFBInputDeviceID 		device;
+        int 					inputinterval;
 	public:
 		MMSInputThread(class MMSInputManager *manager, DFBInputDeviceID device, int inputinterval);
 		~MMSInputThread();

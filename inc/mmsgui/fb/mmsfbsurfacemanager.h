@@ -32,8 +32,6 @@ typedef struct {
 
 class MMSFBSurfaceManager {
     private:
-        MMSGuiLogger            logger;
-
         vector<MMSFBSURMANLIST> used_surfaces;
         vector<MMSFBSURMANLIST> free_surfaces;
 

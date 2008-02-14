@@ -25,7 +25,6 @@
 
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsconfig/mmsconfigdata.h"
-#include "mmsgui/mmsguilogger.h"
 
 #define MMS_OT_VESAFB       "vesafb"
 #define MMS_OT_MATROXFB     "matroxfb"
@@ -36,8 +35,6 @@
 class MMSFBManager {
 
     private:
-        MMSGuiLogger        logger;
-
         MMSFBLayer          *graphicslayer;
         MMSFBLayer          *videolayer;
         int                 videolayerid;

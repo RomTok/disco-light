@@ -45,27 +45,23 @@ MMSPluginManager::~MMSPluginManager() {
 void MMSPluginManager::loadOSDPlugins() {
     vector<MMSPluginData *> data;
 
-    MMSLogger logger("MMSCORE");
-
     if (this->osdPluginHandlers.size() > 0) {
         throw new MMSPluginManagerError(0,"OSD Plugins already loaded");
     }
 
-    logger.writeLog("getOSDPlugins from service");
+    DEBUGMSG("MMSCore", "getOSDPlugins from service");
     data = this->service->getOSDPlugins();
     
     for(unsigned int i=0;i<data.size();i++) {
         MMSOSDPluginHandler *myhandler;
         myhandler = new MMSOSDPluginHandler(*(data.at(i)),true);
         this->osdPluginHandlers.push_back(myhandler);
-        logger.writeLog(" " + data.at(i)->getName());
+        DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
 }
 
 void MMSPluginManager::loadCentralPlugins() {
     vector<MMSPluginData *> data;
-
-    MMSLogger logger("MMSCORE");
 
     if (this->centralPluginHandlers.size() > 0) {
         throw new MMSPluginManagerError(0,"Central Plugins already loaded");
@@ -77,14 +73,12 @@ void MMSPluginManager::loadCentralPlugins() {
         MMSCentralPluginHandler *myhandler;
         myhandler = new MMSCentralPluginHandler(*(data.at(i)),true);
         this->centralPluginHandlers.push_back(myhandler);
-        logger.writeLog(" " + data.at(i)->getName());
+        DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
 }
 
 void MMSPluginManager::loadImportPlugins() {
     vector<MMSPluginData *> data;
-
-    MMSLogger logger("MMSCORE");
 
     if (this->importPluginHandlers.size() > 0) {
         throw new MMSPluginManagerError(0,"Import Plugins already loaded");
@@ -96,14 +90,12 @@ void MMSPluginManager::loadImportPlugins() {
         MMSImportPluginHandler *myhandler;
         myhandler = new MMSImportPluginHandler(*(data.at(i)),true);
         this->importPluginHandlers.push_back(myhandler);
-        logger.writeLog(" " + data.at(i)->getName());
+        DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
 }
 
 void MMSPluginManager::loadBackendPlugins() {
     vector<MMSPluginData *> data;
-
-    MMSLogger logger("MMSCORE");
 
     if (this->backendPluginHandlers.size() > 0) {
         throw new MMSPluginManagerError(0,"Backend Plugins already loaded");
@@ -115,7 +107,7 @@ void MMSPluginManager::loadBackendPlugins() {
         MMSBackendPluginHandler *myhandler;
         myhandler = new MMSBackendPluginHandler(*(data.at(i)),true);
         this->backendPluginHandlers.push_back(myhandler);
-        logger.writeLog(" " + data.at(i)->getName());
+        DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
 }
 

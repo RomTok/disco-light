@@ -34,8 +34,6 @@
 
 class MMSPluginParameterParser {
     private:
-//        xmlpp::DomParser *parser;
-        MMSLogger logger;
 
     public:
         MMSPluginParameterParser();

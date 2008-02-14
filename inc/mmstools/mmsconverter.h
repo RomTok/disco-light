@@ -33,7 +33,6 @@
 class MMSConverter {
 	private:
 		static map<string, iconv_t> trans;
-		MMSLogger logger;
 		static MMSMutex mutex;
 	public:
 		MMSConverter(string codepage);

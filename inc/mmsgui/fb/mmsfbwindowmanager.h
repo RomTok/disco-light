@@ -45,8 +45,6 @@ typedef struct {
 
 class MMSFBWindowManager {
     private:
-        MMSGuiLogger    logger;
-    
         MMSFBLayer      *layer;         /* layer on which the windows will be drawn */
         MMSFBSurface    *layer_surface; /* layer's surface */
 

@@ -180,7 +180,6 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPlugins(const bool inactiveToo){
     string                  query;    
     vector<MMSPluginData *> pluginList;
     MMSRecordSet            rs;
-    MMSLogger logger("MMSPluginDAO");
 
     if(!inactiveToo)
     	query = PLUGINDAO_FIND_ALL_ACTIVE_PLUGINS;
@@ -260,7 +259,6 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, cons
     string                  query;    
     vector<MMSPluginData *> pluginList;
     MMSRecordSet            rs;
-    MMSLogger 				logger("MMSPluginDAO");
     
     // select all plugins
     if(!inactiveToo)
@@ -270,7 +268,7 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, cons
 
     this->getMMSDBConnection()->query(query, &rs);
 
-    logger.writeLog("Found " + iToStr(rs.getCount()) + " records.");
+    DEBUGMSG("MMSPluginDAO", "Found %d records.", rs.getCount());
 
     /* check if result is empty */
     if (rs.getCount()==0) return pluginList;

@@ -35,11 +35,11 @@ MMS_CREATEERROR(MMSImportPluginError);
 
 class MMSImportPluginHandler {
     private:
-        bool loaded;
-        MMSPluginData plugindata;
-        IMMSImportPlugin *plugin;
-        MMSShlHandler *handler;
-        MMSMutex calllock;
+        bool 				loaded;
+        MMSPluginData 		plugindata;
+        IMMSImportPlugin	*plugin;
+        MMSShlHandler 		*handler;
+        MMSMutex 			calllock;
        
     public:
         MMSImportPluginHandler(MMSPluginData plugindata, bool autoload = false);

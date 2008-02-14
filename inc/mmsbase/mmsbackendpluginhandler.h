@@ -33,12 +33,12 @@
 
 class MMSBackendPluginHandler {
     private:
-        bool loaded;
-        MMSPluginData plugindata;
-        IMMSBackendPlugin *plugin;
-        MMSShlHandler *handler;
-        MMSMutex calllock;
-        IMMSSwitcher *switcher;
+        bool 				loaded;
+        MMSPluginData 		plugindata;
+        IMMSBackendPlugin 	*plugin;
+        MMSShlHandler 		*handler;
+        MMSMutex 			calllock;
+        IMMSSwitcher 		*switcher;
        
     public:
         MMSBackendPluginHandler(MMSPluginData plugindata, bool autoload = false);

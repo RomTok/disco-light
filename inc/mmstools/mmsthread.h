@@ -33,7 +33,6 @@ class MMSThread {
 		bool isrunning;
 		
 	public:
-        MMSLogger logger;
         string    identity;
 
 //	protected:

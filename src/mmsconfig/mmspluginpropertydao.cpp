@@ -21,7 +21,6 @@
  ***************************************************************************/
 
 #include "mmsconfig/mmspluginpropertydao.h"
-#include "mmstools/mmslogger.h"
 #include "mmstools/tools.h"
 #include "mmsconfig/mmsconfigqueries.h"
 

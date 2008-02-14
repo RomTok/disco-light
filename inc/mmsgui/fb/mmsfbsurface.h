@@ -47,8 +47,6 @@ typedef struct {
 
 class MMSFBSurface {
     private:
-        MMSGuiLogger    logger;
-
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
 
         MMSFBSurfaceConfig  config;     /* surface configuration */

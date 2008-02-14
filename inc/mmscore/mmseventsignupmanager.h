@@ -38,7 +38,6 @@ class MMSEventSignupManager : public IMMSEventSignupManager {
         vector<MMSEventSignup *> signups;
         MMSMutex signupmutex;
         MMSMutex getrecmutex;
-        MMSLogger logger;
 
     public:
         MMSEventSignupManager();

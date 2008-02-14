@@ -24,7 +24,6 @@
 #define MMSWIDGET_H_
 
 #include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/mmsguilogger.h"
 #include "mmsgui/mmsguitools.h"
 #include <sigc++/sigc++.h>
 
@@ -125,8 +124,6 @@ This class cannot be constructed. Only widgets which are derived from this class
 */
 class MMSWidget {
     private:
-        static MMSGuiLogger logger;
-
         MMSTheme            *theme;             /* access to the theme which is used */
         MMSWidgetClass      *baseWidgetClass;
         MMSWidgetClass      *widgetClass;

@@ -33,7 +33,6 @@
 
 class MMSInputManager  {
 	private:
-		MMSInputLogger logger;
 		MMSMutex mutex;
 		void handleInput(MMSInputEvent *inputevent);
 		vector <MMSInputThread *> threads;

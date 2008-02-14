@@ -27,7 +27,6 @@
 
 class MMSXMLClientInterface {
 	private:
-        MMSLogger 		logger;
 		MMSTCPClient 	*tcl;
 
 	public:

@@ -34,12 +34,12 @@ MMS_CREATEERROR(MMSOSDPluginError);
 
 class MMSOSDPluginHandler {
     private:
-        bool loaded;
-        MMSPluginData plugindata;
-        IMMSOSDPlugin *plugin;
-        MMSShlHandler *handler;
-        MMSMutex calllock;
-        IMMSSwitcher *switcher;
+        bool 			loaded;
+        MMSPluginData 	plugindata;
+        IMMSOSDPlugin 	*plugin;
+        MMSShlHandler 	*handler;
+        MMSMutex 		calllock;
+        IMMSSwitcher 	*switcher;
        
     public:
         MMSOSDPluginHandler(MMSPluginData plugindata, bool autoload = false);

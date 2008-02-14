@@ -27,8 +27,7 @@
 
 class MMSServerInterface {
 	public:
-        MMSLogger logger;
-
+    
 	public:
 		MMSServerInterface(string identity);
 		virtual ~MMSServerInterface() = 0;

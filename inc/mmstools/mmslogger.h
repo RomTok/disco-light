@@ -28,9 +28,9 @@
 class MMSLogger
 {
     private:
-        MMSLogBackend backend;
-        string identity;
-        bool stdout;
+        MMSLogBackend 	backend;
+        string 			identity;
+        bool 			stdout;
     public:
         MMSLogger();
         MMSLogger(string identity);

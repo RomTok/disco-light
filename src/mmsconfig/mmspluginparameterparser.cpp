@@ -22,10 +22,6 @@
 #include "mmsconfig/mmspluginparameterparser.h"
 
 MMSPluginParameterParser::MMSPluginParameterParser() {
-
-//	parser=new xmlpp::DomParser();
-    logger.setIdentity("MMSPluginParameterParser");
-
 }
 
 MMSPluginParameterParser::~MMSPluginParameterParser() {
@@ -88,7 +84,7 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
     if(plugin== NULL)
         return;
     
-    logger.writeLog("CreateProperty");
+    DEBUGMSG("PLUGINPARAMETERPARSER", "CreateProperty");
 
     if(plugin->getProperty(name)!=NULL) {
         return;
@@ -112,7 +108,7 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
             query.append("\"]");
 
 	  		if(xmlStrcmp(pNode->name, (const xmlChar *) query.c_str())) {
-	  			logger.writeLog("invalid configuration file (" + parameterfile + ") - does not contain correct root node");
+	  			DEBUGMSG("PLUGINPARAMETERPARSER", "invalid configuration file (%s) - does not contain correct root node", parameterfile.c_str());
                 throw new MMSPluginParameterParserError(0,"Plugin " + plugin->getName() + " has no parameter named " + name);
 	  		}
             

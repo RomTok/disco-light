@@ -36,8 +36,6 @@ typedef struct {
 
 class MMSFBWindow {
     private:
-        MMSGuiLogger    logger;
-
         IDirectFBWindow     *dfbwindow; /* dfb window if used */
 
         MMSFBSurface        *surface;   /* windows surface */
