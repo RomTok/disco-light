@@ -44,7 +44,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
 		
-		logger.writeLog("MMSInputManager:handleInput: " + string(this->mapper->lookUpKeyName(inputevent->key)));
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: " + string(this->mapper->lookUpKeyName(inputevent->key)));
 
 		/* check crtl+c and exit */
 		if((inputevent->key==DIKS_SMALL_C)&&(this->lastkey==DIKS_CONTROL))
@@ -56,7 +56,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	
 		if((inputeventset.at(0).key==DIKS_POWER)||(inputeventset.at(0).key==DIKS_POWER2)) {
 			if(config->getShutdown() == true) {
-				logger.writeLog("executing: " + config->getShutdownCmd());
+				DEBUGMSG("MMSINPUTMANAGER", "executing: " + config->getShutdownCmd());
 				
 				executeCmd(config->getShutdownCmd());			
 				sleep(30);
@@ -85,11 +85,11 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				DFBInputDeviceKeySymbol key;
 				if (subscriptions.at(i)->getKey(key))
 					if (key == inputeventset.at(y).key) {
-						logger.writeLog("found a subscription");
+						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
 						/* ok i found one execute */
 		                subscriptions.at(i)->callback.emit(subscriptions.at(i));
 						/* stop it only one key per subscription */
-						logger.writeLog("returning from handle input");
+		                DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
 						this->mutex.unlock();
 						return;
 					}
@@ -102,7 +102,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
-		logger.writeLog("MMSInputManager:handleInput: BUTTON PRESSED AT: " + iToStr(inputevent->posx) + "," + iToStr(inputevent->posy));
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: " + iToStr(inputevent->posx) + "," + iToStr(inputevent->posy));
 
 		
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
@@ -115,7 +115,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			if ((inputevent->posx - rect.x < 0)||(inputevent->posy - rect.y < 0)
 					||(inputevent->posx - rect.x - rect.w >= 0)||(inputevent->posy - rect.y - rect.h >= 0)) {
 				/* pointer is not over the window */
-				logger.writeLog("MMSInputManager:handleInput: BUTTON PRESSED, NOT OVER THE WINDOW");
+				DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED, NOT OVER THE WINDOW");
 				this->mutex.unlock();
 				return;
 			}
@@ -131,7 +131,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
-		logger.writeLog("MMSInputManager:handleInput: BUTTON RELEASED AT: " + iToStr(inputevent->posx) + "," + iToStr(inputevent->posy));
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: " + iToStr(inputevent->posx) + "," + iToStr(inputevent->posy));
 
 		
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
@@ -167,11 +167,11 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				if (subscriptions.at(i)->getPointerArea(pointer_area))
 					if ((inputevent->posx >= pointer_area.x)&&(inputevent->posy >= pointer_area.y)
 				      &&(inputevent->posx < pointer_area.x + pointer_area.w)&&(inputevent->posy < pointer_area.y + pointer_area.h)) {
-						logger.writeLog("found a subscription");
+						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
 						/* ok i found one execute */
 		                subscriptions.at(i)->callback.emit(subscriptions.at(i));
 						/* stop it only one key per subscription */
-						logger.writeLog("returning from handle input");
+		                DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
 						this->mutex.unlock();
 						return;
 					}

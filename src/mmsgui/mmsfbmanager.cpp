@@ -60,21 +60,21 @@ bool MMSFBManager::init(int argc, char **argv) {
 		myargv[myargc]=strdup("--dfb:system=x11");
 		myargc++;
 	}
-    logger.writeLog("init mmsfb");
+    DEBUGMSG("MMSGUI", "init mmsfb");
     if (!mmsfb->init(myargc, myargv))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
-    logger.writeLog("get video layer");
+    DEBUGMSG("MMSGUI", "get video layer");
     if (!mmsfb->getLayer(this->config.getVideoLayerId(), &this->videolayer))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
      
     if(this->config.getVideoLayerId() == this->config.getGraphicsLayerId()) {
-        logger.writeLog("video layer and graphics layer are the same");
+    	DEBUGMSG("MMSGUI", "video layer and graphics layer are the same");
         this->graphicslayer = this->videolayer;
     }
     else {
         this->layercount++; 
-        logger.writeLog("get graphics layer");
+        DEBUGMSG("MMSGUI", "get graphics layer");
         if (!mmsfb->getLayer(this->config.getGraphicsLayerId(), &this->graphicslayer))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
     }
@@ -92,16 +92,16 @@ bool MMSFBManager::init(int argc, char **argv) {
 }
 
 void MMSFBManager::release() {
-    logger.writeLog("release mmsfb");
+	DEBUGMSG("MMSGUI", "release mmsfb");
     if (this->videolayer)
         delete this->videolayer;
     mmsfb->release();
 } 
 
 void MMSFBManager::applySettings() {
-    logger.writeLog("configure graphics layer");
+	DEBUGMSG("MMSGUI", "configure graphics layer");
 
-    logger.writeLog("set exclusive access");
+	DEBUGMSG("MMSGUI", "set exclusive access");
     /* set exclusive access to the graphics layer */
     if (!this->graphicslayer->setExclusiveAccess())
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
@@ -118,9 +118,9 @@ void MMSFBManager::applySettings() {
         usleep(300000); 
 
         /* use both layers */
-        logger.writeLog("configure video layer");
+        DEBUGMSG("MMSGUI", "configure video layer");
 
-        logger.writeLog("set exclusive access");
+        DEBUGMSG("MMSGUI", "set exclusive access");
         /* set exclusive access to the video layer */
         if (!this->videolayer->setExclusiveAccess())
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
@@ -138,7 +138,7 @@ void MMSFBManager::applySettings() {
 
         if (config.getOutputType() == MMS_OT_VIAFB) {
             /* set the video layer behind the graphics layer */
-            logger.writeLog("set the video layer behind the graphics layer");
+        	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
             this->videolayer->setLevel(-1);
         }
     }
@@ -159,8 +159,7 @@ void MMSFBManager::applySettings() {
         pixelformat = MMSFB_PF_ARGB;
 
     string buffermode = config.getGraphicsLayerBufferMode(); 
-    logger.writeLog("creating temporary surface: " + iToStr(config.getXres()) + "x" + iToStr(config.getYres())
-      		                                       + ", " + pixelformat.c_str());
+    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d ,%s", config.getXres(), config.getYres(), pixelformat.c_str());
     mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
 }
 

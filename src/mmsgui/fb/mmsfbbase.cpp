@@ -21,12 +21,10 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbbase.h"
+#include "mmstools/mmstools.h"
 
 /* stores the last error text */
 string MMSFB_LastErrorString;
-
-/* init a new guilogger for central error logging */
-MMSGuiLogger    mmsfb_error_logger;
 
 string MMSFB_ErrorString(int rc, string msg) {
     if (rc)
@@ -41,7 +39,7 @@ string MMSFB_ErrorString(int rc, string msg) {
 
 void MMSFB_SetError(int rc, string msg) {
     MMSFB_LastErrorString = MMSFB_ErrorString(rc, msg);
-    mmsfb_error_logger.writeLog(MMSFB_LastErrorString);
+    DEBUGMSG("MMSGUI", MMSFB_LastErrorString);
 }
 
 string getDFBPixelFormatString(DFBSurfacePixelFormat pf) {

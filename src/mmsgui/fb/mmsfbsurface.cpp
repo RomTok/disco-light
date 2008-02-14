@@ -132,29 +132,29 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 
     /* log some infos */
     if ((!config)&&(!(caps & DSCAPS_SUBSURFACE))) {
-       	logger.writeLog("Surface properties:");
+    	DEBUGMSG("MMSGUI", "Surface properties:");
 
-	    logger.writeLog(" size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
 	    if (this->config.alphachannel)
-	    	logger.writeLog(" pixelformat:  " + this->config.pixelformat + ",ALPHACHANNEL");
+	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.pixelformat + ",ALPHACHANNEL");
 	    else
-	    	logger.writeLog(" pixelformat:  " + this->config.pixelformat);
+	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.pixelformat);
 	    
-       	logger.writeLog(" capabilities:");
+	    DEBUGMSG("MMSGUI", " capabilities:");
 	
 	    if (caps & DSCAPS_PRIMARY)
-	    	logger.writeLog("  PRIMARY");
+	    	DEBUGMSG("MMSGUI", "  PRIMARY");
 	    if (caps & DSCAPS_SYSTEMONLY)
-	    	logger.writeLog("  SYSTEMONLY");
+	    	DEBUGMSG("MMSGUI", "  SYSTEMONLY");
 	    if (caps & DSCAPS_VIDEOONLY)
-	    	logger.writeLog("  VIDEOONLY");
+	    	DEBUGMSG("MMSGUI", "  VIDEOONLY");
 	    if (caps & DSCAPS_DOUBLE)
-	    	logger.writeLog("  DOUBLE");
+	    	DEBUGMSG("MMSGUI", "  DOUBLE");
 	    if (caps & DSCAPS_TRIPLE)
-	    	logger.writeLog("  TRIPLE");
+	    	DEBUGMSG("MMSGUI", "  TRIPLE");
 	    if (caps & DSCAPS_PREMULTIPLIED)
-	    	logger.writeLog("  PREMULTIPLIED");
+	    	DEBUGMSG("MMSGUI", "  PREMULTIPLIED");
     }
 
     return true;

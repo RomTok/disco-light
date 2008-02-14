@@ -24,12 +24,6 @@
 #include "mmsgui/mmsborder.h"
 #include "mmsgui/mmsslider.h"
 
-/* static variables */
-MMSGuiLogger 	MMSWidget::logger;
-
-
-//#define __PUPTRACE__
-
 MMSWidget::MMSWidget() {
     this->baseWidgetClass = NULL;
     this->widgetClass = NULL;

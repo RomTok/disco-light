@@ -151,7 +151,7 @@ void MMSThemeManager::throughFile(xmlNode* node, MMSTheme *theme) {
 	if(!xmlStrcmp(node->name, (const xmlChar *) XML_ID_THEME))
         getThemeValues(node, theme);
     else {
-        logger.writeLog("no valid theme file: " + theme->getThemeFile());
+    	DEBUGMSG("MMSGUI", "no valid theme file: %s", theme->getThemeFile().c_str());
         return;
     }
 
@@ -381,7 +381,7 @@ void MMSThemeManager::getClassValues(xmlNode *node, MMSTheme *theme) {
 	}
 
     if(name.empty() || type.empty()) {
-        logger.writeLog("class misses name or type (ignoring)");
+    	DEBUGMSG("MMSGUI", "class misses name or type (ignoring)");
         return;
     }
 
@@ -410,7 +410,7 @@ void MMSThemeManager::getClassValues(xmlNode *node, MMSTheme *theme) {
     else if(type == XML_ID_ARROW)
         getArrowClassValues(node, theme, name);
     else
-        logger.writeLog("invalid class type found (ignoring)");
+    	DEBUGMSG("MMSGUI", "invalid class type found (ignoring)");
 }
 
 void MMSThemeManager::getTemplateClassValues(xmlNode *node, MMSTheme *theme, string className) {

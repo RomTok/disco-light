@@ -84,9 +84,7 @@ MMSInputHandler::~MMSInputHandler()  {
 }
 
 void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
-	MMSInputLogger logger;
 	DFBInputEvent evt;
-//    struct DFBKeySymbolName     *symbol_name;
     
     bool event_buffered = false;
     inputevent->type = MMSINPUTEVENTTYPE_NONE;

@@ -23,6 +23,8 @@
 #ifndef MMSFBSURFACEMANAGER_H_
 #define MMSFBSURFACEMANAGER_H_
 
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbsurface.h"
 
 typedef struct {

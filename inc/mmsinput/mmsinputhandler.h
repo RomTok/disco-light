@@ -25,7 +25,6 @@
 
 #include "mmsgui/mmsguitools.h"
 #include "mmsbase/mmsbase.h"
-#include "mmsinput/mmsinputlogger.h"
 
 #ifndef DFBCHECK
     #define DFBCHECK( x... ) \

@@ -37,7 +37,6 @@ MMSInputThread::~MMSInputThread() {
 
 void MMSInputThread::threadMain() {
 	MMSInputEvent			event, lastevent;
-	MMSInputLogger          logger;
     time_t                  aclock;
     struct timeval          tv;
     double                  currtime, lasttime = 0;

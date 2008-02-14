@@ -23,6 +23,8 @@
 #ifndef MMSFBWINDOWMANAGER_H_
 #define MMSFBWINDOWMANAGER_H_
 
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanagerthread.h"
 

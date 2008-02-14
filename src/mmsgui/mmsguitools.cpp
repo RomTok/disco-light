@@ -132,7 +132,7 @@ bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer, IDirectFB *dfb
     mylayer->GetConfiguration(mylayer, &cfg);
     *w=cfg.width;
     *h=cfg.height;
-    logger.writeLog("screen resolution: " + iToStr(*w) + "/" + iToStr(*h)); 
+    DEBUGMSG("MMSGUI", "screen resolution: %d/%d", *w, *h); 
     
     if (!layer)
     	mylayer->Release(mylayer);
@@ -161,7 +161,7 @@ bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
     if (imagefile != "") imagefile+= "/";
     imagefile += filename;
 
-    logger.writeLog("using image file '" + imagefile + "'");
+    DEBUGMSG("MMSGUI", "using image file '%s'", imagefile.c_str());
 
     if (filename == "")
         return false;
@@ -183,7 +183,7 @@ bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
             mydfb->Release(mydfb);*/
         if (myimage)
             myimage->Release(myimage);
-        logger.writeLog("cannot load image file '" + imagefile + "'");
+        DEBUGMSG("MMSGUI", "cannot load image file '%s'", imagefile.c_str());
         return false;
     }
 
@@ -206,7 +206,7 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
     if (fontfile != "") fontfile+= "/";
     fontfile += filename;
 
-    logger.writeLog("using font file '" + fontfile + "'");
+    DEBUGMSG("MMSGUI", "using font file '%s'", fontfile.c_str());
 
     if (filename == "")
         return false;
@@ -232,7 +232,7 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
             mydfb->Release(mydfb);*/
         if (myfont)
             myfont->Release(myfont);
-        logger.writeLog("cannot load font file '" + fontfile + "'");
+        DEBUGMSG("MMSGUI", "cannot load font file '%s'", fontfile.c_str());
         return false;
     }
 

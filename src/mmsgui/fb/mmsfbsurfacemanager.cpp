@@ -101,7 +101,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     
     /* create the surface */
     if ((dfbres=mmsfb->dfb->CreateSurface(mmsfb->dfb, &surface_desc, &dfbsurface)) != DFB_OK) {
-        logger.writeLog("ERROR");
+    	DEBUGMSG("MMSGUI", "ERROR");
         MMSFB_SetError(dfbres, "IDirectFB::CreateSurface(" + iToStr(w) + "x" + iToStr(h) + ") failed");
         return NULL;
     }
@@ -118,7 +118,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     int size;
     surface->getMemSize(&size);
     this->surface_mem_cnt+=size;
-    logger.writeLog("Allocated surface memory: " + iToStr(this->surface_mem_cnt) + " Byte");
+    DEBUGMSG("MMSGUI", "Allocated surface memory: " + iToStr(this->surface_mem_cnt) + " Byte");
     
     /* add to used surfaces */
 /* TRACE
@@ -194,7 +194,7 @@ MMSFBSurface *MMSFBSurfaceManager::getTemporarySurface(int w, int h) {
 	if ((ww>=w)&&(hh>=h))
 		return this->tempsuf;
 
-	logger.writeLog("the temporary surface " + iToStr(ww) + "x" + iToStr(hh) + " is to small - requested size is "
+	DEBUGMSG("MMSGUI", "the temporary surface " + iToStr(ww) + "x" + iToStr(hh) + " is to small - requested size is "
 											 + iToStr(w) + "x" + iToStr(h));
 	this->tempsuf->unlock();
 	return NULL;

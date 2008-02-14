@@ -23,6 +23,9 @@
 #ifndef MMSFBBASE_H_
 #define MMSFBBASE_H_
 
+#include "mmstools/base.h"
+#include "mmstools/mmstools.h"
+
 extern "C" {
 #include <direct/debug.h>
 #include <direct/trace.h>

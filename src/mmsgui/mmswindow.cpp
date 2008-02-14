@@ -143,34 +143,34 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     if (!this->parent) {
         /* normal parent window, check the flags and get the right layer */
         if ((mmsfbmanager.getLayerCount()<2)&&(this->flags & MMSW_VIDEO)) {
-            logger.writeLog("use video window on graphics layer");
+        	DEBUGMSG("MMSGUI", "use video window on graphics layer");
             this->flags = (MMSWINDOW_FLAGS)(this->flags | MMSW_USEGRAPHICSLAYER);
         }
     
         if ((this->flags & MMSW_VIDEO)&&(!(this->flags & MMSW_USEGRAPHICSLAYER))) {
-    		logger.writeLog("get the video layer");    	
+        	DEBUGMSG("MMSGUI", "get the video layer");    	
         	this->layer = mmsfbmanager.getVideoLayer();
         } else {
-    		logger.writeLog("get the grapics layer");    	
+        	DEBUGMSG("MMSGUI", "get the grapics layer");    	
         	this->layer = mmsfbmanager.getGraphicsLayer();
         }
     }
     else {
         /* child window, use the flags and the layer from my parent */
-        logger.writeLog("use layer from parent window");     
+    	DEBUGMSG("MMSGUI", "use layer from parent window");     
         this->flags = this->parent->flags;
         this->layer = this->parent->layer;
     }
 
-    logger.writeLog("got flags: ");
+    DEBUGMSG("MMSGUI", "got flags: ");
     if (this->flags) {
         if (this->flags & MMSW_VIDEO)
-            logger.writeLog(" MMSW_VIDEO");
+        	DEBUGMSG("MMSGUI", " MMSW_VIDEO");
         if(this->flags & MMSW_USEGRAPHICSLAYER)
-            logger.writeLog(" MMSW_USEGRAPHICSLAYER");
+        	DEBUGMSG("MMSGUI", " MMSW_USEGRAPHICSLAYER");
     }
     else
-        logger.writeLog(" MMSW_NONE");
+    	DEBUGMSG("MMSGUI", " MMSW_NONE");
 
     /* create image and font manager */
     this->im = new MMSImageManager(this->layer);
@@ -215,7 +215,7 @@ bool MMSWindow::resize(bool refresh) {
 //    logger.writeLog("resize... flags: " + iToStr(this->flags));
 
 	if (this->layer == NULL) {
-		logger.writeLog("have no layer... returning");
+		DEBUGMSG("MMSGUI", "have no layer... returning");
 		return false;
 	}
 		
@@ -225,7 +225,7 @@ bool MMSWindow::resize(bool refresh) {
     	/* check if we have a video window and should use the video layer */
         if ((this->flags & MMSW_VIDEO)&&(!(this->flags & MMSW_USEGRAPHICSLAYER))) {
             if (!this->surface) {
-                logger.writeLog("have a video window, use the layer surface");
+            	DEBUGMSG("MMSGUI", "have a video window, use the layer surface");
         		this->layer->getSurface(&this->surface);
                 if (this->windowmanager)
                     this->windowmanager->addWindow(this);
@@ -235,19 +235,19 @@ bool MMSWindow::resize(bool refresh) {
                 this->layer->getResolution(&this->geom.w, &this->geom.h);
             }
             else
-                logger.writeLog("cannot resize the layer surface");
+            	DEBUGMSG("MMSGUI", "cannot resize the layer surface");
     
             return true;
     	}
 
         if (!this->windowmanager) {
-            logger.writeLog("have no windowmanager... returning");
+        	DEBUGMSG("MMSGUI", "have no windowmanager... returning");
             return false;
         }
 
         /* get the screen width and height */
         this->layer->getResolution(&vrect.w, &vrect.h);
-        logger.writeLog("got screen " + iToStr(vrect.w) + "x" + iToStr(vrect.h));
+        DEBUGMSG("MMSGUI", "got screen %dx%d", vrect.w, vrect.h);
 
         if (this->flags & MMSW_VIDEO) {
             /* for video windows use full screen */
@@ -258,7 +258,7 @@ bool MMSWindow::resize(bool refresh) {
             /* other windows uses visible rectangle settings from windowmanager */
             vrect = this->windowmanager->getVRect();
 
-        logger.writeLog("use screen area " + iToStr(vrect.x) + "," + iToStr(vrect.x) + "," + iToStr(vrect.w) + "," + iToStr(vrect.h));
+        DEBUGMSG("MMSGUI", "use screen area %d, %d, %d, %d", vrect.x, vrect.x, vrect.w, vrect.h);
     }
     else {
         /* child window */
@@ -276,7 +276,7 @@ bool MMSWindow::resize(bool refresh) {
     if (!getDx(dx)) dx = "";
     if (getPixelFromSizeHint(&wdesc.posx, dx, vrect.w, 0) == false) {
         if (getPixelFromSizeHint(&wdesc.posx, dx, 10000, 0) == false) {
-            logger.writeLog("window dx " + dx + " is wrong, using 0px");  
+        	DEBUGMSG("MMSGUI", "window dx %s is wrong, using 0px", dx.c_str());  
             myWindowClass.setDx("0px");
             wdesc.posx = 0;
         }
@@ -285,7 +285,7 @@ bool MMSWindow::resize(bool refresh) {
     if (!getDy(dy)) dy = "";
     if (getPixelFromSizeHint(&wdesc.posy, dy, vrect.h, wdesc.posx) == false) {
         if (getPixelFromSizeHint(&wdesc.posy, dy, 10000, wdesc.posx) == false) {
-            logger.writeLog("window dy " + dy + " is wrong, using 0px");  
+        	DEBUGMSG("MMSGUI", "window dy %s is wrong, using 0px", dy.c_str());  
             myWindowClass.setDy("0px");
             wdesc.posy = 0;
         }
@@ -294,7 +294,7 @@ bool MMSWindow::resize(bool refresh) {
     if (!getDx(dx)) dx = "";
     if (getPixelFromSizeHint(&wdesc.posx, dx, vrect.w, wdesc.posy) == false) {
         if (getPixelFromSizeHint(&wdesc.posx, dx, 10000, wdesc.posy) == false) {
-            logger.writeLog("window dx " + dx + " is wrong, using 0px");  
+        	DEBUGMSG("MMSGUI", "window dx %s is wrong, using 0px", dx.c_str());  
             myWindowClass.setDx("0px");
             wdesc.posx = 0;
         }
@@ -309,7 +309,7 @@ bool MMSWindow::resize(bool refresh) {
     if (!getWidth(width)) width = "";
     if (getPixelFromSizeHint(&wdesc.width, width, vrect.w, 0) == false) {
         if (getPixelFromSizeHint(&wdesc.width, width, 10000, 0) == false) {
-            logger.writeLog("window width " + width + " is wrong, using " + iToStr(vrect.w) + "px");  
+        	DEBUGMSG("MMSGUI", "window width %s is wrong, using %d px", width.c_str(), vrect.w);  
             myWindowClass.setWidth(iToStr(vrect.w) + "px");
             wdesc.width = vrect.w;
         }
@@ -317,7 +317,7 @@ bool MMSWindow::resize(bool refresh) {
     if (!getHeight(height)) height = "";
     if (getPixelFromSizeHint(&wdesc.height, height, vrect.h, 0) == false) {
         if (getPixelFromSizeHint(&wdesc.height, height, 10000, 0) == false) {
-            logger.writeLog("window height " + height + " is wrong, using " + iToStr(vrect.h) + "px");  
+        	DEBUGMSG("MMSGUI", "window height %s is wrong, using %d px", height.c_str(), vrect.h);  
             myWindowClass.setHeight(iToStr(vrect.h) + "px");
             wdesc.height = vrect.h;
         }
@@ -325,10 +325,10 @@ bool MMSWindow::resize(bool refresh) {
 
     if ((wdesc.width == 0)&&(wdesc.height == 0)) {
         /* bad values */
-        logger.writeLog("window width " + width + " is wrong, using " + iToStr(vrect.w) + "px");  
+    	DEBUGMSG("MMSGUI", "window width " + width + " is wrong, using " + iToStr(vrect.w) + "px");  
         myWindowClass.setWidth(iToStr(vrect.w) + "px");
         wdesc.width = vrect.w;
-        logger.writeLog("window height " + height + " is wrong, using " + iToStr(vrect.h) + "px");  
+        DEBUGMSG("MMSGUI", "window height " + height + " is wrong, using " + iToStr(vrect.h) + "px");  
         myWindowClass.setHeight(iToStr(vrect.h) + "px");
         wdesc.height = vrect.h;
     }
@@ -419,7 +419,7 @@ bool MMSWindow::resize(bool refresh) {
     
             if (!(this->flags & MMSW_VIDEO)) {
                 /* no video window, use alpha */
-                logger.writeLog("creating window (" + iToStr(wdesc.posx) + ","
+            	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc.posx) + ","
                                                     + iToStr(wdesc.posy) + ","
                                                     + iToStr(wdesc.width) + ","
                                                     + iToStr(wdesc.height)
@@ -431,7 +431,7 @@ bool MMSWindow::resize(bool refresh) {
             }
             else {
                 /* video window, do not use alpha */
-                logger.writeLog("creating video window (" + iToStr(wdesc.posx) + ","
+            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc.posx) + ","
                                                           + iToStr(wdesc.posy) + ","
                                                           + iToStr(wdesc.width) + ","
                                                           + iToStr(wdesc.height)
@@ -465,13 +465,13 @@ printf("-----%u: window created (%x)\n", pthread_self(), this->surface);
             int px,py;
             this->window->getPosition(&px, &py);
             if ((this->geom.x != px)||(this->geom.y != py)) {
-                logger.writeLog("repositioning window (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ")");
+            	DEBUGMSG("MMSGUI", "repositioning window (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ")");
                 this->window->moveTo(this->geom.x, this->geom.y);
             }
             int w,h;
             this->window->getSize(&w, &h);
             if ((this->geom.w != w)||(this->geom.h != h)) {
-                logger.writeLog("resizing window (" + iToStr(this->geom.w) + "x" + iToStr(this->geom.h) + ")");
+            	DEBUGMSG("MMSGUI", "resizing window (" + iToStr(this->geom.w) + "x" + iToStr(this->geom.h) + ")");
                 this->window->resize(this->geom.w, this->geom.h);
             }
         }
@@ -487,7 +487,7 @@ printf("-----%u: window created (%x)\n", pthread_self(), this->surface);
             bool os;
             getOwnSurface(os);
         	if (os) {
-	            logger.writeLog("creating surface for child window (" + iToStr(wdesc.posx) + ","
+        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc.posx) + ","
 	                                                                  + iToStr(wdesc.posy) + ","
 	                                                                  + iToStr(wdesc.width) + ","
 	                                                                  + iToStr(wdesc.height)
@@ -498,7 +498,7 @@ printf("-----%u: window created (%x)\n", pthread_self(), this->surface);
 	                                      wdesc.width, wdesc.height, MMSFB_PF_NONE, 1);
 	        }
 	        else {
-	            logger.writeLog("creating sub surface for child window (" + iToStr(wdesc.posx) + ","
+	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc.posx) + ","
 	                                                                      + iToStr(wdesc.posy) + ","
 	                                                                      + iToStr(wdesc.width) + ","
 	                                                                      + iToStr(wdesc.height)
@@ -530,7 +530,7 @@ printf("-----%u: child window surface created (%x)\n", pthread_self(), this->sur
             /* change the surface (new size/pos) */
             if   ((this->geom.x != oldx)||(this->geom.y != oldy)
                 ||(this->geom.w != oldw)||(this->geom.h != oldh)) { 
-                logger.writeLog("re-positioning/-sizing child window (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ","
+            	DEBUGMSG("MMSGUI", "re-positioning/-sizing child window (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ","
                                                                         + iToStr(this->geom.w) + "," + iToStr(this->geom.h) + ")");
                 this->parent->setChildWindowRegion(this, refresh);
             }
@@ -1935,7 +1935,7 @@ printf("-----refreshfromChild- win=%s,%x - tid=%u\n", this->name.c_str(),this->s
 
         if (htdb) {
             /* I have to draw the border */
-            logger.writeLog("draw window border");
+        	DEBUGMSG("MMSGUI", "draw window border");
             drawMyBorder();
         }
     }
@@ -2013,10 +2013,10 @@ bool MMSWindow::setFirstFocus(bool cw) {
             return false;
     }
 
-    logger.writeLog("MMSWindow: setFirstFocus to " + getName());
+    DEBUGMSG("MMSGUI", "MMSWindow: setFirstFocus to " + getName());
 
     if (this->firstfocusset) {
-        logger.writeLog("MMSWindow: focus already set");
+    	DEBUGMSG("MMSGUI", "MMSWindow: focus already set");
         return true;
     }       
     this->firstfocusset = true;
@@ -2035,7 +2035,7 @@ bool MMSWindow::setFirstFocus(bool cw) {
                     for(unsigned int i=0;i<w->children.size();i++) {
                         if(w->children.at(i)->getFocusable(b))
                         	if (b) {
-	                            logger.writeLog("MMSWindow: set focus to child nr " + iToStr(i));
+                        		DEBUGMSG("MMSGUI", "MMSWindow: set focus to child nr " + iToStr(i));
 	                            w->children.at(i)->setFocus(true);
 	                            w->firstfocusset = true;
 	                            this->childwins.at(j).focusedWidget = i;
@@ -2081,7 +2081,7 @@ bool MMSWindow::setFirstFocus(bool cw) {
             return true;
         }
 
-        logger.writeLog("MMSWindow: no children to focus for window " + getName());
+        DEBUGMSG("MMSGUI", "MMSWindow: no children to focus for window " + getName());
         return false;
     }
 
@@ -2089,13 +2089,13 @@ bool MMSWindow::setFirstFocus(bool cw) {
     for(unsigned int i=0;i<this->children.size();i++) {
         if(this->children.at(i)->getFocusable(b))
         	if (b) {
-	            logger.writeLog("MMSWindow: set focus to child nr " + iToStr(i));
+        		DEBUGMSG("MMSGUI", "MMSWindow: set focus to child nr " + iToStr(i));
 	            this->children.at(i)->setFocus(true);
 	            return true;
 	        }
     }
 
-    logger.writeLog("MMSWindow: no children to focus for window " + getName());
+    DEBUGMSG("MMSGUI", "MMSWindow: no children to focus for window " + getName());
     return false;
 }
 
@@ -3078,11 +3078,11 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            			/* this is the widget under the pointer */
 	            			if (this->children.at(j) != this->focusedwidget) {
 	            				/* set focus to this widget */
-		    	            	logger.writeLog("try to change focus");
+	            				DEBUGMSG("MMSGUI", "try to change focus");
 	            				setFocusedWidget(this->children.at(j), true, true);
 	            			}
 
-	            			logger.writeLog("try to execute input on widget");
+	            			DEBUGMSG("MMSGUI", "try to execute input on widget");
 	            	        this->buttonpress_widget = this->focusedwidget; 
 	    	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
 
@@ -3113,7 +3113,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            			/* this is the childwin under the pointer */
 	            			if (!this->childwins.at(j).window->getFocus()) {
 	            				/* set focus to this childwin */
-		    	            	logger.writeLog("try to change focus");
+	            				DEBUGMSG("MMSGUI", "try to change focus");
 		    	            	this->childwins.at(j).window->setFocus();
 	            			}
 
@@ -3123,7 +3123,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            				inputeventset->at(k).posy-=rect.y;
 	            			}
 	            			
-	            			logger.writeLog("try to execute input on childwin");
+	            			DEBUGMSG("MMSGUI", "try to execute input on childwin");
 	            	        this->buttonpress_childwin = this->childwins.at(j).window; 
 	            			this->childwins.at(j).window->handleInput(inputeventset);
 
@@ -3159,7 +3159,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     		try {
 	            if (this->children.size()) {
 	            	if (this->buttonpress_widget) {
-            			logger.writeLog("try to execute input on widget");
+	            		DEBUGMSG("MMSGUI", "try to execute input on widget");
             	        this->buttonpress_widget->handleInput(&(inputeventset->at(i)));
 
             	        if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
@@ -3183,7 +3183,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
             				inputeventset->at(k).posy-=rect.y;
             			}
 
-            			logger.writeLog("try to execute input on childwin");
+            			DEBUGMSG("MMSGUI", "try to execute input on childwin");
             	        bool rc = this->buttonpress_childwin->handleInput(inputeventset);
 
             	        if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_BUTTONRELEASE)

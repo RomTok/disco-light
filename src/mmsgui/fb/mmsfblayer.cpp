@@ -100,20 +100,20 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     this->config.options = getDFBLayerOptionsString(dlc.options);
 
     if (!config) {
-    	logger.writeLog("Layer properties:");
-	    logger.writeLog(" size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+    	DEBUGMSG("MMSGUI", "Layer properties:");
+    	DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 	
-	    logger.writeLog(" pixelformat: " + this->config.pixelformat);
+    	DEBUGMSG("MMSGUI", " pixelformat: " + this->config.pixelformat);
 	
 	    if (this->config.buffermode!="")
-	    	logger.writeLog(" buffermode:  " + this->config.buffermode);
+	    	DEBUGMSG("MMSGUI", " buffermode:  " + this->config.buffermode);
 	    else
-	    	logger.writeLog(" buffermode:  NONE");
+	    	DEBUGMSG("MMSGUI", " buffermode:  NONE");
 	
 	    if (this->config.options!="")
-	    	logger.writeLog(" options:     " + this->config.options);
+	    	DEBUGMSG("MMSGUI", " options:     " + this->config.options);
 	    else
-	    	logger.writeLog(" options:     NONE");
+	    	DEBUGMSG("MMSGUI", " options:     NONE");
     }
 
     /* fill return config */
@@ -195,17 +195,17 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
     	if(failedFlags & DLCONF_PIXELFORMAT) {
             MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
-            logger.writeLog("Your configuration contains a pixelformat that is not supported.");
+            DEBUGMSG("MMSGUI", "Your configuration contains a pixelformat that is not supported.");
             return false;
         }
     	if(failedFlags & DLCONF_BUFFERMODE) {
             MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
-            logger.writeLog("Your configuration contains a buffermode that is not supported.");
+            DEBUGMSG("MMSGUI", "Your configuration contains a buffermode that is not supported.");
             return false;
         }
     	if(failedFlags & DLCONF_OPTIONS) {
             MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
-            logger.writeLog("Your configuration contains options that are not supported.");
+            DEBUGMSG("MMSGUI", "Your configuration contains options that are not supported.");
             return false;
         }
     	
@@ -218,7 +218,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
             MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
             return false;
         }
-        logger.writeLog("Your configuration contains a resolution that is not supported.");
+        DEBUGMSG("MMSGUI", "Your configuration contains a resolution that is not supported.");
     }
     
     /* set configuration */

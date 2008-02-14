@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/mmsfontmanager.h"
-#include "mmsgui/mmsguilogger.h"
+#include "mmstools/mmstools.h"
 
 MMSFontManager::MMSFontManager() {
 }
@@ -34,7 +34,6 @@ MMSFontManager::~MMSFontManager() {
 }
 
 IDirectFBFont *MMSFontManager::getFont(string path, string filename, unsigned int size) {
-    MMSGuiLogger    logger;
     string          fontfile;
     MMSFM_DESC      fm_desc;
 
@@ -55,7 +54,7 @@ IDirectFBFont *MMSFontManager::getFont(string path, string filename, unsigned in
     /* load font */
     fm_desc.font = NULL;
     if (!loadFont(&(fm_desc.font), "", fontfile, size)) {
-        logger.writeLog("cannot load font file '" + fontfile + "'");
+        DEBUGMSG("MMSGUI", "cannot load font file '%s'", fontfile.c_str());
         return NULL;
     }
     fm_desc.fontfile = fontfile;

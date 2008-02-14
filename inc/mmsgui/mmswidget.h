@@ -23,6 +23,8 @@
 #ifndef MMSWIDGET_H_
 #define MMSWIDGET_H_
 
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 #include "mmsgui/theme/mmstheme.h"
 #include "mmsgui/mmsguitools.h"
 #include <sigc++/sigc++.h>

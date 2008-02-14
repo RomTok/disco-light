@@ -23,9 +23,12 @@
 #ifndef MMSFBLAYER_H_
 #define MMSFBLAYER_H_
 
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfbwindow.h"
+
 
 typedef struct {
     int     w;              /* width */

@@ -83,7 +83,7 @@ MMSAudioCtrl::MMSAudioCtrl(string channel) {
              this->elem = snd_mixer_elem_next(this->elem)) {
     
             string mix = snd_mixer_selem_get_name(this->elem);
-            DEBUGMSG("MMSMedia", "got mixer channel: %s" + mix.c_str());
+            DEBUGMSG("MMSMedia", "got mixer channel: %s", mix.c_str());
             /* is active? */
             if (!snd_mixer_selem_is_active(this->elem))
                 continue;

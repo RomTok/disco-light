@@ -23,7 +23,10 @@
 #ifndef MMSFBSURFACE_H_
 #define MMSFBSURFACE_H_
 
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbbase.h"
+
 
 #define MMSFBSurfaceBlittingFlags   DFBSurfaceBlittingFlags
 #define MMSFBSurfaceDrawingFlags    DFBSurfaceDrawingFlags

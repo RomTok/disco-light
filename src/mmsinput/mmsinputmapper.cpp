@@ -53,7 +53,7 @@ string MMSInputMapper::lookUpKeyName(DFBInputDeviceKeySymbol key) {
 }
 
 DFBInputDeviceKeySymbol MMSInputMapper::lookUpKeySymbol(const string keyname) {
-	logger.writeLog("got key: " + keyname);
+	DEBUGMSG("MMSINPUTMANAGER", "got key: " + keyname);
 	
 	if(strToUpr(keyname) == "BACKSPACE") return DIKS_BACKSPACE;
 	if(strToUpr(keyname) == "TAB") return DIKS_TAB;
@@ -316,7 +316,6 @@ DFBInputDeviceKeySymbol MMSInputMapper::lookUpKeySymbol(const string keyname) {
 MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 	xmlNode *walkNode = NULL;
 	xmlNode *curNode = NULL;
-    logger.setIdentity("MMSINPUT");
 
 	/* map the keys */
 	try {
@@ -355,7 +354,7 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 				    continue;
 				
 				if(!xmlStrcmp(mapName, (const xmlChar *) name.c_str())) {
-					logger.writeLog("using mapping set of " + name + " node");
+					DEBUGMSG("MMSINPUTMANAGER", "using mapping set of " + name + " node");
 							
 					walkNode = walkNode->xmlChildrenNode;
 					for (curNode = walkNode; curNode; curNode = curNode->next) {
@@ -373,7 +372,7 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 				}
 				else {
 					//ignore this node
-					logger.writeLog("Ignore mapping set of " + string((const char *) mapName) + " node");
+					DEBUGMSG("MMSINPUTMANAGER", "Ignore mapping set of " + string((const char *) mapName) + " node");
 				}
 				
 				xmlFree(mapName);
@@ -381,10 +380,10 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
         }
 	}
 	catch(MMSError *error) {
-        logger.writeLog("Error loading inputmaps (" + mapfile + "." + name + ") [" + error->getMessage() + "]");
+		DEBUGMSG("MMSINPUTMANAGER", "Error loading inputmaps (" + mapfile + "." + name + ") [" + error->getMessage() + "]");
 	}
 
-    logger.writeLog("Parsing inputmap finished.");
+	DEBUGMSG("MMSINPUTMANAGER", "Parsing inputmap finished.");
 }
 
 MMSInputMapper::~MMSInputMapper() {
@@ -405,7 +404,7 @@ void MMSInputMapper::mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *in
    		string foundkeyname = run->second;
    	    DFBInputDeviceKeySymbol foundkey = lookUpKeySymbol(foundkeyname);
    	    if(foundkey) {
-   	    	logger.writeLog("mapped to key '" + foundkeyname + "', id: " + iToStr(foundkey));
+   	    	DEBUGMSG("MMSINPUTMANAGER", "mapped to key '" + foundkeyname + "', id: " + iToStr(foundkey));
    	        evt.type = MMSINPUTEVENTTYPE_KEYPRESS;
    	        evt.key = foundkey;
    	        inputeventset->push_back(evt);

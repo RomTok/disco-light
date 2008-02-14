@@ -24,6 +24,8 @@
 #define MMSIMAGEMANAGER_H_
 
 #include "mmsgui/mmsguitools.h"
+#include "mmstools/mmstools.h"
+#include "mmstools/mmslogger.h"
 
 #define MMSIM_MAX_DESC_SUF      64
 #define MMSIM_DESC_SUF_LOADING  0xfffffffe

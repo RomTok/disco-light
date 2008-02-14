@@ -484,7 +484,7 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
                 
                 // set value
                 *(int *)(data + postApiParam->offset) = iValue;
-                DEBUGMSG("MMSMedia", "%s: %s = %s"name.c_str(), parameter.c_str(), postApiParam->enum_values[*(int *)(data + postApiParam->offset)]);
+                DEBUGMSG("MMSMedia", "%s: %s = %s", name.c_str(), parameter.c_str(), postApiParam->enum_values[*(int *)(data + postApiParam->offset)]);
             }
             else if(postApiParam->type == POST_PARAM_TYPE_DOUBLE) {
                 double dValue = atof(value.c_str()); 
