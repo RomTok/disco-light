@@ -45,6 +45,7 @@ class MMSMusicInterface {
 	        sigc::signal<void, int> *onNextSong;
 	        sigc::signal<void, int> *onPrevSong;
 	        bool isPlaying();
+	        bool isPaused();
             bool getTimes(int *pos, int *length);
             void setRepeat(bool repeat);
             void setShuffle(bool shuffle);

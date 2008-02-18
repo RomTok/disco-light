@@ -42,6 +42,7 @@ class IMMSMusicManager {
         virtual void setOnNextSong(sigc::signal<void, int> *onNextSong) = 0;
         virtual void setOnPrevSong(sigc::signal<void, int> *onPrevSong) = 0;
         virtual bool isPlaying() = 0;
+        virtual bool isPaused() = 0;
         virtual bool getTimes(int *pos, int *length) = 0;
         virtual void setRepeat(bool repeat) = 0;
         virtual void setShuffle(bool shuffle) = 0;

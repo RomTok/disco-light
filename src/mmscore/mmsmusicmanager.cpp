@@ -149,6 +149,10 @@ bool MMSMusicManager::isPlaying() {
 	return player.isPlaying();
 }
 
+bool MMSMusicManager::isPaused() {
+	return player.isPaused();
+}
+
 bool MMSMusicManager::getTimes(int *pos, int *length) {
     return player.getTimes(pos, length);   
 }

@@ -611,6 +611,22 @@ bool MMSAV::isPlaying() {
 }
 
 /**
+ * Determines if a stream is currently being paused.
+ * 
+ * @return true if stream is being paused
+ */
+bool MMSAV::isPaused() {
+	if(this->status == STATUS_PAUSED) {
+		if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
+	    	this->setStatus(STATUS_STOPPED);
+	    	return false;
+		}
+		else return true;
+	}
+	return false;
+}
+
+/**
  * Starts playing.
  *
  * If the continue flag is set it tries to continue
@@ -683,18 +699,46 @@ void MMSAV::stop() {
 }
 
 /**
- * Toggles playing/pausing.
+ * Continues playing.
+ */
+void MMSAV::cont() {
+    if(this->status == this->STATUS_PAUSED  ||
+       this->status == this->STATUS_SLOW    ||
+       this->status == this->STATUS_SLOW2   ||
+       this->status == this->STATUS_FFWD    ||
+       this->status == this->STATUS_FFWD2) {
+       this->setStatus(this->STATUS_PLAYING);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+    }
+}
+
+/**
+ * Pauses.
  */
 void MMSAV::pause() {
+    if(this->status == this->STATUS_PLAYING ||
+       this->status == this->STATUS_SLOW    ||
+       this->status == this->STATUS_SLOW2   ||
+       this->status == this->STATUS_FFWD    ||
+       this->status == this->STATUS_FFWD2) {
+       this->setStatus(this->STATUS_PAUSED);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+    }
+}
+
+/**
+ * Toggles playing/pausing.
+ */
+void MMSAV::contPause() {
     if(this->status == this->STATUS_PLAYING) {
-        this->setStatus(this->STATUS_PAUSED);
+       this->setStatus(this->STATUS_PAUSED);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
     }
     else if(this->status == this->STATUS_PAUSED || 
-            this->status == this->STATUS_SLOW    ||
-            this->status == this->STATUS_SLOW2   ||
-            this->status == this->STATUS_FFWD    ||
-            this->status == this->STATUS_FFWD2) {
+        this->status == this->STATUS_SLOW    ||
+        this->status == this->STATUS_SLOW2   ||
+        this->status == this->STATUS_FFWD    ||
+        this->status == this->STATUS_FFWD2) {
         this->setStatus(this->STATUS_PLAYING);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
     }

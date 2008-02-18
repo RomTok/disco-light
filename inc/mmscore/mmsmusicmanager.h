@@ -51,6 +51,7 @@ class MMSMusicManager : public IMMSMusicManager {
         void setOnNextSong(sigc::signal<void, int> *onNextSong);
         void setOnPrevSong(sigc::signal<void, int> *onPrevSong);
         bool isPlaying();
+        bool isPaused();
         bool getTimes(int *pos, int *length);
         void setRepeat(bool repeat);
         void setShuffle(bool shuffle);

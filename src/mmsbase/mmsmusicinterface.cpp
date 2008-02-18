@@ -116,6 +116,13 @@ bool MMSMusicInterface::isPlaying() {
 	return false;
 }
 
+bool MMSMusicInterface::isPaused() {
+	if(this->manager)
+		return manager->isPaused();
+	
+	return true;
+}
+
 bool MMSMusicInterface::getTimes(int *pos, int *length) {
     if(this->manager)
         return manager->getTimes(pos, length);
