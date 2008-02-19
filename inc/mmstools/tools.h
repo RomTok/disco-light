@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#ifdef __ENABLE_DEBUG__
+#ifdef __ENABLE_LOG__
 #define DEBUGMSG(ident, msg...) ({writeDebugMessage(ident, __FILE__, __LINE__, msg);})
 #else
 #define DEBUGMSG(ident, msg...)
