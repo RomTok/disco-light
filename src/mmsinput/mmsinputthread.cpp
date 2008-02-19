@@ -20,8 +20,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-//#define TRACETRACE
-
 #include "mmsinput/mmsinputthread.h"
 
 MMSInputThread::MMSInputThread(class MMSInputManager *manager, DFBInputDeviceID device, int inputinterval) {
@@ -48,12 +46,7 @@ void MMSInputThread::threadMain() {
 		this->handler = new MMSInputHandler(this->device);
 
 	while (1) {
-//		logger.writeLog("wait for inputs ");
 		this->handler->grabEvents(&event);
-
-#ifdef TRACETRACE
-printf("kjhjkh>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d\n", key);
-#endif
 
 		if (event.type == MMSINPUTEVENTTYPE_KEYPRESS) {
 	        if (this->inputinterval > 0) {
@@ -94,9 +87,7 @@ printf("kjhjkh>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d\n", key);
 		}
 
         /* to the input manager */
-//		logger.writeLog("handle input");
 		this->manager->handleInput(&event);
-//		logger.writeLog("handled input");
 	}
 }
 

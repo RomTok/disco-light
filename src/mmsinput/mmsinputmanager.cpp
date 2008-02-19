@@ -37,14 +37,12 @@ MMSInputManager::~MMSInputManager() {
 void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	MMSWindow *window=NULL;
 	vector<MMSInputEvent> inputeventset;
-
 	
 	this->mutex.lock();
 
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
-		
-		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: " + string(this->mapper->lookUpKeyName(inputevent->key)));
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: %s", this->mapper->lookUpKeyName(inputevent->key));
 
 		/* check crtl+c and exit */
 		if((inputevent->key==DIKS_SMALL_C)&&(this->lastkey==DIKS_CONTROL))
@@ -56,7 +54,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	
 		if((inputeventset.at(0).key==DIKS_POWER)||(inputeventset.at(0).key==DIKS_POWER2)) {
 			if(config->getShutdown() == true) {
-				DEBUGMSG("MMSINPUTMANAGER", "executing: " + config->getShutdownCmd());
+				DEBUGMSG("MMSINPUTMANAGER", "executing: %s", config->getShutdownCmd().c_str());
 				
 				executeCmd(config->getShutdownCmd());			
 				sleep(30);
@@ -95,15 +93,13 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 					}
 			}
 		}
-		 
+
 		if(window != NULL)
 			window->handleInput(&inputeventset);
-			
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
-		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: " + iToStr(inputevent->posx) + "," + iToStr(inputevent->posy));
-
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: %d,%d", inputevent->posx, inputevent->posy);
 		
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
 
@@ -131,7 +127,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
-		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: " + iToStr(inputevent->posx) + "," + iToStr(inputevent->posy));
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: %d,%d", inputevent->posx, inputevent->posy);
 
 		
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
@@ -148,12 +144,9 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			ie.posy = inputevent->posy - rect.y;
 			inputeventset.push_back(ie);
 			if (window->handleInput(&inputeventset)) {
-//				printf("okay\n");
 				this->mutex.unlock();
 				return;
 			}
-//			else
-//				printf("fail\n");
 		}
 
 	

@@ -348,7 +348,7 @@ void MMSImageManager::releaseImage(MMSFBSurface *surface) {
             this->images.at(i)->usecount--;
             if (this->images.at(i)->usecount <= 0) {
                 /* this surface is not used anymore */
-            	DEBUGMSG("MMSGUI", "ImageManager deletes: " + this->images.at(i)->imagefile + "'");
+            	DEBUGMSG("MMSGUI", "ImageManager deletes: '%s'", this->images.at(i)->imagefile.c_str());
 
                 for (int j = 0; j < this->images.at(i)->sufcount; j++)
                     if (this->images.at(i)->suf[j].surface)
