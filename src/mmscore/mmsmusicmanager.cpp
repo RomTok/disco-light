@@ -118,10 +118,12 @@ void MMSMusicManager::play() {
 		player.play();
 	}
 	else {
-		string file = this->playlist.at(this->offset);
-		if(player.isPlaying()) player.stop();
-		player.startPlaying(file, cont);
-	    this->alreadyPlayed.at(this->offset) = true;
+		if(this->playlist.size() > this->offset) {
+			string file = this->playlist.at(this->offset);
+			if(player.isPlaying()) player.stop();
+			player.startPlaying(file, cont);
+		    this->alreadyPlayed.at(this->offset) = true;
+		}
 	}
 }
 
