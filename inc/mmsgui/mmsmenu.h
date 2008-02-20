@@ -102,7 +102,11 @@ class MMSMenu : public MMSWidget {
 
         void setFocus(bool set, bool refresh = true);
 
+#ifdef MIST
         void setSelected(unsigned int item, bool refresh = true);
+#else
+        bool setSelected(unsigned int item, bool refresh = true);
+#endif
         unsigned int getSelected();
 
         MMSWidget *getItem(unsigned int item);

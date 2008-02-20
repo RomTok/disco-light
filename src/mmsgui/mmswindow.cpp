@@ -271,6 +271,7 @@ bool MMSWindow::resize(bool refresh) {
 //        logger.writeLog("got inner size from parent " + iToStr(vrect.w) + "x" + iToStr(vrect.h));  
     }
 
+    
     /* calculate the window position */
     /* first try with xpos */
     if (!getDx(dx)) dx = "";
@@ -700,7 +701,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
 
                 /* draw at new pos */
                 flipWindow(childwin, NULL, (MMSFBSurfaceFlipFlags)0, false, false);
-    
+
                 /* redraw the old rects */
                 if (oldregion.y1 < currregion->y1) {
                     /* redraw above */
@@ -782,6 +783,7 @@ bool MMSWindow::moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh)
 void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, int offsX, int offsY) {
     DFBRegion       pw_region;
 
+    
 
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: flipwindow, drawchildwindows, region=%d,%d,%d,%d\n", pthread_self(), region->x1,region->y1,region->x2,region->y2);
@@ -842,6 +844,8 @@ printf("-----%u: flipwindow, drawchildwindows, opacity=%d, region=%d,%d,%d,%d\n"
             if (myregion->y2 > pw_region.y2)
                 src_rect.h-= myregion->y2 - pw_region.y2;
 
+            
+#ifdef MIST
             /* set the blitting flags and color */
             if (cw->opacity < 255) { 
                 dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
@@ -849,9 +853,35 @@ printf("-----%u: flipwindow, drawchildwindows, opacity=%d, region=%d,%d,%d,%d\n"
             }
             else
                 dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
-           
-            /* blit */
+
             dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+#else
+            bool os;
+            cw->window->getOwnSurface(os);
+        	if (os) {
+                /* set the blitting flags and color */
+                if (cw->opacity < 255) { 
+                    dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+                    dst_surface->setColor(0, 0, 0, cw->opacity);
+                }
+                else
+                    dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+
+                /* blit window front buffer to destination surface */
+        		dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+        	}
+        	else {
+        		/* no own surface -> direct draw */
+				DFBRectangle r = cw->window->geom;
+				if ((src_rect.w == r.w)||(src_rect.h == r.h))
+					/* draw all (e.g. border) */
+					cw->window->draw(false, &src_rect, false);
+				else
+					/* minimal draw */
+					cw->window->draw(true, &src_rect, false);
+        	}
+#endif
+
 
             /* draw the children of this child */
             DFBRegion reg;
@@ -883,13 +913,14 @@ printf("-----%u: flipwindow, after lock\n", pthread_self());
 #endif
 
 
+
     if (!win) win = this;
     if (win->getType()!=MMSWINDOWTYPE_CHILDWINDOW) {
         /* normal parent window */
         pw_surface = win->surface;
         if (region == NULL) {
             /* complete surface */
-            pw_region.x1 = 0;
+        	pw_region.x1 = 0;
             pw_region.y1 = 0;
             pw_region.x2 = win->geom.w - 1;
             pw_region.y2 = win->geom.h - 1;
@@ -971,6 +1002,9 @@ printf("-----%u: flipwindow, set old opacity to %d (%x)\n", pthread_self(),this-
         rect.w = pw_region.x2 - pw_region.x1 + 1;
         rect.h = pw_region.y2 - pw_region.y1 + 1;
 
+        
+#ifdef MIST
+        
         if (win->parent->parent == NULL) {
             /* my parent is the root parent */
             
@@ -1005,12 +1039,31 @@ printf("-----%u: flipwindow, flipwindow, end\n", pthread_self());
         
             return ret;
         }
-      
+#else
+
+        if (this->parent == NULL) {
+            /* i am the root */
+        	this->draw(true, &rect);
+        } else {
+            /* i am also a child, call recursive */
+            bool ret = this->parent->flipWindow(win->parent, &pw_region, flags, false, false);
+
+            /* unlock */
+            if (!locked)
+                flipLock.unlock();
+        
+            return ret;
+        }
+
+#endif
+
+        
     }
 
     /* lock */
     pw_surface->lock();
 
+    
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: flipwindow, drawchildwindows\n", pthread_self());
 #endif
@@ -1018,6 +1071,8 @@ printf("-----%u: flipwindow, drawchildwindows\n", pthread_self());
 	/* draw all affected child windows */
     drawChildWindows(pw_surface, &pw_region);
 
+    
+    
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: flipwindow, drawchildwindows, end, flip\n", pthread_self());
 #endif
@@ -1161,7 +1216,7 @@ void MMSWindow::getArrowWidgetStatus(bool *setarrows) {
 
 void MMSWindow::switchArrowWidgets() {
     preCalcNaviLock.lock();
-    
+
     /* connect arrow widgets */
     loadArrowWidgets();
 
@@ -1246,11 +1301,12 @@ bool MMSWindow::init() {
 
 
 
-void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update) {
+void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
 
     /* lock */
     this->surface->lock();
 
+    
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: draw\n", pthread_self());
 #endif
@@ -1274,19 +1330,26 @@ printf("no clip\n");
 printf("-----%u: draw, clear started\n", pthread_self());
 #endif
 
-    /* clear all or a part of the surface */
-    this->surface->clear();
+
+	/* clear all or a part of the surface */
+#ifdef MIST
+	this->surface->clear();
+#else
+	if (clear)
+		this->surface->clear();
+#endif
 
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: draw, clear finished\n", pthread_self());
 #endif
 
-    /* draw background */
+
+	/* draw background */
     DFBColor bgcolor;
     getBgColor(bgcolor);
     if (this->bgimage) {
         /* prepare for blitting */        
-        this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
+   		this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
 
         /* draw background with bgimage */
 #ifdef __PUPTRACE__
@@ -1299,11 +1362,12 @@ printf("bgimage = %s\n", s.c_str());
     else
     if (bgcolor.a) {
         /* prepare for drawing */        
-        this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, 255);
+   		this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, 255);
 
         /* draw window background */
         this->surface->fillRectangle(this->innerGeom.x, this->innerGeom.y, this->innerGeom.w, this->innerGeom.h);
     }
+
 
     /* draw children */
     bool backgroundFilled = true;
@@ -1312,6 +1376,8 @@ printf("bgimage = %s\n", s.c_str());
         this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled); 
     }
 
+    
+    
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: draw, reset clip\n", pthread_self());
 #endif
@@ -1441,7 +1507,7 @@ bool MMSWindow::showAction(bool *stopaction) {
     /* two times are needed because if window is not shown (shown=false) */
     /* refreshFromChild does not work!!! -> but the second call to draw  */
     /* uses the current settings from all childs                         */
-    draw();                                                            /**/
+	draw();                                                            /**/
     draw();                                                            /**/
     /*********************************************************************/
 
@@ -1680,7 +1746,6 @@ printf("-----%u: hide action started\n", pthread_self());
     	removeFocusFromChildWindow();
     }
 
-    
     if ((this->parent)||((!this->parent)&&(this->window))) {
 	    unsigned int opacity;
 	    if (!getOpacity(opacity)) opacity = 255;
@@ -1845,11 +1910,15 @@ void MMSWindow::remove(MMSWidget *child) {
     }
 }
 
+
 void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update) {
-    DFBRegion    region;
+    DFBRegion  	region;
 
-
+#ifdef MIST
     if(shown==false) {
+#else
+    if (!isShown(true)) {
+#endif
 //        logger.writeLog("draw children skipped because window is not shown");
         return;
     }
@@ -1863,18 +1932,38 @@ void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update) {
 printf("-----refreshfromChild- win=%s,%x - tid=%u\n", this->name.c_str(),this->surface,pthread_self());
 #endif
 
-    if(child) {
+
+#ifdef MIST
+	if(child) {
+		/* draw only childs of this child */
+	    child->drawchildren();
+	}
+	else {
+	    /* draw only some parts of the window */
+	    draw(true, rect2update);
+	    if (!children.empty()) {
+	        child=children.at(0);
+	    }
+	}
+#else
+	bool os;
+	getOwnSurface(os);
+
+	if(child) {
     	/* draw only childs of this child */
-        child->drawchildren();
+		if (os)
+			child->drawchildren();
     }
     else {
         /* draw only some parts of the window */
-        draw(OPTIMIZED_REDRAW, rect2update);
-        if (!children.empty()) {
-            child=children.at(0);
-        }
-    }
+    	if (os)
+    		draw(true, rect2update);
 
+    	if (!children.empty())
+            child=children.at(0);
+    }
+#endif
+	
     /* set the region */
     DFBRectangle rect;
     if (child) {
@@ -3281,9 +3370,17 @@ void MMSWindow::setWindowManager(IMMSWindowManager *wm) {
     }
 }
 
-bool MMSWindow::isShown() {
-    return this->shown;
+#ifdef MIST
+#else
+bool MMSWindow::isShown(bool checkparents) {
+	if (!this->shown) return false;
+	if ((checkparents)&&(this->parent)) return this->parent->isShown(true);
+	return true;
 }
+#endif
+
+
+
 
 bool MMSWindow::willHide() {
     return this->willhide;

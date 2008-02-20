@@ -622,12 +622,14 @@ logger.writeLog("BBB>");
     
     /* make changes visible */
     if (refresh)
-//        this->layer_surface->flip(&ls_region, flags);
-        this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC));
-        //this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)DSFLIP_NONE);
-
-
-
+#ifdef MIST
+    	this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC)); //needed for matrox!!!
+#else
+        if (high_freq)
+        	this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC)); //needed for matrox!!!
+        else
+    		this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
+#endif
     
     
     /* unlock */

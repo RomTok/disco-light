@@ -57,6 +57,10 @@ MMSWidget::MMSWidget() {
     this->id = factory.getId();
 
     this->toRedraw = false;
+#ifdef MIST
+#else
+    this->redrawChildren = false;
+#endif
     this->visible = true;
 
 
@@ -348,6 +352,7 @@ void MMSWidget::setInnerGeometry() {
     /* calculate geometry */
     mygeom = this->geom;
 
+    
     if (drawable) {
     	unsigned int margin, borderthickness, bordermargin;
     	if (!getMargin(margin))
@@ -376,6 +381,7 @@ void MMSWidget::setInnerGeometry() {
 printf("setinnergeom for %s\n", this->getName().c_str());
 #endif
 
+
     if (memcmp(&(this->innerGeom), &mygeom, sizeof(mygeom))) {
         /* inner geom has changed */
         this->innerGeom = mygeom;
@@ -394,6 +400,7 @@ void MMSWidget::setGeometry(DFBRectangle geom) {
     DFBRectangle oldgeom;
     bool dimChanged = true;
 
+    
     if (this->geomset) {
         /* dimension has changed? */
         dimChanged = ((this->geom.w!=geom.w)||(this->geom.h!=geom.h));
@@ -433,6 +440,8 @@ void MMSWidget::setGeometry(DFBRectangle geom) {
     oldgeom = this->geom;
     this->geom = geom;
 
+    
+    
     if (this->has_own_surface) {
 	    if (dimChanged) {
 	        /* calculate complete inner geometry */
@@ -451,6 +460,7 @@ void MMSWidget::setGeometry(DFBRectangle geom) {
 
     /* calculate my children */
     this->recalculateChildren();
+
 }
 
 DFBRectangle MMSWidget::getGeometry() {
@@ -1126,7 +1136,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
 
         /* if not filled then */
         if (!*backgroundFilled) {
-            /* searching for the next parent widget */
+        	/* searching for the next parent widget */
             MMSWidget *widget = NULL;
             vector<MMSWidget*> wlist;
             if (this->parent)
@@ -1337,9 +1347,11 @@ bool MMSWidget::drawDebug() {
     return true;
 }
 
+#ifdef MIST
+#else
 void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 
-    if ((toRedrawOnly)&&(this->toRedraw==false))
+    if ((toRedrawOnly) && (this->toRedraw==false) && (this->redrawChildren==false))
         return;
 
     if (!this->visible)
@@ -1349,15 +1361,20 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
     if (!backgroundFilled)
         backgroundFilled = &myBackgroundFilled;
 
-    this->draw(backgroundFilled);
-    this->toRedraw = false;
+    if ((!toRedrawOnly)||(this->toRedraw))
+    	this->draw(backgroundFilled);
     
-    for(unsigned int i=0;i<this->children.size();i++) {
-        this->children.at(i)->drawchildren(toRedrawOnly, backgroundFilled);            
+    if ((!toRedrawOnly)||(this->toRedraw)||(this->redrawChildren)) {
+	    for(unsigned int i=0;i<this->children.size();i++)
+	        this->children.at(i)->drawchildren(toRedrawOnly, backgroundFilled);            
+
+    	drawMyBorder();
     }
 
-    drawMyBorder();
+    this->toRedraw = this->redrawChildren = false;
+    
 }
+#endif
 
 void MMSWidget::add(MMSWidget *widget) {
     if (canHaveChildren())
@@ -1376,8 +1393,11 @@ void MMSWidget::add(MMSWidget *widget) {
     
 }
 
+#ifdef MIST
+#else
 void MMSWidget::markChildren2Redraw() {
-    this->toRedraw = true;
+	this->toRedraw = true;
+	this->redrawChildren = true;
     for(unsigned int i=0;i<this->children.size();i++) {
         if (this->children.at(i)->isVisible())            
             this->children.at(i)->markChildren2Redraw();            
@@ -1385,28 +1405,33 @@ void MMSWidget::markChildren2Redraw() {
 }
 
 MMSWidget *MMSWidget::getDrawableParent(bool mark2Redraw, bool markChildren2Redraw, bool checkborder,
-                                        vector<MMSWidget*> *wlist) {
+                                        vector<MMSWidget*> *wlist, bool followpath) {
     if (mark2Redraw) {
         this->toRedraw = true;
 
-        if (markChildren2Redraw) {
-            for(unsigned int i=0;i<this->children.size();i++) {
-                if (this->children.at(i)->isVisible())            
-                    this->children.at(i)->markChildren2Redraw();            
-            }
-        }
+		if (markChildren2Redraw) {
+		    this->redrawChildren = true;
+		
+		    for(unsigned int i=0;i<this->children.size();i++)
+		        if (this->children.at(i)->isVisible())            
+		            this->children.at(i)->markChildren2Redraw();            
+		}
     }
 
+    if (followpath)
+    	this->redrawChildren = true;
+    
     if (this->needsParentDraw(checkborder)==false) {
-        return this;
-    }
-    else if (this->parent) {
         if (wlist) wlist->push_back(this->parent);
-        return this->parent->getDrawableParent(mark2Redraw, false, checkborder, wlist);
+        return this->parent->getDrawableParent(false, false, checkborder, wlist, true);
     }
-    else {
-        return NULL;
+    else
+    if (this->parent) {
+        if (wlist) wlist->push_back(this->parent);
+        return this->parent->getDrawableParent(mark2Redraw, false, checkborder, wlist, followpath);
     }
+
+    return NULL;
 }
 
 void MMSWidget::refresh() {
@@ -1431,7 +1456,7 @@ void MMSWidget::refresh() {
     tobeupdated.w = this->geom.w - 2*margin;
     tobeupdated.h = this->geom.h - 2*margin;
 
-    this->getRootWindow()->refreshFromChild(this->getDrawableParent(OPTIMIZED_REDRAW, OPTIMIZED_REDRAW), &tobeupdated);
+    this->getRootWindow()->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated);
 
     switchArrowWidgets();
 
@@ -1439,90 +1464,14 @@ void MMSWidget::refresh() {
     if (this->rootwindow)
         this->rootwindow->unlock();
 }
+#endif
 
 bool MMSWidget::isDrawable() {
     return this->drawable;
 }
 
+#ifdef MIST
 bool MMSWidget::needsParentDraw(bool checkborder) {
-	DFBColor c;
-	
-    if (this->needsparentdraw)
-        return true;
-
-    if (checkborder) {
-        unsigned int borderthickness;
-        if (!getBorderThickness(borderthickness))
-        	borderthickness = 0;
-        
-        if (borderthickness>0) {
-            bool borderrcorners;
-            if (!getBorderRCorners(borderrcorners))
-            	borderrcorners = false;
-
-            if ((borderrcorners)||(getOpacity()!=255))
-                return true;
-            else
-            if (isSelected()) {
-                DFBColor c;
-                getBorderSelColor(c);
-                if (c.a!=255)
-                    return true;
-            }
-            else {
-                DFBColor c;
-                getBorderColor(c);
-                if (c.a!=255)
-                    return true;
-            }
-        }
-    }
-    
-    if (isActivated()) {
-        if (!isPressed()) {
-	        if (isSelected()) {
-	            getSelBgColor(c);
-	            if (c.a==255)
-	                return false;
-	        }
-	        else {
-	        	getBgColor(c);
-	            if (c.a==255)
-	                return false;
-	        }
-        }
-        else {
-            if (isSelected()) {
-            	getSelBgColor_p(c);
-                if (c.a==255)
-                    return false;
-            }
-            else {
-            	getBgColor_p(c);
-                if (c.a==255)
-                    return false;
-            }
-        }
-    }
-    else {
-        if (isSelected()) {
-        	getSelBgColor_i(c);
-            if (c.a==255)
-                return false;
-        }
-        else {
-        	getBgColor_i(c);
-            if (c.a==255)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-/*
- * 
- * bool MMSWidget::needsParentDraw(bool checkborder) {
 
     if (this->needsparentdraw)
         return true;
@@ -1574,10 +1523,84 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
 
     return true;
 }
+#else
+bool MMSWidget::needsParentDraw(bool checkborder) {
+	DFBColor c;
+	
+    if (this->needsparentdraw)
+        return true;
 
- * 
- * 
- */
+    if (checkborder) {
+        unsigned int borderthickness;
+        if (!getBorderThickness(borderthickness))
+        	borderthickness = 0;
+        
+        if (borderthickness>0) {
+            bool borderrcorners;
+            if (!getBorderRCorners(borderrcorners))
+            	borderrcorners = false;
+
+            if ((borderrcorners)||(getOpacity()!=255))
+                return true;
+            else
+            if (this->selected) {
+                DFBColor c;
+                getBorderSelColor(c);
+                if (c.a!=255)
+                    return true;
+            }
+            else {
+                DFBColor c;
+                getBorderColor(c);
+                if (c.a!=255)
+                    return true;
+            }
+        }
+    }
+    
+    if (this->activated) {
+        if (!this->pressed) {
+	        if (this->selected) {
+	            getSelBgColor(c);
+	            if (c.a==255)
+	                return false;
+	        }
+	        else {
+	        	getBgColor(c);
+	            if (c.a==255)
+	                return false;
+	        }
+        }
+        else {
+            if (this->selected) {
+            	getSelBgColor_p(c);
+                if (c.a==255)
+                    return false;
+            }
+            else {
+            	getBgColor_p(c);
+                if (c.a==255)
+                    return false;
+            }
+        }
+    }
+    else {
+        if (this->selected) {
+        	getSelBgColor_i(c);
+            if (c.a==255)
+                return false;
+        }
+        else {
+        	getBgColor_i(c);
+            if (c.a==255)
+                return false;
+        }
+    }
+
+    return true;
+}
+#endif
+
  
  bool MMSWidget::canHaveChildren() {
     return this->canhavechildren;
@@ -1656,18 +1679,23 @@ bool MMSWidget::isFocused() {
     return this->focused;
 }
 
-void MMSWidget::setSelected(bool set, bool refresh) {
+#ifdef MIST
+#else
+bool MMSWidget::setSelected(bool set, bool refresh) {
 
     /* check if selected status already set */
     if (this->selected == set) {
         /* refresh my children */
-        if (canSelectChildren()) {
+    	if (canSelectChildren()) {
+        	bool rf = false;
             for (unsigned int i=0; i < children.size(); i++)
-                children.at(i)->setSelected(set, false);
-            if (refresh)
-                this->refresh();
+                if (children.at(i)->setSelected(set, false))
+                	rf = true;
+
+            if (refresh && rf)
+            	this->refresh();
         }
-        return;
+        return false;
     }
     
     /* get flags */
@@ -1693,7 +1721,10 @@ void MMSWidget::setSelected(bool set, bool refresh) {
     if (selectable)
         if (set)
             this->onSelect->emit(this);
+    
+    return true;
 }
+#endif
 
 bool MMSWidget::isSelected() {
     return this->selected;
@@ -1795,7 +1826,18 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 
 		switch (inputevent->key) {
 			case DIKS_CURSOR_DOWN:
-		        if (scrollDown())
+#ifdef MIST
+#else
+				for (int ii=0; ii< 15;ii++) scrollDown();
+				for (int ii=0; ii< 15;ii++) scrollUp();
+				for (int ii=0; ii< 15;ii++) scrollDown();
+				for (int ii=0; ii< 15;ii++) scrollUp();
+				for (int ii=0; ii< 15;ii++) scrollDown();
+				for (int ii=0; ii< 15;ii++) scrollUp();
+				for (int ii=0; ii< 15;ii++) scrollDown();
+#endif
+
+				if (scrollDown())
 		            return;
 		        break;
 			case DIKS_CURSOR_UP:

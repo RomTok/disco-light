@@ -81,8 +81,10 @@ struct bool_accumulator
 
 
 
-
+#ifdef MIST
 #define OPTIMIZED_REDRAW    true        /* use optimized redrawing? */
+#else
+#endif
 
 /*
 #ifndef DFBCHECK
@@ -235,7 +237,11 @@ class MMSWidget {
 
         virtual void setFocus(bool set, bool refresh = true);
         bool isFocused();
+#ifdef MIST
         virtual void setSelected(bool set, bool refresh = true);
+#else
+        virtual bool setSelected(bool set, bool refresh = true);
+#endif
         bool isSelected();
         void unsetFocusableForAllChildren(bool refresh);
 
@@ -306,9 +312,18 @@ class MMSWidget {
 
 
         bool toRedraw;
+#ifdef MIST
+#else
+        bool redrawChildren;
+#endif
         void markChildren2Redraw();
+#ifdef MIST
         virtual MMSWidget *getDrawableParent(bool mark2Redraw = false, bool markChildren2Redraw = false,
                                              bool checkborder = true, vector<MMSWidget*> *wlist = NULL);
+#else
+        virtual MMSWidget *getDrawableParent(bool mark2Redraw = false, bool markChildren2Redraw = false,
+                                             bool checkborder = true, vector<MMSWidget*> *wlist = NULL, bool followpath = false);
+#endif
         void refresh();
 
 //        IDirectFB *dfb;

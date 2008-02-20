@@ -1022,7 +1022,7 @@ bool MMSMenu::scrollDownEx(unsigned int count, bool refresh, bool test) {
                 return false;
             }
         }
-    
+
         /* in test mode we can say that we can scroll */
         if (test)
             return true;
@@ -1856,13 +1856,14 @@ void MMSMenu::setFocus(bool set, bool refresh) {
     }
 }
 
-
-void MMSMenu::setSelected(unsigned int item, bool refresh) {
+#ifdef MIST
+#else
+bool MMSMenu::setSelected(unsigned int item, bool refresh) {
     if (!getConfig())
-        return;
+        return false;
 
     if (item >= children.size())
-        return;
+        return false;
 
     if (!this->firstSelection) {
         if (item == 0)
@@ -1919,7 +1920,10 @@ void MMSMenu::setSelected(unsigned int item, bool refresh) {
     if (mx > this->x) {
    		scrollRight(mx - this->x, refresh);
     }
+    
+    return true;
 }
+#endif
 
 unsigned int MMSMenu::getSelected() {
     return (this->x + this->y * getCols());
