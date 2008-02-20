@@ -845,17 +845,6 @@ printf("-----%u: flipwindow, drawchildwindows, opacity=%d, region=%d,%d,%d,%d\n"
                 src_rect.h-= myregion->y2 - pw_region.y2;
 
             
-#ifdef MIST
-            /* set the blitting flags and color */
-            if (cw->opacity < 255) { 
-                dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
-                dst_surface->setColor(0, 0, 0, cw->opacity);
-            }
-            else
-                dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
-
-            dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
-#else
             bool os;
             cw->window->getOwnSurface(os);
         	if (os) {
@@ -880,8 +869,6 @@ printf("-----%u: flipwindow, drawchildwindows, opacity=%d, region=%d,%d,%d,%d\n"
 					/* minimal draw */
 					cw->window->draw(true, &src_rect, false);
         	}
-#endif
-
 
             /* draw the children of this child */
             DFBRegion reg;
@@ -1003,44 +990,6 @@ printf("-----%u: flipwindow, set old opacity to %d (%x)\n", pthread_self(),this-
         rect.h = pw_region.y2 - pw_region.y1 + 1;
 
         
-#ifdef MIST
-        
-        if (win->parent->parent == NULL) {
-            /* my parent is the root parent */
-            
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, draw\n", pthread_self());
-#endif
-
-            win->parent->draw(true, &rect);
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("----------%u: flipwindow, draw, end\n", pthread_self());
-#endif
-
-        } else {
-            /* my parent is also a child, call it recursive */
-            pw_region.x1-=myregion->x1;
-            pw_region.y1-=myregion->y1;
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, flipwindow\n", pthread_self());
-#endif
-
-            bool ret = win->parent->parent->flipWindow(win->parent, &pw_region, flags, false, false);
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, flipwindow, end\n", pthread_self());
-#endif
-
-            /* unlock */
-            if (!locked)
-                flipLock.unlock();
-        
-            return ret;
-        }
-#else
-
         if (this->parent == NULL) {
             /* i am the root */
         	this->draw(true, &rect);
@@ -1055,9 +1004,6 @@ printf("-----%u: flipwindow, flipwindow, end\n", pthread_self());
             return ret;
         }
 
-#endif
-
-        
     }
 
     /* lock */
@@ -1332,12 +1278,8 @@ printf("-----%u: draw, clear started\n", pthread_self());
 
 
 	/* clear all or a part of the surface */
-#ifdef MIST
-	this->surface->clear();
-#else
 	if (clear)
 		this->surface->clear();
-#endif
 
 #ifdef MMSGUI_STDOUT_TRACE
 printf("-----%u: draw, clear finished\n", pthread_self());
@@ -1914,11 +1856,7 @@ void MMSWindow::remove(MMSWidget *child) {
 void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update) {
     DFBRegion  	region;
 
-#ifdef MIST
-    if(shown==false) {
-#else
     if (!isShown(true)) {
-#endif
 //        logger.writeLog("draw children skipped because window is not shown");
         return;
     }
@@ -1933,19 +1871,6 @@ printf("-----refreshfromChild- win=%s,%x - tid=%u\n", this->name.c_str(),this->s
 #endif
 
 
-#ifdef MIST
-	if(child) {
-		/* draw only childs of this child */
-	    child->drawchildren();
-	}
-	else {
-	    /* draw only some parts of the window */
-	    draw(true, rect2update);
-	    if (!children.empty()) {
-	        child=children.at(0);
-	    }
-	}
-#else
 	bool os;
 	getOwnSurface(os);
 
@@ -1962,7 +1887,6 @@ printf("-----refreshfromChild- win=%s,%x - tid=%u\n", this->name.c_str(),this->s
     	if (!children.empty())
             child=children.at(0);
     }
-#endif
 	
     /* set the region */
     DFBRectangle rect;
@@ -3370,15 +3294,11 @@ void MMSWindow::setWindowManager(IMMSWindowManager *wm) {
     }
 }
 
-#ifdef MIST
-#else
 bool MMSWindow::isShown(bool checkparents) {
 	if (!this->shown) return false;
 	if ((checkparents)&&(this->parent)) return this->parent->isShown(true);
 	return true;
 }
-#endif
-
 
 
 

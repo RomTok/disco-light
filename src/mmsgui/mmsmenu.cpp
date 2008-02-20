@@ -1856,8 +1856,6 @@ void MMSMenu::setFocus(bool set, bool refresh) {
     }
 }
 
-#ifdef MIST
-#else
 bool MMSMenu::setSelected(unsigned int item, bool refresh) {
     if (!getConfig())
         return false;
@@ -1923,7 +1921,6 @@ bool MMSMenu::setSelected(unsigned int item, bool refresh) {
     
     return true;
 }
-#endif
 
 unsigned int MMSMenu::getSelected() {
     return (this->x + this->y * getCols());

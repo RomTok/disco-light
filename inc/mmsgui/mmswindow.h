@@ -157,11 +157,7 @@ class MMSWindow {
         void switchArrowWidgets();
 
         virtual bool init();
-#ifdef MIST
-        virtual void draw(bool toRedrawOnly = false, DFBRectangle *rect2update = NULL);
-#else
         virtual void draw(bool toRedrawOnly = false, DFBRectangle *rect2update = NULL, bool clear = true);
-#endif
         void drawMyBorder();
         bool setFirstFocus(bool cw = false);
 
@@ -210,11 +206,7 @@ class MMSWindow {
         int getNumberOfFocusableChildWins();
         MMSFBSurface *getSurface();
         void setWindowManager(IMMSWindowManager *wm);
-#ifdef MIST
-        bool isShown();
-#else
         bool isShown(bool checkparents = false);
-#endif
         bool willHide();
 
 		void instantShow();

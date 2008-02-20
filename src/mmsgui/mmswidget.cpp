@@ -57,10 +57,7 @@ MMSWidget::MMSWidget() {
     this->id = factory.getId();
 
     this->toRedraw = false;
-#ifdef MIST
-#else
     this->redrawChildren = false;
-#endif
     this->visible = true;
 
 
@@ -1347,8 +1344,6 @@ bool MMSWidget::drawDebug() {
     return true;
 }
 
-#ifdef MIST
-#else
 void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 
     if ((toRedrawOnly) && (this->toRedraw==false) && (this->redrawChildren==false))
@@ -1374,7 +1369,6 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
     this->toRedraw = this->redrawChildren = false;
     
 }
-#endif
 
 void MMSWidget::add(MMSWidget *widget) {
     if (canHaveChildren())
@@ -1393,8 +1387,6 @@ void MMSWidget::add(MMSWidget *widget) {
     
 }
 
-#ifdef MIST
-#else
 void MMSWidget::markChildren2Redraw() {
 	this->toRedraw = true;
 	this->redrawChildren = true;
@@ -1464,66 +1456,11 @@ void MMSWidget::refresh() {
     if (this->rootwindow)
         this->rootwindow->unlock();
 }
-#endif
 
 bool MMSWidget::isDrawable() {
     return this->drawable;
 }
 
-#ifdef MIST
-bool MMSWidget::needsParentDraw(bool checkborder) {
-
-    if (this->needsparentdraw)
-        return true;
-
-    if (checkborder)
-        if (getBorderThickness()>0)
-            if ((getBorderRCorners())||(getOpacity()!=255))
-                return true;
-            else
-            if (isSelected())
-                if (getBorderSelColor().a!=255)
-                    return true;
-            else
-                if (getBorderColor().a!=255)
-                    return true;
-
-    if (isActivated()) {
-        if (isSelected()) {
-            if (this->selbgimage)
-                return false;
-            else
-                if (getSelBgColor().a)
-                    return false;
-        }
-        else {
-            if (this->bgimage)
-                return false;
-            else
-                if (getBgColor().a)
-                    return false;
-        }
-    }
-    else {
-        if (isSelected()) {
-            if (this->selbgimage_i)
-                return false;
-            else
-                if (getSelBgColor_i().a)
-                    return false;
-        }
-        else {
-            if (this->bgimage_i)
-                return false;
-            else
-                if (getBgColor_i().a)
-                    return false;
-        }
-    }
-
-    return true;
-}
-#else
 bool MMSWidget::needsParentDraw(bool checkborder) {
 	DFBColor c;
 	
@@ -1599,7 +1536,6 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
 
     return true;
 }
-#endif
 
  
  bool MMSWidget::canHaveChildren() {
@@ -1679,8 +1615,6 @@ bool MMSWidget::isFocused() {
     return this->focused;
 }
 
-#ifdef MIST
-#else
 bool MMSWidget::setSelected(bool set, bool refresh) {
 
     /* check if selected status already set */
@@ -1724,7 +1658,6 @@ bool MMSWidget::setSelected(bool set, bool refresh) {
     
     return true;
 }
-#endif
 
 bool MMSWidget::isSelected() {
     return this->selected;
@@ -1826,8 +1759,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 
 		switch (inputevent->key) {
 			case DIKS_CURSOR_DOWN:
-#ifdef MIST
-#else
+/*PERFORMANCE TEST
 				for (int ii=0; ii< 15;ii++) scrollDown();
 				for (int ii=0; ii< 15;ii++) scrollUp();
 				for (int ii=0; ii< 15;ii++) scrollDown();
@@ -1835,7 +1767,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 				for (int ii=0; ii< 15;ii++) scrollDown();
 				for (int ii=0; ii< 15;ii++) scrollUp();
 				for (int ii=0; ii< 15;ii++) scrollDown();
-#endif
+*/
 
 				if (scrollDown())
 		            return;
