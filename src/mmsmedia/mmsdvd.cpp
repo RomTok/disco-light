@@ -132,25 +132,13 @@ void MMSDVD::open() {
  * 
  * @param   cont    if true it tries to continue at a position stopped before
  */
-void MMSDVD::play(const bool cont) {
+void MMSDVD::startPlaying(const bool cont) {
 	string mrl = "dvd://" + this->device;
 	
 	/* play root title if not continuing (otherwise */
 	/* xine uses last played chapter                */
 	if(!cont) mrl += "/0";
-    MMSAV::play(mrl, cont); 
-}
-
-/**
- * Toggles playing/pausing.
- * 
- * If DVD was stopped, start from beginning.
- */
-void MMSDVD::pause() {
-	if(this->status == this->STATUS_STOPPED)
-		play(false);
-	else
-		MMSAV::pause();
+    MMSAV::startPlaying(mrl, cont); 
 }
 
 /**

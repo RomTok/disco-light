@@ -100,13 +100,13 @@ void MMSTV::open() {
  * 
  * @param   channel [in]    channel name to be played
  */
-void MMSTV::play(const string channel) {
+void MMSTV::startPlaying(const string channel) {
     if(!this->stream) this->open();
 
     /* first try using our own input plugin */
     if(this->usingInputDVBMorphine) {
         try {
-            MMSAV::play("mmsdvb://" + channel, false);
+            MMSAV::startPlaying("mmsdvb://" + channel, false);
         }
         catch(MMSError *e) {
             /* now use the xine input plugin */
@@ -114,13 +114,24 @@ void MMSTV::play(const string channel) {
             DEBUGMSG("MMSMedia", "Error while using Morphine's DVB input plugin [" + e->getMessage() + "]");
             DEBUGMSG("MMSMedia", "Using xine's plugin. Not all features will be available.");
             delete e;
-            MMSAV::play("dvb://" + channel, false);
+            MMSAV::startPlaying("dvb://" + channel, false);
         }
     }
     else
-        MMSAV::play("dvb://" + channel, false);
+        MMSAV::startPlaying("dvb://" + channel, false);
     
     this->channel = channel;
+}
+
+/**
+ * Continues playing the stream.
+ * 
+ * If recording is on, it will be continued, too.
+ */
+void MMSTV::play() {
+    //TODO: recording
+	//this->recordPause();
+    MMSAV::play();
 }
 
 /**

@@ -28,7 +28,6 @@
 
 class MMSMusicManager : public IMMSMusicManager {
 	private: 
-		MMSMusicInterface 		interface;
 		MMSMutex 				mutex;
 		sigc::signal<void, int> *onNextSong;
 		sigc::signal<void, int> *onPrevSong;
@@ -37,13 +36,15 @@ class MMSMusicManager : public IMMSMusicManager {
 		int      				offset;
 		bool 					cont, repeat, shuffle;
         vector<bool> 			alreadyPlayed;
+        
 	public:
 		MMSMusicManager();
 		virtual ~MMSMusicManager();
-		void setPlayList(PLAYLIST, int offset=0);
+		void init(PLAYLIST list, int offset=0);
 		void stopAll();
 		void next();
 		void prev();
+		void play();
 		void pause();
 		bool hasPlaylist();
 		PLAYLIST getPlaylist();

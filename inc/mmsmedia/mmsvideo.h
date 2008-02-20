@@ -42,7 +42,7 @@ class MMSVideo : public MMSAV {
         MMSVideo(MMSWindow *window, const bool verbose = false);
         ~MMSVideo();
         
-        void play(const string file, const bool cont = true);
+        void startPlaying(const string file, const bool cont = true);
 };
 
 #endif /*MMSVIDEO_H_*/

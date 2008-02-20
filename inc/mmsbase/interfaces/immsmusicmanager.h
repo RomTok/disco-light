@@ -31,10 +31,11 @@ typedef vector<string> PLAYLIST;
 class IMMSMusicManager {
 	public: 
 	    virtual ~IMMSMusicManager() {};
-		virtual void setPlayList(PLAYLIST, int offset=0) = 0;
+		virtual void init(PLAYLIST, int offset=0) = 0;
 		virtual void stopAll() = 0;
 		virtual void next() = 0;
 		virtual void prev() = 0;
+		virtual void play() = 0;
 		virtual void pause() = 0;
 		virtual bool hasPlaylist() = 0;
 		virtual PLAYLIST getPlaylist() = 0;

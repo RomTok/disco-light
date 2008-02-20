@@ -27,17 +27,18 @@
 
 class MMSMusicInterface {
 	private:
-	
 		static IMMSMusicManager *manager;
 		void setManager(IMMSMusicManager *manager);
+		
 	public:
 			MMSMusicInterface(); 
 			~MMSMusicInterface(); 
-			void play(string file);
-			void play(PLAYLIST list, int offset=0);
+			void init(string file);
+			void init(PLAYLIST list, int offset=0);
 			void stop();
 			void next();
 			void prev();
+			void play();
 			void pause();
 			bool hasPlaylist();
 			PLAYLIST getPlaylist();

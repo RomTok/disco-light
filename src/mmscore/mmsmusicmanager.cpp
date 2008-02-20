@@ -28,7 +28,8 @@ MMSMusicManager::MMSMusicManager() :
     repeat(false),
     shuffle(false) {
 	/* register myself to the music interface */
-	this->interface.setManager(this);
+	MMSMusicInterface interface;
+	interface.setManager(this);
     this->player.onPlaybackFinished->connect(sigc::mem_fun(this, &MMSMusicManager::next));
 }
 
@@ -37,28 +38,23 @@ MMSMusicManager::~MMSMusicManager() {
 		this->player.stop();
 }
 
-void MMSMusicManager::setPlayList(PLAYLIST list,int offset) {
+void MMSMusicManager::init(PLAYLIST list, int offset) {
 	this->mutex.lock();
 	this->playlist = list;
 	this->offset = offset;
     this->alreadyPlayed.clear();
     for(unsigned int i = 0; i < playlist.size(); i++)
         this->alreadyPlayed.push_back(false);
+	this->mutex.unlock();
     
 	DEBUGMSG("MMSMusicManager", "got playlist size: %d offset: %d", list.size(), offset);
-	string file = this->playlist.at(this->offset);
-	if(player.isPlaying())
-		player.stop();
-	player.play(file,(const bool)cont);
-    this->alreadyPlayed.at(this->offset) = true;
-	this->mutex.unlock();
 }
 
 void MMSMusicManager::stopAll() {
 	this->mutex.lock();
 	if(player.isPlaying())
 		player.stop();
-	cont=false;
+	this->cont=false;
 	this->mutex.unlock();
 }
 
@@ -83,7 +79,7 @@ void MMSMusicManager::next() {
 
 	if(player.isPlaying())
 		player.stop();
-	player.play((const string)file,(const bool)false);
+	player.startPlaying(file, false);
     this->alreadyPlayed.at(this->offset) = true;
 	if(this->onNextSong)
 		this->onNextSong->emit(this->offset);
@@ -110,20 +106,30 @@ void MMSMusicManager::prev() {
 		  this->offset = this->playlist.size() - 1;
 	}
 	string file = this->playlist.at(this->offset);
-	player.play(file,false);			
+	player.startPlaying(file,false);			
     this->alreadyPlayed.at(this->offset) = true;
 	if(this->onPrevSong)
 		this->onPrevSong->emit(this->offset);
 	this->mutex.unlock();
 }
 
+void MMSMusicManager::play() {
+	if(this->cont) {
+		player.play();
+	}
+	else {
+		string file = this->playlist.at(this->offset);
+		if(player.isPlaying()) player.stop();
+		player.startPlaying(file, cont);
+	    this->alreadyPlayed.at(this->offset) = true;
+	}
+}
+
 void MMSMusicManager::pause() {
 	this->mutex.lock();
-	//if(player.isPlaying())
-		player.pause();
+    player.pause();
 	cont=true;
 	this->mutex.unlock();
-
 }
 
 bool MMSMusicManager::hasPlaylist() {

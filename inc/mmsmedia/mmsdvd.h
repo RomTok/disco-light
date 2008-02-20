@@ -68,8 +68,7 @@ class MMSDVD : public MMSAV {
         ~MMSDVD();
         
         void open();
-        void play(const bool cont = true);
-        void pause();
+        void startPlaying(const bool cont = true);
         void rewind();
         void previous();
         void next();

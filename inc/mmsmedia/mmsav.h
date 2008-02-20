@@ -132,11 +132,11 @@ class MMSAV
         /* playing methods */
         bool isPlaying();
         bool isPaused();
-        void play(const string mrl, const bool cont = true);
+        bool isStopped();
+        void startPlaying(const string mrl, const bool cont = true);
+        void play();
         void stop();
-        void cont();
         void pause();
-        void contPause();
         void ffwd();
         void slow();
         

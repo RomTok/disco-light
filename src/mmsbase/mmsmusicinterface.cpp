@@ -44,22 +44,27 @@ void MMSMusicInterface::setManager(IMMSMusicManager *manager) {
 	this->manager = manager;
 }
 
-void MMSMusicInterface::play(string file) {
-
+void MMSMusicInterface::init(string file) {
 	if(this->manager!=NULL) {
 		PLAYLIST playlist;
 		playlist.push_back(file);
-		this->manager->setPlayList(playlist);
+		this->manager->init(playlist);
 	}
 }
 
-void MMSMusicInterface::play(PLAYLIST list, int offset) {
+void MMSMusicInterface::init(PLAYLIST list, int offset) {
 	if(this->manager!=NULL) {
-		this->manager->setPlayList(list,offset);
+		this->manager->init(list,offset);
 		if(this->onNextSong)
 			this->manager->setOnNextSong(this->onNextSong);
 		if(this->onPrevSong)
 			this->manager->setOnPrevSong(this->onPrevSong);
+	}
+}
+
+void MMSMusicInterface::play() {
+	if(this->manager!=NULL) {
+		this->manager->play();
 	}
 }
 
@@ -68,7 +73,6 @@ void MMSMusicInterface::stop() {
 		this->manager->stopAll();
 	}
 }
-
 
 void MMSMusicInterface::next() {
 	if(this->manager)

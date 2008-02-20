@@ -55,15 +55,15 @@ MMSVideo::~MMSVideo() {
  * 
  * @exception   MMSAVError stream could not be opened
  */
-void MMSVideo::play(const string file, const bool cont) {
+void MMSVideo::startPlaying(const string file, const bool cont) {
     
    string::size_type loc = file.find( "://", 0 );
    if( loc != string::npos ) {
 	   /* we found a mrl, so we play file directly */
-	   MMSAV::play(file, cont);
+	   MMSAV::startPlaying(file, cont);
    } 
    else {
 	   /* we found no mrl type, it seems to be a file */
-	   MMSAV::play("file://" + file, cont);
+	   MMSAV::startPlaying("file://" + file, cont);
    }
 }

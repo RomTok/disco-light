@@ -50,7 +50,8 @@ class MMSTV : public MMSAV {
         ~MMSTV();
 
         void open();
-        void play(const string channel = "");
+        void startPlaying(const string channel = "");
+        void play();
         void pause();
         void previous();
         void next();

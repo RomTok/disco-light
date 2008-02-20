@@ -53,7 +53,7 @@ class MMSSound : public MMSAV {
         ~MMSSound();
         
         void open();
-        void play(string mrl, bool cont);
+        void startPlaying(string mrl, bool cont);
         void ffwd();
         
         /**

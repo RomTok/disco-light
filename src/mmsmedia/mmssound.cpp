@@ -76,10 +76,10 @@ void MMSSound::open() {
  * @param   mrl     MRL to play 
  * @param   cont    if true it tries to continue at a position stopped before
  */
-void MMSSound::play(string mrl, bool cont) {
+void MMSSound::startPlaying(string mrl, bool cont) {
     if(!this->stream)
         this->open();
-    MMSAV::play(mrl, cont);
+    MMSAV::startPlaying(mrl, cont);
 }
 
 /**

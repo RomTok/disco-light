@@ -627,6 +627,15 @@ bool MMSAV::isPaused() {
 }
 
 /**
+ * Determines if a stream is in stopped status.
+ * 
+ * @return true if stream is being stopped
+ */
+bool MMSAV::isStopped() {
+	return (this->status == STATUS_STOPPED);
+}
+
+/**
  * Starts playing.
  *
  * If the continue flag is set it tries to continue
@@ -637,7 +646,7 @@ bool MMSAV::isPaused() {
  * 
  * @exception   MMSAVError stream could not be opened
  */
-void MMSAV::play(const string mrl, const bool cont) {
+void MMSAV::startPlaying(const string mrl, const bool cont) {
     static string currentMRL = "";
     
     if(!this->stream)
@@ -683,6 +692,23 @@ void MMSAV::play(const string mrl, const bool cont) {
 }
 
 /**
+ * Continues playing.
+ * 
+ * It only works if playing was stopped or speed
+ * changed to other than normal.
+ */
+void MMSAV::play() {
+    if(this->status == this->STATUS_PAUSED  ||
+       this->status == this->STATUS_SLOW    ||
+       this->status == this->STATUS_SLOW2   ||
+       this->status == this->STATUS_FFWD    ||
+       this->status == this->STATUS_FFWD2) {
+       this->setStatus(this->STATUS_PLAYING);
+        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+    }
+}
+
+/**
  * Stops playing.
  * 
  * It saves the position, so if you call MMSAV::play()
@@ -699,21 +725,10 @@ void MMSAV::stop() {
 }
 
 /**
- * Continues playing.
- */
-void MMSAV::cont() {
-    if(this->status == this->STATUS_PAUSED  ||
-       this->status == this->STATUS_SLOW    ||
-       this->status == this->STATUS_SLOW2   ||
-       this->status == this->STATUS_FFWD    ||
-       this->status == this->STATUS_FFWD2) {
-       this->setStatus(this->STATUS_PLAYING);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-    }
-}
-
-/**
  * Pauses.
+ * 
+ * It only works if stream is playing (can be slow,
+ * ffwd etc.).
  */
 void MMSAV::pause() {
     if(this->status == this->STATUS_PLAYING ||
@@ -723,24 +738,6 @@ void MMSAV::pause() {
        this->status == this->STATUS_FFWD2) {
        this->setStatus(this->STATUS_PAUSED);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
-    }
-}
-
-/**
- * Toggles playing/pausing.
- */
-void MMSAV::contPause() {
-    if(this->status == this->STATUS_PLAYING) {
-       this->setStatus(this->STATUS_PAUSED);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
-    }
-    else if(this->status == this->STATUS_PAUSED || 
-        this->status == this->STATUS_SLOW    ||
-        this->status == this->STATUS_SLOW2   ||
-        this->status == this->STATUS_FFWD    ||
-        this->status == this->STATUS_FFWD2) {
-        this->setStatus(this->STATUS_PLAYING);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
     }
 }
 
@@ -808,7 +805,9 @@ void MMSAV::ffwd() {
  * @param   length  [out]   time in seconds of title length
  */
 bool MMSAV::getTimes(int *pos, int *length) {
-    if(xine_get_pos_length(this->stream, NULL, pos, length)) {
+	if(!this->stream) return false;
+    
+	if(xine_get_pos_length(this->stream, NULL, pos, length)) {
         if(pos)    (*pos)    /= 1000;
         if(length) (*length) /= 1000;
         return true;
