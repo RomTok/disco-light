@@ -24,7 +24,6 @@
 #define MMSINPUT_H_
 
 #include "mmsinput/mmsinputhandler.h"
-#include "mmsinput/mmsinputlogger.h"
 #include "mmsinput/mmsinputmanager.h"
 #include "mmsinput/mmsinputsubscription.h"
 #include "mmsinput/mmsinputthread.h"
