@@ -24,13 +24,17 @@
 #define MMSTHREAD_H_
 
 #include <pthread.h>
+#include <sched.h>
 #include "mmstools/mmslogger.h"
 
 class MMSThread {
 
 	private:
-		pthread_t id;
-		bool isrunning;
+		int				priority;
+        pthread_attr_t	tattr;
+        sched_param		param;
+		pthread_t 		id;
+		bool 			isrunning;
 		
 	public:
         string    identity;
@@ -39,7 +43,7 @@ class MMSThread {
 		void run();
 
 	public:
-		MMSThread(string identity = "MMSThread");
+		MMSThread(string identity = "MMSThread", int priority = 0);
         virtual ~MMSThread() {};
 		virtual void threadMain() = 0;
 		void start();

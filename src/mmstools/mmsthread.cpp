@@ -38,12 +38,13 @@ static void *startmythread(void *thiz) {
 	return NULL;
 }
 
-MMSThread::MMSThread(string identity) {
+MMSThread::MMSThread(string identity, int priority) {
     D_DEBUG_AT( MMS_Thread, "MMSThread( %s )\n", identity.c_str() );
 
     direct_trace_print_stack(NULL);
 
     this->identity = identity;
+    this->priority = priority;
 
     this->isrunning=false;
 }
@@ -63,7 +64,17 @@ void MMSThread::run() {
 }
 
 void MMSThread::start() {
-	pthread_create(&this->id, NULL, startmythread, static_cast<void *>(this));
+	if (this->isrunning)
+		return;
+
+	/* initialize the priority */
+    pthread_attr_init(&this->tattr);
+    pthread_attr_getschedparam(&tattr, &param);
+    param.sched_priority = this->priority;
+    pthread_attr_setschedparam(&tattr, &param);
+
+    /* create the new thread */
+    pthread_create(&this->id, &tattr, startmythread, static_cast<void *>(this));
 }
 
 void MMSThread::detach() {
