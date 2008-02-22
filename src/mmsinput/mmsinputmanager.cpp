@@ -42,7 +42,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
-		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: %s", this->mapper->lookUpKeyName(inputevent->key));
+		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: %s", this->mapper->lookUpKeyName(inputevent->key).c_str());
 
 		/* check crtl+c and exit */
 		if((inputevent->key==DIKS_SMALL_C)&&(this->lastkey==DIKS_CONTROL))
