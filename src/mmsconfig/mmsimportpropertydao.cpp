@@ -66,7 +66,7 @@ void MMSImportPropertyDAO::saveOrUpdate(MMSImportPropertyData *data) {
         update(data);
 }
 
-MMSImportPropertyData *MMSImportPropertyDAO::moveRecordToData(MMSRecordSet rs) {
+MMSImportPropertyData *MMSImportPropertyDAO::moveRecordToData(MMSRecordSet &rs) {
     MMSImportPropertyData *data = new MMSImportPropertyData();
 
     data->setId(atoi(rs["ID"].c_str()));

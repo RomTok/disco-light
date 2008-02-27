@@ -21,6 +21,7 @@
 #define MMSHANDLER_H_
 
 #include "mmstools/mmsmutex.h"
+#include <iostream>
 
 /**
  * Handler class that implements reference counting.
@@ -35,7 +36,7 @@ template<class X> class MMSHandle {
         /**
          * Constructor
          */
-        explicit MMSHandle(X* orig = NULL) : data(orig), refCount(new int(1)), lock(new MMSMutex()) {
+        explicit MMSHandle(X* orig) : data(orig), refCount(new int(1)), lock(new MMSMutex()) {
         }
 
         /**
@@ -55,7 +56,7 @@ template<class X> class MMSHandle {
         	--(*refCount);
         	lock->unlock();
         	if(*refCount == 0) {
-        		delete data;
+        		if(data) delete data;
         		delete refCount;
         		delete lock;
         	} 
@@ -72,31 +73,29 @@ template<class X> class MMSHandle {
         /** 
          * Overloaded = operator.
          */
-        MMSHandle& operator=(const MMSHandle& orig) throw() {
+        void operator=(const MMSHandle& orig) throw() {
             /* do not copy if data is already the same */
-            if(data == orig.data) return *this;
-
-            /* free memory if reference counter is 0 */
-        	lock->lock();
-        	--(*refCount);
-        	lock->unlock();
-        	if(*refCount == 0) {
-        		delete data;
-        		delete refCount;
-        		delete lock;
-        	} 
-
-            /* create a copy */
-            data     = orig.data;
-            refCount = orig.refCount;
-            lock     = orig.lock;
-
-            /* increase reference counter */
-            lock->lock();
-            refCount++;
-            lock->unlock();
-
-            return this;
+            if(data != orig.data) {
+	            /* free memory if reference counter is 0 */
+	        	lock->lock();
+	        	--(*refCount);
+	        	lock->unlock();
+	        	if(*refCount == 0) {
+	        		if(data) delete data;
+	        		delete refCount;
+	        		delete lock;
+	        	} 
+	
+	            /* create a copy */
+	            data     = orig.data;
+	            refCount = orig.refCount;
+	            lock     = orig.lock;
+	
+	            /* increase reference counter */
+	            lock->lock();
+	            refCount++;
+	            lock->unlock();
+            }
         }
         
         /**

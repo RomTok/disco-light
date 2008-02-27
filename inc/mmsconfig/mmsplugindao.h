@@ -39,7 +39,7 @@ class MMSPluginDAO {
         void save(MMSPluginData *data);
         void update(MMSPluginData *data);
 
-        MMSPluginData *moveRecordToData(MMSRecordSet rs);
+        MMSPluginData *moveRecordToData(MMSRecordSet &rs);
         
     public:
         MMSPluginDAO(IMMSDB *connection);

@@ -95,7 +95,7 @@ void MMSPluginDAO::saveOrUpdate(vector<MMSPluginData *> dataList) {
     }
 }
 
-MMSPluginData *MMSPluginDAO::moveRecordToData(MMSRecordSet rs) {
+MMSPluginData *MMSPluginDAO::moveRecordToData(MMSRecordSet &rs) {
     MMSPluginData *data = new MMSPluginData();
 
     data->setId(atoi(rs["ID"].c_str()));

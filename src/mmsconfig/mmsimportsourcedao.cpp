@@ -83,7 +83,7 @@ void MMSImportSourceDAO::saveOrUpdate(vector<MMSImportSourceData *> dataList) {
     }
 }
 
-MMSImportSourceData *MMSImportSourceDAO::moveRecordToData(MMSRecordSet rs) {
+MMSImportSourceData *MMSImportSourceDAO::moveRecordToData(MMSRecordSet &rs) {
     MMSImportSourceData *data = new MMSImportSourceData();
 
     data->setId(atoi(rs["ID"].c_str()));

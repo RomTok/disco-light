@@ -38,7 +38,7 @@ class MMSImportSourceDAO {
         void save(MMSImportSourceData *data);
         void update(MMSImportSourceData *data);
 
-        MMSImportSourceData *moveRecordToData(MMSRecordSet rs);
+        MMSImportSourceData *moveRecordToData(MMSRecordSet &rs);
 
     public:
         MMSImportSourceDAO(IMMSDB *connection);

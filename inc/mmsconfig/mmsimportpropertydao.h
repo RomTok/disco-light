@@ -40,7 +40,7 @@ class MMSImportPropertyDAO {
         void save(MMSImportPropertyData *data);
         void update(MMSImportPropertyData *data);
 
-        MMSImportPropertyData *moveRecordToData(MMSRecordSet rs);
+        MMSImportPropertyData *moveRecordToData(MMSRecordSet &rs);
 
     public:
         MMSImportPropertyDAO(IMMSDB *connection);

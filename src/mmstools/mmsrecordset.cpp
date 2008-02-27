@@ -23,13 +23,17 @@
 #include "mmstools/mmsrecordset.h"
 
 MMSRecordSet::~MMSRecordSet() {
-    rows.erase(rows.begin(), rows.end());
+	for(vector< map<string, string>* >::iterator it = rows.begin();it!=rows.end();it++) {
+		if(*it) delete *it;
+		*it=NULL;
+	}
+    rows.clear();
 }
 
 void MMSRecordSet::addRow() {
     this->count++;
     this->recnum = this->count-1;
-    rows.push_back(new map<string, string>);
+    rows.push_back(new map<string, string> );
 }
 
 bool MMSRecordSet::next() {
@@ -76,12 +80,24 @@ string defret = "";
 string &MMSRecordSet::operator[](string key) {
 	if(this->recnum == -1)
 		return defret;
-		
-    return (*rows.at(this->recnum))[key];
+	
+	map<string,string>::iterator found;
+	found = rows.at(this->recnum)->find(key);
+	if (found != rows.at(this->recnum)->end())
+		return found->second;
+	else {
+		pair< map<string,string>::iterator, bool > ret = rows.at(this->recnum)->insert(make_pair(key,string("")));
+		return ret.first->second;
+	}
 }
 
 bool MMSRecordSet::reset() {
-    rows.erase(rows.begin(), rows.end());
+	for(vector< map<string, string>* >::iterator it = rows.begin();it!=rows.end();it++) {
+		if(*it) delete *it;
+		*it=NULL;
+	}
+	
+    rows.clear();
     
     this->recnum = -1;
     this->count  = 0;
