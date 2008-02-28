@@ -118,7 +118,7 @@ void MMSMusicManager::play() {
 		player.play();
 	}
 	else {
-		if(this->playlist.size() > this->offset) {
+		if(this->playlist.size() > (size_t)this->offset) {
 			string file = this->playlist.at(this->offset);
 			if(player.isPlaying()) player.stop();
 			player.startPlaying(file, cont);
