@@ -81,7 +81,6 @@ class MMSFBWindowManager {
         bool hideWindow(MMSFBWindow *window, bool locked = false, bool refresh = true);
 
         bool flipSurface(MMSFBSurface *surface, DFBRegion *region = NULL,
-                         MMSFBSurfaceFlipFlags flags = (MMSFBSurfaceFlipFlags)0,
                          bool locked = false, bool refresh = true);
 
         bool setWindowOpacity(MMSFBWindow *window);

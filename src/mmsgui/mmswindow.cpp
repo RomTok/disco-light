@@ -34,8 +34,6 @@ D_DEBUG_DOMAIN( MMS_Window, "MMS/Window", "MMS Window" );
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
 
-//#define __PUPTRACE__
-
 MMSWindow::MMSWindow() {
 
     this->TID = 0;
@@ -448,10 +446,6 @@ bool MMSWindow::resize(bool refresh) {
             /* get window surface */
             this->window->getSurface(&(this->surface));
             
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: window created (%x)\n", pthread_self(), this->surface);
-#endif
-
             this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
         
             /* set the window to bottom */
@@ -514,10 +508,6 @@ printf("-----%u: window created (%x)\n", pthread_self(), this->surface);
 	            rect.h = wdesc.height;
 	            this->surface = this->parent->surface->getSubSurface(&rect);
 	        }
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: child window surface created (%x)\n", pthread_self(), this->surface);
-#endif
 
             this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
         
@@ -634,15 +624,7 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
             this->childwins.at(i).opacity = opacity;
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: setchildwindowopacity, flipwin (opacity=%d)\n", pthread_self(), opacity);
-#endif
-            
             flipWindow(childwin, NULL, (MMSFBSurfaceFlipFlags)0, false, true);
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: setchildwindowopacity, flipwin, end\n", pthread_self());
-#endif
 
 			flipLock.unlock();
 
@@ -784,11 +766,6 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
     DFBRegion       pw_region;
 
     
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, drawchildwindows, region=%d,%d,%d,%d\n", pthread_self(), region->x1,region->y1,region->x2,region->y2);
-#endif    
-    
     if (region == NULL) {
         /* complete surface */
         pw_region.x1 = 0;
@@ -806,11 +783,6 @@ printf("-----%u: flipwindow, drawchildwindows, region=%d,%d,%d,%d\n", pthread_se
         CHILDWINS *cw = &(this->childwins.at(i));
         DFBRegion *myregion = &(cw->region);
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, drawchildwindows, opacity=%d, region=%d,%d,%d,%d\n", pthread_self(), cw->opacity,
-                                                 myregion->x1,myregion->y1,myregion->x2,myregion->y2);
-#endif
-        
         /* if the window has no opacity then continue */
         if (!cw->opacity)
             continue;
@@ -887,18 +859,9 @@ bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFl
     DFBRegion       pw_region;
 
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow\n", pthread_self());
-#endif
-
     /* stop parallel processing */
     if (!locked)
         flipLock.lock();
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, after lock\n", pthread_self());
-#endif
-
 
 
     if (!win) win = this;
@@ -924,7 +887,7 @@ printf("-----%u: flipwindow, after lock\n", pthread_self());
             if (this->childwins.at(i).window == win) {
                 /* child window found, flip it */
                 if (flipChildSurface)
-                    win->surface->flip(region, DSFLIP_NONE);
+                    win->surface->flip(region);
                 
                 /* return if parent window is not shown */
                 if ((win->parent->isShown()==false)&&(win->parent->willshow==false)) {
@@ -940,17 +903,9 @@ printf("-----%u: flipwindow, after lock\n", pthread_self());
                     if (!locked)
                         flipLock.unlock();
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, opacity is zero (%x)\n", pthread_self(), win->surface);
-#endif
-
                     return true;
                 }
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, set old opacity to %d (%x)\n", pthread_self(),this->childwins.at(i).opacity, win->surface);
-#endif
-                
                 this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
 
                 /* get parents surface and break loop */
@@ -1010,25 +965,11 @@ printf("-----%u: flipwindow, set old opacity to %d (%x)\n", pthread_self(),this-
     pw_surface->lock();
 
     
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, drawchildwindows\n", pthread_self());
-#endif
-
 	/* draw all affected child windows */
     drawChildWindows(pw_surface, &pw_region);
 
-    
-    
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, drawchildwindows, end, flip\n", pthread_self());
-#endif
-
 	/* do the flip */
-    pw_surface->flip(&pw_region, (MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: flipwindow, flip, end\n", pthread_self());
-#endif
+    pw_surface->flip(&pw_region);
 
     /* unlock */
     pw_surface->unlock();
@@ -1251,12 +1192,7 @@ void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
 
     /* lock */
     this->surface->lock();
-
     
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw\n", pthread_self());
-#endif
-
     if (rect2update) {
         /* use a small rectangle */
         DFBRegion clip;
@@ -1266,25 +1202,11 @@ printf("-----%u: draw\n", pthread_self());
         clip.y2 = rect2update->y + rect2update->h - 1;
         this->surface->setClip(&clip);
     }
-#ifdef __PUPTRACE__
-else
-printf("no clip\n");
-#endif
     	
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw, clear started\n", pthread_self());
-#endif
-
 
 	/* clear all or a part of the surface */
 	if (clear)
 		this->surface->clear();
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw, clear finished\n", pthread_self());
-#endif
-
 
 	/* draw background */
     DFBColor bgcolor;
@@ -1294,11 +1216,6 @@ printf("-----%u: draw, clear finished\n", pthread_self());
    		this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
 
         /* draw background with bgimage */
-#ifdef __PUPTRACE__
-string s;
-this->getBgImageName(s);
-printf("bgimage = %s\n", s.c_str());
-#endif
         this->surface->stretchBlit(this->bgimage, NULL, &(this->innerGeom));
     }
     else
@@ -1319,32 +1236,15 @@ printf("bgimage = %s\n", s.c_str());
     }
 
     
-    
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw, reset clip\n", pthread_self());
-#endif
-
 	/* reset the clip */
     this->surface->setClip(NULL);
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw, reset clip finished\n", pthread_self());
-#endif
 
 	/* unlock */
     this->surface->unlock();
     
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw, unlock\n", pthread_self());
-#endif
-
 	/* draw border */
     if (!toRedrawOnly)
         drawMyBorder();
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: draw stopped\n", pthread_self());
-#endif
 
 }
 
@@ -1505,7 +1405,7 @@ bool MMSWindow::showAction(bool *stopaction) {
 	    if (!getMoveIn(movein)) movein = MMSDIRECTION_NOTSET;
 	    
 	    if ((fadein)||(movein!=MMSDIRECTION_NOTSET)) {
-    	    int steps = 9;
+    	    int steps = 5;
     	    unsigned int opacity_step;
     	    int move_step;
     	    
@@ -1646,10 +1546,6 @@ bool MMSWindow::hide(bool goback, bool wait) {
         return false;
     }
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: hide started\n", pthread_self());
-#endif
-    
     if (this->action->isRunning())
         this->action->cancelBroadcast.emit(this->getType());
     this->action->setAction(MMSWACTION_HIDE);
@@ -1679,10 +1575,6 @@ bool MMSWindow::hideAction(bool *stopaction) {
         if (this->windowmanager)
             this->windowmanager->removeWindowFromToplevel(this);
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: hide action started\n", pthread_self());
-#endif
-
     if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
         /* remove the focus from me */
     	removeFocusFromChildWindow();
@@ -1700,7 +1592,7 @@ printf("-----%u: hide action started\n", pthread_self());
 	    if (!getMoveOut(moveout)) moveout = MMSDIRECTION_NOTSET;
 
 	    if ((fadeout)||(moveout!=MMSDIRECTION_NOTSET)) {
-    	    int steps = 9;
+    	    int steps = 5;
     	    unsigned int opacity_step;
     	    int move_step;
     	    
@@ -1809,10 +1701,6 @@ printf("-----%u: hide action started\n", pthread_self());
         }
     }
     
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: hide action stopped\n", pthread_self());
-#endif
-    
     *stopaction=false;
 
     return !saction;
@@ -1857,19 +1745,12 @@ void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update) {
     DFBRegion  	region;
 
     if (!isShown(true)) {
-//        logger.writeLog("draw children skipped because window is not shown");
+    	DEBUGMSG("MMSGUI", "draw children skipped because window is not shown");
         return;
     }
 
-//    logger.writeLog("draw children");
-
     /* lock drawing */
     this->drawLock.lock();
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----refreshfromChild- win=%s,%x - tid=%u\n", this->name.c_str(),this->surface,pthread_self());
-#endif
-
 
 	bool os;
 	getOwnSurface(os);
@@ -1883,7 +1764,6 @@ printf("-----refreshfromChild- win=%s,%x - tid=%u\n", this->name.c_str(),this->s
         /* draw only some parts of the window */
     	if (os)
     		draw(true, rect2update);
-
     	if (!children.empty())
             child=children.at(0);
     }

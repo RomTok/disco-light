@@ -77,8 +77,15 @@ bool MMSFBManager::init(int argc, char **argv) {
         DEBUGMSG("MMSGUI", "get graphics layer");
         if (!mmsfb->getLayer(this->config.getGraphicsLayerId(), &this->graphicslayer))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+
+    	this->graphicslayer->setFlipFlags((MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
     }
 
+	if (config.getOutputType() == MMS_OT_MATROXFB)
+    	this->videolayer->setFlipFlags((MMSFBSurfaceFlipFlags)DSFLIP_WAITFORSYNC);
+    else
+    	this->videolayer->setFlipFlags((MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
+    
     if (!this->graphicslayer->getID(&this->graphicslayerid))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 

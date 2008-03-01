@@ -71,7 +71,7 @@ MMSWidget *MMSTextBox::copyWidget() {
 
 void MMSTextBox::setSurfaceGeometry(unsigned int width, unsigned int height) {
     this->surfaceChanged = true;
-    MMSWidget::setSurfaceGeometry(width, height);
+   	MMSWidget::setSurfaceGeometry(width, height);
 }
 
 bool MMSTextBox::calcWordGeom(string text, unsigned int startWidth, unsigned int startHeight,
@@ -331,8 +331,8 @@ bool MMSTextBox::draw(bool *backgroundFilled) {
         if (calcWordGeom(getText(), getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
                          &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
             /* text has changed, reset something */
-            setScrollSize(scrollDX, scrollDY);
-            setSurfaceGeometry(realWidth, realHeight);
+        	setScrollSize(scrollDX, scrollDY);
+          	setSurfaceGeometry(realWidth, realHeight);
         }
     }    
 
@@ -344,7 +344,7 @@ bool MMSTextBox::draw(bool *backgroundFilled) {
 
         /* draw my things */
         if (this->font) {
-            DFBRectangle surfaceGeom = getSurfaceGeometry();
+        	DFBRectangle surfaceGeom = getSurfaceGeometry();
 
             DFBColor color;
             
@@ -362,9 +362,16 @@ bool MMSTextBox::draw(bool *backgroundFilled) {
 
                 /* draw single words into surface */
                 for (unsigned int i = 0; i < this->wordgeom.size(); i++)
-                    this->surface->drawString(this->wordgeom.at(i)->word, -1,
-                                              surfaceGeom.x + this->wordgeom.at(i)->geom.x,
-                                              surfaceGeom.y + this->wordgeom.at(i)->geom.y);
+                {
+					if (this->has_own_surface)
+						this->surface->drawString(this->wordgeom.at(i)->word, -1,
+						                          surfaceGeom.x + this->wordgeom.at(i)->geom.x,
+						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y);
+					else
+						this->surface->drawString(this->wordgeom.at(i)->word, -1,
+						                          surfaceGeom.x + this->wordgeom.at(i)->geom.x - scrollPosX,
+						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y - scrollPosY);
+                }
             }
         }
 

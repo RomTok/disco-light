@@ -57,6 +57,8 @@ class MMSFBSurface {
         bool setWinSurface(bool iswinsurface = true);
         bool setLayerSurface(bool islayersurface = true);
 
+        MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
+        
         MMSMutex  			Lock;       		/* to make it thread-safe */
         unsigned long       TID;        		/* save the id of the thread which has locked the surface */
         unsigned long       Lock_cnt;   		/* count the number of times the thread has call lock() */
@@ -80,6 +82,8 @@ class MMSFBSurface {
         bool getSize(int *w, int *h);
         bool getMemSize(int *size);
 
+        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);        
+        
         bool clear(unsigned char r = 0, unsigned char g = 0,
                    unsigned char b = 0, unsigned char a = 0);
 
@@ -101,7 +105,7 @@ class MMSFBSurface {
         bool blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
-        bool flip(DFBRegion *region = NULL, MMSFBSurfaceFlipFlags flags = (MMSFBSurfaceFlipFlags)0);
+        bool flip(DFBRegion *region = NULL);
 
         bool createCopy(MMSFBSurface **dstsurface, int w = 0, int h = 0,
                         bool copycontent = false, bool withbackbuffer = false);

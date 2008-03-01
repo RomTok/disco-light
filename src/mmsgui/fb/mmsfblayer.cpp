@@ -34,6 +34,7 @@ MMSFBLayer::MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer) {
     this->dfb = dfb;
     this->dfblayer = dfblayer;
     this->surface = NULL;
+    this->flipflags = (MMSFBSurfaceFlipFlags)0;
 
     /* get the current config */
     if (this->dfblayer) {
@@ -308,11 +309,20 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     /* save this for the next call */
     this->surface = *surface;
     
-#ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: layer surface (%x)\n", pthread_self(), *surface);
-#endif
+    /* initialize the flip flags for the layer surface */
+    this->surface->setFlipFlags(this->flipflags);
 
     return true;
+}
+
+bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
+	this->flipflags = flags;
+	
+	/* if the layer surface does exist, update it */
+	if (this->surface)
+	    this->surface->setFlipFlags(this->flipflags);
+
+	return true;
 }
 
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,

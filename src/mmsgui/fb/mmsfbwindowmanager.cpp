@@ -203,7 +203,7 @@ bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window) {
                             this->vwins.push_back(vw);
 
                             /* draw the window */
-                            flipSurface(vw.surface, NULL, (MMSFBSurfaceFlipFlags)0, true);
+                            flipSurface(vw.surface, NULL, true);
                         }
                     }
             }
@@ -247,7 +247,7 @@ bool MMSFBWindowManager::lowerToBottom(MMSFBWindow *window) {
                             this->vwins.insert(this->vwins.begin(), vw);
 
                             /* draw the window */
-                            flipSurface(vw.surface, NULL, (MMSFBSurfaceFlipFlags)0, true);
+                            flipSurface(vw.surface, NULL, true);
                         }
                     }
             }
@@ -332,7 +332,7 @@ bool MMSFBWindowManager::showWindow(MMSFBWindow *window, bool locked, bool refre
                 this->vwins.push_back(vwin);
 
             /* draw the window */
-            flipSurface(vwin.surface, NULL, (MMSFBSurfaceFlipFlags)0, true, refresh);
+            flipSurface(vwin.surface, NULL, true, refresh);
 
             /* unlock */
             if (!locked)
@@ -361,7 +361,7 @@ bool MMSFBWindowManager::hideWindow(MMSFBWindow *window, bool locked, bool refre
             /* redraw the window with no opacity because must redrawing other windows */
             this->vwins.at(i).opacity = 0;
 
-            flipSurface(this->vwins.at(i).surface, NULL, (MMSFBSurfaceFlipFlags)0, true, refresh);
+            flipSurface(this->vwins.at(i).surface, NULL, true, refresh);
 
             if (this->high_freq_surface==this->vwins.at(i).surface) {
                 /* i was the high_freq_surface */
@@ -387,7 +387,6 @@ bool MMSFBWindowManager::hideWindow(MMSFBWindow *window, bool locked, bool refre
 }
 
 bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
-                                     MMSFBSurfaceFlipFlags flags,
                                      bool locked, bool refresh) {
     VISIBLE_WINDOWS *vw = NULL;
     DFBRegion       ls_region;
@@ -622,10 +621,7 @@ logger.writeLog("BBB>");
     
     /* make changes visible */
     if (refresh)
-        if (high_freq)
-        	this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC)); //needed for matrox!!!
-        else
-    		this->layer_surface->flip(&ls_region, (MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
+    	this->layer_surface->flip(&ls_region);
     
     
     /* unlock */
@@ -650,7 +646,7 @@ bool MMSFBWindowManager::setWindowOpacity(MMSFBWindow *window) {
             loadWindowConfig(window, &(this->vwins.at(i)));
 
             /* redraw the window */
-            flipSurface(this->vwins.at(i).surface, NULL, (MMSFBSurfaceFlipFlags)0, true);
+            flipSurface(this->vwins.at(i).surface, NULL, true);
 
             /* unlock */
             lock.unlock();
@@ -684,15 +680,14 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             /* moving high_freq_surface? */
             if (this->high_freq_surface == this->vwins.at(i).surface) {
                 /* yes, reset it */
-                mmsfbwindowmanager->flipSurface(this->high_freq_surface, NULL,
-                                                (MMSFBSurfaceFlipFlags)0, true);
+                mmsfbwindowmanager->flipSurface(this->high_freq_surface, NULL, true);
                 this->high_freq_surface = NULL;
                 this->high_freq_saved_surface = NULL;
                 this->high_freq_lastflip = 0;
             }
 
             /* redraw the window */
-            flipSurface(this->vwins.at(i).surface, NULL, (MMSFBSurfaceFlipFlags)0, true);
+            flipSurface(this->vwins.at(i).surface, NULL, true);
 
             /* redraw the old rects */
             if (old_vwin.region.y1 < this->vwins.at(i).region.y1) {
@@ -701,7 +696,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
                 region = old_vwin.region;
                 if (region.y2 >= this->vwins.at(i).region.y1)
                     region.y2 = this->vwins.at(i).region.y1 - 1;
-                flipSurface(NULL, &region, (MMSFBSurfaceFlipFlags)0, true);
+                flipSurface(NULL, &region, true);
             }
             else 
             if (old_vwin.region.y1 > this->vwins.at(i).region.y1) {
@@ -710,7 +705,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
                 region = old_vwin.region;
                 if (region.y1 <= this->vwins.at(i).region.y2)
                     region.y1 = this->vwins.at(i).region.y2 + 1;
-                flipSurface(NULL, &region, (MMSFBSurfaceFlipFlags)0, true);
+                flipSurface(NULL, &region, true);
             } 
             if (old_vwin.region.x1 < this->vwins.at(i).region.x1) {
                 /* redraw left side */
@@ -722,7 +717,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
                         region.x2 = this->vwins.at(i).region.x1 - 1;
                     region.y1 = this->vwins.at(i).region.y1;
                     region.y2 = this->vwins.at(i).region.y2;
-                    flipSurface(NULL, &region, (MMSFBSurfaceFlipFlags)0, true);
+                    flipSurface(NULL, &region, true);
                 }
             }
             else 
@@ -736,7 +731,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
                         region.x1 = this->vwins.at(i).region.x2 + 1;
                     region.y1 = this->vwins.at(i).region.y1;
                     region.y2 = this->vwins.at(i).region.y2;
-                    flipSurface(NULL, &region, (MMSFBSurfaceFlipFlags)0, true);
+                    flipSurface(NULL, &region, true);
                 }
             } 
 
@@ -786,8 +781,7 @@ bool MMSFBWindowManager::setWindowSize(MMSFBWindow *window, int w, int h) {
                     showWindow(window, true, false);
 
                     /* flip the old region */
-                    flipSurface(NULL, &old_vwin.region, (MMSFBSurfaceFlipFlags)0,
-                                true, true);
+                    flipSurface(NULL, &old_vwin.region, true, true);
                 }
             }
 
@@ -828,7 +822,7 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy) 
 	region.y1 = this->pointer_posy - 10; 
 	region.x2 = this->pointer_posx + 10; 
 	region.y2 = this->pointer_posy + 10; 
-	flipSurface(NULL, &region, (MMSFBSurfaceFlipFlags)0, false);
+	flipSurface(NULL, &region, false);
 }
 
 

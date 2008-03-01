@@ -119,7 +119,12 @@ static int frame_cb(void *cdata) {
     reg.y1=vodesc->rect.y;
     reg.x2=reg.x1 + vodesc->rect.w-1;
     reg.y2=reg.y1 + vodesc->rect.h-1;*/
-    vodesc->winsurface->flip(NULL, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC));
+    
+    
+//    vodesc->winsurface->flip(NULL, (MMSFBSurfaceFlipFlags)(DSFLIP_WAITFORSYNC));
+    vodesc->winsurface->flip();
+    
+    
     //vodesc->winsurface->lock();
     
     /*          frame->surface->Unlock( frame->surface );
@@ -222,7 +227,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         /* clear surface */
         if(!this->vodesc.winsurface->clear())
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::clear() failed");
-        if(!this->vodesc.winsurface->flip(NULL, (DFBSurfaceFlipFlags)0))
+        if(!this->vodesc.winsurface->flip())
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
     
         if(vodesc.winsurface->getDFBSurface()->SetBlittingFlags(vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)

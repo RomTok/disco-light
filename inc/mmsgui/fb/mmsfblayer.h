@@ -47,6 +47,8 @@ class MMSFBLayer {
 
         MMSFBSurface            *surface;   /* layers surface */
 
+        MMSFBSurfaceFlipFlags	flipflags;	/* flags which are used when flipping */
+        
     public:
         MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer);
         virtual ~MMSFBLayer(); 
@@ -61,6 +63,8 @@ class MMSFBLayer {
         bool setLevel(int level);
         bool getSurface(MMSFBSurface **surface);
 
+        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);        
+        
         bool createSurface(MMSFBSurface **surface, int w, int h,
                            string pixelformat = MMSFB_PF_NONE, int backbuffer = 0);
         bool createWindow(MMSFBWindow **window, int x, int y, int w, int h,

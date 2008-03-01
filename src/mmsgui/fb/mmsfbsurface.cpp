@@ -35,6 +35,7 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface, IDirectFBSurface *paren
 						   DFBRectangle *sub_surface_rect) {
     /* init me */
     this->dfbsurface = dfbsurface;
+    this->flipflags = (MMSFBSurfaceFlipFlags)0;
     this->TID = 0;
     this->Lock_cnt = 0;
     this->parent_dfbsurface = parent_dfbsurface;
@@ -290,6 +291,11 @@ bool MMSFBSurface::getMemSize(int *size) {
     return true;
 }
 
+
+bool MMSFBSurface::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
+	this->flipflags = flags;
+	return true;
+}
 
 
 bool MMSFBSurface::clear(unsigned char r, unsigned char g,
@@ -711,7 +717,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
     return true;
 }
 
-bool MMSFBSurface::flip(DFBRegion *region, MMSFBSurfaceFlipFlags flags) {
+bool MMSFBSurface::flip(DFBRegion *region) {
     DFBResult   dfbres;
 
     if (region)
@@ -726,17 +732,10 @@ bool MMSFBSurface::flip(DFBRegion *region, MMSFBSurfaceFlipFlags flags) {
     /* check if initialized */
     INITCHECK;
 
-#ifdef MMSGUI_STDOUT_TRACE
-if (region)
-printf("  flip>>>,  %x - %d,%d,%d,%d - tid=%u\n", this, region->x1, region->y1, region->x2, region->y2, pthread_self());
-else
-printf("  flip>>>,  %x - tid=%u\n", this, pthread_self());
-#endif
-
 #ifdef USE_DFB_WINMAN
 
     /* flip */
-    if ((dfbres=this->dfbsurface->Flip(this->dfbsurface, region, flags)) != DFB_OK) {
+    if ((dfbres=this->dfbsurface->Flip(this->dfbsurface, region, this->flipflags)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
         return false;
@@ -748,7 +747,7 @@ printf("  flip>>>,  %x - tid=%u\n", this, pthread_self());
 
     if (!this->config.islayersurface) {
         /* flip */
-        if ((dfbres=this->dfbsurface->Flip(this->dfbsurface, region, flags)) != DFB_OK) {
+        if ((dfbres=this->dfbsurface->Flip(this->dfbsurface, region, this->flipflags)) != DFB_OK) {
             MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
             return false;
@@ -757,13 +756,9 @@ printf("  flip>>>,  %x - tid=%u\n", this, pthread_self());
 
     if (this->config.iswinsurface) {
         /* inform the window manager */
-        mmsfbwindowmanager->flipSurface(this, region, flags);
+        mmsfbwindowmanager->flipSurface(this, region);
     }
 
-#endif
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("  <<<flip,  %x - tid=%u\n", this, pthread_self());
 #endif
 
     return true;
