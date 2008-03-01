@@ -42,6 +42,7 @@ class IMMSSwitcher {
         virtual IMMSSwitcher *newSwitcher(MMSPluginData *plugindata) = 0;
 
         virtual bool switchToPlugin() = 0;
+        virtual bool leavePlugin(bool show_switcher) = 0;
         
         
 /*        virtual DFBRectangle getVRect() = 0;
