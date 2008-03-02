@@ -1744,16 +1744,17 @@ void MMSWindow::remove(MMSWidget *child) {
 void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update) {
     DFBRegion  	region;
 
-    if (!isShown(true)) {
+	bool os;
+	getOwnSurface(os);
+
+    if (!isShown((!os)?true:false)) {
+    	
     	DEBUGMSG("MMSGUI", "draw children skipped because window is not shown");
         return;
     }
 
     /* lock drawing */
     this->drawLock.lock();
-
-	bool os;
-	getOwnSurface(os);
 
 	if(child) {
     	/* draw only childs of this child */
