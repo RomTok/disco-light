@@ -37,8 +37,9 @@ public:
 	virtual int query(string statement, MMSRecordSet *rs) = 0;
 	virtual int query(string statement) = 0;
     virtual int getLastInsertedID() = 0;
-
-
+    virtual void startTransaction() = 0;
+    virtual void commitTransaction() = 0;
+    virtual void rollbackTransaction() = 0;
 };
 
 #endif /*IMMSDB_H_*/

@@ -66,8 +66,9 @@ class MMSDBFreeTDS : public IMMSDB {
     
         void connect();
         void disconnect();
-        void commit();
-        void rollback();
+        void startTransaction() {};
+        void commitTransaction() {};
+        void rollbackTransaction() {};
         string getDBName();
         int query(string statement, MMSRecordSet *rs);
         int query(string statement);

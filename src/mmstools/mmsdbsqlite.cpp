@@ -78,12 +78,12 @@ int MMSDBSQLite::getResults(void *rs, int numCols, char **results, char **column
  * @brief ????
  * 
  */
-void MMSDBSQLite::commit() {
+void MMSDBSQLite::startTransaction() {
     int     rc=0;
     char    *errmsg=NULL;
 
     //open transaction
-    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "COMMIT TRANSACTION", NULL, NULL, &errmsg)) != SQLITE_OK)
+    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "BEGIN TRANSACTION", NULL, NULL, &errmsg)) != SQLITE_OK)
     {        
         throw(new MMSError(rc, errmsg));
     }
@@ -95,12 +95,29 @@ void MMSDBSQLite::commit() {
  * @brief ????
  * 
  */
-void MMSDBSQLite::rollback() {
+void MMSDBSQLite::commitTransaction() {
     int     rc=0;
     char    *errmsg=NULL;
 
     //open transaction
-    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "ROLLBACK TRANSACTION", NULL, NULL, &errmsg)) != SQLITE_OK)
+    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "COMMIT", NULL, NULL, &errmsg)) != SQLITE_OK)
+    {        
+        throw(new MMSError(rc, errmsg));
+    }
+
+    return;
+}
+
+/**
+ * @brief ????
+ * 
+ */
+void MMSDBSQLite::rollbackTransaction() {
+    int     rc=0;
+    char    *errmsg=NULL;
+
+    //open transaction
+    if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "ROLLBACK", NULL, NULL, &errmsg)) != SQLITE_OK)
     {        
         throw(new MMSError(rc, errmsg));
     }
