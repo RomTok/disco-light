@@ -40,10 +40,11 @@
  */
 class MMSTV : public MMSAV {
     private:
-        string	channel;                /**< currently played channel name              */
-        string  captureFilename;        /**< filename for saved stream                  */
-        bool    recording,              /**< if true recording is on                    */
-                usingInputDVBMorphine;  /**< if true our own xine input plugin is used  */
+        string	     channel;               /**< currently played channel name              */
+        string       captureFilename;       /**< filename for saved stream                  */
+        unsigned int timeout;               /**< tuning timeout in seconds                  */
+        bool         recording,             /**< if true recording is on                    */
+                     usingInputDVBMorphine; /**< if true our own xine input plugin is used  */
 
     public:
         MMSTV(MMSWindow *window, const string channel = "", const bool verbose = false);
@@ -62,9 +63,16 @@ class MMSTV : public MMSAV {
         
         string getCurrentChannelName(void);
         
+        void setTuningTimeout(const unsigned int timeout);
+        const unsigned int getTuningTimeout();
         void setRecordDir(const string dir);
         const string getRecordDir();
         const string getRecordFilename();
+
+        /**
+         * Callback that is used to receive buffering progress changes.
+         */
+        sigc::signal<void, const unsigned short> onProgressChange;
 };
 
 #endif /*MMSTV_H_*/

@@ -107,7 +107,7 @@ class MMSAV
         void initialize(const bool verbose = false, MMSWindow *window = NULL);
         void open(xine_event_listener_cb_t queue_cb = NULL);
         void setStatus(int status);
-        void sendEvent(int type);
+        void sendEvent(int type, void *data = NULL, int datalen = 0);
 
     public:
         /* status constants */

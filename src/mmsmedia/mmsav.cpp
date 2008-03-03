@@ -997,13 +997,15 @@ void MMSAV::hueDown(int count) {
  * Send a xine event to the engine
  * 
  * @param   type    [in]    type of event
+ * @param   data    [in]    event specific data
+ * @param   datalen [in]    length of data
  */
-void MMSAV::sendEvent(int type) {
+void MMSAV::sendEvent(int type, void *data, int datalen) {
     xine_event_t evt;
     
     evt.stream      = this->stream;
-    evt.data        = NULL;
-    evt.data_length = 0;
+    evt.data        = data;
+    evt.data_length = datalen;
     evt.type        = type;
 
     xine_event_send(this->stream, &evt);

@@ -50,16 +50,29 @@ MMS_CREATEERROR(MMSTVError);
  * @param   event       [in]        pointer to event structure
  */
 static void queue_cb(void *userData, const xine_event_t *event) {
-    //MMSTV                  *mmstv  = (MMSTV*)userData;
-    xine_ui_message_data_t *msg    = (xine_ui_message_data_t*)event->data;
+    MMSTV *mmstv  = static_cast<MMSTV*>(userData);
 
-    if(event->type == XINE_EVENT_UI_MESSAGE)
-        printf("event: %s\n", (char*)msg + msg->parameters);
+    if(event->type == XINE_EVENT_UI_MESSAGE) {
+        xine_ui_message_data_t *msg = (xine_ui_message_data_t*)event->data;
+        DEBUGMSG("MMSTV", "event: %s", (char*)msg + msg->parameters);
+    }
+    else if(event->type == XINE_EVENT_PROGRESS) {
+        xine_progress_data_t *prog = (xine_progress_data_t*)event->data;
+        DEBUGMSG("MMSTV", "event: %s (%d%%)", prog->description, prog->percent);
+        if(mmstv) mmstv->onProgressChange.emit(prog->percent);
+    }
+    else if(event->type == XINE_EVENT_UI_PLAYBACK_FINISHED) {
+    	DEBUGMSG("MMSTV", "event: signal lost");
+    	mmstv->startPlaying(mmstv->getCurrentChannelName());
+    } else
+    	DEBUGMSG("MMSTV", "event: %u", event->type);
 }
 
 /**
  * Initializes everything that is needed by MMSTV.
  *
+ * The timeout attribute is set to 10 seconds.
+ * 
  * @param   window      [in]    main window for dvd playing
  * @param   _channel    [in]    channel to open
  * @param   verbose     [in]    if true the xine engine writes debug messages to stdout
@@ -77,6 +90,7 @@ MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose) :
             usingInputDVBMorphine(false) {
 #endif
     MMSAV::initialize(verbose, window);
+    setTuningTimeout(10);
 }
 
 /**
@@ -212,6 +226,45 @@ void MMSTV::recordPause() {
  */
 string MMSTV::getCurrentChannelName(void) {
     return this->channel;
+}
+
+/**
+ * Sets the maximum time for tuning to a channel.
+ * 
+ * @param	timeout	[in]	timeout in seconds
+ * 
+ * @note A value of 0 means infinite. Otherwise a minimum of 5
+ * seconds is required.
+ * 
+ * @see MMSTV::getTuningTimeout()
+ */
+void MMSTV::setTuningTimeout(const unsigned int timeout) {
+    xine_cfg_entry_t  conf;
+
+    if(!this->xine) return;
+    this->timeout = timeout;	
+
+    if(xine_config_lookup_entry(this->xine, "media.dvb.tuning_timeout", &conf)) {
+        conf.num_value = timeout;
+        xine_config_update_entry(this->xine, &conf);
+    }
+    else
+    	xine_config_register_num(this->xine, "media.dvb.tuning_timeout", timeout,
+    	                         "Number of seconds until tuning times out.",
+    	                         "Leave at 0 means try forever. "
+    	                         "Greater than 0 means wait that many seconds to get a lock. Minimum is 5 seconds.",
+    	                         XINE_CONFIG_SECURITY, NULL, NULL);	
+}
+
+/**
+ * Returns the setting for the tuning timeout.
+ * 
+ * @return timeout in seconds
+ * 
+ * @see MMSTV::setTuningTimeout()
+ */
+const unsigned int MMSTV::getTuningTimeout() {
+	return this->timeout;
 }
 
 /**
