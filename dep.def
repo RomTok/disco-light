@@ -1,5 +1,8 @@
 SHELL=/bin/bash
 
+#initialize HAVE_ALL_DEPS
+HAVE_ALL_DEPS=1
+
 #output directory
 LIBDIR=../../lib
 
@@ -10,7 +13,8 @@ ifndef LIBXML_CHECKED
     $(info check for libxml2 version >= 2.6)
     ASK=$(shell pkg-config --atleast-version=2.6 libxml-2.0 && echo "1")
     ifeq ($(ASK),)
-        $(error libxml-2.0 was not found or version is older than 2.6. Either adjust PKG_CONFIG_PATH or install the package)
+        $(warning libxml-2.0 was not found or version is older than 2.6. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
     else
         export LIBXML_INC=$(shell pkg-config --cflags libxml-2.0)
         export LIBXML_LIBS=$(shell pkg-config --libs libxml-2.0)
@@ -56,7 +60,8 @@ endif
 #database?
 ifndef SQLITE3_INC
     ifndef FREETDS_INC
-        $(error No database backend found. Please install either sqlite3 or unix odbc and a fitting driver)
+        $(warning No database backend found. Please install either sqlite3 or unix odbc and a fitting driver)
+        HAVE_ALL_DEPS=0
     endif
 endif
 
@@ -65,7 +70,8 @@ ifndef CURL_CHECKED
     $(info check for libcurl)
     export CURL_INC=$(shell pkg-config --cflags libcurl)
     ifeq ($(CURL_INC),)
-        $(error libcurl was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        $(warning libcurl was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
     else
         export CURL_LIBS=$(shell pkg-config --libs libcurl)
     endif
@@ -77,7 +83,8 @@ ifndef DIRECTFB_CHECKED
     $(info check for directfb)
     export DIRECTFB_INC=$(shell pkg-config --cflags directfb)
     ifeq ($(DIRECTFB_INC),)
-        $(error directfb was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        $(warning directfb was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
     else
         export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
     endif
@@ -89,7 +96,8 @@ ifndef XINE_CHECKED
     $(info check for libxine)
     export XINE_LIBS=$(shell pkg-config --libs libxine)
     ifeq ($(XINE_LIBS),)
-        $(error libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        $(warning libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
     else
         # have to do some extra checks because openSuse 10.3 installs libxine.pc even if no
         # development package is installed :-(
@@ -97,24 +105,29 @@ ifndef XINE_CHECKED
         ifeq ($(strip $(XINE_INC)),)
             ASK=$(shell ls /usr/include/xine.h 2>/dev/null)
             ifeq ($(ASK),)
-                $(error xine headers were not found. Please install libxine-dev.)
+                $(warning xine headers were not found. Please install libxine-dev.)
+                HAVE_ALL_DEPS=0
             endif
         endif
     endif
     export XINE_CHECKED=1
 endif
 
-
 #sigc++
 ifndef SIGC_CHECKED
     $(info check for sigc++)
     export SIGC_INC=$(shell pkg-config --cflags sigc++-2.0)
     ifeq ($(SIGC_INC),)
-        $(error sigc++-2.0 was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        $(warning sigc++-2.0 was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
     else
         export SIGC_LIBS=$(shell pkg-config --libs sigc++-2.0)
     endif
     export SIGC_CHECKED=1
+endif
+
+ifeq ($(HAVE_ALL_DEPS),0)
+    $(error Please install all dependencies before continuing.)
 endif
 
 #my includes
