@@ -13,9 +13,8 @@ cp ./doc/conf/$PROJECTNAME.conf $TMPDIR/doc/conf
 cd /tmp
 tar -cvf $TARFILE ./$PNV/README ./$PNV/Makefile ./$PNV/dep.def ./$PNV/shlib.def ./$PNV/doc >/dev/null
 tar -rf $TARFILE `find ./$PNV/inc -name "*.h"`
-tar -rf $TARFILE `find ./$PNV/src -name "*.cpp"`
-tar -rf $TARFILE `find ./$PNV/src -name "Makefile"`
-tar -rf $TARFILE `find ./$PNV/scripts -name "*.h"`
+tar -rf $TARFILE `find ./$PNV/src -name "*.cpp" -or -name "Makefile"`
+tar -rf $TARFILE `find ./$PNV/scripts -name "*.sh"`
 bzip2 $TARFILE
 cd - >/dev/null
 mv /tmp/$TARFILE.bz2 .
