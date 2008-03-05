@@ -126,6 +126,19 @@ ifndef SIGC_CHECKED
     export SIGC_CHECKED=1
 endif
 
+#alsa
+ifndef ALSA_CHECKED
+    $(info check for alsa)
+    export ALSA_LIBS=$(shell pkg-config --libs alsa)
+    ifeq ($(ALSA_LIBS),)
+        $(warning alsa was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
+    else
+        export ALSA_INC=$(shell pkg-config --cflags alsa)
+    endif
+    export ALSA_CHECKED=1
+endif
+
 ifeq ($(HAVE_ALL_DEPS),0)
     $(error Please install all dependencies before continuing.)
 endif
