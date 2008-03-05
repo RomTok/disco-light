@@ -10,7 +10,7 @@ endif
 #project name
 ifndef PROJECTNAME
     export PROJECTNAME=disko
-    export PROJECTVERSION=1.1.0
+    export PROJECTVERSION=1.1.1
 endif
 
 all clean update:
