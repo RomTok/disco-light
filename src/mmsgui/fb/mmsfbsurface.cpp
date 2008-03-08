@@ -42,6 +42,9 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface, IDirectFBSurface *paren
     if (this->parent_dfbsurface) {
     	this->is_sub_surface = true;
     	this->sub_surface_rect = *sub_surface_rect;
+#ifndef USE_DFB_SUBSURFACE
+        this->dfbsurface = this->parent_dfbsurface;
+#endif
     }
     else {
     	this->is_sub_surface = false;
@@ -60,6 +63,7 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface, IDirectFBSurface *paren
         this->config.color.g = 0;
         this->config.color.b = 0;
         this->config.color.a = 0;
+        this->config.clipped = false;
         this->config.iswinsurface = false;
         this->config.islayersurface = false;
         this->config.blittingflags = DSBLIT_NOFX;
@@ -93,9 +97,22 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     INITCHECK;
 
     /* get size */
-    if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
-        MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
-        return false;
+    if (!this->is_sub_surface) {
+	    if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
+	        MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
+	        return false;
+	    }
+    }
+    else {
+#ifdef USE_DFB_SUBSURFACE
+	    if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
+	        MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
+	        return false;
+	    }
+#else
+	    this->config.w = this->sub_surface_rect.w;
+	    this->config.h = this->sub_surface_rect.h;
+#endif
     }
 
     /* get pixelformat */
@@ -310,26 +327,40 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
     /* check if initialized */
     INITCHECK;
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("  clear>>>, %x - %d,%d,%d,%d - tid=%u\n", this, r,g,b,a,  pthread_self());
-#endif
-
-    /* save color and set it to given values */
-    MMSFBColor mc = this->config.color;
-    setColor(r,g,b,a);
-
-    /* clear surface */
-    if ((dfbres=this->dfbsurface->Clear(this->dfbsurface, r, g, b, a)) != DFB_OK) {
-        MMSFB_SetError(dfbres, "IDirectFBSurface::Clear() failed");
-        return false;
+    if (!this->is_sub_surface) {
+	    /* save color and set it to given values */
+	    MMSFBColor mc = this->config.color;
+	    setColor(r,g,b,a);
+	
+	    /* clear surface */
+	    if ((dfbres=this->dfbsurface->Clear(this->dfbsurface, r, g, b, a)) != DFB_OK) {
+	        MMSFB_SetError(dfbres, "IDirectFBSurface::Clear() failed");
+	        return false;
+	    }
+	
+	    /* reset color */
+	    setColor(mc.r,mc.g,mc.b,mc.a);
     }
-
-    /* reset color */
-    setColor(mc.r,mc.g,mc.b,mc.a);
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("  <<<clear, %x - %d,%d,%d,%d - tid=%u\n", this, r,g,b,a,  pthread_self());
+    else {
+#ifdef USE_DFB_SUBSURFACE
+	    /* save color and set it to given values */
+	    MMSFBColor mc = this->config.color;
+	    setColor(r,g,b,a);
+	
+	    /* clear surface */
+	    if ((dfbres=this->dfbsurface->Clear(this->dfbsurface, r, g, b, a)) != DFB_OK) {
+	        MMSFB_SetError(dfbres, "IDirectFBSurface::Clear() failed");
+	        return false;
+	    }
+	
+	    /* reset color */
+	    setColor(mc.r,mc.g,mc.b,mc.a);
+#else
+	    lock();
+//TODO....
+	    unlock();
 #endif
+    }
 
     return true;
 }
@@ -373,28 +404,41 @@ bool MMSFBSurface::setClip(DFBRegion *clip) {
     /* check if initialized */
     INITCHECK;
 
-#ifdef MMSGUI_STDOUT_TRACE
-if (clip)
-printf("  setClip>>>, %x - %d,%d,%d,%d - tid=%u\n", this, clip->x1, clip->y1, clip->x2, clip->y2,  pthread_self());
-else
-printf("  setClip>>>, %x - tid=%u\n", this,  pthread_self());
-#endif
-
-    /* set color */
+    /* set clip */
     if ((dfbres=this->dfbsurface->SetClip(this->dfbsurface, clip)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::SetClip() failed");
         return false;
     }
 
-#ifdef MMSGUI_STDOUT_TRACE
-if (clip)
-printf("  <<<setClip, %x - %d,%d,%d,%d - tid=%u\n", this, clip->x1, clip->y1, clip->x2, clip->y2,  pthread_self());
-else
-printf("  <<<setClip, %x - tid=%u\n", this,  pthread_self());
-#endif
-
+    /* save the region */
+    if (clip) {
+    	this->config.clipped = true;
+	    this->config.clip_region = *clip;
+	    this->config.clip_rect.x = this->config.clip_region.x1;
+	    this->config.clip_rect.y = this->config.clip_region.y1;
+	    this->config.clip_rect.w = this->config.clip_region.x2 - this->config.clip_region.x1 + 1;
+	    this->config.clip_rect.h = this->config.clip_region.y2 - this->config.clip_region.y1 + 1;
+    }
+    else
+    	this->config.clipped = false;
+    
     return true;
 }
+
+bool MMSFBSurface::getClip(DFBRegion *clip) {
+
+	/* check if initialized */
+    INITCHECK;
+
+    /* return the clip region */
+    if (this->config.clipped) {
+    	*clip = this->config.clip_region;
+    	return true;
+    }
+    else
+    	return false;
+}
+
 
 bool MMSFBSurface::setDrawingFlags(MMSFBSurfaceDrawingFlags flags) {
     DFBResult   dfbres;
@@ -557,10 +601,6 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
     /* check if initialized */
     INITCHECK;
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("blitfl>>>,  %x - tid=%u\n", this,  pthread_self());
-#endif
-
     if ((flags & DSBLIT_BLEND_ALPHACHANNEL)||(flags & DSBLIT_BLEND_COLORALPHA)) {
         /* if we do alpha channel blitting, we have to change the default settings to become correct results */
         dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_ONE/*DSBF_DESTALPHA*/));
@@ -614,10 +654,6 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
     /* lock the source */
     //source->lock();
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("  blit>>>,  %x,%x - %dx%d - tid=%u\n", this, source, (src_rect)?src_rect->w:0, (src_rect)?src_rect->h:0,  pthread_self());
-#endif
-
     /* stretch blit */
     if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &src, x, y)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, src="
@@ -628,9 +664,6 @@ printf("  blit>>>,  %x,%x - %dx%d - tid=%u\n", this, source, (src_rect)?src_rect
         return false;
     }
 
-#ifdef MMSGUI_STDOUT_TRACE
-printf("    <<<blit,%x,%x - %dx%d - tid=%u\n", this, source, (src_rect)?src_rect->w:0, (src_rect)?src_rect->h:0,  pthread_self());
-#endif
 
     /* unlock the source */
     //source->unlock();
@@ -1008,11 +1041,6 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 }
 
 void MMSFBSurface::lock() {
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("lock>>>,  %x - tid=%u\n", this, pthread_self());
-fflush(stdout);
-#endif
     if (this->Lock.trylock() == 0) {
         /* I have got the lock the first time */
         this->TID = pthread_self();
@@ -1030,18 +1058,9 @@ fflush(stdout);
             this->Lock_cnt = 1;
         }
     }
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("<<<lock,  %x - tid=%u,%d\n", this, pthread_self(),this->Lock_cnt);
-fflush(stdout);
-#endif
 }
 
 void MMSFBSurface::unlock() {
-#ifdef MMSGUI_STDOUT_TRACE
-printf("unlock>>>,  %x - tid=%u\n", this, pthread_self());
-fflush(stdout);
-#endif
     if (this->TID != pthread_self())
         return;
     
@@ -1052,32 +1071,30 @@ fflush(stdout);
 
     if (this->Lock_cnt == 0)
         Lock.unlock();
-
-#ifdef MMSGUI_STDOUT_TRACE
-printf("<<<unlock,  %x - tid=%u\n", this, pthread_self());
-fflush(stdout);
-#endif
 }
 
 
 MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
     DFBResult   		dfbres;
-    IDirectFBSurface    *subsuf;
+    IDirectFBSurface    *subsuf = NULL;
     MMSFBSurface 		*surface;
 
     /* check if initialized */
     INITCHECK;
 
+#ifdef USE_DFB_SUBSURFACE
     /* get a sub surface */
     if ((dfbres=this->dfbsurface->GetSubSurface(this->dfbsurface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
         return false;
     }
+#endif
 
     /* create a new surface instance */
     surface = new MMSFBSurface(subsuf, this->dfbsurface, rect);
     if (!surface) {
-        subsuf->Release(subsuf);
+    	if (subsuf)
+    		subsuf->Release(subsuf);
         MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
         return NULL;
     }
@@ -1087,7 +1104,7 @@ MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
 
 bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
     DFBResult   		dfbres;
-    IDirectFBSurface    *subsuf;
+    IDirectFBSurface    *subsuf = NULL;
 
 	/* check if initialized */
     INITCHECK;
@@ -1104,6 +1121,7 @@ bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
     	return false;
     }
 
+#ifdef USE_DFB_SUBSURFACE
     /* because dfb has no IDirectFBSurface::setSubSurface(), allocate a new and release the old one */
     if ((dfbres=this->parent_dfbsurface->GetSubSurface(this->parent_dfbsurface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
@@ -1115,6 +1133,8 @@ bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
     	this->dfbsurface->Release(this->dfbsurface);
 
     this->dfbsurface = subsuf;
+#endif
+
     this->sub_surface_rect = *rect;
     
     unlock();

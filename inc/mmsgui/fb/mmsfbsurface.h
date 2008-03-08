@@ -27,24 +27,29 @@
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbbase.h"
 
+/* use DFB subsurfaces? */
+#define USE_DFB_SUBSURFACE
 
 #define MMSFBSurfaceBlittingFlags   DFBSurfaceBlittingFlags
 #define MMSFBSurfaceDrawingFlags    DFBSurfaceDrawingFlags
 #define MMSFBSurfaceFlipFlags       DFBSurfaceFlipFlags
 
 typedef struct {
-    int         w;              /* width */
-    int         h;              /* height */
-    string      pixelformat;    /* pixel format */
-    bool        alphachannel;   /* the pixel format has alphachannel */
-    MMSFBColor  color;          /* color for drawing/blitting */
-    int         backbuffer;     /* 0-none, 1-double, 2-triple buffered */
-    bool		systemonly;		/* true, if surface is stored in system memory */
-    bool        iswinsurface;   /* the surface is a window surface */
-    bool        islayersurface; /* the surface is the layer surface */
-                                /* note: for example it is possible to have */
-                                /*       a window surface in combination with */
-                                /*       this layer flag */
+    int         	w;              /* width */
+    int         	h;              /* height */
+    string      	pixelformat;    /* pixel format */
+    bool        	alphachannel;   /* the pixel format has alphachannel */
+    MMSFBColor  	color;          /* color for drawing/blitting */
+    bool			clipped;		/* is a clip region set? */
+    DFBRegion		clip_region;	/* current clip region */
+    DFBRectangle	clip_rect;		/* current clip rectangle */
+    int         	backbuffer;     /* 0-none, 1-double, 2-triple buffered */
+    bool			systemonly;		/* true, if surface is stored in system memory */
+    bool        	iswinsurface;   /* the surface is a window surface */
+    bool        	islayersurface; /* the surface is the layer surface */
+                                	/* note: for example it is possible to have */
+                                	/*       a window surface in combination with */
+                                	/*       this layer flag */
     MMSFBSurfaceBlittingFlags blittingflags; /* blitting flags */
 } MMSFBSurfaceConfig;
 
@@ -92,6 +97,7 @@ class MMSFBSurface {
         bool getColor(MMSFBColor *color);
 
         bool setClip(DFBRegion *clip);
+        bool getClip(DFBRegion *clip);
 
         bool setDrawingFlags(MMSFBSurfaceDrawingFlags flags);
         bool drawLine(int x1, int y1, int x2, int y2);
