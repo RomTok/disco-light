@@ -28,7 +28,7 @@
 #include "mmsgui/fb/mmsfbbase.h"
 
 /* use DFB subsurfaces? */
-#define USE_DFB_SUBSURFACE
+//#define USE_DFB_SUBSURFACE
 
 #define MMSFBSurfaceBlittingFlags   DFBSurfaceBlittingFlags
 #define MMSFBSurfaceDrawingFlags    DFBSurfaceDrawingFlags
@@ -41,8 +41,7 @@ typedef struct {
     bool        	alphachannel;   /* the pixel format has alphachannel */
     MMSFBColor  	color;          /* color for drawing/blitting */
     bool			clipped;		/* is a clip region set? */
-    DFBRegion		clip_region;	/* current clip region */
-    DFBRectangle	clip_rect;		/* current clip rectangle */
+    DFBRegion		clip;			/* current clip region */
     int         	backbuffer;     /* 0-none, 1-double, 2-triple buffered */
     bool			systemonly;		/* true, if surface is stored in system memory */
     bool        	iswinsurface;   /* the surface is a window surface */
@@ -50,7 +49,9 @@ typedef struct {
                                 	/* note: for example it is possible to have */
                                 	/*       a window surface in combination with */
                                 	/*       this layer flag */
-    MMSFBSurfaceBlittingFlags blittingflags; /* blitting flags */
+    MMSFBSurfaceDrawingFlags 	drawingflags;	/* drawing flags */
+    MMSFBSurfaceBlittingFlags 	blittingflags;	/* blitting flags */
+    IDirectFBFont				*font;			/* font */
 } MMSFBSurfaceConfig;
 
 class MMSFBSurface {
@@ -59,20 +60,32 @@ class MMSFBSurface {
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
+        void deleteSubSurface(MMSFBSurface *surface);
+
+        void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
+
+        bool clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *tmp, bool *tmpset);
+        
         bool setWinSurface(bool iswinsurface = true);
         bool setLayerSurface(bool islayersurface = true);
 
         MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
         
-        MMSMutex  			Lock;       		/* to make it thread-safe */
-        unsigned long       TID;        		/* save the id of the thread which has locked the surface */
-        unsigned long       Lock_cnt;   		/* count the number of times the thread has call lock() */
-        bool				is_sub_surface;		/* is it a sub surface? */
-        IDirectFBSurface    *parent_dfbsurface;	/* parent dfbsurface in case of subsurface */
-        DFBRectangle 		sub_surface_rect;   /* sub surface position and size */
-        
+        MMSMutex  				Lock;       		/* to make it thread-safe */
+        unsigned long       	TID;        		/* save the id of the thread which has locked the surface */
+        unsigned long       	Lock_cnt;   		/* count the number of times the thread has call lock() */
+
+        bool					is_sub_surface;		/* is it a sub surface? */
+        MMSFBSurface    		*parent;			/* parent surface in case of subsurface */
+        MMSFBSurface    		*root_parent;		/* root parent surface in case of subsurface */
+        DFBRectangle 			sub_surface_rect;   /* sub surface position and size relative to the parent */
+        int						sub_surface_xoff;	/* x offset which is added to sub_surface_rect */
+        int						sub_surface_yoff;	/* y offset which is added to sub_surface_rect */
+        vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
+
     public:
-        MMSFBSurface(IDirectFBSurface *dfbsurface, IDirectFBSurface *parent_dfbsurface = NULL,
+        MMSFBSurface(IDirectFBSurface *dfbsurface,
+        			 MMSFBSurface *parent = NULL,
         		     DFBRectangle *sub_surface_rect = NULL);
         virtual ~MMSFBSurface(); 
 
@@ -136,6 +149,7 @@ class MMSFBSurface {
         bool setSubSurface(DFBRectangle *rect);
         bool setSubSurface(DFBRegion *region);
         bool moveTo(int x, int y);
+        bool move(int x, int y);
 
     friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;

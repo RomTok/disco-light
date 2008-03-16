@@ -135,7 +135,7 @@ class MMSWindow {
         MMSWidget		*buttonpress_widget;
         MMSWindow		*buttonpress_childwin;
 
-        
+        bool			draw_setgeom;
         
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
         		    bool *own_surface);

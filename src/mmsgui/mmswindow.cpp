@@ -54,6 +54,8 @@ MMSWindow::MMSWindow() {
         this->borderimages[i] = NULL;
     bordergeomset = false;
 
+    this->draw_setgeom = true;
+
     this->dxpix = 0;
     this->dypix = 0;    
     this->geom.x = 0;
@@ -659,9 +661,9 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
 
 
                 bool os;
-                getOwnSurface(os);
+                childwin->getOwnSurface(os);
             	if (os) {
-	                if   ((oldregion.x2 - oldregion.x1 + 1 != childwin->geom.w)
+            		if   ((oldregion.x2 - oldregion.x1 + 1 != childwin->geom.w)
 	                    ||(oldregion.y2 - oldregion.y1 + 1 != childwin->geom.h)) {
 	
 	                    /* resize surface */
@@ -670,7 +672,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
             	}
             	else {
             		/* working with sub surface */
-            		childwin->surface->setSubSurface(&(childwin->geom));
+					childwin->surface->setSubSurface(&(childwin->geom));
             	}
 
                 /* call resize recursive for new regions of my child windows */
@@ -1231,7 +1233,10 @@ void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
     /* draw children */
     bool backgroundFilled = true;
     if(!this->children.empty()) {
-        this->children.at(0)->setGeometry(this->innerGeom);
+		if (this->draw_setgeom) {
+			this->children.at(0)->setGeometry(this->innerGeom);
+			this->draw_setgeom = false;
+		}
         this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled); 
     }
 
@@ -1617,7 +1622,6 @@ bool MMSWindow::hideAction(bool *stopaction) {
     	    	opacity_step = opacity / (steps+1);
 
        	    for (int i = 1; i <= steps; i++) {
-
         	    switch (moveout) {
         	    	case MMSDIRECTION_LEFT:
         	    		if (!parent)
@@ -1855,6 +1859,7 @@ void MMSWindow::refresh() {
     this->drawLock.lock();
 
     /* draw complete window */
+    this->draw_setgeom = true;
     draw();
 
     /* make it visible */   
