@@ -908,8 +908,11 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
 
     if ((flags & DSBLIT_BLEND_ALPHACHANNEL)||(flags & DSBLIT_BLEND_COLORALPHA)) {
         /* if we do alpha channel blitting, we have to change the default settings to become correct results */
-        dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_ONE/*DSBF_DESTALPHA*/));
-        dfbsurface->SetDstBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_INVSRCALPHA));
+    	if (config.pixelformat != MMSFB_PF_YV12) 
+    		dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_ONE/*DSBF_DESTALPHA*/));
+
+    	dfbsurface->SetDstBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_INVSRCALPHA));
+
 
         if (flags & DSBLIT_BLEND_COLORALPHA)
              flags = (MMSFBSurfaceBlittingFlags)(flags | DSBLIT_SRC_PREMULTCOLOR);
