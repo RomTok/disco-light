@@ -31,6 +31,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
         } else {
         
 		    try {
+		    	string filename = getenv("HOME") + string("/.disko/diskorc.xml");
 		        rcparser.parseFile("./etc/diskorc.xml");
 		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
 		        
@@ -38,6 +39,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 		        try {
 		        rcparser.parseFile("/etc/diskorc.xml");
 		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
+
+		        
 		        } catch (MMSRcParserError *ex) {
 					rcConfigDB.database  = "/tmp/mmsconfigdb";
 					rcDataDB.database    = "/tmp/mmsdatadb";
@@ -120,7 +123,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	  	MMSInputSubscription sub1(inputs);
 
 
-        if(flags & MMSINIT_EVENTS || flags == MMSINIT_PLUGINMANAGER) {
+        if(flags & MMSINIT_PLUGINMANAGER || flags == MMSINIT_FULL) {
     
 	        DEBUGMSG("Core", "creating PluginManager");
 	        pluginmanager = new MMSPluginManager();
@@ -150,7 +153,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	        pluginmanager->initializeImportPlugins();
         }
 
-        if(flags & MMSINIT_EVENTS || flags == MMSINIT_EVENTS) {
+        if(flags & MMSINIT_EVENTS || flags == MMSINIT_FULL) {
 
         	DEBUGMSG("Core", "creating EventSignupManager");
         	eventsignupmanager = new MMSEventSignupManager(); 
