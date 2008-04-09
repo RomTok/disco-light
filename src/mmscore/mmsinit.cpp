@@ -143,12 +143,6 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	        DEBUGMSG("Core", "initialize Backend Plugins...");
 	        pluginmanager->initializeBackendPlugins();
 
-	        DEBUGMSG("Core", "initialize OSD Plugins...");
-	        pluginmanager->initializeOSDPlugins();
-
-	        DEBUGMSG("Core", "initialize Central Plugins...");
-	        pluginmanager->initializeCentralPlugins();
-	        
 	        DEBUGMSG("Core", "initialize Import Plugins...");
 	        pluginmanager->initializeImportPlugins();
         }
@@ -168,19 +162,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	        mastereventsignup->setManager(eventsignupmanager);
         }
 
-        DEBUGMSG("Core", "creating switcher");
-//        switcher = new Switcher();
-//        switcher->setInputManager(inputs);
-//        switcher->setPluginManager(pluginmanager);
-//        switcher->setWindowManager((IMMSWindowManager*)windowmanager);
-//        pluginmanager->setSwitcher(switcher);
-
-
 //        DEBUGMSG("Core", "starting ImportScheduler");
 //        importscheduler = new MMSImportScheduler(pluginmanager);
 //        importscheduler->start();
 
-        DEBUGMSG("Core", "starting music manager");
+//        DEBUGMSG("Core", "starting music manager");
 //        soundmanager = new MMSMusicManager();
         
         DEBUGMSG("Core", "wait for inputs");
@@ -189,14 +175,27 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
  
 		
     	atexit(on_exit);
-        
-
+       
     } catch(MMSError *error) {
         DEBUGMSG("Core", "Abort due to: " + error->getMessage());
     }
     
-	return 0;
+	return true;
+}
 
-	
-	return false;
+bool registerSwitcher(IMMSSwitcher *switcher) {
+    DEBUGMSG("Core", "registering switcher");
+    switcher->setInputManager(inputs);
+    switcher->setWindowManager((IMMSWindowManager*)windowmanager);
+    if(pluginmanager) {
+        switcher->setPluginManager(pluginmanager);
+        pluginmanager->setSwitcher(switcher);
+        DEBUGMSG("Core", "initialize OSD Plugins...");
+        pluginmanager->initializeOSDPlugins();
+
+        DEBUGMSG("Core", "initialize Central Plugins...");
+        pluginmanager->initializeCentralPlugins();
+    }
+    
+    return true;
 }

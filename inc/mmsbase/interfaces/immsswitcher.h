@@ -26,6 +26,8 @@
 #include "mmsgui/mmschildwindow.h"
 #include "mmsconfig/mmsplugindata.h"
 
+class MMSPluginManager;
+class MMSInputManager;
 
 class IMMSSwitcher {
     public:
@@ -34,7 +36,11 @@ class IMMSSwitcher {
         virtual void show() = 0;
         virtual void hide() = 0;
 
-        virtual MMSChildWindow* loadPreviewDialog(string filename, MMSTheme *theme = NULL) = 0;
+		virtual void setWindowManager(IMMSWindowManager *wm) = 0;
+		virtual void setPluginManager(MMSPluginManager *pm) = 0;
+		virtual void setInputManager(MMSInputManager  *im) = 0;
+
+		virtual MMSChildWindow* loadPreviewDialog(string filename, MMSTheme *theme = NULL) = 0;
         virtual MMSChildWindow* loadInfoBarDialog(string filename, MMSTheme *theme = NULL) = 0;
 
         virtual void setVolume(unsigned int volume, bool init = false) = 0;
