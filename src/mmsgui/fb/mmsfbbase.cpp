@@ -136,7 +136,11 @@ bool isAlphaPixelFormat(string pf) {
     if   ((pf == MMSFB_PF_RGB16)
         ||(pf == MMSFB_PF_RGB24)
         ||(pf == MMSFB_PF_RGB32)
-        ||(pf == MMSFB_PF_YV12)
+		||(pf == MMSFB_PF_YV12)
+		||(pf == MMSFB_PF_YUY2)
+		||(pf == MMSFB_PF_UYVY)
+		||(pf == MMSFB_PF_LUT8)
+		||(pf == MMSFB_PF_NV12)
         ||(pf == MMSFB_PF_I420))
         return false;
     return true;

@@ -39,6 +39,7 @@ typedef struct {
     int         	h;              /* height */
     string      	pixelformat;    /* pixel format */
     bool        	alphachannel;   /* the pixel format has alphachannel */
+    bool            premultiplied;	/* premultiplied surface */
     MMSFBColor  	color;          /* color for drawing/blitting */
     bool			clipped;		/* is a clip region set? */
     DFBRegion		clip;			/* current clip region */

@@ -309,6 +309,9 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
         return false;
     }
 
+    /* is it a premultiplied surface? */
+    this->config.premultiplied = caps & DSCAPS_PREMULTIPLIED;
+    
     /* get the buffer mode */
     this->config.backbuffer = 0;
     if (caps & DSCAPS_DOUBLE)
@@ -907,20 +910,15 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
     INITCHECK;
 
     if ((flags & DSBLIT_BLEND_ALPHACHANNEL)||(flags & DSBLIT_BLEND_COLORALPHA)) {
-        /* if we do alpha channel blitting, we have to change the default settings to become correct results */
-    	if (config.pixelformat != MMSFB_PF_YV12) 
-    		dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_ONE/*DSBF_DESTALPHA*/));
-
+    	/* if we do alpha channel blitting, we have to change the default settings to become correct results */
+    	if (this->config.alphachannel)
+    		dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)DSBF_ONE);
+        else
+    		dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)DSBF_SRCALPHA);
     	dfbsurface->SetDstBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_INVSRCALPHA));
 
-
-        if (flags & DSBLIT_BLEND_COLORALPHA)
+    	if (flags & DSBLIT_BLEND_COLORALPHA)
              flags = (MMSFBSurfaceBlittingFlags)(flags | DSBLIT_SRC_PREMULTCOLOR);
-    }
-    else {
-        /* that's the default for no alpha channel blitting */
-        //dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_SRCALPHA));
-        //dfbsurface->SetDstBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)(DSBF_INVSRCALPHA));
     }
 
     /* set the blitting flags */
