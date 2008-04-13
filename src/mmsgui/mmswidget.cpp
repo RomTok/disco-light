@@ -1407,11 +1407,15 @@ void MMSWidget::refresh() {
     DFBRectangle tobeupdated;
     unsigned int margin = 0;
 
-    if (!this->geomset)
-        return;
+    if (!this->geomset) {
+    	return;
+    	
+    }
 
-    if (!this->visible)
-        return;
+    if (!this->visible) {
+    	return;
+    	
+    }
 
     /* lock the window because only one thread can do this at the same time */
     if (this->rootwindow)

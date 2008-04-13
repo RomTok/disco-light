@@ -141,7 +141,7 @@ void MMSFBManager::applySettings() {
 		//this->videolayer->dfblayer->SetFieldParity(this->videolayer->dfblayer,0);
 
         /* set the full opacity of the graphics layer */    
-        this->graphicslayer->setOpacity(255);
+        this->graphicslayer->setOpacity(0);
 
         if (config.getOutputType() == MMS_OT_VIAFB) {
             /* set the video layer behind the graphics layer */

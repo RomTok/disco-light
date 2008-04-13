@@ -709,7 +709,7 @@ void MMSMenu::recalculateChildren() {
 			                }
 			                else {
 			                	/* smooth scrolling */
-
+			                	printf("scroll smooth\n");
 			                	/* get the percent of scrolling */
 				                int d = (10000*scrolling_offset) / (this->item_w + item_hmargin*2);
 				                
