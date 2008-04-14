@@ -1429,6 +1429,10 @@ void MMSWidget::refresh() {
     tobeupdated.w = this->geom.w - 2*margin;
     tobeupdated.h = this->geom.h - 2*margin;
 
+    /* e.g. for smooth scrolling menus we must recalculate children here */
+    /* TODO: widgets different from mmsmenu should return without recalculation */ 
+    recalculateChildren();
+    
     this->getRootWindow()->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated);
 
     switchArrowWidgets();
