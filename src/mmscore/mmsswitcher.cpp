@@ -188,7 +188,7 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
     if(i != this->plugins.end()) {
         MMSChildWindow *preview = i->second->previewWin;
         if(preview && preview->isShown())
-            preview->hide();
+            preview->hide(false,true);
     } 
 
     this->curr_plugin = data->getId();
