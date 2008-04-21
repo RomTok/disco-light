@@ -191,6 +191,365 @@ MMSDIRECTION getDirectionFromString(string inputstr);
 
 
 
+namespace MMSGUI_MMSTHEME_ATTR {
+
+	#define MMSGUI_MMSTHEME_ATTR_ATTRDESC \
+		{ "name", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_MMSTHEME_ATTR_IDS \
+		MMSGUI_MMSTHEME_ATTR_IDS_name
+	
+	#define MMSGUI_MMSTHEME_ATTR_INIT { \
+		MMSGUI_MMSTHEME_ATTR_ATTRDESC, \
+		NULL \
+	}
+
+	typedef enum {
+		MMSGUI_MMSTHEME_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_MMSDIALOG_ATTR {
+
+	#define MMSGUI_MMSDIALOG_ATTR_ATTRDESC \
+		{ "name", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_MMSDIALOG_ATTR_IDS \
+		MMSGUI_MMSDIALOG_ATTR_IDS_name
+	
+	#define MMSGUI_MMSDIALOG_ATTR_INIT { \
+		MMSGUI_MMSDIALOG_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_MMSDIALOG_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_DESCRIPTION_ATTR {
+
+	#define MMSGUI_DESCRIPTION_ATTR_ATTRDESC \
+		{ "author", TAFF_ATTRTYPE_STRING }, \
+		{ "email", TAFF_ATTRTYPE_STRING }, \
+		{ "desc", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_DESCRIPTION_ATTR_IDS \
+		MMSGUI_DESCRIPTION_ATTR_IDS_author, \
+		MMSGUI_DESCRIPTION_ATTR_IDS_email, \
+		MMSGUI_DESCRIPTION_ATTR_IDS_desc
+
+	#define MMSGUI_DESCRIPTION_ATTR_INIT { \
+		MMSGUI_DESCRIPTION_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_DESCRIPTION_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_CLASS_ATTR {
+
+	#define MMSGUI_CLASS_ATTR_ATTRDESC \
+		{ "name", TAFF_ATTRTYPE_STRING }, \
+		{ "type", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_CLASS_ATTR_IDS \
+		MMSGUI_CLASS_ATTR_IDS_name, \
+		MMSGUI_CLASS_ATTR_IDS_type
+}
+
+namespace MMSGUI_BORDER_ATTR {
+
+	#define MMSGUI_BORDER_ATTR_ATTRDESC \
+		{ "border.color", TAFF_ATTRTYPE_STRING }, \
+		{ "border.color.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.color.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.color.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.color.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.image.path", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.top-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.top", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.top-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.bottom-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.bottom", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.bottom-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.path", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.top-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.top", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.top-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.bottom-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.bottom", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.bottom-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.thickness", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.margin", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.rcorners", TAFF_ATTRTYPE_BOOL }
+	
+	#define MMSGUI_BORDER_ATTR_IDS \
+		MMSGUI_BORDER_ATTR_IDS_border_color, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_a, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_r, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_g, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_b, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_a, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_r, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_g, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_b, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_path, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_top_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_top, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_top_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_bottom_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_bottom, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_bottom_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_path, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_top_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_top, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_top_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_thickness, \
+		MMSGUI_BORDER_ATTR_IDS_border_margin, \
+		MMSGUI_BORDER_ATTR_IDS_border_rcorners
+}
+
+namespace MMSGUI_WIDGET_ATTR {
+
+	#define MMSGUI_WIDGET_ATTR_ATTRDESC \
+		{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "bgimage", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_WIDGET_ATTR_IDS \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage
+}
+
+namespace MMSGUI_ARROW_ATTR {
+
+	#define MMSGUI_ARROW_ATTR_ATTRDESC \
+		{ "color", TAFF_ATTRTYPE_STRING }, \
+		{ "selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "direction", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_ARROW_ATTR_IDS \
+		MMSGUI_ARROW_ATTR_IDS_color, \
+		MMSGUI_ARROW_ATTR_IDS_selcolor, \
+		MMSGUI_ARROW_ATTR_IDS_direction
+	
+	#define MMSGUI_ARROW_ATTR_INIT { \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_ARROW_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_ARROW_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_IMAGE_ATTR {
+
+	#define MMSGUI_IMAGE_ATTR_ATTRDESC \
+		{ "image", TAFF_ATTRTYPE_STRING }, \
+		{ "image.path", TAFF_ATTRTYPE_STRING }, \
+		{ "image.name", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_IMAGE_ATTR_IDS \
+		MMSGUI_IMAGE_ATTR_IDS_image, \
+		MMSGUI_IMAGE_ATTR_IDS_image_path, \
+		MMSGUI_IMAGE_ATTR_IDS_image_name
+	
+	#define MMSGUI_IMAGE_ATTR_INIT { \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_IMAGE_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_IMAGE_ATTR_IDS
+	} ids;
+}
+
+
+namespace MMSGUI_WINDOW_ATTR {
+
+	#define MMSGUI_WINDOW_ATTR_ATTRDESC \
+		{ "alignment", TAFF_ATTRTYPE_STRING }, \
+		{ "dx", TAFF_ATTRTYPE_STRING }, \
+		{ "dy", TAFF_ATTRTYPE_STRING }, \
+		{ "w", TAFF_ATTRTYPE_STRING }, \
+		{ "h", TAFF_ATTRTYPE_STRING }, \
+		{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgimage", TAFF_ATTRTYPE_STRING }, \
+		{ "bgimage.path", TAFF_ATTRTYPE_STRING }, \
+		{ "bgimage.name", TAFF_ATTRTYPE_STRING }, \
+		{ "opacity", TAFF_ATTRTYPE_UCHAR }, \
+		{ "fadein", TAFF_ATTRTYPE_BOOL }, \
+		{ "fadeout", TAFF_ATTRTYPE_BOOL }, \
+		{ "debug", TAFF_ATTRTYPE_BOOL }, \
+		{ "margin", TAFF_ATTRTYPE_UCHAR }, \
+		{ "up_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "down_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "left_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "right_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_up", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_down", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_left", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_right", TAFF_ATTRTYPE_STRING }, \
+		{ "own_surface", TAFF_ATTRTYPE_BOOL }, \
+		{ "movein", TAFF_ATTRTYPE_STRING }, \
+		{ "moveout", TAFF_ATTRTYPE_STRING }
+
+	#define MMSGUI_WINDOW_ATTR_IDS \
+		MMSGUI_WINDOW_ATTR_IDS_alignment, \
+		MMSGUI_WINDOW_ATTR_IDS_dx, \
+		MMSGUI_WINDOW_ATTR_IDS_dy, \
+		MMSGUI_WINDOW_ATTR_IDS_w, \
+		MMSGUI_WINDOW_ATTR_IDS_h, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_a, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_r, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_g, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_b, \
+		MMSGUI_WINDOW_ATTR_IDS_bgimage, \
+		MMSGUI_WINDOW_ATTR_IDS_bgimage_path, \
+		MMSGUI_WINDOW_ATTR_IDS_bgimage_name, \
+		MMSGUI_WINDOW_ATTR_IDS_opacity, \
+		MMSGUI_WINDOW_ATTR_IDS_fadein, \
+		MMSGUI_WINDOW_ATTR_IDS_fadeout, \
+		MMSGUI_WINDOW_ATTR_IDS_debug, \
+		MMSGUI_WINDOW_ATTR_IDS_margin, \
+		MMSGUI_WINDOW_ATTR_IDS_up_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_down_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_left_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_right_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_up, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_down, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_left, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_right, \
+		MMSGUI_WINDOW_ATTR_IDS_own_surface, \
+		MMSGUI_WINDOW_ATTR_IDS_movein, \
+		MMSGUI_WINDOW_ATTR_IDS_moveout
+}
+
+
+namespace MMSGUI_MAINWINDOW_ATTR {
+
+	#define MMSGUI_MAINWINDOW_ATTR_INIT { \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WINDOW_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WINDOW_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_CLASS_MAINWINDOW_ATTR {
+
+	#define MMSGUI_CLASS_MAINWINDOW_ATTR_INIT { \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WINDOW_ATTR_ATTRDESC, \
+		MMSGUI_CLASS_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WINDOW_ATTR_IDS,
+		MMSGUI_CLASS_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_POPUPWINDOW_ATTR {
+
+	#define MMSGUI_POPUPWINDOW_ATTR_ATTRDESC \
+		{ "duration", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_POPUPWINDOW_ATTR_IDS \
+		MMSGUI_POPUPWINDOW_ATTR_IDS_duration
+	
+	#define MMSGUI_POPUPWINDOW_ATTR_INIT { \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WINDOW_ATTR_ATTRDESC, \
+		MMSGUI_POPUPWINDOW_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WINDOW_ATTR_IDS,
+		MMSGUI_POPUPWINDOW_ATTR_IDS
+	} ids;
+}
+
+namespace MMSGUI_CLASS_POPUPWINDOW_ATTR {
+
+	#define MMSGUI_CLASS_POPUPWINDOW_ATTR_INIT { \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WINDOW_ATTR_ATTRDESC, \
+		MMSGUI_POPUPWINDOW_ATTR_ATTRDESC, \
+		MMSGUI_CLASS_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WINDOW_ATTR_IDS,
+		MMSGUI_POPUPWINDOW_ATTR_IDS,
+		MMSGUI_CLASS_ATTR_IDS
+	} ids;
+}
+
+
+extern TAFF_DESCRIPTION mmsgui_taff_description;
+
+
+typedef enum {
+	MMSGUI_TAGTABLE_TAG_MMSTHEME,
+	MMSGUI_TAGTABLE_TAG_MMSDIALOG,
+	MMSGUI_TAGTABLE_TAG_DESCRIPTION,
+	MMSGUI_TAGTABLE_TAG_MAINWINDOW,
+	MMSGUI_TAGTABLE_TAG_CLASS_MAINWINDOW,
+	MMSGUI_TAGTABLE_TAG_POPUPWINDOW,
+	MMSGUI_TAGTABLE_TAG_CLASS_POPUPWINDOW,
+	MMSGUI_TAGTABLE_TAG_ARROW,
+	MMSGUI_TAGTABLE_TAG_IMAGE
+};
+
+
+
+
+
+
 
 #endif /*MMSTHEMEBASE_H_*/
 

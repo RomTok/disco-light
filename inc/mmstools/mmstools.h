@@ -28,6 +28,7 @@
 #include "mmstools/mmsdbaccess.h"
 #include "mmstools/mmserror.h"
 #include "mmstools/mmsfile.h"
+#include "mmstools/mmstafffile.h"
 #include "mmstools/mmsfilesearch.h"
 #include "mmstools/mmsidfactory.h"
 #include "mmstools/mmslogger.h"
