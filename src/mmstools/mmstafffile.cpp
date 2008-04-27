@@ -21,23 +21,34 @@
  ***************************************************************************/
 
 #include "mmstools/mmstafffile.h"
+#include "mmstools/tools.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 
+
 MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 			             string external_filename, MMSTAFF_EXTERNAL_TYPE external_type,
-			             bool trace, bool rewrite_taff) {
+			             bool ignore_blank_values, bool trace, bool rewrite_taff) {
 	this->taff_filename = taff_filename;
 	this->taff_desc = taff_desc;
 	this->taff_buf = NULL;
 	this->taff_buf_size = 0;
+	this->taff_buf_pos = 0;
+	this->loaded = false;
+	this->correct_version = false;
 	this->external_filename = external_filename;
 	this->external_type = external_type;
+	this->ignore_blank_values = ignore_blank_values;
 	this->trace = trace;
 	this->correct_version = false;
+	this->current_tag = -1;
+	this->current_tag_pos = 0;
 
+	if ((this->taff_filename == "")&&(this->external_filename == ""))
+		return;
+	
 	/* read the file into taff_buf */
 	bool ret = false;
 	if (!rewrite_taff)
@@ -137,9 +148,18 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *
 					/* now check the type of the variable */
 					char *validvals = "";
 					bool badval = false;
+					bool int_val_set = false;
+					int	 int_val;
 					switch (attr[attrid].type) {
 					case TAFF_ATTRTYPE_NONE:
 					case TAFF_ATTRTYPE_STRING:
+						break;
+					case TAFF_ATTRTYPE_NE_STRING:
+						badval = (!*attrVal);
+						if (badval) {
+							validvals = "any characters, but not empty";
+							attr_found = false;
+						}
 						break;
 					case TAFF_ATTRTYPE_BOOL:
 						badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false")));
@@ -147,16 +167,24 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *
 							validvals = "\"true\", \"false\"";
 							attr_found = false;
 						}
+						else {
+							int_val_set = true;
+							if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
+								int_val = -1;
+							else
+								int_val = 0;
+						}
 						break;
 					case TAFF_ATTRTYPE_UCHAR:
 						badval = ((xmlStrlen(attrVal) < 1)||(xmlStrlen(attrVal) > 3));
 						if (!badval) {
-							int v = atoi((char*)attrVal);
-							char vv[3+1];
-							sprintf(vv, "%d", v);
-							badval = (xmlStrcmp(attrVal, (xmlChar *)vv));
+							char iv[3+1];
+							int_val = atoi((char*)attrVal);
+							sprintf(iv, "%d", int_val);
+							badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
 							if (!badval)
-								badval = (v<0||v>255);
+								badval = (int_val<0||int_val>255);
+							int_val_set = !badval;
 						}
 						if (badval) {
 							validvals = "\"0\"..\"255\"";
@@ -165,6 +193,11 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *
 						break;
 					}
 
+					/* check if the value is blank and i have to ignore it */
+					if (this->ignore_blank_values)
+						if (!*attrVal)
+							continue;
+					
 					if (!attr_found) {
 						printf("Error: Value \"%s\" is invalid for the attribute \"%s\" of tag \"%s\", line %d\n       valid values: %s\n",
 										attrVal, cur_attr->name, cur_node->name, cur_node->line, validvals);
@@ -178,25 +211,37 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *
 
 					/* write attribute value */
 					if (taff_file) {
-						/* get the length of the value INCLUDING the 0x00 because of fast read & parse of the TAFF */
-						int attrvallen = xmlStrlen(attrVal) + 1;
-	
-						size_t ritems;
-						unsigned char wb[3];
-						wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-						wb[1]=(unsigned char)attrid;
-						if (attrvallen >= 0xff) {
-							/* in this case set 0xff as mark and append the full integer */
-							wb[2]=0xff;
-							taff_file->writeBuffer(wb, &ritems, 1, 3);
-							taff_file->writeBuffer(&attrvallen, &ritems, 1, sizeof(int));
+						if (!int_val_set) {
+							/* get the length of the value INCLUDING the 0x00 because of fast read & parse of the TAFF */
+							int attrvallen = xmlStrlen(attrVal) + 1;
+		
+							size_t ritems;
+							unsigned char wb[3];
+							wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+							wb[1]=(unsigned char)attrid;
+							if (attrvallen >= 0xff) {
+								/* in this case set 0xff as mark and append the full integer */
+								wb[2]=0xff;
+								taff_file->writeBuffer(wb, &ritems, 1, 3);
+								taff_file->writeBuffer(&attrvallen, &ritems, 1, sizeof(int));
+							}
+							else {
+								/* in this case write only one byte length */
+								wb[2]=(unsigned char)attrvallen;
+								taff_file->writeBuffer(wb, &ritems, 1, 3);
+							}
+							taff_file->writeBuffer(attrVal, &ritems, 1, attrvallen);
 						}
 						else {
-							/* in this case write only one byte length */
-							wb[2]=(unsigned char)attrvallen;
+							/* writing the value as INT and not as STRING */
+							size_t ritems;
+							unsigned char wb[3];
+							wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+							wb[1]=(unsigned char)attrid;
+							wb[2]=sizeof(int);
 							taff_file->writeBuffer(wb, &ritems, 1, 3);
+							taff_file->writeBuffer(&int_val, &ritems, 1, sizeof(int));
 						}
-						taff_file->writeBuffer(attrVal, &ritems, 1, attrvallen);
 					}
 				}
 				else {
@@ -291,7 +336,7 @@ bool MMSTaffFile::convertExternal2TAFF() {
 
 bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *external_file) {
 	size_t ritems;
-	char wb[1024];
+	char wb[8*1024];
 
 	TAFF_TAGTABLE *tagt = &(this->taff_desc->tagtable[tagid]);
 	TAFF_ATTRDESC *attr = tagt->attr;
@@ -308,16 +353,33 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 	}
 
 	/* write attributes */
-	char *attrval;
-	int attrid;
-	while ((attrid = getNextAttribute(&attrval)) >= 0) {
+	char *attrval_str;
+	int  attrval_int;
+	int  attrid;
+	while ((attrid = getNextAttribute(&attrval_str, &attrval_int)) >= 0) {
+		string attrval;
+		switch (attr[attrid].type) {
+		case TAFF_ATTRTYPE_BOOL:
+			if (attrval_int)
+				attrval = "true";
+			else
+				attrval = "false";
+			break;
+		case TAFF_ATTRTYPE_UCHAR:
+			attrval = iToStr(attrval_int);
+			break;
+		default:
+			attrval = attrval_str;
+			break;
+		}
+
 		if (this->trace)
-			printf(" Attribute \"%s\" found, ID=%d, value=\"%s\"\n", attr[attrid].name, attrid, attrval);
+			printf(" Attribute \"%s\" found, ID=%d, value=\"%s\"\n", attr[attrid].name, attrid, attrval.c_str());
 
 		if (external_file) {
 			*wb = '\n';
 			memset(&wb[1], ' ', depth*4+4);
-			sprintf(&wb[1+depth*4+4], "%s = \"%s\"", attr[attrid].name, attrval);
+			sprintf(&wb[1+depth*4+4], "%s = \"%s\"", attr[attrid].name, attrval.c_str());
 			external_file->writeBuffer(wb, &ritems, 1, strlen(wb));
 		}
 	}
@@ -348,11 +410,9 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 
 bool MMSTaffFile::convertTAFF2XML() {
 	if (!this->loaded) return false;
-	reset();
 
 	/* get root tag */
-	bool eof;
-	int tagid = getNextTag(eof);
+	int tagid = getFirstTag();
 	if (tagid < 0) return false;
 	
 	/* open binary destination file */
@@ -433,7 +493,7 @@ bool MMSTaffFile::readFile() {
 
 	/* all right */
 	this->taff_buf_size = ritems;
-	reset();
+	getFirstTag();
 	this->loaded = true;
 	return true;
 }
@@ -455,8 +515,17 @@ void MMSTaffFile::setTrace(bool trace) {
 	this->trace = trace;
 }
 
-void MMSTaffFile::reset() {
+int MMSTaffFile::getFirstTag() {
 	this->taff_buf_pos = sizeof(this->taff_desc->type) + sizeof(this->taff_desc->version);
+	this->current_tag = -1;
+	this->current_tag_pos = 0;
+
+	if (this->taff_buf[this->taff_buf_pos] == MMSTAFF_TAGTABLE_TYPE_TAG) {
+		bool eof;
+		return getNextTag(eof);
+	}
+
+	return this->current_tag;
 }
 
 int MMSTaffFile::getNextTag(bool &eof) {
@@ -464,8 +533,10 @@ int MMSTaffFile::getNextTag(bool &eof) {
 	do {
 		switch (this->taff_buf[this->taff_buf_pos]) {
 		case MMSTAFF_TAGTABLE_TYPE_TAG:
+			this->current_tag = this->taff_buf[this->taff_buf_pos+1];
+			this->current_tag_pos = this->taff_buf_pos;
 			this->taff_buf_pos+=2;
-			return this->taff_buf[this->taff_buf_pos-1];
+			return this->current_tag;
 		case MMSTAFF_TAGTABLE_TYPE_ATTR: {
 				this->taff_buf_pos+=2;
 				int len = (int)this->taff_buf[this->taff_buf_pos];
@@ -478,32 +549,135 @@ int MMSTaffFile::getNextTag(bool &eof) {
 			}
 			break;
 		case MMSTAFF_TAGTABLE_TYPE_CLOSETAG:
+			this->current_tag = -1;
 			this->taff_buf_pos+=2;
 			eof = false;
-			return -1;
+			return this->current_tag;
 		default:
+			this->current_tag = -1;
+			this->current_tag_pos = 0;
 			eof = true;
-			return -1;
+			return this->current_tag;
 		}
 	} while (this->taff_buf_pos < this->taff_buf_size);
+	this->current_tag = -1;
+	this->current_tag_pos = 0;
 	eof = true;
-	return -1;
+	return this->current_tag;
 }
 		
-int MMSTaffFile::getNextAttribute(char **value) {
+int MMSTaffFile::getCurrentTag() {
+	return this->current_tag;
+}
+
+MMSTaffFile *MMSTaffFile::copyCurrentTag() {
+	MMSTaffFile *mytafff = NULL;
+	int tag_cnt, closetag_cnt;
+	
+	if (!this->current_tag_pos)
+		return NULL;
+
+	/* save buffer positions */
+	int	saved_taff_buf_pos = this->taff_buf_pos;
+	int	saved_current_tag = this->current_tag;
+	int	saved_current_tag_pos = this->current_tag_pos;
+
+	/* go to the position after the current tag */
+	this->taff_buf_pos = this->current_tag_pos;
+	this->taff_buf_pos+=2;
+	
+	/* searching the close tag of this tag */
+	tag_cnt = 1;
+	closetag_cnt = 0;
+	while (tag_cnt > closetag_cnt) {
+		bool eof;
+		if (getNextTag(eof) < 0) {
+			if (eof) break;
+			closetag_cnt++;			
+		}
+		else
+			tag_cnt++;
+	}
+	
+	/* all right? */
+	if (tag_cnt == closetag_cnt) {
+		/* yes, allocate memory and copy buffer */
+		mytafff = new MMSTaffFile("", this->taff_desc, "", this->external_type,
+								  this->ignore_blank_values, this->trace, false);
+		if (mytafff) {
+			int len = this->taff_buf_pos - saved_current_tag_pos;
+			mytafff->taff_buf_size = sizeof(this->taff_desc->type) + sizeof(this->taff_desc->version) + len;
+			mytafff->taff_buf = (unsigned char *)malloc(mytafff->taff_buf_size);
+			if (mytafff->taff_buf) {
+				/* copy & init */
+				memcpy(mytafff->taff_buf, this->taff_buf, sizeof(this->taff_desc->type) + sizeof(this->taff_desc->version));
+				memcpy(&(mytafff->taff_buf[sizeof(this->taff_desc->type) + sizeof(this->taff_desc->version)]),
+					   &(this->taff_buf[saved_current_tag_pos]), len);
+				mytafff->getFirstTag();
+				this->loaded = true;
+				this->correct_version = true;
+			}
+			else {
+				/* out of memory */
+				delete mytafff;
+				mytafff = NULL;
+			}
+		}
+	}
+	
+	/* restore the old buffer positions */
+	this->taff_buf_pos = saved_taff_buf_pos;
+	this->current_tag = saved_current_tag;
+	this->current_tag_pos = saved_current_tag_pos;
+	
+	return mytafff;
+}
+
+
+int MMSTaffFile::getFirstAttribute(char **value_str, int *value_int) {
+	if (!this->current_tag_pos)
+		return -1;
+
+	/* go to the position after the current tag */
+	this->taff_buf_pos = this->current_tag_pos;
+	this->taff_buf_pos+=2;
+
+	/* get the attribute */
+	if (this->taff_buf[this->taff_buf_pos] == MMSTAFF_TAGTABLE_TYPE_ATTR)
+		return getNextAttribute(value_str, value_int);
+
+	return -1;
+}
+
+int MMSTaffFile::getNextAttribute(char **value_str, int *value_int) {
 	/* searching for next attribute */
 	do {
 		switch (this->taff_buf[this->taff_buf_pos]) {
 		case MMSTAFF_TAGTABLE_TYPE_ATTR: {
 			    int attrid = (int)this->taff_buf[this->taff_buf_pos+1];
 				this->taff_buf_pos+=2;
+
+				/* get the length of the value */
 				int len = (int)this->taff_buf[this->taff_buf_pos];
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
 					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 				}
-				*value = (char*)&this->taff_buf[this->taff_buf_pos]; 
+				
+				/* check the type of value and set the return values */
+				TAFF_ATTRDESC *attr = this->taff_desc->tagtable[current_tag].attr;
+				switch (attr[attrid].type) {
+				case TAFF_ATTRTYPE_BOOL:
+				case TAFF_ATTRTYPE_UCHAR:
+					*value_str = NULL; 
+					*value_int = *((int*)&this->taff_buf[this->taff_buf_pos]); 
+					break;
+				default:
+					*value_str = (char*)&this->taff_buf[this->taff_buf_pos]; 
+					break;
+				}
+
 				this->taff_buf_pos+=len;
 				return attrid;
 			}
@@ -514,4 +688,25 @@ int MMSTaffFile::getNextAttribute(char **value) {
 	} while (this->taff_buf_pos < this->taff_buf_size);
 	return -1;
 }
+
+bool MMSTaffFile::getAttribute(int id, char **value_str, int *value_int) {
+	int attrid = getFirstAttribute(value_str, value_int);
+	while (attrid >= 0) {
+		if (attrid == id)
+			return true; 
+		attrid = getNextAttribute(value_str, value_int);
+	}
+	return false;
+}
+
+char *MMSTaffFile::getAttributeString(int id) {
+	char *value_str = NULL;
+	int  value_int;
+	if (getAttribute(id, &value_str, &value_int))
+		if (value_str)
+			return value_str;
+	return NULL;
+}
+
+
 

@@ -31,6 +31,7 @@
 typedef enum {
 	TAFF_ATTRTYPE_NONE,			/* not set */
 	TAFF_ATTRTYPE_STRING,		/* any characters */
+	TAFF_ATTRTYPE_NE_STRING,	/* any characters, but not empty */
 	TAFF_ATTRTYPE_BOOL,			/* valid values: "true", "false" */
 	TAFF_ATTRTYPE_UCHAR			/* valid values: "0".."255" */
 } TAFF_ATTRTYPE;
@@ -74,9 +75,13 @@ class MMSTaffFile {
 		string 					external_filename;
 		MMSTAFF_EXTERNAL_TYPE	external_type;
 
+		bool    ignore_blank_values;
 		bool 	trace;
 		bool	loaded;
 		bool	correct_version;
+
+		int		current_tag;
+		int		current_tag_pos;
 		
         bool convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *taff_file);
         bool convertXML2TAFF();
@@ -87,7 +92,7 @@ class MMSTaffFile {
 	public:
         MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
         			string external_filename = "", MMSTAFF_EXTERNAL_TYPE external_type = MMSTAFF_EXTERNAL_TYPE_XML,
-        			bool trace = false, bool rewrite_taff = false);
+        			bool ignore_blank_values = false, bool trace = false, bool rewrite_taff = false);
         ~MMSTaffFile(); 
 
         bool convertExternal2TAFF();
@@ -100,10 +105,15 @@ class MMSTaffFile {
         bool setExternal(string external_filename = "", MMSTAFF_EXTERNAL_TYPE external_type = MMSTAFF_EXTERNAL_TYPE_XML);
         void setTrace(bool trace);
         
-        void reset();
+        int  getFirstTag();
         int  getNextTag(bool &eof);
-        int  getNextAttribute(char **value);
+        int  getCurrentTag();
+        MMSTaffFile *copyCurrentTag();
 
+        int  getFirstAttribute(char **value_str, int *value_int);
+        int  getNextAttribute(char **value_str, int *value_int);
+        bool getAttribute(int id, char **value_str, int *value_int);
+        char *getAttributeString(int id);
 };
 
 
