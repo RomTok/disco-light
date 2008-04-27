@@ -33,7 +33,9 @@ typedef enum {
 	TAFF_ATTRTYPE_STRING,		/* any characters */
 	TAFF_ATTRTYPE_NE_STRING,	/* any characters, but not empty */
 	TAFF_ATTRTYPE_BOOL,			/* valid values: "true", "false" */
-	TAFF_ATTRTYPE_UCHAR			/* valid values: "0".."255" */
+	TAFF_ATTRTYPE_UCHAR,		/* valid values: "0".."255" */
+	TAFF_ATTRTYPE_UCHAR100,		/* valid values: "0".."100" */
+	TAFF_ATTRTYPE_INT			/* valid values: "-2147483648".."2147483647" */
 } TAFF_ATTRTYPE;
 
 typedef struct {

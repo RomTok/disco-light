@@ -176,6 +176,7 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *
 						}
 						break;
 					case TAFF_ATTRTYPE_UCHAR:
+					case TAFF_ATTRTYPE_UCHAR100:
 						badval = ((xmlStrlen(attrVal) < 1)||(xmlStrlen(attrVal) > 3));
 						if (!badval) {
 							char iv[3+1];
@@ -183,11 +184,28 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, xmlNode *node, MMSFile *
 							sprintf(iv, "%d", int_val);
 							badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
 							if (!badval)
-								badval = (int_val<0||int_val>255);
+								if (attr[attrid].type == TAFF_ATTRTYPE_UCHAR100)
+									badval = (int_val<0||int_val>100);
+								else
+									badval = (int_val<0||int_val>255);
 							int_val_set = !badval;
 						}
 						if (badval) {
-							validvals = "\"0\"..\"255\"";
+							if (attr[attrid].type == TAFF_ATTRTYPE_UCHAR100)
+								validvals = "\"0\"..\"100\"";
+							else
+								validvals = "\"0\"..\"255\"";
+							attr_found = false;
+						}
+						break;
+					case TAFF_ATTRTYPE_INT:
+						char iv[11+1];
+						int_val = atoi((char*)attrVal);
+						sprintf(iv, "%d", int_val);
+						badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
+						int_val_set = !badval;
+						if (badval) {
+							validvals = "\"-2147483648\"..\"2147483647\"";
 							attr_found = false;
 						}
 						break;
@@ -366,6 +384,8 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 				attrval = "false";
 			break;
 		case TAFF_ATTRTYPE_UCHAR:
+		case TAFF_ATTRTYPE_UCHAR100:
+		case TAFF_ATTRTYPE_INT:
 			attrval = iToStr(attrval_int);
 			break;
 		default:
@@ -670,6 +690,8 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int) {
 				switch (attr[attrid].type) {
 				case TAFF_ATTRTYPE_BOOL:
 				case TAFF_ATTRTYPE_UCHAR:
+				case TAFF_ATTRTYPE_UCHAR100:
+				case TAFF_ATTRTYPE_INT:
 					*value_str = NULL; 
 					*value_int = *((int*)&this->taff_buf[this->taff_buf_pos]); 
 					break;
