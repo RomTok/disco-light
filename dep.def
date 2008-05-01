@@ -176,21 +176,6 @@ ifndef RANLIB
     export RANLIB=ranlib
 endif
 
-#helper
-ifndef SQLITEBIN_FOUND
-    $(info check for sqlite3 binary)
-    SQLITE_BIN=$(shell which sqlite 2>/dev/null)
-    ifeq ($(SQLITE_BIN),)
-        SQLITE_BIN=$(shell which sqlite3 2>/dev/null)
-        ifeq ($(SQLITE_BIN),)
-            $(error sqlite not found)
-        else
-            export SQLITEBIN_FOUND=1
-        endif
-        export SQLITEBIN_FOUND=1
-    endif
-endif
-
 #directories
 ifeq ($(prefix),)
     export prefix=$(HOME)/$(PROJECTNAME)
