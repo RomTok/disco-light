@@ -255,7 +255,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     /* open the audio output driver */
     const char* const *ao_list;
     int i = 0;
-    if(!(ao_list = xine_list_audio_output_plugins(this->xine))) {
+    if(!(ao_list = xine_list_audio_output_plugins(this->xine)) || !*ao_list) {
         DEBUGMSG("MMSMedia", "No audio output plugins found");
         xine_engine_set_param(this->xine, XINE_PARAM_IGNORE_AUDIO, 1);
         this->ao=NULL;
