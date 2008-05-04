@@ -578,7 +578,7 @@ bool MMSTaffFile::readFile() {
     	}
         if (stat(this->external_filename.c_str(), &statbuf2)==0) {
         	if (statbuf2.st_mtime >= statbuf1.st_mtime) {
-                /* external file has been modified, therefor the taff file maybe not up-to-date */ 
+                /* external file has been modified, therefore the taff file maybe not up-to-date */ 
         		free(this->taff_buf);
         		this->taff_buf = NULL;
         		return false;
