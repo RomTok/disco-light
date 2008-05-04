@@ -44,7 +44,7 @@ MMSWidget *MMSVBox::copyWidget() {
 }
 
 void MMSVBox::add(MMSWidget *widget) {
-    widget->setParent(this);
+	widget->setParent(this);
     this->children.push_back(widget);
     if (this->getRootWindow())
         this->getRootWindow()->add(widget);
@@ -85,7 +85,7 @@ void MMSVBox::recalculateChildren() {
 		    getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
 		    safepix -= rect.h;
             if ((safepix < 0)||((int)rect.h < 0)) 
-                throw new MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
+                throw new MMSWidgetError(0,"cannot calculate geometry (not enough free pixels), sizehint "+ sizehint);
 		    	
 		    rect.w = this->geom.w;
 		    rect.x = this->geom.x;

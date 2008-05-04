@@ -25,6 +25,32 @@
 
 #include "mmsgui/theme/mmsthemebase.h"
 
+//describe attributes
+namespace MMSGUI_DESCRIPTION_ATTR {
+
+	#define MMSGUI_DESCRIPTION_ATTR_ATTRDESC \
+		{ "author", TAFF_ATTRTYPE_STRING }, \
+		{ "email", TAFF_ATTRTYPE_STRING }, \
+		{ "desc", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_DESCRIPTION_ATTR_IDS \
+		MMSGUI_DESCRIPTION_ATTR_IDS_author, \
+		MMSGUI_DESCRIPTION_ATTR_IDS_email, \
+		MMSGUI_DESCRIPTION_ATTR_IDS_desc
+
+	#define MMSGUI_DESCRIPTION_ATTR_INIT { \
+		MMSGUI_DESCRIPTION_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_DESCRIPTION_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_DESCRIPTION_ATTR_I[];
+
+
 class MMSDescriptionClass {
     private:
         bool    isauthor;
@@ -39,7 +65,7 @@ class MMSDescriptionClass {
         //
         void unsetAll();
         //
-        void setAttributesFromXMLNode(xmlNode* node);
+        void setAttributesFromXMLNode(MMSTaffFile *tafff);
         //
         bool isAuthor();
         void setAuthor(string author);

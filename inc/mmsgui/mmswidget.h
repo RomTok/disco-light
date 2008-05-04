@@ -255,7 +255,7 @@ class MMSWidget {
 //        virtual void handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *requestingchild);
         void setBinData(void *data);
         void *getBinData();
-        bool setSizeHint(string hint);
+        bool setSizeHint(string &hint);
         string getSizeHint();
         bool isGeomSet();
         void setGeomSet(bool set);

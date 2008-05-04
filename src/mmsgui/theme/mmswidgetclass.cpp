@@ -22,6 +22,13 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_WIDGET_ATTR_I[] = MMSGUI_WIDGET_ATTR_INIT;
+
+//address attribute names
+#define GETATTRNAME(aname) MMSGUI_WIDGET_ATTR_I[MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_##aname].name
+#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
 
 MMSWidgetClass::MMSWidgetClass() {
 	initBgColor();
@@ -219,370 +226,755 @@ void MMSWidgetClass::unsetAll() {
     unsetBlendFactor();
 }
 
-void MMSWidgetClass::setAttributesFromXMLNode(xmlNode* node, string prefix, string path) {
+void MMSWidgetClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+    DFBColor color;
     bool class_set = false;
 
-    startXMLScan
-    {
-        DFBColor color;
-        color.a = 0;
-        color.r = 0;
-        color.g = 0;
-        color.b = 0;
-
-        if(attrName == "class") {
-            class_set = true;
-        }
-        else if(attrName == prefix + "bgcolor") {
-            if (isBgColor()) getBgColor(color);
-
-            if (getColorFromString(attrValue, &color))    
-                setBgColor(color);
-        }
-        else if(attrName == prefix + "bgcolor.a") {
-            if (isBgColor()) getBgColor(color);
-    
-            color.a = atoi(attrValue.c_str());
-
-            setBgColor(color);
-        }
-        else if(attrName == prefix + "bgcolor.r") {
-            if (isBgColor()) getBgColor(color);
-    
-            color.r = atoi(attrValue.c_str());
-
-            setBgColor(color);
-        }
-        else if(attrName == prefix + "bgcolor.g") {
-            if (isBgColor()) getBgColor(color);
-    
-            color.g = atoi(attrValue.c_str());
-
-            setBgColor(color);
-        }
-        else if(attrName == prefix + "bgcolor.b") {
-            if (isBgColor()) getBgColor(color);
-    
-            color.b = atoi(attrValue.c_str());
-
-            setBgColor(color);
-        }
-        else if(attrName == prefix + "selbgcolor") {
-            if (isSelBgColor()) getSelBgColor(color);
-
-            if (getColorFromString(attrValue, &color))    
-                setSelBgColor(color);
-        }
-        else if(attrName == prefix + "selbgcolor.a") {
-            if (isSelBgColor()) getSelBgColor(color);
-    
-            color.a = atoi(attrValue.c_str());
-
-            setSelBgColor(color);
-        }
-        else if(attrName == prefix + "selbgcolor.r") {
-            if (isSelBgColor()) getSelBgColor(color);
-    
-            color.r = atoi(attrValue.c_str());
-
-            setSelBgColor(color);
-        }
-        else if(attrName == prefix + "selbgcolor.g") {
-            if (isSelBgColor()) getSelBgColor(color);
-    
-            color.g = atoi(attrValue.c_str());
-
-            setSelBgColor(color);
-        }
-        else if(attrName == prefix + "selbgcolor.b") {
-            if (isSelBgColor()) getSelBgColor(color);
-    
-            color.b = atoi(attrValue.c_str());
-
-            setSelBgColor(color);
-        }
-        else if(attrName == prefix + "bgcolor_p") {
-            if (isBgColor_p()) getBgColor_p(color);
-
-            if (getColorFromString(attrValue, &color))    
-                setBgColor_p(color);
-        }
-        else if(attrName == prefix + "bgcolor_p.a") {
-            if (isBgColor_p()) getBgColor_p(color);
-    
-            color.a = atoi(attrValue.c_str());
-
-            setBgColor_p(color);
-        }
-        else if(attrName == prefix + "bgcolor_p.r") {
-            if (isBgColor_p()) getBgColor_p(color);
-    
-            color.r = atoi(attrValue.c_str());
-
-            setBgColor_p(color);
-        }
-        else if(attrName == prefix + "bgcolor_p.g") {
-            if (isBgColor_p()) getBgColor_p(color);
-    
-            color.g = atoi(attrValue.c_str());
-
-            setBgColor_p(color);
-        }
-        else if(attrName == prefix + "bgcolor_p.b") {
-            if (isBgColor_p()) getBgColor_p(color);
-    
-            color.b = atoi(attrValue.c_str());
-
-            setBgColor_p(color);
-        }
-        else if(attrName == prefix + "selbgcolor_p") {
-            if (isSelBgColor_p()) getSelBgColor_p(color);
-
-            if (getColorFromString(attrValue, &color))    
-                setSelBgColor_p(color);
-        }
-        else if(attrName == prefix + "selbgcolor_p.a") {
-            if (isSelBgColor_p()) getSelBgColor_p(color);
-    
-            color.a = atoi(attrValue.c_str());
-
-            setSelBgColor_p(color);
-        }
-        else if(attrName == prefix + "selbgcolor_p.r") {
-            if (isSelBgColor_p()) getSelBgColor_p(color);
-    
-            color.r = atoi(attrValue.c_str());
-
-            setSelBgColor_p(color);
-        }
-        else if(attrName == prefix + "selbgcolor_p.g") {
-            if (isSelBgColor_p()) getSelBgColor_p(color);
-    
-            color.g = atoi(attrValue.c_str());
-
-            setSelBgColor_p(color);
-        }
-        else if(attrName == prefix + "selbgcolor_p.b") {
-            if (isSelBgColor_p()) getSelBgColor_p(color);
-    
-            color.b = atoi(attrValue.c_str());
-
-            setSelBgColor_p(color);
-        }
-        else if(attrName == prefix + "bgcolor_i") {
-            if (isBgColor_i()) getBgColor_i(color);
-
-            if (getColorFromString(attrValue, &color))    
-                setBgColor_i(color);
-        }
-        else if(attrName == prefix + "bgcolor_i.a") {
-            if (isBgColor_i()) getBgColor_i(color);
-    
-            color.a = atoi(attrValue.c_str());
-
-            setBgColor_i(color);
-        }
-        else if(attrName == prefix + "bgcolor_i.r") {
-            if (isBgColor_i()) getBgColor_i(color);
-    
-            color.r = atoi(attrValue.c_str());
-
-            setBgColor_i(color);
-        }
-        else if(attrName == prefix + "bgcolor_i.g") {
-            if (isBgColor_i()) getBgColor_i(color);
-    
-            color.g = atoi(attrValue.c_str());
-
-            setBgColor_i(color);
-        }
-        else if(attrName == prefix + "bgcolor_i.b") {
-            if (isBgColor_i()) getBgColor_i(color);
-    
-            color.b = atoi(attrValue.c_str());
-
-            setBgColor_i(color);
-        }
-        else if(attrName == prefix + "selbgcolor_i") {
-            if (isSelBgColor_i()) getSelBgColor_i(color);
-
-            if (getColorFromString(attrValue, &color))    
-                setSelBgColor_i(color);
-        }
-        else if(attrName == prefix + "selbgcolor_i.a") {
-            if (isSelBgColor_i()) getSelBgColor_i(color);
-    
-            color.a = atoi(attrValue.c_str());
-
-            setSelBgColor_i(color);
-        }
-        else if(attrName == prefix + "selbgcolor_i.r") {
-            if (isSelBgColor_i()) getSelBgColor_i(color);
-    
-            color.r = atoi(attrValue.c_str());
-
-            setSelBgColor_i(color);
-        }
-        else if(attrName == prefix + "selbgcolor_i.g") {
-            if (isSelBgColor_i()) getSelBgColor_i(color);
-    
-            color.g = atoi(attrValue.c_str());
-
-            setSelBgColor_i(color);
-        }
-        else if(attrName == prefix + "selbgcolor_i.b") {
-            if (isSelBgColor_i()) getSelBgColor_i(color);
-    
-            color.b = atoi(attrValue.c_str());
-
-            setSelBgColor_i(color);
-        }
-        else if(attrName == prefix + "bgimage") {
-            if (attrValue != "")
-                setBgImagePath("");
-            else
-                setBgImagePath(path);
-            setBgImageName(attrValue);
-        }
-        else if(attrName == prefix + "bgimage.path") {
-            if (attrValue != "")
-                setBgImagePath(attrValue);
-            else
-                setBgImagePath(path);
-        }
-        else if(attrName == prefix + "bgimage.name") {
-            setBgImageName(attrValue);
-        }
-        else if(attrName == prefix + "selbgimage") {
-            if (attrValue != "")
-                setSelBgImagePath("");
-            else
-                setSelBgImagePath(path);
-            setSelBgImageName(attrValue);
-        }
-        else if(attrName == prefix + "selbgimage.path") {
-            if (attrValue != "")
-                setSelBgImagePath(attrValue);
-            else
-                setSelBgImagePath(path);
-        }
-        else if(attrName == prefix + "selbgimage.name") {
-            setSelBgImageName(attrValue);
-        }
-        else if(attrName == prefix + "bgimage_p") {
-            if (attrValue != "")
-                setBgImagePath_p("");
-            else
-                setBgImagePath_p(path);
-            setBgImageName_p(attrValue);
-        }
-        else if(attrName == prefix + "bgimage_p.path") {
-            if (attrValue != "")
-                setBgImagePath_p(attrValue);
-            else
-                setBgImagePath_p(path);
-        }
-        else if(attrName == prefix + "bgimage_p.name") {
-            setBgImageName_p(attrValue);
-        }
-        else if(attrName == prefix + "selbgimage_p") {
-            if (attrValue != "")
-                setSelBgImagePath_p("");
-            else
-                setSelBgImagePath_p(path);
-            setSelBgImageName_p(attrValue);
-        }
-        else if(attrName == prefix + "selbgimage_p.path") {
-            if (attrValue != "")
-                setSelBgImagePath_p(attrValue);
-            else
-                setSelBgImagePath_p(path);
-        }
-        else if(attrName == prefix + "selbgimage_p.name") {
-            setSelBgImageName_p(attrValue);
-        }
-        else if(attrName == prefix + "bgimage_i") {
-            if (attrValue != "")
-                setBgImagePath_i("");
-            else
-                setBgImagePath_i(path);
-            setBgImageName_i(attrValue);
-        }
-        else if(attrName == prefix + "bgimage_i.path") {
-            if (attrValue != "")
-                setBgImagePath_i(attrValue);
-            else
-                setBgImagePath_i(path);
-        }
-        else if(attrName == prefix + "bgimage_i.name") {
-            setBgImageName_i(attrValue);
-        }
-        else if(attrName == prefix + "selbgimage_i") {
-            if (attrValue != "")
-                setSelBgImagePath_i("");
-            else
-                setSelBgImagePath_i(path);
-            setSelBgImageName_i(attrValue);
-        }
-        else if(attrName == prefix + "selbgimage_i.path") {
-            if (attrValue != "")
-                setSelBgImagePath_i(attrValue);
-            else
-                setSelBgImagePath_i(path);
-        }
-        else if(attrName == prefix + "selbgimage_i.name") {
-            setSelBgImageName_i(attrValue);
-        }
-        else if(attrName == prefix + "margin") {
-            setMargin(atoi(attrValue.c_str()));
-        }
-        else if(attrName == prefix + "focusable") {
-            setFocusable((attrValue == "true") ? true : false);
-        }
-        else if(attrName == prefix + "selectable") {
-            setSelectable((attrValue == "true") ? true : false);
-        }
-        else if(attrName == prefix + "up_arrow") {
-            setUpArrow(attrValue);
-        }
-        else if(attrName == prefix + "down_arrow") {
-            setDownArrow(attrValue);
-        }
-        else if(attrName == prefix + "left_arrow") {
-            setLeftArrow(attrValue);
-        }
-        else if(attrName == prefix + "right_arrow") {
-            setRightArrow(attrValue);
-        }
-        else if(attrName == prefix + "data") {
-            setData(attrValue);
-        }
-        else if(attrName == prefix + "navigate_up") {
-            setNavigateUp(attrValue);
-        }
-        else if(attrName == prefix + "navigate_down") {
-            setNavigateDown(attrValue);
-        }
-        else if(attrName == prefix + "navigate_left") {
-            setNavigateLeft(attrValue);
-        }
-        else if(attrName == prefix + "navigate_right") {
-            setNavigateRight(attrValue);
-        }
-        else if(attrName == prefix + "vslider") {
-            setVSlider(attrValue);
-        }
-        else if(attrName == prefix + "hslider") {
-            setHSlider(attrValue);
-        }
-        else if(attrName == prefix + "imagesondemand")
-            setImagesOnDemand((attrValue == "true") ? true : false);
-        else if(attrName == prefix + "blend")
-            setBlend(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "blend_factor")
-            setBlendFactor(atof(attrValue.c_str()));
+    if (prefix == "") {
+		startTAFFScan
+		{
+	        switch (attrid) {
+			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+	            class_set = true;
+				break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.a = attrval_int;
+	            setBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.r = attrval_int;
+	            setBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.g = attrval_int;
+	            setBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.b = attrval_int;
+	            setBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.a = attrval_int;
+	            setSelBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.r = attrval_int;
+	            setSelBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.g = attrval_int;
+	            setSelBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.b = attrval_int;
+	            setSelBgColor(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.a = attrval_int;
+	            setBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.r = attrval_int;
+	            setBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.g = attrval_int;
+	            setBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.b = attrval_int;
+	            setBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.a = attrval_int;
+	            setSelBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.r = attrval_int;
+	            setSelBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.g = attrval_int;
+	            setSelBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.b = attrval_int;
+	            setSelBgColor_p(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.a = attrval_int;
+	            setBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.r = attrval_int;
+	            setBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.g = attrval_int;
+	            setBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.b = attrval_int;
+	            setBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.a = attrval_int;
+	            setSelBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.r = attrval_int;
+	            setSelBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.g = attrval_int;
+	            setSelBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.b = attrval_int;
+	            setSelBgColor_i(color);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage:
+	            if (*attrval_str)
+	                setBgImagePath("");
+	            else
+	                setBgImagePath(path);
+	            setBgImageName(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_path:
+	            if (*attrval_str)
+	                setBgImagePath(attrval_str);
+	            else
+	                setBgImagePath(path);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_name:
+	            setBgImageName(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage:
+	            if (*attrval_str)
+	                setSelBgImagePath("");
+	            else
+	                setSelBgImagePath(path);
+	            setSelBgImageName(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_path:
+	            if (*attrval_str)
+	                setSelBgImagePath(attrval_str);
+	            else
+	                setSelBgImagePath(path);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_name:
+	            setSelBgImageName(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_p:
+	            if (*attrval_str)
+	                setBgImagePath_p("");
+	            else
+	                setBgImagePath_p(path);
+	            setBgImageName_p(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_p_path:
+	            if (*attrval_str)
+	                setBgImagePath_p(attrval_str);
+	            else
+	                setBgImagePath_p(path);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_p_name:
+	            setBgImageName_p(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_p:
+	            if (*attrval_str)
+	                setSelBgImagePath_p("");
+	            else
+	                setSelBgImagePath_p(path);
+	            setSelBgImageName_p(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_path:
+	            if (*attrval_str)
+	                setSelBgImagePath_p(attrval_str);
+	            else
+	                setSelBgImagePath_p(path);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_name:
+	            setSelBgImageName_p(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_i:
+	            if (*attrval_str)
+	                setBgImagePath_i("");
+	            else
+	                setBgImagePath_i(path);
+	            setBgImageName_i(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_i_path:
+	            if (*attrval_str)
+	                setBgImagePath_i(attrval_str);
+	            else
+	                setBgImagePath_i(path);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_i_name:
+	            setBgImageName_i(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_i:
+	            if (*attrval_str)
+	                setSelBgImagePath_i("");
+	            else
+	                setSelBgImagePath_i(path);
+	            setSelBgImageName_i(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_path:
+	            if (*attrval_str)
+	                setSelBgImagePath_i(attrval_str);
+	            else
+	                setSelBgImagePath_i(path);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_name:
+	            setSelBgImageName_i(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_margin:
+	            setMargin(attrval_int);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_focusable:
+	            setFocusable((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selectable:
+	            setSelectable((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_up_arrow:
+	            setUpArrow(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_down_arrow:
+	            setDownArrow(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_left_arrow:
+	            setLeftArrow(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_right_arrow:
+	            setRightArrow(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_data:
+	            setData(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_navigate_up:
+	            setNavigateUp(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_navigate_down:
+	            setNavigateDown(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_navigate_left:
+	            setNavigateLeft(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_navigate_right:
+	            setNavigateRight(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_vslider:
+	            setVSlider(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_hslider:
+	            setHSlider(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_imagesondemand:
+	            setImagesOnDemand((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_blend:
+	            setBlend(attrval_int);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_blend_factor:
+	            setBlendFactor(atof(attrval_str));
+	            break;
+			}
+		}
+		endTAFFScan
     }
-    endXMLScan 
+    else {
+    	unsigned int pl = strlen(prefix.c_str());
+    	
+    	startTAFFScan_WITHOUT_ID
+    	{
+    		/* check if attrname has correct prefix */
+    		if (pl >= strlen(attrname))
+        		continue;
+            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            	continue;
+            attrname = &attrname[pl];
+
+    		/* okay, correct prefix, check attributes now */
+            if (ISATTRNAME(bgcolor)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setBgColor(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.a = attrval_int;
+	            setBgColor(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.r = attrval_int;
+	            setBgColor(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.g = attrval_int;
+	            setBgColor(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor()) getBgColor(color);
+	            color.b = attrval_int;
+	            setBgColor(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelBgColor(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.a = attrval_int;
+	            setSelBgColor(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.r = attrval_int;
+	            setSelBgColor(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.g = attrval_int;
+	            setSelBgColor(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor()) getSelBgColor(color);
+	            color.b = attrval_int;
+	            setSelBgColor(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_p)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_p_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.a = attrval_int;
+	            setBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_p_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.r = attrval_int;
+	            setBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_p_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.g = attrval_int;
+	            setBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_p()) getBgColor_p(color);
+	            color.b = attrval_int;
+	            setBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_p)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_p_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.a = attrval_int;
+	            setSelBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_p_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.r = attrval_int;
+	            setSelBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_p_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.g = attrval_int;
+	            setSelBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_p_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_p()) getSelBgColor_p(color);
+	            color.b = attrval_int;
+	            setSelBgColor_p(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_i)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_i_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.a = attrval_int;
+	            setBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_i_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.r = attrval_int;
+	            setBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_i_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.g = attrval_int;
+	            setBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(bgcolor_i_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isBgColor_i()) getBgColor_i(color);
+	            color.b = attrval_int;
+	            setBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_i)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_i_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.a = attrval_int;
+	            setSelBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_i_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.r = attrval_int;
+	            setSelBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_i_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.g = attrval_int;
+	            setSelBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(selbgcolor_i_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelBgColor_i()) getSelBgColor_i(color);
+	            color.b = attrval_int;
+	            setSelBgColor_i(color);
+            }
+            else
+            if (ISATTRNAME(bgimage)) { 
+	            if (*attrval_str)
+	                setBgImagePath("");
+	            else
+	                setBgImagePath(path);
+	            setBgImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(bgimage_path)) { 
+	            if (*attrval_str)
+	                setBgImagePath(attrval_str);
+	            else
+	                setBgImagePath(path);
+            }
+            else
+            if (ISATTRNAME(bgimage_name)) { 
+	            setBgImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selbgimage)) { 
+	            if (*attrval_str)
+	                setSelBgImagePath("");
+	            else
+	                setSelBgImagePath(path);
+	            setSelBgImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selbgimage_path)) { 
+	            if (*attrval_str)
+	                setSelBgImagePath(attrval_str);
+	            else
+	                setSelBgImagePath(path);
+            }
+            else
+            if (ISATTRNAME(selbgimage_name)) { 
+	            setSelBgImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(bgimage_p)) { 
+	            if (*attrval_str)
+	                setBgImagePath_p("");
+	            else
+	                setBgImagePath_p(path);
+	            setBgImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(bgimage_p_path)) { 
+	            if (*attrval_str)
+	                setBgImagePath_p(attrval_str);
+	            else
+	                setBgImagePath_p(path);
+            }
+            else
+            if (ISATTRNAME(bgimage_p_name)) { 
+	            setBgImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selbgimage_p)) { 
+	            if (*attrval_str)
+	                setSelBgImagePath_p("");
+	            else
+	                setSelBgImagePath_p(path);
+	            setSelBgImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selbgimage_p_path)) { 
+	            if (*attrval_str)
+	                setSelBgImagePath_p(attrval_str);
+	            else
+	                setSelBgImagePath_p(path);
+            }
+            else
+            if (ISATTRNAME(selbgimage_p_name)) { 
+	            setSelBgImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(bgimage_i)) { 
+	            if (*attrval_str)
+	                setBgImagePath_i("");
+	            else
+	                setBgImagePath_i(path);
+	            setBgImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(bgimage_i_path)) { 
+	            if (*attrval_str)
+	                setBgImagePath_i(attrval_str);
+	            else
+	                setBgImagePath_i(path);
+            }
+            else
+            if (ISATTRNAME(bgimage_i_name)) { 
+	            setBgImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selbgimage_i)) { 
+	            if (*attrval_str)
+	                setSelBgImagePath_i("");
+	            else
+	                setSelBgImagePath_i(path);
+	            setSelBgImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selbgimage_i_path)) { 
+	            if (*attrval_str)
+	                setSelBgImagePath_i(attrval_str);
+	            else
+	                setSelBgImagePath_i(path);
+            }
+            else
+            if (ISATTRNAME(selbgimage_i_name)) { 
+	            setSelBgImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(margin)) { 
+	            setMargin(attrval_int);
+            }
+            else
+            if (ISATTRNAME(focusable)) { 
+	            setFocusable((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(selectable)) { 
+	            setSelectable((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(up_arrow)) { 
+	            setUpArrow(attrval_str);
+            }
+            else
+            if (ISATTRNAME(down_arrow)) { 
+	            setDownArrow(attrval_str);
+            }
+            else
+            if (ISATTRNAME(left_arrow)) { 
+	            setLeftArrow(attrval_str);
+            }
+            else
+            if (ISATTRNAME(right_arrow)) { 
+	            setRightArrow(attrval_str);
+            }
+            else
+            if (ISATTRNAME(data)) { 
+	            setData(attrval_str);
+            }
+            else
+            if (ISATTRNAME(navigate_up)) { 
+	            setNavigateUp(attrval_str);
+            }
+            else
+            if (ISATTRNAME(navigate_down)) { 
+	            setNavigateDown(attrval_str);
+            }
+            else
+            if (ISATTRNAME(navigate_left)) { 
+	            setNavigateLeft(attrval_str);
+            }
+            else
+            if (ISATTRNAME(navigate_right)) { 
+	            setNavigateRight(attrval_str);
+            }
+            else
+            if (ISATTRNAME(vslider)) { 
+	            setVSlider(attrval_str);
+            }
+            else
+            if (ISATTRNAME(hslider)) { 
+	            setHSlider(attrval_str);
+            }
+            else
+            if (ISATTRNAME(imagesondemand)) { 
+	            setImagesOnDemand((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(blend)) { 
+	            setBlend(attrval_int);
+            }
+            else
+            if (ISATTRNAME(blend_factor)) { 
+	            setBlendFactor(atof(attrval_str));
+			}
+    	}
+    	endTAFFScan_WITHOUT_ID
+    }
 
     if ((!isBgImagePath())&&(!class_set)&&(path!=""))
         setBgImagePath(path);

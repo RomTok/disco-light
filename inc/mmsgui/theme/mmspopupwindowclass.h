@@ -25,6 +25,34 @@
 
 #include "mmsgui/theme/mmswindowclass.h"
 
+//describe attributes
+namespace MMSGUI_POPUPWINDOW_ATTR {
+
+	#define MMSGUI_POPUPWINDOW_ATTR_ATTRDESC \
+		{ "duration", TAFF_ATTRTYPE_UCHAR }
+	
+	#define MMSGUI_POPUPWINDOW_ATTR_IDS \
+		MMSGUI_POPUPWINDOW_ATTR_IDS_duration
+	
+	#define MMSGUI_POPUPWINDOW_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WINDOW_ATTR_ATTRDESC, \
+		MMSGUI_POPUPWINDOW_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WINDOW_ATTR_IDS,
+		MMSGUI_POPUPWINDOW_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_POPUPWINDOW_ATTR_I[];
+
+
 class MMSPopupWindowClass {
     private:
         string       className;
@@ -38,7 +66,7 @@ class MMSPopupWindowClass {
         //
         void unsetAll();
         //
-        void setAttributesFromXMLNode(xmlNode* node, string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string path = "");
         //
         void setClassName(string className);
         string getClassName();

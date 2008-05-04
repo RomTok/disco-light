@@ -1494,7 +1494,6 @@ void MMSFBSurface::unlock() {
 
 
 MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
-    DFBResult   		dfbres;
     IDirectFBSurface    *subsuf = NULL;
     MMSFBSurface 		*surface;
 
@@ -1503,6 +1502,7 @@ MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
 
 #ifdef USE_DFB_SUBSURFACE
     /* get a sub surface */
+    DFBResult dfbres;
     if ((dfbres=this->dfbsurface->GetSubSurface(this->dfbsurface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
         return false;
@@ -1525,8 +1525,6 @@ MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
 }
 
 bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
-    DFBResult   		dfbres;
-    IDirectFBSurface    *subsuf = NULL;
 
 	/* check if initialized */
     INITCHECK;
@@ -1545,6 +1543,8 @@ bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
 
 #ifdef USE_DFB_SUBSURFACE
     /* because dfb has no IDirectFBSurface::setSubSurface(), allocate a new and release the old one */
+    DFBResult dfbres;
+    IDirectFBSurface *subsuf = NULL;
     if ((dfbres=this->parent->dfbsurface->GetSubSurface(this->parent->dfbsurface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
         unlock();

@@ -22,6 +22,7 @@
 
 #include "mmsgui/theme/mmswindowclass.h"
 
+
 MMSWindowClass::MMSWindowClass() {
     initAlignment();
     initDx();
@@ -143,136 +144,129 @@ void MMSWindowClass::unsetAll() {
     unsetMoveOut();
 }
 
-void MMSWindowClass::setAttributesFromXMLNode(xmlNode* node, string path) {
+void MMSWindowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string path) {
+    DFBColor color;
     bool class_set = false;
 
-    startXMLScan
-    {
-        DFBColor color;
-        color.a = 0;
-        color.r = 0;
-        color.g = 0;
-        color.b = 0;
-
-        if(attrName == "class") {
+	startTAFFScan
+	{
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
             class_set = true;
-        }
-        else if(attrName == "alignment") {
-            setAlignment(getAlignmentFromString(attrValue));
-        }
-        else if(attrName == "dx") {
-            setDx(attrValue);
-        }
-        else if(attrName == "dy") {
-            setDy(attrValue);
-        }
-        else if(attrName == "w") {
-            setWidth(attrValue);
-        }
-        else if(attrName == "h") {
-            setHeight(attrValue);
-        }
-        else if(attrName == "bgcolor") {
+			break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_alignment:
+            setAlignment(getAlignmentFromString(attrval_str));
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_dx:
+            setDx(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_dy:
+            setDy(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_w:
+            setWidth(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_h:
+            setHeight(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor:
+			color.a = color.r = color.g = color.b = 0;
             if (isBgColor()) getBgColor(color);
-
-            if (getColorFromString(attrValue, &color))    
+            if (getColorFromString(attrval_str, &color))    
                 setBgColor(color);
-        }
-        else if(attrName == "bgcolor.a") {
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor_a:
+			color.a = color.r = color.g = color.b = 0;
             if (isBgColor()) getBgColor(color);
-    
-            color.a = atoi(attrValue.c_str());
-
+            color.a = attrval_int;
             setBgColor(color);
-        }
-        else if(attrName == "bgcolor.r") {
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor_r:
+			color.a = color.r = color.g = color.b = 0;
             if (isBgColor()) getBgColor(color);
-    
-            color.r = atoi(attrValue.c_str());
-
+            color.r = attrval_int;
             setBgColor(color);
-        }
-        else if(attrName == "bgcolor.g") {
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor_g:
+			color.a = color.r = color.g = color.b = 0;
             if (isBgColor()) getBgColor(color);
-    
-            color.g = atoi(attrValue.c_str());
-
+            color.g = attrval_int;
             setBgColor(color);
-        }
-        else if(attrName == "bgcolor.b") {
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor_b:
+			color.a = color.r = color.g = color.b = 0;
             if (isBgColor()) getBgColor(color);
-    
-            color.b = atoi(attrValue.c_str());
-
+            color.b = attrval_int;
             setBgColor(color);
-        }
-        else if(attrName == "bgimage") {
-            if (attrValue != "")
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgimage:
+            if (*attrval_str)
                 setBgImagePath("");
             else
                 setBgImagePath(path);
-            setBgImageName(attrValue);
-        }
-        else if(attrName == "bgimage.path") {
-            if (attrValue != "")
-                setBgImagePath(attrValue);
+            setBgImageName(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgimage_path:
+            if (*attrval_str)
+                setBgImagePath(attrval_str);
             else
                 setBgImagePath(path);
-        }
-        else if(attrName == "bgimage.name") {
-            setBgImageName(attrValue);
-        }
-        else if(attrName == "opacity") {
-            setOpacity(atoi(attrValue.c_str()));
-        }
-        else if(attrName == "fadein") {
-            setFadeIn((attrValue == "true") ? true : false);
-        }
-        else if(attrName == "fadeout") {
-            setFadeOut((attrValue == "true") ? true : false);
-        }
-        else if(attrName == "debug") {
-            setDebug((attrValue == "true") ? true : false);
-        }
-        else if(attrName == "margin") {
-            setMargin(atoi(attrValue.c_str()));
-        }
-        else if(attrName == "up_arrow") {
-            setUpArrow(attrValue);
-        }
-        else if(attrName == "down_arrow") {
-            setDownArrow(attrValue);
-        }
-        else if(attrName == "left_arrow") {
-            setLeftArrow(attrValue);
-        }
-        else if(attrName == "right_arrow") {
-            setRightArrow(attrValue);
-        }
-        else if(attrName == "navigate_up") {
-            setNavigateUp(attrValue);
-        }
-        else if(attrName == "navigate_down") {
-            setNavigateDown(attrValue);
-        }
-        else if(attrName == "navigate_left") {
-            setNavigateLeft(attrValue);
-        }
-        else if(attrName == "navigate_right") {
-            setNavigateRight(attrValue);
-        }
-        else if(attrName == "own_surface") {
-            setOwnSurface((attrValue == "true") ? true : false);
-        }
-        else if(attrName == "movein") {
-            setMoveIn(getDirectionFromString(attrValue));
-        }
-        else if(attrName == "moveout") {
-            setMoveOut(getDirectionFromString(attrValue));
-        }
-    }
-    endXMLScan 
-
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgimage_name:
+            setBgImageName(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_opacity:
+            setOpacity(attrval_int);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_fadein:
+            setFadeIn((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_fadeout:
+            setFadeOut((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_debug:
+            setDebug((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_margin:
+            setMargin(attrval_int);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_up_arrow:
+            setUpArrow(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_down_arrow:
+            setDownArrow(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_left_arrow:
+            setLeftArrow(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_right_arrow:
+            setRightArrow(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_navigate_up:
+            setNavigateUp(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_navigate_down:
+            setNavigateDown(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_navigate_left:
+            setNavigateLeft(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_navigate_right:
+            setNavigateRight(attrval_str);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_own_surface:
+            setOwnSurface((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_movein:
+            setMoveIn(getDirectionFromString(attrval_str));
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_moveout:
+            setMoveOut(getDirectionFromString(attrval_str));
+            break;
+		}
+	}
+	endTAFFScan
+    
     if ((!isBgImagePath())&&(!class_set)&&(path!=""))
         setBgImagePath(path);
 }

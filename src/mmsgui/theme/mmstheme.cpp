@@ -26,6 +26,53 @@
 MMSTheme *globalTheme = new MMSTheme();
 
 
+TAFF_ATTRDESC MMSGUI_MMSTHEME_ATTR_I[]			= MMSGUI_MMSTHEME_ATTR_INIT;
+TAFF_ATTRDESC MMSGUI_MMSDIALOG_ATTR_I[]			= MMSGUI_MMSDIALOG_ATTR_INIT;
+TAFF_ATTRDESC MMSGUI_BASE_ATTR_I[]				= MMSGUI_BASE_ATTR_INIT;
+
+
+TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
+	{	"mmstheme",		NULL, 	NULL,			MMSGUI_MMSTHEME_ATTR_I			},
+	{	"mmsdialog",	NULL, 	NULL,			MMSGUI_MMSDIALOG_ATTR_I			},
+	{	"description",	NULL, 	NULL,			MMSGUI_DESCRIPTION_ATTR_I		},
+	{	"vbox",			NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
+	{	"hbox",			NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
+	{	"template", 	NULL,	NULL,			MMSGUI_TEMPLATE_ATTR_I			},
+	{	"class", 		"type",	"template",		MMSGUI_TEMPLATE_ATTR_I			},
+	{	"mainwindow",	NULL, 	NULL,			MMSGUI_MAINWINDOW_ATTR_I		},
+	{	"class", 		"type",	"mainwindow",	MMSGUI_MAINWINDOW_ATTR_I		},
+	{	"childwindow",	NULL, 	NULL,			MMSGUI_CHILDWINDOW_ATTR_I		},
+	{	"class", 		"type",	"childwindow",	MMSGUI_CHILDWINDOW_ATTR_I		},
+	{	"popupwindow",	NULL, 	NULL,			MMSGUI_POPUPWINDOW_ATTR_I		},
+	{	"class", 		"type",	"popupwindow", 	MMSGUI_POPUPWINDOW_ATTR_I		},
+	{	"rootwindow",	NULL, 	NULL,			MMSGUI_ROOTWINDOW_ATTR_I		},
+	{	"class", 		"type",	"rootwindow",	MMSGUI_ROOTWINDOW_ATTR_I		},
+	{	"arrow", 		NULL, 	NULL,			MMSGUI_ARROW_ATTR_I				},
+	{	"class", 		"type",	"arrow",		MMSGUI_ARROW_ATTR_I				},
+	{	"button", 		NULL, 	NULL,			MMSGUI_BUTTON_ATTR_I			},
+	{	"class", 		"type",	"button",		MMSGUI_BUTTON_ATTR_I			},
+	{	"image", 		NULL, 	NULL,			MMSGUI_IMAGE_ATTR_I				},
+	{	"class", 		"type",	"image",		MMSGUI_IMAGE_ATTR_I				},
+	{	"label", 		NULL, 	NULL,			MMSGUI_LABEL_ATTR_I				},
+	{	"class", 		"type",	"label",		MMSGUI_LABEL_ATTR_I				},
+	{	"menu", 		NULL, 	NULL,			MMSGUI_MENU_ATTR_I				},
+	{	"class", 		"type",	"menu",			MMSGUI_MENU_ATTR_I				},
+	{	"menuitem",		NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
+	{	"progressbar",	NULL, 	NULL,			MMSGUI_PROGRESSBAR_ATTR_I		},
+	{	"class", 		"type",	"progressbar",	MMSGUI_PROGRESSBAR_ATTR_I		},
+	{	"slider",		NULL, 	NULL,			MMSGUI_SLIDER_ATTR_I			},
+	{	"class", 		"type",	"slider",		MMSGUI_SLIDER_ATTR_I			},
+	{	"textbox",		NULL, 	NULL,			MMSGUI_TEXTBOX_ATTR_I			},
+	{	"class", 		"type",	"textbox",		MMSGUI_TEXTBOX_ATTR_I			},
+	{	NULL, 			NULL, 	NULL,			NULL							}
+};
+
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 1, mmsgui_taff_tagtable };
+
+
+
+
+
 bool MMSTheme::addTemplateClass(MMSTemplateClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;

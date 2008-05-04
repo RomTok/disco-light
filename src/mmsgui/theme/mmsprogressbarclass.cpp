@@ -22,6 +22,14 @@
 
 #include "mmsgui/theme/mmsprogressbarclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_PROGRESSBAR_ATTR_I[] = MMSGUI_PROGRESSBAR_ATTR_INIT;
+
+//address attribute names
+#define GETATTRNAME(aname) MMSGUI_PROGRESSBAR_ATTR_I[MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_##aname].name
+#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
+
 MMSProgressBarClass::MMSProgressBarClass() {
     unsetAll();
 }
@@ -33,89 +41,172 @@ void MMSProgressBarClass::unsetAll() {
     unsetProgress();
 }
 
-void MMSProgressBarClass::setAttributesFromXMLNode(xmlNode* node, string prefix, string path) {
-    startXMLScan
-    {
-        DFBColor color;
-        color.a = 0;
-        color.r = 0;
-        color.g = 0;
-        color.b = 0;
+void MMSProgressBarClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+    DFBColor color;
 
-        if(attrName == "class")
-            setClassName(attrValue);
-        else if(attrName == prefix + "color") {
-            if (isColor()) color = getColor();
-
-            if (getColorFromString(attrValue, &color))    
-                setColor(color);
-        }
-        else if(attrName == prefix + "color.a") {
-            if (isColor()) color = getColor();
-    
-            color.a = atoi(attrValue.c_str());
-
-            setColor(color);
-        }
-        else if(attrName == prefix + "color.r") {
-            if (isColor()) color = getColor();
-    
-            color.r = atoi(attrValue.c_str());
-
-            setColor(color);
-        }
-        else if(attrName == prefix + "color.g") {
-            if (isColor()) color = getColor();
-    
-            color.g = atoi(attrValue.c_str());
-
-            setColor(color);
-        }
-        else if(attrName == prefix + "color.b") {
-            if (isColor()) color = getColor();
-    
-            color.b = atoi(attrValue.c_str());
-
-            setColor(color);
-        }
-        else if(attrName == prefix + "selcolor") {
-            if (isSelColor()) color = getSelColor();
-
-            if (getColorFromString(attrValue, &color))    
-                setSelColor(color);
-        }
-        else if(attrName == prefix + "selcolor.a") {
-            if (isSelColor()) color = getSelColor();
-    
-            color.a = atoi(attrValue.c_str());
-
-            setSelColor(color);
-        }
-        else if(attrName == prefix + "selcolor.r") {
-            if (isSelColor()) color = getSelColor();
-    
-            color.r = atoi(attrValue.c_str());
-
-            setSelColor(color);
-        }
-        else if(attrName == prefix + "selcolor.g") {
-            if (isSelColor()) color = getSelColor();
-    
-            color.g = atoi(attrValue.c_str());
-
-            setSelColor(color);
-        }
-        else if(attrName == prefix + "selcolor.b") {
-            if (isSelColor()) color = getSelColor();
-    
-            color.b = atoi(attrValue.c_str());
-
-            setSelColor(color);
-        }
-        else if(attrName == prefix + "progress")
-            setProgress(atoi(attrValue.c_str()));
+    if (prefix == "") {
+		startTAFFScan
+		{
+	        switch (attrid) {
+			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+	            setClassName(attrval_str);
+				break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_color:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            if (getColorFromString(attrval_str, &color))    
+	                setColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_color_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.a = attrval_int;
+	            setColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_color_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.r = attrval_int;
+	            setColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_color_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.g = attrval_int;
+	            setColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_color_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.b = attrval_int;
+	            setColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_selcolor:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_selcolor_a:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.a = attrval_int;
+	            setSelColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_selcolor_r:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.r = attrval_int;
+	            setSelColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_selcolor_g:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.g = attrval_int;
+	            setSelColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_selcolor_b:
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.b = attrval_int;
+	            setSelColor(color);
+	            break;
+			case MMSGUI_PROGRESSBAR_ATTR::MMSGUI_PROGRESSBAR_ATTR_IDS_progress:
+	            setProgress(attrval_int);
+	            break;
+			}
+		}
+		endTAFFScan
     }
-    endXMLScan 
+    else {
+    	unsigned int pl = strlen(prefix.c_str());
+    	
+    	startTAFFScan_WITHOUT_ID
+    	{
+    		/* check if attrname has correct prefix */
+    		if (pl >= strlen(attrname))
+        		continue;
+            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            	continue;
+            attrname = &attrname[pl];
+
+    		/* okay, correct prefix, check attributes now */
+            if (ISATTRNAME(color)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            if (getColorFromString(attrval_str, &color))    
+	                setColor(color);
+    		}
+            else
+            if (ISATTRNAME(color_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.a = attrval_int;
+	            setColor(color);
+    		}
+            else
+            if (ISATTRNAME(color_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.r = attrval_int;
+	            setColor(color);
+    		}
+            else
+            if (ISATTRNAME(color_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.g = attrval_int;
+	            setColor(color);
+    		}
+            else
+            if (ISATTRNAME(color_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isColor()) color = getColor();
+	            color.b = attrval_int;
+	            setColor(color);
+    		}
+            else
+            if (ISATTRNAME(selcolor)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            if (getColorFromString(attrval_str, &color))    
+	                setSelColor(color);
+    		}
+            else
+            if (ISATTRNAME(selcolor_a)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.a = attrval_int;
+	            setSelColor(color);
+    		}
+            else
+            if (ISATTRNAME(selcolor_r)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.r = attrval_int;
+	            setSelColor(color);
+    		}
+            else
+            if (ISATTRNAME(selcolor_g)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.g = attrval_int;
+	            setSelColor(color);
+    		}
+            else
+            if (ISATTRNAME(selcolor_b)) { 
+				color.a = color.r = color.g = color.b = 0;
+	            if (isSelColor()) color = getSelColor();
+	            color.b = attrval_int;
+	            setSelColor(color);
+    		}
+            else
+            if (ISATTRNAME(progress)) { 
+	            setProgress(attrval_int);
+			}
+    	}
+    	endTAFFScan_WITHOUT_ID
+    }
 }
 
 void MMSProgressBarClass::setClassName(string className) {

@@ -25,6 +25,54 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+//describe attributes
+namespace MMSGUI_ARROW_ATTR {
+
+	#define MMSGUI_ARROW_ATTR_ATTRDESC \
+		{ "color", TAFF_ATTRTYPE_STRING }, \
+		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "direction", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_ARROW_ATTR_IDS \
+		MMSGUI_ARROW_ATTR_IDS_color, \
+		MMSGUI_ARROW_ATTR_IDS_color_a, \
+		MMSGUI_ARROW_ATTR_IDS_color_r, \
+		MMSGUI_ARROW_ATTR_IDS_color_g, \
+		MMSGUI_ARROW_ATTR_IDS_color_b, \
+		MMSGUI_ARROW_ATTR_IDS_selcolor, \
+		MMSGUI_ARROW_ATTR_IDS_selcolor_a, \
+		MMSGUI_ARROW_ATTR_IDS_selcolor_r, \
+		MMSGUI_ARROW_ATTR_IDS_selcolor_g, \
+		MMSGUI_ARROW_ATTR_IDS_selcolor_b, \
+		MMSGUI_ARROW_ATTR_IDS_direction
+	
+	#define MMSGUI_ARROW_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_ARROW_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_ARROW_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_ARROW_ATTR_I[];
+
+
 //! A data access class for the arrow widget.
 /*!
 This class is the base for the MMSArrow widget class.
@@ -64,7 +112,7 @@ class MMSArrowClass {
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the XML node
         */
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         ////////////////////////////////////////////////////////////////////////
 

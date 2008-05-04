@@ -1994,8 +1994,8 @@ bool MMSMenu::draw(bool *backgroundFilled) {
     else if ((menuClass)&&(menuClass->is##x())) return menuClass->get##x(); \
     else return this->theme->menuClass.get##x();
 
-xmlNode *MMSMenu::getXMLNode() {
-    xmlNode *node;
+MMSTaffFile *MMSMenu::getXMLNode() {
+    MMSTaffFile *node;
     if ((node=myMenuClass.getXMLNode()))
         return node;
     if ((menuClass)&&((node=menuClass->getXMLNode())))

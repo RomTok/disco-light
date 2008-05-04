@@ -22,6 +22,14 @@
 
 #include "mmsgui/theme/mmsimageclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_IMAGE_ATTR_I[] = MMSGUI_IMAGE_ATTR_INIT;
+
+//address attribute names
+#define GETATTRNAME(aname) MMSGUI_IMAGE_ATTR_I[MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_##aname].name
+#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
+
 MMSImageClass::MMSImageClass() {
     unsetAll();
 }
@@ -46,116 +54,275 @@ void MMSImageClass::unsetAll() {
     unsetAlignment();
 }
 
-void MMSImageClass::setAttributesFromXMLNode(xmlNode* node, string prefix, string path) {
+void MMSImageClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
     bool class_set = false;
 
-    startXMLScan
-    {
-        if(attrName == "class") {
-            setClassName(attrValue);
-            class_set = true;
-        }
-        else if(attrName == prefix + "image") {
-            if (attrValue != "")
-                setImagePath("");
-            else
-                setImagePath(path);
-            setImageName(attrValue);
-        }
-        else if(attrName == prefix + "image.path") {
-            if (attrValue != "")
-                setImagePath(attrValue);
-            else
-                setImagePath(path);
-        }
-        else if(attrName == prefix + "image.name")
-            setImageName(attrValue);
-        else if(attrName == prefix + "selimage") {
-            if (attrValue != "")
-                setSelImagePath("");
-            else
-                setSelImagePath(path);
-            setSelImageName(attrValue);
-        }
-        else if(attrName == prefix + "selimage.path") {
-            if (attrValue != "")
-                setSelImagePath(attrValue);
-            else
-                setSelImagePath(path);
-        }
-        else if(attrName == prefix + "selimage.name")
-            setSelImageName(attrValue);
-        else if(attrName == prefix + "image_p") {
-            if (attrValue != "")
-                setImagePath_p("");
-            else
-                setImagePath_p(path);
-            setImageName_p(attrValue);
-        }
-        else if(attrName == prefix + "image_p.path") {
-            if (attrValue != "")
-                setImagePath_p(attrValue);
-            else
-                setImagePath_p(path);
-        }
-        else if(attrName == prefix + "image_p.name")
-            setImageName_p(attrValue);
-        else if(attrName == prefix + "selimage_p") {
-            if (attrValue != "")
-                setSelImagePath_p("");
-            else
-                setSelImagePath_p(path);
-            setSelImageName_p(attrValue);
-        }
-        else if(attrName == prefix + "selimage_p.path") {
-            if (attrValue != "")
-                setSelImagePath_p(attrValue);
-            else
-                setSelImagePath_p(path);
-        }
-        else if(attrName == prefix + "selimage_p.name")
-            setSelImageName_p(attrValue);
-        else if(attrName == prefix + "image_i") {
-            if (attrValue != "")
-                setImagePath_i("");
-            else
-                setImagePath_i(path);
-            setImageName_i(attrValue);
-        }
-        else if(attrName == prefix + "image_i.path") {
-            if (attrValue != "")
-                setImagePath_i(attrValue);
-            else
-                setImagePath_i(path);
-        }
-        else if(attrName == prefix + "image_i.name")
-            setImageName_i(attrValue);
-        else if(attrName == prefix + "selimage_i") {
-            if (attrValue != "")
-                setSelImagePath_i("");
-            else
-                setSelImagePath_i(path);
-            setSelImageName_i(attrValue);
-        }
-        else if(attrName == prefix + "selimage_i.path") {
-            if (attrValue != "")
-                setSelImagePath_i(attrValue);
-            else
-                setSelImagePath_i(path);
-        }
-        else if(attrName == prefix + "selimage_i.name")
-            setSelImageName_i(attrValue);
-        else if(attrName == prefix + "useratio")
-            setUseRatio((attrValue == "true") ? true : false);
-        else if(attrName == prefix + "fit_width")
-            setFitWidth((attrValue == "true") ? true : false);
-        else if(attrName == prefix + "fit_height")
-            setFitHeight((attrValue == "true") ? true : false);
-        else if(attrName == prefix + "alignment")
-            setAlignment(getAlignmentFromString(attrValue));
+    if (prefix == "") {
+		startTAFFScan
+		{
+	        switch (attrid) {
+			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+	            setClassName(attrval_str);
+	            class_set = true;
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image:
+	            if (*attrval_str)
+	                setImagePath("");
+	            else
+	                setImagePath(path);
+	            setImageName(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_path:
+	            if (*attrval_str)
+	                setImagePath(attrval_str);
+	            else
+	                setImagePath(path);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_name:
+	            setImageName(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage:
+	            if (*attrval_str)
+	                setSelImagePath("");
+	            else
+	                setSelImagePath(path);
+	            setSelImageName(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_path:
+	            if (*attrval_str)
+	                setSelImagePath(attrval_str);
+	            else
+	                setSelImagePath(path);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_name:
+	            setSelImageName(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_p:
+	            if (*attrval_str)
+	                setImagePath_p("");
+	            else
+	                setImagePath_p(path);
+	            setImageName_p(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_p_path:
+	            if (*attrval_str)
+	                setImagePath_p(attrval_str);
+	            else
+	                setImagePath_p(path);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_p_name:
+	            setImageName_p(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_p:
+	            if (*attrval_str)
+	                setSelImagePath_p("");
+	            else
+	                setSelImagePath_p(path);
+	            setSelImageName_p(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_p_path:
+	            if (*attrval_str)
+	                setSelImagePath_p(attrval_str);
+	            else
+	                setSelImagePath_p(path);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_p_name:
+	            setSelImageName_p(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_i:
+	            if (*attrval_str)
+	                setImagePath_i("");
+	            else
+	                setImagePath_i(path);
+	            setImageName_i(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_i_path:
+	            if (*attrval_str)
+	                setImagePath_i(attrval_str);
+	            else
+	                setImagePath_i(path);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_image_i_name:
+	            setImageName_i(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_i:
+	            if (*attrval_str)
+	                setSelImagePath_i("");
+	            else
+	                setSelImagePath_i(path);
+	            setSelImageName_i(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_i_path:
+	            if (*attrval_str)
+	                setSelImagePath_i(attrval_str);
+	            else
+	                setSelImagePath_i(path);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_selimage_i_name:
+	            setSelImageName_i(attrval_str);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_useratio:
+	            setUseRatio((attrval_int) ? true : false);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_fit_width:
+	            setFitWidth((attrval_int) ? true : false);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_fit_height:
+	            setFitHeight((attrval_int) ? true : false);
+				break;
+			case MMSGUI_IMAGE_ATTR::MMSGUI_IMAGE_ATTR_IDS_alignment:
+	            setAlignment(getAlignmentFromString(attrval_str));
+				break;
+			}
+		}
+		endTAFFScan
     }
-    endXMLScan 
+    else {	
+    	unsigned int pl = strlen(prefix.c_str());
+    	
+    	startTAFFScan_WITHOUT_ID
+    	{
+    		/* check if attrname has correct prefix */
+    		if (pl >= strlen(attrname))
+        		continue;
+            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            	continue;
+            attrname = &attrname[pl];
 
+    		/* okay, correct prefix, check attributes now */
+            if (ISATTRNAME(image)) { 
+	            if (*attrval_str)
+	                setImagePath("");
+	            else
+	                setImagePath(path);
+	            setImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(image_path)) { 
+	            if (*attrval_str)
+	                setImagePath(attrval_str);
+	            else
+	                setImagePath(path);
+            }
+            else
+            if (ISATTRNAME(image_name)) { 
+	            setImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage)) { 
+	            if (*attrval_str)
+	                setSelImagePath("");
+	            else
+	                setSelImagePath(path);
+	            setSelImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage_path)) { 
+	            if (*attrval_str)
+	                setSelImagePath(attrval_str);
+	            else
+	                setSelImagePath(path);
+            }
+            else
+            if (ISATTRNAME(selimage_name)) { 
+	            setSelImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(image_p)) { 
+	            if (*attrval_str)
+	                setImagePath_p("");
+	            else
+	                setImagePath_p(path);
+	            setImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(image_p_path)) { 
+	            if (*attrval_str)
+	                setImagePath_p(attrval_str);
+	            else
+	                setImagePath_p(path);
+            }
+            else
+            if (ISATTRNAME(image_p_name)) { 
+	            setImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage_p)) { 
+	            if (*attrval_str)
+	                setSelImagePath_p("");
+	            else
+	                setSelImagePath_p(path);
+	            setSelImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage_p_path)) { 
+	            if (*attrval_str)
+	                setSelImagePath_p(attrval_str);
+	            else
+	                setSelImagePath_p(path);
+            }
+            else
+            if (ISATTRNAME(selimage_p_name)) { 
+	            setSelImageName_p(attrval_str);
+            }
+            else
+            if (ISATTRNAME(image_i)) { 
+	            if (*attrval_str)
+	                setImagePath_i("");
+	            else
+	                setImagePath_i(path);
+	            setImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(image_i_path)) { 
+	            if (*attrval_str)
+	                setImagePath_i(attrval_str);
+	            else
+	                setImagePath_i(path);
+            }
+            else
+            if (ISATTRNAME(image_i_name)) { 
+	            setImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage_i)) { 
+	            if (*attrval_str)
+	                setSelImagePath_i("");
+	            else
+	                setSelImagePath_i(path);
+	            setSelImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage_i_path)) { 
+	            if (*attrval_str)
+	                setSelImagePath_i(attrval_str);
+	            else
+	                setSelImagePath_i(path);
+            }
+            else
+            if (ISATTRNAME(selimage_i_name)) { 
+	            setSelImageName_i(attrval_str);
+            }
+            else
+            if (ISATTRNAME(useratio)) { 
+	            setUseRatio((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(fit_width)) { 
+	            setFitWidth((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(fit_height)) { 
+	            setFitHeight((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(alignment)) { 
+	            setAlignment(getAlignmentFromString(attrval_str));
+			}
+    	}
+    	endTAFFScan_WITHOUT_ID
+    }
+    
     if ((!isImagePath())&&(!class_set)&&(path!=""))
         setImagePath(path);
     if ((!isSelImagePath())&&(!class_set)&&(path!=""))

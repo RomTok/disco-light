@@ -25,6 +25,76 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+//describe attributes
+namespace MMSGUI_IMAGE_ATTR {
+
+	#define MMSGUI_IMAGE_ATTR_ATTRDESC \
+		{ "image", TAFF_ATTRTYPE_STRING }, \
+		{ "image.path", TAFF_ATTRTYPE_STRING }, \
+		{ "image.name", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage.path", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage.name", TAFF_ATTRTYPE_STRING }, \
+		{ "image_p", TAFF_ATTRTYPE_STRING }, \
+		{ "image_p.path", TAFF_ATTRTYPE_STRING }, \
+		{ "image_p.name", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage_p", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage_p.path", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage_p.name", TAFF_ATTRTYPE_STRING }, \
+		{ "image_i", TAFF_ATTRTYPE_STRING }, \
+		{ "image_i.path", TAFF_ATTRTYPE_STRING }, \
+		{ "image_i.name", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage_i", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage_i.path", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage_i.name", TAFF_ATTRTYPE_STRING }, \
+		{ "useratio", TAFF_ATTRTYPE_BOOL }, \
+		{ "fit_width", TAFF_ATTRTYPE_BOOL }, \
+		{ "fit_height", TAFF_ATTRTYPE_BOOL }, \
+		{ "alignment", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_IMAGE_ATTR_IDS \
+		MMSGUI_IMAGE_ATTR_IDS_image, \
+		MMSGUI_IMAGE_ATTR_IDS_image_path, \
+		MMSGUI_IMAGE_ATTR_IDS_image_name, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_path, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_name, \
+		MMSGUI_IMAGE_ATTR_IDS_image_p, \
+		MMSGUI_IMAGE_ATTR_IDS_image_p_path, \
+		MMSGUI_IMAGE_ATTR_IDS_image_p_name, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_p, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_p_path, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_p_name, \
+		MMSGUI_IMAGE_ATTR_IDS_image_i, \
+		MMSGUI_IMAGE_ATTR_IDS_image_i_path, \
+		MMSGUI_IMAGE_ATTR_IDS_image_i_name, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_i, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_i_path, \
+		MMSGUI_IMAGE_ATTR_IDS_selimage_i_name, \
+		MMSGUI_IMAGE_ATTR_IDS_useratio, \
+		MMSGUI_IMAGE_ATTR_IDS_fit_width, \
+		MMSGUI_IMAGE_ATTR_IDS_fit_height, \
+		MMSGUI_IMAGE_ATTR_IDS_alignment
+
+	#define MMSGUI_IMAGE_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_IMAGE_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_IMAGE_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_IMAGE_ATTR_I[];
+
+
 //! A data access class for the image widget.
 /*!
 This class is the base for the MMSImage widget class.
@@ -90,7 +160,7 @@ class MMSImageClass {
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the XML node
         */
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         ////////////////////////////////////////////////////////////////////////
 

@@ -25,6 +25,78 @@
 
 #include "mmsgui/theme/mmsborderclass.h"
 
+//describe attributes
+namespace MMSGUI_WINDOW_ATTR {
+
+	#define MMSGUI_WINDOW_ATTR_ATTRDESC \
+		{ "alignment", TAFF_ATTRTYPE_STRING }, \
+		{ "dx", TAFF_ATTRTYPE_STRING }, \
+		{ "dy", TAFF_ATTRTYPE_STRING }, \
+		{ "w", TAFF_ATTRTYPE_STRING }, \
+		{ "h", TAFF_ATTRTYPE_STRING }, \
+		{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "bgimage", TAFF_ATTRTYPE_STRING }, \
+		{ "bgimage.path", TAFF_ATTRTYPE_STRING }, \
+		{ "bgimage.name", TAFF_ATTRTYPE_STRING }, \
+		{ "opacity", TAFF_ATTRTYPE_UCHAR }, \
+		{ "fadein", TAFF_ATTRTYPE_BOOL }, \
+		{ "fadeout", TAFF_ATTRTYPE_BOOL }, \
+		{ "debug", TAFF_ATTRTYPE_BOOL }, \
+		{ "margin", TAFF_ATTRTYPE_UCHAR }, \
+		{ "up_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "down_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "left_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "right_arrow", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_up", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_down", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_left", TAFF_ATTRTYPE_STRING }, \
+		{ "navigate_right", TAFF_ATTRTYPE_STRING }, \
+		{ "own_surface", TAFF_ATTRTYPE_BOOL }, \
+		{ "movein", TAFF_ATTRTYPE_STRING }, \
+		{ "moveout", TAFF_ATTRTYPE_STRING }
+
+	#define MMSGUI_WINDOW_ATTR_IDS \
+		MMSGUI_WINDOW_ATTR_IDS_alignment, \
+		MMSGUI_WINDOW_ATTR_IDS_dx, \
+		MMSGUI_WINDOW_ATTR_IDS_dy, \
+		MMSGUI_WINDOW_ATTR_IDS_w, \
+		MMSGUI_WINDOW_ATTR_IDS_h, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_a, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_r, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_g, \
+		MMSGUI_WINDOW_ATTR_IDS_bgcolor_b, \
+		MMSGUI_WINDOW_ATTR_IDS_bgimage, \
+		MMSGUI_WINDOW_ATTR_IDS_bgimage_path, \
+		MMSGUI_WINDOW_ATTR_IDS_bgimage_name, \
+		MMSGUI_WINDOW_ATTR_IDS_opacity, \
+		MMSGUI_WINDOW_ATTR_IDS_fadein, \
+		MMSGUI_WINDOW_ATTR_IDS_fadeout, \
+		MMSGUI_WINDOW_ATTR_IDS_debug, \
+		MMSGUI_WINDOW_ATTR_IDS_margin, \
+		MMSGUI_WINDOW_ATTR_IDS_up_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_down_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_left_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_right_arrow, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_up, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_down, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_left, \
+		MMSGUI_WINDOW_ATTR_IDS_navigate_right, \
+		MMSGUI_WINDOW_ATTR_IDS_own_surface, \
+		MMSGUI_WINDOW_ATTR_IDS_movein, \
+		MMSGUI_WINDOW_ATTR_IDS_moveout
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WINDOW_ATTR_IDS
+	} ids;
+}
+
 
 class MMSWindowClass {
     private:
@@ -143,7 +215,7 @@ class MMSWindowClass {
         //
         void unsetAll();
         //
-        void setAttributesFromXMLNode(xmlNode* node, string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string path = "");
         //
         bool isAlignment();
         void unsetAlignment();

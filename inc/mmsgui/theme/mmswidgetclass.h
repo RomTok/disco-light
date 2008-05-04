@@ -25,6 +25,159 @@
 
 #include "mmsgui/theme/mmsborderclass.h"
 
+//describe attributes
+namespace MMSGUI_WIDGET_ATTR {
+
+	#define MMSGUI_WIDGET_ATTR_ATTRDESC \
+	{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
+	{ "bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_p", TAFF_ATTRTYPE_STRING }, \
+	{ "bgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_p", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_i", TAFF_ATTRTYPE_STRING }, \
+	{ "bgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_i", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "selbgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "bgimage", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage.path", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage.name", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage.path", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage.name", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage_p", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage_p.path", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage_p.name", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage_p", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage_p.path", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage_p.name", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage_i", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage_i.path", TAFF_ATTRTYPE_STRING }, \
+	{ "bgimage_i.name", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage_i", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage_i.path", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgimage_i.name", TAFF_ATTRTYPE_STRING }, \
+	{ "margin", TAFF_ATTRTYPE_UCHAR }, \
+	{ "focusable", TAFF_ATTRTYPE_BOOL }, \
+	{ "selectable", TAFF_ATTRTYPE_BOOL }, \
+	{ "up_arrow", TAFF_ATTRTYPE_STRING }, \
+	{ "down_arrow", TAFF_ATTRTYPE_STRING }, \
+	{ "left_arrow", TAFF_ATTRTYPE_STRING }, \
+	{ "right_arrow", TAFF_ATTRTYPE_STRING }, \
+	{ "data", TAFF_ATTRTYPE_STRING }, \
+	{ "navigate_up", TAFF_ATTRTYPE_STRING }, \
+	{ "navigate_down", TAFF_ATTRTYPE_STRING }, \
+	{ "navigate_left", TAFF_ATTRTYPE_STRING }, \
+	{ "navigate_right", TAFF_ATTRTYPE_STRING }, \
+	{ "vslider", TAFF_ATTRTYPE_STRING }, \
+	{ "hslider", TAFF_ATTRTYPE_STRING }, \
+	{ "imagesondemand", TAFF_ATTRTYPE_BOOL }, \
+	{ "blend", TAFF_ATTRTYPE_UCHAR }, \
+	{ "blend_factor", TAFF_ATTRTYPE_STRING }
+
+	#define MMSGUI_WIDGET_ATTR_IDS \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_a, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_r, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_g, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_b, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_a, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_r, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_g, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_b, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_a, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_r, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_g, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_b, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_a, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_r, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_g, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_b, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_a, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_r, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_g, \
+		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_b, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_a, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_r, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_g, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_b, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_path, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_name, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_path, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_name, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_p, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_p_path, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_p_name, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_p, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_path, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_name, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_i, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_i_path, \
+		MMSGUI_WIDGET_ATTR_IDS_bgimage_i_name, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_i, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_path, \
+		MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_name, \
+		MMSGUI_WIDGET_ATTR_IDS_margin, \
+		MMSGUI_WIDGET_ATTR_IDS_focusable, \
+		MMSGUI_WIDGET_ATTR_IDS_selectable, \
+		MMSGUI_WIDGET_ATTR_IDS_up_arrow, \
+		MMSGUI_WIDGET_ATTR_IDS_down_arrow, \
+		MMSGUI_WIDGET_ATTR_IDS_left_arrow, \
+		MMSGUI_WIDGET_ATTR_IDS_right_arrow, \
+		MMSGUI_WIDGET_ATTR_IDS_data, \
+		MMSGUI_WIDGET_ATTR_IDS_navigate_up, \
+		MMSGUI_WIDGET_ATTR_IDS_navigate_down, \
+		MMSGUI_WIDGET_ATTR_IDS_navigate_left, \
+		MMSGUI_WIDGET_ATTR_IDS_navigate_right, \
+		MMSGUI_WIDGET_ATTR_IDS_vslider, \
+		MMSGUI_WIDGET_ATTR_IDS_hslider, \
+		MMSGUI_WIDGET_ATTR_IDS_imagesondemand, \
+		MMSGUI_WIDGET_ATTR_IDS_blend, \
+		MMSGUI_WIDGET_ATTR_IDS_blend_factor
+
+	#define MMSGUI_WIDGET_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS
+	} ids;
+}
+
+
+
 //! A data access class as base for all widgets.
 /*!
 This class is the base for all widget classes.
@@ -228,7 +381,7 @@ class MMSWidgetClass {
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the XML node
         */
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         ////////////////////////////////////////////////////////////////////////
 

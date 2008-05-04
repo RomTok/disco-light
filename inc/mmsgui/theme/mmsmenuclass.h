@@ -25,6 +25,78 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+//describe attributes
+namespace MMSGUI_MENU_ATTR {
+
+	#define MMSGUI_MENU_ATTR_ATTRDESC \
+		{ "item_width", TAFF_ATTRTYPE_STRING }, \
+		{ "item_height", TAFF_ATTRTYPE_STRING }, \
+		{ "item_hmargin", TAFF_ATTRTYPE_UCHAR }, \
+		{ "item_vmargin", TAFF_ATTRTYPE_UCHAR }, \
+		{ "cols", TAFF_ATTRTYPE_INT }, \
+		{ "dim_items", TAFF_ATTRTYPE_UCHAR }, \
+		{ "fixed_pos", TAFF_ATTRTYPE_INT }, \
+		{ "hloop", TAFF_ATTRTYPE_BOOL }, \
+		{ "vloop", TAFF_ATTRTYPE_BOOL }, \
+		{ "trans_items", TAFF_ATTRTYPE_UCHAR }, \
+		{ "dim_top", TAFF_ATTRTYPE_UCHAR }, \
+		{ "dim_bottom", TAFF_ATTRTYPE_UCHAR }, \
+		{ "dim_left", TAFF_ATTRTYPE_UCHAR }, \
+		{ "dim_right", TAFF_ATTRTYPE_UCHAR }, \
+		{ "trans_top", TAFF_ATTRTYPE_UCHAR }, \
+		{ "trans_bottom", TAFF_ATTRTYPE_UCHAR }, \
+		{ "trans_left", TAFF_ATTRTYPE_UCHAR }, \
+		{ "trans_right", TAFF_ATTRTYPE_UCHAR }, \
+		{ "zoomsel_width", TAFF_ATTRTYPE_STRING }, \
+		{ "zoomsel_height", TAFF_ATTRTYPE_STRING }, \
+		{ "zoomsel_shiftx", TAFF_ATTRTYPE_STRING }, \
+		{ "zoomsel_shifty", TAFF_ATTRTYPE_STRING }, \
+		{ "smooth_scrolling", TAFF_ATTRTYPE_STRING }
+
+	#define MMSGUI_MENU_ATTR_IDS \
+		MMSGUI_MENU_ATTR_IDS_item_width, \
+		MMSGUI_MENU_ATTR_IDS_item_height, \
+		MMSGUI_MENU_ATTR_IDS_item_hmargin, \
+		MMSGUI_MENU_ATTR_IDS_item_vmargin, \
+		MMSGUI_MENU_ATTR_IDS_cols, \
+		MMSGUI_MENU_ATTR_IDS_dim_items, \
+		MMSGUI_MENU_ATTR_IDS_fixed_pos, \
+		MMSGUI_MENU_ATTR_IDS_hloop, \
+		MMSGUI_MENU_ATTR_IDS_vloop, \
+		MMSGUI_MENU_ATTR_IDS_trans_items, \
+		MMSGUI_MENU_ATTR_IDS_dim_top, \
+		MMSGUI_MENU_ATTR_IDS_dim_bottom, \
+		MMSGUI_MENU_ATTR_IDS_dim_left, \
+		MMSGUI_MENU_ATTR_IDS_dim_right, \
+		MMSGUI_MENU_ATTR_IDS_trans_top, \
+		MMSGUI_MENU_ATTR_IDS_trans_bottom, \
+		MMSGUI_MENU_ATTR_IDS_trans_left, \
+		MMSGUI_MENU_ATTR_IDS_trans_right, \
+		MMSGUI_MENU_ATTR_IDS_zoomsel_width, \
+		MMSGUI_MENU_ATTR_IDS_zoomsel_height, \
+		MMSGUI_MENU_ATTR_IDS_zoomsel_shiftx, \
+		MMSGUI_MENU_ATTR_IDS_zoomsel_shifty, \
+		MMSGUI_MENU_ATTR_IDS_smooth_scrolling
+	
+	#define MMSGUI_MENU_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_MENU_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_MENU_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_MENU_ATTR_I[];
+
+
 //! A data access class for the menu widget.
 /*!
 This class is the base for the MMSMenu widget class.
@@ -36,8 +108,9 @@ which are main features of the MMSGUI.
 class MMSMenuClass {
     private:
         string          className;      //! name of the theme class
-        xmlDoc		    *doc;           //! copy of the XML node
-        xmlNode         *node;          //! copy of the XML node
+
+        MMSTaffFile		*tafff;
+
         bool            isitemwidth;    //! is itemwidth set?
         string          itemwidth;      //! width of an item (percent or pixel)
         bool            isitemheight;   //! is itemheight set?
@@ -111,19 +184,19 @@ class MMSMenuClass {
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the XML node
         */
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Saves a copy of an XML node including all child nodes.
         /*!
         \param node  pointer to the XML node to be copied
         */
-        void duplicateXMLNode(xmlNode* node);
+        void duplicateXMLNode(MMSTaffFile *tafff);
 
         //! Get the copied XML node, see duplicateXMLNode().
         /*!
         \return pointer to the XML node
         */
-        xmlNode *getXMLNode();
+        MMSTaffFile *getXMLNode();
 
         ////////////////////////////////////////////////////////////////////////
 

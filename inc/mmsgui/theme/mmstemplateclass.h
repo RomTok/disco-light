@@ -25,11 +25,27 @@
 
 #include "mmsgui/theme/mmsthemebase.h"
 
+//describe attributes
+namespace MMSGUI_TEMPLATE_ATTR {
+
+	#define MMSGUI_TEMPLATE_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_TEMPLATE_ATTR_I[];
+
+
 class MMSTemplateClass {
     private:
         string          className;
-        xmlDoc 			*doc;
-        xmlNode     	*node;
+        
+        MMSTaffFile		*tafff;
 
     public:
         MMSTemplateClass();
@@ -37,9 +53,9 @@ class MMSTemplateClass {
         //
         void unsetAll();
         //
-        void setAttributesFromXMLNode(xmlNode* node);
-        void duplicateXMLNode(xmlNode* node);
-        xmlNode *getXMLNode();
+        void setAttributesFromXMLNode(MMSTaffFile *tafff);
+        void duplicateXMLNode(MMSTaffFile *tafff);
+        MMSTaffFile *getXMLNode();
         //
         void setClassName(string className);
         string getClassName();

@@ -22,22 +22,30 @@
 
 #include "mmsgui/theme/mmsmenuclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_MENU_ATTR_I[] = MMSGUI_MENU_ATTR_INIT;
+
+//address attribute names
+#define GETATTRNAME(aname) MMSGUI_MENU_ATTR_I[MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_##aname].name
+#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
+
 MMSMenuClass::MMSMenuClass() {
-    this->doc = NULL;
+    this->tafff = NULL;
     unsetAll();
 }
 
 MMSMenuClass::~MMSMenuClass() {
-    if (this->doc)
-        xmlFreeDoc(this->doc);
+    if (this->tafff)
+        delete this->tafff;
+    this->tafff = NULL;
 }
 
 void MMSMenuClass::unsetAll() {
     this->className = "";
-    if (this->doc)
-        xmlFreeDoc(this->doc);
-    this->doc = NULL;
-    this->node = NULL;
+    if (this->tafff)
+        delete this->tafff;
+    this->tafff = NULL;
     unsetItemWidth();
     unsetItemHeight();
     unsetItemHMargin();
@@ -63,75 +71,207 @@ void MMSMenuClass::unsetAll() {
     unsetSmoothScrolling();
 }
 
-void MMSMenuClass::setAttributesFromXMLNode(xmlNode* node, string prefix, string path) {
+void MMSMenuClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
 
-    startXMLScan
-    {
-        if(attrName == "class")
-            setClassName(attrValue);
-        else if(attrName == prefix + "item_width")
-            setItemWidth(attrValue);
-        else if(attrName == prefix + "item_height")
-            setItemHeight(attrValue);
-        else if(attrName == prefix + "item_hmargin")
-            setItemHMargin(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "item_vmargin")
-            setItemVMargin(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "cols")
-            setCols(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "dim_items")
-            setDimItems(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "fixed_pos")
-            setFixedPos(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "hloop")
-            setHLoop((attrValue == "true") ? true : false);
-        else if(attrName == prefix + "vloop")
-            setVLoop((attrValue == "true") ? true : false);
-        else if(attrName == prefix + "trans_items")
-            setTransItems(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "dim_top")
-            setDimTop(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "dim_bottom")
-            setDimBottom(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "dim_left")
-            setDimLeft(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "dim_right")
-            setDimRight(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "trans_top")
-            setTransTop(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "trans_bottom")
-            setTransBottom(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "trans_left")
-            setTransLeft(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "trans_right")
-            setTransRight(atoi(attrValue.c_str()));
-        else if(attrName == prefix + "zoomsel_width")
-            setZoomSelWidth(attrValue);
-        else if(attrName == prefix + "zoomsel_height")
-            setZoomSelHeight(attrValue);
-        else if(attrName == prefix + "zoomsel_shiftx")
-            setZoomSelShiftX(attrValue);
-        else if(attrName == prefix + "zoomsel_shifty")
-            setZoomSelShiftY(attrValue);
-        else if(attrName == prefix + "smooth_scrolling")
-            setSmoothScrolling((attrValue == "true") ? true : false);
+    if (prefix == "") {
+		startTAFFScan
+		{
+			switch (attrid) {
+			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+	            setClassName(attrval_str);
+				break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_item_width:
+	            setItemWidth(attrval_str);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_item_height:
+	            setItemHeight(attrval_str);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_item_hmargin:
+	            setItemHMargin(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_item_vmargin:
+	            setItemVMargin(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_cols:
+	            setCols(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_dim_items:
+	            setDimItems(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_fixed_pos:
+	            setFixedPos(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_hloop:
+	            setHLoop((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_vloop:
+	            setVLoop((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_trans_items:
+	            setTransItems(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_dim_top:
+	            setDimTop(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_dim_bottom:
+	            setDimBottom(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_dim_left:
+	            setDimLeft(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_dim_right:
+	            setDimRight(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_trans_top:
+	            setTransTop(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_trans_bottom:
+	            setTransBottom(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_trans_left:
+	            setTransLeft(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_trans_right:
+	            setTransRight(attrval_int);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_zoomsel_width:
+	            setZoomSelWidth(attrval_str);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_zoomsel_height:
+	            setZoomSelHeight(attrval_str);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_zoomsel_shiftx:
+	            setZoomSelShiftX(attrval_str);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_zoomsel_shifty:
+	            setZoomSelShiftY(attrval_str);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_smooth_scrolling:
+	            setSmoothScrolling((attrval_int) ? true : false);
+	            break;
+			}
+		}
+		endTAFFScan
     }
-    endXMLScan 
+    else {
+    	unsigned int pl = strlen(prefix.c_str());
+    	
+    	startTAFFScan_WITHOUT_ID
+    	{
+    		/* check if attrname has correct prefix */
+    		if (pl >= strlen(attrname))
+        		continue;
+            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            	continue;
+            attrname = &attrname[pl];
+
+    		/* okay, correct prefix, check attributes now */
+            if (ISATTRNAME(item_width)) { 
+	            setItemWidth(attrval_str);
+            }
+            else
+            if (ISATTRNAME(item_height)) { 
+	            setItemHeight(attrval_str);
+            }
+            else
+            if (ISATTRNAME(item_hmargin)) { 
+	            setItemHMargin(attrval_int);
+            }
+            else
+            if (ISATTRNAME(item_vmargin)) { 
+	            setItemVMargin(attrval_int);
+            }
+            else
+            if (ISATTRNAME(cols)) { 
+	            setCols(attrval_int);
+            }
+            else
+            if (ISATTRNAME(dim_items)) { 
+	            setDimItems(attrval_int);
+            }
+            else
+            if (ISATTRNAME(fixed_pos)) { 
+	            setFixedPos(attrval_int);
+            }
+            else
+            if (ISATTRNAME(hloop)) { 
+	            setHLoop((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(vloop)) { 
+	            setVLoop((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(trans_items)) { 
+	            setTransItems(attrval_int);
+            }
+            else
+            if (ISATTRNAME(dim_top)) { 
+	            setDimTop(attrval_int);
+            }
+            else
+            if (ISATTRNAME(dim_bottom)) { 
+	            setDimBottom(attrval_int);
+            }
+            else
+            if (ISATTRNAME(dim_left)) { 
+	            setDimLeft(attrval_int);
+            }
+            else
+            if (ISATTRNAME(dim_right)) { 
+	            setDimRight(attrval_int);
+            }
+            else
+            if (ISATTRNAME(trans_top)) { 
+	            setTransTop(attrval_int);
+            }
+            else
+            if (ISATTRNAME(trans_bottom)) { 
+	            setTransBottom(attrval_int);
+            }
+            else
+            if (ISATTRNAME(trans_left)) { 
+	            setTransLeft(attrval_int);
+            }
+            else
+            if (ISATTRNAME(trans_right)) { 
+	            setTransRight(attrval_int);
+            }
+            else
+            if (ISATTRNAME(zoomsel_width)) { 
+	            setZoomSelWidth(attrval_str);
+            }
+            else
+            if (ISATTRNAME(zoomsel_height)) { 
+	            setZoomSelHeight(attrval_str);
+            }
+            else
+            if (ISATTRNAME(zoomsel_shiftx)) { 
+	            setZoomSelShiftX(attrval_str);
+            }
+            else
+            if (ISATTRNAME(zoomsel_shifty)) {  
+	            setZoomSelShiftY(attrval_str);
+            }
+            else
+            if (ISATTRNAME(smooth_scrolling)) { 
+	            setSmoothScrolling((attrval_int) ? true : false);
+			}
+    	}
+    	endTAFFScan_WITHOUT_ID
+    }
 }
 
-void MMSMenuClass::duplicateXMLNode(xmlNode* node) {
-
-    if (this->doc)
-        xmlFreeDoc(this->doc);
-    this->doc = NULL;
-    this->node = NULL;
-    this->doc = xmlNewDoc(node->doc->version);
-//    this->node = this->doc->create_root_node_by_import(node);
-    this->node = xmlDocCopyNodeList(this->doc, node);
+void MMSMenuClass::duplicateXMLNode(MMSTaffFile *tafff) {
+    if (this->tafff)
+        delete this->tafff;
+    this->tafff = tafff->copyCurrentTag();
 }
 
-xmlNode *MMSMenuClass::getXMLNode() {
-    return this->node;
+MMSTaffFile *MMSMenuClass::getXMLNode() {
+	if (this->tafff)
+		this->tafff->getFirstTag();
+    return this->tafff;
 }
 
 void MMSMenuClass::setClassName(string className) {

@@ -1361,7 +1361,6 @@ void MMSWidget::add(MMSWidget *widget) {
             throw new MMSWidgetError(0,"this widget does only support one child");
     else
         throw new MMSWidgetError(0,"this widget does not support children");
-    
 }
 
 void MMSWidget::markChildren2Redraw() {
@@ -1879,7 +1878,7 @@ string MMSWidget::getSizeHint() {
     return this->sizehint;
 }
 
-bool MMSWidget::setSizeHint(string hint) {
+bool MMSWidget::setSizeHint(string &hint) {
     if (getPixelFromSizeHint(NULL, hint, 10000, 0)) {
         this->sizehint = hint;
         return true;

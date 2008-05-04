@@ -25,6 +25,66 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+//describe attributes
+namespace MMSGUI_TEXTBOX_ATTR {
+
+	#define MMSGUI_TEXTBOX_ATTR_ATTRDESC \
+		{ "font.path", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name", TAFF_ATTRTYPE_STRING }, \
+		{ "font.size", TAFF_ATTRTYPE_UCHAR }, \
+		{ "alignment", TAFF_ATTRTYPE_STRING }, \
+		{ "wrap", TAFF_ATTRTYPE_BOOL }, \
+		{ "splitwords", TAFF_ATTRTYPE_BOOL }, \
+		{ "color", TAFF_ATTRTYPE_STRING }, \
+		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "text", TAFF_ATTRTYPE_STRING }
+	
+	#define MMSGUI_TEXTBOX_ATTR_IDS \
+		MMSGUI_TEXTBOX_ATTR_IDS_font_path, \
+		MMSGUI_TEXTBOX_ATTR_IDS_font_name, \
+		MMSGUI_TEXTBOX_ATTR_IDS_font_size, \
+		MMSGUI_TEXTBOX_ATTR_IDS_alignment, \
+		MMSGUI_TEXTBOX_ATTR_IDS_wrap, \
+		MMSGUI_TEXTBOX_ATTR_IDS_splitwords, \
+		MMSGUI_TEXTBOX_ATTR_IDS_color, \
+		MMSGUI_TEXTBOX_ATTR_IDS_color_a, \
+		MMSGUI_TEXTBOX_ATTR_IDS_color_r, \
+		MMSGUI_TEXTBOX_ATTR_IDS_color_g, \
+		MMSGUI_TEXTBOX_ATTR_IDS_color_b, \
+		MMSGUI_TEXTBOX_ATTR_IDS_selcolor, \
+		MMSGUI_TEXTBOX_ATTR_IDS_selcolor_a, \
+		MMSGUI_TEXTBOX_ATTR_IDS_selcolor_r, \
+		MMSGUI_TEXTBOX_ATTR_IDS_selcolor_g, \
+		MMSGUI_TEXTBOX_ATTR_IDS_selcolor_b, \
+		MMSGUI_TEXTBOX_ATTR_IDS_text
+	
+	#define MMSGUI_TEXTBOX_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_TEXTBOX_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_TEXTBOX_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_TEXTBOX_ATTR_I[];
+
+
 //! A data access class for the textbox widget.
 /*!
 This class is the base for the MMSTextBox widget class.
@@ -76,7 +136,7 @@ class MMSTextBoxClass {
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the XML node
         */
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         ////////////////////////////////////////////////////////////////////////
 

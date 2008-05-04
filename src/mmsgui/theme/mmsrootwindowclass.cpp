@@ -22,6 +22,10 @@
 
 #include "mmsgui/theme/mmsrootwindowclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_ROOTWINDOW_ATTR_I[] = MMSGUI_ROOTWINDOW_ATTR_INIT;
+
+
 MMSRootWindowClass::MMSRootWindowClass() {
     unsetAll();
 }
@@ -30,13 +34,16 @@ void MMSRootWindowClass::unsetAll() {
     this->className = "";
 }
 
-void MMSRootWindowClass::setAttributesFromXMLNode(xmlNode* node, string path) {
-    startXMLScan
-    {
-        if(attrName == "class")
-            setClassName(attrValue);
-    }
-    endXMLScan 
+void MMSRootWindowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string path) {
+	startTAFFScan
+	{
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+            setClassName(attrval_str);
+			break;
+		}
+	}
+	endTAFFScan
 }
 
 void MMSRootWindowClass::setClassName(string className) {

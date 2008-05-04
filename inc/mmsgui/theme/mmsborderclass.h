@@ -26,6 +26,88 @@
 #include "mmsgui/theme/mmsthemebase.h"
 #include <directfb.h>
 
+//describe attributes
+namespace MMSGUI_BORDER_ATTR {
+
+	#define MMSGUI_BORDER_ATTR_ATTRDESC \
+		{ "border.color", TAFF_ATTRTYPE_STRING }, \
+		{ "border.color.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.color.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.color.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.color.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.image.path", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.top-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.top", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.top-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.bottom-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.bottom", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.bottom-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.image.left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.path", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.top-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.top", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.top-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.bottom-right", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.bottom", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.bottom-left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selimage.left", TAFF_ATTRTYPE_STRING }, \
+		{ "border.thickness", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.margin", TAFF_ATTRTYPE_UCHAR }, \
+		{ "border.rcorners", TAFF_ATTRTYPE_BOOL }
+	
+	#define MMSGUI_BORDER_ATTR_IDS \
+		MMSGUI_BORDER_ATTR_IDS_border_color, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_a, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_r, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_g, \
+		MMSGUI_BORDER_ATTR_IDS_border_color_b, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_a, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_r, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_g, \
+		MMSGUI_BORDER_ATTR_IDS_border_selcolor_b, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_path, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_top_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_top, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_top_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_bottom_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_bottom, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_bottom_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_image_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_path, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_top_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_top, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_top_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom_right, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_selimage_left, \
+		MMSGUI_BORDER_ATTR_IDS_border_thickness, \
+		MMSGUI_BORDER_ATTR_IDS_border_margin, \
+		MMSGUI_BORDER_ATTR_IDS_border_rcorners
+
+	#define MMSGUI_BORDER_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS
+	} ids;
+}
+
+
 class MMSBorderClass {
     private:
     	struct {
@@ -85,7 +167,7 @@ class MMSBorderClass {
         //
         void unsetAll();
         //
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
         //
         bool isColor();
         void unsetColor();

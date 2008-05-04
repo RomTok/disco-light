@@ -22,6 +22,10 @@
 
 #include "mmsgui/theme/mmsdescriptionclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_DESCRIPTION_ATTR_I[] = MMSGUI_DESCRIPTION_ATTR_INIT;
+
+
 MMSDescriptionClass::MMSDescriptionClass() {
     unsetAll();
 }
@@ -32,17 +36,22 @@ void MMSDescriptionClass::unsetAll() {
     unsetDesc();
 }
 
-void MMSDescriptionClass::setAttributesFromXMLNode(xmlNode* node) {
-    startXMLScan
-    {
-        if(attrName == "author")
-            setAuthor(attrValue);
-        else if(attrName == "email")
-            setEmail(attrValue);
-        else if(attrName == "desc")
-            setDesc(attrValue);
-    }
-    endXMLScan 
+void MMSDescriptionClass::setAttributesFromXMLNode(MMSTaffFile *tafff) {
+	startTAFFScan
+	{
+		switch (attrid) {
+		case MMSGUI_DESCRIPTION_ATTR::MMSGUI_DESCRIPTION_ATTR_IDS_author:
+			setAuthor(attrval_str);
+			break;
+		case MMSGUI_DESCRIPTION_ATTR::MMSGUI_DESCRIPTION_ATTR_IDS_email:
+			setEmail(attrval_str);
+			break;
+		case MMSGUI_DESCRIPTION_ATTR::MMSGUI_DESCRIPTION_ATTR_IDS_desc:
+			setDesc(attrval_str);
+			break;
+		}
+	}
+	endTAFFScan
 }
 
 bool MMSDescriptionClass::isAuthor() {

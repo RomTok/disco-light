@@ -28,11 +28,18 @@ MMSThemeManager::MMSThemeManager(string themepath, string globalThemeName) {
     if (!themeManager) themeManager = this;
     this->themepath = themepath;
     
-    loadGlobalTheme(globalThemeName);
+//loop von 500 dauert 21 sekunden mit xml 
+//loop von 5000 dauert 3 sekunden mit mmstafffile -> verbesserung faktor 70 
+//system("date");
+//for (int i=0; i < 5000; i++)
+	loadGlobalTheme(globalThemeName);
+
+//system("date");
 }
 
 MMSThemeManager::~MMSThemeManager() {
 }
+
 
 void MMSThemeManager::loadTheme(string path, string themeName, MMSTheme *theme) {
     if (themeName == "")
@@ -43,33 +50,39 @@ void MMSThemeManager::loadTheme(string path, string themeName, MMSTheme *theme) 
     
     theme->setTheme(path, themeName);
 
+    /* get files */
+    string themefile 	 = theme->getThemeFile();
+    string themetafffile = themefile + ".taff";
+
     //check for file
-    if(!file_exist(theme->getThemeFile()))
-    	throw new MMSThemeManagerError(1, "theme file (" + theme->getThemeFile() + ") not found");
-    
-    xmlDoc *parser = NULL;
-	
-	LIBXML_TEST_VERSION
-	
-    try {
-		parser = xmlReadFile(theme->getThemeFile().c_str(), NULL, 0);
+    if(!file_exist(themefile))
+        if(!file_exist(themetafffile))
+        	throw new MMSThemeManagerError(1, "theme file (" + themefile + ") not found");
 
-		if (!parser)
-			throw new MMSThemeManagerError(1, "could not parse file");
-		
-        //Walk the tree:
-		xmlNode* pNode = xmlDocGetRootElement(parser);
-        this->throughFile(pNode, theme);
+    /* open the taff file */
+	MMSTaffFile *tafff = new MMSTaffFile(themetafffile, &mmsgui_taff_description,
+										 themefile, MMSTAFF_EXTERNAL_TYPE_XML);
 
-	    /* free the document */
-	    xmlFreeDoc(parser);
-    }
-	catch(MMSError *error) {
-	    /* free the document */
-    	if (parser)
-    		xmlFreeDoc(parser);
-        throw new MMSThemeManagerError(1, "could not load theme file " + theme->getThemeFile() + ": " + error->getMessage());
+	if (!tafff)
+        throw new MMSThemeManagerError(1, "could not load theme file " + themefile);
+
+	if (!tafff->isLoaded()) {
+		delete tafff;
+        throw new MMSThemeManagerError(1, "could not load theme file " + themefile);
 	}
+
+	/* get root tag */
+	int tagid = tafff->getFirstTag();
+	if (tagid < 0) {
+		delete tafff;
+        throw new MMSThemeManagerError(1, "invalid taff file " + themetafffile);
+	}
+
+	/* through the file */
+    this->throughFile(tafff, theme);
+
+    /* free the document */
+	delete tafff;
 }
 
 void MMSThemeManager::loadGlobalTheme(string themeName) {
@@ -140,231 +153,306 @@ void MMSThemeManager::deleteLocalTheme(MMSTheme **theme) {
     }
 }
 
-void MMSThemeManager::throughFile(xmlNode* node, MMSTheme *theme) {
-//	const xmlpp::ContentNode* nodeContent = dynamic_cast<const xmlpp::ContentNode*>(node);
-//	const xmlpp::TextNode* nodeText = dynamic_cast<const xmlpp::TextNode*>(node);
 
-//	if(nodeText && nodeText->is_white_space())
-//    	return;    	
+#define GET_THEME_CLASS(method) \
+class_name = tafff->getAttributeString(MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name); \
+if (class_name)	method(tafff, theme, class_name); \
+else DEBUGMSG("MMSGUI", "name of class not specified (ignoring)");
 
-    /* check if theme is given */
-	if(!xmlStrcmp(node->name, (const xmlChar *) XML_ID_THEME))
-        getThemeValues(node, theme);
+
+void MMSThemeManager::throughFile(MMSTaffFile *tafff, MMSTheme *theme) {
+
+	/* check if the correct tag */
+	int currTag = tafff->getCurrentTag();
+	if (currTag == MMSGUI_TAGTABLE_TAG_MMSTHEME)
+        getThemeValues(tafff, theme);
     else {
     	DEBUGMSG("MMSGUI", "no valid theme file: %s", theme->getThemeFile().c_str());
         return;
     }
 
     /* iterate through childs */
-	for (xmlNode *cur_node = node->children; cur_node; cur_node = cur_node->next) {
-		string name = (string)(char *)cur_node->name;
-		if(name == XML_ID_DESC)
-	        getDescriptionValues(cur_node, theme);
-	    else if(name == XML_ID_MAINWIN)
-	        getMainWindowValues(cur_node,  &(theme->mainWindowClass), theme);
-	    else if(name == XML_ID_POPUPWIN)
-	        getPopupWindowValues(cur_node,  &(theme->popupWindowClass), theme);
-        else if(name == XML_ID_ROOTWIN)
-            getRootWindowValues(cur_node,  &(theme->rootWindowClass), theme);
-        else if(name == XML_ID_CHILDWIN)
-            getChildWindowValues(cur_node,  &(theme->childWindowClass), theme);
-        else if(name == XML_ID_LABEL)
-            getLabelValues(cur_node,  &(theme->labelClass), theme);
-        else if(name == XML_ID_IMAGE)
-            getImageValues(cur_node,  &(theme->imageClass), theme);
-	    else if(name == XML_ID_BUTTON)
-            getButtonValues(cur_node,  &(theme->buttonClass), theme);
-        else if(name == XML_ID_PROGRESSBAR)
-            getProgressBarValues(cur_node,  &(theme->progressBarClass), theme);
-        else if(name == XML_ID_MENU)
-            getMenuValues(cur_node,  &(theme->menuClass), theme);
-        else if(name == XML_ID_TEXTBOX)
-            getTextBoxValues(cur_node,  &(theme->textBoxClass), theme);
-        else if(name == XML_ID_ARROW)
-            getArrowValues(cur_node,  &(theme->arrowClass), theme);
-
-        else if(name == XML_ID_CLASS)
-            getClassValues(cur_node, theme);
-	}  
+    bool returntag = true;
+    int depth = 0;
+	while (1) {
+		char *class_name;
+		bool eof;
+		int tid = tafff->getNextTag(eof);
+		if (eof) break;
+		if (tid < 0) {
+			if (depth==0) break;
+			depth--;
+			continue;
+		}
+		else {
+			depth++;
+			if (depth>1) continue;
+		}
+		
+		switch (tid) {
+		case MMSGUI_TAGTABLE_TAG_DESCRIPTION:
+			getDescriptionValues(tafff, theme);
+			break;
+		case MMSGUI_TAGTABLE_TAG_MAINWINDOW:
+		    getMainWindowValues(tafff, &(theme->mainWindowClass), theme);
+		    break;
+		case MMSGUI_TAGTABLE_TAG_CHILDWINDOW:
+			getChildWindowValues(tafff, &(theme->childWindowClass), theme);
+			break;
+		case MMSGUI_TAGTABLE_TAG_POPUPWINDOW:
+		    getPopupWindowValues(tafff, &(theme->popupWindowClass), theme);
+		    break;
+		case MMSGUI_TAGTABLE_TAG_ROOTWINDOW:
+	        getRootWindowValues(tafff, &(theme->rootWindowClass), theme);
+	        break;
+		case MMSGUI_TAGTABLE_TAG_LABEL:
+            getLabelValues(tafff, &(theme->labelClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_IMAGE:
+			getImageValues(tafff, &(theme->imageClass), theme);
+			break;
+		case MMSGUI_TAGTABLE_TAG_BUTTON:
+			getButtonValues(tafff, &(theme->buttonClass), theme);
+			break;
+		case MMSGUI_TAGTABLE_TAG_PROGRESSBAR:
+            getProgressBarValues(tafff, &(theme->progressBarClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_SLIDER:
+            getSliderValues(tafff, &(theme->sliderClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_MENU:
+            getMenuValues(tafff, &(theme->menuClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_TEXTBOX:
+            getTextBoxValues(tafff, &(theme->textBoxClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_ARROW:
+            getArrowValues(tafff, &(theme->arrowClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_TEMPLATE:
+			GET_THEME_CLASS(getTemplateClassValues);
+		    break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_MAINWINDOW:
+			GET_THEME_CLASS(getMainWindowClassValues);
+		    break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_CHILDWINDOW:
+			GET_THEME_CLASS(getChildWindowClassValues);
+			break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_POPUPWINDOW:
+			GET_THEME_CLASS(getPopupWindowClassValues);
+		    break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_ROOTWINDOW:
+			GET_THEME_CLASS(getRootWindowClassValues);
+	        break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_LABEL:
+			GET_THEME_CLASS(getLabelClassValues);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_IMAGE:
+			GET_THEME_CLASS(getImageClassValues);
+			break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_BUTTON:
+			GET_THEME_CLASS(getButtonClassValues);
+			break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_PROGRESSBAR:
+			GET_THEME_CLASS(getProgressBarClassValues);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_SLIDER:
+			GET_THEME_CLASS(getSliderClassValues);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_MENU:
+			GET_THEME_CLASS(getMenuClassValues);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_TEXTBOX:
+			GET_THEME_CLASS(getTextBoxClassValues);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_ARROW:
+			GET_THEME_CLASS(getArrowClassValues);
+            break;
+		}
+	}
 }
 
-void MMSThemeManager::getThemeValues(xmlNode* node, MMSTheme *theme) {
-#ifdef sdsdfs
-	if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)) {
-        const xmlpp::Element::AttributeList& attributes = nodeElement->get_attributes();
-        for(xmlpp::Element::AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
-    	    const xmlpp::Attribute* attribute = *iter;
-/*            if(attribute->get_name() == "name")
-                theme->name = attribute->get_value();*/
-        }
-    }
-#endif
+void MMSThemeManager::getThemeValues(MMSTaffFile *tafff, MMSTheme *theme) {
+//TODO: read mmstheme attributes (e.g. theme name) here, is it required to do this?
 }
 
 
 
-void MMSThemeManager::getDescriptionValues(xmlNode* node, MMSTheme *theme) {
+void MMSThemeManager::getDescriptionValues(MMSTaffFile *tafff, MMSTheme *theme) {
 
-    theme->description.setAttributesFromXMLNode(node);
+    theme->description.setAttributesFromXMLNode(tafff);
 }
 
 
-void  MMSThemeManager::getTemplateValues(xmlNode* node, MMSTemplateClass *themeClass) {
+void  MMSThemeManager::getTemplateValues(MMSTaffFile *tafff, MMSTemplateClass *themeClass) {
 
-    themeClass->setAttributesFromXMLNode(node);
+    themeClass->setAttributesFromXMLNode(tafff);
 
-    themeClass->duplicateXMLNode(node);
+    themeClass->duplicateXMLNode(tafff);
 }
 
-void MMSThemeManager::getMainWindowValues(xmlNode* node, MMSMainWindowClass *themeClass, MMSTheme *theme) {
+void MMSThemeManager::getMainWindowValues(MMSTaffFile *tafff, MMSMainWindowClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(node, themePath);
+    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(node, themePath);
+    themeClass->setAttributesFromXMLNode(tafff, themePath);
 }
 
-void MMSThemeManager::getPopupWindowValues(xmlNode* node, MMSPopupWindowClass *themeClass, MMSTheme *theme) {
+void MMSThemeManager::getPopupWindowValues(MMSTaffFile *tafff, MMSPopupWindowClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(node, themePath);
+    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(node, themePath);
+    themeClass->setAttributesFromXMLNode(tafff, themePath);
 }
 
-void MMSThemeManager::getRootWindowValues(xmlNode* node, MMSRootWindowClass *themeClass, MMSTheme *theme) {
+void MMSThemeManager::getRootWindowValues(MMSTaffFile *tafff, MMSRootWindowClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(node, themePath);
+    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(node, themePath);
+    themeClass->setAttributesFromXMLNode(tafff, themePath);
 }
 
 
-void MMSThemeManager::getChildWindowValues(xmlNode* node, MMSChildWindowClass *themeClass, MMSTheme *theme) {
+void MMSThemeManager::getChildWindowValues(MMSTaffFile *tafff, MMSChildWindowClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(node, themePath);
+    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(node, themePath);
+    themeClass->setAttributesFromXMLNode(tafff, themePath);
 }
 
 
-void MMSThemeManager::getLabelValues(xmlNode* node, MMSLabelClass *themeClass, MMSTheme *theme) {
+void MMSThemeManager::getLabelValues(MMSTaffFile *tafff, MMSLabelClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
 }
 
-void  MMSThemeManager::getImageValues(xmlNode* node, MMSImageClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getImageValues(MMSTaffFile *tafff, MMSImageClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
 }
 
 
-void  MMSThemeManager::getButtonValues(xmlNode* node, MMSButtonClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getButtonValues(MMSTaffFile *tafff, MMSButtonClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
 }
 
-void  MMSThemeManager::getProgressBarValues(xmlNode* node, MMSProgressBarClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getProgressBarValues(MMSTaffFile *tafff, MMSProgressBarClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
 }
 
-void  MMSThemeManager::getMenuValues(xmlNode* node, MMSMenuClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getSliderValues(MMSTaffFile *tafff, MMSSliderClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
-
-    themeClass->duplicateXMLNode(node);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
 }
 
-void  MMSThemeManager::getTextBoxValues(xmlNode* node, MMSTextBoxClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getMenuValues(MMSTaffFile *tafff, MMSMenuClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+
+    themeClass->duplicateXMLNode(tafff);
 }
 
-void  MMSThemeManager::getArrowValues(xmlNode* node, MMSArrowClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getTextBoxValues(MMSTaffFile *tafff, MMSTextBoxClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(node, "", themePath);
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(node, "", themePath);
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
 }
 
+void  MMSThemeManager::getArrowValues(MMSTaffFile *tafff, MMSArrowClass *themeClass, MMSTheme *theme) {
 
+    string themePath = "";
+    if (theme)
+        themePath = theme->getThemePath();
+    
+    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+
+    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+
+    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+}
+
+/*
 void MMSThemeManager::getClassValues(xmlNode *node, MMSTheme *theme) {
     string type, name;
     xmlChar *xtype, *xname;
@@ -412,195 +500,212 @@ void MMSThemeManager::getClassValues(xmlNode *node, MMSTheme *theme) {
     else
     	DEBUGMSG("MMSGUI", "invalid class type found (ignoring)");
 }
+*/
 
-void MMSThemeManager::getTemplateClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getTemplateClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSTemplateClass *themeClass = theme->getTemplateClass(className);
 
     if (!themeClass) {
         themeClass = new MMSTemplateClass;
-        getTemplateValues(node, themeClass);
+        getTemplateValues(tafff, themeClass);
         themeClass->setClassName(className);
         if (!theme->addTemplateClass(themeClass))
             delete themeClass;
     }
     else {
-        getTemplateValues(node, themeClass);
+        getTemplateValues(tafff, themeClass);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getMainWindowClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getMainWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSMainWindowClass *themeClass = theme->getMainWindowClass(className);
 
     if (!themeClass) {
         themeClass = new MMSMainWindowClass;
-        getMainWindowValues(node, themeClass, theme);
+        getMainWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addMainWindowClass(themeClass))
             delete themeClass;
     }
     else {
-        getMainWindowValues(node, themeClass, theme);
+        getMainWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getPopupWindowClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getPopupWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSPopupWindowClass *themeClass = theme->getPopupWindowClass(className);
 
     if (!themeClass) {
         themeClass = new MMSPopupWindowClass;
-        getPopupWindowValues(node, themeClass, theme);
+        getPopupWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addPopupWindowClass(themeClass))
             delete themeClass;
     }
     else {
-        getPopupWindowValues(node, themeClass, theme);
+        getPopupWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getRootWindowClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getRootWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSRootWindowClass *themeClass = theme->getRootWindowClass(className);
 
     if (!themeClass) {
         themeClass = new MMSRootWindowClass;
-        getRootWindowValues(node, themeClass, theme);
+        getRootWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addRootWindowClass(themeClass))
             delete themeClass;
     }
     else {
-        getRootWindowValues(node, themeClass, theme);
+        getRootWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getChildWindowClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getChildWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSChildWindowClass *themeClass = theme->getChildWindowClass(className);
 
     if (!themeClass) {
         themeClass = new MMSChildWindowClass;
-        getChildWindowValues(node, themeClass, theme);
+        getChildWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addChildWindowClass(themeClass))
             delete themeClass;
     }
     else {
-        getChildWindowValues(node, themeClass, theme);
+        getChildWindowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getLabelClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getLabelClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSLabelClass *themeClass = theme->getLabelClass(className);
 
     if (!themeClass) {
         themeClass = new MMSLabelClass;
-        getLabelValues(node, themeClass, theme);
+        getLabelValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addLabelClass(themeClass))
             delete themeClass;
     }
     else {
-        getLabelValues(node, themeClass, theme);
+        getLabelValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getImageClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getImageClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSImageClass *themeClass = theme->getImageClass(className);
 
     if (!themeClass) {
         themeClass = new MMSImageClass;
-        getImageValues(node, themeClass, theme);
+        getImageValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addImageClass(themeClass))
             delete themeClass;
     }
     else {
-        getImageValues(node, themeClass, theme);
+        getImageValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getButtonClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getButtonClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSButtonClass *themeClass = theme->getButtonClass(className);
 
     if (!themeClass) {
         themeClass = new MMSButtonClass;
-        getButtonValues(node, themeClass, theme);
+        getButtonValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addButtonClass(themeClass))
             delete themeClass;
     }
     else {
-        getButtonValues(node, themeClass, theme);
+        getButtonValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getProgressBarClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getProgressBarClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSProgressBarClass *themeClass = theme->getProgressBarClass(className);
 
     if (!themeClass) {
         themeClass = new MMSProgressBarClass;
-        getProgressBarValues(node, themeClass, theme);
+        getProgressBarValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addProgressBarClass(themeClass))
             delete themeClass;
     }
     else {
-        getProgressBarValues(node, themeClass, theme);
+        getProgressBarValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getMenuClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getSliderClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSSliderClass *themeClass = theme->getSliderClass(className);
+
+    if (!themeClass) {
+        themeClass = new MMSSliderClass;
+        getSliderValues(tafff, themeClass, theme);
+        themeClass->setClassName(className);
+        if (!theme->addSliderClass(themeClass))
+            delete themeClass;
+    }
+    else {
+        getSliderValues(tafff, themeClass, theme);
+        themeClass->setClassName(className);
+    }
+}
+
+void MMSThemeManager::getMenuClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSMenuClass *themeClass = theme->getMenuClass(className);
 
     if (!themeClass) {
         themeClass = new MMSMenuClass;
-        getMenuValues(node, themeClass, theme);
+        getMenuValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addMenuClass(themeClass))
             delete themeClass;
     }
     else {
-        getMenuValues(node, themeClass, theme);
+        getMenuValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getTextBoxClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getTextBoxClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSTextBoxClass *themeClass = theme->getTextBoxClass(className);
 
     if (!themeClass) {
         themeClass = new MMSTextBoxClass;
-        getTextBoxValues(node, themeClass, theme);
+        getTextBoxValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addTextBoxClass(themeClass))
             delete themeClass;
     }
     else {
-        getTextBoxValues(node, themeClass, theme);
+        getTextBoxValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getArrowClassValues(xmlNode *node, MMSTheme *theme, string className) {
+void MMSThemeManager::getArrowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSArrowClass *themeClass = theme->getArrowClass(className);
 
     if (!themeClass) {
         themeClass = new MMSArrowClass;
-        getArrowValues(node, themeClass, theme);
+        getArrowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
         if (!theme->addArrowClass(themeClass))
             delete themeClass;
     }
     else {
-        getArrowValues(node, themeClass, theme);
+        getArrowValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }

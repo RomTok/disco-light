@@ -611,6 +611,7 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     cw.oldopacity = 0;
     cw.focusedWidget = 0;
     this->childwins.push_back(cw);
+
     return true;
 }
 

@@ -44,7 +44,7 @@ MMSWidget *MMSHBox::copyWidget() {
 }
 
 void MMSHBox::add(MMSWidget *widget) {
-    widget->setParent(this);
+	widget->setParent(this);
     this->children.push_back(widget);
     if (this->getRootWindow())
         this->getRootWindow()->add(widget);

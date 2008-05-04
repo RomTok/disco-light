@@ -22,6 +22,10 @@
 
 #include "mmsgui/theme/mmspopupwindowclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_POPUPWINDOW_ATTR_I[] = MMSGUI_POPUPWINDOW_ATTR_INIT;
+
+
 MMSPopupWindowClass::MMSPopupWindowClass() {
     unsetAll();
 }
@@ -31,15 +35,19 @@ void MMSPopupWindowClass::unsetAll() {
     unsetDuration();
 }
 
-void MMSPopupWindowClass::setAttributesFromXMLNode(xmlNode* node, string path) {
-    startXMLScan
-    {
-        if(attrName == "class")
-            setClassName(attrValue);
-        else if(attrName == "duration")
-            setDuration(atoi(attrValue.c_str()));
-    }
-    endXMLScan 
+void MMSPopupWindowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string path) {
+	startTAFFScan
+	{
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+            setClassName(attrval_str);
+			break;
+		case MMSGUI_POPUPWINDOW_ATTR::MMSGUI_POPUPWINDOW_ATTR_IDS_duration:
+            setDuration(attrval_int);
+            break;
+		}
+	}
+	endTAFFScan
 }
 
 void MMSPopupWindowClass::setClassName(string className) {

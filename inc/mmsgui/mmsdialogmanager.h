@@ -45,25 +45,26 @@ class MMSDialogManager {
 
         void insertNamedWidget(MMSWidget *widget);
 
-        void throughDoc(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        void throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow,
+        				MMSTheme *theme, bool only_first_child = false);
 
-        void getDescriptionValues(xmlNode *node);
+        void getDescriptionValues(MMSTaffFile *tafff, MMSTheme *theme);
 
-        void getMainWindowValues(xmlNode *node, MMSTheme *theme);
-        void getPopupWindowValues(xmlNode *node, MMSTheme *theme);
-        void getRootWindowValues(xmlNode *node, MMSTheme *theme);
-        void getChildWindowValues(xmlNode *node, MMSWindow *rootWindow, MMSTheme *theme);
-        string getTemplateValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getVBoxValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getHBoxValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getLabelValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getButtonValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getImageValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getProgressBarValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getMenuValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getTextBoxValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getArrowValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        string getSliderValues(xmlNode *node, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        void getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme);
+        void getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme);
+        void getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme);
+        void getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootWindow, MMSTheme *theme);
+        string getTemplateValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getVBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getHBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getLabelValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getButtonValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getImageValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getProgressBarValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getTextBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getArrowValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getSliderValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         
     public:
         MMSDialogManager();

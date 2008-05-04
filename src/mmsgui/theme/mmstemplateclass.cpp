@@ -22,44 +22,49 @@
 
 #include "mmsgui/theme/mmstemplateclass.h"
 
+//store attribute descriptions here 
+TAFF_ATTRDESC MMSGUI_TEMPLATE_ATTR_I[] = MMSGUI_TEMPLATE_ATTR_INIT;
+
+
 MMSTemplateClass::MMSTemplateClass() {
-    this->doc = NULL;
+    this->tafff = NULL;
     unsetAll();
 }
 
 MMSTemplateClass::~MMSTemplateClass() {
-    if (this->doc)
-        xmlFreeDoc(this->doc);
+    if (this->tafff)
+        delete this->tafff;
+    this->tafff = NULL;
 }
 
 void MMSTemplateClass::unsetAll() {
     this->className = "";
-    if (this->doc)
-        xmlFreeDoc(this->doc);
-    this->doc = NULL;
-    this->node = NULL;
+    if (this->tafff)
+        delete this->tafff;
+    this->tafff = NULL;
 }
 
-void MMSTemplateClass::setAttributesFromXMLNode(xmlNode* node) {
-    startXMLScan
-    {
-        if(attrName == "class")
-            setClassName(attrValue);
-    }
-    endXMLScan 
+void MMSTemplateClass::setAttributesFromXMLNode(MMSTaffFile *tafff) {
+	startTAFFScan
+	{
+		switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+            setClassName(attrval_str);
+			break;
+		}
+	}
+	endTAFFScan
 }
 
-void MMSTemplateClass::duplicateXMLNode(xmlNode* node) {
-    if (this->doc)
-        xmlFreeDoc(this->doc);
-    this->doc = NULL;
-    this->node = NULL;
-    this->doc = xmlNewDoc(node->doc->version);
-    this->node = xmlDocCopyNodeList(this->doc, node);
+void MMSTemplateClass::duplicateXMLNode(MMSTaffFile *tafff) {
+    if (this->tafff)
+        delete this->tafff;
+    this->tafff = tafff->copyCurrentTag();
 }
 
-xmlNode *MMSTemplateClass::getXMLNode() {
-    return this->node;
+MMSTaffFile *MMSTemplateClass::getXMLNode() {
+	this->tafff->getFirstTag();
+    return this->tafff;
 }
 
 void MMSTemplateClass::setClassName(string className) {

@@ -224,7 +224,7 @@ class MMSFile {
         \param ptr      storage location for data
         \param ritems   address of a size_t for returning the number of full items actually written
         \param size     item size in bytes
-        \param nitems   maximum number of items to be read
+        \param nitems   number of items to be written
         \return true if successful
         \note The pointer ptr must addresses size*nitems bytes in memory.
         */

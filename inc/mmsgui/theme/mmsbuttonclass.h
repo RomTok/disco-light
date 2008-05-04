@@ -25,6 +25,26 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+//describe attributes
+namespace MMSGUI_BUTTON_ATTR {
+
+	#define MMSGUI_BUTTON_ATTR_INIT { \
+		MMSGUI_BASE_ATTR_ATTRDESC, \
+		MMSGUI_BORDER_ATTR_ATTRDESC, \
+		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_BASE_ATTR_IDS,
+		MMSGUI_BORDER_ATTR_IDS,
+		MMSGUI_WIDGET_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_ATTRDESC MMSGUI_BUTTON_ATTR_I[];
+
+
 //! A data access class for the button widget.
 /*!
 This class is the base for the MMSButton widget class.
@@ -58,7 +78,7 @@ class MMSButtonClass {
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the XML node
         */
-        void setAttributesFromXMLNode(xmlNode* node, string prefix = "", string path = "");
+        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         ////////////////////////////////////////////////////////////////////////
 
