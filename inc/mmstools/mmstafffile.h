@@ -78,11 +78,11 @@ typedef enum {
 //! A data access class for Tagged Attributes File Format (TAFF).
 /*!
 This class is written to generate an simple to parse binary presentation of
-high level markup languages such as XML. For now only the convertion XML to TAFF
+high level markup languages such as XML. For now only the conversion XML to TAFF
 or vice versa is supported.
 The user of this class must specify a description of which tags and attributes
 are allowed. Further he specifies the type of an attribute. With this informations
-this class also checks the types and ranges of attributes during the convertion.
+this class also checks the types and ranges of attributes during the conversion.
 For example the MMSGUI works completely with TAFF.  
 \author Jens Schneider
 */
@@ -94,10 +94,10 @@ class MMSTaffFile {
 		int					taff_buf_size;			//! size of the buffer
 		int					taff_buf_pos;			//! current read position
 
-		string 					external_filename;	//! name of the external file for convertion
+		string 					external_filename;	//! name of the external file for conversion
 		MMSTAFF_EXTERNAL_TYPE	external_type;		//! type of the external file
 
-		bool    ignore_blank_values;				//! ignore blank values during the convertion from external file
+		bool    ignore_blank_values;				//! ignore blank values during the conversion from external file
 		bool 	trace;								//! print trace messages?
 		bool    print_warnings;						//!	print warnings?
 		bool	loaded;								//! is the TAFF buffer loaded?
@@ -107,16 +107,16 @@ class MMSTaffFile {
 		int		current_tag_pos;					//! buffer postion of the current tag
 		
 		
-        //! Recursive called method for XML to TAFF convertion.
+        //! Recursive called method for XML to TAFF conversion.
         bool convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file);
 
-        //! XML to TAFF convertion.
+        //! XML to TAFF conversion.
         bool convertXML2TAFF();
 
-        //! Recursive called method for TAFF to XML convertion.
+        //! Recursive called method for TAFF to XML conversion.
         bool convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *external_file);
 
-        //! TAFF to XML convertion.
+        //! TAFF to XML conversion.
         bool convertTAFF2XML();
 
 	public:
@@ -124,9 +124,9 @@ class MMSTaffFile {
         /*!
         \param taff_filename		under this name the converted TAFF buffer is/will be stored
         \param taff_desc			the user of this class have to support this tag/attribute description
-        \param external_filename	name of the external file for convertion
+        \param external_filename	name of the external file for conversion
         \param external_type		type of the external file
-        \param ignore_blank_values	ignore blank values during the convertion from external file
+        \param ignore_blank_values	ignore blank values during the conversion from external file
         \param trace				print trace messages?
         \param print_warnings		print warnings?
         \param rewrite_taff			(re-)convert from external file before loading TAFF 
@@ -155,7 +155,7 @@ class MMSTaffFile {
 
         //! Set or reset the external file and type.
         /*!
-        \param external_filename	name of the external file for convertion
+        \param external_filename	name of the external file for conversion
         \param external_type		type of the external file
         */
         void setExternal(string external_filename = "", MMSTAFF_EXTERNAL_TYPE external_type = MMSTAFF_EXTERNAL_TYPE_XML);
