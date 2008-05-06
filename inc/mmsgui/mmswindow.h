@@ -31,21 +31,27 @@
 #include "mmsgui/interfaces/immswindowmanager.h"
 #include "mmstools/mmsmutex.h"
 
-/*
-MMS_CREATEERROR(MMSWindowError);
-*/
 
+//! available types of windows
 typedef enum {
-	MMSWINDOWTYPE_MAINWINDOW = 0,
-    MMSWINDOWTYPE_POPUPWINDOW,
-    MMSWINDOWTYPE_ROOTWINDOW,
-    MMSWINDOWTYPE_CHILDWINDOW
+	MMSWINDOWTYPE_MAINWINDOW = 0,	/*! main windows will be displayed over the root window
+									    only one main window can be shown at the same time
+									    if a main window appears the currently shown main window will be disappear
+									*/
+    MMSWINDOWTYPE_POPUPWINDOW,		//! popup windows will be displayed over root and main windows
+    								//! the popup window which appears finally is on the top of the screen  
+    MMSWINDOWTYPE_ROOTWINDOW,		//! root windows will be displayed in the background 
+    								//! only one root window can be shown at the same time
+    								//! if a root window appears the currently shown root window will be disappear
+    MMSWINDOWTYPE_CHILDWINDOW		//! child windows are parts of main, popup and root windows
+    								//! a full window functionality is given
 } MMSWINDOWTYPE;
 
+//! available window flags
 typedef enum {
-    MMSW_NONE               = 0x00000000,
-    MMSW_VIDEO              = 0x00000001,
-    MMSW_USEGRAPHICSLAYER   = 0x00000002
+    MMSW_NONE               = 0x00000000,	//! none
+    MMSW_VIDEO              = 0x00000001,	//! the window displays a video stream and should be on the video layer if it exists 
+    MMSW_USEGRAPHICSLAYER   = 0x00000002	//! the window should use the graphics layer
 } MMSWINDOW_FLAGS;
 
 
@@ -57,131 +63,206 @@ This class cannot be constructed. Only windows which are derived from this class
 */
 class MMSWindow {
     private:
+    	
+    	//! describes a child window
         typedef struct {
-            MMSWindow       *window;        /* points to the child window */
-            DFBRegion       region;         /* region of the window within parent window */
-            unsigned char   opacity;        /* opacity of the window */
-            unsigned char   oldopacity;     /* old opacity of the window */
-            unsigned int    focusedWidget;  /* save the last focused widget here */
+            MMSWindow       *window;        	//! points to the child window
+            DFBRegion       region;         	//! region of the window within parent window
+            unsigned char   opacity;        	//! opacity of the window
+            unsigned char   oldopacity;     	//! old opacity of the window
+            unsigned int    focusedWidget;  	//! save the last focused widget here
         } CHILDWINS;
 
-        MMSTheme                *theme;             /* access to the theme which is used */
-        MMSWindowClass          *baseWindowClass;
-        MMSWindowClass          *windowClass;
-        MMSWindowClass          myWindowClass;
-		MMSWINDOW_FLAGS			flags;
+        //! status area for the arrow widgets
+        typedef struct {
+        	bool up;							//! currently navigate up is possible?
+        	bool down;							//! currently navigate down is possible?
+        	bool left;							//! currently navigate left is possible?
+        	bool right;							//! currently navigate right is possible?
+        } ARROW_WIDGET_STATUS;
+        
+        MMSTheme            *theme;           	//! access to the theme which is used
+        MMSWindowClass      *baseWindowClass;	//! base attributes of the window
+        										//! this can be initialization values from theme.cpp
+        										//! or from theme.xml (NOT a <class/> definition, but e.g. tag <mainwindow/>)
+        MMSWindowClass      *windowClass;		//! attributes set by <class/> tag in theme.xml
+        										//! is NULL, if window has no theme class definition
+        										//! attributes set here, prevails over attributes from baseWindowClass
+        MMSWindowClass      myWindowClass;		//! attributes of the window which will be set during
+        										//! the runtime (e.g. window->setAlignment(...) )
+        										//! attributes set here, prevails over attributes from windowClass
+        										//! and baseWindowClass
 
-		MMSMutex      			Lock;               /* to make it thread-safe */
-        unsigned long           TID;                /* save the id of the thread which has locked the window */
-        unsigned long           Lock_cnt;           /* count the number of times the thread has call lock() */
+        MMSWINDOW_FLAGS		flags;				//! window creation flags
 
-        bool                    initialized;
+		MMSMutex      		Lock;               //! to make it thread-safe :)
+        unsigned long       TID;                //! save the id of the thread which has locked the window
+        unsigned long       Lock_cnt;           //! count the number of times the thread has call lock()
+        										//! because it is not a problem, that the same thread calls lock() several times
 
-        string name;                                /* name of the window */
+        MMSMutex      		drawLock;			//! special draw lock
+        MMSMutex      		flipLock;			//! special flip lock
+        MMSMutex  			preCalcNaviLock;	//! lock the pre-calculation of the navigation
 
-        MMSWindow               *parent;            /* parent window or NULL */
+        bool                initialized;		//! is window initialized?
+
+        string 				name;              	//! name of the window
+
+        MMSWindow           *parent;            //! parent window (if window is a child window) or NULL
 		
-        MMSImageManager         *im;
-        MMSFontManager          *fm;
+        MMSImageManager     *im;				//! image manager for the window 
+        MMSFontManager      *fm;				//! font manager for the window
 
-        MMSFBSurface            *bgimage;
-        MMSFBSurface            *borderimages[8];
-        DFBRectangle            bordergeom[8];
-        bool                    bordergeomset;
+        MMSFBSurface        *bgimage;			//!	background image
+        MMSFBSurface        *borderimages[8];	//! border images
+        DFBRectangle        bordergeom[8];		//! border geometry
+        bool                bordergeomset;		//! border geometry set?
 
-        MMSFBLayer              *layer;
-        MMSFBWindow             *window;
-        MMSFBSurface            *surface;
+        MMSFBLayer          *layer;				//! access to the MMSFBLayer on which the window has to be displayed
+        MMSFBWindow         *window;			//! access to the MMSFBWindow which is behind of this class
+        MMSFBSurface        *surface;			//! access to the MMSFBSurface of the window 
 
-        DFBRectangle 			vrect;				/* visible rectangle on the screen */
+        DFBRectangle 		vrect;				//! visible screen area (that means the visible area e.g. on the TV set)
+        										//! see the initialization of the MMSWindowManager
 
-        int                     dxpix;
-        int                     dypix;
-/*        int                     posx;
-        int                     posy;
-        unsigned int            width;
-        unsigned int            height;*/
-        DFBRectangle            geom;
-        DFBRectangle            innerGeom;
+        int                 dxpix;				//! x-movement of the window based on the alignment attribute
+        int                 dypix;				//! y-movement of the window based on the alignment attribute
+        DFBRectangle        geom;				//! geometry of the window based on the margin attribute
+        DFBRectangle        innerGeom;			//! inner geometry of the window based on the border margin attribute
 
-        vector<MMSWidget *>     children;
-        MMSWidget 				*focusedwidget;
-        bool                    shown;
-        bool					willshow;
-        bool					willhide;
-        bool                    firstfocusset;
+        bool				draw_setgeom;		//! check and recalc the geometry of the widgets during the next draw()? 
+        
+        vector<MMSWidget *>	children;			//! widgets of the window
+        MMSWidget 			*focusedwidget;		//! focused widget or NULL
+        bool                shown;				//! is window shown?
+        bool				willshow;			//! is show animation running?
+        bool				willhide;			//! is hide animation running?
+        bool                firstfocusset;		//! focus set the first time?
 
-        MMSMutex      			drawLock;
-        MMSMutex      			flipLock;
+        vector<CHILDWINS>   childwins;			//! child windows of the window
+        unsigned int        focusedChildWin;	//! focused child window
 
-        vector<CHILDWINS>       childwins;
-        unsigned int            focusedChildWin;
+        MMSWidget       	*upArrowWidget;		//! widget which has to be selected if it is possible to navigate up
+        MMSWidget       	*downArrowWidget;	//! widget which has to be selected if it is possible to navigate down
+        MMSWidget       	*leftArrowWidget;	//! widget which has to be selected if it is possible to navigate left
+        MMSWidget       	*rightArrowWidget;	//! widget which has to be selected if it is possible to navigate right
+        bool            	initialArrowsDrawn;	//! up/down/left/right arrow widgets updated the first time?
 
-        MMSWidget       *upArrowWidget;
-        MMSWidget       *downArrowWidget;
-        MMSWidget       *leftArrowWidget;
-        MMSWidget       *rightArrowWidget;
+        MMSWindow       	*navigateUpWindow;		//! child window which is to be focused if user navigates up
+        MMSWindow       	*navigateDownWindow;	//! child window which is to be focused if user navigates down
+        MMSWindow       	*navigateLeftWindow;	//! child window which is to be focused if user navigates left
+        MMSWindow       	*navigateRightWindow;	//! child window which is to be focused if user navigates right
 
-        bool            initialArrowsDrawn;
-
-        MMSWindow       *navigateUpWindow;
-        MMSWindow       *navigateDownWindow;
-        MMSWindow       *navigateLeftWindow;
-        MMSWindow       *navigateRightWindow;
-
-        MMSMutex  		preCalcNaviLock;
+        MMSWidget			*buttonpress_widget;	//! widget on which the user has pressed the (mouse) button
+        MMSWindow			*buttonpress_childwin;	//! child window on which the user has pressed the (mouse) button
 
         
-        MMSWidget		*buttonpress_widget;
-        MMSWindow		*buttonpress_childwin;
-
-        bool			draw_setgeom;
-        
+        //! Internal method: Creates the window.
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
         		    bool *own_surface);
-		bool create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
+
+        //! Internal method: Create the window.
+        bool create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
 					bool *own_surface);
+
+        //! Internal method: Resize the window.
         bool resize(bool refresh = true);
+
+        //! Internal method: Add a child window.
         bool addChildWindow(MMSWindow *childwin);
+
+        //! Internal method: Set the opacity of a child window.
         bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity);
+
+        //! Internal method: Set the region of a child window.
         bool setChildWindowRegion(MMSWindow *childwin, bool refresh = true);
+
+        //! Internal method: Move a child window.
         bool moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh = true);
+
+        //! Internal method: Draw a child window.
         void drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region = NULL, int offsX = 0, int offsY = 0);
+
+        //! Internal method: Flip a window.
         bool flipWindow(MMSWindow *win = NULL, DFBRegion *region = NULL,
                         MMSFBSurfaceFlipFlags flags = (MMSFBSurfaceFlipFlags)0,
                         bool flipChildSurface = true, bool locked = false);
+        
+        //! Internal method: Remove the focus from a child window.
         void removeFocusFromChildWindow();
 
+        //! Internal method: Load widgets for up/down/left/right arrows.
         void loadArrowWidgets();
-        void getArrowWidgetStatus(bool *setarrows);
+
+        //! Internal method: Get the navigation status. With this infos i can select/unselect the arrow widgets. 
+        void getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows);
+
+        //! Internal method: Update the status of the arrow widgets. 
         void switchArrowWidgets();
 
+        //! Internal method: Init me.
         virtual bool init();
+
+        //! Internal method: Draw me.
         virtual void draw(bool toRedrawOnly = false, DFBRectangle *rect2update = NULL, bool clear = true);
+
+        //! Internal method: Draw my border.
         void drawMyBorder();
+
+        //! Internal method: Focus one widget/child window for the first time.
         bool setFirstFocus(bool cw = false);
 
+        //! Internal method: Used to find best candidate to navigate up from currPos.
         double calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle candPos);
+
+        //! Internal method: Used to find best candidate to navigate down from currPos.
         double calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle candPos);
+
+        //! Internal method: Used to find best candidate to navigate left from currPos.
         double calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle candPos);
+
+        //! Internal method: Used to find best candidate to navigate right from currPos.
         double calculateDistGradCode_Right(DFBRectangle currPos, DFBRectangle candPos);
+
+        //! Internal method: Handle widget navigation (up/down/left/right).
         bool handleNavigationForWidgets(MMSInputEvent *inputevent);
+
+        //! Internal method: Remove the focus from the currently focused child window. Goal: Change status of widgets. 
         void removeChildWinFocus();
+
+        //! Internal method: Restore the focus to the currently focused child window. Goal: Change status of widgets. 
         bool restoreChildWinFocus();
+
+        //! Internal method: Handle child window navigation (up/down/left/right).
         bool handleNavigationForChildWins(MMSInputEvent *inputevent);
+
+        //! Internal method: Do the pre-calculation of the navigation routes.
         void preCalcNavigation();
-
-	protected:
-        static class IMMSWindowManager *windowmanager;
-        MMSWindowAction         *action;
-
-    public:
-        MMSWindow();
-        virtual ~MMSWindow(); 
-		virtual MMSWINDOWTYPE getType() = 0;
 
         void lock();
         void unlock();
+        
+	protected:
+		
+        static class IMMSWindowManager 	*windowmanager;	//! interface to the window manager
+        MMSWindowAction         		*action;		//! window action thread (used for animations) 
+
+    public:
+    	
+    	//! The base constructor for all window types.
+    	/*! This will internally used by the supported window types/classes (see MMSWINDOWTYPE).
+    	*/
+        MMSWindow();
+        
+        //! The base destructor for this class.
+        virtual ~MMSWindow(); 
+
+        //! Get the type of the window.
+        /*!
+        \return type of the window
+        */
+        virtual MMSWINDOWTYPE getType() = 0;
+
 
         string getName();
         void   setName(string name);

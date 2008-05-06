@@ -534,7 +534,6 @@ bool MMSWindow::resize(bool refresh) {
 }
 
 
-
 void MMSWindow::lock() {
     if (this->Lock.trylock() == 0) {
         /* I have got the lock the first time */
@@ -564,7 +563,6 @@ void MMSWindow::unlock() {
     if (this->Lock_cnt == 0)
         Lock.unlock();
 }
-
 
 
 string MMSWindow::getName() {
@@ -1063,25 +1061,24 @@ void MMSWindow::loadArrowWidgets() {
 }
 
 
-
-void MMSWindow::getArrowWidgetStatus(bool *setarrows) {
+void MMSWindow::getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows) {
 
     if (this->focusedwidget) {
         /* for my widgets */
-        setarrows[0]=(this->focusedwidget->canNavigateUp());
-        setarrows[1]=(this->focusedwidget->canNavigateDown());
-        setarrows[2]=(this->focusedwidget->canNavigateLeft());
-        setarrows[3]=(this->focusedwidget->canNavigateRight());
+        setarrows->up=(this->focusedwidget->canNavigateUp());
+        setarrows->down=(this->focusedwidget->canNavigateDown());
+        setarrows->left=(this->focusedwidget->canNavigateLeft());
+        setarrows->right=(this->focusedwidget->canNavigateRight());
 
         /* check my window navigation */
-        if (!setarrows[0])
-            setarrows[0]=getNavigateUpWindow();
-        if (!setarrows[1])
-            setarrows[1]=getNavigateDownWindow();
-        if (!setarrows[2])
-            setarrows[2]=getNavigateLeftWindow();
-        if (!setarrows[3])
-            setarrows[3]=getNavigateRightWindow();
+        if (!setarrows->up)
+            setarrows->up=(getNavigateUpWindow());
+        if (!setarrows->down)
+            setarrows->down=(getNavigateDownWindow());
+        if (!setarrows->left)
+            setarrows->left=(getNavigateLeftWindow());
+        if (!setarrows->right)
+            setarrows->right=(getNavigateRightWindow());
     }
     else {
         /* for my focused child window */
@@ -1092,14 +1089,14 @@ void MMSWindow::getArrowWidgetStatus(bool *setarrows) {
             fWin->getArrowWidgetStatus(setarrows);
 
             /* check my window navigation */
-            if (!setarrows[0])
-                setarrows[0]=getNavigateUpWindow();
-            if (!setarrows[1])
-                setarrows[1]=getNavigateDownWindow();
-            if (!setarrows[2])
-                setarrows[2]=getNavigateLeftWindow();
-            if (!setarrows[3])
-                setarrows[3]=getNavigateRightWindow();
+            if (!setarrows->up)
+                setarrows->up=(getNavigateUpWindow());
+            if (!setarrows->down)
+                setarrows->down=(getNavigateDownWindow());
+            if (!setarrows->left)
+                setarrows->left=(getNavigateLeftWindow());
+            if (!setarrows->right)
+                setarrows->right=(getNavigateRightWindow());
         }
     }
 }
@@ -1111,33 +1108,33 @@ void MMSWindow::switchArrowWidgets() {
     loadArrowWidgets();
 
     /* get the new state of the arrows */
-    bool setarrows[4];
-    setarrows[0]=setarrows[1]=setarrows[2]=setarrows[3]=false;
+    ARROW_WIDGET_STATUS setarrows;
+    memset(&setarrows, 0, sizeof(ARROW_WIDGET_STATUS));
 
     /* get all the states (my own and all children) */
-    getArrowWidgetStatus(setarrows);
+    getArrowWidgetStatus(&setarrows);
 
     /* switch arrow widgets */
     if (this->upArrowWidget)
-        if (setarrows[0])
+        if (setarrows.up)
             this->upArrowWidget->setSelected(true);
         else
             this->upArrowWidget->setSelected(false);
 
     if (this->downArrowWidget)
-        if (setarrows[1])
+        if (setarrows.down)
             this->downArrowWidget->setSelected(true);
         else
             this->downArrowWidget->setSelected(false);
 
     if (this->leftArrowWidget)    
-        if (setarrows[2])
+        if (setarrows.left)
             this->leftArrowWidget->setSelected(true);
         else
             this->leftArrowWidget->setSelected(false);
 
     if (this->rightArrowWidget)
-        if (setarrows[3])
+        if (setarrows.right)
             this->rightArrowWidget->setSelected(true);
         else
             this->rightArrowWidget->setSelected(false);
