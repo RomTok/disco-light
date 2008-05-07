@@ -32,26 +32,40 @@
 #include "mmstools/mmsmutex.h"
 
 
-//! available types of windows
+//! The available types of windows.
 typedef enum {
-	MMSWINDOWTYPE_MAINWINDOW = 0,	/*! main windows will be displayed over the root window
-									    only one main window can be shown at the same time
-									    if a main window appears the currently shown main window will be disappear
-									*/
-    MMSWINDOWTYPE_POPUPWINDOW,		//! popup windows will be displayed over root and main windows
-    								//! the popup window which appears finally is on the top of the screen  
-    MMSWINDOWTYPE_ROOTWINDOW,		//! root windows will be displayed in the background 
-    								//! only one root window can be shown at the same time
-    								//! if a root window appears the currently shown root window will be disappear
-    MMSWINDOWTYPE_CHILDWINDOW		//! child windows are parts of main, popup and root windows
-    								//! a full window functionality is given
+	/*!
+	Main windows will be displayed over the root window.
+	Only one main window can be shown at the same time.
+	If a main window appears the currently shown main window will be disappear.
+	*/
+	MMSWINDOWTYPE_MAINWINDOW = 0,
+	/*!
+	Popup windows will be displayed over root and main windows.
+	The popup window which appears finally is on the top of the screen.
+	*/
+    MMSWINDOWTYPE_POPUPWINDOW,
+    /*!
+    Root windows will be displayed in the background.
+	Only one root window can be shown at the same time.
+	If a root window appears the currently shown root window will be disappear.
+	*/
+    MMSWINDOWTYPE_ROOTWINDOW,
+    /*!
+    Child windows are parts of main, popup and root windows.
+    A full window functionality is given.
+    */
+    MMSWINDOWTYPE_CHILDWINDOW		
 } MMSWINDOWTYPE;
 
-//! available window flags
+//! The available window flags.
 typedef enum {
-    MMSW_NONE               = 0x00000000,	//! none
-    MMSW_VIDEO              = 0x00000001,	//! the window displays a video stream and should be on the video layer if it exists 
-    MMSW_USEGRAPHICSLAYER   = 0x00000002	//! the window should use the graphics layer
+	//! none
+    MMSW_NONE               = 0x00000000,
+    //! The window displays a video stream and should be on the video layer if it exists.
+    MMSW_VIDEO              = 0x00000001,
+    //! The window should use the graphics layer.
+    MMSW_USEGRAPHICSLAYER   = 0x00000002
 } MMSWINDOW_FLAGS;
 
 
@@ -66,11 +80,16 @@ class MMSWindow {
     	
     	//! describes a child window
         typedef struct {
-            MMSWindow       *window;        	//! points to the child window
-            DFBRegion       region;         	//! region of the window within parent window
-            unsigned char   opacity;        	//! opacity of the window
-            unsigned char   oldopacity;     	//! old opacity of the window
-            unsigned int    focusedWidget;  	//! save the last focused widget here
+        	//! points to the child window
+            MMSWindow       *window;
+            //! region of the window within parent window
+            DFBRegion       region;
+            //! opacity of the window
+            unsigned char   opacity;
+         	//! old opacity of the window
+            unsigned char   oldopacity;
+            //! save the last focused widget here
+            unsigned int    focusedWidget;
         } CHILDWINS;
 
         //! status area for the arrow widgets
@@ -113,6 +132,8 @@ class MMSWindow {
         MMSImageManager     *im;				//! image manager for the window 
         MMSFontManager      *fm;				//! font manager for the window
 
+        MMSWindowAction   	*action;			//! window action thread (used for animations) 
+        
         MMSFBSurface        *bgimage;			//!	background image
         MMSFBSurface        *borderimages[8];	//! border images
         DFBRectangle        bordergeom[8];		//! border geometry
@@ -239,13 +260,39 @@ class MMSWindow {
         //! Internal method: Do the pre-calculation of the navigation routes.
         void preCalcNavigation();
 
+        //! Internal method: Lock the window. Will be used by the widgets.
         void lock();
+
+        //! Internal method: Unlock the window. Will be used by the widgets.
         void unlock();
+
+        //! Internal method: Will be called from the MMSWindowAction thread if the window should appear.
+        virtual bool showAction(bool *stopaction);
+
+        //! Internal method: Will be called from the MMSWindowAction thread if the window should disappear.
+        virtual bool hideAction(bool *stopaction);   
+
+        //! Internal method: Refresh a part of a window. Will be used by the widgets.
+        void refreshFromChild(MMSWidget *child, DFBRectangle *rect2update = NULL);
         
-	protected:
+        //! Internal method: Set the focused widget.
+        void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false);
+
+        //! Internal method: Will be called by MMSInputManager if the window has the input focus.
+        bool handleInput(vector<MMSInputEvent> *inputeventset);
+
+        //! Internal method: (Re-)calculate the position and size of all widgets.
+        void recalculateChildren();
+        
+        //! Internal method: Show the window without animation.
+		void instantShow();
+
+        //! Internal method: Hide the window without animation.
+		void instantHide();
+
+    protected:
 		
         static class IMMSWindowManager 	*windowmanager;	//! interface to the window manager
-        MMSWindowAction         		*action;		//! window action thread (used for animations) 
 
     public:
     	
@@ -263,59 +310,301 @@ class MMSWindow {
         */
         virtual MMSWINDOWTYPE getType() = 0;
 
-
+        //! Get the name of the window.
+        /*!
+        \return name of the window
+        */
         string getName();
+
+        //! Set the name of the window.
+        /*!
+        \param name		name of the window
+        */
         void   setName(string name);
+
+        //! Find a window over its name.
+        /*!
+        \param name		name of the window
+        \return pointer to the MMSWindow object or NULL
+        */
         MMSWindow* searchForWindow(string name);
 
+        //! Makes a window visible.
+        /*!
+        \return true if the show action successfully started 
+        \note The MMSWindowAction thread will be started here and show() returnes immediately!
+        */
         virtual bool show();
-        virtual bool showAction(bool *stopaction);
+
+        //! Hide a visible window.
+        /*!
+        \param goback	this parameter will be routed to the onHide callback, so the application can
+        				decide which if and which window should appear afterwards
+        \param wait		waiting until hideAction is finished?
+        \return true if the hide action successfully started 
+        \note The MMSWindowAction thread will be started here and hide() returnes immediately if wait=false!
+        */
         virtual bool hide(bool goback = false, bool wait = false);   
-        virtual bool hideAction(bool *stopaction);   
+
+        //! Can be called after show() waiting for end of showAction thread.
         void waitUntilShown();
+
+        //! Can be called after hide() waiting for end of hideAction thread.
         void waitUntilHidden();
-        void refresh();
-        void refreshFromChild(MMSWidget *child, DFBRectangle *rect2update = NULL);
-        void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false);
-        bool handleInput(vector<MMSInputEvent> *inputeventset);
+        
+        //! Get the geometry of the window.
+        /*!
+        \return the rectangle of the window on the layer or parent window 
+        */
         DFBRectangle getGeometry();
+
+        //! Get the geometry of the window based on the layer.
+        /*! 
+        \return the rectangle of the window on the layer 
+        */
         DFBRectangle getRealGeometry();
+
+        //! Add a widget to the window.
+        /*! 
+        \param child	pointer to a widget
+        */
         void add(MMSWidget *child);
+
+        //! Remove a widget from the window.
+        /*! 
+        \param child	pointer to a widget
+        */
         void remove(MMSWidget *child);
+
+        //! Get the currently focused widget.
+        /*! 
+        \return pointer to the focused widget
+        */
         MMSWidget *getFocusedWidget();
+
+        //! Get the number of focusable widgets.
+        /*! 
+        \return number of focusable widgets
+        */
         int getNumberOfFocusableWidgets();
+
+        //! Get the number of focusable child windows.
+        /*! 
+        \return number of focusable child windows
+        */
         int getNumberOfFocusableChildWins();
+
+        //! Refresh (redraw) the whole window.
+        /*!
+        It is possible to update window attributes without refresh.
+        So you have to refresh() the window 'manually'.
+
+        For example you can call:
+          a) setOpacity(100) and setBgColor(bgcolor)
+         or
+          b) setOpacity(100, false), setBgColor(bgcolor, false) and then refresh() 
+        
+        With variant b) you have a better performance because only one refresh() will be done. 
+        */
+        void refresh();
+        
+        //! Get access to the surface of the window needed to display video streams.
+        /*! 
+        \return pointer to the surface class
+        */
         MMSFBSurface *getSurface();
+
+        //! Set the window manager.
+        /*!
+        \param wm	interface to the window manager 
+        */
         void setWindowManager(IMMSWindowManager *wm);
+
+        //! Is the window shown?
+        /*!
+        \param checkparents		if true the parent(s) will be check too 
+        \return true, if the window is shown
+        */
         bool isShown(bool checkparents = false);
+
+        //! Is the hide action running?
+        /*!
+        \return true, if the window action thread is going to hide the window
+        */
         bool willHide();
 
-		void instantShow();
-		void instantHide();
-
+        //! Set the focus to this window.
         void setFocus();
+
+        //! Is the window focused?
+        /*!
+        \return true, if the window is focused
+        */
         bool getFocus();
 
-        void recalculateChildren();
-
+        //! Search a widget with a given name. 
+        /*!
+        \param name		name of the widget
+        \return pointer to the widget which was found or NULL 
+        */
         MMSWidget* searchForWidget(string name);
+
+        //! Operator [] which you can use to find a widget. 
+        /*!
+        \param name		name of the widget
+        \return pointer to the widget which was found or NULL
+        \see searchForWidget()
+        */
         MMSWidget* operator[](string name);
 
+        //! Get the window to which the GUI navigates if the user press up.
+        /*!
+        \return pointer to the window or NULL
+        */
         MMSWindow *getNavigateUpWindow();
+
+        //! Get the window to which the GUI navigates if the user press down.
+        /*!
+        \return pointer to the window or NULL
+        */
         MMSWindow *getNavigateDownWindow();
+
+        //! Get the window to which the GUI navigates if the user press left.
+        /*!
+        \return pointer to the window or NULL
+        */
         MMSWindow *getNavigateLeftWindow();
+        
+        //! Get the window to which the GUI navigates if the user press right.
+        /*!
+        \return pointer to the window or NULL
+        */
         MMSWindow *getNavigateRightWindow();
+
+        //! Set the window to which the GUI navigates if the user press up.
+        /*!
+        \param upWindow		pointer to the window or NULL
+        */
         void setNavigateUpWindow(MMSWindow *upWindow);
+
+        //! Set the window to which the GUI navigates if the user press down.
+        /*!
+        \param downWindow	pointer to the window or NULL
+        */
         void setNavigateDownWindow(MMSWindow *downWindow);
-        void setNavigateRightWindow(MMSWindow *rightWindow);
+
+        //! Set the window to which the GUI navigates if the user press left.
+        /*!
+        \param leftWindow	pointer to the window or NULL
+        */
         void setNavigateLeftWindow(MMSWindow *leftWindow);
 
+        //! Set the window to which the GUI navigates if the user press right.
+        /*!
+        \param rightWindow	pointer to the window or NULL
+        */
+        void setNavigateRightWindow(MMSWindow *rightWindow);
+
+        //! Set one or more callbacks for the onBeforeShow event.  
+        /*!
+        The connected callbacks will be called during show().
+        If at least one of the callbacks returns false, the show process of the window
+        will be stopped and the window will not appear.
+
+        A callback method must be defined like this:
+        
+        	bool myclass::mycallbackmethod(MMSWindow *win);
+        	
+        	Parameters:
+        		win 	the pointer to the window which is to be shown
+        		
+        	Returns:
+        		true if the show process should continue, else false if the window should not appear
+        		
+        To connect your callback to onBeforeShow do this:
+        
+        	mywindow->onBeforeShow->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+        */
         sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator> *onBeforeShow;
+
+        //! Set one or more callbacks for the onAfterShow event.  
+        /*!
+        The connected callbacks will be called during show().
+
+        A callback method must be defined like this:
+        
+        	void myclass::mycallbackmethod(MMSWindow *win, bool already_shown);
+        	
+        	Parameters:
+        		win 			is the pointer to the window which is shown now
+        		already_shown	the window was already shown
+        		
+        To connect your callback to onAfterShow do this:
+        
+        	mywindow->onAfterShow->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+        */
         sigc::signal<void, MMSWindow*, bool> *onAfterShow;
+
+        //! Set one or more callbacks for the onBeforeHide event.  
+        /*!
+        The connected callbacks will be called during hide().
+        If at least one of the callbacks returns false, the hide process of the window
+        will be stopped and the window will not disappear.
+
+        A callback method must be defined like this:
+        
+        	bool myclass::mycallbackmethod(MMSWindow *win, bool goback);
+        	
+        	Parameters:
+        		win 	is the pointer to the window which is to be hidden
+        		goback	the application can decide, what to do if true/false, see hide()
+
+        	Returns:
+        		true if the hide process should continue, else false if the window should not disappear
+        		
+        To connect your callback to onBeforeHide do this:
+        
+        	mywindow->onBeforeHide->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+        */
         sigc::signal<bool, MMSWindow*, bool>::accumulated<bool_accumulator> *onBeforeHide;
+ 
+        //! Set one or more callbacks for the onHide event.  
+        /*!
+        The connected callbacks will be called during hide().
+
+        A callback method must be defined like this:
+        
+        	void myclass::mycallbackmethod(MMSWindow *win, bool goback);
+        	
+        	Parameters:
+        		win 	is the pointer to the window which is hidden now
+        		goback	the application can decide, what to do if true/false, see hide()
+
+        To connect your callback to onHide do this:
+        
+        	mywindow->onHide->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+        */
         sigc::signal<void, MMSWindow*, bool> *onHide;
+
+        //! Set one or more callbacks for the onHandleInput event.  
+        /*!
+        The connected callbacks will be called during hide().
+
+        A callback method must be defined like this:
+        
+        	void myclass::mycallbackmethod(MMSWindow *win, MMSInputEvent *inputevent);
+        	
+        	Parameters:
+        		win 		is the pointer to the window
+        		inputevent	the input event
+
+        To connect your callback to onHandleInput do this:
+        
+        	mywindow->onHandleInput->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+        */
         sigc::signal<void, MMSWindow*, MMSInputEvent*> *onHandleInput;
 
+        
     public:
         /* theme access methods */
         bool getAlignment(MMSALIGNMENT &alignment);
@@ -393,6 +682,8 @@ class MMSWindow {
         void updateFromThemeClass(MMSWindowClass *themeClass);
 
     /* friends */
+    friend class MMSInputManager;
+    friend class MMSWindowAction;
     friend class MMSMainWindow;
     friend class MMSPopupWindow;
     friend class MMSRootWindow;

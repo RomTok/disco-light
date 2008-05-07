@@ -3221,6 +3221,7 @@ void MMSWindow::instantHide() {
 	}
 }
 
+
 MMSWidget* MMSWindow::searchForWidget(string name) {
     MMSWidget *widget;
 
