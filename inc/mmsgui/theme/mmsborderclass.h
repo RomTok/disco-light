@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
@@ -107,6 +107,21 @@ namespace MMSGUI_BORDER_ATTR {
 	} ids;
 }
 
+//! 8 possible border images
+#define MMSBORDER_IMAGE_NUM_SIZE	8
+
+//! describes the 8 possible border images
+typedef enum {
+	MMSBORDER_IMAGE_NUM_TOP_LEFT = 0,
+	MMSBORDER_IMAGE_NUM_TOP,
+	MMSBORDER_IMAGE_NUM_TOP_RIGHT,
+	MMSBORDER_IMAGE_NUM_RIGHT,
+	MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT,
+	MMSBORDER_IMAGE_NUM_BOTTOM,
+	MMSBORDER_IMAGE_NUM_BOTTOM_LEFT,
+	MMSBORDER_IMAGE_NUM_LEFT
+} MMSBORDER_IMAGE_NUM;
+
 
 class MMSBorderClass {
     private:
@@ -129,9 +144,9 @@ class MMSBorderClass {
 
     	struct {
             string       *imagepath;
-            string       *imagenames[8];
+            string       *imagenames[MMSBORDER_IMAGE_NUM_SIZE];
             string       *selimagepath;
-            string       *selimagenames[8];
+            string       *selimagenames[MMSBORDER_IMAGE_NUM_SIZE];
 		} ed;
 
         /* init routines */
@@ -188,8 +203,8 @@ class MMSBorderClass {
         void unsetImageNames();
         void setImageNames(const string &imagename_1, const string &imagename_2, const string &imagename_3, const string &imagename_4,
         				   const string &imagename_5, const string &imagename_6, const string &imagename_7, const string &imagename_8);
-        void setImageNames(unsigned int num, const string &imagename);
-        bool getImageNames(unsigned int num, string &imagename);
+        void setImageNames(MMSBORDER_IMAGE_NUM num, const string &imagename);
+        bool getImageNames(MMSBORDER_IMAGE_NUM num, string &imagename);
         //
         bool isSelImagePath();
         void unsetSelImagePath();
@@ -200,8 +215,8 @@ class MMSBorderClass {
         void unsetSelImageNames();
         void setSelImageNames(const string &selimagename_1, const string &selimagename_2, const string &selimagename_3, const string &selimagename_4,
         					  const string &selimagename_5, const string &selimagename_6, const string &selimagename_7, const string &selimagename_8);
-        void setSelImageNames(unsigned int num, const string &selimagename);
-        bool getSelImageNames(unsigned int num, string &selimagename);
+        void setSelImageNames(MMSBORDER_IMAGE_NUM num, const string &selimagename);
+        bool getSelImageNames(MMSBORDER_IMAGE_NUM num, string &selimagename);
         //
         bool isThickness();
         void unsetThickness();

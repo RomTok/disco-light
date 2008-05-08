@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
@@ -137,11 +137,11 @@ class MMSWidget {
         MMSFBSurface        *bgimage_i;
         MMSFBSurface        *selbgimage_i;
 
-        MMSFBSurface        *borderimages[8];
-        DFBRectangle        bordergeom[8];
+        MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
+        DFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                bordergeomset;
-        MMSFBSurface        *borderselimages[8];
-        DFBRectangle        borderselgeom[8];
+        MMSFBSurface        *borderselimages[MMSBORDER_IMAGE_NUM_SIZE];
+        DFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                borderselgeomset;
 
         class MMSWindow *rootwindow;
@@ -375,9 +375,9 @@ class MMSWidget {
         bool	getBorderColor(DFBColor &color);
         bool 	getBorderSelColor(DFBColor &selcolor);
         bool 	getBorderImagePath(string &imagepath);
-        bool	getBorderImageNames(unsigned int num, string &imagename);
+        bool	getBorderImageNames(MMSBORDER_IMAGE_NUM num, string &imagename);
         bool	getBorderSelImagePath(string &selimagepath);
-        bool	getBorderSelImageNames(unsigned int num, string &selimagename);
+        bool	getBorderSelImageNames(MMSBORDER_IMAGE_NUM num, string &selimagename);
         bool	getBorderThickness(unsigned int &thickness);
         bool	getBorderMargin(unsigned int &margin);
         bool 	getBorderRCorners(bool &rcorners);

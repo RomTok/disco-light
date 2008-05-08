@@ -26,52 +26,74 @@
 #include "mmstools/base.h"
 #include "mmstools/mmsfile.h"
 
-#define TAFF_IDENT	"TAFF"		//! TAFF Eyecatcher
+//! TAFF Eyecatcher
+#define TAFF_IDENT	"TAFF"
 
 //! Types of TAFF attributes
 typedef enum {
-	TAFF_ATTRTYPE_NONE,			//! not set
-	TAFF_ATTRTYPE_STRING,		//! any characters
-	TAFF_ATTRTYPE_NE_STRING,	//! any characters, but not empty
-	TAFF_ATTRTYPE_BOOL,			//! valid values: "true", "false"
-	TAFF_ATTRTYPE_UCHAR,		//! valid values: "0".."255"
-	TAFF_ATTRTYPE_UCHAR100,		//! valid values: "0".."100"
-	TAFF_ATTRTYPE_INT			//! valid values: "-2147483648".."2147483647"
+	//! not set
+	TAFF_ATTRTYPE_NONE,
+	//! any characters
+	TAFF_ATTRTYPE_STRING,
+	//! any characters, but not empty
+	TAFF_ATTRTYPE_NE_STRING,
+	//! valid values: "true", "false"
+	TAFF_ATTRTYPE_BOOL,
+	//! valid values: "0".."255"
+	TAFF_ATTRTYPE_UCHAR,
+	//! valid values: "0".."100"
+	TAFF_ATTRTYPE_UCHAR100,
+	//! valid values: "-2147483648".."2147483647"
+	TAFF_ATTRTYPE_INT
 } TAFF_ATTRTYPE;
 
 //! Describe a TAFF attribute
 typedef struct {
-	char 			*name;		//! name of attribute
-	TAFF_ATTRTYPE 	type;		//! type of attribute
+	//! name of attribute
+	char 			*name;
+	//! type of attribute
+	TAFF_ATTRTYPE 	type;
 } TAFF_ATTRDESC;
 
 //! Describe a TAFF tag
 typedef struct {
-	char 			*name;		//! name of tag
-	char 			*typeattr;	//! name of special type attribute
-	char 			*type;		//! value of special type attribute
-	TAFF_ATTRDESC 	*attr;		//! attributes
+	//! name of tag
+	char 			*name;
+	//! name of special type attribute
+	char 			*typeattr;
+	//! value of special type attribute
+	char 			*type;
+	//! attributes
+	TAFF_ATTRDESC 	*attr;
 } TAFF_TAGTABLE;
 
 //! Describe a TAFF file format
 typedef struct {
-	char			type[8];	//! type of TAFF file
-	unsigned int	version;	//! type-based version
-	TAFF_TAGTABLE	*tagtable;	//! tags
+	//! type of TAFF file
+	char			type[8];
+	//! type-based version
+	unsigned int	version;
+	//! tags
+	TAFF_TAGTABLE	*tagtable;
 } TAFF_DESCRIPTION;
 
 //! Internal tag/attribute identifiers
 typedef enum {
-	MMSTAFF_TAGTABLE_TYPE_CLOSETAG,	//! internally identifies a close tag
-	MMSTAFF_TAGTABLE_TYPE_TAG,		//! internally identifies a tag
-	MMSTAFF_TAGTABLE_TYPE_ATTR		//! internally identifies a attribute
+	//! internally identifies a close tag
+	MMSTAFF_TAGTABLE_TYPE_CLOSETAG,
+	//! internally identifies a tag
+	MMSTAFF_TAGTABLE_TYPE_TAG,
+	//! internally identifies a attribute
+	MMSTAFF_TAGTABLE_TYPE_ATTR
 };
 
-#define MMSTAFF_ATTR_WITHOUT_ID		0xff	//! internally identifies attributes without id (attribute names will be stored)
+//! internally identifies attributes without id (attribute names will be stored)
+#define MMSTAFF_ATTR_WITHOUT_ID		0xff
 
 //! Supported types of external files
 typedef enum { 
-	MMSTAFF_EXTERNAL_TYPE_XML		//! the external file is written in XML
+	//! the external file is written in XML
+	MMSTAFF_EXTERNAL_TYPE_XML
 } MMSTAFF_EXTERNAL_TYPE;
 
 
@@ -88,23 +110,47 @@ For example the MMSGUI works completely with TAFF.
 */
 class MMSTaffFile {
 	private:
-		string 				taff_filename;			//! taff filename
-		TAFF_DESCRIPTION 	*taff_desc;				//! describe the tags and attributes
-		unsigned char 		*taff_buf;				//! binary presentation data
-		int					taff_buf_size;			//! size of the buffer
-		int					taff_buf_pos;			//! current read position
+		//! taff filename
+		string 				taff_filename;
 
-		string 					external_filename;	//! name of the external file for conversion
-		MMSTAFF_EXTERNAL_TYPE	external_type;		//! type of the external file
+		//! describe the tags and attributes
+		TAFF_DESCRIPTION 	*taff_desc;
 
-		bool    ignore_blank_values;				//! ignore blank values during the conversion from external file
-		bool 	trace;								//! print trace messages?
-		bool    print_warnings;						//!	print warnings?
-		bool	loaded;								//! is the TAFF buffer loaded?
-		bool	correct_version;					//! has the TAFF file the correct version?
+		//! binary presentation data
+		unsigned char 		*taff_buf;
 
-		int		current_tag;						//! id of the current tag
-		int		current_tag_pos;					//! buffer postion of the current tag
+		//! size of the buffer
+		int					taff_buf_size;
+
+		//! current read position
+		int					taff_buf_pos;
+
+		//! name of the external file for conversion
+		string 					external_filename;
+
+		//! type of the external file
+		MMSTAFF_EXTERNAL_TYPE	external_type;
+
+		//! ignore blank values during the conversion from external file
+		bool    ignore_blank_values;
+		
+		//! print trace messages?
+		bool 	trace;
+		
+		//!	print warnings?
+		bool    print_warnings;
+		
+		//! is the TAFF buffer loaded?
+		bool	loaded;
+		
+		//! has the TAFF file the correct version?
+		bool	correct_version;
+
+		//! id of the current tag
+		int		current_tag;
+		
+		//! buffer postion of the current tag
+		int		current_tag_pos;
 		
 		
         //! Recursive called method for XML to TAFF conversion.

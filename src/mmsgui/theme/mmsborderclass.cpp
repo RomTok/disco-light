@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
@@ -171,28 +171,28 @@ void MMSBorderClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix,
 	                setImagePath(path);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_top_left:
-	            setImageNames(0, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_top:
-	            setImageNames(1, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_TOP, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_top_right:
-	            setImageNames(2, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_right:
-	            setImageNames(3, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_RIGHT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_bottom_right:
-	            setImageNames(4, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_bottom:
-	            setImageNames(5, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_bottom_left:
-	            setImageNames(6, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_left:
-	            setImageNames(7, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_LEFT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_path:
 	            if (*attrval_str)
@@ -201,28 +201,28 @@ void MMSBorderClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix,
 	                setSelImagePath(path);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_top_left:
-	            setSelImageNames(0, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_top:
-	            setSelImageNames(1, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_top_right:
-	            setSelImageNames(2, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_right:
-	            setSelImageNames(3, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_RIGHT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom_right:
-	            setSelImageNames(4, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom:
-	            setSelImageNames(5, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_bottom_left:
-	            setSelImageNames(6, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_left:
-	            setSelImageNames(7, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_LEFT, attrval_str);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_thickness:
 	            setThickness(attrval_int);
@@ -328,35 +328,35 @@ void MMSBorderClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix,
             }
             else
             if (ISATTRNAME(border_image_top_left)) { 
-	            setImageNames(0, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_top)) { 
-	            setImageNames(1, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_TOP, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_top_right)) { 
-	            setImageNames(2, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_right)) { 
-	            setImageNames(3, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_RIGHT, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_bottom_right)) { 
-	            setImageNames(4, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_bottom)) { 
-	            setImageNames(5, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_bottom_left)) { 
-	            setImageNames(6, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, attrval_str);
             }
             else
             if (ISATTRNAME(border_image_left)) { 
-	            setImageNames(7, attrval_str);
+	            setImageNames(MMSBORDER_IMAGE_NUM_LEFT, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_path)) { 
@@ -367,35 +367,35 @@ void MMSBorderClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix,
             }
             else
             if (ISATTRNAME(border_selimage_top_left)) { 
-	            setSelImageNames(0, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_top)) { 
-	            setSelImageNames(1, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_top_right)) { 
-	            setSelImageNames(2, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_right)) { 
-	            setSelImageNames(3, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_RIGHT, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_bottom_right)) { 
-	            setSelImageNames(4, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_bottom)) { 
-	            setSelImageNames(5, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_bottom_left)) { 
-	            setSelImageNames(6, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, attrval_str);
             }
             else
             if (ISATTRNAME(border_selimage_left)) { 
-	            setSelImageNames(7, attrval_str);
+	            setSelImageNames(MMSBORDER_IMAGE_NUM_LEFT, attrval_str);
             }
             else
             if (ISATTRNAME(border_thickness)) { 
@@ -499,11 +499,11 @@ bool MMSBorderClass::getImagePath(string &imagepath) {
 
 
 void MMSBorderClass::initImageNames() {
-	MMSTHEMECLASS_INIT_STRINGS(imagenames,8);
+	MMSTHEMECLASS_INIT_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_SIZE);
 }
 
 void MMSBorderClass::freeImageNames() {
-	MMSTHEMECLASS_FREE_STRINGS(imagenames,8);
+	MMSTHEMECLASS_FREE_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_SIZE);
 }
 
 bool MMSBorderClass::isImageNames() {
@@ -511,26 +511,26 @@ bool MMSBorderClass::isImageNames() {
 }
 
 void MMSBorderClass::unsetImageNames() {
-	MMSTHEMECLASS_UNSET_STRINGS(imagenames,8);
+	MMSTHEMECLASS_UNSET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_SIZE);
 }
 
 void MMSBorderClass::setImageNames(const string &imagename_1, const string &imagename_2, const string &imagename_3, const string &imagename_4,
 								   const string &imagename_5, const string &imagename_6, const string &imagename_7, const string &imagename_8) {
-	MMSTHEMECLASS_SET_STRINGS(imagenames,0,imagename_1);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,1,imagename_2);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,2,imagename_3);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,3,imagename_4);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,4,imagename_5);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,5,imagename_6);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,6,imagename_7);
-	MMSTHEMECLASS_SET_STRINGS(imagenames,7,imagename_8);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_TOP_LEFT,imagename_1);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_TOP,imagename_2);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_TOP_RIGHT,imagename_3);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_RIGHT,imagename_4);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT,imagename_5);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_BOTTOM,imagename_6);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_BOTTOM_LEFT,imagename_7);
+	MMSTHEMECLASS_SET_STRINGS(imagenames,MMSBORDER_IMAGE_NUM_LEFT,imagename_8);
 }
 
-void MMSBorderClass::setImageNames(unsigned int num, const string &imagename) {
+void MMSBorderClass::setImageNames(MMSBORDER_IMAGE_NUM num, const string &imagename) {
 	MMSTHEMECLASS_SET_STRINGS(imagenames,num,imagename);
 }
 
-bool MMSBorderClass::getImageNames(unsigned int num, string &imagename) {
+bool MMSBorderClass::getImageNames(MMSBORDER_IMAGE_NUM num, string &imagename) {
 	MMSTHEMECLASS_GET_STRINGS(imagenames,num,imagename);
 }
 
@@ -562,11 +562,11 @@ bool MMSBorderClass::getSelImagePath(string &selimagepath) {
 
 
 void MMSBorderClass::initSelImageNames() {
-	MMSTHEMECLASS_INIT_STRINGS(selimagenames,8);
+	MMSTHEMECLASS_INIT_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_SIZE);
 }
 
 void MMSBorderClass::freeSelImageNames() {
-	MMSTHEMECLASS_FREE_STRINGS(selimagenames,8);
+	MMSTHEMECLASS_FREE_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_SIZE);
 }
 
 bool MMSBorderClass::isSelImageNames() {
@@ -574,26 +574,26 @@ bool MMSBorderClass::isSelImageNames() {
 }
 
 void MMSBorderClass::unsetSelImageNames() {
-	MMSTHEMECLASS_UNSET_STRINGS(selimagenames,8);
+	MMSTHEMECLASS_UNSET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_SIZE);
 }
 
 void MMSBorderClass::setSelImageNames(const string &selimagename_1, const string &selimagename_2, const string &selimagename_3, const string &selimagename_4,
 								      const string &selimagename_5, const string &selimagename_6, const string &selimagename_7, const string &selimagename_8) {
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,0,selimagename_1);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,1,selimagename_2);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,2,selimagename_3);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,3,selimagename_4);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,4,selimagename_5);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,5,selimagename_6);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,6,selimagename_7);
-	MMSTHEMECLASS_SET_STRINGS(selimagenames,7,selimagename_8);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_TOP_LEFT,selimagename_1);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_TOP,selimagename_2);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_TOP_RIGHT,selimagename_3);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_RIGHT,selimagename_4);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT,selimagename_5);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_BOTTOM,selimagename_6);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_BOTTOM_LEFT,selimagename_7);
+	MMSTHEMECLASS_SET_STRINGS(selimagenames,MMSBORDER_IMAGE_NUM_LEFT,selimagename_8);
 }
 
-void MMSBorderClass::setSelImageNames(unsigned int num, const string &selimagename) {
+void MMSBorderClass::setSelImageNames(MMSBORDER_IMAGE_NUM num, const string &selimagename) {
 	MMSTHEMECLASS_SET_STRINGS(selimagenames,num,selimagename);
 }
 
-bool MMSBorderClass::getSelImageNames(unsigned int num, string &selimagename) {
+bool MMSBorderClass::getSelImageNames(MMSBORDER_IMAGE_NUM num, string &selimagename) {
 	MMSTHEMECLASS_GET_STRINGS(selimagenames,num,selimagename);
 }
 

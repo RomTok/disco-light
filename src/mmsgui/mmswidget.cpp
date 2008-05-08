@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
@@ -34,10 +34,10 @@ MMSWidget::MMSWidget() {
     this->selbgimage_p = NULL;
     this->bgimage_i = NULL;
     this->selbgimage_i = NULL;
-    for (int i=0;i<8;i++)
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
         this->borderimages[i] = NULL;
     bordergeomset = false;
-    for (int i=0;i<8;i++)
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
         this->borderselimages[i] = NULL;
     borderselgeomset = false;
     this->rootwindow = NULL;
@@ -95,9 +95,9 @@ MMSWidget::~MMSWidget() {
         this->rootwindow->im->releaseImage(this->selbgimage_p);
         this->rootwindow->im->releaseImage(this->bgimage_i);
         this->rootwindow->im->releaseImage(this->selbgimage_i);
-        for (int i=0;i<8;i++)
+        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
             this->rootwindow->im->releaseImage(this->borderimages[i]);
-        for (int i=0;i<8;i++)
+        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
             this->rootwindow->im->releaseImage(this->borderselimages[i]);
     }
 
@@ -183,9 +183,9 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     newWidget->selbgimage_p = NULL;
     newWidget->bgimage_i = NULL;
     newWidget->selbgimage_i = NULL;
-    for (int i=0;i<8;i++)
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
         newWidget->borderimages[i] = NULL;
-    for (int i=0;i<8;i++)
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
         newWidget->borderselimages[i] = NULL;
 
     if (drawable) {
@@ -217,15 +217,15 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
             newWidget->selbgimage_i = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getBorderImagePath(path)) path = "";
-            for (int i=0;i<8;i++) {
-                if (!newWidget->getBorderImageNames(i, name)) name = "";
-                newWidget->borderimages[i] = this->rootwindow->im->getImage(path, name);
+            for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+	            if (!newWidget->getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+	            newWidget->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
     
             if (!newWidget->getBorderSelImagePath(path)) path = "";
-            for (int i=0;i<8;i++) {
-                if (!newWidget->getBorderSelImageNames(i, name)) name = "";
-                newWidget->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+            for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+	            if (!newWidget->getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+	            newWidget->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
     }
@@ -717,17 +717,17 @@ bool MMSWidget::init() {
         this->selbgimage_i = this->rootwindow->im->getImage(path, name);
 
         if (!getBorderImagePath(path)) path = "";
-        for (int i=0;i<8;i++) {
-            if (!getBorderImageNames(i, name)) name = "";
+        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
             this->borderimages[i] = this->rootwindow->im->getImage(path, name);
         }
 
         if (!getBorderSelImagePath(path)) path = "";
-        for (int i=0;i<8;i++) {
-            if (!getBorderSelImageNames(i, name)) name = "";
+        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+            if (!getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
             this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
         }
-
+        
         /* get my four widgets to which I have to navigate */
         if (!getNavigateUp(name)) name = "";
         this->navigateUpWidget = this->rootwindow->searchForWidget(name);
@@ -2199,7 +2199,7 @@ bool MMSWidget::getBorderImagePath(string &imagepath) {
     GETBORDER(ImagePath, imagepath);
 }
 
-bool MMSWidget::getBorderImageNames(unsigned int num, string &imagename) {
+bool MMSWidget::getBorderImageNames(MMSBORDER_IMAGE_NUM num, string &imagename) {
     GETBORDER_IMAGES(ImageNames, num, imagename);
 }
 
@@ -2207,7 +2207,7 @@ bool MMSWidget::getBorderSelImagePath(string &selimagepath) {
     GETBORDER(SelImagePath, selimagepath);
 }
 
-bool MMSWidget::getBorderSelImageNames(unsigned int num, string &selimagename) {
+bool MMSWidget::getBorderSelImageNames(MMSBORDER_IMAGE_NUM num, string &selimagename) {
     GETBORDER_IMAGES(SelImageNames, num, selimagename);
 }
 
@@ -2569,14 +2569,15 @@ void MMSWidget::setBorderSelColor(DFBColor borderselcolor, bool refresh) {
 void MMSWidget::setBorderImagePath(string borderimagepath, bool load, bool refresh) {
     myWidgetClass.border.setImagePath(borderimagepath);
     if (load)
-        if (this->rootwindow)
-            for (int i=0;i<8;i++) {
-                this->rootwindow->im->releaseImage(this->borderimages[i]);
-                string path, name;
-                if (!getBorderImagePath(path)) path = "";
-                if (!getBorderImageNames(i, name)) name = "";
-                this->borderimages[i] = this->rootwindow->im->getImage(path, name);
+        if (this->rootwindow) {
+            string path, name;
+            if (!getBorderImagePath(path)) path = "";
+            for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+	            this->rootwindow->im->releaseImage(this->borderimages[i]);
+	            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+	            this->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
+        }
     if (refresh)
         this->refresh();
 }
@@ -2587,14 +2588,15 @@ void MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, stri
     myWidgetClass.border.setImageNames(imagename_1, imagename_2, imagename_3, imagename_4,
                                        imagename_5, imagename_6, imagename_7, imagename_8);
     if (load)
-        if (this->rootwindow)
-            for (int i=0;i<8;i++) {
-                this->rootwindow->im->releaseImage(this->borderimages[i]);
-                string path, name;
-                if (!getBorderImagePath(path)) path = "";
-                if (!getBorderImageNames(i, name)) name = "";
-                this->borderimages[i] = this->rootwindow->im->getImage(path, name);
+        if (this->rootwindow) {
+            string path, name;
+            if (!getBorderImagePath(path)) path = "";
+            for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+	            this->rootwindow->im->releaseImage(this->borderimages[i]);
+	            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+	            this->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
+        }
     if (refresh)
         this->refresh();
 }
@@ -2602,14 +2604,15 @@ void MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, stri
 void MMSWidget::setBorderSelImagePath(string borderselimagepath, bool load, bool refresh) {
     myWidgetClass.border.setSelImagePath(borderselimagepath);
     if (load)
-        if (this->rootwindow)
-            for (int i=0;i<8;i++) {
-                this->rootwindow->im->releaseImage(this->borderselimages[i]);
-                string path, name;
-                if (!getBorderSelImagePath(path)) path = "";
-                if (!getBorderSelImageNames(i, name)) name = "";
-                this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+        if (this->rootwindow) {
+            string path, name;
+            if (!getBorderSelImagePath(path)) path = "";
+            for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+	            this->rootwindow->im->releaseImage(this->borderselimages[i]);
+	            if (!getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+	            this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
+        }
     if (refresh)
         this->refresh();
 }
@@ -2620,14 +2623,16 @@ void MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagenam
     myWidgetClass.border.setSelImageNames(selimagename_1, selimagename_2, selimagename_3, selimagename_4,
                                           selimagename_5, selimagename_6, selimagename_7, selimagename_8);
     if (load)
-        if (this->rootwindow)
-            for (int i=0;i<8;i++) {
-                this->rootwindow->im->releaseImage(this->borderselimages[i]);
-                string path, name;
-                if (!getBorderSelImagePath(path)) path = "";
-                if (!getBorderSelImageNames(i, name)) name = "";
-                this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+        if (this->rootwindow) {
+            string path, name;
+            if (!getBorderSelImagePath(path)) path = "";
+
+            for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+	            this->rootwindow->im->releaseImage(this->borderselimages[i]);
+	            if (!getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+	            this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
+        }
     if (refresh)
         this->refresh();
 }
@@ -2743,28 +2748,28 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setBorderImagePath(s);
     if (themeClass->border.isImageNames()) {
     	string s[8];
-    	themeClass->border.getImageNames(0, s[0]);
-    	themeClass->border.getImageNames(0, s[1]);
-    	themeClass->border.getImageNames(0, s[2]);
-    	themeClass->border.getImageNames(0, s[3]);
-    	themeClass->border.getImageNames(0, s[4]);
-    	themeClass->border.getImageNames(0, s[5]);
-    	themeClass->border.getImageNames(0, s[6]);
-    	themeClass->border.getImageNames(0, s[7]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, s[0]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_TOP, s[1]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, s[2]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_RIGHT, s[3]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, s[4]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, s[5]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, s[6]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_LEFT, s[7]);
         setBorderImageNames(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7]);
     }
     if (themeClass->border.getSelImagePath(s))
         setBorderSelImagePath(s);
     if (themeClass->border.isSelImageNames()) {
     	string s[8];
-    	themeClass->border.getSelImageNames(0, s[0]);
-    	themeClass->border.getSelImageNames(0, s[1]);
-    	themeClass->border.getSelImageNames(0, s[2]);
-    	themeClass->border.getSelImageNames(0, s[3]);
-    	themeClass->border.getSelImageNames(0, s[4]);
-    	themeClass->border.getSelImageNames(0, s[5]);
-    	themeClass->border.getSelImageNames(0, s[6]);
-    	themeClass->border.getSelImageNames(0, s[7]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, s[0]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_TOP, s[1]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, s[2]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_RIGHT, s[3]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, s[4]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, s[5]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, s[6]);
+    	themeClass->border.getSelImageNames(MMSBORDER_IMAGE_NUM_LEFT, s[7]);
         setBorderSelImageNames(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7]);
     }
     if (themeClass->border.getThickness(u))

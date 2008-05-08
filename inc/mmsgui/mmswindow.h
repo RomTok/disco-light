@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
@@ -53,7 +53,7 @@ typedef enum {
     MMSWINDOWTYPE_ROOTWINDOW,
     /*!
     Child windows are parts of main, popup and root windows.
-    A full window functionality is given.
+    The full window functionality is given.
     */
     MMSWINDOWTYPE_CHILDWINDOW		
 } MMSWINDOWTYPE;
@@ -94,88 +94,174 @@ class MMSWindow {
 
         //! status area for the arrow widgets
         typedef struct {
-        	bool up;							//! currently navigate up is possible?
-        	bool down;							//! currently navigate down is possible?
-        	bool left;							//! currently navigate left is possible?
-        	bool right;							//! currently navigate right is possible?
+        	//! currently navigate up is possible?
+        	bool up;
+        	//! currently navigate down is possible?
+        	bool down;
+        	//! currently navigate left is possible?
+        	bool left;
+        	//! currently navigate right is possible?
+        	bool right;
         } ARROW_WIDGET_STATUS;
         
-        MMSTheme            *theme;           	//! access to the theme which is used
-        MMSWindowClass      *baseWindowClass;	//! base attributes of the window
-        										//! this can be initialization values from theme.cpp
-        										//! or from theme.xml (NOT a <class/> definition, but e.g. tag <mainwindow/>)
-        MMSWindowClass      *windowClass;		//! attributes set by <class/> tag in theme.xml
-        										//! is NULL, if window has no theme class definition
-        										//! attributes set here, prevails over attributes from baseWindowClass
-        MMSWindowClass      myWindowClass;		//! attributes of the window which will be set during
-        										//! the runtime (e.g. window->setAlignment(...) )
-        										//! attributes set here, prevails over attributes from windowClass
-        										//! and baseWindowClass
+        //! access to the theme which is used
+        MMSTheme            *theme;
+        
+        //! base attributes of the window
+        /*!
+        This can be initialization values from theme.cpp
+        or from theme.xml (NOT a <class/> definition, but e.g. tag <mainwindow/>).
+        */
+        MMSWindowClass      *baseWindowClass;
 
-        MMSWINDOW_FLAGS		flags;				//! window creation flags
+        //! attributes set by <class/> tag in theme.xml
+        /*!
+        Is NULL, if window has no theme class definition.
+        Attributes set here, prevails over attributes from baseWindowClass.
+        */
+        MMSWindowClass      *windowClass;
 
-		MMSMutex      		Lock;               //! to make it thread-safe :)
-        unsigned long       TID;                //! save the id of the thread which has locked the window
-        unsigned long       Lock_cnt;           //! count the number of times the thread has call lock()
-        										//! because it is not a problem, that the same thread calls lock() several times
+        //! attributes of the window which will be set during the runtime
+        /*!
+        The runtime attributes set here (e.g. window->setAlignment(...) ), prevails over attributes
+        from windowClass and baseWindowClass.
+        */
+        MMSWindowClass      myWindowClass;
 
-        MMSMutex      		drawLock;			//! special draw lock
-        MMSMutex      		flipLock;			//! special flip lock
-        MMSMutex  			preCalcNaviLock;	//! lock the pre-calculation of the navigation
+        //! window creation flags
+        MMSWINDOW_FLAGS		flags;
 
-        bool                initialized;		//! is window initialized?
-
-        string 				name;              	//! name of the window
-
-        MMSWindow           *parent;            //! parent window (if window is a child window) or NULL
+        //! to make it thread-safe :)
+		MMSMutex      		Lock;
 		
-        MMSImageManager     *im;				//! image manager for the window 
-        MMSFontManager      *fm;				//! font manager for the window
+		//! save the id of the thread which has locked the window
+        unsigned long       TID;
 
-        MMSWindowAction   	*action;			//! window action thread (used for animations) 
+        //! count the number of times the thread has call lock() because it is not a problem, that the same thread calls lock() several times
+        unsigned long       Lock_cnt;
+
+        //! special draw lock
+        MMSMutex      		drawLock;
         
-        MMSFBSurface        *bgimage;			//!	background image
-        MMSFBSurface        *borderimages[8];	//! border images
-        DFBRectangle        bordergeom[8];		//! border geometry
-        bool                bordergeomset;		//! border geometry set?
-
-        MMSFBLayer          *layer;				//! access to the MMSFBLayer on which the window has to be displayed
-        MMSFBWindow         *window;			//! access to the MMSFBWindow which is behind of this class
-        MMSFBSurface        *surface;			//! access to the MMSFBSurface of the window 
-
-        DFBRectangle 		vrect;				//! visible screen area (that means the visible area e.g. on the TV set)
-        										//! see the initialization of the MMSWindowManager
-
-        int                 dxpix;				//! x-movement of the window based on the alignment attribute
-        int                 dypix;				//! y-movement of the window based on the alignment attribute
-        DFBRectangle        geom;				//! geometry of the window based on the margin attribute
-        DFBRectangle        innerGeom;			//! inner geometry of the window based on the border margin attribute
-
-        bool				draw_setgeom;		//! check and recalc the geometry of the widgets during the next draw()? 
+        //! special flip lock
+        MMSMutex      		flipLock;
         
-        vector<MMSWidget *>	children;			//! widgets of the window
-        MMSWidget 			*focusedwidget;		//! focused widget or NULL
-        bool                shown;				//! is window shown?
-        bool				willshow;			//! is show animation running?
-        bool				willhide;			//! is hide animation running?
-        bool                firstfocusset;		//! focus set the first time?
+        //! lock the pre-calculation of the navigation
+        MMSMutex  			preCalcNaviLock;
 
-        vector<CHILDWINS>   childwins;			//! child windows of the window
-        unsigned int        focusedChildWin;	//! focused child window
+        //! is window initialized?
+        bool                initialized;
 
-        MMSWidget       	*upArrowWidget;		//! widget which has to be selected if it is possible to navigate up
-        MMSWidget       	*downArrowWidget;	//! widget which has to be selected if it is possible to navigate down
-        MMSWidget       	*leftArrowWidget;	//! widget which has to be selected if it is possible to navigate left
-        MMSWidget       	*rightArrowWidget;	//! widget which has to be selected if it is possible to navigate right
-        bool            	initialArrowsDrawn;	//! up/down/left/right arrow widgets updated the first time?
+        //! name of the window
+        string 				name;
 
-        MMSWindow       	*navigateUpWindow;		//! child window which is to be focused if user navigates up
-        MMSWindow       	*navigateDownWindow;	//! child window which is to be focused if user navigates down
-        MMSWindow       	*navigateLeftWindow;	//! child window which is to be focused if user navigates left
-        MMSWindow       	*navigateRightWindow;	//! child window which is to be focused if user navigates right
+        //! parent window (if window is a child window) or NULL
+        MMSWindow           *parent;
+		
+        //! image manager for the window
+        MMSImageManager     *im;
+        
+        //! font manager for the window
+        MMSFontManager      *fm;
 
-        MMSWidget			*buttonpress_widget;	//! widget on which the user has pressed the (mouse) button
-        MMSWindow			*buttonpress_childwin;	//! child window on which the user has pressed the (mouse) button
+        //! window action thread (used for animations)
+        MMSWindowAction   	*action; 
+        
+        //!	background image
+        MMSFBSurface        *bgimage;
+        
+        //! border images
+        MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
+        
+        //! border geometry
+        DFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
+        
+        //! border geometry set?
+        bool                bordergeomset;
+
+        //! access to the MMSFBLayer on which the window has to be displayed
+        MMSFBLayer          *layer;
+        
+        //! access to the MMSFBWindow which is behind of this class
+        MMSFBWindow         *window;
+        
+        //! access to the MMSFBSurface of the window
+        MMSFBSurface        *surface; 
+
+        //! visible screen area (that means the visible area e.g. on the TV set), see the initialization of the MMSWindowManager
+        DFBRectangle 		vrect;
+
+        //! x-movement of the window based on the alignment attribute
+        int                 dxpix;
+        
+        //! y-movement of the window based on the alignment attribute
+        int                 dypix;
+        
+        //! geometry of the window based on the margin attribute
+        DFBRectangle        geom;
+        
+        //! inner geometry of the window based on the border margin attribute
+        DFBRectangle        innerGeom;
+
+        //! check and recalc the geometry of the widgets during the next draw()?
+        bool				draw_setgeom; 
+        
+        //! widgets of the window
+        vector<MMSWidget *>	children;
+        
+        //! focused widget or NULL
+        MMSWidget 			*focusedwidget;
+        
+        //! is window shown?
+        bool                shown;
+        
+        //! is show animation running?
+        bool				willshow;
+        
+        //! is hide animation running?
+        bool				willhide;
+        
+        //! focus set the first time?
+        bool                firstfocusset;
+
+        //! child windows of the window
+        vector<CHILDWINS>   childwins;
+        
+        //! focused child window
+        unsigned int        focusedChildWin;
+
+        //! widget which has to be selected if it is possible to navigate up
+        MMSWidget       	*upArrowWidget;
+        
+        //! widget which has to be selected if it is possible to navigate down
+        MMSWidget       	*downArrowWidget;
+        
+        //! widget which has to be selected if it is possible to navigate left
+        MMSWidget       	*leftArrowWidget;
+        
+        //! widget which has to be selected if it is possible to navigate right
+        MMSWidget       	*rightArrowWidget;
+        
+        //! up/down/left/right arrow widgets updated the first time?
+        bool            	initialArrowsDrawn;
+
+        //! child window which is to be focused if user navigates up
+        MMSWindow       	*navigateUpWindow;
+        
+        //! child window which is to be focused if user navigates down
+        MMSWindow       	*navigateDownWindow;
+        
+        //! child window which is to be focused if user navigates left
+        MMSWindow       	*navigateLeftWindow;
+        
+    	//! child window which is to be focused if user navigates right
+        MMSWindow       	*navigateRightWindow;
+
+        //! widget on which the user has pressed the (mouse) button
+        MMSWidget			*buttonpress_widget;
+        
+        //! child window on which the user has pressed the (mouse) button
+        MMSWindow			*buttonpress_childwin;
 
         
         //! Internal method: Creates the window.
@@ -292,7 +378,8 @@ class MMSWindow {
 
     protected:
 		
-        static class IMMSWindowManager 	*windowmanager;	//! interface to the window manager
+    	//! interface to the window manager
+        static class IMMSWindowManager 	*windowmanager;
 
     public:
     	
@@ -397,11 +484,14 @@ class MMSWindow {
         //! Refresh (redraw) the whole window.
         /*!
         It is possible to update window attributes without refresh.
-        So you have to refresh() the window 'manually'.
+        In this case you have to refresh() the window 'manually' to make the changes visible.
 
         For example you can call:
+        
           a) setOpacity(100) and setBgColor(bgcolor)
+          
          or
+         
           b) setOpacity(100, false), setBgColor(bgcolor, false) and then refresh() 
         
         With variant b) you have a better performance because only one refresh() will be done. 
@@ -516,9 +606,11 @@ class MMSWindow {
         	bool myclass::mycallbackmethod(MMSWindow *win);
         	
         	Parameters:
-        		win 	the pointer to the window which is to be shown
+
+        		win -> is the pointer to the window which is to be shown
         		
         	Returns:
+
         		true if the show process should continue, else false if the window should not appear
         		
         To connect your callback to onBeforeShow do this:
@@ -536,8 +628,10 @@ class MMSWindow {
         	void myclass::mycallbackmethod(MMSWindow *win, bool already_shown);
         	
         	Parameters:
-        		win 			is the pointer to the window which is shown now
-        		already_shown	the window was already shown
+
+        		win -> is the pointer to the window which is shown now
+        		
+        		already_shown -> the window was already shown
         		
         To connect your callback to onAfterShow do this:
         
@@ -556,10 +650,13 @@ class MMSWindow {
         	bool myclass::mycallbackmethod(MMSWindow *win, bool goback);
         	
         	Parameters:
-        		win 	is the pointer to the window which is to be hidden
-        		goback	the application can decide, what to do if true/false, see hide()
+        	
+        		win -> is the pointer to the window which is to be hidden
+        		
+        		goback -> the application can decide, what to do if true/false, see hide()
 
         	Returns:
+        	
         		true if the hide process should continue, else false if the window should not disappear
         		
         To connect your callback to onBeforeHide do this:
@@ -577,8 +674,10 @@ class MMSWindow {
         	void myclass::mycallbackmethod(MMSWindow *win, bool goback);
         	
         	Parameters:
-        		win 	is the pointer to the window which is hidden now
-        		goback	the application can decide, what to do if true/false, see hide()
+        	
+        		win -> is the pointer to the window which is hidden now
+        		
+        		goback -> the application can decide, what to do if true/false, see hide()
 
         To connect your callback to onHide do this:
         
@@ -595,8 +694,10 @@ class MMSWindow {
         	void myclass::mycallbackmethod(MMSWindow *win, MMSInputEvent *inputevent);
         	
         	Parameters:
-        		win 		is the pointer to the window
-        		inputevent	the input event
+        	
+        		winm -> is the pointer to the window
+        		
+        		inputevent -> the input event
 
         To connect your callback to onHandleInput do this:
         
@@ -606,79 +707,519 @@ class MMSWindow {
 
         
     public:
-        /* theme access methods */
-        bool getAlignment(MMSALIGNMENT &alignment);
-        bool getDx(string &dx);
-        int getDxPix();
+        /* begin of theme access methods *************************************/
+
+        //! Get the alignment of the window. 
+        /*!
+        \param alignment	returns the alignment
+        \return true, if alignment is successfully returned
+        */
+    	bool getAlignment(MMSALIGNMENT &alignment);
+
+        //! Get the x-movement of the window.
+        /*!
+        \param dx	returns the x-movement
+        \return true, if dx is successfully returned
+        */
+    	bool getDx(string &dx);
+
+        //! Get the x-movement of the window as integer in pixel.
+        /*!
+        \return the x-movement
+        */
+    	int getDxPix();
+
+        //! Get the y-movement of the window.
+        /*!
+        \param dy	returns the y-movement
+        \return true, if dy is successfully returned
+        */
         bool getDy(string &dy);
+
+        //! Get the y-movement of the window as integer in pixel.
+        /*!
+        \return the y-movement
+        */
         int getDyPix();
+
+        //! Get the width of the window.
+        /*!
+        \param width	returns the width
+        \return true, if width is successfully returned
+        */
         bool getWidth(string &width);
+
+        //! Get the height of the window.
+        /*!
+        \param height	returns the height
+        \return true, if height is successfully returned
+        */
         bool getHeight(string &height);
+
+        //! Get the background color of the window.
+        /*!
+        \param bgcolor	returns the bgcolor
+        \return true, if bgcolor is successfully returned
+        */
         bool getBgColor(DFBColor &bgcolor);
+
+        //! Get the path to the background image of the window.
+        /*!
+        \param bgimagepath	returns the path
+        \return true, if bgimagepath is successfully returned
+        */
         bool getBgImagePath(string &bgimagepath);
+
+        //! Get the name of the background image.
+        /*!
+        \param bgimagename	returns the name
+        \return true, if bgimagename is successfully returned
+        */
         bool getBgImageName(string &bgimagename);
+
+        //! Get the opacity of the window.
+        /*!
+        \param opacity	returns the opacity
+        \return true, if opacity is successfully returned
+        */
         bool getOpacity(unsigned int &opacity);
+
+        //! Detect if the window has to fade-in during the show action.
+        /*!
+        \param fadein	returns the fadein status
+        \return true, if fadein is successfully returned
+        */
         bool getFadeIn(bool &fadein);
+
+        //! Detect if the window has to fade-out during the hide action.
+        /*!
+        \param fadeout	returns the fadeout status
+        \return true, if fadeout is successfully returned
+        */
         bool getFadeOut(bool &fadeout);
+
+        //! Detect if the window has to draw debug rectangles around its widgets.
+        /*!
+        \param debug	returns the debug status
+        \return true, if debug is successfully returned
+        */
         bool getDebug(bool &debug);
+
+        //! Get the margin of the window.
+        /*!
+		The margin of a window is the space around the window border.
+		If you have for example a 640x480 window with an margin 10, the window content will be drawed within 620x460.  
+        \param margin	returns the margin
+        \return true, if margin is successfully returned
+        */
         bool getMargin(unsigned int &margin);
+
+        //! Get the name of the uparrow widget.
+        /*!
+        If the user can navigate up to a other widget or child window,
+        the uparrow widget will be selected, else unselected.
+        \param uparrow	returns the name
+        \return true, if uparrow is successfully returned
+        */
         bool getUpArrow(string &uparrow);
+
+        //! Get the name of the downarrow widget.
+        /*!
+        If the user can navigate down to a other widget or child window,
+        the downarrow widget will be selected, else unselected.
+        \param downarrow	returns the name
+        \return true, if downarrow is successfully returned
+        */
         bool getDownArrow(string &downarrow);
+        
+        //! Get the name of the leftarrow widget.
+        /*!
+        If the user can navigate left to a other widget or child window,
+        the leftarrow widget will be selected, else unselected.
+        \param leftarrow	returns the name
+        \return true, if leftarrow is successfully returned
+        */
         bool getLeftArrow(string &leftarrow);
+
+        //! Get the name of the rightarrow widget.
+        /*!
+        If the user can navigate right to a other widget or child window,
+        the rightarrow widget will be selected, else unselected.
+        \param rightarrow	returns the name
+        \return true, if rightarrow is successfully returned
+        */
         bool getRightArrow(string &rightarrow);
+
+        //! Get the name of the navigateup window.
+        /*!
+        This is the child window which is to be focused if user navigates up.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigateup	returns the name
+        \return true, if navigateup is successfully returned
+        */
         bool getNavigateUp(string &navigateup);
+
+        //! Get the name of the navigatedown window.
+        /*!
+        This is the child window which is to be focused if user navigates down.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigatedown	returns the name
+        \return true, if navigatedown is successfully returned
+        */
         bool getNavigateDown(string &navigatedown);
+
+        //! Get the name of the navigateleft window.
+        /*!
+        This is the child window which is to be focused if user navigates left.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigateleft	returns the name
+        \return true, if navigateleft is successfully returned
+        */
         bool getNavigateLeft(string &navigateleft);
+
+        //! Get the name of the navigateright window.
+        /*!
+        This is the child window which is to be focused if user navigates right.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigateright	returns the name
+        \return true, if navigateright is successfully returned
+        */
         bool getNavigateRight(string &navigateright);
+
+        //! Detect if the window has an own surface.
+        /*!
+        If the window has no own surface, the drawing functions will be directly work on the parent surface.
+        This can save a lot of memory.
+        \param ownsurface	returns the ownsurface status
+        \return true, if ownsurface is successfully returned
+        */
         bool getOwnSurface(bool &ownsurface);
+
+        //! Get the move-in direction of the window which is used during the show action.
+        /*!
+        \param movein	returns the movein direction
+        \return true, if movein is successfully returned
+        */
         bool getMoveIn(MMSDIRECTION &movein);
+
+        //! Get the move-out direction of the window which is used during the hide action.
+        /*!
+        \param moveout	returns the moveout direction
+        \return true, if moveout is successfully returned
+        */
         bool getMoveOut(MMSDIRECTION &moveout);
 
+        //! Get the color of the window border.
+        /*!
+        \param color	returns the border color
+        \return true, if color is successfully returned
+        */
         bool getBorderColor(DFBColor &color);
+
+        //! Get the path to the window border images.
+        /*!
+        \param imagepath	returns the path
+        \return true, if imagepath is successfully returned
+        */
         bool getBorderImagePath(string &imagepath);
-        bool getBorderImageNames(unsigned int num, string &imagename);
+
+        //! Get the name of a border image.
+        /*!
+        \param num			number of image, see MMSBORDER_IMAGE_NUM
+        \param imagename	returns the name
+        \return true, if imagename is successfully returned
+        */
+        bool getBorderImageNames(MMSBORDER_IMAGE_NUM num, string &imagename);
+
+        //! Get the border thickness.
+        /*!
+        \param thickness	returns the border thickness
+        \return true, if thickness is successfully returned
+        */
         bool getBorderThickness(unsigned int &thickness);
+
+        //! Get the border margin.
+        /*!
+        The border margin is the space between the border an the inner rectangle of the window on which the
+        widgets or child windows will be drawn.
+        \param margin	returns the border margin
+        \return true, if margin is successfully returned
+        */
         bool getBorderMargin(unsigned int &margin);
+
+        //! Detect if the border has round corners.
+        /*!
+        \param rcorners	returns the round corners status
+        \return true, if rcorners is successfully returned
+        */
         bool getBorderRCorners(bool &rcorners);
         
         
-        
+        //! Set the alignment of the window. 
+        /*!
+        \param alignment	the alignment
+        \param refresh		refresh the window after changing the alignment?
+        \param resize		resize the window after changing the alignment?
+        */
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true, bool resize = true);
+
+        //! Set the x-movement of the window.
+        /*!
+        \param dx		the x-movement
+        \param refresh	refresh the window after changing the dx?
+        \param resize	resize the window after changing the dx?
+        */
         void setDx(string dx, bool refresh = false, bool resize = true);
+
+        //! Set the x-movement of the window as integer in pixel.
+        /*!
+        \param dx		the x-movement in pixel
+        \param refresh	refresh the window after changing the dx?
+        \param resize	resize the window after changing the dx?
+        */
         void setDxPix(int dx, bool refresh = false, bool resize = true);
+
+        //! Set the y-movement of the window.
+        /*!
+        \param dy		the y-movement
+        \param refresh	refresh the window after changing the dy?
+        \param resize	resize the window after changing the dy?
+        */
         void setDy(string dy, bool refresh = false, bool resize = true);
+
+        //! Set the y-movement of the window as integer in pixel.
+        /*!
+        \param dy		the y-movement in pixel
+        \param refresh	refresh the window after changing the dy?
+        \param resize	resize the window after changing the dy?
+        */
         void setDyPix(int dy, bool refresh = false, bool resize = true);
+
+        //! Set the width of the window.
+        /*!
+        \param width	the width
+        \param refresh	refresh the window after changing the width?
+        \param resize	resize the window after changing the width?
+        */
         void setWidth(string width, bool refresh = true, bool resize = true);
+
+        //! Set the height of the window.
+        /*!
+        \param height	the height
+        \param refresh	refresh the window after changing the height?
+        \param resize	resize the window after changing the height?
+        */
         void setHeight(string height, bool refresh = true, bool resize = true);
+
+        //! Set the background color of the window.
+        /*!
+        \param bgcolor	the bgcolor
+        \param refresh	refresh the window after changing the bgcolor?
+        */
         void setBgColor(DFBColor bgcolor, bool refresh = true);
+
+        //! Set the path to the background image of the window.
+        /*!
+        \param bgimagepath	the path
+        \param load			reload the bgimage after changing the bgimagepath?
+        \param refresh		refresh the window after changing the bgimagepath?
+        */
         void setBgImagePath(string bgimagepath, bool load = true, bool refresh = true);
+
+        //! Set the name of the background image.
+        /*!
+        \param bgimagename	the name
+        \param load			reload the bgimage after changing the bgimagename?
+        \param refresh		refresh the window after changing the bgimagename?
+        */
         void setBgImageName(string bgimagename, bool load = true, bool refresh = true);
+
+        //! Set the opacity of the window.
+        /*!
+        \param opacity	the opacity
+        \param refresh	refresh the window after changing the opacity?
+        */
         void setOpacity(unsigned int opacity, bool refresh = true);
+
+        //! Set the fadein status needed during the show action.
+        /*!
+        \param fadein	if true, the window is fading in during the next show()
+        */
         void setFadeIn(bool fadein);
+
+        //! Set the fadeout status needed during the hide action.
+        /*!
+        \param fadeout	if true, the window is fading out during the next hide()
+        */
         void setFadeOut(bool fadeout);
+
+        //! Should the window draw debug rectangles around its widgets?
+        /*!
+        \param debug	the debug status
+        \param refresh	refresh the window after changing the debug status?
+        */
         void setDebug(bool debug, bool refresh = true);
+
+        //! Set the margin of the window.
+        /*!
+		The margin of a window is the space around the window border.
+		If you have for example a 640x480 window with an margin 10, the window content will be drawed within 620x460.  
+        \param margin	the margin
+        \param refresh	refresh the window after changing the margin?
+        \param resize	resize the window after changing the margin?
+        */
         void setMargin(unsigned int margin, bool refresh = true, bool resize = true);
+
+        //! Set the name of the uparrow widget.
+        /*!
+        If the user can navigate up to a other widget or child window,
+        the uparrow widget will be selected, else unselected.
+        \param uparrow	the name
+        \param refresh	refresh the window after changing the uparrow?
+        */
         void setUpArrow(string uparrow, bool refresh = true);
+
+        //! Set the name of the downarrow widget.
+        /*!
+        If the user can navigate down to a other widget or child window,
+        the downarrow widget will be selected, else unselected.
+        \param downarrow	the name
+        \param refresh		refresh the window after changing the downarrow?
+        */
         void setDownArrow(string downarrow, bool refresh = true);
+
+        //! Set the name of the leftarrow widget.
+        /*!
+        If the user can navigate left to a other widget or child window,
+        the leftarrow widget will be selected, else unselected.
+        \param leftarrow	the name
+        \param refresh		refresh the window after changing the leftarrow?
+        */
         void setLeftArrow(string leftarrow, bool refresh = true);
+
+        //! Set the name of the rightarrow widget.
+        /*!
+        If the user can navigate right to a other widget or child window,
+        the rightarrow widget will be selected, else unselected.
+        \param rightarrow	the name
+        \param refresh		refresh the window after changing the rightarrow?
+        */
         void setRightArrow(string rightarrow, bool refresh = true);
+
+        //! Set the name of the navigateup window.
+        /*!
+        This is the child window which is to be focused if user navigates up.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigateup	the name
+        */
         void setNavigateUp(string navigateup);
+
+        //! Set the name of the navigatedown window.
+        /*!
+        This is the child window which is to be focused if user navigates down.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigatedown	the name
+        */
         void setNavigateDown(string navigatedown);
+
+        //! Set the name of the navigateleft window.
+        /*!
+        This is the child window which is to be focused if user navigates left.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigateleft	the name
+        */
         void setNavigateLeft(string navigateleft);
+
+        //! Set the name of the navigateright window.
+        /*!
+        This is the child window which is to be focused if user navigates right.
+        If it is not set, the GUI is searching automatically for the best route.
+        \param navigateright	the name
+        */
         void setNavigateRight(string navigateright);
+
+        //! Should the window working with an own surface?
+        /*!
+        If the window has no own surface, the drawing functions will be directly work on the parent surface.
+        This can save a lot of memory.
+        \param ownsurface	the ownsurface status
+        */
         void setOwnSurface(bool ownsurface);
+
+        //! Set the move-in direction of the window which is used during the show action.
+        /*!
+        \param movein	the movein direction
+        */
         void setMoveIn(MMSDIRECTION movein);
+
+        //! Set the move-out direction of the window which is used during the hide action.
+        /*!
+        \param moveout	the moveout direction
+        */
         void setMoveOut(MMSDIRECTION moveout);
 
+        //! Set the color of the window border.
+        /*!
+        \param color	the border color
+        \param refresh	refresh the window after changing the border color?
+        */
         void setBorderColor(DFBColor color, bool refresh = true);
+
+        //! Set the path to the window border images.
+        /*!
+        \param imagepath	returns the path
+        \param load			reload the border images after changing the imagepath?
+        \param refresh		refresh the window after changing the imagepath?
+        */
         void setBorderImagePath(string imagepath, bool load = true, bool refresh = true);
+
+        //! Set the names of the window border images.
+        /*!
+        \param imagename_1	the top-left image
+        \param imagename_2	the top image
+        \param imagename_3	the top-right image
+        \param imagename_4	the right image
+        \param imagename_5	the bottom-right image
+        \param imagename_6	the bottom image
+        \param imagename_7	the bottom-left image
+        \param imagename_8	the left image
+        \param load			reload the border images after changing the image names?
+        \param refresh		refresh the window after changing the image names?
+        */
         void setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
                                  string imagename_5, string imagename_6, string imagename_7, string imagename_8,
                                  bool load = true, bool refresh = true);
+
+        //! Set the border thickness.
+        /*!
+        \param thickness	the border thickness
+        \param refresh		refresh the window after changing the thickness?
+        \param resize		resize the window after changing the thickness?
+        */
         void setBorderThickness(unsigned int thickness, bool refresh = true, bool resize = true);
+
+        //! Set the border margin.
+        /*!
+        The border margin is the space between the border an the inner rectangle of the window on which the
+        widgets or child windows will be drawn.
+        \param margin		the border margin
+        \param refresh		refresh the window after changing the margin?
+        \param resize		resize the window after changing the margin?
+        */
         void setBorderMargin(unsigned int margin, bool refresh = true, bool resize = true);
+
+        //! Should the window border uses round corners?
+        /*!
+        \param rcorners	the round corners status
+        \param refresh	refresh the window after changing the rcorners?
+        */
         void setBorderRCorners(bool rcorners, bool refresh = true);
 
+        //! Update the current widgets settings with settings from another theme class.
+        /*!
+        \param themeClass	source theme class
+        \note Only this parameters which are set within the source theme class will be updated.
+        */
         void updateFromThemeClass(MMSWindowClass *themeClass);
 
     /* friends */

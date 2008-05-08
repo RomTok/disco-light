@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
@@ -50,7 +50,7 @@ MMSWindow::MMSWindow() {
     this->surface = NULL;
 	this->flags = MMSW_NONE;
     this->bgimage = NULL;
-    for (int i=0;i<8;i++)
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
         this->borderimages[i] = NULL;
     bordergeomset = false;
 
@@ -189,8 +189,8 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
 
     /* load border images */
     if (!getBorderImagePath(path)) path = "";
-    for (int i=0;i<8;i++) {
-        if (!getBorderImageNames(i, name)) name = "";
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+        if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
         this->borderimages[i] = im->getImage(path, name);
     }
 
@@ -3421,7 +3421,7 @@ bool MMSWindow::getBorderImagePath(string &imagepath) {
     GETBORDER(ImagePath, imagepath);
 }
 
-bool MMSWindow::getBorderImageNames(unsigned int num, string &imagename) {
+bool MMSWindow::getBorderImageNames(MMSBORDER_IMAGE_NUM num, string &imagename) {
     GETBORDER_IMAGES(ImageNames, num, imagename);
 }
 
@@ -3634,14 +3634,15 @@ void MMSWindow::setBorderColor(DFBColor color, bool refresh) {
 
 void MMSWindow::setBorderImagePath(string imagepath, bool load, bool refresh) {
     myWindowClass.border.setImagePath(imagepath);
-    if (load)
-        for (int i=0;i<8;i++) {
+    if (load) {
+        string path, name;
+        if (!getBorderImagePath(path)) path = "";
+        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
             im->releaseImage(this->borderimages[i]);
-            string path, name;
-            if (!getBorderImagePath(path)) path = "";
-            if (!getBorderImageNames(i, name)) name = "";
+            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
             this->borderimages[i] = im->getImage(path, name);
         }
+    }
     if (refresh)
         this->refresh();
 }
@@ -3651,14 +3652,15 @@ void MMSWindow::setBorderImageNames(string imagename_1, string imagename_2, stri
                                     bool load, bool refresh) {
     myWindowClass.border.setImageNames(imagename_1, imagename_2, imagename_3, imagename_4,
                                        imagename_5, imagename_6, imagename_7, imagename_8);
-    if (load)
-        for (int i=0;i<8;i++) {
+    if (load) {
+        string path, name;
+        if (!getBorderImagePath(path)) path = "";
+        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
             im->releaseImage(this->borderimages[i]);
-            string path, name;
-            if (!getBorderImagePath(path)) path = "";
-            if (!getBorderImageNames(i, name)) name = "";
+            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
             this->borderimages[i] = im->getImage(path, name);
         }
+    }
     if (refresh)
         this->refresh();
 }
@@ -3748,14 +3750,14 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setBorderImagePath(s, true, false);
     if (themeClass->border.isImageNames()) {
     	string s[8];
-    	themeClass->border.getImageNames(0, s[0]);
-    	themeClass->border.getImageNames(0, s[1]);
-    	themeClass->border.getImageNames(0, s[2]);
-    	themeClass->border.getImageNames(0, s[3]);
-    	themeClass->border.getImageNames(0, s[4]);
-    	themeClass->border.getImageNames(0, s[5]);
-    	themeClass->border.getImageNames(0, s[6]);
-    	themeClass->border.getImageNames(0, s[7]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, s[0]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_TOP, s[1]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, s[2]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_RIGHT, s[3]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, s[4]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, s[5]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, s[6]);
+    	themeClass->border.getImageNames(MMSBORDER_IMAGE_NUM_LEFT, s[7]);
         setBorderImageNames(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], true, false);
     }
     if (themeClass->border.getThickness(u))
