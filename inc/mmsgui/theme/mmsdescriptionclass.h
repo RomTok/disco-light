@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmsthemebase.h"
 
-//describe attributes
+//! describe attributes 
 namespace MMSGUI_DESCRIPTION_ATTR {
 
 	#define MMSGUI_DESCRIPTION_ATTR_ATTRDESC \
@@ -64,9 +64,13 @@ class MMSDescriptionClass {
         MMSDescriptionClass();
         //
         void unsetAll();
-        //
-        void setAttributesFromXMLNode(MMSTaffFile *tafff);
-        //
+        
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff);
+
         bool isAuthor();
         void setAuthor(string author);
         void unsetAuthor();

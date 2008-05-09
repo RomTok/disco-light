@@ -32,7 +32,7 @@
 
 
 //example from: http://libsigc.sourceforge.net/libsigc2/docs/reference/html/classsigc_1_1signal_1_1accumulated.html
-//this accumulator calculates the arithmetic mean value
+//! this accumulator calculates the arithmetic mean value
 struct arithmetic_mean_accumulator
 {
   typedef double result_type;
@@ -48,7 +48,7 @@ struct arithmetic_mean_accumulator
 };
 
 //example from: http://libsigc.sourceforge.net/libsigc2/docs/reference/html/classsigc_1_1signal_1_1accumulated.html
-//this accumulator stops signal emission when a slot returns zero
+//! this accumulator stops signal emission when a slot returns zero
 struct interruptable_accumulator
 {
   typedef bool result_type;
@@ -62,9 +62,12 @@ struct interruptable_accumulator
   }
 };
 
-//with this accumulator the emit() method of a callback ends with
-//  - true,  if the no callback methods are connected or all connected callback methods returns true
-//  - false, if at least one connected callback method returns false
+//! bool accumulator
+/*!
+with this accumulator the emit() method of a callback ends with
+ - true,  if the no callback methods are connected or all connected callback methods returns true
+ - false, if at least one connected callback method returns false
+*/
 struct bool_accumulator
 {
   typedef bool result_type;
@@ -103,16 +106,28 @@ typedef struct {
 
 MMS_CREATEERROR(MMSWidgetError);
 
+
+//! The available types of widgets.
 typedef enum {
+	//! A MMSHBox can contain 0 to n widgets. The widgets will be arranged in one horizontal row (0..n columns).  
     MMSWIDGETTYPE_HBOX = 0,
+	//! A MMSVBox can contain 0 to n widgets. The widgets will be arranged in one vertical column (0..n rows).  
     MMSWIDGETTYPE_VBOX,
+    //! A MMSButton widget can get the focus and therefore can process inputs. 
     MMSWIDGETTYPE_BUTTON,
+    //! A MMSImage widget cannot get the focus but can be selected. 
     MMSWIDGETTYPE_IMAGE,
+    //! A MMSLabel widget cannot get the focus but can be selected. It displays one line of text.
     MMSWIDGETTYPE_LABEL,
+    //! A MMSMenu widget can get the focus and therefore can process inputs. It displays one- or two-dimensional menus. 
     MMSWIDGETTYPE_MENU,
+    //! A MMSProgressBar widget cannot get the focus but can be selected. 
     MMSWIDGETTYPE_PROGRESSBAR,
+    //! A MMSTextBox widget can get the focus and therefore can process inputs. It displays a formated multiline text.
     MMSWIDGETTYPE_TEXTBOX,
+    //! A MMSArrow widget cannot get the focus but can be selected. 
     MMSWIDGETTYPE_ARROW,
+    //! A MMSSlider widget cannot get the focus but can be selected. 
     MMSWIDGETTYPE_SLIDER
 } MMSWIDGETTYPE;
 

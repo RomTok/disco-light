@@ -30,26 +30,38 @@
 
 //! Specifies supported types of files.
 typedef enum {
-    MMSFT_NOTSET    = 0,    /* not set */
-    MMSFT_FILE      = 1,    /* normal file */
-    MMSFT_URL       = 2     /* url */
+	//! not set
+    MMSFT_NOTSET    = 0,
+    //! normal file
+    MMSFT_FILE      = 1,
+    //! url
+    MMSFT_URL       = 2
 } MMSFileType;
 
 //! Specifies supported modes for working with files.
 typedef enum {
-    MMSFM_READ      = 0,    /* read binary (file must exist) */
-    MMSFM_WRITE     = 1,    /* write binary (file size will be set to 0) */
-    MMSFM_APPEND    = 2,    /* append binary (always writing to the end of the file) */
-    MMSFM_READWRITE = 3,    /* read & write binary (file must exist) */
-    MMSFM_WRITEREAD = 4,    /* write & read binary (file size will be set to 0) */
-    MMSFM_APPENDREAD= 5     /* append & read binary (always writing to the end of the file) */
+	//! read binary (file must exist)
+    MMSFM_READ      = 0,
+    //! write binary (file size will be set to 0)
+    MMSFM_WRITE     = 1,
+    //! append binary (always writing to the end of the file)
+    MMSFM_APPEND    = 2,
+    //! read & write binary (file must exist)
+    MMSFM_READWRITE = 3,
+    //! write & read binary (file size will be set to 0)
+    MMSFM_WRITEREAD = 4,
+    //! append & read binary (always writing to the end of the file)
+    MMSFM_APPENDREAD= 5
 } MMSFileMode;
 
 //! Specifies the origins for function setFilePos().
 typedef enum {
-    MMSFPO_SET      = 0,    /* from beginning of file */
-    MMSFPO_CUR      = 1,    /* from current position of file pointer */
-    MMSFPO_END      = 2     /* from end of file */
+	//! from beginning of file
+    MMSFPO_SET      = 0,
+    //! from current position of file pointer
+    MMSFPO_CUR      = 1,
+    //! from end of file
+    MMSFPO_END      = 2
 } MMSFilePosOrigin;
 
 //! A file class.
@@ -60,24 +72,50 @@ urls (http://address/file) with one interface.
 */
 class MMSFile {
     private:
-        string      name;       //! ALL files: name of the file
-        MMSFileMode mode;       //! ALL files: open mode
-        bool        usecache;   //! ALL files: use a separate cache for all file types?
-        MMSFileType type;       //! ALL files: type of file
-        int         lasterror;  //! ALL files: last error (0 if last call was sucessfull)
+    	//! ALL files: name of the file
+        string      name;
+        
+        //! ALL files: open mode
+        MMSFileMode mode;
+        
+        //! ALL files: use a separate cache for all file types?
+        bool        usecache;
+        
+        //! ALL files: type of file
+        MMSFileType type;
+        
+        //! ALL files: last error (0 if last call was sucessfull)
+        int         lasterror;
 
-        FILE        *file;      //! MMSFT_FILE: pointer to a file
+        //! MMSFT_FILE: pointer to a file
+        FILE        *file;
 
-        CURLM       *mhandle;   //! MMSFT_URL: pointer to a multi handle, if an url is used
-        CURL        *curl;      //! MMSFT_URL: pointer to a curl, if an url is used
-        char        *buffer;    //! MMSFT_URL: buffer to cached data from url
-        unsigned    buf_len;    //! MMSFT_URL: buffer length
-        unsigned    buf_pos;    //! MMSFT_URL: fill pointer within buffer
-        int         still_progr;//! MMSFT_URLL: url fetch is not finished and working in background
+        //! MMSFT_URL: pointer to a multi handle, if an url is used
+        CURLM       *mhandle;
+        
+        //! MMSFT_URL: pointer to a curl, if an url is used
+        CURL        *curl;
+        
+        //! MMSFT_URL: buffer to cached data from url
+        char        *buffer;
+        
+        //! MMSFT_URL: buffer length
+        unsigned    buf_len;
+        
+        //! MMSFT_URL: fill pointer within buffer
+        unsigned    buf_pos;
+        
+        //! MMSFT_URLL: url fetch is not finished and working in background
+        int         still_progr;
 
-        char        *cache;     //! USECACHE=TRUE: pointer to the whole file data
-        size_t      cache_fsize;//! USECACHE=TRUE: file size
-        size_t      cache_fpos; //! USECACHE=TRUE: current position in cache
+        //! USECACHE=TRUE: pointer to the whole file data
+        char        *cache;
+        
+        //! USECACHE=TRUE: file size
+        size_t      cache_fsize;
+        
+        //! USECACHE=TRUE: current position in cache
+        size_t      cache_fpos;
 
         //! Internal function which resets the most private variables.
         void resetAll();

@@ -26,7 +26,7 @@
 #include "mmsgui/theme/mmsthemebase.h"
 #include <directfb.h>
 
-//describe attributes
+//! describe attributes for MMSBorder 
 namespace MMSGUI_BORDER_ATTR {
 
 	#define MMSGUI_BORDER_ATTR_ATTRDESC \
@@ -123,6 +123,15 @@ typedef enum {
 } MMSBORDER_IMAGE_NUM;
 
 
+//! A data access class for the border of widgets and windows.
+/*!
+This class is the base for the MMSBorder class.
+With this data store you have access to all changeable border attributes. 
+It is also one of the base classes for MMSThemeManager and MMSDialogManager
+which are main features of the MMSGUI.
+\note This class will be internally used by class MMSBorder.
+\author Jens Schneider
+*/
 class MMSBorderClass {
     private:
     	struct {
@@ -181,9 +190,15 @@ class MMSBorderClass {
         MMSBorderClass &operator=(const MMSBorderClass &c); 
         //
         void unsetAll();
-        //
-        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
-        //
+
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
+
         bool isColor();
         void unsetColor();
         void setColor(const DFBColor &color);

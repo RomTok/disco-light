@@ -2011,13 +2011,13 @@ double MMSWindow::calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle ca
         return MAXDGCODE;
 
     /* create some vector points */
-    double w1 = (double)candPos.x;                          //! left border to left border
+    double w1 = (double)candPos.x;                          // left border to left border
            w1-= (double)currPos.x;
-    double w2 = (double)candPos.x + (double)candPos.w - 1;  //! right border to right border
+    double w2 = (double)candPos.x + (double)candPos.w - 1;  // right border to right border
            w2-= (double)currPos.x + (double)currPos.w - 1;
-    double w3 = (double)candPos.x + ((double)candPos.w / 2);//! middle to middle
+    double w3 = (double)candPos.x + ((double)candPos.w / 2);// middle to middle
            w3-= (double)currPos.x + ((double)currPos.w / 2);
-    double h  = (double)candPos.y + ((double)candPos.h / 2);//! height
+    double h  = (double)candPos.y + ((double)candPos.h / 2);// height
            h -= (double)currPos.y + ((double)currPos.h / 2);
 
     /* if the candidate is direct over the current widget and candidate width is equal or greater */
@@ -2100,13 +2100,13 @@ double MMSWindow::calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle 
         return MAXDGCODE;
 
     /* create some vector points */
-    double w1 = (double)candPos.x;                          //! left border to left border
+    double w1 = (double)candPos.x;                          // left border to left border
            w1-= (double)currPos.x;
-    double w2 = (double)candPos.x + (double)candPos.w - 1;  //! right border to right border
+    double w2 = (double)candPos.x + (double)candPos.w - 1;  // right border to right border
            w2-= (double)currPos.x + (double)currPos.w - 1;
-    double w3 = (double)candPos.x + ((double)candPos.w / 2);//! middle to middle
+    double w3 = (double)candPos.x + ((double)candPos.w / 2);// middle to middle
            w3-= (double)currPos.x + ((double)currPos.w / 2);
-    double h  = (double)candPos.y + ((double)candPos.h / 2);//! height
+    double h  = (double)candPos.y + ((double)candPos.h / 2);// height
            h -= (double)currPos.y + ((double)currPos.h / 2);
 
     /* if the candidate is direct under the current widget and candidate width is equal or greater */
@@ -2188,13 +2188,13 @@ double MMSWindow::calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle 
         return MAXDGCODE;
  
     /* create some vector points */
-    double h1 = (double)candPos.y;                          //! top border to top border
+    double h1 = (double)candPos.y;                          // top border to top border
            h1-= (double)currPos.y;
-    double h2 = (double)candPos.y + (double)candPos.h - 1;  //! bottom border to bottom border
+    double h2 = (double)candPos.y + (double)candPos.h - 1;  // bottom border to bottom border
            h2-= (double)currPos.y + (double)currPos.h - 1;
-    double h3 = (double)candPos.y + ((double)candPos.h / 2);//! middle to middle
+    double h3 = (double)candPos.y + ((double)candPos.h / 2);// middle to middle
            h3-= (double)currPos.y + ((double)currPos.h / 2);
-    double w  = (double)candPos.x + ((double)candPos.w / 2);//! width
+    double w  = (double)candPos.x + ((double)candPos.w / 2);// width
            w -= (double)currPos.x + ((double)currPos.w / 2);
 
     /* if the candidate is direct left of the current widget and candidate width is equal or greater */
@@ -2276,13 +2276,13 @@ double MMSWindow::calculateDistGradCode_Right(DFBRectangle currPos, DFBRectangle
         return MAXDGCODE;
   
     /* create some vector points */
-    double h1 = (double)candPos.y;                          //! top border to top border
+    double h1 = (double)candPos.y;                          // top border to top border
            h1-= (double)currPos.y;
-    double h2 = (double)candPos.y + (double)candPos.h - 1;  //! bottom border to bottom border
+    double h2 = (double)candPos.y + (double)candPos.h - 1;  // bottom border to bottom border
            h2-= (double)currPos.y + (double)currPos.h - 1;
-    double h3 = (double)candPos.y + ((double)candPos.h / 2);//! middle to middle
+    double h3 = (double)candPos.y + ((double)candPos.h / 2);// middle to middle
            h3-= (double)currPos.y + ((double)currPos.h / 2);
-    double w  = (double)candPos.x + ((double)candPos.w / 2);//! width
+    double w  = (double)candPos.x + ((double)candPos.w / 2);// width
            w -= (double)currPos.x + ((double)currPos.w / 2);
 
     /* if the candidate is direct right of the current widget and candidate width is equal or greater */

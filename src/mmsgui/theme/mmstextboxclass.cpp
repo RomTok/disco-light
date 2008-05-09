@@ -47,7 +47,7 @@ void MMSTextBoxClass::unsetAll() {
     unsetText();
 }
 
-void MMSTextBoxClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     DFBColor color;
     bool class_set = false;
 

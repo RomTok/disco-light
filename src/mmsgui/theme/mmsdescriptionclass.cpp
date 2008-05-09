@@ -36,7 +36,7 @@ void MMSDescriptionClass::unsetAll() {
     unsetDesc();
 }
 
-void MMSDescriptionClass::setAttributesFromXMLNode(MMSTaffFile *tafff) {
+void MMSDescriptionClass::setAttributesFromTAFF(MMSTaffFile *tafff) {
 	startTAFFScan
 	{
 		switch (attrid) {

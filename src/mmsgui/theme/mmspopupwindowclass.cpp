@@ -35,7 +35,7 @@ void MMSPopupWindowClass::unsetAll() {
     unsetDuration();
 }
 
-void MMSPopupWindowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string path) {
+void MMSPopupWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
 	startTAFFScan
 	{
         switch (attrid) {

@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//describe attributes
+//! describe attributes for MMSLabel which are additional to the MMSWidgetClass 
 namespace MMSGUI_LABEL_ATTR {
 
 	#define MMSGUI_LABEL_ATTR_ATTRDESC \
@@ -87,50 +87,73 @@ This class is the base for the MMSLabel widget class.
 With this data store you have access to all changeable widget attributes. 
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
+\note This class will be internally used by class MMSLabel.
 \author Jens Schneider
 */
 class MMSLabelClass {
     private:
-        string          className;  //! name of the theme class
-        bool            isfontpath; //! is fontpath set?
-        string          fontpath;   //! path to the font
-        bool            isfontname; //! is fontname set?
-        string          fontname;   //! name of the font
-        bool            isfontsize; //! is fontsize set?
-        unsigned int    fontsize;   //! size of the font
-        bool            isalignment;//! is alignment set?
-        MMSALIGNMENT    alignment;  //! alignment of the text
-        bool            iscolor;    //! is color set?
-        DFBColor        color;      //! color of the text if the widget is not selected
-        bool            isselcolor; //! is selcolor set?
-        DFBColor        selcolor;   //! color of the text if the widget is selected
-        bool            istext;     //! is text set?
-        string          text;       //! text to draw
+    	//! name of the theme class
+        string          className;
+        
+        //! is fontpath set?
+        bool            isfontpath;
+        
+        //! path to the font
+        string          fontpath;
+        
+        //! is fontname set?
+        bool            isfontname;
+        
+        //! name of the font
+        string          fontname;
+        
+        //! is fontsize set?
+        bool            isfontsize;
+        
+        //! size of the font
+        unsigned int    fontsize;
+        
+        //! is alignment set?
+        bool            isalignment;
+        
+        //! alignment of the text
+        MMSALIGNMENT    alignment;
+        
+        //! is color set?
+        bool            iscolor;
+        
+        //! color of the text if the widget is not selected
+        DFBColor        color;
+        
+        //! is selcolor set?
+        bool            isselcolor;
+        
+        //! color of the text if the widget is selected
+        DFBColor        selcolor;
+        
+        //! is text set?
+        bool            istext;
+        
+        //! text to draw
+        string          text;
 
     public:
-        MMSWidgetClass widgetClass; //! stores base widget attributes 
-
-        ////////////////////////////////////////////////////////////////////////
+    	//! stores base widget attributes
+        MMSWidgetClass widgetClass; 
 
         //! Constructor of class MMSLabelClass.
         MMSLabelClass();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Mark all attributes as not set.
         void unsetAll();
 
-        ////////////////////////////////////////////////////////////////////////
-
-        //! Read and set all attributes from the given XML node.
+        //! Read and set all attributes from the given TAFF buffer.
         /*!
-        \param node    pointer to the XML node
+        \param tafff   pointer to the TAFF buffer
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the XML node
+        \param path    optional, path needed for empty path values from the TAFF buffer
         */
-        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
-
-        ////////////////////////////////////////////////////////////////////////
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Set the name of the theme class.
         /*!
@@ -143,8 +166,6 @@ class MMSLabelClass {
         \return name of the class
         */
         string getClassName();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the fontpath is set.
         bool isFontPath();
@@ -164,8 +185,6 @@ class MMSLabelClass {
         */
         string getFontPath();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the fontname is set.
         bool isFontName();
 
@@ -183,8 +202,6 @@ class MMSLabelClass {
         \return name of the font
         */
         string getFontName();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the fontsize is set.
         bool isFontSize();
@@ -204,8 +221,6 @@ class MMSLabelClass {
         */
         unsigned int getFontSize();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if alignment is set.
         bool isAlignment();
 
@@ -223,8 +238,6 @@ class MMSLabelClass {
         \return size of the font
         */
         MMSALIGNMENT getAlignment();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the color is set. This color will be used for the unselected text.
         bool isColor();
@@ -244,8 +257,6 @@ class MMSLabelClass {
         */
         DFBColor getColor();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the color is set. This color will be used for the selected text.
         bool isSelColor();
 
@@ -263,8 +274,6 @@ class MMSLabelClass {
         \return color for selected text
         */
         DFBColor getSelColor();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the text is set.
         bool isText();

@@ -93,7 +93,7 @@ void MMSBorderClass::unsetAll() {
     unsetRCorners();
 }
 
-void MMSBorderClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     DFBColor color;
     bool class_set = false;
 

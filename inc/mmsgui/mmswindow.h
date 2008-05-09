@@ -268,7 +268,7 @@ class MMSWindow {
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
         		    bool *own_surface);
 
-        //! Internal method: Create the window.
+        //! Internal method: Creates the window.
         bool create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
 					bool *own_surface);
 
@@ -301,7 +301,7 @@ class MMSWindow {
         //! Internal method: Load widgets for up/down/left/right arrows.
         void loadArrowWidgets();
 
-        //! Internal method: Get the navigation status. With this infos i can select/unselect the arrow widgets. 
+        //! Internal method: Get the navigation status. With this infos we can select/unselect the arrow widgets. 
         void getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows);
 
         //! Internal method: Update the status of the arrow widgets. 
@@ -494,7 +494,10 @@ class MMSWindow {
          
           b) setOpacity(100, false), setBgColor(bgcolor, false) and then refresh() 
         
-        With variant b) you have a better performance because only one refresh() will be done. 
+        With variant b) you have a better performance because only one refresh will be done.
+        
+        This works also for widgets. You can update a few widgets without direct refresh
+        and call window->refresh() afterwards. 
         */
         void refresh();
         
@@ -631,7 +634,7 @@ class MMSWindow {
 
         		win -> is the pointer to the window which is shown now
         		
-        		already_shown -> the window was already shown
+        		already_shown -> the window was already shown?
         		
         To connect your callback to onAfterShow do this:
         
@@ -695,7 +698,7 @@ class MMSWindow {
         	
         	Parameters:
         	
-        		winm -> is the pointer to the window
+        		win -> is the pointer to the window
         		
         		inputevent -> the input event
 

@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//describe attributes
+//! describe attributes for MMSProgressBar which are additional to the MMSWidgetClass 
 namespace MMSGUI_PROGRESSBAR_ATTR {
 
 	#define MMSGUI_PROGRESSBAR_ATTR_ATTRDESC \
@@ -73,48 +73,55 @@ namespace MMSGUI_PROGRESSBAR_ATTR {
 extern TAFF_ATTRDESC MMSGUI_PROGRESSBAR_ATTR_I[];
 
 
-//! A data access class for the progressbar widget.
+//! A data access class for the MMSProgressBar widget class.
 /*!
 This class is the base for the MMSProgressBar widget class.
 With this data store you have access to all changeable widget attributes. 
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
+\note This class will be internally used by class MMSProgressBar.
 \author Jens Schneider
 */
 class MMSProgressBarClass {
     private:
-        string          className;      //! name of the theme class
-        bool            iscolor;        //! is color set? 
-        DFBColor        color;          //! color if the widget is not selected
-        bool            isselcolor;     //! is selcolor set?
-        DFBColor        selcolor;       //! color if the widget is selected
-        bool            isprogress;     //! is progress value set? 
-        unsigned int    progress;       //! progress value in percent
+    	//! name of the theme class
+        string          className;
+        
+        //! is color set?
+        bool            iscolor;
+        
+        //! color if the widget is not selected
+        DFBColor        color;
+        
+        //! is selcolor set?
+        bool            isselcolor;
+        
+        //! color if the widget is selected
+        DFBColor        selcolor;
+        
+        //! is progress value set?
+        bool            isprogress;
+        
+        //! progress value in percent
+        unsigned int    progress;
 
     public:
-        MMSWidgetClass widgetClass; //! stores base widget attributes 
-
-        ////////////////////////////////////////////////////////////////////////
+    	//! stores base widget attributes
+        MMSWidgetClass widgetClass; 
 
         //! Constructor of class MMSProgressBarClass.
         MMSProgressBarClass();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Mark all attributes as not set.
         void unsetAll();
 
-        ////////////////////////////////////////////////////////////////////////
-
-        //! Read and set all attributes from the given XML node.
+        //! Read and set all attributes from the given TAFF buffer.
         /*!
-        \param node    pointer to the XML node
+        \param tafff   pointer to the TAFF buffer
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the XML node
+        \param path    optional, path needed for empty path values from the TAFF buffer
         */
-        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
-
-        ////////////////////////////////////////////////////////////////////////
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Set the name of the theme class.
         /*!
@@ -127,8 +134,6 @@ class MMSProgressBarClass {
         \return name of the class
         */
         string getClassName();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the color is set. This color will be used to draw the unselected progress bar.
         bool isColor();
@@ -148,8 +153,6 @@ class MMSProgressBarClass {
         */
         DFBColor getColor();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the color is set. This color will be used for the selected progress bar.
         bool isSelColor();
 
@@ -167,8 +170,6 @@ class MMSProgressBarClass {
         \return color which is used for the selected progress bar
         */
         DFBColor getSelColor();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the progress value is set.
         bool isProgress();

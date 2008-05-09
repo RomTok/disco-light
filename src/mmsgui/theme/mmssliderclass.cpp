@@ -51,7 +51,7 @@ void MMSSliderClass::unsetAll() {
     unsetPosition();
 }
 
-void MMSSliderClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSSliderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     bool class_set = false;
 
     if (prefix == "") {

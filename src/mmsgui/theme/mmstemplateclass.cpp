@@ -44,7 +44,7 @@ void MMSTemplateClass::unsetAll() {
     this->tafff = NULL;
 }
 
-void MMSTemplateClass::setAttributesFromXMLNode(MMSTaffFile *tafff) {
+void MMSTemplateClass::setAttributesFromTAFF(MMSTaffFile *tafff) {
 	startTAFFScan
 	{
 		switch (attrid) {
@@ -56,13 +56,13 @@ void MMSTemplateClass::setAttributesFromXMLNode(MMSTaffFile *tafff) {
 	endTAFFScan
 }
 
-void MMSTemplateClass::duplicateXMLNode(MMSTaffFile *tafff) {
+void MMSTemplateClass::duplicateTAFF(MMSTaffFile *tafff) {
     if (this->tafff)
         delete this->tafff;
     this->tafff = tafff->copyCurrentTag();
 }
 
-MMSTaffFile *MMSTemplateClass::getXMLNode() {
+MMSTaffFile *MMSTemplateClass::getTAFF() {
 	this->tafff->getFirstTag();
     return this->tafff;
 }

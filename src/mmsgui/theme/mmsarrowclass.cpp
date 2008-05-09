@@ -41,7 +41,7 @@ void MMSArrowClass::unsetAll() {
     unsetDirection();
 }
 
-void MMSArrowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSArrowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     DFBColor color;
 
     if (prefix == "") {

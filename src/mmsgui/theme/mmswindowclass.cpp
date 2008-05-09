@@ -144,7 +144,7 @@ void MMSWindowClass::unsetAll() {
     unsetMoveOut();
 }
 
-void MMSWindowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string path) {
+void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
     DFBColor color;
     bool class_set = false;
 

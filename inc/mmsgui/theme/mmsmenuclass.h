@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//describe attributes
+//! describe attributes for MMSMenu which are additional to the MMSWidgetClass 
 namespace MMSGUI_MENU_ATTR {
 
 	#define MMSGUI_MENU_ATTR_ATTRDESC \
@@ -103,67 +103,158 @@ This class is the base for the MMSMenu widget class.
 With this data store you have access to all changeable widget attributes. 
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
+\note This class will be internally used by class MMSMenu.
 \author Jens Schneider
 */
 class MMSMenuClass {
     private:
-        string          className;      //! name of the theme class
+    	//! name of the theme class
+        string          className;
 
+        //! the copied TAFF buffer
         MMSTaffFile		*tafff;
 
-        bool            isitemwidth;    //! is itemwidth set?
-        string          itemwidth;      //! width of an item (percent or pixel)
-        bool            isitemheight;   //! is itemheight set?
-        string          itemheight;     //! height of an item (percent or pixel)
-        bool            isitemhmargin;  //! is horizontal item margin set?
-        unsigned int    itemhmargin;    //! horizontal item margin
-        bool            isitemvmargin;  //! is vertical item margin set?
-        unsigned int    itemvmargin;    //! vertical item margin
-        bool            iscols;         //! is the number of columns set?
-        unsigned int    cols;           //! number of columns
-        bool            isdimitems;     //! is the dimitems value set?
-        unsigned int    dimitems;       //! dimitems if the menu has not the focus
-        bool            isfixedpos;     //! is the fixedpos value set?
-        unsigned int    fixedpos;       //! fixed position of the selected item
-        bool            ishloop;        //! is the hloop flag set?
-        unsigned int    hloop;          //! loop horizontal (left/right) without jumping out of the menu
-        bool            isvloop;        //! is the vloop flag set?
-        unsigned int    vloop;          //! loop vertical (up/down) without jumping out of the menu
-        bool            istransitems;   //! is the transitems value set?
-        unsigned int    transitems;     //! transitems if the menu has not the focus
-        bool            isdimtop;       //! is the dimtop value set?
-        unsigned int    dimtop;         //! dim the items at the top of the menu
-        bool            isdimbottom;    //! is the dimbottom value set?
-        unsigned int    dimbottom;      //! dim the items at the bottom of the menu
-        bool            isdimleft;      //! is the dimleft value set?
-        unsigned int    dimleft;        //! dim the items at the left of the menu
-        bool            isdimright;     //! is the dimright value set?
-        unsigned int    dimright;       //! dim the items at the right of the menu
-        bool            istranstop;     //! is the transtop value set?
-        unsigned int    transtop;       //! transparent the items at the top of the menu
-        bool            istransbottom;  //! is the transbottom value set?
-        unsigned int    transbottom;    //! transparent the items at the bottom of the menu
-        bool            istransleft;    //! is the transleft value set?
-        unsigned int    transleft;      //! transparent the items at the left of the menu
-        bool            istransright;   //! is the transright value set?
-        unsigned int    transright;     //! transparent the items at the right of the menu
-
-        bool			iszoomselwidth;	//! is zoom in (width) value set?
-        string			zoomselwidth;	//! zoom in (width) the selected item (percent or pixel)
-        bool			iszoomselheight;//! is zoom in (height) value set?
-        string          zoomselheight;	//! zoom in (height) the selected item (percent or pixel)
-        bool			iszoomselshiftx;//! is horizontal shift value set?
-        string			zoomselshiftx;	//! horizontal shift of the selected item (percent or pixel)
-        bool			iszoomselshifty;//! is vertical shift value set?
-        string 			zoomselshifty;  //! vertical shift of the selected item (percent or pixel)
+        //! is itemwidth set?
+        bool            isitemwidth;
         
+        //! width of an item (percent or pixel)
+        string          itemwidth;
+        
+        //! is itemheight set?
+        bool            isitemheight;
+        
+        //! height of an item (percent or pixel)
+        string          itemheight;
+        
+        //! is horizontal item margin set?
+        bool            isitemhmargin;
+        
+        //! horizontal item margin
+        unsigned int    itemhmargin;
+        
+        //! is vertical item margin set?
+        bool            isitemvmargin;
+        
+        //! vertical item margin
+        unsigned int    itemvmargin;
+        
+        //! is the number of columns set?
+        bool            iscols;
+        
+        //! number of columns
+        unsigned int    cols;
+        
+        //! is the dimitems value set?
+        bool            isdimitems;
+        
+        //! dimitems if the menu has not the focus
+        unsigned int    dimitems;
+        
+        //! is the fixedpos value set?
+        bool            isfixedpos;
+        
+        //! fixed position of the selected item
+        unsigned int    fixedpos;
+        
+        //! is the hloop flag set?
+        bool            ishloop;
+        
+        //! loop horizontal (left/right) without jumping out of the menu
+        unsigned int    hloop;
+        
+        //! is the vloop flag set?
+        bool            isvloop;
+        
+        //! loop vertical (up/down) without jumping out of the menu
+        unsigned int    vloop;
+        
+        //! is the transitems value set?
+        bool            istransitems;
+        
+        //! transitems if the menu has not the focus
+        unsigned int    transitems;
+        
+        //! is the dimtop value set?
+        bool            isdimtop;
+        
+        //! dim the items at the top of the menu
+        unsigned int    dimtop;
+        
+        //! is the dimbottom value set?
+        bool            isdimbottom;
+        
+        //! dim the items at the bottom of the menu
+        unsigned int    dimbottom;
+        
+        //! is the dimleft value set?
+        bool            isdimleft;
+        
+        //! dim the items at the left of the menu
+        unsigned int    dimleft;
+        
+        //! is the dimright value set?
+        bool            isdimright;
+        
+        //! dim the items at the right of the menu
+        unsigned int    dimright;
+        
+        //! is the transtop value set?
+        bool            istranstop;
+        
+        //! transparent the items at the top of the menu
+        unsigned int    transtop;
+        
+        //! is the transbottom value set?
+        bool            istransbottom;
+        
+        //! transparent the items at the bottom of the menu
+        unsigned int    transbottom;
+        
+        //! is the transleft value set?
+        bool            istransleft;
+        
+        //! transparent the items at the left of the menu
+        unsigned int    transleft;
+        
+        //! is the transright value set?
+        bool            istransright;
+        
+        //! transparent the items at the right of the menu
+        unsigned int    transright;
+
+        //! is zoom in (width) value set?
+        bool			iszoomselwidth;
+        
+        //! zoom in (width) the selected item (percent or pixel)
+        string			zoomselwidth;
+        
+        //! is zoom in (height) value set?
+        bool			iszoomselheight;
+        
+        //! zoom in (height) the selected item (percent or pixel)
+        string          zoomselheight;
+        
+        //! is horizontal shift value set?
+        bool			iszoomselshiftx;
+        
+        //! horizontal shift of the selected item (percent or pixel)
+        string			zoomselshiftx;
+        
+        //! is vertical shift value set?
+        bool			iszoomselshifty;
+        
+        //! vertical shift of the selected item (percent or pixel)
+        string 			zoomselshifty;
+
+        //! is smooth scrolling enabled?
         bool			issmoothscrolling;
+        
+        //! do smooth scrolling yes/no if user navigates in the menu
         bool  			smoothscrolling;
 
     public:
-        MMSWidgetClass widgetClass; //! stores base widget attributes 
-
-        ////////////////////////////////////////////////////////////////////////
+    	//! stores base widget attributes
+        MMSWidgetClass widgetClass; 
 
         //! Constructor of class MMSMenuClass.
         MMSMenuClass();
@@ -171,34 +262,28 @@ class MMSMenuClass {
         //! Destructor of class MMSMenuClass.
         ~MMSMenuClass();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Mark all attributes as not set.
         void unsetAll();
 
-        ////////////////////////////////////////////////////////////////////////
-
-        //! Read and set all attributes from the given XML node.
+        //! Read and set all attributes from the given TAFF buffer.
         /*!
-        \param node    pointer to the XML node
+        \param tafff   pointer to the TAFF buffer
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the XML node
+        \param path    optional, path needed for empty path values from the TAFF buffer
         */
-        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
-        //! Saves a copy of an XML node including all child nodes.
+        //! Saves a copy of an TAFF buffer including all child nodes.
         /*!
-        \param node  pointer to the XML node to be copied
+        \param tafff   pointer to the TAFF buffer
         */
-        void duplicateXMLNode(MMSTaffFile *tafff);
+        void duplicateTAFF(MMSTaffFile *tafff);
 
-        //! Get the copied XML node, see duplicateXMLNode().
+        //! Get the copied TAFF buffer, see duplicateTAFF().
         /*!
-        \return pointer to the XML node
+        \return pointer to the TAFF buffer
         */
-        MMSTaffFile *getXMLNode();
-
-        ////////////////////////////////////////////////////////////////////////
+        MMSTaffFile *getTAFF();
 
         //! Set the name of the theme class.
         /*!
@@ -211,8 +296,6 @@ class MMSMenuClass {
         \return name of the class
         */
         string getClassName();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the itemwidth is set.
         bool isItemWidth();
@@ -232,8 +315,6 @@ class MMSMenuClass {
         */
         string getItemWidth();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the itemheight is set.
         bool isItemHeight();
 
@@ -251,8 +332,6 @@ class MMSMenuClass {
         \return item height
         */
         string getItemHeight();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the horizontal item margin is set.
         bool isItemHMargin();
@@ -272,8 +351,6 @@ class MMSMenuClass {
         */
         unsigned int getItemHMargin();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the vertical item margin is set.
         bool isItemVMargin();
 
@@ -291,8 +368,6 @@ class MMSMenuClass {
         \return vertical margin
         */
         unsigned int getItemVMargin();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the number of columns is set.
         bool isCols();
@@ -312,8 +387,6 @@ class MMSMenuClass {
         */
         unsigned int getCols();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the dimitems value is set.
         bool isDimItems();
 
@@ -331,8 +404,6 @@ class MMSMenuClass {
         \return dimitems value
         */
         unsigned int getDimItems();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the fixedpos value is set.
         bool isFixedPos();
@@ -352,8 +423,6 @@ class MMSMenuClass {
         */
         int getFixedPos();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the hloop flag is set.
         bool isHLoop();
 
@@ -371,8 +440,6 @@ class MMSMenuClass {
         \return hloop flag
         */
         bool getHLoop();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the vloop flag is set.
         bool isVLoop();
@@ -392,8 +459,6 @@ class MMSMenuClass {
         */
         bool getVLoop();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the transitems value is set.
         bool isTransItems();
 
@@ -411,8 +476,6 @@ class MMSMenuClass {
         \return transitems value
         */
         unsigned int getTransItems();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the dimtop value is set.
         bool isDimTop();
@@ -432,8 +495,6 @@ class MMSMenuClass {
         */
         unsigned int getDimTop();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the dimbottom value is set.
         bool isDimBottom();
 
@@ -451,8 +512,6 @@ class MMSMenuClass {
         \return dimbottom value
         */
         unsigned int getDimBottom();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the dimleft value is set.
         bool isDimLeft();
@@ -472,8 +531,6 @@ class MMSMenuClass {
         */
         unsigned int getDimLeft();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the dimright value is set.
         bool isDimRight();
 
@@ -491,8 +548,6 @@ class MMSMenuClass {
         \return dimright value
         */
         unsigned int getDimRight();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the transtop value is set.
         bool isTransTop();
@@ -512,8 +567,6 @@ class MMSMenuClass {
         */
         unsigned int getTransTop();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the transbottom value is set.
         bool isTransBottom();
 
@@ -532,8 +585,6 @@ class MMSMenuClass {
         */
         unsigned int getTransBottom();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the transleft value is set.
         bool isTransLeft();
 
@@ -551,8 +602,6 @@ class MMSMenuClass {
         \return transleft value
         */
         unsigned int getTransLeft();
-
-        ////////////////////////////////////////////////////////////////////////
 
         //! Check if the transright value is set.
         bool isTransRight();

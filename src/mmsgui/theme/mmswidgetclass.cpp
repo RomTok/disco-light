@@ -226,7 +226,7 @@ void MMSWidgetClass::unsetAll() {
     unsetBlendFactor();
 }
 
-void MMSWidgetClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     DFBColor color;
     bool class_set = false;
 

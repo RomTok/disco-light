@@ -41,7 +41,7 @@ void MMSProgressBarClass::unsetAll() {
     unsetProgress();
 }
 
-void MMSProgressBarClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSProgressBarClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     DFBColor color;
 
     if (prefix == "") {

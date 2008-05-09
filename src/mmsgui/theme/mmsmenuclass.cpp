@@ -71,7 +71,7 @@ void MMSMenuClass::unsetAll() {
     unsetSmoothScrolling();
 }
 
-void MMSMenuClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
 
     if (prefix == "") {
 		startTAFFScan
@@ -262,13 +262,13 @@ void MMSMenuClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, s
     }
 }
 
-void MMSMenuClass::duplicateXMLNode(MMSTaffFile *tafff) {
+void MMSMenuClass::duplicateTAFF(MMSTaffFile *tafff) {
     if (this->tafff)
         delete this->tafff;
     this->tafff = tafff->copyCurrentTag();
 }
 
-MMSTaffFile *MMSMenuClass::getXMLNode() {
+MMSTaffFile *MMSMenuClass::getTAFF() {
 	if (this->tafff)
 		this->tafff->getFirstTag();
     return this->tafff;

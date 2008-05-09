@@ -1,9 +1,9 @@
 /***************************************************************************
- *   Copyright (C) 2005-2007 by                                            *
+ *   Copyright (C) 2005-2008 by                                            *
  *                                                                         *
- *      Stefan Schwarzer <sxs@.tv>                                 *
- *      Guido Madaus     <bere@.tv>                                *
- *      Jens Schneider   <pupeider@.tv>                            *
+ *      Stefan Schwarzer <sxs@morphine.tv>                                 *
+ *      Guido Madaus     <bere@morphine.tv>                                *
+ *      Jens Schneider   <pupeider@morphine.tv>                            *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *

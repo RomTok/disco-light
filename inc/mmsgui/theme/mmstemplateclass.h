@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmsthemebase.h"
 
-//describe attributes
+//! describe attributes
 namespace MMSGUI_TEMPLATE_ATTR {
 
 	#define MMSGUI_TEMPLATE_ATTR_INIT { \
@@ -43,8 +43,10 @@ extern TAFF_ATTRDESC MMSGUI_TEMPLATE_ATTR_I[];
 
 class MMSTemplateClass {
     private:
+    	//! name of the theme class
         string          className;
         
+        //! the copied TAFF buffer
         MMSTaffFile		*tafff;
 
     public:
@@ -52,11 +54,25 @@ class MMSTemplateClass {
         ~MMSTemplateClass();
         //
         void unsetAll();
-        //
-        void setAttributesFromXMLNode(MMSTaffFile *tafff);
-        void duplicateXMLNode(MMSTaffFile *tafff);
-        MMSTaffFile *getXMLNode();
-        //
+
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff);
+
+        //! Saves a copy of an TAFF buffer including all child nodes.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        */
+        void duplicateTAFF(MMSTaffFile *tafff);
+
+        //! Get the copied TAFF buffer, see duplicateTAFF().
+        /*!
+        \return pointer to the TAFF buffer
+        */
+        MMSTaffFile *getTAFF();
+
         void setClassName(string className);
         string getClassName();
 };

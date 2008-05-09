@@ -127,7 +127,7 @@ class MMSMenu : public MMSWidget {
 
     public:
         /* theme access methods */
-        MMSTaffFile *getXMLNode();
+        MMSTaffFile *getTAFF();
         string getItemWidth();
         string getItemHeight();
         unsigned int getItemHMargin();

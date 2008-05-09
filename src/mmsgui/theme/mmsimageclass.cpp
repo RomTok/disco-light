@@ -54,7 +54,7 @@ void MMSImageClass::unsetAll() {
     unsetAlignment();
 }
 
-void MMSImageClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSImageClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     bool class_set = false;
 
     if (prefix == "") {

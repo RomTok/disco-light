@@ -1994,13 +1994,13 @@ bool MMSMenu::draw(bool *backgroundFilled) {
     else if ((menuClass)&&(menuClass->is##x())) return menuClass->get##x(); \
     else return this->theme->menuClass.get##x();
 
-MMSTaffFile *MMSMenu::getXMLNode() {
+MMSTaffFile *MMSMenu::getTAFF() {
     MMSTaffFile *node;
-    if ((node=myMenuClass.getXMLNode()))
+    if ((node=myMenuClass.getTAFF()))
         return node;
-    if ((menuClass)&&((node=menuClass->getXMLNode())))
+    if ((menuClass)&&((node=menuClass->getTAFF())))
         return node;
-    return this->theme->menuClass.getXMLNode();
+    return this->theme->menuClass.getTAFF();
 }
 
 string MMSMenu::getItemWidth() {

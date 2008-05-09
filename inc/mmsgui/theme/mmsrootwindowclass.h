@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswindowclass.h"
 
-//describe attributes
+//! describe attributes for MMSRootWindow which are additional to the MMSWindowClass 
 namespace MMSGUI_ROOTWINDOW_ATTR {
 
 	#define MMSGUI_ROOTWINDOW_ATTR_INIT { \
@@ -55,9 +55,14 @@ class MMSRootWindowClass {
         MMSRootWindowClass();
         //
         void unsetAll();
-        //
-        void setAttributesFromXMLNode(MMSTaffFile *tafff, string path = "");
-        //
+
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string path = "");
+
         void setClassName(string className);
         string getClassName();
 };

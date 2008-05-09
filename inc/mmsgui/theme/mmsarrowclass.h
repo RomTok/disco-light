@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//describe attributes
+//! describe attributes for MMSArrow which are additional to the MMSWidgetClass 
 namespace MMSGUI_ARROW_ATTR {
 
 	#define MMSGUI_ARROW_ATTR_ATTRDESC \
@@ -79,42 +79,49 @@ This class is the base for the MMSArrow widget class.
 With this data store you have access to all changeable widget attributes. 
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
+\note This class will be internally used by class MMSArrow.
 \author Jens Schneider
 */
 class MMSArrowClass {
     private:
-        string       className;     //! name of the theme class
-        bool         iscolor;       //! is color set? 
-        DFBColor     color;         //! color if the arrow is not selected
-        bool         isselcolor;    //! is selcolor set?
-        DFBColor     selcolor;      //! color if the arrow is selected
-        bool         isdirection;   //! is direction set?
-        MMSDIRECTION direction;     //! direction of the arrow
+    	//! name of the theme class
+        string       className;
+        
+        //! is color set?
+        bool         iscolor;
+        
+        //! color if the arrow is not selected
+        DFBColor     color;
+        
+        //! is selcolor set?
+        bool         isselcolor;
+        
+        //! color if the arrow is selected
+        DFBColor     selcolor;
+        
+        //! is direction set?
+        bool         isdirection;
+        
+        //! direction of the arrow
+        MMSDIRECTION direction;
 
     public:
-        MMSWidgetClass widgetClass; //! stores base widget attributes 
-
-        ////////////////////////////////////////////////////////////////////////
+    	//! stores base widget attributes
+        MMSWidgetClass widgetClass; 
 
         //! Constructor of class MMSArrowClass.
         MMSArrowClass();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Mark all attributes as not set.
         void unsetAll();
 
-        ////////////////////////////////////////////////////////////////////////
-
-        //! Read and set all attributes from the given XML node.
+        //! Read and set all attributes from the given TAFF buffer.
         /*!
-        \param node    pointer to the XML node
+        \param tafff   pointer to the TAFF buffer
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the XML node
+        \param path    optional, path needed for empty path values from the TAFF buffer
         */
-        void setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix = "", string path = "");
-
-        ////////////////////////////////////////////////////////////////////////
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Set the name of the theme class.
         /*!
@@ -128,9 +135,10 @@ class MMSArrowClass {
         */
         string getClassName();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the color is set. This color will be used for the unselected arrow.
+        /*!
+        \return true if the color is set
+        */
         bool isColor();
 
         //! Set the color which is used to draw the unselected arrow.
@@ -148,9 +156,10 @@ class MMSArrowClass {
         */
         DFBColor getColor();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the color is set. This color will be used for the selected arrow.
+        /*!
+        \return true if the color is set
+        */
         bool isSelColor();
 
         //! Set the color which is used to draw the selected arrow.
@@ -168,9 +177,10 @@ class MMSArrowClass {
         */
         DFBColor getSelColor();
 
-        ////////////////////////////////////////////////////////////////////////
-
         //! Check if the direction is set.
+        /*!
+        \return true if the direction is set
+        */
         bool isDirection();
 
         //! Set the direction of the arrow.

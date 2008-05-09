@@ -254,7 +254,7 @@ void MMSDialogManager::throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, 
 
 void MMSDialogManager::getDescriptionValues(MMSTaffFile *tafff, MMSTheme *theme) {
 
-    this->description.setAttributesFromXMLNode(tafff);
+    this->description.setAttributesFromTAFF(tafff);
 }
 
 void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) {
@@ -271,9 +271,9 @@ void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
     else
         themePath = globalTheme->getThemePath();
 
-    themeClass.windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.windowClass.setAttributesFromXMLNode(tafff, themePath);
-    themeClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass.windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.windowClass.setAttributesFromTAFF(tafff, themePath);
+    themeClass.setAttributesFromTAFF(tafff, themePath);
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
@@ -350,9 +350,9 @@ void MMSDialogManager::getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme)
     else
         themePath = globalTheme->getThemePath();
 
-    themeClass.windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.windowClass.setAttributesFromXMLNode(tafff, themePath);
-    themeClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass.windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.windowClass.setAttributesFromTAFF(tafff, themePath);
+    themeClass.setAttributesFromTAFF(tafff, themePath);
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
@@ -430,9 +430,9 @@ void MMSDialogManager::getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
     else
         themePath = globalTheme->getThemePath();
 
-    themeClass.windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.windowClass.setAttributesFromXMLNode(tafff, themePath);
-    themeClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass.windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.windowClass.setAttributesFromTAFF(tafff, themePath);
+    themeClass.setAttributesFromTAFF(tafff, themePath);
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
@@ -510,9 +510,9 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
     else
         themePath = globalTheme->getThemePath();
 
-    themeClass.windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.windowClass.setAttributesFromXMLNode(tafff, themePath);
-    themeClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass.windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.windowClass.setAttributesFromTAFF(tafff, themePath);
+    themeClass.setAttributesFromTAFF(tafff, themePath);
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
@@ -586,11 +586,11 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
     MMSTemplateClass    themeClass, *templateClass;
     MMSHBox             *hbox;
     string              name = "";
-    MMSTaffFile        	*xmlNode;
+    MMSTaffFile        	*tf;
     vector<string>      widgetNames;
 
     /* read settings from dialog */    
-    themeClass.setAttributesFromXMLNode(tafff);
+    themeClass.setAttributesFromTAFF(tafff);
 
     /* is a class name given? */
     if (themeClass.getClassName()=="")
@@ -607,7 +607,7 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
     }
 
     /* are there any childs stored in the templateClass? */
-    if (!(xmlNode = templateClass->getXMLNode()))
+    if (!(tf = templateClass->getTAFF()))
         return "";
 
     /* search for attributes which are only supported within dialog */
@@ -658,7 +658,7 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
         rootWindow->add(hbox);
 
     /* yes, parse the childs from templateClass */
-    throughDoc(xmlNode, hbox, rootWindow, theme);
+    throughDoc(tf, hbox, rootWindow, theme);
 
     /* for each child widget which is named by attribute */
     for (unsigned int i = 0; i < widgetNames.size(); i++) {
@@ -675,9 +675,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSButtonClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSButton*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -686,9 +686,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSImageClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSImage*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -697,9 +697,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSLabelClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSLabel*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -708,9 +708,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSMenuClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSMenu*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -719,9 +719,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSProgressBarClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSProgressBar*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -730,9 +730,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSTextBoxClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSTextBox*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -741,9 +741,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSArrowClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSArrow*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -752,9 +752,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                     {
                         /* read attributes from dialog */
                         MMSSliderClass themeCls;
-                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                         /* apply settings from dialog */
                         ((MMSSlider*)mywidget)->updateFromThemeClass(&themeCls);
                     }
@@ -863,9 +863,9 @@ string MMSDialogManager::getLabelValues(MMSTaffFile *tafff, MMSWidget *currentWi
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new label from theme class */
     label = new MMSLabel(rootWindow, themeClass.getClassName(), theme);
@@ -924,9 +924,9 @@ string MMSDialogManager::getButtonValues(MMSTaffFile *tafff, MMSWidget *currentW
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new button from theme class */
     button = new MMSButton(rootWindow, themeClass.getClassName(), theme);
@@ -984,9 +984,9 @@ string MMSDialogManager::getImageValues(MMSTaffFile *tafff, MMSWidget *currentWi
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new image from theme class */
     image = new MMSImage(rootWindow, themeClass.getClassName(), theme);
@@ -1045,9 +1045,9 @@ string MMSDialogManager::getProgressBarValues(MMSTaffFile *tafff, MMSWidget *cur
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new progressbar from theme class */
     pBar = new MMSProgressBar(rootWindow, themeClass.getClassName(), theme);
@@ -1097,8 +1097,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     MMSMenu         *menu;
     string          name = "";
     string          size = "";
-//    xmlNode     	*xNode;
-    MMSTaffFile    	*xNode;
+    MMSTaffFile    	*tf;
 
     /* get themepath */
     string themePath = "";
@@ -1108,9 +1107,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new menu from theme class */
     menu = new MMSMenu(rootWindow, themeClass.getClassName(), theme);
@@ -1152,9 +1151,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     MMSHBox *tmpWidget = new MMSHBox(NULL);
 
     /* are there any childs stored in the theme? */
-    if ((xNode = menu->getXMLNode())) {
+    if ((tf = menu->getTAFF())) {
         /* yes, parse the childs from theme */
-        throughDoc(xNode, tmpWidget, NULL, theme); 
+        throughDoc(tf, tmpWidget, NULL, theme); 
     }
     else {
         /* no, parse the childs from dialog file */
@@ -1168,7 +1167,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
         haveItemTemplate = true;
     }
     else {
-        if (xNode) {
+        if (tf) {
             /* try with theme failed, retry with childs from dialog file */
             throughDoc(tafff, tmpWidget, NULL, theme);
             MMSWidget *itemTemplate = tmpWidget->disconnectChild();
@@ -1235,9 +1234,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSButtonClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSButton*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1246,9 +1245,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSImageClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSImage*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1257,9 +1256,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSLabelClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSLabel*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1270,9 +1269,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSProgressBarClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSProgressBar*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1281,9 +1280,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSTextBoxClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSTextBox*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1292,9 +1291,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSArrowClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSArrow*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1303,9 +1302,9 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
                                     {
                                         /* read attributes from node */
                                         MMSSliderClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.widgetClass.setAttributesFromXMLNode(tafff, prefix, "");
-                                        themeCls.setAttributesFromXMLNode(tafff, prefix, "");
+                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, prefix, "");
+                                        themeCls.setAttributesFromTAFF(tafff, prefix, "");
                                         /* apply settings from node */
                                         ((MMSSlider*)widget)->updateFromThemeClass(&themeCls);
                                     }
@@ -1342,9 +1341,9 @@ string MMSDialogManager::getTextBoxValues(MMSTaffFile *tafff, MMSWidget *current
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new textbox from theme class */
     textbox = new MMSTextBox(rootWindow, themeClass.getClassName(), theme);
@@ -1402,9 +1401,9 @@ string MMSDialogManager::getArrowValues(MMSTaffFile *tafff, MMSWidget *currentWi
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new arrow from theme class */
     arrow = new MMSArrow(rootWindow, themeClass.getClassName(), theme);
@@ -1462,9 +1461,9 @@ string MMSDialogManager::getSliderValues(MMSTaffFile *tafff, MMSWidget *currentW
         themePath = globalTheme->getThemePath();
 
     /* read settings from dialog */    
-    themeClass.widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
-    themeClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, "", themePath);
+    themeClass.setAttributesFromTAFF(tafff, "", themePath);
 
     /* create new slider from theme class */
     slider = new MMSSlider(rootWindow, themeClass.getClassName(), theme);

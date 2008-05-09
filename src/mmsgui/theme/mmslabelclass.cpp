@@ -45,7 +45,7 @@ void MMSLabelClass::unsetAll() {
     unsetText();
 }
 
-void MMSLabelClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string prefix, string path) {
+void MMSLabelClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
     DFBColor color;
     bool class_set = false;
 

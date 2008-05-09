@@ -34,7 +34,7 @@ void MMSRootWindowClass::unsetAll() {
     this->className = "";
 }
 
-void MMSRootWindowClass::setAttributesFromXMLNode(MMSTaffFile *tafff, string path) {
+void MMSRootWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
 	startTAFFScan
 	{
         switch (attrid) {

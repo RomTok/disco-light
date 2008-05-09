@@ -280,15 +280,15 @@ void MMSThemeManager::getThemeValues(MMSTaffFile *tafff, MMSTheme *theme) {
 
 void MMSThemeManager::getDescriptionValues(MMSTaffFile *tafff, MMSTheme *theme) {
 
-    theme->description.setAttributesFromXMLNode(tafff);
+    theme->description.setAttributesFromTAFF(tafff);
 }
 
 
 void  MMSThemeManager::getTemplateValues(MMSTaffFile *tafff, MMSTemplateClass *themeClass) {
 
-    themeClass->setAttributesFromXMLNode(tafff);
+    themeClass->setAttributesFromTAFF(tafff);
 
-    themeClass->duplicateXMLNode(tafff);
+    themeClass->duplicateTAFF(tafff);
 }
 
 void MMSThemeManager::getMainWindowValues(MMSTaffFile *tafff, MMSMainWindowClass *themeClass, MMSTheme *theme) {
@@ -297,11 +297,11 @@ void MMSThemeManager::getMainWindowValues(MMSTaffFile *tafff, MMSMainWindowClass
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, themePath);
+    themeClass->setAttributesFromTAFF(tafff, themePath);
 }
 
 void MMSThemeManager::getPopupWindowValues(MMSTaffFile *tafff, MMSPopupWindowClass *themeClass, MMSTheme *theme) {
@@ -310,11 +310,11 @@ void MMSThemeManager::getPopupWindowValues(MMSTaffFile *tafff, MMSPopupWindowCla
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, themePath);
+    themeClass->setAttributesFromTAFF(tafff, themePath);
 }
 
 void MMSThemeManager::getRootWindowValues(MMSTaffFile *tafff, MMSRootWindowClass *themeClass, MMSTheme *theme) {
@@ -323,11 +323,11 @@ void MMSThemeManager::getRootWindowValues(MMSTaffFile *tafff, MMSRootWindowClass
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, themePath);
+    themeClass->setAttributesFromTAFF(tafff, themePath);
 }
 
 
@@ -337,11 +337,11 @@ void MMSThemeManager::getChildWindowValues(MMSTaffFile *tafff, MMSChildWindowCla
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->windowClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->windowClass.setAttributesFromXMLNode(tafff, themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, themePath);
+    themeClass->setAttributesFromTAFF(tafff, themePath);
 }
 
 
@@ -351,11 +351,11 @@ void MMSThemeManager::getLabelValues(MMSTaffFile *tafff, MMSLabelClass *themeCla
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 void  MMSThemeManager::getImageValues(MMSTaffFile *tafff, MMSImageClass *themeClass, MMSTheme *theme) {
@@ -364,11 +364,11 @@ void  MMSThemeManager::getImageValues(MMSTaffFile *tafff, MMSImageClass *themeCl
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 
@@ -378,11 +378,11 @@ void  MMSThemeManager::getButtonValues(MMSTaffFile *tafff, MMSButtonClass *theme
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 void  MMSThemeManager::getProgressBarValues(MMSTaffFile *tafff, MMSProgressBarClass *themeClass, MMSTheme *theme) {
@@ -391,11 +391,11 @@ void  MMSThemeManager::getProgressBarValues(MMSTaffFile *tafff, MMSProgressBarCl
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 void  MMSThemeManager::getSliderValues(MMSTaffFile *tafff, MMSSliderClass *themeClass, MMSTheme *theme) {
@@ -404,11 +404,11 @@ void  MMSThemeManager::getSliderValues(MMSTaffFile *tafff, MMSSliderClass *theme
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 void  MMSThemeManager::getMenuValues(MMSTaffFile *tafff, MMSMenuClass *themeClass, MMSTheme *theme) {
@@ -417,13 +417,13 @@ void  MMSThemeManager::getMenuValues(MMSTaffFile *tafff, MMSMenuClass *themeClas
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->duplicateXMLNode(tafff);
+    themeClass->duplicateTAFF(tafff);
 }
 
 void  MMSThemeManager::getTextBoxValues(MMSTaffFile *tafff, MMSTextBoxClass *themeClass, MMSTheme *theme) {
@@ -432,11 +432,11 @@ void  MMSThemeManager::getTextBoxValues(MMSTaffFile *tafff, MMSTextBoxClass *the
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 void  MMSThemeManager::getArrowValues(MMSTaffFile *tafff, MMSArrowClass *themeClass, MMSTheme *theme) {
@@ -445,11 +445,11 @@ void  MMSThemeManager::getArrowValues(MMSTaffFile *tafff, MMSArrowClass *themeCl
     if (theme)
         themePath = theme->getThemePath();
     
-    themeClass->widgetClass.border.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->widgetClass.setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, "", themePath);
 
-    themeClass->setAttributesFromXMLNode(tafff, "", themePath);
+    themeClass->setAttributesFromTAFF(tafff, "", themePath);
 }
 
 /*
