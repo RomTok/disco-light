@@ -690,7 +690,7 @@ class MMSWindow {
 
         //! Set one or more callbacks for the onHandleInput event.  
         /*!
-        The connected callbacks will be called during hide().
+        The connected callbacks will be called if an input event was raised.
 
         A callback method must be defined like this:
         
