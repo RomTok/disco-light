@@ -49,12 +49,6 @@ class MMSTemplateClass {
         //! the copied TAFF buffer
         MMSTaffFile		*tafff;
 
-    public:
-        MMSTemplateClass();
-        ~MMSTemplateClass();
-        //
-        void unsetAll();
-
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -67,6 +61,12 @@ class MMSTemplateClass {
         */
         void duplicateTAFF(MMSTaffFile *tafff);
 
+    public:
+        MMSTemplateClass();
+        ~MMSTemplateClass();
+        //
+        void unsetAll();
+
         //! Get the copied TAFF buffer, see duplicateTAFF().
         /*!
         \return pointer to the TAFF buffer
@@ -75,6 +75,10 @@ class MMSTemplateClass {
 
         void setClassName(string className);
         string getClassName();
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSTEMPLATECLASS_H_*/

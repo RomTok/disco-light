@@ -137,6 +137,14 @@ class MMSLabelClass {
         //! text to draw
         string          text;
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
+
     public:
     	//! stores base widget attributes
         MMSWidgetClass widgetClass; 
@@ -146,14 +154,6 @@ class MMSLabelClass {
 
         //! Mark all attributes as not set.
         void unsetAll();
-
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Set the name of the theme class.
         /*!
@@ -292,6 +292,10 @@ class MMSLabelClass {
         \return text string
         */
         string getText();
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSLABELCLASS_H_*/

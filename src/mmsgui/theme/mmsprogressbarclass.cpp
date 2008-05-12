@@ -41,10 +41,10 @@ void MMSProgressBarClass::unsetAll() {
     unsetProgress();
 }
 
-void MMSProgressBarClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSProgressBarClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
     DFBColor color;
 
-    if (prefix == "") {
+    if (!prefix) {
 		startTAFFScan
 		{
 	        switch (attrid) {
@@ -119,14 +119,14 @@ void MMSProgressBarClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefi
 		endTAFFScan
     }
     else {
-    	unsigned int pl = strlen(prefix.c_str());
+    	unsigned int pl = strlen(prefix->c_str());
     	
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
     		if (pl >= strlen(attrname))
         		continue;
-            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 

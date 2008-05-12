@@ -205,6 +205,14 @@ class MMSImageClass {
         //! the alignment of the image within the widget
         MMSALIGNMENT alignment;
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
+
     public:
     	//! stores base widget attributes
         MMSWidgetClass widgetClass; 
@@ -214,14 +222,6 @@ class MMSImageClass {
 
         //! Mark all attributes as not set.
         void unsetAll();
-
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Set the name of the theme class.
         /*!
@@ -522,6 +522,10 @@ class MMSImageClass {
         \return alignment of the image within the widget
         */
         MMSALIGNMENT getAlignment();
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSIMAGECLASS_H_*/

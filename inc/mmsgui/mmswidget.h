@@ -449,6 +449,7 @@ class MMSWidget {
 
         void updateFromThemeClass(MMSWidgetClass *themeClass);
 
+    /* friends */
     friend class MMSWindow;
     friend class MMSHBox;
     friend class MMSVBox;

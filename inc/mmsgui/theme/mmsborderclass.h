@@ -184,20 +184,20 @@ class MMSBorderClass {
         void freeMargin();
         void freeRCorners();
 
-    public:
-        MMSBorderClass();
-        ~MMSBorderClass();
-        MMSBorderClass &operator=(const MMSBorderClass &c); 
-        //
-        void unsetAll();
-
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
         \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
         \param path    optional, path needed for empty path values from the TAFF buffer
         */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
+
+    public:
+        MMSBorderClass();
+        ~MMSBorderClass();
+        MMSBorderClass &operator=(const MMSBorderClass &c); 
+        //
+        void unsetAll();
 
         bool isColor();
         void unsetColor();
@@ -247,6 +247,10 @@ class MMSBorderClass {
         void unsetRCorners();
         void setRCorners(bool rcorners);
         bool getRCorners(bool &rcorners);
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSBORDERCLASS_H_*/

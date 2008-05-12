@@ -93,11 +93,11 @@ void MMSBorderClass::unsetAll() {
     unsetRCorners();
 }
 
-void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
     DFBColor color;
     bool class_set = false;
 
-    if (prefix == "") {
+    if (!prefix) {
 		startTAFFScan
 		{
 	        switch (attrid) {
@@ -168,7 +168,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setImagePath(attrval_str);
 	            else
-	                setImagePath(path);
+	                setImagePath((path)?*path:"");
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_image_top_left:
 	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
@@ -198,7 +198,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelImagePath(attrval_str);
 	            else
-	                setSelImagePath(path);
+	                setSelImagePath((path)?*path:"");
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selimage_top_left:
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
@@ -238,14 +238,14 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 		endTAFFScan
     }
     else {
-    	unsigned int pl = strlen(prefix.c_str());
+    	unsigned int pl = strlen(prefix->c_str());
     	
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
     		if (pl >= strlen(attrname))
         		continue;
-            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
@@ -324,7 +324,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setImagePath(attrval_str);
 	            else
-	                setImagePath(path);
+	                setImagePath((path)?*path:"");
             }
             else
             if (ISATTRNAME(border_image_top_left)) { 
@@ -363,7 +363,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelImagePath(attrval_str);
 	            else
-	                setSelImagePath(path);
+	                setSelImagePath((path)?*path:"");
             }
             else
             if (ISATTRNAME(border_selimage_top_left)) { 
@@ -413,10 +413,12 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
     	endTAFFScan_WITHOUT_ID
     }
     
-    if ((!isImagePath())&&(!class_set)&&(path!=""))
-        setImagePath(path);
-    if ((!isSelImagePath())&&(!class_set)&&(path!=""))
-        setSelImagePath(path);
+    if ((!class_set)&&(path)&&(*path!="")) {
+		if (!isImagePath())
+		    setImagePath(*path);
+		if (!isSelImagePath())
+		    setSelImagePath(*path);
+    }
 }
 
 

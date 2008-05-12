@@ -226,11 +226,11 @@ void MMSWidgetClass::unsetAll() {
     unsetBlendFactor();
 }
 
-void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
     DFBColor color;
     bool class_set = false;
 
-    if (prefix == "") {
+    if (!prefix) {
 		startTAFFScan
 		{
 	        switch (attrid) {
@@ -421,14 +421,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath("");
 	            else
-	                setBgImagePath(path);
+	                setBgImagePath((path)?*path:"");
 	            setBgImageName(attrval_str);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_path:
 	            if (*attrval_str)
 	                setBgImagePath(attrval_str);
 	            else
-	                setBgImagePath(path);
+	                setBgImagePath((path)?*path:"");
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_name:
 	            setBgImageName(attrval_str);
@@ -437,14 +437,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath("");
 	            else
-	                setSelBgImagePath(path);
+	                setSelBgImagePath((path)?*path:"");
 	            setSelBgImageName(attrval_str);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_path:
 	            if (*attrval_str)
 	                setSelBgImagePath(attrval_str);
 	            else
-	                setSelBgImagePath(path);
+	                setSelBgImagePath((path)?*path:"");
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_name:
 	            setSelBgImageName(attrval_str);
@@ -453,14 +453,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath_p("");
 	            else
-	                setBgImagePath_p(path);
+	                setBgImagePath_p((path)?*path:"");
 	            setBgImageName_p(attrval_str);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_p_path:
 	            if (*attrval_str)
 	                setBgImagePath_p(attrval_str);
 	            else
-	                setBgImagePath_p(path);
+	                setBgImagePath_p((path)?*path:"");
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_p_name:
 	            setBgImageName_p(attrval_str);
@@ -469,14 +469,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath_p("");
 	            else
-	                setSelBgImagePath_p(path);
+	                setSelBgImagePath_p((path)?*path:"");
 	            setSelBgImageName_p(attrval_str);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_path:
 	            if (*attrval_str)
 	                setSelBgImagePath_p(attrval_str);
 	            else
-	                setSelBgImagePath_p(path);
+	                setSelBgImagePath_p((path)?*path:"");
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_name:
 	            setSelBgImageName_p(attrval_str);
@@ -485,14 +485,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath_i("");
 	            else
-	                setBgImagePath_i(path);
+	                setBgImagePath_i((path)?*path:"");
 	            setBgImageName_i(attrval_str);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_i_path:
 	            if (*attrval_str)
 	                setBgImagePath_i(attrval_str);
 	            else
-	                setBgImagePath_i(path);
+	                setBgImagePath_i((path)?*path:"");
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgimage_i_name:
 	            setBgImageName_i(attrval_str);
@@ -501,14 +501,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath_i("");
 	            else
-	                setSelBgImagePath_i(path);
+	                setSelBgImagePath_i((path)?*path:"");
 	            setSelBgImageName_i(attrval_str);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_path:
 	            if (*attrval_str)
 	                setSelBgImagePath_i(attrval_str);
 	            else
-	                setSelBgImagePath_i(path);
+	                setSelBgImagePath_i((path)?*path:"");
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_name:
 	            setSelBgImageName_i(attrval_str);
@@ -569,14 +569,14 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 		endTAFFScan
     }
     else {
-    	unsigned int pl = strlen(prefix.c_str());
+    	unsigned int pl = strlen(prefix->c_str());
     	
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
     		if (pl >= strlen(attrname))
         		continue;
-            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
@@ -795,7 +795,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath("");
 	            else
-	                setBgImagePath(path);
+	                setBgImagePath((path)?*path:"");
 	            setBgImageName(attrval_str);
             }
             else
@@ -803,7 +803,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath(attrval_str);
 	            else
-	                setBgImagePath(path);
+	                setBgImagePath((path)?*path:"");
             }
             else
             if (ISATTRNAME(bgimage_name)) { 
@@ -814,7 +814,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath("");
 	            else
-	                setSelBgImagePath(path);
+	                setSelBgImagePath((path)?*path:"");
 	            setSelBgImageName(attrval_str);
             }
             else
@@ -822,7 +822,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath(attrval_str);
 	            else
-	                setSelBgImagePath(path);
+	                setSelBgImagePath((path)?*path:"");
             }
             else
             if (ISATTRNAME(selbgimage_name)) { 
@@ -833,7 +833,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath_p("");
 	            else
-	                setBgImagePath_p(path);
+	                setBgImagePath_p((path)?*path:"");
 	            setBgImageName_p(attrval_str);
             }
             else
@@ -841,7 +841,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath_p(attrval_str);
 	            else
-	                setBgImagePath_p(path);
+	                setBgImagePath_p((path)?*path:"");
             }
             else
             if (ISATTRNAME(bgimage_p_name)) { 
@@ -852,7 +852,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath_p("");
 	            else
-	                setSelBgImagePath_p(path);
+	                setSelBgImagePath_p((path)?*path:"");
 	            setSelBgImageName_p(attrval_str);
             }
             else
@@ -860,7 +860,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath_p(attrval_str);
 	            else
-	                setSelBgImagePath_p(path);
+	                setSelBgImagePath_p((path)?*path:"");
             }
             else
             if (ISATTRNAME(selbgimage_p_name)) { 
@@ -871,7 +871,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath_i("");
 	            else
-	                setBgImagePath_i(path);
+	                setBgImagePath_i((path)?*path:"");
 	            setBgImageName_i(attrval_str);
             }
             else
@@ -879,7 +879,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setBgImagePath_i(attrval_str);
 	            else
-	                setBgImagePath_i(path);
+	                setBgImagePath_i((path)?*path:"");
             }
             else
             if (ISATTRNAME(bgimage_i_name)) { 
@@ -890,7 +890,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath_i("");
 	            else
-	                setSelBgImagePath_i(path);
+	                setSelBgImagePath_i((path)?*path:"");
 	            setSelBgImageName_i(attrval_str);
             }
             else
@@ -898,7 +898,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
 	            if (*attrval_str)
 	                setSelBgImagePath_i(attrval_str);
 	            else
-	                setSelBgImagePath_i(path);
+	                setSelBgImagePath_i((path)?*path:"");
             }
             else
             if (ISATTRNAME(selbgimage_i_name)) { 
@@ -976,18 +976,20 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, st
     	endTAFFScan_WITHOUT_ID
     }
 
-    if ((!isBgImagePath())&&(!class_set)&&(path!=""))
-        setBgImagePath(path);
-    if ((!isSelBgImagePath())&&(!class_set)&&(path!=""))
-        setSelBgImagePath(path);
-    if ((!isBgImagePath_p())&&(!class_set)&&(path!=""))
-        setBgImagePath_p(path);
-    if ((!isSelBgImagePath_p())&&(!class_set)&&(path!=""))
-        setSelBgImagePath_p(path);
-    if ((!isBgImagePath_i())&&(!class_set)&&(path!=""))
-        setBgImagePath_i(path);
-    if ((!isSelBgImagePath_i())&&(!class_set)&&(path!=""))
-        setSelBgImagePath_i(path);
+    if ((!class_set)&&(path)&&(*path!="")) {
+		if (!isBgImagePath())
+		    setBgImagePath(*path);
+		if (!isSelBgImagePath())
+		    setSelBgImagePath(*path);
+		if (!isBgImagePath_p())
+		    setBgImagePath_p(*path);
+		if (!isSelBgImagePath_p())
+		    setSelBgImagePath_p(*path);
+		if (!isBgImagePath_i())
+		    setBgImagePath_i(*path);
+		if (!isSelBgImagePath_i())
+		    setSelBgImagePath_i(*path);
+    }
 }
 
 void MMSWidgetClass::initBgColor() {

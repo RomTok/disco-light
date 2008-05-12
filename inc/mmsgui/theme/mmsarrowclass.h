@@ -105,6 +105,14 @@ class MMSArrowClass {
         //! direction of the arrow
         MMSDIRECTION direction;
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
+
     public:
     	//! stores base widget attributes
         MMSWidgetClass widgetClass; 
@@ -114,14 +122,6 @@ class MMSArrowClass {
 
         //! Mark all attributes as not set.
         void unsetAll();
-
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Set the name of the theme class.
         /*!
@@ -197,6 +197,10 @@ class MMSArrowClass {
         \return direction
         */
         MMSDIRECTION getDirection();
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSARROWCLASS_H_*/

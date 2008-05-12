@@ -252,6 +252,20 @@ class MMSMenuClass {
         //! do smooth scrolling yes/no if user navigates in the menu
         bool  			smoothscrolling;
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
+
+        //! Saves a copy of an TAFF buffer including all child nodes.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        */
+        void duplicateTAFF(MMSTaffFile *tafff);
+
     public:
     	//! stores base widget attributes
         MMSWidgetClass widgetClass; 
@@ -264,20 +278,6 @@ class MMSMenuClass {
 
         //! Mark all attributes as not set.
         void unsetAll();
-
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
-
-        //! Saves a copy of an TAFF buffer including all child nodes.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        */
-        void duplicateTAFF(MMSTaffFile *tafff);
 
         //! Get the copied TAFF buffer, see duplicateTAFF().
         /*!
@@ -644,6 +644,9 @@ class MMSMenuClass {
         void unsetSmoothScrolling();
         bool getSmoothScrolling();
         
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSMENUCLASS_H_*/

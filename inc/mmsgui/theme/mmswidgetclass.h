@@ -493,6 +493,14 @@ class MMSWidgetClass {
         void freeBlend();
         void freeBlendFactor();
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
+        
     public:
         MMSBorderClass border;           	//! stores base border attributes
 
@@ -507,14 +515,6 @@ class MMSWidgetClass {
         
         //! Mark all attributes as not set.
         void unsetAll();
-
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string prefix = "", string path = "");
 
         //! Check if the background color is set. This color will be used for the unselected widget.
         bool isBgColor();
@@ -1189,6 +1189,9 @@ class MMSWidgetClass {
         */
         bool getBlendFactor(double &blendfactor);
 
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSWIDGETCLASS_H_*/

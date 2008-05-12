@@ -47,11 +47,11 @@ void MMSTextBoxClass::unsetAll() {
     unsetText();
 }
 
-void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
     DFBColor color;
     bool class_set = false;
 
-    if (prefix == "") {
+    if (!prefix) {
 		startTAFFScan
 		{
 	        switch (attrid) {
@@ -63,7 +63,7 @@ void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, s
 	            if (*attrval_str)
 	                setFontPath(attrval_str);
 	            else
-	                setFontPath(path);
+	                setFontPath((path)?*path:"");
 	            break;
 			case MMSGUI_TEXTBOX_ATTR::MMSGUI_TEXTBOX_ATTR_IDS_font_name:
 	            setFontName(attrval_str);
@@ -148,14 +148,14 @@ void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, s
 		endTAFFScan
     }
     else {
-    	unsigned int pl = strlen(prefix.c_str());
+    	unsigned int pl = strlen(prefix->c_str());
     	
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
     		if (pl >= strlen(attrname))
         		continue;
-            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
@@ -164,7 +164,7 @@ void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, s
 	            if (*attrval_str)
 	                setFontPath(attrval_str);
 	            else
-	                setFontPath(path);
+	                setFontPath((path)?*path:"");
             }
             else
             if (ISATTRNAME(font_name)) { 
@@ -264,8 +264,10 @@ void MMSTextBoxClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, s
     	endTAFFScan_WITHOUT_ID
     }
 
-    if ((!isFontPath())&&(!class_set)&&(path!=""))
-        setFontPath(path);
+    if ((!class_set)&&(path)&&(*path!="")) {
+	    if (!isFontPath())
+	        setFontPath(*path);
+    }
 }
 
 void MMSTextBoxClass::setClassName(string className) {

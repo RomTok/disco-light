@@ -71,9 +71,9 @@ void MMSMenuClass::unsetAll() {
     unsetSmoothScrolling();
 }
 
-void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
 
-    if (prefix == "") {
+    if (!prefix) {
 		startTAFFScan
 		{
 			switch (attrid) {
@@ -154,14 +154,14 @@ void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, stri
 		endTAFFScan
     }
     else {
-    	unsigned int pl = strlen(prefix.c_str());
+    	unsigned int pl = strlen(prefix->c_str());
     	
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
     		if (pl >= strlen(attrname))
         		continue;
-            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 

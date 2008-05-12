@@ -59,19 +59,19 @@ class MMSPopupWindowClass {
         bool         isduration;
         unsigned int duration;
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *path = NULL);
+
     public:
         MMSWindowClass windowClass;
 
         MMSPopupWindowClass();
         //
         void unsetAll();
-
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string path = "");
 
         void setClassName(string className);
         string getClassName();
@@ -80,6 +80,10 @@ class MMSPopupWindowClass {
         void setDuration(unsigned int duration);
         void unsetDuration();
         unsigned int getDuration();
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSPOPUPWINDOWCLASS_H_*/

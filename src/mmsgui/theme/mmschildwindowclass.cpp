@@ -34,7 +34,7 @@ void MMSChildWindowClass::unsetAll() {
     this->className = "";
 }
 
-void MMSChildWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
+void MMSChildWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
 	startTAFFScan
 	{
         switch (attrid) {

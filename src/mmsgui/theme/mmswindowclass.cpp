@@ -144,7 +144,7 @@ void MMSWindowClass::unsetAll() {
     unsetMoveOut();
 }
 
-void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
+void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
     DFBColor color;
     bool class_set = false;
 
@@ -203,14 +203,14 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
             if (*attrval_str)
                 setBgImagePath("");
             else
-                setBgImagePath(path);
+                setBgImagePath((path)?*path:"");
             setBgImageName(attrval_str);
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgimage_path:
             if (*attrval_str)
                 setBgImagePath(attrval_str);
             else
-                setBgImagePath(path);
+                setBgImagePath((path)?*path:"");
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgimage_name:
             setBgImageName(attrval_str);
@@ -267,8 +267,10 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string path) {
 	}
 	endTAFFScan
     
-    if ((!isBgImagePath())&&(!class_set)&&(path!=""))
-        setBgImagePath(path);
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	if (!isBgImagePath())
+    		setBgImagePath(*path);
+    }
 }
 
 void MMSWindowClass::initAlignment() {

@@ -49,6 +49,13 @@ class MMSRootWindowClass {
     private:
         string className;
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *path = NULL);
+        
     public:
         MMSWindowClass windowClass;
         //
@@ -56,15 +63,12 @@ class MMSRootWindowClass {
         //
         void unsetAll();
 
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string path = "");
-
         void setClassName(string className);
         string getClassName();
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSROOTWINDOWCLASS_H_*/

@@ -38,7 +38,7 @@ void MMSButtonClass::unsetAll() {
     this->className = "";
 }
 
-void MMSButtonClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSButtonClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
 	startTAFFScan
 	{
         switch (attrid) {

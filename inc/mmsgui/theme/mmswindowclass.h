@@ -206,6 +206,13 @@ class MMSWindowClass {
         void freeMoveIn();
         void freeMoveOut();
 
+        //! Read and set all attributes from the given TAFF buffer.
+        /*!
+        \param tafff   pointer to the TAFF buffer
+        \param path    optional, path needed for empty path values from the TAFF buffer
+        */
+        void setAttributesFromTAFF(MMSTaffFile *tafff, string *path = NULL);
+
     public:
         MMSBorderClass border;
 
@@ -215,13 +222,6 @@ class MMSWindowClass {
         //
         void unsetAll();
         
-        //! Read and set all attributes from the given TAFF buffer.
-        /*!
-        \param tafff   pointer to the TAFF buffer
-        \param path    optional, path needed for empty path values from the TAFF buffer
-        */
-        void setAttributesFromTAFF(MMSTaffFile *tafff, string path = "");
-
         bool isAlignment();
         void unsetAlignment();
         void setAlignment(MMSALIGNMENT alignment);
@@ -472,6 +472,10 @@ class MMSWindowClass {
         void unsetMoveOut();
         void setMoveOut(MMSDIRECTION moveout);
         bool getMoveOut(MMSDIRECTION &moveout);
+
+    /* friends */
+    friend class MMSThemeManager;
+    friend class MMSDialogManager;
 };
 
 #endif /*MMSWINDOWCLASS_H_*/

@@ -41,10 +41,10 @@ void MMSArrowClass::unsetAll() {
     unsetDirection();
 }
 
-void MMSArrowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, string path) {
+void MMSArrowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
     DFBColor color;
 
-    if (prefix == "") {
+    if (!prefix) {
 		startTAFFScan
 		{
 	        switch (attrid) {
@@ -119,14 +119,14 @@ void MMSArrowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string prefix, str
 		endTAFFScan
     }
     else {
-    	unsigned int pl = strlen(prefix.c_str());
+    	unsigned int pl = strlen(prefix->c_str());
     	
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
     		if (pl >= strlen(attrname))
         		continue;
-            if (memcmp(attrname, prefix.c_str(), pl)!=0)
+            if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
