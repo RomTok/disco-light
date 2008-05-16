@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <png.h>
 
 
 
@@ -49,6 +50,10 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 	this->current_tag = -1;
 	this->current_tag_pos = 0;
 
+	if (!this->taff_desc)
+		if (this->external_type == MMSTAFF_EXTERNAL_TYPE_IMAGE)
+			this->taff_desc = &mmstaff_image_taff_description;
+	
 	if ((this->taff_filename == "")&&(this->external_filename == ""))
 		return;
 	
@@ -66,6 +71,136 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 MMSTaffFile::~MMSTaffFile() {
 	if (this->taff_buf)
 		free(this->taff_buf);
+}
+
+bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size, bool premultiplied) {
+	FILE 			*fp;
+	char			png_sig[8];
+    png_structp     png_ptr = NULL;
+    png_infop       info_ptr = NULL;
+    png_infop       end_info_ptr = NULL;
+    png_bytep       *row_pointers = NULL;
+    
+    /* check if file does exist and if it is an png format */
+    *buf = NULL;
+    fp = fopen(filename, "rb");
+    if (!fp)
+    	return false;
+    if (fread(png_sig, 1, sizeof(png_sig), fp)!=sizeof(png_sig)) {
+        fclose(fp);
+    	return false;
+    }
+    if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
+        fclose(fp);
+    	return false;
+    }
+    
+    /* init png structs and abend handler */
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fclose(fp);
+    	return false;
+    }
+    png_set_sig_bytes(png_ptr, sizeof(png_sig));
+    
+    if (setjmp(png_ptr->jmpbuf)) {
+    	//abend from libpng
+        printf("png read error\n");
+    	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
+        if (row_pointers) free(row_pointers);
+    	if (*buf) free(*buf);
+        *buf = NULL;
+        fclose(fp);
+        return false;
+    }
+    
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+    	png_destroy_read_struct(&png_ptr, NULL, NULL);
+        fclose(fp);
+    	return false;
+    }
+
+    end_info_ptr = png_create_info_struct(png_ptr);
+    if (!end_info_ptr) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+    	return false;
+    }
+
+    /* read png infos */
+    png_init_io(png_ptr, fp);
+    png_read_info(png_ptr, info_ptr);
+    png_uint_32 w;
+    png_uint_32 h;
+    int bit_depth;
+    int color_type;
+    png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
+
+    /* check the png format */
+    if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
+    	/* we only support ARGB png images */
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        fclose(fp);
+    	return false;
+    }
+    *width = w;
+    *height = h;
+    *pitch = 4 * w;
+    *size = *pitch * h;
+    
+    /* set input transformations */
+    if (bit_depth == 16)
+    	png_set_strip_16(png_ptr);
+    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+    png_set_bgr(png_ptr);
+    png_set_interlace_handling(png_ptr);
+    png_read_update_info(png_ptr, info_ptr);
+
+    /* allocate memory for row pointers */
+    row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
+    if (!row_pointers) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        fclose(fp);
+    	return false;
+    }
+    
+    /* allocate memory for image data */
+    *buf = malloc(*size);
+    if (!*buf) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        free(row_pointers);
+        fclose(fp);
+    	return false;
+    }
+    char *b = (char*)*buf;
+    for (int i = 0; i < *height; i++) {
+    	row_pointers[i]=(png_byte*)b;
+    	b+=*pitch;
+    }
+
+    /* read the image data */
+    png_read_image(png_ptr, row_pointers);
+    png_read_end(png_ptr, end_info_ptr);
+
+    /* should i pre-multiply with alpha channel? */
+    if (premultiplied) {
+		unsigned int *src = (unsigned int*)*buf;
+	    for (int i = *width * *height; i > 0; i--) {
+	    	register unsigned int s = *src;
+	        register unsigned int a = (s >> 24) + 1;
+	        *src = ((((s & 0x00ff00ff) * a) >> 8) & 0x00ff00ff) |
+	               ((((s & 0x0000ff00) * a) >> 8) & 0x0000ff00) |
+	               ((((s & 0xff000000))));
+	        src++;
+	    }
+    }
+
+    /* all right */
+	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+    free(row_pointers);
+    fclose(fp);
+	return true;
 }
 
 bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file) {
@@ -157,6 +292,7 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 					switch (attr[attrid].type) {
 					case TAFF_ATTRTYPE_NONE:
 					case TAFF_ATTRTYPE_STRING:
+					case TAFF_ATTRTYPE_BINDATA:
 						break;
 					case TAFF_ATTRTYPE_NE_STRING:
 						badval = (!*attrVal);
@@ -376,9 +512,95 @@ bool MMSTaffFile::convertXML2TAFF() {
 	    xmlFreeDoc(parser);
 	}
 	else {
-		printf("Error: cannot read external file\n");
+		printf("Error: cannot read external file %s\n", this->external_filename.c_str());
 	}
 	
+	return rc;
+}
+
+bool MMSTaffFile::convertIMAGE2TAFF() {
+	bool   	rc = false;
+	void	*png_buf;
+	int 	png_width;
+	int 	png_height;
+	int     png_pitch;
+	int     png_size;
+
+	/* check input parameters */
+	if (!this->taff_desc) return false;
+	if (this->external_filename=="") return false;
+
+	/* read the whole PNG image */
+	if (readPNG(this->external_filename.c_str(), &png_buf, &png_width, &png_height, &png_pitch, &png_size, true)) {
+		/* open binary destination file */
+		MMSFile *taff_file = NULL;
+		if (this->taff_filename!="") {
+			taff_file = new MMSFile(this->taff_filename.c_str(), MMSFM_WRITE);
+			size_t ritems;
+			taff_file->writeBuffer((void*)TAFF_IDENT, &ritems, 1, strlen(TAFF_IDENT));
+			taff_file->writeBuffer(&(this->taff_desc->type), &ritems, 1, sizeof(this->taff_desc->type));
+			taff_file->writeBuffer(&(this->taff_desc->version), &ritems, 1, sizeof(this->taff_desc->version));
+
+			/* write the tag */
+			unsigned char wb[3];
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_TAG;
+			wb[1]=MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE;
+			taff_file->writeBuffer(wb, &ritems, 1, 2);
+
+			/* write attributes: width */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			taff_file->writeBuffer(&png_width, &ritems, 1, sizeof(int));
+			
+			/* write attributes: height */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			taff_file->writeBuffer(&png_height, &ritems, 1, sizeof(int));
+
+			/* write attributes: pitch */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			taff_file->writeBuffer(&png_pitch, &ritems, 1, sizeof(int));
+
+			/* write attributes: size */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			taff_file->writeBuffer(&png_size, &ritems, 1, sizeof(int));
+
+			/* write attributes: data */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
+			wb[2]=0xff;
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			taff_file->writeBuffer(&png_size, &ritems, 1, sizeof(int));
+			taff_file->writeBuffer(png_buf, &ritems, 1, png_size);
+			
+			/* write the close tag */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_CLOSETAG;
+			wb[1]=MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE;
+			taff_file->writeBuffer(wb, &ritems, 1, 2);
+		}
+
+		/* all is fine */
+		rc = true;
+		
+		/* close file and free */
+		if (taff_file)
+			delete taff_file;
+		free(png_buf);
+	}
+	else {
+		printf("Error: cannot read external file %s\n", this->external_filename.c_str());
+	}
+
 	return rc;
 }
 
@@ -386,6 +608,8 @@ bool MMSTaffFile::convertExternal2TAFF() {
 	switch (this->external_type) {
 	case MMSTAFF_EXTERNAL_TYPE_XML:
 		return convertXML2TAFF();
+	case MMSTAFF_EXTERNAL_TYPE_IMAGE:
+		return convertIMAGE2TAFF();
 	}
 	return false;
 }
@@ -505,6 +729,9 @@ bool MMSTaffFile::convertTAFF2External() {
 	switch (this->external_type) {
 	case MMSTAFF_EXTERNAL_TYPE_XML:
 		return convertTAFF2XML();
+	case MMSTAFF_EXTERNAL_TYPE_IMAGE:
+		printf("currently we cannot convert taff to image\n");
+		return false;
 	}
 	return false;
 }
@@ -544,7 +771,7 @@ bool MMSTaffFile::readFile() {
 	}
 	delete taff_file;
 
-	if (ritems < 16) {
+	if (ritems < 40) {
 		/* wrong size */
 		free(this->taff_buf);
 		this->taff_buf = NULL;
@@ -553,7 +780,7 @@ bool MMSTaffFile::readFile() {
 
 	/* check the version of the file */
 	this->correct_version = false;
-	if (memcmp(this->taff_buf, &(this->taff_desc->type), sizeof(this->taff_desc->type))) {
+	if (strcmp((char*)this->taff_buf, (char*)&(this->taff_desc->type))) {
 		/* wrong type */
 		free(this->taff_buf);
 		this->taff_buf = NULL;
@@ -843,5 +1070,14 @@ char *MMSTaffFile::getAttributeString(int id) {
 	return NULL;
 }
 
+
+TAFF_ATTRDESC MMSTAFF_IMAGE_RAWIMAGE_ATTR_I[]	= MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT;
+
+TAFF_TAGTABLE mmstaff_image_taff_tagtable[] = {
+	{	"rawimage",		NULL, 	NULL,			MMSTAFF_IMAGE_RAWIMAGE_ATTR_I	},
+	{	NULL, 			NULL, 	NULL,			NULL							}
+};
+
+TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 1, mmstaff_image_taff_tagtable };
 
 

@@ -25,6 +25,8 @@
 #include <unistd.h>
 #include "mmsgui/mmsimagemanager.h"
 #include "mmsgui/mmsgifloader.h"
+//#include <png.h>
+
 
 MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
     this->layer = layer;
@@ -39,6 +41,138 @@ MMSImageManager::~MMSImageManager() {
         delete this->images.at(i);
     }
 }
+
+#ifdef sfsfsfs
+bool read_png(const char *filename, void **buf, int *width, int *height, bool premultiplied) {
+	FILE 			*fp;
+	char			png_sig[8];
+    png_structp     png_ptr = NULL;
+    png_infop       info_ptr = NULL;
+    png_infop       end_info_ptr = NULL;
+    png_bytep       *row_pointers = NULL;
+    
+    /* check if file does exist and if it is an png format */
+    *buf = NULL;
+    fp = fopen(filename, "rb");
+    if (!fp)
+    	return false;
+    if (fread(png_sig, 1, sizeof(png_sig), fp)!=sizeof(png_sig)) {
+        fclose(fp);
+    	return false;
+    }
+    if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
+        fclose(fp);
+    	return false;
+    }
+    
+    /* init png structs and abend handler */
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fclose(fp);
+    	return false;
+    }
+    png_set_sig_bytes(png_ptr, sizeof(png_sig));
+    
+    if (setjmp(png_ptr->jmpbuf)) {
+    	//abend from libpng
+        printf("png read error\n");
+    	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
+        if (row_pointers) free(row_pointers);
+    	if (*buf) free(*buf);
+        *buf = NULL;
+        fclose(fp);
+        return false;
+    }
+    
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+    	png_destroy_read_struct(&png_ptr, NULL, NULL);
+        fclose(fp);
+    	return false;
+    }
+
+    end_info_ptr = png_create_info_struct(png_ptr);
+    if (!end_info_ptr) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+    	return false;
+    }
+
+    /* read png infos */
+    png_init_io(png_ptr, fp);
+    png_read_info(png_ptr, info_ptr);
+    png_uint_32 w;
+    png_uint_32 h;
+    int bit_depth;
+    int color_type;
+    png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
+
+    /* check the png format */
+    if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
+    	/* we only support ARGB png images */
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        fclose(fp);
+    	return false;
+    }
+    *width = w;
+    *height = h;
+    
+    /* set input transformations */
+    if (bit_depth == 16)
+    	png_set_strip_16(png_ptr);
+    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+    png_set_bgr(png_ptr);
+    png_set_interlace_handling(png_ptr);
+    png_read_update_info(png_ptr, info_ptr);
+
+    /* allocate memory for row pointers */
+    row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
+    if (!row_pointers) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        fclose(fp);
+    	return false;
+    }
+    
+    /* allocate memory for image data */
+    int ww=(*width)*4;
+    *buf = malloc(ww * *height);
+    if (!*buf) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        free(row_pointers);
+        fclose(fp);
+    	return false;
+    }
+    char *b = (char*)*buf;
+    for (int i = 0; i < *height; i++) {
+    	row_pointers[i]=(png_byte*)b;
+    	b+=ww;
+    }
+
+    /* read the image data */
+    png_read_image(png_ptr, row_pointers);
+    png_read_end(png_ptr, end_info_ptr);
+
+    /* should i pre-multiply with alpha channel? */
+    if (premultiplied) {
+		unsigned int *src = (unsigned int*)*buf;
+	    for (int i = *width * *height; i > 0; i--) {
+	    	register unsigned int s = *src;
+	        register unsigned int a = (s >> 24) + 1;
+	        *src = ((((s & 0x00ff00ff) * a) >> 8) & 0x00ff00ff) |
+	               ((((s & 0x0000ff00) * a) >> 8) & 0x0000ff00) |
+	               ((((s & 0xff000000))));
+	        src++;
+	    }
+    }
+
+    /* all right */
+	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+    free(row_pointers);
+    fclose(fp);
+	return true;
+}
+#endif
+
 
 MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc) {
     string                  imagefile;
@@ -55,6 +189,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
         return NULL;
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return NULL;
+
 
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
@@ -150,8 +285,160 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
         } 
     }
     else {
+        /* failed, try to read from taff? */
+/*
+struct  timeval tv;
+gettimeofday(&tv, NULL);
+printf("start > %d\n", tv.tv_usec);
+*/
+
+    	if (1) {
+    		/* yes, try with taff */
+	    	MMSTaffFile *tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+	    										 imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+	    	if (tafff) {
+	    		if (tafff->isLoaded()) {
+	
+		    		/* load the attributes */
+			    	void *img_buf = NULL;
+			    	int img_width = 0;
+			    	int img_height= 0;
+			    	int img_pitch = 0;
+			    	int img_size  = 0;
+			    	int attrid;
+			    	char *value_str;
+			    	int  value_int;
+			    	
+			    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
+			    		switch (attrid) {
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width:
+			    			img_width = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height:
+			    			img_height = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch:
+			    			img_pitch = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size:
+			    			img_size = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data:
+			    			img_buf = value_str;
+			    			break;
+			    		}
+			    	}
+			    	
+			    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
+			        	/* successfully read */
+			            im_desc->imagefile = imagefile;
+			        
+			            if (reload_image < 0) {
+			                /* get the modification time of the file */
+			                struct stat statbuf;
+			                if (stat(imagefile.c_str(), &statbuf)==0)
+			                    im_desc->mtime = statbuf.st_mtime;
+			                else
+			                    im_desc->mtime = 0;
+			            }
+			
+			            if (reload_image < 0) {
+			                /* create a surface */
+			                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height)) { 
+			                    DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
+			                    delete im_desc;
+			                    return NULL;
+			                }
+			                im_desc->sufcount = 1;
+			        
+			                /* copy img_buf to the surface */
+			                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
+			                char *dfbsuf_ptr;
+			                int dfbsuf_pitch;
+			                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
+			                if (img_pitch == dfbsuf_pitch)
+			                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
+			                else {
+			                	/* copy each line */
+			                	char *img_b = (char*)img_buf;
+			                	for (int i = 0; i < img_height; i++) {
+			                		memcpy(dfbsuf_ptr, img_b, img_pitch);
+			                		dfbsuf_ptr+=dfbsuf_pitch;
+			                		img_b+=img_pitch;
+			                	}
+			                }
+			                dfbsuf->Unlock(dfbsuf);
+			
+			                /* free */
+			                delete tafff;
+/*
+gettimeofday(&tv, NULL);
+printf("end < %d\n", tv.tv_usec);
+
+string ss;
+im_desc->suf[0].surface->getPixelFormat(&ss);
+printf("png loaded: width=%d,height=%d,pitch=%d,pf=%s\n", img_width, img_height, dfbsuf_pitch,  ss.c_str());
+*/
+			
+			                DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
+			        
+			                /* add to images list and return the surface */
+			                im_desc->usecount = 1;
+			                this->images.push_back(im_desc);
+			                if (surfdesc)
+			                    *surfdesc = this->images.at(this->images.size()-1)->suf;
+			                return im_desc->suf[0].surface; 
+			            }
+			            else {
+			                /* increase usecount */
+			                this->images.at(reload_image)->usecount++;
+			        
+			                /* check if I have to resize the surface */
+			                int w, h;
+			                this->images.at(reload_image)->suf[0].surface->getSize(&w, &h);
+			                if ((w != img_width) || (h != img_height))
+			                    this->images.at(reload_image)->suf[0].surface->resize(img_width, img_height);
+			        
+			                /* copy img_buf to the surface */
+			                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
+			                char *dfbsuf_ptr;
+			                int dfbsuf_pitch;
+			                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
+			                if (img_pitch == dfbsuf_pitch)
+			                	/* copy in one block */
+			                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
+			                else {
+			                	/* copy each line */
+			                	char *img_b = (char*)img_buf;
+			                	for (int i = 0; i < img_height; i++) {
+			                		memcpy(dfbsuf_ptr, img_b, img_pitch);
+			                		dfbsuf_ptr+=dfbsuf_pitch;
+			                		img_b+=img_pitch;
+			                	}
+			                }
+			                dfbsuf->Unlock(dfbsuf);
+			
+			                /* free */
+			                delete tafff;
+			                
+			                DEBUGMSG("MMSGUI", "ImageManager has reloaded: '%s'", imagefile.c_str());
+			        
+			                /* return the surface */
+			                delete im_desc;
+			                if (surfdesc)
+			                    *surfdesc = this->images.at(reload_image)->suf;
+			                return this->images.at(reload_image)->suf[0].surface; 
+			            }
+			    	}
+	    		}
+	    		
+	            /* free */
+	            delete tafff;
+	        }
+    	}
+        
         /* failed, try it with DFB providers */
-        if (!loadImage(&imageprovider, "", imagefile)) {
+    	if (!loadImage(&imageprovider, "", imagefile)) {
         	DEBUGMSG("MMSGUI", "cannot load image file '%s'", imagefile.c_str());
             if (reload_image < 0) {
                 delete im_desc;
@@ -217,7 +504,12 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
         
             /* release imageprovider */
             imageprovider->Release(imageprovider);
-        
+
+/*
+gettimeofday(&tv, NULL);
+printf("end < %d\n", tv.tv_usec);
+*/
+
             DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
     
             /* add to images list and return the surface */

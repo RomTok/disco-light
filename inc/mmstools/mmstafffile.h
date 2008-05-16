@@ -44,7 +44,9 @@ typedef enum {
 	//! valid values: "0".."100"
 	TAFF_ATTRTYPE_UCHAR100,
 	//! valid values: "-2147483648".."2147483647"
-	TAFF_ATTRTYPE_INT
+	TAFF_ATTRTYPE_INT,
+	//! any binary data
+	TAFF_ATTRTYPE_BINDATA
 } TAFF_ATTRTYPE;
 
 //! Describe a TAFF attribute
@@ -70,7 +72,7 @@ typedef struct {
 //! Describe a TAFF file format
 typedef struct {
 	//! type of TAFF file
-	char			type[8];
+	char			type[32];
 	//! type-based version
 	unsigned int	version;
 	//! tags
@@ -93,7 +95,9 @@ typedef enum {
 //! Supported types of external files
 typedef enum { 
 	//! the external file is written in XML
-	MMSTAFF_EXTERNAL_TYPE_XML
+	MMSTAFF_EXTERNAL_TYPE_XML,
+	//! the external file is an image (currently we only support PNG images) */
+	MMSTAFF_EXTERNAL_TYPE_IMAGE
 } MMSTAFF_EXTERNAL_TYPE;
 
 
@@ -152,24 +156,30 @@ class MMSTaffFile {
 		//! buffer postion of the current tag
 		int		current_tag_pos;
 		
-		
-        //! Recursive called method for XML to TAFF conversion.
+		//! Internal method: Read a PNG Image.
+		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size, bool premultiplied);
+
+		//! Internal method: Recursive called method for XML to TAFF conversion.
         bool convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file);
 
-        //! XML to TAFF conversion.
+        //! Internal method: XML to TAFF conversion.
         bool convertXML2TAFF();
 
-        //! Recursive called method for TAFF to XML conversion.
+        //! Internal method: IMAGE to TAFF conversion.
+        bool convertIMAGE2TAFF();
+
+        //! Internal method: Recursive called method for TAFF to XML conversion.
         bool convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *external_file);
 
-        //! TAFF to XML conversion.
+        //! Internal method: TAFF to XML conversion.
         bool convertTAFF2XML();
 
 	public:
         //! Constructor of class MMSTaffFile.
         /*!
         \param taff_filename		under this name the converted TAFF buffer is/will be stored
-        \param taff_desc			the user of this class have to support this tag/attribute description
+        \param taff_desc			the user of this class have to support this tag/attribute description, use NULL
+                                    here if you use the external type MMSTAFF_EXTERNAL_TYPE_IMAGE
         \param external_filename	name of the external file for conversion
         \param external_type		type of the external file
         \param ignore_blank_values	ignore blank values during the conversion from external file
@@ -276,6 +286,39 @@ class MMSTaffFile {
         \return pointer to null terminated value string or NULL
         */
         char *getAttributeString(int id);
+};
+
+
+namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
+
+	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC \
+		{ "width", TAFF_ATTRTYPE_INT }, \
+		{ "height", TAFF_ATTRTYPE_INT }, \
+		{ "pitch", TAFF_ATTRTYPE_INT }, \
+		{ "size", TAFF_ATTRTYPE_INT }, \
+		{ "data", TAFF_ATTRTYPE_BINDATA }
+	
+	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data
+	
+	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT { \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC, \
+		NULL \
+	}
+
+	typedef enum {
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS
+	} ids;
+}
+
+extern TAFF_DESCRIPTION mmstaff_image_taff_description;
+
+typedef enum {
+	MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE
 };
 
 

@@ -20,26 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSTOOLS_H_
-#define MMSTOOLS_H_
+#ifndef MMSTAFF_H_
+#define MMSTAFF_H_
 
-#include "mmstools/datasource.h"
-#include "mmstools/mmsdbconnmgr.h"
-#include "mmstools/mmsdbaccess.h"
-#include "mmstools/mmserror.h"
-#include "mmstools/mmsfile.h"
-#include "mmstools/mmsfilesearch.h"
-#include "mmstools/mmsidfactory.h"
-#include "mmstools/mmslogger.h"
-#include "mmstools/mmsthread.h"
-#include "mmstools/mmsrecordset.h"
-#include "mmstools/tools.h"
-#include "mmstools/mmsserverinterface.h"
-#include "mmstools/mmstcpserver.h"
-#include "mmstools/mmstcpserverthread.h"
-#include "mmstools/mmstcpclient.h"
-#include "mmstools/mmsmutex.h"
-#include "mmstools/mmsconverter.h"
-#include "mmstools/mmstafffile.h"
+#include "mmstaff/mmstafffile.h"
 
-#endif  /*MMSTOOLS_H_*/
+#endif  /*MMSTAFF_H_*/

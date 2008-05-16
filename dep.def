@@ -8,6 +8,20 @@ LIBDIR=../../lib
 
 #check dependencies
 
+#libpng
+ifndef LIBPNG_CHECKED
+    $(info check for libpng version >= 1.2)
+    ASK=$(shell pkg-config --atleast-version=1.2 libpng && echo "1")
+    ifeq ($(ASK),)
+        $(warning libpng was not found or version is older than 1.2. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
+    else
+        export LIBPNG_INC=$(shell pkg-config --cflags libpng)
+        export LIBPNG_LIBS=$(shell pkg-config --libs libpng)
+    endif
+    export LIBPNG_CHECKED=1
+endif
+
 #libxml2
 ifndef LIBXML_CHECKED
     $(info check for libxml2 version >= 2.6)
