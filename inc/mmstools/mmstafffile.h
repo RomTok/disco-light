@@ -105,7 +105,7 @@ typedef enum {
 /*!
 This class is written to generate an simple to parse binary presentation of
 high level markup languages such as XML. For now only the conversion XML to TAFF
-or vice versa is supported.
+or vice versa and PNG to TAFF is supported.
 The user of this class must specify a description of which tags and attributes
 are allowed. Further he specifies the type of an attribute. With this informations
 this class also checks the types and ranges of attributes during the conversion.
