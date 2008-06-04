@@ -69,6 +69,7 @@ void MMSMenuClass::unsetAll() {
     unsetZoomSelShiftX();
     unsetZoomSelShiftY();
     unsetSmoothScrolling();
+    unsetParentWindow();
 }
 
 void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -148,6 +149,9 @@ void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, str
 	            break;
 			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_smooth_scrolling:
 	            setSmoothScrolling((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_MENU_ATTR::MMSGUI_MENU_ATTR_IDS_parent_window:
+	            setParentWindow(attrval_str);
 	            break;
 			}
 		}
@@ -257,6 +261,10 @@ void MMSMenuClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, str
             if (ISATTRNAME(smooth_scrolling)) { 
 	            setSmoothScrolling((attrval_int) ? true : false);
 			}
+            else
+            if (ISATTRNAME(parent_window)) {  
+	            setParentWindow(attrval_str);
+            }
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -674,4 +682,22 @@ void MMSMenuClass::unsetSmoothScrolling() {
 bool MMSMenuClass::getSmoothScrolling() {
     return this->smoothscrolling;
 }
+
+bool MMSMenuClass::isParentWindow() {
+    return this->isparentwindow;
+}
+
+void MMSMenuClass::setParentWindow(string parentwindow) {
+    this->parentwindow = parentwindow;
+    this->isparentwindow = true;
+}
+
+void MMSMenuClass::unsetParentWindow() {
+    this->isparentwindow = false;
+}
+
+string MMSMenuClass::getParentWindow() {
+    return this->parentwindow;
+}
+
 

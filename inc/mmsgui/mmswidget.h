@@ -230,6 +230,7 @@ class MMSWidget {
         MMSWidget* getChild(unsigned int atpos = 0);
         MMSWidget* disconnectChild(unsigned int atpos = 0);
         MMSWidget* searchForWidget(string name);
+        MMSWidget* searchForWidgetType(MMSWIDGETTYPE type);
         MMSWidget* operator[](string name);
 
         virtual void add(MMSWidget *widget);
@@ -309,11 +310,13 @@ class MMSWidget {
         sigc::signal<void, MMSWidget*> *onReturn;
 
     protected:
-        void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
-        void setRootWindow(class MMSWindow *root);
+        virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
+        virtual void setRootWindow(class MMSWindow *root);
         virtual void recalculateChildren();
 //        void registerInput(DFBInputDeviceKeySymbol key, GUIINPUTCALLBACK cb);
         virtual void handleInput(MMSInputEvent *inputevent);
+
+        virtual bool callOnReturn() { return true; }
         
         bool geomset;
 

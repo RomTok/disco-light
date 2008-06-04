@@ -29,6 +29,7 @@ MMSTheme *globalTheme = new MMSTheme();
 TAFF_ATTRDESC MMSGUI_MMSTHEME_ATTR_I[]			= MMSGUI_MMSTHEME_ATTR_INIT;
 TAFF_ATTRDESC MMSGUI_MMSDIALOG_ATTR_I[]			= MMSGUI_MMSDIALOG_ATTR_INIT;
 TAFF_ATTRDESC MMSGUI_BASE_ATTR_I[]				= MMSGUI_BASE_ATTR_INIT;
+TAFF_ATTRDESC MMSGUI_NONE_ATTR_I[]              = { NULL, TAFF_ATTRTYPE_NONE };
 
 
 TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
@@ -64,6 +65,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"slider",		MMSGUI_SLIDER_ATTR_I			},
 	{	"textbox",		NULL, 	NULL,			MMSGUI_TEXTBOX_ATTR_I			},
 	{	"class", 		"type",	"textbox",		MMSGUI_TEXTBOX_ATTR_I			},
+	{	"separator",	NULL, 	NULL,			MMSGUI_NONE_ATTR_I				},
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 

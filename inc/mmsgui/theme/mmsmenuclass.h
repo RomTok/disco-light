@@ -51,7 +51,8 @@ namespace MMSGUI_MENU_ATTR {
 		{ "zoomsel_height", TAFF_ATTRTYPE_STRING }, \
 		{ "zoomsel_shiftx", TAFF_ATTRTYPE_STRING }, \
 		{ "zoomsel_shifty", TAFF_ATTRTYPE_STRING }, \
-		{ "smooth_scrolling", TAFF_ATTRTYPE_STRING }
+		{ "smooth_scrolling", TAFF_ATTRTYPE_STRING }, \
+		{ "parent_window", TAFF_ATTRTYPE_STRING }
 
 	#define MMSGUI_MENU_ATTR_IDS \
 		MMSGUI_MENU_ATTR_IDS_item_width, \
@@ -76,7 +77,8 @@ namespace MMSGUI_MENU_ATTR {
 		MMSGUI_MENU_ATTR_IDS_zoomsel_height, \
 		MMSGUI_MENU_ATTR_IDS_zoomsel_shiftx, \
 		MMSGUI_MENU_ATTR_IDS_zoomsel_shifty, \
-		MMSGUI_MENU_ATTR_IDS_smooth_scrolling
+		MMSGUI_MENU_ATTR_IDS_smooth_scrolling, \
+		MMSGUI_MENU_ATTR_IDS_parent_window
 	
 	#define MMSGUI_MENU_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -252,6 +254,12 @@ class MMSMenuClass {
         //! do smooth scrolling yes/no if user navigates in the menu
         bool  			smoothscrolling;
 
+        //! is parent window set?
+        bool			isparentwindow;
+
+        //! name of the parent window
+        string 			parentwindow;
+        
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -643,6 +651,11 @@ class MMSMenuClass {
         void setSmoothScrolling(bool smoothscrolling);
         void unsetSmoothScrolling();
         bool getSmoothScrolling();
+
+        bool isParentWindow();
+        void setParentWindow(string parentwindow);
+        void unsetParentWindow();
+        string getParentWindow();
         
     /* friends */
     friend class MMSThemeManager;

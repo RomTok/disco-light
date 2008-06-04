@@ -68,8 +68,13 @@ bool MMSMenu::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->zoomselshiftx = 0;
     this->zoomselshifty = 0;
     
-    smooth_scrolling = getSmoothScrolling();
-    scrolling_offset = 0;
+    this->smooth_scrolling = getSmoothScrolling();
+    this->scrolling_offset = 0;
+    
+    this->parent_window = NULL;
+    this->curr_submenu = -1;
+    this->parent_menu = NULL;
+    this->back_item = -1;
     
     return MMSWidget::create(root, true, false, true, true, true, false);
 }
@@ -241,6 +246,16 @@ bool MMSMenu::getConfig(bool *firstTime) {
 
 
 
+void MMSMenu::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
+	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled);
+
+	/* draw my separators */
+	for(unsigned int i=0;i<this->iteminfos.size();i++) {
+		MMSWidget *sep = this->iteminfos.at(i).separator;
+		if (sep) sep->drawchildren(false, backgroundFilled);
+	}
+
+}
 
 void MMSMenu::recalculateChildren() {
     DFBRectangle rect;
@@ -290,7 +305,16 @@ void MMSMenu::recalculateChildren() {
 			rows_after = rows_before + cols;
 			selected_col = selected_item % cols;
        	}
+       	
+       	// summary of the separator sizes
+       	int sepsize = 0;
 
+       	// hide all separators
+        for(int i = 0; i < (int)this->iteminfos.size(); i++) {
+   			MMSWidget *sep = this->iteminfos.at(i).separator;
+   			if (sep) sep->setVisible(false, false);
+        }
+       	
        	/* through all items */
         for(int i = 0; i < (int)this->children.size(); i++) {
             rect.x = item_xx + (i % (int)cols - (int)px) * item_ww;
@@ -298,6 +322,9 @@ void MMSMenu::recalculateChildren() {
             rect.w = item_w;
             rect.h = item_h;  
     
+            if (cols==1)
+            	rect.y+=sepsize;
+            
             bool visibleBefore = this->children.at(i)->isVisible();
             bool visibleAfter = (!((rect.x < item_xx) || (rect.y < item_yy) || (rect.x > menu_xx) || (rect.y > menu_yy)));
     
@@ -415,7 +442,23 @@ void MMSMenu::recalculateChildren() {
 
 //					rect.x+=this->innerGeom.x;
 //					rect.y+=this->innerGeom.y;
+                   	
                 	this->children.at(i)->setGeometry(rect);
+
+                   	if (cols==1) {
+                   		/* if one column, check if i have a separator */
+               			MMSWidget *sep = this->iteminfos.at(i).separator;
+                   		if (sep) {
+                   			DFBRectangle seprect;
+                   			seprect.x = 0;
+                   			seprect.y = rect.y + rect.h;
+                   			seprect.w = this->geom.w;
+                		    getPixelFromSizeHint(&seprect.h, sep->sizehint, this->geom.h, this->geom.w);
+                		    sepsize+=seprect.h;
+                		    sep->setGeometry(seprect);
+                            sep->setVisible(true, false);
+                   		}
+                   	}
                 }
     
                 /* switch the visibility */
@@ -864,6 +907,26 @@ void MMSMenu::recalculateChildren() {
     }
 }
 
+void MMSMenu::initParentWindow(void) {
+	if (!this->rootwindow) return;
+	
+	/* get the parent window */
+	this->parent_window = NULL;
+	string pw = getParentWindow();
+	if (pw!="") {
+		MMSWindow *p = this->rootwindow->getParent(true);
+		if (p)
+			this->parent_window = p->searchForWindow(pw);
+	}
+	if (!this->parent_window)
+		this->parent_window = this->rootwindow;
+}
+
+void MMSMenu::setRootWindow(class MMSWindow *root) {
+	MMSWidget::setRootWindow(root);
+	initParentWindow();
+}
+
 
 void MMSMenu::switchArrowWidgets() {
     /* connect arrow widgets */
@@ -931,6 +994,96 @@ void MMSMenu::switchArrowWidgets() {
         else
             this->downArrowWidget->setSelected(false);
     }
+}
+
+void MMSMenu::emitOnReturnForParents(MMSMenu *orw) {
+	// first all parents recursive on to the stack 
+	if (this->parent_menu)
+		this->parent_menu->emitOnReturnForParents(orw);
+	// fire the onReturn event
+	this->onReturn->emit(orw);
+}
+
+bool MMSMenu::callOnReturn() {
+	if (!switchToSubMenu()) {
+		// call onReturn for all parents
+		if (this->parent_menu)
+			this->parent_menu->emitOnReturnForParents(this);
+		
+		// return true, so widget will call onReturn for this menu 
+		return true;
+	}
+
+	// i have switched the menu, so onReturn should not called
+	return false;
+}
+
+bool MMSMenu::switchToSubMenu() {
+
+	// get access to the submenu struct
+	unsigned int sel = getSelected();
+	if (this->back_item == sel) {
+		// the user has chosen the go-back-item
+		switchBackToParentMenu();
+		return true;
+	}
+	if (sel>=this->iteminfos.size()) return false;
+	MMSMENUITEMINFOS *sm = &(this->iteminfos.at(sel));
+
+	// get access to the submenu window
+	if ((!this->rootwindow)||(sm->name=="")) return false;
+	if (!sm->window) {
+		MMSWindow *p = this->parent_window->getParent();
+		if (!p) return false;
+		sm->window=p->searchForWindow(sm->name);
+	}
+	if (!sm->window) return false;
+
+	// get access to the menu widget of the submenu window
+	if (!sm->menu) {
+		sm->menu = (MMSMenu *)sm->window->searchForWidgetType(MMSWIDGETTYPE_MENU);
+		if (!sm->menu) return false;
+	}
+
+	// switch to the other menu (window)
+	this->curr_submenu = sel;
+	sm->menu->parent_menu = this;
+	sm->menu->setSelected(0);
+	sm->window->setFocus();
+	if (memcmp(&this->parent_window->geom, &sm->window->geom, sizeof(sm->window->geom))==0)
+		// same geom for me and submenu, hide me
+		this->parent_window->hide();
+	sm->window->show();
+	return true;
+}
+
+bool MMSMenu::switchBackToParentMenu(MMSDIRECTION direction) {
+	// check if we can go back to the parent menu
+	if (!this->parent_menu) return false;
+	DFBRectangle pgeom = this->parent_menu->parent_window->geom;
+	DFBRectangle mgeom = this->parent_window->geom;
+	switch (direction) {
+	case MMSDIRECTION_LEFT:
+		if (pgeom.x >= mgeom.x) return false;
+		break;
+	case MMSDIRECTION_RIGHT:
+		if (pgeom.x+pgeom.w <= mgeom.x+mgeom.w) return false;
+		break;
+	case MMSDIRECTION_UP:
+		if (pgeom.y >= mgeom.y) return false;
+		break;
+	case MMSDIRECTION_DOWN:
+		if (pgeom.y+pgeom.h <= mgeom.y+mgeom.h) return false;
+		break;
+	}
+	
+	// okay, switch back
+	this->parent_menu->parent_window->setFocus();
+	this->parent_window->hide();
+	this->parent_menu->parent_window->show();
+	this->parent_menu->curr_submenu = -1;
+	this->parent_menu = NULL;
+	return true;
 }
 
 void MMSMenu::setSliders() {
@@ -1635,7 +1788,17 @@ bool MMSMenu::scrollDown(unsigned int count, bool refresh, bool test) {
 	    }
 	}
 
-	return scrollDownEx(count, refresh, test);
+	bool ret = scrollDownEx(count, refresh, test);
+
+	if ((!ret)&&(!test))
+		// nothing to scroll
+		if (this->parent_menu) {
+			// if we have a parent menu, we do only leave this menu if we switch back to the parent
+			switchBackToParentMenu(MMSDIRECTION_DOWN);
+			return true;
+		}
+		
+	return ret;
 }
 
 bool MMSMenu::scrollUp(unsigned int count, bool refresh, bool test) {
@@ -1665,7 +1828,17 @@ bool MMSMenu::scrollUp(unsigned int count, bool refresh, bool test) {
 	    }
 	}
 
-	return scrollUpEx(count, refresh, test);
+	bool ret = scrollUpEx(count, refresh, test);
+
+	if ((!ret)&&(!test))
+		// nothing to scroll
+		if (this->parent_menu) {
+			// if we have a parent menu, we do only leave this menu if we switch back to the parent
+			switchBackToParentMenu(MMSDIRECTION_UP);
+			return true;
+		}
+		
+	return ret;
 }
 
 bool MMSMenu::scrollRight(unsigned int count, bool refresh, bool test) {
@@ -1695,7 +1868,17 @@ bool MMSMenu::scrollRight(unsigned int count, bool refresh, bool test) {
 	    }
 	}
 
-	return scrollRightEx(count, refresh, test);
+	bool ret = scrollRightEx(count, refresh, test);
+
+	if ((!ret)&&(!test))
+		// nothing to scroll
+		if (this->parent_menu) {
+			// if we have a parent menu, we do only leave this menu if we switch back to the parent
+			switchBackToParentMenu(MMSDIRECTION_RIGHT);
+			return true;
+		}
+		
+	return ret;
 }
 
 bool MMSMenu::scrollLeft(unsigned int count, bool refresh, bool test) {
@@ -1725,7 +1908,17 @@ bool MMSMenu::scrollLeft(unsigned int count, bool refresh, bool test) {
 	    }
 	}
 
-	return scrollLeftEx(count, refresh, test);
+	bool ret = scrollLeftEx(count, refresh, test);
+
+	if ((!ret)&&(!test))
+		// nothing to scroll
+		if (this->parent_menu) {
+			// if we have a parent menu, we do only leave this menu if we switch back to the parent
+			switchBackToParentMenu(MMSDIRECTION_LEFT);
+			return true;
+		}
+		
+	return ret;
 }
 
 bool MMSMenu::scrollTo(int posx, int posy, bool refresh) {
@@ -1774,7 +1967,8 @@ MMSWidget *MMSMenu::getItemTemplate() {
 }
 
 MMSWidget *MMSMenu::newItem() {
-    MMSWidget *widget;
+    MMSWidget 			*widget;
+    MMSMENUITEMINFOS	iteminfo;
 
     if (!this->itemTemplate)
         throw new MMSWidgetError(0, "item template not set");
@@ -1784,6 +1978,11 @@ MMSWidget *MMSMenu::newItem() {
     widget->setParent(this);
     widget->setRootWindow(this->rootwindow);
     this->children.push_back(widget);
+	iteminfo.name = "";
+	iteminfo.window = NULL;
+	iteminfo.menu = NULL;
+	iteminfo.separator = NULL;
+	this->iteminfos.push_back(iteminfo);
 
     recalculateChildren();
 
@@ -1804,6 +2003,9 @@ void MMSMenu::clear() {
     for(int i = (int)this->children.size() - 1; i >= 0 ; i--) {
         delete this->children.at(i);
         this->children.erase(this->children.end()-1);
+        MMSWidget *w = this->iteminfos.at(i).separator;
+        if (w) delete w;
+        this->iteminfos.erase(this->iteminfos.end()-1);
     }
 
     this->x = 0;
@@ -1874,7 +2076,6 @@ bool MMSMenu::setSelected(unsigned int item, bool refresh) {
     unsigned int mx = item % cols;
     unsigned int my = item / cols;
 
-    
     /* scroll left-down */
     if ((mx < this->x)&&(my > this->y)) {
         if (scrollLeft(this->x - mx, false))
@@ -1984,6 +2185,32 @@ bool MMSMenu::draw(bool *backgroundFilled) {
     return MMSWidget::drawDebug();
 }
 
+bool MMSMenu::setSubMenuName(unsigned int item, const char *name) {
+	if (item >= this->iteminfos.size()) return false;
+	iteminfos.at(item).name = name;
+	iteminfos.at(item).window = NULL;
+	return true;
+}
+
+bool MMSMenu::setSubMenuName(unsigned int item, string &name) {
+	return setSubMenuName(item, name.c_str());
+}
+
+bool MMSMenu::setBackItem(unsigned int item) {
+	if ((item!=-1)&&(item >= this->children.size())) return false;
+	this->back_item = item;
+	return true;
+}
+
+bool MMSMenu::setSeparator(unsigned int item, MMSWidget *widget, bool refresh) {
+	if (item >= this->iteminfos.size()) return false;
+	iteminfos.at(item).separator = widget;
+    widget->setParent(this);
+    widget->setRootWindow(this->rootwindow);
+    if (refresh)
+	    this->refresh();
+	return true;
+}
 
 /***********************************************/
 /* begin of theme access methods (get methods) */
@@ -2093,6 +2320,10 @@ string MMSMenu::getZoomSelShiftY() {
 
 bool MMSMenu::getSmoothScrolling() {
     GETMENU(SmoothScrolling);
+}
+
+string MMSMenu::getParentWindow() {
+    GETMENU(ParentWindow);
 }
 
 /***********************************************/
@@ -2232,6 +2463,11 @@ void MMSMenu::setSmoothScrolling(bool smoothscrolling) {
     this->smooth_scrolling = smoothscrolling;
 }
 
+void MMSMenu::setParentWindow(string parentwindow) {
+    myMenuClass.setParentWindow(parentwindow);
+    initParentWindow();
+}
+
 void MMSMenu::updateFromThemeClass(MMSMenuClass *themeClass) {
    if (themeClass->isItemWidth())
         setItemWidth(themeClass->getItemWidth());
@@ -2279,6 +2515,8 @@ void MMSMenu::updateFromThemeClass(MMSMenuClass *themeClass) {
         setZoomSelShiftY(themeClass->getZoomSelShiftY());
    if (themeClass->isSmoothScrolling())
         setSmoothScrolling(themeClass->getSmoothScrolling());
+   if (themeClass->isParentWindow())
+        setParentWindow(themeClass->getParentWindow());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

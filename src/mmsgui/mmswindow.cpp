@@ -1152,6 +1152,16 @@ MMSFBSurface *MMSWindow::getSurface() {
     return this->surface;
 }
 
+MMSWindow *MMSWindow::getParent(bool toplevel) {
+	if (!toplevel)
+		return this->parent;
+	if (!this->parent)
+		return NULL;
+	MMSWindow *pw = this->parent->getParent(toplevel);
+	if (pw)
+		return pw;
+	return this->parent;
+}
 
 
 void MMSWindow::recalculateChildren() {
@@ -3225,9 +3235,6 @@ void MMSWindow::instantHide() {
 MMSWidget* MMSWindow::searchForWidget(string name) {
     MMSWidget *widget;
 
-    if (name=="")
-        return NULL;
-
     /* for all child windows */
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((widget = childwins.at(i).window->searchForWidget(name)))
@@ -3241,6 +3248,27 @@ MMSWidget* MMSWindow::searchForWidget(string name) {
     /* second, call search method of my children */
     for (unsigned int i = 0; i < children.size(); i++)
         if ((widget = children.at(i)->searchForWidget(name)))
+            return widget;
+
+    return NULL;
+}
+
+MMSWidget* MMSWindow::searchForWidgetType(MMSWIDGETTYPE type) {
+    MMSWidget *widget;
+
+    /* for all child windows */
+    for (unsigned int i = 0; i < childwins.size(); i++)
+        if ((widget = childwins.at(i).window->searchForWidgetType(type)))
+            return widget;
+
+    /* first, my own children */
+    for (unsigned int i = 0; i < children.size(); i++)
+        if (children.at(i)->getType() == type)
+            return children.at(i);
+
+    /* second, call search method of my children */
+    for (unsigned int i = 0; i < children.size(); i++)
+        if ((widget = children.at(i)->searchForWidgetType(type)))
             return widget;
 
     return NULL;

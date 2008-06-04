@@ -207,7 +207,7 @@ MMSDIRECTION getDirectionFromString(string inputstr);
 	while (1) { \
 		if (first) { attrid=tafff->getFirstAttribute(&attrval_str, &attrval_int, &attrname); first=false; } else \
 		attrid=tafff->getNextAttribute(&attrval_str, &attrval_int, &attrname); \
-		while(attrid!=MMSTAFF_ATTR_WITHOUT_ID) if((attrid=tafff->getNextAttribute(&attrval_str,&attrval_int,&attrname))<0)break; \
+		while((attrid>=0)&&(attrid!=MMSTAFF_ATTR_WITHOUT_ID)) attrid=tafff->getNextAttribute(&attrval_str,&attrval_int,&attrname); \
 		if (attrid<0) break;
 
 #define endTAFFScan_WITHOUT_ID } }

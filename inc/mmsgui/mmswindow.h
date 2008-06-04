@@ -507,6 +507,13 @@ class MMSWindow {
         */
         MMSFBSurface *getSurface();
 
+        //! Get the parent window.
+        /*! 
+        \param toplevel		if true the toplevel parent will be returned 
+        \return pointer to the parent window or NULL if the window has no parent
+        */
+        MMSWindow *getParent(bool toplevel = false);
+
         //! Set the window manager.
         /*!
         \param wm	interface to the window manager 
@@ -541,6 +548,13 @@ class MMSWindow {
         \return pointer to the widget which was found or NULL 
         */
         MMSWidget* searchForWidget(string name);
+
+        //! Search a widget with a given type. 
+        /*!
+        \param type		type of the widget
+        \return pointer to the widget which was found or NULL 
+        */
+        MMSWidget* searchForWidgetType(MMSWIDGETTYPE type);
 
         //! Operator [] which you can use to find a widget. 
         /*!

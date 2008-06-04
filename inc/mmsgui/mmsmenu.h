@@ -37,6 +37,13 @@ with an high number of items.
 */
 class MMSMenu : public MMSWidget {
     private:
+    	typedef struct {
+    		string			name;
+    		class MMSWindow	*window;
+    		MMSMenu			*menu;
+    		MMSWidget		*separator;
+    	} MMSMENUITEMINFOS;
+    	
         string          className;
         MMSMenuClass    *menuClass;
         MMSMenuClass    myMenuClass;
@@ -66,6 +73,22 @@ class MMSMenu : public MMSWidget {
 
         DFBRectangle 	virtualGeom;
 
+        //! this will be used to show/hide the menu and its whole parent window(s)
+        //! normally this is the same as widgets rootwindow, but it can also be the a parent from widgets rootwindow 
+        MMSWindow		*parent_window;
+        
+        //! represents additional informations for each menu item
+        vector<MMSMENUITEMINFOS>	iteminfos; 
+
+        //! if != -1 then currently activated submenu is set
+        unsigned int 	curr_submenu;
+        
+        //! if a submenu does appear, we will save the parent menu here which will used to go back 
+        MMSMenu			*parent_menu;
+        
+        //! if != -1 then the item with this id is set as go-back-item
+        //! if the user enters this item, the parent menu (if does exist) will be shown
+        unsigned int	back_item;
         
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
@@ -75,8 +98,12 @@ class MMSMenu : public MMSWidget {
 
         bool getConfig(bool *firstTime = NULL);
 
+        void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
         void recalculateChildren();
 
+        void initParentWindow(void);
+        void setRootWindow(class MMSWindow *root);
+        
         void switchArrowWidgets();
         void setSliders();
 
@@ -87,6 +114,12 @@ class MMSMenu : public MMSWidget {
         bool scrollRightEx(unsigned int count, bool refresh, bool test);
         bool scrollLeftEx(unsigned int count, bool refresh, bool test);
 
+        void emitOnReturnForParents(MMSMenu *orw);
+        bool callOnReturn();
+
+        bool switchToSubMenu();
+        bool switchBackToParentMenu(MMSDIRECTION direction = MMSDIRECTION_NOTSET);
+        
     public:
         MMSMenu(MMSWindow *root, string className, MMSTheme *theme = NULL);
         ~MMSMenu();
@@ -121,6 +154,11 @@ class MMSMenu : public MMSWidget {
         bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false);
         bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false);
         bool scrollTo(int posx, int posy, bool refresh = true);
+
+        bool setSubMenuName(unsigned int item, const char *name);
+        bool setSubMenuName(unsigned int item, string &name);
+        bool setBackItem(unsigned int item);
+        bool setSeparator(unsigned int item, MMSWidget *widget, bool refresh = true);
         
         sigc::signal<void, MMSWidget*> *onSelectItem;
         sigc::signal<void, MMSWidget*> *onBeforeScroll;
@@ -151,6 +189,7 @@ class MMSMenu : public MMSWidget {
         string getZoomSelShiftX();
         string getZoomSelShiftY();
         bool getSmoothScrolling();
+        string getParentWindow();
 
         void setItemWidth(string itemwidth, bool refresh = true);
         void setItemHeight(string itemheight, bool refresh = true);
@@ -175,6 +214,7 @@ class MMSMenu : public MMSWidget {
         void setZoomSelShiftX(string zoomselshiftx, bool refresh = true);
         void setZoomSelShiftY(string zoomselshifty, bool refresh = true);
         void setSmoothScrolling(bool smoothscrolling);
+        void setParentWindow(string parentwindow);
 
         void updateFromThemeClass(MMSMenuClass *themeClass);
 };

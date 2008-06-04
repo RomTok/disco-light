@@ -20,30 +20,32 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
-
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
-
-#include "mmsgui/mmsmainwindow.h"
-#include "mmsgui/mmspopupwindow.h"
-#include "mmsgui/mmsrootwindow.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
-
-#include "mmsgui/mmshbox.h"
-#include "mmsgui/mmsvbox.h"
-#include "mmsgui/mmsbutton.h"
-#include "mmsgui/mmslabel.h"
-#include "mmsgui/mmsimage.h"
-#include "mmsgui/mmsarrow.h"
-#include "mmsgui/mmsprogressbar.h"
-#include "mmsgui/mmsmenu.h"
-#include "mmsgui/mmstextbox.h"
-#include "mmsgui/mmsslider.h"
-
 #include "mmsgui/additional/mmsfiledialog.h"
 
-#endif /*MMSGUI_H_*/
+MMSFileDialog::MMSFileDialog(string dialogfile, MMSTheme *theme) {
+	this->dialogfile = dialogfile;
+	if (this->dialogfile != "")
+		this->dialogwindow = this->dm.loadDialog(this->dialogfile, theme);
+	else
+		this->dialogwindow = this->dm.loadDialog("share/disko/mmsfiledialog.xml", theme);
+}
+
+MMSFileDialog::MMSFileDialog(MMSWindow *dialogwindow) {
+	this->dialogwindow = dialogwindow;
+}
+
+MMSFileDialog::~MMSFileDialog() {
+	if (this->dm.isLoaded()) {
+		// i have loaded the dialogfile, so i must delete it
+		if (this->dialogwindow)
+			delete this->dialogwindow;
+	}
+}
+
+bool MMSFileDialog::show() {
+	if (!this->dialogwindow) return false;
+	
+	this->dialogwindow->show();
+	return true;
+}
+

@@ -69,6 +69,7 @@ class MMSDialogManager {
     public:
         MMSDialogManager();
         ~MMSDialogManager();
+        bool isLoaded();
         MMSWindow* loadDialog(string filename, MMSTheme *theme = NULL);
         MMSChildWindow* loadChildDialog(string filename, MMSTheme *theme = NULL);
         MMSWidget* searchForWidget(string name);

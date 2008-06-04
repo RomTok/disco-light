@@ -47,6 +47,10 @@ MMSDialogManager::~MMSDialogManager() {
         delete rootWindow;
 }
 
+bool MMSDialogManager::isLoaded() {
+	return (rootWindow)?true:false;
+}
+
 void MMSDialogManager::insertNamedWidget(MMSWidget *widget) {
     namedWidgets.push_back(widget);
 }
@@ -1199,123 +1203,188 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     			returntag = false;
     		
     		/* check if a <menuitem> is given */
-            if (tid != MMSGUI_TAGTABLE_TAG_MENUITEM)
-                continue;
-
-            /* create new menu item */
-            MMSWidget *topwidget = menu->newItem();
-            haveItems = true;
-
-            startTAFFScan_WITHOUT_ID
+            if (tid == MMSGUI_TAGTABLE_TAG_MENUITEM)
             {
-            	if (memcmp(attrname, "widget.", 7)==0) {
-                    /* search for attributes which are to be set for menu items child widgets */
-                    string widgetName = &attrname[7];
-                    int pos = (int)widgetName.find(".");
-                    if (pos > 0) {
-                        /* widget name found */
-                        widgetName = widgetName.substr(0, pos);
-                        MMSWidget *widget;
-                        if (topwidget->getName() == widgetName)
-                            widget = topwidget;
-                        else
-                            widget = topwidget->searchForWidget(widgetName);
-
-                        if (widget) {
-                            /* widget found */
-                            /* add attribute to widget */
-                            string prefix = "widget." + widgetName + ".";
-                            switch (widget->getType()) {
-                                case MMSWIDGETTYPE_HBOX:
-                                    break;
-                                case MMSWIDGETTYPE_VBOX:
-                                    break;
-                                case MMSWIDGETTYPE_BUTTON:
-                                    {
-                                        /* read attributes from node */
-                                        MMSButtonClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSButton*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                                case MMSWIDGETTYPE_IMAGE:
-                                    {
-                                        /* read attributes from node */
-                                        MMSImageClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSImage*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                                case MMSWIDGETTYPE_LABEL:
-                                    {
-                                        /* read attributes from node */
-                                        MMSLabelClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSLabel*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                                case MMSWIDGETTYPE_MENU:
-                                    break;
-                                case MMSWIDGETTYPE_PROGRESSBAR:
-                                    {
-                                        /* read attributes from node */
-                                        MMSProgressBarClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSProgressBar*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                                case MMSWIDGETTYPE_TEXTBOX:
-                                    {
-                                        /* read attributes from node */
-                                        MMSTextBoxClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSTextBox*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                                case MMSWIDGETTYPE_ARROW:
-                                    {
-                                        /* read attributes from node */
-                                        MMSArrowClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSArrow*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                                case MMSWIDGETTYPE_SLIDER:
-                                    {
-                                        /* read attributes from node */
-                                        MMSSliderClass themeCls;
-                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
-                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
-                                        /* apply settings from node */
-                                        ((MMSSlider*)widget)->updateFromThemeClass(&themeCls);
-                                    }
-                                    break;
-                            }
-                        }
-                    }  
-                }
+	            /* create new menu item */
+	            MMSWidget *topwidget = menu->newItem();
+	            haveItems = true;
+	
+	            /* here we must loop for n widgets */
+	            vector<string> wgs;
+	            bool wg_break = false;
+	            while (!wg_break) {
+	            	wg_break = true;
+		            startTAFFScan_WITHOUT_ID
+		            {
+		            	if (memcmp(attrname, "widget.", 7)==0) {
+		                    /* search for attributes which are to be set for menu items child widgets */
+		                    string widgetName = &attrname[7];
+		                    int pos = (int)widgetName.find(".");
+		                    if (pos > 0) {
+		                        /* widget name found */
+		                        widgetName = widgetName.substr(0, pos);
+		                        
+		                        /* check if i have already processed this widget */
+		                        for (unsigned int w = 0; w < wgs.size(); w++)
+		                        	if (wgs.at(w)==widgetName) {
+		                        		widgetName = "";
+		                        		break;
+		                        	}
+		                        if (widgetName == "")
+		                        	continue;
+		                        wg_break = false;
+		                        wgs.push_back(widgetName);
+		                        
+		                        /* okay, searching for the widget within the new item */
+		                        MMSWidget *widget;
+		                        if (topwidget->getName() == widgetName)
+		                            widget = topwidget;
+		                        else
+		                            widget = topwidget->searchForWidget(widgetName);
+		
+		                        if (widget) {
+		                            /* widget found */
+		                            /* add attribute to widget */
+		                            string prefix = "widget." + widgetName + ".";
+		                            switch (widget->getType()) {
+		                                case MMSWIDGETTYPE_HBOX:
+		                                    break;
+		                                case MMSWIDGETTYPE_VBOX:
+		                                    break;
+		                                case MMSWIDGETTYPE_BUTTON:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSButtonClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSButton*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                                case MMSWIDGETTYPE_IMAGE:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSImageClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSImage*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                                case MMSWIDGETTYPE_LABEL:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSLabelClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSLabel*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                                case MMSWIDGETTYPE_MENU:
+		                                    break;
+		                                case MMSWIDGETTYPE_PROGRESSBAR:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSProgressBarClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSProgressBar*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                                case MMSWIDGETTYPE_TEXTBOX:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSTextBoxClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSTextBox*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                                case MMSWIDGETTYPE_ARROW:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSArrowClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSArrow*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                                case MMSWIDGETTYPE_SLIDER:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSSliderClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSSlider*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
+		                            }
+		                        }
+		                    }  
+		                }
+		            }
+		            endTAFFScan_WITHOUT_ID
+	            }
+	
+	            startTAFFScan_WITHOUT_ID
+	            {
+	            	if (memcmp(attrname, "childwindow", 11)==0) {
+	            		// there is a child window given which represents a sub menu
+	            		menu->setSubMenuName(menu->getSize()-1, attrval_str);
+	            	}
+	            	else
+	            	if (memcmp(attrname, "goback", 6)==0) {
+	            		// if true, this item should be the go-back-item
+	                    //! if the user enters this item, the parent menu (if does exist) will be shown
+	            		if (memcmp(attrval_str, "true", 4)==0)
+	            			menu->setBackItem(menu->getSize()-1);
+	            	}
+	            }
+	            endTAFFScan_WITHOUT_ID
+	    	
+	            startTAFFScan
+	            {
+	                switch (attrid) {
+	        		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
+	        			if (*attrval_str)
+	        				topwidget->setName(attrval_str);
+	        			break;
+	        	    }
+	            }
+	            endTAFFScan
             }
-            endTAFFScan_WITHOUT_ID
-    	
+            else {
+            	// any other widgets given in the menu, we need a temporary widget
+                MMSHBox *tmpWidget = new MMSHBox(NULL);
+
+                // parse the childs from dialog file
+            	throughDoc(tafff, tmpWidget, NULL, theme);
+
+            	if (tid == MMSGUI_TAGTABLE_TAG_SEPARATOR) {
+                    // set the separator
+	            	if (menu->getSize() > 0) {
+		                MMSWidget *separator = tmpWidget->disconnectChild();
+		                if (separator) {
+		                	// separator widget(s) set
+		                	separator->setFocusable(false);
+		                	menu->setSeparator(menu->getSize()-1, separator);
+		                }
+	            	}
+            	}
+                delete tmpWidget;
+            }
     	}
 
         if (haveItems)

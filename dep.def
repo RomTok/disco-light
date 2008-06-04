@@ -6,6 +6,11 @@ HAVE_ALL_DEPS=1
 #output directory
 LIBDIR=../../lib
 
+#destination of disko tools
+ifndef OUTPUTDIR
+export OUTPUTDIR=../../bin
+endif
+
 #check dependencies
 
 #libpng

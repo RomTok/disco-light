@@ -20,30 +20,24 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMSFILEDIALOG_H_
+#define MMSFILEDIALOG_H_
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
-
-#include "mmsgui/mmsmainwindow.h"
-#include "mmsgui/mmspopupwindow.h"
-#include "mmsgui/mmsrootwindow.h"
+#include "mmsgui/mmswindow.h"
 #include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
 
-#include "mmsgui/mmshbox.h"
-#include "mmsgui/mmsvbox.h"
-#include "mmsgui/mmsbutton.h"
-#include "mmsgui/mmslabel.h"
-#include "mmsgui/mmsimage.h"
-#include "mmsgui/mmsarrow.h"
-#include "mmsgui/mmsprogressbar.h"
-#include "mmsgui/mmsmenu.h"
-#include "mmsgui/mmstextbox.h"
-#include "mmsgui/mmsslider.h"
+class MMSFileDialog {
+    private:
+    	string 				dialogfile;
+    	MMSDialogManager	dm;
+    	MMSWindow			*dialogwindow;
+    	
+    public:
+        MMSFileDialog(string dialogfile = "", MMSTheme *theme = NULL);
+        MMSFileDialog(MMSWindow *dialogwindow);
+        ~MMSFileDialog();
+        
+        bool show();
+};
 
-#include "mmsgui/additional/mmsfiledialog.h"
-
-#endif /*MMSGUI_H_*/
+#endif /*MMSFILEDIALOG_H_*/

@@ -267,6 +267,22 @@ MMSWidget* MMSWidget::searchForWidget(string name) {
     return NULL;
 }
 
+MMSWidget* MMSWidget::searchForWidgetType(MMSWIDGETTYPE type) {
+    MMSWidget *widget;
+
+    /* first, my own children */
+    for (unsigned int i = 0; i < children.size(); i++)
+        if (children.at(i)->getType() == type)
+            return children.at(i);
+
+    /* second, call search method of my children */
+    for (unsigned int i = 0; i < children.size(); i++)
+        if ((widget = children.at(i)->searchForWidgetType(type)))
+            return widget;
+
+    return NULL;
+}
+
 MMSWidget* MMSWidget::operator[](string name) {
     MMSWidget *widget;
 
@@ -1779,7 +1795,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 			case DIKS_ZOOM:
 		        if (getFocusable(b))
 		        	if (b) {
-			            this->onReturn->emit(this);
+		        		if (callOnReturn()) this->onReturn->emit(this);
 			            return;
 			        }
 		        break;
@@ -1820,7 +1836,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	    				scrollTo(inputevent->posx, inputevent->posy);
 	
 	    				/* emit the onReturn */
-	    				this->onReturn->emit(this);
+	    				if (callOnReturn()) this->onReturn->emit(this);
 	    			}
 	    		}
 	
@@ -2009,7 +2025,7 @@ bool MMSWidget::canNavigateDown() {
 }
 
 bool MMSWidget::canNavigateLeft() {
-    if (navigateLeftWidget)
+	if (navigateLeftWidget)
         return true;
     else
         return scrollLeft(1, false, true);
