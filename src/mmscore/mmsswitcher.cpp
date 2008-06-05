@@ -170,7 +170,6 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
     /* no menu item given */
     if(!pluginLabel) {
-	printf("\n no pluginlabel\n");
         return;
 	}
 	
@@ -179,7 +178,6 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
     /* return if current plugin is selected plugin */
     if(this->curr_plugin == data->getId()) {
-	printf("\n same\n");
         return;
     }
 
@@ -196,16 +194,9 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
     i = this->plugins.find(this->curr_plugin);
     if(i != this->plugins.end()) {
         MMSChildWindow *preview = i->second->previewWin;
-
-	if(!preview)
-		printf("\nno show preview\n");
-
-        if(preview && !preview->isShown()) {
-            printf("\n show preview\n");
+        if(preview && !preview->isShown())
             preview->show();
-        }
-    } else
-	printf("\n not found\n");
+    }
 }
 
 void MMSSwitcher::onReturn(MMSWidget *widget) {
