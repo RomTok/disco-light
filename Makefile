@@ -40,18 +40,18 @@ install:
 		./src/diskodesigner/scripts/updatediskodesignerrc.sh $(DESTDIR)$(sysconfdir)/diskodesignerrc.xml $(datadir)/$(PROJECTNAME)/db $(datadir)/$(PROJECTNAME)/ $(sysconfdir) $(prefix); \
 	fi
 	@echo "writing pkgconfig information"
-	@install -d "$(DESTDIR)$(libdir)/pkgconfig"
-	@echo "prefix=$(prefix)" > $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "exec_prefix=\$${prefix}" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "libdir=\$${prefix}/lib" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "includedir=\$${prefix}/inc" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo  >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Name: $(PROJECTNAME)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Version: 1.1.1" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libxine, alsa" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
-	@echo "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsdata -lmmsgui -lmmsinput -lmmsmedia -lmmstools $(LIBPNG_LIBS) $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(XINE_LIBS) $(SIGC_LIBS) $(XINE_LIBS)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc 
-	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBPNG_INC) $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(XINE_INC) $(SIGC_INC) $(XINE_INC)" >> $(DESTDIR)$(libdir)/pkgconfig/$(PROJECTNAME).pc
+	@install -d "$(DESTDIR)$(libdir)/../pkgconfig"
+	@echo "prefix=$(prefix)" > $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "exec_prefix=\$${prefix}" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "libdir=\$${prefix}/lib" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "includedir=\$${prefix}/inc" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo  >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "Name: $(PROJECTNAME)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "Version: 1.1.1" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libxine, alsa" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsdata -lmmsgui -lmmsinput -lmmsmedia -lmmstools $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(XINE_LIBS) $(SIGC_LIBS) $(XINE_LIBS)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
+	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(XINE_INC) $(SIGC_INC) $(XINE_INC)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 
 check:
 	@echo check for libpng

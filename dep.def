@@ -207,11 +207,11 @@ ifeq ($(bindir),)
 endif
 
 ifeq ($(incdir),)
-    export incdir=$(prefix)/inc
+    export incdir=$(prefix)/include/disko
 endif
 
 ifeq ($(libdir),)
-    export libdir=$(prefix)/lib
+    export libdir=$(prefix)/lib/disko
 endif
 
 ifeq ($(datadir),)
