@@ -162,9 +162,6 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	        DEBUGMSG("Core", "loading Import Plugins...");
 	        pluginmanager->loadImportPlugins();
 
-	        DEBUGMSG("Core", "initialize Backend Plugins...");
-	        pluginmanager->initializeBackendPlugins();
-
 	        DEBUGMSG("Core", "initialize Import Plugins...");
 	        pluginmanager->initializeImportPlugins();
         }
@@ -212,6 +209,10 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
     if(pluginmanager) {
         switcher->setPluginManager(pluginmanager);
         pluginmanager->setSwitcher(switcher);
+        
+        DEBUGMSG("Core", "initialize Backend Plugins...");
+        pluginmanager->initializeBackendPlugins();
+
         DEBUGMSG("Core", "initialize OSD Plugins...");
         pluginmanager->initializeOSDPlugins();
 
