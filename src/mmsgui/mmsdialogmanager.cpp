@@ -39,7 +39,11 @@
 
 
 MMSDialogManager::MMSDialogManager() {
-	rootWindow = NULL;
+	this->rootWindow = NULL;
+}
+  
+MMSDialogManager::MMSDialogManager(MMSWindow *rootWindow) {
+	this->rootWindow = rootWindow;
 }
   
 MMSDialogManager::~MMSDialogManager() {

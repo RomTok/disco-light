@@ -29,13 +29,15 @@
 class MMSFileDialog {
     private:
     	string 				dialogfile;
-    	MMSDialogManager	dm;
+    	MMSDialogManager	*dm;
     	MMSWindow			*dialogwindow;
     	
     public:
-        MMSFileDialog(string dialogfile = "", MMSTheme *theme = NULL);
+        MMSFileDialog();
         MMSFileDialog(MMSWindow *dialogwindow);
         ~MMSFileDialog();
+        bool loadFileDialog(MMSWindow *parent, string dialogfile = "", MMSTheme *theme = NULL);
+        bool isInitialized();
         
         bool show();
 };

@@ -22,28 +22,49 @@
 
 #include "mmsgui/additional/mmsfiledialog.h"
 
-MMSFileDialog::MMSFileDialog(string dialogfile, MMSTheme *theme) {
-	this->dialogfile = dialogfile;
-	if (this->dialogfile != "")
-		this->dialogwindow = this->dm.loadDialog(this->dialogfile, theme);
-	else
-		this->dialogwindow = this->dm.loadDialog("share/disko/mmsfiledialog.xml", theme);
+MMSFileDialog::MMSFileDialog() {
+	this->dm = NULL;
+	this->dialogwindow = NULL;
 }
 
 MMSFileDialog::MMSFileDialog(MMSWindow *dialogwindow) {
+	this->dm = NULL;
 	this->dialogwindow = dialogwindow;
 }
 
 MMSFileDialog::~MMSFileDialog() {
-	if (this->dm.isLoaded()) {
-		// i have loaded the dialogfile, so i must delete it
-		if (this->dialogwindow)
-			delete this->dialogwindow;
+	if (this->dm) {
+		if (this->dm->isLoaded()) {
+			// i have loaded the dialogwindow, so i must delete it
+			if (this->dialogwindow)
+				delete this->dialogwindow;
+		}
+		delete dm;
 	}
 }
 
+
+bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSTheme *theme) {
+	this->dm = new MMSDialogManager(parent);
+	this->dialogfile = dialogfile;
+	this->dialogwindow = NULL;
+
+	if (this->dialogfile != "")
+		// load a user specified dialog file
+		this->dialogwindow = this->dm->loadDialog(this->dialogfile, theme);
+	else
+	if (parent)
+		// load the default dialog file which includes a child window
+		// do this only if a parent window is given!!!
+		this->dialogwindow = this->dm->loadChildDialog("share/disko/mmsfiledialog.xml", theme);
+}
+
+bool MMSFileDialog::isInitialized() {
+	return (this->dialogwindow);
+}
+
 bool MMSFileDialog::show() {
-	if (!this->dialogwindow) return false;
+	if (!isInitialized()) return false;
 	
 	this->dialogwindow->show();
 	return true;

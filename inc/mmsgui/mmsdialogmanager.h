@@ -68,6 +68,7 @@ class MMSDialogManager {
         
     public:
         MMSDialogManager();
+        MMSDialogManager(MMSWindow *rootWindow);
         ~MMSDialogManager();
         bool isLoaded();
         MMSWindow* loadDialog(string filename, MMSTheme *theme = NULL);
