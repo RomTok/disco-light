@@ -215,7 +215,7 @@ ifeq ($(libdir),)
 endif
 
 ifeq ($(datadir),)
-    export datadir=$(prefix)/share/
+    export datadir=$(prefix)/share/disko
 endif
 
 ifeq ($(sysconfir),)
