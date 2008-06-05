@@ -42,9 +42,9 @@ install:
 	@echo "writing pkgconfig information"
 	@install -d "$(DESTDIR)$(libdir)/../pkgconfig"
 	@echo "prefix=$(prefix)" > $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-	@echo "exec_prefix=\$${prefix}" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-	@echo "libdir=\$${prefix}/lib" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-	@echo "includedir=\$${prefix}/inc" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "exec_prefix=\$${prefix}/bin" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "libdir=\$${prefix}/lib/disko" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "includedir=\$${prefix}/include/disko" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo  >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Name: $(PROJECTNAME)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
