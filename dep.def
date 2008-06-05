@@ -161,10 +161,10 @@ endif
 #openssl
 ifndef OPENSSL_CHECKED
     $(info check for openssl)
-    export OPENSSL_LIBS=$(shell pkg-config --libs openssl)
+    export OPENSSL_LIBS=$(shell pkg-config --silence-errors --libs openssl)
     ifeq ($(OPENSSL_LIBS),)
-        $(warning openssl was not found. Either adjust PKG_CONFIG_PATH or install the package)
-        HAVE_ALL_DEPS=0
+        $(warning openssl was not found. Building without mmscrypt support.)
+        export OPENSSL_INC=-D_NO_MMSCRYPT
     else
         export OPENSSL_INC=$(shell pkg-config --cflags openssl)
     endif
