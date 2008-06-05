@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef _NO_MMSCRYPT
 #include <errno.h>
 #include <openssl/rand.h>
 #include <openssl/aes.h>
@@ -153,3 +154,5 @@ unsigned char* MMSCrypt::decrypt(unsigned char *in, unsigned int size, bool useM
     out[ol] = 0;
     return out;
 }
+
+#endif /* _NO_MMSCRYPT */
