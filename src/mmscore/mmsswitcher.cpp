@@ -87,13 +87,17 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
         /* show the menu bar */
         this->menu->setFocus(true);
-      this->menuBar->show();
+        this->menuBar->show();
 
         /* connect onSelectItem callback of the menu widget */
         menu->onSelectItem->connect(sigc::mem_fun(this,&MMSSwitcher::onSelectItem));
 
         /* connect onReturn callback of the menu widget */
         menu->onReturn->connect(sigc::mem_fun(this,&MMSSwitcher::onReturn));
+        
+    	/* create inputs */
+        subscribeKey(DIKS_MENU);
+        subscribeKey(DIKS_BACKSPACE);
     } catch(MMSError *error) {
         DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
         string msg = error->getMessage();
@@ -124,10 +128,6 @@ void MMSSwitcher::onSubscription(MMSInputSubscription *subscription){
     DFBInputDeviceKeySymbol key;
 
     subscription->getKey(key);
-
-  	// stops the application
-    if (key == DIKS_POWER)
-    	exit(0);
 
     if (key == DIKS_BACKSPACE) {
         /* hide all shown popups */
