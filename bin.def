@@ -21,8 +21,8 @@ install: all
 		pushd share &> /dev/null; \
 		for i in `find . -type f | grep -v /CVS/`; do \
 			dir=`dirname $$i`; \
-			install -d "$(DESTDIR)$(datadir)/$(PROJECTNAME)/$$dir"; \
-			install -c -m 644 "$$i" "$(DESTDIR)$(datadir)/$(PROJECTNAME)/$$dir/"; \
+			install -d "$(DESTDIR)$(datadir)/$$dir"; \
+			install -c -m 644 "$$i" "$(DESTDIR)$(datadir)/$$dir/"; \
 		done; \
 		popd &> /dev/null; \
 	fi
@@ -46,8 +46,8 @@ update: all
 		pushd share &> /dev/null; \
 		for i in `find . -type f | grep -v /CVS/`; do \
 			dir=`dirname $$i`; \
-			install -d "$(DESTDIR)$(datadir)/$(PROJECTNAME)/$$dir"; \
-			install -c -m 644 "$$i" "$(DESTDIR)$(datadir)/$(PROJECTNAME)/$$dir/"; \
+			install -d "$(DESTDIR)$(datadir)/$$dir"; \
+			install -c -m 644 "$$i" "$(DESTDIR)$(datadir)/$$dir/"; \
 		done; \
 		popd &> /dev/null; \
 	fi;
