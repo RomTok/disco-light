@@ -19,6 +19,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifdef LIBXML_READER_ENABLED
+
 #ifndef MMSXMLSERVERINTERFACE_H_
 #define MMSXMLSERVERINTERFACE_H_
 
@@ -38,4 +41,4 @@ class MMSXMLServerInterface : public MMSServerInterface {
 };
 
 #endif /*MMSXMLSERVERINTERFACE_H_*/
-
+#endif /* LIBXML_READER_ENABLED */

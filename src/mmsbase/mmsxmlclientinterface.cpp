@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsbase/mmsxmlclientinterface.h"
-
 #ifdef LIBXML_READER_ENABLED
+
+#include "mmsbase/mmsxmlclientinterface.h"
 
 MMSXMLClientInterface::MMSXMLClientInterface(string host, unsigned int port) {
     LIBXML_TEST_VERSION;
