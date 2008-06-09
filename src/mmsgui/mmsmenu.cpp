@@ -1087,25 +1087,26 @@ bool MMSMenu::switchBackToParentMenu(MMSDIRECTION direction) {
 }
 
 void MMSMenu::setSliders() {
-
+    MMSSlider *s;
+    
     /* get columns */
     unsigned int cols = getCols();
 
-    if (this->vSliderWidget) {
+    if(this->vSliderWidget && (s = dynamic_cast<MMSSlider*>(this->vSliderWidget))) {
         unsigned int pos = 0;
         int size = (int)children.size() - 1;
         if (size > 0)
             pos = (this->y * 100) / (size / cols + ((size % cols)?1:0));
-        ((MMSSlider *)this->vSliderWidget)->setPosition(pos);
+    	s->setPosition(pos);
     }
 
-    if ((this->hSliderWidget)&&(cols>1)) {
+    if ((this->hSliderWidget)&&(cols>1) && (s = dynamic_cast<MMSSlider*>(this->vSliderWidget))) {
         unsigned int pos = 0;
         int size = (int)children.size() - 1;
         if (size >= (int)cols) size = cols - 1;
         if (size > 0)
             pos = (this->x * 100) / size;
-        ((MMSSlider *)this->hSliderWidget)->setPosition(pos);
+    	s->setPosition(pos);
     }
 }
 
