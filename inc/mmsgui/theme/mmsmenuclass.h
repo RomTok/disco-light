@@ -51,7 +51,7 @@ namespace MMSGUI_MENU_ATTR {
 		{ "zoomsel_height", TAFF_ATTRTYPE_STRING }, \
 		{ "zoomsel_shiftx", TAFF_ATTRTYPE_STRING }, \
 		{ "zoomsel_shifty", TAFF_ATTRTYPE_STRING }, \
-		{ "smooth_scrolling", TAFF_ATTRTYPE_STRING }, \
+		{ "smooth_scrolling", TAFF_ATTRTYPE_BOOL }, \
 		{ "parent_window", TAFF_ATTRTYPE_STRING }
 
 	#define MMSGUI_MENU_ATTR_IDS \
