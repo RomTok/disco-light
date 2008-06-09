@@ -218,7 +218,8 @@ bool MMSFBSurface::clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *
 	if (!regionset) {
 		/* init region */
 		*region = myregion;
-		return this->parent->clipSubSurface(region, true, tmp, tmpset);
+		if(this->parent)
+    		return this->parent->clipSubSurface(region, true, tmp, tmpset);
 	}
     
     /* check if input region is within my region */
