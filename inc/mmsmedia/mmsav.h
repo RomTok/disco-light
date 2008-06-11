@@ -85,6 +85,7 @@ class MMSAV
         MMSWindow                       *window;                                /**< window for classes that use video  */
         VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
+        bool							didXineOpen;							/**< true if xine_open() was called		*/
     
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
     
@@ -105,7 +106,7 @@ class MMSAV
         // internal methods
         void xineInit();
         void initialize(const bool verbose = false, MMSWindow *window = NULL);
-        void open(xine_event_listener_cb_t queue_cb = NULL);
+        void open(xine_event_listener_cb_t queue_cb = NULL, void *userData = NULL);
         void setStatus(int status);
         void sendEvent(int type, void *data = NULL, int datalen = 0);
 

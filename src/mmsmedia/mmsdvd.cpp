@@ -121,7 +121,7 @@ MMSDVD::~MMSDVD() {
  * Calls MMSAV::open() with the queue_cb callback.
  */
 void MMSDVD::open() {
-    MMSAV::open(queue_cb);
+    MMSAV::open(queue_cb, (void*)this);
 }
 
 /**

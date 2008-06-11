@@ -42,7 +42,7 @@ static void output_cb(void *cdata, int width, int height, double ratio,
                       DFBSurfacePixelFormat format, DFBRectangle* dest_rect) {
     VODESC *vodesc = (VODESC *) cdata;
 
-	//printf("\noutput_cp %d:%d:%f",width,height,ratio);
+	//printf("\noutput_cp %d:%d:%f:%d:%d",width,height,ratio,vodesc->windsc.width,vodesc->windsc.height);
     if (vodesc->ratio != ratio) {
     
         /* ratio has changed */
@@ -224,6 +224,9 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         window->getSurface()->getSize(&(this->vodesc.windsc.width), &(this->vodesc.windsc.height));
         this->vodesc.winsurface = window->getSurface();
     
+        this->vodesc.rect.w = this->vodesc.windsc.width;
+        this->vodesc.rect.h = (int)((double)(this->vodesc.windsc.width) / this->vodesc.ratio + 0.5);
+        
         /* clear surface */
         if(!this->vodesc.winsurface->clear())
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::clear() failed");
@@ -290,6 +293,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
  * Initializes private variables
  */ 
 MMSAV::MMSAV() : window(NULL),
+				 didXineOpen(false),
                  verbose(false),
                  status(STATUS_NONE),
                  pos(0),
@@ -360,7 +364,7 @@ MMSAV::~MMSAV() {
  *
  * @exception   MMSAVError  Cannot get a new stream
  */
-void MMSAV::open(xine_event_listener_cb_t queue_cb) {
+void MMSAV::open(xine_event_listener_cb_t queue_cb, void *userData) {
     /* open stream */
     if (!(this->stream = xine_stream_new(this->xine, this->ao, this->vo)))
         throw new MMSAVError(0, "Cannot get a new stream");
@@ -388,7 +392,10 @@ void MMSAV::open(xine_event_listener_cb_t queue_cb) {
     /* create event listener thread */
     if(queue_cb) {
         this->queue = xine_event_new_queue(this->stream);
-        xine_event_create_listener_thread(this->queue, queue_cb, (void*)this);
+        if(this->queue)
+        	xine_event_create_listener_thread(this->queue, queue_cb, userData);
+        else
+        	DEBUGMSG("MMSMedia", "Could not create event listener");
     }
 }
 
@@ -658,7 +665,10 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
         this->open();
     
     if(currentMRL != mrl) {
-        xine_close(this->stream);
+        if(this->didXineOpen) {
+    	    xine_close(this->stream);
+    	    this->didXineOpen = false;
+        }
     
         if(!xine_open(this->stream, mrl.c_str())) {
             string msg;
@@ -682,6 +692,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
             throw new MMSAVError(0, msg);
         }
 
+        this->didXineOpen = true;
         currentMRL = mrl;
     }
     else if(this->isPlaying())

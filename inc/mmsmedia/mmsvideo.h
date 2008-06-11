@@ -42,6 +42,7 @@ class MMSVideo : public MMSAV {
         MMSVideo(MMSWindow *window, const bool verbose = false);
         ~MMSVideo();
         
+        void open();
         void startPlaying(const string file, const bool cont = true);
 };
 

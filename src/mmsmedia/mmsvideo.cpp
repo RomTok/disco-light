@@ -26,6 +26,27 @@
 MMS_CREATEERROR(MMSVideoError);
 
 /**
+ * Callback, that will be called if xine sends event messages.
+ *  
+ * @param   userData    [in/out]    pointer to the MMSVideo object
+ * @param   event       [in]        pointer to event structure
+ */
+static void queue_cb(void *userData, const xine_event_t *event) {
+	MMSVideo               *mmsvideo = (MMSVideo*)userData;
+    xine_ui_message_data_t *msg      = (xine_ui_message_data_t*)event->data;
+	
+    printf("event: %d\n", event->type);
+	switch(event->type) {
+        case XINE_EVENT_UI_MESSAGE:
+			if(msg->explanation)
+			    mmsvideo->onError->emit(string((char*)msg + msg->parameters));
+    	    break;
+        default:
+            break;
+    }
+}
+
+/**
  * Initializes everything that is needed by MMSVideo.
  *
  * @param   window  [in]    main window for video playback
@@ -45,6 +66,13 @@ MMSVideo::~MMSVideo() {
 }
 
 /**
+ * Calls MMSAV::open() with the queue_cb callback.
+ */
+void MMSVideo::open() {
+    MMSAV::open(queue_cb, (void*)this);
+}
+
+/**
  * Starts playing.
  *
  * If the continue flag is set it tries to continue
@@ -56,6 +84,7 @@ MMSVideo::~MMSVideo() {
  * @exception   MMSAVError stream could not be opened
  */
 void MMSVideo::startPlaying(const string file, const bool cont) {
+   this->open();
     
    string::size_type loc = file.find( "://", 0 );
    if( loc != string::npos ) {
