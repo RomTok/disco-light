@@ -197,6 +197,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
        
     } catch(MMSError *error) {
         DEBUGMSG("Core", "Abort due to: " + error->getMessage());
+        return false;
     }
     
 	return true;
