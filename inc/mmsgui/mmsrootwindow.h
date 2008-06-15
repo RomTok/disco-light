@@ -40,7 +40,6 @@ class MMSRootWindow : public MMSWindow {
         MMSRootWindow(string className, string w, string h, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER,
                       MMSWINDOW_FLAGS flags = MMSW_NONE, MMSTheme *theme = NULL, bool *own_surface = NULL);
         virtual ~MMSRootWindow(); 
-        MMSWINDOWTYPE getType() { return MMSWINDOWTYPE_ROOTWINDOW; }
 
     public:
         /* theme access methods */

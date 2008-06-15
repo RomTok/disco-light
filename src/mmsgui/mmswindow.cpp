@@ -81,27 +81,45 @@ MMSWindow::MMSWindow() {
 }
 
 MMSWindow::~MMSWindow() {
-    /* delete the callbacks */
+
+	// hide the window if shown
+	instantHide();
+
+	// delete the callbacks
     if (onBeforeShow) delete onBeforeShow;
     if (onAfterShow) delete onAfterShow;
     if (onBeforeHide) delete onBeforeHide;
     if (onHide) delete onHide;
     if (onHandleInput) delete onHandleInput;
 
-    if (this->windowmanager)
-        this->windowmanager->removeWindow(this);
+	if (this->type != MMSWINDOWTYPE_CHILDWINDOW) {
+		// remove normal window
+	    if (this->windowmanager)
+	        this->windowmanager->removeWindow(this);
+	}
+	else {
+		// remove child window from parent
+		if (this->parent)
+			this->parent->removeChildWindow(this);
+	}
 
-    /* delete children */
-    for (unsigned int i = 0; i < children.size(); i++)
-        delete children.at(i);
+    // delete children
+	// i have to delete only the first widget because all others are children from it and will be implicitly deleted 
+	if (children.size()>0)
+		delete children.at(0);
 
-    /* delete childwins */
+    // delete childwins
     for (unsigned int i = 0; i < childwins.size(); i++)
         delete childwins.at(i).window;
 
+    // delete the rest :)
     delete this->action;
     delete this->im;
     delete this->fm;
+}
+
+MMSWINDOWTYPE MMSWindow::getType() {
+	return this->type;
 }
 
 bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
@@ -613,6 +631,22 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     return true;
 }
 
+
+
+bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
+    if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
+        return false;
+
+    for (unsigned int i = 0; i < this->childwins.size(); i++)
+    	if (childwins.at(i).window == childwin) {
+            this->childwins.erase(this->childwins.begin()+i);
+    		return true;
+    	}
+
+    return false;
+}
+
+
 bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity) {
     if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
         return false;
@@ -1064,7 +1098,7 @@ void MMSWindow::loadArrowWidgets() {
 void MMSWindow::getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows) {
 
     if (this->focusedwidget) {
-        /* for my widgets */
+    	/* for my widgets */
         setarrows->up=(this->focusedwidget->canNavigateUp());
         setarrows->down=(this->focusedwidget->canNavigateDown());
         setarrows->left=(this->focusedwidget->canNavigateLeft());
@@ -1741,13 +1775,11 @@ void MMSWindow::add(MMSWidget *child) {
 }
 
 void MMSWindow::remove(MMSWidget *child) {
-    MMSWidget *widget;
     /* remove from children vector */
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        widget = children.at(i);
-        if(widget->getId() == child->getId()) {
+        if(children.at(i) == child) {
             this->children.erase(this->children.begin()+i);
-            break;
+            return;
         }
     }
 }
@@ -3219,36 +3251,41 @@ void MMSWindow::instantShow() {
 
 void MMSWindow::instantHide() {
 	if (!parent) {
-    	/* normal window */
-	    if (this->window) {
-	        this->window->setOpacity(0);
-	        this->window->hide();
-	    }
+    	// normal window
+	    if (this->windowmanager)
+	        this->windowmanager->removeWindowFromToplevel(this);
+    	if (isShown())
+    	    if (this->window) {
+		        this->window->setOpacity(0);
+		        this->window->hide();
+	    	}
 	}
 	else {
-		/* child window */
-        this->parent->setChildWindowOpacity(this, 0);
+		// child window
+    	if (isShown()) {
+			removeFocusFromChildWindow();
+		    this->parent->setChildWindowOpacity(this, 0);
+    	}
 	}
 }
 
 
+
 MMSWidget* MMSWindow::searchForWidget(string name) {
     MMSWidget *widget;
+
+	if (name=="")
+	    return NULL;
 
     /* for all child windows */
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((widget = childwins.at(i).window->searchForWidget(name)))
             return widget;
 
-    /* first, my own children */
+    /* for my own children (widgets) */
     for (unsigned int i = 0; i < children.size(); i++)
         if (children.at(i)->getName() == name)
             return children.at(i);
-
-    /* second, call search method of my children */
-    for (unsigned int i = 0; i < children.size(); i++)
-        if ((widget = children.at(i)->searchForWidget(name)))
-            return widget;
 
     return NULL;
 }

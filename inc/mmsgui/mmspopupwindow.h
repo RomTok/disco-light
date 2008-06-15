@@ -46,7 +46,6 @@ class MMSPopupWindow : public MMSWindow {
                        MMSWINDOW_FLAGS flags = MMSW_NONE, MMSTheme *theme = NULL, bool *own_surface = NULL,
                        unsigned int duration = 0);
         virtual ~MMSPopupWindow(); 
-		MMSWINDOWTYPE getType() { return MMSWINDOWTYPE_POPUPWINDOW; }
 
         virtual bool show();
 

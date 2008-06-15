@@ -51,7 +51,7 @@ MMSWindowClass::MMSWindowClass() {
 }
 
 MMSWindowClass::~MMSWindowClass() {
-    freeAlignment();
+	freeAlignment();
     freeDx();
     freeDy();
     freeWidth();

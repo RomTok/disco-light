@@ -23,7 +23,8 @@
 #ifndef MMSFILEDIALOG_H_
 #define MMSFILEDIALOG_H_
 
-#include "mmsgui/mmswindow.h"
+#include "mmsgui/mmswindows.h"
+#include "mmsgui/mmswidgets.h"
 #include "mmsgui/mmsdialogmanager.h"
 
 class MMSFileDialog {
@@ -32,14 +33,40 @@ class MMSFileDialog {
     	MMSDialogManager	*dm;
     	MMSWindow			*dialogwindow;
     	
+    	MMSLabelWidget		*filedialog_title;
+    	
+    	MMSWidget			*filedialog_ok;
+    	MMSWidget			*filedialog_cancel;
+    	
+    	MMSLabelWidget		*filedialog_path;
+    	MMSLabelWidget		*filedialog_name;
+
+    	MMSMenuWidget		*filedialog_filelist;
+
+    	MMSButtonWidget		*filedialog_up;
+    	MMSButtonWidget		*filedialog_down;
+
+    	string				path;
+    	string				filename;
+    	
+    	void onReturn(MMSWidget *widget);
+    	void onSelectItem(MMSWidget *widget);
+    	
+    	bool fillMenu();
+
     public:
         MMSFileDialog();
-        MMSFileDialog(MMSWindow *dialogwindow);
+        MMSFileDialog(string path, string filename, MMSWindow *dialogwindow = NULL);
         ~MMSFileDialog();
         bool loadFileDialog(MMSWindow *parent, string dialogfile = "", MMSTheme *theme = NULL);
         bool isInitialized();
+
+        bool setTitle(string title);
         
         bool show();
+        
+        sigc::signal<void, MMSFileDialog*> *onOK;
+        sigc::signal<void> *onCancel;
 };
 
 #endif /*MMSFILEDIALOG_H_*/

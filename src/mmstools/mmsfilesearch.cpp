@@ -28,11 +28,12 @@
 #include <fnmatch.h>
 
 
-MMSFileSearch::MMSFileSearch(string directory, string mask, bool recursive, bool caseinsensitive) {
-	this->directory = directory;
+MMSFileSearch::MMSFileSearch(string directory, string mask, bool recursive, bool caseinsensitive, bool getdirs) {
+	setDircetory(directory);
 	this->mask = mask;
 	this->recursive = recursive;
 	this->caseinsensitive = caseinsensitive;
+	this->getdirs = getdirs;
 	this->option = MMSFILESEARCH_NONE;
 	seperateMask();
 }
@@ -57,7 +58,10 @@ void MMSFileSearch::setRecursive(bool recursive) {
 }
 
 void MMSFileSearch::setDircetory(string directory) {
-	this->directory = directory;
+	if (directory=="")
+		this->directory = "/";
+	else
+		this->directory = directory;
 }
 
 void MMSFileSearch::setString(string mask) {
@@ -97,9 +101,8 @@ void MMSFileSearch::seperateMask() {
 list<MMSFILE_ENTRY *> MMSFileSearch::execute() {
     list<MMSFILE_ENTRY *> result;
 
-	this->dirhandle = opendir(this->directory.c_str());
-	string cwd = this->directory; 
-	scanDir(&result,this->dirhandle,cwd);
+    this->dirhandle = opendir(this->directory.c_str());
+	scanDir(&result,this->dirhandle,(this->directory!="/")?this->directory:"");
     closedir(this->dirhandle);	 
     return result;
 }
@@ -122,6 +125,29 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 		}
 					
 		if(entry->d_type == DT_DIR) {
+			if (this->getdirs) {
+				// put name of directory to the list
+				if((this->option == MMSFILESEARCH_NONE)||(this->option == MMSFILESEARCH_DEEPESTDIR_OF_FILE)) {
+					
+					// we have a regular file -> and want to check it
+					if(match(entry->d_name) == true) {
+						filefound = true;
+
+						// we have found sth;
+						if((this->option != MMSFILESEARCH_DEEPESTDIR_OF_FILE)&&(this->option != MMSFILESEARCH_DEEPESTDIR)) {
+														
+							//we really really want it
+							MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
+							file->isdir = true;
+							file->name = cwd + "/" + entry->d_name;
+							file->basename = entry->d_name;
+							file->path = cwd;
+							result->push_back(file);
+						}
+					}
+				}
+				
+			}
 			if(this->recursive == true) {
 				// we have a directory -> recurse
 				string newcwd = cwd + "/" + entry->d_name;
@@ -146,6 +172,7 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 													
 						//we really really want it
 						MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
+						file->isdir = false;
 						file->name = cwd + "/" + entry->d_name;
 						file->basename = entry->d_name;
 						file->path = cwd;
@@ -169,6 +196,7 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
                                                         
                             //we really really want it
                             MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
+							file->isdir = false;
                             file->name = cwd + "/" + entry->d_name;
                             file->basename = entry->d_name;
                             file->path = cwd;
@@ -197,6 +225,7 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 
 		// we have no dirs in here and should return the deepest directory entry
 		MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
+		file->isdir = false;
 		file->name = cwd;
 		pos = cwd.find_last_of('/');
 		file->basename = cwd.substr(pos+1);
@@ -207,6 +236,7 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 
 		//we should have at least one file until we really want it
 		MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
+		file->isdir = false;
 		file->name = cwd;
 		pos = cwd.find_last_of('/');
 		file->basename = cwd.substr(pos+1);

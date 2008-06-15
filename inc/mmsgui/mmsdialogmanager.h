@@ -35,6 +35,7 @@
 class MMSDialogManager {
 	private:
         MMSWindow               *rootWindow;
+        bool					rootWindow_is_mine;
 
         vector<MMSChildWindow*> childWins;
 

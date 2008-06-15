@@ -43,7 +43,6 @@ class MMSChildWindow : public MMSWindow {
                        string w, string h, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER,
                        MMSWINDOW_FLAGS flags = MMSW_NONE, MMSTheme *theme = NULL, bool *own_surface = NULL);
         virtual ~MMSChildWindow(); 
-        MMSWINDOWTYPE getType() { return MMSWINDOWTYPE_CHILDWINDOW; }
 
     public:
         /* theme access methods */

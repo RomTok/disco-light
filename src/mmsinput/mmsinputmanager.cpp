@@ -61,7 +61,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			}	
 			exit(0);
 		}
-	
+
 		window = this->windowmanager->getToplevelWindow();
 	
 		if(window!=NULL) {

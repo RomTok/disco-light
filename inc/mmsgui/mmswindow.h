@@ -103,7 +103,10 @@ class MMSWindow {
         	//! currently navigate right is possible?
         	bool right;
         } ARROW_WIDGET_STATUS;
-        
+
+        //! type of the window
+        MMSWINDOWTYPE type;
+
         //! access to the theme which is used
         MMSTheme            *theme;
         
@@ -278,6 +281,9 @@ class MMSWindow {
         //! Internal method: Add a child window.
         bool addChildWindow(MMSWindow *childwin);
 
+        //! Internal method: Remove a child window.
+        bool removeChildWindow(MMSWindow *childwin);
+        
         //! Internal method: Set the opacity of a child window.
         bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity);
 
@@ -395,7 +401,7 @@ class MMSWindow {
         /*!
         \return type of the window
         */
-        virtual MMSWINDOWTYPE getType() = 0;
+        MMSWINDOWTYPE getType();
 
         //! Get the name of the window.
         /*!
@@ -1247,16 +1253,17 @@ class MMSWindow {
     friend class MMSRootWindow;
     friend class MMSChildWindow;
     friend class MMSWidget;
-    friend class MMSHBox;
-    friend class MMSVBox;
-    friend class MMSLabel;
-    friend class MMSButton;
-    friend class MMSImage;
-    friend class MMSProgressBar;
-    friend class MMSMenu;
-    friend class MMSTextBox;
-    friend class MMSArrow;
-    friend class MMSSlider;
+    friend class MMSHBoxWidget;
+    friend class MMSVBoxWidget;
+    friend class MMSLabelWidget;
+    friend class MMSButtonWidget;
+    friend class MMSImageWidget;
+    friend class MMSProgressBarWidget;
+    friend class MMSMenuWidget;
+    friend class MMSTextBoxWidget;
+    friend class MMSArrowWidget;
+    friend class MMSSliderWidget;
+    friend class MMSInputWidget;
 };
 
 #endif /*MMSWINDOW_H_*/

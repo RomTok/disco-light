@@ -47,7 +47,7 @@ class MMSSwitcher : public IMMSSwitcher {
         static MMSMainWindow                 *window;            /**< whole switcher window                                         */
 
         MMSChildWindow                       *menuBar;           /**< shows the plugin menu                                         */
-        MMSMenu                              *menu;              /**< plugin menu                                                   */
+        MMSMenuWidget                        *menu;              /**< plugin menu                                                   */
 
         static map<int, plugin_data_t *>     plugins;            /**< loaded plugins                                                */
         static int                           curr_plugin;        /**< index to pluginSwitchers which points to the current plugin   */

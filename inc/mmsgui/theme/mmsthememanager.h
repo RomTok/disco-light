@@ -48,14 +48,15 @@ class MMSThemeManager {
         void getPopupWindowValues(MMSTaffFile *tafff, MMSPopupWindowClass *themeClass, MMSTheme *theme);
         void getRootWindowValues(MMSTaffFile *tafff, MMSRootWindowClass *themeClass, MMSTheme *theme);
         void getChildWindowValues(MMSTaffFile *tafff, MMSChildWindowClass *themeClass, MMSTheme *theme);
-        void getLabelValues(MMSTaffFile *tafff, MMSLabelClass *themeClass, MMSTheme *theme);
-        void getImageValues(MMSTaffFile *tafff, MMSImageClass *themeClass, MMSTheme *theme);
-        void getButtonValues(MMSTaffFile *tafff, MMSButtonClass *themeClass, MMSTheme *theme);
-        void getProgressBarValues(MMSTaffFile *tafff, MMSProgressBarClass *themeClass, MMSTheme *theme);
-        void getSliderValues(MMSTaffFile *tafff, MMSSliderClass *themeClass, MMSTheme *theme);
-        void getMenuValues(MMSTaffFile *tafff, MMSMenuClass *themeClass, MMSTheme *theme);
-        void getTextBoxValues(MMSTaffFile *tafff, MMSTextBoxClass *themeClass, MMSTheme *theme);
-        void getArrowValues(MMSTaffFile *tafff, MMSArrowClass *themeClass, MMSTheme *theme);
+        void getLabelWidgetValues(MMSTaffFile *tafff, MMSLabelWidgetClass *themeClass, MMSTheme *theme);
+        void getImageWidgetValues(MMSTaffFile *tafff, MMSImageWidgetClass *themeClass, MMSTheme *theme);
+        void getButtonWidgetValues(MMSTaffFile *tafff, MMSButtonWidgetClass *themeClass, MMSTheme *theme);
+        void getProgressBarWidgetValues(MMSTaffFile *tafff, MMSProgressBarWidgetClass *themeClass, MMSTheme *theme);
+        void getSliderWidgetValues(MMSTaffFile *tafff, MMSSliderWidgetClass *themeClass, MMSTheme *theme);
+        void getMenuWidgetValues(MMSTaffFile *tafff, MMSMenuWidgetClass *themeClass, MMSTheme *theme);
+        void getTextBoxWidgetValues(MMSTaffFile *tafff, MMSTextBoxWidgetClass *themeClass, MMSTheme *theme);
+        void getArrowWidgetValues(MMSTaffFile *tafff, MMSArrowWidgetClass *themeClass, MMSTheme *theme);
+        void getInputWidgetValues(MMSTaffFile *tafff, MMSInputWidgetClass *themeClass, MMSTheme *theme);
 
 //        void getClassValues(MMSTaffFile *tafff, MMSTheme *theme);
         void getTemplateClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
@@ -63,14 +64,15 @@ class MMSThemeManager {
         void getPopupWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getRootWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getChildWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getLabelClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getImageClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getButtonClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getProgressBarClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getSliderClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getMenuClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getTextBoxClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
-        void getArrowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getLabelWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getImageWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getButtonWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getProgressBarWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getSliderWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getMenuWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getTextBoxWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getArrowWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getInputWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
 
 
         void loadTheme(string path, string themeName, MMSTheme *theme);

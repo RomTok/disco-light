@@ -27,22 +27,11 @@
 #include "mmsgui/theme/mmstheme.h"
 #include "mmsgui/theme/mmsthememanager.h"
 
-#include "mmsgui/mmsmainwindow.h"
-#include "mmsgui/mmspopupwindow.h"
-#include "mmsgui/mmsrootwindow.h"
+#include "mmsgui/mmswindows.h"
 #include "mmsgui/mmsdialogmanager.h"
 #include "mmsgui/mmswindowmanager.h"
 
-#include "mmsgui/mmshbox.h"
-#include "mmsgui/mmsvbox.h"
-#include "mmsgui/mmsbutton.h"
-#include "mmsgui/mmslabel.h"
-#include "mmsgui/mmsimage.h"
-#include "mmsgui/mmsarrow.h"
-#include "mmsgui/mmsprogressbar.h"
-#include "mmsgui/mmsmenu.h"
-#include "mmsgui/mmstextbox.h"
-#include "mmsgui/mmsslider.h"
+#include "mmsgui/mmswidgets.h"
 
 #include "mmsgui/additional/mmsfiledialog.h"
 

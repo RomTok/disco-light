@@ -23,12 +23,12 @@
 #ifndef MMSIMAGETHREAD_H_
 #define MMSIMAGETHREAD_H_
 
-#include "mmsgui/mmsimage.h"
+#include "mmsgui/mmsimagewidget.h"
 #include <sigc++/sigc++.h>
 
 class MMSImageThread : public MMSThread {
     private:
-        class MMSImage *image;
+        class MMSImageWidget *image;
 
         bool inWait;
         bool stopThread;
@@ -39,7 +39,7 @@ class MMSImageThread : public MMSThread {
         void threadMain();
 
     public:
-        MMSImageThread(MMSImage *image);
+        MMSImageThread(MMSImageWidget *image);
         void stop();
         void pause(bool pauseThread);
 };

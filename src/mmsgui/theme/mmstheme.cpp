@@ -48,24 +48,26 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"popupwindow", 	MMSGUI_POPUPWINDOW_ATTR_I		},
 	{	"rootwindow",	NULL, 	NULL,			MMSGUI_ROOTWINDOW_ATTR_I		},
 	{	"class", 		"type",	"rootwindow",	MMSGUI_ROOTWINDOW_ATTR_I		},
-	{	"arrow", 		NULL, 	NULL,			MMSGUI_ARROW_ATTR_I				},
-	{	"class", 		"type",	"arrow",		MMSGUI_ARROW_ATTR_I				},
-	{	"button", 		NULL, 	NULL,			MMSGUI_BUTTON_ATTR_I			},
-	{	"class", 		"type",	"button",		MMSGUI_BUTTON_ATTR_I			},
-	{	"image", 		NULL, 	NULL,			MMSGUI_IMAGE_ATTR_I				},
-	{	"class", 		"type",	"image",		MMSGUI_IMAGE_ATTR_I				},
-	{	"label", 		NULL, 	NULL,			MMSGUI_LABEL_ATTR_I				},
-	{	"class", 		"type",	"label",		MMSGUI_LABEL_ATTR_I				},
-	{	"menu", 		NULL, 	NULL,			MMSGUI_MENU_ATTR_I				},
-	{	"class", 		"type",	"menu",			MMSGUI_MENU_ATTR_I				},
+	{	"arrow", 		NULL, 	NULL,			MMSGUI_ARROWWIDGET_ATTR_I		},
+	{	"class", 		"type",	"arrow",		MMSGUI_ARROWWIDGET_ATTR_I		},
+	{	"button", 		NULL, 	NULL,			MMSGUI_BUTTONWIDGET_ATTR_I		},
+	{	"class", 		"type",	"button",		MMSGUI_BUTTONWIDGET_ATTR_I		},
+	{	"image", 		NULL, 	NULL,			MMSGUI_IMAGEWIDGET_ATTR_I		},
+	{	"class", 		"type",	"image",		MMSGUI_IMAGEWIDGET_ATTR_I		},
+	{	"label", 		NULL, 	NULL,			MMSGUI_LABELWIDGET_ATTR_I		},
+	{	"class", 		"type",	"label",		MMSGUI_LABELWIDGET_ATTR_I		},
+	{	"menu", 		NULL, 	NULL,			MMSGUI_MENUWIDGET_ATTR_I		},
+	{	"class", 		"type",	"menu",			MMSGUI_MENUWIDGET_ATTR_I		},
 	{	"menuitem",		NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
-	{	"progressbar",	NULL, 	NULL,			MMSGUI_PROGRESSBAR_ATTR_I		},
-	{	"class", 		"type",	"progressbar",	MMSGUI_PROGRESSBAR_ATTR_I		},
-	{	"slider",		NULL, 	NULL,			MMSGUI_SLIDER_ATTR_I			},
-	{	"class", 		"type",	"slider",		MMSGUI_SLIDER_ATTR_I			},
-	{	"textbox",		NULL, 	NULL,			MMSGUI_TEXTBOX_ATTR_I			},
-	{	"class", 		"type",	"textbox",		MMSGUI_TEXTBOX_ATTR_I			},
+	{	"progressbar",	NULL, 	NULL,			MMSGUI_PROGRESSBARWIDGET_ATTR_I	},
+	{	"class", 		"type",	"progressbar",	MMSGUI_PROGRESSBARWIDGET_ATTR_I	},
+	{	"slider",		NULL, 	NULL,			MMSGUI_SLIDERWIDGET_ATTR_I		},
+	{	"class", 		"type",	"slider",		MMSGUI_SLIDERWIDGET_ATTR_I		},
+	{	"textbox",		NULL, 	NULL,			MMSGUI_TEXTBOXWIDGET_ATTR_I		},
+	{	"class", 		"type",	"textbox",		MMSGUI_TEXTBOXWIDGET_ATTR_I		},
 	{	"separator",	NULL, 	NULL,			MMSGUI_NONE_ATTR_I				},
+	{	"input", 		NULL, 	NULL,			MMSGUI_INPUTWIDGET_ATTR_I		},
+	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
@@ -125,85 +127,96 @@ bool MMSTheme::addChildWindowClass(MMSChildWindowClass *themeClass) {
     return true;
 }
 
-bool MMSTheme::addLabelClass(MMSLabelClass *themeClass) {
+bool MMSTheme::addLabelWidgetClass(MMSLabelWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < labelClasses.size(); i++)
-        if (labelClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < labelWidgetClasses.size(); i++)
+        if (labelWidgetClasses.at(i)->getClassName() == className)
             return false;
-    labelClasses.push_back(themeClass);
+    labelWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addImageClass(MMSImageClass *themeClass) {
+bool MMSTheme::addImageWidgetClass(MMSImageWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < imageClasses.size(); i++)
-        if (imageClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < imageWidgetClasses.size(); i++)
+        if (imageWidgetClasses.at(i)->getClassName() == className)
             return false;
-    imageClasses.push_back(themeClass);
+    imageWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addButtonClass(MMSButtonClass *themeClass) {
+bool MMSTheme::addButtonWidgetClass(MMSButtonWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < buttonClasses.size(); i++)
-        if (buttonClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < buttonWidgetClasses.size(); i++)
+        if (buttonWidgetClasses.at(i)->getClassName() == className)
             return false;
-    buttonClasses.push_back(themeClass);
+    buttonWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addProgressBarClass(MMSProgressBarClass *themeClass) {
+bool MMSTheme::addProgressBarWidgetClass(MMSProgressBarWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < progressBarClasses.size(); i++)
-        if (progressBarClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < progressBarWidgetClasses.size(); i++)
+        if (progressBarWidgetClasses.at(i)->getClassName() == className)
             return false;
-    progressBarClasses.push_back(themeClass);
+    progressBarWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addMenuClass(MMSMenuClass *themeClass) {
+bool MMSTheme::addMenuWidgetClass(MMSMenuWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < menuClasses.size(); i++)
-        if (menuClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < menuWidgetClasses.size(); i++)
+        if (menuWidgetClasses.at(i)->getClassName() == className)
             return false;
-    menuClasses.push_back(themeClass);
+    menuWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addTextBoxClass(MMSTextBoxClass *themeClass) {
+bool MMSTheme::addTextBoxWidgetClass(MMSTextBoxWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < textBoxClasses.size(); i++)
-        if (textBoxClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < textBoxWidgetClasses.size(); i++)
+        if (textBoxWidgetClasses.at(i)->getClassName() == className)
             return false;
-    textBoxClasses.push_back(themeClass);
+    textBoxWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addArrowClass(MMSArrowClass *themeClass) {
+bool MMSTheme::addArrowWidgetClass(MMSArrowWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < arrowClasses.size(); i++)
-        if (arrowClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < arrowWidgetClasses.size(); i++)
+        if (arrowWidgetClasses.at(i)->getClassName() == className)
             return false;
-    arrowClasses.push_back(themeClass);
+    arrowWidgetClasses.push_back(themeClass);
     return true;
 }
 
-bool MMSTheme::addSliderClass(MMSSliderClass *themeClass) {
+bool MMSTheme::addSliderWidgetClass(MMSSliderWidgetClass *themeClass) {
     string className = themeClass->getClassName();
     if (className == "") return false;
-    for (unsigned int i = 0; i < sliderClasses.size(); i++)
-        if (sliderClasses.at(i)->getClassName() == className)
+    for (unsigned int i = 0; i < sliderWidgetClasses.size(); i++)
+        if (sliderWidgetClasses.at(i)->getClassName() == className)
             return false;
-    sliderClasses.push_back(themeClass);
+    sliderWidgetClasses.push_back(themeClass);
     return true;
 }
+
+bool MMSTheme::addInputWidgetClass(MMSInputWidgetClass *themeClass) {
+    string className = themeClass->getClassName();
+    if (className == "") return false;
+    for (unsigned int i = 0; i < inputWidgetClasses.size(); i++)
+        if (inputWidgetClasses.at(i)->getClassName() == className)
+            return false;
+    inputWidgetClasses.push_back(themeClass);
+    return true;
+}
+
 
 #ifdef ssfsf
 void MMSTheme::addSimpleHSliderClass(MMSSIMPLESLIDERH_THEME *simpleHSliderClass, const string name) {
@@ -294,69 +307,79 @@ MMSChildWindowClass* MMSTheme::getChildWindowClass(string className) {
     return NULL;
 }
 
-MMSLabelClass* MMSTheme::getLabelClass(string className) {
+MMSLabelWidgetClass* MMSTheme::getLabelWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < labelClasses.size(); i++)
-        if (labelClasses.at(i)->getClassName() == className)
-            return labelClasses.at(i);
+    for (unsigned int i = 0; i < labelWidgetClasses.size(); i++)
+        if (labelWidgetClasses.at(i)->getClassName() == className)
+            return labelWidgetClasses.at(i);
     return NULL;
 }
 
-MMSImageClass* MMSTheme::getImageClass(string className) {
+MMSImageWidgetClass* MMSTheme::getImageWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < imageClasses.size(); i++)
-        if (imageClasses.at(i)->getClassName() == className)
-            return imageClasses.at(i);
+    for (unsigned int i = 0; i < imageWidgetClasses.size(); i++)
+        if (imageWidgetClasses.at(i)->getClassName() == className)
+            return imageWidgetClasses.at(i);
     return NULL;
 }
 
-MMSButtonClass* MMSTheme::getButtonClass(string className) {
+MMSButtonWidgetClass* MMSTheme::getButtonWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < buttonClasses.size(); i++)
-        if (buttonClasses.at(i)->getClassName() == className)
-            return buttonClasses.at(i);
+    for (unsigned int i = 0; i < buttonWidgetClasses.size(); i++)
+        if (buttonWidgetClasses.at(i)->getClassName() == className)
+            return buttonWidgetClasses.at(i);
     return NULL;
 }
 
-MMSProgressBarClass* MMSTheme::getProgressBarClass(string className) {
+MMSProgressBarWidgetClass* MMSTheme::getProgressBarWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < progressBarClasses.size(); i++)
-        if (progressBarClasses.at(i)->getClassName() == className)
-            return progressBarClasses.at(i);
+    for (unsigned int i = 0; i < progressBarWidgetClasses.size(); i++)
+        if (progressBarWidgetClasses.at(i)->getClassName() == className)
+            return progressBarWidgetClasses.at(i);
     return NULL;
 }
 
-MMSMenuClass* MMSTheme::getMenuClass(string className) {
+MMSMenuWidgetClass* MMSTheme::getMenuWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < menuClasses.size(); i++)
-        if (menuClasses.at(i)->getClassName() == className)
-            return menuClasses.at(i);
+    for (unsigned int i = 0; i < menuWidgetClasses.size(); i++)
+        if (menuWidgetClasses.at(i)->getClassName() == className)
+            return menuWidgetClasses.at(i);
     return NULL;
 }
 
-MMSTextBoxClass* MMSTheme::getTextBoxClass(string className) {
+MMSTextBoxWidgetClass* MMSTheme::getTextBoxWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < textBoxClasses.size(); i++)
-        if (textBoxClasses.at(i)->getClassName() == className)
-            return textBoxClasses.at(i);
+    for (unsigned int i = 0; i < textBoxWidgetClasses.size(); i++)
+        if (textBoxWidgetClasses.at(i)->getClassName() == className)
+            return textBoxWidgetClasses.at(i);
     return NULL;
 }
 
-MMSArrowClass* MMSTheme::getArrowClass(string className) {
+MMSArrowWidgetClass* MMSTheme::getArrowWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < arrowClasses.size(); i++)
-        if (arrowClasses.at(i)->getClassName() == className)
-            return arrowClasses.at(i);
+    for (unsigned int i = 0; i < arrowWidgetClasses.size(); i++)
+        if (arrowWidgetClasses.at(i)->getClassName() == className)
+            return arrowWidgetClasses.at(i);
     return NULL;
 }
 
-MMSSliderClass* MMSTheme::getSliderClass(string className) {
+MMSSliderWidgetClass* MMSTheme::getSliderWidgetClass(string className) {
     if (className=="") return NULL;
-    for (unsigned int i = 0; i < sliderClasses.size(); i++)
-        if (sliderClasses.at(i)->getClassName() == className)
-            return sliderClasses.at(i);
+    for (unsigned int i = 0; i < sliderWidgetClasses.size(); i++)
+        if (sliderWidgetClasses.at(i)->getClassName() == className)
+            return sliderWidgetClasses.at(i);
     return NULL;
 }
+
+MMSInputWidgetClass* MMSTheme::getInputWidgetClass(string className) {
+    if (className=="") return NULL;
+    for (unsigned int i = 0; i < inputWidgetClasses.size(); i++)
+        if (inputWidgetClasses.at(i)->getClassName() == className)
+            return inputWidgetClasses.at(i);
+    return NULL;
+}
+
+
 
 
 MMSTheme::MMSTheme() {
@@ -531,244 +554,244 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.border.setRCorners(false);
     }
 
-    /* MMSLabel */
+    /* MMSLabelWidget */
     {
         /* base widget settings */
-        this->labelClass.widgetClass.setBgColor(color);
-        this->labelClass.widgetClass.setSelBgColor(color);
-        this->labelClass.widgetClass.setBgColor_p(color);
-        this->labelClass.widgetClass.setSelBgColor_p(color);
-        this->labelClass.widgetClass.setBgColor_i(color);
-        this->labelClass.widgetClass.setSelBgColor_i(color);
-        this->labelClass.widgetClass.setBgImagePath("");
-        this->labelClass.widgetClass.setBgImageName("");
-        this->labelClass.widgetClass.setSelBgImagePath("");
-        this->labelClass.widgetClass.setSelBgImageName("");
-        this->labelClass.widgetClass.setBgImagePath_p("");
-        this->labelClass.widgetClass.setBgImageName_p("");
-        this->labelClass.widgetClass.setSelBgImagePath_p("");
-        this->labelClass.widgetClass.setSelBgImageName_p("");
-        this->labelClass.widgetClass.setBgImagePath_i("");
-        this->labelClass.widgetClass.setBgImageName_i("");
-        this->labelClass.widgetClass.setSelBgImagePath_i("");
-        this->labelClass.widgetClass.setSelBgImageName_i("");
-        this->labelClass.widgetClass.setMargin(0);
-        this->labelClass.widgetClass.setFocusable(false);
-        this->labelClass.widgetClass.setSelectable(true);
-        this->labelClass.widgetClass.setUpArrow("");
-        this->labelClass.widgetClass.setDownArrow("");
-        this->labelClass.widgetClass.setLeftArrow("");
-        this->labelClass.widgetClass.setRightArrow("");
-        this->labelClass.widgetClass.setData("");
-        this->labelClass.widgetClass.setNavigateUp("");
-        this->labelClass.widgetClass.setNavigateDown("");
-        this->labelClass.widgetClass.setNavigateLeft("");
-        this->labelClass.widgetClass.setNavigateRight("");
-        this->labelClass.widgetClass.setVSlider("");
-        this->labelClass.widgetClass.setHSlider("");
-        this->labelClass.widgetClass.setImagesOnDemand(false);
-        this->labelClass.widgetClass.setBlend(0);
-        this->labelClass.widgetClass.setBlendFactor(0);
+        this->labelWidgetClass.widgetClass.setBgColor(color);
+        this->labelWidgetClass.widgetClass.setSelBgColor(color);
+        this->labelWidgetClass.widgetClass.setBgColor_p(color);
+        this->labelWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->labelWidgetClass.widgetClass.setBgColor_i(color);
+        this->labelWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->labelWidgetClass.widgetClass.setBgImagePath("");
+        this->labelWidgetClass.widgetClass.setBgImageName("");
+        this->labelWidgetClass.widgetClass.setSelBgImagePath("");
+        this->labelWidgetClass.widgetClass.setSelBgImageName("");
+        this->labelWidgetClass.widgetClass.setBgImagePath_p("");
+        this->labelWidgetClass.widgetClass.setBgImageName_p("");
+        this->labelWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->labelWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->labelWidgetClass.widgetClass.setBgImagePath_i("");
+        this->labelWidgetClass.widgetClass.setBgImageName_i("");
+        this->labelWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->labelWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->labelWidgetClass.widgetClass.setMargin(0);
+        this->labelWidgetClass.widgetClass.setFocusable(false);
+        this->labelWidgetClass.widgetClass.setSelectable(true);
+        this->labelWidgetClass.widgetClass.setUpArrow("");
+        this->labelWidgetClass.widgetClass.setDownArrow("");
+        this->labelWidgetClass.widgetClass.setLeftArrow("");
+        this->labelWidgetClass.widgetClass.setRightArrow("");
+        this->labelWidgetClass.widgetClass.setData("");
+        this->labelWidgetClass.widgetClass.setNavigateUp("");
+        this->labelWidgetClass.widgetClass.setNavigateDown("");
+        this->labelWidgetClass.widgetClass.setNavigateLeft("");
+        this->labelWidgetClass.widgetClass.setNavigateRight("");
+        this->labelWidgetClass.widgetClass.setVSlider("");
+        this->labelWidgetClass.widgetClass.setHSlider("");
+        this->labelWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->labelWidgetClass.widgetClass.setBlend(0);
+        this->labelWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->labelClass.widgetClass.border.setColor(color);
-        this->labelClass.widgetClass.border.setSelColor(color);
-        this->labelClass.widgetClass.border.setImagePath("");
-        this->labelClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->labelClass.widgetClass.border.setSelImagePath("");
-        this->labelClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->labelClass.widgetClass.border.setThickness(0);
-        this->labelClass.widgetClass.border.setMargin(0);
-        this->labelClass.widgetClass.border.setRCorners(false);
+        this->labelWidgetClass.widgetClass.border.setColor(color);
+        this->labelWidgetClass.widgetClass.border.setSelColor(color);
+        this->labelWidgetClass.widgetClass.border.setImagePath("");
+        this->labelWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->labelWidgetClass.widgetClass.border.setSelImagePath("");
+        this->labelWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->labelWidgetClass.widgetClass.border.setThickness(0);
+        this->labelWidgetClass.widgetClass.border.setMargin(0);
+        this->labelWidgetClass.widgetClass.border.setRCorners(false);
 
         /* label settings */
-        this->labelClass.setFontPath("./themes/default");
-        this->labelClass.setFontName("decker.ttf");
-        this->labelClass.setFontSize(16);
-        this->labelClass.setAlignment(MMSALIGNMENT_CENTER);
+        this->labelWidgetClass.setFontPath("./themes/default");
+        this->labelWidgetClass.setFontName("decker.ttf");
+        this->labelWidgetClass.setFontSize(16);
+        this->labelWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         DFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
         c.b = 192;
-        this->labelClass.setColor(c);
+        this->labelWidgetClass.setColor(c);
         c.a = 255;
         c.r = 255;
         c.g = 255;
         c.b = 255;
-        this->labelClass.setSelColor(c);
-        this->labelClass.setText("");
+        this->labelWidgetClass.setSelColor(c);
+        this->labelWidgetClass.setText("");
     }
 
-    /* MMSImage */
+    /* MMSImageWidget */
     {
         /* base widget settings */
-        this->imageClass.widgetClass.setBgColor(color);
-        this->imageClass.widgetClass.setSelBgColor(color);
-        this->imageClass.widgetClass.setBgColor_p(color);
-        this->imageClass.widgetClass.setSelBgColor_p(color);
-        this->imageClass.widgetClass.setBgColor_i(color);
-        this->imageClass.widgetClass.setSelBgColor_i(color);
-        this->imageClass.widgetClass.setBgImagePath("");
-        this->imageClass.widgetClass.setBgImageName("");
-        this->imageClass.widgetClass.setSelBgImagePath("");
-        this->imageClass.widgetClass.setSelBgImageName("");
-        this->imageClass.widgetClass.setBgImagePath_p("");
-        this->imageClass.widgetClass.setBgImageName_p("");
-        this->imageClass.widgetClass.setSelBgImagePath_p("");
-        this->imageClass.widgetClass.setSelBgImageName_p("");
-        this->imageClass.widgetClass.setBgImagePath_i("");
-        this->imageClass.widgetClass.setBgImageName_i("");
-        this->imageClass.widgetClass.setSelBgImagePath_i("");
-        this->imageClass.widgetClass.setSelBgImageName_i("");
-        this->imageClass.widgetClass.setMargin(0);
-        this->imageClass.widgetClass.setFocusable(false);
-        this->imageClass.widgetClass.setSelectable(true);
-        this->imageClass.widgetClass.setUpArrow("");
-        this->imageClass.widgetClass.setDownArrow("");
-        this->imageClass.widgetClass.setLeftArrow("");
-        this->imageClass.widgetClass.setRightArrow("");
-        this->imageClass.widgetClass.setData("");
-        this->imageClass.widgetClass.setNavigateUp("");
-        this->imageClass.widgetClass.setNavigateDown("");
-        this->imageClass.widgetClass.setNavigateLeft("");
-        this->imageClass.widgetClass.setNavigateRight("");
-        this->imageClass.widgetClass.setVSlider("");
-        this->imageClass.widgetClass.setHSlider("");
-        this->imageClass.widgetClass.setImagesOnDemand(false);
-        this->imageClass.widgetClass.setBlend(0);
-        this->imageClass.widgetClass.setBlendFactor(0);
+        this->imageWidgetClass.widgetClass.setBgColor(color);
+        this->imageWidgetClass.widgetClass.setSelBgColor(color);
+        this->imageWidgetClass.widgetClass.setBgColor_p(color);
+        this->imageWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->imageWidgetClass.widgetClass.setBgColor_i(color);
+        this->imageWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->imageWidgetClass.widgetClass.setBgImagePath("");
+        this->imageWidgetClass.widgetClass.setBgImageName("");
+        this->imageWidgetClass.widgetClass.setSelBgImagePath("");
+        this->imageWidgetClass.widgetClass.setSelBgImageName("");
+        this->imageWidgetClass.widgetClass.setBgImagePath_p("");
+        this->imageWidgetClass.widgetClass.setBgImageName_p("");
+        this->imageWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->imageWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->imageWidgetClass.widgetClass.setBgImagePath_i("");
+        this->imageWidgetClass.widgetClass.setBgImageName_i("");
+        this->imageWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->imageWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->imageWidgetClass.widgetClass.setMargin(0);
+        this->imageWidgetClass.widgetClass.setFocusable(false);
+        this->imageWidgetClass.widgetClass.setSelectable(true);
+        this->imageWidgetClass.widgetClass.setUpArrow("");
+        this->imageWidgetClass.widgetClass.setDownArrow("");
+        this->imageWidgetClass.widgetClass.setLeftArrow("");
+        this->imageWidgetClass.widgetClass.setRightArrow("");
+        this->imageWidgetClass.widgetClass.setData("");
+        this->imageWidgetClass.widgetClass.setNavigateUp("");
+        this->imageWidgetClass.widgetClass.setNavigateDown("");
+        this->imageWidgetClass.widgetClass.setNavigateLeft("");
+        this->imageWidgetClass.widgetClass.setNavigateRight("");
+        this->imageWidgetClass.widgetClass.setVSlider("");
+        this->imageWidgetClass.widgetClass.setHSlider("");
+        this->imageWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->imageWidgetClass.widgetClass.setBlend(0);
+        this->imageWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->imageClass.widgetClass.border.setColor(color);
-        this->imageClass.widgetClass.border.setSelColor(color);
-        this->imageClass.widgetClass.border.setImagePath("");
-        this->imageClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->imageClass.widgetClass.border.setSelImagePath("");
-        this->imageClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->imageClass.widgetClass.border.setThickness(0);
-        this->imageClass.widgetClass.border.setMargin(0);
-        this->imageClass.widgetClass.border.setRCorners(false);
+        this->imageWidgetClass.widgetClass.border.setColor(color);
+        this->imageWidgetClass.widgetClass.border.setSelColor(color);
+        this->imageWidgetClass.widgetClass.border.setImagePath("");
+        this->imageWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->imageWidgetClass.widgetClass.border.setSelImagePath("");
+        this->imageWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->imageWidgetClass.widgetClass.border.setThickness(0);
+        this->imageWidgetClass.widgetClass.border.setMargin(0);
+        this->imageWidgetClass.widgetClass.border.setRCorners(false);
 
         /* image settings */
-        this->imageClass.setImagePath("");
-        this->imageClass.setImageName("");
-        this->imageClass.setSelImagePath("");
-        this->imageClass.setSelImageName("");
-        this->imageClass.setImagePath_p("");
-        this->imageClass.setImageName_p("");
-        this->imageClass.setSelImagePath_p("");
-        this->imageClass.setSelImageName_p("");
-        this->imageClass.setImagePath_i("");
-        this->imageClass.setImageName_i("");
-        this->imageClass.setSelImagePath_i("");
-        this->imageClass.setSelImageName_i("");
-        this->imageClass.setUseRatio(false);
-        this->imageClass.setFitWidth(false);
-        this->imageClass.setFitHeight(false);
-        this->imageClass.setAlignment(MMSALIGNMENT_CENTER);
+        this->imageWidgetClass.setImagePath("");
+        this->imageWidgetClass.setImageName("");
+        this->imageWidgetClass.setSelImagePath("");
+        this->imageWidgetClass.setSelImageName("");
+        this->imageWidgetClass.setImagePath_p("");
+        this->imageWidgetClass.setImageName_p("");
+        this->imageWidgetClass.setSelImagePath_p("");
+        this->imageWidgetClass.setSelImageName_p("");
+        this->imageWidgetClass.setImagePath_i("");
+        this->imageWidgetClass.setImageName_i("");
+        this->imageWidgetClass.setSelImagePath_i("");
+        this->imageWidgetClass.setSelImageName_i("");
+        this->imageWidgetClass.setUseRatio(false);
+        this->imageWidgetClass.setFitWidth(false);
+        this->imageWidgetClass.setFitHeight(false);
+        this->imageWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
     }
 
-    /* MMSButton */
+    /* MMSButtonWidget */
     {
         /* base widget settings */
-        this->buttonClass.widgetClass.setBgColor(color);
-        this->buttonClass.widgetClass.setSelBgColor(color);
-        this->buttonClass.widgetClass.setBgColor_p(color);
-        this->buttonClass.widgetClass.setSelBgColor_p(color);
-        this->buttonClass.widgetClass.setBgColor_i(color);
-        this->buttonClass.widgetClass.setSelBgColor_i(color);
-        this->buttonClass.widgetClass.setBgImagePath("");
-        this->buttonClass.widgetClass.setBgImageName("");
-        this->buttonClass.widgetClass.setSelBgImagePath("");
-        this->buttonClass.widgetClass.setSelBgImageName("");
-        this->buttonClass.widgetClass.setBgImagePath_p("");
-        this->buttonClass.widgetClass.setBgImageName_p("");
-        this->buttonClass.widgetClass.setSelBgImagePath_p("");
-        this->buttonClass.widgetClass.setSelBgImageName_p("");
-        this->buttonClass.widgetClass.setBgImagePath_i("");
-        this->buttonClass.widgetClass.setBgImageName_i("");
-        this->buttonClass.widgetClass.setSelBgImagePath_i("");
-        this->buttonClass.widgetClass.setSelBgImageName_i("");
-        this->buttonClass.widgetClass.setMargin(0);
-        this->buttonClass.widgetClass.setFocusable(true);
-        this->buttonClass.widgetClass.setSelectable(true);
-        this->buttonClass.widgetClass.setUpArrow("");
-        this->buttonClass.widgetClass.setDownArrow("");
-        this->buttonClass.widgetClass.setLeftArrow("");
-        this->buttonClass.widgetClass.setRightArrow("");
-        this->buttonClass.widgetClass.setData("");
-        this->buttonClass.widgetClass.setNavigateUp("");
-        this->buttonClass.widgetClass.setNavigateDown("");
-        this->buttonClass.widgetClass.setNavigateLeft("");
-        this->buttonClass.widgetClass.setNavigateRight("");
-        this->buttonClass.widgetClass.setVSlider("");
-        this->buttonClass.widgetClass.setHSlider("");
-        this->buttonClass.widgetClass.setImagesOnDemand(false);
-        this->buttonClass.widgetClass.setBlend(0);
-        this->buttonClass.widgetClass.setBlendFactor(0);
+        this->buttonWidgetClass.widgetClass.setBgColor(color);
+        this->buttonWidgetClass.widgetClass.setSelBgColor(color);
+        this->buttonWidgetClass.widgetClass.setBgColor_p(color);
+        this->buttonWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->buttonWidgetClass.widgetClass.setBgColor_i(color);
+        this->buttonWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->buttonWidgetClass.widgetClass.setBgImagePath("");
+        this->buttonWidgetClass.widgetClass.setBgImageName("");
+        this->buttonWidgetClass.widgetClass.setSelBgImagePath("");
+        this->buttonWidgetClass.widgetClass.setSelBgImageName("");
+        this->buttonWidgetClass.widgetClass.setBgImagePath_p("");
+        this->buttonWidgetClass.widgetClass.setBgImageName_p("");
+        this->buttonWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->buttonWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->buttonWidgetClass.widgetClass.setBgImagePath_i("");
+        this->buttonWidgetClass.widgetClass.setBgImageName_i("");
+        this->buttonWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->buttonWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->buttonWidgetClass.widgetClass.setMargin(0);
+        this->buttonWidgetClass.widgetClass.setFocusable(true);
+        this->buttonWidgetClass.widgetClass.setSelectable(true);
+        this->buttonWidgetClass.widgetClass.setUpArrow("");
+        this->buttonWidgetClass.widgetClass.setDownArrow("");
+        this->buttonWidgetClass.widgetClass.setLeftArrow("");
+        this->buttonWidgetClass.widgetClass.setRightArrow("");
+        this->buttonWidgetClass.widgetClass.setData("");
+        this->buttonWidgetClass.widgetClass.setNavigateUp("");
+        this->buttonWidgetClass.widgetClass.setNavigateDown("");
+        this->buttonWidgetClass.widgetClass.setNavigateLeft("");
+        this->buttonWidgetClass.widgetClass.setNavigateRight("");
+        this->buttonWidgetClass.widgetClass.setVSlider("");
+        this->buttonWidgetClass.widgetClass.setHSlider("");
+        this->buttonWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->buttonWidgetClass.widgetClass.setBlend(0);
+        this->buttonWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->buttonClass.widgetClass.border.setColor(color);
-        this->buttonClass.widgetClass.border.setSelColor(color);
-        this->buttonClass.widgetClass.border.setImagePath("");
-        this->buttonClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->buttonClass.widgetClass.border.setSelImagePath("");
-        this->buttonClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->buttonClass.widgetClass.border.setThickness(0);
-        this->buttonClass.widgetClass.border.setMargin(0);
-        this->buttonClass.widgetClass.border.setRCorners(false);
+        this->buttonWidgetClass.widgetClass.border.setColor(color);
+        this->buttonWidgetClass.widgetClass.border.setSelColor(color);
+        this->buttonWidgetClass.widgetClass.border.setImagePath("");
+        this->buttonWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->buttonWidgetClass.widgetClass.border.setSelImagePath("");
+        this->buttonWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->buttonWidgetClass.widgetClass.border.setThickness(0);
+        this->buttonWidgetClass.widgetClass.border.setMargin(0);
+        this->buttonWidgetClass.widgetClass.border.setRCorners(false);
     }
 
-    /* MMSProgressBar */
+    /* MMSProgressBarWidget */
     {
         /* base widget settings */
-        this->progressBarClass.widgetClass.setBgColor(color);
-        this->progressBarClass.widgetClass.setSelBgColor(color);
-        this->progressBarClass.widgetClass.setBgColor_p(color);
-        this->progressBarClass.widgetClass.setSelBgColor_p(color);
-        this->progressBarClass.widgetClass.setBgColor_i(color);
-        this->progressBarClass.widgetClass.setSelBgColor_i(color);
-        this->progressBarClass.widgetClass.setBgImagePath("");
-        this->progressBarClass.widgetClass.setBgImageName("");
-        this->progressBarClass.widgetClass.setSelBgImagePath("");
-        this->progressBarClass.widgetClass.setSelBgImageName("");
-        this->progressBarClass.widgetClass.setBgImagePath_p("");
-        this->progressBarClass.widgetClass.setBgImageName_p("");
-        this->progressBarClass.widgetClass.setSelBgImagePath_p("");
-        this->progressBarClass.widgetClass.setSelBgImageName_p("");
-        this->progressBarClass.widgetClass.setBgImagePath_i("");
-        this->progressBarClass.widgetClass.setBgImageName_i("");
-        this->progressBarClass.widgetClass.setSelBgImagePath_i("");
-        this->progressBarClass.widgetClass.setSelBgImageName_i("");
-        this->progressBarClass.widgetClass.setMargin(0);
-        this->progressBarClass.widgetClass.setFocusable(false);
-        this->progressBarClass.widgetClass.setSelectable(true);
-        this->progressBarClass.widgetClass.setUpArrow("");
-        this->progressBarClass.widgetClass.setDownArrow("");
-        this->progressBarClass.widgetClass.setLeftArrow("");
-        this->progressBarClass.widgetClass.setRightArrow("");
-        this->progressBarClass.widgetClass.setData("");
-        this->progressBarClass.widgetClass.setNavigateUp("");
-        this->progressBarClass.widgetClass.setNavigateDown("");
-        this->progressBarClass.widgetClass.setNavigateLeft("");
-        this->progressBarClass.widgetClass.setNavigateRight("");
-        this->progressBarClass.widgetClass.setVSlider("");
-        this->progressBarClass.widgetClass.setHSlider("");
-        this->progressBarClass.widgetClass.setImagesOnDemand(false);
-        this->progressBarClass.widgetClass.setBlend(0);
-        this->progressBarClass.widgetClass.setBlendFactor(0);
+        this->progressBarWidgetClass.widgetClass.setBgColor(color);
+        this->progressBarWidgetClass.widgetClass.setSelBgColor(color);
+        this->progressBarWidgetClass.widgetClass.setBgColor_p(color);
+        this->progressBarWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->progressBarWidgetClass.widgetClass.setBgColor_i(color);
+        this->progressBarWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->progressBarWidgetClass.widgetClass.setBgImagePath("");
+        this->progressBarWidgetClass.widgetClass.setBgImageName("");
+        this->progressBarWidgetClass.widgetClass.setSelBgImagePath("");
+        this->progressBarWidgetClass.widgetClass.setSelBgImageName("");
+        this->progressBarWidgetClass.widgetClass.setBgImagePath_p("");
+        this->progressBarWidgetClass.widgetClass.setBgImageName_p("");
+        this->progressBarWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->progressBarWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->progressBarWidgetClass.widgetClass.setBgImagePath_i("");
+        this->progressBarWidgetClass.widgetClass.setBgImageName_i("");
+        this->progressBarWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->progressBarWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->progressBarWidgetClass.widgetClass.setMargin(0);
+        this->progressBarWidgetClass.widgetClass.setFocusable(false);
+        this->progressBarWidgetClass.widgetClass.setSelectable(true);
+        this->progressBarWidgetClass.widgetClass.setUpArrow("");
+        this->progressBarWidgetClass.widgetClass.setDownArrow("");
+        this->progressBarWidgetClass.widgetClass.setLeftArrow("");
+        this->progressBarWidgetClass.widgetClass.setRightArrow("");
+        this->progressBarWidgetClass.widgetClass.setData("");
+        this->progressBarWidgetClass.widgetClass.setNavigateUp("");
+        this->progressBarWidgetClass.widgetClass.setNavigateDown("");
+        this->progressBarWidgetClass.widgetClass.setNavigateLeft("");
+        this->progressBarWidgetClass.widgetClass.setNavigateRight("");
+        this->progressBarWidgetClass.widgetClass.setVSlider("");
+        this->progressBarWidgetClass.widgetClass.setHSlider("");
+        this->progressBarWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->progressBarWidgetClass.widgetClass.setBlend(0);
+        this->progressBarWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->progressBarClass.widgetClass.border.setColor(color);
-        this->progressBarClass.widgetClass.border.setSelColor(color);
-        this->progressBarClass.widgetClass.border.setImagePath("");
-        this->progressBarClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->progressBarClass.widgetClass.border.setSelImagePath("");
-        this->progressBarClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->progressBarClass.widgetClass.border.setThickness(0);
-        this->progressBarClass.widgetClass.border.setMargin(0);
-        this->progressBarClass.widgetClass.border.setRCorners(false);
+        this->progressBarWidgetClass.widgetClass.border.setColor(color);
+        this->progressBarWidgetClass.widgetClass.border.setSelColor(color);
+        this->progressBarWidgetClass.widgetClass.border.setImagePath("");
+        this->progressBarWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->progressBarWidgetClass.widgetClass.border.setSelImagePath("");
+        this->progressBarWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->progressBarWidgetClass.widgetClass.border.setThickness(0);
+        this->progressBarWidgetClass.widgetClass.border.setMargin(0);
+        this->progressBarWidgetClass.widgetClass.border.setRCorners(false);
 
         /* progressbar settings */
         DFBColor c;
@@ -776,211 +799,211 @@ MMSTheme::MMSTheme() {
         c.r = 0;
         c.g = 0;
         c.b = 0;
-        this->progressBarClass.setColor(c);
+        this->progressBarWidgetClass.setColor(c);
         c.a = 255;
         c.r = 255;
         c.g = 255;
         c.b = 255;
-        this->progressBarClass.setSelColor(c);
-        this->progressBarClass.setProgress(100);
+        this->progressBarWidgetClass.setSelColor(c);
+        this->progressBarWidgetClass.setProgress(100);
     }
 
-    /* MMSMenu */
+    /* MMSMenuWidget */
     {
         /* base widget settings */
-        this->menuClass.widgetClass.setBgColor(color);
-        this->menuClass.widgetClass.setSelBgColor(color);
-        this->menuClass.widgetClass.setBgColor_p(color);
-        this->menuClass.widgetClass.setSelBgColor_p(color);
-        this->menuClass.widgetClass.setBgColor_i(color);
-        this->menuClass.widgetClass.setSelBgColor_i(color);
-        this->menuClass.widgetClass.setBgImagePath("");
-        this->menuClass.widgetClass.setBgImageName("");
-        this->menuClass.widgetClass.setSelBgImagePath("");
-        this->menuClass.widgetClass.setSelBgImageName("");
-        this->menuClass.widgetClass.setBgImagePath_p("");
-        this->menuClass.widgetClass.setBgImageName_p("");
-        this->menuClass.widgetClass.setSelBgImagePath_p("");
-        this->menuClass.widgetClass.setSelBgImageName_p("");
-        this->menuClass.widgetClass.setBgImagePath_i("");
-        this->menuClass.widgetClass.setBgImageName_i("");
-        this->menuClass.widgetClass.setSelBgImagePath_i("");
-        this->menuClass.widgetClass.setSelBgImageName_i("");
-        this->menuClass.widgetClass.setMargin(0);
-        this->menuClass.widgetClass.setFocusable(true);
-        this->menuClass.widgetClass.setSelectable(true);
-        this->menuClass.widgetClass.setUpArrow("");
-        this->menuClass.widgetClass.setDownArrow("");
-        this->menuClass.widgetClass.setLeftArrow("");
-        this->menuClass.widgetClass.setRightArrow("");
-        this->menuClass.widgetClass.setData("");
-        this->menuClass.widgetClass.setNavigateUp("");
-        this->menuClass.widgetClass.setNavigateDown("");
-        this->menuClass.widgetClass.setNavigateLeft("");
-        this->menuClass.widgetClass.setNavigateRight("");
-        this->menuClass.widgetClass.setVSlider("");
-        this->menuClass.widgetClass.setHSlider("");
-        this->menuClass.widgetClass.setImagesOnDemand(false);
-        this->menuClass.widgetClass.setBlend(0);
-        this->menuClass.widgetClass.setBlendFactor(0);
+        this->menuWidgetClass.widgetClass.setBgColor(color);
+        this->menuWidgetClass.widgetClass.setSelBgColor(color);
+        this->menuWidgetClass.widgetClass.setBgColor_p(color);
+        this->menuWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->menuWidgetClass.widgetClass.setBgColor_i(color);
+        this->menuWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->menuWidgetClass.widgetClass.setBgImagePath("");
+        this->menuWidgetClass.widgetClass.setBgImageName("");
+        this->menuWidgetClass.widgetClass.setSelBgImagePath("");
+        this->menuWidgetClass.widgetClass.setSelBgImageName("");
+        this->menuWidgetClass.widgetClass.setBgImagePath_p("");
+        this->menuWidgetClass.widgetClass.setBgImageName_p("");
+        this->menuWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->menuWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->menuWidgetClass.widgetClass.setBgImagePath_i("");
+        this->menuWidgetClass.widgetClass.setBgImageName_i("");
+        this->menuWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->menuWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->menuWidgetClass.widgetClass.setMargin(0);
+        this->menuWidgetClass.widgetClass.setFocusable(true);
+        this->menuWidgetClass.widgetClass.setSelectable(true);
+        this->menuWidgetClass.widgetClass.setUpArrow("");
+        this->menuWidgetClass.widgetClass.setDownArrow("");
+        this->menuWidgetClass.widgetClass.setLeftArrow("");
+        this->menuWidgetClass.widgetClass.setRightArrow("");
+        this->menuWidgetClass.widgetClass.setData("");
+        this->menuWidgetClass.widgetClass.setNavigateUp("");
+        this->menuWidgetClass.widgetClass.setNavigateDown("");
+        this->menuWidgetClass.widgetClass.setNavigateLeft("");
+        this->menuWidgetClass.widgetClass.setNavigateRight("");
+        this->menuWidgetClass.widgetClass.setVSlider("");
+        this->menuWidgetClass.widgetClass.setHSlider("");
+        this->menuWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->menuWidgetClass.widgetClass.setBlend(0);
+        this->menuWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->menuClass.widgetClass.border.setColor(color);
-        this->menuClass.widgetClass.border.setSelColor(color);
-        this->menuClass.widgetClass.border.setImagePath("");
-        this->menuClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->menuClass.widgetClass.border.setSelImagePath("");
-        this->menuClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->menuClass.widgetClass.border.setThickness(0);
-        this->menuClass.widgetClass.border.setMargin(0);
-        this->menuClass.widgetClass.border.setRCorners(false);
+        this->menuWidgetClass.widgetClass.border.setColor(color);
+        this->menuWidgetClass.widgetClass.border.setSelColor(color);
+        this->menuWidgetClass.widgetClass.border.setImagePath("");
+        this->menuWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->menuWidgetClass.widgetClass.border.setSelImagePath("");
+        this->menuWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->menuWidgetClass.widgetClass.border.setThickness(0);
+        this->menuWidgetClass.widgetClass.border.setMargin(0);
+        this->menuWidgetClass.widgetClass.border.setRCorners(false);
 
         /* menu settings */
-        this->menuClass.setItemWidth("");
-        this->menuClass.setItemHeight("");
-        this->menuClass.setItemHMargin(0);
-        this->menuClass.setItemVMargin(0);
-        this->menuClass.setCols(0);
-        this->menuClass.setDimItems(0);
-        this->menuClass.setFixedPos(-1);
-        this->menuClass.setHLoop(false);
-        this->menuClass.setVLoop(false);
-        this->menuClass.setTransItems(0);
-        this->menuClass.setDimTop(0);
-        this->menuClass.setDimBottom(0);
-        this->menuClass.setDimLeft(0);
-        this->menuClass.setDimRight(0);
-        this->menuClass.setTransTop(0);
-        this->menuClass.setTransBottom(0);
-        this->menuClass.setTransLeft(0);
-        this->menuClass.setTransRight(0);
-        this->menuClass.setZoomSelWidth("");
-        this->menuClass.setZoomSelHeight("");
-        this->menuClass.setZoomSelShiftX("");
-        this->menuClass.setZoomSelShiftY("");
-        this->menuClass.setSmoothScrolling(false);
+        this->menuWidgetClass.setItemWidth("");
+        this->menuWidgetClass.setItemHeight("");
+        this->menuWidgetClass.setItemHMargin(0);
+        this->menuWidgetClass.setItemVMargin(0);
+        this->menuWidgetClass.setCols(0);
+        this->menuWidgetClass.setDimItems(0);
+        this->menuWidgetClass.setFixedPos(-1);
+        this->menuWidgetClass.setHLoop(false);
+        this->menuWidgetClass.setVLoop(false);
+        this->menuWidgetClass.setTransItems(0);
+        this->menuWidgetClass.setDimTop(0);
+        this->menuWidgetClass.setDimBottom(0);
+        this->menuWidgetClass.setDimLeft(0);
+        this->menuWidgetClass.setDimRight(0);
+        this->menuWidgetClass.setTransTop(0);
+        this->menuWidgetClass.setTransBottom(0);
+        this->menuWidgetClass.setTransLeft(0);
+        this->menuWidgetClass.setTransRight(0);
+        this->menuWidgetClass.setZoomSelWidth("");
+        this->menuWidgetClass.setZoomSelHeight("");
+        this->menuWidgetClass.setZoomSelShiftX("");
+        this->menuWidgetClass.setZoomSelShiftY("");
+        this->menuWidgetClass.setSmoothScrolling(false);
     }
 
-    /* MMSTextBox */
+    /* MMSTextBoxWidget */
     {
         /* base widget settings */
-        this->textBoxClass.widgetClass.setBgColor(color);
-        this->textBoxClass.widgetClass.setSelBgColor(color);
-        this->textBoxClass.widgetClass.setBgColor_p(color);
-        this->textBoxClass.widgetClass.setSelBgColor_p(color);
-        this->textBoxClass.widgetClass.setBgColor_i(color);
-        this->textBoxClass.widgetClass.setSelBgColor_i(color);
-        this->textBoxClass.widgetClass.setBgImagePath("");
-        this->textBoxClass.widgetClass.setBgImageName("");
-        this->textBoxClass.widgetClass.setSelBgImagePath("");
-        this->textBoxClass.widgetClass.setSelBgImageName("");
-        this->textBoxClass.widgetClass.setBgImagePath_p("");
-        this->textBoxClass.widgetClass.setBgImageName_p("");
-        this->textBoxClass.widgetClass.setSelBgImagePath_p("");
-        this->textBoxClass.widgetClass.setSelBgImageName_p("");
-        this->textBoxClass.widgetClass.setBgImagePath_i("");
-        this->textBoxClass.widgetClass.setBgImageName_i("");
-        this->textBoxClass.widgetClass.setSelBgImagePath_i("");
-        this->textBoxClass.widgetClass.setSelBgImageName_i("");
-        this->textBoxClass.widgetClass.setMargin(0);
-        this->textBoxClass.widgetClass.setFocusable(true);
-        this->textBoxClass.widgetClass.setSelectable(true);
-        this->textBoxClass.widgetClass.setUpArrow("");
-        this->textBoxClass.widgetClass.setDownArrow("");
-        this->textBoxClass.widgetClass.setLeftArrow("");
-        this->textBoxClass.widgetClass.setRightArrow("");
-        this->textBoxClass.widgetClass.setData("");
-        this->textBoxClass.widgetClass.setNavigateUp("");
-        this->textBoxClass.widgetClass.setNavigateDown("");
-        this->textBoxClass.widgetClass.setNavigateLeft("");
-        this->textBoxClass.widgetClass.setNavigateRight("");
-        this->textBoxClass.widgetClass.setVSlider("");
-        this->textBoxClass.widgetClass.setHSlider("");
-        this->textBoxClass.widgetClass.setImagesOnDemand(false);
-        this->textBoxClass.widgetClass.setBlend(0);
-        this->textBoxClass.widgetClass.setBlendFactor(0);
+        this->textBoxWidgetClass.widgetClass.setBgColor(color);
+        this->textBoxWidgetClass.widgetClass.setSelBgColor(color);
+        this->textBoxWidgetClass.widgetClass.setBgColor_p(color);
+        this->textBoxWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->textBoxWidgetClass.widgetClass.setBgColor_i(color);
+        this->textBoxWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->textBoxWidgetClass.widgetClass.setBgImagePath("");
+        this->textBoxWidgetClass.widgetClass.setBgImageName("");
+        this->textBoxWidgetClass.widgetClass.setSelBgImagePath("");
+        this->textBoxWidgetClass.widgetClass.setSelBgImageName("");
+        this->textBoxWidgetClass.widgetClass.setBgImagePath_p("");
+        this->textBoxWidgetClass.widgetClass.setBgImageName_p("");
+        this->textBoxWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->textBoxWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->textBoxWidgetClass.widgetClass.setBgImagePath_i("");
+        this->textBoxWidgetClass.widgetClass.setBgImageName_i("");
+        this->textBoxWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->textBoxWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->textBoxWidgetClass.widgetClass.setMargin(0);
+        this->textBoxWidgetClass.widgetClass.setFocusable(true);
+        this->textBoxWidgetClass.widgetClass.setSelectable(true);
+        this->textBoxWidgetClass.widgetClass.setUpArrow("");
+        this->textBoxWidgetClass.widgetClass.setDownArrow("");
+        this->textBoxWidgetClass.widgetClass.setLeftArrow("");
+        this->textBoxWidgetClass.widgetClass.setRightArrow("");
+        this->textBoxWidgetClass.widgetClass.setData("");
+        this->textBoxWidgetClass.widgetClass.setNavigateUp("");
+        this->textBoxWidgetClass.widgetClass.setNavigateDown("");
+        this->textBoxWidgetClass.widgetClass.setNavigateLeft("");
+        this->textBoxWidgetClass.widgetClass.setNavigateRight("");
+        this->textBoxWidgetClass.widgetClass.setVSlider("");
+        this->textBoxWidgetClass.widgetClass.setHSlider("");
+        this->textBoxWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->textBoxWidgetClass.widgetClass.setBlend(0);
+        this->textBoxWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->textBoxClass.widgetClass.border.setColor(color);
-        this->textBoxClass.widgetClass.border.setSelColor(color);
-        this->textBoxClass.widgetClass.border.setImagePath("");
-        this->textBoxClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->textBoxClass.widgetClass.border.setSelImagePath("");
-        this->textBoxClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->textBoxClass.widgetClass.border.setThickness(0);
-        this->textBoxClass.widgetClass.border.setMargin(0);
-        this->textBoxClass.widgetClass.border.setRCorners(false);
+        this->textBoxWidgetClass.widgetClass.border.setColor(color);
+        this->textBoxWidgetClass.widgetClass.border.setSelColor(color);
+        this->textBoxWidgetClass.widgetClass.border.setImagePath("");
+        this->textBoxWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->textBoxWidgetClass.widgetClass.border.setSelImagePath("");
+        this->textBoxWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->textBoxWidgetClass.widgetClass.border.setThickness(0);
+        this->textBoxWidgetClass.widgetClass.border.setMargin(0);
+        this->textBoxWidgetClass.widgetClass.border.setRCorners(false);
 
         /* textbox settings */
-        this->textBoxClass.setFontPath("./themes/default");
-        this->textBoxClass.setFontName("decker.ttf");
-        this->textBoxClass.setFontSize(16);
-        this->textBoxClass.setAlignment(MMSALIGNMENT_CENTER);
-        this->textBoxClass.setWrap(true);
-        this->textBoxClass.setSplitWords(true);
+        this->textBoxWidgetClass.setFontPath("./themes/default");
+        this->textBoxWidgetClass.setFontName("decker.ttf");
+        this->textBoxWidgetClass.setFontSize(16);
+        this->textBoxWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
+        this->textBoxWidgetClass.setWrap(true);
+        this->textBoxWidgetClass.setSplitWords(true);
         DFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
         c.b = 192;
-        this->textBoxClass.setColor(c);
+        this->textBoxWidgetClass.setColor(c);
         c.a = 255;
         c.r = 255;
         c.g = 255;
         c.b = 255;
-        this->textBoxClass.setSelColor(c);
-        this->textBoxClass.setText("");
+        this->textBoxWidgetClass.setSelColor(c);
+        this->textBoxWidgetClass.setText("");
     }
 
-    /* MMSArrow */
+    /* MMSArrowWidget */
     {
         /* base widget settings */
-        this->arrowClass.widgetClass.setBgColor(color);
-        this->arrowClass.widgetClass.setSelBgColor(color);
-        this->arrowClass.widgetClass.setBgColor_p(color);
-        this->arrowClass.widgetClass.setSelBgColor_p(color);
-        this->arrowClass.widgetClass.setBgColor_i(color);
-        this->arrowClass.widgetClass.setSelBgColor_i(color);
-        this->arrowClass.widgetClass.setBgImagePath("");
-        this->arrowClass.widgetClass.setBgImageName("");
-        this->arrowClass.widgetClass.setSelBgImagePath("");
-        this->arrowClass.widgetClass.setSelBgImageName("");
-        this->arrowClass.widgetClass.setBgImagePath_p("");
-        this->arrowClass.widgetClass.setBgImageName_p("");
-        this->arrowClass.widgetClass.setSelBgImagePath_p("");
-        this->arrowClass.widgetClass.setSelBgImageName_p("");
-        this->arrowClass.widgetClass.setBgImagePath_i("");
-        this->arrowClass.widgetClass.setBgImageName_i("");
-        this->arrowClass.widgetClass.setSelBgImagePath_i("");
-        this->arrowClass.widgetClass.setSelBgImageName_i("");
-        this->arrowClass.widgetClass.setMargin(0);
-        this->arrowClass.widgetClass.setFocusable(false);
-        this->arrowClass.widgetClass.setSelectable(true);
-        this->arrowClass.widgetClass.setUpArrow("");
-        this->arrowClass.widgetClass.setDownArrow("");
-        this->arrowClass.widgetClass.setLeftArrow("");
-        this->arrowClass.widgetClass.setRightArrow("");
-        this->arrowClass.widgetClass.setData("");
-        this->arrowClass.widgetClass.setNavigateUp("");
-        this->arrowClass.widgetClass.setNavigateDown("");
-        this->arrowClass.widgetClass.setNavigateLeft("");
-        this->arrowClass.widgetClass.setNavigateRight("");
-        this->arrowClass.widgetClass.setVSlider("");
-        this->arrowClass.widgetClass.setHSlider("");
-        this->arrowClass.widgetClass.setImagesOnDemand(false);
-        this->arrowClass.widgetClass.setBlend(0);
-        this->arrowClass.widgetClass.setBlendFactor(0);
+        this->arrowWidgetClass.widgetClass.setBgColor(color);
+        this->arrowWidgetClass.widgetClass.setSelBgColor(color);
+        this->arrowWidgetClass.widgetClass.setBgColor_p(color);
+        this->arrowWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->arrowWidgetClass.widgetClass.setBgColor_i(color);
+        this->arrowWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->arrowWidgetClass.widgetClass.setBgImagePath("");
+        this->arrowWidgetClass.widgetClass.setBgImageName("");
+        this->arrowWidgetClass.widgetClass.setSelBgImagePath("");
+        this->arrowWidgetClass.widgetClass.setSelBgImageName("");
+        this->arrowWidgetClass.widgetClass.setBgImagePath_p("");
+        this->arrowWidgetClass.widgetClass.setBgImageName_p("");
+        this->arrowWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->arrowWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->arrowWidgetClass.widgetClass.setBgImagePath_i("");
+        this->arrowWidgetClass.widgetClass.setBgImageName_i("");
+        this->arrowWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->arrowWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->arrowWidgetClass.widgetClass.setMargin(0);
+        this->arrowWidgetClass.widgetClass.setFocusable(false);
+        this->arrowWidgetClass.widgetClass.setSelectable(true);
+        this->arrowWidgetClass.widgetClass.setUpArrow("");
+        this->arrowWidgetClass.widgetClass.setDownArrow("");
+        this->arrowWidgetClass.widgetClass.setLeftArrow("");
+        this->arrowWidgetClass.widgetClass.setRightArrow("");
+        this->arrowWidgetClass.widgetClass.setData("");
+        this->arrowWidgetClass.widgetClass.setNavigateUp("");
+        this->arrowWidgetClass.widgetClass.setNavigateDown("");
+        this->arrowWidgetClass.widgetClass.setNavigateLeft("");
+        this->arrowWidgetClass.widgetClass.setNavigateRight("");
+        this->arrowWidgetClass.widgetClass.setVSlider("");
+        this->arrowWidgetClass.widgetClass.setHSlider("");
+        this->arrowWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->arrowWidgetClass.widgetClass.setBlend(0);
+        this->arrowWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->arrowClass.widgetClass.border.setColor(color);
-        this->arrowClass.widgetClass.border.setSelColor(color);
-        this->arrowClass.widgetClass.border.setImagePath("");
-        this->arrowClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->arrowClass.widgetClass.border.setSelImagePath("");
-        this->arrowClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->arrowClass.widgetClass.border.setThickness(0);
-        this->arrowClass.widgetClass.border.setMargin(0);
-        this->arrowClass.widgetClass.border.setRCorners(false);
+        this->arrowWidgetClass.widgetClass.border.setColor(color);
+        this->arrowWidgetClass.widgetClass.border.setSelColor(color);
+        this->arrowWidgetClass.widgetClass.border.setImagePath("");
+        this->arrowWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->arrowWidgetClass.widgetClass.border.setSelImagePath("");
+        this->arrowWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->arrowWidgetClass.widgetClass.border.setThickness(0);
+        this->arrowWidgetClass.widgetClass.border.setMargin(0);
+        this->arrowWidgetClass.widgetClass.border.setRCorners(false);
 
         /* arrow settings */
         DFBColor c;
@@ -988,79 +1011,148 @@ MMSTheme::MMSTheme() {
         c.r = 192;
         c.g = 192;
         c.b = 192;
-        this->arrowClass.setColor(c);
+        this->arrowWidgetClass.setColor(c);
         c.a = 255;
         c.r = 255;
         c.g = 255;
         c.b = 255;
-        this->arrowClass.setSelColor(c);
-        this->arrowClass.setDirection(MMSDIRECTION_LEFT);
+        this->arrowWidgetClass.setSelColor(c);
+        this->arrowWidgetClass.setDirection(MMSDIRECTION_LEFT);
     }
 
-    /* MMSSlider */
+    /* MMSSliderWidget */
     {
         /* base widget settings */
-        this->sliderClass.widgetClass.setBgColor(color);
-        this->sliderClass.widgetClass.setSelBgColor(color);
-        this->sliderClass.widgetClass.setBgColor_p(color);
-        this->sliderClass.widgetClass.setSelBgColor_p(color);
-        this->sliderClass.widgetClass.setBgColor_i(color);
-        this->sliderClass.widgetClass.setSelBgColor_i(color);
-        this->sliderClass.widgetClass.setBgImagePath("");
-        this->sliderClass.widgetClass.setBgImageName("");
-        this->sliderClass.widgetClass.setSelBgImagePath("");
-        this->sliderClass.widgetClass.setSelBgImageName("");
-        this->sliderClass.widgetClass.setBgImagePath_p("");
-        this->sliderClass.widgetClass.setBgImageName_p("");
-        this->sliderClass.widgetClass.setSelBgImagePath_p("");
-        this->sliderClass.widgetClass.setSelBgImageName_p("");
-        this->sliderClass.widgetClass.setBgImagePath_i("");
-        this->sliderClass.widgetClass.setBgImageName_i("");
-        this->sliderClass.widgetClass.setSelBgImagePath_i("");
-        this->sliderClass.widgetClass.setSelBgImageName_i("");
-        this->sliderClass.widgetClass.setMargin(0);
-        this->sliderClass.widgetClass.setFocusable(false);
-        this->sliderClass.widgetClass.setSelectable(true);
-        this->sliderClass.widgetClass.setUpArrow("");
-        this->sliderClass.widgetClass.setDownArrow("");
-        this->sliderClass.widgetClass.setLeftArrow("");
-        this->sliderClass.widgetClass.setRightArrow("");
-        this->sliderClass.widgetClass.setData("");
-        this->sliderClass.widgetClass.setNavigateUp("");
-        this->sliderClass.widgetClass.setNavigateDown("");
-        this->sliderClass.widgetClass.setNavigateLeft("");
-        this->sliderClass.widgetClass.setNavigateRight("");
-        this->sliderClass.widgetClass.setVSlider("");
-        this->sliderClass.widgetClass.setHSlider("");
-        this->sliderClass.widgetClass.setImagesOnDemand(false);
-        this->sliderClass.widgetClass.setBlend(0);
-        this->sliderClass.widgetClass.setBlendFactor(0);
+        this->sliderWidgetClass.widgetClass.setBgColor(color);
+        this->sliderWidgetClass.widgetClass.setSelBgColor(color);
+        this->sliderWidgetClass.widgetClass.setBgColor_p(color);
+        this->sliderWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->sliderWidgetClass.widgetClass.setBgColor_i(color);
+        this->sliderWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->sliderWidgetClass.widgetClass.setBgImagePath("");
+        this->sliderWidgetClass.widgetClass.setBgImageName("");
+        this->sliderWidgetClass.widgetClass.setSelBgImagePath("");
+        this->sliderWidgetClass.widgetClass.setSelBgImageName("");
+        this->sliderWidgetClass.widgetClass.setBgImagePath_p("");
+        this->sliderWidgetClass.widgetClass.setBgImageName_p("");
+        this->sliderWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->sliderWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->sliderWidgetClass.widgetClass.setBgImagePath_i("");
+        this->sliderWidgetClass.widgetClass.setBgImageName_i("");
+        this->sliderWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->sliderWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->sliderWidgetClass.widgetClass.setMargin(0);
+        this->sliderWidgetClass.widgetClass.setFocusable(false);
+        this->sliderWidgetClass.widgetClass.setSelectable(true);
+        this->sliderWidgetClass.widgetClass.setUpArrow("");
+        this->sliderWidgetClass.widgetClass.setDownArrow("");
+        this->sliderWidgetClass.widgetClass.setLeftArrow("");
+        this->sliderWidgetClass.widgetClass.setRightArrow("");
+        this->sliderWidgetClass.widgetClass.setData("");
+        this->sliderWidgetClass.widgetClass.setNavigateUp("");
+        this->sliderWidgetClass.widgetClass.setNavigateDown("");
+        this->sliderWidgetClass.widgetClass.setNavigateLeft("");
+        this->sliderWidgetClass.widgetClass.setNavigateRight("");
+        this->sliderWidgetClass.widgetClass.setVSlider("");
+        this->sliderWidgetClass.widgetClass.setHSlider("");
+        this->sliderWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->sliderWidgetClass.widgetClass.setBlend(0);
+        this->sliderWidgetClass.widgetClass.setBlendFactor(0);
 
         /* base widget border settings */
-        this->sliderClass.widgetClass.border.setColor(color);
-        this->sliderClass.widgetClass.border.setSelColor(color);
-        this->sliderClass.widgetClass.border.setImagePath("");
-        this->sliderClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
-        this->sliderClass.widgetClass.border.setSelImagePath("");
-        this->sliderClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
-        this->sliderClass.widgetClass.border.setThickness(0);
-        this->sliderClass.widgetClass.border.setMargin(0);
-        this->sliderClass.widgetClass.border.setRCorners(false);
+        this->sliderWidgetClass.widgetClass.border.setColor(color);
+        this->sliderWidgetClass.widgetClass.border.setSelColor(color);
+        this->sliderWidgetClass.widgetClass.border.setImagePath("");
+        this->sliderWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->sliderWidgetClass.widgetClass.border.setSelImagePath("");
+        this->sliderWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->sliderWidgetClass.widgetClass.border.setThickness(0);
+        this->sliderWidgetClass.widgetClass.border.setMargin(0);
+        this->sliderWidgetClass.widgetClass.border.setRCorners(false);
 
         /* slider settings */
-        this->sliderClass.setImagePath("");
-        this->sliderClass.setImageName("");
-        this->sliderClass.setSelImagePath("");
-        this->sliderClass.setSelImageName("");
-        this->sliderClass.setImagePath_p("");
-        this->sliderClass.setImageName_p("");
-        this->sliderClass.setSelImagePath_p("");
-        this->sliderClass.setSelImageName_p("");
-        this->sliderClass.setImagePath_i("");
-        this->sliderClass.setImageName_i("");
-        this->sliderClass.setSelImagePath_i("");
-        this->sliderClass.setSelImageName_i("");
-        this->sliderClass.setPosition(0);
+        this->sliderWidgetClass.setImagePath("");
+        this->sliderWidgetClass.setImageName("");
+        this->sliderWidgetClass.setSelImagePath("");
+        this->sliderWidgetClass.setSelImageName("");
+        this->sliderWidgetClass.setImagePath_p("");
+        this->sliderWidgetClass.setImageName_p("");
+        this->sliderWidgetClass.setSelImagePath_p("");
+        this->sliderWidgetClass.setSelImageName_p("");
+        this->sliderWidgetClass.setImagePath_i("");
+        this->sliderWidgetClass.setImageName_i("");
+        this->sliderWidgetClass.setSelImagePath_i("");
+        this->sliderWidgetClass.setSelImageName_i("");
+        this->sliderWidgetClass.setPosition(0);
+    }
+
+    /* MMSInputWidget */
+    {
+        /* base widget settings */
+        this->inputWidgetClass.widgetClass.setBgColor(color);
+        this->inputWidgetClass.widgetClass.setSelBgColor(color);
+        this->inputWidgetClass.widgetClass.setBgColor_p(color);
+        this->inputWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->inputWidgetClass.widgetClass.setBgColor_i(color);
+        this->inputWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->inputWidgetClass.widgetClass.setBgImagePath("");
+        this->inputWidgetClass.widgetClass.setBgImageName("");
+        this->inputWidgetClass.widgetClass.setSelBgImagePath("");
+        this->inputWidgetClass.widgetClass.setSelBgImageName("");
+        this->inputWidgetClass.widgetClass.setBgImagePath_p("");
+        this->inputWidgetClass.widgetClass.setBgImageName_p("");
+        this->inputWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->inputWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->inputWidgetClass.widgetClass.setBgImagePath_i("");
+        this->inputWidgetClass.widgetClass.setBgImageName_i("");
+        this->inputWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->inputWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->inputWidgetClass.widgetClass.setMargin(0);
+        this->inputWidgetClass.widgetClass.setFocusable(false);
+        this->inputWidgetClass.widgetClass.setSelectable(true);
+        this->inputWidgetClass.widgetClass.setUpArrow("");
+        this->inputWidgetClass.widgetClass.setDownArrow("");
+        this->inputWidgetClass.widgetClass.setLeftArrow("");
+        this->inputWidgetClass.widgetClass.setRightArrow("");
+        this->inputWidgetClass.widgetClass.setData("");
+        this->inputWidgetClass.widgetClass.setNavigateUp("");
+        this->inputWidgetClass.widgetClass.setNavigateDown("");
+        this->inputWidgetClass.widgetClass.setNavigateLeft("");
+        this->inputWidgetClass.widgetClass.setNavigateRight("");
+        this->inputWidgetClass.widgetClass.setVSlider("");
+        this->inputWidgetClass.widgetClass.setHSlider("");
+        this->inputWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->inputWidgetClass.widgetClass.setBlend(0);
+        this->inputWidgetClass.widgetClass.setBlendFactor(0);
+
+        /* base widget border settings */
+        this->inputWidgetClass.widgetClass.border.setColor(color);
+        this->inputWidgetClass.widgetClass.border.setSelColor(color);
+        this->inputWidgetClass.widgetClass.border.setImagePath("");
+        this->inputWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->inputWidgetClass.widgetClass.border.setSelImagePath("");
+        this->inputWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->inputWidgetClass.widgetClass.border.setThickness(0);
+        this->inputWidgetClass.widgetClass.border.setMargin(0);
+        this->inputWidgetClass.widgetClass.border.setRCorners(false);
+
+        /* label settings */
+        this->inputWidgetClass.setFontPath("./themes/default");
+        this->inputWidgetClass.setFontName("decker.ttf");
+        this->inputWidgetClass.setFontSize(16);
+        this->inputWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
+        DFBColor c;
+        c.a = 255;
+        c.r = 192;
+        c.g = 192;
+        c.b = 192;
+        this->inputWidgetClass.setColor(c);
+        c.a = 255;
+        c.r = 255;
+        c.g = 255;
+        c.b = 255;
+        this->inputWidgetClass.setSelColor(c);
+        this->inputWidgetClass.setText("");
     }
 
 }

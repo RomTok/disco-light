@@ -29,14 +29,15 @@
 #include "mmsgui/theme/mmspopupwindowclass.h"
 #include "mmsgui/theme/mmsrootwindowclass.h"
 #include "mmsgui/theme/mmschildwindowclass.h"
-#include "mmsgui/theme/mmslabelclass.h"
-#include "mmsgui/theme/mmsimageclass.h"
-#include "mmsgui/theme/mmsbuttonclass.h"
-#include "mmsgui/theme/mmsprogressbarclass.h"
-#include "mmsgui/theme/mmsmenuclass.h"
-#include "mmsgui/theme/mmstextboxclass.h"
-#include "mmsgui/theme/mmsarrowclass.h"
-#include "mmsgui/theme/mmssliderclass.h"
+#include "mmsgui/theme/mmslabelwidgetclass.h"
+#include "mmsgui/theme/mmsimagewidgetclass.h"
+#include "mmsgui/theme/mmsbuttonwidgetclass.h"
+#include "mmsgui/theme/mmsprogressbarwidgetclass.h"
+#include "mmsgui/theme/mmsmenuwidgetclass.h"
+#include "mmsgui/theme/mmstextboxwidgetclass.h"
+#include "mmsgui/theme/mmsarrowwidgetclass.h"
+#include "mmsgui/theme/mmssliderwidgetclass.h"
+#include "mmsgui/theme/mmsinputwidgetclass.h"
 
 
 MMS_CREATEERROR(MMSThemeError);
@@ -48,8 +49,8 @@ typedef enum {
 	MMSGUI_TAGTABLE_TAG_MMSTHEME,
 	MMSGUI_TAGTABLE_TAG_MMSDIALOG,
 	MMSGUI_TAGTABLE_TAG_DESCRIPTION,
-	MMSGUI_TAGTABLE_TAG_VBOX,
-	MMSGUI_TAGTABLE_TAG_HBOX,
+	MMSGUI_TAGTABLE_TAG_VBOXWIDGET,
+	MMSGUI_TAGTABLE_TAG_HBOXWIDGET,
 	MMSGUI_TAGTABLE_TAG_TEMPLATE,
 	MMSGUI_TAGTABLE_TAG_CLASS_TEMPLATE,
 	MMSGUI_TAGTABLE_TAG_MAINWINDOW,
@@ -60,24 +61,26 @@ typedef enum {
 	MMSGUI_TAGTABLE_TAG_CLASS_POPUPWINDOW,
 	MMSGUI_TAGTABLE_TAG_ROOTWINDOW,
 	MMSGUI_TAGTABLE_TAG_CLASS_ROOTWINDOW,
-	MMSGUI_TAGTABLE_TAG_ARROW,
-	MMSGUI_TAGTABLE_TAG_CLASS_ARROW,
-	MMSGUI_TAGTABLE_TAG_BUTTON,
-	MMSGUI_TAGTABLE_TAG_CLASS_BUTTON,
-	MMSGUI_TAGTABLE_TAG_IMAGE,
-	MMSGUI_TAGTABLE_TAG_CLASS_IMAGE,
-	MMSGUI_TAGTABLE_TAG_LABEL,
-	MMSGUI_TAGTABLE_TAG_CLASS_LABEL,
-	MMSGUI_TAGTABLE_TAG_MENU,
-	MMSGUI_TAGTABLE_TAG_CLASS_MENU,
+	MMSGUI_TAGTABLE_TAG_ARROWWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_ARROWWIDGET,
+	MMSGUI_TAGTABLE_TAG_BUTTONWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_BUTTONWIDGET,
+	MMSGUI_TAGTABLE_TAG_IMAGEWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_IMAGEWIDGET,
+	MMSGUI_TAGTABLE_TAG_LABELWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_LABELWIDGET,
+	MMSGUI_TAGTABLE_TAG_MENUWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_MENUWIDGET,
 	MMSGUI_TAGTABLE_TAG_MENUITEM,
-	MMSGUI_TAGTABLE_TAG_PROGRESSBAR,
-	MMSGUI_TAGTABLE_TAG_CLASS_PROGRESSBAR,
-	MMSGUI_TAGTABLE_TAG_SLIDER,
-	MMSGUI_TAGTABLE_TAG_CLASS_SLIDER,
-	MMSGUI_TAGTABLE_TAG_TEXTBOX,
-	MMSGUI_TAGTABLE_TAG_CLASS_TEXTBOX,
-	MMSGUI_TAGTABLE_TAG_SEPARATOR
+	MMSGUI_TAGTABLE_TAG_PROGRESSBARWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_PROGRESSBARWIDGET,
+	MMSGUI_TAGTABLE_TAG_SLIDERWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_SLIDERWIDGET,
+	MMSGUI_TAGTABLE_TAG_TEXTBOXWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_TEXTBOXWIDGET,
+	MMSGUI_TAGTABLE_TAG_SEPARATOR,
+	MMSGUI_TAGTABLE_TAG_INPUTWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_INPUTWIDGET
 };
 
 
@@ -91,62 +94,66 @@ class MMSTheme {
         string              themeFile;  /* complete name of the theme file */
         MMSDescriptionClass description;/* description of the theme */
 
-        vector<MMSTemplateClass*>       templateClasses;
-        vector<MMSMainWindowClass*>     mainWindowClasses;
-        vector<MMSPopupWindowClass*>    popupWindowClasses;
-        vector<MMSRootWindowClass*>     rootWindowClasses;
-        vector<MMSChildWindowClass*>    childWindowClasses;
-        vector<MMSLabelClass*>          labelClasses;
-        vector<MMSImageClass*>          imageClasses;
-        vector<MMSButtonClass*>         buttonClasses;
-        vector<MMSProgressBarClass*>    progressBarClasses;
-        vector<MMSMenuClass*>           menuClasses;
-        vector<MMSTextBoxClass*>        textBoxClasses;
-        vector<MMSArrowClass*>          arrowClasses;
-        vector<MMSSliderClass*>         sliderClasses;
+        vector<MMSTemplateClass*>       	templateClasses;
+        vector<MMSMainWindowClass*>     	mainWindowClasses;
+        vector<MMSPopupWindowClass*>    	popupWindowClasses;
+        vector<MMSRootWindowClass*>     	rootWindowClasses;
+        vector<MMSChildWindowClass*>    	childWindowClasses;
+        vector<MMSLabelWidgetClass*>    	labelWidgetClasses;
+        vector<MMSImageWidgetClass*>    	imageWidgetClasses;
+        vector<MMSButtonWidgetClass*>   	buttonWidgetClasses;
+        vector<MMSProgressBarWidgetClass*>  progressBarWidgetClasses;
+        vector<MMSMenuWidgetClass*>         menuWidgetClasses;
+        vector<MMSTextBoxWidgetClass*>      textBoxWidgetClasses;
+        vector<MMSArrowWidgetClass*>        arrowWidgetClasses;
+        vector<MMSSliderWidgetClass*>       sliderWidgetClasses;
+        vector<MMSInputWidgetClass*>        inputWidgetClasses;
         
         bool addTemplateClass(MMSTemplateClass *themeClass);
         bool addMainWindowClass(MMSMainWindowClass *themeClass);
         bool addPopupWindowClass(MMSPopupWindowClass *themeClass);
         bool addRootWindowClass(MMSRootWindowClass *themeClass);
         bool addChildWindowClass(MMSChildWindowClass *themeClass);
-        bool addLabelClass(MMSLabelClass *themeClass);
-        bool addImageClass(MMSImageClass *themeClass);
-        bool addButtonClass(MMSButtonClass *themeClass);
-        bool addProgressBarClass(MMSProgressBarClass *themeClass);
-        bool addMenuClass(MMSMenuClass *themeClass);
-        bool addTextBoxClass(MMSTextBoxClass *themeClass);
-        bool addArrowClass(MMSArrowClass *themeClass);
-        bool addSliderClass(MMSSliderClass *themeClass);
+        bool addLabelWidgetClass(MMSLabelWidgetClass *themeClass);
+        bool addImageWidgetClass(MMSImageWidgetClass *themeClass);
+        bool addButtonWidgetClass(MMSButtonWidgetClass *themeClass);
+        bool addProgressBarWidgetClass(MMSProgressBarWidgetClass *themeClass);
+        bool addMenuWidgetClass(MMSMenuWidgetClass *themeClass);
+        bool addTextBoxWidgetClass(MMSTextBoxWidgetClass *themeClass);
+        bool addArrowWidgetClass(MMSArrowWidgetClass *themeClass);
+        bool addSliderWidgetClass(MMSSliderWidgetClass *themeClass);
+        bool addInputWidgetClass(MMSInputWidgetClass *themeClass);
 
     public:
 
-        MMSMainWindowClass  mainWindowClass;
-        MMSPopupWindowClass popupWindowClass;
-        MMSRootWindowClass  rootWindowClass;
-        MMSChildWindowClass childWindowClass;
-        MMSLabelClass       labelClass;
-        MMSImageClass       imageClass;
-        MMSButtonClass      buttonClass;
-        MMSProgressBarClass progressBarClass;
-        MMSMenuClass        menuClass;
-        MMSTextBoxClass     textBoxClass;
-        MMSArrowClass       arrowClass;
-        MMSSliderClass      sliderClass;
+        MMSMainWindowClass  		mainWindowClass;
+        MMSPopupWindowClass 		popupWindowClass;
+        MMSRootWindowClass  		rootWindowClass;
+        MMSChildWindowClass 		childWindowClass;
+        MMSLabelWidgetClass       	labelWidgetClass;
+        MMSImageWidgetClass       	imageWidgetClass;
+        MMSButtonWidgetClass      	buttonWidgetClass;
+        MMSProgressBarWidgetClass	progressBarWidgetClass;
+        MMSMenuWidgetClass       	menuWidgetClass;
+        MMSTextBoxWidgetClass     	textBoxWidgetClass;
+        MMSArrowWidgetClass       	arrowWidgetClass;
+        MMSSliderWidgetClass      	sliderWidgetClass;
+        MMSInputWidgetClass       	inputWidgetClass;
 
-        MMSTemplateClass*       getTemplateClass(string className = "");
-        MMSMainWindowClass*     getMainWindowClass(string className = "");
-        MMSPopupWindowClass*    getPopupWindowClass(string className = "");
-        MMSRootWindowClass*     getRootWindowClass(string className = "");
-        MMSChildWindowClass*    getChildWindowClass(string className = "");
-        MMSLabelClass*          getLabelClass(string className = "");
-        MMSImageClass*          getImageClass(string className = "");
-        MMSButtonClass*         getButtonClass(string className = "");
-        MMSProgressBarClass*    getProgressBarClass(string className = "");
-        MMSMenuClass*           getMenuClass(string className = "");
-        MMSTextBoxClass*        getTextBoxClass(string className = "");
-        MMSArrowClass*          getArrowClass(string className = "");
-        MMSSliderClass*         getSliderClass(string className = "");
+        MMSTemplateClass*       	getTemplateClass(string className = "");
+        MMSMainWindowClass*     	getMainWindowClass(string className = "");
+        MMSPopupWindowClass*    	getPopupWindowClass(string className = "");
+        MMSRootWindowClass*     	getRootWindowClass(string className = "");
+        MMSChildWindowClass*    	getChildWindowClass(string className = "");
+        MMSLabelWidgetClass*      	getLabelWidgetClass(string className = "");
+        MMSImageWidgetClass*        getImageWidgetClass(string className = "");
+        MMSButtonWidgetClass*       getButtonWidgetClass(string className = "");
+        MMSProgressBarWidgetClass*	getProgressBarWidgetClass(string className = "");
+        MMSMenuWidgetClass*         getMenuWidgetClass(string className = "");
+        MMSTextBoxWidgetClass*      getTextBoxWidgetClass(string className = "");
+        MMSArrowWidgetClass*        getArrowWidgetClass(string className = "");
+        MMSSliderWidgetClass*       getSliderWidgetClass(string className = "");
+        MMSInputWidgetClass*        getInputWidgetClass(string className = "");
 
         MMSTheme();
         ~MMSTheme();

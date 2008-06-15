@@ -22,7 +22,8 @@
 
 #include "mmsgui/mmswidget.h"
 #include "mmsgui/mmsborder.h"
-#include "mmsgui/mmsslider.h"
+#include "mmsgui/mmsmenuwidget.h"
+#include "mmsgui/mmssliderwidget.h"
 
 MMSWidget::MMSWidget() {
     this->baseWidgetClass = NULL;
@@ -82,12 +83,13 @@ this->has_own_surface = false;
 }
 
 MMSWidget::~MMSWidget() {
-    /* delete the callbacks */
+
+	// delete the callbacks
     if (onSelect) delete onSelect;
     if (onFocus)  delete onFocus;
     if (onReturn) delete onReturn;
 
-    /* delete images */
+    // delete images
     if (this->rootwindow) {
         this->rootwindow->im->releaseImage(this->bgimage);
         this->rootwindow->im->releaseImage(this->selbgimage);
@@ -101,16 +103,20 @@ MMSWidget::~MMSWidget() {
             this->rootwindow->im->releaseImage(this->borderselimages[i]);
     }
 
-    /* delete children */
+    // delete children
     for (unsigned int i = 0; i < children.size(); i++)
         delete children.at(i);
 
-    /* remove me from root window list */
+    // remove me from root window list
     if (this->rootwindow)
         this->rootwindow->remove(this);
-        
+
     if(this->surface)
         delete this->surface;
+}
+
+MMSWIDGETTYPE MMSWidget::getType() {
+	return this->type;
 }
 
 bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
@@ -1445,8 +1451,10 @@ void MMSWidget::refresh() {
     tobeupdated.h = this->geom.h - 2*margin;
 
     /* e.g. for smooth scrolling menus we must recalculate children here */
-    /* TODO: widgets different from mmsmenu should return without recalculation */ 
-    recalculateChildren();
+    /* so if the widget is a menu and smooth scrolling is enabled, we do the recalculation */
+    if (this->type == MMSWIDGETTYPE_MENU)
+    	if (((MMSMenuWidget *)this)->getSmoothScrolling())
+    		recalculateChildren();
     
     this->getRootWindow()->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated);
 

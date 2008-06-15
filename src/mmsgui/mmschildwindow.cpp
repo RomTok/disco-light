@@ -39,6 +39,7 @@ MMSChildWindow::~MMSChildWindow() {
 bool MMSChildWindow::create(string className, MMSWindow *parent,
                             string dx, string dy, string w, string h, MMSALIGNMENT alignment,
                             MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface) {
+	this->type = MMSWINDOWTYPE_CHILDWINDOW;
     this->className = className;
     if (theme) this->theme = theme; else this->theme = globalTheme;
     this->childWindowClass = this->theme->getChildWindowClass(className);

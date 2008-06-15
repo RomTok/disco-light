@@ -37,6 +37,7 @@ MMSRootWindow::~MMSRootWindow() {
 
 bool MMSRootWindow::create(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
                            MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface) {
+	this->type = MMSWINDOWTYPE_ROOTWINDOW;
     this->className = className;
     if (theme) this->theme = theme; else this->theme = globalTheme;
     this->rootWindowClass = this->theme->getRootWindowClass(className);

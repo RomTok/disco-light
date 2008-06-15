@@ -205,29 +205,32 @@ void MMSThemeManager::throughFile(MMSTaffFile *tafff, MMSTheme *theme) {
 		case MMSGUI_TAGTABLE_TAG_ROOTWINDOW:
 	        getRootWindowValues(tafff, &(theme->rootWindowClass), theme);
 	        break;
-		case MMSGUI_TAGTABLE_TAG_LABEL:
-            getLabelValues(tafff, &(theme->labelClass), theme);
+		case MMSGUI_TAGTABLE_TAG_LABELWIDGET:
+            getLabelWidgetValues(tafff, &(theme->labelWidgetClass), theme);
             break;
-		case MMSGUI_TAGTABLE_TAG_IMAGE:
-			getImageValues(tafff, &(theme->imageClass), theme);
+		case MMSGUI_TAGTABLE_TAG_IMAGEWIDGET:
+			getImageWidgetValues(tafff, &(theme->imageWidgetClass), theme);
 			break;
-		case MMSGUI_TAGTABLE_TAG_BUTTON:
-			getButtonValues(tafff, &(theme->buttonClass), theme);
+		case MMSGUI_TAGTABLE_TAG_BUTTONWIDGET:
+			getButtonWidgetValues(tafff, &(theme->buttonWidgetClass), theme);
 			break;
-		case MMSGUI_TAGTABLE_TAG_PROGRESSBAR:
-            getProgressBarValues(tafff, &(theme->progressBarClass), theme);
+		case MMSGUI_TAGTABLE_TAG_PROGRESSBARWIDGET:
+            getProgressBarWidgetValues(tafff, &(theme->progressBarWidgetClass), theme);
             break;
-		case MMSGUI_TAGTABLE_TAG_SLIDER:
-            getSliderValues(tafff, &(theme->sliderClass), theme);
+		case MMSGUI_TAGTABLE_TAG_SLIDERWIDGET:
+            getSliderWidgetValues(tafff, &(theme->sliderWidgetClass), theme);
             break;
-		case MMSGUI_TAGTABLE_TAG_MENU:
-            getMenuValues(tafff, &(theme->menuClass), theme);
+		case MMSGUI_TAGTABLE_TAG_MENUWIDGET:
+            getMenuWidgetValues(tafff, &(theme->menuWidgetClass), theme);
             break;
-		case MMSGUI_TAGTABLE_TAG_TEXTBOX:
-            getTextBoxValues(tafff, &(theme->textBoxClass), theme);
+		case MMSGUI_TAGTABLE_TAG_TEXTBOXWIDGET:
+            getTextBoxWidgetValues(tafff, &(theme->textBoxWidgetClass), theme);
             break;
-		case MMSGUI_TAGTABLE_TAG_ARROW:
-            getArrowValues(tafff, &(theme->arrowClass), theme);
+		case MMSGUI_TAGTABLE_TAG_ARROWWIDGET:
+            getArrowWidgetValues(tafff, &(theme->arrowWidgetClass), theme);
+            break;
+		case MMSGUI_TAGTABLE_TAG_INPUTWIDGET:
+            getInputWidgetValues(tafff, &(theme->inputWidgetClass), theme);
             break;
 		case MMSGUI_TAGTABLE_TAG_CLASS_TEMPLATE:
 			GET_THEME_CLASS(getTemplateClassValues);
@@ -244,29 +247,32 @@ void MMSThemeManager::throughFile(MMSTaffFile *tafff, MMSTheme *theme) {
 		case MMSGUI_TAGTABLE_TAG_CLASS_ROOTWINDOW:
 			GET_THEME_CLASS(getRootWindowClassValues);
 	        break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_LABEL:
-			GET_THEME_CLASS(getLabelClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_LABELWIDGET:
+			GET_THEME_CLASS(getLabelWidgetClassValues);
             break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_IMAGE:
-			GET_THEME_CLASS(getImageClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_IMAGEWIDGET:
+			GET_THEME_CLASS(getImageWidgetClassValues);
 			break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_BUTTON:
-			GET_THEME_CLASS(getButtonClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_BUTTONWIDGET:
+			GET_THEME_CLASS(getButtonWidgetClassValues);
 			break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_PROGRESSBAR:
-			GET_THEME_CLASS(getProgressBarClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_PROGRESSBARWIDGET:
+			GET_THEME_CLASS(getProgressBarWidgetClassValues);
             break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_SLIDER:
-			GET_THEME_CLASS(getSliderClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_SLIDERWIDGET:
+			GET_THEME_CLASS(getSliderWidgetClassValues);
             break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_MENU:
-			GET_THEME_CLASS(getMenuClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_MENUWIDGET:
+			GET_THEME_CLASS(getMenuWidgetClassValues);
             break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_TEXTBOX:
-			GET_THEME_CLASS(getTextBoxClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_TEXTBOXWIDGET:
+			GET_THEME_CLASS(getTextBoxWidgetClassValues);
             break;
-		case MMSGUI_TAGTABLE_TAG_CLASS_ARROW:
-			GET_THEME_CLASS(getArrowClassValues);
+		case MMSGUI_TAGTABLE_TAG_CLASS_ARROWWIDGET:
+			GET_THEME_CLASS(getArrowWidgetClassValues);
+            break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_INPUTWIDGET:
+			GET_THEME_CLASS(getInputWidgetClassValues);
             break;
 		}
 	}
@@ -345,7 +351,7 @@ void MMSThemeManager::getChildWindowValues(MMSTaffFile *tafff, MMSChildWindowCla
 }
 
 
-void MMSThemeManager::getLabelValues(MMSTaffFile *tafff, MMSLabelClass *themeClass, MMSTheme *theme) {
+void MMSThemeManager::getLabelWidgetValues(MMSTaffFile *tafff, MMSLabelWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -358,7 +364,7 @@ void MMSThemeManager::getLabelValues(MMSTaffFile *tafff, MMSLabelClass *themeCla
     themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
 }
 
-void  MMSThemeManager::getImageValues(MMSTaffFile *tafff, MMSImageClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getImageWidgetValues(MMSTaffFile *tafff, MMSImageWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -372,7 +378,7 @@ void  MMSThemeManager::getImageValues(MMSTaffFile *tafff, MMSImageClass *themeCl
 }
 
 
-void  MMSThemeManager::getButtonValues(MMSTaffFile *tafff, MMSButtonClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getButtonWidgetValues(MMSTaffFile *tafff, MMSButtonWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -385,7 +391,7 @@ void  MMSThemeManager::getButtonValues(MMSTaffFile *tafff, MMSButtonClass *theme
     themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
 }
 
-void  MMSThemeManager::getProgressBarValues(MMSTaffFile *tafff, MMSProgressBarClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getProgressBarWidgetValues(MMSTaffFile *tafff, MMSProgressBarWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -398,7 +404,7 @@ void  MMSThemeManager::getProgressBarValues(MMSTaffFile *tafff, MMSProgressBarCl
     themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
 }
 
-void  MMSThemeManager::getSliderValues(MMSTaffFile *tafff, MMSSliderClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getSliderWidgetValues(MMSTaffFile *tafff, MMSSliderWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -411,7 +417,7 @@ void  MMSThemeManager::getSliderValues(MMSTaffFile *tafff, MMSSliderClass *theme
     themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
 }
 
-void  MMSThemeManager::getMenuValues(MMSTaffFile *tafff, MMSMenuClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getMenuWidgetValues(MMSTaffFile *tafff, MMSMenuWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -426,7 +432,7 @@ void  MMSThemeManager::getMenuValues(MMSTaffFile *tafff, MMSMenuClass *themeClas
     themeClass->duplicateTAFF(tafff);
 }
 
-void  MMSThemeManager::getTextBoxValues(MMSTaffFile *tafff, MMSTextBoxClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getTextBoxWidgetValues(MMSTaffFile *tafff, MMSTextBoxWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -439,7 +445,20 @@ void  MMSThemeManager::getTextBoxValues(MMSTaffFile *tafff, MMSTextBoxClass *the
     themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
 }
 
-void  MMSThemeManager::getArrowValues(MMSTaffFile *tafff, MMSArrowClass *themeClass, MMSTheme *theme) {
+void  MMSThemeManager::getArrowWidgetValues(MMSTaffFile *tafff, MMSArrowWidgetClass *themeClass, MMSTheme *theme) {
+
+    string themePath = "";
+    if (theme)
+        themePath = theme->getThemePath();
+    
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+}
+
+void MMSThemeManager::getInputWidgetValues(MMSTaffFile *tafff, MMSInputWidgetClass *themeClass, MMSTheme *theme) {
 
     string themePath = "";
     if (theme)
@@ -582,133 +601,150 @@ void MMSThemeManager::getChildWindowClassValues(MMSTaffFile *tafff, MMSTheme *th
     }
 }
 
-void MMSThemeManager::getLabelClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSLabelClass *themeClass = theme->getLabelClass(className);
+void MMSThemeManager::getLabelWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSLabelWidgetClass *themeClass = theme->getLabelWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSLabelClass;
-        getLabelValues(tafff, themeClass, theme);
+        themeClass = new MMSLabelWidgetClass;
+        getLabelWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addLabelClass(themeClass))
+        if (!theme->addLabelWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getLabelValues(tafff, themeClass, theme);
+        getLabelWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getImageClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSImageClass *themeClass = theme->getImageClass(className);
+void MMSThemeManager::getImageWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSImageWidgetClass *themeClass = theme->getImageWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSImageClass;
-        getImageValues(tafff, themeClass, theme);
+        themeClass = new MMSImageWidgetClass;
+        getImageWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addImageClass(themeClass))
+        if (!theme->addImageWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getImageValues(tafff, themeClass, theme);
+        getImageWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getButtonClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSButtonClass *themeClass = theme->getButtonClass(className);
+void MMSThemeManager::getButtonWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSButtonWidgetClass *themeClass = theme->getButtonWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSButtonClass;
-        getButtonValues(tafff, themeClass, theme);
+        themeClass = new MMSButtonWidgetClass;
+        getButtonWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addButtonClass(themeClass))
+        if (!theme->addButtonWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getButtonValues(tafff, themeClass, theme);
+        getButtonWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getProgressBarClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSProgressBarClass *themeClass = theme->getProgressBarClass(className);
+void MMSThemeManager::getProgressBarWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSProgressBarWidgetClass *themeClass = theme->getProgressBarWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSProgressBarClass;
-        getProgressBarValues(tafff, themeClass, theme);
+        themeClass = new MMSProgressBarWidgetClass;
+        getProgressBarWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addProgressBarClass(themeClass))
+        if (!theme->addProgressBarWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getProgressBarValues(tafff, themeClass, theme);
+        getProgressBarWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getSliderClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSSliderClass *themeClass = theme->getSliderClass(className);
+void MMSThemeManager::getSliderWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSSliderWidgetClass *themeClass = theme->getSliderWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSSliderClass;
-        getSliderValues(tafff, themeClass, theme);
+        themeClass = new MMSSliderWidgetClass;
+        getSliderWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addSliderClass(themeClass))
+        if (!theme->addSliderWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getSliderValues(tafff, themeClass, theme);
+        getSliderWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getMenuClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSMenuClass *themeClass = theme->getMenuClass(className);
+void MMSThemeManager::getMenuWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSMenuWidgetClass *themeClass = theme->getMenuWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSMenuClass;
-        getMenuValues(tafff, themeClass, theme);
+        themeClass = new MMSMenuWidgetClass;
+        getMenuWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addMenuClass(themeClass))
+        if (!theme->addMenuWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getMenuValues(tafff, themeClass, theme);
+        getMenuWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getTextBoxClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSTextBoxClass *themeClass = theme->getTextBoxClass(className);
+void MMSThemeManager::getTextBoxWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSTextBoxWidgetClass *themeClass = theme->getTextBoxWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSTextBoxClass;
-        getTextBoxValues(tafff, themeClass, theme);
+        themeClass = new MMSTextBoxWidgetClass;
+        getTextBoxWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addTextBoxClass(themeClass))
+        if (!theme->addTextBoxWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getTextBoxValues(tafff, themeClass, theme);
+        getTextBoxWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
 
-void MMSThemeManager::getArrowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
-    MMSArrowClass *themeClass = theme->getArrowClass(className);
+void MMSThemeManager::getArrowWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSArrowWidgetClass *themeClass = theme->getArrowWidgetClass(className);
 
     if (!themeClass) {
-        themeClass = new MMSArrowClass;
-        getArrowValues(tafff, themeClass, theme);
+        themeClass = new MMSArrowWidgetClass;
+        getArrowWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
-        if (!theme->addArrowClass(themeClass))
+        if (!theme->addArrowWidgetClass(themeClass))
             delete themeClass;
     }
     else {
-        getArrowValues(tafff, themeClass, theme);
+        getArrowWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }
+
+void MMSThemeManager::getInputWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSInputWidgetClass *themeClass = theme->getInputWidgetClass(className);
+
+    if (!themeClass) {
+        themeClass = new MMSInputWidgetClass;
+        getInputWidgetValues(tafff, themeClass, theme);
+        themeClass->setClassName(className);
+        if (!theme->addInputWidgetClass(themeClass))
+            delete themeClass;
+    }
+    else {
+        getInputWidgetValues(tafff, themeClass, theme);
+        themeClass->setClassName(className);
+    }
+}
+
 
 
 

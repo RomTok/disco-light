@@ -22,7 +22,7 @@
 
 #include "mmsgui/mmsimagethread.h"
 
-MMSImageThread::MMSImageThread(MMSImage *image) {
+MMSImageThread::MMSImageThread(MMSImageWidget *image) {
     this->image = image;
     this->inWait = false;
     this->stopThread = false;

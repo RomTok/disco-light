@@ -128,7 +128,9 @@ typedef enum {
     //! A MMSArrow widget cannot get the focus but can be selected. 
     MMSWIDGETTYPE_ARROW,
     //! A MMSSlider widget cannot get the focus but can be selected. 
-    MMSWIDGETTYPE_SLIDER
+    MMSWIDGETTYPE_SLIDER,
+    //! A MMSInput widget can get the focus and therefore can process inputs. You can display and edit one line of text.
+    MMSWIDGETTYPE_INPUT
 } MMSWIDGETTYPE;
 
 //! This class is the base class for all widgets.
@@ -139,6 +141,9 @@ This class cannot be constructed. Only widgets which are derived from this class
 */
 class MMSWidget {
     private:
+        //! type of the widget
+        MMSWIDGETTYPE 		type;
+
         MMSTheme            *theme;             /* access to the theme which is used */
         MMSWidgetClass      *baseWidgetClass;
         MMSWidgetClass      *widgetClass;
@@ -222,7 +227,7 @@ class MMSWidget {
     public:
         MMSWidget();
         virtual ~MMSWidget();
-        virtual MMSWIDGETTYPE getType() = 0;
+        MMSWIDGETTYPE getType();
 
         void copyWidget(MMSWidget *newWidget);
         virtual MMSWidget *copyWidget() = 0;
@@ -454,16 +459,17 @@ class MMSWidget {
 
     /* friends */
     friend class MMSWindow;
-    friend class MMSHBox;
-    friend class MMSVBox;
-    friend class MMSLabel;
-    friend class MMSButton;
-    friend class MMSImage;
-    friend class MMSProgressBar;
-    friend class MMSMenu;
-    friend class MMSTextBox;
-    friend class MMSArrow;
-    friend class MMSSlider;
+    friend class MMSHBoxWidget;
+    friend class MMSVBoxWidget;
+    friend class MMSLabelWidget;
+    friend class MMSButtonWidget;
+    friend class MMSImageWidget;
+    friend class MMSProgressBarWidget;
+    friend class MMSMenuWidget;
+    friend class MMSTextBoxWidget;
+    friend class MMSArrowWidget;
+    friend class MMSSliderWidget;
+    friend class MMSInputWidget;
 };
 
 #include "mmswindow.h"

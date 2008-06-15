@@ -37,6 +37,7 @@ MMSPopupWindow::~MMSPopupWindow() {
 
 bool MMSPopupWindow::create(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
                             MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, unsigned int duration) {
+	this->type = MMSWINDOWTYPE_POPUPWINDOW;
     this->className = className;
     if (theme) this->theme = theme; else this->theme = globalTheme;
     this->popupWindowClass = this->theme->getPopupWindowClass(className);

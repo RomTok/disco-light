@@ -36,6 +36,7 @@ MMS_CREATEERROR(MMSFileSearchError);
 #define MMSFILESEARCH_DEEPESTDIRENTRY_OF_FILE "<DEEPESTDIRENTRYOFFILE>;"
 
 typedef struct _mmsfile_entry {
+	bool   isdir;
 	string name;
 	string basename;
 	string path;
@@ -54,6 +55,7 @@ class MMSFileSearch {
 	private:
 		bool recursive;
 		bool caseinsensitive;
+		bool getdirs;
 		string directory;
 		string mask;
 		vector<string>  singlemask;
@@ -64,7 +66,7 @@ class MMSFileSearch {
 		MMSFILESEARCH_OPTION option;
 		
 	public:
-		MMSFileSearch(string directory, string mask, bool recursive=true, bool caseinsensitive=false);
+		MMSFileSearch(string directory, string mask, bool recursive=true, bool caseinsensitive=false, bool getdirs = false);
 		void setRecursive(bool recursive);
 		void setDircetory(string directory);
 		void setString(string mask);

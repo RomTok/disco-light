@@ -65,22 +65,22 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         /* get access to the menu bar */
         this->menuBar = (MMSChildWindow *)this->window->searchForWindow("menuBar");
         if(!this->menuBar) throw MMSError(0, "Error loading switchers menuBar childwindow");
-        this->menu    = (MMSMenu *)dm["menu"];
+        this->menu    = (MMSMenuWidget *)dm["menu"];
         if(!this->menu) throw MMSError(0, "Error loading switchers menu");
 
         /* fill the menu */
         MMSPluginService service(&source);
         vector<MMSPluginData *> p = service.getOSDPlugins();
         for(unsigned int i = 0; i < p.size();i++) {
-            MMSButton *pluginItem = dynamic_cast<MMSButton*>(menu->newItem());
-	    MMSLabel *pluginLabel = dynamic_cast<MMSLabel*>((*pluginItem)["pluginname"]);
+            MMSButtonWidget *pluginItem = dynamic_cast<MMSButtonWidget*>(menu->newItem());
+	    MMSLabelWidget *pluginLabel = dynamic_cast<MMSLabelWidget*>((*pluginItem)["pluginname"]);
             pluginLabel->setText(p.at(i)->getName());
             pluginItem->setBinData((void*)p.at(i));
         }
         p = service.getCentralPlugins();
         for(unsigned int i = 0; i < p.size();i++) {
-            MMSButton *pluginItem = dynamic_cast<MMSButton*>(menu->newItem());
-	    MMSLabel *pluginLabel = dynamic_cast<MMSLabel*>((*pluginItem)["pluginname"]);	
+            MMSButtonWidget *pluginItem = dynamic_cast<MMSButtonWidget*>(menu->newItem());
+	    MMSLabelWidget *pluginLabel = dynamic_cast<MMSLabelWidget*>((*pluginItem)["pluginname"]);	
             pluginLabel->setText(p.at(i)->getName());
             pluginItem->setBinData((void*)p.at(i));
         }
@@ -164,9 +164,9 @@ void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
 
 
 void MMSSwitcher::onSelectItem(MMSWidget *widget) {
-    MMSButton *pluginLabel = dynamic_cast<MMSButton*>(widget);
+    MMSButtonWidget *pluginLabel = dynamic_cast<MMSButtonWidget*>(widget);
     if(!pluginLabel)
-        pluginLabel = dynamic_cast<MMSButton*>(this->menu->getSelectedItem());
+        pluginLabel = dynamic_cast<MMSButtonWidget*>(this->menu->getSelectedItem());
 
     /* no menu item given */
     if(!pluginLabel) {
@@ -201,9 +201,9 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
 void MMSSwitcher::onReturn(MMSWidget *widget) {
     try {
-        MMSLabel *pluginLabel = dynamic_cast<MMSLabel*>(widget);
+        MMSLabelWidget *pluginLabel = dynamic_cast<MMSLabelWidget*>(widget);
         if(!pluginLabel)
-            pluginLabel = dynamic_cast<MMSLabel*>(this->menu->getSelectedItem());
+            pluginLabel = dynamic_cast<MMSLabelWidget*>(this->menu->getSelectedItem());
 
         /* no menu item given */
         if(!pluginLabel)
