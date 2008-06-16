@@ -22,7 +22,7 @@ all clean update:
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
 	@+make -C  ./src/mmscore   $@
-	@+make -C  ./src/diskodesigner   $@
+	#@+make -C  ./src/diskodesigner   $@
 
 install:
 	@+make -C  ./src/mmstools  $@
@@ -33,10 +33,10 @@ install:
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
 	@+make -C  ./src/mmscore   $@
-	@+make -C  ./src/diskodesigner   $@
+	#@+make -C  ./src/diskodesigner   $@
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
-	@echo "applying local configuration to the diskodesignerrc.xml"
-	@if test -f ./src/diskodesigner/scripts/updatediskodesignerrc.sh; then \
+	#@echo "applying local configuration to the diskodesignerrc.xml"
+	#@if test -f ./src/diskodesigner/scripts/updatediskodesignerrc.sh; then \
 		./src/diskodesigner/scripts/updatediskodesignerrc.sh $(DESTDIR)$(sysconfdir)/diskodesignerrc.xml $(datadir)/db $(datadir)/ $(sysconfdir) $(prefix); \
 	fi
 	@echo "writing pkgconfig information"
