@@ -37,8 +37,8 @@ install:
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
 	#@echo "applying local configuration to the diskodesignerrc.xml"
 	#@if test -f ./src/diskodesigner/scripts/updatediskodesignerrc.sh; then \
-		./src/diskodesigner/scripts/updatediskodesignerrc.sh $(DESTDIR)$(sysconfdir)/diskodesignerrc.xml $(datadir)/db $(datadir)/ $(sysconfdir) $(prefix); \
-	fi
+	#	./src/diskodesigner/scripts/updatediskodesignerrc.sh $(DESTDIR)$(sysconfdir)/diskodesignerrc.xml $(datadir)/db $(datadir)/ $(sysconfdir) $(prefix); \
+	#fi
 	@echo "writing pkgconfig information"
 	@install -d "$(DESTDIR)$(libdir)/../pkgconfig"
 	@echo "prefix=$(prefix)" > $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
