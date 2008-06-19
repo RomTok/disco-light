@@ -15,7 +15,6 @@ endif
 
 all clean update:
 	@+make -C  ./src/mmstools  $@
-	@+make -C  ./src/mmsdata   $@
 	@+make -C  ./src/mmsconfig $@
 	@+make -C  ./src/mmsgui    $@
 	@+make -C  ./src/mmsbase   $@
@@ -26,7 +25,6 @@ all clean update:
 
 install-disko:
 	@+make -C  ./src/mmstools  install
-	@+make -C  ./src/mmsdata   install
 	@+make -C  ./src/mmsconfig install
 	@+make -C  ./src/mmsgui    install
 	@+make -C  ./src/mmsbase   install

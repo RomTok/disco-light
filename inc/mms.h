@@ -37,7 +37,6 @@
 #include <mmsbase/mmsbase.h>
 #include <mmsconfig/mmsconfig.h>
 #include <mmsgui/mmsgui.h>
-#include <mmsdata/mmsdata.h>
 #include <mmsinput/mmsinput.h>
 #include <mmsmedia/mmsmedia.h>
 
