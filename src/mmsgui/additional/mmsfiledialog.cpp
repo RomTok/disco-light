@@ -82,7 +82,7 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 	if (parent)
 		// load the default dialog file which includes a child window
 		// do this only if a parent window is given!!!
-		this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "share/disko/mmsgui/mmsfiledialog.xml", theme);
+		this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsfiledialog.xml", theme);
 	
 	if (!this->dialogwindow)
 		return false;
