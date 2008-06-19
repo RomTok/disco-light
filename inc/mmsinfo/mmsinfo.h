@@ -1,7 +1,7 @@
 #ifndef MMSINFO_H_
 #define MMSINFO_H_
 
-#define DISKO_PREFIX "/opt/disko"
+#define DISKO_PREFIX ""
 
 const char *getPrefix();
 
