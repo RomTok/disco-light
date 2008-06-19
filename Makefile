@@ -24,17 +24,20 @@ all clean update:
 	@+make -C  ./src/mmscore   $@
 	@+make -C  ./tools/taff    $@
 
-install:
-	@+make -C  ./src/mmstools  $@
-	@+make -C  ./src/mmsdata   $@
-	@+make -C  ./src/mmsconfig $@
-	@+make -C  ./src/mmsgui    $@
-	@+make -C  ./src/mmsbase   $@
-	@+make -C  ./src/mmsinput  $@
-	@+make -C  ./src/mmsmedia  $@
-	@+make -C  ./src/mmscore   $@
-	@+make -C  ./tools/taff    $@
+install-disko:
+	@+make -C  ./src/mmstools  install
+	@+make -C  ./src/mmsdata   install
+	@+make -C  ./src/mmsconfig install
+	@+make -C  ./src/mmsgui    install
+	@+make -C  ./src/mmsbase   install
+	@+make -C  ./src/mmsinput  install
+	@+make -C  ./src/mmsmedia  install
+	@+make -C  ./src/mmscore   install
+	@+make -C  ./src/mmsinfo   install
+	@+make -C  ./tools/taff    install
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
+
+install-pkgconfig:
 	@echo "writing pkgconfig information"
 	@install -d "$(DESTDIR)$(libdir)/../pkgconfig"
 	@echo "prefix=$(prefix)" > $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
@@ -50,6 +53,8 @@ install:
 	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(XINE_INC) $(SIGC_INC) $(XINE_INC)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "URL: http://www.directfb.org" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 
+install: install-disko install-pkgconfig
+
 check:
 	@echo check for libpng
 	@pkg-config --print-errors --exists libpng
@@ -63,7 +68,7 @@ check:
 	@pkg-config --print-errors --exists directfb
 	@echo check for libsigc++
 	@pkg-config --print-errors --exists sigc++-2.0
-	
+		
 dox:
 	@doxygen ./doc/conf/$(PROJECTNAME).conf
 	
