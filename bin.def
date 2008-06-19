@@ -15,6 +15,7 @@ clean:
 	@rm -f $(OUTPUTDIR)/$(TARGET)
 	
 install: all
+	@echo " [INSTALL]   ($(TARGET))"
 	@install -d $(DESTDIR)$(bindir)
 	@install -c -m 755 $(OUTPUTDIR)/$(TARGET) $(DESTDIR)$(bindir)/
 	@if test -d ./share/; then \

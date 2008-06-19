@@ -22,6 +22,7 @@ all clean update:
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
 	@+make -C  ./src/mmscore   $@
+	@+make -C  ./tools/taff    $@
 
 install:
 	@+make -C  ./src/mmstools  $@
@@ -32,6 +33,7 @@ install:
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
 	@+make -C  ./src/mmscore   $@
+	@+make -C  ./tools/taff    $@
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
 	@echo "writing pkgconfig information"
 	@install -d "$(DESTDIR)$(libdir)/../pkgconfig"
