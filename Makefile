@@ -34,6 +34,14 @@ install-disko:
 	@+make -C  ./src/mmsinfo   install
 	@+make -C  ./tools/taff    install
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
+	@install -d "$(DESTDIR)$(datadir)"
+	@pushd share &> /dev/null; \
+		for i in `find . -type f | grep -v /CVS/`; do \
+			dir=`dirname $$i`; \
+			install -d "$(DESTDIR)$(datadir)/$$dir"; \
+			install -c -m 644 "$$i" "$(DESTDIR)$(datadir)/$$dir/"; \
+		done; \
+	popd &> /dev/null;
 
 install-pkgconfig:
 	@echo "writing pkgconfig information"
