@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/additional/mmsfiledialog.h"
+#include "mmsinfo/mmsinfo.h"
 
 #define FILEDIALOG_TITLE	"filedialog_title"
 #define FILEDIALOG_OK		"filedialog_ok"
@@ -81,8 +82,7 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 	if (parent)
 		// load the default dialog file which includes a child window
 		// do this only if a parent window is given!!!
-//TODO
-		this->dialogwindow = this->dm->loadChildDialog("share/disko-designer/mmsfiledialog.xml", theme);
+		this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "share/disko/mmsgui/mmsfiledialog.xml", theme);
 	
 	if (!this->dialogwindow)
 		return false;
