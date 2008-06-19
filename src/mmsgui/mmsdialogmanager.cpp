@@ -242,6 +242,9 @@ void MMSDialogManager::throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, 
         		case MMSGUI_TAGTABLE_TAG_SLIDERWIDGET:
                     widgetName = getSliderValues(tafff, currentWidget, rootWindow, theme);
                     break;
+        		case MMSGUI_TAGTABLE_TAG_INPUTWIDGET:
+        	        widgetName = getInputValues(tafff, currentWidget, rootWindow, theme);
+                    break;
         		}
 
                 if(widgetName != "") { 
@@ -768,6 +771,17 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                         ((MMSSliderWidget*)mywidget)->updateFromThemeClass(&themeCls);
                     }
                     break;
+                case MMSWIDGETTYPE_INPUT:
+                    {
+                        /* read attributes from dialog */
+                        MMSInputWidgetClass themeCls;
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+                        /* apply settings from dialog */
+                        ((MMSInputWidget*)mywidget)->updateFromThemeClass(&themeCls);
+                    }
+                    break;
             }
         }        
     } 
@@ -917,6 +931,7 @@ string MMSDialogManager::getLabelValues(MMSTaffFile *tafff, MMSWidget *currentWi
     /* return the name of the widget */
     return name;
 }
+
 
 
 string MMSDialogManager::getButtonValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
@@ -1335,6 +1350,8 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 		                                        ((MMSSliderWidget*)widget)->updateFromThemeClass(&themeCls);
 		                                    }
 		                                    break;
+		                                case MMSWIDGETTYPE_INPUT:
+		                                    break;
 		                            }
 		                        }
 		                    }  
@@ -1580,6 +1597,67 @@ string MMSDialogManager::getSliderValues(MMSTaffFile *tafff, MMSWidget *currentW
     /* return the name of the widget */
     return name;
 }
+
+string MMSDialogManager::getInputValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
+    MMSInputWidgetClass   themeClass;
+    MMSInputWidget  *input;
+    string          name = "";
+    string          size = "";
+
+    /* get themepath */
+    string themePath = "";
+    if (theme)
+        themePath = theme->getThemePath();
+    else
+        themePath = globalTheme->getThemePath();
+
+    /* read settings from dialog */    
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+
+    /* create new label from theme class */
+    input = new MMSInputWidget(rootWindow, themeClass.getClassName(), theme);
+
+    /* apply settings from dialog */
+    input->updateFromThemeClass(&themeClass);
+
+    /* search for attributes which are only supported within dialog */  
+    startTAFFScan
+    {
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
+            name = attrval_str;
+			break;
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_size:
+	        size = attrval_str;
+			break;
+	    }
+    }
+    endTAFFScan
+
+    /* add to widget vector if named */
+    if(name != "") { 
+        input->setName(name);
+        insertNamedWidget(input);
+    }
+
+    if(size != "") {
+        if (!input->setSizeHint(size))
+            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+    }
+
+    if (currentWidget)
+        currentWidget->add(input);
+    else
+        rootWindow->add(input);
+    
+    throughDoc(tafff, input, rootWindow, theme);
+    
+    /* return the name of the widget */
+    return name;
+}
+
 
 
 

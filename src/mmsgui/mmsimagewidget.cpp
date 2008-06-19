@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/mmsimagewidget.h"
+#include "mmsgui/mmsimagewidgetthread.h"
 
 
 //#define __PUPTRACE__
@@ -118,7 +119,7 @@ void MMSImageWidget::loadMyImage(string path, string filename, MMSFBSurface **su
     }
     else {
         /* start a thread for it */
-        this->imageThread = new MMSImageThread(this);
+        this->imageThread = new MMSImageWidgetThread(this);
         this->imageThread->start();
     }
 }

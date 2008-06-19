@@ -37,9 +37,20 @@ class MMSInputWidget : public MMSWidget {
         MMSInputWidgetClass *inputWidgetClass;
         MMSInputWidgetClass myInputWidgetClass;
 
-        IDirectFBFont *font;
+        IDirectFBFont 	*font;
+        int				cursor_pos;
+        bool			cursor_on;
+        int 			scroll_x;
+        
+        class MMSInputWidgetThread	*iwt;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
+
+        void handleInput(MMSInputEvent *inputevent);
+        
+        bool init();
+        bool draw(bool *backgroundFilled = NULL);
+        void drawCursor(bool cursor_on);
 
     public: 
         MMSInputWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
@@ -47,11 +58,12 @@ class MMSInputWidget : public MMSWidget {
 
         MMSWidget *copyWidget();
 
-        bool init();
-        bool draw(bool *backgroundFilled = NULL);
-
+        void setCursorPos(int cursor_pos, bool refresh = true);
+        void addTextAfterCursorPos(string text, bool refresh = true);
+        void removeTextBeforeCursorPos(int textlen, bool refresh = true);
+        
     public:
-        /* theme access methods */
+    	/* theme access methods */
         string getFontPath();
         string getFontName();
         unsigned int getFontSize();
@@ -67,9 +79,11 @@ class MMSInputWidget : public MMSWidget {
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setColor(DFBColor color, bool refresh = true);
         void setSelColor(DFBColor selcolor, bool refresh = true);
-        void setText(string text, bool refresh = true);
+        void setText(string text, bool refresh = true, bool reset_cursor = true);
 
         void updateFromThemeClass(MMSInputWidgetClass *themeClass);
+
+    friend class MMSInputWidgetThread;
 };
 
 #endif /*MMSINPUTWIDGET_H_*/

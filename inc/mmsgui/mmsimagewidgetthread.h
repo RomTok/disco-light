@@ -20,13 +20,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSIMAGETHREAD_H_
-#define MMSIMAGETHREAD_H_
+#ifndef MMSIMAGEWIDGETTHREAD_H_
+#define MMSIMAGEWIDGETTHREAD_H_
 
 #include "mmsgui/mmsimagewidget.h"
 #include <sigc++/sigc++.h>
 
-class MMSImageThread : public MMSThread {
+class MMSImageWidgetThread : public MMSThread {
     private:
         class MMSImageWidget *image;
 
@@ -39,9 +39,9 @@ class MMSImageThread : public MMSThread {
         void threadMain();
 
     public:
-        MMSImageThread(MMSImageWidget *image);
+        MMSImageWidgetThread(MMSImageWidget *image);
         void stop();
         void pause(bool pauseThread);
 };
 
-#endif /*MMSIMAGETHREAD_H_*/
+#endif /*MMSIMAGEWIDGETTHREAD_H_*/

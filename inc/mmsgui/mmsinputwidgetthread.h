@@ -20,53 +20,20 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSFILEDIALOG_H_
-#define MMSFILEDIALOG_H_
+#ifndef MMSINPUTWIDGETTHREAD_H_
+#define MMSINPUTWIDGETTHREAD_H_
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmswidgets.h"
-#include "mmsgui/mmsdialogmanager.h"
+#include "mmsgui/mmsinputwidget.h"
+#include <sigc++/sigc++.h>
 
-class MMSFileDialog {
+class MMSInputWidgetThread : public MMSThread {
     private:
-    	string 				dialogfile;
-    	MMSDialogManager	*dm;
-    	MMSWindow			*dialogwindow;
-    	
-    	MMSLabelWidget		*filedialog_title;
-    	
-    	MMSWidget			*filedialog_ok;
-    	MMSWidget			*filedialog_cancel;
-    	
-    	MMSLabelWidget		*filedialog_path;
-    	MMSInputWidget		*filedialog_name;
+        class MMSInputWidget *inputwidget;
 
-    	MMSMenuWidget		*filedialog_filelist;
-
-    	MMSButtonWidget		*filedialog_up;
-    	MMSButtonWidget		*filedialog_down;
-
-    	string				path;
-    	string				filename;
-    	
-    	void onReturn(MMSWidget *widget);
-    	void onSelectItem(MMSWidget *widget);
-    	
-    	bool fillMenu();
+        void threadMain();
 
     public:
-        MMSFileDialog();
-        MMSFileDialog(string path, string filename, MMSWindow *dialogwindow = NULL);
-        ~MMSFileDialog();
-        bool loadFileDialog(MMSWindow *parent, string dialogfile = "", MMSTheme *theme = NULL);
-        bool isInitialized();
-
-        bool setTitle(string title);
-        
-        bool show();
-        
-        sigc::signal<void, MMSFileDialog*> *onOK;
-        sigc::signal<void> *onCancel;
+        MMSInputWidgetThread(MMSInputWidget *inputwidget);
 };
 
-#endif /*MMSFILEDIALOG_H_*/
+#endif /*MMSINPUTWIDGETTHREAD_H_*/

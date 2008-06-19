@@ -20,16 +20,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsgui/mmsimagethread.h"
+#include "mmsgui/mmsimagewidgetthread.h"
 
-MMSImageThread::MMSImageThread(MMSImageWidget *image) {
+MMSImageWidgetThread::MMSImageWidgetThread(MMSImageWidget *image) {
     this->image = image;
     this->inWait = false;
     this->stopThread = false;
     this->pauseThread = false;
 }
 
-void MMSImageThread::wait(unsigned int delaytime) {
+void MMSImageWidgetThread::wait(unsigned int delaytime) {
     this->inWait = true;
     usleep(delaytime);
     while (this->pauseThread)
@@ -37,13 +37,13 @@ void MMSImageThread::wait(unsigned int delaytime) {
     this->inWait = false;
 }
 
-void MMSImageThread::stop() {
+void MMSImageWidgetThread::stop() {
     while (!this->inWait)
         usleep(1000);
     this->stopThread = true;
 }
 
-void MMSImageThread::pause(bool pauseThread) {
+void MMSImageWidgetThread::pause(bool pauseThread) {
     if (pauseThread) {
         while (!this->inWait)
             usleep(1000);
@@ -54,7 +54,7 @@ void MMSImageThread::pause(bool pauseThread) {
     }
 }
 
-void MMSImageThread::doIt() {
+void MMSImageWidgetThread::doIt() {
 
     /* init */
     this->inWait = false;
@@ -250,7 +250,7 @@ void MMSImageThread::doIt() {
     }
 }
 
-void MMSImageThread::threadMain() {
+void MMSImageWidgetThread::threadMain() {
     doIt();
     delete this;
 }

@@ -1108,7 +1108,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setSelBgImagePath_i("");
         this->inputWidgetClass.widgetClass.setSelBgImageName_i("");
         this->inputWidgetClass.widgetClass.setMargin(0);
-        this->inputWidgetClass.widgetClass.setFocusable(false);
+        this->inputWidgetClass.widgetClass.setFocusable(true);
         this->inputWidgetClass.widgetClass.setSelectable(true);
         this->inputWidgetClass.widgetClass.setUpArrow("");
         this->inputWidgetClass.widgetClass.setDownArrow("");

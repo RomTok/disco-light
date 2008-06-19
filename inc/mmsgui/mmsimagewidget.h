@@ -24,7 +24,6 @@
 #define MMSIMAGEWIDGET_H_
 
 #include "mmsgui/mmswidget.h"
-#include "mmsgui/mmsimagethread.h"
 
 //! With this class you can display pictures and animations.
 /*!
@@ -68,7 +67,7 @@ class MMSImageWidget : public MMSWidget {
         bool    selimage_p_loaded;
         bool    selimage_i_loaded;
 
-        class MMSImageThread  *imageThread;
+        class MMSImageWidgetThread  *imageThread;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
@@ -131,7 +130,7 @@ class MMSImageWidget : public MMSWidget {
 
         void updateFromThemeClass(MMSImageWidgetClass *themeClass);
 
-    friend class MMSImageThread;
+    friend class MMSImageWidgetThread;
 };
 
 #endif /*MMSIMAGEWIDGET_H_*/

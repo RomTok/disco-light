@@ -81,7 +81,8 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 	if (parent)
 		// load the default dialog file which includes a child window
 		// do this only if a parent window is given!!!
-		this->dialogwindow = this->dm->loadChildDialog("share/disko/mmsfiledialog.xml", theme);
+//TODO
+		this->dialogwindow = this->dm->loadChildDialog("share/disko-designer/mmsfiledialog.xml", theme);
 	
 	if (!this->dialogwindow)
 		return false;
@@ -91,7 +92,7 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 	this->filedialog_ok = this->dialogwindow->searchForWidget(FILEDIALOG_OK);
 	this->filedialog_cancel = this->dialogwindow->searchForWidget(FILEDIALOG_CANCEL);
 	this->filedialog_path = (MMSLabelWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_PATH);
-	this->filedialog_name = (MMSLabelWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_NAME);
+	this->filedialog_name = (MMSInputWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_NAME);
 	this->filedialog_filelist = (MMSMenuWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_FILELIST);
 	this->filedialog_up = (MMSButtonWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_UP);
 	this->filedialog_down = (MMSButtonWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_DOWN);
@@ -110,7 +111,7 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 		if (this->filedialog_path->getType() != MMSWIDGETTYPE_LABEL)
 			this->filedialog_path = NULL;
 	if (this->filedialog_name)
-		if (this->filedialog_name->getType() != MMSWIDGETTYPE_LABEL)
+		if (this->filedialog_name->getType() != MMSWIDGETTYPE_INPUT)
 			this->filedialog_name = NULL;
 	if (this->filedialog_filelist)
 		if (this->filedialog_filelist->getType() == MMSWIDGETTYPE_MENU) {
@@ -129,7 +130,7 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 			this->filedialog_down->onReturn->connect(sigc::mem_fun(this,&MMSFileDialog::onReturn));
 		else
 			this->filedialog_down = NULL;
-	
+
 	return true;
 }
 
