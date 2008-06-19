@@ -56,7 +56,7 @@ install-pkgconfig:
 	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Version: 1.1.1" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libxine, alsa" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-	@echo "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmsmedia -lmmstools $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(XINE_LIBS) $(SIGC_LIBS) $(XINE_LIBS)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
+	@echo "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmsmedia -lmmstools -lmmsinfo $(LIBXML_LIBS) $(SQLITE3_LIBS) $(FREETDS_LIBS) $(DIRECTFB_LIBS) $(XINE_LIBS) $(SIGC_LIBS) $(XINE_LIBS)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
 	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(LIBXML_INC) $(SQLITE3_INC) $(FREETDS_INC) $(DIRECTFB_INC) $(XINE_INC) $(SIGC_INC) $(XINE_INC)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "URL: http://www.directfb.org" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 
