@@ -14,13 +14,13 @@ ifndef PROJECTNAME
 endif
 
 all clean update:
+	@+make -C  ./src/mmsinfo   $@
 	@+make -C  ./src/mmstools  $@
 	@+make -C  ./src/mmsconfig $@
 	@+make -C  ./src/mmsgui    $@
 	@+make -C  ./src/mmsbase   $@
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
-	@+make -C  ./src/mmsinfo   $@
 	@+make -C  ./src/mmscore   $@
 	@+make -C  ./tools/taff    $@
 
