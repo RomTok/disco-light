@@ -54,5 +54,4 @@ void MMSEventThread::threadMain() {
         this->centralHandler->invokeOnEvent(this->event);
     else if(this->backendHandler)
         this->backendHandler->invokeOnEvent(this->event);
-    delete this;
 }
