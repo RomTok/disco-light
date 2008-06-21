@@ -245,17 +245,9 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
         if (reload_image < 0) {
             /* load it */
             MMSGIFLoader *gifloader = new MMSGIFLoader(im_desc, this->layer);
-            im_desc->loading = true;
             gifloader->start();
+            gifloader->block();
    
-            /* wait of at least first image of GIF */
-            int s = 10*1000;
-            while ((im_desc->sufcount <= 0) && (im_desc->loading)) {
-                usleep(s);
-                if (s < 100*1000)
-                    s+= 10*1000;
-            }
-
             if (im_desc->sufcount > 0) {
             	DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
         

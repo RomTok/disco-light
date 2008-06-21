@@ -25,14 +25,16 @@
 
 //#define GIFTRACE
 
-MMSGIFLoader::MMSGIFLoader(MMSIM_DESC *desc, MMSFBLayer *layer) {
-    this->desc = desc;
-    this->layer = layer;
-    this->myfile = NULL;
+MMSGIFLoader::MMSGIFLoader(MMSIM_DESC      *_desc, 
+		                   MMSFBLayer      *_layer) : 
+    desc(_desc),
+    layer(_layer),
+    myfile(NULL) {
+	pthread_cond_init(&this->cond, NULL);
+	pthread_mutex_init(&this->mutex, NULL);
 }
 
 bool MMSGIFLoader::loadHeader() {
-
     unsigned char   buffer[1024];
     size_t          count = 0;
 
@@ -673,6 +675,10 @@ bool MMSGIFLoader::loadBlocks() {
                         desc->suf[desc->sufcount].delaytime = 100;
 
                     desc->sufcount++;
+                    if(desc->sufcount == 1) {
+                        pthread_cond_signal(&this->cond);
+                        pthread_mutex_unlock(&this->mutex);
+                    }
                 }
                 else {
                     /* no free index */
@@ -681,8 +687,8 @@ bool MMSGIFLoader::loadBlocks() {
 #endif
                     delete newsuf;
                 }
-                }
-                break;
+            }
+            break;
 
             case 0x3b:
                 /* normal end of GIF stream */
@@ -707,14 +713,18 @@ bool MMSGIFLoader::loadBlocks() {
 }
 
 void MMSGIFLoader::threadMain() {
-
+	pthread_mutex_lock(&this->mutex);
+	
     /* start loading */
     this->desc->loading = true;
 
     /* load some header informations */
     if (loadHeader()) {
         /* load the separated blocks */
-        loadBlocks();
+        if(!loadBlocks()) {
+            pthread_cond_signal(&this->cond);
+            pthread_mutex_unlock(&this->mutex);
+        }
     }
 
     if (this->myfile)
@@ -725,8 +735,18 @@ void MMSGIFLoader::threadMain() {
 
     /* stop loading */
     this->desc->loading = false;
+    
+    pthread_cond_destroy(&this->cond);
+    pthread_mutex_destroy(&this->mutex);
+    pthread_exit(NULL);
+}
 
-    delete this;
+/**
+ * This method returns when at least the first image
+ * of a GIF file is loaded.
+ */
+void MMSGIFLoader::block() {
+	pthread_cond_wait(&this->cond, &this->mutex);	
 }
 
 bool isGIF(string file) {
@@ -758,4 +778,3 @@ bool isGIF(string file) {
 
     return true;
 }
-

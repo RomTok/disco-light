@@ -84,6 +84,8 @@ class MMSGIFLoader : public MMSThread {
         MMS_GIF_LSD     gif_lsd;
         MMS_GIF_CT      gif_gct;     
 
+        pthread_cond_t	cond;
+        pthread_mutex_t	mutex;
 
         bool loadHeader();
         bool loadBlocks();
@@ -91,7 +93,10 @@ class MMSGIFLoader : public MMSThread {
         void threadMain();
 
     public:
-        MMSGIFLoader(MMSIM_DESC *desc, MMSFBLayer *layer);
+        MMSGIFLoader(MMSIM_DESC      *desc, 
+        		     MMSFBLayer      *layer);
+        
+        void block();
 };
 
 bool isGIF(string file);
