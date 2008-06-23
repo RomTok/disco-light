@@ -783,5 +783,6 @@ bool isGIF(string file) {
         return false;
     }
 
+    free(gif_header);
     return true;
 }
