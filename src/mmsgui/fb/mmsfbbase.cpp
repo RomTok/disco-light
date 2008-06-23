@@ -26,7 +26,7 @@
 /* stores the last error text */
 string MMSFB_LastErrorString;
 
-string MMSFB_ErrorString(int rc, string msg) {
+string MMSFB_ErrorString(const int rc, const string msg) {
     if (rc)
     {
         string s1 = msg;
@@ -37,7 +37,7 @@ string MMSFB_ErrorString(int rc, string msg) {
         return msg;
 }
 
-void MMSFB_SetError(int rc, string msg) {
+void MMSFB_SetError(const int rc, const string msg) {
     MMSFB_LastErrorString = MMSFB_ErrorString(rc, msg);
     DEBUGMSG("MMSGUI", MMSFB_LastErrorString);
 }
