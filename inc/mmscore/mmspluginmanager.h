@@ -29,6 +29,7 @@ MMS_CREATEERROR(MMSPluginManagerError);
 
 class MMSPluginManager {
     private:
+    	DataSource							*source;
         MMSPluginService                    *service;
         vector<MMSOSDPluginHandler *>       osdPluginHandlers;
         vector<MMSCentralPluginHandler *>   centralPluginHandlers;

@@ -38,6 +38,7 @@ static MMSConfigDataDFB             rcDFB;
 static MMSWindowManager             *windowmanager = NULL;
 
 static void on_exit() {
+	if(pluginmanager) delete pluginmanager;
 }
 
 

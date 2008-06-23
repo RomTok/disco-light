@@ -26,7 +26,7 @@
 
 MMSPluginManager::MMSPluginManager() {
     MMSConfigData *config = new MMSConfigData();
-    DataSource    *source = new DataSource(config->getConfigDBDBMS(), 
+    this->source          = new DataSource(config->getConfigDBDBMS(), 
     		                               config->getConfigDBDatabase(),
     		                               config->getConfigDBAddress(),
     		                               config->getConfigDBPort(),
@@ -38,8 +38,16 @@ MMSPluginManager::MMSPluginManager() {
 }
 
 MMSPluginManager::~MMSPluginManager() {
+    if(this->source)  delete this->source;
     if(this->service) delete this->service;
-    this->osdPluginHandlers.erase(this->osdPluginHandlers.begin(), this->osdPluginHandlers.end());
+    for(vector<MMSOSDPluginHandler*>::iterator it = this->osdPluginHandlers.begin(); it != this->osdPluginHandlers.end(); ++it)
+       delete *it;
+    for(vector<MMSCentralPluginHandler*>::iterator it = this->centralPluginHandlers.begin(); it != this->centralPluginHandlers.end(); ++it)
+       delete *it;
+    for(vector<MMSImportPluginHandler*>::iterator it = this->importPluginHandlers.begin(); it != this->importPluginHandlers.end(); ++it)
+       delete *it;
+    for(vector<MMSBackendPluginHandler*>::iterator it = this->backendPluginHandlers.begin(); it != this->backendPluginHandlers.end(); ++it)
+       delete *it;
 }
 
 void MMSPluginManager::loadOSDPlugins() {
