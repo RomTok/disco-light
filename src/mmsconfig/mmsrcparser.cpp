@@ -57,6 +57,7 @@ MMSRcParser::MMSRcParser() {
     this->dfb.touchrect.y              = 0;
     this->dfb.touchrect.w              = 0;
     this->dfb.touchrect.h              = 0;
+    this->dfb.pointer                  = false;
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -300,6 +301,8 @@ void MMSRcParser::throughDFBSettings(xmlNode* node) {
 	        this->dfb.touchrect.w = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.h"))
 	    	this->dfb.touchrect.h = strToInt(string((const char *)parvalue));
+        else if(!xmlStrcmp(parname, (const xmlChar *) "pointer"))
+            this->dfb.pointer = strToBool(string((const char *)parvalue));
 		
 	    xmlFree(parname);
 	    xmlFree(parvalue);

@@ -60,6 +60,14 @@ MMSInputHandler::MMSInputHandler(DFBInputDeviceID device) {
 	this->pointer_rect.y = config->getTouchRect().y;
 	this->pointer_rect.w = config->getTouchRect().w;
 	this->pointer_rect.h = config->getTouchRect().h;
+	if ((this->pointer_rect.w<=0)||(this->pointer_rect.h<=0))
+		if (config->getPointer()) {
+			// no touch rect given but pointer needed
+			this->pointer_rect.x = this->screen_rect.x;
+			this->pointer_rect.y = this->screen_rect.y;
+			this->pointer_rect.w = this->screen_rect.w;
+			this->pointer_rect.h = this->screen_rect.h;
+		}
 
 	/* calculate a factor between screen and pointer rectangle */
 	if ((this->pointer_rect.w > 0)&&(this->pointer_rect.h > 0)) {

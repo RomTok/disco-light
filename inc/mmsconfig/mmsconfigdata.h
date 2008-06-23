@@ -76,6 +76,7 @@ class MMSConfigDataDFB {
 	    string graphicslayerbuffermode;
 	    CVRECT vrect;
 	    CVRECT touchrect;
+	    bool   pointer;
 };
 
 class MMSConfigData {
@@ -136,6 +137,7 @@ class MMSConfigData {
         const string getGraphicsLayerBufferMode();
         const CVRECT getVRect();
         const CVRECT getTouchRect();
+        const bool   getPointer();
 };
 
 #endif /*MMSCONFIGDATA_H_*/

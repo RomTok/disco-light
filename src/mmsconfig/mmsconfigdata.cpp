@@ -227,6 +227,10 @@ const CVRECT MMSConfigData::getTouchRect() {
     return this->dfb.touchrect;
 }
 
+const bool MMSConfigData::getPointer() {
+    return this->dfb.pointer;
+}
+
 /* static variables */
 MMSConfigDataGlobal MMSConfigData::global;
 MMSConfigDataDB     MMSConfigData::configdb;

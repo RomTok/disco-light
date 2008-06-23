@@ -21,6 +21,8 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbwindowmanager.h"
+#include "mmsinfo/mmsinfo.h"
+#include "mmsgui/fb/mmsfb.h"
 #include <directfb.h>
 
 /* initialize the mmsfbwindowmanager object */ 
@@ -40,9 +42,22 @@ MMSFBWindowManager::MMSFBWindowManager() {
     this->high_freq_region.y2 = 0;
     this->high_freq_lastflip = 0;
     
+    // init pointer values
+    this->show_pointer = false;
     this->pointer_posx = -1;        
-    this->pointer_posy = -1;        
+    this->pointer_posy = -1; 
+    this->pointer_rect.x = 0;
+    this->pointer_rect.y = 0;
+    this->pointer_rect.w = 0;
+    this->pointer_rect.h = 0;
+    this->pointer_region.x1 = 0;
+    this->pointer_region.y1 = 0;
+    this->pointer_region.x2 = 0;
+    this->pointer_region.y2 = 0;
+    this->pointer_surface = NULL;
+    this->pointer_opacity = 0;
     
+    // start my thread
     mmsfbwinmanthread = new MMSFBWindowManagerThread(&this->high_freq_surface,
                                                      &this->high_freq_saved_surface,
                                                      &this->high_freq_lastflip,
@@ -58,7 +73,7 @@ MMSFBWindowManager::~MMSFBWindowManager() {
     }
 }
 
-bool MMSFBWindowManager::init(MMSFBLayer *layer) {
+bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
 
     /* check if already initialized */
     if (this->layer) {
@@ -66,8 +81,9 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer) {
         return false;
     }
 
-    /* save layer */
+    // set values
     this->layer = layer;
+    this->show_pointer = show_pointer;
 
     DEBUGMSG("MMSGUI", "MMSFBWindowManager: get layer surface");
     
@@ -607,24 +623,18 @@ logger.writeLog("BBB>");
         }
     }
 
-    
-    
-    this->layer_surface->setClip(NULL);
+    // draw the pointer
+    drawPointer(&ls_region);
 
-    /* draw pointer */
-    if ((this->pointer_posx>=0)&&(this->pointer_posy>=0)) {
-	    this->layer_surface->setColor(255,255,255,255);
-	    this->layer_surface->drawLine(this->pointer_posx-10,this->pointer_posy,this->pointer_posx+10,this->pointer_posy);
-	    this->layer_surface->drawLine(this->pointer_posx,this->pointer_posy-10,this->pointer_posx,this->pointer_posy+10);
-	    this->layer_surface->setColor(0,0,0,0);
-    }
+    // reset the clip
+    this->layer_surface->setClip(NULL);
     
-    /* make changes visible */
+    // make changes visible
     if (refresh)
     	this->layer_surface->flip(&ls_region);
     
     
-    /* unlock */
+    // unlock
     if (!locked)
         lock.unlock();
 
@@ -812,17 +822,146 @@ bool MMSFBWindowManager::setWindowSize(MMSFBWindow *window, int w, int h) {
 }
 
 void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy) {
+	// changed?
 	if ((this->pointer_posx == pointer_posx)&&(this->pointer_posy == pointer_posy))
 		return;
 	this->pointer_posx = pointer_posx;
 	this->pointer_posy = pointer_posy;
 
-	DFBRegion region;
-	region.x1 = this->pointer_posx - 10; 
-	region.y1 = this->pointer_posy - 10; 
-	region.x2 = this->pointer_posx + 10; 
-	region.y2 = this->pointer_posy + 10; 
-	flipSurface(NULL, &region, false);
+	// do nothing more if pointer will not be shown
+	if (!this->show_pointer)
+		return;
+
+	// surface of pointer initialized?
+	if (!this->pointer_surface)
+		if (!loadPointer()) {
+			// not loaded, set a primitive pointer 
+			this->pointer_rect.w = 21;
+			this->pointer_rect.h = 21;
+		    if (this->layer->createSurface(&this->pointer_surface, this->pointer_rect.w, this->pointer_rect.h)) { 
+			    this->pointer_surface->setColor(255,255,255,255);
+			    this->pointer_surface->drawLine(0,this->pointer_rect.h/2,this->pointer_rect.w-1,this->pointer_rect.h/2);
+			    this->pointer_surface->drawLine(this->pointer_rect.w/2,0,this->pointer_rect.w/2,this->pointer_rect.h-1);
+		    }
+		    else
+		    	this->pointer_surface = NULL;
+		}
+	
+	// save the old region
+	DFBRegion old_region = this->pointer_region;
+	
+	// set the rectangle/region position
+	this->pointer_rect.x = this->pointer_posx - (this->pointer_rect.w >> 1);
+	this->pointer_rect.y = this->pointer_posy - (this->pointer_rect.h >> 1);
+	this->pointer_region.x1 = this->pointer_rect.x;
+	this->pointer_region.y1 = this->pointer_rect.y;
+	this->pointer_region.x2 = this->pointer_rect.x + this->pointer_rect.w - 1;
+	this->pointer_region.y2 = this->pointer_rect.y + this->pointer_rect.h - 1;
+
+	// set opacity
+    this->pointer_opacity = 255;
+	
+	// check if i have to flip one or two regions
+	if   ((old_region.x1 > this->pointer_region.x2)
+		||(old_region.y1 > this->pointer_region.y2)
+		||(old_region.x2 < this->pointer_region.x1)
+		||(old_region.y2 < this->pointer_region.y1)) {
+		// two regions to be updated
+		flipSurface(NULL, &this->pointer_region, false);
+		flipSurface(NULL, &old_region, false);
+	}
+	else {
+		// one region
+		if (old_region.x1 > this->pointer_region.x1)
+			old_region.x1 = this->pointer_region.x1;
+		else
+			old_region.x2 = this->pointer_region.x2;
+		if (old_region.y1 > this->pointer_region.y1)
+			old_region.y1 = this->pointer_region.y1;
+		else
+			old_region.y2 = this->pointer_region.y2;
+		flipSurface(NULL, &old_region, false);
+	}
 }
 
+bool MMSFBWindowManager::getPointerPosition(int &pointer_posx, int &pointer_posy) {
+	// set?
+	if ((this->pointer_posx<0)||(this->pointer_posy<0))
+		return false;
+	pointer_posx = this->pointer_posx;
+	pointer_posy = this->pointer_posy;
+	return true;
+}
+
+bool MMSFBWindowManager::loadPointer() {
+    IDirectFBImageProvider *imageprov = NULL;
+    DFBSurfaceDescription   surface_desc;
+	string 					imagefile = (string)getPrefix() + "/share/disko/mmsgui/mmspointer.png";
+
+	// create image provider
+    if (!mmsfb->createImageProvider(&imageprov, imagefile)) {
+        if (imageprov)
+        	imageprov->Release(imageprov);
+        return false;
+    }
+
+    // get surface description
+    if (imageprov->GetSurfaceDescription(imageprov, &surface_desc)!=DFB_OK) {
+        imageprov->Release(imageprov);
+        return false;
+    }
+    
+    // create a surface
+    if (!this->layer->createSurface(&this->pointer_surface, surface_desc.width, surface_desc.height)) { 
+        imageprov->Release(imageprov);
+        return false;
+    }
+
+    // render to the surface
+    if (imageprov->RenderTo(imageprov, this->pointer_surface->getDFBSurface(), NULL)!=DFB_OK) {
+        imageprov->Release(imageprov);
+        delete this->pointer_surface;
+        return false;
+    }
+
+    // release imageprovider
+    imageprov->Release(imageprov);
+    
+    // set pointer width & height
+    this->pointer_rect.w = surface_desc.width;
+    this->pointer_rect.h = surface_desc.height;
+    return true;
+}
+
+void MMSFBWindowManager::drawPointer(DFBRegion *region) {
+	// should draw the pointer?
+	if (!this->show_pointer)
+		return;
+	if ((this->pointer_posx<0)||(this->pointer_posy<0))
+		return;
+	if (!this->pointer_surface)
+		return;
+	if (this->pointer_opacity == 0)
+		return;
+
+	// blit the pointer surface with given opacity
+	if (this->pointer_opacity < 255) { 
+		this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+	    this->layer_surface->setColor(0, 0, 0, this->pointer_opacity);
+	}
+	else
+		this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+	this->layer_surface->blit(this->pointer_surface, NULL, this->pointer_rect.x, this->pointer_rect.y);
+	this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+    this->layer_surface->setColor(0, 0, 0, 0);
+}
+
+unsigned char MMSFBWindowManager::getPointerOpacity() {
+	return this->pointer_opacity;
+}
+
+void MMSFBWindowManager::setPointerOpacity(unsigned char opacity) {
+	this->pointer_opacity = opacity;
+	flipSurface(NULL, &this->pointer_region, false);
+}
 

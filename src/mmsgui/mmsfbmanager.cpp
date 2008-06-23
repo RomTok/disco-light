@@ -151,7 +151,7 @@ void MMSFBManager::applySettings() {
     }
 
     /* init the mmsfbwindowmanager */
-    mmsfbwindowmanager->init(this->graphicslayer);
+    mmsfbwindowmanager->init(this->graphicslayer, config.getPointer());
 
     /* create a global temporary surface */
     string pixelformat = config.getGraphicsLayerPixelformat(); 
