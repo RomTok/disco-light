@@ -142,10 +142,18 @@ void MMSRcParser::checkVersion(xmlNode* node) {
 	
 	version = xmlGetProp(node, (const xmlChar*)"version");
 	
+	if(!version) {
+		std::cout << "Configuration file misses version entity!" << std::endl;
+		throw new MMSRcParserError(1, "missing version");
+	}
+	
 	if(xmlStrcmp(version, (const xmlChar *) "1.1.0")) {
 		std::cout << "Version of configuration file does not match!" << std::endl;
+		xmlFree(version);
 		throw new MMSRcParserError(1, "version mismatch");
 	}
+
+	xmlFree(version);
 }
 
 void MMSRcParser::throughGlobal(xmlNode* node) {
