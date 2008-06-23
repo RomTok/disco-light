@@ -714,8 +714,8 @@ bool MMSGIFLoader::loadBlocks() {
 
 void MMSGIFLoader::threadMain() {
 	pthread_mutex_lock(&this->mutex);
-	
-    /* start loading */
+
+	/* start loading */
     this->desc->loading = true;
 
     /* load some header informations */
@@ -746,7 +746,14 @@ void MMSGIFLoader::threadMain() {
  * of a GIF file is loaded.
  */
 void MMSGIFLoader::block() {
-	pthread_cond_wait(&this->cond, &this->mutex);	
+	struct timespec ts;
+	
+	clock_gettime(CLOCK_REALTIME, &ts);
+	ts.tv_sec += 5;
+	pthread_mutex_lock(&this->mutex);
+	while(this->desc->loading && this->desc->sufcount <= 0)
+	    pthread_cond_timedwait(&this->cond, &this->mutex, &ts);	
+	pthread_mutex_unlock(&this->mutex);
 }
 
 bool isGIF(string file) {
