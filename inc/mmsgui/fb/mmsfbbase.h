@@ -107,8 +107,8 @@ typedef struct {
 
 
 /* error logging routines */
-string MMSFB_ErrorString(int rc, string msg);
-void MMSFB_SetError(int rc, string msg);
+string MMSFB_ErrorString(const int rc, const string msg);
+void MMSFB_SetError(const int rc, const string msg);
 
 /* conversion routines for pixel formats */
 string getDFBPixelFormatString(DFBSurfacePixelFormat pf);
