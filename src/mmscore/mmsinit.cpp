@@ -177,7 +177,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	        masterevent = new MMSEvent();
 	        masterevent->setDispatcher(eventdispatcher);
 
-	        mastereventsignup = new MMSEventSignup(*(new MMSPluginData));
+	        MMSPluginData data;
+	        mastereventsignup = new MMSEventSignup(data);
 	        mastereventsignup->setManager(eventsignupmanager);
         }
 
