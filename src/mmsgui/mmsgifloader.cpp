@@ -30,6 +30,9 @@ MMSGIFLoader::MMSGIFLoader(MMSIM_DESC      *_desc,
     desc(_desc),
     layer(_layer),
     myfile(NULL) {
+
+	this->desc->loading = true;
+
 	pthread_cond_init(&this->cond, NULL);
 	pthread_mutex_init(&this->mutex, NULL);
 }
@@ -345,7 +348,7 @@ bool MMSGIFLoader::loadBlocks() {
                 IDirectFBSurface *dfbsuf = newsuf->getDFBSurface();
 
                 int ci;
-                if (desc->sufcount <= 0) {
+                if (this->desc->sufcount <= 0) {
                     /* first surface */
                     if (this->gif_lsd.global_color_table) {
                         if ((gif_gce.transparent_color) && (this->gif_lsd.bgcolor == gif_gce.transcolor)) {
@@ -714,9 +717,6 @@ bool MMSGIFLoader::loadBlocks() {
 
 void MMSGIFLoader::threadMain() {
 	pthread_mutex_lock(&this->mutex);
-
-	/* start loading */
-    this->desc->loading = true;
 
     /* load some header informations */
     if (loadHeader()) {
