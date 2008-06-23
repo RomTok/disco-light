@@ -30,7 +30,7 @@ static MMSEventSignupManager        *eventsignupmanager = NULL;
 static MMSConfigData                *config             = NULL;
 static MMSEvent                     *masterevent        = NULL;
 static MMSEventSignup               *mastereventsignup  = NULL;
-static MMSImportScheduler           *importscheduler    = NULL;
+/* static MMSImportScheduler           *importscheduler    = NULL; */
 static MMSInputManager              *inputs             = NULL;
 static MMSConfigDataGlobal          rcGlobal;
 static MMSConfigDataDB              rcConfigDB, rcDataDB;
@@ -197,6 +197,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
        
     } catch(MMSError *error) {
         DEBUGMSG("Core", "Abort due to: " + error->getMessage());
+        fprintf(stderr, "Error initializing disko: %s\n", error->getMessage().c_str());
+        delete error;
         return false;
     }
     
