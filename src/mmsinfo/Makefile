@@ -6,6 +6,8 @@ all: mmsinfo.o
 	
 clean:
 	@echo "Cleaning mmsinfo"
+	@rm -f mmsinfo.o
+	@rm -f $(LIBDIR)/libmmsinfo.so
 
 update:
 	@echo "mmsinfo is up to date."
