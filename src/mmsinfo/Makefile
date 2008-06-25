@@ -28,4 +28,4 @@ install: prepare all
 
 %.o : %.cpp
 	@echo " [CXX]       ($@)"
-	@$(CXX) $(CFLAGS) -I../../inc/mmsinfo -shared -c $< -o $@
+	@$(CXX) $(CFLAGS) -I../../inc -shared -c $< -o $@
