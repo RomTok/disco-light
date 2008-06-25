@@ -3005,25 +3005,27 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	int posy = inputeventset->at(i).posy;
 	            	bool b;
 	            	for (unsigned int j = 0; j < this->children.size(); j++) {
-	            		if (!this->children.at(j)->getFocusable(b))
+	            		MMSWidget *w = this->children.at(j);
+	            		if (!w->getFocusable(b, false))
 	            			continue;
 	            		if (!b)
 	            			continue;
-	            		if (!this->children.at(j)->isActivated())
+	            		if (!w->isActivated())
 	            			continue;
 	            		DFBRectangle rect = this->children.at(j)->getGeometry();
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
-	            			/* this is the widget under the pointer */
-	            			if (this->children.at(j) != this->focusedwidget) {
-	            				/* set focus to this widget */
+	            			// this is the widget under the pointer
+		            		w->getFocusable(b);
+	            			if ((b)&&(w != this->focusedwidget)) {
+	            				// set focus to this widget
 	            				DEBUGMSG("MMSGUI", "try to change focus");
-	            				setFocusedWidget(this->children.at(j), true, true);
+	            				setFocusedWidget(w, true, true);
 	            			}
 
 	            			DEBUGMSG("MMSGUI", "try to execute input on widget");
-	            	        this->buttonpress_widget = this->focusedwidget; 
-	    	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
+	            	        this->buttonpress_widget = w; 
+	            	        this->buttonpress_widget->handleInput(&(inputeventset->at(i)));
 
 	                        /* set the arrow widgets */
 	                        switchArrowWidgets();

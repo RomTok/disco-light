@@ -304,10 +304,10 @@ class MMSWidget {
         bool canNavigateLeft();
         bool canNavigateRight();
 
-        virtual bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false);
-        virtual bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false);
-        virtual bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false);
-        virtual bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false);
+        virtual bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        virtual bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        virtual bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        virtual bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollTo(int posx, int posy, bool refresh = true);
         
         sigc::signal<void, MMSWidget*> *onSelect;
@@ -378,7 +378,7 @@ class MMSWidget {
         bool    getSelBgImagePath_i(string &selbgimagepath_i);
         bool    getSelBgImageName_i(string &selbgimagename_i);
         bool 	getMargin(unsigned int &margin);
-        bool 	getFocusable(bool &focusable);
+        bool 	getFocusable(bool &focusable, bool check_selectable = true);
         bool 	getSelectable(bool &selectable);
         bool	getUpArrow(string &uparrow);
         bool	getDownArrow(string &downarrow);

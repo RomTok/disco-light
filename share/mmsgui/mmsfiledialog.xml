@@ -41,12 +41,14 @@
 								</button>
 							</menu>
 							<vbox size="21px">
-								<button name="filedialog_up" size="20px" border.color="#606060ff" border.selcolor="#606060ff" border.thickness="1">
+								<button name="filedialog_up" size="20px" border.color="#606060ff" border.selcolor="#606060ff" border.thickness="1"
+								             bgcolor_p="#808080ff" selectable="false">
 									<arrow direction="up" margin="5" color="#000000ff"/>
 								</button>
 								<slider name="filedialog_slider" border.color="#606060ff" border.selcolor="#606060ff" border.thickness="1"
 										bgcolor="#808080ff" image.name="filedialog_slider.png"/>
-								<button name="filedialog_down" size="20px" border.color="#606060ff" border.selcolor="#606060ff" border.thickness="1">
+								<button name="filedialog_down" size="20px" border.color="#606060ff" border.selcolor="#606060ff" border.thickness="1"
+								             bgcolor_p="#808080ff" selectable="false">
 									<arrow direction="down" margin="5" color="#000000ff"/>
 								</button>
 							</vbox>

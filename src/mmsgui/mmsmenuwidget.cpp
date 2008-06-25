@@ -1124,7 +1124,8 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh) {
         this->onSelectItem->emit(item);
 }
 
-bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test) {
+
+bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pyChanged = false;
     unsigned int oldx=0;
     unsigned int oldy;
@@ -1148,89 +1149,116 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test) {
     /* normal menu or fixed selection? */
     if (fixedpos < 0) {
         /* normal menu */
-        if (this->x + (this->y + count) * cols >= children.size()) {
-            if (this->x == 0) {
-                /* really nothing to scroll? */
-                if (getVLoop()) {
-                    /* I should not give up the focus */
-                    if (this->y)
-                        return scrollUpEx(this->y, refresh, test);
-                    else
-                        return true;
-                }
-                /* nothing to scroll */
-                return false;
-            }
+        if (!leave_selection) {
+        	// we have to change the selected menu item!!!
+	        if (this->x + (this->y + count) * cols >= children.size()) {
+	            if (this->x == 0) {
+	                /* really nothing to scroll? */
+	                if (getVLoop()) {
+	                    /* I should not give up the focus */
+	                    if (this->y)
+	                        return scrollUpEx(this->y, refresh, test, leave_selection);
+	                    else
+	                        return true;
+	                }
+	                /* nothing to scroll */
+	                return false;
+	            }
+	
+	            for (int i = (int)this->x - 1; i >= 0; i--)
+	                if (i + (this->y + count) * cols < children.size()) {
+	                    /* save old and set new x selection */
+	                    oldx = this->x;
+	                    if (!test)
+	                        this->x = i;
+	                    break;
+	                }
+	
+	            if (!oldx) {
+	                /* really nothing to scroll? */
+	                if (getVLoop()) {
+	                    /* I should not give up the focus */
+	                    if (this->y)
+	                        return scrollUpEx(this->y, refresh, test, leave_selection);
+	                    else
+	                        return true;
+	                }
+	                /* nothing to scroll */
+	                return false;
+	            }
+	        }
+	
+	        /* in test mode we can say that we can scroll */
+	        if (test)
+	            return true;
 
-            for (int i = (int)this->x - 1; i >= 0; i--)
-                if (i + (this->y + count) * cols < children.size()) {
-                    /* save old and set new x selection */
-                    oldx = this->x;
-                    if (!test)
-                        this->x = i;
-                    break;
-                }
+        	// save old and set new y selection
+	        oldy = this->y;
+	        this->y+=count;
+	
+	        // recalculate scroll position
+	        int ypy = this->y - this->py;
+	        if (ypy >= this->v_items) {
+	            this->py = this->y - this->v_items + 1;
+	            pyChanged = true;
+	        }
+	        else
+	        if (ypy < 0) {
+	            this->py = this->y;
+	            pyChanged = true;
+	        }
+	        if (oldx) {
+	            if (this->x < this->px) {
+	                this->px = this->x;
+	                pyChanged = true;
+	            }
+	        }
 
-            if (!oldx) {
-                /* really nothing to scroll? */
-                if (getVLoop()) {
-                    /* I should not give up the focus */
-                    if (this->y)
-                        return scrollUpEx(this->y, refresh, test);
-                    else
-                        return true;
-                }
-                /* nothing to scroll */
-                return false;
-            }
-        }
-
-        /* in test mode we can say that we can scroll */
-        if (test)
-            return true;
-
-        /* save old and set new y selection */
-        oldy = this->y;
-        this->y+=count;
-
-        /* recalculate scroll position */    
-        if ((int)(this->y - this->py) >= this->v_items) {
-            this->py = this->y - this->v_items + 1;
-            pyChanged = true;
-        }
-        if (oldx) {
-            if (this->x < this->px) {
-                this->px = this->x;
-                pyChanged = true;
-            }
-        }
-
-        /* get access to widgets */    
-        MMSWidget *olditem = children.at(((oldx)?oldx:this->x) + oldy * cols);
-        MMSWidget *item    = children.at(this->x + this->y * cols);
-    
-        if (!pyChanged) {
-            /* not scrolled, switch focus between visible childs */
-			selectItem(olditem, false, false);
-			selectItem(item, true, false);
-			if (refresh) {
-			    this->refresh();
-			}
+	        /* get access to widgets */    
+	        MMSWidget *olditem = children.at(((oldx)?oldx:this->x) + oldy * cols);
+	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	    
+	        if (!pyChanged) {
+	            /* not scrolled, switch focus between visible childs */
+				selectItem(olditem, false, false);
+				selectItem(item, true, false);
+				if (refresh) {
+				    this->refresh();
+				}
+	        }
+	        else {
+	            /* scrolled, switch focus needs recalculate children */
+	            selectItem(olditem, false, false);
+	    
+	            if (refresh)
+	                recalculateChildren();
+	    
+	            selectItem(item, true, false);
+	    
+	            if (refresh) {
+	                this->refresh();
+	            }
+	        }
         }
         else {
-            /* scrolled, switch focus needs recalculate children */
-            selectItem(olditem, false, false);
-    
-            if (refresh)
+        	// we have to leave the selected menu item asis!!!
+            if (this->x + (this->py + this->v_items + count - 1) * cols >= children.size())
+                // nothing to scroll
+                return false;
+            	
+	        // in test mode we can say that we can scroll
+	        if (test)
+	            return true;
+
+	        // recalculate scroll position    
+            this->py++;
+
+	        if (refresh) {
                 recalculateChildren();
-    
-            selectItem(item, true, false);
-    
-            if (refresh) {
                 this->refresh();
             }
         }
-
+        
         /* set the sliders */
         setSliders();
     
@@ -1285,7 +1313,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test) {
     }
 }
 
-bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pyChanged = false;
     unsigned int oldy;
     unsigned int cols;
@@ -1308,61 +1336,88 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test) {
     /* normal menu or fixed selection? */
     if (fixedpos < 0) {
         /* normal menu */
-        if (this->y < count) {
-            /* really nothing to scroll? */
-            if (getVLoop()) {
-                /* I should not give up the focus */
-                unsigned int lines = this->children.size() /* / cols */; 
-                /* if (this->children.size() % cols > 0) lines++; */
-                if ((int)lines - (int)this->y > 1)
-                    return scrollDownEx(lines - this->y - 1, refresh, test);
-                else
-                    return true;
-            }
-            /* nothing to scroll */
-            return false;
-        }
-
-        /* in test mode we can say that we can scroll */
-        if (test)
-            return true;
-
-        /* save old and set new y selection */
-        oldy = this->y;
-        this->y-=count;
-    
-        /* recalculate scroll position */    
-        if (this->y < this->py) {
-            this->py = this->y;
-            pyChanged = true;
-        }
-    
-        /* get access to widgets */    
-        MMSWidget *olditem = children.at(this->x + oldy * cols);
-        MMSWidget *item    = children.at(this->x + this->y * cols);
-    
-        if (!pyChanged) {
-            /* not scrolled, switch focus between visible childs */
-			selectItem(olditem, false, false);
-			selectItem(item, true, false);
-			if (refresh) {
-			    this->refresh();
-			}
+        if (!leave_selection) {
+        	// we have to change the selected menu item!!!
+	        if (this->y < count) {
+	            /* really nothing to scroll? */
+	            if (getVLoop()) {
+	                /* I should not give up the focus */
+	                unsigned int lines = this->children.size() /* / cols */; 
+	                /* if (this->children.size() % cols > 0) lines++; */
+	                if ((int)lines - (int)this->y > 1)
+	                    return scrollDownEx(lines - this->y - 1, refresh, test, leave_selection);
+	                else
+	                    return true;
+	            }
+	            /* nothing to scroll */
+	            return false;
+	        }
+	
+	        /* in test mode we can say that we can scroll */
+	        if (test)
+	            return true;
+	
+	        // save old and set new y selection
+	        oldy = this->y;
+	        this->y-=count;
+	    
+	        // recalculate scroll position    
+	        int ypy = this->y - this->py;
+	        if (ypy < 0) {
+	            this->py = this->y;
+	            pyChanged = true;
+	        }
+	        else
+	        if (ypy >= this->v_items) {
+	            this->py = this->y - this->v_items + 1;
+	            pyChanged = true;
+	        }
+	    
+	        /* get access to widgets */    
+	        MMSWidget *olditem = children.at(this->x + oldy * cols);
+	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	    
+	        if (!pyChanged) {
+	            /* not scrolled, switch focus between visible childs */
+				selectItem(olditem, false, false);
+				selectItem(item, true, false);
+				if (refresh) {
+				    this->refresh();
+				}
+	        }
+	        else {
+	            /* scrolled, switch focus needs recalculate children */
+	            selectItem(olditem, false, false);
+	    
+	            if (refresh)
+	                recalculateChildren();
+	    
+	            selectItem(item, true, false);
+	    
+	            if (refresh) {
+	                this->refresh();
+	            }
+	        }
         }
         else {
-            /* scrolled, switch focus needs recalculate children */
-            selectItem(olditem, false, false);
-    
-            if (refresh)
+        	// we have to leave the selected menu item asis!!!
+            if (this->py < count)
+                // nothing to scroll
+                return false;
+            	
+	        // in test mode we can say that we can scroll
+	        if (test)
+	            return true;
+
+	        // recalculate scroll position    
+            this->py--;
+
+	        if (refresh) {
                 recalculateChildren();
-    
-            selectItem(item, true, false);
-    
-            if (refresh) {
                 this->refresh();
             }
         }
-    
+        
         /* set the sliders */
         setSliders();
 
@@ -1418,7 +1473,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test) {
 }
 
 
-bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pxChanged = false;
     unsigned int oldx;
     unsigned int oldy=0;
@@ -1436,101 +1491,128 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test) {
     /* normal menu or fixed selection? */
     if (fixedpos < 0) {
         /* normal menu */
-        if (this->x + count + this->y * cols >= children.size()) {
-            if ((this->x + count >= cols) || (this->y == 0)) {
-                /* really nothing to scroll? */
-                if (getHLoop()) {
-                    /* I should not give up the focus */
-                    if (this->x)
-                        return scrollLeftEx(this->x, refresh, test);
-                    else
-                        return true;
-                }
-                /* nothing to scroll */
-                return false;
-            }
-
-            for (int i = (int)this->y - 1; i >= 0; i--)
-                if (this->x + count + i * cols < children.size()) {
-                    oldy = this->y;
-                    if (!test)
-                        this->y = i;
-                    break;
-                }
-
-            if (!oldy) {
-                /* really nothing to scroll? */
-                if (getHLoop()) {
-                    /* I should not give up the focus */
-                    if (this->x)
-                        return scrollLeftEx(this->x, refresh, test);
-                    else
-                        return true;
-                }
-                /* nothing to scroll */
-                return false;
-            }
-        }
-        else
-        if (this->x + count >= cols) {
-            /* really nothing to scroll? */
-            if (getHLoop()) {
-                /* I should not give up the focus */
-                if (this->x)
-                    return scrollLeftEx(this->x, refresh, test);
-                else
-                    return true;
-            }
-            /* nothing to scroll */
-            return false;
-        }
-
-        /* in test mode we can say that we can scroll */
-        if (test)
-            return true;
- 
-        /* save old and set new x selection */
-        oldx = this->x;
-        this->x+=count;
-    
-        /* recalculate scroll position */    
-        if ((int)(this->x - this->px) >= this->h_items) {
-            this->px = this->x - this->h_items + 1;
-            pxChanged = true;
-        }
-        if (oldy) {
-            if (this->y < this->py) {
-                this->py = this->y;
-                pxChanged = true;
-            }
-        }
-    
-        /* get access to widgets */    
-        MMSWidget *olditem = children.at(oldx + ((oldy)?oldy:this->y) * cols);
-        MMSWidget *item    = children.at(this->x + this->y * cols);
-    
-        if (!pxChanged) {
-            /* not scrolled, switch focus between visible childs */
-			selectItem(olditem, false, false);
-			selectItem(item, true, false);
-			if (refresh) {
-			    this->refresh();
-			}
+        if (!leave_selection) {
+        	// we have to change the selected menu item!!!
+	        if (this->x + count + this->y * cols >= children.size()) {
+	            if ((this->x + count >= cols) || (this->y == 0)) {
+	                /* really nothing to scroll? */
+	                if (getHLoop()) {
+	                    /* I should not give up the focus */
+	                    if (this->x)
+	                        return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                    else
+	                        return true;
+	                }
+	                /* nothing to scroll */
+	                return false;
+	            }
+	
+	            for (int i = (int)this->y - 1; i >= 0; i--)
+	                if (this->x + count + i * cols < children.size()) {
+	                    oldy = this->y;
+	                    if (!test)
+	                        this->y = i;
+	                    break;
+	                }
+	
+	            if (!oldy) {
+	                /* really nothing to scroll? */
+	                if (getHLoop()) {
+	                    /* I should not give up the focus */
+	                    if (this->x)
+	                        return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                    else
+	                        return true;
+	                }
+	                /* nothing to scroll */
+	                return false;
+	            }
+	        }
+	        else
+	        if (this->x + count >= cols) {
+	            /* really nothing to scroll? */
+	            if (getHLoop()) {
+	                /* I should not give up the focus */
+	                if (this->x)
+	                    return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                else
+	                    return true;
+	            }
+	            /* nothing to scroll */
+	            return false;
+	        }
+	
+	        /* in test mode we can say that we can scroll */
+	        if (test)
+	            return true;
+	 
+	        /* save old and set new x selection */
+	        oldx = this->x;
+	        this->x+=count;
+	    
+	        /* recalculate scroll position */    
+	        int xpx = this->x - this->px;
+	        if (xpx >= this->h_items) {
+	            this->px = this->x - this->h_items + 1;
+	            pxChanged = true;
+	        }
+	        else
+	        if (xpx < 0) {
+	            this->px = this->x;
+	            pxChanged = true;
+	        }
+	        if (oldy) {
+	            if (this->y < this->py) {
+	                this->py = this->y;
+	                pxChanged = true;
+	            }
+	        }
+	    
+	        /* get access to widgets */    
+	        MMSWidget *olditem = children.at(oldx + ((oldy)?oldy:this->y) * cols);
+	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	    
+	        if (!pxChanged) {
+	            /* not scrolled, switch focus between visible childs */
+				selectItem(olditem, false, false);
+				selectItem(item, true, false);
+				if (refresh) {
+				    this->refresh();
+				}
+	        }
+	        else {
+	            /* scrolled, switch focus needs recalculate children */
+	            selectItem(olditem, false, false);
+	    
+	            if (refresh)
+	                recalculateChildren();
+	    
+	            selectItem(item, true, false);
+	    
+	            if (refresh) {
+	                this->refresh();
+	            }
+	        }
         }
         else {
-            /* scrolled, switch focus needs recalculate children */
-            selectItem(olditem, false, false);
-    
-            if (refresh)
+        	// we have to leave the selected menu item asis!!!
+	        if (this->px + this->h_items + count - 1 >= ((cols<=children.size())?cols:children.size()))
+                // nothing to scroll
+                return false;
+            	
+	        // in test mode we can say that we can scroll
+	        if (test)
+	            return true;
+
+	        // recalculate scroll position    
+            this->px++;
+
+	        if (refresh) {
                 recalculateChildren();
-    
-            selectItem(item, true, false);
-    
-            if (refresh) {
                 this->refresh();
             }
         }
-    
+        
         /* set the sliders */
         setSliders();
 
@@ -1613,7 +1695,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test) {
     }
 }
 
-bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pxChanged = false;
     unsigned int oldx;
     unsigned int cols;
@@ -1630,64 +1712,90 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test) {
     /* normal menu or fixed selection? */
     if (fixedpos < 0) {
         /* normal menu */
-        if (this->x < count) {
-            /* really nothing to scroll? */
-            if (getHLoop()) {
-                /* I should not give up the focus */
-                unsigned int columns;
-                if (cols < this->children.size())
-                    columns = cols;
-                else
-                    columns = this->children.size();
-                if ((int)columns - (int)this->x > 1)
-                    return scrollRightEx(columns - this->x - 1, refresh, test);
-                else
-                    return true;
-            }
-            /* nothing to scroll */
-            return false;
-        }
-
-        /* in test mode we can say that we can scroll */
-        if (test)
-            return true;
-
-        /* save old and set new x selection */
-        oldx = this->x;
-        this->x-=count;
-    
-        /* recalculate scroll position */    
-        if (this->x < this->px) {
-            this->px = this->x;
-            pxChanged = true;
-        }
-    
-        /* get access to widgets */    
-        MMSWidget *olditem = children.at(oldx + this->y * cols);
-        MMSWidget *item    = children.at(this->x + this->y * cols);
-    
-        if (!pxChanged) {
-            /* not scrolled, switch focus between visible childs */
-			selectItem(olditem, false, false);
-			selectItem(item, true, false);
-			if (refresh) {
-			    this->refresh();
-			}
+        if (!leave_selection) {
+	        if (this->x < count) {
+	            /* really nothing to scroll? */
+	            if (getHLoop()) {
+	                /* I should not give up the focus */
+	                unsigned int columns;
+	                if (cols < this->children.size())
+	                    columns = cols;
+	                else
+	                    columns = this->children.size();
+	                if ((int)columns - (int)this->x > 1)
+	                    return scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
+	                else
+	                    return true;
+	            }
+	            /* nothing to scroll */
+	            return false;
+	        }
+	
+	        /* in test mode we can say that we can scroll */
+	        if (test)
+	            return true;
+	
+	        /* save old and set new x selection */
+	        oldx = this->x;
+	        this->x-=count;
+	    
+	        /* recalculate scroll position */    
+	        int xpx = this->x - this->px;
+	        if (xpx < 0) {
+	            this->px = this->x;
+	            pxChanged = true;
+	        }
+	        else
+	        if (xpx >= this->h_items) {
+	            this->px = this->x - this->h_items + 1;
+	            pxChanged = true;
+	        }
+	        
+	        /* get access to widgets */    
+	        MMSWidget *olditem = children.at(oldx + this->y * cols);
+	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	    
+	        if (!pxChanged) {
+	            /* not scrolled, switch focus between visible childs */
+				selectItem(olditem, false, false);
+				selectItem(item, true, false);
+				if (refresh) {
+				    this->refresh();
+				}
+	        }
+	        else {
+	            /* scrolled, switch focus needs recalculate children */
+	            selectItem(olditem, false, false);
+	    
+	            if (refresh)
+	                recalculateChildren();
+	    
+	            selectItem(item, true, false);
+	    
+	            if (refresh) {
+	                this->refresh();
+	            }
+	        }
         }
         else {
-            /* scrolled, switch focus needs recalculate children */
-            selectItem(olditem, false, false);
-    
-            if (refresh)
+        	// we have to leave the selected menu item asis!!!
+            if (this->px < count)
+                // nothing to scroll
+                return false;
+            	
+	        // in test mode we can say that we can scroll
+	        if (test)
+	            return true;
+
+	        // recalculate scroll position    
+            this->px--;
+
+	        if (refresh) {
                 recalculateChildren();
-    
-            selectItem(item, true, false);
-    
-            if (refresh) {
                 this->refresh();
             }
         }
-    
+
         /* set the sliders */
         setSliders();
 
@@ -1770,7 +1878,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test) {
     }
 }
 
-bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
 
 	if (this->children.size()==0)
 		return false;
@@ -1787,17 +1895,17 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test) {
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
 	    		count = this->v_items-count;
 	    		while (count--)
-	    			scrollUpEx(1, refresh, test);
+	    			scrollUpEx(1, refresh, test, leave_selection);
 	    		return true;
 	    	}
 	    	
     		while (count--)
-    			scrollDownEx(1, refresh, test);
+    			scrollDownEx(1, refresh, test, leave_selection);
     		return true;
 	    }
 	}
 
-	bool ret = scrollDownEx(count, refresh, test);
+	bool ret = scrollDownEx(count, refresh, test, leave_selection);
 
 	if ((!ret)&&(!test))
 		// nothing to scroll
@@ -1810,7 +1918,7 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test) {
 	return ret;
 }
 
-bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
 
 	if (this->children.size()==0)
 		return false;
@@ -1827,17 +1935,17 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test) {
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
 	    		count = this->v_items-count;
 	    		while (count--)
-	    			scrollDownEx(1, refresh, test);
+	    			scrollDownEx(1, refresh, test, leave_selection);
 	    		return true;
 	    	}
 	    	
     		while (count--)
-    			scrollUpEx(1, refresh, test);
+    			scrollUpEx(1, refresh, test, leave_selection);
     		return true;
 	    }
 	}
 
-	bool ret = scrollUpEx(count, refresh, test);
+	bool ret = scrollUpEx(count, refresh, test, leave_selection);
 
 	if ((!ret)&&(!test))
 		// nothing to scroll
@@ -1850,7 +1958,7 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test) {
 	return ret;
 }
 
-bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
 
 	if (this->children.size()==0)
 		return false;
@@ -1867,17 +1975,17 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test) {
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
 	    		count = this->children.size()-count;
 	    		while (count--)
-	    			scrollLeftEx(1, refresh, test);
+	    			scrollLeftEx(1, refresh, test, leave_selection);
 	    		return true;
 	    	}
 
     		while (count--)
-    			scrollRightEx(1, refresh, test);
+    			scrollRightEx(1, refresh, test, leave_selection);
     		return true;
 	    }
 	}
 
-	bool ret = scrollRightEx(count, refresh, test);
+	bool ret = scrollRightEx(count, refresh, test, leave_selection);
 
 	if ((!ret)&&(!test))
 		// nothing to scroll
@@ -1890,7 +1998,7 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test) {
 	return ret;
 }
 
-bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test) {
+bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
 
 	if (this->children.size()==0)
 		return false;
@@ -1907,17 +2015,17 @@ bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test) {
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
 	    		count = this->children.size()-count;
 	    		while (count--)
-	    			scrollRightEx(1, refresh, test);
+	    			scrollRightEx(1, refresh, test, leave_selection);
 	    		return true;
 			}
 
     		while (count--)
-    			scrollLeftEx(1, refresh, test);
+    			scrollLeftEx(1, refresh, test, leave_selection);
     		return true;
 	    }
 	}
 
-	bool ret = scrollLeftEx(count, refresh, test);
+	bool ret = scrollLeftEx(count, refresh, test, leave_selection);
 
 	if ((!ret)&&(!test))
 		// nothing to scroll

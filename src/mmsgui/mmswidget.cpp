@@ -639,7 +639,7 @@ bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
 }
 
 
-bool MMSWidget::scrollDown(unsigned int count, bool refresh, bool test) {
+bool MMSWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
     if (setScrollPos((int)this->scrollPosX, (int)this->scrollPosY + count*(int)this->scrollDY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
@@ -648,7 +648,7 @@ bool MMSWidget::scrollDown(unsigned int count, bool refresh, bool test) {
     return false;
 }
 
-bool MMSWidget::scrollUp(unsigned int count, bool refresh, bool test) {
+bool MMSWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
     if (setScrollPos((int)this->scrollPosX, (int)this->scrollPosY - count*(int)this->scrollDY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
@@ -657,7 +657,7 @@ bool MMSWidget::scrollUp(unsigned int count, bool refresh, bool test) {
     return false;
 }
 
-bool MMSWidget::scrollRight(unsigned int count, bool refresh, bool test) {
+bool MMSWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
     if (setScrollPos((int)this->scrollPosX + count*(int)this->scrollDX, (int)this->scrollPosY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
@@ -666,7 +666,7 @@ bool MMSWidget::scrollRight(unsigned int count, bool refresh, bool test) {
     return false;
 }
 
-bool MMSWidget::scrollLeft(unsigned int count, bool refresh, bool test) {
+bool MMSWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
     if (setScrollPos((int)this->scrollPosX - count*(int)this->scrollDX, (int)this->scrollPosY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
@@ -1814,7 +1814,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 		/* button pressed */
-		if (getFocusable(b))
+		if (getFocusable(b, false))
 			if (b) {
 				/* save last inputevent */
 				last_inputevent = *inputevent; 
@@ -1829,7 +1829,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		/* button released */
-        if (getFocusable(b))
+        if (getFocusable(b, false))
         	if (b) {
 	    		if (last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 
@@ -1856,7 +1856,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 		/* axis motion */
-        if (getFocusable(b))
+        if (getFocusable(b, false))
         	if (b) {
 	    		if (last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 					/* check if the pointer is within widget */
@@ -1879,6 +1879,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 
     throw new MMSWidgetError(1,"input not handled");
 }
+
 
 /*void MMSWidget::registerInput(DFBInputDeviceKeySymbol key, GUIINPUTCALLBACK cb) {
     INPUT_CB *input = new INPUT_CB;
@@ -2141,8 +2142,20 @@ bool MMSWidget::getBlendFactor(double &blendfactor) {
     GETWIDGET(BlendFactor, blendfactor);
 }
 
-bool MMSWidget::getFocusable(bool &focusable) {
-    GETWIDGET(Focusable, focusable);
+bool MMSWidget::getFocusable(bool &focusable, bool check_selectable) {
+	if (check_selectable) { 
+		if (getSelectable(focusable)) {
+		    if (focusable) {
+		    	GETWIDGET(Focusable, focusable);
+		    }
+		}
+		else {
+	    	GETWIDGET(Focusable, focusable);
+		}
+	}
+	else {
+    	GETWIDGET(Focusable, focusable);
+	}
 }
 
 bool MMSWidget::getSelectable(bool &selectable) {

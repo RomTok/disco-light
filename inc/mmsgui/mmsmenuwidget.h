@@ -54,10 +54,15 @@ class MMSMenuWidget : public MMSWidget {
         int    			item_h;     /* height of an item */
         int    			v_items;    /* number of visible vertical items */
         int    			h_items;    /* number of visible horizontal items */
-        unsigned int    x;          /* selected x */
-        unsigned int    y;          /* selected y */
-        unsigned int    px;         /* left position */
-        unsigned int    py;         /* top position */
+
+        //! x position of the selected item
+        int    			x; 
+        //! y position of the selected item
+        int    			y;
+        //! scroll x-offset
+        int    			px;
+        //! scroll y-offset
+        int    			py;
 
         bool            firstFocus;
         bool            firstSelection;
@@ -109,10 +114,10 @@ class MMSMenuWidget : public MMSWidget {
 
         void selectItem(MMSWidget *item, bool set, bool refresh = true);
 
-        bool scrollDownEx(unsigned int count, bool refresh, bool test);
-        bool scrollUpEx(unsigned int count, bool refresh, bool test);
-        bool scrollRightEx(unsigned int count, bool refresh, bool test);
-        bool scrollLeftEx(unsigned int count, bool refresh, bool test);
+        bool scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection);
+        bool scrollUpEx(unsigned int count, bool refresh, bool test, bool leave_selection);
+        bool scrollRightEx(unsigned int count, bool refresh, bool test, bool leave_selection);
+        bool scrollLeftEx(unsigned int count, bool refresh, bool test, bool leave_selection);
 
         void emitOnReturnForParents(MMSMenuWidget *orw);
         bool callOnReturn();
@@ -148,10 +153,10 @@ class MMSMenuWidget : public MMSWidget {
         bool init();
         bool draw(bool *backgroundFilled = NULL);
 
-        bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false);
-        bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false);
-        bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false);
-        bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false);
+        bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollTo(int posx, int posy, bool refresh = true);
 
         bool setSubMenuName(unsigned int item, const char *name);

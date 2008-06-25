@@ -41,6 +41,7 @@ MMSFBWindowManager::MMSFBWindowManager() {
     this->high_freq_region.x2 = 0;
     this->high_freq_region.y2 = 0;
     this->high_freq_lastflip = 0;
+    this->mmsfbwinmanthread = NULL;
     
     // init pointer values
     this->show_pointer = false;
@@ -56,13 +57,6 @@ MMSFBWindowManager::MMSFBWindowManager() {
     this->pointer_region.y2 = 0;
     this->pointer_surface = NULL;
     this->pointer_opacity = 0;
-    
-    // start my thread
-    mmsfbwinmanthread = new MMSFBWindowManagerThread(&this->high_freq_surface,
-                                                     &this->high_freq_saved_surface,
-                                                     &this->high_freq_lastflip,
-                                                     &this->lock);
-    mmsfbwinmanthread->start();
 }
 
 MMSFBWindowManager::~MMSFBWindowManager() {
@@ -79,6 +73,16 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     if (this->layer) {
         MMSFB_SetError(0, "already initialized");
         return false;
+    }
+
+    // start my thread
+    if (!this->mmsfbwinmanthread) {
+	    this->mmsfbwinmanthread = new MMSFBWindowManagerThread(&this->high_freq_surface,
+	                                                     	&this->high_freq_saved_surface,
+	                                                     	&this->high_freq_lastflip,
+	                                                     	&this->lock);
+	    if (this->mmsfbwinmanthread)
+	    	mmsfbwinmanthread->start();
     }
 
     // set values

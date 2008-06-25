@@ -215,12 +215,12 @@ void MMSFileDialog::onReturn(MMSWidget *widget) {
 	else
 	if (widget == this->filedialog_up) {
 		if (this->filedialog_filelist)
-			this->filedialog_filelist->scrollUp();
+			this->filedialog_filelist->scrollUp(1,true,false,true);
 	}
 	else
 	if (widget == this->filedialog_down) {
 		if (this->filedialog_filelist)
-			this->filedialog_filelist->scrollDown();
+			this->filedialog_filelist->scrollDown(1,true,false,true);
 	}
 }
 
@@ -255,7 +255,7 @@ bool MMSFileDialog::fillMenu() {
 		if (item) {
 			MMSLabelWidget *label = (MMSLabelWidget*)item->searchForWidget(PATH_OR_FILE);
 			if ((label)&&(label->getType() == MMSWIDGETTYPE_LABEL)) {
-				label->setText("..");
+				label->setText("[..]");
 			}
 		}
 	}
