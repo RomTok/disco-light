@@ -1,8 +1,3 @@
-# check for arch
-ifeq ($(shell uname -m),x86_64)
-export CFLAGS += -fPIC
-endif
-
 ifeq ($(nodep),)
 include dep.def
 endif
