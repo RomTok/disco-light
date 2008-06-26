@@ -30,7 +30,7 @@ MMSMusicManager::MMSMusicManager() :
 	/* register myself to the music interface */
 	MMSMusicInterface interface;
 	interface.setManager(this);
-    this->player.onPlaybackFinished->connect(sigc::mem_fun(this, &MMSMusicManager::next));
+    this->player.onPlaybackFinished.connect(sigc::mem_fun(this, &MMSMusicManager::next));
 }
 
 MMSMusicManager::~MMSMusicManager() {
@@ -46,7 +46,7 @@ void MMSMusicManager::init(PLAYLIST list, int offset) {
     for(unsigned int i = 0; i < playlist.size(); i++)
         this->alreadyPlayed.push_back(false);
 	this->mutex.unlock();
-    
+
 	DEBUGMSG("MMSMusicManager", "got playlist size: %d offset: %d", list.size(), offset);
 }
 
@@ -68,7 +68,7 @@ void MMSMusicManager::next() {
         while(this->alreadyPlayed.at(newOffset));
         this->offset = newOffset;
     }
-    else { 
+    else {
     	this->offset++;
     	if(this->offset==(int)this->playlist.size()) {
             if(!this->repeat) return;
@@ -85,7 +85,7 @@ void MMSMusicManager::next() {
 		this->onNextSong->emit(this->offset);
 
 	this->mutex.unlock();
-	
+
 }
 
 void MMSMusicManager::prev() {
@@ -100,13 +100,13 @@ void MMSMusicManager::prev() {
         while(this->alreadyPlayed.at(newOffset));
         this->offset = newOffset;
     }
-    else { 
+    else {
 	    this->offset--;
         if(this->offset < 0)
 		  this->offset = this->playlist.size() - 1;
 	}
 	string file = this->playlist.at(this->offset);
-	player.startPlaying(file,false);			
+	player.startPlaying(file,false);
     this->alreadyPlayed.at(this->offset) = true;
 	if(this->onPrevSong)
 		this->onPrevSong->emit(this->offset);
@@ -162,7 +162,7 @@ bool MMSMusicManager::isPaused() {
 }
 
 bool MMSMusicManager::getTimes(int *pos, int *length) {
-    return player.getTimes(pos, length);   
+    return player.getTimes(pos, length);
 }
 
 void MMSMusicManager::setOnNextSong(sigc::signal<void, int> *onNextSong) {

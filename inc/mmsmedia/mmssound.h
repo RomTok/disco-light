@@ -28,13 +28,13 @@
 
 /**
  * @brief   Handles any kind of music playback.
- * 
+ *
  * @ingroup     mmsmedia mmslibs
  *
  * @author      Matthias Hardt (mattmax@morphine.tv)
  * @version     1.0.3
  * @date        11/07/2007
- * 
+ *
  * This class is derived from MMSAV and specialized in
  * handling music playback.
  */
@@ -43,23 +43,23 @@ class MMSSound : public MMSAV {
         void initialize(const bool verbose);
 
     protected:
-    
+
     public:
-    
+
         /* if you specify the source, the constructor will try to open it */
         MMSSound(const bool verbose = false);
 
         /* destructor */
         ~MMSSound();
-        
+
         void open();
         void startPlaying(string mrl, bool cont);
         void ffwd();
-        
+
         /**
          * callback that will be called if playback finished
          */
-        sigc::signal<void> *onPlaybackFinished;
+        sigc::signal<void> onPlaybackFinished;
 };
 
 #endif /*MMSSOUND_H_*/

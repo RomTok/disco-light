@@ -26,38 +26,34 @@ MMS_CREATEERROR(MMSSoundError);
 
 /**
  * Callback, that will be called if xine sends event messages.
- * 
+ *
  * @param   userData    [in/out]    pointer to the MMSSound object
  * @param   event       [in]        pointer to event structure
  */
 static void queue_cb(void *userData, const xine_event_t *event) {
     MMSSound *mmssound = (MMSSound*)userData;
-    
+
     if(event->type == XINE_EVENT_UI_PLAYBACK_FINISHED)
-        mmssound->onPlaybackFinished->emit();
+        mmssound->onPlaybackFinished.emit();
 }
 
 /**
  * Constructor of MMSSound class.
  *
  * @param   verbose [in]    if true the xine engine writes debug messages to stdout
- *  
+ *
  * @see MMSAV::MMSAV()
  * @see MMSAV::initialize()
  */
 MMSSound::MMSSound(const bool verbose) {
     MMSAV::initialize(verbose);
-    this->onPlaybackFinished = new sigc::signal<void>;
 }
 
 /**
  * Destructor of MMSSound class.
  */
 MMSSound::~MMSSound() {
-    if(this->onPlaybackFinished) {
-        this->onPlaybackFinished->clear();
-        delete this->onPlaybackFinished;
-    }
+    this->onPlaybackFinished.clear();
 }
 
 /**
@@ -71,9 +67,9 @@ void MMSSound::open() {
  * Starts playing.
  *
  * If the continue flag is set it tries to continue
- * at the position where it was stopped before. 
+ * at the position where it was stopped before.
  *
- * @param   mrl     MRL to play 
+ * @param   mrl     MRL to play
  * @param   cont    if true it tries to continue at a position stopped before
  */
 void MMSSound::startPlaying(string mrl, bool cont) {
@@ -84,7 +80,7 @@ void MMSSound::startPlaying(string mrl, bool cont) {
 
 /**
  * Playback will be switched to fast forward.
- * 
+ *
  * There are two different speed settings for fast forward.
  * Twice as fast and four times as fast.
  */
