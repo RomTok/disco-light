@@ -31,7 +31,7 @@
 #include <sys/time.h>
 
 #ifdef __ENABLE_LOG__
-#define DEBUGMSG(ident, msg...) ({writeDebugMessage(ident, __FILE__, __LINE__, msg);})
+#define DEBUGMSG(ident, msg...) writeDebugMessage(ident, __FILE__, __LINE__, msg)
 #else
 #define DEBUGMSG(ident, msg...)
 #endif
@@ -93,6 +93,6 @@ void executeCmd(string cmd);
 bool file_exist( string filename );
 
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const char *msg, ...);
-void writeDebugMessage(const string &identity, const char *filename, const int lineno, const string &msg);
+void writeDebugMessage(const char *identity, const char *filename, const int lineno, const string &msg);
 
 #endif /*TOOLS_H_*/
