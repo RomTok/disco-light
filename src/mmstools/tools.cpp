@@ -72,7 +72,7 @@ string *strToUpr(string *src) {
 
     len = strlen(dest);
     for(i=0; i<=len; i++) {
-        
+
     	if((dest[i] >= 'a') && (dest[i] <= 'z'))
             dest[i]-=32;
     }
@@ -118,9 +118,9 @@ int hexToInt(const char *in) {
 
 string getSimpleTimeString() {
     string timstr;
-    
+
     getCurrentTimeString(NULL,NULL,&timstr,NULL);
-    
+
     return timstr;
 }
 
@@ -213,7 +213,7 @@ string getDayOfWeek(time_t *clock) {
         case 6:
             return "Saturday";
     }
-    
+
     return "";
 }
 
@@ -296,7 +296,7 @@ int strToInt(string s) {
 string iToStr(int i) {
     char mychar[1024];
     string mystr;
-    
+
     sprintf(mychar,"%d",i);
     mystr = mychar;
     return mystr;
@@ -305,7 +305,7 @@ string iToStr(int i) {
 string fToStr(double i) {
     char mychar[1024];
     string mystr;
-    
+
     sprintf(mychar,"%f",i);
     mystr = mychar;
     return mystr;
@@ -340,7 +340,7 @@ char *scanForString(char *buf, char *toFind, char **ret,
 		}
 	}
 
-	return ptr; 
+	return ptr;
 }
 
 char *scanForString(char *buf, char *toFind, string *ret,
@@ -448,7 +448,7 @@ bool scanString(string toscan, string frontkey, string backkey,
 
 string cpToStr(char *str) {
     string ret = str;
-    return ret;    
+    return ret;
 }
 
 
@@ -459,7 +459,7 @@ string cToStr(char chr) {
 
     string ret = my;
 
-    return ret;    
+    return ret;
 }
 
 void trim(string& str)
@@ -476,22 +476,22 @@ void trim(string& str)
 bool strToBool(string s) {
 	if(s.empty())
 		return false;
-		
-	if(strcasecmp(s.c_str(), "true") == 0) 
+
+	if(strcasecmp(s.c_str(), "true") == 0)
 		return true;
-	else 
+	else
 		return false;
 }
 
 void executeCmd(string cmd) {
 	pid_t pid;
 	int i,y;
-	int argc; 
+	int argc;
 	char *argv[256];
 	char buffer[4096];
-	
-	
-    for (i=0;i<256;i++) 
+
+
+    for (i=0;i<256;i++)
     	argv[i]=NULL;
     argc=0;
     sprintf(buffer,"%s",cmd.c_str());
@@ -500,16 +500,16 @@ void executeCmd(string cmd) {
 
     i=0;
     while ((buffer[i]!=0)&&(argc<256)) {
-        while(buffer[i]==' ') 
+        while(buffer[i]==' ')
         	i++;
 
-        if(buffer[i]==0) 
+        if(buffer[i]==0)
         	break;
 
         if(buffer[i]=='\'') {
             i++;
             y=i;
-            while ((buffer[i]!='\'')&&(buffer[i]!=0)) 
+            while ((buffer[i]!='\'')&&(buffer[i]!=0))
             	i++;
 
             if (buffer[i]=='\'') {
@@ -519,7 +519,7 @@ void executeCmd(string cmd) {
         } else if (buffer[i]=='"') {
             i++;
             y=i;
-            while ((buffer[i]!='"')&&(buffer[i]!=0)) 
+            while ((buffer[i]!='"')&&(buffer[i]!=0))
             	i++;
 
             if (buffer[i]=='"') {
@@ -528,7 +528,7 @@ void executeCmd(string cmd) {
             }
         } else {
             y=i;
-            while ((buffer[i]!=' ')&&(buffer[i]!=0)) 
+            while ((buffer[i]!=' ')&&(buffer[i]!=0))
             	i++;
 
             if (buffer[i]==' ') {
@@ -540,7 +540,7 @@ void executeCmd(string cmd) {
         argc++;
     }
 
-	 
+
 	pid = fork();
 		if(pid!=-1) {
 		if(pid>0)
@@ -559,8 +559,8 @@ void executeCmd(string cmd) {
 
 bool file_exist( string filename ) {
 	struct stat buffer ;
-	
-	if ( stat( filename.c_str(), &buffer ) == 0) 
+
+	if ( stat( filename.c_str(), &buffer ) == 0)
 		return true;
 
 	return false;
@@ -573,50 +573,50 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	char 	buffer[1024]={0};
 	char 	buffer2[1024]={0};
 	int		num;
-	
+
     debugMsgMutex.lock();
 	if((fp=fopen(config.getLogfile().c_str(), "a+"))==NULL)
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
 	va_start(arglist, (char *)msg);
 	vsprintf(buffer, msg, arglist);
-    
+
 	gettimeofday(&tv, NULL);
-    
+
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
-    
+
 	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %s: %s [%s:%d]\n", timebuf,
 	                    tv.tv_usec/10000, identity, buffer, filename, lineno);
-	
+
 	fwrite(buffer2, 1, num, fp);
-	
+
 	va_end(arglist);
-	
+
 	fclose(fp);
     debugMsgMutex.unlock();
-	
+
 	return;
 }
 
-void writeDebugMessage(const string &identity, const char *filename, const int lineno, const string &msg) {
+void writeDebugMessage(const char *identity, const char *filename, const int lineno, const string &msg) {
 	struct  timeval tv;
 	char    timebuf[12];
 	char 	buffer[1024]={0};
 	int		num;
-	
+
     debugMsgMutex.lock();
 	if((fp=fopen(config.getLogfile().c_str(), "a+"))==NULL)
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
-		
+
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
-    
+
 	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %s: %s [%s:%d]\n", timebuf,
 	               tv.tv_usec/10000, identity.c_str(), msg.c_str(), filename, lineno);
-	
+
 	fwrite(buffer, 1, num, fp);
 	fclose(fp);
     debugMsgMutex.unlock();
-	
+
 	return;
 }
