@@ -43,27 +43,27 @@ static void on_exit() {
 
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
-	
-	try { 
+
+	try {
         MMSRcParser rcparser;
-        
+
         if(configfile != "") {
         	printf("set configfile: %s\n", configfile.c_str());
 	        rcparser.parseFile(configfile);
 	        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
         } else {
-        
+
 		    try {
 		    	string filename = getenv("HOME") + string("/.disko/diskorc.xml");
 		        rcparser.parseFile("./etc/diskorc.xml");
 		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
-		        
+
 		    } catch (MMSRcParserError *ex) {
 		        try {
 		        rcparser.parseFile("/etc/diskorc.xml");
 		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
 
-		        
+
 		        } catch (MMSRcParserError *ex) {
 					rcConfigDB.database  = "/tmp/mmsconfigdb";
 					rcDataDB.database    = "/tmp/mmsdatadb";
@@ -109,25 +109,25 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
         DEBUGMSG("Core", "Shutdown command:           " + config->getShutdownCmd());
 
         DEBUGMSG("Core", "Touch pad/screen area:      " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
-        
+
         DEBUGMSG("Core", "initialize frame buffer");
 
         mmsfbmanager.init(argc,argv);
         mmsfbmanager.applySettings();
 
         DEBUGMSG("Core", "starting theme manager");
-        MMSThemeManager thememanager(config->getData(),config->getTheme());
+        themeManager = new MMSThemeManager(config->getData(),config->getTheme());
 
-        DEBUGMSG("Core", "starting window manager");
-        DFBRectangle vrect;
-        vrect.x = config->getVRect().x;
-        vrect.y = config->getVRect().y;
-        vrect.w = config->getVRect().w;
-        vrect.h = config->getVRect().h;
-        
         if(flags & MMSINIT_WINDOWMANAGER || flags == MMSINIT_FULL) {
-	        windowmanager = new MMSWindowManager(vrect);
-	
+            DEBUGMSG("Core", "starting window manager");
+            DFBRectangle vrect;
+            vrect.x = config->getVRect().x;
+            vrect.y = config->getVRect().y;
+            vrect.w = config->getVRect().w;
+            vrect.h = config->getVRect().h;
+
+            windowmanager = new MMSWindowManager(vrect);
+
 	        DEBUGMSG("Core", "creating background window");
 	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","100%","100%");
 	        rootwin->setWindowManager((IMMSWindowManager*)windowmanager);
@@ -137,7 +137,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
         DEBUGMSG("Core", "creating input manager");
         inputs = new MMSInputManager(config->getSysConfig() + "/inputmap.xml", config->getInputMap());
 		inputs->setWindowManager((IMMSWindowManager*)windowmanager);
-		
+
         //inputs
 		DEBUGMSG("Core", "add input device");
 		inputs->addDevice(DIDID_KEYBOARD, config->getInputInterval());
@@ -145,21 +145,19 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 		DEBUGMSG("Core", "creating master subscription");
 	  	MMSInputSubscription sub1(inputs);
 
-
         if(flags & MMSINIT_PLUGINMANAGER || flags == MMSINIT_FULL) {
-    
 	        DEBUGMSG("Core", "creating PluginManager");
 	        pluginmanager = new MMSPluginManager();
-	
+
 	        DEBUGMSG("Core", "loading Backend Plugins...");
 	        pluginmanager->loadBackendPlugins();
-	
+
 	        DEBUGMSG("Core", "loading OSD Plugins...");
 	        pluginmanager->loadOSDPlugins();
-	    
+
 	        DEBUGMSG("Core", "loading Central Plugins...");
 	        pluginmanager->loadCentralPlugins();
-	    
+
 	        DEBUGMSG("Core", "loading Import Plugins...");
 	        pluginmanager->loadImportPlugins();
 
@@ -170,11 +168,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
         if(flags & MMSINIT_EVENTS || flags == MMSINIT_FULL) {
 
         	DEBUGMSG("Core", "creating EventSignupManager");
-        	eventsignupmanager = new MMSEventSignupManager(); 
+        	eventsignupmanager = new MMSEventSignupManager();
 
 	        DEBUGMSG("Core", "creating EventDispatcher");
-	        eventdispatcher = new MMSEventDispatcher(pluginmanager,eventsignupmanager); 
-        
+	        eventdispatcher = new MMSEventDispatcher(pluginmanager,eventsignupmanager);
+
 	        masterevent = new MMSEvent();
 	        masterevent->setDispatcher(eventdispatcher);
 
@@ -189,21 +187,21 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 
 //        DEBUGMSG("Core", "starting music manager");
 //        soundmanager = new MMSMusicManager();
-        
+
         DEBUGMSG("Core", "wait for inputs");
 		/* here must be a barrier implemented */
         inputs->startListen();
- 
-		
+
+
     	atexit(on_exit);
-       
+
     } catch(MMSError *error) {
         DEBUGMSG("Core", "Abort due to: " + error->getMessage());
         fprintf(stderr, "Error initializing disko: %s\n", error->getMessage().c_str());
         delete error;
         return false;
     }
-    
+
 	return true;
 }
 
@@ -214,7 +212,7 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
     if(pluginmanager) {
         switcher->setPluginManager(pluginmanager);
         pluginmanager->setSwitcher(switcher);
-        
+
         DEBUGMSG("Core", "initialize Backend Plugins...");
         pluginmanager->initializeBackendPlugins();
 
@@ -224,6 +222,6 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
         DEBUGMSG("Core", "initialize Central Plugins...");
         pluginmanager->initializeCentralPlugins();
     }
-    
+
     return true;
 }
