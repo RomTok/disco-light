@@ -612,7 +612,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
 	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %s: %s [%s:%d]\n", timebuf,
-	               tv.tv_usec/10000, identity.c_str(), msg.c_str(), filename, lineno);
+	               tv.tv_usec/10000, identity, msg.c_str(), filename, lineno);
 
 	fwrite(buffer, 1, num, fp);
 	fclose(fp);
