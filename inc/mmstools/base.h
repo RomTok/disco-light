@@ -26,6 +26,7 @@
 using namespace std;
 
 #include <string>
+#include <iostream>
 #include <vector>
 
 #endif /*BASE_H_*/
