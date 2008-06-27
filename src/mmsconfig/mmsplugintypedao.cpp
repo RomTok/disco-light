@@ -21,7 +21,6 @@
  ***************************************************************************/
 
 #include "mmsconfig/mmsplugintypedao.h"
-#include <iostream>
 
 MMSPluginTypeDAO::MMSPluginTypeDAO(IMMSDB *myConnection) {
     MMSPluginTypeDAO::setMMSDBConnection(myConnection);
@@ -58,7 +57,7 @@ vector<MMSPluginTypeData *> MMSPluginTypeDAO::findAllTypes() {
     MMSRecordSet            rs;
     vector<MMSPluginTypeData   *> types;
     MMSPluginTypeData   *type;
-    
+
     /* do query */
     this->getMMSDBConnection()->query(
         "select * from PluginTypes", &rs);
@@ -69,12 +68,12 @@ vector<MMSPluginTypeData *> MMSPluginTypeDAO::findAllTypes() {
 
     /* create object */
     do {
-        
+
         type = new MMSPluginTypeData;
         type->setID(atoi(rs["ID"].c_str()));
         type->setName(rs["PluginTypeName"]);
         types.push_back(type);
-        
+
     } while (rs.next());
 
     return types;

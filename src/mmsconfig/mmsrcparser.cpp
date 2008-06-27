@@ -22,8 +22,6 @@
 
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"
-#include <iostream>
-#include <stdlib.h>
 
 MMSRcParser::MMSRcParser() {
 	this->global.logfile       = "/tmp/mmscore";
@@ -63,20 +61,20 @@ MMSRcParser::MMSRcParser() {
 MMSRcParser::~MMSRcParser() {
 
 }
-		
+
 void MMSRcParser::parseFile(string filename) {
 
 	try {
 		xmlDoc *parser = NULL;
-		
+
 		LIBXML_TEST_VERSION
-		
+
 		parser = xmlReadFile((char *)filename.c_str(), NULL, 0);
-		
+
 		if(parser == NULL) {
 			throw new MMSRcParserError(1,"Could not parse file:" + filename);
 		}
-		
+
 		if(parser) {
 			//Walk the tree:
 			xmlNode* pNode = xmlDocGetRootElement(parser);
@@ -99,11 +97,11 @@ void MMSRcParser::parseFile(string filename) {
             if (this->dfb.vrect.h - this->dfb.vrect.y > this->dfb.yres)
                 this->dfb.vrect.h = this->dfb.yres - this->dfb.vrect.y;
 
-		
+
     	    /*free the document */
     	    xmlFreeDoc(parser);
 		}
-		
+
 	    /*
 	     *Free the global variables that may
 	     *have been allocated by the parser.
@@ -115,7 +113,7 @@ void MMSRcParser::parseFile(string filename) {
 		std::cout << "Exception caught: " << error->getMessage() << std::endl;
 		throw new MMSRcParserError(1,error->getMessage());
 	}
-	
+
 }
 
 void MMSRcParser::getMMSRc(MMSConfigDataGlobal &global,
@@ -130,24 +128,24 @@ void MMSRcParser::getMMSRc(MMSConfigDataGlobal &global,
 
 /**
  * Checks for version of the configuration file.
- * 
+ *
  * If the version does not match, an exception is thrown.
- * 
+ *
  * @note	By now it checks exactly for version 1.1.0.
- * 
+ *
  * @param	node	should be the mmsrc root node
  */
 void MMSRcParser::checkVersion(xmlNode* node) {
 
 	xmlChar *version;
-	
+
 	version = xmlGetProp(node, (const xmlChar*)"version");
-	
+
 	if(!version) {
 		std::cout << "Configuration file misses version entity!" << std::endl;
 		throw new MMSRcParserError(1, "missing version");
 	}
-	
+
 	if(xmlStrcmp(version, (const xmlChar *) "1.1.0")) {
 		std::cout << "Version of configuration file does not match!" << std::endl;
 		xmlFree(version);
@@ -161,19 +159,19 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
 	xmlNode *cur_node = NULL;
 	xmlChar *parname;
 	xmlChar *parvalue;
-		
+
 	node = node->xmlChildrenNode;
-		
+
 	for (cur_node = node; cur_node; cur_node = cur_node->next) {
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter"))
 			continue;
-			
+
     	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
     	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
-    	
+
     	if(parname == NULL && parvalue == NULL)
     		continue;
-    	
+
 	    if(!xmlStrcmp(parname, (const xmlChar *) "logfile"))
 		    this->global.logfile = string((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "inputmap"))
@@ -194,7 +192,7 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdown = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "shutdowncmd"))
             this->global.shutdowncmd = string((const char *)parvalue);
-	    
+
 	    xmlFree(parname);
 	    xmlFree(parvalue);
 	}
@@ -203,9 +201,9 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
 void MMSRcParser::throughDBSettings(xmlNode* node) {
 	MMSConfigDataDB *db;
 	xmlChar *type;
-	
+
 	type = xmlGetProp(node, (const xmlChar*)"type");
-	
+
 	if(!xmlStrcmp(type, (const xmlChar *) "config")) {
 		db = &this->configdb;
 	}
@@ -217,18 +215,18 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 	}
 
 	xmlFree(type);
-	
+
 	xmlNode *cur_node = NULL;
 	xmlChar *parname;
 	xmlChar *parvalue;
-	
+
 	for (cur_node = node->xmlChildrenNode; cur_node; cur_node = cur_node->next) {
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter"))
 			continue;
-		
+
 		parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
 		parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
-        
+
 		if(!xmlStrcmp(parname, (const xmlChar *) "dbms"))
             db->dbms = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "address"))
@@ -242,7 +240,7 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 		else if(!xmlStrcmp(parname, (const xmlChar *) "database")) {
 		    db->database = string((const char *)parvalue);
 		}
-		
+
 	    xmlFree(parname);
 	    xmlFree(parvalue);
 	}
@@ -253,16 +251,16 @@ void MMSRcParser::throughDFBSettings(xmlNode* node) {
 	xmlNode *cur_node = NULL;
 	xmlChar *parname;
 	xmlChar *parvalue;
-		
+
 	node = node->xmlChildrenNode;
-		
+
 	for (cur_node = node; cur_node; cur_node = cur_node->next) {
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter"))
 			continue;
-			
+
     	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
     	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
-    		
+
 		if(!xmlStrcmp(parname, (const xmlChar *) "xres"))
 			this->dfb.xres = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres"))
@@ -303,20 +301,20 @@ void MMSRcParser::throughDFBSettings(xmlNode* node) {
 	    	this->dfb.touchrect.h = strToInt(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "pointer"))
             this->dfb.pointer = strToBool(string((const char *)parvalue));
-		
+
 	    xmlFree(parname);
 	    xmlFree(parvalue);
-	    
+
 	}
 }
 
 void MMSRcParser::throughFile(xmlNode* node) {
 
 	xmlNode *cur_node = NULL;
-	
+
 	if(node==NULL)
 		return;
-	
+
 	if(!xmlStrcmp(node->name, (const xmlChar *) "mmsrc")) {
 		checkVersion(node);
 
