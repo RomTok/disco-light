@@ -63,7 +63,7 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
 	            thread = new MMSEventThread(osdHandlers.at(i), e);
 	            thread->start();
 	        }
-	
+
 	        DEBUGMSG("MMSEventdispatcher", "filter the central handler");
 	        /* get all central handlers */
 	        centralHandlers = getManager()->getCentralPluginHandlers(plugins);
@@ -73,7 +73,7 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
 	            thread = new MMSEventThread(centralHandlers.at(i), e);
 	            thread->start();
 	        }
-	
+
 	        DEBUGMSG("MMSEventdispatcher", "filter the backend handler");
 	        /* get all central handlers */
 	        backendHandlers = getManager()->getBackendPluginHandlers(plugins);
@@ -87,7 +87,9 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
         } catch (MMSEventSignupManagerError *err) {
         	DEBUGMSG("MMSEventdispatcher", "Error: %s", err->getMessage().c_str());
         	return;
-        }	
+        }
+        for(vector<MMSPluginData *>::iterator it = plugins.begin(); it != plugins.end(); ++it)
+        	delete *it;
     }
 }
 
