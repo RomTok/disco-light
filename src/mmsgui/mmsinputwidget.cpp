@@ -49,7 +49,7 @@ bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->cursor_pos = 0;
 	this->cursor_on = true;
 	this->scroll_x = 0;
-    
+
     // create thread
     this->iwt = new MMSInputWidgetThread(this);
 	if (this->iwt)
@@ -60,7 +60,7 @@ bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 
 MMSWidget *MMSInputWidget::copyWidget() {
     /* create widget */
-    MMSInputWidget *newWidget = new MMSInputWidget(this->rootwindow, className); 
+    MMSInputWidget *newWidget = new MMSInputWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -68,7 +68,7 @@ MMSWidget *MMSInputWidget::copyWidget() {
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-    /* reload my font */    
+    /* reload my font */
     newWidget->font = NULL;
     if (this->rootwindow) {
         newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
@@ -115,12 +115,12 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
             string text = getText();
 
-            // get width and height of the string to be drawn            
+            // get width and height of the string to be drawn
             this->font->GetStringWidth(this->font, text.c_str(), -1, &width);
             this->font->GetHeight(this->font, &height);
-            
+
             // calc cursor position
-            if (text.size() < this->cursor_pos)
+            if (text.size() < (unsigned int)this->cursor_pos)
             	cursor_x = width;
             else
             	this->font->GetStringWidth(this->font, text.substr(0,this->cursor_pos).c_str(), -1, &cursor_x);
@@ -185,6 +185,8 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
                         case MMSALIGNMENT_BOTTOM_RIGHT:
                             y = surfaceGeom.y + surfaceGeom.h - height;
                             break;
+                        default:
+                        	break;
                 	}
                     break;
                 case MMSALIGNMENT_CENTER:
@@ -206,19 +208,21 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
                         case MMSALIGNMENT_BOTTOM_CENTER:
                             y = surfaceGeom.y + surfaceGeom.h - height;
                             break;
+                        default:
+                        	break;
                 	}
                     break;
             }
-            
+
             DFBColor color;
-            
+
             if (isSelected())
                 color = getSelColor();
             else
                 color = getColor();
-            
+
             if (color.a) {
-                /* prepare for drawing */        
+                /* prepare for drawing */
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
                 /* draw the text */
@@ -256,13 +260,13 @@ void MMSInputWidget::setCursorPos(int cursor_pos, bool refresh) {
 	}
 
 	string text = getText();
-	if (text.size() >= cursor_pos)
+	if (text.size() >= (unsigned int)cursor_pos)
 		// okay, set it
 		this->cursor_pos = cursor_pos;
 	else
 		// out of range
 		this->cursor_pos = text.size();
-	
+
 	if (refresh)
 		this->refresh();
 }
@@ -273,9 +277,7 @@ void MMSInputWidget::addTextAfterCursorPos(string text, bool refresh) {
 	int textlen = text.size();
 
 	string oldtext = getText();
-	if (oldtext.size() >= cursor_pos)
-		this->cursor_pos = cursor_pos;
-	else
+	if (oldtext.size() < (unsigned int)this->cursor_pos)
 		this->cursor_pos = oldtext.size();
 
 	// insert the text and change the cursor position
@@ -289,9 +291,9 @@ void MMSInputWidget::removeTextBeforeCursorPos(int textlen, bool refresh) {
 	if (this->cursor_pos<=0) return;
 
 	string text = getText();
-	if (text.size() < this->cursor_pos)
+	if (text.size() < (unsigned int)this->cursor_pos)
 		this->cursor_pos = text.size();
-	
+
 	if (this->cursor_pos <= textlen)
 		textlen = this->cursor_pos;
 
@@ -530,7 +532,7 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
 			case DIKS_SMALL_Z:
 				addTextAfterCursorPos("z");
 				break;
-	
+
 			default:
 				processed = false;
 		}
@@ -538,7 +540,7 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
 
 	// not processed, call base widget
 	if (!processed)
-		MMSWidget::handleInput(inputevent);	
+		MMSWidget::handleInput(inputevent);
 }
 
 
@@ -649,7 +651,7 @@ void MMSInputWidget::setSelColor(DFBColor selcolor, bool refresh) {
 
 void MMSInputWidget::setText(string text, bool refresh, bool reset_cursor) {
     myInputWidgetClass.setText(text);
-    
+
     if (reset_cursor)
     	// set cursor to the end
     	setCursorPos(0xffff, refresh);

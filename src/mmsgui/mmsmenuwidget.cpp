@@ -52,37 +52,37 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 
     this->itemTemplate = NULL;
 
-    this->item_w = 0; 
+    this->item_w = 0;
     this->item_h = 0;
     this->x = 0;
     this->y = 0;
-    this->px = 0; 
-    this->py = 0; 
-    this->v_items = 0; 
+    this->px = 0;
+    this->py = 0;
+    this->v_items = 0;
     this->h_items = 0;
 
     this->firstFocus = false;
     this->firstSelection = false;
 
-    this->zoomselwidth = 0;      
+    this->zoomselwidth = 0;
     this->zoomselheight = 0;
     this->zoomselshiftx = 0;
     this->zoomselshifty = 0;
-    
+
     this->smooth_scrolling = getSmoothScrolling();
     this->scrolling_offset = 0;
-    
+
     this->parent_window = NULL;
     this->curr_submenu = -1;
     this->parent_menu = NULL;
     this->back_item = -1;
-    
+
     return MMSWidget::create(root, true, false, true, true, true, false);
 }
 
 MMSWidget *MMSMenuWidget::copyWidget() {
     /* create widget */
-    MMSMenuWidget *newWidget = new MMSMenuWidget(this->rootwindow, className); 
+    MMSMenuWidget *newWidget = new MMSMenuWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -156,7 +156,7 @@ bool MMSMenuWidget::getConfig(bool *firstTime) {
 
         /* we need to adjust the virtual rect */
         adjustVirtualRect();
-        
+
         return true;
     }
     else
@@ -171,7 +171,7 @@ bool MMSMenuWidget::getConfig(bool *firstTime) {
     if (getItemHeight() != "")
         getPixelFromSizeHint(&this->item_h, getItemHeight(), this->innerGeom.h, 0);
     else
-        this->item_h = this->innerGeom.h; 
+        this->item_h = this->innerGeom.h;
 
     if (this->item_w <= 0) {
         /* it seems that width should be a factor of height */
@@ -186,12 +186,12 @@ bool MMSMenuWidget::getConfig(bool *firstTime) {
         getPixelFromSizeHint((int*)&this->zoomselwidth, getZoomSelWidth(), this->item_w, 0);
     else
         this->zoomselwidth = 0;
-    
+
     if (getZoomSelHeight() != "")
         getPixelFromSizeHint((int*)&this->zoomselheight, getZoomSelHeight(), this->item_h, 0);
     else
         this->zoomselheight = 0;
-    
+
     this->zoomsel = ((this->zoomselwidth)||(this->zoomselheight));
 
    	if (this->zoomsel) {
@@ -199,14 +199,14 @@ bool MMSMenuWidget::getConfig(bool *firstTime) {
 	        getPixelFromSizeHint((int*)&this->zoomselshiftx, getZoomSelShiftX(), this->zoomselwidth, 0);
 	    else
 	        this->zoomselshiftx = 0;
-	
+
 	    if (getZoomSelShiftY() != "")
 	        getPixelFromSizeHint((int*)&this->zoomselshifty, getZoomSelShiftY(), this->zoomselheight, 0);
 	    else
 	        this->zoomselshifty = 0;
     }
-    
-    
+
+
 	/* calculate visible horizontal items */
 	this->h_items = (this->innerGeom.w - this->zoomselwidth) / this->item_w;
 	rest = (this->innerGeom.w - this->zoomselwidth) % this->item_w;
@@ -241,7 +241,7 @@ bool MMSMenuWidget::getConfig(bool *firstTime) {
 
     /* we need to adjust the virtual rect */
     adjustVirtualRect();
-    
+
     return true;
 }
 
@@ -289,11 +289,11 @@ void MMSMenuWidget::recalculateChildren() {
         /* item pos with margin */
         int item_xx = this->virtualGeom.x + item_hmargin;
         int item_yy = this->virtualGeom.y + item_vmargin;
-    
+
         /* item width/height with margin */
         int item_ww = item_w + item_hmargin * 2;
         int item_hh = item_h + item_vmargin * 2;
-    
+
         /* menu pos */
         int menu_xx = this->virtualGeom.x + this->virtualGeom.w - item_w - item_hmargin;
         int menu_yy = this->virtualGeom.y + this->virtualGeom.h - item_h - item_vmargin;
@@ -306,7 +306,7 @@ void MMSMenuWidget::recalculateChildren() {
 			rows_after = rows_before + cols;
 			selected_col = selected_item % cols;
        	}
-       	
+
        	// summary of the separator sizes
        	int sepsize = 0;
 
@@ -315,20 +315,20 @@ void MMSMenuWidget::recalculateChildren() {
    			MMSWidget *sep = this->iteminfos.at(i).separator;
    			if (sep) sep->setVisible(false, false);
         }
-       	
+
        	/* through all items */
         for(int i = 0; i < (int)this->children.size(); i++) {
             rect.x = item_xx + (i % (int)cols - (int)px) * item_ww;
             rect.y = item_yy + (i / (int)cols - (int)py) * item_hh;
             rect.w = item_w;
-            rect.h = item_h;  
-    
+            rect.h = item_h;
+
             if (cols==1)
             	rect.y+=sepsize;
-            
+
             bool visibleBefore = this->children.at(i)->isVisible();
             bool visibleAfter = (!((rect.x < item_xx) || (rect.y < item_yy) || (rect.x > menu_xx) || (rect.y > menu_yy)));
-    
+
             if (visibleBefore || visibleAfter) {
                 if (visibleAfter) {
                     /* the item is visible, set geometry for it */
@@ -337,11 +337,11 @@ void MMSMenuWidget::recalculateChildren() {
 						if (cols == 1) {
 						    /* menu with one column (vertical) */
 							if (i > selected_item)
-								rect.y+=this->zoomselheight;                
+								rect.y+=this->zoomselheight;
 
 							if (i == selected_item) {
-								rect.w+=this->zoomselwidth;                
-								rect.h+=this->zoomselheight;                
+								rect.w+=this->zoomselwidth;
+								rect.h+=this->zoomselheight;
 							}
 							else {
 								int xxx = this->zoomselwidth / 2;
@@ -358,13 +358,13 @@ void MMSMenuWidget::recalculateChildren() {
 								}
 								rect.x+=xxx;
 							}
-						}                	
+						}
 						else {
 						    /* menu with columns and rows */
 						    if (i < rows_before) {
 								/* the rows before */
 								if (i > selected_col)
-									rect.x+=this->zoomselwidth;                
+									rect.x+=this->zoomselwidth;
 
 								if (i == selected_col) {
 									int xxx = this->zoomselwidth / 2;
@@ -380,18 +380,18 @@ void MMSMenuWidget::recalculateChildren() {
 											xxx=this->zoomselshiftx;
 									}
 									rect.x+=xxx;
-								
+
 								}
 						    }
 						    else
 						    if (i < rows_after) {
 						    	/* current row */
 						    	if (i > selected_item)
-						    		rect.x+=this->zoomselwidth;                
+						    		rect.x+=this->zoomselwidth;
 
 						    	if (i == selected_item) {
-									rect.w+=this->zoomselwidth;                
-									rect.h+=this->zoomselheight;                
+									rect.w+=this->zoomselwidth;
+									rect.h+=this->zoomselheight;
 								}
 								else {
 									int yyy = this->zoomselheight / 2;
@@ -411,10 +411,10 @@ void MMSMenuWidget::recalculateChildren() {
 							}
 							else {
 								/* the rows after */
-								rect.y+=this->zoomselheight;                
-						
+								rect.y+=this->zoomselheight;
+
 								if (i > selected_col)
-									rect.x+=this->zoomselwidth;                
+									rect.x+=this->zoomselwidth;
 
 								if (i == selected_col) {
 									int xxx = this->zoomselwidth / 2;
@@ -430,20 +430,20 @@ void MMSMenuWidget::recalculateChildren() {
 											xxx=this->zoomselshiftx;
 									}
 									rect.x+=xxx;
-								
+
 								}
 							}
 						}
                    	}
 
-                   	
+
 //printf("rect=%s,%d,%d,%d,%d\n", this->children.at(i)->getName().c_str(),rect.x,rect.y,rect.w,rect.h);
 //printf("rectx=%d,%d\n", this->innerGeom.x,this->innerGeom.y);
 //printf("rectx=%d,%d\n", this->virtualGeom.x,this->virtualGeom.y);
 
 //					rect.x+=this->innerGeom.x;
 //					rect.y+=this->innerGeom.y;
-                   	
+
                 	this->children.at(i)->setGeometry(rect);
 
                    	if (cols==1) {
@@ -461,17 +461,17 @@ void MMSMenuWidget::recalculateChildren() {
                    		}
                    	}
                 }
-    
+
                 /* switch the visibility */
                 this->children.at(i)->setVisible(visibleAfter, false);
             }
 
-        
+
     		if ((i+1)%cols==0)
     			selected_col+=cols;
-        
+
         }
-    
+
         return;
     }
     else {
@@ -484,10 +484,10 @@ void MMSMenuWidget::recalculateChildren() {
             /* item pos with margin */
             int item_xx = this->virtualGeom.x + item_hmargin;
             int item_yy = this->virtualGeom.y + item_vmargin;
-        
+
             /* item height with margin */
             int item_hh = item_h + item_vmargin * 2;
-        
+
             /* menu pos */
             int menu_yy = this->virtualGeom.y + this->virtualGeom.h - item_h - item_vmargin;
 
@@ -506,8 +506,8 @@ void MMSMenuWidget::recalculateChildren() {
                 rect.x = item_xx;
                 rect.y = item_yy + (i + fixedpos - (int)py) * item_hh;
                 rect.w = item_w;
-                rect.h = item_h;  
-        
+                rect.h = item_h;
+
                 bool visibleBefore = this->children.at(i)->isVisible();
                 bool visibleAfter = (!((rect.y < item_yy) || (rect.y > menu_yy)));
                 if (visibleAfter)
@@ -533,21 +533,21 @@ void MMSMenuWidget::recalculateChildren() {
                             visibleAfter = (!((rect.y < item_yy) || (rect.y > menu_yy)));
                             if (visibleAfter)
                                 realpos = (rect.y - item_yy) / item_hh;
-                        } 
+                        }
                     }
                 }
-        
+
                 if (visibleBefore || visibleAfter) {
                     if (visibleAfter) {
                         /* the item is visible, set geometry for it */
                        	if (this->zoomsel) {
                        		/* the selected item should zoomed in, so i have to align the items around it */
 							if (realpos > fixedpos)
-								rect.y+=this->zoomselheight;                
+								rect.y+=this->zoomselheight;
 
 							if (realpos == fixedpos) {
-								rect.w+=this->zoomselwidth;                
-								rect.h+=this->zoomselheight;                
+								rect.w+=this->zoomselwidth;
+								rect.h+=this->zoomselheight;
 							}
 							else {
 								int xxx = this->zoomselwidth / 2;
@@ -564,8 +564,8 @@ void MMSMenuWidget::recalculateChildren() {
 								}
 								rect.x+=xxx;
 							}
-                       	}                    	
-                    	
+                       	}
+
                     	this->children.at(i)->setGeometry(rect);
 
                         /* dim down and/or increase transparency */
@@ -625,14 +625,14 @@ void MMSMenuWidget::recalculateChildren() {
             /* menu with one row (horizontal) */
             if (fixedpos >= this->h_items)
                 fixedpos = (this->h_items - 1) / 2;
-            
+
             /* item pos with margin */
             int item_xx = this->virtualGeom.x + item_hmargin;
             int item_yy = this->virtualGeom.y + item_vmargin;
-        
+
             /* item width with margin */
             int item_ww = item_w + item_hmargin * 2;
-        
+
             /* menu pos */
             int menu_xx = this->virtualGeom.x + this->virtualGeom.w - item_w - item_hmargin;
 
@@ -666,8 +666,8 @@ void MMSMenuWidget::recalculateChildren() {
 
 				rect.y = item_yy;
                 rect.w = item_w;
-                rect.h = item_h;  
-        
+                rect.h = item_h;
+
                 bool visibleBefore = this->children.at(i)->isVisible();
                 bool visibleAfter = (!((rect.x < item_xx) || (rect.x > menu_xx)));
 
@@ -716,10 +716,10 @@ void MMSMenuWidget::recalculateChildren() {
 
                             if (visibleAfter)
                                 realpos = (rect.x - item_xx) / item_ww;
-                        } 
+                        }
                     }
                 }
-        
+
                 if (visibleBefore || visibleAfter) {
                     if (visibleAfter) {
                         /* the item is visible, set geometry for it */
@@ -756,16 +756,16 @@ void MMSMenuWidget::recalculateChildren() {
 			                	// printf("scroll smooth\n");
 			                	/* get the percent of scrolling */
 				                int d = (10000*scrolling_offset) / (this->item_w + item_hmargin*2);
-				                
+
 								if (realpos > fixedpos) {
 									rect.x+=(int)this->zoomselwidth;
 								}
-	
+
 								if (d>=0)
 								{
 									if (realpos == fixedpos) {
 										/* set blend value */
-										this->children.at(i)->setBlend((d*255 + 5000) / 10000, false);										
+										this->children.at(i)->setBlend((d*255 + 5000) / 10000, false);
 
 										/* calculate item's rectangle */
 										int dd = ((int)this->zoomselwidth * d + 5000) / 10000;
@@ -788,26 +788,26 @@ void MMSMenuWidget::recalculateChildren() {
 												yyy=this->zoomselshifty;
 										}
 										rect.y+=yyy;
-		
+
 										if ((d>0)&&(realpos+1 == fixedpos)) {
 											/* set blend value */
-											this->children.at(i)->setBlend((d*255 + 5000) / 10000, false);										
+											this->children.at(i)->setBlend((d*255 + 5000) / 10000, false);
 
 											/* calculate item's rectangle */
 											rect.y-=((((int)this->zoomselheight/2)+this->zoomselshifty) * d + 5000) / 10000;
 											rect.w+=((int)this->zoomselwidth * d + 5000) / 10000;
-											rect.h+=((int)this->zoomselheight * d + 5000) / 10000;                
+											rect.h+=((int)this->zoomselheight * d + 5000) / 10000;
 										}
 										else
 											/* reset blend value */
-											this->children.at(i)->setBlend(0, false);										
+											this->children.at(i)->setBlend(0, false);
 									}
 								}
 								else
 								{
 									if (realpos+1 == fixedpos) {
 										/* set blend value */
-										this->children.at(i)->setBlend((d*-255 + 5000) / 10000, false);										
+										this->children.at(i)->setBlend((d*-255 + 5000) / 10000, false);
 
 										/* calculate item's rectangle */
 										rect.y-=((((int)this->zoomselheight/2)+this->zoomselshifty) * d - 5000) / 10000;
@@ -828,11 +828,11 @@ void MMSMenuWidget::recalculateChildren() {
 												yyy=this->zoomselshifty;
 										}
 										rect.y+=yyy;
-		
+
 										if (realpos == fixedpos) {
 											/* set blend value */
-											this->children.at(i)->setBlend((d*-255 + 5000) / 10000, false);										
-											
+											this->children.at(i)->setBlend((d*-255 + 5000) / 10000, false);
+
 											/* calculate item's rectangle */
 											rect.x+=this->zoomselwidth+((int)this->zoomselwidth * d - 5000) / 10000;
 											rect.y+=((((int)this->zoomselheight/2)+this->zoomselshifty) * d - 5000) / 10000;
@@ -841,13 +841,13 @@ void MMSMenuWidget::recalculateChildren() {
 										}
 										else
 											/* reset blend value */
-											this->children.at(i)->setBlend(0, false);										
+											this->children.at(i)->setBlend(0, false);
 									}
 	                       		}
-							
+
 			                }
                        	}
-							
+
                     	this->children.at(i)->setGeometry(rect);
 
                         /* dim down and/or increase transparency */
@@ -910,7 +910,7 @@ void MMSMenuWidget::recalculateChildren() {
 
 void MMSMenuWidget::initParentWindow(void) {
 	if (!this->rootwindow) return;
-	
+
 	/* get the parent window */
 	this->parent_window = NULL;
 	string pw = getParentWindow();
@@ -941,31 +941,31 @@ void MMSMenuWidget::switchArrowWidgets() {
         /* select the correct arrows */
         if (cols > 1) {
             /* horizontal menu */
-            if (this->leftArrowWidget)    
+            if (this->leftArrowWidget)
                 this->leftArrowWidget->setSelected(true);
-            if (this->rightArrowWidget)    
+            if (this->rightArrowWidget)
                 this->rightArrowWidget->setSelected(true);
-            if (this->upArrowWidget)    
+            if (this->upArrowWidget)
                 this->upArrowWidget->setSelected(false);
-            if (this->downArrowWidget)    
+            if (this->downArrowWidget)
                 this->downArrowWidget->setSelected(false);
         }
         else {
             /* vertical menu */
-            if (this->leftArrowWidget)    
+            if (this->leftArrowWidget)
                 this->leftArrowWidget->setSelected(false);
-            if (this->rightArrowWidget)    
+            if (this->rightArrowWidget)
                 this->rightArrowWidget->setSelected(false);
-            if (this->upArrowWidget)    
+            if (this->upArrowWidget)
                 this->upArrowWidget->setSelected(true);
-            if (this->downArrowWidget)    
+            if (this->downArrowWidget)
                 this->downArrowWidget->setSelected(true);
         }
         return;
     }
 
     /* switch arrow widgets */
-    if (this->leftArrowWidget) {    
+    if (this->leftArrowWidget) {
         if (this->px == 0)
             this->leftArrowWidget->setSelected(false);
         else
@@ -998,7 +998,7 @@ void MMSMenuWidget::switchArrowWidgets() {
 }
 
 void MMSMenuWidget::emitOnReturnForParents(MMSMenuWidget *orw) {
-	// first all parents recursive on to the stack 
+	// first all parents recursive on to the stack
 	if (this->parent_menu)
 		this->parent_menu->emitOnReturnForParents(orw);
 	// fire the onReturn event
@@ -1013,8 +1013,8 @@ bool MMSMenuWidget::callOnReturn() {
 
 		// close all sub menus
 		switchBackToParentMenu(MMSDIRECTION_NOTSET, true);
-		
-		// return true, so widget will call onReturn for this menu 
+
+		// return true, so widget will call onReturn for this menu
 		return true;
 	}
 
@@ -1067,20 +1067,22 @@ bool MMSMenuWidget::switchBackToParentMenu(MMSDIRECTION direction, bool closeall
 	DFBRectangle pgeom = this->parent_menu->parent_window->geom;
 	DFBRectangle mgeom = this->parent_window->geom;
 	switch (direction) {
-	case MMSDIRECTION_LEFT:
-		if (pgeom.x >= mgeom.x) return false;
-		break;
-	case MMSDIRECTION_RIGHT:
-		if (pgeom.x+pgeom.w <= mgeom.x+mgeom.w) return false;
-		break;
-	case MMSDIRECTION_UP:
-		if (pgeom.y >= mgeom.y) return false;
-		break;
-	case MMSDIRECTION_DOWN:
-		if (pgeom.y+pgeom.h <= mgeom.y+mgeom.h) return false;
-		break;
+		case MMSDIRECTION_LEFT:
+			if (pgeom.x >= mgeom.x) return false;
+			break;
+		case MMSDIRECTION_RIGHT:
+			if (pgeom.x+pgeom.w <= mgeom.x+mgeom.w) return false;
+			break;
+		case MMSDIRECTION_UP:
+			if (pgeom.y >= mgeom.y) return false;
+			break;
+		case MMSDIRECTION_DOWN:
+			if (pgeom.y+pgeom.h <= mgeom.y+mgeom.h) return false;
+			break;
+		default:
+			break;
 	}
-	
+
 	// okay, switch back
 	if (this->parent_window->getFocus())
 		this->parent_menu->parent_window->setFocus();
@@ -1096,7 +1098,7 @@ bool MMSMenuWidget::switchBackToParentMenu(MMSDIRECTION direction, bool closeall
 
 void MMSMenuWidget::setSliders() {
     MMSSliderWidget *s;
-    
+
     /* get columns */
     unsigned int cols = getCols();
 
@@ -1164,7 +1166,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	                /* nothing to scroll */
 	                return false;
 	            }
-	
+
 	            for (int i = (int)this->x - 1; i >= 0; i--)
 	                if (i + (this->y + count) * cols < children.size()) {
 	                    /* save old and set new x selection */
@@ -1173,7 +1175,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	                        this->x = i;
 	                    break;
 	                }
-	
+
 	            if (!oldx) {
 	                /* really nothing to scroll? */
 	                if (getVLoop()) {
@@ -1187,7 +1189,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	                return false;
 	            }
 	        }
-	
+
 	        /* in test mode we can say that we can scroll */
 	        if (test)
 	            return true;
@@ -1195,7 +1197,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
         	// save old and set new y selection
 	        oldy = this->y;
 	        this->y+=count;
-	
+
 	        // recalculate scroll position
 	        int ypy = this->y - this->py;
 	        if (ypy >= this->v_items) {
@@ -1214,10 +1216,10 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            }
 	        }
 
-	        /* get access to widgets */    
+	        /* get access to widgets */
 	        MMSWidget *olditem = children.at(((oldx)?oldx:this->x) + oldy * cols);
 	        MMSWidget *item    = children.at(this->x + this->y * cols);
-	    
+
 	        if (!pyChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
@@ -1229,12 +1231,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
-	    
+
 	            if (refresh)
 	                recalculateChildren();
-	    
+
 	            selectItem(item, true, false);
-	    
+
 	            if (refresh) {
 	                this->refresh();
 	            }
@@ -1245,12 +1247,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
             if (this->x + (this->py + this->v_items + count - 1) * cols >= children.size())
                 // nothing to scroll
                 return false;
-            	
+
 	        // in test mode we can say that we can scroll
 	        if (test)
 	            return true;
 
-	        // recalculate scroll position    
+	        // recalculate scroll position
             this->py++;
 
 	        if (refresh) {
@@ -1258,10 +1260,10 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
                 this->refresh();
             }
         }
-        
+
         /* set the sliders */
         setSliders();
-    
+
         return true;
     }
     else {
@@ -1278,33 +1280,33 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
             oldy = this->y;
             this->y+=count;
 
-            if (this->y >= children.size()) {
+            if (this->y >= (int)children.size()) {
                 /* go back to begin of the list (round robin) */
                 this->y = this->y - children.size();
             }
 
             /* recalculate scroll position */
             this->py = this->y;
-            
-            /* get access to widgets */    
+
+            /* get access to widgets */
             MMSWidget *olditem = children.at(oldy);
             MMSWidget *item    = children.at(this->y);
-        
+
             /* switch focus and recalculate children */
             selectItem(olditem, false, false);
-    
+
             if (refresh)
                 recalculateChildren();
-    
+
             selectItem(item, true, false);
-    
+
             if (refresh) {
                 this->refresh();
             }
 
             /* set the sliders */
             setSliders();
-    
+
             return true;
         }
         else
@@ -1338,11 +1340,11 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
         /* normal menu */
         if (!leave_selection) {
         	// we have to change the selected menu item!!!
-	        if (this->y < count) {
+	        if (this->y < (int)count) {
 	            /* really nothing to scroll? */
 	            if (getVLoop()) {
 	                /* I should not give up the focus */
-	                unsigned int lines = this->children.size() /* / cols */; 
+	                unsigned int lines = this->children.size() /* / cols */;
 	                /* if (this->children.size() % cols > 0) lines++; */
 	                if ((int)lines - (int)this->y > 1)
 	                    return scrollDownEx(lines - this->y - 1, refresh, test, leave_selection);
@@ -1352,16 +1354,16 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            /* nothing to scroll */
 	            return false;
 	        }
-	
+
 	        /* in test mode we can say that we can scroll */
 	        if (test)
 	            return true;
-	
+
 	        // save old and set new y selection
 	        oldy = this->y;
 	        this->y-=count;
-	    
-	        // recalculate scroll position    
+
+	        // recalculate scroll position
 	        int ypy = this->y - this->py;
 	        if (ypy < 0) {
 	            this->py = this->y;
@@ -1372,11 +1374,11 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            this->py = this->y - this->v_items + 1;
 	            pyChanged = true;
 	        }
-	    
-	        /* get access to widgets */    
+
+	        /* get access to widgets */
 	        MMSWidget *olditem = children.at(this->x + oldy * cols);
 	        MMSWidget *item    = children.at(this->x + this->y * cols);
-	    
+
 	        if (!pyChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
@@ -1388,12 +1390,12 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
-	    
+
 	            if (refresh)
 	                recalculateChildren();
-	    
+
 	            selectItem(item, true, false);
-	    
+
 	            if (refresh) {
 	                this->refresh();
 	            }
@@ -1401,15 +1403,15 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
         }
         else {
         	// we have to leave the selected menu item asis!!!
-            if (this->py < count)
+            if (this->py < (int)count)
                 // nothing to scroll
                 return false;
-            	
+
 	        // in test mode we can say that we can scroll
 	        if (test)
 	            return true;
 
-	        // recalculate scroll position    
+	        // recalculate scroll position
             this->py--;
 
 	        if (refresh) {
@@ -1417,7 +1419,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
                 this->refresh();
             }
         }
-        
+
         /* set the sliders */
         setSliders();
 
@@ -1444,26 +1446,26 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
             /* recalculate scroll position */
             this->py = this->y;
-            
-            /* get access to widgets */    
+
+            /* get access to widgets */
             MMSWidget *olditem = children.at(oldy);
             MMSWidget *item    = children.at(this->y);
-        
+
             /* switch focus and recalculate children */
             selectItem(olditem, false, false);
-    
+
             if (refresh)
                 recalculateChildren();
-    
+
             selectItem(item, true, false);
-    
+
             if (refresh) {
                 this->refresh();
             }
 
             /* set the sliders */
             setSliders();
-    
+
             return true;
         }
         else
@@ -1506,7 +1508,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                /* nothing to scroll */
 	                return false;
 	            }
-	
+
 	            for (int i = (int)this->y - 1; i >= 0; i--)
 	                if (this->x + count + i * cols < children.size()) {
 	                    oldy = this->y;
@@ -1514,7 +1516,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                        this->y = i;
 	                    break;
 	                }
-	
+
 	            if (!oldy) {
 	                /* really nothing to scroll? */
 	                if (getHLoop()) {
@@ -1541,16 +1543,16 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            /* nothing to scroll */
 	            return false;
 	        }
-	
+
 	        /* in test mode we can say that we can scroll */
 	        if (test)
 	            return true;
-	 
+
 	        /* save old and set new x selection */
 	        oldx = this->x;
 	        this->x+=count;
-	    
-	        /* recalculate scroll position */    
+
+	        /* recalculate scroll position */
 	        int xpx = this->x - this->px;
 	        if (xpx >= this->h_items) {
 	            this->px = this->x - this->h_items + 1;
@@ -1567,11 +1569,11 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                pxChanged = true;
 	            }
 	        }
-	    
-	        /* get access to widgets */    
+
+	        /* get access to widgets */
 	        MMSWidget *olditem = children.at(oldx + ((oldy)?oldy:this->y) * cols);
 	        MMSWidget *item    = children.at(this->x + this->y * cols);
-	    
+
 	        if (!pxChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
@@ -1583,12 +1585,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
-	    
+
 	            if (refresh)
 	                recalculateChildren();
-	    
+
 	            selectItem(item, true, false);
-	    
+
 	            if (refresh) {
 	                this->refresh();
 	            }
@@ -1599,12 +1601,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        if (this->px + this->h_items + count - 1 >= ((cols<=children.size())?cols:children.size()))
                 // nothing to scroll
                 return false;
-            	
+
 	        // in test mode we can say that we can scroll
 	        if (test)
 	            return true;
 
-	        // recalculate scroll position    
+	        // recalculate scroll position
             this->px++;
 
 	        if (refresh) {
@@ -1612,7 +1614,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
                 this->refresh();
             }
         }
-        
+
         /* set the sliders */
         setSliders();
 
@@ -1627,7 +1629,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
             /* callback */
             this->onBeforeScroll->emit(this);
-            
+
             if ((smooth_scrolling)&&(refresh)) {
             	/* scrolling animation */
 				/* smooth scrolling with fix 5 steps */
@@ -1649,20 +1651,20 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             oldx = this->x;
             this->x+=count;
 
-            if (this->x >= cols) {
+            if (this->x >= (int)cols) {
                 /* go back to begin of the first row (round robin) */
                 this->x = this->x - cols;
             }
 
-            if (this->x >= children.size()) {
+            if (this->x >= (int)children.size()) {
                 /* go back to begin of the list (round robin) */
                 this->x = this->x - children.size();
             }
 
             /* recalculate scroll position */
             this->px = this->x;
-            
-            /* get access to widgets */    
+
+            /* get access to widgets */
             MMSWidget *olditem = children.at(oldx);
             MMSWidget *item    = children.at(this->x);
 
@@ -1674,12 +1676,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
             /* switch focus and recalculate children */
             selectItem(olditem, false, false);
-    
+
             if (refresh)
                 recalculateChildren();
-    
+
             selectItem(item, true, false);
-    
+
             if (refresh) {
                 this->refresh();
             }
@@ -1713,7 +1715,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
     if (fixedpos < 0) {
         /* normal menu */
         if (!leave_selection) {
-	        if (this->x < count) {
+	        if (this->x < (int)count) {
 	            /* really nothing to scroll? */
 	            if (getHLoop()) {
 	                /* I should not give up the focus */
@@ -1730,16 +1732,16 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            /* nothing to scroll */
 	            return false;
 	        }
-	
+
 	        /* in test mode we can say that we can scroll */
 	        if (test)
 	            return true;
-	
+
 	        /* save old and set new x selection */
 	        oldx = this->x;
 	        this->x-=count;
-	    
-	        /* recalculate scroll position */    
+
+	        /* recalculate scroll position */
 	        int xpx = this->x - this->px;
 	        if (xpx < 0) {
 	            this->px = this->x;
@@ -1750,11 +1752,11 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            this->px = this->x - this->h_items + 1;
 	            pxChanged = true;
 	        }
-	        
-	        /* get access to widgets */    
+
+	        /* get access to widgets */
 	        MMSWidget *olditem = children.at(oldx + this->y * cols);
 	        MMSWidget *item    = children.at(this->x + this->y * cols);
-	    
+
 	        if (!pxChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
@@ -1766,12 +1768,12 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
-	    
+
 	            if (refresh)
 	                recalculateChildren();
-	    
+
 	            selectItem(item, true, false);
-	    
+
 	            if (refresh) {
 	                this->refresh();
 	            }
@@ -1779,15 +1781,15 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
         }
         else {
         	// we have to leave the selected menu item asis!!!
-            if (this->px < count)
+            if (this->px < (int)count)
                 // nothing to scroll
                 return false;
-            	
+
 	        // in test mode we can say that we can scroll
 	        if (test)
 	            return true;
 
-	        // recalculate scroll position    
+	        // recalculate scroll position
             this->px--;
 
 	        if (refresh) {
@@ -1836,7 +1838,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
                 /* go back to end of the first row (round robin) */
                 this->x = (int)cols + (int)this->x;
 
-                if (this->x >= children.size()) {
+                if (this->x >= (int)children.size()) {
                     /* go back to begin of the list (round robin) */
                     this->x = children.size() - (cols - this->x);
                 }
@@ -1844,8 +1846,8 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 
             /* recalculate scroll position */
             this->px = this->x;
-            
-            /* get access to widgets */    
+
+            /* get access to widgets */
             MMSWidget *olditem = children.at(oldx);
             MMSWidget *item    = children.at(this->x);
 
@@ -1854,15 +1856,15 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             	olditem->setBlend(0, false);
             	item->setBlend(0, false);
             }
-            
+
             /* switch focus and recalculate children */
             selectItem(olditem, false, false);
-    
+
             if (refresh)
                 recalculateChildren();
-    
+
             selectItem(item, true, false);
-    
+
             if (refresh) {
                 this->refresh();
             }
@@ -1882,7 +1884,7 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 
 	if (this->children.size()==0)
 		return false;
-	
+
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
@@ -1891,14 +1893,14 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 	    	count = count % this->children.size();
             if (fixedpos >= this->v_items)
                 fixedpos = (this->v_items - 1) / 2;
-            
+
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
 	    		count = this->v_items-count;
 	    		while (count--)
 	    			scrollUpEx(1, refresh, test, leave_selection);
 	    		return true;
 	    	}
-	    	
+
     		while (count--)
     			scrollDownEx(1, refresh, test, leave_selection);
     		return true;
@@ -1914,7 +1916,7 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 			switchBackToParentMenu(MMSDIRECTION_DOWN);
 			return true;
 		}
-		
+
 	return ret;
 }
 
@@ -1922,7 +1924,7 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool l
 
 	if (this->children.size()==0)
 		return false;
-	
+
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
@@ -1931,14 +1933,14 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool l
 	    	count = count % this->children.size();
             if (fixedpos >= this->v_items)
                 fixedpos = (this->v_items - 1) / 2;
-            
+
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
 	    		count = this->v_items-count;
 	    		while (count--)
 	    			scrollDownEx(1, refresh, test, leave_selection);
 	    		return true;
 	    	}
-	    	
+
     		while (count--)
     			scrollUpEx(1, refresh, test, leave_selection);
     		return true;
@@ -1954,7 +1956,7 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool l
 			switchBackToParentMenu(MMSDIRECTION_UP);
 			return true;
 		}
-		
+
 	return ret;
 }
 
@@ -1971,7 +1973,7 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 	    	count = count % this->children.size();
             if (fixedpos >= this->h_items)
                 fixedpos = (this->h_items - 1) / 2;
-            
+
 	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
 	    		count = this->children.size()-count;
 	    		while (count--)
@@ -1994,7 +1996,7 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 			switchBackToParentMenu(MMSDIRECTION_RIGHT);
 			return true;
 		}
-		
+
 	return ret;
 }
 
@@ -2034,7 +2036,7 @@ bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool
 			switchBackToParentMenu(MMSDIRECTION_LEFT);
 			return true;
 		}
-		
+
 	return ret;
 }
 
@@ -2055,7 +2057,7 @@ bool MMSMenuWidget::scrollTo(int posx, int posy, bool refresh) {
 
 void MMSMenuWidget::setItemTemplate(MMSWidget *itemTemplate) {
 	bool b;
-	
+
 	if (!itemTemplate)
         throw new MMSWidgetError(0, "item template not set");
 
@@ -2194,49 +2196,49 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh) {
     unsigned int my = item / cols;
 
     /* scroll left-down */
-    if ((mx < this->x)&&(my > this->y)) {
+    if (((int)mx < this->x)&&((int)my > this->y)) {
         if (scrollLeft(this->x - mx, false))
        		scrollDown(my - this->y, refresh);
     }
     else
     /* scroll right-down */
-    if ((mx > this->x)&&(my > this->y)) {
+    if (((int)mx > this->x)&&((int)my > this->y)) {
         if (scrollRight(mx - this->x, false))
       		scrollDown(my - this->y, refresh);
     }
     else
     /* scroll left-up */
-    if ((mx < this->x)&&(my < this->y)) {
+    if (((int)mx < this->x)&&((int)my < this->y)) {
         if (scrollUp(this->y - my, false))
        		scrollLeft(this->x - mx, refresh);
     }
     else
     /* scroll right-up */
-    if ((mx > this->x)&&(my < this->y)) {
+    if (((int)mx > this->x)&&((int)my < this->y)) {
         if (scrollUp(this->y - my, false))
        		scrollRight(mx - this->x, refresh);
     }
     else
     /* scroll down */
-    if (my > this->y) {
+    if ((int)my > this->y) {
    		scrollDown(my - this->y, refresh);
     }
     else
     /* scroll up */
-    if (my < this->y) {
+    if ((int)my < this->y) {
    		scrollUp(this->y - my, refresh);
     }
     else
     /* scroll left */
-    if (mx < this->x) {
+    if ((int)mx < this->x) {
    		scrollLeft(this->x - mx, refresh);
     }
     else
     /* scroll right */
-    if (mx > this->x) {
+    if ((int)mx > this->x) {
    		scrollRight(mx - this->x, refresh);
     }
-    
+
     return true;
 }
 
@@ -2314,7 +2316,8 @@ bool MMSMenuWidget::setSubMenuName(unsigned int item, string &name) {
 }
 
 bool MMSMenuWidget::setBackItem(unsigned int item) {
-	if ((item!=-1)&&(item >= this->children.size())) return false;
+/*	if ((item!=-1)&&(item >= this->children.size())) return false;   -- item is unsigned (mattmax) */
+	if (item >= this->children.size()) return false;
 	this->back_item = item;
 	return true;
 }

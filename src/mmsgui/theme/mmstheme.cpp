@@ -29,7 +29,7 @@ MMSTheme *globalTheme = new MMSTheme();
 TAFF_ATTRDESC MMSGUI_MMSTHEME_ATTR_I[]			= MMSGUI_MMSTHEME_ATTR_INIT;
 TAFF_ATTRDESC MMSGUI_MMSDIALOG_ATTR_I[]			= MMSGUI_MMSDIALOG_ATTR_INIT;
 TAFF_ATTRDESC MMSGUI_BASE_ATTR_I[]				= MMSGUI_BASE_ATTR_INIT;
-TAFF_ATTRDESC MMSGUI_NONE_ATTR_I[]              = { NULL, TAFF_ATTRTYPE_NONE };
+TAFF_ATTRDESC MMSGUI_NONE_ATTR_I[]              = {{ NULL, TAFF_ATTRTYPE_NONE }};
 
 
 TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
@@ -225,7 +225,7 @@ void MMSTheme::addSimpleHSliderClass(MMSSIMPLESLIDERH_THEME *simpleHSliderClass,
     if(!p.second)
         throw new MMSThemeError(1, "duplicate class name: " + name);
 
-    simpleHSliderClasses.push_back(simpleHSliderClass);    
+    simpleHSliderClasses.push_back(simpleHSliderClass);
 }
 
 void MMSTheme::addSimpleVSliderClass(MMSSIMPLESLIDERV_THEME *simpleVSliderClass, const string name) {
@@ -234,7 +234,7 @@ void MMSTheme::addSimpleVSliderClass(MMSSIMPLESLIDERV_THEME *simpleVSliderClass,
     if(!p.second)
         throw new MMSThemeError(1, "duplicate class name: " + name);
 
-    simpleVSliderClasses.push_back(simpleVSliderClass);        
+    simpleVSliderClasses.push_back(simpleVSliderClass);
 }
 
 void MMSTheme::addSimpleHMenuClass(MMSSIMPLEHMENU_THEME *simpleHMenuClass, const string name) {
@@ -243,7 +243,7 @@ void MMSTheme::addSimpleHMenuClass(MMSSIMPLEHMENU_THEME *simpleHMenuClass, const
     if(!p.second)
         throw new MMSThemeError(1, "duplicate class name: " + name);
 
-    simpleHMenuClasses.push_back(simpleHMenuClass);            
+    simpleHMenuClasses.push_back(simpleHMenuClass);
 }
 
 void MMSTheme::addSimpleVMenuClass(MMSSIMPLEVMENU_THEME *simpleVMenuClass, const string name) {
@@ -252,7 +252,7 @@ void MMSTheme::addSimpleVMenuClass(MMSSIMPLEVMENU_THEME *simpleVMenuClass, const
     if(!p.second)
         throw new MMSThemeError(1, "duplicate class name: " + name);
 
-    simpleVMenuClasses.push_back(simpleVMenuClass);                
+    simpleVMenuClasses.push_back(simpleVMenuClass);
 }
 #endif
 
@@ -263,7 +263,7 @@ void MMSTheme::addTextboxClass(MMSTEXTBOX_THEME *textboxClass, const string name
     if(!p.second)
         throw new MMSThemeError(1, "duplicate class name: " + name);
 
-    textboxClasses.push_back(textboxClass);                    
+    textboxClasses.push_back(textboxClass);
 }
 #endif
 

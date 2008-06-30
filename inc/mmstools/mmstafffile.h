@@ -52,7 +52,7 @@ typedef enum {
 //! Describe a TAFF attribute
 typedef struct {
 	//! name of attribute
-	char 			*name;
+	const char		*name;
 	//! type of attribute
 	TAFF_ATTRTYPE 	type;
 } TAFF_ATTRDESC;
@@ -60,11 +60,11 @@ typedef struct {
 //! Describe a TAFF tag
 typedef struct {
 	//! name of tag
-	char 			*name;
+	const char		*name;
 	//! name of special type attribute
-	char 			*typeattr;
+	const char		*typeattr;
 	//! value of special type attribute
-	char 			*type;
+	const char		*type;
 	//! attributes
 	TAFF_ATTRDESC 	*attr;
 } TAFF_TAGTABLE;
@@ -93,7 +93,7 @@ typedef enum {
 #define MMSTAFF_ATTR_WITHOUT_ID		0xff
 
 //! Supported types of external files
-typedef enum { 
+typedef enum {
 	//! the external file is written in XML
 	MMSTAFF_EXTERNAL_TYPE_XML,
 	//! the external file is an image (currently we only support PNG images) */
@@ -109,7 +109,7 @@ or vice versa and PNG to TAFF is supported.
 The user of this class must specify a description of which tags and attributes
 are allowed. Further he specifies the type of an attribute. With this informations
 this class also checks the types and ranges of attributes during the conversion.
-For example the MMSGUI works completely with TAFF.  
+For example the MMSGUI works completely with TAFF.
 \author Jens Schneider
 */
 class MMSTaffFile {
@@ -137,25 +137,25 @@ class MMSTaffFile {
 
 		//! ignore blank values during the conversion from external file
 		bool    ignore_blank_values;
-		
+
 		//! print trace messages?
 		bool 	trace;
-		
+
 		//!	print warnings?
 		bool    print_warnings;
-		
+
 		//! is the TAFF buffer loaded?
 		bool	loaded;
-		
+
 		//! has the TAFF file the correct version?
 		bool	correct_version;
 
 		//! id of the current tag
 		int		current_tag;
-		
+
 		//! buffer postion of the current tag
 		int		current_tag_pos;
-		
+
 		//! Internal method: Read a PNG Image.
 		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size, bool premultiplied);
 
@@ -185,14 +185,14 @@ class MMSTaffFile {
         \param ignore_blank_values	ignore blank values during the conversion from external file
         \param trace				print trace messages?
         \param print_warnings		print warnings?
-        \param rewrite_taff			(re-)convert from external file before loading TAFF 
+        \param rewrite_taff			(re-)convert from external file before loading TAFF
         */
 		MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
         			string external_filename = "", MMSTAFF_EXTERNAL_TYPE external_type = MMSTAFF_EXTERNAL_TYPE_XML,
         			bool ignore_blank_values = false, bool trace = false, bool print_warnings = false, bool rewrite_taff = false);
 
         //! Destructor of class MMSTaffFile.
-		~MMSTaffFile(); 
+		~MMSTaffFile();
 
 		//! Convert external file to TAFF.
         bool convertExternal2TAFF();
@@ -227,7 +227,7 @@ class MMSTaffFile {
         \param print_warnings	print warnings?
         */
         void setPrintWarnings(bool print_warnings);
-        
+
         //! Get the first tag id.
         /*!
         \return id of the tag or -1 if an error has occurred
@@ -236,7 +236,7 @@ class MMSTaffFile {
 
         //! Get the next tag id.
         /*!
-        \param eof	if eof set to true after calling this method, the end of file is reached 
+        \param eof	if eof set to true after calling this method, the end of file is reached
         \return id of the tag or -1 in case of close tag or eof
         */
         int  getNextTag(bool &eof);
@@ -257,7 +257,7 @@ class MMSTaffFile {
         /*!
         \param value_str	return pointer to null terminated value string or NULL if value is returned by value_int parameter
         \param value_int	a few types of attributes will be directly stored in binary format and will be returned by this parameter
-        \param name			optional, with this parameter you can get the name of the attribute   
+        \param name			optional, with this parameter you can get the name of the attribute
         \return id of the attribute or -1 in case of close tag has reached
         */
         int  getFirstAttribute(char **value_str, int *value_int, char **name = NULL);
@@ -266,12 +266,12 @@ class MMSTaffFile {
         /*!
         \param value_str	return pointer to null terminated value string or NULL if value is returned by value_int parameter
         \param value_int	a few types of attributes will be directly stored in binary format and will be returned by this parameter
-        \param name			optional, with this parameter you can get the name of the attribute   
+        \param name			optional, with this parameter you can get the name of the attribute
         \return id of the attribute or -1 in case of close tag has reached
         */
         int  getNextAttribute(char **value_str, int *value_int, char **name = NULL);
 
-        //! Searching for an attribute id within the current tag. 
+        //! Searching for an attribute id within the current tag.
         /*!
         \param id           attribute id to search for
         \param value_str	return pointer to null terminated value string or NULL if value is returned by value_int parameter
@@ -280,7 +280,7 @@ class MMSTaffFile {
         */
         bool getAttribute(int id, char **value_str, int *value_int);
 
-        //! Searching for an attribute id within the current tag. 
+        //! Searching for an attribute id within the current tag.
         /*!
         \param id  	attribute id to search for
         \return pointer to null terminated value string or NULL
@@ -297,17 +297,17 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		{ "pitch", TAFF_ATTRTYPE_INT }, \
 		{ "size", TAFF_ATTRTYPE_INT }, \
 		{ "data", TAFF_ATTRTYPE_BINDATA }
-	
+
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data
-	
+
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT { \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC, \
-		NULL \
+		{NULL, TAFF_ATTRTYPE_NONE} \
 	}
 
 	typedef enum {
