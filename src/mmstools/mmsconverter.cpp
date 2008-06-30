@@ -29,17 +29,18 @@ map<string, iconv_t> MMSConverter::trans;
 MMSConverter::MMSConverter(string codepage) {
 	map<string, iconv_t>::iterator it;
 	iconv_t newtrans;
-	
+
 	it = trans.find(codepage);
 	if(it==trans.end()) {
+		// TODO: memory is never freed by calling iconv_close()
 		newtrans = iconv_open("UTF-8",codepage.c_str());
 		if(newtrans !=(iconv_t)(-1)) {
 			trans.insert(make_pair(codepage, newtrans));
 		}else {
 			throw new MMSConverterError(0,"cannot create translation descriptor");
-		}	
-	} 
-	
+		}
+	}
+
 }
 
 MMSConverter::~MMSConverter() {
@@ -53,7 +54,7 @@ string MMSConverter::convert(string frompage, string buffer) {
 	char line[32000];
 	char retline[32000];
 	size_t sizein, sizeout, sizeret;
-	mutex.lock();	
+	mutex.lock();
 	it=trans.find(frompage);
 	if(it!=trans.end()) {
 		sizeout=32000;
@@ -63,19 +64,19 @@ string MMSConverter::convert(string frompage, string buffer) {
 		sprintf(line,"%s",buffer.c_str());
 		sizein = strlen(line);
 		lineptr=line;
-		//logger.writeLog("before sizein(" + iToStr(sizein) + ") sizeout(" + iToStr(sizeout) + ")");  
+		//logger.writeLog("before sizein(" + iToStr(sizein) + ") sizeout(" + iToStr(sizeout) + ")");
 		//logger.writeLog("string before: |BEGIN|" + string(line) + "|END|");
 		sizeret=iconv(it->second,&lineptr, &sizein,&retlineptr,&sizeout);
-		//logger.writeLog("before sizein(" + iToStr(sizein) + ") sizeout(" + iToStr(sizeout) + ") sizeret(" + iToStr(sizeret) + ") " + strerror(errno));  
+		//logger.writeLog("before sizein(" + iToStr(sizein) + ") sizeout(" + iToStr(sizeout) + ") sizeret(" + iToStr(sizeret) + ") " + strerror(errno));
 		//logger.writeLog("string after: |BEGIN|" + string(retline) + "|END|");
-		mutex.unlock();	
+		mutex.unlock();
 		return retline;
 	} else {
-			mutex.unlock();	
+			mutex.unlock();
 			throw new MMSConverterError(0,"have no translation descriptor");
 	}
-	mutex.unlock();	
+	mutex.unlock();
 	return "";
-}	
+}
 
 MMSMutex MMSConverter::mutex;
