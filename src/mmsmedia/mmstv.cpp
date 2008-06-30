@@ -43,9 +43,9 @@ MMS_CREATEERROR(MMSTVError);
 
 /**
  * Callback, that will be called if xine sends event messages.
- * 
+ *
  * It also emits signals that can be handled by sigc++ connectors.
- * 
+ *
  * @param   userData    [in/out]    pointer to the MMSTV object
  * @param   event       [in]        pointer to event structure
  */
@@ -72,11 +72,11 @@ static void queue_cb(void *userData, const xine_event_t *event) {
  * Initializes everything that is needed by MMSTV.
  *
  * The timeout attribute is set to 10 seconds.
- * 
+ *
  * @param   window      [in]    main window for dvd playing
  * @param   _channel    [in]    channel to open
  * @param   verbose     [in]    if true the xine engine writes debug messages to stdout
- *  
+ *
  * @see MMSAV::MMSAV()
  * @see MMSAV::initialize()
  */
@@ -95,7 +95,7 @@ MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose) :
 
 /**
  * Destructor of MMSTV class.
- */ 
+ */
 MMSTV::~MMSTV() {
 }
 
@@ -103,7 +103,7 @@ MMSTV::~MMSTV() {
  * Calls MMSAV::open() with the queue_cb callback.
  */
 void MMSTV::open() {
-    MMSAV::open(queue_cb);
+    MMSAV::open(queue_cb, this);
 }
 
 /**
@@ -111,7 +111,7 @@ void MMSTV::open() {
  *
  * If usingInputDVBMorphine is set, it tries to use our own
  * input plugin for playback.
- * 
+ *
  * @param   channel [in]    channel name to be played
  */
 void MMSTV::startPlaying(const string channel) {
@@ -133,13 +133,13 @@ void MMSTV::startPlaying(const string channel) {
     }
     else
         MMSAV::startPlaying("dvb://" + channel, false);
-    
+
     this->channel = channel;
 }
 
 /**
  * Continues playing the stream.
- * 
+ *
  * If recording is on, it will be continued, too.
  */
 void MMSTV::play() {
@@ -150,7 +150,7 @@ void MMSTV::play() {
 
 /**
  * Pauses the stream.
- * 
+ *
  * If recording is on, it will be paused, too.
  */
 void MMSTV::pause() {
@@ -160,9 +160,9 @@ void MMSTV::pause() {
 
 /**
  * Switch to previous channel.
- * 
+ *
  * @note Using ~/.xine/channels.conf and not the Morphine database.
- * 
+ *
  * @see MMSTV::next()
  */
 void MMSTV::previous() {
@@ -171,7 +171,7 @@ void MMSTV::previous() {
 
 /**
  * Switch to next channel.
- * 
+ *
  * @note Using ~/.xine/channels.conf and not the Morphine database.
  *
  * @see MMSTV::previous()
@@ -221,7 +221,7 @@ void MMSTV::recordPause() {
 
 /**
  * Retrieve the current channel name.
- * 
+ *
  * @return  current channel name
  */
 string MMSTV::getCurrentChannelName(void) {
@@ -230,19 +230,19 @@ string MMSTV::getCurrentChannelName(void) {
 
 /**
  * Sets the maximum time for tuning to a channel.
- * 
+ *
  * @param	timeout	[in]	timeout in seconds
- * 
+ *
  * @note A value of 0 means infinite. Otherwise a minimum of 5
  * seconds is required.
- * 
+ *
  * @see MMSTV::getTuningTimeout()
  */
 void MMSTV::setTuningTimeout(const unsigned int timeout) {
     xine_cfg_entry_t  conf;
 
     if(!this->xine) return;
-    this->timeout = timeout;	
+    this->timeout = timeout;
 
     if(xine_config_lookup_entry(this->xine, "media.dvb.tuning_timeout", &conf)) {
         conf.num_value = timeout;
@@ -253,14 +253,14 @@ void MMSTV::setTuningTimeout(const unsigned int timeout) {
     	                         "Number of seconds until tuning times out.",
     	                         "Leave at 0 means try forever. "
     	                         "Greater than 0 means wait that many seconds to get a lock. Minimum is 5 seconds.",
-    	                         XINE_CONFIG_SECURITY, NULL, NULL);	
+    	                         XINE_CONFIG_SECURITY, NULL, NULL);
 }
 
 /**
  * Returns the setting for the tuning timeout.
- * 
+ *
  * @return timeout in seconds
- * 
+ *
  * @see MMSTV::setTuningTimeout()
  */
 const unsigned int MMSTV::getTuningTimeout() {
@@ -269,10 +269,10 @@ const unsigned int MMSTV::getTuningTimeout() {
 
 /**
  * Sets the directory where tv recordings will be stored.
- * 
+ *
  * It actually changes the value of the xine config option
  * "media.capture.save_dir".
- * 
+ *
  * @param   dir [in]    directory to save recordings into
  */
 void MMSTV::setRecordDir(const string dir) {
@@ -286,25 +286,25 @@ void MMSTV::setRecordDir(const string dir) {
     }
     else
 #ifdef XINE_CONFIG_STRING_IS_DIRECTORY_NAME
-        xine_config_register_filename(this->xine, 
-                "media.capture.save_dir", 
-                dir.c_str(), 
-                XINE_CONFIG_STRING_IS_DIRECTORY_NAME, 
+        xine_config_register_filename(this->xine,
+                "media.capture.save_dir",
+                dir.c_str(),
+                XINE_CONFIG_STRING_IS_DIRECTORY_NAME,
 #else
-        xine_config_register_string(this->xine, 
-                "media.capture.save_dir", 
-                dir.c_str(), 
+        xine_config_register_string(this->xine,
+                "media.capture.save_dir",
+                dir.c_str(),
 #endif
-                "directory for saving streams", 
-                NULL, 
-                XINE_CONFIG_SECURITY, 
-                NULL , 
+                "directory for saving streams",
+                NULL,
+                XINE_CONFIG_SECURITY,
+                NULL ,
                 NULL);
 }
 
 /**
  * Retrieves the directory where tv recordings will be stored.
- * 
+ *
  * @return  current recordings dir
  */
 const string MMSTV::getRecordDir() {
@@ -319,7 +319,7 @@ const string MMSTV::getRecordDir() {
 /**
  * Retrieves the filename of the current recording if
  * recording is on.
- * 
+ *
  * @return  current recording filename or "" if nothing is recorded
  */
 const string MMSTV::getRecordFilename() {
