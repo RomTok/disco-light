@@ -9,6 +9,7 @@ ifndef PROJECTNAME
 endif
 
 all clean update:
+	@$(shell [ -d ./lib ] || mkdir lib)
 	@+make -C  ./src/mmsinfo   $@
 	@+make -C  ./src/mmstools  $@
 	@+make -C  ./src/mmsconfig $@
