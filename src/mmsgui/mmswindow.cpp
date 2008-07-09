@@ -1599,11 +1599,8 @@ bool MMSWindow::hide(bool goback, bool wait) {
     this->action->start();
 
     if (wait) {
-        int c = 0;
-        while (!this->action->isRunning() && c < 20) { msleep(100); c++; } 
-        c = 0;
-        while (this->action->isRunning() && c < 20) { msleep(100); c++; }
-        msleep(100);
+    	int c = 0;
+        while ((this->action->getAction()==MMSWACTION_HIDE) && c < 20) { msleep(100); c++; } 
     } 
 
     /* call onHide callback */

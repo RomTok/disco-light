@@ -46,6 +46,7 @@ class MMSWindowAction  : public MMSThread {
 		virtual ~MMSWindowAction();
 		void threadMain();
 		void setAction(MMSWACTION action);
+		MMSWACTION getAction();
 		void cancelCleanup();
 		void onCancelBroadcast(int windowtype);
 /*		void onShow();

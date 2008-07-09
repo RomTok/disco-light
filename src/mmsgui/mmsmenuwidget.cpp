@@ -1121,8 +1121,9 @@ void MMSMenuWidget::setSliders() {
     }
 }
 
-void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh) {
+void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool refreshall) {
     item->setSelected(set, refresh);
+    if (refreshall) this->refresh();
     if (set)
         this->onSelectItem->emit(item);
 }
@@ -1224,10 +1225,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	        if (!pyChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
-				selectItem(item, true, false);
-				if (refresh) {
-				    this->refresh();
-				}
+				selectItem(item, true, false, refresh);
 	        }
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
@@ -1236,11 +1234,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            if (refresh)
 	                recalculateChildren();
 
-	            selectItem(item, true, false);
-
-	            if (refresh) {
-	                this->refresh();
-	            }
+	            selectItem(item, true, false, refresh);
 	        }
         }
         else {
@@ -1299,11 +1293,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
             if (refresh)
                 recalculateChildren();
 
-            selectItem(item, true, false);
-
-            if (refresh) {
-                this->refresh();
-            }
+            selectItem(item, true, false, refresh);
 
             /* set the sliders */
             setSliders();
@@ -1383,10 +1373,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	        if (!pyChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
-				selectItem(item, true, false);
-				if (refresh) {
-				    this->refresh();
-				}
+				selectItem(item, true, false, refresh);
 	        }
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
@@ -1395,11 +1382,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            if (refresh)
 	                recalculateChildren();
 
-	            selectItem(item, true, false);
-
-	            if (refresh) {
-	                this->refresh();
-	            }
+	            selectItem(item, true, false, refresh);
 	        }
         }
         else {
@@ -1458,11 +1441,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
             if (refresh)
                 recalculateChildren();
 
-            selectItem(item, true, false);
-
-            if (refresh) {
-                this->refresh();
-            }
+            selectItem(item, true, false, refresh);
 
             /* set the sliders */
             setSliders();
@@ -1578,10 +1557,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        if (!pxChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
-				selectItem(item, true, false);
-				if (refresh) {
-				    this->refresh();
-				}
+				selectItem(item, true, false, refresh);
 	        }
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
@@ -1590,11 +1566,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            if (refresh)
 	                recalculateChildren();
 
-	            selectItem(item, true, false);
-
-	            if (refresh) {
-	                this->refresh();
-	            }
+	            selectItem(item, true, false, refresh);
 	        }
         }
         else {
@@ -1681,11 +1653,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             if (refresh)
                 recalculateChildren();
 
-            selectItem(item, true, false);
-
-            if (refresh) {
-                this->refresh();
-            }
+            selectItem(item, true, false, refresh);
 
             /* set the sliders */
             setSliders();
@@ -1761,10 +1729,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	        if (!pxChanged) {
 	            /* not scrolled, switch focus between visible childs */
 				selectItem(olditem, false, false);
-				selectItem(item, true, false);
-				if (refresh) {
-				    this->refresh();
-				}
+				selectItem(item, true, false, refresh);
 	        }
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
@@ -1773,11 +1738,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            if (refresh)
 	                recalculateChildren();
 
-	            selectItem(item, true, false);
-
-	            if (refresh) {
-	                this->refresh();
-	            }
+	            selectItem(item, true, false, refresh);
 	        }
         }
         else {
@@ -1864,11 +1825,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             if (refresh)
                 recalculateChildren();
 
-            selectItem(item, true, false);
-
-            if (refresh) {
-                this->refresh();
-            }
+            selectItem(item, true, false, refresh);
 
             /* set the sliders */
             setSliders();

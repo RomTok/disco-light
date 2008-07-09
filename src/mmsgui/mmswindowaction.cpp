@@ -55,7 +55,8 @@ void MMSWindowAction::threadMain() {
     			break;		
     	}
     	this->stopaction = false;
-
+    	this->action = MMSWACTION_NONE;
+    	
     } catch(MMSError *error) {
     	DEBUGMSG("MMSGUI", "Error: %s", error->getMessage().c_str());
     }
@@ -90,6 +91,10 @@ void MMSWindowAction::onCancelBroadcast(int type) {
 
 void MMSWindowAction::setAction(MMSWACTION action) {
 	this->action=action;
+}
+
+MMSWACTION MMSWindowAction::getAction() {
+	return this->action;
 }
 
 sigc::signal<void,int> MMSWindowAction::cancelBroadcast;

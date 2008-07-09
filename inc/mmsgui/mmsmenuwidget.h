@@ -112,7 +112,7 @@ class MMSMenuWidget : public MMSWidget {
         void switchArrowWidgets();
         void setSliders();
 
-        void selectItem(MMSWidget *item, bool set, bool refresh = true);
+        void selectItem(MMSWidget *item, bool set, bool refresh = true, bool refreshall = false);
 
         bool scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection);
         bool scrollUpEx(unsigned int count, bool refresh, bool test, bool leave_selection);
