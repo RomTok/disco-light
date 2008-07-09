@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fnmatch.h>
+#include <string.h>
 
 
 MMSFileSearch::MMSFileSearch(string directory, string mask, bool recursive, bool caseinsensitive, bool getdirs) {

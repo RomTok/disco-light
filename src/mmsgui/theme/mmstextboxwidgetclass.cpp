@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmstextboxwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[] = MMSGUI_TEXTBOXWIDGET_ATTR_INIT;

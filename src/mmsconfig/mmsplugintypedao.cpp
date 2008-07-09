@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsconfig/mmsplugintypedao.h"
+#include <stdlib.h>
 
 MMSPluginTypeDAO::MMSPluginTypeDAO(IMMSDB *myConnection) {
     MMSPluginTypeDAO::setMMSDBConnection(myConnection);

@@ -87,7 +87,7 @@ typedef enum {
 	MMSTAFF_TAGTABLE_TYPE_TAG,
 	//! internally identifies a attribute
 	MMSTAFF_TAGTABLE_TYPE_ATTR
-};
+} MMSTAFF_TAGTABLE_TYPE;
 
 //! internally identifies attributes without id (attribute names will be stored)
 #define MMSTAFF_ATTR_WITHOUT_ID		0xff
@@ -319,7 +319,7 @@ extern TAFF_DESCRIPTION mmstaff_image_taff_description;
 
 typedef enum {
 	MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE
-};
+} MMSTAFF_IMAGE_TAGTABLE_TAG;
 
 
 #endif /*MMSTAFFFILE_H_*/

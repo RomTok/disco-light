@@ -22,6 +22,7 @@
 
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmstools/mmstools.h"
+#include <string.h>
 
 /* stores the last error text */
 string MMSFB_LastErrorString;

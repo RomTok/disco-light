@@ -22,6 +22,7 @@
 
 #include "mmsconfig/mmsplugincategorydao.h"
 #include <iostream>
+#include <stdlib.h>
 
 MMSPluginCategoryDAO::MMSPluginCategoryDAO(IMMSDB *myConnection) {
     MMSPluginCategoryDAO::setMMSDBConnection(myConnection);

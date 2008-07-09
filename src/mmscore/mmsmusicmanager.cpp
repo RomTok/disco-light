@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "mmscore/mmsmusicmanager.h"
+#include <stdlib.h>
 
 MMSMusicManager::MMSMusicManager() :
     onNextSong(NULL),

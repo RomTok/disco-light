@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmswindowclass.h"
-
+#include <string.h>
 
 MMSWindowClass::MMSWindowClass() {
     initAlignment();

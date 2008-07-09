@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmsinputwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_INPUTWIDGET_ATTR_I[] = MMSGUI_INPUTWIDGET_ATTR_INIT;

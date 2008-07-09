@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/mmsguitools.h"
+#include <stdlib.h>
 
 bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis) {
     std::string::size_type pos;

@@ -22,6 +22,7 @@
 
 #include "mmstools/mmstools.h"
 #include "mmsconfig/mmsconfigdata.h"
+#include <string.h>
 
 MMSConfigDataDB::MMSConfigDataDB (const string database) :
     dbms(DBMS_SQLITE),

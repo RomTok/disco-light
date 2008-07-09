@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmsprogressbarwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_PROGRESSBARWIDGET_ATTR_I[] = MMSGUI_PROGRESSBARWIDGET_ATTR_INIT;

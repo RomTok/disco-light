@@ -22,7 +22,7 @@
 
 #include "mmsgui/mmsmenuwidget.h"
 #include "mmsgui/mmssliderwidget.h"
-
+#include <string.h>
 
 
 MMSMenuWidget::MMSMenuWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget::MMSWidget() {

@@ -22,6 +22,8 @@
 
 #include "mmsgui/mmsfbmanager.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
+#include <string.h>
+#include <stdlib.h>
 
 MMS_CREATEERROR(MMSFBManagerError);
 

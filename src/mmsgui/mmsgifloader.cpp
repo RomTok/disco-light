@@ -22,6 +22,8 @@
 
 #include "mmsgui/mmsgifloader.h"
 #include "mmsgui/fb/mmsfbsurface.h"
+#include <string.h>
+#include <stdlib.h>
 
 //#define GIFTRACE
 

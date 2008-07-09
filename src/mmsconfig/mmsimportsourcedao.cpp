@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsconfig/mmsimportsourcedao.h"
+#include <stdlib.h>
 
 MMSImportSourceDAO::MMSImportSourceDAO(IMMSDB *connection) {
     setMMSDBConnection(connection);

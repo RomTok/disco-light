@@ -24,9 +24,10 @@
 #include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsconfigdata.h"
 #include <wordexp.h>
-#include <strings.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <stdlib.h>
 
 /* Once-only initialisation of the key */
 static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;

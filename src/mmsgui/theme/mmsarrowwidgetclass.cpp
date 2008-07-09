@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmsarrowwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_ARROWWIDGET_ATTR_I[] = MMSGUI_ARROWWIDGET_ATTR_INIT;

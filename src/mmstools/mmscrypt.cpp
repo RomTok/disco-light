@@ -22,6 +22,7 @@
 
 #ifndef _NO_MMSCRYPT
 #include <errno.h>
+#include <string.h>
 #include <openssl/rand.h>
 #include <openssl/aes.h>
 

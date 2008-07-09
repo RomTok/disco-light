@@ -23,6 +23,7 @@
 #include "mmstools/mmstcpclient.h"
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 MMSTCPClient::MMSTCPClient(string host, unsigned int port) {
     this->host = host;

@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmslabelwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;

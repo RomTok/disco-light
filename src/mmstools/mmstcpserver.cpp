@@ -24,6 +24,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
+#include <string.h>
 
 MMSTCPServer::MMSTCPServer(vector<MMSServerInterface *> interfaces,
 					 	   string host, unsigned int port) : MMSThread("MMSTCPServer") {

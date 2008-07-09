@@ -22,6 +22,7 @@
 
 #include "mmscore/mmseventsignupmanager.h"
 #include "mmstools/tools.h"
+#include <string.h>
 
 MMSEventSignupManager::MMSEventSignupManager() {
 }

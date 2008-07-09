@@ -22,6 +22,7 @@
  ***************************************************************************/
 
 #include <fstream>
+#include <stdlib.h>
 #include "mmsmedia/mmsdvd.h"
 
 MMS_CREATEERROR(MMSDVDError);

@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmsimagewidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_IMAGEWIDGET_ATTR_I[] = MMSGUI_IMAGEWIDGET_ATTR_INIT;

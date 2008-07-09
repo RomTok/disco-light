@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmssliderwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_SLIDERWIDGET_ATTR_I[] = MMSGUI_SLIDERWIDGET_ATTR_INIT;

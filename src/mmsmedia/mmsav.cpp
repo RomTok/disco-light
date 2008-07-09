@@ -22,6 +22,8 @@
  ***************************************************************************/
 #include "mmsmedia/mmsav.h"
 #include <directfb_version.h>
+#include <string.h>
+#include <stdlib.h>
 
 MMS_CREATEERROR(MMSAVError);
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}

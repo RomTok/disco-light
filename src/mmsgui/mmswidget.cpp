@@ -24,6 +24,7 @@
 #include "mmsgui/mmsborder.h"
 #include "mmsgui/mmsmenuwidget.h"
 #include "mmsgui/mmssliderwidget.h"
+#include <string.h>
 
 MMSWidget::MMSWidget() {
     this->baseWidgetClass = NULL;

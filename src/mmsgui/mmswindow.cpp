@@ -24,7 +24,8 @@
 #include "mmstools/tools.h"
 #include "mmsgui/mmsborder.h"
 #include <math.h>
-
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 
 D_DEBUG_DOMAIN( MMS_Window, "MMS/Window", "MMS Window" );

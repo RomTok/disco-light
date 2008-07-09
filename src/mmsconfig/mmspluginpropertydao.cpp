@@ -23,6 +23,7 @@
 #include "mmsconfig/mmspluginpropertydao.h"
 #include "mmstools/tools.h"
 #include "mmsconfig/mmsconfigqueries.h"
+#include <stdlib.h>
 
 MMSPluginPropertyDAO::MMSPluginPropertyDAO(IMMSDB *myConnection) {
     MMSPluginPropertyDAO::setMMSDBConnection(myConnection);

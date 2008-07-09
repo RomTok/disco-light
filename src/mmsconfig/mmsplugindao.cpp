@@ -24,6 +24,7 @@
 #include "mmstools/mmstools.h"
 #include "mmsconfig/mmsconfigqueries.h"
 #include <iostream>
+#include <stdlib.h>
 
 MMSPluginDAO::MMSPluginDAO(IMMSDB *myConnection) {
     this->setMMSDBConnection(myConnection);

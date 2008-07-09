@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/theme/mmsmenuwidgetclass.h"
+#include <string.h>
 
 //store attribute descriptions here 
 TAFF_ATTRDESC MMSGUI_MENUWIDGET_ATTR_I[] = MMSGUI_MENUWIDGET_ATTR_INIT;

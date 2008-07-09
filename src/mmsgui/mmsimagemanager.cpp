@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 #include "mmsgui/mmsimagemanager.h"
 #include "mmsgui/mmsgifloader.h"
 //#include <png.h>

@@ -24,7 +24,7 @@
 #include "mmsgui/mmswindows.h"
 #include "mmsgui/mmswidgets.h"
 #include "mmsgui/theme/mmsthememanager.h"
-
+#include <string.h>
 
 MMSDialogManager::MMSDialogManager() {
 	this->rootWindow = NULL;

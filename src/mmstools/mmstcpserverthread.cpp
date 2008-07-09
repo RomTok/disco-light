@@ -23,6 +23,7 @@
 #include "mmstools/mmstcpserverthread.h"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <string.h>
 
 MMSTCPServerThread::MMSTCPServerThread(MMSServerInterface *interface, int s, string identity) : MMSThread(identity) {
 	this->interface = interface;
