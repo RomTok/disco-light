@@ -1006,6 +1006,7 @@ void MMSMenuWidget::emitOnReturnForParents(MMSMenuWidget *orw) {
 }
 
 bool MMSMenuWidget::callOnReturn() {
+	
 	if (!switchToSubMenu()) {
 		// call onReturn for all parents
 		if (this->parent_menu)
@@ -1888,22 +1889,24 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
-	    	/* this is a vertical menu and we have to check which is the shortest way - up or down scrolling */
-	    	/* it's important to know because of smooth scrolling */
-	    	count = count % this->children.size();
-            if (fixedpos >= this->v_items)
-                fixedpos = (this->v_items - 1) / 2;
-
-	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
-	    		count = this->v_items-count;
+			if (getCols() == 1) {
+		    	/* this is a vertical menu and we have to check which is the shortest way - up or down scrolling */
+		    	/* it's important to know because of smooth scrolling */
+		    	count = count % this->children.size();
+	            if (fixedpos >= this->v_items)
+	                fixedpos = (this->v_items - 1) / 2;
+	
+		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
+		    		count = this->v_items-count;
+		    		while (count--)
+		    			scrollUpEx(1, refresh, test, leave_selection);
+		    		return true;
+		    	}
+	
 	    		while (count--)
-	    			scrollUpEx(1, refresh, test, leave_selection);
+	    			scrollDownEx(1, refresh, test, leave_selection);
 	    		return true;
-	    	}
-
-    		while (count--)
-    			scrollDownEx(1, refresh, test, leave_selection);
-    		return true;
+			}
 	    }
 	}
 
@@ -1928,22 +1931,24 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool l
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
-	    	/* this is a vertical menu and we have to check which is the shortest way - up or down scrolling */
-	    	/* it's important to know because of smooth scrolling */
-	    	count = count % this->children.size();
-            if (fixedpos >= this->v_items)
-                fixedpos = (this->v_items - 1) / 2;
-
-	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
-	    		count = this->v_items-count;
+			if (getCols() == 1) {
+		    	/* this is a vertical menu and we have to check which is the shortest way - up or down scrolling */
+		    	/* it's important to know because of smooth scrolling */
+		    	count = count % this->children.size();
+	            if (fixedpos >= this->v_items)
+	                fixedpos = (this->v_items - 1) / 2;
+	
+		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
+		    		count = this->v_items-count;
+		    		while (count--)
+		    			scrollDownEx(1, refresh, test, leave_selection);
+		    		return true;
+		    	}
+	
 	    		while (count--)
-	    			scrollDownEx(1, refresh, test, leave_selection);
+	    			scrollUpEx(1, refresh, test, leave_selection);
 	    		return true;
-	    	}
-
-    		while (count--)
-    			scrollUpEx(1, refresh, test, leave_selection);
-    		return true;
+			}
 	    }
 	}
 
@@ -1968,22 +1973,24 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
-	    	/* this is a horizontal menu and we have to check which is the shortest way - left or right scrolling */
-	    	/* it's important to know because of smooth scrolling */
-	    	count = count % this->children.size();
-            if (fixedpos >= this->h_items)
-                fixedpos = (this->h_items - 1) / 2;
-
-	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
-	    		count = this->children.size()-count;
+			if (getCols() != 1) {
+		    	/* this is a horizontal menu and we have to check which is the shortest way - left or right scrolling */
+		    	/* it's important to know because of smooth scrolling */
+		    	count = count % this->children.size();
+	            if (fixedpos >= this->h_items)
+	                fixedpos = (this->h_items - 1) / 2;
+	
+		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
+		    		count = this->children.size()-count;
+		    		while (count--)
+		    			scrollLeftEx(1, refresh, test, leave_selection);
+		    		return true;
+		    	}
+	
 	    		while (count--)
-	    			scrollLeftEx(1, refresh, test, leave_selection);
+	    			scrollRightEx(1, refresh, test, leave_selection);
 	    		return true;
-	    	}
-
-    		while (count--)
-    			scrollRightEx(1, refresh, test, leave_selection);
-    		return true;
+			}
 	    }
 	}
 
@@ -2008,22 +2015,24 @@ bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
-	    	/* this is a horizontal menu and we have to check which is the shortest way - left or right scrolling */
-	    	/* it's important to know because of smooth scrolling */
-	    	count = count % this->children.size();
-            if (fixedpos >= this->h_items)
-                fixedpos = (this->h_items - 1) / 2;
-
-	    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
-	    		count = this->children.size()-count;
+			if (getCols() != 1) {
+		    	/* this is a horizontal menu and we have to check which is the shortest way - left or right scrolling */
+		    	/* it's important to know because of smooth scrolling */
+		    	count = count % this->children.size();
+	            if (fixedpos >= this->h_items)
+	                fixedpos = (this->h_items - 1) / 2;
+	
+		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
+		    		count = this->children.size()-count;
+		    		while (count--)
+		    			scrollRightEx(1, refresh, test, leave_selection);
+		    		return true;
+				}
+	
 	    		while (count--)
-	    			scrollRightEx(1, refresh, test, leave_selection);
+	    			scrollLeftEx(1, refresh, test, leave_selection);
 	    		return true;
 			}
-
-    		while (count--)
-    			scrollLeftEx(1, refresh, test, leave_selection);
-    		return true;
 	    }
 	}
 
