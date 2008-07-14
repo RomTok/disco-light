@@ -1301,7 +1301,7 @@ void MMSWindow::drawMyBorder() {
 	if (!getBorderThickness(borderThickness))
 		borderThickness = 0;
 	bool borderRCorners;
-	if (getBorderRCorners(borderRCorners))
+	if (!getBorderRCorners(borderRCorners))
 		borderRCorners = false;
 	DFBColor c;
 
