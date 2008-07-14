@@ -352,24 +352,27 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
         MMSFBSurface *suf2= NULL;
 
         if (isActivated()) {
-            if (!isPressed()) {
-	            if (isSelected()) {
-	                suf = (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
-	                suf2= (this->image)?this->image_suf[image_curr_index].surface:NULL;
-	            }
-	            else {
-	                suf = (this->image)?this->image_suf[image_curr_index].surface:NULL;
-	                suf2= (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
-	            }
+        	
+            if (isSelected()) {
+                suf = (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
+                suf2= (this->image)?this->image_suf[image_curr_index].surface:NULL;
             }
             else {
+                suf = (this->image)?this->image_suf[image_curr_index].surface:NULL;
+                suf2= (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
+            }
+	        if (isPressed()) {
                 if (isSelected()) {
-                    suf = (this->selimage_p)?this->selimage_p_suf[selimage_p_curr_index].surface:NULL;
-                    suf2= (this->image_p)?this->image_p_suf[image_p_curr_index].surface:NULL;
+                	if (this->selimage_p)
+                		suf = this->selimage_p_suf[selimage_p_curr_index].surface;
+                	if (this->image_p)
+                		suf2= this->image_p_suf[image_p_curr_index].surface;
                 }
                 else {
-                    suf = (this->image_p)?this->image_p_suf[image_p_curr_index].surface:NULL;
-                    suf2= (this->selimage_p)?this->selimage_p_suf[selimage_p_curr_index].surface:NULL;
+                	if (this->image_p)
+                		suf = this->image_p_suf[image_p_curr_index].surface;
+                	if (this->selimage_p)
+                		suf2= this->selimage_p_suf[selimage_p_curr_index].surface;
                 }
             }
         }

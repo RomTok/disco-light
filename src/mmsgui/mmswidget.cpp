@@ -1058,24 +1058,27 @@ bool MMSWidget::draw(bool *backgroundFilled) {
 
         if (this->drawable) {
             if (isActivated()) {
-            	if (!isPressed()) {
-	                if (isSelected()) {
-	                    getSelBgColor(col);
-	                    suf = this->selbgimage;
-	                }
-	                else {
-	                    getBgColor(col);
-	                    suf = this->bgimage;
-	                }
-            	}
-            	else {
+                if (isSelected()) {
+                    getSelBgColor(col);
+                    suf = this->selbgimage;
+                }
+                else {
+                    getBgColor(col);
+                    suf = this->bgimage;
+                }
+            	if (isPressed()) {
+                    DFBColor mycol;
                     if (isSelected()) {
-                        getSelBgColor_p(col);
-                        suf = this->selbgimage_p;
+                        getSelBgColor_p(mycol);
+                        if (mycol.a>0) col=mycol;
+                        if (this->selbgimage_p)
+                        	suf = this->selbgimage_p;
                     }
                     else {
-                        getBgColor_p(col);
-                        suf = this->bgimage_p;
+                        getBgColor_p(mycol);
+                        if (mycol.a>0) col=mycol;
+                        if (this->bgimage_p)
+                        	suf = this->bgimage_p;
                     }
             	}
             }
