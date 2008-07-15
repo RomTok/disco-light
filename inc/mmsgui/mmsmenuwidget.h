@@ -86,14 +86,14 @@ class MMSMenuWidget : public MMSWidget {
         vector<MMSMENUITEMINFOS>	iteminfos; 
 
         //! if != -1 then currently activated submenu is set
-        unsigned int 	curr_submenu;
+        int 			curr_submenu;
         
         //! if a submenu does appear, we will save the parent menu here which will used to go back 
         MMSMenuWidget	*parent_menu;
         
         //! if != -1 then the item with this id is set as go-back-item
         //! if the user enters this item, the parent menu (if does exist) will be shown
-        unsigned int	back_item;
+        int				back_item;
         
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
