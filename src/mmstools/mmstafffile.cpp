@@ -984,6 +984,8 @@ int MMSTaffFile::getFirstAttribute(char **value_str, int *value_int, char **name
 
 	return -1;
 }
+#define GET_INT32_FROM_UCHAR_STREAM(stream) \
+     ((int)( (stream)[0] | ((stream)[1] << 8) | ((stream)[2] << 16) | ((stream)[3] << 24) ))
 
 int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name) {
 	/* searching for next attribute */
@@ -996,7 +998,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 
 				/* check if name of attribute is stored instead of id */
 				if (attrid == MMSTAFF_ATTR_WITHOUT_ID) {
-					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
+					len = GET_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 					if (name)
 						*name = (char*)&this->taff_buf[this->taff_buf_pos];
@@ -1009,7 +1011,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 				len = (int)this->taff_buf[this->taff_buf_pos];
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
-					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
+					len = GET_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 				}
 
@@ -1022,7 +1024,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					case TAFF_ATTRTYPE_UCHAR100:
 					case TAFF_ATTRTYPE_INT:
 						*value_str = NULL;
-						*value_int = *((int*)&this->taff_buf[this->taff_buf_pos]);
+						*value_int = GET_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 						break;
 					default:
 						*value_str = (char*)&this->taff_buf[this->taff_buf_pos];
