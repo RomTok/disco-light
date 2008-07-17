@@ -27,6 +27,12 @@ MMSMainWindow*            MMSSwitcher::window;        /**< whole switcher window
 map<int, plugin_data_t *> MMSSwitcher::plugins;       /**< loaded plugins                                                */
 int                       MMSSwitcher::curr_plugin;   /**< index to pluginSwitchers which points to the current plugin   */
 
+#define SWITCHER_MENUBAR			"switcher_menubar"
+#define SWITCHER_MENU				"switcher_menu"
+#define	SWITCHER_MENU_PLUGINNAME	"switcher_menu_pluginname"
+#define	SWITCHER_MENU_PLUGINTITLE	"switcher_menu_plugintitle"
+#define	SWITCHER_MENU_PLUGINICON	"switcher_menu_pluginicon"
+
 /* public */
 MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
     windowmanager(NULL),
@@ -63,26 +69,36 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         if(!this->window) throw MMSError(0, "Error loading switchers root window");
   
         /* get access to the menu bar */
-        this->menuBar = (MMSChildWindow *)this->window->searchForWindow("menuBar");
+        this->menuBar = (MMSChildWindow *)this->window->searchForWindow(SWITCHER_MENUBAR);
         if(!this->menuBar) throw MMSError(0, "Error loading switchers menuBar childwindow");
-        this->menu    = (MMSMenuWidget *)dm["menu"];
+        this->menu    = dynamic_cast<MMSMenuWidget*>(this->menuBar->searchForWidget(SWITCHER_MENU));
         if(!this->menu) throw MMSError(0, "Error loading switchers menu");
 
         /* fill the menu */
         MMSPluginService service(&source);
         vector<MMSPluginData *> p = service.getOSDPlugins();
         for(unsigned int i = 0; i < p.size();i++) {
-            MMSButtonWidget *pluginItem = dynamic_cast<MMSButtonWidget*>(menu->newItem());
-	    MMSLabelWidget *pluginLabel = dynamic_cast<MMSLabelWidget*>((*pluginItem)["pluginname"]);
-            pluginLabel->setText(p.at(i)->getName());
+        	// new item
+            MMSWidget *pluginItem = menu->newItem();
+            if (!pluginItem) break;
+            
+            // set plugin data to the item
             pluginItem->setBinData((void*)p.at(i));
+
+            // set values if widgets are defined
+            setMenuItemValues(pluginItem);
         }
         p = service.getCentralPlugins();
         for(unsigned int i = 0; i < p.size();i++) {
-            MMSButtonWidget *pluginItem = dynamic_cast<MMSButtonWidget*>(menu->newItem());
-	    MMSLabelWidget *pluginLabel = dynamic_cast<MMSLabelWidget*>((*pluginItem)["pluginname"]);	
-            pluginLabel->setText(p.at(i)->getName());
+        	// new item
+            MMSWidget *pluginItem = menu->newItem();
+            if (!pluginItem) break;
+
+            // set plugin data to the item
             pluginItem->setBinData((void*)p.at(i));
+
+            // set values if widgets are defined
+            setMenuItemValues(pluginItem);
         }
 
         /* show the menu bar */
@@ -111,6 +127,96 @@ MMSSwitcher::~MMSSwitcher() {
     this->plugins.clear();
 	this->subscriptions.clear();
 }
+
+void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
+	// get the plugin data
+	if (!item) return;
+	MMSPluginData *plugindata = (MMSPluginData *)item->getBinData();
+	
+	// set the plugin name
+	MMSLabelWidget *pluginName = dynamic_cast<MMSLabelWidget*>(item->searchForWidget(SWITCHER_MENU_PLUGINNAME));
+    if (pluginName) pluginName->setText(plugindata->getName());
+
+    // set the plugin title
+    MMSLabelWidget *pluginTitle = dynamic_cast<MMSLabelWidget*>(item->searchForWidget(SWITCHER_MENU_PLUGINTITLE));
+    if (pluginTitle) pluginTitle->setText(plugindata->getTitle());
+    
+    // set the plugin icon
+    MMSImageWidget *pluginIcon = dynamic_cast<MMSImageWidget*>(item->searchForWidget(SWITCHER_MENU_PLUGINICON));
+    if (pluginIcon) {
+        string path;
+        string name;
+        
+        name = plugindata->getIcon();
+		if (!searchingForImage(plugindata->getPath(), name, &path))
+            if (path!="")
+            	pluginIcon->setImage(path, name);
+            else
+				pluginIcon->setImageName(name);
+		else
+            pluginIcon->setImageName("plugin_icon.png");
+
+        name = plugindata->getSelectedIcon();
+		if (!searchingForImage(plugindata->getPath(), name, &path))
+            if (path!="")
+            	pluginIcon->setSelImage(path, name);
+            else
+				pluginIcon->setSelImageName(name);
+		else
+            pluginIcon->setSelImageName("plugin_icon_s.png");
+    }
+	
+}
+
+int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *path) {
+
+    /* searching for image */
+    MMSFile *myfile;
+    int err;
+
+    if (imagename=="") {
+        *path = "";
+        return 1;
+    }
+
+    /* first: current plugin theme */            
+    *path = pluginpath + "/themes/" + config.getTheme() + "/";
+    myfile = new MMSFile(*path + imagename);
+    err = myfile->getLastError();
+    delete myfile;
+    if (err) {
+        /* second: plugin default theme */
+        if (config.getTheme() != DEFAULT_THEME) {            
+            *path = pluginpath + "/themes/" + DEFAULT_THEME + "/";
+            myfile = new MMSFile(*path + imagename);
+            err = myfile->getLastError();
+            delete myfile;
+        }
+    }
+    if (err) {
+        /* third: current theme */            
+        *path = "./themes/" + config.getTheme() + "/";
+        myfile = new MMSFile(*path + imagename);
+        err = myfile->getLastError();
+        delete myfile;
+        if (!err) *path = "";
+    }
+    if (err) {
+        /* fourth: default theme */            
+        if (config.getTheme() != DEFAULT_THEME) {            
+            *path = "./themes/";
+            *path = *path + DEFAULT_THEME + "/";
+            myfile = new MMSFile(*path + imagename);
+            err = myfile->getLastError();
+            delete myfile;
+            if (!err) *path = "";
+        }
+    }
+
+    return err;
+}
+
+
 
 void MMSSwitcher::setWindowManager(IMMSWindowManager *wm) {
 	this->windowmanager = wm;
