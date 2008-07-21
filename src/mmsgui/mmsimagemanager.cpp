@@ -30,7 +30,24 @@
 
 
 MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
-    this->layer = layer;
+	// save layer
+	this->layer = layer;
+    
+    // get the pixelformat, create a little temp surface
+	this->pixelformat = "";
+	MMSFBSurface *ts;
+    if (this->layer->createSurface(&ts, 8, 1)) {
+    	// okay, get the pixelformat from surface
+    	ts->getPixelFormat(&this->pixelformat);
+    	delete ts;
+    }
+
+    // use taff?
+	this->usetaff = false;
+    if (this->pixelformat == MMSFB_PF_ARGB) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_ARGB;
+    }
 }
 
 MMSImageManager::~MMSImageManager() {
@@ -285,19 +302,24 @@ gettimeofday(&tv, NULL);
 printf("start > %d\n", tv.tv_usec);
 */
 
-    	if (1) {
-    		/* yes, try with taff */
+    	
+    	
+    	if (this->usetaff) {
+    		// yes, try with taff
+    		// assume: the taffpf (supported taff pixelformat) is correctly set
 	    	MMSTaffFile *tafff = new MMSTaffFile(imagefile + ".taff", NULL,
 	    										 imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
 	    	if (tafff) {
 	    		if (tafff->isLoaded()) {
 	
 		    		/* load the attributes */
-			    	void *img_buf = NULL;
-			    	int img_width = 0;
-			    	int img_height= 0;
-			    	int img_pitch = 0;
-			    	int img_size  = 0;
+			    	void 		*img_buf = NULL;
+			    	int 		img_width = 0;
+			    	int 		img_height= 0;
+			    	int 		img_pitch = 0;
+			    	int 		img_size  = 0;
+			    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
+			    	bool 		img_premultiplied = true;
 			    	int attrid;
 			    	char *value_str;
 			    	int  value_int;
@@ -319,6 +341,12 @@ printf("start > %d\n", tv.tv_usec);
 			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data:
 			    			img_buf = value_str;
 			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat:
+			    			img_pixelformat = (MMSTAFF_PF)value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
+			    			img_premultiplied = (value_int);
+			    			break;
 			    		}
 			    	}
 			    	
@@ -337,7 +365,7 @@ printf("start > %d\n", tv.tv_usec);
 			
 			            if (reload_image < 0) {
 			                /* create a surface */
-			                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height)) { 
+			                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height, this->pixelformat)) { 
 			                    DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
 			                    delete im_desc;
 			                    return NULL;
@@ -476,7 +504,7 @@ printf("png loaded: width=%d,height=%d,pitch=%d,pf=%s\n", img_width, img_height,
     
         if (reload_image < 0) {
             /* create a surface */
-            if (!this->layer->createSurface(&(im_desc->suf[0].surface), surface_desc.width, surface_desc.height)) { 
+            if (!this->layer->createSurface(&(im_desc->suf[0].surface), surface_desc.width, surface_desc.height, this->pixelformat)) { 
                 /* release imageprovider */
                 imageprovider->Release(imageprovider);
                 DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
@@ -578,7 +606,7 @@ MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, 
     desc.pixelformat = pixelformat;
 */
 //    if (this->dfb->CreateSurface(this->dfb, &desc, &(im_desc.surface)) != DFB_OK)
-    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, pixelformat)) 
+    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat=="")?this->pixelformat:pixelformat)) 
         return NULL;
     im_desc->sufcount = 1;
     im_desc->imagefile = "";
