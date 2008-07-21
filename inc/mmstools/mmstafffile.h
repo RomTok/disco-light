@@ -100,6 +100,14 @@ typedef enum {
 	MMSTAFF_EXTERNAL_TYPE_IMAGE
 } MMSTAFF_EXTERNAL_TYPE;
 
+//! Supported pixelformats of taff images
+typedef enum {
+	//! 32 bit ARGB (4 byte, alpha 8@24, red 8@16, green 8@8, blue 8@0)
+	MMSTAFF_PF_ARGB,
+	//! 32 bit ARGB (4 byte, inv. alpha 8@24, red 8@16, green 8@8, blue 8@0)
+	MMSTAFF_PF_AiRGB
+} MMSTAFF_PF;
+
 
 //! A data access class for Tagged Attributes File Format (TAFF).
 /*!
@@ -143,6 +151,12 @@ class MMSTaffFile {
 
 		//!	print warnings?
 		bool    print_warnings;
+		
+		//! convert image to this pixelformat
+		MMSTAFF_PF	destination_pixelformat;
+		
+		//! should the destination pixels premultiplied?
+		bool		destination_premultiplied;
 
 		//! is the TAFF buffer loaded?
 		bool	loaded;
@@ -157,7 +171,7 @@ class MMSTaffFile {
 		int		current_tag_pos;
 
 		//! Internal method: Read a PNG Image.
-		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size, bool premultiplied);
+		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
 
 		//! Internal method: Recursive called method for XML to TAFF conversion.
         bool convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file);
@@ -181,6 +195,7 @@ class MMSTaffFile {
         \param taff_desc			the user of this class have to support this tag/attribute description, use NULL
                                     here if you use the external type MMSTAFF_EXTERNAL_TYPE_IMAGE
         \param external_filename	name of the external file for conversion
+        							set to blank if no conversion is to be done in the constructor 
         \param external_type		type of the external file
         \param ignore_blank_values	ignore blank values during the conversion from external file
         \param trace				print trace messages?
@@ -204,9 +219,15 @@ class MMSTaffFile {
         bool readFile();
 
         //! Is TAFF buffer filled?
+        /*!
+        \return true if successfully loaded
+        */
         bool isLoaded();
 
-        //! Has the TAFF file the correct version described in TAFF description.
+        //! Has the TAFF file the correct version described in TAFF description?
+        /*!
+        \return true if correct version
+        */
         bool checkVersion();
 
         //! Set or reset the external file and type.
@@ -227,6 +248,13 @@ class MMSTaffFile {
         \param print_warnings	print warnings?
         */
         void setPrintWarnings(bool print_warnings);
+
+        //! Set the final pixelformat for the convertion (type MMSTAFF_EXTERNAL_TYPE_IMAGE).
+        /*!
+        \param pixelformat		final pixelformat
+        \param premultiplied	the image will be premultiplied during the conversion
+        */
+        void setDestinationPixelFormat(MMSTAFF_PF pixelformat = MMSTAFF_PF_ARGB, bool premultiplied = true);
 
         //! Get the first tag id.
         /*!
@@ -296,14 +324,18 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		{ "height", TAFF_ATTRTYPE_INT }, \
 		{ "pitch", TAFF_ATTRTYPE_INT }, \
 		{ "size", TAFF_ATTRTYPE_INT }, \
-		{ "data", TAFF_ATTRTYPE_BINDATA }
+		{ "data", TAFF_ATTRTYPE_BINDATA }, \
+		{ "pixelformat", TAFF_ATTRTYPE_INT }, \
+		{ "premultiplied", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size, \
-		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT { \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC, \

@@ -46,6 +46,8 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 	this->ignore_blank_values = ignore_blank_values;
 	this->trace = trace;
 	this->print_warnings = print_warnings;
+	this->destination_pixelformat = MMSTAFF_PF_ARGB;
+	this->destination_premultiplied = true;
 	this->correct_version = false;
 	this->current_tag = -1;
 	this->current_tag_pos = 0;
@@ -73,7 +75,7 @@ MMSTaffFile::~MMSTaffFile() {
 		free(this->taff_buf);
 }
 
-bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size, bool premultiplied) {
+bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
 	FILE 			*fp;
 	char			png_sig[8];
     png_structp     png_ptr = NULL;
@@ -183,8 +185,11 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     png_read_image(png_ptr, row_pointers);
     png_read_end(png_ptr, end_info_ptr);
 
-    /* should i pre-multiply with alpha channel? */
-    if (premultiplied) {
+    // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
+    // so check now if i have to convert it
+
+    // should i pre-multiply with alpha channel?
+    if (this->destination_premultiplied) {
 		unsigned int *src = (unsigned int*)*buf;
 	    for (int i = *width * *height; i > 0; i--) {
 	    	register unsigned int s = *src;
@@ -196,7 +201,26 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 	    }
     }
 
-    /* all right */
+    // have to convert the pixelformat? 
+    switch (this->destination_pixelformat) {
+    case MMSTAFF_PF_AiRGB: {
+    		// invert the alpha channel
+			unsigned int *src = (unsigned int*)*buf;
+		    for (int i = *width * *height; i > 0; i--) {
+		    	register unsigned int s = *src;
+		    	register unsigned int a = s;
+		    	a = ~a;
+		    	a = a & 0xff000000;
+		    	s = s & 0x00ffffff;
+		    	s = s | a;
+		    	*src = s;
+		    	src++;
+		    }
+    	}
+   		break;
+    }
+
+    // all right
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
     free(row_pointers);
     fclose(fp);
@@ -531,7 +555,7 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 	if (this->external_filename=="") return false;
 
 	/* read the whole PNG image */
-	if (readPNG(this->external_filename.c_str(), &png_buf, &png_width, &png_height, &png_pitch, &png_size, true)) {
+	if (readPNG(this->external_filename.c_str(), &png_buf, &png_width, &png_height, &png_pitch, &png_size)) {
 		/* open binary destination file */
 		MMSFile *taff_file = NULL;
 		if (this->taff_filename!="") {
@@ -575,6 +599,22 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 			taff_file->writeBuffer(wb, &ritems, 1, 3);
 			taff_file->writeBuffer(&png_size, &ritems, 1, sizeof(int));
 
+			/* write attributes: pixelformat */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			int pf = (int)this->destination_pixelformat;
+			taff_file->writeBuffer(&pf, &ritems, 1, sizeof(int));
+
+			/* write attributes: premultiplied */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			bool pm = (this->destination_premultiplied);
+			taff_file->writeBuffer(&pm, &ritems, 1, sizeof(bool));
+			
 			/* write attributes: data */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
@@ -839,6 +879,11 @@ void MMSTaffFile::setTrace(bool trace) {
 
 void MMSTaffFile::setPrintWarnings(bool print_warnings) {
 	this->print_warnings = print_warnings;
+}
+
+void MMSTaffFile::setDestinationPixelFormat(MMSTAFF_PF pixelformat, bool premultiplied) {
+	this->destination_pixelformat = MMSTAFF_PF_ARGB;
+	this->destination_premultiplied = premultiplied;
 }
 
 int MMSTaffFile::getFirstTag() {
