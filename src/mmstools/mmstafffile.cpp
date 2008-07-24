@@ -218,6 +218,25 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 		    }
     	}
    		break;
+    case MMSTAFF_PF_AYUV: {
+    		// convert RGB to YUV color space
+			unsigned int *src = (unsigned int*)*buf;
+		    for (int i = *width * *height; i > 0; i--) {
+		    	register unsigned int s = *src;
+		    	register int r = (s >> 16) & 0xff;
+		    	register int g = (s >> 8) & 0xff;
+		    	register int b = s  & 0xff;
+		    	s = s & 0xff000000;											//A
+		    	if (s) {
+			    	s = s | (((((66*r+129*g+25*b+128)>>8)+16) & 0xff) << 16);	//Y
+			    	s = s | (((((-38*r-74*g+112*b+128)>>8)+128) & 0xff) << 8);	//U (Cb)
+			    	s = s | ((((112*r-94*g-18*b+128)>>8)+128) & 0xff);			//V (Cr)
+		    	}
+		    	*src = s;
+		    	src++;
+		    }
+    	}
+    	break;
     }
 
     // all right
@@ -610,7 +629,7 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 			/* write attributes: premultiplied */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied;
-			wb[2]=sizeof(int);
+			wb[2]=sizeof(bool);
 			taff_file->writeBuffer(wb, &ritems, 1, 3);
 			bool pm = (this->destination_premultiplied);
 			taff_file->writeBuffer(&pm, &ritems, 1, sizeof(bool));
@@ -882,7 +901,7 @@ void MMSTaffFile::setPrintWarnings(bool print_warnings) {
 }
 
 void MMSTaffFile::setDestinationPixelFormat(MMSTAFF_PF pixelformat, bool premultiplied) {
-	this->destination_pixelformat = MMSTAFF_PF_ARGB;
+	this->destination_pixelformat = pixelformat;
 	this->destination_premultiplied = premultiplied;
 }
 
