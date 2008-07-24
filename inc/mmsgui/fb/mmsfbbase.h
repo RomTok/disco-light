@@ -85,6 +85,7 @@ typedef struct {
 #define MMSFB_PF_ARGB2554   "ARGB2554"  // 16 bit ARGB (2 byte, alpha 2@14, red 5@9, green 5@4, blue 4@0)
 #define MMSFB_PF_ARGB4444   "ARGB4444"  // 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
 #define MMSFB_PF_NV21       "NV21"      // 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CrCb [15:0] plane)
+#define MMSFB_PF_AYUV       "AYUV"      // 32 bit AYUV (4 byte, alpha 8@24, Y 8@16, Cb 8@8, Cr 8@0)
 
 /* supported buffer modes */
 #define MMSFB_BM_NONE       ""          // none
@@ -115,6 +116,7 @@ string getDFBPixelFormatString(DFBSurfacePixelFormat pf);
 DFBSurfacePixelFormat getDFBPixelFormatFromString(string pf);
 bool isAlphaPixelFormat(string pf);
 bool isIndexedPixelFormat(string pf);
+bool isRGBPixelFormat(string pf);
 
 /* conversion routines for layer buffer modes */
 string getDFBLayerBufferModeString(DFBDisplayLayerBufferMode bm);

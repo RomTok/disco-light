@@ -157,10 +157,15 @@ void MMSFBManager::applySettings() {
 
     /* create a global temporary surface */
     string pixelformat = config.getGraphicsLayerPixelformat(); 
-    if (!isAlphaPixelFormat(pixelformat))
-        /* the gui internally needs surfaces with alpha channel */
-        /* so switch all non-alpha pixelformats to ARGB */
-        pixelformat = MMSFB_PF_ARGB;
+    if (!isAlphaPixelFormat(pixelformat)) {
+    	/* the gui internally needs surfaces with alpha channel */
+        if (!isRGBPixelFormat(pixelformat))
+            /* so switch all non-alpha pixelformats to AYUV */
+            pixelformat = MMSFB_PF_AYUV;
+        else
+            /* so switch all non-alpha pixelformats to ARGB */
+            pixelformat = MMSFB_PF_ARGB;
+	}
     else
     if (isIndexedPixelFormat(pixelformat))
         /* the gui internally needs non-indexed surfaces */

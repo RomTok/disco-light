@@ -338,10 +338,15 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
 
     if (pixelformat == MMSFB_PF_NONE) {
         pixelformat = this->config.pixelformat;
-        if (!isAlphaPixelFormat(pixelformat))
+        if (!isAlphaPixelFormat(pixelformat)) {
             /* the gui internally needs surfaces with alpha channel */
-            /* so switch all non-alpha pixelformats to ARGB */
-            pixelformat = MMSFB_PF_ARGB;
+            if (!isRGBPixelFormat(pixelformat))
+	            /* so switch all non-alpha pixelformats to AYUV */
+	            pixelformat = MMSFB_PF_AYUV;
+            else
+	            /* so switch all non-alpha pixelformats to ARGB */
+	            pixelformat = MMSFB_PF_ARGB;
+        }
         else
         if (isIndexedPixelFormat(pixelformat))
             /* the gui internally needs non-indexed surfaces */
@@ -372,9 +377,15 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 
     if (!isAlphaPixelFormat(pixelformat)) {
         /* non-alpha pixelformats  */
-        if (usealpha)
-            /* switch all non-alpha pixelformats to ARGB */
-            pixelformat = MMSFB_PF_ARGB;
+        if (usealpha) {
+            /* switch all non-alpha pixelformats to Axxx */
+        	if (!isRGBPixelFormat(pixelformat))
+	            /* so switch all non-alpha pixelformats to AYUV */
+	            pixelformat = MMSFB_PF_AYUV;
+            else
+	            /* so switch all non-alpha pixelformats to ARGB */
+	            pixelformat = MMSFB_PF_ARGB;
+        }
     }
     else {
         /* alpha pixelformats  */

@@ -48,6 +48,16 @@ MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
     	this->usetaff = true;
     	this->taffpf = MMSTAFF_PF_ARGB;
     }
+    else
+    if (this->pixelformat == MMSFB_PF_AiRGB) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_AiRGB;
+    }
+    else
+    if (this->pixelformat == MMSFB_PF_AYUV) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_AYUV;
+    }
 }
 
 MMSImageManager::~MMSImageManager() {
@@ -307,155 +317,197 @@ printf("start > %d\n", tv.tv_usec);
     	if (this->usetaff) {
     		// yes, try with taff
     		// assume: the taffpf (supported taff pixelformat) is correctly set
-	    	MMSTaffFile *tafff = new MMSTaffFile(imagefile + ".taff", NULL,
-	    										 imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
-	    	if (tafff) {
-	    		if (tafff->isLoaded()) {
-	
-		    		/* load the attributes */
-			    	void 		*img_buf = NULL;
-			    	int 		img_width = 0;
-			    	int 		img_height= 0;
-			    	int 		img_pitch = 0;
-			    	int 		img_size  = 0;
-			    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
-			    	bool 		img_premultiplied = true;
-			    	int attrid;
-			    	char *value_str;
-			    	int  value_int;
-			    	
-			    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
-			    		switch (attrid) {
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width:
-			    			img_width = value_int;
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height:
-			    			img_height = value_int;
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch:
-			    			img_pitch = value_int;
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size:
-			    			img_size = value_int;
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data:
-			    			img_buf = value_str;
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat:
-			    			img_pixelformat = (MMSTAFF_PF)value_int;
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
-			    			img_premultiplied = (value_int);
-			    			break;
-			    		}
-			    	}
-			    	
-			    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
-			        	/* successfully read */
-			            im_desc->imagefile = imagefile;
-			        
-			            if (reload_image < 0) {
-			                /* get the modification time of the file */
-			                struct stat statbuf;
-			                if (stat(imagefile.c_str(), &statbuf)==0)
-			                    im_desc->mtime = statbuf.st_mtime;
-			                else
-			                    im_desc->mtime = 0;
-			            }
-			
-			            if (reload_image < 0) {
-			                /* create a surface */
-			                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height, this->pixelformat)) { 
-			                    DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
-			                    delete im_desc;
-			                    return NULL;
-			                }
-			                im_desc->sufcount = 1;
-			        
-			                /* copy img_buf to the surface */
-			                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
-			                char *dfbsuf_ptr;
-			                int dfbsuf_pitch;
-			                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
-			                if (img_pitch == dfbsuf_pitch)
-			                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
-			                else {
-			                	/* copy each line */
-			                	char *img_b = (char*)img_buf;
-			                	for (int i = 0; i < img_height; i++) {
-			                		memcpy(dfbsuf_ptr, img_b, img_pitch);
-			                		dfbsuf_ptr+=dfbsuf_pitch;
-			                		img_b+=img_pitch;
-			                	}
-			                }
-			                dfbsuf->Unlock(dfbsuf);
-			
-			                /* free */
-			                delete tafff;
-/*
-gettimeofday(&tv, NULL);
-printf("end < %d\n", tv.tv_usec);
+	    	// first : try to read taff image without special pixelformat
+    		// second: try with pixelformat from my surfaces
+    		bool retry = false;
+    		do {
+    			MMSTaffFile *tafff;
+    			if (retry) {
+	    			retry = false;
+printf("ImageManager, retry\n");
+    				// have to convert taff with special destination pixelformat
+    				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+		    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+        			if (tafff) {
+        				// set external file and requested pixelformat
+	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+printf("ImageManager, taffpf = %d\n", taffpf);
+	    				tafff->setDestinationPixelFormat(taffpf);
+	    				// convert it
+	    				if (!tafff->convertExternal2TAFF()) {
+	    					// conversion failed
+	    					delete tafff;
+	    					break;
+	    				}
+        			}
+    			}
 
-string ss;
-im_desc->suf[0].surface->getPixelFormat(&ss);
-printf("png loaded: width=%d,height=%d,pitch=%d,pf=%s\n", img_width, img_height, dfbsuf_pitch,  ss.c_str());
-*/
-			
-			                DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
-			        
-			                /* add to images list and return the surface */
-			                im_desc->usecount = 1;
-			                this->images.push_back(im_desc);
-			                if (surfdesc)
-			                    *surfdesc = this->images.at(this->images.size()-1)->suf;
-			                return im_desc->suf[0].surface; 
-			            }
-			            else {
-			                /* increase usecount */
-			                this->images.at(reload_image)->usecount++;
-			        
-			                /* check if I have to resize the surface */
-			                int w, h;
-			                this->images.at(reload_image)->suf[0].surface->getSize(&w, &h);
-			                if ((w != img_width) || (h != img_height))
-			                    this->images.at(reload_image)->suf[0].surface->resize(img_width, img_height);
-			        
-			                /* copy img_buf to the surface */
-			                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
-			                char *dfbsuf_ptr;
-			                int dfbsuf_pitch;
-			                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
-			                if (img_pitch == dfbsuf_pitch)
-			                	/* copy in one block */
-			                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
-			                else {
-			                	/* copy each line */
-			                	char *img_b = (char*)img_buf;
-			                	for (int i = 0; i < img_height; i++) {
-			                		memcpy(dfbsuf_ptr, img_b, img_pitch);
-			                		dfbsuf_ptr+=dfbsuf_pitch;
-			                		img_b+=img_pitch;
-			                	}
-			                }
-			                dfbsuf->Unlock(dfbsuf);
-			
-			                /* free */
-			                delete tafff;
-			                
-			                DEBUGMSG("MMSGUI", "ImageManager has reloaded: '%s'", imagefile.c_str());
-			        
-			                /* return the surface */
-			                delete im_desc;
-			                if (surfdesc)
-			                    *surfdesc = this->images.at(reload_image)->suf;
-			                return this->images.at(reload_image)->suf[0].surface; 
-			            }
-			    	}
-	    		}
-	    		
-	            /* free */
-	            delete tafff;
-	        }
+				// load image
+				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+	    								imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    			if (tafff) {
+		    		if (tafff->isLoaded()) {
+		
+			    		// load the attributes
+		    	    	int 		attrid;
+		    	    	char 		*value_str;
+		    	    	int  		value_int;
+				    	void 		*img_buf = NULL;
+				    	int 		img_width = 0;
+				    	int 		img_height= 0;
+				    	int 		img_pitch = 0;
+				    	int 		img_size  = 0;
+				    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
+				    	bool 		img_premultiplied = true;
+				    	
+				    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
+				    		switch (attrid) {
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width:
+				    			img_width = value_int;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height:
+				    			img_height = value_int;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch:
+				    			img_pitch = value_int;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size:
+				    			img_size = value_int;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data:
+				    			img_buf = value_str;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat:
+				    			img_pixelformat = (MMSTAFF_PF)value_int;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
+				    			img_premultiplied = (value_int);
+				    			break;
+				    		}
+				    	}
+				    	
+				    	if (img_pixelformat != taffpf) {
+printf("ImageManager, taffpf = %d\n", (int)taffpf);
+				    		// the image from the file has not the same pixelformat as the surface
+				    		if (!retry) {
+				    			// retry with surface pixelformat
+printf("ImageManager, request new pixf\n");
+				    			retry = true;
+				    			delete tafff;
+				    			continue;
+				    		}
+				    		else
+				    			retry = false;
+				    	}
+				    	else
+				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
+				        	/* successfully read */
+printf("ImageManager, use pixf = %d\n", (int)taffpf);
+				            im_desc->imagefile = imagefile;
+				        
+				            if (reload_image < 0) {
+				                /* get the modification time of the file */
+				                struct stat statbuf;
+				                if (stat(imagefile.c_str(), &statbuf)==0)
+				                    im_desc->mtime = statbuf.st_mtime;
+				                else
+				                    im_desc->mtime = 0;
+				            }
+				
+				            if (reload_image < 0) {
+				                /* create a surface */
+				                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height, this->pixelformat)) { 
+				                    DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
+				                    delete im_desc;
+				                    return NULL;
+				                }
+				                im_desc->sufcount = 1;
+				        
+				                /* copy img_buf to the surface */
+				                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
+				                char *dfbsuf_ptr;
+				                int dfbsuf_pitch;
+				                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
+				                if (img_pitch == dfbsuf_pitch)
+				                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
+				                else {
+				                	/* copy each line */
+				                	char *img_b = (char*)img_buf;
+				                	for (int i = 0; i < img_height; i++) {
+				                		memcpy(dfbsuf_ptr, img_b, img_pitch);
+				                		dfbsuf_ptr+=dfbsuf_pitch;
+				                		img_b+=img_pitch;
+				                	}
+				                }
+				                dfbsuf->Unlock(dfbsuf);
+				
+				                /* free */
+				                delete tafff;
+	/*
+	gettimeofday(&tv, NULL);
+	printf("end < %d\n", tv.tv_usec);
+	
+	string ss;
+	im_desc->suf[0].surface->getPixelFormat(&ss);
+	printf("png loaded: width=%d,height=%d,pitch=%d,pf=%s\n", img_width, img_height, dfbsuf_pitch,  ss.c_str());
+	*/
+				
+				                DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
+				        
+				                /* add to images list and return the surface */
+				                im_desc->usecount = 1;
+				                this->images.push_back(im_desc);
+				                if (surfdesc)
+				                    *surfdesc = this->images.at(this->images.size()-1)->suf;
+				                return im_desc->suf[0].surface; 
+				            }
+				            else {
+				                /* increase usecount */
+				                this->images.at(reload_image)->usecount++;
+				        
+				                /* check if I have to resize the surface */
+				                int w, h;
+				                this->images.at(reload_image)->suf[0].surface->getSize(&w, &h);
+				                if ((w != img_width) || (h != img_height))
+				                    this->images.at(reload_image)->suf[0].surface->resize(img_width, img_height);
+				        
+				                /* copy img_buf to the surface */
+				                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
+				                char *dfbsuf_ptr;
+				                int dfbsuf_pitch;
+				                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
+				                if (img_pitch == dfbsuf_pitch)
+				                	/* copy in one block */
+				                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
+				                else {
+				                	/* copy each line */
+				                	char *img_b = (char*)img_buf;
+				                	for (int i = 0; i < img_height; i++) {
+				                		memcpy(dfbsuf_ptr, img_b, img_pitch);
+				                		dfbsuf_ptr+=dfbsuf_pitch;
+				                		img_b+=img_pitch;
+				                	}
+				                }
+				                dfbsuf->Unlock(dfbsuf);
+				
+				                /* free */
+				                delete tafff;
+				                
+				                DEBUGMSG("MMSGUI", "ImageManager has reloaded: '%s'", imagefile.c_str());
+				        
+				                /* return the surface */
+				                delete im_desc;
+				                if (surfdesc)
+				                    *surfdesc = this->images.at(reload_image)->suf;
+				                return this->images.at(reload_image)->suf[0].surface; 
+				            }
+				    	}
+		    		}
+		    		
+		            /* free */
+		            delete tafff;
+		        }
+    		} while (retry);
     	}
         
         /* failed, try it with DFB providers */

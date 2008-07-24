@@ -486,6 +486,9 @@ bool MMSFBSurface::getMemSize(int *size) {
     else
     if(pf == MMSFB_PF_NV21)
     	*size = (px * 3) / 2;
+    else
+    if(pf == MMSFB_PF_AYUV)
+    	*size = px * 4;
 
     return true;
 }

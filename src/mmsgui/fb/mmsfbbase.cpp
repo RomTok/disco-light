@@ -84,6 +84,8 @@ string getDFBPixelFormatString(DFBSurfacePixelFormat pf) {
         return MMSFB_PF_ARGB4444;
     if (pf == DSPF_NV21)
         return MMSFB_PF_NV21;
+    if (pf == DSPF_AYUV)
+        return MMSFB_PF_AYUV;
     return MMSFB_PF_NONE;
 }
 
@@ -130,6 +132,8 @@ DFBSurfacePixelFormat getDFBPixelFormatFromString(string pf) {
         return DSPF_ARGB4444;
     if(pf == MMSFB_PF_NV21)
         return DSPF_NV21;
+    if(pf == MMSFB_PF_AYUV)
+        return DSPF_AYUV;
     return DSPF_UNKNOWN;
 }
 
@@ -142,6 +146,8 @@ bool isAlphaPixelFormat(string pf) {
 		||(pf == MMSFB_PF_UYVY)
 		||(pf == MMSFB_PF_LUT8)
 		||(pf == MMSFB_PF_NV12)
+		||(pf == MMSFB_PF_NV16)
+		||(pf == MMSFB_PF_NV21)
         ||(pf == MMSFB_PF_I420))
         return false;
     return true;
@@ -151,6 +157,19 @@ bool isIndexedPixelFormat(string pf) {
     if (pf == MMSFB_PF_ALUT44)
         return true;
     return false;
+}
+
+bool isRGBPixelFormat(string pf) {
+    if   ((pf == MMSFB_PF_YUY2)
+        ||(pf == MMSFB_PF_UYVY)
+        ||(pf == MMSFB_PF_I420)
+		||(pf == MMSFB_PF_YV12)
+		||(pf == MMSFB_PF_NV12)
+		||(pf == MMSFB_PF_NV16)
+		||(pf == MMSFB_PF_NV21)
+        ||(pf == MMSFB_PF_AYUV))
+        return false;
+    return true;
 }
 
 string getDFBLayerBufferModeString(DFBDisplayLayerBufferMode bm) {
