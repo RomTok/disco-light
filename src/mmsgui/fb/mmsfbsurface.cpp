@@ -513,10 +513,18 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
     /* check if initialized */
     INITCHECK;
 
+    if ((a < 0xff)&&(this->config.premultiplied)) {
+    	// premultiplied surface, have to premultiply the color
+        register int aa = a + 1;
+        r = (aa * r) >> 8;
+        g = (aa * g) >> 8;
+        b = (aa * b) >> 8;
+    }
+    
     if (!this->is_sub_surface) {
 	    /* save color and set it to given values */
-	    MMSFBColor mc = this->config.color;
-	    setColor(r,g,b,a);
+//	    MMSFBColor mc = this->config.color;
+//	    setColor(r,g,b,a);
 	
 	    /* clear surface */
 	    if ((dfbres=this->dfbsurface->Clear(this->dfbsurface, r, g, b, a)) != DFB_OK) {
@@ -525,7 +533,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 	    }
 	
 	    /* reset color */
-	    setColor(mc.r,mc.g,mc.b,mc.a);
+//	    setColor(mc.r,mc.g,mc.b,mc.a);
     }
     else {
     	
@@ -573,6 +581,13 @@ bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
     this->config.color.b = b;
     this->config.color.a = a;
 
+    // set the default drawing flags
+    // reason a): if it is an PREMULTIPLIED surface, the given color has to
+    //            premultiplied internally before using it
+    // reason b): if an alpha value is specified, the next draw function
+    //            should blend over the surface 
+	this->setDrawingFlagsByAlpha(a);
+    
     return true;
 }
 
@@ -1367,14 +1382,23 @@ bool MMSFBSurface::setBlittingFlagsByBrightnessAlphaAndOpacity(
 
 bool MMSFBSurface::setDrawingFlagsByAlpha(unsigned char alpha) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* set the drawing flags */
-    if (alpha == 255)
-        setDrawingFlags((MMSFBSurfaceDrawingFlags)DSDRAW_NOFX);
-    else
-        setDrawingFlags((MMSFBSurfaceDrawingFlags)DSDRAW_BLEND);
+    // set the drawing flags
+    if (this->config.premultiplied) {
+    	// premultiplied surface, have to premultiply the color
+	    if (alpha == 255)
+	        setDrawingFlags((MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY));
+	    else
+	        setDrawingFlags((MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND|DSDRAW_SRC_PREMULTIPLY));
+    }
+    else {
+	    if (alpha == 255)
+	        setDrawingFlags((MMSFBSurfaceDrawingFlags)DSDRAW_NOFX);
+	    else
+	        setDrawingFlags((MMSFBSurfaceDrawingFlags)DSDRAW_BLEND);
+    }
 
     return true;
 }
