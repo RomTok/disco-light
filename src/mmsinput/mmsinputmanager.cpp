@@ -37,33 +37,32 @@ MMSInputManager::~MMSInputManager() {
 void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	MMSWindow *window=NULL;
 	vector<MMSInputEvent> inputeventset;
-	
+
 	this->mutex.lock();
 
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
-		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: %s", this->mapper->lookUpKeyName(inputevent->key).c_str());
 
 		/* check crtl+c and exit */
 		if((inputevent->key==DIKS_SMALL_C)&&(this->lastkey==DIKS_CONTROL))
 			exit(1);
-	
+
 		this->lastkey = inputevent->key;
-	
+
 		this->mapper->mapkey(inputevent, &inputeventset);
-	
+
 		if((inputeventset.at(0).key==DIKS_POWER)||(inputeventset.at(0).key==DIKS_POWER2)) {
 			if(config->getShutdown() == true) {
 				DEBUGMSG("MMSINPUTMANAGER", "executing: %s", config->getShutdownCmd().c_str());
-				
-				executeCmd(config->getShutdownCmd());			
+
+				executeCmd(config->getShutdownCmd());
 				sleep(30);
-			}	
+			}
 			exit(0);
 		}
 
 		window = this->windowmanager->getToplevelWindow();
-	
+
 		if(window!=NULL) {
 			/* we have a window -> lets see if there are navigation keys */
 			for(unsigned y=0;y<inputeventset.size();y++) {
@@ -76,7 +75,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				}
 			}
 		}
-		
+
 		/* got through subscriptions first */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
@@ -100,7 +99,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: %d,%d", inputevent->posx, inputevent->posy);
-		
+
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
 
 		window = this->windowmanager->getToplevelWindow();
@@ -129,7 +128,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: %d,%d", inputevent->posx, inputevent->posy);
 
-		
+
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
 
 		window = this->windowmanager->getToplevelWindow();
@@ -149,10 +148,10 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			}
 		}
 
-	
-	
-	
-	
+
+
+
+
 		/* got through subscriptions first */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
@@ -170,16 +169,16 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 					}
 			}
 		}
-	
-	
-	
+
+
+
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
-		
-		
+
+
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
 			/* get the window rect and check if the pointer is in there */
@@ -201,13 +200,13 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			window->handleInput(&inputeventset);
 		}
 	}
-	
+
 	this->mutex.unlock();
 }
 
 void MMSInputManager::addDevice(DFBInputDeviceID device, int inputinterval) {
 	MMSInputThread *thread = new MMSInputThread(this, device, inputinterval);
-	
+
 	this->threads.push_back(thread);
 
 }
