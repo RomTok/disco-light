@@ -48,13 +48,14 @@ string MMSInputMapper::lookUpKeyName(DFBInputDeviceKeySymbol key) {
     struct DFBKeySymbolName     *symbol_name;
 
    	symbol_name = (DFBKeySymbolName *)bsearch( &key,keynames,sizeof(keynames) / sizeof(keynames[0]) - 1, sizeof(keynames[0]), compare_symbol);
+   	if(!symbol_name) return "NULL";
 
    	return symbol_name->name;
 }
 
 DFBInputDeviceKeySymbol MMSInputMapper::lookUpKeySymbol(const string keyname) {
 	DEBUGMSG("MMSINPUTMANAGER", "got key: " + keyname);
-	
+
 	if(strToUpr(keyname) == "BACKSPACE") return DIKS_BACKSPACE;
 	if(strToUpr(keyname) == "TAB") return DIKS_TAB;
 	if(strToUpr(keyname) == "RETURN") return DIKS_RETURN;
@@ -320,28 +321,28 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 	/* map the keys */
 	try {
 		LIBXML_TEST_VERSION
-				
-		parser = xmlReadFile((char *)mapfile.c_str(), NULL, 0);		
-			
+
+		parser = xmlReadFile((char *)mapfile.c_str(), NULL, 0);
+
 		if(parser == NULL) {
 			throw new MMSError(1, "Could not parse file:" + mapfile);
 		}
 		else {
-			
+
 			xmlNode* pNode = xmlDocGetRootElement(parser);
-            
+
 			// check if incorrent input mapfile found
 			if(xmlStrcmp(pNode->name, (const xmlChar *) "mmsinputmaps")) {
 				std::cout << "invalid mapfile (" << mapfile << ") - does not contain mmsinputmaps root node" << std::endl;
 				throw new MMSError(1, "invalid file");
 			}
-			
+
 			pNode = pNode->xmlChildrenNode;
 
 			// need char buffers fpr mapping information
 			xmlChar *keyName;
 			xmlChar *mapTo;
-			
+
 			// walk trough the child node, until found the correct map node
 			for (walkNode = pNode; walkNode; walkNode = walkNode->next) {
 				xmlChar *mapName;
@@ -352,20 +353,20 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 				mapName   = xmlGetProp(walkNode, (const xmlChar*)"name");
 				if(!mapName)
 				    continue;
-				
+
 				if(!xmlStrcmp(mapName, (const xmlChar *) name.c_str())) {
 					DEBUGMSG("MMSINPUTMANAGER", "using mapping set of " + name + " node");
-							
+
 					walkNode = walkNode->xmlChildrenNode;
 					for (curNode = walkNode; curNode; curNode = curNode->next) {
 						if(xmlStrcmp(curNode->name, (const xmlChar *) "key"))
 							continue;
-								
+
 						keyName = xmlGetProp(curNode, (const xmlChar*)"name");
 						mapTo   = xmlGetProp(curNode, (const xmlChar*)"mapto");
-					    
+
 					    this->keyMap.insert(pair<string, string> (strToUpr(string((const char *) keyName)), strToUpr(string((const char *)mapTo))));
-					    	
+
 						xmlFree(keyName);
 						xmlFree(mapTo);
 					}
@@ -374,7 +375,7 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 					//ignore this node
 					DEBUGMSG("MMSINPUTMANAGER", "Ignore mapping set of " + string((const char *) mapName) + " node");
 				}
-				
+
 				xmlFree(mapName);
 			}
         }
@@ -387,19 +388,19 @@ MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 }
 
 MMSInputMapper::~MMSInputMapper() {
-	
+
 	this->keyMap.clear();
 	delete this->parser;
 }
 
 void MMSInputMapper::mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *inputeventset) {
     string symbol = lookUpKeyName(inputevent->key);
-    MMSInputEvent evt; 
+    MMSInputEvent evt;
 
 	/* parse the result nodes */
     typedef multimap<string, string>::iterator MI;
     pair<MI,MI> iter = this->keyMap.equal_range(symbol);
-    
+
     for( MI run = iter.first; run != iter.second; ++run ) {
    		string foundkeyname = run->second;
    	    DFBInputDeviceKeySymbol foundkey = lookUpKeySymbol(foundkeyname);
