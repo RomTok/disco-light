@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "mmstools/mmstcpserver.h"
+#include "mmstools/tools.h"
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
@@ -89,7 +90,7 @@ void MMSTCPServer::threadMain() {
 		if (FD_ISSET(this->s, &readfds)) {
 			/* going to accept the new connection */
 			if ((new_s = accept(this->s, (struct sockaddr *)&sac, &saclen))<0) continue;
-			
+
 			/* call next server thread */
 			if (this->st_size<=0) {
 				close(new_s);
@@ -102,12 +103,12 @@ void MMSTCPServer::threadMain() {
 		}
 		else
 		if (FD_ISSET(this->s, &writefds)) {
-			printf ("WRITEFDS\n");
+			DEBUGOUT ("WRITEFDS\n");
 			return;
 		}
 		else
 		if (FD_ISSET(this->s, &errorfds)) {
-			printf ("ERRORFDS\n");
+			DEBUGOUT ("ERRORFDS\n");
 			return;
 		}
 		else {

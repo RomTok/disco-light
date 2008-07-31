@@ -51,10 +51,10 @@ void MMSFBWindowManagerThread::threadMain() {
 	    	else
 	    		mmsfbwindowmanager->setPointerOpacity(0);
     	}
-    		
-    	
+
+
         if (!*(this->high_freq_surface)) {
-            /* have no region */ 
+            /* have no region */
             sleep(1);
             continue;
         }
@@ -63,7 +63,7 @@ void MMSFBWindowManagerThread::threadMain() {
         struct  timeval tv;
         gettimeofday(&tv, NULL);
         int newfliptime = (((int)tv.tv_sec)%1000000)*1000+((int)tv.tv_usec)/1000;
-        int diff = newfliptime - *(this->high_freq_lastflip);  
+        int diff = newfliptime - *(this->high_freq_lastflip);
         if ((diff > 0)&&(diff < 1000)) {
             /* already running */
             msleep(200);
@@ -81,7 +81,7 @@ void MMSFBWindowManagerThread::threadMain() {
             (*(this->high_freq_surface))->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
             (*(this->high_freq_surface))->blit(*(this->high_freq_saved_surface), NULL, 0, 0);
         }
-            printf("flipped not fas enough");
+        DEBUGOUT("flipped not fast enough");
         mmsfbwindowmanager->flipSurface(*(this->high_freq_surface), NULL,
                                        (MMSFBSurfaceFlipFlags)0, true);
         *(this->high_freq_surface) = NULL;

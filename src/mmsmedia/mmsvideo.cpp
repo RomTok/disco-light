@@ -27,15 +27,15 @@ MMS_CREATEERROR(MMSVideoError);
 
 /**
  * Callback, that will be called if xine sends event messages.
- *  
+ *
  * @param   userData    [in/out]    pointer to the MMSVideo object
  * @param   event       [in]        pointer to event structure
  */
 static void queue_cb(void *userData, const xine_event_t *event) {
 	MMSVideo               *mmsvideo = (MMSVideo*)userData;
     xine_ui_message_data_t *msg      = (xine_ui_message_data_t*)event->data;
-	
-    printf("event: %d\n", event->type);
+
+    DEBUGOUT("event: %d\n", event->type);
 	switch(event->type) {
         case XINE_EVENT_UI_MESSAGE:
 			if(msg->explanation)
@@ -51,7 +51,7 @@ static void queue_cb(void *userData, const xine_event_t *event) {
  *
  * @param   window  [in]    main window for video playback
  * @param   verbose [in]    if true the xine engine writes debug messages to stdout
- *  
+ *
  * @see MMSAV::MMSAV()
  * @see MMSAV::initialize()
  */
@@ -76,21 +76,21 @@ void MMSVideo::open() {
  * Starts playing.
  *
  * If the continue flag is set it tries to continue
- * at the position where it was stopped before. 
- * 
+ * at the position where it was stopped before.
+ *
  * @param   file    file to play
  * @param   cont    if true it tries to continue at a position stopped before
- * 
+ *
  * @exception   MMSAVError stream could not be opened
  */
 void MMSVideo::startPlaying(const string file, const bool cont) {
    this->open();
-    
+
    string::size_type loc = file.find( "://", 0 );
    if( loc != string::npos ) {
 	   /* we found a mrl, so we play file directly */
 	   MMSAV::startPlaying(file, cont);
-   } 
+   }
    else {
 	   /* we found no mrl type, it seems to be a file */
 	   MMSAV::startPlaying("file://" + file, cont);

@@ -437,9 +437,9 @@ void MMSMenuWidget::recalculateChildren() {
                    	}
 
 
-//printf("rect=%s,%d,%d,%d,%d\n", this->children.at(i)->getName().c_str(),rect.x,rect.y,rect.w,rect.h);
-//printf("rectx=%d,%d\n", this->innerGeom.x,this->innerGeom.y);
-//printf("rectx=%d,%d\n", this->virtualGeom.x,this->virtualGeom.y);
+//DEBUGOUT("rect=%s,%d,%d,%d,%d\n", this->children.at(i)->getName().c_str(),rect.x,rect.y,rect.w,rect.h);
+//DEBUGOUT("rectx=%d,%d\n", this->innerGeom.x,this->innerGeom.y);
+//DEBUGOUT("rectx=%d,%d\n", this->virtualGeom.x,this->virtualGeom.y);
 
 //					rect.x+=this->innerGeom.x;
 //					rect.y+=this->innerGeom.y;
@@ -753,7 +753,7 @@ void MMSMenuWidget::recalculateChildren() {
 			                }
 			                else {
 			                	/* smooth scrolling */
-			                	// printf("scroll smooth\n");
+			                	// DEBUGOUT("scroll smooth\n");
 			                	/* get the percent of scrolling */
 				                int d = (10000*scrolling_offset) / (this->item_w + item_hmargin*2);
 
@@ -1006,7 +1006,7 @@ void MMSMenuWidget::emitOnReturnForParents(MMSMenuWidget *orw) {
 }
 
 bool MMSMenuWidget::callOnReturn() {
-	
+
 	if (!switchToSubMenu()) {
 		// call onReturn for all parents
 		if (this->parent_menu)
@@ -1852,14 +1852,14 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 		    	count = count % this->children.size();
 	            if (fixedpos >= this->v_items)
 	                fixedpos = (this->v_items - 1) / 2;
-	
+
 		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
 		    		count = this->v_items-count;
 		    		while (count--)
 		    			scrollUpEx(1, refresh, test, leave_selection);
 		    		return true;
 		    	}
-	
+
 	    		while (count--)
 	    			scrollDownEx(1, refresh, test, leave_selection);
 	    		return true;
@@ -1894,14 +1894,14 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool l
 		    	count = count % this->children.size();
 	            if (fixedpos >= this->v_items)
 	                fixedpos = (this->v_items - 1) / 2;
-	
+
 		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->v_items - 1) / 2))) {
 		    		count = this->v_items-count;
 		    		while (count--)
 		    			scrollDownEx(1, refresh, test, leave_selection);
 		    		return true;
 		    	}
-	
+
 	    		while (count--)
 	    			scrollUpEx(1, refresh, test, leave_selection);
 	    		return true;
@@ -1936,14 +1936,14 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 		    	count = count % this->children.size();
 	            if (fixedpos >= this->h_items)
 	                fixedpos = (this->h_items - 1) / 2;
-	
+
 		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
 		    		count = this->children.size()-count;
 		    		while (count--)
 		    			scrollLeftEx(1, refresh, test, leave_selection);
 		    		return true;
 		    	}
-	
+
 	    		while (count--)
 	    			scrollRightEx(1, refresh, test, leave_selection);
 	    		return true;
@@ -1978,14 +1978,14 @@ bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool
 		    	count = count % this->children.size();
 	            if (fixedpos >= this->h_items)
 	                fixedpos = (this->h_items - 1) / 2;
-	
+
 		    	if (count > (this->children.size() / 2) - (fixedpos - ((this->h_items - 1) / 2))) {
 		    		count = this->children.size()-count;
 		    		while (count--)
 		    			scrollRightEx(1, refresh, test, leave_selection);
 		    		return true;
 				}
-	
+
 	    		while (count--)
 	    			scrollLeftEx(1, refresh, test, leave_selection);
 	    		return true;

@@ -23,7 +23,7 @@
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include "mmsgui/fb/mmsfb.h"
 
-/* initialize the mmsfbsurfacemanager object */ 
+/* initialize the mmsfbsurfacemanager object */
 MMSFBSurfaceManager *mmsfbsurfacemanager = new MMSFBSurfaceManager();
 
 MMSFBSurfaceManager::MMSFBSurfaceManager() {
@@ -43,7 +43,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     /* searching for free surface */
     for (unsigned int i = 0; i < this->free_surfaces.size(); i++) {
         surface = free_surfaces.at(i).surface;
-        MMSFBSurfaceConfig *sc = &surface->config; 
+        MMSFBSurfaceConfig *sc = &surface->config;
         if   ((sc->w == w) && (sc->h == h)
             &&(sc->pixelformat == pixelformat) && (sc->backbuffer == backbuffer)) {
             /* found, return it */
@@ -52,7 +52,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
             this->used_surfaces.push_back(surface);
 */
 
-//printf("reuse surface=%d,%d\n", w,h);
+//DEBUGOUT("reuse surface=%d,%d\n", w,h);
 
             return surface;
         }
@@ -61,7 +61,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
             if (free_surfaces.at(i).insert_time < time(NULL) - 30) {
                 /* the surface is longer than 30 seconds in the free_surfaces list, remove it */
 
-//printf("remove surface=%2,%d\n", w,h);
+//DEBUGOUT("remove surface=%2,%d\n", w,h);
 
                 if (surface->dfbsurface) {
                     surface->dfbsurface->Release(surface->dfbsurface);
@@ -80,12 +80,12 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     surface_desc.pixelformat = getDFBPixelFormatFromString(pixelformat);
 
     if (surface_desc.pixelformat==DSPF_UNKNOWN)
-        surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags & ~DSDESC_PIXELFORMAT); 
+        surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags & ~DSDESC_PIXELFORMAT);
 
     /* we use premultiplied surfaces because of alphachannel blitting with better performance */
     surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags | DSDESC_CAPS);
     surface_desc.caps = DSCAPS_PREMULTIPLIED;
-    
+
     switch (backbuffer) {
         case 1: /* front + one back buffer (double) */
             surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_DOUBLE);
@@ -98,7 +98,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     /* surface should stored in system memory only? */
     if (systemonly)
     	surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_SYSTEMONLY);
-    
+
     /* create the surface */
     if ((dfbres=mmsfb->dfb->CreateSurface(mmsfb->dfb, &surface_desc, &dfbsurface)) != DFB_OK) {
     	DEBUGMSG("MMSGUI", "ERROR");
@@ -119,7 +119,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     surface->getMemSize(&size);
     this->surface_mem_cnt+=size;
     DEBUGMSG("MMSGUI", "Allocated surface memory: " + iToStr(this->surface_mem_cnt) + " Byte");
-    
+
     /* add to used surfaces */
 /* TRACE
     this->used_surfaces.push_back(surface);

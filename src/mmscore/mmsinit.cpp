@@ -48,7 +48,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
         MMSRcParser rcparser;
 
         if(configfile != "") {
-        	printf("set configfile: %s\n", configfile.c_str());
+        	DEBUGOUT("set configfile: %s\n", configfile.c_str());
 	        rcparser.parseFile(configfile);
 	        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
         } else {

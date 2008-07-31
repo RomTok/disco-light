@@ -36,6 +36,14 @@
 #define DEBUGMSG(ident, msg...)
 #endif
 
+#ifdef __ENABLE_DEBUG__
+#define DEBUGOUT(msg...) printf(msg)
+#define DEBUGERR(msg...) fprintf(stderr, msg)
+#else
+#define DEBUGOUT(msg...)
+#define DEBUGERR(msg...)
+#endif
+
 string substituteEnvVars(string input);
 
 string maskChars(string str);

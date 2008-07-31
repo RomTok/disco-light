@@ -37,9 +37,9 @@
 MMSFileDialog::MMSFileDialog() {
 	this->dm = NULL;
 	this->path = "/";
-	this->filename = "";	
+	this->filename = "";
 	this->dialogwindow = NULL;
-	
+
 	// initialize the callbacks
     this->onOK     = new sigc::signal<void, MMSFileDialog*>;
     this->onCancel = new sigc::signal<void>;
@@ -50,14 +50,14 @@ MMSFileDialog::MMSFileDialog(string path, string filename, MMSWindow *dialogwind
 	this->path = path;
 	this->filename = filename;
 	this->dialogwindow = dialogwindow;
-	
+
 	// initialize the callbacks
     this->onOK     = new sigc::signal<void, MMSFileDialog*>;
     this->onCancel = new sigc::signal<void>;
-}	
+}
 
 MMSFileDialog::~MMSFileDialog() {
-	
+
 	// delete the callbacks
     if (this->onOK)
     	delete this->onOK;
@@ -83,7 +83,7 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 		// load the default dialog file which includes a child window
 		// do this only if a parent window is given!!!
 		this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsfiledialog.xml", theme);
-	
+
 	if (!this->dialogwindow)
 		return false;
 
@@ -153,11 +153,11 @@ bool MMSFileDialog::show() {
 	if (this->filedialog_name)
 		this->filedialog_name->setText(this->filename);
 	fillMenu();
-	
+
 	// show the dialog
 	this->dialogwindow->setFocus();
 	this->dialogwindow->show();
-	
+
 	return true;
 }
 
@@ -206,7 +206,7 @@ void MMSFileDialog::onReturn(MMSWidget *widget) {
 		            }
 		            else
 		            if ((int)data.find("F.") == 0) {
-		            	printf("file = %s\n", data.c_str());
+		            	DEBUGOUT("file = %s\n", data.c_str());
 		            }
 				}
 			}
@@ -248,7 +248,7 @@ bool MMSFileDialog::fillMenu() {
 	// update path
 	if (this->filedialog_path)
 		this->filedialog_path->setText(path);
-	
+
 	// create back item
 	if (this->path != "/") {
 		MMSWidget *item = filedialog_filelist->newItem();
@@ -295,7 +295,7 @@ bool MMSFileDialog::fillMenu() {
 
 	// selection to the first item
 	this->filedialog_filelist->setSelected(0);
-	
+
 	return true;
 }
 

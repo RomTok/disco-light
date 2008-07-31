@@ -76,13 +76,13 @@ bool MMSFBLayer::setExclusiveAccess() {
         MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetCooperativeLevel(DLSCL_EXCLUSIVE) failed");
         return false;
     }
-    
+
     return true;
 }
 
 bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     DFBResult               dfbres;
-    DFBDisplayLayerConfig   dlc;     
+    DFBDisplayLayerConfig   dlc;
 
     /* check if initialized */
     INITCHECK;
@@ -103,14 +103,14 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     if (!config) {
     	DEBUGMSG("MMSGUI", "Layer properties:");
     	DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
-	
+
     	DEBUGMSG("MMSGUI", " pixelformat: " + this->config.pixelformat);
-	
+
 	    if (this->config.buffermode!="")
 	    	DEBUGMSG("MMSGUI", " buffermode:  " + this->config.buffermode);
 	    else
 	    	DEBUGMSG("MMSGUI", " buffermode:  NONE");
-	
+
 	    if (this->config.options!="")
 	    	DEBUGMSG("MMSGUI", " options:     " + this->config.options);
 	    else
@@ -159,7 +159,7 @@ bool MMSFBLayer::getPixelformat(string *pixelformat) {
 
 bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffermode, string options) {
     DFBResult               dfbres;
-    DFBDisplayLayerConfig   dlc;     
+    DFBDisplayLayerConfig   dlc;
 
     /* check if initialized */
     INITCHECK;
@@ -169,7 +169,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     if (!getConfiguration(&config))
         return false;
 
-   
+
     /* change config data */
     dlc.flags = DLCONF_NONE;
     dlc.width = w;
@@ -177,7 +177,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     dlc.pixelformat = getDFBPixelFormatFromString(pixelformat);
     dlc.buffermode = getDFBLayerBufferModeFromString(buffermode);
     dlc.options = getDFBLayerOptionsFromString(options);
-		
+
     if (dlc.width > 0)
         dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_WIDTH);
     if (dlc.height > 0)
@@ -187,7 +187,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     if (dlc.buffermode != DLBM_UNKNOWN)
         dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_BUFFERMODE);
   //  if (dlc.options != DLOP_NONE) {
-        printf("\nSET OPTIONS 0x%08x!!!!\n", dlc.options);
+        DEBUGOUT("\nSET OPTIONS 0x%08x!!!!\n", dlc.options);
         dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_OPTIONS);
   //  }
 
@@ -209,7 +209,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
             DEBUGMSG("MMSGUI", "Your configuration contains options that are not supported.");
             return false;
         }
-    	
+
         /* check if desired resolution is unsupported */
     	if(failedFlags & DLCONF_WIDTH)
             dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_WIDTH);
@@ -221,7 +221,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
         }
         DEBUGMSG("MMSGUI", "Your configuration contains a resolution that is not supported.");
     }
-    
+
     /* set configuration */
     if((dfbres = this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
@@ -308,7 +308,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 
     /* save this for the next call */
     this->surface = *surface;
-    
+
     /* initialize the flip flags for the layer surface */
     this->surface->setFlipFlags(this->flipflags);
 
@@ -317,7 +317,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 
 bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
 	this->flipflags = flags;
-	
+
 	/* if the layer surface does exist, update it */
 	if (this->surface)
 	    this->surface->setFlipFlags(this->flipflags);
@@ -443,7 +443,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 #ifdef USE_MMSFB_WINMAN
 
     MMSFBSurface *surface;
-    bool usels = false; 
+    bool usels = false;
 
     if (uselayersurface) {
         /* check: i can only accept this flag */
@@ -451,7 +451,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 //
 //temporary disabled, because of some timing problems
 //biggest problem: the DVD freeze-frame sends NO frames to the GUI - therefore the autodetection cannot run correctly
-//                 -> so saved_surface in mmsfb_windowmanager can be removed in the next release!!! 
+//                 -> so saved_surface in mmsfb_windowmanager can be removed in the next release!!!
 //
 //        usels = ((x == 0)&&(y == 0)&&(w == this->config.w)&&(h == this->config.h));
 //
@@ -491,7 +491,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
     mmsfbwindowmanager->addWindow(*window);
 
 #endif
-    
+
     return true;
 }
 

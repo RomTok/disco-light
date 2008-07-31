@@ -27,7 +27,7 @@
 #include <errno.h>
 #include <curl/curl.h>
 #include "mmstools/mmsfile.h"
-#include "mmstools/tools.h" 
+#include "mmstools/tools.h"
 
 /* curl calls this c-routine to transfer data to the object */
 size_t c_write_cb(char *buffer, size_t size, size_t nitems, void *outstream) {
@@ -53,7 +53,7 @@ size_t MMSFile::write_cb(char *buffer, size_t size, size_t nitems, void *outstre
         newbuff=(char*)realloc(this->buffer,this->buf_len + (size - freebuff));
         if(newbuff==NULL) {
             /*TODO: ERROR HANDLING */
-            fprintf(stderr,"callback buffer grow failed\n");
+        	DEBUGERR("callback buffer grow failed\n");
             size=freebuff;
         }
         else {
@@ -116,7 +116,7 @@ bool MMSFile::fillCurlBuffer(size_t want, unsigned waittime) {
 
         if(cres!=CURLM_OK) {
             /*TODO: ERROR HANDLING */
-            fprintf(stderr,"curl_multi_fdset failed %d\n",cres);
+        	DEBUGERR("curl_multi_fdset failed %d\n",cres);
             return false;
         }
 
@@ -238,7 +238,7 @@ bool MMSFile::openFile() {
         if((this->buf_pos == 0) && (!this->still_progr)) {
             /* an error occurred */
             curl_multi_remove_handle(this->mhandle, this->curl);
-            curl_multi_cleanup(this->mhandle); 
+            curl_multi_cleanup(this->mhandle);
             curl_easy_cleanup(this->curl);
             resetAll();
             this->lasterror=ENOENT;

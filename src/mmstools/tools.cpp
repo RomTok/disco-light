@@ -496,7 +496,7 @@ void executeCmd(string cmd) {
     	argv[i]=NULL;
     argc=0;
     sprintf(buffer,"%s",cmd.c_str());
-    printf("\n%s\n",buffer);
+    DEBUGOUT("\n%s\n",buffer);
     argv[0]=buffer;
 
     i=0;

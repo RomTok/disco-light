@@ -795,7 +795,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
         return false;
 
 #ifdef __PUPTRACE__
-printf("draw widget = %s ***************************\n", getName().c_str());
+    DEBUGOUT("draw widget = %s ***************************\n", getName().c_str());
 #endif
 
     /* lock */
@@ -914,7 +914,7 @@ if (!this->has_own_surface) {
                 clip.y2 = innerGeom.y + innerGeom.h - 1;
 
 #ifdef MMSGUI_STDOUT_TRACE
-printf("-----%u: widget setclip (%x)\n", pthread_self(), this->windowSurface);
+                DEBUGOUT("-----%u: widget setclip (%x)\n", pthread_self(), this->windowSurface);
 #endif
 
                 this->windowSurface->setClip(&clip);
@@ -932,7 +932,7 @@ printf("-----%u: widget setclip (%x)\n", pthread_self(), this->windowSurface);
                 if (this->drawable) {
                     /* copy background from parent */
 #ifdef __PUPTRACE__
-printf("copy from widget, w = %s -> w = %s\n", widget->getName().c_str(), this->getName().c_str());
+                	DEBUGOUT("copy from widget, w = %s -> w = %s\n", widget->getName().c_str(), this->getName().c_str());
 #endif
                 	this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)(DSBLIT_NOFX));
                     this->surface->blit(widget->surface, &srcrect, 0, 0);
@@ -966,7 +966,7 @@ printf("copy from widget, w = %s -> w = %s\n", widget->getName().c_str(), this->
                         DFBRectangle src, dst;
                         int sw, sh;
 #ifdef __PUPTRACE__
-printf("copy from window, win=%s -> w=%s\n", this->rootwindow->getName().c_str(), this->getName().c_str());
+                        DEBUGOUT("copy from window, win=%s -> w=%s\n", this->rootwindow->getName().c_str(), this->getName().c_str());
 #endif
 
                         /* get width and height of windows background image */
