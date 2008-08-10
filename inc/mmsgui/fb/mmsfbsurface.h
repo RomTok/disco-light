@@ -64,6 +64,13 @@ class MMSFBSurface {
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
         
+        // first time flag for eAB_blend_argb_to_argb()
+        static bool 			firsttime_eAB_blend_argb_to_argb;
+        
+        // first time flag for eAB_blend_ayuv_to_ayuv()
+        static bool 			firsttime_eAB_blend_ayuv_to_ayuv;
+        
+        
         void deleteSubSurface(MMSFBSurface *surface);
 
         void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
@@ -74,8 +81,15 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
         
-        void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int width, int height,
-        					   		unsigned int *dst, int dst_pitch);
+        void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+        void eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+        bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
+        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
+        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
+        
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
         
         

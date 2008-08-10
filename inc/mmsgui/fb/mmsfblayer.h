@@ -57,6 +57,9 @@ class MMSFBLayer {
         MMSFBSurface            *surface;   /* layers surface */
 
         MMSFBSurfaceFlipFlags	flipflags;	/* flags which are used when flipping */
+
+        // first time flag for createSurface()
+        static bool 			firsttime_createsurface;
         
     public:
         MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer);

@@ -26,6 +26,9 @@
 
 D_DEBUG_DOMAIN( MMS_Layer, "MMS/Layer", "MMS Layer" );
 
+// static variables
+bool MMSFBLayer::firsttime_createsurface = true;
+
 
 #define INITCHECK  if(!this->dfblayer){MMSFB_SetError(0,"not initialized");return false;}
 
@@ -332,7 +335,6 @@ bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
 
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
                                string pixelformat, int backbuffer) {
-	static bool firsttime = true;
 	
 	
     D_DEBUG_AT( MMS_Layer, "createSurface( %dx%d, %s, %s buffer )\n", w, h, pixelformat.c_str(),
@@ -366,9 +368,9 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
             pixelformat = MMSFB_PF_ARGB;
     }
 
-    if (firsttime) {
+    if (firsttime_createsurface) {
     	printf("DISKO: Pixelformat %s is used for surfaces.\n", pixelformat.c_str());
-    	firsttime = false;
+    	firsttime_createsurface = false;
     }
     return mmsfb->createSurface(surface, w, h, pixelformat, backbuffer, (this->config.buffermode == MMSFB_BM_BACKSYSTEM));
 }
