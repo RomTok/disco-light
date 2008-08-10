@@ -35,27 +35,29 @@ MMSRcParser::MMSRcParser() {
     this->configdb.database = "/tmp/mmsconfigdb";
 	this->datadb.database   = "/tmp/mmsdatadb";
 
-    this->dfb.xres                     = 800;
-    this->dfb.yres                     = 600;
-    this->dfb.outputtype               = "vesafb";
-    this->dfb.videolayerid             = 0;
-    this->dfb.videolayerpixelformat    = "RGB16";
-    this->dfb.videolayeroptions        = "";
-    this->dfb.videolayerbuffermode     = "BACKSYSTEM";
-	this->dfb.graphicslayerid          = 0;
-	this->dfb.graphicslayerpixelformat = "RGB16";
-//    this->dfb.graphicslayeroptions     = "SRC_COLORKEY";
-    this->dfb.graphicslayeroptions     = "";
-    this->dfb.graphicslayerbuffermode  = "BACKSYSTEM";
-    this->dfb.vrect.x                  = 0;
-    this->dfb.vrect.y                  = 0;
-    this->dfb.vrect.w                  = 0;
-    this->dfb.vrect.h                  = 0;
-    this->dfb.touchrect.x              = 0;
-    this->dfb.touchrect.y              = 0;
-    this->dfb.touchrect.w              = 0;
-    this->dfb.touchrect.h              = 0;
-    this->dfb.pointer                  = false;
+    this->dfb.xres                       = 800;
+    this->dfb.yres                       = 600;
+    this->dfb.outputtype                 = "vesafb";
+    this->dfb.videolayerid               = 0;
+    this->dfb.videolayerpixelformat      = "RGB16";
+    this->dfb.videolayeroptions          = "";
+    this->dfb.videolayerbuffermode       = "BACKSYSTEM";
+	this->dfb.graphicslayerid            = 0;
+	this->dfb.graphicslayerpixelformat   = "RGB16";
+    this->dfb.graphicslayeroptions       = "";
+    this->dfb.graphicslayerbuffermode    = "BACKSYSTEM";
+    this->dfb.vrect.x                    = 0;
+    this->dfb.vrect.y                    = 0;
+    this->dfb.vrect.w                    = 0;
+    this->dfb.vrect.h                    = 0;
+    this->dfb.touchrect.x                = 0;
+    this->dfb.touchrect.y                = 0;
+    this->dfb.touchrect.w                = 0;
+    this->dfb.touchrect.h                = 0;
+    this->dfb.pointer                    = false;	// show the mouse pointer, default no
+	this->dfb.graphicswindowpixelformat  = "";		// supported values: ARGB or AYUV, empty string means autodetection
+	this->dfb.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
+    this->dfb.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -301,7 +303,13 @@ void MMSRcParser::throughDFBSettings(xmlNode* node) {
 	    	this->dfb.touchrect.h = strToInt(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "pointer"))
             this->dfb.pointer = strToBool(string((const char *)parvalue));
-
+		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat"))
+			this->dfb.graphicswindowpixelformat = string((const char *)parvalue);
+		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat"))
+			this->dfb.graphicssurfacepixelformat = string((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
+            this->dfb.extendedaccel = strToBool(string((const char *)parvalue));
+		
 	    xmlFree(parname);
 	    xmlFree(parvalue);
 

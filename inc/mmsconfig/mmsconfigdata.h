@@ -77,6 +77,9 @@ class MMSConfigDataDFB {
 	    CVRECT vrect;
 	    CVRECT touchrect;
 	    bool   pointer;
+		string graphicswindowpixelformat;
+		string graphicssurfacepixelformat;
+	    bool   extendedaccel;
 };
 
 class MMSConfigData {
@@ -138,6 +141,9 @@ class MMSConfigData {
         const CVRECT getVRect();
         const CVRECT getTouchRect();
         const bool   getPointer();
+        const string getGraphicsWindowPixelformat();
+        const string getGraphicsSurfacePixelformat();
+        const bool   getExtendedAccel();
 };
 
 #endif /*MMSCONFIGDATA_H_*/

@@ -157,7 +157,8 @@ bool MMSFBLayer::getPixelformat(string *pixelformat) {
     return true;
 }
 
-bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffermode, string options) {
+bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffermode, string options,
+								  string window_pixelformat, string surface_pixelformat) {
     DFBResult               dfbres;
     DFBDisplayLayerConfig   dlc;
 
@@ -235,6 +236,10 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     /* set background */
     this->dfblayer->SetBackgroundMode(this->dfblayer, DLBM_COLOR);
     this->dfblayer->SetBackgroundColor(this->dfblayer, 0, 0, 0, 0);
+
+    // set special config
+    this->config.window_pixelformat = window_pixelformat;
+    this->config.surface_pixelformat = surface_pixelformat;
 
     return true;
 }
@@ -327,7 +332,9 @@ bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
 
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
                                string pixelformat, int backbuffer) {
-
+	static bool firsttime = true;
+	
+	
     D_DEBUG_AT( MMS_Layer, "createSurface( %dx%d, %s, %s buffer )\n", w, h, pixelformat.c_str(),
                 (backbuffer != 0) ? "double" : "single" );
 
@@ -339,27 +346,38 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
     if (pixelformat == MMSFB_PF_NONE) {
         pixelformat = this->config.pixelformat;
         if (!isAlphaPixelFormat(pixelformat)) {
-            /* the gui internally needs surfaces with alpha channel */
-            if (!isRGBPixelFormat(pixelformat))
-	            /* so switch all non-alpha pixelformats to AYUV */
-	            pixelformat = MMSFB_PF_AYUV;
-            else
-	            /* so switch all non-alpha pixelformats to ARGB */
-	            pixelformat = MMSFB_PF_ARGB;
+        	// the gui internally needs surfaces with alpha channel
+        	// now we have to decide if we are working in RGB or YUV color space
+        	pixelformat = this->config.surface_pixelformat;
+        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+        		// use autodetection
+	        	if (!isRGBPixelFormat(pixelformat))
+		            // so switch all non-alpha pixelformats to AYUV
+		            pixelformat = MMSFB_PF_AYUV;
+	            else
+		            // so switch all non-alpha pixelformats to ARGB
+		            pixelformat = MMSFB_PF_ARGB;
+        	}
         }
         else
         if (isIndexedPixelFormat(pixelformat))
-            /* the gui internally needs non-indexed surfaces */
-            /* so switch all indexed pixelformats to ARGB */
+            // the gui internally needs non-indexed surfaces
+            // so switch all indexed pixelformats to ARGB
             pixelformat = MMSFB_PF_ARGB;
     }
 
+    if (firsttime) {
+    	printf("DISKO: Pixelformat %s is used for surfaces.\n", pixelformat.c_str());
+    	firsttime = false;
+    }
     return mmsfb->createSurface(surface, w, h, pixelformat, backbuffer, (this->config.buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
                               string pixelformat, bool usealpha, bool uselayersurface) {
 
+	static bool firsttime = true;
+	
     /* check if initialized */
     INITCHECK;
 
@@ -378,13 +396,18 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
     if (!isAlphaPixelFormat(pixelformat)) {
         /* non-alpha pixelformats  */
         if (usealpha) {
-            /* switch all non-alpha pixelformats to Axxx */
-        	if (!isRGBPixelFormat(pixelformat))
-	            /* so switch all non-alpha pixelformats to AYUV */
-	            pixelformat = MMSFB_PF_AYUV;
-            else
-	            /* so switch all non-alpha pixelformats to ARGB */
-	            pixelformat = MMSFB_PF_ARGB;
+        	// switch all non-alpha pixelformats to alpha
+        	// now we have to decide if we are working in RGB or YUV color space
+        	pixelformat = this->config.window_pixelformat;
+        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+        		// use autodetection
+	        	if (!isRGBPixelFormat(pixelformat))
+		            // so switch all non-alpha pixelformats to AYUV
+		            pixelformat = MMSFB_PF_AYUV;
+	            else
+		            // so switch all non-alpha pixelformats to ARGB
+		            pixelformat = MMSFB_PF_ARGB;
+        	}
         }
     }
     else {
@@ -404,6 +427,12 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
             pixelformat = MMSFB_PF_ARGB;
     }
 
+    if (firsttime) {
+    	printf("DISKO: Pixelformat %s is used for windows.\n", pixelformat.c_str());
+    	firsttime = false;
+    }
+    
+    
 #ifdef USE_DFB_WINMAN
 
     DFBResult               dfbres;

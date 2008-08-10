@@ -31,11 +31,20 @@
 
 
 typedef struct {
-    int     w;              /* width */
-    int     h;              /* height */
-    string  pixelformat;    /* pixel format */
-    string  buffermode;     /* buffer mode */
-    string  options;        /* options */
+	// width
+    int     w;
+    // height
+    int     h;
+    // pixelformat
+    string  pixelformat;
+    // buffer mode
+    string  buffermode;
+    // options
+    string  options;
+    // pixelformat for windows
+    string  window_pixelformat;
+    // pixelformat for surfaces
+    string  surface_pixelformat;
 } MMSFBLayerConfig;
 
 class MMSFBLayer {
@@ -58,7 +67,8 @@ class MMSFBLayer {
         bool getConfiguration(MMSFBLayerConfig *config = NULL);
         bool getResolution(int *w, int *h);
         bool getPixelformat(string *pixelformat);
-        bool setConfiguration(int w=0, int h=0, string pixelformat="", string buffermode="", string options="");
+        bool setConfiguration(int w=0, int h=0, string pixelformat="", string buffermode="", string options="",
+        					  string window_pixelformat = "", string surface_pixelformat = "");
         bool setOpacity(unsigned char opacity);
         bool setLevel(int level);
         bool getSurface(MMSFBSurface **surface);

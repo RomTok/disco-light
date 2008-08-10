@@ -232,6 +232,19 @@ const bool MMSConfigData::getPointer() {
     return this->dfb.pointer;
 }
 
+const string MMSConfigData::getGraphicsWindowPixelformat() {
+    return this->dfb.graphicswindowpixelformat;
+}
+
+const string MMSConfigData::getGraphicsSurfacePixelformat() {
+    return this->dfb.graphicssurfacepixelformat;
+}
+
+const bool MMSConfigData::getExtendedAccel() {
+    return this->dfb.extendedaccel;
+}
+
+
 /* static variables */
 MMSConfigDataGlobal MMSConfigData::global;
 MMSConfigDataDB     MMSConfigData::configdb;
