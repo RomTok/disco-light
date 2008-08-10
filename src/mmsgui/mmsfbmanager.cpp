@@ -182,6 +182,11 @@ void MMSFBManager::applySettings() {
     string buffermode = config.getGraphicsLayerBufferMode(); 
     DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d ,%s", config.getXres(), config.getYres(), pixelformat.c_str());
     mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
+    MMSFBSurface *ts = mmsfbsurfacemanager->getTemporarySurface(10,10);
+    if (ts) {
+    	ts->setExtendedAcceleration(config.getExtendedAccel());
+    	mmsfbsurfacemanager->releaseTemporarySurface(ts);
+    }
 }
 
 

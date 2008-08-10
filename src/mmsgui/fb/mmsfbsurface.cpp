@@ -29,6 +29,10 @@
 D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 
 
+// static MMSFBSurface variable
+bool MMSFBSurface::extendedaccel = false;
+
+
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->dfbsurface)){MMSFB_SetError(0,"not initialized");return false;}
 
 #define CLIPSUBSURFACE \
@@ -358,6 +362,14 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     }
 
     return true;
+}
+
+void MMSFBSurface::setExtendedAcceleration(bool extendedaccel) {
+	this->extendedaccel = extendedaccel;
+}
+
+bool MMSFBSurface::getExtendedAcceleration() {
+	return this->extendedaccel;
 }
 
 bool MMSFBSurface::isWinSurface() {
@@ -953,22 +965,144 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
     return true;
 }
 
+
+void MMSFBSurface::eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int width, int height,
+					   					  unsigned int *dst, int dst_pitch) {
+	// prepare...
+	unsigned int OLDDST = (*dst) + 1;
+	unsigned int OLDSRC  = (*src) + 1;
+	unsigned int *src_end = src + (src_pitch/4) * (height-1) + width;
+	int src_pitch_diff = src_pitch/4 - width;
+	int dst_pitch_diff = dst_pitch/4 - width;
+	register unsigned int d;
+
+	// for all lines
+	while (src < src_end) {
+		// for all pixels in the line
+		unsigned int *line_end = src + width;
+		while (src < line_end) {
+			// load pixel from memory and check if the previous pixel is the same
+			register unsigned int DST = *dst; 
+			register unsigned int SRC  = *src;
+			if ((DST==OLDDST)&&(SRC==OLDSRC)) {
+				// same pixel, use the previous value
+				if (SRC >> 24) {
+					// source has an alpha
+					*dst = d;
+				}
+			    dst++;
+			    src++;
+				continue;
+			}
+			OLDDST = DST;
+			OLDSRC = SRC;
+
+			// is the source alpha channel 0x00 or 0xff?
+			register unsigned int A = SRC >> 24;
+			if (A == 0xff) {
+				// source pixel is not transparent, copy it directly to the destination
+				d = SRC;
+				*dst = d;
+			}
+			else
+			if (!A) {
+				// source pixel is full transparent, do not change the destination
+				d = DST;
+			}
+			else
+			{
+				// source alpha is > 0x00 and < 0xff  
+				register unsigned int SA= 0x100 - A;
+				unsigned int a = DST >> 24;
+				unsigned int r = (DST << 8) >> 24;
+				unsigned int g = (DST << 16) >> 24;
+				unsigned int b = DST & 0xff;
+
+				// invert src alpha
+			    a = (SA * a) >> 8;
+			    r = (SA * r) >> 8;
+			    g = (SA * g) >> 8;
+			    b = (SA * b) >> 8;
+
+			    // add src to dst
+			    a += A;
+			    r += (SRC << 8) >> 24;
+			    g += (SRC << 16) >> 24;
+			    b += SRC & 0xff;
+			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+					| ((r >> 8) ? 0xff0000   : (r << 16))
+					| ((g >> 8) ? 0xff00     : (g << 8))
+			    	| ((b >> 8) ? 0xff 		 :  b);
+				*dst = d;
+			}
+		    
+		    dst++;
+		    src++;
+		}
+
+		// go to the next line
+		src+= src_pitch_diff; 
+		dst+= dst_pitch_diff;
+	}
+}
+
+
+
+bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+	// extended acceleration on?
+	if (!this->extendedaccel)
+		return false;
+
+	// currently we do not accelerate using video hardware
+	if (!((this->config.systemonly)&&(source->config.systemonly)))
+		return false;
+	
+	if (source->config.pixelformat == MMSFB_PF_ARGB) {
+		// source is ARGB
+		if (this->config.pixelformat == MMSFB_PF_ARGB) {
+			// destination is ARGB
+			if (source->config.blittingflags == DSBLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+
+//printf("blend alpha argb to argb\n");
+			}
+			
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
+	if (source->config.pixelformat == MMSFB_PF_AYUV) {
+		// source is AYUV
+
+		
+		// does not match
+		return false;
+	}
+
+	// does not match
+	return false;
+}
+
 bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
     DFBResult    dfbres;
-    DFBRectangle src;
+    DFBRectangle srcr;
 
     if (src_rect) {
-         src = *src_rect;
+         srcr = *src_rect;
     }
     else {
-         src.x = 0;
-         src.y = 0;
-         src.w = source->config.w;
-         src.h = source->config.h;
+         srcr.x = 0;
+         srcr.y = 0;
+         srcr.w = source->config.w;
+         srcr.h = source->config.h;
     }
 
     D_DEBUG_AT( MMS_Surface, "blit( %d,%d - %dx%d -> %d,%d ) <- %dx%d\n",
-                DFB_RECTANGLE_VALS(&src), x, y, this->config.w, this->config.h );
+                DFB_RECTANGLE_VALS(&srcr), x, y, this->config.w, this->config.h );
 
     MMSFB_TRACE();
 
@@ -978,12 +1112,13 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 
     /* blit */
     if (!this->is_sub_surface) {
-	    if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &src, x, y)) != DFB_OK) {
-	        MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, src="
-	        		               +iToStr(src.x)+","+iToStr(src.y)+","+iToStr(src.w)+","+iToStr(src.h)
-	        		               +", dst="+iToStr(x)+","+iToStr(y));
-	        return false;
-	    }
+    	if (!extendedAccelBlit(source, &srcr, x, y))
+		    if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &srcr, x, y)) != DFB_OK) {
+		        MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, srcr="
+		        		               +iToStr(srcr.x)+","+iToStr(srcr.y)+","+iToStr(srcr.w)+","+iToStr(srcr.h)
+		        		               +", dst="+iToStr(x)+","+iToStr(y));
+		        return false;
+		    }
     }
     else {
 
@@ -996,7 +1131,8 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 	    SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 
-	    this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &src, x, y);
+    	if (!extendedAccelBlit(source, &srcr, x, y))
+    		this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &srcr, x, y);
         
 #ifndef USE_DFB_SUBSURFACE
 	    RESETSUBSURFACE_BLITTINGFLAGS;

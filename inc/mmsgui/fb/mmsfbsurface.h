@@ -61,6 +61,9 @@ class MMSFBSurface {
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
+        // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
+        static bool			extendedaccel;
+        
         void deleteSubSurface(MMSFBSurface *surface);
 
         void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
@@ -70,6 +73,12 @@ class MMSFBSurface {
         bool setWinSurface(bool iswinsurface = true);
         bool setLayerSurface(bool islayersurface = true);
 
+        
+        void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int width, int height,
+        					   		unsigned int *dst, int dst_pitch);
+        bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        
+        
         MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
         
         MMSMutex  				Lock;       		/* to make it thread-safe */
@@ -94,6 +103,9 @@ class MMSFBSurface {
 
         bool getConfiguration(MMSFBSurfaceConfig *config = NULL);
 
+        void setExtendedAcceleration(bool extendedaccel);
+        bool getExtendedAcceleration();
+        
         bool isWinSurface();
         bool isLayerSurface();
 
