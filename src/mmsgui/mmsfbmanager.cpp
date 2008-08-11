@@ -184,7 +184,9 @@ void MMSFBManager::applySettings() {
     mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
     MMSFBSurface *ts = mmsfbsurfacemanager->getTemporarySurface(10,10);
     if (ts) {
-    	ts->setExtendedAcceleration(config.getExtendedAccel());
+    	// currently we do not accelerate using video hardware
+    	if (buffermode == MMSFB_BM_BACKSYSTEM)
+    		ts->setExtendedAcceleration(config.getExtendedAccel());
     	mmsfbsurfacemanager->releaseTemporarySurface(ts);
     }
 }
