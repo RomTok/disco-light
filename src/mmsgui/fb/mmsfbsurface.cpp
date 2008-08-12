@@ -988,6 +988,9 @@ void MMSFBSurface::eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int 
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
 
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
 	unsigned int OLDDST = (*dst) + 1;
 	unsigned int OLDSRC  = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
@@ -1088,6 +1091,9 @@ void MMSFBSurface::eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pi
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
 
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
 	unsigned int OLDDST = (*dst) + 1;
 	unsigned int OLDSRC  = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
@@ -1177,12 +1183,18 @@ void MMSFBSurface::eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
 
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
 	unsigned short int OLDDST = (*dst) + 1;
 	unsigned int OLDSRC  = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch_pix - sw;
 	register unsigned short int d;
+
+	
+	
 	
 	// for all lines
 	while (src < src_end) {
@@ -1264,6 +1276,9 @@ void MMSFBSurface::eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int 
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
 
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
 	unsigned int OLDDST = (*dst) + 1;
 	unsigned int OLDSRC  = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
