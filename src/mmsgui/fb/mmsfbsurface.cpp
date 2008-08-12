@@ -30,12 +30,14 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 
 
 // static variables
-bool MMSFBSurface::extendedaccel						= false;
-bool MMSFBSurface::firsttime_eAB_blend_argb_to_argb 	= true;
-bool MMSFBSurface::firsttime_eAB_blend_argb_to_rgb16	= true;
-bool MMSFBSurface::firsttime_eAB_blend_ayuv_to_ayuv		= true;
+bool MMSFBSurface::extendedaccel								= false;
+bool MMSFBSurface::firsttime_eAB_blend_argb_to_argb 			= true;
+bool MMSFBSurface::firsttime_eAB_blend_srcalpha_argb_to_argb	= true;
+bool MMSFBSurface::firsttime_eAB_blend_argb_to_rgb16			= true;
+bool MMSFBSurface::firsttime_eAB_blend_ayuv_to_ayuv				= true;
 
-bool MMSFBSurface::firsttime_eASB_blend_argb_to_argb 	= true;
+bool MMSFBSurface::firsttime_eASB_blend_argb_to_argb 			= true;
+bool MMSFBSurface::firsttime_eASB_blend_srcalpha_argb_to_argb 	= true;
 
 
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->dfbsurface)){MMSFB_SetError(0,"not initialized");return false;}
@@ -976,7 +978,7 @@ void MMSFBSurface::eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int 
 
 	// first time?
 	if (firsttime_eAB_blend_argb_to_argb) {
-		printf("DISKO: Using accelerated blend alphachannel ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated blend ARGB to ARGB.\n");
 		firsttime_eAB_blend_argb_to_argb = false;
 	}
 
@@ -1057,11 +1059,115 @@ void MMSFBSurface::eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int 
 }
 
 
+void MMSFBSurface::eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+										  		   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+										  		   unsigned char alpha) {
+
+	// check for full alpha value
+	if (alpha == 0xff) {
+		// max alpha is specified, so i can ignore it and use faster routine
+		eAB_blend_argb_to_argb(src, src_pitch, src_height, sx, sy, sw, sh,
+							   dst, dst_pitch, dst_height, dx, dy);
+		return;
+	}
+	
+	// first time?
+	if (firsttime_eAB_blend_srcalpha_argb_to_argb) {
+		printf("DISKO: Using accelerated blend srcalpha ARGB to ARGB.\n");
+		firsttime_eAB_blend_srcalpha_argb_to_argb = false;
+	}
+
+	// something to do?
+	if (!alpha)
+		// source should blitted full transparent, so leave destination as is
+		return;
+
+	// prepare...
+	int src_pitch_pix = src_pitch >> 2;
+	int dst_pitch_pix = dst_pitch >> 2;
+	src+= sx + sy * src_pitch_pix;
+	dst+= dx + dy * dst_pitch_pix;
+
+	unsigned int OLDDST = (*dst) + 1;
+	unsigned int OLDSRC  = (*src) + 1;
+	unsigned int *src_end = src + src_pitch_pix * sh;
+	int src_pitch_diff = src_pitch_pix - sw;
+	int dst_pitch_diff = dst_pitch_pix - sw;
+	register unsigned int d;
+
+	register unsigned int ALPHA = alpha;
+	ALPHA++;
+	
+	// for all lines
+	while (src < src_end) {
+		// for all pixels in the line
+		unsigned int *line_end = src + sw;
+		while (src < line_end) {
+			// load pixel from memory and check if the previous pixel is the same
+			register unsigned int SRC = *src;
+
+			// is the source alpha channel 0x00 or 0xff?
+			register unsigned int A = SRC >> 24;
+			if (A) {
+				// source alpha is > 0x00 and < 0xff  
+				register unsigned int DST = *dst; 
+
+				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
+					// same pixel, use the previous value
+					*dst = d;
+				    dst++;
+				    src++;
+					continue;
+				}
+				OLDDST = DST;
+				OLDSRC = SRC;
+
+				// load source pixel and multiply it with given ALPHA
+			    A = (ALPHA * A) >> 8;
+				unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
+				unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
+				unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
+				register unsigned int SA= 0x100 - A;
+				
+				unsigned int a = DST >> 24;
+				unsigned int r = (DST << 8) >> 24;
+				unsigned int g = (DST << 16) >> 24;
+				unsigned int b = DST & 0xff;
+
+				// invert src alpha
+			    a = (SA * a) >> 8;
+			    r = (SA * r) >> 8;
+			    g = (SA * g) >> 8;
+			    b = (SA * b) >> 8;
+
+			    // add src to dst
+			    a += A;
+			    r += sr;
+			    g += sg;
+			    b += sb;
+			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+					| ((r >> 8) ? 0xff0000   : (r << 16))
+					| ((g >> 8) ? 0xff00     : (g << 8))
+			    	| ((b >> 8) ? 0xff 		 :  b);
+				*dst = d;
+			}
+		    
+		    dst++;
+		    src++;
+		}
+
+		// go to the next line
+		src+= src_pitch_diff; 
+		dst+= dst_pitch_diff;
+	}
+}
+
+
 void MMSFBSurface::eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
 										   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
 	if (firsttime_eAB_blend_argb_to_rgb16) {
-		printf("DISKO: Using accelerated blend alphachannel ARGB to RGB16.\n");
+		printf("DISKO: Using accelerated blend ARGB to RGB16.\n");
 		firsttime_eAB_blend_argb_to_rgb16 = false;
 	}
 	
@@ -1148,7 +1254,7 @@ void MMSFBSurface::eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int 
 
 	// first time?
 	if (firsttime_eAB_blend_ayuv_to_ayuv) {
-		printf("DISKO: Using accelerated blend alphachannel AYUV to AYUV.\n");
+		printf("DISKO: Using accelerated blend AYUV to AYUV.\n");
 		firsttime_eAB_blend_ayuv_to_ayuv = false;
 	}
 
@@ -1339,10 +1445,22 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA)) {
-				printf("fehlt noch\n");
+			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
+				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
+				// blitting with alpha channel and coloralpha
+				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
+					eAB_blend_srcalpha_argb_to_argb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.h:source->root_parent->config.h,
+										   			sx, sy, sw, sh,
+										   			(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										   			x, y,
+										   			this->config.color.a);
+					extendedUnlock(source, this);
+					return true;
+				}
+				
+				return false;
 			}
-			
+
 			// does not match
 			return false;
 		}
@@ -1363,8 +1481,9 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA)) {
-				printf("fehlt noch-\n");
+			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
+				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
+//				printf("fehlt noch-\n");
 			}
 			
 			// does not match
@@ -1393,8 +1512,9 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA)) {
-				printf("fehlt noch#2\n");
+			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
+				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
+//				printf("fehlt noch#2\n");
 			}
 			
 			// does not match
@@ -1415,7 +1535,7 @@ void MMSFBSurface::eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int
 
 	// first time?
 	if (firsttime_eASB_blend_argb_to_argb) {
-		printf("DISKO: Using accelerated stretch & blend alphachannel ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated stretch & blend ARGB to ARGB.\n");
 		firsttime_eASB_blend_argb_to_argb = false;
 	}
 
@@ -1496,7 +1616,7 @@ void MMSFBSurface::eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int
 								OLDDST = DST;
 								
 								
-								
+								// extract destination
 								unsigned int a = DST >> 24;
 								unsigned int r = (DST << 8) >> 24;
 								unsigned int g = (DST << 16) >> 24;
@@ -1539,6 +1659,150 @@ void MMSFBSurface::eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int
 	}
 }
 
+
+
+
+void MMSFBSurface::eASB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+										   			unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+										   			unsigned char alpha) {
+
+	// check for full alpha value
+	if (alpha == 0xff) {
+		// max alpha is specified, so i can ignore it and use faster routine
+		eASB_blend_argb_to_argb(src, src_pitch, src_height, sx, sy, sw, sh,
+							    dst, dst_pitch, dst_height, dx, dy, dw, dh);
+		return;
+	}
+	
+	// first time?
+	if (firsttime_eASB_blend_srcalpha_argb_to_argb) {
+		printf("DISKO: Using accelerated stretch & blend srcalpha ARGB to ARGB.\n");
+		firsttime_eASB_blend_srcalpha_argb_to_argb = false;
+	}
+
+	// something to do?
+	if (!alpha)
+		// source should blitted full transparent, so leave destination as is
+		return;
+	
+	// prepare...
+	int  src_pitch_pix = src_pitch >> 2;
+	int  dst_pitch_pix = dst_pitch >> 2;
+	unsigned int *src_end = src + sx + src_pitch_pix * (sy + sh);
+	if (src_end > src + src_pitch_pix * src_height)
+		src_end = src + src_pitch_pix * src_height;
+	unsigned int *dst_end = dst + dst_pitch_pix * dst_height;
+	src+=sx + sy * src_pitch_pix;
+	dst+=dx + dy * dst_pitch_pix;
+
+	
+//	printf("sw=%d,sh=%d\n", sw,sh);	
+	
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+	
+
+	register unsigned int ALPHA = alpha;
+	ALPHA++;
+
+	
+	// for all lines
+	int vertcnt = 0x8000;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned int *line_end = src + sw;
+			unsigned int *old_dst = dst;
+	
+			do {
+				int horicnt = 0x8000;
+				while (src < line_end) {
+					// load pixel from memory and check if the previous pixel is the same
+		
+					horicnt+=horifact;
+					
+					if (horicnt & 0xffff0000) {
+						register unsigned int SRC = *src;
+						register unsigned int A = SRC >> 24;
+
+						if (!A) {
+							// source pixel is full transparent, do not change the destination
+							do {
+								dst++;
+								horicnt-=0x10000;
+							} while (horicnt & 0xffff0000);
+						}
+						else
+						{
+							// source alpha is > 0x00 and < 0xff  
+							register unsigned int DST = *dst; 
+							unsigned int OLDDST = DST + 1;
+							register unsigned int d;
+
+							// load source pixel and multiply it with given ALPHA
+						    A = (ALPHA * A) >> 8;
+							unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
+							unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
+							unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
+							register unsigned int SA= 0x100 - A;
+							
+							do {
+								if (DST==OLDDST) {
+									// same pixel, use the previous value
+									if (A) {
+										// source has an alpha
+										*dst = d;
+									}
+								    dst++;
+								    DST = *dst;
+									horicnt-=0x10000;
+									continue;
+								}
+								OLDDST = DST;
+								
+								// extract destination
+								unsigned int a = DST >> 24;
+								unsigned int r = (DST << 8) >> 24;
+								unsigned int g = (DST << 16) >> 24;
+								unsigned int b = DST & 0xff;
+								
+								// invert src alpha
+							    a = (SA * a) >> 8;
+							    r = (SA * r) >> 8;
+							    g = (SA * g) >> 8;
+							    b = (SA * b) >> 8;
+	
+							    // add src to dst
+							    a += A;
+							    r += sr;
+							    g += sg;
+							    b += sb;
+							    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+									| ((r >> 8) ? 0xff0000   : (r << 16))
+									| ((g >> 8) ? 0xff00     : (g << 8))
+							    	| ((b >> 8) ? 0xff 		 :  b);
+								*dst = d;
+								dst++;
+								DST = *dst;
+								horicnt-=0x10000;
+							} while (horicnt & 0xffff0000);
+						}
+					}
+				    
+				    src++;
+				}
+				src-=sw;
+				vertcnt-=0x10000;
+				dst = old_dst +  dst_pitch/4;
+				old_dst = dst;
+			} while (vertcnt & 0xffff0000);
+		}
+		
+		// next line
+		src+=src_pitch/4;
+	}
+}
 
 
 bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
@@ -1672,9 +1936,20 @@ bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *
 			else
 			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
-//				printf("fehlt noch!!!\n");
+				// blitting with alpha channel and coloralpha
+				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_srcalpha_argb_to_argb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.h:source->root_parent->config.h,
+													 sx, sy, sw, sh,
+													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													 dx, dy, dw, dh,
+													 this->config.color.a);
+					extendedUnlock(source, this);                        
+
+					return true;
+				}
+				return false;
 			}
-			
+
 			// does not match
 			return false;
 		}
@@ -1811,7 +2086,10 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 #ifndef USE_DFB_SUBSURFACE
 		    RESETSUBSURFACE_BLITTINGFLAGS;
 	
-	        UNCLIPSUBSURFACE
+		    dst.x-=this->sub_surface_xoff;
+		    dst.y-=this->sub_surface_yoff;
+
+		    UNCLIPSUBSURFACE
 #endif
 	    }
 	        
@@ -1847,12 +2125,16 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 					    SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 	
-				    	this->dfbsurface->Blit(this->dfbsurface, tempsuf->getDFBSurface(), &temp, dst.x, dst.y);
+		    	    	if (!extendedAccelBlit(tempsuf, &temp, dst.x, dst.y))
+		    	    		this->dfbsurface->Blit(this->dfbsurface, tempsuf->getDFBSurface(), &temp, dst.x, dst.y);
 	        
 #ifndef USE_DFB_SUBSURFACE
 			    	    RESETSUBSURFACE_BLITTINGFLAGS;
 				
-				        UNCLIPSUBSURFACE
+					    dst.x+=this->sub_surface_xoff;
+					    dst.y+=this->sub_surface_yoff;
+
+					    UNCLIPSUBSURFACE
 #endif
 	
 					    blit_done = true;
@@ -1894,7 +2176,10 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 #ifndef USE_DFB_SUBSURFACE
 		    RESETSUBSURFACE_BLITTINGFLAGS;
 	
-	        UNCLIPSUBSURFACE
+		    dst.x+=this->sub_surface_xoff;
+		    dst.y+=this->sub_surface_yoff;
+
+		    UNCLIPSUBSURFACE
 #endif
 	    }
     }
