@@ -143,7 +143,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             windowmanager = new MMSWindowManager(vrect);
 
 	        DEBUGMSG("Core", "creating background window");
-	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","100%","100%");
+	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","100%","100%",
+	        											MMSALIGNMENT_CENTER,MMSW_VIDEO);
 	        rootwin->setWindowManager((IMMSWindowManager*)windowmanager);
 	        windowmanager->setBackgroundWindow(rootwin);
         }
