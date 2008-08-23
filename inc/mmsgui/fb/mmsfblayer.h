@@ -60,6 +60,10 @@ class MMSFBLayer {
 
         // first time flag for createSurface()
         static bool 			firsttime_createsurface;
+
+        // first time flags for createWindow()
+        static bool 			firsttime_createwindow_usealpha;
+        static bool 			firsttime_createwindow_noalpha;
         
     public:
         MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer);

@@ -27,7 +27,9 @@
 D_DEBUG_DOMAIN( MMS_Layer, "MMS/Layer", "MMS Layer" );
 
 // static variables
-bool MMSFBLayer::firsttime_createsurface = true;
+bool MMSFBLayer::firsttime_createsurface		= true;
+bool MMSFBLayer::firsttime_createwindow_usealpha= true;
+bool MMSFBLayer::firsttime_createwindow_noalpha	= true;
 
 
 #define INITCHECK  if(!this->dfblayer){MMSFB_SetError(0,"not initialized");return false;}
@@ -378,8 +380,6 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
 bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
                               string pixelformat, bool usealpha, bool uselayersurface) {
 
-	static bool firsttime = true;
-	
     /* check if initialized */
     INITCHECK;
 
@@ -429,10 +429,17 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
             pixelformat = MMSFB_PF_ARGB;
     }
 
-    if (firsttime) {
-    	printf("DISKO: Pixelformat %s is used for windows.\n", pixelformat.c_str());
-    	firsttime = false;
+    if (usealpha) {
+	    if (firsttime_createwindow_usealpha) {
+	    	printf("DISKO: Pixelformat %s is used for windows with alphachannel.\n", pixelformat.c_str());
+	    	firsttime_createwindow_usealpha = false;
+	    }
     }
+    else
+	    if (firsttime_createwindow_noalpha) {
+	    	printf("DISKO: Pixelformat %s is used for windows with no alphachannel.\n", pixelformat.c_str());
+	    	firsttime_createwindow_noalpha = false;
+	    }
     
     
 #ifdef USE_DFB_WINMAN
