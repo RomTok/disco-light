@@ -171,6 +171,19 @@ ifndef OPENSSL_CHECKED
     export OPENSSL_CHECKED=1
 endif
 
+#sofia
+ifndef PJ_CHECKED
+    $(info check for libpj)
+    export PJ_INC=$(shell pkg-config --cflags libpj)
+    ifeq ($(PJ_INC),)
+       $(warning libpj was not found. Building without SIP support.)
+       export PJ_INC=-D_NO_MMSSIP
+    else
+        export PJ_LIBS=$(shell pkg-config --libs libpj)
+    endif
+    export PJ_CHECKED=1
+endif
+
 ifeq ($(HAVE_ALL_DEPS),0)
     $(error Please install all dependencies before continuing.)
 endif
@@ -251,3 +264,18 @@ ifndef LOG_FLAG_SET
         export CFLAGS+=-D__ENABLE_LOG__
     endif
 endif
+
+# set variables for pkg-config file
+req_str = "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libxine, alsa, libpng >= 1.2"
+ifdef OPENSSL_LIBS
+    req_str += ", openssl"
+endif
+ifdef PJ_LIBS
+    req_str += ", libpj"
+endif
+libs_str   = "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmsmedia -lmmssip -lmmstools -lmmsinfo"
+cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
+ifdef FREETDS_LIBS
+    libs_str   += " $(FREETDS_LIBS)"
+    cflags_str +=" $(FREETDS_INC)"
+endif 

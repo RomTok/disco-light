@@ -18,6 +18,7 @@ all clean update:
 	@+make -C  ./src/mmsinput  $@
 	@+make -C  ./src/mmsmedia  $@
 	@+make -C  ./src/mmscore   $@
+	@+make -C  ./src/mmssip    $@
 	@+make -C  ./tools/taff    $@
 
 install-disko:
@@ -28,6 +29,7 @@ install-disko:
 	@+make -C  ./src/mmsinput  install
 	@+make -C  ./src/mmsmedia  install
 	@+make -C  ./src/mmscore   install
+	@+make -C  ./src/mmssip    install
 	@+make -C  ./src/mmsinfo   install
 	@+make -C  ./tools/taff    install
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
@@ -51,15 +53,10 @@ install-pkgconfig:
 	@echo "Name: $(PROJECTNAME)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Version: 1.1.1" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-	@echo "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libxine, alsa, libpng >= 1.2" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-ifdef FREETDS_LIBS
-	@echo "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmsmedia -lmmstools -lmmsinfo $(FREETDS_LIBS)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
-	@echo "Cflags: $(CFLAGS) -I\$${includedir} $(FREETDS_INC)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-else
-	@echo "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmsmedia -lmmstools -lmmsinfo" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
-	@echo "Cflags: $(CFLAGS) -I\$${includedir}" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-endif
-	@echo "URL: http://www.directfb.org" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo $(req_str) >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo $(libs_str)   >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
+	@echo $(cflags_str) >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "URL: http://www.diskohq.org" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 
 install: install-disko install-pkgconfig
 
