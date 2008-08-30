@@ -76,26 +76,28 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
         /* fill the menu */
         MMSPluginService service(&source);
-        vector<MMSPluginData *> p = service.getOSDPlugins();
-        for(unsigned int i = 0; i < p.size();i++) {
+        osdplugs = service.getOSDPlugins();
+        for(unsigned int i = 0; i < osdplugs.size();i++) {
         	// new item
             MMSWidget *pluginItem = menu->newItem();
             if (!pluginItem) break;
             
             // set plugin data to the item
-            pluginItem->setBinData((void*)p.at(i));
+            DEBUGMSG("Switcher", osdplugs.at(i)->getName().c_str());
+            pluginItem->setBinData((void*)osdplugs.at(i));
 
             // set values if widgets are defined
             setMenuItemValues(pluginItem);
         }
-        p = service.getCentralPlugins();
-        for(unsigned int i = 0; i < p.size();i++) {
+        centralplugs = service.getCentralPlugins();
+        for(unsigned int i = 0; i < centralplugs.size();i++) {
         	// new item
             MMSWidget *pluginItem = menu->newItem();
             if (!pluginItem) break;
 
             // set plugin data to the item
-            pluginItem->setBinData((void*)p.at(i));
+            DEBUGMSG("Switcher", centralplugs.at(i)->getName().c_str());
+            pluginItem->setBinData((void*)centralplugs.at(i));
 
             // set values if widgets are defined
             setMenuItemValues(pluginItem);
@@ -307,16 +309,20 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
 void MMSSwitcher::onReturn(MMSWidget *widget) {
     try {
-        MMSLabelWidget *pluginLabel = dynamic_cast<MMSLabelWidget*>(widget);
+        MMSButtonWidget *pluginLabel = dynamic_cast<MMSButtonWidget*>(widget);
         if(!pluginLabel)
-            pluginLabel = dynamic_cast<MMSLabelWidget*>(this->menu->getSelectedItem());
+            pluginLabel = dynamic_cast<MMSButtonWidget*>(this->menu->getSelectedItem());
 
         /* no menu item given */
-        if(!pluginLabel)
+        if(!pluginLabel) {
+        	DEBUGMSG("Switcher", "Could not get the widget item");
             return;
+        }
 
         MMSPluginData *data = (MMSPluginData*)pluginLabel->getBinData();
-
+        if(!data)
+        	DEBUGMSG("Switcher","Data is not set");
+        
         if(data->getType()->getName() == "OSD_PLUGIN") {
             MMSOSDPluginHandler *handler = this->pluginmanager->getOSDPluginHandler(data->getId());
             handler->invokeShow(NULL);

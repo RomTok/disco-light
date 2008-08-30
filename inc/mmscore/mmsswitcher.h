@@ -51,7 +51,10 @@ class MMSSwitcher : public IMMSSwitcher {
 
         static map<int, plugin_data_t *>     plugins;            /**< loaded plugins                                                */
         static int                           curr_plugin;        /**< index to pluginSwitchers which points to the current plugin   */
-
+        vector<MMSPluginData *> 			 osdplugs;
+        vector<MMSPluginData *> 			 centralplugs;
+        
+        
         void setMenuItemValues(MMSWidget *item);
 		int  searchingForImage(string pluginpath, string imagename, string *path);
         void onSelectItem(MMSWidget *widget);

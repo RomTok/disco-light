@@ -3,6 +3,8 @@ SHELL=/bin/bash
 #initialize HAVE_ALL_DEPS
 HAVE_ALL_DEPS=1
 
+CFLAGS+=-fPIC
+
 #output directory
 LIBDIR=../../lib
 
