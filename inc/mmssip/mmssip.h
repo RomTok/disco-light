@@ -25,10 +25,17 @@
 
 #include <pjsua-lib/pjsua.h>
 #include <iostream>
+#include <sigc++/sigc++.h>
 
 using namespace std;
 
-typedef int callID;
+typedef enum {
+    MMSSIP_CALL_STATE_NONE,
+    MMSSIP_CALL_STATE_CALLING,
+    MMSSIP_CALL_STATE_INCOMING,
+    MMSSIP_CALL_STATE_CONNECTING,
+    MMSSIP_CALL_STATE_IN_PROGRESS
+} CallState;
 
 class MMSSip {
     private:
@@ -49,8 +56,10 @@ class MMSSip {
 
     	~MMSSip();
 
-    	callID call(const string &user, const string &domain);
-    	void hangup(const callID &id);
+    	const int call(const string &user, const string &domain);
+    	void hangup(const int &id);
+
+        sigc::signal<void, int> *onCallSuccessfull;
 };
 
 #endif /* _NO_MMSSIP */

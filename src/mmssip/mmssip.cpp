@@ -29,6 +29,8 @@
  * - using STUN server
  */
 
+static MMSSip *thiz = NULL;
+
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
 static void onCallMediaState(pjsua_call_id);
@@ -40,6 +42,14 @@ MMSSip::MMSSip(const string    &user,
     user(user),
     passwd(passwd),
     registrar(registrar) {
+
+	/* only one instance of mmssip allowed */
+	if(thiz) {
+		DEBUGMSG("MMSSIP", "There's already an instance of MMSSIP running.");
+		throw MMSError(0, "There's already an instance of MMSSIP running.");
+	}
+
+	thiz = this;
 
 	pj_status_t status;
 
@@ -116,10 +126,16 @@ MMSSip::MMSSip(const string    &user,
 	}
 
     DEBUGMSG("MMSSIP", "SIP account registered");
+
+    this->onCallSuccessfull  = new sigc::signal<void, int>;
 }
 
 MMSSip::~MMSSip() {
 	pjsua_destroy();
+	if(this->onCallSuccessfull) {
+		this->onCallSuccessfull->clear();
+		delete this->onCallSuccessfull;
+	}
 }
 
 /*
@@ -134,7 +150,7 @@ MMSSip::~MMSSip() {
  *
  * @see MMSSip::hangup()
  */
-callID MMSSip::call(const string &user, const string &domain) {
+const int MMSSip::call(const string &user, const string &domain) {
 	pj_status_t    status;
 	pj_str_t       uri;
     pjsua_call_id  call;
@@ -160,7 +176,7 @@ callID MMSSip::call(const string &user, const string &domain) {
 	return (this->activeCalls.size() - 1);
 }
 
-void MMSSip::hangup(const callID &id) {
+void MMSSip::hangup(const int &id) {
 	pjsua_call_id cid = this->activeCalls.at(id);
     pjsua_call_hangup(cid, 0, NULL, NULL);
     this->activeCalls.erase(this->activeCalls.begin() + id);
@@ -191,7 +207,19 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
     PJ_UNUSED_ARG(e);
 
     pjsua_call_get_info(callId, &ci);
-    DEBUGMSG("MMSSIP", "Call %d state=%.*s", callId, (int)ci.state_text.slen, ci.state_text.ptr);
+    DEBUGMSG("MMSSIP", "Call %d state=%d (%.*s)", callId, ci.state, (int)ci.state_text.slen, ci.state_text.ptr);
+
+    switch(ci.state) {
+        case PJSIP_INV_STATE_NULL:
+        	break;
+        case PJSIP_INV_STATE_CONFIRMED:
+            if(thiz && thiz->onCallSuccessfull)
+                thiz->onCallSuccessfull->emit(callId);
+        	break;
+        default:
+
+        	break;
+    }
 }
 
 /* Callback called by the library when call's media state has changed */
