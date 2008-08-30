@@ -54,12 +54,12 @@ MMSSip::MMSSip(const string    &user,
 
 	pj_status_t status;
 
-	pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
+/*	pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
 	status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
 	if(status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
 		throw MMSError(0, "Error registering thread (pj_thread_register)");
-	}
+	} */
 
     /* create pjsua */
     status = pjsua_create();
