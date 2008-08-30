@@ -29,14 +29,6 @@
 
 using namespace std;
 
-typedef enum {
-    MMSSIP_CALL_STATE_NONE,
-    MMSSIP_CALL_STATE_CALLING,
-    MMSSIP_CALL_STATE_INCOMING,
-    MMSSIP_CALL_STATE_CONNECTING,
-    MMSSIP_CALL_STATE_IN_PROGRESS
-} CallState;
-
 class MMSSip {
     private:
         string       user,
@@ -59,7 +51,8 @@ class MMSSip {
     	const int call(const string &user, const string &domain);
     	void hangup(const int &id);
 
-        sigc::signal<void, int> *onCallSuccessfull;
+        sigc::signal<void, int> 		*onCallSuccessfull;
+        sigc::signal<void, int, string> *onCallIncoming;
 };
 
 #endif /* _NO_MMSSIP */

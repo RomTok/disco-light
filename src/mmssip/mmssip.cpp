@@ -128,6 +128,7 @@ MMSSip::MMSSip(const string    &user,
     DEBUGMSG("MMSSIP", "SIP account registered");
 
     this->onCallSuccessfull  = new sigc::signal<void, int>;
+    this->onCallIncoming     = new sigc::signal<void, int, string>;
 }
 
 MMSSip::~MMSSip() {
@@ -194,10 +195,13 @@ static void onIncomingCall(pjsua_acc_id  accId,
 
     pjsua_call_get_info(callId, &ci);
 
-    DEBUGMSG("MMSSIP", "Incoming call from %.*s!!", (int)ci.remote_info.slen, ci.remote_info.ptr);
+    DEBUGMSG("MMSSIP", "Incoming call from %.*s", (int)ci.remote_info.slen, ci.remote_info.ptr);
+
+    if(thiz && thiz->onCallIncoming)
+        thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
 
     /* Automatically answer incoming calls with 200/OK */
-    pjsua_call_answer(callId, 200, NULL, NULL);
+    //pjsua_call_answer(callId, 200, NULL, NULL);
 }
 
 /* Callback called by the library when call's state has changed */
@@ -211,10 +215,27 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
 
     switch(ci.state) {
         case PJSIP_INV_STATE_NULL:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_NULL");
+        	break;
+        case PJSIP_INV_STATE_CALLING:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CALLING");
+        	break;
+        case PJSIP_INV_STATE_INCOMING:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
+        	break;
+        case PJSIP_INV_STATE_EARLY:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_EARLY");
+        	break;
+        case PJSIP_INV_STATE_CONNECTING:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONNECTING");
         	break;
         case PJSIP_INV_STATE_CONFIRMED:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONFIRMED");
             if(thiz && thiz->onCallSuccessfull)
                 thiz->onCallSuccessfull->emit(callId);
+        	break;
+        case PJSIP_INV_STATE_DISCONNECTED:
+        	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_DISCONNECTED");
         	break;
         default:
 
