@@ -26,8 +26,21 @@
 #include <pjsua-lib/pjsua.h>
 #include <iostream>
 #include <sigc++/sigc++.h>
+#include <map>
 
 using namespace std;
+
+typedef enum {
+	BUDDY_ONLINE		= PJSUA_BUDDY_STATUS_ONLINE,
+	BUDDY_OFFLINE		= PJSUA_BUDDY_STATUS_OFFLINE,
+	BUDDY_UNKNOWN		= PJSUA_BUDDY_STATUS_UNKNOWN
+} MMSSipBuddyStatus;
+
+typedef struct {
+	string 				name;
+	string 				uri;
+	MMSSipBuddyStatus	status;
+} MMSSipBuddy;
 
 class MMSSip {
     private:
@@ -36,9 +49,13 @@ class MMSSip {
                      registrar;
         short int    localPort;
 
-        pjsua_acc_id accID;
+        pjsua_acc_id          accID;
+        pj_thread_desc        pjThreadDesc;
+        pj_thread_t           *pjThread;
 
         vector<pjsua_call_id> activeCalls;
+
+        map<int, MMSSipBuddy> buddies;
 
     public:
     	MMSSip(const string    &user,
@@ -48,11 +65,14 @@ class MMSSip {
 
     	~MMSSip();
 
-    	const int call(const string &user, const string &domain);
+    	const int call(const string &user, const string &domain = "");
     	void hangup(const int &id);
+    	void addBuddy(const string &name, const string &id, const string &domain);
+        MMSSipBuddy	getBuddy(const int &id);
 
-        sigc::signal<void, int> 		*onCallSuccessfull;
-        sigc::signal<void, int, string> *onCallIncoming;
+        sigc::signal<void, int> 		           *onCallSuccessfull;
+        sigc::signal<void, int, string>            *onCallIncoming;
+        sigc::signal<void, MMSSipBuddy>            *onBuddyStatus;
 };
 
 #endif /* _NO_MMSSIP */

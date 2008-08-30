@@ -34,6 +34,7 @@ static MMSSip *thiz = NULL;
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
 static void onCallMediaState(pjsua_call_id);
+static void onBuddyState(pjsua_buddy_id);
 
 MMSSip::MMSSip(const string    &user,
 		       const string    &passwd,
@@ -53,6 +54,13 @@ MMSSip::MMSSip(const string    &user,
 
 	pj_status_t status;
 
+	pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
+	status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
+	if(status != PJ_SUCCESS) {
+		DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
+		throw MMSError(0, "Error registering thread (pj_thread_register)");
+	}
+
     /* create pjsua */
     status = pjsua_create();
     if(status != PJ_SUCCESS) {
@@ -69,6 +77,7 @@ MMSSip::MMSSip(const string    &user,
     cfg.cb.on_incoming_call    = &onIncomingCall;
     cfg.cb.on_call_media_state = &onCallMediaState;
     cfg.cb.on_call_state       = &onCallState;
+    cfg.cb.on_buddy_state      = &onBuddyState;
 
     pjsua_logging_config_default(&logCfg);
     logCfg.console_level = 0;
@@ -129,6 +138,7 @@ MMSSip::MMSSip(const string    &user,
 
     this->onCallSuccessfull  = new sigc::signal<void, int>;
     this->onCallIncoming     = new sigc::signal<void, int, string>;
+    this->onBuddyStatus      = new sigc::signal<void, MMSSipBuddy>;
 }
 
 MMSSip::~MMSSip() {
@@ -157,6 +167,8 @@ const int MMSSip::call(const string &user, const string &domain) {
     pjsua_call_id  call;
     char           tmp[1024];
 
+    const char     *cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
+
     snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), domain.c_str());
 	status = pjsua_verify_sip_url(tmp);
 	if (status != PJ_SUCCESS) {
@@ -183,6 +195,13 @@ void MMSSip::hangup(const int &id) {
     this->activeCalls.erase(this->activeCalls.begin() + id);
 }
 
+void MMSSip::addBuddy(const string &name, const string &id, const string &domain) {
+
+}
+
+MMSSipBuddy MMSSip::getBuddy(const int &id) {
+	return this->buddies[id];
+}
 
 /* Callback called by the library upon receiving incoming call */
 static void onIncomingCall(pjsua_acc_id  accId,
@@ -253,6 +272,15 @@ static void onCallMediaState(pjsua_call_id callId) {
         // When media is active, connect call to sound device.
         pjsua_conf_connect(ci.conf_slot, 0);
         pjsua_conf_connect(0, ci.conf_slot);
+    }
+}
+
+static void onBuddyState(pjsua_buddy_id id) {
+    pjsua_buddy_info info;
+
+    if(pjsua_buddy_get_info(id, &info) == PJ_SUCCESS) {
+        if(thiz && thiz->onBuddyStatus)
+            thiz->onBuddyStatus->emit(thiz->getBuddy(id));
     }
 }
 
