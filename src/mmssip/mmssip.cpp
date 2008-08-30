@@ -54,13 +54,6 @@ MMSSip::MMSSip(const string    &user,
 
 	pj_status_t status;
 
-/*	pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
-	status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
-	if(status != PJ_SUCCESS) {
-		DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
-		throw MMSError(0, "Error registering thread (pj_thread_register)");
-	} */
-
     /* create pjsua */
     status = pjsua_create();
     if(status != PJ_SUCCESS) {
@@ -166,8 +159,21 @@ const int MMSSip::call(const string &user, const string &domain) {
 	pj_str_t       uri;
     pjsua_call_id  call;
     char           tmp[1024];
+    static bool    registeredThread = false;
 
     const char     *cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
+
+    /* have to register the input thread once, otherwise libpj
+     * doesn't work
+     */
+    if(!registeredThread) {
+		pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
+		status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
+		if(status != PJ_SUCCESS) {
+			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
+			throw MMSError(0, "Error registering thread (pj_thread_register)");
+		}
+    }
 
     snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), domain.c_str());
 	status = pjsua_verify_sip_url(tmp);
