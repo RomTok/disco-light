@@ -39,6 +39,7 @@
 #include <mmsgui/mmsgui.h>
 #include <mmsinput/mmsinput.h>
 #include <mmsmedia/mmsmedia.h>
+#include <mmssip/mmssip.h>
 
 #endif /*MMS_H_*/
 

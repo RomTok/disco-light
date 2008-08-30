@@ -49,6 +49,7 @@ MMSSip::MMSSip(const string    &user,
 		DEBUGMSG("MMSSIP", "Error initializing SIP stack (pjsua_create)");
 		throw MMSError(0, "Error initializing SIP stack (pjsua_create)");
 	}
+    DEBUGMSG("MMSSIP", "SIP stack init #1");
 
     /* configure pjsua */
     pjsua_config         cfg;
@@ -60,13 +61,15 @@ MMSSip::MMSSip(const string    &user,
     cfg.cb.on_call_state       = &onCallState;
 
     pjsua_logging_config_default(&logCfg);
-    logCfg.console_level = 4;
+    logCfg.console_level = 0;
 
     status = pjsua_init(&cfg, &logCfg, NULL);
     if(status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Error initializing SIP stack (pjsua_init)");
 		throw MMSError(0, "Error initializing SIP stack (pjsua_init)");
 	}
+
+    DEBUGMSG("MMSSIP", "SIP stack init #2");
 
     /* add UDP transport */
     pjsua_transport_config transCfg;
@@ -79,6 +82,8 @@ MMSSip::MMSSip(const string    &user,
 		throw MMSError(0, "Error initializing SIP stack (pjsua_transport_create)");
 	}
 
+    DEBUGMSG("MMSSIP", "UDP transport created");
+
     /* start pjsua */
     status = pjsua_start();
     if(status != PJ_SUCCESS) {
@@ -86,17 +91,17 @@ MMSSip::MMSSip(const string    &user,
 		throw MMSError(0, "Error starting SIP stack (pjsua_start)");
 	}
 
+    DEBUGMSG("MMSSIP", "SIP stack started");
+
     /* register to SIP server */
     pjsua_acc_config accCfg;
-    char tmp[1024];
+    char id[80], reg[80];
 
     pjsua_acc_config_default(&accCfg);
-    snprintf(tmp, sizeof(tmp), "sip:%s@%s", user.c_str(), registrar.c_str());
-    accCfg.id         = pj_str(tmp);
-    printf("id: %s\n", tmp);
-    snprintf(tmp, sizeof(tmp), "sip:%s", registrar.c_str());
-    accCfg.reg_uri    = pj_str(tmp);
-    printf("reg_uri: %s\n", tmp);
+    snprintf(id, sizeof(id), "sip:%s@%s", user.c_str(), registrar.c_str());
+    accCfg.id         = pj_str(id);
+    snprintf(reg, sizeof(reg), "sip:%s", registrar.c_str());
+    accCfg.reg_uri    = pj_str(reg);
     accCfg.cred_count = 1;
     accCfg.cred_info[0].realm     = pj_str((char*)registrar.c_str());
     accCfg.cred_info[0].scheme    = pj_str((char*)"digest");
@@ -109,6 +114,8 @@ MMSSip::MMSSip(const string    &user,
 		DEBUGMSG("MMSSIP", "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 		throw MMSError(0, "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 	}
+
+    DEBUGMSG("MMSSIP", "SIP account registered");
 }
 
 MMSSip::~MMSSip() {
@@ -156,6 +163,7 @@ callID MMSSip::call(const string &user, const string &domain) {
 void MMSSip::hangup(const callID &id) {
 	pjsua_call_id cid = this->activeCalls.at(id);
     pjsua_call_hangup(cid, 0, NULL, NULL);
+    this->activeCalls.erase(this->activeCalls.begin() + id);
 }
 
 
