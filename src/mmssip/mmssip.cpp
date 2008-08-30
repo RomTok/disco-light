@@ -161,6 +161,8 @@ const int MMSSip::call(const string &user, const string &domain) {
     char           tmp[1024];
     static bool    registeredThread = false;
 
+    DEBUGMSG("MMSSIP", "in call(" + user + ", " + domain + ")");
+
     const char     *cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
 
     /* have to register the input thread once, otherwise libpj
