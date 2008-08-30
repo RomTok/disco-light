@@ -161,8 +161,6 @@ const int MMSSip::call(const string &user, const string &domain) {
     char           tmp[1024];
     static bool    registeredThread = false;
 
-    DEBUGMSG("MMSSIP", "in call(" + user + ", " + domain + ")");
-
     const char     *cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
 
     /* have to register the input thread once, otherwise libpj
@@ -175,20 +173,21 @@ const int MMSSip::call(const string &user, const string &domain) {
 			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
 			throw MMSError(0, "Error registering thread (pj_thread_register)");
 		}
+		registeredThread = true;
     }
 
-    snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), domain.c_str());
+    snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), cDomain);
 	status = pjsua_verify_sip_url(tmp);
 	if (status != PJ_SUCCESS) {
-		DEBUGMSG("MMSSIP", "Invalid callee info sip:" + user + "@" + domain);
-		throw MMSError(0, "Invalid callee info sip:" + user + "@" + domain);
+		DEBUGMSG("MMSSIP", "Invalid callee info sip:" + user + "@" + cDomain);
+		throw MMSError(0, "Invalid callee info sip:" + user + "@" + cDomain);
 	}
 
     uri = pj_str(tmp);
 	status = pjsua_call_make_call(this->accID, &uri, 0, NULL, NULL, &call);
 	if (status != PJ_SUCCESS) {
-		DEBUGMSG("MMSSIP", "Error calling sip:" + user + "@" + domain);
-		throw MMSError(0, "Error calling sip:" + user + "@" + domain);
+		DEBUGMSG("MMSSIP", "Error calling sip:" + user + "@" + cDomain);
+		throw MMSError(0, "Error calling sip:" + user + "@" + cDomain);
 	}
 
 	/* insert call into activeCalls */
