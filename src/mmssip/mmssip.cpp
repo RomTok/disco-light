@@ -34,6 +34,7 @@ static MMSSip *thiz = NULL;
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
 static void onCallMediaState(pjsua_call_id);
+static void onRegistrationState(pjsua_acc_id);
 static void onBuddyState(pjsua_buddy_id);
 
 MMSSip::MMSSip(const string    &user,
@@ -70,6 +71,7 @@ MMSSip::MMSSip(const string    &user,
     cfg.cb.on_incoming_call    = &onIncomingCall;
     cfg.cb.on_call_media_state = &onCallMediaState;
     cfg.cb.on_call_state       = &onCallState;
+    cfg.cb.on_reg_state        = &onRegistrationState;
     cfg.cb.on_buddy_state      = &onBuddyState;
 
     pjsua_logging_config_default(&logCfg);
@@ -129,9 +131,9 @@ MMSSip::MMSSip(const string    &user,
 
     DEBUGMSG("MMSSIP", "SIP account registered");
 
-    this->onCallSuccessfull  = new sigc::signal<void, int>;
-    this->onCallIncoming     = new sigc::signal<void, int, string>;
-    this->onBuddyStatus      = new sigc::signal<void, MMSSipBuddy>;
+    this->onCallSuccessfull    = new sigc::signal<void, int>;
+    this->onCallIncoming       = new sigc::signal<void, int, string>;
+    this->onBuddyStatus        = new sigc::signal<void, MMSSipBuddy>;
 }
 
 MMSSip::~MMSSip() {
@@ -261,6 +263,7 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
                 thiz->onCallSuccessfull->emit(callId);
         	break;
         case PJSIP_INV_STATE_DISCONNECTED:
+        	DEBUGMSG("MMSSIP", "lastStatusText: %s", ci.last_status_text);
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_DISCONNECTED");
         	break;
         default:
@@ -280,6 +283,18 @@ static void onCallMediaState(pjsua_call_id callId) {
         pjsua_conf_connect(ci.conf_slot, 0);
         pjsua_conf_connect(0, ci.conf_slot);
     }
+}
+
+static void onRegistrationState(pjsua_acc_id id) {
+	pjsua_acc_info info;
+
+	if(pjsua_acc_get_info(id, &info) == PJ_SUCCESS) {
+	    DEBUGMSG("MMSSIP", (info.has_registration ? "registered" : "not registered"));
+	    DEBUGMSG("MMSSIP", "status: %d", info.status);
+	    DEBUGMSG("MMSSIP", "status_text: %s", info.status_text);
+	    DEBUGMSG("MMSSIP", "online_status: %d", info.online_status);
+	    DEBUGMSG("MMSSIP", "online_status_text: %s", info.online_status_text);
+	}
 }
 
 static void onBuddyState(pjsua_buddy_id id) {
