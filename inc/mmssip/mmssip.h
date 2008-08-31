@@ -46,7 +46,8 @@ class MMSSip {
     private:
         string       user,
                      passwd,
-                     registrar;
+                     registrar,
+                     realm;
         short int    localPort;
 
         pjsua_acc_id          accID;
@@ -61,13 +62,15 @@ class MMSSip {
     	MMSSip(const string    &user,
     		   const string    &passwd,
     		   const string    &registrar,
+    		   const string    &realm = "",
     		   const short int &localPort = 5060);
 
     	~MMSSip();
 
     	const int call(const string &user, const string &domain = "");
     	void hangup(const int &id);
-    	void addBuddy(const string &name, const string &id, const string &domain);
+    	void answer(const int &id);
+    	void addBuddy(const string &name, const string &uri);
         MMSSipBuddy	getBuddy(const int &id);
 
         sigc::signal<void, int> 		           *onCallSuccessfull;

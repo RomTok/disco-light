@@ -40,10 +40,12 @@ static void onBuddyState(pjsua_buddy_id);
 MMSSip::MMSSip(const string    &user,
 		       const string    &passwd,
 		       const string    &registrar,
+		       const string    &realm,
 		       const short int &localPort) :
     user(user),
     passwd(passwd),
-    registrar(registrar) {
+    registrar(registrar),
+    realm(realm) {
 
 	/* only one instance of mmssip allowed */
 	if(thiz) {
@@ -117,7 +119,7 @@ MMSSip::MMSSip(const string    &user,
     snprintf(reg, sizeof(reg), "sip:%s", registrar.c_str());
     accCfg.reg_uri    = pj_str(reg);
     accCfg.cred_count = 1;
-    accCfg.cred_info[0].realm     = pj_str((char*)registrar.c_str());
+    accCfg.cred_info[0].realm     = pj_str((realm == "") ? (char*)registrar.c_str() : (char*)realm.c_str());
     accCfg.cred_info[0].scheme    = pj_str((char*)"digest");
     accCfg.cred_info[0].username  = pj_str((char*)user.c_str());
     accCfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
@@ -204,8 +206,29 @@ void MMSSip::hangup(const int &id) {
     this->activeCalls.erase(this->activeCalls.begin() + id);
 }
 
-void MMSSip::addBuddy(const string &name, const string &id, const string &domain) {
+void MMSSip::answer(const int &id) {
+    pjsua_call_answer(id, 200, NULL, NULL);
 
+	/* insert call into activeCalls */
+	this->activeCalls.push_back(id);
+}
+
+void MMSSip::addBuddy(const string &name, const string &uri) {
+    pjsua_buddy_config buddyCfg;
+    pjsua_buddy_id     buddyId;
+    pjsua_buddy_info   buddyInfo;
+
+    pjsua_buddy_config_default(&buddyCfg);
+    buddyCfg.uri = pj_str((char*)uri.c_str());
+    buddyCfg.subscribe = true;
+    if(pjsua_buddy_add(&buddyCfg, &buddyId) == PJ_SUCCESS) {
+    	MMSSipBuddy buddy = {name, uri, BUDDY_UNKNOWN};
+    	buddies[buddyId] = buddy;
+    	if(pjsua_buddy_get_info(buddyId, &buddyInfo) == PJ_SUCCESS) {
+    		buddy.status = (MMSSipBuddyStatus)buddyInfo.status;
+    	}
+       	buddies[buddyId] = buddy;
+    }
 }
 
 MMSSipBuddy MMSSip::getBuddy(const int &id) {
@@ -227,9 +250,6 @@ static void onIncomingCall(pjsua_acc_id  accId,
 
     if(thiz && thiz->onCallIncoming)
         thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
-
-    /* Automatically answer incoming calls with 200/OK */
-    //pjsua_call_answer(callId, 200, NULL, NULL);
 }
 
 /* Callback called by the library when call's state has changed */

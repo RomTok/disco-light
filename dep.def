@@ -173,7 +173,7 @@ ifndef OPENSSL_CHECKED
     export OPENSSL_CHECKED=1
 endif
 
-#sofia
+#libpj
 ifndef PJ_CHECKED
     $(info check for libpj)
     export PJ_INC=$(shell pkg-config --cflags libpj)
