@@ -20,6 +20,17 @@
 
 #ifndef _NO_MMSSIP
 
+#ifdef PJSIP_AUTH_AUTO_SEND_NEXT
+#undef PJSIP_AUTH_AUTO_SEND_NEXT
+#endif
+#define PJSIP_AUTH_AUTO_SEND_NEXT 1
+
+#ifdef PJSIP_AUTH_HEADER_CACHING
+#undef PJSIP_AUTH_HEADER_CACHING
+#endif
+#define PJSIP_AUTH_HEADER_CACHING 1
+
+
 #include "mmstools/tools.h"
 #include "mmstools/mmserror.h"
 #include "mmssip/mmssip.h"
@@ -30,6 +41,7 @@
  */
 
 static MMSSip *thiz = NULL;
+static bool   registered = false;
 
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
@@ -77,7 +89,7 @@ MMSSip::MMSSip(const string    &user,
     cfg.cb.on_buddy_state      = &onBuddyState;
 
     pjsua_logging_config_default(&logCfg);
-    logCfg.console_level = 0;
+    logCfg.console_level = 1;
 
     status = pjsua_init(&cfg, &logCfg, NULL);
     if(status != PJ_SUCCESS) {
@@ -109,21 +121,35 @@ MMSSip::MMSSip(const string    &user,
 
     DEBUGMSG("MMSSIP", "SIP stack started");
 
+    sleep(1);
+
     /* register to SIP server */
     pjsua_acc_config accCfg;
-    char id[80], reg[80];
+
+    char *tmpid = (char*)malloc(80);
+    snprintf(tmpid, 80, "sip:%s@%s", user.c_str(), registrar.c_str());
+    char *tmpreg = (char*)malloc(80);
+    snprintf(tmpreg, 80, "sip:%s", realm.c_str());
+    char *tmprealm = (char*)malloc(80);
+    snprintf(tmprealm, 80, "*");
+    char *tmpuser = (char*)malloc(80);
+    snprintf(tmpuser, 80, "%s", user.c_str());
+    char *tmppasswd = (char*)malloc(80);
+    snprintf(tmppasswd, 80, "%s", passwd.c_str());
+    char *tmpscheme = (char*)malloc(80);
+    snprintf(tmpscheme, 80, "Digest");
 
     pjsua_acc_config_default(&accCfg);
-    snprintf(id, sizeof(id), "sip:%s@%s", user.c_str(), registrar.c_str());
-    accCfg.id         = pj_str(id);
-    snprintf(reg, sizeof(reg), "sip:%s", registrar.c_str());
-    accCfg.reg_uri    = pj_str(reg);
+    accCfg.reg_timeout  = 60;
+    accCfg.id         = pj_str(tmpid);
+    accCfg.reg_uri    = pj_str(tmpreg);
     accCfg.cred_count = 1;
-    accCfg.cred_info[0].realm     = pj_str((realm == "") ? (char*)registrar.c_str() : (char*)realm.c_str());
-    accCfg.cred_info[0].scheme    = pj_str((char*)"digest");
-    accCfg.cred_info[0].username  = pj_str((char*)user.c_str());
-    accCfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-    accCfg.cred_info[0].data      = pj_str((char*)passwd.c_str());
+    accCfg.cred_info[0].realm     = pj_str(tmprealm);
+    accCfg.cred_info[0].scheme    = pj_str(tmpscheme);
+    accCfg.cred_info[0].username  = pj_str(tmpuser);
+    accCfg.cred_info[0].data_type = 0;
+    accCfg.cred_info[0].data      = pj_str(tmppasswd);
+    accCfg.publish_enabled        = PJ_FALSE;
 
     status = pjsua_acc_add(&accCfg, PJ_TRUE, &this->accID);
     if(status != PJ_SUCCESS) {
@@ -135,6 +161,8 @@ MMSSip::MMSSip(const string    &user,
 
     this->onCallSuccessfull    = new sigc::signal<void, int>;
     this->onCallIncoming       = new sigc::signal<void, int, string>;
+    this->onCallDisconnected   = new sigc::signal<void, int>;
+    this->onCalling            = new sigc::signal<void, int>;
     this->onBuddyStatus        = new sigc::signal<void, MMSSipBuddy>;
 }
 
@@ -165,7 +193,18 @@ const int MMSSip::call(const string &user, const string &domain) {
     char           tmp[1024];
     static bool    registeredThread = false;
 
-    const char     *cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
+    if(!registered) {
+    	DEBUGMSG("MMSSIP", "Cannot make a call (not registered)");
+    	throw MMSError(0, "Cannot make a call (not registered)");
+    }
+
+    const char *cDomain;
+    if(user.find("@") == string::npos) {
+        cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
+        snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), cDomain);
+    }
+    else
+        snprintf(tmp, 1024, "sip:%s", user.c_str());
 
     /* have to register the input thread once, otherwise libpj
      * doesn't work
@@ -180,7 +219,6 @@ const int MMSSip::call(const string &user, const string &domain) {
 		registeredThread = true;
     }
 
-    snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), cDomain);
 	status = pjsua_verify_sip_url(tmp);
 	if (status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Invalid callee info sip:" + user + "@" + cDomain);
@@ -194,41 +232,95 @@ const int MMSSip::call(const string &user, const string &domain) {
 		throw MMSError(0, "Error calling sip:" + user + "@" + cDomain);
 	}
 
-	/* insert call into activeCalls */
-	this->activeCalls.push_back(call);
-
-	return (this->activeCalls.size() - 1);
+	return call;
 }
 
-void MMSSip::hangup(const int &id) {
-	pjsua_call_id cid = this->activeCalls.at(id);
-    pjsua_call_hangup(cid, 0, NULL, NULL);
-    this->activeCalls.erase(this->activeCalls.begin() + id);
+void MMSSip::hangup(int id) {
+	pj_status_t        status;
+    static bool        registeredThread = false;
+
+    DEBUGMSG("MMSSIP", "calling pjsua_call_hangup");
+
+    /* have to register the input thread once, otherwise libpj
+     * doesn't work
+     */
+    if(!registeredThread) {
+		pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
+		status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
+		if(status != PJ_SUCCESS) {
+			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
+			throw MMSError(0, "Error registering thread (pj_thread_register)");
+		}
+		registeredThread = true;
+    }
+
+    pjsua_call_hangup(id, 0, NULL, NULL);
 }
 
-void MMSSip::answer(const int &id) {
+void MMSSip::answer(int id) {
+	pj_status_t        status;
+    static bool        registeredThread = false;
+
+    DEBUGMSG("MMSSIP", "calling pjsua_call_answer");
+
+    /* have to register the input thread once, otherwise libpj
+     * doesn't work
+     */
+    if(!registeredThread) {
+		pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
+		status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
+		if(status != PJ_SUCCESS) {
+			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
+			throw MMSError(0, "Error registering thread (pj_thread_register)");
+		}
+		registeredThread = true;
+    }
+
     pjsua_call_answer(id, 200, NULL, NULL);
-
-	/* insert call into activeCalls */
-	this->activeCalls.push_back(id);
 }
 
 void MMSSip::addBuddy(const string &name, const string &uri) {
+	pj_status_t        status;
     pjsua_buddy_config buddyCfg;
     pjsua_buddy_id     buddyId;
     pjsua_buddy_info   buddyInfo;
+    static bool        registeredThread = false;
+
+    if(!registered) {
+    	DEBUGMSG("MMSSIP", "Cannot add buddy (not registered)");
+    	throw MMSError(0, "Cannot add buddy (not registered)");
+    }
+
+    /* have to register the input thread once, otherwise libpj
+     * doesn't work
+     */
+    if(!registeredThread) {
+		pj_bzero(this->pjThreadDesc, sizeof(this->pjThreadDesc));
+		status = pj_thread_register("MMSSIP", this->pjThreadDesc, &this->pjThread);
+		if(status != PJ_SUCCESS) {
+			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
+			throw MMSError(0, "Error registering thread (pj_thread_register)");
+		}
+		registeredThread = true;
+    }
 
     pjsua_buddy_config_default(&buddyCfg);
-    buddyCfg.uri = pj_str((char*)uri.c_str());
+    char buri[80];
+    sprintf(buri, "sip:%s", uri.c_str());
+    buddyCfg.uri = pj_str(buri);
     buddyCfg.subscribe = true;
     if(pjsua_buddy_add(&buddyCfg, &buddyId) == PJ_SUCCESS) {
+    	DEBUGMSG("MMSSIP", "successfully added buddy " + name);
     	MMSSipBuddy buddy = {name, uri, BUDDY_UNKNOWN};
     	buddies[buddyId] = buddy;
     	if(pjsua_buddy_get_info(buddyId, &buddyInfo) == PJ_SUCCESS) {
     		buddy.status = (MMSSipBuddyStatus)buddyInfo.status;
     	}
        	buddies[buddyId] = buddy;
+       	onBuddyState(buddyId);
     }
+    else
+	    DEBUGMSG("MMSSIP", "failed to add buddy " + name);
 }
 
 MMSSipBuddy MMSSip::getBuddy(const int &id) {
@@ -246,9 +338,9 @@ static void onIncomingCall(pjsua_acc_id  accId,
 
     pjsua_call_get_info(callId, &ci);
 
-    DEBUGMSG("MMSSIP", "Incoming call from %.*s", (int)ci.remote_info.slen, ci.remote_info.ptr);
+    DEBUGMSG("MMSSIP", "Incoming call from %.*s (id=%d)", (int)ci.remote_info.slen, ci.remote_info.ptr, callId);
 
-    if(thiz && thiz->onCallIncoming)
+	if(thiz && thiz->onCallIncoming)
         thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
 }
 
@@ -267,6 +359,8 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_CALLING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CALLING");
+            if(thiz && thiz->onCalling)
+                thiz->onCalling->emit(callId);
         	break;
         case PJSIP_INV_STATE_INCOMING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
@@ -285,6 +379,8 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         case PJSIP_INV_STATE_DISCONNECTED:
         	DEBUGMSG("MMSSIP", "lastStatusText: %s", ci.last_status_text);
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_DISCONNECTED");
+        	if(thiz && thiz->onCallDisconnected)
+                thiz->onCallDisconnected->emit(callId);
         	break;
         default:
 
@@ -309,6 +405,7 @@ static void onRegistrationState(pjsua_acc_id id) {
 	pjsua_acc_info info;
 
 	if(pjsua_acc_get_info(id, &info) == PJ_SUCCESS) {
+		if(info.status == 200) registered = true;
 	    DEBUGMSG("MMSSIP", (info.has_registration ? "registered" : "not registered"));
 	    DEBUGMSG("MMSSIP", "status: %d", info.status);
 	    DEBUGMSG("MMSSIP", "status_text: %s", info.status_text);

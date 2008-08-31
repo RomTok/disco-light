@@ -54,8 +54,6 @@ class MMSSip {
         pj_thread_desc        pjThreadDesc;
         pj_thread_t           *pjThread;
 
-        vector<pjsua_call_id> activeCalls;
-
         map<int, MMSSipBuddy> buddies;
 
     public:
@@ -68,13 +66,15 @@ class MMSSip {
     	~MMSSip();
 
     	const int call(const string &user, const string &domain = "");
-    	void hangup(const int &id);
-    	void answer(const int &id);
+    	void hangup(int id);
+    	void answer(int id);
     	void addBuddy(const string &name, const string &uri);
         MMSSipBuddy	getBuddy(const int &id);
 
         sigc::signal<void, int> 		           *onCallSuccessfull;
         sigc::signal<void, int, string>            *onCallIncoming;
+        sigc::signal<void, int>                    *onCallDisconnected;
+        sigc::signal<void, int>                    *onCalling;
         sigc::signal<void, MMSSipBuddy>            *onBuddyStatus;
 };
 
