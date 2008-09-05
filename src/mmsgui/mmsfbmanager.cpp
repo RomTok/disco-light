@@ -185,6 +185,7 @@ void MMSFBManager::applySettings() {
     MMSFBSurface *ts = mmsfbsurfacemanager->getTemporarySurface(10,10);
     if (ts) {
     	// currently we do not accelerate using video hardware
+    	// if buffermode is not MMSFB_BM_BACKSYSTEM we use the directfb hardware acceleration
     	if (buffermode == MMSFB_BM_BACKSYSTEM)
     		ts->setExtendedAcceleration(config.getExtendedAccel());
     	mmsfbsurfacemanager->releaseTemporarySurface(ts);
