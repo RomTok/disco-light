@@ -33,6 +33,8 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 bool MMSFBSurface::extendedaccel								= false;
 bool MMSFBSurface::firsttime_eAB_blend_argb_to_argb 			= true;
 bool MMSFBSurface::firsttime_eAB_blend_srcalpha_argb_to_argb	= true;
+bool MMSFBSurface::firsttime_eAB_rgb16_to_rgb16				    = true;
+bool MMSFBSurface::firsttime_eAB_argb_to_rgb16				    = true;
 bool MMSFBSurface::firsttime_eAB_blend_argb_to_rgb16			= true;
 bool MMSFBSurface::firsttime_eAB_blend_ayuv_to_ayuv				= true;
 
@@ -1169,6 +1171,100 @@ void MMSFBSurface::eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pi
 }
 
 
+void MMSFBSurface::eAB_rgb16_to_rgb16(unsigned short int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+									  unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
+	// first time?
+	if (firsttime_eAB_rgb16_to_rgb16) {
+		printf("DISKO: Using accelerated copy RGB16 to RGB16.\n");
+		firsttime_eAB_rgb16_to_rgb16 = false;
+	}
+	
+	// prepare...
+	int src_pitch_pix = src_pitch >> 1;
+	int dst_pitch_pix = dst_pitch >> 1;
+	src+= sx + sy * src_pitch_pix;
+	dst+= dx + dy * dst_pitch_pix;
+
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
+	unsigned short int *src_end = src + src_pitch_pix * sh;
+	
+	// for all lines
+	while (src < src_end) {
+		// copy the line
+		memcpy(dst, src, sw << 1);
+
+		// go to the next line
+		src+= src_pitch_pix; 
+		dst+= dst_pitch_pix;
+	}
+}
+
+
+
+void MMSFBSurface::eAB_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+									 unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
+	// first time?
+	if (firsttime_eAB_argb_to_rgb16) {
+		printf("DISKO: Using accelerated conversion ARGB to RGB16.\n");
+		firsttime_eAB_argb_to_rgb16 = false;
+	}
+	
+	// prepare...
+	int src_pitch_pix = src_pitch >> 2;
+	int dst_pitch_pix = dst_pitch >> 1;
+	src+= sx + sy * src_pitch_pix;
+	dst+= dx + dy * dst_pitch_pix;
+
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
+	unsigned int OLDSRC  = (*src) + 1;
+	unsigned int *src_end = src + src_pitch_pix * sh;
+	int src_pitch_diff = src_pitch_pix - sw;
+	int dst_pitch_diff = dst_pitch_pix - sw;
+	register unsigned short int d;
+	
+	
+	// for all lines
+	while (src < src_end) {
+		// for all pixels in the line
+		unsigned int *line_end = src + sw;
+		while (src < line_end) {
+			// load pixel from memory and check if the previous pixel is the same
+			register unsigned int SRC  = *src;
+
+			// same?
+			if (SRC==OLDSRC) {
+				// same pixel, use the previous value
+				*dst = d;
+			    dst++;
+			    src++;
+				continue;
+			}
+			OLDSRC = SRC;
+			
+			// copy source directly to the destination
+			unsigned int r = (SRC << 8) >> 24;
+			unsigned int g = (SRC << 16) >> 24;
+			unsigned int b = SRC & 0xff;
+		    d =    ((r >> 3) << 11)
+		    	 | ((g >> 2) << 5)
+		    	 | (b >> 3);
+		    *dst = d;
+		    
+		    dst++;
+		    src++;
+		}
+
+		// go to the next line
+		src+= src_pitch_diff; 
+		dst+= dst_pitch_diff;
+	}
+}
+
+
 void MMSFBSurface::eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
 										   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
@@ -1375,6 +1471,10 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 	if (!this->extendedaccel)
 		return false;
 
+	// premultiplied surface?
+	if (!source->config.premultiplied)
+		return false;
+	
 	// a few help and clipping values
 	void *src_ptr, *dst_ptr;
 	int  src_pitch, dst_pitch;
@@ -1482,6 +1582,20 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 		else
 		if (this->config.pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
+			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
+				// convert without alpha channel
+				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
+					eAB_argb_to_rgb16((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.h:source->root_parent->config.h,
+									   sx, sy, sw, sh,
+									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									   x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+				
+				return false;
+			}
+			else
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
@@ -1509,6 +1623,31 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 		return false;
 	}
 	else
+	if (source->config.pixelformat == MMSFB_PF_RGB16) {
+		// source is RGB16 (RGB565)
+		if (this->config.pixelformat == MMSFB_PF_RGB16) {
+			// destination is RGB16 (RGB565)
+			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
+					eAB_rgb16_to_rgb16((unsigned short int *)src_ptr, src_pitch, (!source->root_parent)?source->config.h:source->root_parent->config.h,
+									   sx, sy, sw, sh,
+									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									   x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+				
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
 	if (source->config.pixelformat == MMSFB_PF_AYUV) {
 		// source is AYUV
 		if (this->config.pixelformat == MMSFB_PF_AYUV) {

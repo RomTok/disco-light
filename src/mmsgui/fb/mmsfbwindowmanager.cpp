@@ -412,6 +412,7 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
     DFBRegion       ls_region;
     bool            high_freq = false;
     bool            cleared = false;
+    bool			win_found = false;
 
     /* check if initialized */
     INITCHECK;
@@ -425,22 +426,40 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
         /* surface given */
         for (unsigned int i=0; i < this->vwins.size(); i++)
             if (this->vwins.at(i).surface == surface) {
-                /* surface found */
+                // surface found
                 vw = &(this->vwins.at(i));
                 DFBRegion *myregion = &(vw->region);
     
-                /* calculate the affected region on the layer surface */
+                // calculate the affected region on the layer surface
                 if (region == NULL) {
-                    /* complete surface */
+                    // complete surface
                     ls_region = *myregion;
                 }
                 else {
-                    /* only a region */
+                    // only a region
                     ls_region.x1 = myregion->x1 + region->x1;
                     ls_region.y1 = myregion->y1 + region->y1;
                     ls_region.x2 = myregion->x1 + region->x2;
                     ls_region.y2 = myregion->y1 + region->y2;
                 }
+
+                // check region
+                if (ls_region.x1 < 0) {
+                	ls_region.x2+= ls_region.x1;
+                	ls_region.x1 = 0;
+                }
+                if (ls_region.y1 < 0) {
+                	ls_region.y2+= ls_region.y1;
+                	ls_region.y1 = 0;
+                }
+                int ls_w, ls_h;
+                if (this->layer_surface->getSize(&ls_w, &ls_h)) {
+                	if (ls_region.x2 >= ls_w)
+                		ls_region.x2 = ls_w - 1;
+                	if (ls_region.y2 >= ls_h)
+                		ls_region.y2 = ls_h - 1;
+                }
+                
                 break;
             }
 
@@ -543,37 +562,34 @@ logger.writeLog("BBB>");
         }
     }
 
-    /* set the region of the layer surface */
+    // set the region of the layer surface
     this->layer_surface->setClip(&ls_region);
 
-    /* check if i have to clear the background */
+    // check if i have to clear the background
     if (!vw)
         cleared = true;
     else
         cleared = (!((vw->alphachannel==false)&&(vw->opacity==255)));
 
-    if (cleared)
-        this->layer_surface->clear();
-
-    /* search for other affected windows and draw parts of it */
+    // searching for other affected windows and draw parts of it
     for (unsigned int i=0; i < this->vwins.size(); i++) {
         VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
         DFBRegion *myregion = &(aw->region);
 
-        /* if the window has no opacity then continue */
+        // if the window has no opacity then continue
         if (!aw->opacity)
             continue;
 
-        /* check if layer surface */
+        // check if layer surface
         if (aw->islayersurface)
             if (!cleared)
                 continue;
-
+        
         if (!((myregion->x2 < ls_region.x1)||(myregion->y2 < ls_region.y1)
             ||(myregion->x1 > ls_region.x2)||(myregion->y1 > ls_region.y2))) {
 
-            /* the window is affected */
-            /* calc source and destination */
+            // the window is affected
+            // calc source and destination
             DFBRectangle src_rect;
             int dst_x = ls_region.x1;
             int dst_y = ls_region.y1;
@@ -598,8 +614,9 @@ logger.writeLog("BBB>");
             if (myregion->y2 > ls_region.y2)
                 src_rect.h-= myregion->y2 - ls_region.y2;
 
-            /* set the blitting flags and color */
-            if (aw->alphachannel)
+            // set the blitting flags and color
+            if ((aw->alphachannel)&&(win_found)) {
+            	// the window has an alphachannel and is NOT the first window to be blit
                 if (aw->opacity < 255) { 
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
@@ -607,7 +624,9 @@ logger.writeLog("BBB>");
                 else {
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
                 }
-            else
+            }
+            else {
+            	// the window has no alphachannel or is the FIRST window to be blit
                 if (aw->opacity < 255) { 
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_COLORALPHA);
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
@@ -615,7 +634,22 @@ logger.writeLog("BBB>");
                 else {
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
                 }
-            /* check if layer surface and blit */
+
+                // first window?
+                if (!win_found) {
+                	// yes, clear the layer before blitting the first window surface
+                	// but only, if the first window does not use the whole layer region
+                	// else we do not have to clear the layer region and can save CPU
+                    if (cleared)
+                    	if ((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
+                    	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2)) {
+                    		this->layer_surface->clear();
+                    	}
+                	win_found = true;
+                }
+            }
+
+            // check if layer surface and blit
             if (aw->islayersurface) {
                 if (aw->saved_surface) {
                     this->layer_surface->blit(aw->saved_surface, &src_rect, dst_x, dst_y);
@@ -627,6 +661,11 @@ logger.writeLog("BBB>");
         }
     }
 
+    // if no window is drawn, check if we have to clear the layer region 
+    if (!win_found)
+	    if (cleared)
+	        this->layer_surface->clear();
+    
     // draw the pointer
     drawPointer(&ls_region);
 
@@ -853,7 +892,7 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy) 
 	
 	// save the old region
 	DFBRegion old_region = this->pointer_region;
-	
+
 	// set the rectangle/region position
 	this->pointer_rect.x = this->pointer_posx - (this->pointer_rect.w >> 1);
 	this->pointer_rect.y = this->pointer_posy - (this->pointer_rect.h >> 1);
@@ -872,7 +911,8 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy) 
 		||(old_region.y2 < this->pointer_region.y1)) {
 		// two regions to be updated
 		flipSurface(NULL, &this->pointer_region, false);
-		flipSurface(NULL, &old_region, false);
+		if (old_region.x1 != old_region.x2)
+			flipSurface(NULL, &old_region, false);
 	}
 	else {
 		// one region
