@@ -79,6 +79,9 @@ class MMSFBSurface {
         // first time flag for eAB_blend_argb_to_rgb16()
         static bool 			firsttime_eAB_blend_argb_to_rgb16;
         
+        // first time flag for eAB_blend_airgb_to_airgb()
+        static bool 			firsttime_eAB_blend_airgb_to_airgb;
+
         // first time flag for eAB_blend_ayuv_to_ayuv()
         static bool 			firsttime_eAB_blend_ayuv_to_ayuv;
         
@@ -112,6 +115,13 @@ class MMSFBSurface {
         void eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
+        
+        void eAB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+        
+        
+        
+        
         void eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
 

@@ -353,7 +353,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
         	// the gui internally needs surfaces with alpha channel
         	// now we have to decide if we are working in RGB or YUV color space
         	pixelformat = this->config.surface_pixelformat;
-        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AiRGB)&&(pixelformat != MMSFB_PF_AYUV))) {
         		// use autodetection
 	        	if (!isRGBPixelFormat(pixelformat))
 		            // so switch all non-alpha pixelformats to AYUV
@@ -401,7 +401,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         	// switch all non-alpha pixelformats to alpha
         	// now we have to decide if we are working in RGB or YUV color space
         	pixelformat = this->config.window_pixelformat;
-        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AiRGB)&&(pixelformat != MMSFB_PF_AYUV))) {
         		// use autodetection
 	        	if (!isRGBPixelFormat(pixelformat))
 		            // so switch all non-alpha pixelformats to AYUV

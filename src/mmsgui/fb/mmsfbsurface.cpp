@@ -36,6 +36,7 @@ bool MMSFBSurface::firsttime_eAB_blend_srcalpha_argb_to_argb	= true;
 bool MMSFBSurface::firsttime_eAB_rgb16_to_rgb16				    = true;
 bool MMSFBSurface::firsttime_eAB_argb_to_rgb16				    = true;
 bool MMSFBSurface::firsttime_eAB_blend_argb_to_rgb16			= true;
+bool MMSFBSurface::firsttime_eAB_blend_airgb_to_airgb 			= true;
 bool MMSFBSurface::firsttime_eAB_blend_ayuv_to_ayuv				= true;
 
 bool MMSFBSurface::firsttime_eASB_blend_argb_to_argb 			= true;
@@ -1357,6 +1358,96 @@ void MMSFBSurface::eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int
 }
 
 
+void MMSFBSurface::eAB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+										  	unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
+
+	// first time?
+	if (firsttime_eAB_blend_airgb_to_airgb) {
+		printf("DISKO: Using accelerated blend AiRGB to AiRGB.\n");
+		firsttime_eAB_blend_airgb_to_airgb = false;
+	}
+
+	// prepare...
+	int src_pitch_pix = src_pitch >> 2;
+	int dst_pitch_pix = dst_pitch >> 2;
+	src+= sx + sy * src_pitch_pix;
+	dst+= dx + dy * dst_pitch_pix;
+
+	if (dst_height - dy < sh)
+		sh = dst_height - dy;
+	
+	unsigned int OLDDST = (*dst) + 1;
+	unsigned int OLDSRC  = (*src) + 1;
+	unsigned int *src_end = src + src_pitch_pix * sh;
+	int src_pitch_diff = src_pitch_pix - sw;
+	int dst_pitch_diff = dst_pitch_pix - sw;
+	register unsigned int d;
+
+	// for all lines
+	while (src < src_end) {
+		// for all pixels in the line
+		unsigned int *line_end = src + sw;
+		while (src < line_end) {
+			// load pixel from memory and check if the previous pixel is the same
+			register unsigned int SRC = *src;
+
+			// is the source alpha channel 0x00 or 0xff?
+			register unsigned int A = SRC >> 24;
+			if (A == 0x00) {
+				// source pixel is not transparent, copy it directly to the destination
+				*dst = SRC;
+			}
+			else
+			if (A < 0xff) {
+				// source alpha is > 0x00 and < 0xff  
+				register unsigned int DST = *dst; 
+
+				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
+					// same pixel, use the previous value
+					*dst = d;
+				    dst++;
+				    src++;
+					continue;
+				}
+				OLDDST = DST;
+				OLDSRC = SRC;
+
+				unsigned int a = (DST >> 24);
+				unsigned int r = (DST << 8) >> 24;
+				unsigned int g = (DST << 16) >> 24;
+				unsigned int b = DST & 0xff;
+
+				// invert src alpha
+			    a = (A * (0x100 - a)) >> 8;
+			    r = (A * r) >> 8;
+			    g = (A * g) >> 8;
+			    b = (A * b) >> 8;
+
+			    // add src to dst
+			    a += 0x100 - A;
+			    r += (SRC << 8) >> 24;
+			    g += (SRC << 16) >> 24;
+			    b += SRC & 0xff;
+				d =	  ((r >> 8) ? 0xff0000   : (r << 16))
+					| ((g >> 8) ? 0xff00     : (g << 8))
+			    	| ((b >> 8) ? 0xff 		 :  b);
+			    if (!(a >> 8)) d |= (0x100 - a) << 24;
+				*dst = d;
+			}
+		    
+		    dst++;
+		    src++;
+		}
+
+		// go to the next line
+		src+= src_pitch_diff; 
+		dst+= dst_pitch_diff;
+	}
+}
+
+
+
+
 void MMSFBSurface::eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
 										  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 
@@ -1648,6 +1739,33 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 		// does not match
 		return false;
 	}
+	else
+	if (source->config.pixelformat == MMSFB_PF_AiRGB) {
+		// source is AiRGB
+		if (this->config.pixelformat == MMSFB_PF_AiRGB) {
+			// destination is AiRGB
+			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
+					eAB_blend_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.h:source->root_parent->config.h,
+										   	 sx, sy, sw, sh,
+										     (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										     x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+				
+				return false;
+			}
+			
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
 	if (source->config.pixelformat == MMSFB_PF_AYUV) {
 		// source is AYUV
 		if (this->config.pixelformat == MMSFB_PF_AYUV) {
