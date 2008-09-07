@@ -70,6 +70,9 @@ class MMSFBSurface {
         // first time flag for eAB_blend_srcalpha_argb_to_argb()
         static bool 			firsttime_eAB_blend_srcalpha_argb_to_argb;
         
+        // first time flag for eAB_blend_argb_to_airgb()
+        static bool 			firsttime_eAB_blend_argb_to_airgb;
+
         // first time flag for eAB_rgb16_to_rgb16()
         static bool 			firsttime_eAB_rgb16_to_rgb16;
 
@@ -82,6 +85,15 @@ class MMSFBSurface {
         // first time flag for eAB_blend_airgb_to_airgb()
         static bool 			firsttime_eAB_blend_airgb_to_airgb;
 
+        // first time flag for eAB_blend_srcalpha_airgb_to_airgb()
+        static bool 			firsttime_eAB_blend_srcalpha_airgb_to_airgb;
+
+        // first time flag for eAB_airgb_to_rgb16()
+        static bool 			firsttime_eAB_airgb_to_rgb16;
+
+        // first time flag for eAB_blend_airgb_to_rgb16()
+        static bool 			firsttime_eAB_blend_airgb_to_rgb16;
+        
         // first time flag for eAB_blend_ayuv_to_ayuv()
         static bool 			firsttime_eAB_blend_ayuv_to_ayuv;
         
@@ -90,6 +102,12 @@ class MMSFBSurface {
 
         // first time flag for eASB_blend_srcalpha_argb_to_argb()
         static bool 			firsttime_eASB_blend_srcalpha_argb_to_argb;
+
+        // first time flag for eASB_blend_airgb_to_airgb()
+        static bool 			firsttime_eASB_blend_airgb_to_airgb;
+
+        // first time flag for eASB_blend_srcalpha_airgb_to_airgb()
+        static bool 			firsttime_eASB_blend_srcalpha_airgb_to_airgb;
 
         
         void deleteSubSurface(MMSFBSurface *surface);
@@ -107,6 +125,8 @@ class MMSFBSurface {
         void eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
         									 unsigned char alpha);
+        void eAB_blend_argb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
         void eAB_rgb16_to_rgb16(unsigned short int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
@@ -118,6 +138,13 @@ class MMSFBSurface {
         
         void eAB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+        void eAB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        									   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+        									   unsigned char alpha);
+        void eAB_airgb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+        void eAB_blend_airgb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        						      unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
         
         
         
@@ -132,11 +159,17 @@ class MMSFBSurface {
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
 
         void eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
-        										   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
+									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
         void eASB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
 
+        void eASB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+									   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
+        void eASB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        									    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+        									    unsigned char alpha);
+        
         bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
         
         MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
