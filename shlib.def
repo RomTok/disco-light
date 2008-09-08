@@ -27,6 +27,10 @@ install: all
 	@find $(DESTDIR)$(incdir)/$(SUBPACKAGE)/ -name *.h | xargs chmod 644
 	@install -d $(DESTDIR)$(libdir)
 	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
+	@if test -f $(LIBDIR)/$(STATIC_TARGET); then \
+		install -m 755 $(LIBDIR)/$(STATIC_TARGET) $(DESTDIR)$(libdir)/; \
+	fi
+
 
 update: 
 	@echo " [UPDATE]    ($(SUBPACKAGE))"

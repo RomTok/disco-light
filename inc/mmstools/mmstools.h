@@ -41,5 +41,6 @@
 #include "mmstools/mmsmutex.h"
 #include "mmstools/mmsconverter.h"
 #include "mmstools/mmstafffile.h"
+#include "mmstools/mmsdatetime.h"
 
 #endif  /*MMSTOOLS_H_*/
