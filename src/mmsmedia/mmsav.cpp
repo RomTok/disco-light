@@ -43,22 +43,36 @@ MMS_CREATEERROR(MMSAVError);
 static void output_cb(void *cdata, int width, int height, double ratio,
                       DFBSurfacePixelFormat format, DFBRectangle* dest_rect) {
     VODESC *vodesc = (VODESC *) cdata;
+    int    newH, newW;
 
 	//DEBUGOUT("\noutput_cp %d:%d:%f:%d:%d",width,height,ratio,vodesc->windsc.width,vodesc->windsc.height);
     if (vodesc->ratio != ratio) {
+    	newW = (int)((double)(vodesc->windsc.height) * ratio + 0.5);
+    	newH = (int)((double)(vodesc->windsc.width) / ratio + 0.5);
 
-        /* ratio has changed */
+    	/* ratio has changed */
         if (ratio<1.0) {
-            vodesc->rect.w = (int)((double)(vodesc->windsc.height) / ratio + 0.5);
-            vodesc->rect.h = vodesc->windsc.height;
+        	if(newW > vodesc->windsc.width) {
+        		vodesc->rect.w = vodesc->windsc.width;
+        		vodesc->rect.h = newH;
+        	} else {
+				vodesc->rect.w = newW;
+				vodesc->rect.h = vodesc->windsc.height;
+        	}
             vodesc->rect.x = (vodesc->windsc.width - vodesc->rect.w) / 2;
             vodesc->rect.y = 0;
         } else {
-            vodesc->rect.w = vodesc->windsc.width;
-            vodesc->rect.h = (int)((double)(vodesc->windsc.width) / ratio + 0.5);
+        	if(newH > vodesc->windsc.height) {
+        		vodesc->rect.h = vodesc->windsc.height;
+                vodesc->rect.w = newW;
+        	} else {
+        		vodesc->rect.w = vodesc->windsc.width;
+        		vodesc->rect.h = newH;
+        	}
             vodesc->rect.x = 0;
             vodesc->rect.y = (vodesc->windsc.height - vodesc->rect.h) / 2;
         }
+
         /* save other infos */
         vodesc->format = format;
         vodesc->ratio  = ratio;
@@ -685,7 +699,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
                     msg = "Error in demux plugin";
                     break;
                 case XINE_ERROR_INPUT_FAILED :
-                    msg = "Error in input plugin";
+                    msg = "Error in input plugin (" + mrl + ")";
                     break;
                 default:
                     msg = "Cannot play stream";
