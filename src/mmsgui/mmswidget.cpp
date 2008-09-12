@@ -1431,20 +1431,21 @@ MMSWidget *MMSWidget::getDrawableParent(bool mark2Redraw, bool markChildren2Redr
 void MMSWidget::refresh() {
     DFBRectangle tobeupdated;
     unsigned int margin = 0;
+    MMSWindow *myroot = this->rootwindow;
 
     if (!this->geomset) {
     	return;
-
     }
 
     if (!this->visible) {
     	return;
-
     }
 
+    if (!myroot)
+   		return;
+    
     /* lock the window because only one thread can do this at the same time */
-    if (this->rootwindow)
-        this->rootwindow->lock();
+    myroot->lock();
 
     if (this->drawable)
         getMargin(margin);
@@ -1460,13 +1461,12 @@ void MMSWidget::refresh() {
     	if (((MMSMenuWidget *)this)->getSmoothScrolling())
     		recalculateChildren();
 
-    this->getRootWindow()->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated);
+   	myroot->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated);
 
     switchArrowWidgets();
 
     /* unlock the window */
-    if (this->rootwindow)
-        this->rootwindow->unlock();
+    myroot->unlock();
 }
 
 bool MMSWidget::isDrawable() {
