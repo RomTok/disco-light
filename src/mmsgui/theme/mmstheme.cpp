@@ -621,6 +621,7 @@ MMSTheme::MMSTheme() {
         c.b = 255;
         this->labelWidgetClass.setSelColor(c);
         this->labelWidgetClass.setText("");
+        this->labelWidgetClass.setSlidable(false);
     }
 
     /* MMSImageWidget */

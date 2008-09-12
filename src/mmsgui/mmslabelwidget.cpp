@@ -28,6 +28,11 @@ MMSLabelWidget::MMSLabelWidget(MMSWindow *root, string className, MMSTheme *them
 }
 
 MMSLabelWidget::~MMSLabelWidget() {
+    if (labelThread) {
+        labelThread->stop();
+        labelThread=NULL;
+    }
+
     if (this->rootwindow) {
         this->rootwindow->fm->releaseFont(this->font);
     }
@@ -43,6 +48,9 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 
     /* clear */
     this->font = NULL;
+    this->slid_width = 0;
+    this->slid_offset = 0;
+    this->labelThread = NULL;
 
     return MMSWidget::create(root, true, false, false, true, false, false);
 }
@@ -59,8 +67,14 @@ MMSWidget *MMSLabelWidget::copyWidget() {
 
     /* reload my font */    
     newWidget->font = NULL;
+    newWidget->labelThread = NULL;
     if (this->rootwindow) {
         newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
+
+        // first time the label thread has to be started
+        if (newWidget->getSlidable()) {
+			newWidget->setSlidable(true);
+        }
     }
 
     return newWidget;
@@ -73,6 +87,11 @@ bool MMSLabelWidget::init() {
 
     /* load font */
     this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
+
+    // first time the label thread has to be started
+    if (getSlidable()) {
+    	setSlidable(true);
+    }
 
     return true;
 }
@@ -106,6 +125,9 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
             this->font->GetStringWidth(this->font, text.c_str(), -1, &width);
             this->font->GetHeight(this->font, &height);
     
+            // save the width of the text
+            this->slid_width = width;
+            
             switch (getAlignment()) {
                 case MMSALIGNMENT_LEFT:
                     x = surfaceGeom.x;
@@ -161,7 +183,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
                 /* draw the text */
-                this->surface->drawString(text, -1, x, y);
+                this->surface->drawString(text, -1, x - this->slid_offset, y);
             }
         }
 
@@ -211,6 +233,10 @@ DFBColor MMSLabelWidget::getSelColor() {
 
 string MMSLabelWidget::getText() {
     GETLABEL(Text);
+}
+
+bool MMSLabelWidget::getSlidable() {
+    GETLABEL(Slidable);
 }
 
 /***********************************************/
@@ -287,6 +313,31 @@ void MMSLabelWidget::setText(string text, bool refresh) {
         this->refresh();
 }
 
+void MMSLabelWidget::setSlidable(bool slidable) {
+    myLabelWidgetClass.setSlidable(slidable);
+    if (slidable) {
+    	// text should slide
+    	this->slid_offset = 0;
+
+        if (this->labelThread) {
+            // toggle pause off
+            this->labelThread->pause(false);
+        }
+        else {
+            // start a thread
+            this->labelThread = new MMSLabelWidgetThread(this);
+            this->labelThread->start();
+        }
+    }
+    else {
+    	// static text
+        if (labelThread)
+            labelThread->stop();
+    	this->slid_offset = 0;
+    	this->refresh();
+    }
+}
+
 void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
     if (themeClass->isFontPath())
         setFontPath(themeClass->getFontPath());
@@ -302,6 +353,8 @@ void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
         setSelColor(themeClass->getSelColor());
     if (themeClass->isText())
         setText(themeClass->getText());
+    if (themeClass->isSlidable())
+        setSlidable(themeClass->getSlidable());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

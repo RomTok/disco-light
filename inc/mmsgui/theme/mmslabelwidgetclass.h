@@ -43,7 +43,8 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "text", TAFF_ATTRTYPE_STRING }
+		{ "text", TAFF_ATTRTYPE_STRING }, \
+		{ "slidable", TAFF_ATTRTYPE_BOOL }
 	
 	#define MMSGUI_LABELWIDGET_ATTR_IDS \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_path, \
@@ -60,7 +61,8 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_r, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_b, \
-		MMSGUI_LABELWIDGET_ATTR_IDS_text
+		MMSGUI_LABELWIDGET_ATTR_IDS_text, \
+		MMSGUI_LABELWIDGET_ATTR_IDS_slidable
 	
 	#define MMSGUI_LABELWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -137,6 +139,12 @@ class MMSLabelWidgetClass {
         //! text to draw
         string          text;
 
+        //! is slidable set?
+        bool            isslidable;
+        
+        //! if true and size of the text string is greater than widget dimension, the text will slide over the widget
+        bool          	slidable;
+        
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -293,6 +301,25 @@ class MMSLabelWidgetClass {
         */
         string getText();
 
+        
+        //! Check if the slidable flag is set.
+        bool isSlidable();
+
+        //! Set the slidable flag.
+        /*!
+        \param slidable  true/false
+        */
+        void setSlidable(bool slidable);
+
+        //! Mark the slidable flag as not set.
+        void unsetSlidable();
+
+        //! Get the slidable flag.
+        /*!
+        \return true/false
+        */
+        bool getSlidable();
+        
     /* friends */
     friend class MMSThemeManager;
     friend class MMSDialogManager;

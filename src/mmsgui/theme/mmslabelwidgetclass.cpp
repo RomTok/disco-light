@@ -44,6 +44,7 @@ void MMSLabelWidgetClass::unsetAll() {
     unsetColor();
     unsetSelColor();
     unsetText();
+    unsetSlidable();
 }
 
 void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -135,6 +136,9 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_text:
 	            setText(attrval_str);
+	            break;
+			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slidable:
+	            setSlidable((attrval_int)?true:false);
 	            break;
 			}
 		}
@@ -244,6 +248,10 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             else
             if (ISATTRNAME(text)) { 
 	            setText(attrval_str);
+			}
+            else
+            if (ISATTRNAME(slidable)) { 
+	            setSlidable((attrval_int)?true:false);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -380,5 +388,22 @@ void MMSLabelWidgetClass::unsetText() {
 
 string MMSLabelWidgetClass::getText() {
     return this->text;
+}
+
+bool MMSLabelWidgetClass::isSlidable() {
+    return this->isslidable;
+}
+
+void MMSLabelWidgetClass::setSlidable(bool slidable) {
+    this->slidable = slidable;
+    this->isslidable = true;
+}
+
+void MMSLabelWidgetClass::unsetSlidable() {
+    this->isslidable = false;
+}
+
+bool MMSLabelWidgetClass::getSlidable() {
+    return this->slidable;
 }
 
