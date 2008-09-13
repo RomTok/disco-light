@@ -71,7 +71,8 @@ class MMSImageWidget : public MMSWidget {
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
-        void loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc, unsigned int *index);
+        void loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc,
+        				 unsigned int *index, unsigned int mirror_size);
 
         void workWithRatio(MMSFBSurface *suf, DFBRectangle *surfaceGeom);
         
@@ -104,6 +105,7 @@ class MMSImageWidget : public MMSWidget {
         bool getFitWidth();
         bool getFitHeight();
         MMSALIGNMENT getAlignment();
+        unsigned int getMirrorSize();
 
         void setImagePath(string imagepath, bool load = true, bool refresh = true);
         void setImageName(string imagename, bool load = true, bool refresh = true);
@@ -127,6 +129,7 @@ class MMSImageWidget : public MMSWidget {
         void setFitWidth(bool fitwidth, bool refresh = true);
         void setFitHeight(bool fitheight, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
+        void setMirrorSize(unsigned int mirrorsize, bool refresh = true);
 
         void updateFromThemeClass(MMSImageWidgetClass *themeClass);
 

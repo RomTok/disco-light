@@ -86,13 +86,14 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     return MMSWidget::create(root, true, false, false, true, true, true);
 }
 
-void MMSImageWidget::loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc, unsigned int *index) {
+void MMSImageWidget::loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc,
+								 unsigned int *index, unsigned int mirror_size) {
     /* pause the imageThread */
     if (this->imageThread)
         this->imageThread->pause(true);
     
     /* get image from imagemanager */
-    *surface = this->rootwindow->im->getImage(path, filename, surfdesc);
+    *surface = this->rootwindow->im->getImage(path, filename, surfdesc, mirror_size);
     *index = 0;
     if (!*surface) {
         if (this->imageThread)
@@ -147,24 +148,24 @@ MMSWidget *MMSImageWidget::copyWidget() {
     		b = false;
         if ((!b)||(newWidget->isVisible())) {
             loadMyImage(newWidget->getImagePath(), newWidget->getImageName(),
-                        &newWidget->image, &(newWidget->image_suf), &image_curr_index);
+                        &newWidget->image, &(newWidget->image_suf), &image_curr_index, getMirrorSize());
             image_loaded = true;
             loadMyImage(newWidget->getSelImagePath(), newWidget->getSelImageName(),
-                        &newWidget->selimage, &(newWidget->selimage_suf), &selimage_curr_index);
+                        &newWidget->selimage, &(newWidget->selimage_suf), &selimage_curr_index, getMirrorSize());
             selimage_loaded = true;
 
             loadMyImage(newWidget->getImagePath_p(), newWidget->getImageName_p(),
-                        &newWidget->image_p, &(newWidget->image_p_suf), &image_p_curr_index);
+                        &newWidget->image_p, &(newWidget->image_p_suf), &image_p_curr_index, getMirrorSize());
             image_p_loaded = true;
             loadMyImage(newWidget->getSelImagePath_p(), newWidget->getSelImageName_p(),
-                        &newWidget->selimage_p, &(newWidget->selimage_p_suf), &selimage_p_curr_index);
+                        &newWidget->selimage_p, &(newWidget->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
             selimage_p_loaded = true;
             
             loadMyImage(newWidget->getImagePath_i(), newWidget->getImageName_i(),
-                        &newWidget->image_i, &(newWidget->image_i_suf), &image_i_curr_index);
+                        &newWidget->image_i, &(newWidget->image_i_suf), &image_i_curr_index, getMirrorSize());
             image_i_loaded = true;
             loadMyImage(newWidget->getSelImagePath_i(), newWidget->getSelImageName_i(),
-                        &newWidget->selimage_i, &(newWidget->selimage_i_suf), &selimage_i_curr_index);
+                        &newWidget->selimage_i, &(newWidget->selimage_i_suf), &selimage_i_curr_index, getMirrorSize());
             selimage_i_loaded = true;
         }
     }
@@ -184,29 +185,29 @@ bool MMSImageWidget::init() {
     if ((!b)||(this->isVisible())) {
         /* load images */    
         if (!image_loaded) {
-            loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index);
+            loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index, getMirrorSize());
             image_loaded = true;
         }
         if (!selimage_loaded) {
-            loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index);
+            loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index, getMirrorSize());
             selimage_loaded = true;
         }
 
         if (!image_p_loaded) {
-            loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index);
+            loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index, getMirrorSize());
             image_p_loaded = true;
         }
         if (!selimage_p_loaded) {
-            loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index);
+            loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
             selimage_p_loaded = true;
         }
 
         if (!image_i_loaded) {
-            loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index);
+            loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index, getMirrorSize());
             image_i_loaded = true;
         }
         if (!selimage_i_loaded) {
-            loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index);
+            loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index, getMirrorSize());
             selimage_i_loaded = true;
         }
     }
@@ -466,27 +467,27 @@ void MMSImageWidget::setVisible(bool visible, bool refresh) {
 	            /* load image on demand */
 	            if (!this->isVisible()) {
 	                if (!image_loaded) {
-	                    loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index);
+	                    loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index, getMirrorSize());
 	                    image_loaded = true;
 	                }
 	                if (!selimage_loaded) {
-	                    loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index);
+	                    loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index, getMirrorSize());
 	                    selimage_loaded = true;
 	                }
 	                if (!image_p_loaded) {
-	                    loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index);
+	                    loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index, getMirrorSize());
 	                    image_p_loaded = true;
 	                }
 	                if (!selimage_p_loaded) {
-	                    loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index);
+	                    loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
 	                    selimage_p_loaded = true;
 	                }
 	                if (!image_i_loaded) {
-	                    loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index);
+	                    loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index, getMirrorSize());
 	                    image_i_loaded = true;
 	                }
 	                if (!selimage_i_loaded) {
-	                    loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index);
+	                    loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index, getMirrorSize());
 	                    selimage_i_loaded = true;
 	                }
 	            }
@@ -605,6 +606,10 @@ MMSALIGNMENT MMSImageWidget::getAlignment() {
     GETIMAGE(Alignment);
 }
 
+unsigned int MMSImageWidget::getMirrorSize() {
+    GETIMAGE(MirrorSize);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
@@ -620,7 +625,7 @@ void MMSImageWidget::setImagePath(string imagepath, bool load, bool refresh) {
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index);
+                loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index, getMirrorSize());
                 image_loaded = true;
             }
         }
@@ -639,7 +644,7 @@ void MMSImageWidget::setImageName(string imagename, bool load, bool refresh) {
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index);
+                loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index, getMirrorSize());
                 image_loaded = true;
             }
         }
@@ -659,7 +664,7 @@ void MMSImageWidget::setImage(string imagepath, string imagename, bool load, boo
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index);
+                loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index, getMirrorSize());
                 image_loaded = true;
             }
         }
@@ -678,7 +683,7 @@ void MMSImageWidget::setSelImagePath(string selimagepath, bool load, bool refres
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index);
+                loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index, getMirrorSize());
                 selimage_loaded = true;
             }
         }
@@ -697,7 +702,7 @@ void MMSImageWidget::setSelImageName(string selimagename, bool load, bool refres
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index);
+                loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index, getMirrorSize());
                 selimage_loaded = true;
             }
         }
@@ -717,7 +722,7 @@ void MMSImageWidget::setSelImage(string selimagepath, string selimagename, bool 
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index);
+                loadMyImage(getSelImagePath(), getSelImageName(), &this->selimage, &(this->selimage_suf), &selimage_curr_index, getMirrorSize());
                 selimage_loaded = true;
             }
         }
@@ -738,7 +743,7 @@ void MMSImageWidget::setImagePath_p(string imagepath_p, bool load, bool refresh)
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index);
+                loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index, getMirrorSize());
                 image_p_loaded = true;
             }
         }
@@ -757,7 +762,7 @@ void MMSImageWidget::setImageName_p(string imagename_p, bool load, bool refresh)
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index);
+                loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index, getMirrorSize());
                 image_p_loaded = true;
             }
         }
@@ -777,7 +782,7 @@ void MMSImageWidget::setImage_p(string imagepath_p, string imagename_p, bool loa
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index);
+                loadMyImage(getImagePath_p(), getImageName_p(), &this->image_p, &(this->image_p_suf), &image_p_curr_index, getMirrorSize());
                 image_p_loaded = true;
             }
         }
@@ -796,7 +801,7 @@ void MMSImageWidget::setSelImagePath_p(string selimagepath_p, bool load, bool re
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index);
+                loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
                 selimage_p_loaded = true;
             }
         }
@@ -815,7 +820,7 @@ void MMSImageWidget::setSelImageName_p(string selimagename_p, bool load, bool re
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index);
+                loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
                 selimage_p_loaded = true;
             }
         }
@@ -835,7 +840,7 @@ void MMSImageWidget::setSelImage_p(string selimagepath_p, string selimagename_p,
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index);
+                loadMyImage(getSelImagePath_p(), getSelImageName_p(), &this->selimage_p, &(this->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
                 selimage_p_loaded = true;
             }
         }
@@ -856,7 +861,7 @@ void MMSImageWidget::setImagePath_i(string imagepath_i, bool load, bool refresh)
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index);
+                loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index, getMirrorSize());
                 image_i_loaded = true;
             }
         }
@@ -875,7 +880,7 @@ void MMSImageWidget::setImageName_i(string imagename_i, bool load, bool refresh)
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index);
+                loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index, getMirrorSize());
                 image_i_loaded = true;
             }
         }
@@ -895,7 +900,7 @@ void MMSImageWidget::setImage_i(string imagepath_i, string imagename_i, bool loa
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index);
+                loadMyImage(getImagePath_i(), getImageName_i(), &this->image_i, &(this->image_i_suf), &image_i_curr_index, getMirrorSize());
                 image_i_loaded = true;
             }
         }
@@ -914,7 +919,7 @@ void MMSImageWidget::setSelImagePath_i(string selimagepath_i, bool load, bool re
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index);
+                loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index, getMirrorSize());
                 selimage_i_loaded = true;
             }
         }
@@ -933,7 +938,7 @@ void MMSImageWidget::setSelImageName_i(string selimagename_i, bool load, bool re
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index);
+                loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index, getMirrorSize());
                 selimage_i_loaded = true;
             }
         }
@@ -953,7 +958,7 @@ void MMSImageWidget::setSelImage_i(string selimagepath_i, string selimagename_i,
             if (!getImagesOnDemand(b))
             	b = false;
             if ((!b)||(this->isVisible())) {
-                loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index);
+                loadMyImage(getSelImagePath_i(), getSelImageName_i(), &this->selimage_i, &(this->selimage_i_suf), &selimage_i_curr_index, getMirrorSize());
                 selimage_i_loaded = true;
             }
         }
@@ -981,6 +986,12 @@ void MMSImageWidget::setFitHeight(bool fitheight, bool refresh) {
 
 void MMSImageWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     myImageWidgetClass.setAlignment(alignment);
+    if (refresh)
+        this->refresh();
+}
+
+void MMSImageWidget::setMirrorSize(unsigned int mirrorsize, bool refresh) {
+    myImageWidgetClass.setMirrorSize(mirrorsize);
     if (refresh)
         this->refresh();
 }
@@ -1018,6 +1029,8 @@ void MMSImageWidget::updateFromThemeClass(MMSImageWidgetClass *themeClass) {
         setFitHeight(themeClass->getFitHeight());
     if (themeClass->isAlignment())
         setAlignment(themeClass->getAlignment());
+    if (themeClass->isMirrorSize())
+        setMirrorSize(themeClass->getMirrorSize());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

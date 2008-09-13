@@ -48,6 +48,7 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 	this->print_warnings = print_warnings;
 	this->destination_pixelformat = MMSTAFF_PF_ARGB;
 	this->destination_premultiplied = true;
+	this->mirror_size = 0;
 	this->correct_version = false;
 	this->current_tag = -1;
 	this->current_tag_pos = 0;
@@ -168,7 +169,8 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     }
 
     /* allocate memory for image data */
-    *buf = malloc(*size);
+    if (this->mirror_size > *height) this->mirror_size = *height;
+    *buf = malloc((*size) + (*pitch) * this->mirror_size);
     if (!*buf) {
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
         free(row_pointers);
@@ -199,6 +201,34 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 	               ((((s & 0xff000000))));
 	        src++;
 	    }
+    }
+    
+    // should create a mirror effect?
+    if (this->mirror_size) {
+    	// yes
+		unsigned int *dst = (unsigned int*)*buf;
+		dst+=*width * *height;
+		unsigned int *src = dst - *width;
+		unsigned int alpha = 0;
+		unsigned int alphaX = 0x100 / this->mirror_size;
+		if (0x100 % this->mirror_size >= (this->mirror_size >> 1))
+			alphaX++;
+		if (alphaX == 0) alphaX = 1;
+    	for (int i = 0; i < this->mirror_size; i++) {
+    		for (int j = 0; j < *width; j++) {
+    			register unsigned int s = *src;
+    			register unsigned int sa = s >> 24;
+    			*dst = (s & 0x00ffffff) | (((sa > alpha)?(sa-alpha):0)<<24);
+    			dst++;
+    			src++;
+    		}
+    		src-=(*width) << 1;
+    		alpha+=alphaX;
+    	}
+
+    	// set new values
+    	*height = (*height) + this->mirror_size;
+    	*size = (*pitch) * (*height);
     }
 
     // have to convert the pixelformat? 
@@ -634,6 +664,14 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 			bool pm = (this->destination_premultiplied);
 			taff_file->writeBuffer(&pm, &ritems, 1, sizeof(bool));
 			
+			/* write attributes: mirror_size */
+			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size;
+			wb[2]=sizeof(int);
+			taff_file->writeBuffer(wb, &ritems, 1, 3);
+			int ms = (int)this->mirror_size;
+			taff_file->writeBuffer(&ms, &ritems, 1, sizeof(int));
+
 			/* write attributes: data */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
@@ -903,6 +941,10 @@ void MMSTaffFile::setPrintWarnings(bool print_warnings) {
 void MMSTaffFile::setDestinationPixelFormat(MMSTAFF_PF pixelformat, bool premultiplied) {
 	this->destination_pixelformat = pixelformat;
 	this->destination_premultiplied = premultiplied;
+}
+
+void MMSTaffFile::setMirrorEffect(unsigned int size) {
+	this->mirror_size = size;
 }
 
 int MMSTaffFile::getFirstTag() {

@@ -53,6 +53,7 @@ void MMSImageWidgetClass::unsetAll() {
     unsetFitWidth();
     unsetFitHeight();
     unsetAlignment();
+    unsetMirrorSize();
 }
 
 void MMSImageWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -173,6 +174,9 @@ void MMSImageWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 				break;
 			case MMSGUI_IMAGEWIDGET_ATTR::MMSGUI_IMAGEWIDGET_ATTR_IDS_alignment:
 	            setAlignment(getAlignmentFromString(attrval_str));
+				break;
+			case MMSGUI_IMAGEWIDGET_ATTR::MMSGUI_IMAGEWIDGET_ATTR_IDS_mirror_size:
+	            setMirrorSize(attrval_int);
 				break;
 			}
 		}
@@ -319,6 +323,10 @@ void MMSImageWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             else
             if (ISATTRNAME(alignment)) { 
 	            setAlignment(getAlignmentFromString(attrval_str));
+			}
+            else
+            if (ISATTRNAME(mirror_size)) { 
+	            setMirrorSize(attrval_int);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -622,4 +630,22 @@ void MMSImageWidgetClass::unsetAlignment() {
 MMSALIGNMENT MMSImageWidgetClass::getAlignment() {
     return this->alignment;
 }
+
+bool MMSImageWidgetClass::isMirrorSize() {
+    return this->ismirrorsize;
+}
+
+void MMSImageWidgetClass::setMirrorSize(unsigned int mirrorsize) {
+    this->mirrorsize = mirrorsize;
+    this->ismirrorsize = true;
+}
+
+void MMSImageWidgetClass::unsetMirrorSize() {
+    this->ismirrorsize = false;
+}
+
+unsigned int MMSImageWidgetClass::getMirrorSize() {
+    return this->mirrorsize;
+}
+
 

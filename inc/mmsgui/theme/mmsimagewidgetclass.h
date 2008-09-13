@@ -50,7 +50,8 @@ namespace MMSGUI_IMAGEWIDGET_ATTR {
 		{ "useratio", TAFF_ATTRTYPE_BOOL }, \
 		{ "fit_width", TAFF_ATTRTYPE_BOOL }, \
 		{ "fit_height", TAFF_ATTRTYPE_BOOL }, \
-		{ "alignment", TAFF_ATTRTYPE_STRING }
+		{ "alignment", TAFF_ATTRTYPE_STRING }, \
+		{ "mirror_size", TAFF_ATTRTYPE_INT }
 	
 	#define MMSGUI_IMAGEWIDGET_ATTR_IDS \
 		MMSGUI_IMAGEWIDGET_ATTR_IDS_image, \
@@ -74,7 +75,8 @@ namespace MMSGUI_IMAGEWIDGET_ATTR {
 		MMSGUI_IMAGEWIDGET_ATTR_IDS_useratio, \
 		MMSGUI_IMAGEWIDGET_ATTR_IDS_fit_width, \
 		MMSGUI_IMAGEWIDGET_ATTR_IDS_fit_height, \
-		MMSGUI_IMAGEWIDGET_ATTR_IDS_alignment
+		MMSGUI_IMAGEWIDGET_ATTR_IDS_alignment, \
+		MMSGUI_IMAGEWIDGET_ATTR_IDS_mirror_size
 
 	#define MMSGUI_IMAGEWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -204,6 +206,12 @@ class MMSImageWidgetClass {
         
         //! the alignment of the image within the widget
         MMSALIGNMENT alignment;
+
+        //! is the mirror size set?
+        bool         ismirrorsize;
+        
+        //! the size of the mirror effect
+        unsigned int mirrorsize;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -517,11 +525,29 @@ class MMSImageWidgetClass {
         //! Mark the alignment as not set.
         void unsetAlignment();
 
-        //! Get the alignment flag.
+        //! Get the alignment.
         /*!
         \return alignment of the image within the widget
         */
         MMSALIGNMENT getAlignment();
+
+        //! Check if the mirror size is set.
+        bool isMirrorSize();
+
+        //! Set the mirror size.
+        /*!
+        \param mirrorsize size of the mirror effect in pixel
+        */
+        void setMirrorSize(unsigned int mirrorsize);
+
+        //! Mark the mirror size as not set.
+        void unsetMirrorSize();
+
+        //! Get the mirror size.
+        /*!
+        \return size of the mirror in pixel
+        */
+        unsigned int getMirrorSize();
 
     /* friends */
     friend class MMSThemeManager;

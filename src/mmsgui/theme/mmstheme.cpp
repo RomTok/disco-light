@@ -692,6 +692,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.setFitWidth(false);
         this->imageWidgetClass.setFitHeight(false);
         this->imageWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
+        this->imageWidgetClass.setMirrorSize(0);
     }
 
     /* MMSButtonWidget */

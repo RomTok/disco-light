@@ -202,7 +202,8 @@ bool read_png(const char *filename, void **buf, int *width, int *height, bool pr
 #endif
 
 
-MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc) {
+MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc,
+										unsigned int mirror_size) {
     string                  imagefile;
     IDirectFBImageProvider  *imageprovider = NULL;
     MMSIM_DESC              *im_desc = NULL;
@@ -333,18 +334,36 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
 	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
 	    				tafff->setDestinationPixelFormat(taffpf);
+	    				tafff->setMirrorEffect(mirror_size);
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
 	    					// conversion failed
 	    					delete tafff;
 	    					break;
 	    				}
+	    				delete tafff;
         			}
     			}
 
 				// load image
 				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
-	    								imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    			if (tafff) {
+    				if (!tafff->isLoaded()) {
+        				// set external file and mirror effect
+	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+	    				tafff->setMirrorEffect(mirror_size);
+	    				// convert it
+	    				if (!tafff->convertExternal2TAFF()) {
+	    					// conversion failed
+	    					delete tafff;
+	    					break;
+	    				}
+	    				delete tafff;
+	    				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+	    	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    				}
+    			}
     			if (tafff) {
 		    		if (tafff->isLoaded()) {
 
@@ -359,6 +378,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	int 		img_size  = 0;
 				    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
 				    	bool 		img_premultiplied = true;
+				    	int 		img_mirror_size = 0;
 
 				    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
 				    		switch (attrid) {
@@ -383,6 +403,9 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
 				    			img_premultiplied = (value_int);
 				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size:
+				    			img_mirror_size = value_int;
+				    			break;
 				    		}
 				    	}
 
@@ -392,6 +415,20 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    		if (!retry) {
 				    			// retry with surface pixelformat
 				    			DEBUGOUT("ImageManager, request new pixf\n");
+				    			retry = true;
+				    			delete tafff;
+				    			continue;
+				    		}
+				    		else
+				    			retry = false;
+				    	}
+				    	else
+				    	if (img_mirror_size != mirror_size) {
+				    		DEBUGOUT("ImageManager, mirror_size = %d\n", (int)mirror_size);
+				    		// the image from the file has not the same mirror_size
+				    		if (!retry) {
+				    			// retry with given mirror_size
+				    			DEBUGOUT("ImageManager, request new mirrot_size\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;

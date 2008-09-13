@@ -160,6 +160,9 @@ class MMSTaffFile {
 		//! should the destination pixels premultiplied?
 		bool		destination_premultiplied;
 
+		//! size of the mirror in pixel
+		unsigned int mirror_size;
+		
 		//! is the TAFF buffer loaded?
 		bool	loaded;
 
@@ -258,6 +261,12 @@ class MMSTaffFile {
         */
         void setDestinationPixelFormat(MMSTAFF_PF pixelformat = MMSTAFF_PF_ARGB, bool premultiplied = true);
 
+        //! Set the mirror effect.
+        /*!
+        \param size	size of the mirror effect in pixel
+        */
+        void setMirrorEffect(unsigned int size);
+
         //! Get the first tag id.
         /*!
         \return id of the tag or -1 if an error has occurred
@@ -328,7 +337,8 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		{ "size", TAFF_ATTRTYPE_INT }, \
 		{ "data", TAFF_ATTRTYPE_BINDATA }, \
 		{ "pixelformat", TAFF_ATTRTYPE_INT }, \
-		{ "premultiplied", TAFF_ATTRTYPE_BOOL }
+		{ "premultiplied", TAFF_ATTRTYPE_BOOL }, \
+		{ "mirror_size", TAFF_ATTRTYPE_INT }
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width, \
@@ -337,7 +347,8 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat, \
-		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT { \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC, \
