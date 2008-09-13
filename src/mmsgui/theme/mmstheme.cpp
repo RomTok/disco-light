@@ -883,6 +883,10 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.setZoomSelShiftX("");
         this->menuWidgetClass.setZoomSelShiftY("");
         this->menuWidgetClass.setSmoothScrolling(false);
+        this->menuWidgetClass.setParentWindow("");
+        this->menuWidgetClass.setSelImagePath("");
+        this->menuWidgetClass.setSelImageName("");
+        this->menuWidgetClass.setSmoothSelection(false);
     }
 
     /* MMSTextBoxWidget */

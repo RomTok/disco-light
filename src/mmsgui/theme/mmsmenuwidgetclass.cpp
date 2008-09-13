@@ -71,15 +71,20 @@ void MMSMenuWidgetClass::unsetAll() {
     unsetZoomSelShiftY();
     unsetSmoothScrolling();
     unsetParentWindow();
+    unsetSelImagePath();
+    unsetSelImageName();
+    unsetSmoothSelection();
 }
 
 void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+    bool class_set = false;
 
     if (!prefix) {
 		startTAFFScan
 		{
 			switch (attrid) {
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+	            class_set = true;
 	            setClassName(attrval_str);
 				break;
 			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_item_width:
@@ -153,6 +158,25 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
 	            break;
 			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_parent_window:
 	            setParentWindow(attrval_str);
+	            break;
+			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_selimage:
+	            if (*attrval_str)
+	                setSelImagePath("");
+	            else
+	                setSelImagePath((path)?*path:"");
+	            setSelImageName(attrval_str);
+	            break;
+			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_selimage_path:
+	            if (*attrval_str)
+	                setSelImagePath(attrval_str);
+	            else
+	                setSelImagePath((path)?*path:"");
+	            break;
+			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_selimage_name:
+	            setSelImageName(attrval_str);
+	            break;
+			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_smooth_selection:
+	            setSmoothSelection((attrval_int) ? true : false);
 	            break;
 			}
 		}
@@ -266,8 +290,36 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
             if (ISATTRNAME(parent_window)) {  
 	            setParentWindow(attrval_str);
             }
+            else
+            if (ISATTRNAME(selimage)) { 
+	            if (*attrval_str)
+	                setSelImagePath("");
+	            else
+	                setSelImagePath((path)?*path:"");
+	            setSelImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(selimage_path)) { 
+	            if (*attrval_str)
+	                setSelImagePath(attrval_str);
+	            else
+	                setSelImagePath((path)?*path:"");
+            }
+            else
+            if (ISATTRNAME(selimage_name)) { 
+	            setSelImageName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(smooth_selection)) { 
+	            setSmoothSelection((attrval_int) ? true : false);
+			}
     	}
     	endTAFFScan_WITHOUT_ID
+    }
+
+    if ((!class_set)&&(path)&&(*path!="")) {
+		if (!isSelImagePath())
+		    setSelImagePath(*path);
     }
 }
 
@@ -700,5 +752,59 @@ void MMSMenuWidgetClass::unsetParentWindow() {
 string MMSMenuWidgetClass::getParentWindow() {
     return this->parentwindow;
 }
+
+
+
+bool MMSMenuWidgetClass::isSelImagePath() {
+    return this->isselimagepath;
+}
+
+void MMSMenuWidgetClass::setSelImagePath(string selimagepath) {
+    this->selimagepath = selimagepath;
+    this->isselimagepath = true;
+}
+
+void MMSMenuWidgetClass::unsetSelImagePath() {
+    this->isselimagepath = false;
+}
+
+string MMSMenuWidgetClass::getSelImagePath() {
+    return this->selimagepath;
+}
+
+bool MMSMenuWidgetClass::isSelImageName() {
+    return this->isselimagename;
+}
+
+void MMSMenuWidgetClass::setSelImageName(string selimagename) {
+    this->selimagename = selimagename;
+    this->isselimagename = true;
+}
+
+void MMSMenuWidgetClass::unsetSelImageName() {
+    this->isselimagename = false;
+}
+
+string MMSMenuWidgetClass::getSelImageName() {
+    return this->selimagename;
+}
+
+bool MMSMenuWidgetClass::isSmoothSelection() {
+    return this->issmoothselection;
+}
+
+void MMSMenuWidgetClass::setSmoothSelection(bool smoothselection) {
+    this->smoothselection = smoothselection;
+    this->issmoothselection = true;
+}
+
+void MMSMenuWidgetClass::unsetSmoothSelection() {
+    this->issmoothselection = false;
+}
+
+bool MMSMenuWidgetClass::getSmoothSelection() {
+    return this->smoothselection;
+}
+
 
 

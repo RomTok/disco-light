@@ -48,6 +48,7 @@ class MMSMenuWidget : public MMSWidget {
         MMSMenuWidgetClass  *menuWidgetClass;
         MMSMenuWidgetClass  myMenuWidgetClass;
 
+        MMSFBSurface    *selimage;
         MMSWidget       *itemTemplate;
 
         int    			item_w;     /* width of an item */ 
@@ -76,6 +77,10 @@ class MMSMenuWidget : public MMSWidget {
         bool 			smooth_scrolling;
         int  			scrolling_offset;
 
+        bool 			smooth_selection;
+        int  			selection_offset_x;
+        int  			selection_offset_y;
+        
         DFBRectangle 	virtualGeom;
 
         //! this will be used to show/hide the menu and its whole parent window(s)
@@ -194,6 +199,9 @@ class MMSMenuWidget : public MMSWidget {
         string getZoomSelShiftY();
         bool getSmoothScrolling();
         string getParentWindow();
+        bool getSelImagePath(string &selimagepath);
+        bool getSelImageName(string &selimagename);
+        bool getSmoothSelection();
 
         void setItemWidth(string itemwidth, bool refresh = true);
         void setItemHeight(string itemheight, bool refresh = true);
@@ -219,6 +227,9 @@ class MMSMenuWidget : public MMSWidget {
         void setZoomSelShiftY(string zoomselshifty, bool refresh = true);
         void setSmoothScrolling(bool smoothscrolling);
         void setParentWindow(string parentwindow);
+        void setSelImagePath(string selimagepath, bool load = true, bool refresh = true);
+        void setSelImageName(string selimagename, bool load = true, bool refresh = true);
+        void setSmoothSelection(bool smoothselection);
 
         void updateFromThemeClass(MMSMenuWidgetClass *themeClass);
 };

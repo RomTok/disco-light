@@ -52,7 +52,11 @@ namespace MMSGUI_MENUWIDGET_ATTR {
 		{ "zoomsel_shiftx", TAFF_ATTRTYPE_STRING }, \
 		{ "zoomsel_shifty", TAFF_ATTRTYPE_STRING }, \
 		{ "smooth_scrolling", TAFF_ATTRTYPE_BOOL }, \
-		{ "parent_window", TAFF_ATTRTYPE_STRING }
+		{ "parent_window", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage.path", TAFF_ATTRTYPE_STRING }, \
+		{ "selimage.name", TAFF_ATTRTYPE_STRING }, \
+		{ "smooth_selection", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_MENUWIDGET_ATTR_IDS \
 		MMSGUI_MENUWIDGET_ATTR_IDS_item_width, \
@@ -78,7 +82,11 @@ namespace MMSGUI_MENUWIDGET_ATTR {
 		MMSGUI_MENUWIDGET_ATTR_IDS_zoomsel_shiftx, \
 		MMSGUI_MENUWIDGET_ATTR_IDS_zoomsel_shifty, \
 		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_scrolling, \
-		MMSGUI_MENUWIDGET_ATTR_IDS_parent_window
+		MMSGUI_MENUWIDGET_ATTR_IDS_parent_window, \
+		MMSGUI_MENUWIDGET_ATTR_IDS_selimage, \
+		MMSGUI_MENUWIDGET_ATTR_IDS_selimage_path, \
+		MMSGUI_MENUWIDGET_ATTR_IDS_selimage_name, \
+		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_selection
 	
 	#define MMSGUI_MENUWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -260,6 +268,24 @@ class MMSMenuWidgetClass {
         //! name of the parent window
         string 			parentwindow;
         
+        //! is selimage path set?
+        bool			isselimagepath;
+
+        //! selimage path
+        string 			selimagepath;
+        
+        //! is selimage name set?
+        bool			isselimagename;
+
+        //! selimage filename
+        string 			selimagename;
+        
+        //! is smooth selection enabled?
+        bool			issmoothselection;
+        
+        //! do smooth selection yes/no if user navigates in the menu
+        bool  			smoothselection;
+
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -656,6 +682,22 @@ class MMSMenuWidgetClass {
         void setParentWindow(string parentwindow);
         void unsetParentWindow();
         string getParentWindow();
+        
+
+        bool isSelImagePath();
+        void setSelImagePath(string selimagepath);
+        void unsetSelImagePath();
+        string getSelImagePath();
+
+        bool isSelImageName();
+        void setSelImageName(string selimagename);
+        void unsetSelImageName();
+        string getSelImageName();
+
+        bool isSmoothSelection();
+        void setSmoothSelection(bool smoothselection);
+        void unsetSmoothSelection();
+        bool getSmoothSelection();
         
     /* friends */
     friend class MMSThemeManager;
