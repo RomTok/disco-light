@@ -80,7 +80,8 @@ void MMSLabelWidgetThread::doIt() {
         }
 
         /* get the next sleep time */
-        unsigned int delaytime = 500;
+        unsigned int delaytime = label->getSlideDelay();
+        if (delaytime < 100) delaytime = 100;
         bool changed = false;
 
         if (label->getSlidable()) {

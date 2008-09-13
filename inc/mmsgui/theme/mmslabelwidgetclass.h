@@ -44,7 +44,8 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
 		{ "text", TAFF_ATTRTYPE_STRING }, \
-		{ "slidable", TAFF_ATTRTYPE_BOOL }
+		{ "slidable", TAFF_ATTRTYPE_BOOL }, \
+		{ "slide_delay", TAFF_ATTRTYPE_INT }
 	
 	#define MMSGUI_LABELWIDGET_ATTR_IDS \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_path, \
@@ -62,7 +63,8 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_b, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_text, \
-		MMSGUI_LABELWIDGET_ATTR_IDS_slidable
+		MMSGUI_LABELWIDGET_ATTR_IDS_slidable, \
+		MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay
 	
 	#define MMSGUI_LABELWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -144,6 +146,12 @@ class MMSLabelWidgetClass {
         
         //! if true and size of the text string is greater than widget dimension, the text will slide over the widget
         bool          	slidable;
+        
+        //! is slide delay set?
+        bool            isslidedelay;
+        
+        //! slide delay used if slidable set to true
+        unsigned int   	slidedelay;
         
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -319,6 +327,24 @@ class MMSLabelWidgetClass {
         \return true/false
         */
         bool getSlidable();
+        
+        //! Check if the slide delay is set.
+        bool isSlideDelay();
+
+        //! Set the slide delay.
+        /*!
+        \param slidedelay  delay in milliseconds
+        */
+        void setSlideDelay(unsigned int slidedelay);
+
+        //! Mark the slide delay as not set.
+        void unsetSlideDelay();
+
+        //! Get the slide delay.
+        /*!
+        \return slide delay
+        */
+        unsigned int getSlideDelay();
         
     /* friends */
     friend class MMSThemeManager;

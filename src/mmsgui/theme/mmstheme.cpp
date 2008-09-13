@@ -622,6 +622,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setSelColor(c);
         this->labelWidgetClass.setText("");
         this->labelWidgetClass.setSlidable(false);
+        this->labelWidgetClass.setSlideDelay(500);
     }
 
     /* MMSImageWidget */

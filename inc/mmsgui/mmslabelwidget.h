@@ -67,6 +67,7 @@ class MMSLabelWidget : public MMSWidget {
         DFBColor getSelColor();
         string getText();
         bool getSlidable();
+        unsigned int getSlideDelay();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
@@ -77,6 +78,7 @@ class MMSLabelWidget : public MMSWidget {
         void setSelColor(DFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true);
         void setSlidable(bool slidable);
+        void setSlideDelay(unsigned int slidedelay);
 
         void updateFromThemeClass(MMSLabelWidgetClass *themeClass);
 

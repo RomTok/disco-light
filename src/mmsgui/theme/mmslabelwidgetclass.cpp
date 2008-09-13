@@ -45,6 +45,7 @@ void MMSLabelWidgetClass::unsetAll() {
     unsetSelColor();
     unsetText();
     unsetSlidable();
+    unsetSlideDelay();
 }
 
 void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -139,6 +140,9 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slidable:
 	            setSlidable((attrval_int)?true:false);
+	            break;
+			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay:
+	            setSlideDelay(attrval_int);
 	            break;
 			}
 		}
@@ -252,6 +256,10 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             else
             if (ISATTRNAME(slidable)) { 
 	            setSlidable((attrval_int)?true:false);
+			}
+            else
+            if (ISATTRNAME(slide_delay)) { 
+	            setSlideDelay(attrval_int);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -406,4 +414,22 @@ void MMSLabelWidgetClass::unsetSlidable() {
 bool MMSLabelWidgetClass::getSlidable() {
     return this->slidable;
 }
+
+bool MMSLabelWidgetClass::isSlideDelay() {
+    return this->isslidedelay;
+}
+
+void MMSLabelWidgetClass::setSlideDelay(unsigned int slidedelay) {
+    this->slidedelay = slidedelay;
+    this->isslidedelay = true;
+}
+
+void MMSLabelWidgetClass::unsetSlideDelay() {
+    this->isslidedelay = false;
+}
+
+unsigned int MMSLabelWidgetClass::getSlideDelay() {
+    return this->slidedelay;
+}
+
 

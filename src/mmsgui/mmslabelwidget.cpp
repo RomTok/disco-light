@@ -239,6 +239,10 @@ bool MMSLabelWidget::getSlidable() {
     GETLABEL(Slidable);
 }
 
+unsigned int MMSLabelWidget::getSlideDelay() {
+    GETLABEL(SlideDelay);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
@@ -338,6 +342,10 @@ void MMSLabelWidget::setSlidable(bool slidable) {
     }
 }
 
+void MMSLabelWidget::setSlideDelay(unsigned int slidedelay) {
+    myLabelWidgetClass.setSlideDelay(slidedelay);
+}
+
 void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
     if (themeClass->isFontPath())
         setFontPath(themeClass->getFontPath());
@@ -355,6 +363,8 @@ void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
         setText(themeClass->getText());
     if (themeClass->isSlidable())
         setSlidable(themeClass->getSlidable());
+    if (themeClass->isSlideDelay())
+        setSlideDelay(themeClass->getSlideDelay());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }
