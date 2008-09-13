@@ -285,6 +285,14 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 			DFBRectangle wgeom = w->getGeometry();
 			wgeom.x+=selection_offset_x-innerGeom.x;
 			wgeom.y+=selection_offset_y-innerGeom.y;
+            if (getCols()==1) {
+                if (smooth_scrolling)
+                	wgeom.y-=scrolling_offset;
+            }
+            else {
+                if (smooth_scrolling)
+                	wgeom.x-=scrolling_offset;
+            }
 			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, 255, opacity);
 			this->surface->stretchBlit(selimage, NULL, &wgeom);
 		}
@@ -366,11 +374,32 @@ void MMSMenuWidget::recalculateChildren() {
             rect.w = item_w;
             rect.h = item_h;
 
-            if (cols==1)
+            if (cols==1) {
+                if (smooth_scrolling)
+                	rect.y+=scrolling_offset;
+
             	rect.y+=sepsize;
+            }
+            else {
+                if (smooth_scrolling)
+                	rect.x+=scrolling_offset;
+            }
 
             bool visibleBefore = this->children.at(i)->isVisible();
             bool visibleAfter = (!((rect.x < item_xx) || (rect.y < item_yy) || (rect.x > menu_xx) || (rect.y > menu_yy)));
+            
+            if (!visibleAfter) {
+            	// checking for smooth scrolling
+                if (smooth_scrolling)
+                    if (cols==1) {
+                    	// draw parts of items before and after
+                        visibleAfter = (!((rect.x < item_xx) || (rect.y < item_yy - item_hh) || (rect.x > menu_xx) || (rect.y > menu_yy + item_hh)));
+                    }
+                    else {
+                    	// draw parts of items before and after
+                        visibleAfter = (!((rect.x < item_xx - item_ww) || (rect.y < item_yy) || (rect.x > menu_xx + item_ww) || (rect.y > menu_yy)));
+                    }
+            }
 
             if (visibleBefore || visibleAfter) {
                 if (visibleAfter) {
@@ -1271,7 +1300,8 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
-	            if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
+
+				if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
 	            	// selection animation
 					// smooth selection with fix 5 steps
 					int sloop          = 5;
@@ -1291,9 +1321,23 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 				selectItem(item, true, false, refresh);
 	        }
 	        else {
-	            /* scrolled, switch focus needs recalculate children */
+	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
+	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
+	            	/* scrolling animation */
+					/* smooth scrolling with fix 5 steps */
+					int sloop = 5;
+					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
+					scrolling_offset=soffs * sloop;
+					for (int z = 0; z < sloop - 1; z++) {
+				        scrolling_offset-=soffs;
+				        this->refresh();
+//sleep(2);
+					}
+					scrolling_offset=0;
+	            }
+	            
 	            if (refresh)
 	                recalculateChildren();
 
@@ -1463,8 +1507,22 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 				selectItem(item, true, false, refresh);
 	        }
 	        else {
-	            /* scrolled, switch focus needs recalculate children */
+	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
+
+	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
+	            	/* scrolling animation */
+					/* smooth scrolling with fix 5 steps */
+					int sloop = 5;
+					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
+					scrolling_offset=-soffs * sloop;
+					for (int z = 0; z < sloop - 1; z++) {
+				        scrolling_offset+=soffs;
+				        this->refresh();
+//sleep(2);
+					}
+					scrolling_offset=0;
+	            }
 
 	            if (refresh)
 	                recalculateChildren();
@@ -1670,8 +1728,22 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 				selectItem(item, true, false, refresh);
 	        }
 	        else {
-	            /* scrolled, switch focus needs recalculate children */
+	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
+
+	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
+	            	/* scrolling animation */
+					/* smooth scrolling with fix 5 steps */
+					int sloop = 5;
+					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
+					scrolling_offset=soffs * sloop;
+					for (int z = 0; z < sloop - 1; z++) {
+				        scrolling_offset-=soffs;
+				        this->refresh();
+// sleep(2);
+					}
+					scrolling_offset=0;
+	            }
 
 	            if (refresh)
 	                recalculateChildren();
@@ -1865,6 +1937,20 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	        else {
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
+
+	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
+	            	/* scrolling animation */
+					/* smooth scrolling with fix 5 steps */
+					int sloop = 5;
+					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
+					scrolling_offset=-soffs * sloop;
+					for (int z = 0; z < sloop - 1; z++) {
+				        scrolling_offset+=soffs;
+				        this->refresh();
+// sleep(2);
+					}
+					scrolling_offset=0;
+	            }
 
 	            if (refresh)
 	                recalculateChildren();
