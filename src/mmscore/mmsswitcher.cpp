@@ -22,10 +22,18 @@
 
 #include "mmscore/mmsswitcher.h"
 
+IMMSWindowManager 				*MMSSwitcher::windowmanager;
+MMSPluginManager  				*MMSSwitcher::pluginmanager;
+MMSInputManager   				*MMSSwitcher::inputmanager;
+vector<MMSInputSubscription*> 	MMSSwitcher::subscriptions;
+
 MMSDialogManager          MMSSwitcher::dm;            /**< dialog manager for whole switcher window                      */
 MMSMainWindow*            MMSSwitcher::window;        /**< whole switcher window                                         */
 map<int, plugin_data_t *> MMSSwitcher::plugins;       /**< loaded plugins                                                */
 int                       MMSSwitcher::curr_plugin;   /**< index to pluginSwitchers which points to the current plugin   */
+
+MMSSwitcherThread       *MMSSwitcher::switcherThread;//my update thread
+
 
 #define SWITCHER_MENUBAR			"switcher_menubar"
 #define SWITCHER_MENU				"switcher_menu"
@@ -37,24 +45,36 @@ int                       MMSSwitcher::curr_plugin;   /**< index to pluginSwitch
 #define SWITCHER_MENU_STATIC		"switcher_menu_static"
 
 /* public */
-MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
-    windowmanager(NULL),
-    pluginmanager(NULL),
-    inputmanager(NULL) {
+MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
 
     /* switcher instantiated by plugin */
     if(plugindata) {
-        this->plugindata = plugindata;
+        /* get access to the plugin handler */
+    	this->plugindata = plugindata;
+        if (this->plugindata->getType()->getName()=="OSD_PLUGIN") {
+            this->osdhandler = this->pluginmanager->getOSDPluginHandler(this->plugindata->getId());
+            this->showPreviewThread = new MMSSwitcherThread(this);
+        }
+        else if (this->plugindata->getType()->getName()=="CENTRAL_PLUGIN") {
+            this->centralhandler = this->pluginmanager->getCentralPluginHandler(this->plugindata->getId());
+            this->showPreviewThread = new MMSSwitcherThread(this);
+        }
+
+    	
         plugin_data_t *pd = new plugin_data_t;
         pd->plugindata = *plugindata;
-        pd->previewWin = NULL;
+        pd->switcher = this;
         plugins.insert(std::make_pair(plugindata->getId(), pd));
+        
         return;
     }
 
     /* switcher start */
-	DEBUGMSG("Switcher", "startup");
+	DEBUGMSG("MMSSwitcher", "startup");
 
+    this->windowmanager = NULL;
+    this->pluginmanager = NULL;
+    this->inputmanager  = NULL;
     this->curr_plugin = -1;
     this->window      = NULL;
 
@@ -93,7 +113,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
             if (!pluginItem) break;
             
             // set plugin data to the item
-            DEBUGMSG("Switcher", osdplugs.at(i)->getName().c_str());
+            DEBUGMSG("MMSSwitcher", osdplugs.at(i)->getName().c_str());
             pluginItem->setBinData((void*)osdplugs.at(i));
 
             // set values if widgets are defined
@@ -119,7 +139,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
             if (!pluginItem) break;
 
             // set plugin data to the item
-            DEBUGMSG("Switcher", centralplugs.at(i)->getName().c_str());
+            DEBUGMSG("MMSSwitcher", centralplugs.at(i)->getName().c_str());
             pluginItem->setBinData((void*)centralplugs.at(i));
 
             // set values if widgets are defined
@@ -156,6 +176,12 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
     	/* create inputs */
         subscribeKey(DIKS_MENU);
         subscribeKey(DIKS_BACKSPACE);
+
+    
+        /* start my update thread */
+        this->switcherThread = new MMSSwitcherThread(this, NULL, NULL, NULL, NULL);
+        this->switcherThread->start();
+
     } catch(MMSError *error) {
         DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
         string msg = error->getMessage();
@@ -330,22 +356,22 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
     if(this->curr_plugin == data->getId())
         return;
 
-    /* switch preview windows */
-    map<int, plugin_data_t *>::iterator i = this->plugins.find(this->curr_plugin);
-    if (i != this->plugins.end()) {
-        MMSChildWindow *preview = i->second->previewWin;
-        if (preview && preview->isShown())
-            preview->hide(false,true);
-    } 
+    
+    // hide all previews
+    for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
+    	vector<MMSChildWindow *> *wins = &(i->second->previewWins);
+    	for (unsigned int j = 0; j < wins->size(); j++) {
+    		MMSChildWindow *cw = wins->at(j);
+    		cw->hide();
+            cw->waitUntilHidden();
+    	}
+    }
 
+    // set current plugin
     this->curr_plugin = data->getId();
 
-    i = this->plugins.find(this->curr_plugin);
-    if(i != this->plugins.end()) {
-        MMSChildWindow *preview = i->second->previewWin;
-        if(preview && !preview->isShown())
-            preview->show();
-    }
+    // tell the switcher thread to invoke show preview
+    this->switcherThread->invokeShowPreview();
 }
 
 void MMSSwitcher::onReturn(MMSWidget *widget) {
@@ -394,14 +420,60 @@ MMSChildWindow* MMSSwitcher::loadPreviewDialog(string filename, MMSTheme *theme,
     }
 
     if(win) {
+    	// save the window pointer
         map<int, plugin_data_t *>::iterator i = this->plugins.find(id);
-        if(i != this->plugins.end()) {
-        	if (!i->second->previewWin)
-        		i->second->previewWin = win;
-        }
+        if(i != this->plugins.end())
+        	i->second->previewWins.push_back(win);
+
+        // connect the callbacks, so I can handle show/hide of these windows
+        win->onBeforeShow->connect(sigc::mem_fun(this,&MMSSwitcher::onBeforeShowPreview));
     }
 
     return win;
+}
+
+bool MMSSwitcher::onBeforeShowPreview(MMSWindow *win) {
+	// plugin selected?
+	if (this->curr_plugin < 0)
+		return false;
+
+	// searching the plugin
+    map<int, plugin_data_t *>::iterator i = this->plugins.find(this->curr_plugin);
+    if(i == this->plugins.end())
+    	return false;
+    vector<MMSChildWindow *> *wins = &(i->second->previewWins);
+
+	// search for the window which will shown
+    int pW = -1;
+    for (unsigned int i = 0; i < wins->size(); i++) {
+        if (win == wins->at(i)) {
+            /* found */
+            pW = i;
+            break;
+        }
+    }
+
+    if (pW < 0) {
+        // window not found, stop the show process
+        return false;
+    }
+    
+    // hide all previews
+    for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
+    	vector<MMSChildWindow *> *wins = &(i->second->previewWins);
+    	for (unsigned int j = 0; j < wins->size(); j++) {
+    		MMSChildWindow *cw = wins->at(j);
+    		if (cw!=win) {
+	    		cw->hide();
+	            cw->waitUntilHidden();
+    		}
+    	}
+    }
+
+    // set current preview window
+    this->switcherThread->previewShown();
+
+    return true;
 }
 
 MMSChildWindow* MMSSwitcher::loadInfoBarDialog(string filename, MMSTheme *theme) {

@@ -20,18 +20,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSSWTICHER_H_
-#define MMSSWTICHER_H_
+#ifndef MMSSWITCHER_H_
+#define MMSSWITCHER_H_
 
 #include <mmsbase/interfaces/immsswitcher.h>
 #include <mmscore/mmspluginmanager.h>
+#include <mmscore/mmsswitcherthread.h>
 #include <mmsinput/mmsinput.h>
 #include <mmsgui/mmsgui.h>
 
 typedef struct {
-    MMSPluginData  plugindata;
-    MMSChildWindow *previewWin;
+    MMSPluginData 				plugindata;
+    vector<MMSChildWindow *> 	previewWins;
+    MMSSwitcher					*switcher;
 } plugin_data_t;
+
 
 class MMSSwitcher : public IMMSSwitcher {
 	private:
@@ -39,10 +42,10 @@ class MMSSwitcher : public IMMSSwitcher {
 
         MMSPluginData                        *plugindata;        /**< for plugin owned switcher instances                           */
 
-        IMMSWindowManager                    *windowmanager;
-        MMSPluginManager                     *pluginmanager;
-        MMSInputManager                      *inputmanager;
-        vector<MMSInputSubscription*>        subscriptions;
+        static IMMSWindowManager             *windowmanager;
+        static MMSPluginManager              *pluginmanager;
+        static MMSInputManager               *inputmanager;
+        static vector<MMSInputSubscription*> subscriptions;
 
         static MMSDialogManager              dm;                 /**< dialog manager for whole switcher window                      */
         static MMSMainWindow                 *window;            /**< whole switcher window                                         */
@@ -57,6 +60,11 @@ class MMSSwitcher : public IMMSSwitcher {
         vector<MMSPluginData *> 			 osdplugs;
         vector<MMSPluginData *> 			 centralplugs;
         
+
+        MMSOSDPluginHandler                  *osdhandler;
+        MMSCentralPluginHandler              *centralhandler;
+        MMSSwitcherThread                    *showPreviewThread; /**< a separate thread for each plugin                             */
+        static MMSSwitcherThread             *switcherThread;    /**< my update thread                                              */
         
         void setMenuItemValues(MMSWidget *item);
 		int  searchingForImage(string pluginpath, string imagename, string *path);
@@ -84,6 +92,8 @@ class MMSSwitcher : public IMMSSwitcher {
         virtual IMMSSwitcher *newSwitcher(MMSPluginData *plugindata);
         virtual bool switchToPlugin();
         virtual bool leavePlugin(bool show_switcher);
+        
+    friend class MMSSwitcherThread;
 };
 
-#endif /*MMSSWTICHER_H_*/
+#endif /*MMSSWITCHER_H_*/
