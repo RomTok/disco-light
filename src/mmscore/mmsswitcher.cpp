@@ -33,6 +33,9 @@ int                       MMSSwitcher::curr_plugin;   /**< index to pluginSwitch
 #define	SWITCHER_MENU_PLUGINTITLE	"switcher_menu_plugintitle"
 #define	SWITCHER_MENU_PLUGINICON	"switcher_menu_pluginicon"
 
+#define SWITCHER_MENUBAR_STATIC		"switcher_menubar_static"
+#define SWITCHER_MENU_STATIC		"switcher_menu_static"
+
 /* public */
 MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
     windowmanager(NULL),
@@ -74,12 +77,19 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         this->menu    = dynamic_cast<MMSMenuWidget*>(this->menuBar->searchForWidget(SWITCHER_MENU));
         if(!this->menu) throw MMSError(0, "Error loading switchers menu");
 
+        /* get access to the static menu bar */
+        this->menuBar_static = (MMSChildWindow *)this->window->searchForWindow(SWITCHER_MENUBAR_STATIC);
+        if (this->menuBar_static)
+        	this->menu_static = dynamic_cast<MMSMenuWidget*>(this->menuBar_static->searchForWidget(SWITCHER_MENU_STATIC));
+        else
+        	this->menu_static = NULL;
+        
         /* fill the menu */
         MMSPluginService service(&source);
         osdplugs = service.getOSDPlugins();
         for(unsigned int i = 0; i < osdplugs.size();i++) {
         	// new item
-            MMSWidget *pluginItem = menu->newItem();
+            MMSWidget *pluginItem = this->menu->newItem();
             if (!pluginItem) break;
             
             // set plugin data to the item
@@ -88,6 +98,19 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
             // set values if widgets are defined
             setMenuItemValues(pluginItem);
+
+        
+        	// new static item
+            if (this->menu_static) {
+	            pluginItem = this->menu_static->newItem();
+	            if (pluginItem) {
+			        // set plugin data to the item
+			        pluginItem->setBinData((void*)osdplugs.at(i));
+			
+			        // set values if widgets are defined
+			        setMenuItemValues(pluginItem);
+	            }
+            }
         }
         centralplugs = service.getCentralPlugins();
         for(unsigned int i = 0; i < centralplugs.size();i++) {
@@ -101,9 +124,26 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
             // set values if widgets are defined
             setMenuItemValues(pluginItem);
+
+            
+        	// new static item
+            if (this->menu_static) {
+	            pluginItem = this->menu_static->newItem();
+	            if (pluginItem) {
+			        // set plugin data to the item
+			        pluginItem->setBinData((void*)centralplugs.at(i));
+			
+			        // set values if widgets are defined
+			        setMenuItemValues(pluginItem);
+	            }
+            }
         }
 
         /* show the menu bar */
+        if (this->menuBar_static) {
+        	this->menuBar_static->show();
+        	this->menuBar_static->waitUntilShown();
+        }
         this->menu->setFocus(true);
         this->menuBar->show();
 
@@ -167,7 +207,6 @@ void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
 		else
             pluginIcon->setSelImageName("plugin_icon_s.png");
     }
-	
 }
 
 int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *path) {
@@ -272,7 +311,8 @@ void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
 
 
 void MMSSwitcher::onSelectItem(MMSWidget *widget) {
-    MMSButtonWidget *pluginLabel = dynamic_cast<MMSButtonWidget*>(widget);
+//return;
+	MMSButtonWidget *pluginLabel = dynamic_cast<MMSButtonWidget*>(widget);
     if(!pluginLabel)
         pluginLabel = dynamic_cast<MMSButtonWidget*>(this->menu->getSelectedItem());
 
@@ -280,7 +320,10 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
     if(!pluginLabel) {
         return;
 	}
-	
+
+    // set the static menu
+    if (this->menu_static)
+    	this->menu_static->setSelected(menu->getSelected());
 
     MMSPluginData *data = (MMSPluginData*)pluginLabel->getBinData();
 
@@ -309,20 +352,13 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
 void MMSSwitcher::onReturn(MMSWidget *widget) {
     try {
-        MMSButtonWidget *pluginLabel = dynamic_cast<MMSButtonWidget*>(widget);
-        if(!pluginLabel)
-            pluginLabel = dynamic_cast<MMSButtonWidget*>(this->menu->getSelectedItem());
+        // get the selected item
+        MMSWidget *widget = this->menu->getSelectedItem();
 
-        /* no menu item given */
-        if(!pluginLabel) {
-        	DEBUGMSG("Switcher", "Could not get the widget item");
-            return;
-        }
+        // get access to the plugin data
+        MMSPluginData *data = (MMSPluginData*)widget->getBinData();
 
-        MMSPluginData *data = (MMSPluginData*)pluginLabel->getBinData();
-        if(!data)
-        	DEBUGMSG("Switcher","Data is not set");
-        
+        // invoke show
         if(data->getType()->getName() == "OSD_PLUGIN") {
             MMSOSDPluginHandler *handler = this->pluginmanager->getOSDPluginHandler(data->getId());
             handler->invokeShow(NULL);
@@ -331,6 +367,7 @@ void MMSSwitcher::onReturn(MMSWidget *widget) {
             MMSCentralPluginHandler *handler = this->pluginmanager->getCentralPluginHandler(data->getId());
             handler->invokeShow(NULL);
         }
+        
     } catch(MMSError *error) {
         DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
     }
