@@ -76,6 +76,8 @@ MMSWidgetClass::MMSWidgetClass() {
 
     initBlend();
     initBlendFactor();
+
+    initNavigateOnFocus();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -122,6 +124,8 @@ MMSWidgetClass::~MMSWidgetClass() {
 
     freeBlend();
     freeBlendFactor();
+
+    freeNavigateOnFocus();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) { 
@@ -226,6 +230,8 @@ void MMSWidgetClass::unsetAll() {
 
     unsetBlend();
     unsetBlendFactor();
+
+    unsetNavigateOnFocus();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -565,6 +571,9 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_blend_factor:
 	            setBlendFactor(atof(attrval_str));
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_navigate_onfocus:
+	            setNavigateOnFocus((attrval_int) ? true : false);
 	            break;
 			}
 		}
@@ -974,6 +983,10 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             if (ISATTRNAME(blend_factor)) { 
 	            setBlendFactor(atof(attrval_str));
 			}
+            else
+            if (ISATTRNAME(navigate_onfocus)) { 
+	            setNavigateOnFocus((attrval_int) ? true : false);
+            }
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -1850,5 +1863,29 @@ void MMSWidgetClass::setBlendFactor(double blendfactor) {
 
 bool MMSWidgetClass::getBlendFactor(double &blendfactor) {
 	MMSTHEMECLASS_GET_BASIC(blendfactor);
+}
+
+bool MMSWidgetClass::isNavigateOnFocus() {
+	MMSTHEMECLASS_ISSET(navigateonfocus);
+}
+
+void MMSWidgetClass::initNavigateOnFocus() {
+	MMSTHEMECLASS_INIT_BASIC(navigateonfocus);
+}
+
+void MMSWidgetClass::freeNavigateOnFocus() {
+	MMSTHEMECLASS_FREE_BASIC(navigateonfocus);
+}
+
+void MMSWidgetClass::unsetNavigateOnFocus() {
+	MMSTHEMECLASS_UNSET(navigateonfocus);
+}
+
+void MMSWidgetClass::setNavigateOnFocus(bool navigateonfocus) {
+	MMSTHEMECLASS_SET_BASIC(navigateonfocus);
+}
+
+bool MMSWidgetClass::getNavigateOnFocus(bool &navigateonfocus) {
+	MMSTHEMECLASS_GET_BASIC(navigateonfocus);
 }
 

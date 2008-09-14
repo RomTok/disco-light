@@ -344,7 +344,7 @@ class MMSWindow {
         void removeChildWinFocus();
 
         //! Internal method: Restore the focus to the currently focused child window. Goal: Change status of widgets. 
-        bool restoreChildWinFocus();
+        bool restoreChildWinFocus(MMSInputEvent *inputevent = NULL);
 
         //! Internal method: Handle child window navigation (up/down/left/right).
         bool handleNavigationForChildWins(MMSInputEvent *inputevent);

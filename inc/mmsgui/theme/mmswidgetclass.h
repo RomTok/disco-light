@@ -93,7 +93,8 @@ namespace MMSGUI_WIDGET_ATTR {
 	{ "hslider", TAFF_ATTRTYPE_STRING }, \
 	{ "imagesondemand", TAFF_ATTRTYPE_BOOL }, \
 	{ "blend", TAFF_ATTRTYPE_UCHAR }, \
-	{ "blend_factor", TAFF_ATTRTYPE_STRING }
+	{ "blend_factor", TAFF_ATTRTYPE_STRING }, \
+	{ "navigate_onfocus", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WIDGET_ATTR_IDS \
 		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
@@ -160,7 +161,8 @@ namespace MMSGUI_WIDGET_ATTR {
 		MMSGUI_WIDGET_ATTR_IDS_hslider, \
 		MMSGUI_WIDGET_ATTR_IDS_imagesondemand, \
 		MMSGUI_WIDGET_ATTR_IDS_blend, \
-		MMSGUI_WIDGET_ATTR_IDS_blend_factor
+		MMSGUI_WIDGET_ATTR_IDS_blend_factor, \
+		MMSGUI_WIDGET_ATTR_IDS_navigate_onfocus
 
 	#define MMSGUI_WIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -329,6 +331,13 @@ class MMSWidgetClass {
 	        
 	        //! blend factor 0.0.., default 0.0
 	        double          blendfactor; 
+
+	        //! is navigate on focus flag set?
+	        bool            isnavigateonfocus;
+	        
+	        //! use navigate on focus (true/false)
+	        bool            navigateonfocus;
+	        
     	} id;
 
     	struct {
@@ -447,6 +456,8 @@ class MMSWidgetClass {
         void initBlend();
         void initBlendFactor();
 
+        void initNavigateOnFocus();
+        
 
         /* free routines */
         void freeBgColor();
@@ -493,6 +504,8 @@ class MMSWidgetClass {
         void freeBlend();
         void freeBlendFactor();
 
+        void freeNavigateOnFocus();
+        
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -1189,6 +1202,27 @@ class MMSWidgetClass {
         */
         bool getBlendFactor(double &blendfactor);
 
+        
+        //! Check if the navigate on focus is set.
+        bool isNavigateOnFocus();
+ 
+        //! Mark the navigate on focus flag as not set.
+        void unsetNavigateOnFocus();
+
+        //! Set the navigate on focus flag.
+        /*!
+        \param navigateonfocus  use navigateonfocus true/false
+        */
+        void setNavigateOnFocus(bool navigateonfocus);
+
+        //! Get the navigate on focus flag.
+        /*!
+        \return navigate on focus flag
+        \return true if set
+        */
+        bool getNavigateOnFocus(bool &navigateonfocus);
+
+        
     /* friends */
     friend class MMSThemeManager;
     friend class MMSDialogManager;

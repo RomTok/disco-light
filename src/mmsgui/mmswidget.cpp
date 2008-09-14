@@ -1611,7 +1611,7 @@ void MMSWidget::setName(string name) {
     this->name = name;
 }
 
-void MMSWidget::setFocus(bool set, bool refresh) {
+void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     /* switch focused on/off if possible */
 	bool b;
     if (!getFocusable(b))
@@ -1628,6 +1628,30 @@ void MMSWidget::setFocus(bool set, bool refresh) {
         this->rootwindow->setFocusedWidget(this, set);
 
     this->onFocus->emit(this, set);
+
+    // check if we have to navigate
+	if (inputevent) {
+		bool navigateonfocus;
+		if (getNavigateOnFocus(navigateonfocus))
+			if (navigateonfocus) {
+				if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
+					switch (inputevent->key) {
+						case DIKS_CURSOR_DOWN:
+							scrollDown();
+						    break;
+						case DIKS_CURSOR_UP:
+							scrollUp();
+						    break;
+						case DIKS_CURSOR_RIGHT:
+							scrollRight();
+						    break;
+						case DIKS_CURSOR_LEFT:
+							scrollLeft();
+					        break;
+					}
+				}
+			}
+	}
 }
 
 bool MMSWidget::isFocused() {
@@ -2138,14 +2162,6 @@ bool MMSWidget::getMargin(unsigned int &margin) {
     GETWIDGET(Margin, margin);
 }
 
-bool MMSWidget::getBlend(unsigned int &blend) {
-    GETWIDGET(Blend, blend);
-}
-
-bool MMSWidget::getBlendFactor(double &blendfactor) {
-    GETWIDGET(BlendFactor, blendfactor);
-}
-
 bool MMSWidget::getFocusable(bool &focusable, bool check_selectable) {
 	if (check_selectable) {
 		if (getSelectable(focusable)) {
@@ -2217,6 +2233,17 @@ bool MMSWidget::getImagesOnDemand(bool &imagesondemand) {
     GETWIDGET(ImagesOnDemand, imagesondemand);
 }
 
+bool MMSWidget::getBlend(unsigned int &blend) {
+    GETWIDGET(Blend, blend);
+}
+
+bool MMSWidget::getBlendFactor(double &blendfactor) {
+    GETWIDGET(BlendFactor, blendfactor);
+}
+
+bool MMSWidget::getNavigateOnFocus(bool &navigateonfocus) {
+    GETWIDGET(NavigateOnFocus, navigateonfocus);
+}
 
 #define GETBORDER(x,y) \
     if (this->myWidgetClass.border.is##x()) return myWidgetClass.border.get##x(y); \
@@ -2597,6 +2624,10 @@ void MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
         this->refresh();
 }
 
+void MMSWidget::setNavigateOnFocus(bool navigateonfocus) {
+    myWidgetClass.setNavigateOnFocus(navigateonfocus);
+}
+
 void MMSWidget::setBorderColor(DFBColor bordercolor, bool refresh) {
     myWidgetClass.border.setColor(bordercolor);
     if (refresh)
@@ -2783,6 +2814,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setBlend(u);
     if (themeClass->getBlendFactor(d))
         setBlendFactor(d);
+    if (themeClass->getNavigateOnFocus(b))
+        setNavigateOnFocus(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))

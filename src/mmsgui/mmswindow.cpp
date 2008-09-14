@@ -2471,7 +2471,7 @@ void MMSWindow::removeChildWinFocus() {
     }
 }
 
-bool MMSWindow::restoreChildWinFocus() {
+bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
 
     if (this->childwins.size() > this->focusedChildWin) {
 
@@ -2488,8 +2488,10 @@ bool MMSWindow::restoreChildWinFocus() {
         	bool b;
             if (!fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->getFocusable(b))
             	b = false;
-            if (b)
-                fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true);
+
+            if (b) {
+                fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true, true, inputevent);
+            }
             else {
                 /* last focusable widget is not focusable anymore, search other widget to focus */
                 for(unsigned int i=0;i<fWin->children.size();i++) {
@@ -2508,7 +2510,7 @@ bool MMSWindow::restoreChildWinFocus() {
         }
         else {
             /* recursive to my focused childwin */
-            if (!fWin->restoreChildWinFocus()) {
+            if (!fWin->restoreChildWinFocus(inputevent)) {
 
                 /* nothing to focus, searching for other childwin */
                 for(unsigned int i = 0; i < fWin->childwins.size(); i++) {
@@ -2519,7 +2521,7 @@ bool MMSWindow::restoreChildWinFocus() {
                     fWin->focusedChildWin = i;
 
                     /* next try */
-                    if (fWin->restoreChildWinFocus())
+                    if (fWin->restoreChildWinFocus(inputevent))
                         /* okay */
                         return true;
                     else
@@ -2631,7 +2633,6 @@ bool MMSWindow::handleNavigationForChildWins(MMSInputEvent *inputevent) {
 	}
 	
     if (candidate) {
-
         /* check if candidate has something to focus */
         if (!candidate->getNumberOfFocusableWidgets())
             if (!candidate->getNumberOfFocusableChildWins())
@@ -2656,7 +2657,7 @@ bool MMSWindow::handleNavigationForChildWins(MMSInputEvent *inputevent) {
             this->focusedChildWin = cand;
 
             /* restore focused widget to candidate window */
-            restoreChildWinFocus();
+            restoreChildWinFocus(inputevent);
 
             return true;
         }
