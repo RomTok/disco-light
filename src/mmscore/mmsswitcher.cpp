@@ -312,20 +312,18 @@ void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
 
 void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 //return;
-	MMSButtonWidget *pluginLabel = dynamic_cast<MMSButtonWidget*>(widget);
-    if(!pluginLabel)
-        pluginLabel = dynamic_cast<MMSButtonWidget*>(this->menu->getSelectedItem());
+	if (!widget)
+        widget = this->menu->getSelectedItem();
 
     /* no menu item given */
-    if(!pluginLabel) {
+    if (!widget)
         return;
-	}
 
     // set the static menu
     if (this->menu_static)
     	this->menu_static->setSelected(menu->getSelected());
 
-    MMSPluginData *data = (MMSPluginData*)pluginLabel->getBinData();
+    MMSPluginData *data = (MMSPluginData*)widget->getBinData();
 
     /* return if current plugin is selected plugin */
     if(this->curr_plugin == data->getId()) {
@@ -353,7 +351,7 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 void MMSSwitcher::onReturn(MMSWidget *widget) {
     try {
         // get the selected item
-        MMSWidget *widget = this->menu->getSelectedItem();
+        widget = this->menu->getSelectedItem();
 
         // get access to the plugin data
         MMSPluginData *data = (MMSPluginData*)widget->getBinData();

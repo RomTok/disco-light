@@ -22,6 +22,7 @@
 
 #ifndef MMSSWTICHER_H_
 #define MMSSWTICHER_H_
+
 #include <mmsbase/interfaces/immsswitcher.h>
 #include <mmscore/mmspluginmanager.h>
 #include <mmsinput/mmsinput.h>
