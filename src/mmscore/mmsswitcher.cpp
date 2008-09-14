@@ -312,10 +312,11 @@ void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
 
 void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 //return;
+
 	if (!widget)
         widget = this->menu->getSelectedItem();
 
-    /* no menu item given */
+    // no menu item given
     if (!widget)
         return;
 
@@ -325,16 +326,15 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
     MMSPluginData *data = (MMSPluginData*)widget->getBinData();
 
-    /* return if current plugin is selected plugin */
-    if(this->curr_plugin == data->getId()) {
+    // return if current plugin is selected plugin
+    if(this->curr_plugin == data->getId())
         return;
-    }
 
     /* switch preview windows */
     map<int, plugin_data_t *>::iterator i = this->plugins.find(this->curr_plugin);
-    if(i != this->plugins.end()) {
+    if (i != this->plugins.end()) {
         MMSChildWindow *preview = i->second->previewWin;
-        if(preview && preview->isShown())
+        if (preview && preview->isShown())
             preview->hide(false,true);
     } 
 
@@ -396,7 +396,8 @@ MMSChildWindow* MMSSwitcher::loadPreviewDialog(string filename, MMSTheme *theme,
     if(win) {
         map<int, plugin_data_t *>::iterator i = this->plugins.find(id);
         if(i != this->plugins.end()) {
-            i->second->previewWin = win;
+        	if (!i->second->previewWin)
+        		i->second->previewWin = win;
         }
     }
 
