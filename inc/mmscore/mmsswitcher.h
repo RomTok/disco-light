@@ -68,6 +68,7 @@ class MMSSwitcher : public IMMSSwitcher {
         
         void setMenuItemValues(MMSWidget *item);
 		int  searchingForImage(string pluginpath, string imagename, string *path);
+        void onBeforeScroll(MMSWidget *widget);
         void onSelectItem(MMSWidget *widget);
         void onReturn(MMSWidget *widget);
         bool onBeforeShowPreview(MMSWindow *win);

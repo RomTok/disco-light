@@ -79,11 +79,7 @@ void MMSLabelWidgetThread::doIt() {
                 continue;
         }
 
-        /* get the next sleep time */
-        unsigned int delaytime = label->getSlideDelay();
-        if (delaytime < 100) delaytime = 100;
         bool changed = false;
-
         if (label->getSlidable()) {
             if (label->slid_width > 0) {
             	DFBRectangle surfaceGeom = label->getSurfaceGeometry();
@@ -101,12 +97,29 @@ void MMSLabelWidgetThread::doIt() {
         }
         
         /* refresh the widget */
-        if (changed)
+        if (changed) {
+            unsigned int start_ts;
+            unsigned int end_ts;
+            
+            // get start timestamp if needed
+            if (!this->label->frame_delay_set)
+            	start_ts = getMTimeStamp();
+
+            // update screen
             this->label->refresh();
 
+	        // get end timestamp if needed
+	        if (!this->label->frame_delay_set) {
+	        	end_ts = getMTimeStamp();
+	        	this->label->frame_delay = getFrameDelay(start_ts, end_ts) * getFrameNum(label->getSlideDelay());
+	            if (this->label->frame_delay < 100) this->label->frame_delay = 100;
+	            this->label->frame_delay_set = true;
+	        }
+        }
+
         /* sleep */
-        if (delaytime > 0)
-            wait(delaytime*1000);
+        if (this->label->frame_delay > 0)
+            wait(this->label->frame_delay*1000);
         else
             wait(1000000);
         if (this->stopThread)

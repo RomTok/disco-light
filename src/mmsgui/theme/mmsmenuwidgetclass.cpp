@@ -74,6 +74,7 @@ void MMSMenuWidgetClass::unsetAll() {
     unsetSelImagePath();
     unsetSelImageName();
     unsetSmoothSelection();
+    unsetSmoothDelay();
 }
 
 void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -177,6 +178,9 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
 	            break;
 			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_smooth_selection:
 	            setSmoothSelection((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_MENUWIDGET_ATTR::MMSGUI_MENUWIDGET_ATTR_IDS_smooth_delay:
+	            setSmoothDelay(attrval_int);
 	            break;
 			}
 		}
@@ -312,6 +316,10 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
             else
             if (ISATTRNAME(smooth_selection)) { 
 	            setSmoothSelection((attrval_int) ? true : false);
+			}
+            else
+            if (ISATTRNAME(smooth_delay)) { 
+	            setSmoothDelay(attrval_int);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -806,5 +814,22 @@ bool MMSMenuWidgetClass::getSmoothSelection() {
     return this->smoothselection;
 }
 
+
+bool MMSMenuWidgetClass::isSmoothDelay() {
+    return this->issmoothdelay;
+}
+
+void MMSMenuWidgetClass::setSmoothDelay(unsigned int smoothdelay) {
+    this->smoothdelay = smoothdelay;
+    this->issmoothdelay = true;
+}
+
+void MMSMenuWidgetClass::unsetSmoothDelay() {
+    this->issmoothdelay = false;
+}
+
+unsigned int MMSMenuWidgetClass::getSmoothDelay() {
+    return this->smoothdelay;
+}
 
 

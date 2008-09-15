@@ -77,7 +77,7 @@ MMSWidgetClass::MMSWidgetClass() {
     initBlend();
     initBlendFactor();
 
-    initNavigateOnFocus();
+    initScrollOnFocus();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -125,7 +125,7 @@ MMSWidgetClass::~MMSWidgetClass() {
     freeBlend();
     freeBlendFactor();
 
-    freeNavigateOnFocus();
+    freeScrollOnFocus();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) { 
@@ -231,7 +231,7 @@ void MMSWidgetClass::unsetAll() {
     unsetBlend();
     unsetBlendFactor();
 
-    unsetNavigateOnFocus();
+    unsetScrollOnFocus();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -572,8 +572,8 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_blend_factor:
 	            setBlendFactor(atof(attrval_str));
 	            break;
-			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_navigate_onfocus:
-	            setNavigateOnFocus((attrval_int) ? true : false);
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus:
+	            setScrollOnFocus((attrval_int) ? true : false);
 	            break;
 			}
 		}
@@ -984,8 +984,8 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setBlendFactor(atof(attrval_str));
 			}
             else
-            if (ISATTRNAME(navigate_onfocus)) { 
-	            setNavigateOnFocus((attrval_int) ? true : false);
+            if (ISATTRNAME(scroll_onfocus)) { 
+	            setScrollOnFocus((attrval_int) ? true : false);
             }
     	}
     	endTAFFScan_WITHOUT_ID
@@ -1865,27 +1865,27 @@ bool MMSWidgetClass::getBlendFactor(double &blendfactor) {
 	MMSTHEMECLASS_GET_BASIC(blendfactor);
 }
 
-bool MMSWidgetClass::isNavigateOnFocus() {
-	MMSTHEMECLASS_ISSET(navigateonfocus);
+bool MMSWidgetClass::isScrollOnFocus() {
+	MMSTHEMECLASS_ISSET(scrollonfocus);
 }
 
-void MMSWidgetClass::initNavigateOnFocus() {
-	MMSTHEMECLASS_INIT_BASIC(navigateonfocus);
+void MMSWidgetClass::initScrollOnFocus() {
+	MMSTHEMECLASS_INIT_BASIC(scrollonfocus);
 }
 
-void MMSWidgetClass::freeNavigateOnFocus() {
-	MMSTHEMECLASS_FREE_BASIC(navigateonfocus);
+void MMSWidgetClass::freeScrollOnFocus() {
+	MMSTHEMECLASS_FREE_BASIC(scrollonfocus);
 }
 
-void MMSWidgetClass::unsetNavigateOnFocus() {
-	MMSTHEMECLASS_UNSET(navigateonfocus);
+void MMSWidgetClass::unsetScrollOnFocus() {
+	MMSTHEMECLASS_UNSET(scrollonfocus);
 }
 
-void MMSWidgetClass::setNavigateOnFocus(bool navigateonfocus) {
-	MMSTHEMECLASS_SET_BASIC(navigateonfocus);
+void MMSWidgetClass::setScrollOnFocus(bool scrollonfocus) {
+	MMSTHEMECLASS_SET_BASIC(scrollonfocus);
 }
 
-bool MMSWidgetClass::getNavigateOnFocus(bool &navigateonfocus) {
-	MMSTHEMECLASS_GET_BASIC(navigateonfocus);
+bool MMSWidgetClass::getScrollOnFocus(bool &scrollonfocus) {
+	MMSTHEMECLASS_GET_BASIC(scrollonfocus);
 }
 

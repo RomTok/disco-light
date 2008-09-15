@@ -81,6 +81,10 @@ class MMSMenuWidget : public MMSWidget {
         int  			selection_offset_x;
         int  			selection_offset_y;
         
+        unsigned int 	frame_delay;
+        unsigned int 	frame_delay_set;
+
+        
         DFBRectangle 	virtualGeom;
 
         //! this will be used to show/hide the menu and its whole parent window(s)
@@ -142,7 +146,7 @@ class MMSMenuWidget : public MMSWidget {
         MMSWidget *newItem();
         void clear();
 
-        void setFocus(bool set, bool refresh = true);
+        void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
 
         bool setSelected(unsigned int item, bool refresh = true);
         unsigned int getSelected();
@@ -202,6 +206,7 @@ class MMSMenuWidget : public MMSWidget {
         bool getSelImagePath(string &selimagepath);
         bool getSelImageName(string &selimagename);
         bool getSmoothSelection();
+        unsigned int getSmoothDelay();
 
         void setItemWidth(string itemwidth, bool refresh = true);
         void setItemHeight(string itemheight, bool refresh = true);
@@ -230,6 +235,7 @@ class MMSMenuWidget : public MMSWidget {
         void setSelImagePath(string selimagepath, bool load = true, bool refresh = true);
         void setSelImageName(string selimagename, bool load = true, bool refresh = true);
         void setSmoothSelection(bool smoothselection);
+        void setSmoothDelay(unsigned int smoothdelay);
 
         void updateFromThemeClass(MMSMenuWidgetClass *themeClass);
 };

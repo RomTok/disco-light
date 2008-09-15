@@ -167,6 +167,9 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
         this->menu->setFocus(true);
         this->menuBar->show();
 
+        /* connect onBeforeScroll callback of the menu widget */
+        menu->onBeforeScroll->connect(sigc::mem_fun(this,&MMSSwitcher::onBeforeScroll));
+
         /* connect onSelectItem callback of the menu widget */
         menu->onSelectItem->connect(sigc::mem_fun(this,&MMSSwitcher::onSelectItem));
 
@@ -336,6 +339,25 @@ void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
 }
 
 
+void MMSSwitcher::onBeforeScroll(MMSWidget *widget) {
+    
+    // no plugin set
+    this->curr_plugin = -1;
+
+    // tell the switcher thread to invoke show preview
+    this->switcherThread->invokeShowPreview();
+
+    // hide all previews
+    for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
+    	vector<MMSChildWindow *> *wins = &(i->second->previewWins);
+    	for (unsigned int j = 0; j < wins->size(); j++) {
+    		MMSChildWindow *cw = wins->at(j);
+    		cw->hide();
+            cw->waitUntilHidden();
+    	}
+    }
+}
+
 void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 //return;
 
@@ -358,7 +380,7 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
 
     
     // hide all previews
-    for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
+    /*for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
     	vector<MMSChildWindow *> *wins = &(i->second->previewWins);
     	for (unsigned int j = 0; j < wins->size(); j++) {
     		MMSChildWindow *cw = wins->at(j);
@@ -366,6 +388,7 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
             cw->waitUntilHidden();
     	}
     }
+    */
 
     // set current plugin
     this->curr_plugin = data->getId();

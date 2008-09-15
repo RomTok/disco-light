@@ -82,6 +82,9 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->selection_offset_x = 0;
     this->selection_offset_y = 0;
     
+    this->frame_delay = 0;
+    this->frame_delay_set = false;
+    
     this->parent_window = NULL;
     this->curr_submenu = -1;
     this->parent_menu = NULL;
@@ -1201,12 +1204,41 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
 }
 
 
+
+
+#define MMSMENUWIDGET_GET_SLOOP(sloop) \
+	{ sloop = getSmoothDelay(); \
+	if (!sloop) { sloop = 5; this->frame_delay = 0;	this->frame_delay_set = true; } \
+	else sloop = getFrameNum(sloop); }
+
+#define MMSMENUWIDGET_SSLEEP { msleep(this->frame_delay); }
+
+#define MMSMENUWIDGET_GET_SSTART { if (!this->frame_delay_set) start_ts = getMTimeStamp(); }
+
+#define MMSMENUWIDGET_GET_SEND \
+	{ if (!this->frame_delay_set) { \
+	end_ts = getMTimeStamp(); \
+    this->frame_delay = getFrameDelay(start_ts, end_ts); \
+    fd_sum+= frame_delay; } }
+
+#define MMSMENUWIDGET_CALC_DELAY \
+	{ if (!this->frame_delay_set) { \
+    this->frame_delay = fd_sum / (sloop - 1); \
+    this->frame_delay_set = true; } }
+
+
+
+
+
 bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pyChanged = false;
     unsigned int oldx=0;
     unsigned int oldy;
     unsigned int cols;
     int fixedpos;
+	unsigned int start_ts;
+	unsigned int end_ts;
+	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -1302,17 +1334,36 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 				selectItem(olditem, false, false);
 
 				if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
-	            	// selection animation
-					// smooth selection with fix 5 steps
-					int sloop          = 5;
+	            	// selection animation, smooth selection
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs          = (getItemVMargin()*2 + this->item_h) / sloop;
 					selection_offset_x = 0;
 					selection_offset_y =-(getItemVMargin()*2 + this->item_h);
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+						
+						// next offset
 				        selection_offset_y+=soffs;
+				        
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
 				        this->refresh();
-//	sleep(2);
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+					
+					// reset offsets
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
@@ -1325,16 +1376,35 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
-	            	/* scrolling animation */
-					/* smooth scrolling with fix 5 steps */
-					int sloop = 5;
+	            	 //scrolling animation, smooth scrolling 
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
 					scrolling_offset=soffs * sloop;
 					for (int z = 0; z < sloop - 1; z++) {
-				        scrolling_offset-=soffs;
-				        this->refresh();
-//sleep(2);
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+
+						// next offset
+						scrolling_offset-=soffs;
+
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
+						this->refresh();
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+					
+					// reset offset
 					scrolling_offset=0;
 	            }
 	            
@@ -1421,6 +1491,9 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
     unsigned int oldy;
     unsigned int cols;
     int fixedpos;
+	unsigned int start_ts;
+	unsigned int end_ts;
+	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -1489,16 +1562,36 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
             	// selection animation?
 				if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
-					// smooth selection with fix 5 steps
-					int sloop          = 5;
+	            	// selection animation, smooth selection
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs          = (getItemVMargin()*2 + this->item_h) / sloop;
 					selection_offset_x = 0;
 					selection_offset_y = getItemVMargin()*2 + this->item_h;
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+						
+						// next offset
 				        selection_offset_y-=soffs;
+				        
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
 				        this->refresh();
-//	sleep(2);
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+
+					// reset offsets
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
@@ -1511,16 +1604,35 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
-	            	/* scrolling animation */
-					/* smooth scrolling with fix 5 steps */
-					int sloop = 5;
+	            	 //scrolling animation, smooth scrolling 
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
 					scrolling_offset=-soffs * sloop;
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+
+						// next offset
 				        scrolling_offset+=soffs;
-				        this->refresh();
-//sleep(2);
+
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
+						this->refresh();
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+					
+					// reset offset
 					scrolling_offset=0;
 	            }
 
@@ -1609,6 +1721,9 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
     unsigned int oldy=0;
     unsigned int cols;
     int fixedpos;
+	unsigned int start_ts;
+	unsigned int end_ts;
+	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -1709,17 +1824,36 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
 	            if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
-	            	// selection animation
-					// smooth selection with fix 5 steps
-					int sloop          = 5;
+	            	// selection animation, smooth selection
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs          = (getItemHMargin()*2 + this->item_w) / sloop;
 					selection_offset_x =-(getItemHMargin()*2 + this->item_w);
 					selection_offset_y = 0;
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+						
+						// next offset
 				        selection_offset_x+=soffs;
+				        
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
 				        this->refresh();
-//	sleep(2);
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+
+					// reset offsets
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
@@ -1732,16 +1866,35 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
-	            	/* scrolling animation */
-					/* smooth scrolling with fix 5 steps */
-					int sloop = 5;
+	            	 //scrolling animation, smooth scrolling 
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
 					scrolling_offset=soffs * sloop;
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+						
+						// next offset
 				        scrolling_offset-=soffs;
+				        
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
 				        this->refresh();
-// sleep(2);
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+
+					// reset offset
 					scrolling_offset=0;
 	            }
 
@@ -1786,17 +1939,35 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             this->onBeforeScroll->emit(this);
 
             if ((smooth_scrolling)&&(refresh)) {
-            	/* scrolling animation */
-				/* smooth scrolling with fix 5 steps */
-				int sloop = 5;
-//				int sloop = this->item_w + getItemHMargin()*2;
+           	 //scrolling animation, smooth scrolling 
+				int sloop;
+				MMSMENUWIDGET_GET_SLOOP(sloop);
 				int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
 				scrolling_offset=0;
 				for (int z = 0; z < sloop - 1; z++) {
+					// this first sleep is needed for continuous scrolling
+					MMSMENUWIDGET_SSLEEP;
+					
+					// next offset
 			        scrolling_offset-=soffs;
+			        
+			        // get start timestamp if needed
+			        MMSMENUWIDGET_GET_SSTART;
+			        
+			        // update screen
 			        this->refresh();
-//sleep(2);
+
+			        // get end timestamp if needed
+			        MMSMENUWIDGET_GET_SEND;
 				}
+
+				// calc the arithmetic mean?
+				MMSMENUWIDGET_CALC_DELAY;
+
+				// last sleep
+				MMSMENUWIDGET_SSLEEP;
+
+				// reset offset
 				scrolling_offset=0;
             }
 
@@ -1854,6 +2025,9 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
     unsigned int oldx;
     unsigned int cols;
     int fixedpos;
+	unsigned int start_ts;
+	unsigned int end_ts;
+	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -1916,17 +2090,36 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
 	            if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
-	            	// selection animation
-					// smooth selection with fix 5 steps
-					int sloop          = 5;
+	            	// selection animation, smooth selection
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs          = (getItemHMargin()*2 + this->item_w) / sloop;
 					selection_offset_x = getItemHMargin()*2 + this->item_w;
 					selection_offset_y = 0;
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+						
+						// next offset
 				        selection_offset_x-=soffs;
+				        
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
 				        this->refresh();
-//	sleep(2);
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+
+					// reset offsets
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
@@ -1939,16 +2132,35 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
-	            	/* scrolling animation */
-					/* smooth scrolling with fix 5 steps */
-					int sloop = 5;
+	            	// selection animation, smooth scrolling
+					int sloop;
+					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
 					scrolling_offset=-soffs * sloop;
 					for (int z = 0; z < sloop - 1; z++) {
+						// this first sleep is needed for continuous scrolling
+						MMSMENUWIDGET_SSLEEP;
+						
+						// next offset
 				        scrolling_offset+=soffs;
+				        
+				        // get start timestamp if needed
+				        MMSMENUWIDGET_GET_SSTART;
+				        
+				        // update screen
 				        this->refresh();
-// sleep(2);
+
+				        // get end timestamp if needed
+				        MMSMENUWIDGET_GET_SEND;
 					}
+
+					// calc the arithmetic mean?
+					MMSMENUWIDGET_CALC_DELAY;
+
+					// last sleep
+					MMSMENUWIDGET_SSLEEP;
+
+					// reset offset
 					scrolling_offset=0;
 	            }
 
@@ -1993,16 +2205,35 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             this->onBeforeScroll->emit(this);
 
             if ((smooth_scrolling)&&(refresh)) {
-            	/* scrolling animation */
-				/* smooth scrolling with fix 5 steps */
-				int sloop = 5;
-//				int sloop = this->item_w + getItemHMargin()*2;
+            	// selection animation, smooth scrolling
+				int sloop;
+				MMSMENUWIDGET_GET_SLOOP(sloop);
 				int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
 				scrolling_offset=0;
 				for (int z = 0; z < sloop - 1; z++) {
+					// this first sleep is needed for continuous scrolling
+					MMSMENUWIDGET_SSLEEP;
+					
+					// next offset
 			        scrolling_offset+=soffs;
+			        
+			        // get start timestamp if needed
+			        MMSMENUWIDGET_GET_SSTART;
+			        
+			        // update screen
 			        this->refresh();
+
+			        // get end timestamp if needed
+			        MMSMENUWIDGET_GET_SEND;
 				}
+
+				// calc the arithmetic mean?
+				MMSMENUWIDGET_CALC_DELAY;
+
+				// last sleep
+				MMSMENUWIDGET_SSLEEP;
+
+				// reset offset
 				scrolling_offset=0;
             }
 
@@ -2371,7 +2602,7 @@ void MMSMenuWidget::clear() {
     this->refresh();
 }
 
-void MMSMenuWidget::setFocus(bool set, bool refresh) {
+void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
 
 	/* switch the brightness of the menu items */
     if (set) {
@@ -2397,15 +2628,15 @@ void MMSMenuWidget::setFocus(bool set, bool refresh) {
     /* set the focus */
     if (!this->firstSelection) {
         if (!children.empty()) {
-            MMSWidget::setFocus(set, false);
+            MMSWidget::setFocus(set, false, inputevent);
             selectItem(children.at(0), true, refresh);
         }
         else
-            MMSWidget::setFocus(set, refresh);
+            MMSWidget::setFocus(set, refresh, inputevent);
         this->firstSelection = true;
     }
     else {
-        MMSWidget::setFocus(set, refresh);
+        MMSWidget::setFocus(set, refresh, inputevent);
     }
 }
 
@@ -2700,6 +2931,10 @@ bool MMSMenuWidget::getSmoothSelection() {
     GETMENU(SmoothSelection);
 }
 
+unsigned int MMSMenuWidget::getSmoothDelay() {
+    GETMENU(SmoothDelay);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
@@ -2875,6 +3110,12 @@ void MMSMenuWidget::setSmoothSelection(bool smoothselection) {
     this->smooth_selection = smoothselection;
 }
 
+void MMSMenuWidget::setSmoothDelay(unsigned int smoothdelay) {
+    myMenuWidgetClass.setSmoothDelay(smoothdelay);
+    this->frame_delay = 0;
+    this->frame_delay_set = false;
+}
+
 
 void MMSMenuWidget::updateFromThemeClass(MMSMenuWidgetClass *themeClass) {
 	if (themeClass->isItemWidth())
@@ -2931,6 +3172,8 @@ void MMSMenuWidget::updateFromThemeClass(MMSMenuWidgetClass *themeClass) {
        setSelImageName(themeClass->getSelImageName());
    if (themeClass->isSmoothSelection())
         setSmoothSelection(themeClass->getSmoothSelection());
+   if (themeClass->isSmoothDelay())
+        setSmoothDelay(themeClass->getSmoothDelay());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

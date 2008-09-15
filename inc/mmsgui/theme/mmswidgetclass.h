@@ -94,7 +94,7 @@ namespace MMSGUI_WIDGET_ATTR {
 	{ "imagesondemand", TAFF_ATTRTYPE_BOOL }, \
 	{ "blend", TAFF_ATTRTYPE_UCHAR }, \
 	{ "blend_factor", TAFF_ATTRTYPE_STRING }, \
-	{ "navigate_onfocus", TAFF_ATTRTYPE_BOOL }
+	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WIDGET_ATTR_IDS \
 		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
@@ -162,7 +162,7 @@ namespace MMSGUI_WIDGET_ATTR {
 		MMSGUI_WIDGET_ATTR_IDS_imagesondemand, \
 		MMSGUI_WIDGET_ATTR_IDS_blend, \
 		MMSGUI_WIDGET_ATTR_IDS_blend_factor, \
-		MMSGUI_WIDGET_ATTR_IDS_navigate_onfocus
+		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus
 
 	#define MMSGUI_WIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -332,11 +332,11 @@ class MMSWidgetClass {
 	        //! blend factor 0.0.., default 0.0
 	        double          blendfactor; 
 
-	        //! is navigate on focus flag set?
-	        bool            isnavigateonfocus;
+	        //! is scroll on focus flag set?
+	        bool            isscrollonfocus;
 	        
-	        //! use navigate on focus (true/false)
-	        bool            navigateonfocus;
+	        //! use scroll on focus (true/false)
+	        bool            scrollonfocus;
 	        
     	} id;
 
@@ -456,7 +456,7 @@ class MMSWidgetClass {
         void initBlend();
         void initBlendFactor();
 
-        void initNavigateOnFocus();
+        void initScrollOnFocus();
         
 
         /* free routines */
@@ -504,7 +504,7 @@ class MMSWidgetClass {
         void freeBlend();
         void freeBlendFactor();
 
-        void freeNavigateOnFocus();
+        void freeScrollOnFocus();
         
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -1203,24 +1203,24 @@ class MMSWidgetClass {
         bool getBlendFactor(double &blendfactor);
 
         
-        //! Check if the navigate on focus is set.
-        bool isNavigateOnFocus();
+        //! Check if the scroll on focus is set.
+        bool isScrollOnFocus();
  
-        //! Mark the navigate on focus flag as not set.
-        void unsetNavigateOnFocus();
+        //! Mark the scroll on focus flag as not set.
+        void unsetScrollOnFocus();
 
-        //! Set the navigate on focus flag.
+        //! Set the scroll on focus flag.
         /*!
-        \param navigateonfocus  use navigateonfocus true/false
+        \param scrollonfocus  use scrollonfocus true/false
         */
-        void setNavigateOnFocus(bool navigateonfocus);
+        void setScrollOnFocus(bool scrollonfocus);
 
-        //! Get the navigate on focus flag.
+        //! Get the scroll on focus flag.
         /*!
-        \return navigate on focus flag
+        \return scroll on focus flag
         \return true if set
         */
-        bool getNavigateOnFocus(bool &navigateonfocus);
+        bool getScrollOnFocus(bool &scrollonfocus);
 
         
     /* friends */

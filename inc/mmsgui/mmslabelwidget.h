@@ -43,6 +43,9 @@ class MMSLabelWidget : public MMSWidget {
 
         int slid_width;
         int slid_offset;
+
+        unsigned int frame_delay;
+        unsigned int frame_delay_set;
         
         class MMSLabelWidgetThread  *labelThread;
 

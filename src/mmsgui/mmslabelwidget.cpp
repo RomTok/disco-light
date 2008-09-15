@@ -50,6 +50,8 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->font = NULL;
     this->slid_width = 0;
     this->slid_offset = 0;
+    this->frame_delay = 100;
+    this->frame_delay_set = false;
     this->labelThread = NULL;
 
     return MMSWidget::create(root, true, false, false, true, false, false);
@@ -344,6 +346,8 @@ void MMSLabelWidget::setSlidable(bool slidable) {
 
 void MMSLabelWidget::setSlideDelay(unsigned int slidedelay) {
     myLabelWidgetClass.setSlideDelay(slidedelay);
+    this->frame_delay = 100;
+    this->frame_delay_set = false;
 }
 
 void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {

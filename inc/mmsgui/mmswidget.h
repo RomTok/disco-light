@@ -394,7 +394,7 @@ class MMSWidget {
         bool 	getImagesOnDemand(bool &imagesondemand);
         bool 	getBlend(unsigned int &blend);
         bool 	getBlendFactor(double &blendfactor);
-        bool 	getNavigateOnFocus(bool &navigateonfocus);
+        bool 	getScrollOnFocus(bool &scrollonfocus);
 
         bool	getBorderColor(DFBColor &color);
         bool 	getBorderSelColor(DFBColor &selcolor);
@@ -441,7 +441,7 @@ class MMSWidget {
         void setImagesOnDemand(bool imagesondemand);
         void setBlend(unsigned int blend, bool refresh = true);
         void setBlendFactor(double blendfactor, bool refresh = true);
-        void setNavigateOnFocus(bool navigateonfocus);
+        void setScrollOnFocus(bool scrollonfocus);
 
         void setBorderColor(DFBColor bordercolor, bool refresh = true);
         void setBorderSelColor(DFBColor borderselcolor, bool refresh = true);

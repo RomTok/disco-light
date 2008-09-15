@@ -592,7 +592,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.widgetClass.setImagesOnDemand(false);
         this->labelWidgetClass.widgetClass.setBlend(0);
         this->labelWidgetClass.widgetClass.setBlendFactor(0);
-        this->labelWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->labelWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->labelWidgetClass.widgetClass.border.setColor(color);
@@ -664,7 +664,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.widgetClass.setImagesOnDemand(false);
         this->imageWidgetClass.widgetClass.setBlend(0);
         this->imageWidgetClass.widgetClass.setBlendFactor(0);
-        this->imageWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->imageWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->imageWidgetClass.widgetClass.border.setColor(color);
@@ -735,7 +735,7 @@ MMSTheme::MMSTheme() {
         this->buttonWidgetClass.widgetClass.setImagesOnDemand(false);
         this->buttonWidgetClass.widgetClass.setBlend(0);
         this->buttonWidgetClass.widgetClass.setBlendFactor(0);
-        this->buttonWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->buttonWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->buttonWidgetClass.widgetClass.border.setColor(color);
@@ -787,7 +787,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.setImagesOnDemand(false);
         this->progressBarWidgetClass.widgetClass.setBlend(0);
         this->progressBarWidgetClass.widgetClass.setBlendFactor(0);
-        this->progressBarWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->progressBarWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->progressBarWidgetClass.widgetClass.border.setColor(color);
@@ -853,7 +853,7 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.widgetClass.setImagesOnDemand(false);
         this->menuWidgetClass.widgetClass.setBlend(0);
         this->menuWidgetClass.widgetClass.setBlendFactor(0);
-        this->menuWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->menuWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->menuWidgetClass.widgetClass.border.setColor(color);
@@ -894,6 +894,7 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.setSelImagePath("");
         this->menuWidgetClass.setSelImageName("");
         this->menuWidgetClass.setSmoothSelection(false);
+        this->menuWidgetClass.setSmoothDelay(0);
     }
 
     /* MMSTextBoxWidget */
@@ -934,7 +935,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.widgetClass.setImagesOnDemand(false);
         this->textBoxWidgetClass.widgetClass.setBlend(0);
         this->textBoxWidgetClass.widgetClass.setBlendFactor(0);
-        this->textBoxWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->textBoxWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->textBoxWidgetClass.widgetClass.border.setColor(color);
@@ -1006,7 +1007,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.setImagesOnDemand(false);
         this->arrowWidgetClass.widgetClass.setBlend(0);
         this->arrowWidgetClass.widgetClass.setBlendFactor(0);
-        this->arrowWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->arrowWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->arrowWidgetClass.widgetClass.border.setColor(color);
@@ -1072,7 +1073,7 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setImagesOnDemand(false);
         this->sliderWidgetClass.widgetClass.setBlend(0);
         this->sliderWidgetClass.widgetClass.setBlendFactor(0);
-        this->sliderWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->sliderWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->sliderWidgetClass.widgetClass.border.setColor(color);
@@ -1139,7 +1140,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setImagesOnDemand(false);
         this->inputWidgetClass.widgetClass.setBlend(0);
         this->inputWidgetClass.widgetClass.setBlendFactor(0);
-        this->inputWidgetClass.widgetClass.setNavigateOnFocus(false);
+        this->inputWidgetClass.widgetClass.setScrollOnFocus(false);
 
         /* base widget border settings */
         this->inputWidgetClass.widgetClass.border.setColor(color);

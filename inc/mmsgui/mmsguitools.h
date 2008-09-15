@@ -70,4 +70,10 @@ bool loadImage(IDirectFBImageProvider **image, string path, string filename);
 
 bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int size);
 
+unsigned int getFrameNum(unsigned int delay_time);
+
+unsigned int getMTimeStamp();
+
+unsigned int getFrameDelay(unsigned int start_ts, unsigned int end_ts);
+
 #endif /*MMSGUITOOLS_H_*/

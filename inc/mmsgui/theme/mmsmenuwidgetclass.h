@@ -56,7 +56,8 @@ namespace MMSGUI_MENUWIDGET_ATTR {
 		{ "selimage", TAFF_ATTRTYPE_STRING }, \
 		{ "selimage.path", TAFF_ATTRTYPE_STRING }, \
 		{ "selimage.name", TAFF_ATTRTYPE_STRING }, \
-		{ "smooth_selection", TAFF_ATTRTYPE_BOOL }
+		{ "smooth_selection", TAFF_ATTRTYPE_BOOL }, \
+		{ "smooth_delay", TAFF_ATTRTYPE_INT }
 
 	#define MMSGUI_MENUWIDGET_ATTR_IDS \
 		MMSGUI_MENUWIDGET_ATTR_IDS_item_width, \
@@ -86,7 +87,8 @@ namespace MMSGUI_MENUWIDGET_ATTR {
 		MMSGUI_MENUWIDGET_ATTR_IDS_selimage, \
 		MMSGUI_MENUWIDGET_ATTR_IDS_selimage_path, \
 		MMSGUI_MENUWIDGET_ATTR_IDS_selimage_name, \
-		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_selection
+		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_selection, \
+		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_delay
 	
 	#define MMSGUI_MENUWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -285,6 +287,12 @@ class MMSMenuWidgetClass {
         
         //! do smooth selection yes/no if user navigates in the menu
         bool  			smoothselection;
+
+        //! is smooth delay set?
+        bool			issmoothdelay;
+        
+        //! smooth delay
+        unsigned int	smoothdelay;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -698,6 +706,11 @@ class MMSMenuWidgetClass {
         void setSmoothSelection(bool smoothselection);
         void unsetSmoothSelection();
         bool getSmoothSelection();
+        
+        bool isSmoothDelay();
+        void setSmoothDelay(unsigned int smoothdelay);
+        void unsetSmoothDelay();
+        unsigned int getSmoothDelay();
         
     /* friends */
     friend class MMSThemeManager;

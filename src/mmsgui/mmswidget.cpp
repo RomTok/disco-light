@@ -1631,9 +1631,9 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
 
     // check if we have to navigate
 	if (inputevent) {
-		bool navigateonfocus;
-		if (getNavigateOnFocus(navigateonfocus))
-			if (navigateonfocus) {
+		bool scrollonfocus;
+		if (getScrollOnFocus(scrollonfocus))
+			if (scrollonfocus) {
 				if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 					switch (inputevent->key) {
 						case DIKS_CURSOR_DOWN:
@@ -2241,8 +2241,8 @@ bool MMSWidget::getBlendFactor(double &blendfactor) {
     GETWIDGET(BlendFactor, blendfactor);
 }
 
-bool MMSWidget::getNavigateOnFocus(bool &navigateonfocus) {
-    GETWIDGET(NavigateOnFocus, navigateonfocus);
+bool MMSWidget::getScrollOnFocus(bool &scrollonfocus) {
+    GETWIDGET(ScrollOnFocus, scrollonfocus);
 }
 
 #define GETBORDER(x,y) \
@@ -2624,8 +2624,8 @@ void MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
         this->refresh();
 }
 
-void MMSWidget::setNavigateOnFocus(bool navigateonfocus) {
-    myWidgetClass.setNavigateOnFocus(navigateonfocus);
+void MMSWidget::setScrollOnFocus(bool scrollonfocus) {
+    myWidgetClass.setScrollOnFocus(scrollonfocus);
 }
 
 void MMSWidget::setBorderColor(DFBColor bordercolor, bool refresh) {
@@ -2814,8 +2814,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setBlend(u);
     if (themeClass->getBlendFactor(d))
         setBlendFactor(d);
-    if (themeClass->getNavigateOnFocus(b))
-        setNavigateOnFocus(b);
+    if (themeClass->getScrollOnFocus(b))
+        setScrollOnFocus(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))

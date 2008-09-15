@@ -249,4 +249,36 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
 }
 
 
+unsigned int getFrameNum(unsigned int delay_time) {
+	// a frame every 50ms 
+	unsigned int ret = delay_time / 50;
+	if (ret < 2) ret = 2;
+	return ret;
+}
+
+#define MAX_MTIMESTAMP	999999
+
+unsigned int getMTimeStamp() {
+	struct  timeval tv;
+	time_t  		sec;
+
+	// get seconds and milli seconds
+	sec = time(NULL);
+	gettimeofday(&tv, NULL);
+
+	// build timestamp
+	return ((sec % 1000) * 1000) + tv.tv_usec / 1000;
+}
+
+unsigned int getFrameDelay(unsigned int start_ts, unsigned int end_ts) {
+	unsigned int diff;
+	if (start_ts <= end_ts)
+		diff = end_ts - start_ts;
+	else
+		diff = end_ts + MAX_MTIMESTAMP + 1 - start_ts;
+	if (50 > diff)
+		return 50-diff;
+	else
+		return 0;
+}
 
