@@ -1453,7 +1453,7 @@ bool MMSWindow::showAction(bool *stopaction) {
 	    if (!getMoveIn(movein)) movein = MMSDIRECTION_NOTSET;
 	    
 	    if ((fadein)||(movein!=MMSDIRECTION_NOTSET)) {
-    	    int steps = 5;
+    	    int steps = 3;
     	    unsigned int opacity_step;
     	    int move_step;
     	    
@@ -1479,6 +1479,9 @@ bool MMSWindow::showAction(bool *stopaction) {
 
     	    for (int i = steps; i > 0; i--) {
 
+	            // start time stamp
+    	    	unsigned int start_ts = getMTimeStamp();
+    	    	
         	    switch (movein) {
         	    	case MMSDIRECTION_LEFT:
         	    		if (!parent)
@@ -1526,6 +1529,12 @@ bool MMSWindow::showAction(bool *stopaction) {
 	                saction=true;
 	                break;
 	            }
+
+	            // end time stamp
+    	    	unsigned int end_ts = getMTimeStamp();
+
+    	    	// sleeping a little...
+    	    	msleep(getFrameDelay(start_ts, end_ts));
 	        }
 	    }
 
@@ -1637,7 +1646,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
 	    if (!getMoveOut(moveout)) moveout = MMSDIRECTION_NOTSET;
 
 	    if ((fadeout)||(moveout!=MMSDIRECTION_NOTSET)) {
-    	    int steps = 5;
+    	    int steps = 3;
     	    unsigned int opacity_step;
     	    int move_step;
     	    
@@ -1662,7 +1671,11 @@ bool MMSWindow::hideAction(bool *stopaction) {
     	    	opacity_step = opacity / (steps+1);
 
        	    for (int i = 1; i <= steps; i++) {
-        	    switch (moveout) {
+
+	            // start time stamp
+    	    	unsigned int start_ts = getMTimeStamp();
+
+    	    	switch (moveout) {
         	    	case MMSDIRECTION_LEFT:
         	    		if (!parent)
         	    			this->window->moveTo(rect.x - i * move_step, rect.y);
@@ -1702,6 +1715,13 @@ bool MMSWindow::hideAction(bool *stopaction) {
 	                saction=true;
 	                break;
 	            }
+	            
+	            // end time stamp
+    	    	unsigned int end_ts = getMTimeStamp();
+
+    	    	// sleeping a little...
+    	    	msleep(getFrameDelay(start_ts, end_ts));
+	            
 	        }
 	    }
     
