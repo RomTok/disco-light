@@ -392,7 +392,8 @@ string scanForString(string buf, string toFind, string *ret,
 }
 
 void msleep(unsigned long msec) {
-	usleep(msec * 1000);
+	if (msec > 0)
+		usleep(msec * 1000);
 }
 
 
@@ -621,3 +622,5 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 
 	return;
 }
+
+
