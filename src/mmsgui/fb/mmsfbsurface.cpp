@@ -4640,27 +4640,75 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 }
 
 void MMSFBSurface::lock() {
+	// which surface is to lock?
+	MMSFBSurface *tolock = this;
+	if (this->root_parent)
+		tolock = this->root_parent;
+	else
+	if (this->parent)
+		tolock = this->parent;
+
+    if (tolock->Lock.trylock() == 0) {
+        // I have got the lock the first time
+    	tolock->TID = pthread_self();
+    	tolock->Lock_cnt = 1;
+    }
+    else {
+        if ((tolock->TID == pthread_self())&&(tolock->Lock_cnt > 0)) {
+            // I am the thread which has already locked this surface
+        	tolock->Lock_cnt++;
+        }
+        else {
+            // another thread has already locked this surface, waiting for...
+        	tolock->Lock.lock();
+        	tolock->TID = pthread_self();
+        	tolock->Lock_cnt = 1;
+        }
+    }
+    
+/*
     if (this->Lock.trylock() == 0) {
-        /* I have got the lock the first time */
+        // I have got the lock the first time
         this->TID = pthread_self();
         this->Lock_cnt = 1;
     }
     else {
         if ((this->TID == pthread_self())&&(this->Lock_cnt > 0)) {
-            /* I am the thread which has already locked this surface */
+            // I am the thread which has already locked this surface
             this->Lock_cnt++;
         }
         else {
-            /* another thread has already locked this surface, waiting for... */
-            Lock.lock();
+            // another thread has already locked this surface, waiting for...
+            this->Lock.lock();
             this->TID = pthread_self();
             this->Lock_cnt = 1;
         }
     }
+*/
 }
 
 void MMSFBSurface::unlock() {
-    if (this->TID != pthread_self())
+	// which surface is to lock?
+	MMSFBSurface *tolock = this;
+	if (this->root_parent)
+		tolock = this->root_parent;
+	else
+	if (this->parent)
+		tolock = this->parent;
+
+	if (tolock->TID != pthread_self())
+        return;
+    
+    if (tolock->Lock_cnt==0) 
+    	return;
+    	
+    tolock->Lock_cnt--;
+
+    if (tolock->Lock_cnt == 0)
+    	tolock->Lock.unlock();
+	
+/*
+	if (this->TID != pthread_self())
         return;
     
     if(this->Lock_cnt==0) 
@@ -4669,7 +4717,7 @@ void MMSFBSurface::unlock() {
     this->Lock_cnt--;
 
     if (this->Lock_cnt == 0)
-        Lock.unlock();
+        this->Lock.unlock();*/
 }
 
 

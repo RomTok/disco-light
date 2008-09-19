@@ -160,7 +160,10 @@ class MMSWindow {
 
         //! parent window (if window is a child window) or NULL
         MMSWindow           *parent;
-		
+
+        //! toplevel parent window (if window is a child window) or NULL
+        MMSWindow			*toplevel_parent;
+        
         //! image manager for the window
         MMSImageManager     *im;
         
@@ -317,8 +320,13 @@ class MMSWindow {
         virtual bool init();
 
         //! Internal method: Draw me.
-        virtual void draw(bool toRedrawOnly = false, DFBRectangle *rect2update = NULL, bool clear = true);
+        virtual void draw(bool toRedrawOnly = false, DFBRectangle *rect2update = NULL,
+        				  bool clear = true);
 
+bool buffered_shown;        
+void showBufferedShown();
+        
+        
         //! Internal method: Draw my border.
         void drawMyBorder();
 
@@ -365,7 +373,7 @@ class MMSWindow {
         virtual bool hideAction(bool *stopaction);   
 
         //! Internal method: Refresh a part of a window. Will be used by the widgets.
-        void refreshFromChild(MMSWidget *child, DFBRectangle *rect2update = NULL);
+        void refreshFromChild(MMSWidget *child, DFBRectangle *rect2update = NULL, bool check_shown = true);
         
         //! Internal method: Set the focused widget.
         void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false);

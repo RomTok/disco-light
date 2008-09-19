@@ -116,7 +116,7 @@ class MMSMenuWidget : public MMSWidget {
         void recalculateChildren();
 
         void initParentWindow(void);
-        void setRootWindow(class MMSWindow *root);
+        void setRootWindow(MMSWindow *root, MMSWindow *parentroot = NULL);
         
         void switchArrowWidgets();
         void setSliders();

@@ -133,6 +133,11 @@ typedef enum {
     MMSWIDGETTYPE_INPUT
 } MMSWIDGETTYPE;
 
+
+//! define the window class
+class MMSWindow;
+
+
 //! This class is the base class for all widgets.
 /*!
 This class includes the base functionality available for all widgets within MMSGUI.
@@ -164,7 +169,12 @@ class MMSWidget {
         DFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                borderselgeomset;
 
-        class MMSWindow *rootwindow;
+        //! window on which the widget is connected
+        MMSWindow			*rootwindow;
+        
+        //! the toplevel parent window
+        MMSWindow 			*parent_rootwindow;
+        
         int    id;
         string name;
 
@@ -239,7 +249,7 @@ class MMSWidget {
         MMSWidget* operator[](string name);
 
         virtual void add(MMSWidget *widget);
-        MMSWindow *getRootWindow();
+        MMSWindow *getRootWindow(MMSWindow **parentroot = NULL);
         virtual void setGeometry(DFBRectangle geom);
         DFBRectangle getGeometry();
         DFBRectangle getRealGeometry();
@@ -316,7 +326,7 @@ class MMSWidget {
 
     protected:
         virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
-        virtual void setRootWindow(class MMSWindow *root);
+        virtual void setRootWindow(MMSWindow *root, MMSWindow *parentroot = NULL);
         virtual void recalculateChildren();
 //        void registerInput(DFBInputDeviceKeySymbol key, GUIINPUTCALLBACK cb);
         virtual void handleInput(MMSInputEvent *inputevent);

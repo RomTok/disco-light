@@ -396,11 +396,11 @@ void MMSMenuWidget::recalculateChildren() {
                 if (smooth_scrolling)
                     if (cols==1) {
                     	// draw parts of items before and after
-                        visibleAfter = (!((rect.x < item_xx) || (rect.y < item_yy - item_hh) || (rect.x > menu_xx) || (rect.y > menu_yy + item_hh)));
+                        visibleAfter = (!((rect.x < item_xx) || (rect.y <= item_yy - item_hh) || (rect.x > menu_xx) || (rect.y >= menu_yy + item_hh)));
                     }
                     else {
                     	// draw parts of items before and after
-                        visibleAfter = (!((rect.x < item_xx - item_ww) || (rect.y < item_yy) || (rect.x > menu_xx + item_ww) || (rect.y > menu_yy)));
+                        visibleAfter = (!((rect.x <= item_xx - item_ww) || (rect.y < item_yy) || (rect.x >= menu_xx + item_ww) || (rect.y > menu_yy)));
                     }
             }
 
@@ -998,8 +998,8 @@ void MMSMenuWidget::initParentWindow(void) {
 		this->parent_window = this->rootwindow;
 }
 
-void MMSMenuWidget::setRootWindow(class MMSWindow *root) {
-	MMSWidget::setRootWindow(root);
+void MMSMenuWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
+	MMSWidget::setRootWindow(root, parentroot);
 	initParentWindow();
 }
 

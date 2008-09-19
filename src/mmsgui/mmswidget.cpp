@@ -43,6 +43,7 @@ MMSWidget::MMSWidget() {
         this->borderselimages[i] = NULL;
     borderselgeomset = false;
     this->rootwindow = NULL;
+    this->parent_rootwindow = NULL;
 //    this->dfb = NULL;
     this->windowSurface = NULL;
     this->parent = NULL;
@@ -1444,8 +1445,15 @@ void MMSWidget::refresh() {
     if (!myroot)
    		return;
     
+    // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown
+    if (!myroot->isShown(true)) {
+    	DEBUGMSG("MMSGUI", "MMSWidget->refresh() skipped because window is not shown");
+        return;
+    }
+    
     /* lock the window because only one thread can do this at the same time */
-    myroot->lock();
+//    myroot->lock();
+    this->parent_rootwindow->lock();
 
     if (this->drawable)
         getMargin(margin);
@@ -1455,18 +1463,20 @@ void MMSWidget::refresh() {
     tobeupdated.w = this->geom.w - 2*margin;
     tobeupdated.h = this->geom.h - 2*margin;
 
+    
     /* e.g. for smooth scrolling menus we must recalculate children here */
     /* so if the widget is a menu and smooth scrolling is enabled, we do the recalculation */
     if (this->type == MMSWIDGETTYPE_MENU)
     	if (((MMSMenuWidget *)this)->getSmoothScrolling())
     		recalculateChildren();
 
-   	myroot->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated);
+   	myroot->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated, false);
 
     switchArrowWidgets();
 
     /* unlock the window */
-    myroot->unlock();
+//    myroot->unlock();
+    this->parent_rootwindow->unlock();
 }
 
 bool MMSWidget::isDrawable() {
@@ -1576,15 +1586,28 @@ MMSWidget *MMSWidget::getParent() {
     return this->parent;
 }
 
-void MMSWidget::setRootWindow(class MMSWindow *root) {
+void MMSWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
+	// set window on which the widget is connected
     this->rootwindow = root;
+
+    // set the toplevel parent window
+    this->parent_rootwindow = parentroot;
+    
     if (this->rootwindow) {
-//        this->dfb = this->rootwindow->getDFB();
+    	// searching the right toplevel parent
+        if (!this->parent_rootwindow)
+        	if (!this->rootwindow->parent)
+        		this->parent_rootwindow = this->rootwindow;
+        	else
+        		this->parent_rootwindow = this->rootwindow->getParent(true);
+
         this->windowSurface = this->rootwindow->getSurface();
-        this->rootwindow->add(this);
+        rootwindow->add(this);
     }
+    
+    // set root window to all children
     for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setRootWindow(this->rootwindow);
+        children.at(i)->setRootWindow(this->rootwindow, this->parent_rootwindow);
 }
 
 void MMSWidget::recalculateChildren() {
@@ -1595,7 +1618,9 @@ void MMSWidget::recalculateChildren() {
 
 }
 
-MMSWindow *MMSWidget::getRootWindow() {
+MMSWindow *MMSWidget::getRootWindow(MMSWindow **parentroot) {
+	if (parentroot)
+		*parentroot = this->parent_rootwindow;
     return this->rootwindow;
 }
 

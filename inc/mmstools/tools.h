@@ -44,6 +44,9 @@
 #define DEBUGERR(msg...)
 #endif
 
+#define MSG2OUT(ident, msg...) writeMessage2Stdout(ident, __FILE__, __LINE__, msg)
+
+
 string substituteEnvVars(string input);
 
 string maskChars(string str);
@@ -102,5 +105,8 @@ bool file_exist( string filename );
 
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const char *msg, ...);
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const string &msg);
+
+void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const char *msg, ...);
+void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const string &msg);
 
 #endif /*TOOLS_H_*/

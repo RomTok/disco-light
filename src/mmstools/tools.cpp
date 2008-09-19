@@ -587,8 +587,8 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %s: %s [%s:%d]\n", timebuf,
-	                    tv.tv_usec/10000, identity, buffer, filename, lineno);
+	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
+	                    tv.tv_usec/10000, pthread_self(), identity, buffer, filename, lineno);
 
 	fwrite(buffer2, 1, num, fp);
 
@@ -613,8 +613,8 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %s: %s [%s:%d]\n", timebuf,
-	               tv.tv_usec/10000, identity, msg.c_str(), filename, lineno);
+	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
+	               tv.tv_usec/10000, pthread_self(), identity, msg.c_str(), filename, lineno);
 
 	fwrite(buffer, 1, num, fp);
 	fclose(fp);
@@ -623,4 +623,47 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	return;
 }
 
+
+void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const char *msg, ...) {
+	va_list arglist;
+	struct  timeval tv;
+	char    timebuf[12];
+	char 	buffer[1024]={0};
+	char 	buffer2[1024]={0};
+	int		num;
+
+	va_start(arglist, (char *)msg);
+	vsprintf(buffer, msg, arglist);
+
+	gettimeofday(&tv, NULL);
+
+    getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
+
+	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
+	                    tv.tv_usec/10000, pthread_self(), identity, buffer, filename, lineno);
+	
+	fwrite(buffer2, 1, num, stdout);
+
+	va_end(arglist);
+
+	return;
+}
+
+
+void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const string &msg) {
+	struct  timeval tv;
+	char    timebuf[12];
+	char 	buffer[1024]={0};
+	int		num;
+
+	gettimeofday(&tv, NULL);
+    getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
+
+	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
+	               tv.tv_usec/10000, pthread_self(), identity, msg.c_str(), filename, lineno);
+
+	fwrite(buffer, 1, num, stdout);
+
+	return;
+}
 
