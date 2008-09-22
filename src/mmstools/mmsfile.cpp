@@ -171,7 +171,10 @@ bool MMSFile::openFile() {
     /* check name if it is an url string */
     tmp=this->name.substr(0, 7);
     strToUpr(&tmp);
-    if (tmp=="HTTP://") this->type=MMSFT_URL;
+    if (tmp=="HTTP://")
+    	this->type=MMSFT_URL;
+    else
+    	this->type=MMSFT_FILE;
 
     if (this->type!=MMSFT_URL) {
         /* try to open normal file */
@@ -205,9 +208,10 @@ bool MMSFile::openFile() {
                 return false;
         }
 
-        if ((this->file=fopen(name.c_str(), tmpmode)))
-            /* it is a normal file */
-            this->type = MMSFT_FILE;
+        if (!(this->file=fopen(name.c_str(), tmpmode))) {
+        	this->lasterror=ENOENT;
+        	return false;
+        }
     }
 
     if (this->type!=MMSFT_FILE)
