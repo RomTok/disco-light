@@ -310,6 +310,7 @@ class MMSFBSurface {
 
     friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;
+    friend class MMSFBWindowManager;
 };
 
 #endif /*MMSFBSURFACE_H_*/

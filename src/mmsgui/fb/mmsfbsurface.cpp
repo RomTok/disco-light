@@ -4146,7 +4146,10 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
     if (src.w == dst.w && src.h == dst.h)
         return blit(source, &src, dst.x, dst.y);
 
-
+/*
+    MSG2OUT(">", "stretchBlit( %d,%d - %dx%d  ->  %d,%d - %dx%d ) <- %dx%d",
+    		DFB_RECTANGLE_VALS(&src), DFB_RECTANGLE_VALS(&dst), this->config.w, this->config.h );
+*/  
     MMSFB_BREAK();
 
     /* check if initialized */

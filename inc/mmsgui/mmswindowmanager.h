@@ -34,6 +34,8 @@ class MMSWindowManager : public IMMSWindowManager {
         MMSWindow           *toplevel;
         MMSWindow           *backgroundwindow;
 
+        void showBackgroundWindow();
+
 	public:
 		MMSWindowManager(DFBRectangle vrect);
 		virtual ~MMSWindowManager();

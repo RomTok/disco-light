@@ -2661,7 +2661,7 @@ bool MMSWindow::handleNavigationForWidgets(MMSInputEvent *inputevent) {
         if (candidate->getId() != this->focusedwidget->getId()) {
             /* different from current focus */
             this->focusedwidget->setFocus(false);
-            candidate->setFocus(true);
+            candidate->setFocus(true, true, inputevent);
             return true;
         }
     }
@@ -2725,7 +2725,7 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
                     if(fWin->children.at(i)->getFocusable(b))
                     	if (b) {
 		                    this->childwins.at(this->focusedChildWin).focusedWidget = i;
-		                    fWin->children.at(i)->setFocus(true);
+		                    fWin->children.at(i)->setFocus(true, true, inputevent);
 		    
 		                    break;
 		                }
@@ -2771,7 +2771,7 @@ void MMSWindow::setFocus() {
     /* i do only work for child windows */
     if (!this->parent) return;
 
-    /* search me */
+    /* searching me */
     int me = -1;
     for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
         if (this->parent->childwins.at(i).window == this) {

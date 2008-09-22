@@ -41,6 +41,8 @@ void MMSLabelWidgetThread::stop() {
     while (!this->inWait)
         usleep(1000);
     this->stopThread = true;
+    while (isRunning())
+        usleep(1000);
 }
 
 void MMSLabelWidgetThread::pause(bool pauseThread) {
@@ -71,7 +73,7 @@ void MMSLabelWidgetThread::doIt() {
             else
                 continue;
         }
-        if (!win->isShown()) {
+        if (!win->isShown(true)) {
             wait(1000000);
             if (this->stopThread)
                 return;

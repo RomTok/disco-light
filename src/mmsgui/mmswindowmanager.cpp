@@ -106,7 +106,7 @@ bool MMSWindowManager::hideAllRootWindows(bool willshown) {
 
     /* if at least one root window was hidden and no other will shown, show the default root window */
     if ((ret)&&(!willshown))
-        this->backgroundwindow->show();
+    	showBackgroundWindow();
 
     /* return true if at least one root window was found */
     return ret;
@@ -149,13 +149,20 @@ void MMSWindowManager::removeWindowFromToplevel(MMSWindow *window) {
 void MMSWindowManager::setBackgroundWindow(MMSWindow *window) {
     if (window)
         this->backgroundwindow = window;
-        
-    if (this->backgroundwindow)
-        this->backgroundwindow->show();
+    showBackgroundWindow();
 }
 
 MMSWindow *MMSWindowManager::getBackgroundWindow() {
     return this->backgroundwindow;
+}
+
+void MMSWindowManager::showBackgroundWindow() {
+	if (this->backgroundwindow) {
+		unsigned int opacity;
+		if (this->backgroundwindow->getOpacity(opacity))
+			if (opacity)
+				this->backgroundwindow->show();
+	}
 }
 
 void MMSWindowManager::setPointerPosition(int pointer_posx, int pointer_posy) {

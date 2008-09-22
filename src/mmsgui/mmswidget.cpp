@@ -777,7 +777,7 @@ bool MMSWidget::init() {
 
 
 #ifdef OLDDRAW
-bool MMSWidget::draw(bool *backgroundFilled) {
+bool MMSWidget(bool *backgroundFilled) {
     bool         myBackgroundFilled = false;
     bool         retry = false;
 
@@ -1657,7 +1657,7 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     // check if we have to navigate
 	if (inputevent) {
 		bool scrollonfocus;
-		if (getScrollOnFocus(scrollonfocus))
+		if (getScrollOnFocus(scrollonfocus)) {
 			if (scrollonfocus) {
 				if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 					switch (inputevent->key) {
@@ -1676,6 +1676,7 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
 					}
 				}
 			}
+		}
 	}
 }
 

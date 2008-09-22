@@ -615,8 +615,8 @@ logger.writeLog("BBB>");
                 src_rect.h-= myregion->y2 - ls_region.y2;
 
             // set the blitting flags and color
-            if ((aw->alphachannel)&&(win_found)) {
-            	// the window has an alphachannel and is NOT the first window to be blit
+            if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.alphachannel))) {
+            	// the window has an alphachannel
                 if (aw->opacity < 255) { 
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
@@ -624,9 +624,17 @@ logger.writeLog("BBB>");
                 else {
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
                 }
+
+                // first window?
+                if (!win_found) {
+                	// yes, clear the layer before blitting the first window surface
+                    if (cleared)
+                   		this->layer_surface->clear();
+                	win_found = true;
+                }
             }
             else {
-            	// the window has no alphachannel or is the FIRST window to be blit
+            	// the window has no alphachannel
                 if (aw->opacity < 255) { 
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_COLORALPHA);
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
@@ -641,8 +649,8 @@ logger.writeLog("BBB>");
                 	// but only, if the first window does not use the whole layer region
                 	// else we do not have to clear the layer region and can save CPU
                     if (cleared)
-                    	if ((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
-                    	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2)) {
+                    	if ((aw->opacity < 255)||((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
+                    	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2))) {
                     		this->layer_surface->clear();
                     	}
                 	win_found = true;
