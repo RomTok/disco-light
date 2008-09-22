@@ -850,7 +850,6 @@ bool MMSTaffFile::readFile() {
 	char taff_ident[32];
 	if (!taff_file->readBuffer((void*)taff_ident, &ritems, 1, strlen(TAFF_IDENT))) {
 		/* read error */
-		printf("TAFF: Reading TAFF_IDENT failed (%s)\n", this->taff_filename.c_str());
 		this->taff_buf = NULL;
 		delete taff_file;
 		return false;
