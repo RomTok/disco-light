@@ -615,8 +615,7 @@ logger.writeLog("BBB>");
                 src_rect.h-= myregion->y2 - ls_region.y2;
 
             // set the blitting flags and color
-            if (aw->alphachannel) {
-//                if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.alphachannel))) {
+            if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.alphachannel))) {
             	// the window has an alphachannel
                 if (aw->opacity < 255) { 
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
