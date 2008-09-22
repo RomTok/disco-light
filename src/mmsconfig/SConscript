@@ -1,0 +1,7 @@
+Import('env')
+Import('libmmstools')
+env = env.Copy()
+env.Append(LIBPATH = '../../../lib', LIBS = ['mmstools'])
+libmmsconfig = env.SharedLibrary('../../../lib/libmmsconfig', Glob('*.cpp'))
+Depends(libmmsconfig, libmmstools)
+Export('libmmsconfig')

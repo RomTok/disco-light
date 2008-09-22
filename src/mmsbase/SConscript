@@ -1,0 +1,4 @@
+Import('env')
+env = env.Copy()
+libmmsbase = env.SharedLibrary('../../../lib/libmmsbase', Glob('*.cpp'))
+Export('libmmsbase')

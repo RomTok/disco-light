@@ -1,0 +1,3 @@
+Import('env')
+env = env.Copy()
+env.SharedLibrary('../../../lib/libmmscore', Glob('*.cpp'))

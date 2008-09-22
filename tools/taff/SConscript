@@ -1,0 +1,4 @@
+Import('env')
+env = env.Copy()
+env.Append(LIBPATH = '../../../lib', LIBS = ['mmsinfo', 'mmstools', 'mmsconfig', 'mmsgui'])
+taff = env.Program('../../../bin/taff', Glob('src/*.cpp'))
