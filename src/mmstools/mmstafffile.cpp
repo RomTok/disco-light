@@ -850,18 +850,21 @@ bool MMSTaffFile::readFile() {
 	char taff_ident[32];
 	if (!taff_file->readBuffer((void*)taff_ident, &ritems, 1, strlen(TAFF_IDENT))) {
 		/* read error */
+		printf("TAFF: Reading TAFF_IDENT failed (%s)\n", this->taff_filename.c_str());
 		this->taff_buf = NULL;
 		delete taff_file;
 		return false;
 	}
 	if (memcmp(taff_ident, TAFF_IDENT, strlen(TAFF_IDENT))!=0) {
 		/* the first bytes of the file are different from TAFF_IDENT */
+		printf("TAFF: TAFF_IDENT mismatch (%s)\n", this->taff_filename.c_str());
 		this->taff_buf = NULL;
 		delete taff_file;
 		return false;
 	}
 	if (!taff_file->readBufferEx((void**)&(this->taff_buf), &ritems)) {
 		/* read error */
+		printf("TAFF: Reading TAFF file failed (%s)\n", this->taff_filename.c_str());
 		this->taff_buf = NULL;
 		delete taff_file;
 		return false;
@@ -870,6 +873,7 @@ bool MMSTaffFile::readFile() {
 
 	if (ritems < 40) {
 		/* wrong size */
+		printf("TAFF: Wrong TAFF size (%s)\n", this->taff_filename.c_str());
 		free(this->taff_buf);
 		this->taff_buf = NULL;
 		return false;
@@ -879,12 +883,14 @@ bool MMSTaffFile::readFile() {
 	this->correct_version = false;
 	if (strcmp((char*)this->taff_buf, (char*)&(this->taff_desc->type))) {
 		/* wrong type */
+		printf("TAFF: Wrong TAFF type (%s)\n", this->taff_filename.c_str());
 		free(this->taff_buf);
 		this->taff_buf = NULL;
 		return false;
 	}
 	if (memcmp(this->taff_buf+sizeof(this->taff_desc->type), &(this->taff_desc->version), sizeof(this->taff_desc->version))) {
 		/* wrong version */
+		printf("TAFF: Wrong TAFF version (%s)\n", this->taff_filename.c_str());
 		free(this->taff_buf);
 		this->taff_buf = NULL;
 		return false;
@@ -896,6 +902,7 @@ bool MMSTaffFile::readFile() {
         struct stat statbuf1;
         struct stat statbuf2;
         if (stat(this->taff_filename.c_str(), &statbuf1)!=0) {
+    		printf("TAFF: stat() failed for %s\n", this->taff_filename.c_str());
     		free(this->taff_buf);
     		this->taff_buf = NULL;
     		return false;
@@ -903,11 +910,14 @@ bool MMSTaffFile::readFile() {
         if (stat(this->external_filename.c_str(), &statbuf2)==0) {
         	if (statbuf2.st_mtime >= statbuf1.st_mtime) {
                 /* external file has been modified, therefore the taff file maybe not up-to-date */
+        		printf("TAFF: External file %s has been modified\n", this->external_filename.c_str());
         		free(this->taff_buf);
         		this->taff_buf = NULL;
         		return false;
         	}
         }
+        else
+    		printf("TAFF: stat() failed for %s\n", this->external_filename.c_str());
 	}
 
 	/* all right */
