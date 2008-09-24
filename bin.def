@@ -55,5 +55,5 @@ update: all
 	
 %.o : %.cpp
 	@echo " (CXX)        ($@)"
-	$(CXX) $(CFLAGS) $(INC) $(LOCAL_INC) -c $< -o $@
+	@$(CXX) $(CFLAGS) $(INC) $(LOCAL_INC) -c $< -o $@
 

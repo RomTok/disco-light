@@ -16,9 +16,13 @@ all clean update:
 	@+make -C  ./src/mmsgui    $@
 	@+make -C  ./src/mmsbase   $@
 	@+make -C  ./src/mmsinput  $@
+ifdef __WITH_MMSMEDIA__
 	@+make -C  ./src/mmsmedia  $@
+endif
 	@+make -C  ./src/mmscore   $@
+ifdef __WITH_MMSSIP__
 	@+make -C  ./src/mmssip    $@
+endif
 	@+make -C  ./tools/taff    $@
 
 install-disko:
@@ -27,9 +31,13 @@ install-disko:
 	@+make -C  ./src/mmsgui    install
 	@+make -C  ./src/mmsbase   install
 	@+make -C  ./src/mmsinput  install
+ifdef __WITH_MMSMEDIA__
 	@+make -C  ./src/mmsmedia  install
+endif
 	@+make -C  ./src/mmscore   install
+ifdef __WITH_MMSSIP__
 	@+make -C  ./src/mmssip    install
+endif
 	@+make -C  ./src/mmsinfo   install
 	@+make -C  ./tools/taff    install
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
@@ -73,6 +81,8 @@ check:
 	@pkg-config --print-errors --exists directfb
 	@echo check for libsigc++
 	@pkg-config --print-errors --exists sigc++-2.0
+	@echo check for libxine
+	@pkg-config --print-errors --exists libxine
 		
 dox:
 	@doxygen ./doc/conf/$(PROJECTNAME).conf

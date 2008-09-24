@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef _NO_MIXER
 #include "mmsmedia/mmsaudioctrl.h"
 
 snd_mixer_t         *MMSAudioCtrl::handle = NULL;
@@ -34,12 +35,12 @@ snd_mixer_elem_t    *MMSAudioCtrl::elem = NULL;
 
 /**
  * Constructor of MMSAudioCtrl class.
- * 
+ *
  * The first instance of this class assigns
  * an audio channel, attaches to the mixer
  * of the sound card and gets the current
  * settings.
- * 
+ *
  * @param   channel [in]    audio channel
  */
 MMSAudioCtrl::MMSAudioCtrl(string channel) {
@@ -48,26 +49,26 @@ MMSAudioCtrl::MMSAudioCtrl(string channel) {
     if(this->channel=="") {
         this->channel=channel;
     }
-    
+
     if (!this->handle) {
         /* open the mixer */
         if ((err = snd_mixer_open(&(this->handle), 0)) < 0)
             throw new MMSAudioCtrlError(err,"snd_mixer_open() failed");
-    
+
         /* attach the card */
         if ((err = snd_mixer_attach(this->handle, this->card.c_str())) < 0) {
             snd_mixer_close(this->handle);
             throw new MMSAudioCtrlError(err,"snd_mixer_attach() with card = '"
                                             + this->card + "' failed");
         }
-    
+
         /* register */
         if ((err = snd_mixer_selem_register(this->handle, NULL, NULL)) < 0) {
             snd_mixer_close(this->handle);
             string s = snd_strerror(err);
             throw new MMSAudioCtrlError(err,"snd_mixer_selem_register() failed with '" + s + "'");
         }
-    
+
         /* load */
         if ((err = snd_mixer_load(this->handle)) < 0) {
             snd_mixer_close(this->handle);
@@ -81,13 +82,13 @@ MMSAudioCtrl::MMSAudioCtrl(string channel) {
         for (this->elem = snd_mixer_first_elem(this->handle);
              this->elem;
              this->elem = snd_mixer_elem_next(this->elem)) {
-    
+
             string mix = snd_mixer_selem_get_name(this->elem);
             DEBUGMSG("MMSMedia", "got mixer channel: %s", mix.c_str());
             /* is active? */
             if (!snd_mixer_selem_is_active(this->elem))
                 continue;
-    
+
             /* has playback volume? */
             if (!snd_mixer_selem_has_playback_volume(this->elem))
                 continue;
@@ -96,17 +97,17 @@ MMSAudioCtrl::MMSAudioCtrl(string channel) {
                 if(strcmp(this->channel.c_str(),snd_mixer_selem_get_name(this->elem))!=0)
                     continue;
             }
-            
+
             /* we have found our channel*/
             /* get volume range */
             snd_mixer_selem_get_playback_volume_range(this->elem, &(this->pmin), &(this->pmax));
-    
+
             /* get the current volume settings */
             getVolume();
-    
+
             return;
         }
-    
+
         throw new MMSAudioCtrlError(0,"no element found");
     }
 }
@@ -120,9 +121,9 @@ MMSAudioCtrl::~MMSAudioCtrl() {
 
 /**
  * Sets the volume of the audio device.
- * 
+ *
  * @param   count   [in]    volume in percent
- * 
+ *
  * @note If count is less than 0 or more than 100
  * it will be set correctly to 0 or 100.
  */
@@ -139,20 +140,20 @@ void MMSAudioCtrl::setVolume(int count) {
         this->xval = this->pmax;
     else
         this->xval = this->pmin + ((this->pmax - this->pmin) * (long)this->volume) / 100;
-    
+
     /* set the new value */
     snd_mixer_selem_set_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, this->xval);
     snd_mixer_selem_set_playback_volume(elem, SND_MIXER_SCHN_FRONT_RIGHT, this->xval);
-    
+
     /* set mute to off */
     this->muteFlag = false;
 }
 
 /**
  * Returns the currently set volume.
- * 
+ *
  * @param   dfCard  [in]    get the volume directly from card?
- * 
+ *
  * @return Volume in percent
  */
 int MMSAudioCtrl::getVolume(bool dfCard) {
@@ -173,25 +174,25 @@ int MMSAudioCtrl::getVolume(bool dfCard) {
 
 /**
  * Turns up the volume.
- * 
+ *
  * @param   count   [in]    value in percent to increase
- */ 
+ */
 void MMSAudioCtrl::volumeUp(int count) {
     setVolume(getVolume() + count);
 }
 
 /**
  * Turns down the volume.
- * 
+ *
  * @param   count   [in]    value in percent to decrease
- */ 
+ */
 void MMSAudioCtrl::volumeDown(int count) {
     setVolume(getVolume() - count);
 }
 
 /**
  * Checks if sound is muted.
- * 
+ *
  * @return  true if sound is muted
  */
 bool MMSAudioCtrl::isMute() {
@@ -220,3 +221,5 @@ void MMSAudioCtrl::mute() {
         this->muteFlag = true;
     }
 }
+
+#endif /* _NO_MIXER */

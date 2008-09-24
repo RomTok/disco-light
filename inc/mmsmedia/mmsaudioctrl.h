@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef _NO_MIXER
 #ifndef MMSAUDIOCTRL_H_
 #define MMSAUDIOCTRL_H_
 
@@ -31,9 +32,9 @@ MMS_CREATEERROR(MMSAudioCtrlError);
 
 /**
  * @brief   Controls the audio device.
- * 
+ *
  * @ingroup     mmsmedia mmslibs
- * 
+ *
  * @author      Jens Schneider (pupeider@morphine.tv)
  * @version     1.0.3
  * @date        11/07/2007
@@ -76,3 +77,4 @@ class MMSAudioCtrl {
 };
 
 #endif /*MMSAUDIOCTRL_H_*/
+#endif /* _NO_MIXER */

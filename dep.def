@@ -115,10 +115,10 @@ endif
 #libxine
 ifndef XINE_CHECKED
     $(info check for libxine)
-    export XINE_LIBS=$(shell pkg-config --libs libxine)
+    export XINE_LIBS=$(shell pkg-config --silence-errors --libs libxine)
     ifeq ($(XINE_LIBS),)
-        $(warning libxine was not found. Either adjust PKG_CONFIG_PATH or install the package)
-        HAVE_ALL_DEPS=0
+        $(warning libxine was not found. Building without mmsmedia support.)
+        export CFLAGS+=-D_NO_MMSMEDIA
     else
         # have to do some extra checks because openSuse 10.3 installs libxine.pc even if no
         # development package is installed :-(
@@ -126,8 +126,10 @@ ifndef XINE_CHECKED
         ifeq ($(strip $(XINE_INC)),)
             ASK=$(shell ls /usr/include/xine.h 2>/dev/null)
             ifeq ($(ASK),)
-                $(warning xine headers were not found. Please install libxine-dev.)
-                HAVE_ALL_DEPS=0
+                $(warning xine headers were not found. Building without mmsmedia support.)
+                export CFLAGS+=-D_NO_MMSMEDIA
+            else
+                export __WITH_MMSMEDIA__=1
             endif
         endif
     endif
@@ -149,15 +151,17 @@ endif
 
 #alsa
 ifndef ALSA_CHECKED
-    $(info check for alsa)
-    export ALSA_LIBS=$(shell pkg-config --libs alsa)
-    ifeq ($(ALSA_LIBS),)
-        $(warning alsa was not found. Either adjust PKG_CONFIG_PATH or install the package)
-        HAVE_ALL_DEPS=0
-    else
-        export ALSA_INC=$(shell pkg-config --cflags alsa)
+    ifdef __WITH_MMSMEDIA__ 
+        $(info check for alsa)
+        export ALSA_LIBS=$(shell pkg-config --silence-errors --libs alsa)
+        ifeq ($(ALSA_LIBS),)
+            $(warning alsa was not found. Building without mixer support)
+	        export CFLAGS+=-D_NO_MIXER
+        else
+	        export ALSA_INC=$(shell pkg-config --cflags alsa)
+        endif
+        export ALSA_CHECKED=1
     endif
-    export ALSA_CHECKED=1
 endif
 
 #openssl
@@ -176,12 +180,13 @@ endif
 #libpj
 ifndef PJ_CHECKED
     $(info check for libpj)
-    export PJ_INC=$(shell pkg-config --cflags libpj)
+    export PJ_INC=$(shell pkg-config --silence-errors --cflags libpj)
     ifeq ($(PJ_INC),)
        $(warning libpj was not found. Building without SIP support.)
-       export PJ_INC=-D_NO_MMSSIP
+       export CFLAGS+=-D_NO_MMSSIP
     else
         export PJ_LIBS=$(shell pkg-config --libs libpj)
+        export __WITH_MMSSIP__=1
     endif
     export PJ_CHECKED=1
 endif
@@ -268,15 +273,23 @@ ifndef LOG_FLAG_SET
 endif
 
 # set variables for pkg-config file
-req_str = "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libxine, alsa, libpng >= 1.2"
-ifdef OPENSSL_LIBS
+req_str    = "Requires: libxml-2.0 >= 2.6, sqlite3, libcurl, directfb, sigc++-2.0, libpng >= 1.2"
+libs_str   = "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmstools -lmmsinfo"
+cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
+ifneq ($(XINE_LIBS),)
+    req_str += ", libxine"
+    libs_str += " -lmmsmedia"
+endif
+ifneq ($(ALSA_LIBS),)
+    req_str += ", alsa"
+endif
+ifneq ($(OPENSSL_LIBS),)
     req_str += ", openssl"
 endif
-#ifdef PJ_LIBS
-#    req_str += ", libpj"
-#endif
-libs_str   = "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmsmedia -lmmstools -lmmsinfo"
-cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
+ifneq ($(PJ_LIBS),)
+    req_str += ", libpj"
+    libs_str += " -lmmssip"
+endif
 ifdef FREETDS_LIBS
     libs_str   += " $(FREETDS_LIBS)"
     cflags_str +=" $(FREETDS_INC)"

@@ -19,6 +19,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef _NO_MMSMEDIA
 #ifndef MMSMUSICMANAGER_H_
 #define MMSMUSICMANAGER_H_
 
@@ -27,16 +28,16 @@
 #include "mmstools/mmsmutex.h"
 
 class MMSMusicManager : public IMMSMusicManager {
-	private: 
+	private:
 		MMSMutex 				mutex;
 		sigc::signal<void, int> *onNextSong;
 		sigc::signal<void, int> *onPrevSong;
 		PLAYLIST 				playlist;
-		MMSSound 				player;		
+		MMSSound 				player;
 		int      				offset;
 		bool 					cont, repeat, shuffle;
         vector<bool> 			alreadyPlayed;
-        
+
 	public:
 		MMSMusicManager();
 		virtual ~MMSMusicManager();
@@ -59,3 +60,4 @@ class MMSMusicManager : public IMMSMusicManager {
 };
 
 #endif /*MMSMUSICMANAGER_H_*/
+#endif /* _NO_MMSMEDIA */

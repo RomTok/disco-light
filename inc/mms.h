@@ -27,19 +27,23 @@
 #include <mmscore/mmspluginmanager.h>
 #include <mmscore/mmscorelogger.h>
 #include <mmscore/mmseventdispatcher.h>
-#include <mmscore/mmsmusicmanager.h>
 #include <mmscore/mmseventthread.h>
 #include <mmscore/mmseventsignupmanager.h>
 #include <mmscore/mmsimportscheduler.h>
 #include <mmscore/mmsinit.h>
+#include <mmsgui/mmsgui.h>
 #include <mmscore/mmsswitcher.h>
 #include <mmstools/mmstools.h>
 #include <mmsbase/mmsbase.h>
 #include <mmsconfig/mmsconfig.h>
-#include <mmsgui/mmsgui.h>
 #include <mmsinput/mmsinput.h>
+#ifndef _NO_MMSMEDIA
+#include <mmscore/mmsmusicmanager.h>
 #include <mmsmedia/mmsmedia.h>
+#endif
+#ifndef _NO_MMSSIP
 #include <mmssip/mmssip.h>
+#endif
 
 #endif /*MMS_H_*/
 

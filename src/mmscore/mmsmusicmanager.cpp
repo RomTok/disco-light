@@ -19,6 +19,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef _NO_MMSMEDIA
 #include "mmscore/mmsmusicmanager.h"
 #include <stdlib.h>
 
@@ -181,3 +182,4 @@ void MMSMusicManager::setRepeat(bool repeat) {
 void MMSMusicManager::setShuffle(bool shuffle) {
     this->shuffle = shuffle;
 }
+#endif /* _NO_MMSMEDIA */
