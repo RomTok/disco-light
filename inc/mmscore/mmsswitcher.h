@@ -40,8 +40,6 @@ class MMSSwitcher : public IMMSSwitcher {
 	private:
         MMSConfigData                        config;
 
-        MMSPluginData                        *plugindata;        /**< for plugin owned switcher instances                           */
-
         static IMMSWindowManager             *windowmanager;
         static MMSPluginManager              *pluginmanager;
         static MMSInputManager               *inputmanager;
@@ -50,29 +48,34 @@ class MMSSwitcher : public IMMSSwitcher {
         static MMSDialogManager              dm;                 /**< dialog manager for whole switcher window                      */
         static MMSMainWindow                 *window;            /**< whole switcher window                                         */
 
-        MMSChildWindow                       *menuBar;           /**< shows the plugin menu                                         */
-        MMSMenuWidget                        *menu;              /**< plugin menu                                                   */
-        MMSChildWindow                       *menuBar_static;    /**< shows the static plugin menu                                  */
-        MMSMenuWidget                        *menu_static;       /**< plugin static menu, switcher does not control it              */
-
         static map<int, plugin_data_t *>     plugins;            /**< loaded plugins                                                */
         static int                           curr_plugin;        /**< index to pluginSwitchers which points to the current plugin   */
         vector<MMSPluginData *> 			 osdplugs;
         vector<MMSPluginData *> 			 centralplugs;
-        
+
 
         MMSOSDPluginHandler                  *osdhandler;
         MMSCentralPluginHandler              *centralhandler;
         MMSSwitcherThread                    *showPreviewThread; /**< a separate thread for each plugin                             */
         static MMSSwitcherThread             *switcherThread;    /**< my update thread                                              */
-        
-        void setMenuItemValues(MMSWidget *item);
-		int  searchingForImage(string pluginpath, string imagename, string *path);
-        void onBeforeScroll(MMSWidget *widget);
-        void onSelectItem(MMSWidget *widget);
-        void onReturn(MMSWidget *widget);
-        bool onBeforeShowPreview(MMSWindow *win);
+
         bool switchToPluginEx(int toplugin);
+
+	protected:
+        MMSPluginData                        *plugindata;        /**< for plugin owned switcher instances                           */
+
+        MMSChildWindow                       *menuBar;           /**< shows the plugin menu                                         */
+        MMSMenuWidget                        *menu;              /**< plugin menu                                                   */
+        MMSChildWindow                       *menuBar_static;    /**< shows the static plugin menu                                  */
+        MMSMenuWidget                        *menu_static;       /**< plugin static menu, switcher does not control it              */
+
+        int  searchingForImage(string pluginpath, string imagename, string *path);
+
+        virtual void setMenuItemValues(MMSWidget *item);
+        virtual void onBeforeScroll(MMSWidget *widget);
+        virtual void onSelectItem(MMSWidget *widget);
+        virtual void onReturn(MMSWidget *widget);
+        virtual bool onBeforeShowPreview(MMSWindow *win);
 
 	public:
         /* initialization */
@@ -93,7 +96,7 @@ class MMSSwitcher : public IMMSSwitcher {
         virtual IMMSSwitcher *newSwitcher(MMSPluginData *plugindata);
         virtual bool switchToPlugin();
         virtual bool leavePlugin(bool show_switcher);
-        
+
     friend class MMSSwitcherThread;
 };
 
