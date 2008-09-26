@@ -34,7 +34,6 @@ int                       MMSSwitcher::curr_plugin;   /**< index to pluginSwitch
 
 MMSSwitcherThread       *MMSSwitcher::switcherThread;//my update thread
 
-
 #define SWITCHER_MENUBAR			"switcher_menubar"
 #define SWITCHER_MENU				"switcher_menu"
 #define	SWITCHER_MENU_PLUGINNAME	"switcher_menu_pluginname"
@@ -45,8 +44,9 @@ MMSSwitcherThread       *MMSSwitcher::switcherThread;//my update thread
 #define SWITCHER_MENU_STATIC		"switcher_menu_static"
 
 /* public */
-MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
-
+MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
+    osdhandler(NULL),
+    centralhandler(NULL) {
     /* switcher instantiated by plugin */
     if(plugindata) {
         /* get access to the plugin handler */
@@ -60,12 +60,11 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
             this->showPreviewThread = new MMSSwitcherThread(this);
         }
 
-    	
         plugin_data_t *pd = new plugin_data_t;
         pd->plugindata = *plugindata;
         pd->switcher = this;
         plugins.insert(std::make_pair(plugindata->getId(), pd));
-        
+
         return;
     }
 
@@ -80,7 +79,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
 
     try {
         /* get the active osd and central plugins */
-        DataSource source = DataSource(config.getConfigDBDBMS(), 
+        DataSource source = DataSource(config.getConfigDBDBMS(),
                                        config.getConfigDBDatabase(),
                                        config.getConfigDBAddress(),
                                        config.getConfigDBPort(),
@@ -90,7 +89,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
         /* load switcher dialog */
         this->window = (MMSMainWindow*)dm.loadDialog(config.getData() + "/themes/" + config.getTheme() + "/switcher.xml");
         if(!this->window) throw MMSError(0, "Error loading switchers root window");
-  
+
         /* get access to the menu bar */
         this->menuBar = (MMSChildWindow *)this->window->searchForWindow(SWITCHER_MENUBAR);
         if(!this->menuBar) throw MMSError(0, "Error loading switchers menuBar childwindow");
@@ -103,7 +102,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
         	this->menu_static = dynamic_cast<MMSMenuWidget*>(this->menuBar_static->searchForWidget(SWITCHER_MENU_STATIC));
         else
         	this->menu_static = NULL;
-        
+
         /* fill the menu */
         MMSPluginService service(&source);
         osdplugs = service.getOSDPlugins();
@@ -111,7 +110,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
         	// new item
             MMSWidget *pluginItem = this->menu->newItem();
             if (!pluginItem) break;
-            
+
             // set plugin data to the item
             DEBUGMSG("MMSSwitcher", osdplugs.at(i)->getName().c_str());
             pluginItem->setBinData((void*)osdplugs.at(i));
@@ -119,14 +118,14 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
             // set values if widgets are defined
             setMenuItemValues(pluginItem);
 
-        
+
         	// new static item
             if (this->menu_static) {
 	            pluginItem = this->menu_static->newItem();
 	            if (pluginItem) {
 			        // set plugin data to the item
 			        pluginItem->setBinData((void*)osdplugs.at(i));
-			
+
 			        // set values if widgets are defined
 			        setMenuItemValues(pluginItem);
 	            }
@@ -145,14 +144,13 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
             // set values if widgets are defined
             setMenuItemValues(pluginItem);
 
-            
         	// new static item
             if (this->menu_static) {
 	            pluginItem = this->menu_static->newItem();
 	            if (pluginItem) {
 			        // set plugin data to the item
 			        pluginItem->setBinData((void*)centralplugs.at(i));
-			
+
 			        // set values if widgets are defined
 			        setMenuItemValues(pluginItem);
 	            }
@@ -175,12 +173,11 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) {
 
         /* connect onReturn callback of the menu widget */
         menu->onReturn->connect(sigc::mem_fun(this,&MMSSwitcher::onReturn));
-        
+
     	/* create inputs */
         subscribeKey(DIKS_MENU);
         subscribeKey(DIKS_BACKSPACE);
 
-    
         /* start my update thread */
         this->switcherThread = new MMSSwitcherThread(this, NULL, NULL, NULL, NULL);
         this->switcherThread->start();
@@ -203,7 +200,7 @@ void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
 	// get the plugin data
 	if (!item) return;
 	MMSPluginData *plugindata = (MMSPluginData *)item->getBinData();
-	
+
 	// set the plugin name
 	MMSLabelWidget *pluginName = dynamic_cast<MMSLabelWidget*>(item->searchForWidget(SWITCHER_MENU_PLUGINNAME));
     if (pluginName) pluginName->setText(plugindata->getName());
@@ -211,13 +208,13 @@ void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
     // set the plugin title
     MMSLabelWidget *pluginTitle = dynamic_cast<MMSLabelWidget*>(item->searchForWidget(SWITCHER_MENU_PLUGINTITLE));
     if (pluginTitle) pluginTitle->setText(plugindata->getTitle());
-    
+
     // set the plugin icon
     MMSImageWidget *pluginIcon = dynamic_cast<MMSImageWidget*>(item->searchForWidget(SWITCHER_MENU_PLUGINICON));
     if (pluginIcon) {
         string path;
         string name;
-        
+
         name = plugindata->getIcon();
 		if (!searchingForImage(plugindata->getPath(), name, &path))
             if (path!="")
@@ -249,14 +246,14 @@ int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *
         return 1;
     }
 
-    /* first: current plugin theme */            
+    /* first: current plugin theme */
     *path = pluginpath + "/themes/" + config.getTheme() + "/";
     myfile = new MMSFile(*path + imagename);
     err = myfile->getLastError();
     delete myfile;
     if (err) {
         /* second: plugin default theme */
-        if (config.getTheme() != DEFAULT_THEME) {            
+        if (config.getTheme() != DEFAULT_THEME) {
             *path = pluginpath + "/themes/" + DEFAULT_THEME + "/";
             myfile = new MMSFile(*path + imagename);
             err = myfile->getLastError();
@@ -264,7 +261,7 @@ int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *
         }
     }
     if (err) {
-        /* third: current theme */            
+        /* third: current theme */
         *path = "./themes/" + config.getTheme() + "/";
         myfile = new MMSFile(*path + imagename);
         err = myfile->getLastError();
@@ -272,8 +269,8 @@ int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *
         if (!err) *path = "";
     }
     if (err) {
-        /* fourth: default theme */            
-        if (config.getTheme() != DEFAULT_THEME) {            
+        /* fourth: default theme */
+        if (config.getTheme() != DEFAULT_THEME) {
             *path = "./themes/";
             *path = *path + DEFAULT_THEME + "/";
             myfile = new MMSFile(*path + imagename);
@@ -308,19 +305,19 @@ void MMSSwitcher::onSubscription(MMSInputSubscription *subscription){
     if (key == DIKS_BACKSPACE) {
         /* hide all shown popups */
         /* hide all main windows only if no popups to be hide */
-        if(this->windowmanager->hideAllPopupWindows()==false) 
+        if(this->windowmanager->hideAllPopupWindows()==false)
             if(this->windowmanager->hideAllMainWindows(true)==false) {
                 /* hide all windows different from default root */
                 MMSWindow *w = this->windowmanager->getBackgroundWindow();
                 if(w && !(w->isShown()))
-                    this->windowmanager->hideAllRootWindows(); 
+                    this->windowmanager->hideAllRootWindows();
             }
     }
     else {
     	if(this->window->isShown()) {
             /* hide all main and popup windows */
-            this->windowmanager->hideAllPopupWindows(); 
-            this->windowmanager->hideAllMainWindows(); 
+            this->windowmanager->hideAllPopupWindows();
+            this->windowmanager->hideAllMainWindows();
         }
         else {
 			DEBUGMSG("Switcher", "try to show");
@@ -340,7 +337,7 @@ void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
 
 
 void MMSSwitcher::onBeforeScroll(MMSWidget *widget) {
-    
+
     // no plugin set
     this->curr_plugin = -1;
 
@@ -378,7 +375,7 @@ void MMSSwitcher::onSelectItem(MMSWidget *widget) {
     if(this->curr_plugin == data->getId())
         return;
 
-    
+
     // hide all previews
     /*for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
     	vector<MMSChildWindow *> *wins = &(i->second->previewWins);
@@ -414,7 +411,7 @@ void MMSSwitcher::onReturn(MMSWidget *widget) {
             MMSCentralPluginHandler *handler = this->pluginmanager->getCentralPluginHandler(data->getId());
             handler->invokeShow(NULL);
         }
-        
+
     } catch(MMSError *error) {
         DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
     }
@@ -480,7 +477,7 @@ bool MMSSwitcher::onBeforeShowPreview(MMSWindow *win) {
         // window not found, stop the show process
         return false;
     }
-    
+
     // hide all previews
     for (map<int, plugin_data_t *>::iterator i = this->plugins.begin(); i != this->plugins.end(); i++) {
     	vector<MMSChildWindow *> *wins = &(i->second->previewWins);
@@ -529,7 +526,7 @@ bool MMSSwitcher::switchToPluginEx(int toplugin) {
 	      	DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
 	    }
     }
-    
+
     return false;
 }
 
@@ -539,20 +536,20 @@ bool MMSSwitcher::switchToPlugin() {
 
 bool MMSSwitcher::leavePlugin(bool show_switcher) {
 	bool b = false;
-	
+
 	if (!this->window->isShown())
 		b = this->windowmanager->hideAllMainWindows(true);
-	
+
 	if (b==false) {
 	    /* hide all windows different from default root */
 	    MMSWindow *w = this->windowmanager->getBackgroundWindow();
 	    if(w && !w->isShown())
-	        this->windowmanager->hideAllRootWindows(); 
+	        this->windowmanager->hideAllRootWindows();
 	}
-	
+
 	if (!this->window->isShown())
 		if (show_switcher)
 			show();
-	
+
 	return true;
 }
