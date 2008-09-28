@@ -195,10 +195,12 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 		unsigned int *src = (unsigned int*)*buf;
 	    for (int i = *width * *height; i > 0; i--) {
 	    	register unsigned int s = *src;
-	        register unsigned int a = (s >> 24) + 1;
-	        *src = ((((s & 0x00ff00ff) * a) >> 8) & 0x00ff00ff) |
-	               ((((s & 0x0000ff00) * a) >> 8) & 0x0000ff00) |
-	               ((((s & 0xff000000))));
+	        register unsigned int sa = s >> 24;
+	        if (sa != 0xff)
+	        	// source alpha is > 0x00 and < 0xff
+		        *src = ((((s & 0x00ff00ff) * sa) >> 8) & 0x00ff00ff) |
+		               ((((s & 0x0000ff00) * sa) >> 8) & 0x0000ff00) |
+		               ((((s & 0xff000000))));
 	        src++;
 	    }
     }
