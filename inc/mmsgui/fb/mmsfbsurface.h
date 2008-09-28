@@ -106,6 +106,18 @@ class MMSFBSurface {
         // first time flag for eAB_blend_ayuv_to_rgb16()
         static bool 			firsttime_eAB_blend_ayuv_to_rgb16;
         
+
+        // first time flag for eAB_blend_argb_to_yv12()
+        static bool 			firsttime_eAB_blend_argb_to_yv12;
+
+        // first time flag for eAB_blend_srcalpha_argb_to_yv12()
+        static bool 			firsttime_eAB_blend_srcalpha_argb_to_yv12;
+        
+        // first time flag for eAB_blend_ayuv_to_yv12()
+        static bool 			firsttime_eAB_blend_ayuv_to_yv12;
+
+        // first time flag for eAB_blend_srcalpha_ayuv_to_yv12()
+        static bool 			firsttime_eAB_blend_srcalpha_ayuv_to_yv12;
         
         
         // first time flag for eASB_blend_argb_to_argb()
@@ -183,6 +195,18 @@ class MMSFBSurface {
         					   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_ayuv_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+        
+        
+        void eAB_blend_argb_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+        void eAB_blend_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+        void eAB_blend_srcalpha_argb_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
+        				 					 unsigned char alpha);
+        void eAB_blend_srcalpha_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
+        				 					 unsigned char alpha);
         
         
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
