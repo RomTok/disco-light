@@ -24,7 +24,7 @@
 #define MMSIMAGEMANAGER_H_
 
 #include "mmsgui/mmsguitools.h"
-#include "mmstools/mmstools.h"
+#include "mmstools/mmstafffile.h"
 #include "mmstools/mmslogger.h"
 
 #define MMSIM_MAX_DESC_SUF      64
@@ -64,7 +64,7 @@ class MMSImageManager {
         ~MMSImageManager();
         MMSFBSurface *getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc = NULL,
         					   unsigned int mirror_size = 0);
-        MMSFBSurface *newImage(const string &name, unsigned int width, unsigned int height, string pixelformat = ""); 
+        MMSFBSurface *newImage(const string &name, unsigned int width, unsigned int height, string pixelformat = "");
         void releaseImage(const string &path, const string &filename);
         void releaseImage(MMSFBSurface *surface);
 };

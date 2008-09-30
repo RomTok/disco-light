@@ -23,7 +23,6 @@
 #ifndef MMSFBWINDOW_H_
 #define MMSFBWINDOW_H_
 
-#include "mmstools/mmstools.h"
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbsurface.h"
@@ -51,7 +50,7 @@ class MMSFBWindow {
 #ifdef USE_MMSFB_WINMAN
         MMSFBWindow(MMSFBSurface *surface, int x, int y);
 #endif
-        virtual ~MMSFBWindow(); 
+        virtual ~MMSFBWindow();
 
         bool getSurface(MMSFBSurface **surface);
 

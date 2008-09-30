@@ -4,6 +4,7 @@
  *      Stefan Schwarzer <sxs@morphine.tv>                                 *
  *      Guido Madaus     <bere@morphine.tv>                                *
  *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,39 +20,50 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef IMMSDB_H_
-#define IMMSDB_H_
 
+/**
+ * @file  mmsdbmysql.h
+ *
+ * @brief Header file for mysql database functions.
+ *
+ * @author Stefan Schwarzer <sschwarzer@berlinux-solutions.de>
+ * @author Guido Madaus     <gmadaus@berlinux-solutions.de>
+ * @author Jens Schneider   <pupeider@morphine.tv>
+ * @author Matthias Hardt   <MHardt@berlinux-solutions.de>
+ *
+ * @ingroup mmstools
+ */
+#ifndef MMSDBMYSQL_H_
+#define MMSDBMYSQL_H_
+
+#ifdef __ENABLE_MYSQL__
+
+#include "mmstools/base.h"
+#include "mmstools/mmserror.h"
 #include "mmstools/mmsrecordset.h"
 #include "mmstools/datasource.h"
+#include "mmstools/interfaces/immsdb.h"
 
-typedef map<string, string> MMSDB_SP_ARGLIST;
+#include <mysql.h>
 
-class IMMSDB {
-	protected:
-        string     dbname;
-		DataSource *datasource;
-		bool       connected;
+class MMSDBMySQL : public IMMSDB {
+    private:
+        MYSQL      dbhandle;
 
-	public:
-		IMMSDB(DataSource *_datasource) : datasource(_datasource), connected(false) {};
-		virtual ~IMMSDB() {};
+    public:
+    	MMSDBMySQL(DataSource *datasource = NULL);
+        virtual ~MMSDBMySQL();
 
-		virtual void connect() = 0;
-		virtual void disconnect() = 0;
-		virtual int query(string statement, MMSRecordSet *rs) = 0;
-		virtual int query(string statement) = 0;
-		virtual int getLastInsertedID() = 0;
-		virtual void startTransaction() = 0;
-		virtual void commitTransaction() = 0;
-		virtual void rollbackTransaction() = 0;
-
-		/**
-		 * @brief Returns the name of the associated database
-		 *
-		 * @return The name of the associated database
-		 */
-		string getDBName() { return this->dbname; }
+        void connect();
+        void disconnect();
+        void startTransaction();
+        void commitTransaction();
+        void rollbackTransaction();
+        int query(string statement, MMSRecordSet *rs);
+        int query(string statement);
+        int getLastInsertedID();
 };
 
-#endif /*IMMSDB_H_*/
+#endif /*__ENABLE_MYSQL__*/
+
+#endif /*MMSDBMYSQL_H_*/

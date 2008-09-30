@@ -22,13 +22,13 @@
 
 /**
  * @file  mmsdbsqlite.h
- * 
+ *
  * @brief Header file for sqlite3 database functions.
- * 
+ *
  * @author Stefan Schwarzer <sschwarzer@berlinux-solutions.de>
  * @author Guido Madaus     <gmadaus@berlinux-solutions.de>
  * @author Jens Schneider   <pupeider@morphine.tv>
- * 
+ *
  * @ingroup mmstools
  */
 #ifndef MMSDBSQLITE3_H_
@@ -44,27 +44,20 @@
 
 #include <sqlite3.h>
 
-#define DBMS_SQLITE3	"SQLITE3"
-#define DBMS_FREETDS	"FREETDS"
-
 class MMSDBSQLite : public IMMSDB {
     private:
-        string     dbname;
         sqlite3    *dbhandle;
-        DataSource *datasource;
-        bool       connected;
         static int getResults(void *rs, int numCols, char **results, char **columnNames);
 
     public:
     	MMSDBSQLite(DataSource *datasource = NULL);
         virtual ~MMSDBSQLite();
-    
+
         void connect();
         void disconnect();
         void startTransaction();
         void commitTransaction();
         void rollbackTransaction();
-        string getDBName();
         int query(string statement, MMSRecordSet *rs);
         int query(string statement);
         int getLastInsertedID();

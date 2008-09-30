@@ -25,9 +25,6 @@
 
 #include "mmstools/base.h"
 
-#define DBMS_SQLITE		"SQLITE"
-#define DBMS_FREETDS	"FREETDS"
-
 class DataSource {
 
     private:
@@ -37,17 +34,17 @@ class DataSource {
         string       dbName;
         string       user;
         string       password;
-    
+
     public:
-    	DataSource(const string dbms, 
-    			   const string dbName, 
-    			   const string address    = "", 
+    	DataSource(const string dbms,
+    			   const string dbName,
+    			   const string address    = "",
     			   const unsigned int port = 0,
     			   const string user       = "",
     			   const string password   = "");
     	DataSource(const DataSource& d);
     	~DataSource();
-    
+
         void setDBMS(const string dbms);
         const string getDBMS();
         void setAddress(const string address);

@@ -25,7 +25,7 @@
 #include <string.h>
 
 MMSConfigDataDB::MMSConfigDataDB (const string database) :
-    dbms(DBMS_SQLITE),
+    dbms(DBMS_SQLITE3),
     address(""),
     port(0),
     user(""),
@@ -68,7 +68,7 @@ const string MMSConfigData::getInputMap() {
 const string MMSConfigData::getPrefix() {
     if(this->global.prefix != "")
         return this->global.prefix;
-    
+
     FILE *stream;
     char prefix[1024];
     memset(prefix,0,1024);
@@ -81,8 +81,8 @@ const string MMSConfigData::getPrefix() {
             this->global.prefix = prefix;
             return this->global.prefix;
         }
-        
-    } 
+
+    }
 
     stream = fopen("./bin/mmscmd.bin","r");
     if(stream != NULL) {

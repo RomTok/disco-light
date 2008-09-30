@@ -23,7 +23,6 @@
 #ifndef MMSGUITOOLS_H_
 #define MMSGUITOOLS_H_
 
-#include "mmstools/mmstools.h"
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfb.h"
 

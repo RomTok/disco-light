@@ -23,7 +23,7 @@
 #ifndef MMSTHEMEBASE_H_
 #define MMSTHEMEBASE_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/mmstafffile.h"
 #include "mmsgui/mmsguitools.h"
 
 /*#include <libxml/parser.h>

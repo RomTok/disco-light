@@ -22,6 +22,7 @@
 
 #include "mmsgui/additional/mmsfiledialog.h"
 #include "mmsinfo/mmsinfo.h"
+#include "mmstools/mmsfilesearch.h"
 
 #define FILEDIALOG_TITLE	"filedialog_title"
 #define FILEDIALOG_OK		"filedialog_ok"

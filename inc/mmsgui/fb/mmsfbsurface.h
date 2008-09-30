@@ -23,8 +23,8 @@
 #ifndef MMSFBSURFACE_H_
 #define MMSFBSURFACE_H_
 
-#include "mmstools/mmstools.h"
 #include "mmstools/mmslogger.h"
+#include "mmstools/mmsmutex.h"
 #include "mmsgui/fb/mmsfbbase.h"
 
 /* use DFB subsurfaces? */
@@ -63,13 +63,13 @@ class MMSFBSurface {
 
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
-        
+
         // first time flag for eAB_blend_argb_to_argb()
         static bool 			firsttime_eAB_blend_argb_to_argb;
 
         // first time flag for eAB_blend_srcalpha_argb_to_argb()
         static bool 			firsttime_eAB_blend_srcalpha_argb_to_argb;
-        
+
         // first time flag for eAB_blend_argb_to_airgb()
         static bool 			firsttime_eAB_blend_argb_to_airgb;
 
@@ -78,10 +78,10 @@ class MMSFBSurface {
 
         // first time flag for eAB_argb_to_rgb16()
         static bool 			firsttime_eAB_argb_to_rgb16;
-        
+
         // first time flag for eAB_blend_argb_to_rgb16()
         static bool 			firsttime_eAB_blend_argb_to_rgb16;
-        
+
         // first time flag for eAB_blend_airgb_to_airgb()
         static bool 			firsttime_eAB_blend_airgb_to_airgb;
 
@@ -93,7 +93,7 @@ class MMSFBSurface {
 
         // first time flag for eAB_blend_airgb_to_rgb16()
         static bool 			firsttime_eAB_blend_airgb_to_rgb16;
-        
+
         // first time flag for eAB_blend_ayuv_to_ayuv()
         static bool 			firsttime_eAB_blend_ayuv_to_ayuv;
 
@@ -105,21 +105,21 @@ class MMSFBSurface {
 
         // first time flag for eAB_blend_ayuv_to_rgb16()
         static bool 			firsttime_eAB_blend_ayuv_to_rgb16;
-        
+
 
         // first time flag for eAB_blend_argb_to_yv12()
         static bool 			firsttime_eAB_blend_argb_to_yv12;
 
         // first time flag for eAB_blend_srcalpha_argb_to_yv12()
         static bool 			firsttime_eAB_blend_srcalpha_argb_to_yv12;
-        
+
         // first time flag for eAB_blend_ayuv_to_yv12()
         static bool 			firsttime_eAB_blend_ayuv_to_yv12;
 
         // first time flag for eAB_blend_srcalpha_ayuv_to_yv12()
         static bool 			firsttime_eAB_blend_srcalpha_ayuv_to_yv12;
-        
-        
+
+
         // first time flag for eASB_blend_argb_to_argb()
         static bool 			firsttime_eASB_blend_argb_to_argb;
 
@@ -139,24 +139,24 @@ class MMSFBSurface {
         // first time flag for eASB_blend_srcalpha_ayuv_to_ayuv()
         static bool 			firsttime_eASB_blend_srcalpha_ayuv_to_ayuv;
 
-        
+
         // first time flag for eAFR_blend_argb()
         static bool				firsttime_eAFR_blend_argb;
 
         // first time flag for eAFR_blend_ayuv()
         static bool				firsttime_eAFR_blend_ayuv;
-        
-        
+
+
         void deleteSubSurface(MMSFBSurface *surface);
 
         void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
 
         bool clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *tmp, bool *tmpset);
-        
+
         bool setWinSurface(bool iswinsurface = true);
         bool setLayerSurface(bool islayersurface = true);
 
-        
+
         void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -172,7 +172,7 @@ class MMSFBSurface {
         void eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
-        
+
         void eAB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -182,10 +182,10 @@ class MMSFBSurface {
         					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_airgb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         						      unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        
-        
-        
-        
+
+
+
+
         void eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -195,8 +195,8 @@ class MMSFBSurface {
         					   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_ayuv_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        
-        
+
+
         void eAB_blend_argb_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -207,12 +207,12 @@ class MMSFBSurface {
         void eAB_blend_srcalpha_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
         				 					 unsigned char alpha);
-        
-        
+
+
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
         				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
-        
+
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
 
         void eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -232,23 +232,23 @@ class MMSFBSurface {
         void eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
-        
-        bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        
-        
 
-        
+        bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
+
+
+
+
         void eAFR_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
 
         void eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
-        
+
         bool extendedAccelFillRectangle(int x, int y, int w, int h);
 
-        
+
         MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
-        
+
         MMSMutex  				Lock;       		/* to make it thread-safe */
         unsigned long       	TID;        		/* save the id of the thread which has locked the surface */
         unsigned long       	Lock_cnt;   		/* count the number of times the thread has call lock() */
@@ -265,7 +265,7 @@ class MMSFBSurface {
         MMSFBSurface(IDirectFBSurface *dfbsurface,
         			 MMSFBSurface *parent = NULL,
         		     DFBRectangle *sub_surface_rect = NULL);
-        virtual ~MMSFBSurface(); 
+        virtual ~MMSFBSurface();
 
         IDirectFBSurface *getDFBSurface();
 
@@ -273,7 +273,7 @@ class MMSFBSurface {
 
         void setExtendedAcceleration(bool extendedaccel);
         bool getExtendedAcceleration();
-        
+
         bool isWinSurface();
         bool isLayerSurface();
 
@@ -281,8 +281,8 @@ class MMSFBSurface {
         bool getSize(int *w, int *h);
         bool getMemSize(int *size);
 
-        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);        
-        
+        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);
+
         bool clear(unsigned char r = 0, unsigned char g = 0,
                    unsigned char b = 0, unsigned char a = 0);
 

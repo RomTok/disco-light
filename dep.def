@@ -56,6 +56,20 @@ ifndef SQLITE3_CHECKED
     export SQLITE3_CHECKED=1
 endif
 
+#mysql
+ifndef MYSQL_CHECKED
+    $(info check for mysql)
+    ASK=$(shell which mysql_config)
+    ifeq ($(ASK),)
+        $(info mysql was not found. Building without mysql support.)
+    else
+        export MYSQL_INC=$(shell mysql_config --cflags)
+        export MYSQL_LIBS=$(shell mysql_config --libs_r)
+        export CFLAGS+=-D__ENABLE_MYSQL__ 
+    endif
+    export MYSQL_CHECKED=1
+endif
+
 #unix-odbc
 ifndef ODBC_CHECKED
     $(info check for unix-odbc)
@@ -81,8 +95,10 @@ endif
 #database?
 ifndef SQLITE3_INC
     ifndef FREETDS_INC
-        $(warning No database backend found. Please install either sqlite3 or unix odbc and a fitting driver)
-        HAVE_ALL_DEPS=0
+        ifndef MYSQL_INC
+            $(warning No database backend found. Please install either sqlite3 or unix odbc and a fitting driver)
+            HAVE_ALL_DEPS=0
+        endif
     endif
 endif
 
@@ -291,6 +307,14 @@ ifneq ($(PJ_LIBS),)
     req_str += ", libpj"
     libs_str += " -lmmssip"
 endif
+ifdef SQLITE3_LIBS
+    libs_str   += " $(SQLITE3_LIBS)"
+    cflags_str +=" $(SQLITE3_INC)"
+endif 
+ifdef MYSQL_LIBS
+    libs_str   += " $(MYSQL_LIBS)"
+    cflags_str +=" $(MYSQL_INC)"
+endif 
 ifdef FREETDS_LIBS
     libs_str   += " $(FREETDS_LIBS)"
     cflags_str +=" $(FREETDS_INC)"
