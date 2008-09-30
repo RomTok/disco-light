@@ -25,22 +25,17 @@
 #include "mmstools/datasource.h"
 #include "mmstools/interfaces/immsdb.h"
 
-
-#ifdef __ENABLE_SQLITE__
-#include "mmstools/mmsdbsqlite.h"
-#endif
-#ifdef __ENABLE_FREETDS__
-#include "mmstools/mmsdbfreetds.h"
-#endif
-
+#define DBMS_SQLITE3	"SQLITE3"
+#define DBMS_FREETDS	"FREETDS"
+#define DBMS_MYSQL 		"MYSQL"
 
 class MMSDBConnMgr {
        private:
                DataSource *datasource;
        public:
     	   MMSDBConnMgr(DataSource *datasource);
-    	   
-    	   IMMSDB *getConnection(); 
+
+    	   IMMSDB *getConnection();
 };
 
 #endif /*MMSDBCONNMGR_H_*/

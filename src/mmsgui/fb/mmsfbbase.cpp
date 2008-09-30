@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbbase.h"
-#include "mmstools/mmstools.h"
+#include "mmstools/tools.h"
 #include <string.h>
 
 /* stores the last error text */
@@ -45,7 +45,7 @@ void MMSFB_SetError(const int rc, const string msg) {
 
 string getDFBPixelFormatString(DFBSurfacePixelFormat pf) {
     if(pf == DSPF_ARGB1555)
-        return MMSFB_PF_ARGB1555; 
+        return MMSFB_PF_ARGB1555;
     if(pf == DSPF_RGB16)
         return MMSFB_PF_RGB16;
     if(pf == DSPF_RGB24)
@@ -59,7 +59,7 @@ string getDFBPixelFormatString(DFBSurfacePixelFormat pf) {
     if(pf == DSPF_YUY2)
         return MMSFB_PF_YUY2;
     if(pf == DSPF_RGB332)
-        return MMSFB_PF_RGB332; 
+        return MMSFB_PF_RGB332;
     if(pf == DSPF_UYVY)
         return MMSFB_PF_UYVY;
     if(pf == DSPF_I420)
@@ -95,13 +95,13 @@ DFBSurfacePixelFormat getDFBPixelFormatFromString(string pf) {
     if(pf == MMSFB_PF_ARGB1555)
         return DSPF_ARGB1555;
     if(pf == MMSFB_PF_RGB16)
-        return DSPF_RGB16; 
+        return DSPF_RGB16;
     if(pf == MMSFB_PF_RGB24)
         return DSPF_RGB24;
     if(pf == MMSFB_PF_RGB32)
         return DSPF_RGB32;
     if(pf == MMSFB_PF_ARGB)
-        return DSPF_ARGB; 
+        return DSPF_ARGB;
     if(pf == MMSFB_PF_A8)
         return DSPF_A8;
     if(pf == MMSFB_PF_YUY2)
@@ -221,7 +221,7 @@ string getDFBLayerOptionsString(DFBDisplayLayerOptions opts) {
         ret = ret + "|" + MMSFB_LO_FLICKER_FILTERING;
     if(opts & DLOP_DEINTERLACING)
         ret = ret + "|" + MMSFB_LO_DEINTERLACING;
-    if(opts & DLOP_SRC_COLORKEY)   
+    if(opts & DLOP_SRC_COLORKEY)
         ret = ret + "|" + MMSFB_LO_SRC_COLORKEY;
     if(opts & DLOP_DST_COLORKEY)
         ret = ret + "|" + MMSFB_LO_DST_COLORKEY;
@@ -229,12 +229,12 @@ string getDFBLayerOptionsString(DFBDisplayLayerOptions opts) {
         ret = ret + "|" + MMSFB_LO_OPACITY;
     if(opts & DLOP_FIELD_PARITY)
         ret = ret + "|" + MMSFB_LO_FIELD_PARITY;
-    
+
     if (ret!=MMSFB_LO_NONE)
         return ret.substr(1);
     else
         return MMSFB_LO_NONE;
-}  
+}
 
 DFBDisplayLayerOptions getDFBLayerOptionsFromString(string opts) {
     DFBDisplayLayerOptions  o = DLOP_NONE;

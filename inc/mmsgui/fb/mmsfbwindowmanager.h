@@ -23,7 +23,7 @@
 #ifndef MMSFBWINDOWMANAGER_H_
 #define MMSFBWINDOWMANAGER_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/tools.h"
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanagerthread.h"
@@ -53,20 +53,20 @@ class MMSFBWindowManager {
         vector<AVAILABLE_WINDOWS> windows;  /* a list of created windows */
 
         vector<VISIBLE_WINDOWS> vwins;      /* a list of currently visible windows */
-        
-        MMSFBSurface    *high_freq_surface; /* surface which will flipped with high frequency */ 
-        MMSFBSurface    *high_freq_saved_surface; 
+
+        MMSFBSurface    *high_freq_surface; /* surface which will flipped with high frequency */
+        MMSFBSurface    *high_freq_saved_surface;
         DFBRegion       high_freq_region;   /* rectangle which will flipped with high frequency */
         int             high_freq_lastflip; /* last flip time of the high_freq_region */
 
         bool 			show_pointer;
-        int				pointer_posx;        
+        int				pointer_posx;
         int				pointer_posy;
         DFBRectangle	pointer_rect;
         DFBRegion		pointer_region;
         MMSFBSurface	*pointer_surface;
         unsigned char	pointer_opacity;
-        
+
         MMSMutex lock;            /* to make it thread-safe */
 
         MMSFBWindowManagerThread *mmsfbwinmanthread;
@@ -99,14 +99,14 @@ class MMSFBWindowManager {
 
     public:
         MMSFBWindowManager();
-        virtual ~MMSFBWindowManager(); 
+        virtual ~MMSFBWindowManager();
 
         bool init(MMSFBLayer *layer, bool show_pointer = false);
         bool getLayer(MMSFBLayer **layer);
 
         void setPointerPosition(int pointer_posx, int pointer_posy);
         bool getPointerPosition(int &pointer_posx, int &pointer_posy);
-        
+
     friend class MMSFBLayer;
     friend class MMSFBSurface;
     friend class MMSFBWindow;

@@ -28,18 +28,30 @@
 typedef map<string, string> MMSDB_SP_ARGLIST;
 
 class IMMSDB {
-	
-public:
-	virtual ~IMMSDB() {};
-	
-	virtual void connect() = 0;
-	virtual void disconnect() = 0;
-	virtual int query(string statement, MMSRecordSet *rs) = 0;
-	virtual int query(string statement) = 0;
-    virtual int getLastInsertedID() = 0;
-    virtual void startTransaction() = 0;
-    virtual void commitTransaction() = 0;
-    virtual void rollbackTransaction() = 0;
+	protected:
+        string     dbname;
+		DataSource *datasource;
+		bool       connected;
+
+	public:
+		IMMSDB(DataSource *_datasource) : datasource(_datasource), connected(false) {};
+		virtual ~IMMSDB() {};
+
+		virtual void connect() = 0;
+		virtual void disconnect() = 0;
+		virtual int query(string statement, MMSRecordSet *rs) = 0;
+		virtual int query(string statement) = 0;
+		virtual int getLastInsertedID() = 0;
+		virtual void startTransaction() = 0;
+		virtual void commitTransaction() = 0;
+		virtual void rollbackTransaction() = 0;
+
+		/**
+		 * @brief Returns the name of the associated database
+		 *
+		 * @return The name of the associated database
+		 */
+		string getDBName() { return this->dbname; }
 };
 
 #endif /*IMMSDB_H_*/

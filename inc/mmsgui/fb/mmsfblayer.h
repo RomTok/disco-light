@@ -23,7 +23,6 @@
 #ifndef MMSFBLAYER_H_
 #define MMSFBLAYER_H_
 
-#include "mmstools/mmstools.h"
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbsurface.h"
@@ -64,10 +63,10 @@ class MMSFBLayer {
         // first time flags for createWindow()
         static bool 			firsttime_createwindow_usealpha;
         static bool 			firsttime_createwindow_noalpha;
-        
+
     public:
         MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer);
-        virtual ~MMSFBLayer(); 
+        virtual ~MMSFBLayer();
 
         bool getID(int *id);
         bool setExclusiveAccess();
@@ -80,8 +79,8 @@ class MMSFBLayer {
         bool setLevel(int level);
         bool getSurface(MMSFBSurface **surface);
 
-        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);        
-        
+        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);
+
         bool createSurface(MMSFBSurface **surface, int w, int h,
                            string pixelformat = MMSFB_PF_NONE, int backbuffer = 0);
         bool createWindow(MMSFBWindow **window, int x, int y, int w, int h,

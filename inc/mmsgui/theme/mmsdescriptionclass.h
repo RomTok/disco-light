@@ -25,14 +25,14 @@
 
 #include "mmsgui/theme/mmsthemebase.h"
 
-//! describe attributes 
+//! describe attributes
 namespace MMSGUI_DESCRIPTION_ATTR {
 
 	#define MMSGUI_DESCRIPTION_ATTR_ATTRDESC \
 		{ "author", TAFF_ATTRTYPE_STRING }, \
 		{ "email", TAFF_ATTRTYPE_STRING }, \
 		{ "desc", TAFF_ATTRTYPE_STRING }
-	
+
 	#define MMSGUI_DESCRIPTION_ATTR_IDS \
 		MMSGUI_DESCRIPTION_ATTR_IDS_author, \
 		MMSGUI_DESCRIPTION_ATTR_IDS_email, \
@@ -64,7 +64,7 @@ class MMSDescriptionClass {
         MMSDescriptionClass();
         //
         void unsetAll();
-        
+
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer

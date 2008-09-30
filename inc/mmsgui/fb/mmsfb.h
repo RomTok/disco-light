@@ -23,7 +23,6 @@
 #ifndef MMSFB_H_
 #define MMSFB_H_
 
-#include "mmstools/mmstools.h"
 #include "mmstools/mmslogger.h"
 
 #include "mmsgui/fb/mmsfblayer.h"
@@ -38,7 +37,7 @@ class MMSFB {
 
     public:
         MMSFB();
-        virtual ~MMSFB(); 
+        virtual ~MMSFB();
 
         bool init(int argc, char **argv);
         bool release();

@@ -21,25 +21,37 @@
  ***************************************************************************/
 #include "mmstools/mmsdbconnmgr.h"
 
+#ifdef __ENABLE_SQLITE__
+#include "mmstools/mmsdbsqlite.h"
+#endif
+#ifdef __ENABLE_MYSQL__
+#include "mmstools/mmsdbmysql.h"
+#endif
+#ifdef __ENABLE_FREETDS__
+#include "mmstools/mmsdbfreetds.h"
+#endif
 
 MMSDBConnMgr::MMSDBConnMgr(DataSource *datasource) {
 	this->datasource = datasource;
 }
-               
 
 IMMSDB *MMSDBConnMgr::getConnection() {
-
 	#ifdef __ENABLE_SQLITE__
-		if((datasource->getDBMS()==DBMS_SQLITE) || datasource->getDBMS()=="") 
+		if((datasource->getDBMS()==DBMS_SQLITE3) || datasource->getDBMS()=="")
 			return new MMSDBSQLite(datasource);
+	#endif
+
+	#ifdef __ENABLE_MYSQL__
+		if(datasource->getDBMS()==DBMS_MYSQL)
+			return new MMSDBMySQL(datasource);
 	#endif
 
 	#ifdef __ENABLE_FREETDS__
 		if(datasource->getDBMS()==DBMS_FREETDS)
 			return new MMSDBFreeTDS(datasource);
 	#endif
-       
+
 	return NULL;
-       
+
 }
 

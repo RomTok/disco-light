@@ -23,7 +23,7 @@
 #ifndef MMSFBWINDOWMANAGERTHREAD_H_
 #define MMSFBWINDOWMANAGERTHREAD_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/mmsthread.h"
 #include "mmsgui/fb/mmsfbsurface.h"
 #include <sigc++/sigc++.h>
 

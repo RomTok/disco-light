@@ -26,7 +26,7 @@
 #include "mmsgui/theme/mmsthemebase.h"
 #include <directfb.h>
 
-//! describe attributes for MMSBorder 
+//! describe attributes for MMSBorder
 namespace MMSGUI_BORDER_ATTR {
 
 	#define MMSGUI_BORDER_ATTR_ATTRDESC \
@@ -61,7 +61,7 @@ namespace MMSGUI_BORDER_ATTR {
 		{ "border.thickness", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.margin", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.rcorners", TAFF_ATTRTYPE_BOOL }
-	
+
 	#define MMSGUI_BORDER_ATTR_IDS \
 		MMSGUI_BORDER_ATTR_IDS_border_color, \
 		MMSGUI_BORDER_ATTR_IDS_border_color_a, \
@@ -126,7 +126,7 @@ typedef enum {
 //! A data access class for the border of widgets and windows.
 /*!
 This class is the base for the MMSBorder class.
-With this data store you have access to all changeable border attributes. 
+With this data store you have access to all changeable border attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSBorder.
@@ -195,7 +195,7 @@ class MMSBorderClass {
     public:
         MMSBorderClass();
         ~MMSBorderClass();
-        MMSBorderClass &operator=(const MMSBorderClass &c); 
+        MMSBorderClass &operator=(const MMSBorderClass &c);
         //
         void unsetAll();
 

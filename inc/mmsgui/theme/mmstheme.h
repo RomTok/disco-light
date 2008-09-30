@@ -23,6 +23,7 @@
 #ifndef MMSTHEME_H_
 #define MMSTHEME_H_
 
+#include "mmstools/mmserror.h"
 #include "mmsgui/theme/mmsdescriptionclass.h"
 #include "mmsgui/theme/mmstemplateclass.h"
 #include "mmsgui/theme/mmsmainwindowclass.h"
@@ -108,7 +109,7 @@ class MMSTheme {
         vector<MMSArrowWidgetClass*>        arrowWidgetClasses;
         vector<MMSSliderWidgetClass*>       sliderWidgetClasses;
         vector<MMSInputWidgetClass*>        inputWidgetClasses;
-        
+
         bool addTemplateClass(MMSTemplateClass *themeClass);
         bool addMainWindowClass(MMSMainWindowClass *themeClass);
         bool addPopupWindowClass(MMSPopupWindowClass *themeClass);
@@ -163,7 +164,7 @@ class MMSTheme {
         string getThemeName();
         string getThemePath();
         string getThemeFile();
-        
+
     /* friends */
     friend class MMSThemeManager;
 };
@@ -172,7 +173,7 @@ class MMSTheme {
 /* access to global theme */
 extern MMSTheme *globalTheme;
 
- 
+
 #endif /*MMSTHEME_H_*/
 
 

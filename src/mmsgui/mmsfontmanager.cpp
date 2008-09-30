@@ -21,7 +21,6 @@
  ***************************************************************************/
 
 #include "mmsgui/mmsfontmanager.h"
-#include "mmstools/mmstools.h"
 
 MMSFontManager::MMSFontManager() {
 }
@@ -62,7 +61,7 @@ IDirectFBFont *MMSFontManager::getFont(string path, string filename, unsigned in
 
     /* add to fonts list and return the font */
     this->fonts.push_back(fm_desc);
-    return fm_desc.font; 
+    return fm_desc.font;
 }
 
 void MMSFontManager::releaseFont(string path, string filename, unsigned int size) {

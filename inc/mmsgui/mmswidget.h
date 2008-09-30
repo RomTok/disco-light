@@ -23,7 +23,7 @@
 #ifndef MMSWIDGET_H_
 #define MMSWIDGET_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/mmstafffile.h"
 #include "mmstools/mmslogger.h"
 #include "mmsgui/theme/mmstheme.h"
 #include "mmsgui/mmsguitools.h"
@@ -101,7 +101,7 @@ typedef void(*GUIINPUTCALLBACK)(DFBInputDeviceKeySymbol);
 
 typedef struct {
 	DFBInputDeviceKeySymbol key;
-	GUIINPUTCALLBACK cb;	        	
+	GUIINPUTCALLBACK cb;
 } INPUT_CB;
 
 MMS_CREATEERROR(MMSWidgetError);
@@ -109,25 +109,25 @@ MMS_CREATEERROR(MMSWidgetError);
 
 //! The available types of widgets.
 typedef enum {
-	//! A MMSHBox can contain 0 to n widgets. The widgets will be arranged in one horizontal row (0..n columns).  
+	//! A MMSHBox can contain 0 to n widgets. The widgets will be arranged in one horizontal row (0..n columns).
     MMSWIDGETTYPE_HBOX = 0,
-	//! A MMSVBox can contain 0 to n widgets. The widgets will be arranged in one vertical column (0..n rows).  
+	//! A MMSVBox can contain 0 to n widgets. The widgets will be arranged in one vertical column (0..n rows).
     MMSWIDGETTYPE_VBOX,
-    //! A MMSButton widget can get the focus and therefore can process inputs. 
+    //! A MMSButton widget can get the focus and therefore can process inputs.
     MMSWIDGETTYPE_BUTTON,
-    //! A MMSImage widget cannot get the focus but can be selected. 
+    //! A MMSImage widget cannot get the focus but can be selected.
     MMSWIDGETTYPE_IMAGE,
     //! A MMSLabel widget cannot get the focus but can be selected. It displays one line of text.
     MMSWIDGETTYPE_LABEL,
-    //! A MMSMenu widget can get the focus and therefore can process inputs. It displays one- or two-dimensional menus. 
+    //! A MMSMenu widget can get the focus and therefore can process inputs. It displays one- or two-dimensional menus.
     MMSWIDGETTYPE_MENU,
-    //! A MMSProgressBar widget cannot get the focus but can be selected. 
+    //! A MMSProgressBar widget cannot get the focus but can be selected.
     MMSWIDGETTYPE_PROGRESSBAR,
     //! A MMSTextBox widget can get the focus and therefore can process inputs. It displays a formated multiline text.
     MMSWIDGETTYPE_TEXTBOX,
-    //! A MMSArrow widget cannot get the focus but can be selected. 
+    //! A MMSArrow widget cannot get the focus but can be selected.
     MMSWIDGETTYPE_ARROW,
-    //! A MMSSlider widget cannot get the focus but can be selected. 
+    //! A MMSSlider widget cannot get the focus but can be selected.
     MMSWIDGETTYPE_SLIDER,
     //! A MMSInput widget can get the focus and therefore can process inputs. You can display and edit one line of text.
     MMSWIDGETTYPE_INPUT
@@ -171,10 +171,10 @@ class MMSWidget {
 
         //! window on which the widget is connected
         MMSWindow			*rootwindow;
-        
+
         //! the toplevel parent window
         MMSWindow 			*parent_rootwindow;
-        
+
         int    id;
         string name;
 
@@ -218,17 +218,17 @@ class MMSWidget {
 
         MMSInputEvent 	last_inputevent;
 
-        
-        
-        bool has_own_surface; 
 
-        
+
+        bool has_own_surface;
+
+
         void loadArrowWidgets();
         virtual void switchArrowWidgets();
 
         bool create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
                     bool canhavechildren, bool canselectchildren);
-		    
+
         virtual bool init();
         virtual bool draw(bool *backgroundFilled = NULL);
         void drawMyBorder();
@@ -273,7 +273,7 @@ class MMSWidget {
 
         void setPressed(bool set, bool refresh = true);
         bool isPressed();
-        
+
         void setASelected(bool set, bool refresh = true);
         void setPSelected(bool set, bool refresh = true);
         void setISelected(bool set, bool refresh = true);
@@ -319,7 +319,7 @@ class MMSWidget {
         virtual bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollTo(int posx, int posy, bool refresh = true);
-        
+
         sigc::signal<void, MMSWidget*> *onSelect;
         sigc::signal<void, MMSWidget*, bool> *onFocus;
         sigc::signal<void, MMSWidget*> *onReturn;
@@ -332,7 +332,7 @@ class MMSWidget {
         virtual void handleInput(MMSInputEvent *inputevent);
 
         virtual bool callOnReturn() { return true; }
-        
+
         bool geomset;
 
 
@@ -366,7 +366,7 @@ class MMSWidget {
 
         DFBRectangle geom;
         DFBRectangle innerGeom;
-        
+
     public:
         /* theme access methods */
         bool 	getBgColor(DFBColor &bgcolor);

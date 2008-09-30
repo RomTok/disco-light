@@ -23,7 +23,6 @@
 #ifndef MMSFBSURFACEMANAGER_H_
 #define MMSFBSURFACEMANAGER_H_
 
-#include "mmstools/mmstools.h"
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbsurface.h"
 
@@ -38,7 +37,7 @@ class MMSFBSurfaceManager {
         vector<MMSFBSURMANLIST> free_surfaces;
 
         MMSFBSurface *tempsuf;
-        
+
         int surface_mem_cnt;
 
     public:

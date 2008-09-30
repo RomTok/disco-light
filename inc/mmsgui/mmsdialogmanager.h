@@ -25,7 +25,6 @@
 
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
-#include "mmstools/mmstools.h"
 
 /* string constants for xml identifiers */
 #define XML_ID_DIALOG       "mmsdialog"
@@ -67,7 +66,7 @@ class MMSDialogManager {
         string getArrowValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getSliderValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getInputValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
-        
+
     public:
         MMSDialogManager();
         MMSDialogManager(MMSWindow *rootWindow);

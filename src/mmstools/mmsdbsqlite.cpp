@@ -21,34 +21,32 @@
  ***************************************************************************/
 /**
  * @file  mmsdbsqlite.cpp
- * 
+ *
  * @brief Source file for sqlite3 database functions.
- * 
+ *
  * @author Stefan Schwarzer <sschwarzer@berlinux-solutions.de>
  * @author Guido Madaus     <gmadaus@berlinux-solutions.de>
  * @author Jens Schneider   <pupeider@morphine.tv>
- * 
+ *
  * @ingroup mmstools
  */
 #ifdef __ENABLE_SQLITE__
 
-#include "mmstools/mmsdbsqlite.h" 
+#include "mmstools/mmsdbsqlite.h"
 #include "mmstools/mmslogger.h"
 
 /**
  * @brief ????
- * 
+ *
  */
-MMSDBSQLite::MMSDBSQLite(DataSource *_datasource) :
-	datasource(_datasource),
-	connected(false) {
+MMSDBSQLite::MMSDBSQLite(DataSource *_datasource) : IMMSDB(_datasource) {
 	if(!this->datasource)
 		throw new MMSError(0, "Cannot instantiate MMSDBSQLite without datasource");
 };
 
 /**
  * @brief ????
- * 
+ *
  */
 MMSDBSQLite::~MMSDBSQLite() {
     this->disconnect();
@@ -56,7 +54,7 @@ MMSDBSQLite::~MMSDBSQLite() {
 
 /**
  * @brief ????
- * 
+ *
  */
 int MMSDBSQLite::getResults(void *rs, int numCols, char **results, char **columnNames)
 {
@@ -76,7 +74,7 @@ int MMSDBSQLite::getResults(void *rs, int numCols, char **results, char **column
 
 /**
  * @brief ????
- * 
+ *
  */
 void MMSDBSQLite::startTransaction() {
     int     rc=0;
@@ -84,7 +82,7 @@ void MMSDBSQLite::startTransaction() {
 
     //open transaction
     if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "BEGIN TRANSACTION", NULL, NULL, &errmsg)) != SQLITE_OK)
-    {        
+    {
         throw(new MMSError(rc, errmsg));
     }
 
@@ -93,7 +91,7 @@ void MMSDBSQLite::startTransaction() {
 
 /**
  * @brief ????
- * 
+ *
  */
 void MMSDBSQLite::commitTransaction() {
     int     rc=0;
@@ -101,7 +99,7 @@ void MMSDBSQLite::commitTransaction() {
 
     //open transaction
     if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "COMMIT", NULL, NULL, &errmsg)) != SQLITE_OK)
-    {        
+    {
         throw(new MMSError(rc, errmsg));
     }
 
@@ -110,7 +108,7 @@ void MMSDBSQLite::commitTransaction() {
 
 /**
  * @brief ????
- * 
+ *
  */
 void MMSDBSQLite::rollbackTransaction() {
     int     rc=0;
@@ -118,7 +116,7 @@ void MMSDBSQLite::rollbackTransaction() {
 
     //open transaction
     if((rc = sqlite3_exec((sqlite3 *)this->dbhandle, "ROLLBACK", NULL, NULL, &errmsg)) != SQLITE_OK)
-    {        
+    {
         throw(new MMSError(rc, errmsg));
     }
 
@@ -127,9 +125,9 @@ void MMSDBSQLite::rollbackTransaction() {
 
 /**
  * @brief Opens connection to database.
- * 
+ *
  * @param datasource DataSource object which contains required information for database
- * 
+ *
  * @return void
  */
 void MMSDBSQLite::connect() {
@@ -151,11 +149,11 @@ void MMSDBSQLite::connect() {
 
 /**
  * @brief Close connection to database.
- * 
+ *
  * @return void
  */
 void MMSDBSQLite::disconnect() {
-    
+
     if(connected) {
         sqlite3_close((sqlite3 *)dbhandle);
         this->connected = false;
@@ -163,25 +161,15 @@ void MMSDBSQLite::disconnect() {
 
     this->dbname = "";
 
-    return;    
+    return;
 }
 
 /**
- * @brief Returns the name of the connected database
- * 
- * @return The name of the connected database
- */
-string MMSDBSQLite::getDBName() {
-
-    return this->dbname;
-}
-
-/**
- * @brief This function executes given database query and puts the results in MMSRecordSet. 
+ * @brief This function executes given database query and puts the results in MMSRecordSet.
  *        This method is used for select statements
- * 
+ *
  * @param statement buffer with database query
- * 
+ *
  * @return Returns the number of affected rows
  */
 int MMSDBSQLite::query(string statement, MMSRecordSet *rs) {
@@ -190,11 +178,11 @@ int MMSDBSQLite::query(string statement, MMSRecordSet *rs) {
     string 	message;
 
     rs->reset();
-    
+
     if(!this->connected) {
     	message = "Query called but no connection established." + string(" [query was: ") + statement + string("]");
         throw(new MMSError(rc, message));
-    }    
+    }
 
     if((rc = sqlite3_exec((sqlite3 *)dbhandle, statement.c_str(), &(this->getResults), (void *) rs, &errmsg)) != SQLITE_OK)
     {
@@ -210,11 +198,11 @@ int MMSDBSQLite::query(string statement, MMSRecordSet *rs) {
 }
 
 /**
- * @brief This function executes given database query. 
+ * @brief This function executes given database query.
  *        This method is used for insert, update and delete statements
- * 
+ *
  * @param statement buffer with database query
- * 
+ *
  * @return Returns the number of affected rows
  */
 int MMSDBSQLite::query(string statement) {
@@ -226,10 +214,10 @@ int MMSDBSQLite::query(string statement) {
     if(!this->connected) {
     	message = "Query called but no connection established." + string(" [query was: ") + statement + string("]");
         throw(new MMSError(rc, message));
-    }    
+    }
 
     if((rc = sqlite3_exec((sqlite3 *)dbhandle, statement.c_str(), NULL, NULL, &errmsg)) != SQLITE_OK)
-    {        
+    {
         message = string(errmsg) + string(" [query was: ") + statement + string("]");
         sqlite3_free(errmsg);
         throw(new MMSError(rc, message));
@@ -241,7 +229,7 @@ int MMSDBSQLite::query(string statement) {
 
 /**
  * @brief Returns the ID of the last inserted record
- * 
+ *
  * @return Returns the ID of the last inserted record
  */
 int MMSDBSQLite::getLastInsertedID() {

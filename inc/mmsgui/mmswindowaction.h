@@ -23,8 +23,9 @@
 #ifndef MMSWINDOWACTION_H_
 #define MMSWINDOWACTION_H_
 
-#include "mmstools/mmstools.h"
 #include <sigc++/sigc++.h>
+#include "mmstools/mmsidfactory.h"
+#include "mmstools/mmsthread.h"
 
 typedef enum {
 	MMSWACTION_NONE = 0,
@@ -33,7 +34,7 @@ typedef enum {
 } MMSWACTION;
 
 class MMSWindowAction  : public MMSThread {
-	
+
 	private:
 		class MMSWindow *window;
 		MMSIdFactory	idFactory;

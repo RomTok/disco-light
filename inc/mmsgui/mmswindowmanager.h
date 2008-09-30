@@ -24,7 +24,6 @@
 #define MMSWINDOWMANAGER_H_
 
 #include "mmsgui/interfaces/immswindowmanager.h"
-#include "mmstools/mmstools.h"
 
 class MMSWindowManager : public IMMSWindowManager {
 	private:
@@ -44,7 +43,7 @@ class MMSWindowManager : public IMMSWindowManager {
 
 		void addWindow(MMSWindow *window);
         void removeWindow(MMSWindow *window);
-        
+
         bool hideAllMainWindows(bool goback = false);
         bool hideAllPopupWindows();
         bool hideAllRootWindows(bool willshown = false);

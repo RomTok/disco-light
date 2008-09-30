@@ -24,14 +24,13 @@
 #define MMSFBBASE_H_
 
 #include "mmstools/base.h"
-#include "mmstools/mmstools.h"
 
 extern "C" {
 #include <direct/debug.h>
 #include <direct/trace.h>
 
 #include <directfb.h>
-#include <directfb_keynames.h>	
+#include <directfb_keynames.h>
 #include <directfb_strings.h>
 #include <directfb_util.h>
 }
@@ -101,7 +100,7 @@ typedef struct {
 #define MMSFB_LO_ALPHACHANNEL       "ALPHACHANNEL"      // Make usage of alpha channel for blending on a pixel per pixel basis.
 #define MMSFB_LO_FLICKER_FILTERING  "FLICKER_FILTERING" // Enable flicker filtering.
 #define MMSFB_LO_DEINTERLACING      "DEINTERLACING"     // Enable deinterlacing of an interlaced (video) source.
-#define MMSFB_LO_SRC_COLORKEY       "SRC_COLORKEY"      // Enable source color key.   
+#define MMSFB_LO_SRC_COLORKEY       "SRC_COLORKEY"      // Enable source color key.
 #define MMSFB_LO_DST_COLORKEY       "DST_COLORKEY"      // Enable dest. color key.
 #define MMSFB_LO_OPACITY            "OPACITY"           // Make usage of the global alpha factor set by SetOpacity.
 #define MMSFB_LO_FIELD_PARITY       "FIELD_PARITY"      // Set field parity
