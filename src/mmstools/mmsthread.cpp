@@ -24,6 +24,7 @@
 #include "mmstools/mmserror.h"
 #include "mmstools/tools.h"
 
+#ifdef __HAVE_DIRECTFB__
 extern "C" {
 #include <direct/debug.h>
 #include <direct/thread.h>
@@ -32,6 +33,7 @@ extern "C" {
 
 D_DEBUG_DOMAIN( MMS_Thread, "MMS/Thread", "MMS Thread" );
 
+#endif /* __HAVE_DIRECTFB__ */
 
 static void *startmythread(void *thiz) {
 	static_cast<MMSThread *>(thiz)->run();
@@ -39,9 +41,11 @@ static void *startmythread(void *thiz) {
 }
 
 MMSThread::MMSThread(string identity, int priority) {
+#ifdef __HAVE_DIRECTFB__
     D_DEBUG_AT( MMS_Thread, "MMSThread( %s )\n", identity.c_str() );
 
     direct_trace_print_stack(NULL);
+#endif /* __HAVE_DIRECTFB__ */
 
     this->identity = identity;
     this->priority = priority;
@@ -51,7 +55,9 @@ MMSThread::MMSThread(string identity, int priority) {
 
 void MMSThread::run() {
 	try {
+#ifdef __HAVE_DIRECTFB__
         direct_thread_set_name( this->identity.c_str() );
+#endif /* __HAVE_DIRECTFB__ */
 		this->detach();
         this->isrunning = true;
 		threadMain();
@@ -91,5 +97,5 @@ int MMSThread::cancel() {
 		status = pthread_cancel(this->id);
 	this->isrunning=false;
 	return status;
-	
+
 }

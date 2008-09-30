@@ -124,6 +124,7 @@ ifndef DIRECTFB_CHECKED
         HAVE_ALL_DEPS=0
     else
         export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
+        export CFLAGS+=-D__HAVE_DIRECTFB__
     endif
     export DIRECTFB_CHECKED=1
 endif

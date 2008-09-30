@@ -34,7 +34,9 @@ static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;
 /* contains the key to the thread specific memory */
 static pthread_key_t  key_iam;
 static pthread_key_t  key_logfile;
+#ifdef __ENABLE_LOG__
 static MMSConfigData  config;
+#endif
 static FILE			  *fp=NULL;
 static MMSMutex       debugMsgMutex;
 
@@ -569,6 +571,7 @@ bool file_exist( string filename ) {
 }
 
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const char *msg, ...) {
+#ifdef __ENABLE_LOG__
 	va_list arglist;
 	struct  timeval tv;
 	char    timebuf[12];
@@ -598,9 +601,11 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     debugMsgMutex.unlock();
 
 	return;
+#endif
 }
 
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const string &msg) {
+#ifdef __ENABLE_LOG__
 	struct  timeval tv;
 	char    timebuf[12];
 	char 	buffer[1024]={0};
@@ -621,6 +626,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     debugMsgMutex.unlock();
 
 	return;
+#endif
 }
 
 
@@ -641,7 +647,7 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 
 	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
 	                    tv.tv_usec/10000, pthread_self(), identity, buffer, filename, lineno);
-	
+
 	fwrite(buffer2, 1, num, stdout);
 
 	va_end(arglist);
