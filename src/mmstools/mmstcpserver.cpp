@@ -32,7 +32,7 @@ MMSTCPServer::MMSTCPServer(vector<MMSServerInterface *> interfaces,
 
 	/* create threads and link a interface to each */
     this->st_size = interfaces.size();
-	for (unsigned int i = 0; i < this->st_size; i++)
+	for (size_t i = 0; i < this->st_size; i++)
 		this->sthreads.push_back(new MMSTCPServerThread(interfaces.at(i)));
     this->st_cnt = 0;
 
@@ -69,7 +69,10 @@ void MMSTCPServer::threadMain() {
 	sa.sin_family = AF_INET;
 	sa.sin_port = this->port / 0x100 + (this->port % 0x100) * 0x100;
 	sa.sin_addr = ia;
-	if (bind(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) return;
+	if (bind(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
+		printf("\n bind failed\n");
+		return;
+	}
 
 	/* listen/select/accept loop */
 	while (listen(this->s, SOMAXCONN) == 0) {

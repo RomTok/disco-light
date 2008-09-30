@@ -26,8 +26,7 @@
 #include "mmstools/mmslogger.h"
 
 class MMSServerInterface {
-	public:
-    
+
 	public:
 		MMSServerInterface(string identity);
 		virtual ~MMSServerInterface() = 0;
