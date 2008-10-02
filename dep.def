@@ -64,7 +64,7 @@ ifndef MYSQL_CHECKED
         $(info mysql was not found. Building without mysql support.)
     else
         export MYSQL_INC=$(shell mysql_config --cflags)
-        export MYSQL_LIBS=$(shell mysql_config --libs)
+        export MYSQL_LIBS=$(shell mysql_config --libs_r)
         export CFLAGS+=-D__ENABLE_MYSQL__ 
     endif
     export MYSQL_CHECKED=1
