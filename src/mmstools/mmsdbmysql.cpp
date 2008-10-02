@@ -44,8 +44,6 @@
 MMSDBMySQL::MMSDBMySQL(DataSource *_datasource) : IMMSDB(_datasource) {
 	if(!this->datasource)
 		throw new MMSError(0, "Cannot instantiate MMSDBMySQL without datasource");
-	if(!mysql_thread_safe())
-		throw new MMSError(0, "Cannot instantiate MMSDBMySQL without thread-safe mysql client library");
 };
 
 /**
