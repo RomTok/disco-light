@@ -40,16 +40,17 @@ class MMSRecordSet {
         MMSRecordSet(string _info = "not specified") : count(0), info(_info), recnum(-1) {};
         ~MMSRecordSet();
 
-        bool            next();
-        bool            previous();
-        unsigned int    getCount();
-        string          getInfo();
-        bool            setRecordNum(int num);
-        int             getRecordNum();
-        void            addRow();
-        bool            reset();
+        bool            	next();
+        bool            	previous();
+        const unsigned int  getCount() const;
+        const string        getInfo() const;
+        bool            	setRecordNum(int num);
+        const int       	getRecordNum() const;
+        void            	addRow();
+        bool            	reset();
 
-        string &operator[](string key);
+        string & operator[](string key);
+        const string & operator[](const string key) const;
 };
 
 #endif /*MMSRECORDSET_H_*/
