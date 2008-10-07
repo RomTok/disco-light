@@ -215,7 +215,26 @@ int MMSDBMySQL::query(string statement) {
  * @return Returns the ID of the last inserted record
  */
 int MMSDBMySQL::getLastInsertedID() {
-    return 0;
+	int ret = 0;
+
+    if(!this->connected)
+        throw(new MMSError(0, "No connection established. Cannot fetch last inserted id."));
+
+    if(mysql_query(&this->dbhandle, "SELECT LAST_INSERT_ID();") != 0) {
+        message = mysql_error(&this->dbhandle) + string(" [query was: SELECT LAST_INSERT_ID();]");
+        throw new MMSError(0, message);
+    }
+
+    // fetch results if there are some
+    MYSQL_RES *results = mysql_store_result(&this->dbhandle);
+	if(results) {
+		MYSQL_ROW row = mysql_fetch_row(results);
+		if(row)
+			ret = atoi(row[0]);
+		mysql_free_result(results);
+	}
+
+	return ret;
 }
 
 #endif /*__ENABLE_MYSQL__*/
