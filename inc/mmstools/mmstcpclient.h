@@ -34,6 +34,8 @@ class MMSTCPClient {
 
 	public:
 		MMSTCPClient(string host = "0.0.0.0", unsigned int port = 9999);
+		void setAddress(string &host, unsigned int port);
+		void setAddress(const char *host, unsigned int port);
 		bool isConnected();
 		bool connectToServer();
 		bool disconnectFromServer();

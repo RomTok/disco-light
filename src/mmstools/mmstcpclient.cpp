@@ -65,14 +65,14 @@ bool MMSTCPClient::connectToServer() {
 	/* connection established */
 	return true;
 }
- 
+
 bool MMSTCPClient::disconnectFromServer() {
 	if (this->s<0) return true;
 	close(this->s);
 	this->s = -1;
 	return true;
 }
- 
+
 bool MMSTCPClient::sendString(string rbuf) {
 	char 	mybuf[4096+1];
 	int		len, from;
@@ -88,10 +88,10 @@ bool MMSTCPClient::sendString(string rbuf) {
 		from+=len;
 	} while (len>0);
 	send(this->s, "\0", 1, 0);
-	
+
 	return true;
 }
- 
+
 bool MMSTCPClient::receiveString(string *abuf) {
 	char 	mybuf[4096+1];
 	int		len;
@@ -121,4 +121,15 @@ bool MMSTCPClient::sendAndReceive(string rbuf, string *abuf) {
 	disconnectFromServer();
 
 	return retcode;
+}
+
+
+void MMSTCPClient::setAddress(string &host, unsigned int port)  {
+	this->host = host;
+	this->port = port;
+}
+
+void MMSTCPClient::setAddress(const char *host, unsigned int port) {
+	this->host = host;
+	this->port = port;
 }
