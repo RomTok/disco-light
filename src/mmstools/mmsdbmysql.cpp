@@ -221,7 +221,7 @@ int MMSDBMySQL::getLastInsertedID() {
         throw(new MMSError(0, "No connection established. Cannot fetch last inserted id."));
 
     if(mysql_query(&this->dbhandle, "SELECT LAST_INSERT_ID();") != 0) {
-        message = mysql_error(&this->dbhandle) + string(" [query was: SELECT LAST_INSERT_ID();]");
+        string message = mysql_error(&this->dbhandle) + string(" [query was: SELECT LAST_INSERT_ID();]");
         throw new MMSError(0, message);
     }
 
