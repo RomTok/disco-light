@@ -93,7 +93,7 @@ bool MMSTCPClient::sendString(string rbuf) {
 }
 
 bool MMSTCPClient::receiveString(string *abuf) {
-	char 	mybuf[4096+1];
+	char 	mybuf[256000+1];
 	int		len;
 
 	if (!isConnected()) return false;
@@ -105,9 +105,56 @@ bool MMSTCPClient::receiveString(string *abuf) {
 		if (len>0) {
 			mybuf[len]=0;
 			(*abuf)+= mybuf;
+			printf("\nlen %d\n", len);
 		}
 	} while ((len>0)&&(mybuf[len-1]!=0));
 
+	return true;
+}
+
+bool MMSTCPClient::receiveString(string *abuf, int buflen) {
+	char 	mybuf[256000+1];
+	ssize_t		len;
+	ssize_t received=0;
+
+	if (!isConnected()) return false;
+
+	memset(mybuf,0,256001);
+	/* receive answer */
+	*abuf = "";
+	do {
+		if ((len = recv(this->s, &mybuf[received], buflen-received, MSG_WAITALL))<0) return false;
+
+		received+=len;
+		if (len>0) {
+			mybuf[len]=0;
+		}
+	} while(received < buflen);
+
+	*abuf= mybuf;
+	return true;
+}
+
+bool MMSTCPClient::peekString(string *abuf, int buflen) {
+	char 	mybuf[256000+1];
+	int		len;
+	unsigned int received=0;
+
+	if (!isConnected()) return false;
+
+	memset(mybuf,0,256001);
+	/* receive answer */
+	*abuf = "";
+	do {
+		if ((len = recv(this->s, &mybuf[received], buflen-received, MSG_PEEK))<0) return false;
+
+		received+=len;
+		if (len>0) {
+			mybuf[len]=0;
+		}
+	} while(received < buflen);
+
+	(*abuf) = mybuf;
 	return true;
 }
 
