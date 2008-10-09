@@ -74,7 +74,7 @@ bool MMSTCPClient::disconnectFromServer() {
 }
 
 bool MMSTCPClient::sendString(string rbuf) {
-	char 	mybuf[4096+1];
+	char 	mybuf[128000+1];
 	int		len, from;
 
 	if (!isConnected()) return false;
@@ -93,7 +93,7 @@ bool MMSTCPClient::sendString(string rbuf) {
 }
 
 bool MMSTCPClient::receiveString(string *abuf) {
-	char 	mybuf[256000+1];
+	char 	mybuf[128000+1];
 	int		len;
 
 	if (!isConnected()) return false;
@@ -105,7 +105,6 @@ bool MMSTCPClient::receiveString(string *abuf) {
 		if (len>0) {
 			mybuf[len]=0;
 			(*abuf)+= mybuf;
-			printf("\nlen %d\n", len);
 		}
 	} while ((len>0)&&(mybuf[len-1]!=0));
 
@@ -113,13 +112,16 @@ bool MMSTCPClient::receiveString(string *abuf) {
 }
 
 bool MMSTCPClient::receiveString(string *abuf, int buflen) {
-	char 	mybuf[256000+1];
+	//char 	mybuf[128000+1];
+	char 	*mybuf;
 	ssize_t		len;
 	ssize_t received=0;
 
 	if (!isConnected()) return false;
 
-	memset(mybuf,0,256001);
+	mybuf = new char[buflen+1];
+
+	memset(mybuf,0,buflen+1);
 	/* receive answer */
 	*abuf = "";
 	do {
@@ -132,17 +134,17 @@ bool MMSTCPClient::receiveString(string *abuf, int buflen) {
 	} while(received < buflen);
 
 	*abuf= mybuf;
+	delete mybuf;
 	return true;
 }
 
 bool MMSTCPClient::peekString(string *abuf, int buflen) {
-	char 	mybuf[256000+1];
+	char 	mybuf[128000+1];
 	int		len;
 	unsigned int received=0;
 
 	if (!isConnected()) return false;
-
-	memset(mybuf,0,256001);
+	memset(mybuf,0,128000+1);
 	/* receive answer */
 	*abuf = "";
 	do {
