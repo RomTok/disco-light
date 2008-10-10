@@ -29,6 +29,7 @@
 #include "mmstools/mmserror.h"
 #include "mmstools/mmsfile.h"
 #include "mmstools/mmsfilesearch.h"
+#include "mmstools/mmsfiletransfer.h"
 #include "mmstools/mmsidfactory.h"
 #include "mmstools/mmslogger.h"
 #include "mmstools/mmsthread.h"
