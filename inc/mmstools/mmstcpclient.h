@@ -41,6 +41,8 @@ class MMSTCPClient {
 		bool disconnectFromServer();
 		bool sendString(string rbuf);
 		bool receiveString(string *abuf);
+		bool receiveString(string *abuf, int buflen);
+		bool peekString(string *abuf, int buflen);
 		bool sendAndReceive(string rbuf, string *abuf);
 };
 

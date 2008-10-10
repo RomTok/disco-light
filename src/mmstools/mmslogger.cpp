@@ -49,7 +49,7 @@ string MMSLogger::getLogfile() {
 void MMSLogger::writeLog(string message) {
     struct  timeval tv;
     int     num;
-    char    buffer[512];
+    char    buffer[1280000];
     char    timebuf[12];
 
 #ifndef MMSLOGGER_STDOUT_ONLY
