@@ -62,7 +62,7 @@ public:
 	 *
 	 * @param url     [in] the remote host and desired directory ("localhost/dir")
 	 */
-	MMSFiletransfer(string& url);
+	MMSFiletransfer(const string& url);
 
 	/** Destructor of class MMSFiletransfer. */
 	~MMSFiletransfer();
@@ -74,7 +74,7 @@ public:
 	 * @param   remoteName   [in] name of the remote file
 	 * @param   resume    	 [in] resume a prior upload
 	 */
-	bool performUpload(string& localfile, string& remoteName, bool resume = false);
+	bool performUpload(const string& localfile, const string& remoteName, bool resume = false);
 
 	/**
 	 * Performs a ftp download for the specified remote file.
@@ -83,7 +83,7 @@ public:
 	 * @param   remoteName   [in] name of the remote file
 	 * @param   resume    	 [in] resume a prior download
 	 */
-	bool performDownload(string& localfile, string& remoteName, bool resume = false);
+	bool performDownload(const string& localfile, const string& remoteName, bool resume = false);
 
 	/**
 	 * Enables verbose output of from the curl lib.
@@ -96,7 +96,7 @@ public:
 	 * @param   user    	[in] the ftp user
 	 * @param   password   	[in] the password
 	 */
-	void setAuthData(string& user, string& password);
+	void setAuthData(const string& user, const string& password);
 
 	/**
 	 * Changes the remote url.
@@ -104,7 +104,7 @@ public:
 	 *
 	 * @param url	[in] the remote host and desired directory ("localhost/dir")
 	 */
-	void setRemoteUrl(string& url);
+	void setRemoteUrl(const string& url);
 
 	/** Returns the current remote url. */
 	string getRemoteUrl();
@@ -114,7 +114,7 @@ public:
 	 *
 	 * @param timeouts 		[in] The timeout in seconds.
 	 */
-	void setTimeout(long timemouts);
+	void setTimeout(const long timemouts);
 
 	/** Returns the current timeout in seconds. */
 	long getTimeout();
@@ -124,7 +124,7 @@ public:
 	 *
 	 * @param limit		[in] The low speed limit in byte per second
 	 */
-	void setLowSpeedLimit(long limit);
+	void setLowSpeedLimit(const long limit);
 
 	/** Returns the current speed limit (bytes per second) to be considered as timeout. */
 	long getLowSpeedLimit();
@@ -138,7 +138,7 @@ public:
 	 *
 	 * @return the errornumber or 0
 	 */
-	int getLastError(const char** errormsg = NULL);
+	int getLastError(string& errormsg);
 };
 
 #endif /*MMSFILETRANSFER_H_*/

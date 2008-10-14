@@ -38,7 +38,7 @@ size_t MMSFiletransfer::write_callback(void *buffer, size_t size, size_t nmemb, 
 	return fwrite(buffer, size, nmemb, out->stream);
 }
 
-MMSFiletransfer::MMSFiletransfer(string& url) {
+MMSFiletransfer::MMSFiletransfer(const string& url) {
 	timeout = 10;
 	lowSpeedLimit = 1024 * 100;
 
@@ -73,12 +73,12 @@ void MMSFiletransfer::setVerboseInformation(bool enable) {
 }
 
 
-void MMSFiletransfer::setAuthData(string& user, string& password) {
+void MMSFiletransfer::setAuthData(const string& user, const string& password) {
 	curl_easy_setopt(ehandle, CURLOPT_USERPWD, (user + ":" + password).c_str());
 }
 
 
-bool MMSFiletransfer::performUpload(string& localfile, string& remoteName, bool resume) {
+bool MMSFiletransfer::performUpload(const string& localfile, const string& remoteName, bool resume) {
 	FILE *hd_src;
 	struct stat file_info;
 
@@ -117,7 +117,7 @@ bool MMSFiletransfer::performUpload(string& localfile, string& remoteName, bool 
 }
 
 
-bool MMSFiletransfer::performDownload(string& localfile, string& remoteName, bool resume) {
+bool MMSFiletransfer::performDownload(const string& localfile, const string& remoteName, bool resume) {
 	struct stat file_info;
 	FtpFile ftpfile = { localfile.c_str(), /* name to store the file as if succesful */
 	NULL };
@@ -152,7 +152,7 @@ bool MMSFiletransfer::performDownload(string& localfile, string& remoteName, boo
 }
 
 
-void MMSFiletransfer::setRemoteUrl(string& url) {
+void MMSFiletransfer::setRemoteUrl(const string& url) {
 	remoteUrl = "ftp://" + url;
 
 	/* append trailing / if necessary */
@@ -189,9 +189,9 @@ long MMSFiletransfer::getLowSpeedLimit() {
 }
 
 
-int MMSFiletransfer::getLastError(const char** errormsg) {
-	if (errormsg) {
-		*errormsg = (lasterror ? curl_easy_strerror(lasterror) : NULL);
+int MMSFiletransfer::getLastError(string& errormsg) {
+	if (&errormsg) {
+		errormsg = (lasterror ? curl_easy_strerror(lasterror) : NULL);
 	}
 	return lasterror;
 }
