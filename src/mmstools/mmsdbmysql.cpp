@@ -34,6 +34,7 @@
  */
 #ifdef __ENABLE_MYSQL__
 
+#include <stdlib.h>
 #include "mmstools/mmsdbmysql.h"
 #include "mmstools/mmslogger.h"
 
@@ -149,9 +150,6 @@ int MMSDBMySQL::query(string statement, MMSRecordSet *rs) {
         throw new MMSError(0, message);
     }
 
-    //rewind
-    rs->setRecordNum(0);
-
     // get results
     MYSQL_RES *results = mysql_use_result(&this->dbhandle);
     if(results) {
@@ -159,9 +157,9 @@ int MMSDBMySQL::query(string statement, MMSRecordSet *rs) {
     	if(count > 0) {
 			MYSQL_FIELD *fields = mysql_fetch_fields(results);
 			MYSQL_ROW row;
-			while(row = mysql_fetch_row(results)) {
+			while((row = mysql_fetch_row(results))) {
 				rs->addRow();
-				for(int i = 0; i < count; i++) {
+				for(unsigned int i = 0; i < count; i++) {
 					if(row[i])
 						(*rs)[fields[i].name] = row[i];
 				}
@@ -170,6 +168,9 @@ int MMSDBMySQL::query(string statement, MMSRecordSet *rs) {
     	numRows = mysql_num_rows(results);
     	mysql_free_result(results);
     }
+
+    //rewind
+    rs->setRecordNum(0);
 
     return numRows;
 }
