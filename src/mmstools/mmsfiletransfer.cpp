@@ -39,7 +39,6 @@ size_t MMSFiletransfer::write_callback(void *buffer, size_t size, size_t nmemb, 
 }
 
 int MMSFiletransfer::progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
-	cout << dltotal << " " << dlnow << " " << ultotal << " " << ulnow << endl;
 	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
 	return 0;
 }
@@ -63,9 +62,9 @@ MMSFiletransfer::MMSFiletransfer(const string& url, const unsigned int ftpPort =
 		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, lowSpeedLimit);
 		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
 		/* register progress callback */
-//		curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
-//		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
-//		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
+		curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
+		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
 		/* enable curl to create missing dirs on upload */
 		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 	}
