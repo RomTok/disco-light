@@ -28,6 +28,7 @@
 #include <curl/curl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sigc++/sigc++.h>
 
 /** Specifies a structure for file operations */
 typedef struct {
@@ -52,17 +53,22 @@ private:
 	CURLcode lasterror;
 	long timeout;
 	long lowSpeedLimit;
+	unsigned int port;
 
 	static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream);
 	static size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream);
+	static int	  progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow);
 
 public:
+	/** A signal that emits the progress (in percentage) of the current up- or download. */
+	sigc::signal<void, const unsigned int> progress;
+
 	/**
 	 * Constructor of class MMSFiletransfer.
 	 *
 	 * @param url     [in] the remote host and desired directory ("localhost/dir")
 	 */
-	MMSFiletransfer(const string& url);
+	MMSFiletransfer(const string& url, const unsigned int ftpPort);
 
 	/** Destructor of class MMSFiletransfer. */
 	~MMSFiletransfer();
@@ -110,6 +116,16 @@ public:
 	string getRemoteUrl();
 
 	/**
+	 * Sets the port for the ftp connection.
+	 *
+	 * @param ftpPort 		[in] The port for the ftp connection to the remote server.
+	 */
+	void setFtpPort(const unsigned int ftpPort);
+
+	/** Returns the current ftp port. */
+	unsigned int getFtpPort();
+
+	/**
 	 * Sets the timeout.
 	 *
 	 * @param timeouts 		[in] The timeout in seconds.
@@ -138,7 +154,7 @@ public:
 	 *
 	 * @return the errornumber or 0
 	 */
-	int getLastError(string& errormsg);
+	int getLastError(string *errormsg);
 };
 
 #endif /*MMSFILETRANSFER_H_*/
