@@ -66,7 +66,7 @@ MMSFiletransfer::MMSFiletransfer(const string& url, const unsigned int ftpPort =
 		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
 		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
 		/* enable curl to create missing dirs on upload */
-		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+//		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 	}
 }
 
