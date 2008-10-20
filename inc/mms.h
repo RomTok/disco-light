@@ -44,6 +44,9 @@
 #ifndef _NO_MMSSIP
 #include <mmssip/mmssip.h>
 #endif
+#ifndef _NO_MMSFLASH
+#include <mmsflash/mmsflash.h>
+#endif
 
 #endif /*MMS_H_*/
 
