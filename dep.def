@@ -148,6 +148,8 @@ ifndef XINE_CHECKED
             else
                 export __WITH_MMSMEDIA__=1
             endif
+        else
+            $(warning something is wrong with xine headers. Building without mmsmedia support.)
         endif
     endif
     export XINE_CHECKED=1
@@ -206,6 +208,20 @@ ifndef PJ_CHECKED
         export __WITH_MMSSIP__=1
     endif
     export PJ_CHECKED=1
+endif
+
+#swfdec
+ifndef SWFDEC_CHECKED
+    $(info check for swfdec)
+    export SWFDEC_INC=$(shell pkg-config --silence-errors --cflags swfdec-0.8)
+    ifeq ($(SWFDEC_INC),)
+       $(warning swfdec-0.8 was not found. Building without FLASH support.)
+       export CFLAGS+=-D_NO_MMSFLASH
+    else
+        export SWFDEC_LIBS=$(shell pkg-config --libs swfdec-0.8)
+        export __WITH_MMSFLASH__=1
+    endif
+    export SWFDEC_CHECKED=1
 endif
 
 ifeq ($(HAVE_ALL_DEPS),0)
@@ -306,6 +322,10 @@ endif
 ifneq ($(PJ_LIBS),)
     req_str += ", libpj"
     libs_str += " -lmmssip"
+endif
+ifneq ($(SWFDEC_LIBS),)
+    req_str += ", swfdec-0.8"
+    libs_str += " -lmmsflash"
 endif
 ifdef SQLITE3_LIBS
     libs_str   += " $(SQLITE3_LIBS)"

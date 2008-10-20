@@ -24,6 +24,9 @@ ifdef __WITH_MMSSIP__
 	@+make -C  ./src/mmssip    $@
 endif
 	@+make -C  ./tools/taff    $@
+ifdef __WITH_MMSFLASH__
+	@+make -C  ./src/mmsflash  $@
+endif
 
 install-disko:
 	@+make -C  ./src/mmstools  install
@@ -40,6 +43,9 @@ ifdef __WITH_MMSSIP__
 endif
 	@+make -C  ./src/mmsinfo   install
 	@+make -C  ./tools/taff    install
+ifdef __WITH_MMSFLASH__
+	@+make -C  ./src/mmsflash  install
+endif
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h
 	@install -d "$(DESTDIR)$(datadir)"
 	@pushd share &> /dev/null; \
