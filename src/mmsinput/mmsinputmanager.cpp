@@ -25,6 +25,7 @@
 MMSInputManager::MMSInputManager(string file, string name) {
 	this->mapper = new MMSInputMapper(file, name);
 	this->config = new MMSConfigData();
+	this->buttonpress_window = NULL;
 }
 
 MMSInputManager::~MMSInputManager() {
@@ -76,7 +77,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			}
 		}
 
-		/* got through subscriptions first */
+		/* got through subscriptions */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
 				DFBInputDeviceKeySymbol key;
@@ -92,6 +93,16 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 					}
 			}
 		}
+
+		if(window != NULL)
+			window->handleInput(&inputeventset);
+	}
+	else
+	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
+		/* keyboard inputs */
+		this->mapper->mapkey(inputevent, &inputeventset);
+
+		window = this->windowmanager->getToplevelWindow();
 
 		if(window != NULL)
 			window->handleInput(&inputeventset);
@@ -115,6 +126,9 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				return;
 			}
 
+			// save the pointer for release event
+			this->buttonpress_window = window;
+
 			/* call windows handleInput with normalized coordinates */
 			MMSInputEvent ie;
 			ie.type = MMSINPUTEVENTTYPE_BUTTONPRESS;
@@ -132,27 +146,33 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
 
 		window = this->windowmanager->getToplevelWindow();
+		if (!window)
+			window = this->buttonpress_window;
 		if (window) {
 			/* get the window rect and check if the pointer is in there */
 			DFBRectangle rect = window->getGeometry();
 
-			/* call windows handleInput with normalized coordinates */
-			MMSInputEvent ie;
-			ie.type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-			ie.posx = inputevent->posx - rect.x;
-			ie.posy = inputevent->posy - rect.y;
-			inputeventset.push_back(ie);
-			if (window->handleInput(&inputeventset)) {
-				this->mutex.unlock();
-				return;
+			if ((window == this->buttonpress_window)
+				||   ((this->buttonpress_window)
+					&&(inputevent->posx - rect.x >= 0)&&(inputevent->posy - rect.y >= 0)
+					&& (inputevent->posx - rect.x - rect.w < 0)&&(inputevent->posy - rect.y - rect.h < 0))) {
+				/* call windows handleInput with normalized coordinates */
+				MMSInputEvent ie;
+				ie.type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+				ie.posx = inputevent->posx - rect.x;
+				ie.posy = inputevent->posy - rect.y;
+				inputeventset.push_back(ie);
+				if (window->handleInput(&inputeventset)) {
+					this->buttonpress_window = NULL;
+					this->mutex.unlock();
+					return;
+				}
 			}
 		}
+		this->buttonpress_window = NULL;
 
 
-
-
-
-		/* got through subscriptions first */
+		/* got through subscriptions */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
 				DFBRectangle pointer_area;
@@ -169,7 +189,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 					}
 			}
 		}
-
 
 
 	}

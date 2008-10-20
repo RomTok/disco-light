@@ -109,4 +109,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const char *msg, ...);
 void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const string &msg);
 
+unsigned int getMTimeStamp();
+unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts);
+
 #endif /*TOOLS_H_*/

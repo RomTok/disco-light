@@ -42,15 +42,18 @@ class MMSInputManager  {
 		MMSInputMapper *mapper;
 		MMSConfigData *config;
 
+		//! store the window on which the button was pressed
+		MMSWindow *buttonpress_window;
+
 	public:
-		MMSInputManager(string file, string name);				
+		MMSInputManager(string file, string name);
 		~MMSInputManager();
 		void addDevice(DFBInputDeviceID device, int inputinterval);
 		void setWindowManager(IMMSWindowManager *wm);
 		void addSubscription(class MMSInputSubscription *sub);
 		void startListen();
 		void stopListen();
-		
+
 	friend class MMSInputThread;
 };
 

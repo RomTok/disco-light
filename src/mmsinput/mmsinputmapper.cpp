@@ -406,7 +406,8 @@ void MMSInputMapper::mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *in
    	    DFBInputDeviceKeySymbol foundkey = lookUpKeySymbol(foundkeyname);
    	    if(foundkey) {
    	    	DEBUGMSG("MMSINPUTMANAGER", "mapped to key '" + foundkeyname + "', id: " + iToStr(foundkey));
-   	        evt.type = MMSINPUTEVENTTYPE_KEYPRESS;
+//   	        evt.type = MMSINPUTEVENTTYPE_KEYPRESS;
+			evt.type = inputevent->type;
    	        evt.key = foundkey;
    	        inputeventset->push_back(evt);
    	    }
