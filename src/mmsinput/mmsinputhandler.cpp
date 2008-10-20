@@ -39,12 +39,12 @@ MMSInputHandler::MMSInputHandler(DFBInputDeviceID device) {
         return;
 
 	this->config = new MMSConfigData();
-	
-	
-	/*grab the input device */    
+
+
+	/*grab the input device */
     //DFBCHECK(dfb->GetInputDevice( dfb, device, &input ));
-    
-	/*create an input queue */    
+
+	/*create an input queue */
     //DFBCHECK(input->CreateEventBuffer( input, &keybuffer ));
 //    DFBCHECK(dfb->CreateInputEventBuffer(dfb,DICAPS_KEYS, (DFBBoolean)1, &keybuffer));
 	DFBCHECK(dfb->CreateInputEventBuffer(dfb,DICAPS_ALL, (DFBBoolean)1, &keybuffer));
@@ -71,8 +71,8 @@ MMSInputHandler::MMSInputHandler(DFBInputDeviceID device) {
 
 	/* calculate a factor between screen and pointer rectangle */
 	if ((this->pointer_rect.w > 0)&&(this->pointer_rect.h > 0)) {
-		this->xfac = (100 * this->screen_rect.w) / this->pointer_rect.w; 
-		this->yfac = (100 * this->screen_rect.h) / this->pointer_rect.h; 
+		this->xfac = (100 * this->screen_rect.w) / this->pointer_rect.w;
+		this->yfac = (100 * this->screen_rect.h) / this->pointer_rect.h;
 		this->pointer_xpos = this->pointer_old_xpos = this->screen_rect.x + this->screen_rect.w / 2;
 		this->pointer_ypos = this->pointer_old_ypos = this->screen_rect.y + this->screen_rect.h / 2;
 	}
@@ -83,8 +83,8 @@ MMSInputHandler::MMSInputHandler(DFBInputDeviceID device) {
 	}
 
 	this->button_pressed = 0;
-	
-	this->quit=false;    
+
+	this->quit=false;
 }
 
 MMSInputHandler::~MMSInputHandler()  {
@@ -93,10 +93,10 @@ MMSInputHandler::~MMSInputHandler()  {
 
 void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 	DFBInputEvent evt;
-    
+
     bool event_buffered = false;
     inputevent->type = MMSINPUTEVENTTYPE_NONE;
-    
+
 	while(1) {
 		/* wait for event with 100ms timeout */
 		if (keybuffer->WaitForEventWithTimeout(keybuffer, 0, 100) != DFB_OK) {
@@ -104,7 +104,7 @@ void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 				return;
 			continue;
 		}
-		
+
 	    /* process keybuffer */
 	    if (keybuffer->PeekEvent( keybuffer, DFB_EVENT(&evt)) == DFB_OK) {
 	    	/* check if i have to get it */
@@ -132,7 +132,11 @@ void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 		    			break;
 		    	case DIET_KEYRELEASE:
 		    			if (!this->button_pressed) {
-		    				/* currently ignore keyrelease event */
+			    			/* work with keyrelease event */
+				        	/* fill the return structure */
+				        	inputevent->type = MMSINPUTEVENTTYPE_KEYRELEASE;
+			        		inputevent->key = evt.key_symbol;
+			        		return;
 		    			}
 		    			break;
 		    	case DIET_BUTTONPRESS:
@@ -144,14 +148,14 @@ void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 					        	inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
 				        		inputevent->posx = this->pointer_xpos;
 				        		inputevent->posy = this->pointer_ypos;
-		
+
 				    			/* buttonpress event */
 				    			this->button_pressed++;
-		
+
 				    			if (this->button_pressed > 1)
 				    				/* buttonpress event raised two times for touch pad/screens */
 					        		return;
-				    			
+
 				    			/* all buttonpress events will be buffered */
 				    			event_buffered = true;
 			    			}
@@ -165,14 +169,14 @@ void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 					        	inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 				        		inputevent->posx = this->pointer_xpos;
 				        		inputevent->posy = this->pointer_ypos;
-			
+
 				    			/* buttonrelease event */
 				        		this->button_pressed--;
-			
+
 				    			if (!this->button_pressed)
 				    				/* buttonrelease event raised two times for touch pad/screens */
 					        		return;
-				    			
+
 				    			/* buttonrelease event will be buffered */
 				    			event_buffered = true;
 			    			}
@@ -219,18 +223,18 @@ void MMSInputHandler::grabEvents(MMSInputEvent *inputevent) {
 					        		this->pointer_ypos = this->screen_rect.y
 		  			        						 + ((this->yfac * (evt.axisabs - this->pointer_rect.y)) / 100);
 			        	 	}
-		
+
 				       	 	if ((this->pointer_xpos != this->pointer_old_xpos)||(this->pointer_ypos != this->pointer_old_ypos)) {
 				       	 		/* the position of the mouse pointer has changed */
 					       	 	/* save the old pointer */
 					       		this->pointer_old_xpos = this->pointer_xpos;
 					       		this->pointer_old_ypos = this->pointer_ypos;
-				       	 	
+
 				    			/* fill the return structure */
 					        	inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 				        		inputevent->posx = this->pointer_xpos;
 				        		inputevent->posy = this->pointer_ypos;
-		
+
 				        		/* if we are waiting for the second buttonpress event (touch pad/screen) */
 				        		/* --> we cannot return directly */
 				        		if (!event_buffered)
