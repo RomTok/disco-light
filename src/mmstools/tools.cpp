@@ -673,3 +673,27 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	return;
 }
 
+
+#define MAX_MTIMESTAMP	999999
+
+unsigned int getMTimeStamp() {
+	struct  timeval tv;
+	time_t  		sec;
+
+	// get seconds and milli seconds
+	sec = time(NULL);
+	gettimeofday(&tv, NULL);
+
+	// build timestamp
+	return ((sec % 1000) * 1000) + tv.tv_usec / 1000;
+}
+
+unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts) {
+	unsigned int diff;
+	if (start_ts <= end_ts)
+		diff = end_ts - start_ts;
+	else
+		diff = end_ts + MAX_MTIMESTAMP + 1 - start_ts;
+	return diff;
+}
+
