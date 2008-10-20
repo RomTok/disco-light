@@ -99,7 +99,7 @@ bool getColorFromString(string input, DFBColor *color) {
     color->g = 0;
     color->b = 0;
     color->a = 0;
-    
+
     if (input == "")
         return false;
 
@@ -113,7 +113,7 @@ bool getColorFromString(string input, DFBColor *color) {
     color->g = hexToInt(input.substr(3,2).c_str());
     color->b = hexToInt(input.substr(5,2).c_str());
     color->a = hexToInt(input.substr(7,2).c_str());
-    
+
     return true;
 }
 
@@ -133,8 +133,8 @@ bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer, IDirectFB *dfb
     mylayer->GetConfiguration(mylayer, &cfg);
     *w=cfg.width;
     *h=cfg.height;
-    DEBUGMSG("MMSGUI", "screen resolution: %d/%d", *w, *h); 
-    
+    DEBUGMSG("MMSGUI", "screen resolution: %d/%d", *w, *h);
+
     if (!layer)
     	mylayer->Release(mylayer);
     else
@@ -226,7 +226,7 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
     DFBFontDescription desc;
     desc.flags = DFDESC_HEIGHT;
     desc.height = size;
-    
+
 //    if (mydfb->CreateFont(mydfb, fontfile.c_str(), &desc, &myfont) != DFB_OK) {
     if (!mmsfb->createFont(&myfont, fontfile, &desc)) {
 /*        if (!dfb)
@@ -250,32 +250,14 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
 
 
 unsigned int getFrameNum(unsigned int delay_time) {
-	// a frame every 50ms 
+	// a frame every 50ms
 	unsigned int ret = delay_time / 50;
 	if (ret < 2) ret = 2;
 	return ret;
 }
 
-#define MAX_MTIMESTAMP	999999
-
-unsigned int getMTimeStamp() {
-	struct  timeval tv;
-	time_t  		sec;
-
-	// get seconds and milli seconds
-	sec = time(NULL);
-	gettimeofday(&tv, NULL);
-
-	// build timestamp
-	return ((sec % 1000) * 1000) + tv.tv_usec / 1000;
-}
-
 unsigned int getFrameDelay(unsigned int start_ts, unsigned int end_ts) {
-	unsigned int diff;
-	if (start_ts <= end_ts)
-		diff = end_ts - start_ts;
-	else
-		diff = end_ts + MAX_MTIMESTAMP + 1 - start_ts;
+	unsigned int diff = getMDiff(start_ts, end_ts);
 	if (50 > diff)
 		return 50-diff;
 	else

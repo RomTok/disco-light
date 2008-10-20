@@ -71,8 +71,6 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
 
 unsigned int getFrameNum(unsigned int delay_time);
 
-unsigned int getMTimeStamp();
-
 unsigned int getFrameDelay(unsigned int start_ts, unsigned int end_ts);
 
 #endif /*MMSGUITOOLS_H_*/
