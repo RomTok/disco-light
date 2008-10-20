@@ -54,10 +54,13 @@ class MMSFlashThread : public MMSThread {
         //! start the thread
         void start(void);
 
-        //! is started
+        //! is the thread started
         bool isStarted(void);
 
+        //! thread should stop
         void invokeStop(void);
+
+        //! waiting until end of the thread
         void waitUntilStopped(void);
 };
 
