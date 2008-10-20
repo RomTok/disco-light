@@ -39,18 +39,18 @@ size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream) {
 }
 
 int progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
-//	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
+	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
 	return 0;
 }
 
-MMSFiletransfer::MMSFiletransfer(const string url, const unsigned int ftpPort = 0) {
-	timeout = 10;
-	lowSpeedLimit = 1024 * 100;
-	this->setRemoteUrl(url);
-	this->setFtpPort(ftpPort);
+MMSFiletransfer::MMSFiletransfer(const string url, const unsigned int ftpPort = 0) :
+	timeout(10),
+	lowSpeedLimit(102400),
+	port(ftpPort) {
+	setRemoteUrl(url);
 
+	/* initialise curl */
 	curl_global_init(CURL_GLOBAL_ALL);
-
 
 	/* get a curl handle */
 	ehandle = curl_easy_init();
@@ -59,12 +59,14 @@ MMSFiletransfer::MMSFiletransfer(const string url, const unsigned int ftpPort = 
 		lasterror = CURLE_FAILED_INIT;
 	} else {
 		/* set timeout behaviour */
-		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, lowSpeedLimit);
-		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
+		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, 	lowSpeedLimit);
+		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, 	timeout);
+		if(this->port != 0)
+			curl_easy_setopt(ehandle, CURLOPT_PORT, this->port);
 		/* register progress callback */
-		//curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
-		//curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
-		//curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
+		curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, progress_callback);
+		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
 		/* enable curl to create missing dirs on upload */
 		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 	}
@@ -73,12 +75,12 @@ MMSFiletransfer::MMSFiletransfer(const string url, const unsigned int ftpPort = 
 
 MMSFiletransfer::~MMSFiletransfer() {
 	curl_easy_cleanup(ehandle);
-// 	curl_global_cleanup();
+ 	curl_global_cleanup();
 }
 
 
 void MMSFiletransfer::setVerboseInformation(bool enable) {
-	curl_easy_setopt(ehandle, CURLOPT_VERBOSE, (enable ? 1 : 0));
+	curl_easy_setopt(ehandle, CURLOPT_VERBOSE, (enable ? 1L : 0L));
 }
 
 
@@ -110,12 +112,16 @@ bool MMSFiletransfer::performUpload(const string& localfile, const string& remot
 
 	/* get a FILE * of the same file */
 	hd_src = fopen(localfile.c_str(), "rb");
+	if(!hd_src) {
+		lasterror = CURLE_FILE_COULDNT_READ_FILE;
+		return false;
+	}
 
 	/* now specify which file to upload */
 	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION, read_callback);
 	curl_easy_setopt(ehandle, CURLOPT_READDATA, hd_src);
 
-	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, file_info.st_size);
+	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, (long)file_info.st_size);
 
 	/* Now run off and do what you've been told! */
 	lasterror = curl_easy_perform(ehandle);
@@ -132,7 +138,7 @@ bool MMSFiletransfer::performDownload(const string localfile, const string remot
 
 	if (resume) {
 		if (!stat(localfile.c_str(), &file_info)) {
-			curl_easy_setopt(ehandle, CURLOPT_RESUME_FROM, file_info.st_size);
+			curl_easy_setopt(ehandle, CURLOPT_RESUME_FROM, (long)file_info.st_size);
 		}
 	}
 
@@ -140,7 +146,6 @@ bool MMSFiletransfer::performDownload(const string localfile, const string remot
 		lasterror = CURLE_FILE_COULDNT_READ_FILE;
 		return false;
 	}
-
 
 	curl_easy_setopt(ehandle, CURLOPT_URL, (remoteUrl + remoteName).c_str());
 
@@ -171,45 +176,43 @@ void MMSFiletransfer::setRemoteUrl(const string url) {
 }
 
 
-string MMSFiletransfer::getRemoteUrl() {
+const string MMSFiletransfer::getRemoteUrl() {
 	return remoteUrl;
 }
 
 
-void MMSFiletransfer::setTimeout(long timeouts) {
-	timeout = timeouts;
-	curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeouts);
+void MMSFiletransfer::setTimeout(const long timeout) {
+	this->timeout = timeout;
+	curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
 }
 
 
-long MMSFiletransfer::getTimeout() {
+const long MMSFiletransfer::getTimeout() {
 	return timeout;
 }
 
 
 void MMSFiletransfer::setFtpPort(const unsigned int ftpPort) {
-	if (this->port != ftpPort) {
+	if((this->port != (long)ftpPort) && (0 != ftpPort)) {
 		this->port = ftpPort;
-		if (0 != ftpPort) {
-			curl_easy_setopt(ehandle, CURLOPT_PORT, ftpPort);
-		}
+		curl_easy_setopt(ehandle, CURLOPT_PORT, this->port);
 	}
 }
 
 
-unsigned int MMSFiletransfer::getFtpPort() {
-	return this->port;
+const unsigned int MMSFiletransfer::getFtpPort() {
+	return (unsigned int)this->port;
 }
 
 
-void MMSFiletransfer::setLowSpeedLimit(long limit) {
-	lowSpeedLimit = limit;
+void MMSFiletransfer::setLowSpeedLimit(const long limit) {
+	this->lowSpeedLimit = limit;
 	curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, limit);
 }
 
 
-long MMSFiletransfer::getLowSpeedLimit() {
-	return lowSpeedLimit;
+const long MMSFiletransfer::getLowSpeedLimit() {
+	return this->lowSpeedLimit;
 }
 
 

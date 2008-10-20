@@ -57,7 +57,7 @@ private:
 	CURLcode lasterror;
 	long timeout;
 	long lowSpeedLimit;
-	unsigned int port;
+	long port;
 
 
 public:
@@ -114,7 +114,7 @@ public:
 	void setRemoteUrl(const string url);
 
 	/** Returns the current remote url. */
-	string getRemoteUrl();
+	const string getRemoteUrl();
 
 	/**
 	 * Sets the port for the ftp connection.
@@ -124,17 +124,17 @@ public:
 	void setFtpPort(const unsigned int ftpPort);
 
 	/** Returns the current ftp port. */
-	unsigned int getFtpPort();
+	const unsigned int getFtpPort();
 
 	/**
 	 * Sets the timeout.
 	 *
 	 * @param timeouts 		[in] The timeout in seconds.
 	 */
-	void setTimeout(const long timemouts);
+	void setTimeout(const long timemout);
 
 	/** Returns the current timeout in seconds. */
-	long getTimeout();
+	const long getTimeout();
 
 	/**
 	 * Sets the low speed limit to be considered as timeout (default: 100 kb/s).
@@ -144,7 +144,7 @@ public:
 	void setLowSpeedLimit(const long limit);
 
 	/** Returns the current speed limit (bytes per second) to be considered as timeout. */
-	long getLowSpeedLimit();
+	const long getLowSpeedLimit();
 
 	/**
 	 * Returns the error number of the last operation, or 0 if no error has occured.
