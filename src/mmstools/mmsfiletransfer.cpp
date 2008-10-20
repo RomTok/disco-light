@@ -38,11 +38,17 @@ size_t MMSFiletransfer::write_callback(void *buffer, size_t size, size_t nmemb, 
 	return fwrite(buffer, size, nmemb, out->stream);
 }
 
-MMSFiletransfer::MMSFiletransfer(string& url) {
+int MMSFiletransfer::progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
+	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
+	return 0;
+}
+
+MMSFiletransfer::MMSFiletransfer(const string& url, const unsigned int ftpPort = 0) {
 	timeout = 10;
 	lowSpeedLimit = 1024 * 100;
 
-	setRemoteUrl(url);
+	this->setRemoteUrl(url);
+	this->setFtpPort(ftpPort);
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
@@ -52,12 +58,15 @@ MMSFiletransfer::MMSFiletransfer(string& url) {
 	if (!ehandle) {
 		lasterror = CURLE_FAILED_INIT;
 	} else {
-		/* libcurl will do SIZE, RETR, STOR etc and give a full path to the server for all these commands. */
-		curl_easy_setopt(ehandle, CURLOPT_FTP_FILEMETHOD, CURLFTPMETHOD_NOCWD);
-
 		/* set timeout behaviour */
 		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, lowSpeedLimit);
 		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
+		/* register progress callback */
+		curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
+		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
+		/* enable curl to create missing dirs on upload */
+		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 	}
 }
 
@@ -73,12 +82,12 @@ void MMSFiletransfer::setVerboseInformation(bool enable) {
 }
 
 
-void MMSFiletransfer::setAuthData(string& user, string& password) {
+void MMSFiletransfer::setAuthData(const string& user, const string& password) {
 	curl_easy_setopt(ehandle, CURLOPT_USERPWD, (user + ":" + password).c_str());
 }
 
 
-bool MMSFiletransfer::performUpload(string& localfile, string& remoteName, bool resume) {
+bool MMSFiletransfer::performUpload(const string& localfile, const string& remoteName, bool resume) {
 	FILE *hd_src;
 	struct stat file_info;
 
@@ -103,8 +112,7 @@ bool MMSFiletransfer::performUpload(string& localfile, string& remoteName, bool 
 	hd_src = fopen(localfile.c_str(), "rb");
 
 	/* now specify which file to upload */
-	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION,
-			MMSFiletransfer::read_callback);
+	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION, MMSFiletransfer::read_callback);
 	curl_easy_setopt(ehandle, CURLOPT_READDATA, hd_src);
 
 	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, file_info.st_size);
@@ -117,7 +125,7 @@ bool MMSFiletransfer::performUpload(string& localfile, string& remoteName, bool 
 }
 
 
-bool MMSFiletransfer::performDownload(string& localfile, string& remoteName, bool resume) {
+bool MMSFiletransfer::performDownload(const string& localfile, const string& remoteName, bool resume) {
 	struct stat file_info;
 	FtpFile ftpfile = { localfile.c_str(), /* name to store the file as if succesful */
 	NULL };
@@ -152,7 +160,7 @@ bool MMSFiletransfer::performDownload(string& localfile, string& remoteName, boo
 }
 
 
-void MMSFiletransfer::setRemoteUrl(string& url) {
+void MMSFiletransfer::setRemoteUrl(const string& url) {
 	remoteUrl = "ftp://" + url;
 
 	/* append trailing / if necessary */
@@ -178,6 +186,21 @@ long MMSFiletransfer::getTimeout() {
 }
 
 
+void MMSFiletransfer::setFtpPort(const unsigned int ftpPort) {
+	if (this->port != ftpPort) {
+		this->port = ftpPort;
+		if (0 != ftpPort) {
+			curl_easy_setopt(ehandle, CURLOPT_PORT, ftpPort);
+		}
+	}
+}
+
+
+unsigned int MMSFiletransfer::getFtpPort() {
+	return this->port;
+}
+
+
 void MMSFiletransfer::setLowSpeedLimit(long limit) {
 	lowSpeedLimit = limit;
 	curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, limit);
@@ -189,7 +212,7 @@ long MMSFiletransfer::getLowSpeedLimit() {
 }
 
 
-int MMSFiletransfer::getLastError(const char** errormsg) {
+int MMSFiletransfer::getLastError(string *errormsg = NULL) {
 	if (errormsg) {
 		*errormsg = (lasterror ? curl_easy_strerror(lasterror) : NULL);
 	}
