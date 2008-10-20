@@ -34,6 +34,8 @@
 
 #include "mmstools/mmsdbfreetds.h"
 #include "mmstools/mmstools.h"
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * @brief ????

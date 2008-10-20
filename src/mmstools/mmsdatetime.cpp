@@ -1,5 +1,6 @@
 #include "mmstools/mmsdatetime.h"
 #include "mmstools/tools.h"
+#include <stdlib.h>
 
 MMSDateTime::MMSDateTime() {
 	MMSDateTime(time(NULL));
@@ -16,22 +17,22 @@ MMSDateTime::MMSDateTime(string timestr, string format) {
 		this->minute = atoi(timestr.substr(14,2).c_str());
 		this->seconds = atoi(timestr.substr(17,2).c_str());
 	}
-	
+
 	mytime.tm_mday = this->daynum;
 	mytime.tm_mon = this->monthnum;
 	mytime.tm_year = this->yearnum -1900;
 	mytime.tm_hour = this->hour;
 	mytime.tm_min = this->minute;
 	mytime.tm_sec = this->seconds;
-	
+
 	this->timest = mktime(&mytime);
 }
 
 MMSDateTime::MMSDateTime(time_t stamp) {
 	this->timest = stamp;
 	struct tm mytime;
-	
-	
+
+
 	localtime_r(&(this->timest),&mytime);
 	this->daynum = mytime.tm_mday;
 	this->monthnum = mytime.tm_mon;
@@ -40,11 +41,11 @@ MMSDateTime::MMSDateTime(time_t stamp) {
 	this->hour = mytime.tm_hour;
 	this->minute = mytime.tm_min;
 	this->seconds = mytime.tm_sec;
-	
+
 }
 
 MMSDateTime::~MMSDateTime() {
-	
+
 }
 
 string &MMSDateTime::getDay() {
@@ -60,11 +61,11 @@ string &MMSDateTime::getYear() {
 }
 
 string &MMSDateTime::getDbDate() {
-	this->dbdate = iToStr(this->yearnum) + "-" 
-			+ ((this->monthnum < 10) ? "0" : "") + iToStr(this->monthnum + 1) + "-" 
-			+ ((this->daynum < 10) ? "0" : "") + iToStr(this->daynum) + " " 
-			+ ((this->hour < 10) ? "0" : "") + iToStr(this->hour) + ":" 
-			+ ((this->minute < 10) ? "0" : "") + iToStr(this->minute) + ":" 
+	this->dbdate = iToStr(this->yearnum) + "-"
+			+ ((this->monthnum < 10) ? "0" : "") + iToStr(this->monthnum + 1) + "-"
+			+ ((this->daynum < 10) ? "0" : "") + iToStr(this->daynum) + " "
+			+ ((this->hour < 10) ? "0" : "") + iToStr(this->hour) + ":"
+			+ ((this->minute < 10) ? "0" : "") + iToStr(this->minute) + ":"
 			+ ((this->seconds < 10) ? "0" : "") + iToStr(this->seconds);
 
 	return this->dbdate;
