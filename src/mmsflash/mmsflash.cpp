@@ -495,9 +495,15 @@ void MMSFlash::startPlaying(string filename) {
 }
 
 bool MMSFlash::isReady() {
-   	while ((!this->ready)&&(this->loaderthread->isRunning()))
-       	msleep(50);
-	return this->ready;
+    // waiting until loader thread is started
+    while (!this->loaderthread->isStarted())
+    	msleep(50);
+
+    // waiting for ready flag
+    while ((!this->ready)&&(this->loaderthread->isRunning()))
+   		msleep(50);
+
+    return this->ready;
 }
 
 bool MMSFlash::isPlaying(bool wait) {
