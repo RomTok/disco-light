@@ -36,6 +36,10 @@ typedef struct {
 	FILE *stream;
 } FtpFile;
 
+/*static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream);
+static size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream);
+static int	  progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow);*/
+
 /**
  *  A ftp operations class.
  *
@@ -55,9 +59,6 @@ private:
 	long lowSpeedLimit;
 	unsigned int port;
 
-	static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream);
-	static size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream);
-	static int	  progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow);
 
 public:
 	/** A signal that emits the progress (in percentage) of the current up- or download. */
@@ -68,7 +69,7 @@ public:
 	 *
 	 * @param url     [in] the remote host and desired directory ("localhost/dir")
 	 */
-	MMSFiletransfer(const string& url, const unsigned int ftpPort);
+	MMSFiletransfer(const string url, const unsigned int ftpPort);
 
 	/** Destructor of class MMSFiletransfer. */
 	~MMSFiletransfer();
@@ -89,7 +90,7 @@ public:
 	 * @param   remoteName   [in] name of the remote file
 	 * @param   resume    	 [in] resume a prior download
 	 */
-	bool performDownload(const string& localfile, const string& remoteName, bool resume = false);
+	bool performDownload(const string localfile, const string remoteName, bool resume = false);
 
 	/**
 	 * Enables verbose output of from the curl lib.
@@ -102,7 +103,7 @@ public:
 	 * @param   user    	[in] the ftp user
 	 * @param   password   	[in] the password
 	 */
-	void setAuthData(const string& user, const string& password);
+	void setAuthData(const string user, const string password);
 
 	/**
 	 * Changes the remote url.
@@ -110,7 +111,7 @@ public:
 	 *
 	 * @param url	[in] the remote host and desired directory ("localhost/dir")
 	 */
-	void setRemoteUrl(const string& url);
+	void setRemoteUrl(const string url);
 
 	/** Returns the current remote url. */
 	string getRemoteUrl();

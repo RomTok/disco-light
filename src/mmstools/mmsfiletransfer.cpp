@@ -22,11 +22,11 @@
 
 #include "mmstools/mmsfiletransfer.h"
 
-size_t MMSFiletransfer::read_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
+size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
 	return fread(ptr, size, nmemb, (FILE*) stream);
 }
 
-size_t MMSFiletransfer::write_callback(void *buffer, size_t size, size_t nmemb, void *stream) {
+size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream) {
 	FtpFile *out = (FtpFile*) stream;
 	if (out && !out->stream) {
 		/* open file for appending */
@@ -38,19 +38,19 @@ size_t MMSFiletransfer::write_callback(void *buffer, size_t size, size_t nmemb, 
 	return fwrite(buffer, size, nmemb, out->stream);
 }
 
-int MMSFiletransfer::progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
-	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
+int progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
+//	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
 	return 0;
 }
 
-MMSFiletransfer::MMSFiletransfer(const string& url, const unsigned int ftpPort = 0) {
+MMSFiletransfer::MMSFiletransfer(const string url, const unsigned int ftpPort = 0) {
 	timeout = 10;
 	lowSpeedLimit = 1024 * 100;
-
 	this->setRemoteUrl(url);
 	this->setFtpPort(ftpPort);
 
 	curl_global_init(CURL_GLOBAL_ALL);
+
 
 	/* get a curl handle */
 	ehandle = curl_easy_init();
@@ -62,9 +62,9 @@ MMSFiletransfer::MMSFiletransfer(const string& url, const unsigned int ftpPort =
 		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, lowSpeedLimit);
 		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
 		/* register progress callback */
-		curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
-		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
-		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
+		//curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
+		//curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, MMSFiletransfer::progress_callback);
+		//curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
 		/* enable curl to create missing dirs on upload */
 		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 	}
@@ -73,7 +73,7 @@ MMSFiletransfer::MMSFiletransfer(const string& url, const unsigned int ftpPort =
 
 MMSFiletransfer::~MMSFiletransfer() {
 	curl_easy_cleanup(ehandle);
-	curl_global_cleanup();
+// 	curl_global_cleanup();
 }
 
 
@@ -82,7 +82,7 @@ void MMSFiletransfer::setVerboseInformation(bool enable) {
 }
 
 
-void MMSFiletransfer::setAuthData(const string& user, const string& password) {
+void MMSFiletransfer::setAuthData(const string user, const string password) {
 	curl_easy_setopt(ehandle, CURLOPT_USERPWD, (user + ":" + password).c_str());
 }
 
@@ -112,7 +112,7 @@ bool MMSFiletransfer::performUpload(const string& localfile, const string& remot
 	hd_src = fopen(localfile.c_str(), "rb");
 
 	/* now specify which file to upload */
-	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION, MMSFiletransfer::read_callback);
+	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION, read_callback);
 	curl_easy_setopt(ehandle, CURLOPT_READDATA, hd_src);
 
 	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, file_info.st_size);
@@ -125,7 +125,7 @@ bool MMSFiletransfer::performUpload(const string& localfile, const string& remot
 }
 
 
-bool MMSFiletransfer::performDownload(const string& localfile, const string& remoteName, bool resume) {
+bool MMSFiletransfer::performDownload(const string localfile, const string remoteName, bool resume) {
 	struct stat file_info;
 	FtpFile ftpfile = { localfile.c_str(), /* name to store the file as if succesful */
 	NULL };
@@ -141,6 +141,7 @@ bool MMSFiletransfer::performDownload(const string& localfile, const string& rem
 		return false;
 	}
 
+
 	curl_easy_setopt(ehandle, CURLOPT_URL, (remoteUrl + remoteName).c_str());
 
 	/* Set a pointer to our struct to pass to the callback */
@@ -148,7 +149,7 @@ bool MMSFiletransfer::performDownload(const string& localfile, const string& rem
 
 	/* Define our callback to get called when there's data to be written */
 	curl_easy_setopt(ehandle, CURLOPT_WRITEFUNCTION,
-			MMSFiletransfer::write_callback);
+			write_callback);
 
 	lasterror = curl_easy_perform(ehandle);
 
@@ -160,7 +161,7 @@ bool MMSFiletransfer::performDownload(const string& localfile, const string& rem
 }
 
 
-void MMSFiletransfer::setRemoteUrl(const string& url) {
+void MMSFiletransfer::setRemoteUrl(const string url) {
 	remoteUrl = "ftp://" + url;
 
 	/* append trailing / if necessary */
