@@ -30,8 +30,6 @@ typedef enum {
 	MMSFLASHTHREAD_MODE_PLAYER = 1
 } MMSFLASHTHREAD_MODE;
 
-//class MMSFlash;
-
 class MMSFlashThread : public MMSThread {
     private:
         //! access to the flash object
