@@ -83,6 +83,26 @@ struct bool_accumulator
 };
 
 
+//! bool accumulator (not)
+/*!
+with this accumulator the emit() method of a callback ends with
+ - false, if the no callback methods are connected or all connected callback methods returns false
+ - true,  if at least one connected callback method returns true
+*/
+struct neg_bool_accumulator
+{
+  typedef bool result_type;
+  template<typename T_iterator>
+  result_type operator()(T_iterator first, T_iterator last) const
+  {
+    bool ret_ = false;
+    int n_ = 0;
+    for (; first != last; ++first, ++n_)
+      if (*first) ret_ = true;
+    return ret_;
+  }
+};
+
 
 
 /*
