@@ -30,7 +30,6 @@
 #include <sigc++/sigc++.h>
 
 
-
 //example from: http://libsigc.sourceforge.net/libsigc2/docs/reference/html/classsigc_1_1signal_1_1accumulated.html
 //! this accumulator calculates the arithmetic mean value
 struct arithmetic_mean_accumulator
