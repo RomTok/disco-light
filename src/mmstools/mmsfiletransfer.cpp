@@ -80,7 +80,7 @@ MMSFiletransfer::~MMSFiletransfer() {
 
 
 void MMSFiletransfer::setVerboseInformation(bool enable) {
-	curl_easy_setopt(ehandle, CURLOPT_VERBOSE, (enable ? 1 : 0));
+	curl_easy_setopt(ehandle, CURLOPT_VERBOSE, (enable ? 1L : 0L));
 }
 
 
@@ -112,12 +112,16 @@ bool MMSFiletransfer::performUpload(const string& localfile, const string& remot
 
 	/* get a FILE * of the same file */
 	hd_src = fopen(localfile.c_str(), "rb");
+	if(!hd_src) {
+		lasterror = CURLE_FILE_COULDNT_READ_FILE;
+		return false;
+	}
 
 	/* now specify which file to upload */
 	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION, read_callback);
 	curl_easy_setopt(ehandle, CURLOPT_READDATA, hd_src);
 
-	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, file_info.st_size);
+	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, (long)file_info.st_size);
 
 	/* Now run off and do what you've been told! */
 	lasterror = curl_easy_perform(ehandle);
@@ -134,7 +138,7 @@ bool MMSFiletransfer::performDownload(const string localfile, const string remot
 
 	if (resume) {
 		if (!stat(localfile.c_str(), &file_info)) {
-			curl_easy_setopt(ehandle, CURLOPT_RESUME_FROM, file_info.st_size);
+			curl_easy_setopt(ehandle, CURLOPT_RESUME_FROM, (long)file_info.st_size);
 		}
 	}
 
