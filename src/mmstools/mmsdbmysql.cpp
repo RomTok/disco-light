@@ -42,7 +42,9 @@
  * @brief ????
  *
  */
-MMSDBMySQL::MMSDBMySQL(DataSource *_datasource) : IMMSDB(_datasource) {
+MMSDBMySQL::MMSDBMySQL(DataSource *_datasource, bool autoreconnect) :
+	IMMSDB(_datasource),
+	autoreconnect(autoreconnect) {
 	if(!this->datasource)
 		throw new MMSError(0, "Cannot instantiate MMSDBMySQL without datasource");
 };
@@ -95,6 +97,13 @@ void MMSDBMySQL::rollbackTransaction() {
  */
 void MMSDBMySQL::connect() {
 	mysql_init(&this->dbhandle);
+
+	// reconnect?
+	if(this->autoreconnect) {
+		mybool_t r = 1;
+		mysql_options(&this->dbhandle, MYSQL_OPT_RECONNECT, &r);
+	}
+
 	if(!mysql_real_connect(&this->dbhandle,
 			               this->datasource->getAddress().c_str(),
 			               this->datasource->getUser().c_str(),
@@ -116,7 +125,7 @@ void MMSDBMySQL::connect() {
  * @return void
  */
 void MMSDBMySQL::disconnect() {
-    if(this-connected) {
+    if(this->connected) {
         mysql_close(&this->dbhandle);
         this->connected = false;
     }
