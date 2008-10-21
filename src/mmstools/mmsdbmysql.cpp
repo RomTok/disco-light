@@ -98,11 +98,15 @@ void MMSDBMySQL::rollbackTransaction() {
 void MMSDBMySQL::connect() {
 	mysql_init(&this->dbhandle);
 
+#ifdef MYSQL_OPT_RECONNECT
+#  if defined(MYSQL_VERSION_ID) && (MYSQL_VERSION_ID >= 50013)
 	// reconnect?
 	if(this->autoreconnect) {
 		my_bool r = 1;
 		mysql_options(&this->dbhandle, MYSQL_OPT_RECONNECT, &r);
 	}
+#  endif
+#endif
 
 	if(!mysql_real_connect(&this->dbhandle,
 			               this->datasource->getAddress().c_str(),
