@@ -25,16 +25,27 @@
 MMSFlashThread::MMSFlashThread(MMSFlash *flash, MMSFLASHTHREAD_MODE mode, string identity) : MMSThread(identity) {
 	this->flash = flash;
 	this->mode = mode;
+	this->started = false;
 	this->stop = false;
 }
 
 void MMSFlashThread::threadMain() {
+	this->started = true;
 	this->stop = false;
 	if (mode == MMSFLASHTHREAD_MODE_LOADER)
 		this->flash->loader(this->stop);
 	else
 	if (mode == MMSFLASHTHREAD_MODE_PLAYER)
 		this->flash->player(this->stop);
+}
+
+void MMSFlashThread::start(void) {
+	this->started = false;
+	MMSThread::start();
+}
+
+bool MMSFlashThread::isStarted(void) {
+	return this->started;
 }
 
 void MMSFlashThread::invokeStop(void) {
@@ -44,3 +55,4 @@ void MMSFlashThread::invokeStop(void) {
 void MMSFlashThread::waitUntilStopped(void) {
 	while (isRunning()) msleep(50);
 }
+

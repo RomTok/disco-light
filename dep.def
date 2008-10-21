@@ -149,7 +149,7 @@ ifndef XINE_CHECKED
                 export __WITH_MMSMEDIA__=1
             endif
         else
-            $(warning something is wrong with xine headers. Building without mmsmedia support.)
+            export __WITH_MMSMEDIA__=1
         endif
     endif
     export XINE_CHECKED=1

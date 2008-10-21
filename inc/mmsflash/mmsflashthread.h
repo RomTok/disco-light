@@ -30,8 +30,6 @@ typedef enum {
 	MMSFLASHTHREAD_MODE_PLAYER = 1
 } MMSFLASHTHREAD_MODE;
 
-//class MMSFlash;
-
 class MMSFlashThread : public MMSThread {
     private:
         //! access to the flash object
@@ -40,16 +38,27 @@ class MMSFlashThread : public MMSThread {
     	//! mode of the thread
     	MMSFLASHTHREAD_MODE	mode;
 
+    	//! start flag, means that the thread was started after start(), but it can be finished
+    	bool 	started;
+
     	//! stop flag
     	bool 	stop;
 
         //! main routine
         void threadMain();
-
     public:
         MMSFlashThread(MMSFlash *flash, MMSFLASHTHREAD_MODE mode, string identity = "MMSFlashThread");
 
+        //! start the thread
+        void start(void);
+
+        //! is the thread started
+        bool isStarted(void);
+
+        //! thread should stop
         void invokeStop(void);
+
+        //! waiting until end of the thread
         void waitUntilStopped(void);
 };
 
