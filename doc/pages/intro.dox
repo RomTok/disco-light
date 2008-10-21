@@ -27,40 +27,34 @@
  * - XML-based dialog descriptions
  * - Themeable and skinnable
  * - Streaming of media content through xine library
- * - SQLite3 and ODBC database support
+ * - SQLite3, MySQL and ODBC database support
+ * - basic SIP support
+ * - basic Flash support
  *
  * \section install_sec Installation
  *
- * \subsection required_sec Required packages
+ * \subsection required_sec Required and optional packages
  *
  * The following development packages are required to build disko:
- * - libsqlite3
- * - libxine
  * - libpng
  * - libjpeg
- * - libx11
- * - libmpeg
  * - libcurl
- * - libasound
- * - libhal-storage
- * - libdbus-glib
  * - libdirectfb
+ *
+ * To enable all features of disko, the following packages have to be installed:
+ * - libsqlite3
+ * - libmysqlclient
+ * - unix-odbc
+ * - libxine
+ * - libasound
+ * - libswfdec
+ * - libpj
  *
  * On Debian based systems you can install them like this:
  * \code
- * sudo aptitude install libsqlite3-dev     \
- *                       sqlite3            \
- *                       libxine-dev        \
- *                       libpng12-dev       \
+ * sudo aptitude install libpng12-dev       \
  *                       libjpeg62-dev      \
- *                       libx11-dev         \
- *                       libxext-dev        \
- *                       libmpeg3-dev       \
  *                       libcurl3-dev       \
- *                       libasound2-dev     \
- *                       libtag1-dev        \
- *                       libhal-storage-dev \
- *                       libdbus-glib-1-dev \
  *                       libdirectfb-dev
  * \endcode
  *
@@ -69,9 +63,9 @@
  * Download the sources from <a href="http://www.directfb.org/?path=Main%2FDownloads&page=2">DirectFB</a> and build them.
  *
  * \code
- * wget http://www.directfb.org/downloads/Libs/disko-1.1.0.tar.bz2
- * cd <path-to-disko-1.1.0.tar.bz2>
- * tar jxf disko-1.1.0.tar.bz2
+ * wget http://www.diskohq.org/downloads/disko-1.5.0.tar.bz2
+ * cd <path-to-disko-1.5.0.tar.bz2>
+ * tar jxf disko-1.5.0.tar.bz2
  * cd disko
  * make [prefix=<path>]
  * make install
