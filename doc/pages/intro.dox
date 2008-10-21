@@ -60,7 +60,7 @@
  *
  * \subsection build_sec Building and installing
  *
- * Download the sources from <a href="http://www.directfb.org/?path=Main%2FDownloads&page=2">DirectFB</a> and build them.
+ * Download the sources from <a href="http://www.diskohq.org/download/sources">diskohq.org</a> and build them.
  *
  * \code
  * wget http://www.diskohq.org/downloads/disko-1.5.0.tar.bz2
