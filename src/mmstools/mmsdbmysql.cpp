@@ -100,7 +100,7 @@ void MMSDBMySQL::connect() {
 
 	// reconnect?
 	if(this->autoreconnect) {
-		mybool_t r = 1;
+		my_bool r = 1;
 		mysql_options(&this->dbhandle, MYSQL_OPT_RECONNECT, &r);
 	}
 
