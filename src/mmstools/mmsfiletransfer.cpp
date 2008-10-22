@@ -53,81 +53,87 @@ MMSFiletransfer::MMSFiletransfer(const string url, const unsigned int ftpPort = 
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	/* get a curl handle */
-	ehandle = curl_easy_init();
+	this->ehandle = curl_easy_init();
 
-	if (!ehandle) {
-		lasterror = CURLE_FAILED_INIT;
+	if (!this->ehandle) {
+		this->lasterror = CURLE_FAILED_INIT;
 	} else {
 		/* set timeout behaviour */
-		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, 	lowSpeedLimit);
-		curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, 	timeout);
+		curl_easy_setopt(this->ehandle, CURLOPT_LOW_SPEED_LIMIT, 	this->lowSpeedLimit);
+		curl_easy_setopt(this->ehandle, CURLOPT_LOW_SPEED_TIME, 	this->timeout);
 		if(this->port != 0)
-			curl_easy_setopt(ehandle, CURLOPT_PORT, this->port);
-		/* register progress callback */
-		curl_easy_setopt(ehandle, CURLOPT_NOPROGRESS, 0L);
-		curl_easy_setopt(ehandle, CURLOPT_PROGRESSFUNCTION, progress_callback);
-		curl_easy_setopt(ehandle, CURLOPT_PROGRESSDATA, this);
-		/* enable curl to create missing dirs on upload */
-		curl_easy_setopt(ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+			curl_easy_setopt(this->ehandle, CURLOPT_PORT, this->port);
 	}
 }
 
 
 MMSFiletransfer::~MMSFiletransfer() {
-	curl_easy_cleanup(ehandle);
+	curl_easy_cleanup(this->ehandle);
  	curl_global_cleanup();
 }
 
 
 void MMSFiletransfer::setVerboseInformation(bool enable) {
-	curl_easy_setopt(ehandle, CURLOPT_VERBOSE, (enable ? 1L : 0L));
+	curl_easy_setopt(this->ehandle, CURLOPT_VERBOSE, (enable ? 1L : 0L));
 }
 
 
 void MMSFiletransfer::setAuthData(const string user, const string password) {
-	curl_easy_setopt(ehandle, CURLOPT_USERPWD, (user + ":" + password).c_str());
+	curl_easy_setopt(this->ehandle, CURLOPT_USERPWD, (user + ":" + password).c_str());
 }
 
 
-bool MMSFiletransfer::performUpload(const string& localfile, const string& remoteName, bool resume) {
+bool MMSFiletransfer::performUpload(const string localfile, const string remoteName, bool resume) {
 	FILE *hd_src;
 	struct stat file_info;
 
 	/* enable uploading */
-	curl_easy_setopt(ehandle, CURLOPT_UPLOAD, 1L);
+	curl_easy_setopt(this->ehandle, CURLOPT_UPLOAD, 1L);
+	/* enable curl to create missing dirs on upload */
+	curl_easy_setopt(this->ehandle, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+
+	/* register progress callback */
+	curl_easy_setopt(this->ehandle, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(this->ehandle, CURLOPT_PROGRESSFUNCTION, progress_callback);
+	curl_easy_setopt(this->ehandle, CURLOPT_PROGRESSDATA, this);
 
 	if (resume) {
-		curl_easy_setopt(ehandle, CURLOPT_RESUME_FROM, -1L);
+		curl_easy_setopt(this->ehandle, CURLOPT_RESUME_FROM, -1L);
 	}
 
 	/* specify target */
-	curl_easy_setopt(ehandle, CURLOPT_URL, (remoteUrl + remoteName).c_str());
+	curl_easy_setopt(this->ehandle, CURLOPT_URL, (this->remoteUrl + remoteName).c_str());
 
 	/* get the file size of the local file */
 	if (stat(localfile.c_str(), &file_info)) {
 		/* throw error */
-		lasterror = CURLE_FILE_COULDNT_READ_FILE;
+		this->lasterror = CURLE_FILE_COULDNT_READ_FILE;
 		return false;
 	}
 
 	/* get a FILE * of the same file */
 	hd_src = fopen(localfile.c_str(), "rb");
 	if(!hd_src) {
-		lasterror = CURLE_FILE_COULDNT_READ_FILE;
+		this->lasterror = CURLE_FILE_COULDNT_READ_FILE;
 		return false;
 	}
 
 	/* now specify which file to upload */
-	curl_easy_setopt(ehandle, CURLOPT_READFUNCTION, read_callback);
-	curl_easy_setopt(ehandle, CURLOPT_READDATA, hd_src);
+	curl_easy_setopt(this->ehandle, CURLOPT_READFUNCTION, read_callback);
+	curl_easy_setopt(this->ehandle, CURLOPT_READDATA, hd_src);
 
-	curl_easy_setopt(ehandle, CURLOPT_INFILESIZE, (long)file_info.st_size);
+	curl_easy_setopt(this->ehandle, CURLOPT_INFILESIZE, (long)file_info.st_size);
 
 	/* Now run off and do what you've been told! */
-	lasterror = curl_easy_perform(ehandle);
+	this->lasterror = curl_easy_perform(this->ehandle);
+	if (this->lasterror != CURLE_OK)
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 1);
+	else
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 0);
+
 	fclose(hd_src); /* close the local file */
 
-	return (lasterror == CURLE_OK);
+	return (this->lasterror == CURLE_OK);
 }
 
 
@@ -136,78 +142,117 @@ bool MMSFiletransfer::performDownload(const string localfile, const string remot
 	FtpFile ftpfile = { localfile.c_str(), /* name to store the file as if succesful */
 	NULL };
 
+	/* register progress callback */
+	curl_easy_setopt(this->ehandle, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(this->ehandle, CURLOPT_PROGRESSFUNCTION, progress_callback);
+	curl_easy_setopt(this->ehandle, CURLOPT_PROGRESSDATA, this);
+
 	if (resume) {
 		if (!stat(localfile.c_str(), &file_info)) {
-			curl_easy_setopt(ehandle, CURLOPT_RESUME_FROM, (long)file_info.st_size);
+			curl_easy_setopt(this->ehandle, CURLOPT_RESUME_FROM, (long)file_info.st_size);
 		}
 	}
 
 	if (!fopen(ftpfile.filename, (resume ? "ab" : "wb"))) {
-		lasterror = CURLE_FILE_COULDNT_READ_FILE;
+		this->lasterror = CURLE_FILE_COULDNT_READ_FILE;
 		return false;
 	}
 
-	curl_easy_setopt(ehandle, CURLOPT_URL, (remoteUrl + remoteName).c_str());
+	curl_easy_setopt(this->ehandle, CURLOPT_URL, (this->remoteUrl + remoteName).c_str());
 
 	/* Set a pointer to our struct to pass to the callback */
-	curl_easy_setopt(ehandle, CURLOPT_WRITEDATA, &ftpfile);
+	curl_easy_setopt(this->ehandle, CURLOPT_WRITEDATA, &ftpfile);
 
 	/* Define our callback to get called when there's data to be written */
-	curl_easy_setopt(ehandle, CURLOPT_WRITEFUNCTION,
-			write_callback);
+	curl_easy_setopt(this->ehandle, CURLOPT_WRITEFUNCTION, write_callback);
 
-	lasterror = curl_easy_perform(ehandle);
+	this->lasterror = curl_easy_perform(this->ehandle);
+	if (this->lasterror != CURLE_OK)
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 1);
+	else
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 0);
+
 
 	if (ftpfile.stream) {
 		fclose(ftpfile.stream); /* close the local file */
 	}
 
-	return (lasterror == CURLE_OK);
+	return (this->lasterror == CURLE_OK);
+}
+
+
+bool MMSFiletransfer::deleteRemoteFile(const string remoteFile) {
+	std::string ftpcommand = "";
+	struct curl_slist *slist=NULL;
+
+	ftpcommand = "DELE " + remoteFile;
+	slist = curl_slist_append(slist, "CWD /");
+	slist = curl_slist_append(slist, ftpcommand.c_str());
+	/* pass the list of custom commands to the handle */
+	curl_easy_setopt(this->ehandle, CURLOPT_QUOTE, slist);
+
+	curl_easy_setopt(this->ehandle, CURLOPT_URL, this->remoteUrl.c_str());
+	curl_easy_setopt(this->ehandle, CURLOPT_HEADER, 1);
+
+	/* turn off file transfer */
+	curl_easy_setopt(this->ehandle, CURLOPT_NOBODY, 1);
+	this->lasterror = curl_easy_perform(this->ehandle);
+	if (this->lasterror != CURLE_OK)
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 1);
+	else
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 0);
+
+	curl_easy_setopt(this->ehandle, CURLOPT_HEADER, 0);
+	curl_easy_setopt(this->ehandle, CURLOPT_NOBODY, 0);
+	curl_slist_free_all(slist);
+	curl_easy_setopt(this->ehandle, CURLOPT_QUOTE, NULL);
+
+	return (this->lasterror == CURLE_OK);
 }
 
 
 void MMSFiletransfer::setRemoteUrl(const string url) {
-	remoteUrl = "ftp://" + url;
+	this->remoteUrl = "ftp://" + url;
 
 	/* append trailing / if necessary */
-	if ((remoteUrl.length() - 1) != remoteUrl.find('/', remoteUrl.length() - 1)) {
-		remoteUrl.append("/");
+	if ((this->remoteUrl.length() - 1) != this->remoteUrl.find('/', this->remoteUrl.length() - 1)) {
+		this->remoteUrl.append("/");
 	}
 }
 
 
 const string MMSFiletransfer::getRemoteUrl() {
-	return remoteUrl;
+	return this->remoteUrl;
 }
 
 
 void MMSFiletransfer::setTimeout(const long timeout) {
 	this->timeout = timeout;
-	curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
+	curl_easy_setopt(this->ehandle, CURLOPT_LOW_SPEED_TIME, timeout);
 }
 
 
 const long MMSFiletransfer::getTimeout() {
-	return timeout;
+	return this->timeout;
 }
 
 
 void MMSFiletransfer::setFtpPort(const unsigned int ftpPort) {
 	if((this->port != (long)ftpPort) && (0 != ftpPort)) {
 		this->port = ftpPort;
-		curl_easy_setopt(ehandle, CURLOPT_PORT, this->port);
+		curl_easy_setopt(this->ehandle, CURLOPT_PORT, this->port);
 	}
 }
 
 
 const unsigned int MMSFiletransfer::getFtpPort() {
-	return (unsigned int)this->port;
+	return this->port;
 }
 
 
 void MMSFiletransfer::setLowSpeedLimit(const long limit) {
 	this->lowSpeedLimit = limit;
-	curl_easy_setopt(ehandle, CURLOPT_LOW_SPEED_LIMIT, limit);
+	curl_easy_setopt(this->ehandle, CURLOPT_LOW_SPEED_LIMIT, limit);
 }
 
 
@@ -218,7 +263,7 @@ const long MMSFiletransfer::getLowSpeedLimit() {
 
 int MMSFiletransfer::getLastError(string *errormsg = NULL) {
 	if (errormsg) {
-		*errormsg = (lasterror ? curl_easy_strerror(lasterror) : NULL);
+		*errormsg = (this->lasterror ? curl_easy_strerror(this->lasterror) : NULL);
 	}
-	return lasterror;
+	return this->lasterror;
 }
