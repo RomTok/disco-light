@@ -483,7 +483,13 @@ void MMSFlash::startPlaying(string filename) {
     string prefix = filename.substr(0, 7);
     strToUpr(&prefix);
     if ((prefix != "FILE://")&&(prefix != "HTTP://"))
-    	this->filename = "file://" + filename;
+    	if (filename.substr(0,1) != "/") {
+    		char path[1024];
+    		memset(path, 0, sizeof(path));
+			this->filename = "file://" + (string)getcwd(path, 1024) + "/" + filename;
+    	}
+    	else
+    		this->filename = "file://" + filename;
     else
     	this->filename = filename;
 
