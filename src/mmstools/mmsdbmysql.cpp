@@ -39,25 +39,48 @@
 #include "mmstools/mmslogger.h"
 
 /**
- * @brief ????
+ * Constructor
  *
+ * It just sets the datasource and the reconnect parameters
+ * for later use in the connect() method.
+ *
+ * @param	_datasource		[in]	datasource object containing definitions for database connection
+ * @param	autoreconnect 	[in]	if set to true, connection to the database server will be reestablished, if lost (needs mysql >= 5.0.13)
+ *
+ * @exception MMSError	No datasource given (Look at the exception message).
+ *
+ * @see MMSDBMySQL::~MMSDBMySQL()
+ * @see MMSError::getMessage()
  */
-MMSDBMySQL::MMSDBMySQL(DataSource *_datasource) : IMMSDB(_datasource) {
+MMSDBMySQL::MMSDBMySQL(DataSource *_datasource, bool autoreconnect) :
+	IMMSDB(_datasource),
+	autoreconnect(autoreconnect) {
 	if(!this->datasource)
 		throw new MMSError(0, "Cannot instantiate MMSDBMySQL without datasource");
 };
 
 /**
- * @brief ????
+ * Destructor
  *
+ * Handles disconnection from the mysql database.
+ *
+ * @see MMSDBMySQL::MMSDBMySQL()
  */
 MMSDBMySQL::~MMSDBMySQL() {
     this->disconnect();
 }
 
 /**
- * @brief ????
+ * Starts a transaction.
  *
+ * If you are using transaction based queries, call
+ * this method to start a transaction. To commit it,
+ * call commitTransaction().
+ *
+ * @see MMSDBMySQL::commitTransaction()
+ * @see MMSError::getMessage()
+ *
+ * @exception MMSError	Error while trying to start transaction (Look at the exception message).
  */
 void MMSDBMySQL::startTransaction() {
     if(mysql_query(&this->dbhandle, "START TRANSACTION") != 0)
@@ -65,8 +88,16 @@ void MMSDBMySQL::startTransaction() {
 }
 
 /**
- * @brief ????
+ * Commits a transaction.
  *
+ * If you are using transaction based queries, call
+ * this method to commit a transaction. To start it,
+ * call startTransaction().
+ *
+ * @see MMSDBMySQL::startTransaction()
+ * @see MMSError::getMessage()
+ *
+ * @exception MMSError	Error while trying to commit transaction (Look at the exception message).
  */
 void MMSDBMySQL::commitTransaction() {
 #if MYSQL_VERSION_ID >= 40100
@@ -78,8 +109,16 @@ void MMSDBMySQL::commitTransaction() {
 }
 
 /**
- * @brief ????
+ * Does a rollback on the current transaction.
  *
+ * If you are using transaction based queries, call
+ * this method to rollback a transaction.
+ *
+ * @see MMSDBMySQL::startTransaction()
+ * @see MMSDBMySQL::commitTransaction()
+ * @see MMSError::getMessage()
+ *
+ * @exception MMSError	Error while trying to rollback the transaction (Look at the exception message).
  */
 void MMSDBMySQL::rollbackTransaction() {
 #if MYSQL_VERSION_ID >= 40100
@@ -91,10 +130,26 @@ void MMSDBMySQL::rollbackTransaction() {
 }
 
 /**
- * @brief Opens connection to database.
+ * Connects to the mysql database.
+ *
+ * @see MMSDBMySQL::disconnect()
+ * @see MMSError::getMessage()
+ *
+ * @exception MMSError	Error while trying to connect (Look at the exception message).
  */
 void MMSDBMySQL::connect() {
 	mysql_init(&this->dbhandle);
+
+#ifdef MYSQL_OPT_RECONNECT
+#  if defined(MYSQL_VERSION_ID) && (MYSQL_VERSION_ID >= 50013)
+	// reconnect?
+	if(this->autoreconnect) {
+		my_bool r = 1;
+		mysql_options(&this->dbhandle, MYSQL_OPT_RECONNECT, &r);
+	}
+#  endif
+#endif
+
 	if(!mysql_real_connect(&this->dbhandle,
 			               this->datasource->getAddress().c_str(),
 			               this->datasource->getUser().c_str(),
@@ -111,12 +166,12 @@ void MMSDBMySQL::connect() {
 }
 
 /**
- * @brief Close connection to database.
+ * Disconnects from a mysql database.
  *
- * @return void
+ * @see MMSDBMySQL::connect()
  */
 void MMSDBMySQL::disconnect() {
-    if(this-connected) {
+    if(this->connected) {
         mysql_close(&this->dbhandle);
         this->connected = false;
     }
@@ -130,9 +185,15 @@ void MMSDBMySQL::disconnect() {
  * @brief This function executes given database query and puts the results in MMSRecordSet.
  *        This method is used for select statements
  *
- * @param statement buffer with database query
+ * @param statement	[in]	buffer with database query
+ * @param rs		[out]	MMSRecordSet that holds the results
+ *
+ * @see MMSRecordSet
+ * @see MMSError::getMessage()
  *
  * @return Returns the number of affected rows
+ *
+ * @exception	MMSError	Query couldn't be executed (Look at the exception message).
  */
 int MMSDBMySQL::query(string statement, MMSRecordSet *rs) {
 	int     numRows = 0;
@@ -181,7 +242,11 @@ int MMSDBMySQL::query(string statement, MMSRecordSet *rs) {
  *
  * @param statement buffer with database query
  *
+ * @see MMSError::getMessage()
+ *
  * @return Returns the number of affected rows
+ *
+ * @exception	MMSError	Query couldn't be executed (Look at the exception message).
  */
 int MMSDBMySQL::query(string statement) {
 	int     numRows = 0;
@@ -211,9 +276,9 @@ int MMSDBMySQL::query(string statement) {
 /**
  * @brief Returns the ID of the last inserted record
  *
- * @note This method isn't implemented.
- *
  * @return Returns the ID of the last inserted record
+ *
+ * @exception	MMSError	Couldn't fetch last ID (Look at the exception message).
  */
 int MMSDBMySQL::getLastInsertedID() {
 	int ret = 0;

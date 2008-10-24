@@ -48,10 +48,11 @@
 
 class MMSDBMySQL : public IMMSDB {
     private:
-        MYSQL      dbhandle;
+        MYSQL      	dbhandle;
+        bool		autoreconnect;
 
     public:
-    	MMSDBMySQL(DataSource *datasource = NULL);
+    	MMSDBMySQL(DataSource *datasource = NULL, bool autoreconnect = false);
         virtual ~MMSDBMySQL();
 
         void connect();

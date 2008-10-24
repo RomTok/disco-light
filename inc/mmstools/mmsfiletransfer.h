@@ -36,9 +36,6 @@ typedef struct {
 	FILE *stream;
 } FtpFile;
 
-/*static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream);
-static size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream);
-static int	  progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow);*/
 
 /**
  *  A ftp operations class.
@@ -57,7 +54,7 @@ private:
 	CURLcode lasterror;
 	long timeout;
 	long lowSpeedLimit;
-	long port;
+	unsigned int port;
 
 
 public:
@@ -78,19 +75,26 @@ public:
 	 * Performs a ftp upload for the specified local file.
 	 *
 	 * @param   localfile    [in] the local file to be uploaded
-	 * @param   remoteName   [in] name of the remote file
+	 * @param   remoteName   [in] name and path of the remote file
 	 * @param   resume    	 [in] resume a prior upload
 	 */
-	bool performUpload(const string& localfile, const string& remoteName, bool resume = false);
+	bool performUpload(const string localfile, const string remoteName, bool resume = false);
 
 	/**
 	 * Performs a ftp download for the specified remote file.
 	 *
 	 * @param   localfile    [in] the local file to be saved
-	 * @param   remoteName   [in] name of the remote file
+	 * @param   remoteName   [in] name and path of the remote file
 	 * @param   resume    	 [in] resume a prior download
 	 */
 	bool performDownload(const string localfile, const string remoteName, bool resume = false);
+
+	/**
+	 * Deletes the specified remote file.
+	 *
+	 * @param   remoteFile   [in] name and path of the remote file
+	 */
+	bool deleteRemoteFile(const string remoteFile);
 
 	/**
 	 * Enables verbose output of from the curl lib.
@@ -109,7 +113,7 @@ public:
 	 * Changes the remote url.
 	 * The change will be performed on the following ftp operation (upload / download).
 	 *
-	 * @param url	[in] the remote host and desired directory ("localhost/dir")
+	 * @param url	[in] the remote host (e.g. "127.0.0.1")
 	 */
 	void setRemoteUrl(const string url);
 
