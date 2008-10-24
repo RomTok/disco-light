@@ -450,18 +450,12 @@ bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
 		break;
 	case MMSINPUTEVENTTYPE_BUTTONPRESS:
 		swfdec_player_mouse_press((SwfdecPlayer*)this->swfdec_player, posx, posy, 1);
-
-		printf("mouse press %d,%d\n", posx,posy);
 		break;
 	case MMSINPUTEVENTTYPE_BUTTONRELEASE:
 		swfdec_player_mouse_release((SwfdecPlayer*)this->swfdec_player, posx, posy, 1);
-
-		printf("mouse release %d,%d\n", posx,posy);
 		break;
 	case MMSINPUTEVENTTYPE_AXISMOTION:
 		swfdec_player_mouse_move((SwfdecPlayer*)this->swfdec_player, posx, posy);
-
-		printf("mouse motion %d,%d\n", posx,posy);
 		break;
 	}
 
