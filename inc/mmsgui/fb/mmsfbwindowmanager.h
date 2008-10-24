@@ -66,6 +66,7 @@ class MMSFBWindowManager {
         DFBRegion		pointer_region;
         MMSFBSurface	*pointer_surface;
         unsigned char	pointer_opacity;
+        bool			button_pressed;
 
         MMSMutex lock;            /* to make it thread-safe */
 
@@ -104,7 +105,7 @@ class MMSFBWindowManager {
         bool init(MMSFBLayer *layer, bool show_pointer = false);
         bool getLayer(MMSFBLayer **layer);
 
-        void setPointerPosition(int pointer_posx, int pointer_posy);
+        void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = false);
         bool getPointerPosition(int &pointer_posx, int &pointer_posy);
 
     friend class MMSFBLayer;

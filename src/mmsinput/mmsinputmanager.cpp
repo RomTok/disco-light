@@ -111,7 +111,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: %d,%d", inputevent->posx, inputevent->posy);
 
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, true);
+		this->button_pressed = true;
 
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
@@ -142,8 +143,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: %d,%d", inputevent->posx, inputevent->posy);
 
-
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, false);
+		this->button_pressed = false;
 
 		window = this->windowmanager->getToplevelWindow();
 		if (!window)
@@ -195,7 +196,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, this->button_pressed);
 
 
 		window = this->windowmanager->getToplevelWindow();

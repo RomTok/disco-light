@@ -29,7 +29,7 @@
 class IMMSWindowManager {
     public:
         virtual ~IMMSWindowManager() {};
-        
+
         virtual DFBRectangle getVRect() = 0;
 
         virtual void addWindow(MMSWindow *window) = 0;
@@ -46,7 +46,7 @@ class IMMSWindowManager {
         virtual void setBackgroundWindow(MMSWindow *window) = 0;
         virtual MMSWindow *getBackgroundWindow() = 0;
 
-        virtual void setPointerPosition(int pointer_posx, int pointer_posy) = 0;
+        virtual void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = false) = 0;
 };
 
 #endif /*IMMSWINDOWMANAGER_H_*/

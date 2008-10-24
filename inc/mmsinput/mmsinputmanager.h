@@ -43,7 +43,8 @@ class MMSInputManager  {
 		MMSConfigData *config;
 
 		//! store the window on which the button was pressed
-		MMSWindow *buttonpress_window;
+		MMSWindow 	*buttonpress_window;
+		bool		button_pressed;
 
 	public:
 		MMSInputManager(string file, string name);
