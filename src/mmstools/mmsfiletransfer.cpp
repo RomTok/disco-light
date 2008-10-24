@@ -79,7 +79,11 @@ void MMSFiletransfer::setVerboseInformation(bool enable) {
 
 
 void MMSFiletransfer::setAuthData(const string user, const string password) {
-	curl_easy_setopt(this->ehandle, CURLOPT_USERPWD, (user + ":" + password).c_str());
+	std::string auth = user;
+	if (0 != password.length())
+		auth += ":" + password;
+
+	curl_easy_setopt(this->ehandle, CURLOPT_USERPWD, auth.c_str());
 }
 
 
