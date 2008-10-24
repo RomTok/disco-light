@@ -26,6 +26,7 @@ MMSInputManager::MMSInputManager(string file, string name) {
 	this->mapper = new MMSInputMapper(file, name);
 	this->config = new MMSConfigData();
 	this->buttonpress_window = NULL;
+	this->button_pressed = false;
 }
 
 MMSInputManager::~MMSInputManager() {
