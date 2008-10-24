@@ -22,12 +22,12 @@ clean:
 	
 install: all
 	@echo " [INSTALL]   ($(SUBPACKAGE))"
-	@install -d $(DESTDIR)$(incdir)/$(SUBPACKAGE)
-	@cp -R ../../inc/$(SUBPACKAGE)/* $(DESTDIR)$(incdir)/$(SUBPACKAGE)/
-	@find $(DESTDIR)$(incdir)/$(SUBPACKAGE)/ -name *.h | xargs chmod 644
-	@install -d $(DESTDIR)$(libdir)
-	@install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
-	@if test -f $(LIBDIR)/$(STATIC_TARGET); then \
+	install -d $(DESTDIR)$(incdir)/$(SUBPACKAGE)
+	cp -R ../../inc/$(SUBPACKAGE)/* $(DESTDIR)$(incdir)/$(SUBPACKAGE)/
+	find $(DESTDIR)$(incdir)/$(SUBPACKAGE)/ -name *.h | xargs chmod 644
+	install -d $(DESTDIR)$(libdir)
+	install -m 755 $(LIBDIR)/$(TARGET) $(DESTDIR)$(libdir)/
+	if test -f $(LIBDIR)/$(STATIC_TARGET); then \
 		install -m 755 $(LIBDIR)/$(STATIC_TARGET) $(DESTDIR)$(libdir)/; \
 	fi
 

@@ -1,7 +1,9 @@
 #ifndef MMSINFO_H_
 #define MMSINFO_H_
 
-#define DISKO_PREFIX "/home/sxs/disko"
+#ifndef DISKO_PREFIX
+#define DISKO_PREFIX "/home/mah/work/boundaryDevices/bounds/platform-Boundary-TI-Davinci/sysroot-target/usr"
+#endif
 
 const char *getPrefix();
 
