@@ -29,33 +29,39 @@
 #include "mmsgui/fb/mmsfbwindow.h"
 
 
+//! describes the config of a layer
 typedef struct {
-	// width
+	//! layer's id
+	int 	id;
+	//! width
     int     w;
-    // height
+    //! height
     int     h;
-    // pixelformat
+    //! pixelformat
     string  pixelformat;
-    // buffer mode
+    //! buffer mode
     string  buffermode;
-    // options
+    //! options
     string  options;
-    // pixelformat for windows
+    //! pixelformat for windows
     string  window_pixelformat;
-    // pixelformat for surfaces
+    //! pixelformat for surfaces
     string  surface_pixelformat;
 } MMSFBLayerConfig;
 
 class MMSFBLayer {
     private:
-        IDirectFB               *dfb;       /* interface to dfb */
-        IDirectFBDisplayLayer   *dfblayer;  /* interface to the layer */
+    	// interface to the dfb layer
+        IDirectFBDisplayLayer   *dfblayer;
 
-        MMSFBLayerConfig        config;     /* layer configuration */
+        // layer configuration
+        MMSFBLayerConfig        config;
 
-        MMSFBSurface            *surface;   /* layers surface */
+        // layers surface
+        MMSFBSurface            *surface;
 
-        MMSFBSurfaceFlipFlags	flipflags;	/* flags which are used when flipping */
+        // flags which are used when flipping
+        MMSFBSurfaceFlipFlags	flipflags;
 
         // first time flag for createSurface()
         static bool 			firsttime_createsurface;
@@ -65,8 +71,10 @@ class MMSFBLayer {
         static bool 			firsttime_createwindow_noalpha;
 
     public:
-        MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer);
+        MMSFBLayer(int id);
         virtual ~MMSFBLayer();
+
+        bool isInitialized();
 
         bool getID(int *id);
         bool setExclusiveAccess();

@@ -50,6 +50,7 @@ class MMSFB {
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
         bool createFont(IDirectFBFont **font, string filename, DFBFontDescription *desc);
 
+    friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;
 };
 

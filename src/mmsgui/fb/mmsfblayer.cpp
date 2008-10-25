@@ -34,47 +34,84 @@ bool MMSFBLayer::firsttime_createwindow_noalpha	= true;
 
 #define INITCHECK  if(!this->dfblayer){MMSFB_SetError(0,"not initialized");return false;}
 
-MMSFBLayer::MMSFBLayer(IDirectFB *dfb, IDirectFBDisplayLayer *dfblayer) {
-    /* init me */
-    this->dfb = dfb;
-    this->dfblayer = dfblayer;
+
+MMSFBLayer::MMSFBLayer(int id) {
+    // init me
     this->surface = NULL;
     this->flipflags = (MMSFBSurfaceFlipFlags)0;
+    this->config.id = id;
+    this->config.window_pixelformat = MMSFB_PF_ARGB;
+    this->config.surface_pixelformat = MMSFB_PF_ARGB;
 
-    /* get the current config */
+#ifndef  __ENABLE_MMSFB_X11_CORE__
+    // get the layer
+    DFBResult	dfbres;
+    if ((dfbres = mmsfb->dfb->GetDisplayLayer(mmsfb->dfb, this->config.id, &this->dfblayer)) != DFB_OK) {
+    	this->dfblayer = NULL;
+        MMSFB_SetError(dfbres, "IDirectFB::GetDisplayLayer(" + iToStr(id) + ") failed");
+        return;
+    }
+#else
+    //TODO
+    this->dfblayer = (IDirectFBDisplayLayer*)1;
+
+    // fill my config with defaults
+    this->config.w = 800;
+    this->config.h = 600;
+    this->config.pixelformat = MMSFB_PF_YV12;
+    this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+    this->config.options = MMSFB_LO_NONE;
+#endif
+
+    // get the current config
     if (this->dfblayer) {
     	MMSFBLayerConfig config;
     	getConfiguration(&config);
     }
 }
 
+
 MMSFBLayer::~MMSFBLayer() {
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     if (this->dfblayer)
         this->dfblayer->Release(this->dfblayer);
+#else
+    //TODO
+#endif
+}
+
+bool MMSFBLayer::isInitialized() {
+#ifndef  __ENABLE_MMSFB_X11_CORE__
+    return (this->dfblayer != NULL);
+#else
+    //TODO
+    return true;
+#endif
 }
 
 bool MMSFBLayer::getID(int *id) {
-    DFBResult           dfbres;
-    DFBDisplayLayerID   di;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* get the id of the layer */
-    if ((dfbres = this->dfblayer->GetID(this->dfblayer, &di)) != DFB_OK) {
-        MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::GetID() failed");
+    // get configuration
+	MMSFBLayerConfig config;
+    if (!getConfiguration(&config))
         return false;
-    }
-    *id = di;
+
+    // fill return values
+    *id = this->config.id;
 
     return true;
 }
 
 bool MMSFBLayer::setExclusiveAccess() {
-    DFBResult   dfbres;
 
-    /* check if initialized */
+	/* check if initialized */
     INITCHECK;
+
+#ifndef  __ENABLE_MMSFB_X11_CORE__
+    DFBResult   dfbres;
 
     /* set cooperative level to exclusive */
     if ((dfbres=this->dfblayer->SetCooperativeLevel(this->dfblayer, DLSCL_EXCLUSIVE)) != DFB_OK) {
@@ -83,14 +120,19 @@ bool MMSFBLayer::setExclusiveAccess() {
     }
 
     return true;
+#else
+    return true;
+#endif
 }
 
 bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
+
+	/* check if initialized */
+    INITCHECK;
+
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     DFBResult               dfbres;
     DFBDisplayLayerConfig   dlc;
-
-    /* check if initialized */
-    INITCHECK;
 
     /* get configuration */
     if ((dfbres=this->dfblayer->GetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
@@ -104,6 +146,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     this->config.pixelformat = getDFBPixelFormatString(dlc.pixelformat);
     this->config.buffermode = getDFBLayerBufferModeString(dlc.buffermode);
     this->config.options = getDFBLayerOptionsString(dlc.options);
+#endif
 
     if (!config) {
     	DEBUGMSG("MMSGUI", "Layer properties:");
@@ -164,11 +207,13 @@ bool MMSFBLayer::getPixelformat(string *pixelformat) {
 
 bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffermode, string options,
 								  string window_pixelformat, string surface_pixelformat) {
-    DFBResult               dfbres;
-    DFBDisplayLayerConfig   dlc;
 
     /* check if initialized */
     INITCHECK;
+
+#ifndef  __ENABLE_MMSFB_X11_CORE__
+    DFBResult               dfbres;
+    DFBDisplayLayerConfig   dlc;
 
     /* get configuration */
 	MMSFBLayerConfig config;
@@ -247,13 +292,34 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     this->config.surface_pixelformat = surface_pixelformat;
 
     return true;
+#else
+    // fill my config
+    this->config.w = w;
+    this->config.h = h;
+    this->config.pixelformat = pixelformat;
+    this->config.buffermode = buffermode;
+    this->config.options = options;
+    this->config.window_pixelformat = window_pixelformat;
+    this->config.surface_pixelformat = surface_pixelformat;
+
+    //TODO: allocate layer
+
+
+    // get configuration
+    if (!getConfiguration())
+        return false;
+
+    return true;
+#endif
 }
 
 bool MMSFBLayer::setOpacity(unsigned char opacity) {
-    DFBResult   dfbres;
 
-    /* check if initialized */
+	/* check if initialized */
     INITCHECK;
+
+#ifndef  __ENABLE_MMSFB_X11_CORE__
+    DFBResult   dfbres;
 
     /* invert the opacity for inverted pixelformats */
     if (this->config.pixelformat == MMSFB_PF_AiRGB) {
@@ -265,14 +331,20 @@ bool MMSFBLayer::setOpacity(unsigned char opacity) {
         MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetOpacity(" + iToStr(opacity) + ") failed");
         return false;
     }
+
     return true;
+#else
+    return false;
+#endif
 }
 
 bool MMSFBLayer::setLevel(int level) {
-    DFBResult   dfbres;
 
-    /* check if initialized */
+	/* check if initialized */
     INITCHECK;
+
+#ifndef  __ENABLE_MMSFB_X11_CORE__
+    DFBResult   dfbres;
 
     /* set the opacity */
     if ((dfbres=this->dfblayer->SetLevel(this->dfblayer, level)) != DFB_OK) {
@@ -280,12 +352,12 @@ bool MMSFBLayer::setLevel(int level) {
         return false;
     }
     return true;
+#else
+    return false;
+#endif
 }
 
 bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
-    DFBResult           dfbres;
-    IDirectFBSurface    *dfbsurface;
-
     /* check if initialized */
     INITCHECK;
 
@@ -295,7 +367,10 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
         return true;
     }
 
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     /* get layers surface */
+    DFBResult           dfbres;
+    IDirectFBSurface    *dfbsurface;
     if ((dfbres=this->dfblayer->GetSurface(this->dfblayer, &dfbsurface)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::GetSurface() failed");
         return false;
@@ -315,6 +390,9 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     dfbsurface->Clear(dfbsurface,0,0,0,0);
     dfbsurface->Flip(dfbsurface,NULL,(DFBSurfaceFlipFlags)0);
     dfbsurface->Clear(dfbsurface,0,0,0,0);
+#else
+    //TODO
+#endif
 
     /* save this for the next call */
     this->surface = *surface;
@@ -337,8 +415,8 @@ bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
 
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
                                string pixelformat, int backbuffer) {
-	
-	
+
+
     D_DEBUG_AT( MMS_Layer, "createSurface( %dx%d, %s, %s buffer )\n", w, h, pixelformat.c_str(),
                 (backbuffer != 0) ? "double" : "single" );
 
@@ -440,8 +518,8 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 	    	printf("DISKO: Pixelformat %s is used for windows with no alphachannel.\n", pixelformat.c_str());
 	    	firsttime_createwindow_noalpha = false;
 	    }
-    
-    
+
+
 #ifdef USE_DFB_WINMAN
 
     DFBResult               dfbres;

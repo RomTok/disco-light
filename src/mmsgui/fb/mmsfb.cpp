@@ -23,7 +23,7 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 
-/* initialize the mmsfb object */ 
+/* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
 
 #define INITCHECK  if(!this->dfb){MMSFB_SetError(0,"not initialized");return false;}
@@ -51,6 +51,7 @@ bool MMSFB::init(int argc, char **argv) {
     this->argc = argc;
     this->argv = argv;
 
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     /* init dfb */
     DirectFBInit(&this->argc,&this->argv);
 
@@ -59,43 +60,53 @@ bool MMSFB::init(int argc, char **argv) {
         MMSFB_SetError(dfbres, "DirectFBCreate() failed");
         return false;
     }
+#else
+    //TODO
+    this->dfb = (IDirectFB*)1;
+#endif
 
     return true;
 }
 
 bool MMSFB::release() {
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     if (this->dfb) {
         this->dfb->Release(this->dfb);
         this->dfb = NULL;
     }
+#else
+    //TODO
+#endif
     return true;
 }
 
 bool MMSFB::isInitialized() {
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     return (this->dfb != NULL);
+#else
+    //TODO
+    return true;
+#endif
 }
 
 bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
-    DFBResult               dfbres;
-    IDirectFBDisplayLayer   *dfblayer;
 
-    /* check if initialized */
+	// check if initialized
     INITCHECK;
 
-    /* get the layer */
-    if ((dfbres = this->dfb->GetDisplayLayer(this->dfb, id, &dfblayer)) != DFB_OK) {
-        MMSFB_SetError(dfbres, "IDirectFB::GetDisplayLayer(" + iToStr(id) + ") failed");
-        return false;
-    }
-
-    /* create a new layer instance */
-    *layer = new MMSFBLayer(this->dfb, dfblayer);
+    // create a new layer instance
+    *layer = new MMSFBLayer(id);
     if (!*layer) {
-        dfblayer->Release(dfblayer);
         MMSFB_SetError(0, "cannot create new instance of MMSFBLayer");
         return false;
     }
-    
+    if (!(*layer)->isInitialized()) {
+    	delete *layer;
+    	*layer = NULL;
+		MMSFB_SetError(0, "cannot initialize MMSFBLayer");
+		return false;
+	}
+
     return true;
 }
 
@@ -113,6 +124,7 @@ bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelform
 }
 
 bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filename) {
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     DFBResult   dfbres;
 
     /* check if initialized */
@@ -123,11 +135,16 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
         MMSFB_SetError(dfbres, "IDirectFB::CreateImageProvider(" + filename + ") failed");
         return false;
     }
-    
+
     return true;
+#else
+    *provider = NULL;
+    return false;
+#endif
 }
 
 bool MMSFB::createFont(IDirectFBFont **font, string filename, DFBFontDescription *desc) {
+#ifndef  __ENABLE_MMSFB_X11_CORE__
     DFBResult   dfbres;
 
     /* check if initialized */
@@ -138,7 +155,11 @@ bool MMSFB::createFont(IDirectFBFont **font, string filename, DFBFontDescription
         MMSFB_SetError(dfbres, "IDirectFB::CreateFont(" + filename + ") failed");
         return false;
     }
-    
+
     return true;
+#else
+    *font = NULL;
+    return false;
+#endif
 }
 
