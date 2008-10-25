@@ -33,6 +33,7 @@
 #define MMSFBSurfaceBlittingFlags   DFBSurfaceBlittingFlags
 #define MMSFBSurfaceDrawingFlags    DFBSurfaceDrawingFlags
 #define MMSFBSurfaceFlipFlags       DFBSurfaceFlipFlags
+#define MMSFBSurfaceLockFlags		int
 
 typedef struct {
     int         	w;              /* width */
@@ -53,11 +54,19 @@ typedef struct {
     MMSFBSurfaceDrawingFlags 	drawingflags;	/* drawing flags */
     MMSFBSurfaceBlittingFlags 	blittingflags;	/* blitting flags */
     IDirectFBFont				*font;			/* font */
+
+    void	*buffers[3];
+    int 	numbuffers;
+    int 	currbuffer;
+    int 	pitch;
 } MMSFBSurfaceConfig;
+
 
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
+        bool				dfbsurface_locked;
+        int					dfbsurface_lock_cnt;
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
@@ -139,6 +148,9 @@ class MMSFBSurface {
         // first time flag for eASB_blend_srcalpha_ayuv_to_ayuv()
         static bool 			firsttime_eASB_blend_srcalpha_ayuv_to_ayuv;
 
+
+        // first time flag for eAFR_argb()
+        static bool				firsttime_eAFR_argb;
 
         // first time flag for eAFR_blend_argb()
         static bool				firsttime_eAFR_blend_argb;
@@ -237,6 +249,8 @@ class MMSFBSurface {
 
 
 
+        void eAFR_argb(unsigned int *dst, int dst_pitch, int dst_height,
+					   int dx, int dy, int dw, int dh, MMSFBColor color);
 
         void eAFR_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
@@ -331,7 +345,7 @@ class MMSFBSurface {
         bool setFont(IDirectFBFont *font);
         bool drawString(string text, int len, int x, int y);
 
-        void lock();
+        void lock(MMSFBSurfaceLockFlags flags = 0, void **ptr = NULL, int *pitch = NULL);
         void unlock();
 
         MMSFBSurface *getSubSurface(DFBRectangle *rect);
