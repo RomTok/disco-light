@@ -51,7 +51,7 @@ class MMSFB {
         bool createFont(IDirectFBFont **font, string filename, DFBFontDescription *desc);
 
     friend class MMSFBLayer;
-    friend class MMSFBSurfaceManager;
+    friend class MMSFBSurface;
 };
 
 /* access to global mmsfb */

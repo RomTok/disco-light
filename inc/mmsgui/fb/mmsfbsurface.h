@@ -261,11 +261,19 @@ class MMSFBSurface {
         int						sub_surface_yoff;	/* y offset which is added to sub_surface_rect */
         vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
 
+
+        void init(IDirectFBSurface *dfbsurface,
+				  MMSFBSurface *parent,
+				  DFBRectangle *sub_surface_rect);
+
     public:
+        MMSFBSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly);
         MMSFBSurface(IDirectFBSurface *dfbsurface,
-        			 MMSFBSurface *parent = NULL,
-        		     DFBRectangle *sub_surface_rect = NULL);
+					 MMSFBSurface *parent = NULL,
+					 DFBRectangle *sub_surface_rect = NULL);
         virtual ~MMSFBSurface();
+
+        bool isInitialized();
 
         IDirectFBSurface *getDFBSurface();
 
