@@ -35,6 +35,13 @@
 #define MMSFBSurfaceFlipFlags       DFBSurfaceFlipFlags
 #define MMSFBSurfaceLockFlags		int
 
+typedef enum {
+	//! using directfb surfaces
+	MMSFBSurfaceAllocMethod_dfb = 0,
+	//! using malloc
+	MMSFBSurfaceAllocMethod_malloc
+} MMSFBSurfaceAllocMethod;
+
 #define MMSFBSurfaceMaxBuffers		3
 
 typedef struct {
@@ -78,8 +85,14 @@ class MMSFBSurface {
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
+        // using own allocated surfaces?
+        bool				use_own_alloc;
+
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
+
+        // how surface memory will be allocated?
+        static MMSFBSurfaceAllocMethod	allocmethod;
 
         // first time flag for eAB_argb_to_argb()
         static bool 			firsttime_eAB_argb_to_argb;
@@ -310,6 +323,9 @@ class MMSFBSurface {
 
         void setExtendedAcceleration(bool extendedaccel);
         bool getExtendedAcceleration();
+
+        void setAllocMethod(MMSFBSurfaceAllocMethod allocmethod, bool reset = false);
+        MMSFBSurfaceAllocMethod getAllocMethod();
 
         bool isWinSurface();
         bool isLayerSurface();
