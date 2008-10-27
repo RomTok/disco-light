@@ -38,6 +38,47 @@ size_t write_callback(void *buffer, size_t size, size_t nmemb, void *stream) {
 	return fwrite(buffer, size, nmemb, out->stream);
 }
 
+
+/* curl calls this c-routine to transfer data to the object */
+size_t c_mem_write_callback(char *buffer, size_t size, size_t nitems, void *outstream) {
+    if (outstream)
+        return ((MMSFiletransfer *)outstream)->mem_write_callback(buffer, size, nitems, outstream);
+    else
+        return 0;
+}
+
+
+size_t MMSFiletransfer::mem_write_callback(char *buffer, size_t size, size_t nitems, void *outstream) {
+    char    *newbuff;                           /* pointer to new buffer */
+    unsigned int     freebuff;                  /* free memory in old buffer */
+    MMSFiletransfer *instance = ((MMSFiletransfer *)outstream);
+
+    /* get the byte number */
+    size *= nitems;
+
+    /* calculate free buffer space */
+    freebuff=this->buf_len - this->buf_pos;
+
+    if(size > freebuff) {
+        /* not enough space in the old buffer */
+        newbuff=(char*)realloc(this->buffer,this->buf_len + (size - freebuff));
+        if(newbuff==NULL) {
+            size=freebuff;
+        }
+        else {
+            /* new buffer size */
+            this->buf_len+=size - freebuff;
+            this->buffer=newbuff;
+        }
+    }
+
+    memcpy(&(this->buffer[this->buf_pos]), buffer, size);
+    this->buf_pos += size;
+
+    return size;
+}
+
+
 int progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
 	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
 	return 0;
@@ -211,6 +252,36 @@ bool MMSFiletransfer::deleteRemoteFile(const string remoteFile) {
 	curl_slist_free_all(slist);
 	curl_easy_setopt(this->ehandle, CURLOPT_QUOTE, NULL);
 
+	return (this->lasterror == CURLE_OK);
+}
+
+
+bool MMSFiletransfer::getListing(char **buffer, string directory, bool namesOnly) {
+	this->buffer = NULL;
+	this->buf_len = 0;
+	this->buf_pos = 0;
+
+	/* append trailing / if necessary */
+	if ((directory.length() - 1) != directory.find('/', directory.length() - 1)) {
+		directory.append("/");
+	}
+	curl_easy_setopt(this->ehandle, CURLOPT_URL, (this->remoteUrl + directory).c_str());
+
+	/* Set a pointer to our struct to pass to the callback */
+	curl_easy_setopt(this->ehandle, CURLOPT_WRITEDATA, this);
+
+	/* Define our callback to get called when there's data to be written */
+	curl_easy_setopt(this->ehandle, CURLOPT_WRITEFUNCTION, c_mem_write_callback);
+	curl_easy_setopt(this->ehandle, CURLOPT_DIRLISTONLY, (namesOnly ? 1L : 0L));
+
+	this->lasterror = curl_easy_perform(this->ehandle);
+
+	if (this->lasterror != CURLE_OK)
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 1);
+	else
+		curl_easy_setopt(this->ehandle, CURLOPT_FRESH_CONNECT, 0);
+
+	*buffer = this->buffer;
 	return (this->lasterror == CURLE_OK);
 }
 
