@@ -35,6 +35,16 @@
 #define MMSFBSurfaceFlipFlags       DFBSurfaceFlipFlags
 #define MMSFBSurfaceLockFlags		int
 
+#define MMSFBSurfaceMaxBuffers		3
+
+typedef struct {
+    void	*buffers[MMSFBSurfaceMaxBuffers];
+    int 	numbuffers;
+    int 	currbuffer_read;
+    int 	currbuffer_write;
+    int 	pitch;
+} MMSFBSurfaceBuffer;
+
 typedef struct {
     int         	w;              /* width */
     int         	h;              /* height */
@@ -55,10 +65,8 @@ typedef struct {
     MMSFBSurfaceBlittingFlags 	blittingflags;	/* blitting flags */
     IDirectFBFont				*font;			/* font */
 
-    void	*buffers[3];
-    int 	numbuffers;
-    int 	currbuffer;
-    int 	pitch;
+    //! the surface buffer(s)
+    MMSFBSurfaceBuffer	surface_buffer;
 } MMSFBSurfaceConfig;
 
 
@@ -72,6 +80,9 @@ class MMSFBSurface {
 
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
+
+        // first time flag for eAB_argb_to_argb()
+        static bool 			firsttime_eAB_argb_to_argb;
 
         // first time flag for eAB_blend_argb_to_argb()
         static bool 			firsttime_eAB_blend_argb_to_argb;
@@ -158,6 +169,7 @@ class MMSFBSurface {
         // first time flag for eAFR_blend_ayuv()
         static bool				firsttime_eAFR_blend_ayuv;
 
+        void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);
 
@@ -169,11 +181,14 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
 
+        void eAB_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        					  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
         									 unsigned char alpha);
+
         void eAB_blend_argb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
 

@@ -63,10 +63,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
 
 //DEBUGOUT("remove surface=%2,%d\n", w,h);
 
-                if (surface->dfbsurface) {
-                    surface->dfbsurface->Release(surface->dfbsurface);
-                    surface->dfbsurface = NULL;
-                }
+				surface->freeSurfaceBuffer();
                 delete surface;
                 this->free_surfaces.erase(this->free_surfaces.begin()+i);
             }
@@ -123,10 +120,10 @@ return;*/
     /* create a new surface instance */
     new_surface = new MMSFBSurface(NULL);
     if (!new_surface) {
-        surface->dfbsurface->Release(surface->dfbsurface);
+		surface->freeSurfaceBuffer();
         return;
     }
-
+///xxx
     /* set values to new surface */
     new_surface->dfbsurface = surface->dfbsurface;
     new_surface->config = surface->config;
