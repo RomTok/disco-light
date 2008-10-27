@@ -341,3 +341,10 @@ ifdef FREETDS_LIBS
     libs_str   += " $(FREETDS_LIBS)"
     cflags_str +=" $(FREETDS_INC)"
 endif 
+
+
+export CFLAGS+=-D__ENABLE_MMSFB_X11_COREx__ 
+export CFLAGS+=-D__ENABLE_MMSFBSURFACE_X11_COREx__
+export CFLAGS+=-D__HAVE_DIRECTFB__
+ 
+

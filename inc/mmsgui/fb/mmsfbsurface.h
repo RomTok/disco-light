@@ -33,6 +33,24 @@
 #define MMSFBSurfaceBlittingFlags   DFBSurfaceBlittingFlags
 #define MMSFBSurfaceDrawingFlags    DFBSurfaceDrawingFlags
 #define MMSFBSurfaceFlipFlags       DFBSurfaceFlipFlags
+#define MMSFBSurfaceLockFlags		int
+
+typedef enum {
+	//! using directfb surfaces
+	MMSFBSurfaceAllocMethod_dfb = 0,
+	//! using malloc
+	MMSFBSurfaceAllocMethod_malloc
+} MMSFBSurfaceAllocMethod;
+
+#define MMSFBSurfaceMaxBuffers		3
+
+typedef struct {
+    void	*buffers[MMSFBSurfaceMaxBuffers];
+    int 	numbuffers;
+    int 	currbuffer_read;
+    int 	currbuffer_write;
+    int 	pitch;
+} MMSFBSurfaceBuffer;
 
 typedef struct {
     int         	w;              /* width */
@@ -53,16 +71,31 @@ typedef struct {
     MMSFBSurfaceDrawingFlags 	drawingflags;	/* drawing flags */
     MMSFBSurfaceBlittingFlags 	blittingflags;	/* blitting flags */
     IDirectFBFont				*font;			/* font */
+
+    //! the surface buffer(s)
+    MMSFBSurfaceBuffer	surface_buffer;
 } MMSFBSurfaceConfig;
+
 
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
+        bool				dfbsurface_locked;
+        int					dfbsurface_lock_cnt;
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
+        // using own allocated surfaces?
+        bool				use_own_alloc;
+
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
+
+        // how surface memory will be allocated?
+        static MMSFBSurfaceAllocMethod	allocmethod;
+
+        // first time flag for eAB_argb_to_argb()
+        static bool 			firsttime_eAB_argb_to_argb;
 
         // first time flag for eAB_blend_argb_to_argb()
         static bool 			firsttime_eAB_blend_argb_to_argb;
@@ -140,12 +173,16 @@ class MMSFBSurface {
         static bool 			firsttime_eASB_blend_srcalpha_ayuv_to_ayuv;
 
 
+        // first time flag for eAFR_argb()
+        static bool				firsttime_eAFR_argb;
+
         // first time flag for eAFR_blend_argb()
         static bool				firsttime_eAFR_blend_argb;
 
         // first time flag for eAFR_blend_ayuv()
         static bool				firsttime_eAFR_blend_ayuv;
 
+        void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);
 
@@ -157,11 +194,14 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
 
+        void eAB_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        					  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
         									 unsigned char alpha);
+
         void eAB_blend_argb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
@@ -237,6 +277,8 @@ class MMSFBSurface {
 
 
 
+        void eAFR_argb(unsigned int *dst, int dst_pitch, int dst_height,
+					   int dx, int dy, int dw, int dh, MMSFBColor color);
 
         void eAFR_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
@@ -261,11 +303,19 @@ class MMSFBSurface {
         int						sub_surface_yoff;	/* y offset which is added to sub_surface_rect */
         vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
 
+
+        void init(IDirectFBSurface *dfbsurface,
+				  MMSFBSurface *parent,
+				  DFBRectangle *sub_surface_rect);
+
     public:
+        MMSFBSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly);
         MMSFBSurface(IDirectFBSurface *dfbsurface,
-        			 MMSFBSurface *parent = NULL,
-        		     DFBRectangle *sub_surface_rect = NULL);
+					 MMSFBSurface *parent = NULL,
+					 DFBRectangle *sub_surface_rect = NULL);
         virtual ~MMSFBSurface();
+
+        bool isInitialized();
 
         IDirectFBSurface *getDFBSurface();
 
@@ -273,6 +323,9 @@ class MMSFBSurface {
 
         void setExtendedAcceleration(bool extendedaccel);
         bool getExtendedAcceleration();
+
+        void setAllocMethod(MMSFBSurfaceAllocMethod allocmethod, bool reset = false);
+        MMSFBSurfaceAllocMethod getAllocMethod();
 
         bool isWinSurface();
         bool isLayerSurface();
@@ -323,7 +376,7 @@ class MMSFBSurface {
         bool setFont(IDirectFBFont *font);
         bool drawString(string text, int len, int x, int y);
 
-        void lock();
+        void lock(MMSFBSurfaceLockFlags flags = 0, void **ptr = NULL, int *pitch = NULL);
         void unlock();
 
         MMSFBSurface *getSubSurface(DFBRectangle *rect);

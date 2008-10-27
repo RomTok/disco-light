@@ -56,10 +56,22 @@ private:
 	long lowSpeedLimit;
 	unsigned int port;
 
+	/** buffer to cached data from url */
+    char        *buffer;
+
+    /** buffer length */
+    unsigned    buf_len;
+
+    /** fill pointer within buffer */
+    unsigned    buf_pos;
+
 
 public:
 	/** A signal that emits the progress (in percentage) of the current up- or download. */
 	sigc::signal<void, const unsigned int> progress;
+
+    /** Virtual function for the curl write callback. */
+    virtual size_t mem_write_callback(char *buffer, size_t size, size_t nitems, void *outstream);
 
 	/**
 	 * Constructor of class MMSFiletransfer.
@@ -95,6 +107,15 @@ public:
 	 * @param   remoteFile   [in] name and path of the remote file
 	 */
 	bool deleteRemoteFile(const string remoteFile);
+
+	/**
+	 * 	Retrieves a directory listing and writes it into the memory
+	 *
+	 * @param	buffer		[out] pointer to a char buffer
+	 * @param	directory	[in] the remote directory (path from root)
+	 * @param	namesOnly	[in] flag to retrieve only the names
+	 */
+	bool getListing(char **buffer, string directory, bool namesOnly = false);
 
 	/**
 	 * Enables verbose output of from the curl lib.
