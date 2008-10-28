@@ -45,6 +45,20 @@ typedef enum {
 #define MMSFBSurfaceMaxBuffers		3
 
 typedef struct {
+	//! width
+    int     w;
+    //! height
+    int     h;
+    //! pixel format
+    string  pixelformat;
+    //! the pixel format has alphachannel
+    bool    alphachannel;
+    //! premultiplied surface
+    bool    premultiplied;
+    //! premultiplied surface
+    int     backbuffer;
+    //! true, if surface is stored in system memory
+    bool	systemonly;
     void	*buffers[MMSFBSurfaceMaxBuffers];
     int 	numbuffers;
     int 	currbuffer_read;
@@ -53,16 +67,9 @@ typedef struct {
 } MMSFBSurfaceBuffer;
 
 typedef struct {
-    int         	w;              /* width */
-    int         	h;              /* height */
-    string      	pixelformat;    /* pixel format */
-    bool        	alphachannel;   /* the pixel format has alphachannel */
-    bool            premultiplied;	/* premultiplied surface */
     MMSFBColor  	color;          /* color for drawing/blitting */
     bool			clipped;		/* is a clip region set? */
     DFBRegion		clip;			/* current clip region */
-    int         	backbuffer;     /* 0-none, 1-double, 2-triple buffered */
-    bool			systemonly;		/* true, if surface is stored in system memory */
     bool        	iswinsurface;   /* the surface is a window surface */
     bool        	islayersurface; /* the surface is the layer surface */
                                 	/* note: for example it is possible to have */
@@ -80,8 +87,11 @@ typedef struct {
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
-        bool				dfbsurface_locked;
-        int					dfbsurface_lock_cnt;
+        bool				dfbsurface_read_locked;
+        int					dfbsurface_read_lock_cnt;
+        bool				dfbsurface_write_locked;
+        int					dfbsurface_write_lock_cnt;
+        bool				dfbsurface_invert_lock;
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 

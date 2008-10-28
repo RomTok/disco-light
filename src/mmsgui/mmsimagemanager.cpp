@@ -574,6 +574,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 im_desc->mtime = 0;
         }
 
+
 #ifdef  __HAVE_DIRECTFB__
         /* get surface description */
         if (imageprovider->GetSurfaceDescription(imageprovider, &surface_desc)!=DFB_OK) {
@@ -603,6 +604,16 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 return NULL;
             }
             im_desc->sufcount = 1;
+
+            // check if dfb surface available
+            if (!im_desc->suf[0].surface->getDFBSurface()) {
+                /* release imageprovider */
+                imageprovider->Release(imageprovider);
+                delete im_desc->suf[0].surface;
+                DEBUGMSG("MMSGUI", "cannot render image file '%s' because it is not a DFB surface", imagefile.c_str());
+                delete im_desc;
+                return NULL;
+            }
 
             /* render to the surface */
             if (imageprovider->RenderTo(imageprovider, im_desc->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
