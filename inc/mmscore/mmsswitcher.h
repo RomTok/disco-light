@@ -85,7 +85,7 @@ class MMSSwitcher : public IMMSSwitcher {
 		void setPluginManager(MMSPluginManager *pm);
 		void setInputManager(MMSInputManager  *im);
 		void onSubscription(MMSInputSubscription *subscription);
-		void subscribeKey(DFBInputDeviceKeySymbol key);
+		void subscribeKey(MMSKeySymbol key);
 
         /* methods for IMMSSwitcher */
         virtual void show();

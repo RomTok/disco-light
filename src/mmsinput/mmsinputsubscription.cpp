@@ -30,17 +30,17 @@ MMSInputSubscription::MMSInputSubscription(MMSInputManager *manager) {
 	this->manager = manager;
 }
 
-MMSInputSubscription::MMSInputSubscription(DFBInputDeviceKeySymbol key) {
+MMSInputSubscription::MMSInputSubscription(MMSKeySymbol key) {
 	this->key = key;
 }
 
 MMSInputSubscription::MMSInputSubscription(DFBRectangle &pointer_area) {
-	this->key = (DFBInputDeviceKeySymbol)0;
+	this->key = MMSKEY_UNKNOWN;
 	this->pointer_area = pointer_area;
 }
 
-bool MMSInputSubscription::getKey(DFBInputDeviceKeySymbol &key) {
-	if (this->key != (DFBInputDeviceKeySymbol)0) {
+bool MMSInputSubscription::getKey(MMSKeySymbol &key) {
+	if (this->key != MMSKEY_UNKNOWN) {
 		key = this->key;
 		return true;
 	}
@@ -49,7 +49,7 @@ bool MMSInputSubscription::getKey(DFBInputDeviceKeySymbol &key) {
 }
 
 bool MMSInputSubscription::getPointerArea(DFBRectangle &pointer_area) {
-	if (this->key == (DFBInputDeviceKeySymbol)0) {
+	if (this->key == MMSKEY_UNKNOWN) {
 		pointer_area = this->pointer_area;
 		return true;
 	}

@@ -25,6 +25,7 @@
 
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfb.h"
+#include "mmsinput/mmskeymap.h"
 
 typedef enum {
 	MMSINPUTEVENTTYPE_NONE = 0,
@@ -37,7 +38,7 @@ typedef enum {
 
 typedef struct {
 	MMSINPUTEVENTTYPE		type;
-	DFBInputDeviceKeySymbol key;
+	MMSKeySymbol			key;
 	int		    			posx;
 	int						posy;
 } MMSInputEvent;

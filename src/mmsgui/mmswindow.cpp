@@ -2646,16 +2646,16 @@ bool MMSWindow::handleNavigationForWidgets(MMSInputEvent *inputevent) {
 
 		/* check if widget names for navigation are set to the focused widget */
 		switch (inputevent->key) {
-			case DIKS_CURSOR_DOWN:
+			case MMSKEY_CURSOR_DOWN:
 		        candidate = this->focusedwidget->getNavigateDownWidget();
 		        break;
-			case DIKS_CURSOR_UP:
+			case MMSKEY_CURSOR_UP:
 		        candidate = this->focusedwidget->getNavigateUpWidget();
 		        break;
-			case DIKS_CURSOR_RIGHT:
+			case MMSKEY_CURSOR_RIGHT:
 		        candidate = this->focusedwidget->getNavigateRightWidget();
 		        break;
-			case DIKS_CURSOR_LEFT:
+			case MMSKEY_CURSOR_LEFT:
 		        candidate = this->focusedwidget->getNavigateLeftWidget();
 		        break;
 
@@ -2848,16 +2848,16 @@ bool MMSWindow::handleNavigationForChildWins(MMSInputEvent *inputevent) {
 
 	    /* check if window names for navigation are set to the focused child window */
 		switch (inputevent->key) {
-			case DIKS_CURSOR_DOWN:
+			case MMSKEY_CURSOR_DOWN:
 			    candidate = fWin->getNavigateDownWindow();
 			    break;
-			case DIKS_CURSOR_UP:
+			case MMSKEY_CURSOR_UP:
 		        candidate = fWin->getNavigateUpWindow();
 			    break;
-			case DIKS_CURSOR_RIGHT:
+			case MMSKEY_CURSOR_RIGHT:
 		        candidate = fWin->getNavigateRightWindow();
 			    break;
-			case DIKS_CURSOR_LEFT:
+			case MMSKEY_CURSOR_LEFT:
 		        candidate = fWin->getNavigateLeftWindow();
 		        break;
 
@@ -2924,19 +2924,19 @@ void MMSWindow::preCalcNavigation() {
 
             /* for up, down, left right keys */
             for(unsigned int j = 0; j < 4; j++) {
-                DFBInputDeviceKeySymbol key = DIKS_NULL;
+                MMSKeySymbol key = MMSKEY_NULL;
                 switch (j) {
                     case 0:
-                        key = DIKS_CURSOR_UP;
+                        key = MMSKEY_CURSOR_UP;
                         break;
                     case 1:
-                        key = DIKS_CURSOR_DOWN;
+                        key = MMSKEY_CURSOR_DOWN;
                         break;
                     case 2:
-                        key = DIKS_CURSOR_LEFT;
+                        key = MMSKEY_CURSOR_LEFT;
                         break;
                     case 3:
-                        key = DIKS_CURSOR_RIGHT;
+                        key = MMSKEY_CURSOR_RIGHT;
                         break;
                 }
 
@@ -2958,16 +2958,16 @@ void MMSWindow::preCalcNavigation() {
 	                            DFBRectangle wGeom = widget->getGeometry();
 	                            double cand_dgcode = MAXDGCODE;
 
-	                            if (key == DIKS_CURSOR_DOWN)
+	                            if (key == MMSKEY_CURSOR_DOWN)
 	                                cand_dgcode = calculateDistGradCode_Down(fGeom, wGeom);
 	                            else
-	                            if (key == DIKS_CURSOR_UP)
+	                            if (key == MMSKEY_CURSOR_UP)
 	                                cand_dgcode = calculateDistGradCode_Up(fGeom, wGeom);
 	                            else
-	                            if (key == DIKS_CURSOR_RIGHT)
+	                            if (key == MMSKEY_CURSOR_RIGHT)
 	                                cand_dgcode = calculateDistGradCode_Right(fGeom, wGeom);
 	                            else
-	                            if (key == DIKS_CURSOR_LEFT)
+	                            if (key == MMSKEY_CURSOR_LEFT)
 	                                cand_dgcode = calculateDistGradCode_Left(fGeom, wGeom);
 
 	                            /* new candidate? */
@@ -2982,28 +2982,28 @@ void MMSWindow::preCalcNavigation() {
 
                 if (candidate) {
                     /* i found a new widget */
-                    if (key == DIKS_CURSOR_DOWN) {
+                    if (key == MMSKEY_CURSOR_DOWN) {
                       	if (!fwidget->getNavigateDown(s))
                             fwidget->setNavigateDownWidget(candidate);
 						else
 							if (s == "")
 	                            fwidget->setNavigateDownWidget(candidate);
                     } else
-                    if (key == DIKS_CURSOR_UP) {
+                    if (key == MMSKEY_CURSOR_UP) {
                         if (!fwidget->getNavigateUp(s))
                             fwidget->setNavigateUpWidget(candidate);
                         else
                         	if (s == "")
                         		fwidget->setNavigateUpWidget(candidate);
                     } else
-                    if (key == DIKS_CURSOR_RIGHT) {
+                    if (key == MMSKEY_CURSOR_RIGHT) {
                         if (!fwidget->getNavigateRight(s))
                             fwidget->setNavigateRightWidget(candidate);
                         else
                         	if (s == "")
                         		fwidget->setNavigateRightWidget(candidate);
                     } else
-                    if (key == DIKS_CURSOR_LEFT) {
+                    if (key == MMSKEY_CURSOR_LEFT) {
                         if (!fwidget->getNavigateLeft(s))
                             fwidget->setNavigateLeftWidget(candidate);
                         else
@@ -3046,19 +3046,19 @@ void MMSWindow::preCalcNavigation() {
 
             /* for up, down, left right keys */
             for(unsigned int j = 0; j < 4; j++) {
-                DFBInputDeviceKeySymbol key = DIKS_NULL;
+                MMSKeySymbol key = MMSKEY_NULL;
                 switch (j) {
                     case 0:
-                        key = DIKS_CURSOR_UP;
+                        key = MMSKEY_CURSOR_UP;
                         break;
                     case 1:
-                        key = DIKS_CURSOR_DOWN;
+                        key = MMSKEY_CURSOR_DOWN;
                         break;
                     case 2:
-                        key = DIKS_CURSOR_LEFT;
+                        key = MMSKEY_CURSOR_LEFT;
                         break;
                     case 3:
-                        key = DIKS_CURSOR_RIGHT;
+                        key = MMSKEY_CURSOR_RIGHT;
                         break;
                 }
 
@@ -3094,16 +3094,16 @@ void MMSWindow::preCalcNavigation() {
                             wGeom.h = window->geom.h;
                             double cand_dgcode = MAXDGCODE;
 
-                            if (key == DIKS_CURSOR_DOWN)
+                            if (key == MMSKEY_CURSOR_DOWN)
                                 cand_dgcode = calculateDistGradCode_Down(fGeom, wGeom);
                             else
-                            if (key == DIKS_CURSOR_UP)
+                            if (key == MMSKEY_CURSOR_UP)
                                 cand_dgcode = calculateDistGradCode_Up(fGeom, wGeom);
                             else
-                            if (key == DIKS_CURSOR_RIGHT)
+                            if (key == MMSKEY_CURSOR_RIGHT)
                                 cand_dgcode = calculateDistGradCode_Right(fGeom, wGeom);
                             else
-                            if (key == DIKS_CURSOR_LEFT)
+                            if (key == MMSKEY_CURSOR_LEFT)
                                 cand_dgcode = calculateDistGradCode_Left(fGeom, wGeom);
 
                             /* new candidate? */
@@ -3120,25 +3120,25 @@ void MMSWindow::preCalcNavigation() {
                 }
 
                 /* i found a new window */
-                if (key == DIKS_CURSOR_DOWN) {
+                if (key == MMSKEY_CURSOR_DOWN) {
                 	string s;
                 	if (!fWin->getNavigateDown(s)) s = "";
                     if (s == "")
                         fWin->setNavigateDownWindow(candidate);
                 } else
-                if (key == DIKS_CURSOR_UP) {
+                if (key == MMSKEY_CURSOR_UP) {
                 	string s;
                 	if (!fWin->getNavigateUp(s)) s = "";
                     if (s == "")
                         fWin->setNavigateUpWindow(candidate);
                 } else
-                if (key == DIKS_CURSOR_RIGHT) {
+                if (key == MMSKEY_CURSOR_RIGHT) {
                 	string s;
                 	if (!fWin->getNavigateRight(s)) s = "";
                     if (s == "")
                         fWin->setNavigateRightWindow(candidate);
                 } else
-                if (key == DIKS_CURSOR_LEFT) {
+                if (key == MMSKEY_CURSOR_LEFT) {
                 	string s;
                 	if (!fWin->getNavigateLeft(s)) s = "";
                     if (s == "")
@@ -3170,10 +3170,10 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
 
 	                switch(inputeventset->at(i).key) {
-	                    case DIKS_CURSOR_DOWN:
-	                    case DIKS_CURSOR_LEFT:
-	                    case DIKS_CURSOR_RIGHT:
-	                    case DIKS_CURSOR_UP:
+	                    case MMSKEY_CURSOR_DOWN:
+	                    case MMSKEY_CURSOR_LEFT:
+	                    case MMSKEY_CURSOR_RIGHT:
+	                    case MMSKEY_CURSOR_UP:
 	                        /* set the arrow widgets */
 	                        switchArrowWidgets();
 
@@ -3210,10 +3210,10 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                ret = true;
 	                switch(inputeventset->at(i).key) {
 	                    /* handle navigation */
-	                    case DIKS_CURSOR_DOWN:
-	                    case DIKS_CURSOR_LEFT:
-	                    case DIKS_CURSOR_RIGHT:
-	                    case DIKS_CURSOR_UP:
+	                    case MMSKEY_CURSOR_DOWN:
+	                    case MMSKEY_CURSOR_LEFT:
+	                    case MMSKEY_CURSOR_RIGHT:
+	                    case MMSKEY_CURSOR_UP:
 //	                        logger.writeLog("widget threw a exception so try to navigate");
 	                        ret = this->handleNavigationForWidgets(&(inputeventset->at(i)));
 
