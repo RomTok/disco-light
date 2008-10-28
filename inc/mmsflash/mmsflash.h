@@ -90,7 +90,7 @@ class MMSFlash {
 	    void stopThreads(void);
 
         //! Internal method: Map keys.
-	    unsigned int mapKey(DFBInputDeviceKeySymbol key);
+	    unsigned int mapKey(MMSKeySymbol key);
 
         //! Internal method: Will be called on user input.
 	    bool onHandleInput(MMSWindow *window, MMSInputEvent *input);

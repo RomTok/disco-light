@@ -46,7 +46,8 @@ void MMSInputThread::threadMain() {
 	if (this->handler == NULL) {
 		if(config->getOutputType()!= MMS_OT_X11FB) {
 			this->handler = new MMSInputDFBHandler(this->device);
-		}
+		} else
+			this->handler = new MMSInputDFBHandler(this->device);
 
 	}
 

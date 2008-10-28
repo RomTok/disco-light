@@ -68,8 +68,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if(window!=NULL) {
 			/* we have a window -> lets see if there are navigation keys */
 			for(unsigned y=0;y<inputeventset.size();y++) {
-				if	((inputeventset.at(y).key==DIKS_CURSOR_DOWN)||(inputeventset.at(y).key==DIKS_CURSOR_UP)
-					||(inputeventset.at(y).key==DIKS_CURSOR_LEFT)||(inputeventset.at(y).key==DIKS_CURSOR_RIGHT)) {
+				if	((inputeventset.at(y).key==MMSKEY_CURSOR_DOWN)||(inputeventset.at(y).key==MMSKEY_CURSOR_UP)
+					||(inputeventset.at(y).key==MMSKEY_CURSOR_LEFT)||(inputeventset.at(y).key==MMSKEY_CURSOR_RIGHT)) {
 					/* ok execute input on window */
 					window->handleInput(&inputeventset);
 					this->mutex.unlock();

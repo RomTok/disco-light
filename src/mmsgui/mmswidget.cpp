@@ -1444,13 +1444,13 @@ void MMSWidget::refresh() {
 
     if (!myroot)
    		return;
-    
+
     // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown
     if (!myroot->isShown(true)) {
     	DEBUGMSG("MMSGUI", "MMSWidget->refresh() skipped because window is not shown");
         return;
     }
-    
+
     /* lock the window because only one thread can do this at the same time */
 //    myroot->lock();
     this->parent_rootwindow->lock();
@@ -1463,7 +1463,7 @@ void MMSWidget::refresh() {
     tobeupdated.w = this->geom.w - 2*margin;
     tobeupdated.h = this->geom.h - 2*margin;
 
-    
+
     /* e.g. for smooth scrolling menus we must recalculate children here */
     /* so if the widget is a menu and smooth scrolling is enabled, we do the recalculation */
     if (this->type == MMSWIDGETTYPE_MENU)
@@ -1592,7 +1592,7 @@ void MMSWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
 
     // set the toplevel parent window
     this->parent_rootwindow = parentroot;
-    
+
     if (this->rootwindow) {
     	// searching the right toplevel parent
         if (!this->parent_rootwindow)
@@ -1604,7 +1604,7 @@ void MMSWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
         this->windowSurface = this->rootwindow->getSurface();
         rootwindow->add(this);
     }
-    
+
     // set root window to all children
     for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setRootWindow(this->rootwindow, this->parent_rootwindow);
@@ -1661,18 +1661,20 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
 			if (scrollonfocus) {
 				if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 					switch (inputevent->key) {
-						case DIKS_CURSOR_DOWN:
+						case MMSKEY_CURSOR_DOWN:
 							scrollDown();
 						    break;
-						case DIKS_CURSOR_UP:
+						case MMSKEY_CURSOR_UP:
 							scrollUp();
 						    break;
-						case DIKS_CURSOR_RIGHT:
+						case MMSKEY_CURSOR_RIGHT:
 							scrollRight();
 						    break;
-						case DIKS_CURSOR_LEFT:
+						case MMSKEY_CURSOR_LEFT:
 							scrollLeft();
 					        break;
+						default:
+							break;
 					}
 				}
 			}
@@ -1827,7 +1829,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 		last_inputevent = *inputevent;
 
 		switch (inputevent->key) {
-			case DIKS_CURSOR_DOWN:
+			case MMSKEY_CURSOR_DOWN:
 /*PERFORMANCE TEST
 				for (int ii=0; ii< 15;ii++) scrollDown();
 				for (int ii=0; ii< 15;ii++) scrollUp();
@@ -1841,20 +1843,20 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 				if (scrollDown())
 		            return;
 		        break;
-			case DIKS_CURSOR_UP:
+			case MMSKEY_CURSOR_UP:
 		        if (scrollUp())
 		            return;
 		        break;
-			case DIKS_CURSOR_RIGHT:
+			case MMSKEY_CURSOR_RIGHT:
 		        if (scrollRight())
 		            return;
 		        break;
-			case DIKS_CURSOR_LEFT:
+			case MMSKEY_CURSOR_LEFT:
 		        if (scrollLeft())
 		            return;
 		        break;
-			case DIKS_RETURN:
-			case DIKS_ZOOM:
+			case MMSKEY_RETURN:
+			case MMSKEY_ZOOM:
 		        if (getFocusable(b))
 		        	if (b) {
 		        		if (callOnReturn()) this->onReturn->emit(this);
