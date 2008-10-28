@@ -64,6 +64,7 @@ bool MMSFBSurface::firsttime_eASB_blend_srcalpha_ayuv_to_ayuv 	= true;
 
 bool MMSFBSurface::firsttime_eAFR_argb							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_argb					= true;
+bool MMSFBSurface::firsttime_eAFR_rgb16							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_ayuv					= true;
 
 
@@ -1289,6 +1290,89 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
 
     return true;
 }
+
+
+bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
+								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch) {
+	if (src) {
+		src->lock(DSLF_READ, src_ptr, src_pitch);
+		if (!*src_ptr)
+			return false;
+	}
+	if (dst) {
+		dst->lock(DSLF_WRITE, dst_ptr, dst_pitch);
+		if (!*dst_ptr) {
+			if (src)
+				src->unlock();
+			return false;
+		}
+	}
+	return true;
+}
+
+void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst) {
+	if (src)
+		src->unlock();
+	if (dst)
+		dst->unlock();
+}
+
+
+bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source) {
+#ifdef  __HAVE_DIRECTFB__
+	// failed, check if it must not
+	if ((!this->use_own_alloc)&&(!source->use_own_alloc))
+		return false;
+#endif
+
+	// fatal error!!!
+	// we use our own surface buffer handling, but we have not found a matching routine!!!
+	// so print the missing combination and return true
+	printf("DISKO: Missing following combination in method %s\n", method);
+	if (source) {
+		printf("  source premultiplied:    %s\n", (source->config.premultiplied)?"yes":"no");
+		printf("  source pixelformat:      %s\n", source->config.pixelformat.c_str());
+	}
+	printf("  destination pixelformat: %s\n", this->config.pixelformat.c_str());
+	printf("  destination color:       r=%d, g=%d, b=%d, a=%d\n",
+						this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+	if (source) {
+		printf("  blitting flags:         ");
+		if (this->config.blittingflags == DSBLIT_NOFX)
+			printf(" NOFX");
+		if (this->config.blittingflags & DSBLIT_BLEND_ALPHACHANNEL)
+			printf(" BLEND_ALPHACHANNEL");
+		if (this->config.blittingflags & DSBLIT_BLEND_COLORALPHA)
+			printf(" BLEND_COLORALPHA");
+		if (this->config.blittingflags & DSBLIT_COLORIZE)
+			printf(" COLORIZE");
+		if (this->config.blittingflags & DSBLIT_SRC_PREMULTIPLY)
+			printf(" SRC_PREMULTIPLY");
+		if (this->config.blittingflags & DSBLIT_DST_PREMULTIPLY)
+			printf(" DST_PREMULTIPLY");
+		if (this->config.blittingflags & DSBLIT_DEINTERLACE)
+			printf(" DEINTERLACE");
+		if (this->config.blittingflags & DSBLIT_SRC_PREMULTCOLOR)
+			printf(" SRC_PREMULTCOLOR");
+		printf("\n");
+	}
+	else {
+		printf("  drawing flags:          ");
+		if (this->config.drawingflags == DSDRAW_NOFX)
+			printf(" NOFX");
+		if (this->config.drawingflags == DSDRAW_BLEND)
+			printf(" BLEND");
+		if (this->config.drawingflags == DSDRAW_SRC_PREMULTIPLY)
+			printf(" SRC_PREMULTIPLY");
+		if (this->config.drawingflags == DSDRAW_DST_PREMULTIPLY)
+			printf(" DST_PREMULTIPLY");
+		printf("\n");
+	}
+	printf("*****\n");
+	return true;
+}
+
+
 
 
 void MMSFBSurface::eAB_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -4671,33 +4755,8 @@ void MMSFBSurface::eAB_blend_srcalpha_ayuv_to_yv12(unsigned int *src, int src_pi
 
 
 
-bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
-								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch) {
-	if (src) {
-		src->lock(DSLF_READ, src_ptr, src_pitch);
-		if (!*src_ptr)
-			return false;
-	}
-	if (dst) {
-		dst->lock(DSLF_WRITE, dst_ptr, dst_pitch);
-		if (!*dst_ptr) {
-			if (src)
-				src->unlock();
-			return false;
-		}
-	}
-	return true;
-}
 
-void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst) {
-	if (src)
-		src->unlock();
-	if (dst)
-		dst->unlock();
-}
-
-
-bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
 
 	// extended acceleration on?
 	if (!this->extendedaccel)
@@ -4773,7 +4832,6 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 		// to height
 		sh = clipreg.y2 - y + 1;
 
-//printf("pups, source->config.pixelformat = %s  dest %s\n", source->config.pixelformat.c_str(), this->config.pixelformat.c_str());
 	// checking pixelformats...
 	if (source->config.pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
@@ -4859,7 +4917,6 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 					extendedUnlock(source, this);
 					return true;
 				}
-
 				return false;
 			}
 			else
@@ -4873,7 +4930,6 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 					extendedUnlock(source, this);
 					return true;
 				}
-
 				return false;
 			}
 			else
@@ -5142,6 +5198,11 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 
 	// does not match
 	return false;
+}
+
+bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+	if (!extendedAccelBlitEx(source, src_rect, x, y))
+		return printMissingCombination("extendedAccelBlit()", source);
 }
 
 
@@ -5990,7 +6051,7 @@ void MMSFBSurface::eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_p
 	}
 }
 
-bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
 
 	// extended acceleration on?
 	if (!this->extendedaccel)
@@ -6239,6 +6300,13 @@ bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *
 }
 
 
+bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+	if (!extendedAccelStretchBlitEx(source, src_rect, dest_rect))
+		return printMissingCombination("extendedAccelStretchBlit()", source);
+}
+
+
+
 void MMSFBSurface::eAFR_argb(unsigned int *dst, int dst_pitch, int dst_height,
 						     int dx, int dy, int dw, int dh, MMSFBColor color) {
 
@@ -6252,7 +6320,6 @@ void MMSFBSurface::eAFR_argb(unsigned int *dst, int dst_pitch, int dst_height,
 	int dst_pitch_pix = dst_pitch >> 2;
 	dst+= dx + dy * dst_pitch_pix;
 
-	unsigned int OLDDST = (*dst) + 1;
 	unsigned int *dst_end = dst + dst_pitch_pix * dh;
 	int dst_pitch_diff = dst_pitch_pix - dw;
 	register unsigned int d;
@@ -6379,6 +6446,46 @@ void MMSFBSurface::eAFR_blend_argb(unsigned int *dst, int dst_pitch, int dst_hei
 }
 
 
+void MMSFBSurface::eAFR_rgb16(unsigned short int *dst, int dst_pitch, int dst_height,
+						      int dx, int dy, int dw, int dh, MMSFBColor color) {
+
+	// first time?
+	if (firsttime_eAFR_rgb16) {
+		printf("DISKO: Using accelerated fill rectangle to RGB16.\n");
+		firsttime_eAFR_rgb16 = false;
+	}
+
+	// prepare...
+	int dst_pitch_pix = dst_pitch >> 1;
+	dst+= dx + dy * dst_pitch_pix;
+
+	unsigned short int *dst_end = dst + dst_pitch_pix * dh;
+	int dst_pitch_diff = dst_pitch_pix - dw;
+
+	// prepare the color
+	register unsigned short int SRC;
+	unsigned int r = color.r >> 3;
+	unsigned int g = color.g >> 2;
+	unsigned int b = color.b >> 3;
+	SRC =     (r << 11)
+			| (g << 5)
+			| b;
+
+	// copy pixel directly to the destination
+	// for all lines
+	while (dst < dst_end) {
+		// for all pixels in the line
+		unsigned short int *line_end = dst + dw;
+		while (dst < line_end) {
+			*dst = SRC;
+			dst++;
+		}
+
+		// go to the next line
+		dst+= dst_pitch_diff;
+	}
+}
+
 
 void MMSFBSurface::eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
 									int dx, int dy, int dw, int dh, MMSFBColor color) {
@@ -6488,7 +6595,7 @@ void MMSFBSurface::eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_hei
 
 
 
-bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
+bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	// extended acceleration on?
 	if (!this->extendedaccel)
@@ -6578,7 +6685,6 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			color = this->config.color;
-//			color.a = 0xff;
 			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
 				eAFR_argb((unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 						  sx, sy, sw, sh, color);
@@ -6639,10 +6745,37 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 		// does not match
 		return false;
 	}
+	else
+	if (this->config.pixelformat == MMSFB_PF_RGB16) {
+		// destination is RGB16 (RGB565)
+		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			color = this->config.color;
+			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
+				eAFR_rgb16((unsigned short *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+						  sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
 
 	// does not match
 	return false;
 }
+
+
+bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
+	if (!extendedAccelFillRectangleEx(x, y, w, h))
+		return printMissingCombination("extendedAccelFillRectangle()");
+}
+
 
 
 bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
