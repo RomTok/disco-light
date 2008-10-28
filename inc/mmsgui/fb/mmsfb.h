@@ -28,6 +28,24 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/XShm.h>
+#include <X11/extensions/Xvlib.h>
+
+// output types
+#define MMS_OT_VESAFB       "vesafb"
+#define MMS_OT_MATROXFB     "matroxfb"
+#define MMS_OT_VIAFB        "viafb"
+#define MMS_OT_X11FB        "x11"
+#define MMS_OT_SDLFB        "sdl"
+
+typedef enum {
+	MMSFB_BACKEND_DFB = 0,
+	MMSFB_BACKEND_X11
+} MMSFB_BACKEND;
+
 class MMSFB {
     private:
         int             argc;       /* commandline arguments */
@@ -35,15 +53,32 @@ class MMSFB {
 
         IDirectFB       *dfb;       /* interface to dfb */
 
+        string 			outputtype;
+        int				w;
+        int				h;
+        MMSFB_BACKEND	backend;
+
+#ifdef __HAVE_XLIB__
+        Display 		*x_display;
+        int				x_screen;
+        Window 			x_window;
+        GC 				x_gc;
+        int 			xv_port;
+        XvImage  		*xv_image;
+        XShmSegmentInfo xv_shminfo;
+#endif
+
     public:
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv);
+        bool init(int argc, char **argv, string outputtype, int w, int h);
         bool release();
         bool isInitialized();
 
         bool getLayer(int id, MMSFBLayer **layer);
+
+        void *getX11Window();
 
         bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0, bool systemonly = false);
 

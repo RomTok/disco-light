@@ -63,7 +63,7 @@ bool MMSFBManager::init(int argc, char **argv) {
 		myargc++;
 	}
     DEBUGMSG("MMSGUI", "init mmsfb");
-    if (!mmsfb->init(myargc, myargv))
+    if (!mmsfb->init(myargc, myargv, config.getOutputType(), config.getXres(), config.getYres()))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");

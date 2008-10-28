@@ -26,11 +26,6 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsconfig/mmsconfigdata.h"
 
-#define MMS_OT_VESAFB       "vesafb"
-#define MMS_OT_MATROXFB     "matroxfb"
-#define MMS_OT_VIAFB        "viafb"
-#define MMS_OT_X11FB        "x11"
-#define MMS_OT_SDLFB        "sdl"
 
 class MMSFBManager {
 
@@ -40,8 +35,8 @@ class MMSFBManager {
         int                 videolayerid;
         int                 graphicslayerid;
         MMSConfigData       config;
-        int                 layercount;     
-        
+        int                 layercount;
+
     public:
         /* constructor */
         MMSFBManager();
@@ -56,7 +51,7 @@ class MMSFBManager {
         MMSFBLayer *getVideoLayer();
         MMSFBLayer *getGraphicsLayer();
 
-        int getLayerCount();  
+        int getLayerCount();
 };
 
 /* access to global mmsfbmanager */
