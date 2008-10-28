@@ -58,6 +58,7 @@ MMSRcParser::MMSRcParser() {
 	this->dfb.graphicswindowpixelformat  = "";		// supported values: ARGB or AYUV, empty string means autodetection
 	this->dfb.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
     this->dfb.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
+    this->dfb.allocmethod                = "";		// the current alloc method
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -309,7 +310,9 @@ void MMSRcParser::throughDFBSettings(xmlNode* node) {
 			this->dfb.graphicssurfacepixelformat = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
             this->dfb.extendedaccel = strToBool(string((const char *)parvalue));
-		
+		else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
+			this->dfb.allocmethod = string((const char *)parvalue);
+
 	    xmlFree(parname);
 	    xmlFree(parvalue);
 

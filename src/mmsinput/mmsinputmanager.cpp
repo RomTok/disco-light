@@ -26,6 +26,7 @@ MMSInputManager::MMSInputManager(string file, string name) {
 	this->mapper = new MMSInputMapper(file, name);
 	this->config = new MMSConfigData();
 	this->buttonpress_window = NULL;
+	this->button_pressed = false;
 }
 
 MMSInputManager::~MMSInputManager() {
@@ -45,14 +46,14 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		/* keyboard inputs */
 
 		/* check crtl+c and exit */
-		if((inputevent->key==DIKS_SMALL_C)&&(this->lastkey==DIKS_CONTROL))
+		if((inputevent->key==MMSKEY_SMALL_C)&&(this->lastkey==MMSKEY_CONTROL))
 			exit(1);
 
 		this->lastkey = inputevent->key;
 
 		this->mapper->mapkey(inputevent, &inputeventset);
 
-		if((inputeventset.at(0).key==DIKS_POWER)||(inputeventset.at(0).key==DIKS_POWER2)) {
+		if((inputeventset.at(0).key==MMSKEY_POWER)||(inputeventset.at(0).key==MMSKEY_POWER2)) {
 			if(config->getShutdown() == true) {
 				DEBUGMSG("MMSINPUTMANAGER", "executing: %s", config->getShutdownCmd().c_str());
 
@@ -80,7 +81,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		/* got through subscriptions */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
-				DFBInputDeviceKeySymbol key;
+				MMSKeySymbol key;
 				if (subscriptions.at(i)->getKey(key))
 					if (key == inputeventset.at(y).key) {
 						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
@@ -111,7 +112,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: %d,%d", inputevent->posx, inputevent->posy);
 
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, true);
+		this->button_pressed = true;
 
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
@@ -142,8 +144,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: %d,%d", inputevent->posx, inputevent->posy);
 
-
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, false);
+		this->button_pressed = false;
 
 		window = this->windowmanager->getToplevelWindow();
 		if (!window)
@@ -195,7 +197,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy);
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, this->button_pressed);
 
 
 		window = this->windowmanager->getToplevelWindow();
@@ -223,7 +225,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	this->mutex.unlock();
 }
 
-void MMSInputManager::addDevice(DFBInputDeviceID device, int inputinterval) {
+void MMSInputManager::addDevice(MMS_INPUT_DEVICE device, int inputinterval) {
 	MMSInputThread *thread = new MMSInputThread(this, device, inputinterval);
 
 	this->threads.push_back(thread);

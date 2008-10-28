@@ -20,33 +20,65 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef IMMSWINDOWMANAGER_H_
-#define IMMSWINDOWMANAGER_H_
+#ifndef MMSINPUTDFBHANDLER_H_
+#define MMSINPUTDFBHANDLER_H_
 
-#include "mmsgui/mmswindow.h"
+#include "mmsgui/mmsguitools.h"
+#include "mmsbase/mmsbase.h"
+#include "mmsinput/mmsinputhandler.h"
 
 
-class IMMSWindowManager {
-    public:
-        virtual ~IMMSWindowManager() {};
+#ifdef  __HAVE_DIRECTFB__
+	#ifndef DFBCHECK
+		#define DFBCHECK( x... ) \
+		{\
+			 DFBResult err = x;\
+			 if (err != DFB_OK) {\
+				  fprintf( stderr, "%s <%d>:\n\t", __FILE__, __LINE__ );\
+				  DirectFBErrorFatal( #x, err );\
+			 }\
+		}
+	#endif
 
-        virtual DFBRectangle getVRect() = 0;
 
-        virtual void addWindow(MMSWindow *window) = 0;
-        virtual void removeWindow(MMSWindow *window) = 0;
 
-        virtual bool hideAllMainWindows(bool goback = false) = 0;
-        virtual bool hideAllPopupWindows() = 0;
-        virtual bool hideAllRootWindows(bool willshown = false) = 0;
+class MMSInputDFBHandler : public MMSInputHandler {
+	private:
+		MMSConfigData *config;
 
-        virtual void setToplevelWindow(MMSWindow *window) = 0;
-        virtual MMSWindow *getToplevelWindow() = 0;
-		virtual void removeWindowFromToplevel(MMSWindow *window) = 0;
+		IDirectFBInputDevice    *input;
+		IDirectFB			    *dfb;
+		IDirectFBEventBuffer    *keybuffer;
+		bool					quit;
 
-        virtual void setBackgroundWindow(MMSWindow *window) = 0;
-        virtual MMSWindow *getBackgroundWindow() = 0;
+		DFBRectangle	screen_rect;
+		DFBRectangle	pointer_rect;
 
-        virtual void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = false) = 0;
+		int				xfac;
+		int				yfac;
+
+		int				pointer_xpos;
+		int				pointer_ypos;
+
+		int				pointer_old_xpos;
+		int				pointer_old_ypos;
+
+		int				button_pressed;
+
+	public:
+		MMSInputDFBHandler(MMS_INPUT_DEVICE device);
+		~MMSInputDFBHandler();
+		void grabEvents(MMSInputEvent *inputevent);
 };
 
-#endif /*IMMSWINDOWMANAGER_H_*/
+#else
+class MMSInputDFBHandler : public MMSInputHandler {
+	public:
+		MMSInputDFBHandler(MMS_INPUT_DEVICE device);
+		~MMSInputDFBHandler();
+		void grabEvents(MMSInputEvent *inputevent);
+};
+
+#endif
+
+#endif /*MMSINPUTHANDLER_H_*/

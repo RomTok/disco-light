@@ -244,6 +244,9 @@ const bool MMSConfigData::getExtendedAccel() {
     return this->dfb.extendedaccel;
 }
 
+const string MMSConfigData::getAllocMethod() {
+    return this->dfb.allocmethod;
+}
 
 /* static variables */
 MMSConfigDataGlobal MMSConfigData::global;

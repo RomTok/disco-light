@@ -36,7 +36,7 @@ typedef struct {
 
 class MMSConfigDataGlobal {
     public:
-        string logfile;	
+        string logfile;
     	string inputmap;
     	string prefix;
         string theme;
@@ -57,7 +57,7 @@ class MMSConfigDataDB {
     	string       user;
     	string       password;
    	    string       database;
-   	    
+
    	    MMSConfigDataDB(const string database = "");
 };
 
@@ -80,6 +80,7 @@ class MMSConfigDataDFB {
 		string graphicswindowpixelformat;
 		string graphicssurfacepixelformat;
 	    bool   extendedaccel;
+	    string allocmethod;
 };
 
 class MMSConfigData {
@@ -87,14 +88,14 @@ class MMSConfigData {
     	static MMSConfigDataGlobal global;
     	static MMSConfigDataDB     configdb, datadb;
     	static MMSConfigDataDFB    dfb;
-    
+
     public:
         /* call this to set the values */
         MMSConfigData(MMSConfigDataGlobal global,
                       MMSConfigDataDB     configdb,
                       MMSConfigDataDB     datadb,
                       MMSConfigDataDFB    dfb);
-        
+
         /* call if you want to read the values */
         MMSConfigData();
         ~MMSConfigData();
@@ -111,7 +112,7 @@ class MMSConfigData {
         const string getFirstPlugin();
         const bool   getShutdown();
         const string getShutdownCmd();
-        
+
         /* db section getters */
         const string       getConfigDBDBMS();
         const string       getConfigDBAddress();
@@ -125,7 +126,7 @@ class MMSConfigData {
         const string       getDataDBUser();
         const string       getDataDBPassword();
         const string       getDataDBDatabase();
-        
+
         /* dfb section getters */
         const int    getXres();
         const int    getYres();
@@ -144,6 +145,7 @@ class MMSConfigData {
         const string getGraphicsWindowPixelformat();
         const string getGraphicsSurfacePixelformat();
         const bool   getExtendedAccel();
+        const string getAllocMethod();
 };
 
 #endif /*MMSCONFIGDATA_H_*/

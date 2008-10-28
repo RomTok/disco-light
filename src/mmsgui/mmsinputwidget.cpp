@@ -313,223 +313,223 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
 
 		processed = true;
 		switch (inputevent->key) {
-			case DIKS_CURSOR_RIGHT:
+			case MMSKEY_CURSOR_RIGHT:
 				setCursorPos(this->cursor_pos+1);
 		        break;
-			case DIKS_CURSOR_LEFT:
+			case MMSKEY_CURSOR_LEFT:
 				setCursorPos(this->cursor_pos-1);
 				break;
-			case DIKS_BACKSPACE:
+			case MMSKEY_BACKSPACE:
 				removeTextBeforeCursorPos(1);
 				break;
-			case DIKS_HOME:
+			case MMSKEY_HOME:
 		    	setCursorPos(0);
 				break;
-			case DIKS_END:
+			case MMSKEY_END:
 		    	setCursorPos(0xffff);
 				break;
-			case DIKS_SPACE:
+			case MMSKEY_SPACE:
 				addTextAfterCursorPos(" ");
 				break;
-			case DIKS_PLUS_SIGN:
+			case MMSKEY_PLUS_SIGN:
 				addTextAfterCursorPos("+");
 				break;
-			case DIKS_MINUS_SIGN:
+			case MMSKEY_MINUS_SIGN:
 				addTextAfterCursorPos("-");
 				break;
-			case DIKS_PERIOD:
+			case MMSKEY_PERIOD:
 				addTextAfterCursorPos(".");
 				break;
-			case DIKS_SLASH:
+			case MMSKEY_SLASH:
 				addTextAfterCursorPos("/");
 				break;
-			case DIKS_UNDERSCORE:
+			case MMSKEY_UNDERSCORE:
 				addTextAfterCursorPos("_");
 				break;
-			case DIKS_0:
+			case MMSKEY_0:
 				addTextAfterCursorPos("0");
 				break;
-			case DIKS_1:
+			case MMSKEY_1:
 				addTextAfterCursorPos("1");
 				break;
-			case DIKS_2:
+			case MMSKEY_2:
 				addTextAfterCursorPos("2");
 				break;
-			case DIKS_3:
+			case MMSKEY_3:
 				addTextAfterCursorPos("3");
 				break;
-			case DIKS_4:
+			case MMSKEY_4:
 				addTextAfterCursorPos("4");
 				break;
-			case DIKS_5:
+			case MMSKEY_5:
 				addTextAfterCursorPos("5");
 				break;
-			case DIKS_6:
+			case MMSKEY_6:
 				addTextAfterCursorPos("6");
 				break;
-			case DIKS_7:
+			case MMSKEY_7:
 				addTextAfterCursorPos("7");
 				break;
-			case DIKS_8:
+			case MMSKEY_8:
 				addTextAfterCursorPos("8");
 				break;
-			case DIKS_9:
+			case MMSKEY_9:
 				addTextAfterCursorPos("9");
 				break;
-			case DIKS_CAPITAL_A:
+			case MMSKEY_CAPITAL_A:
 				addTextAfterCursorPos("A");
 				break;
-			case DIKS_CAPITAL_B:
+			case MMSKEY_CAPITAL_B:
 				addTextAfterCursorPos("B");
 				break;
-			case DIKS_CAPITAL_C:
+			case MMSKEY_CAPITAL_C:
 				addTextAfterCursorPos("C");
 				break;
-			case DIKS_CAPITAL_D:
+			case MMSKEY_CAPITAL_D:
 				addTextAfterCursorPos("D");
 				break;
-			case DIKS_CAPITAL_E:
+			case MMSKEY_CAPITAL_E:
 				addTextAfterCursorPos("E");
 				break;
-			case DIKS_CAPITAL_F:
+			case MMSKEY_CAPITAL_F:
 				addTextAfterCursorPos("F");
 				break;
-			case DIKS_CAPITAL_G:
+			case MMSKEY_CAPITAL_G:
 				addTextAfterCursorPos("G");
 				break;
-			case DIKS_CAPITAL_H:
+			case MMSKEY_CAPITAL_H:
 				addTextAfterCursorPos("H");
 				break;
-			case DIKS_CAPITAL_I:
+			case MMSKEY_CAPITAL_I:
 				addTextAfterCursorPos("I");
 				break;
-			case DIKS_CAPITAL_J:
+			case MMSKEY_CAPITAL_J:
 				addTextAfterCursorPos("J");
 				break;
-			case DIKS_CAPITAL_K:
+			case MMSKEY_CAPITAL_K:
 				addTextAfterCursorPos("K");
 				break;
-			case DIKS_CAPITAL_L:
+			case MMSKEY_CAPITAL_L:
 				addTextAfterCursorPos("L");
 				break;
-			case DIKS_CAPITAL_M:
+			case MMSKEY_CAPITAL_M:
 				addTextAfterCursorPos("M");
 				break;
-			case DIKS_CAPITAL_N:
+			case MMSKEY_CAPITAL_N:
 				addTextAfterCursorPos("N");
 				break;
-			case DIKS_CAPITAL_O:
+			case MMSKEY_CAPITAL_O:
 				addTextAfterCursorPos("O");
 				break;
-			case DIKS_CAPITAL_P:
+			case MMSKEY_CAPITAL_P:
 				addTextAfterCursorPos("P");
 				break;
-			case DIKS_CAPITAL_Q:
+			case MMSKEY_CAPITAL_Q:
 				addTextAfterCursorPos("Q");
 				break;
-			case DIKS_CAPITAL_R:
+			case MMSKEY_CAPITAL_R:
 				addTextAfterCursorPos("R");
 				break;
-			case DIKS_CAPITAL_S:
+			case MMSKEY_CAPITAL_S:
 				addTextAfterCursorPos("S");
 				break;
-			case DIKS_CAPITAL_T:
+			case MMSKEY_CAPITAL_T:
 				addTextAfterCursorPos("T");
 				break;
-			case DIKS_CAPITAL_U:
+			case MMSKEY_CAPITAL_U:
 				addTextAfterCursorPos("U");
 				break;
-			case DIKS_CAPITAL_V:
+			case MMSKEY_CAPITAL_V:
 				addTextAfterCursorPos("V");
 				break;
-			case DIKS_CAPITAL_W:
+			case MMSKEY_CAPITAL_W:
 				addTextAfterCursorPos("W");
 				break;
-			case DIKS_CAPITAL_X:
+			case MMSKEY_CAPITAL_X:
 				addTextAfterCursorPos("X");
 				break;
-			case DIKS_CAPITAL_Y:
+			case MMSKEY_CAPITAL_Y:
 				addTextAfterCursorPos("Y");
 				break;
-			case DIKS_CAPITAL_Z:
+			case MMSKEY_CAPITAL_Z:
 				addTextAfterCursorPos("Z");
 				break;
-			case DIKS_SMALL_A:
+			case MMSKEY_SMALL_A:
 				addTextAfterCursorPos("a");
 				break;
-			case DIKS_SMALL_B:
+			case MMSKEY_SMALL_B:
 				addTextAfterCursorPos("b");
 				break;
-			case DIKS_SMALL_C:
+			case MMSKEY_SMALL_C:
 				addTextAfterCursorPos("c");
 				break;
-			case DIKS_SMALL_D:
+			case MMSKEY_SMALL_D:
 				addTextAfterCursorPos("d");
 				break;
-			case DIKS_SMALL_E:
+			case MMSKEY_SMALL_E:
 				addTextAfterCursorPos("e");
 				break;
-			case DIKS_SMALL_F:
+			case MMSKEY_SMALL_F:
 				addTextAfterCursorPos("f");
 				break;
-			case DIKS_SMALL_G:
+			case MMSKEY_SMALL_G:
 				addTextAfterCursorPos("g");
 				break;
-			case DIKS_SMALL_H:
+			case MMSKEY_SMALL_H:
 				addTextAfterCursorPos("h");
 				break;
-			case DIKS_SMALL_I:
+			case MMSKEY_SMALL_I:
 				addTextAfterCursorPos("i");
 				break;
-			case DIKS_SMALL_J:
+			case MMSKEY_SMALL_J:
 				addTextAfterCursorPos("j");
 				break;
-			case DIKS_SMALL_K:
+			case MMSKEY_SMALL_K:
 				addTextAfterCursorPos("k");
 				break;
-			case DIKS_SMALL_L:
+			case MMSKEY_SMALL_L:
 				addTextAfterCursorPos("l");
 				break;
-			case DIKS_SMALL_M:
+			case MMSKEY_SMALL_M:
 				addTextAfterCursorPos("m");
 				break;
-			case DIKS_SMALL_N:
+			case MMSKEY_SMALL_N:
 				addTextAfterCursorPos("n");
 				break;
-			case DIKS_SMALL_O:
+			case MMSKEY_SMALL_O:
 				addTextAfterCursorPos("o");
 				break;
-			case DIKS_SMALL_P:
+			case MMSKEY_SMALL_P:
 				addTextAfterCursorPos("p");
 				break;
-			case DIKS_SMALL_Q:
+			case MMSKEY_SMALL_Q:
 				addTextAfterCursorPos("q");
 				break;
-			case DIKS_SMALL_R:
+			case MMSKEY_SMALL_R:
 				addTextAfterCursorPos("r");
 				break;
-			case DIKS_SMALL_S:
+			case MMSKEY_SMALL_S:
 				addTextAfterCursorPos("s");
 				break;
-			case DIKS_SMALL_T:
+			case MMSKEY_SMALL_T:
 				addTextAfterCursorPos("t");
 				break;
-			case DIKS_SMALL_U:
+			case MMSKEY_SMALL_U:
 				addTextAfterCursorPos("u");
 				break;
-			case DIKS_SMALL_V:
+			case MMSKEY_SMALL_V:
 				addTextAfterCursorPos("v");
 				break;
-			case DIKS_SMALL_W:
+			case MMSKEY_SMALL_W:
 				addTextAfterCursorPos("w");
 				break;
-			case DIKS_SMALL_X:
+			case MMSKEY_SMALL_X:
 				addTextAfterCursorPos("x");
 				break;
-			case DIKS_SMALL_Y:
+			case MMSKEY_SMALL_Y:
 				addTextAfterCursorPos("y");
 				break;
-			case DIKS_SMALL_Z:
+			case MMSKEY_SMALL_Z:
 				addTextAfterCursorPos("z");
 				break;
 

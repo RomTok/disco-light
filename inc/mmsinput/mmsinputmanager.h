@@ -38,17 +38,18 @@ class MMSInputManager  {
 		vector <MMSInputThread *> threads;
 		IMMSWindowManager *windowmanager;
 		vector <class MMSInputSubscription *> subscriptions;
-		DFBInputDeviceKeySymbol lastkey;
+		MMSKeySymbol lastkey;
 		MMSInputMapper *mapper;
 		MMSConfigData *config;
 
 		//! store the window on which the button was pressed
-		MMSWindow *buttonpress_window;
+		MMSWindow 	*buttonpress_window;
+		bool		button_pressed;
 
 	public:
 		MMSInputManager(string file, string name);
 		~MMSInputManager();
-		void addDevice(DFBInputDeviceID device, int inputinterval);
+		void addDevice(MMS_INPUT_DEVICE device, int inputinterval);
 		void setWindowManager(IMMSWindowManager *wm);
 		void addSubscription(class MMSInputSubscription *sub);
 		void startListen();

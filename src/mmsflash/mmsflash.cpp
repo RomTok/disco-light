@@ -123,8 +123,8 @@ void MMSFlash::loader(bool &stop) {
 	}
 	void *ptr;
 	int pitch;
-	this->flash_temp_surface->getDFBSurface()->Lock(this->flash_temp_surface->getDFBSurface(), DSLF_WRITE, &ptr, &pitch);
-	this->flash_temp_surface->getDFBSurface()->Unlock(this->flash_temp_surface->getDFBSurface());
+	this->flash_temp_surface->lock(DSLF_WRITE, &ptr, &pitch);
+	this->flash_temp_surface->unlock();
     this->cairosurface = cairo_image_surface_create_for_data((unsigned char*)ptr, CAIRO_FORMAT_ARGB32,
     															this->width, this->height, pitch);
 	if (!this->cairosurface) {
@@ -450,18 +450,12 @@ bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
 		break;
 	case MMSINPUTEVENTTYPE_BUTTONPRESS:
 		swfdec_player_mouse_press((SwfdecPlayer*)this->swfdec_player, posx, posy, 1);
-
-		printf("mouse press %d,%d\n", posx,posy);
 		break;
 	case MMSINPUTEVENTTYPE_BUTTONRELEASE:
 		swfdec_player_mouse_release((SwfdecPlayer*)this->swfdec_player, posx, posy, 1);
-
-		printf("mouse release %d,%d\n", posx,posy);
 		break;
 	case MMSINPUTEVENTTYPE_AXISMOTION:
 		swfdec_player_mouse_move((SwfdecPlayer*)this->swfdec_player, posx, posy);
-
-		printf("mouse motion %d,%d\n", posx,posy);
 		break;
 	}
 
@@ -483,7 +477,13 @@ void MMSFlash::startPlaying(string filename) {
     string prefix = filename.substr(0, 7);
     strToUpr(&prefix);
     if ((prefix != "FILE://")&&(prefix != "HTTP://"))
-    	this->filename = "file://" + filename;
+    	if (filename.substr(0,1) != "/") {
+    		char path[1024];
+    		memset(path, 0, sizeof(path));
+			this->filename = "file://" + (string)getcwd(path, 1024) + "/" + filename;
+    	}
+    	else
+    		this->filename = "file://" + filename;
     else
     	this->filename = filename;
 

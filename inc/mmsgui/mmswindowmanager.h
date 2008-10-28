@@ -55,7 +55,7 @@ class MMSWindowManager : public IMMSWindowManager {
         void setBackgroundWindow(MMSWindow *window);
         MMSWindow *getBackgroundWindow();
 
-        void setPointerPosition(int pointer_posx, int pointer_posy);
+        void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = true);
 };
 
 /* access to global mmswindowmanager */

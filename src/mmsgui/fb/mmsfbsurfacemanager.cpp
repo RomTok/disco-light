@@ -35,9 +35,9 @@ MMSFBSurfaceManager::~MMSFBSurfaceManager() {
 }
 
 MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly) {
-    DFBResult               dfbres;
-    IDirectFBSurface        *dfbsurface;
-    DFBSurfaceDescription   surface_desc;
+//    DFBResult               dfbres;
+//    IDirectFBSurface        *dfbsurface;
+//    DFBSurfaceDescription   surface_desc;
     MMSFBSurface            *surface;
 
     /* searching for free surface */
@@ -63,56 +63,26 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
 
 //DEBUGOUT("remove surface=%2,%d\n", w,h);
 
-                if (surface->dfbsurface) {
-                    surface->dfbsurface->Release(surface->dfbsurface);
-                    surface->dfbsurface = NULL;
-                }
+				surface->freeSurfaceBuffer();
                 delete surface;
                 this->free_surfaces.erase(this->free_surfaces.begin()+i);
             }
         }
     }
 
-    /* create surface description */
-    surface_desc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
-    surface_desc.width = w;
-    surface_desc.height = h;
-    surface_desc.pixelformat = getDFBPixelFormatFromString(pixelformat);
-
-    if (surface_desc.pixelformat==DSPF_UNKNOWN)
-        surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags & ~DSDESC_PIXELFORMAT);
-
-    /* we use premultiplied surfaces because of alphachannel blitting with better performance */
-    surface_desc.flags = (DFBSurfaceDescriptionFlags)(surface_desc.flags | DSDESC_CAPS);
-    surface_desc.caps = DSCAPS_PREMULTIPLIED;
-
-    switch (backbuffer) {
-        case 1: /* front + one back buffer (double) */
-            surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_DOUBLE);
-            break;
-        case 2: /* front + two back buffer (triple) */
-            surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_TRIPLE);
-            break;
-    }
-
-    /* surface should stored in system memory only? */
-    if (systemonly)
-    	surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_SYSTEMONLY);
-
-    /* create the surface */
-    if ((dfbres=mmsfb->dfb->CreateSurface(mmsfb->dfb, &surface_desc, &dfbsurface)) != DFB_OK) {
-    	DEBUGMSG("MMSGUI", "ERROR");
-        MMSFB_SetError(dfbres, "IDirectFB::CreateSurface(" + iToStr(w) + "x" + iToStr(h) + ") failed");
-        return NULL;
-    }
 
     /* create a new surface instance */
-    surface = new MMSFBSurface(dfbsurface);
+    surface = new MMSFBSurface(w, h, pixelformat, backbuffer, systemonly);
     if (!surface) {
-        dfbsurface->Release(dfbsurface);
         MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
         return NULL;
     }
+    if (!surface->isInitialized()) {
+    	delete surface;
+    	surface = NULL;
+		MMSFB_SetError(0, "cannot initialize MMSFBSurface");
+		return false;
+	}
 
     /* add size of the surface to my global counter */
     int size;
@@ -150,10 +120,10 @@ return;*/
     /* create a new surface instance */
     new_surface = new MMSFBSurface(NULL);
     if (!new_surface) {
-        surface->dfbsurface->Release(surface->dfbsurface);
+		surface->freeSurfaceBuffer();
         return;
     }
-
+///xxx
     /* set values to new surface */
     new_surface->dfbsurface = surface->dfbsurface;
     new_surface->config = surface->config;

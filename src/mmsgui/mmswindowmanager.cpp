@@ -119,7 +119,7 @@ void MMSWindowManager::setToplevelWindow(MMSWindow *window) {
             if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW)
                 if (windows.at(i)->isShown()&&(!windows.at(i)->willHide())) {
                     /* set active main window as toplevel */
-                    this->toplevel = windows.at(i); 
+                    this->toplevel = windows.at(i);
                     return;
                 }
     }
@@ -138,7 +138,7 @@ void MMSWindowManager::removeWindowFromToplevel(MMSWindow *window) {
                 if (windows.at(i)->getType() == MMSWINDOWTYPE_ROOTWINDOW)
                     if (windows.at(i)->isShown()) {
                         /* set active root window as toplevel */
-                        this->toplevel = windows.at(i); 
+                        this->toplevel = windows.at(i);
                         return;
                     }
         }
@@ -165,7 +165,7 @@ void MMSWindowManager::showBackgroundWindow() {
 	}
 }
 
-void MMSWindowManager::setPointerPosition(int pointer_posx, int pointer_posy) {
-	mmsfbwindowmanager->setPointerPosition(pointer_posx, pointer_posy);
+void MMSWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, bool pressed) {
+	mmsfbwindowmanager->setPointerPosition(pointer_posx, pointer_posy, pressed);
 }
 
