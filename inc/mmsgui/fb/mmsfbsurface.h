@@ -317,7 +317,9 @@ class MMSFBSurface {
 
         bool isInitialized();
 
+#ifdef  __HAVE_DIRECTFB__
         IDirectFBSurface *getDFBSurface();
+#endif
 
         bool getConfiguration(MMSFBSurfaceConfig *config = NULL);
 

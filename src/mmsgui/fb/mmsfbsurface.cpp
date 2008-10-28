@@ -457,9 +457,14 @@ bool MMSFBSurface::clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *
 	return true;
 }
 
+#ifdef  __HAVE_DIRECTFB__
 IDirectFBSurface *MMSFBSurface::getDFBSurface() {
-    return this->dfbsurface;
+	if (!this->use_own_alloc)
+		return this->dfbsurface;
+	else
+		return NULL;
 }
+#endif
 
 bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	DFBSurfaceCapabilities  caps;
@@ -597,7 +602,10 @@ bool MMSFBSurface::getExtendedAcceleration() {
 void MMSFBSurface::setAllocMethod(MMSFBSurfaceAllocMethod allocmethod, bool reset) {
 	this->allocmethod = allocmethod;
 	if (reset)
-		this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
+		if (this->use_own_alloc != (this->allocmethod != MMSFBSurfaceAllocMethod_dfb)) {
+			this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
+			getConfiguration();
+		}
 }
 
 MMSFBSurfaceAllocMethod MMSFBSurface::getAllocMethod() {
@@ -4765,6 +4773,7 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 		// to height
 		sh = clipreg.y2 - y + 1;
 
+//printf("pups, source->config.pixelformat = %s  dest %s\n", source->config.pixelformat.c_str(), this->config.pixelformat.c_str());
 	// checking pixelformats...
 	if (source->config.pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB

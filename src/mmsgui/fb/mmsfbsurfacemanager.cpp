@@ -35,9 +35,9 @@ MMSFBSurfaceManager::~MMSFBSurfaceManager() {
 }
 
 MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly) {
-    DFBResult               dfbres;
-    IDirectFBSurface        *dfbsurface;
-    DFBSurfaceDescription   surface_desc;
+//    DFBResult               dfbres;
+//    IDirectFBSurface        *dfbsurface;
+//    DFBSurfaceDescription   surface_desc;
     MMSFBSurface            *surface;
 
     /* searching for free surface */
