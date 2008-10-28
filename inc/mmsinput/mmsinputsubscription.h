@@ -33,18 +33,18 @@ typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);
 class MMSInputSubscription {
 	private:
 		static MMSInputManager *manager;
-		DFBInputDeviceKeySymbol key;
+		MMSKeySymbol			key;
 		DFBRectangle			pointer_area;
 	public:
 		MMSInputSubscription(MMSInputManager *manager);
-		MMSInputSubscription(DFBInputDeviceKeySymbol key);
+		MMSInputSubscription(MMSKeySymbol key);
 		MMSInputSubscription(DFBRectangle &pointer_area);
-		bool getKey(DFBInputDeviceKeySymbol &key);
+		bool getKey(MMSKeySymbol &key);
 		bool getPointerArea(DFBRectangle &pointer_area);
-		
+
 		void registerMe();
 
 		sigc::signal<void, MMSInputSubscription*> callback;
 };
- 
+
 #endif /*MMSINPUTSUBSCRIPTION_H_*/

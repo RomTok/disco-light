@@ -114,7 +114,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             DEBUGMSG("Core", "Show mouse pointer:           yes");
         else
             DEBUGMSG("Core", "Show mouse pointer:           no");
-        
+
         DEBUGMSG("Core", "Graphics window pixelformat:  " + config->getGraphicsWindowPixelformat());
         DEBUGMSG("Core", "Graphics surface pixelformat: " + config->getGraphicsSurfacePixelformat());
 
@@ -122,8 +122,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             DEBUGMSG("Core", "Extended acceleration:        yes");
         else
             DEBUGMSG("Core", "Extended acceleration:        no");
-        
-        
+
+
         DEBUGMSG("Core", "initialize frame buffer");
 
         mmsfbmanager.init(argc,argv);
@@ -155,7 +155,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 
         //inputs
 		DEBUGMSG("Core", "add input device");
-		inputs->addDevice(DIDID_KEYBOARD, config->getInputInterval());
+		inputs->addDevice(MMS_INPUT_KEYBOARD, config->getInputInterval());
 
 		DEBUGMSG("Core", "creating master subscription");
 	  	MMSInputSubscription sub1(inputs);

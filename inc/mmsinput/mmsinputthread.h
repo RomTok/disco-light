@@ -24,19 +24,21 @@
 #define MMSINPUTTHREAD_H_
 
 #include "mmstools/mmstools.h"
+#include "mmsconfig/mmsconfigdata.h"
 #include "mmsinput/mmsinputhandler.h"
 
 class MMSInputThread : public MMSThread {
 	private:
 		MMSInputHandler 		*handler;
 		class MMSInputManager 	*manager;
-		DFBInputDeviceID 		device;
+		MMS_INPUT_DEVICE 		device;
         int 					inputinterval;
+        MMSConfigData           *config;
 	public:
-		MMSInputThread(class MMSInputManager *manager, DFBInputDeviceID device, int inputinterval);
+		MMSInputThread(class MMSInputManager *manager, MMS_INPUT_DEVICE device, int inputinterval);
 		~MMSInputThread();
 		void threadMain();
-		
+
 };
 
 #include "mmsinputmanager.h"

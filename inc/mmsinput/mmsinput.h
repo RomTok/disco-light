@@ -23,6 +23,9 @@
 #ifndef MMSINPUT_H_
 #define MMSINPUT_H_
 
+/* the different input device types */
+
+
 #include "mmsinput/mmsinputhandler.h"
 #include "mmsinput/mmsinputmanager.h"
 #include "mmsinput/mmsinputsubscription.h"
