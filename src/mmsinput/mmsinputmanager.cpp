@@ -46,14 +46,14 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		/* keyboard inputs */
 
 		/* check crtl+c and exit */
-		if((inputevent->key==DIKS_SMALL_C)&&(this->lastkey==DIKS_CONTROL))
+		if((inputevent->key==MMSKEY_SMALL_C)&&(this->lastkey==MMSKEY_CONTROL))
 			exit(1);
 
 		this->lastkey = inputevent->key;
 
 		this->mapper->mapkey(inputevent, &inputeventset);
 
-		if((inputeventset.at(0).key==DIKS_POWER)||(inputeventset.at(0).key==DIKS_POWER2)) {
+		if((inputeventset.at(0).key==MMSKEY_POWER)||(inputeventset.at(0).key==MMSKEY_POWER2)) {
 			if(config->getShutdown() == true) {
 				DEBUGMSG("MMSINPUTMANAGER", "executing: %s", config->getShutdownCmd().c_str());
 
@@ -68,8 +68,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if(window!=NULL) {
 			/* we have a window -> lets see if there are navigation keys */
 			for(unsigned y=0;y<inputeventset.size();y++) {
-				if	((inputeventset.at(y).key==DIKS_CURSOR_DOWN)||(inputeventset.at(y).key==DIKS_CURSOR_UP)
-					||(inputeventset.at(y).key==DIKS_CURSOR_LEFT)||(inputeventset.at(y).key==DIKS_CURSOR_RIGHT)) {
+				if	((inputeventset.at(y).key==MMSKEY_CURSOR_DOWN)||(inputeventset.at(y).key==MMSKEY_CURSOR_UP)
+					||(inputeventset.at(y).key==MMSKEY_CURSOR_LEFT)||(inputeventset.at(y).key==MMSKEY_CURSOR_RIGHT)) {
 					/* ok execute input on window */
 					window->handleInput(&inputeventset);
 					this->mutex.unlock();
@@ -81,7 +81,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		/* got through subscriptions */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
-				DFBInputDeviceKeySymbol key;
+				MMSKeySymbol key;
 				if (subscriptions.at(i)->getKey(key))
 					if (key == inputeventset.at(y).key) {
 						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
@@ -225,7 +225,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	this->mutex.unlock();
 }
 
-void MMSInputManager::addDevice(DFBInputDeviceID device, int inputinterval) {
+void MMSInputManager::addDevice(MMS_INPUT_DEVICE device, int inputinterval) {
 	MMSInputThread *thread = new MMSInputThread(this, device, inputinterval);
 
 	this->threads.push_back(thread);

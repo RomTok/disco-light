@@ -291,9 +291,9 @@ bool MMSFBWindowManager::loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *
     vwin->window->getConfiguration(&winconf);
     vwin->region.x1 = winconf.posx;
     vwin->region.y1 = winconf.posy;
-    vwin->region.x2 = vwin->region.x1 + winconf.surface_config.w - 1;
-    vwin->region.y2 = vwin->region.y1 + winconf.surface_config.h - 1;
-    vwin->alphachannel = winconf.surface_config.alphachannel;
+    vwin->region.x2 = vwin->region.x1 + winconf.surface_config.surface_buffer.w - 1;
+    vwin->region.y2 = vwin->region.y1 + winconf.surface_config.surface_buffer.h - 1;
+    vwin->alphachannel = winconf.surface_config.surface_buffer.alphachannel;
     vwin->opacity = winconf.opacity;
     vwin->lastflip = 0;
     vwin->islayersurface = false;
@@ -616,7 +616,7 @@ logger.writeLog("BBB>");
                 src_rect.h-= myregion->y2 - ls_region.y2;
 
             // set the blitting flags and color
-            if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.alphachannel))) {
+            if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.surface_buffer.alphachannel))) {
             	// the window has an alphachannel
                 if (aw->opacity < 255) {
                     this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));

@@ -53,7 +53,7 @@ string MMSInputMapper::lookUpKeyName(DFBInputDeviceKeySymbol key) {
    	return symbol_name->name;
 }
 
-DFBInputDeviceKeySymbol MMSInputMapper::lookUpKeySymbol(const string keyname) {
+/*DFBInputDeviceKeySymbol MMSInputMapper::lookUpKeySymbol(const string keyname) {
 	DEBUGMSG("MMSINPUTMANAGER", "got key: " + keyname);
 
 	if(strToUpr(keyname) == "BACKSPACE") return DIKS_BACKSPACE;
@@ -313,6 +313,7 @@ DFBInputDeviceKeySymbol MMSInputMapper::lookUpKeySymbol(const string keyname) {
 
    	return (DFBInputDeviceKeySymbol)0;
 }
+*/
 
 MMSInputMapper::MMSInputMapper(string mapfile, string name) {
 	xmlNode *walkNode = NULL;
@@ -394,7 +395,7 @@ MMSInputMapper::~MMSInputMapper() {
 }
 
 void MMSInputMapper::mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *inputeventset) {
-    string symbol = lookUpKeyName(inputevent->key);
+    string symbol = mmskeys[inputevent->key];
     MMSInputEvent evt;
 
 	/* parse the result nodes */
@@ -403,7 +404,7 @@ void MMSInputMapper::mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *in
 
     for( MI run = iter.first; run != iter.second; ++run ) {
    		string foundkeyname = run->second;
-   	    DFBInputDeviceKeySymbol foundkey = lookUpKeySymbol(foundkeyname);
+   	    MMSKeySymbol foundkey = mmskeys[foundkeyname];
    	    if(foundkey) {
    	    	DEBUGMSG("MMSINPUTMANAGER", "mapped to key '" + foundkeyname + "', id: " + iToStr(foundkey));
 //   	        evt.type = MMSINPUTEVENTTYPE_KEYPRESS;

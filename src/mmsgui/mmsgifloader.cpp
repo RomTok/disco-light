@@ -347,7 +347,6 @@ bool MMSGIFLoader::loadBlocks() {
                     /* cannot create surface */
                     return false;
                 }
-                IDirectFBSurface *dfbsuf = newsuf->getDFBSurface();
 
                 int ci;
                 if (this->desc->sufcount <= 0) {
@@ -393,7 +392,7 @@ bool MMSGIFLoader::loadBlocks() {
                 /* get direct access to the surface */
                 unsigned char *sufbuf, *sufbuf_start, *sufbuf_end;
                 int pitch;
-                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&sufbuf, &pitch);
+                newsuf->lock(DSLF_WRITE, (void**)&sufbuf, &pitch);
                 sufbuf+= gif_id.x*4 + gif_id.y * pitch;
                 sufbuf_start = sufbuf;
                 sufbuf_end = sufbuf_start + gif_lsd.height * pitch;
@@ -409,7 +408,7 @@ bool MMSGIFLoader::loadBlocks() {
                     unsigned char len;
                     if (!this->myfile->readBuffer((void*)&len, &count, 1, 1)) {
                         /* cannot read file */
-                        dfbsuf->Unlock(dfbsuf);
+                        newsuf->unlock();
                         delete newsuf;
                         return false;
                     }
@@ -429,14 +428,14 @@ bool MMSGIFLoader::loadBlocks() {
                     /* the first two bytes are reserved for the bit from the buffer before */
                     if (!this->myfile->readBuffer((void*)&buffer[2], &count, 1, len)) {
                         /* cannot read file */
-                        dfbsuf->Unlock(dfbsuf);
+                        newsuf->unlock();
                         delete newsuf;
                         return false;
                     }
 
                     if (count < len) {
                         /* bad format */
-                        dfbsuf->Unlock(dfbsuf);
+                        newsuf->unlock();
                         delete newsuf;
                         return false;
                     }
@@ -658,12 +657,12 @@ bool MMSGIFLoader::loadBlocks() {
 #ifdef GIFTRACE
                 	DEBUGOUT("bad format, outlen=%d, needed len=%d\n", outlen, image_size);
 #endif
-                    dfbsuf->Unlock(dfbsuf);
+                    newsuf->unlock();
                     delete newsuf;
                     return false;
                 }
 
-                dfbsuf->Unlock(dfbsuf);
+                newsuf->unlock();
 
                 /* fill the communication structure */
                 if (desc->sufcount < MMSIM_MAX_DESC_SUF) {

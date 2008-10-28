@@ -21,8 +21,9 @@
  ***************************************************************************/
 
 #include "mmsinput/mmsinputthread.h"
+#include "mmsinput/mmsinputdfbhandler.h"
 
-MMSInputThread::MMSInputThread(class MMSInputManager *manager, DFBInputDeviceID device, int inputinterval) {
+MMSInputThread::MMSInputThread(class MMSInputManager *manager, MMS_INPUT_DEVICE device, int inputinterval) {
 	this->manager = manager;
 	this->handler = NULL;
 	this->device = device;
@@ -41,9 +42,14 @@ void MMSInputThread::threadMain() {
     int                     lkcnt = 0, skip = 0;
 
     lastevent.type = MMSINPUTEVENTTYPE_NONE;
-    
-	if (this->handler == NULL)
-		this->handler = new MMSInputHandler(this->device);
+
+	if (this->handler == NULL) {
+		if(config->getOutputType()!= MMS_OT_X11FB) {
+			this->handler = new MMSInputDFBHandler(this->device);
+		} else
+			this->handler = new MMSInputDFBHandler(this->device);
+
+	}
 
 	while (1) {
 		this->handler->grabEvents(&event);
@@ -51,12 +57,12 @@ void MMSInputThread::threadMain() {
 		if (event.type == MMSINPUTEVENTTYPE_KEYPRESS) {
 	        if (this->inputinterval > 0) {
 	            /* here we stop to fast input devices */
-	
+
 	            /* get time in milliseconds */
 	            time(&aclock);
 	            gettimeofday(&tv, NULL);
 	            currtime = ((double) aclock) * 1000 + ((double) tv.tv_usec) / 1000;
-	    
+
 	            if (event.key == lastevent.key) {
 	                /* check if input comes slow enough */
 	                if (currtime < lasttime + ((!skip)?this->inputinterval:(this->inputinterval/2))) {
@@ -67,10 +73,10 @@ void MMSInputThread::threadMain() {
 	            }
 	            else
 	                lkcnt = 0;
-	    
+
 	            /* save the last event */
 	            lastevent = event;
-	    
+
 	            /* check if the last input is to old */
 	            skip=0;
 	            if (lkcnt > 0)
@@ -80,7 +86,7 @@ void MMSInputThread::threadMain() {
 	                else
 	                    /* the next loop we want the input faster */
 	                    skip = 1;
-	    
+
 	            /* save current time */
 	            lasttime = currtime;
 	        }

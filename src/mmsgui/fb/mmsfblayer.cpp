@@ -383,7 +383,6 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
         MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
         return false;
     }
-    (*surface)->setAllocMethod(MMSFBSurfaceAllocMethod_dfb, true);
 
     /* clear the surface */
     dfbsurface->Clear(dfbsurface,0,0,0,0);

@@ -123,8 +123,8 @@ void MMSFlash::loader(bool &stop) {
 	}
 	void *ptr;
 	int pitch;
-	this->flash_temp_surface->getDFBSurface()->Lock(this->flash_temp_surface->getDFBSurface(), DSLF_WRITE, &ptr, &pitch);
-	this->flash_temp_surface->getDFBSurface()->Unlock(this->flash_temp_surface->getDFBSurface());
+	this->flash_temp_surface->lock(DSLF_WRITE, &ptr, &pitch);
+	this->flash_temp_surface->unlock();
     this->cairosurface = cairo_image_surface_create_for_data((unsigned char*)ptr, CAIRO_FORMAT_ARGB32,
     															this->width, this->height, pitch);
 	if (!this->cairosurface) {
@@ -217,193 +217,193 @@ void MMSFlash::stopThreads(void) {
 	this->playing = false;
 }
 
-unsigned int MMSFlash::mapKey(DFBInputDeviceKeySymbol key) {
+unsigned int MMSFlash::mapKey(MMSKeySymbol key) {
 	switch (key) {
-	case DIKS_CURSOR_UP:
+	case MMSKEY_CURSOR_UP:
 		return SWFDEC_KEY_UP;
-	case DIKS_CURSOR_DOWN:
+	case MMSKEY_CURSOR_DOWN:
 		return SWFDEC_KEY_DOWN;
-	case DIKS_CURSOR_LEFT:
+	case MMSKEY_CURSOR_LEFT:
 		return SWFDEC_KEY_LEFT;
-	case DIKS_CURSOR_RIGHT:
+	case MMSKEY_CURSOR_RIGHT:
 		return SWFDEC_KEY_RIGHT;
-	case DIKS_SPACE:
+	case MMSKEY_SPACE:
 		return SWFDEC_KEY_SPACE;
-	case DIKS_BACKSPACE:
+	case MMSKEY_BACKSPACE:
 		return SWFDEC_KEY_BACKSPACE;
-	case DIKS_SLASH:
+	case MMSKEY_SLASH:
 		return SWFDEC_KEY_SLASH;
-	case DIKS_BACKSLASH:
+	case MMSKEY_BACKSLASH:
 		return SWFDEC_KEY_BACKSLASH;
-	case DIKS_TAB:
+	case MMSKEY_TAB:
 		return SWFDEC_KEY_TAB;
-	case DIKS_CLEAR:
+	case MMSKEY_CLEAR:
 		return SWFDEC_KEY_CLEAR;
-	case DIKS_RETURN:
+	case MMSKEY_RETURN:
 		return SWFDEC_KEY_ENTER;
-	case DIKS_SHIFT:
+	case MMSKEY_SHIFT:
 		return SWFDEC_KEY_SHIFT;
-	case DIKS_CONTROL:
+	case MMSKEY_CONTROL:
 		return SWFDEC_KEY_CONTROL;
-	case DIKS_ALT:
+	case MMSKEY_ALT:
 		return SWFDEC_KEY_ALT;
-	case DIKS_CAPS_LOCK:
+	case MMSKEY_CAPS_LOCK:
 		return SWFDEC_KEY_CAPS_LOCK;
-	case DIKS_ESCAPE:
+	case MMSKEY_ESCAPE:
 		return SWFDEC_KEY_ESCAPE;
-	case DIKS_PAGE_UP:
+	case MMSKEY_PAGE_UP:
 		return SWFDEC_KEY_PAGE_UP;
-	case DIKS_PAGE_DOWN:
+	case MMSKEY_PAGE_DOWN:
 		return SWFDEC_KEY_PAGE_DOWN;
-	case DIKS_END:
+	case MMSKEY_END:
 		return SWFDEC_KEY_END;
-	case DIKS_HOME:
+	case MMSKEY_HOME:
 		return SWFDEC_KEY_HOME;
-	case DIKS_INSERT:
+	case MMSKEY_INSERT:
 		return SWFDEC_KEY_INSERT;
-	case DIKS_DELETE:
+	case MMSKEY_DELETE:
 		return SWFDEC_KEY_DELETE;
-	case DIKS_HELP:
+	case MMSKEY_HELP:
 		return SWFDEC_KEY_HELP;
-	case DIKS_0:
+	case MMSKEY_0:
 		return SWFDEC_KEY_0;
-	case DIKS_1:
+	case MMSKEY_1:
 		return SWFDEC_KEY_1;
-	case DIKS_2:
+	case MMSKEY_2:
 		return SWFDEC_KEY_2;
-	case DIKS_3:
+	case MMSKEY_3:
 		return SWFDEC_KEY_3;
-	case DIKS_4:
+	case MMSKEY_4:
 		return SWFDEC_KEY_4;
-	case DIKS_5:
+	case MMSKEY_5:
 		return SWFDEC_KEY_5;
-	case DIKS_6:
+	case MMSKEY_6:
 		return SWFDEC_KEY_6;
-	case DIKS_7:
+	case MMSKEY_7:
 		return SWFDEC_KEY_7;
-	case DIKS_8:
+	case MMSKEY_8:
 		return SWFDEC_KEY_8;
-	case DIKS_9:
+	case MMSKEY_9:
 		return SWFDEC_KEY_9;
-	case DIKS_CAPITAL_A:
-	case DIKS_SMALL_A:
+	case MMSKEY_CAPITAL_A:
+	case MMSKEY_SMALL_A:
 		return SWFDEC_KEY_A;
-	case DIKS_CAPITAL_B:
-	case DIKS_SMALL_B:
+	case MMSKEY_CAPITAL_B:
+	case MMSKEY_SMALL_B:
 		return SWFDEC_KEY_B;
-	case DIKS_CAPITAL_C:
-	case DIKS_SMALL_C:
+	case MMSKEY_CAPITAL_C:
+	case MMSKEY_SMALL_C:
 		return SWFDEC_KEY_C;
-	case DIKS_CAPITAL_D:
-	case DIKS_SMALL_D:
+	case MMSKEY_CAPITAL_D:
+	case MMSKEY_SMALL_D:
 		return SWFDEC_KEY_D;
-	case DIKS_CAPITAL_E:
-	case DIKS_SMALL_E:
+	case MMSKEY_CAPITAL_E:
+	case MMSKEY_SMALL_E:
 		return SWFDEC_KEY_E;
-	case DIKS_CAPITAL_F:
-	case DIKS_SMALL_F:
+	case MMSKEY_CAPITAL_F:
+	case MMSKEY_SMALL_F:
 		return SWFDEC_KEY_F;
-	case DIKS_CAPITAL_G:
-	case DIKS_SMALL_G:
+	case MMSKEY_CAPITAL_G:
+	case MMSKEY_SMALL_G:
 		return SWFDEC_KEY_G;
-	case DIKS_CAPITAL_H:
-	case DIKS_SMALL_H:
+	case MMSKEY_CAPITAL_H:
+	case MMSKEY_SMALL_H:
 		return SWFDEC_KEY_H;
-	case DIKS_CAPITAL_I:
-	case DIKS_SMALL_I:
+	case MMSKEY_CAPITAL_I:
+	case MMSKEY_SMALL_I:
 		return SWFDEC_KEY_I;
-	case DIKS_CAPITAL_J:
-	case DIKS_SMALL_J:
+	case MMSKEY_CAPITAL_J:
+	case MMSKEY_SMALL_J:
 		return SWFDEC_KEY_J;
-	case DIKS_CAPITAL_K:
-	case DIKS_SMALL_K:
+	case MMSKEY_CAPITAL_K:
+	case MMSKEY_SMALL_K:
 		return SWFDEC_KEY_K;
-	case DIKS_CAPITAL_L:
-	case DIKS_SMALL_L:
+	case MMSKEY_CAPITAL_L:
+	case MMSKEY_SMALL_L:
 		return SWFDEC_KEY_L;
-	case DIKS_CAPITAL_M:
-	case DIKS_SMALL_M:
+	case MMSKEY_CAPITAL_M:
+	case MMSKEY_SMALL_M:
 		return SWFDEC_KEY_M;
-	case DIKS_CAPITAL_N:
-	case DIKS_SMALL_N:
+	case MMSKEY_CAPITAL_N:
+	case MMSKEY_SMALL_N:
 		return SWFDEC_KEY_N;
-	case DIKS_CAPITAL_O:
-	case DIKS_SMALL_O:
+	case MMSKEY_CAPITAL_O:
+	case MMSKEY_SMALL_O:
 		return SWFDEC_KEY_O;
-	case DIKS_CAPITAL_P:
-	case DIKS_SMALL_P:
+	case MMSKEY_CAPITAL_P:
+	case MMSKEY_SMALL_P:
 		return SWFDEC_KEY_P;
-	case DIKS_CAPITAL_Q:
-	case DIKS_SMALL_Q:
+	case MMSKEY_CAPITAL_Q:
+	case MMSKEY_SMALL_Q:
 		return SWFDEC_KEY_Q;
-	case DIKS_CAPITAL_R:
-	case DIKS_SMALL_R:
+	case MMSKEY_CAPITAL_R:
+	case MMSKEY_SMALL_R:
 		return SWFDEC_KEY_R;
-	case DIKS_CAPITAL_S:
-	case DIKS_SMALL_S:
+	case MMSKEY_CAPITAL_S:
+	case MMSKEY_SMALL_S:
 		return SWFDEC_KEY_S;
-	case DIKS_CAPITAL_T:
-	case DIKS_SMALL_T:
+	case MMSKEY_CAPITAL_T:
+	case MMSKEY_SMALL_T:
 		return SWFDEC_KEY_T;
-	case DIKS_CAPITAL_U:
-	case DIKS_SMALL_U:
+	case MMSKEY_CAPITAL_U:
+	case MMSKEY_SMALL_U:
 		return SWFDEC_KEY_U;
-	case DIKS_CAPITAL_V:
-	case DIKS_SMALL_V:
+	case MMSKEY_CAPITAL_V:
+	case MMSKEY_SMALL_V:
 		return SWFDEC_KEY_V;
-	case DIKS_CAPITAL_W:
-	case DIKS_SMALL_W:
+	case MMSKEY_CAPITAL_W:
+	case MMSKEY_SMALL_W:
 		return SWFDEC_KEY_W;
-	case DIKS_CAPITAL_X:
-	case DIKS_SMALL_X:
+	case MMSKEY_CAPITAL_X:
+	case MMSKEY_SMALL_X:
 		return SWFDEC_KEY_X;
-	case DIKS_CAPITAL_Y:
-	case DIKS_SMALL_Y:
+	case MMSKEY_CAPITAL_Y:
+	case MMSKEY_SMALL_Y:
 		return SWFDEC_KEY_Y;
-	case DIKS_CAPITAL_Z:
-	case DIKS_SMALL_Z:
+	case MMSKEY_CAPITAL_Z:
+	case MMSKEY_SMALL_Z:
 		return SWFDEC_KEY_Z;
-	case DIKS_F1:
+	case MMSKEY_F1:
 		return SWFDEC_KEY_F1;
-	case DIKS_F2:
+	case MMSKEY_F2:
 		return SWFDEC_KEY_F2;
-	case DIKS_F3:
+	case MMSKEY_F3:
 		return SWFDEC_KEY_F3;
-	case DIKS_F4:
+	case MMSKEY_F4:
 		return SWFDEC_KEY_F4;
-	case DIKS_F5:
+	case MMSKEY_F5:
 		return SWFDEC_KEY_F5;
-	case DIKS_F6:
+	case MMSKEY_F6:
 		return SWFDEC_KEY_F6;
-	case DIKS_F7:
+	case MMSKEY_F7:
 		return SWFDEC_KEY_F7;
-	case DIKS_F8:
+	case MMSKEY_F8:
 		return SWFDEC_KEY_F8;
-	case DIKS_F9:
+	case MMSKEY_F9:
 		return SWFDEC_KEY_F9;
-	case DIKS_F10:
+	case MMSKEY_F10:
 		return SWFDEC_KEY_F10;
-	case DIKS_F11:
+	case MMSKEY_F11:
 		return SWFDEC_KEY_F11;
-	case DIKS_F12:
+	case MMSKEY_F12:
 		return SWFDEC_KEY_F12;
-	case DIKS_NUM_LOCK:
+	case MMSKEY_NUM_LOCK:
 		return SWFDEC_KEY_NUM_LOCK;
-	case DIKS_SCROLL_LOCK:
+	case MMSKEY_SCROLL_LOCK:
 		return SWFDEC_KEY_SCROLL_LOCK;
-	case DIKS_SEMICOLON:
+	case MMSKEY_SEMICOLON:
 		return SWFDEC_KEY_SEMICOLON;
-	case DIKS_EQUALS_SIGN:
+	case MMSKEY_EQUALS_SIGN:
 		return SWFDEC_KEY_EQUAL;
-	case DIKS_COMMA:
+	case MMSKEY_COMMA:
 		return SWFDEC_KEY_COMMA;
-	case DIKS_MINUS_SIGN:
+	case MMSKEY_MINUS_SIGN:
 		return SWFDEC_KEY_MINUS;
-	case DIKS_PERIOD:
+	case MMSKEY_PERIOD:
 		return SWFDEC_KEY_DOT;
-	case DIKS_GRAVE_ACCENT:
+	case MMSKEY_GRAVE_ACCENT:
 		return SWFDEC_KEY_GRAVE;
-	case DIKS_APOSTROPHE:
+	case MMSKEY_APOSTROPHE:
 		return SWFDEC_KEY_APOSTROPHE;
 	}
 

@@ -77,10 +77,10 @@ bool MMSFBWindow::getSurface(MMSFBSurface **surface) {
         MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
         return false;
     }
-    
+
     /* save this for the next call */
     this->surface = *surface;
-    
+
     return true;
 }
 
@@ -111,7 +111,7 @@ bool MMSFBWindow::isShown() {
     /* check if initialized */
     INITCHECK;
 
-    /* return the shown flag */    
+    /* return the shown flag */
     return this->config.shown;
 }
 
@@ -338,7 +338,7 @@ bool MMSFBWindow::isShown() {
     /* check if initialized */
     INITCHECK;
 
-    /* return the shown flag */    
+    /* return the shown flag */
     return this->config.shown;
 }
 
@@ -436,8 +436,8 @@ bool MMSFBWindow::getSize(int *w, int *h) {
     INITCHECK;
 
     /* return the size */
-    *w = this->config.surface_config.w;
-    *h = this->config.surface_config.h;
+    *w = this->config.surface_config.surface_buffer.w;
+    *h = this->config.surface_config.surface_buffer.h;
 
     return true;
 }

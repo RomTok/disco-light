@@ -461,22 +461,22 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                im_desc->sufcount = 1;
 
 				                /* copy img_buf to the surface */
-				                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
-				                char *dfbsuf_ptr;
-				                int dfbsuf_pitch;
-				                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
-				                if (img_pitch == dfbsuf_pitch)
-				                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
+				                char *suf_ptr;
+				                int suf_pitch;
+				                im_desc->suf[0].surface->lock(DSLF_WRITE, (void**)&suf_ptr, &suf_pitch);
+
+				                if (img_pitch == suf_pitch)
+				                	memcpy(suf_ptr, img_buf, img_pitch * img_height);
 				                else {
 				                	/* copy each line */
 				                	char *img_b = (char*)img_buf;
 				                	for (int i = 0; i < img_height; i++) {
-				                		memcpy(dfbsuf_ptr, img_b, img_pitch);
-				                		dfbsuf_ptr+=dfbsuf_pitch;
+				                		memcpy(suf_ptr, img_b, img_pitch);
+				                		suf_ptr+=suf_pitch;
 				                		img_b+=img_pitch;
 				                	}
 				                }
-				                dfbsuf->Unlock(dfbsuf);
+				                im_desc->suf[0].surface->unlock();
 
 				                /* free */
 				                delete tafff;
@@ -509,23 +509,23 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                    this->images.at(reload_image)->suf[0].surface->resize(img_width, img_height);
 
 				                /* copy img_buf to the surface */
-				                IDirectFBSurface *dfbsuf = im_desc->suf[0].surface->getDFBSurface();
-				                char *dfbsuf_ptr;
-				                int dfbsuf_pitch;
-				                dfbsuf->Lock(dfbsuf, DSLF_WRITE, (void**)&dfbsuf_ptr, &dfbsuf_pitch);
-				                if (img_pitch == dfbsuf_pitch)
+				                char *suf_ptr;
+				                int suf_pitch;
+				                im_desc->suf[0].surface->lock(DSLF_WRITE, (void**)&suf_ptr, &suf_pitch);
+
+				                if (img_pitch == suf_pitch)
 				                	/* copy in one block */
-				                	memcpy(dfbsuf_ptr, img_buf, img_pitch * img_height);
+				                	memcpy(suf_ptr, img_buf, img_pitch * img_height);
 				                else {
 				                	/* copy each line */
 				                	char *img_b = (char*)img_buf;
 				                	for (int i = 0; i < img_height; i++) {
-				                		memcpy(dfbsuf_ptr, img_b, img_pitch);
-				                		dfbsuf_ptr+=dfbsuf_pitch;
+				                		memcpy(suf_ptr, img_b, img_pitch);
+				                		suf_ptr+=suf_pitch;
 				                		img_b+=img_pitch;
 				                	}
 				                }
-				                dfbsuf->Unlock(dfbsuf);
+				                im_desc->suf[0].surface->unlock();
 
 				                /* free */
 				                delete tafff;
@@ -546,6 +546,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 		        }
     		} while (retry);
     	}
+
 
         /* failed, try it with DFB providers */
     	if (!loadImage(&imageprovider, "", imagefile)) {
@@ -573,6 +574,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 im_desc->mtime = 0;
         }
 
+
+#ifdef  __HAVE_DIRECTFB__
         /* get surface description */
         if (imageprovider->GetSurfaceDescription(imageprovider, &surface_desc)!=DFB_OK) {
             /* release imageprovider */
@@ -601,6 +604,16 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 return NULL;
             }
             im_desc->sufcount = 1;
+
+            // check if dfb surface available
+            if (!im_desc->suf[0].surface->getDFBSurface()) {
+                /* release imageprovider */
+                imageprovider->Release(imageprovider);
+                delete im_desc->suf[0].surface;
+                DEBUGMSG("MMSGUI", "cannot render image file '%s' because it is not a DFB surface", imagefile.c_str());
+                delete im_desc;
+                return NULL;
+            }
 
             /* render to the surface */
             if (imageprovider->RenderTo(imageprovider, im_desc->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
@@ -661,6 +674,7 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
                 *surfdesc = this->images.at(reload_image)->suf;
             return this->images.at(reload_image)->suf[0].surface;
         }
+#endif
     }
 }
 

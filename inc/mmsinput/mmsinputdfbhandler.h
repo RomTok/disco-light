@@ -20,44 +20,65 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSINPUTMANAGER_
-#define MMSINPUTMANAGER_
+#ifndef MMSINPUTDFBHANDLER_H_
+#define MMSINPUTDFBHANDLER_H_
 
-#include "mmstools/mmstools.h"
+#include "mmsgui/mmsguitools.h"
+#include "mmsbase/mmsbase.h"
 #include "mmsinput/mmsinputhandler.h"
-#include "mmsinput/mmsinputthread.h"
-#include "mmsgui/interfaces/immswindowmanager.h"
-#include "mmsinput/mmsinputmapper.h"
 
-#include <vector>
 
-class MMSInputManager  {
+#ifdef  __HAVE_DIRECTFB__
+	#ifndef DFBCHECK
+		#define DFBCHECK( x... ) \
+		{\
+			 DFBResult err = x;\
+			 if (err != DFB_OK) {\
+				  fprintf( stderr, "%s <%d>:\n\t", __FILE__, __LINE__ );\
+				  DirectFBErrorFatal( #x, err );\
+			 }\
+		}
+	#endif
+
+
+
+class MMSInputDFBHandler : public MMSInputHandler {
 	private:
-		MMSMutex mutex;
-		void handleInput(MMSInputEvent *inputevent);
-		vector <MMSInputThread *> threads;
-		IMMSWindowManager *windowmanager;
-		vector <class MMSInputSubscription *> subscriptions;
-		MMSKeySymbol lastkey;
-		MMSInputMapper *mapper;
 		MMSConfigData *config;
 
-		//! store the window on which the button was pressed
-		MMSWindow 	*buttonpress_window;
-		bool		button_pressed;
+		IDirectFBInputDevice    *input;
+		IDirectFB			    *dfb;
+		IDirectFBEventBuffer    *keybuffer;
+		bool					quit;
+
+		DFBRectangle	screen_rect;
+		DFBRectangle	pointer_rect;
+
+		int				xfac;
+		int				yfac;
+
+		int				pointer_xpos;
+		int				pointer_ypos;
+
+		int				pointer_old_xpos;
+		int				pointer_old_ypos;
+
+		int				button_pressed;
 
 	public:
-		MMSInputManager(string file, string name);
-		~MMSInputManager();
-		void addDevice(MMS_INPUT_DEVICE device, int inputinterval);
-		void setWindowManager(IMMSWindowManager *wm);
-		void addSubscription(class MMSInputSubscription *sub);
-		void startListen();
-		void stopListen();
-
-	friend class MMSInputThread;
+		MMSInputDFBHandler(MMS_INPUT_DEVICE device);
+		~MMSInputDFBHandler();
+		void grabEvents(MMSInputEvent *inputevent);
 };
 
-#include "mmsinputsubscription.h"
+#else
+class MMSInputDFBHandler : public MMSInputHandler {
+	public:
+		MMSInputDFBHandler(MMS_INPUT_DEVICE device);
+		~MMSInputDFBHandler();
+		void grabEvents(MMSInputEvent *inputevent);
+};
 
-#endif /*MMSINPUTMANAGER_*/
+#endif
+
+#endif /*MMSINPUTHANDLER_H_*/

@@ -175,8 +175,8 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         menu->onReturn->connect(sigc::mem_fun(this,&MMSSwitcher::onReturn));
 
     	/* create inputs */
-        subscribeKey(DIKS_MENU);
-        subscribeKey(DIKS_BACKSPACE);
+        subscribeKey(MMSKEY_MENU);
+        subscribeKey(MMSKEY_BACKSPACE);
 
         /* start my update thread */
         this->switcherThread = new MMSSwitcherThread(this, NULL, NULL, NULL, NULL);
@@ -298,11 +298,11 @@ void MMSSwitcher::setInputManager(MMSInputManager  *im) {
 }
 
 void MMSSwitcher::onSubscription(MMSInputSubscription *subscription){
-    DFBInputDeviceKeySymbol key;
+    MMSKeySymbol key;
 
     subscription->getKey(key);
 
-    if (key == DIKS_BACKSPACE) {
+    if (key == MMSKEY_BACKSPACE) {
         /* hide all shown popups */
         /* hide all main windows only if no popups to be hide */
         if(this->windowmanager->hideAllPopupWindows()==false)
@@ -327,7 +327,7 @@ void MMSSwitcher::onSubscription(MMSInputSubscription *subscription){
     }
 }
 
-void MMSSwitcher::subscribeKey(DFBInputDeviceKeySymbol key){
+void MMSSwitcher::subscribeKey(MMSKeySymbol key){
 	MMSInputSubscription *subscription = new MMSInputSubscription(key);
 
 	this->subscriptions.push_back(subscription);

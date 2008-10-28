@@ -26,11 +26,12 @@
 #include "mmstools/base.h"
 #include "mmsbase/mmsbase.h"
 #include "mmsinput/mmsinputhandler.h"
+#include "mmsinput/mmskeymap.h"
 
 #include <directfb.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-#include <directfb_keynames.h> 
+//#include <directfb_keynames.h>
 #include <map>
 
 typedef vector<DFBInputDeviceKeySymbol> MMS_KEYSET;
@@ -40,8 +41,10 @@ class MMSInputMapper {
 	private:
         xmlDoc 			*parser;
         std::multimap	<string, string> keyMap;
+        MMSKeyMap mmskeys;
 
-		DFBInputDeviceKeySymbol lookUpKeySymbol(const string keyname);
+		//DFBInputDeviceKeySymbol lookUpKeySymbol(const string keyname);
+
 
 	public:
 		MMSInputMapper(string mapfile, string name = "default");
@@ -49,5 +52,5 @@ class MMSInputMapper {
 		void mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *inputeventset);
         string lookUpKeyName(DFBInputDeviceKeySymbol key);
 };
- 
+
 #endif /*MMSINPUTMAPPER_H_*/
