@@ -23,8 +23,17 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfb.h"
 
+#ifdef __HAVE_XLIB__
+#include <sys/shm.h>
+#endif
+
 
 D_DEBUG_DOMAIN( MMS_Layer, "MMS/Layer", "MMS Layer" );
+
+#ifdef __HAVE_XLIB__
+#define GUID_YUV12_PLANAR 0x32315659
+#endif
+
 
 // static variables
 bool MMSFBLayer::firsttime_createsurface		= true;
@@ -37,6 +46,7 @@ bool MMSFBLayer::firsttime_createwindow_noalpha	= true;
 
 MMSFBLayer::MMSFBLayer(int id) {
     // init me
+	this->dfblayer = NULL;
     this->surface = NULL;
     this->flipflags = (MMSFBSurfaceFlipFlags)0;
     this->config.id = id;
@@ -64,6 +74,26 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.pixelformat = MMSFB_PF_YV12;
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
+
+		// create x11 backbuffer
+        this->xv_image = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, this->config.w, this->config.h, &this->xv_shminfo);
+        if (!this->xv_image) {
+			MMSFB_SetError(0, "XvShmCreateImage() failed");
+        	return;
+        }
+
+        // map shared memory for x-server commuinication
+        this->xv_shminfo.shmid    = shmget(IPC_PRIVATE, this->xv_image->data_size, IPC_CREAT | 0777);
+        this->xv_shminfo.shmaddr  = this->xv_image->data = (char *)shmat(this->xv_shminfo.shmid, 0, 0);
+        this->xv_shminfo.readOnly = False;
+
+        // attach the x-server to that segment
+        if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo)) {
+        	XFree(this->xv_image);
+        	this->xv_image = NULL;
+			MMSFB_SetError(0, "XShmAttach() failed");
+        	return;
+        }
 #endif
     }
 
@@ -84,7 +114,8 @@ MMSFBLayer::~MMSFBLayer() {
     }
     else {
 #ifdef __HAVE_XLIB__
-    	//TODO
+    	if (this->xv_image)
+    		XFree(this->xv_image);
 #endif
     }
 }
@@ -97,8 +128,7 @@ bool MMSFBLayer::isInitialized() {
     }
     else {
 #ifdef __HAVE_XLIB__
-    	//TODO
-    	return true;
+    	return (this->xv_image != NULL);
 #endif
     }
 }
@@ -171,7 +201,19 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 
     if (!config) {
     	DEBUGMSG("MMSGUI", "Layer properties:");
-    	DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+
+        if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+#ifdef  __HAVE_DIRECTFB__
+            DEBUGMSG("MMSGUI", " backend:     dfb");
+#endif
+        }
+        else {
+#ifdef __HAVE_XLIB__
+            DEBUGMSG("MMSGUI", " backend:     x11");
+#endif
+        }
+
+        DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
     	DEBUGMSG("MMSGUI", " pixelformat: " + this->config.pixelformat);
 
@@ -318,12 +360,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
     }
     else {
 #ifdef __HAVE_XLIB__
-		// fill my config
-/*		this->config.w = w;
-		this->config.h = h;
-		this->config.pixelformat = pixelformat;
-		this->config.buffermode = buffermode;
-		this->config.options = options;*/
+		// if we use XLIB, currently we cannot change the layer attributes
 		this->config.window_pixelformat = window_pixelformat;
 		this->config.surface_pixelformat = surface_pixelformat;
 
@@ -381,54 +418,74 @@ bool MMSFBLayer::setLevel(int level) {
 }
 
 bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
-    /* check if initialized */
+
+	// check if initialized
     INITCHECK;
 
     if (this->surface) {
-        /* i have already a surface */
+        // i have already a surface
         *surface = this->surface;
         return true;
     }
 
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-		/* get layers surface */
+		// get layers surface
 		DFBResult           dfbres;
 		IDirectFBSurface    *dfbsurface;
 		if ((dfbres=this->dfblayer->GetSurface(this->dfblayer, &dfbsurface)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::GetSurface() failed");
 			return false;
 		}
-		dfbsurface->SetBlittingFlags( dfbsurface, DSBLIT_NOFX );
-		/* create a new surface instance */
+		dfbsurface->SetBlittingFlags(dfbsurface, DSBLIT_NOFX);
+
+		// create a new surface instance
 		*surface = new MMSFBSurface(dfbsurface);
 		if (!*surface) {
 			dfbsurface->Release(dfbsurface);
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
 		}
-
-		/* clear the surface */
-		dfbsurface->Clear(dfbsurface,0,0,0,0);
-		dfbsurface->Flip(dfbsurface,NULL,(DFBSurfaceFlipFlags)0);
-		dfbsurface->Clear(dfbsurface,0,0,0,0);
-		dfbsurface->Flip(dfbsurface,NULL,(DFBSurfaceFlipFlags)0);
-		dfbsurface->Clear(dfbsurface,0,0,0,0);
 #endif
     }
     else {
 #ifdef __HAVE_XLIB__
-    	//TODO
+        if (!this->xv_image) {
+			MMSFB_SetError(0, "xv_image not available, cannot get surface");
+        	return false;
+        }
+
+        // create a new surface instance
+		*surface = new MMSFBSurface(0, this->xv_image);
+		if (!*surface) {
+			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+			return false;
+		}
 #endif
     }
 
-    /* save this for the next call */
+    // save this for the next call
     this->surface = *surface;
 
-    /* initialize the flip flags for the layer surface */
-    this->surface->setFlipFlags(this->flipflags);
+    if (this->surface) {
+		// clear the surface
+    	this->surface->clear();
+		if ((this->config.buffermode == MMSFB_BM_BACKSYSTEM) || (this->config.buffermode == MMSFB_BM_BACKVIDEO)) {
+			this->surface->flip();
+			this->surface->clear();
+		}
+		if (this->config.buffermode == MMSFB_BM_TRIPLE) {
+			this->surface->flip();
+			this->surface->clear();
+		}
 
-    return true;
+	    // initialize the flip flags for the layer surface
+	    this->surface->setFlipFlags(this->flipflags);
+
+	    return true;
+    }
+
+    return false;
 }
 
 bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {

@@ -25,6 +25,14 @@
 
 #include "mmstools/base.h"
 
+#ifdef __HAVE_XLIB__
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/XShm.h>
+#include <X11/extensions/Xvlib.h>
+#endif
+
 extern "C" {
 #include <direct/debug.h>
 #include <direct/trace.h>

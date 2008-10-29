@@ -28,12 +28,6 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/Xv.h>
-#include <X11/extensions/XShm.h>
-#include <X11/extensions/Xvlib.h>
-
 // output types
 #define MMS_OT_VESAFB       "vesafb"
 #define MMS_OT_MATROXFB     "matroxfb"
@@ -64,8 +58,6 @@ class MMSFB {
         Window 			x_window;
         GC 				x_gc;
         int 			xv_port;
-        XvImage  		*xv_image;
-        XShmSegmentInfo xv_shminfo;
 #endif
 
     public:

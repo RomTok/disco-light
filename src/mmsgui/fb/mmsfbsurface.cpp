@@ -141,11 +141,14 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly) {
     // init me
     this->dfbsurface = NULL;
-    this->dfbsurface_read_locked = false;
-    this->dfbsurface_read_lock_cnt = 0;
-    this->dfbsurface_write_locked = false;
-    this->dfbsurface_write_lock_cnt = 0;
-    this->dfbsurface_invert_lock = false;
+    this->surface_read_locked = false;
+    this->surface_read_lock_cnt = 0;
+    this->surface_write_locked = false;
+    this->surface_write_lock_cnt = 0;
+    this->surface_invert_lock = false;
+#ifdef __HAVE_XLIB__
+	this->xv_image = NULL;
+#endif
 	this->config.surface_buffer.numbuffers = 0;
 	this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
@@ -224,6 +227,9 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 	        		       MMSFBSurface *parent,
 						   DFBRectangle *sub_surface_rect) {
     // init me
+#ifdef __HAVE_XLIB__
+	this->xv_image = NULL;
+#endif
 	this->config.surface_buffer.numbuffers = 0;
 	if (dfbsurface > (IDirectFBSurface *)1)
 		this->use_own_alloc = false;
@@ -232,6 +238,21 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 
 	init(dfbsurface, parent, sub_surface_rect);
 }
+
+#ifdef __HAVE_XLIB__
+MMSFBSurface::MMSFBSurface(int type, XvImage *xv_image) {
+    // init me
+	this->xv_image = xv_image;
+	this->config.surface_buffer.numbuffers = 1;
+	this->config.surface_buffer.buffers[0] = this->xv_image->data;
+	this->config.surface_buffer.currbuffer_read = 0;
+	this->config.surface_buffer.currbuffer_write = 0;
+	this->config.surface_buffer.pitch = *(this->xv_image->pitches);
+	this->use_own_alloc = true;
+
+	init((IDirectFBSurface*)1, NULL, NULL);
+}
+#endif
 
 MMSFBSurface::~MMSFBSurface() {
 
@@ -263,11 +284,11 @@ void MMSFBSurface::init(IDirectFBSurface *dfbsurface,
 						   DFBRectangle *sub_surface_rect) {
     /* init me */
     this->dfbsurface = dfbsurface;
-    this->dfbsurface_read_locked = false;
-    this->dfbsurface_read_lock_cnt = 0;
-    this->dfbsurface_write_locked = false;
-    this->dfbsurface_write_lock_cnt = 0;
-    this->dfbsurface_invert_lock = false;
+    this->surface_read_locked = false;
+    this->surface_read_lock_cnt = 0;
+    this->surface_write_locked = false;
+    this->surface_write_lock_cnt = 0;
+    this->surface_invert_lock = false;
     this->flipflags = (MMSFBSurfaceFlipFlags)0;
     this->TID = 0;
     this->Lock_cnt = 0;
@@ -358,11 +379,17 @@ void MMSFBSurface::freeSurfaceBuffer() {
 
 	//free my surface buffers
 	MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+#ifdef __HAVE_XLIB__
+	if (!this->xv_image) {
+#endif
 	for (int i = 0; i < sb->numbuffers; i++)
 		if (sb->buffers[i]) {
 			free(sb->buffers[i]);
 			sb->buffers[i] = NULL;
 		}
+#ifdef __HAVE_XLIB__
+	}
+#endif
 	sb->numbuffers = 0;
 }
 
@@ -1325,7 +1352,7 @@ bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitc
 		}
 	}
 
-	if (this->dfbsurface_invert_lock) {
+	if (this->surface_invert_lock) {
 		if (src_ptr && dst_ptr && src_pitch && dst_pitch) {
 			void *t_ptr;
 			int t_pitch;
@@ -7229,9 +7256,9 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 							MMSFBSurfaceBlittingFlags savedbf = this->config.blittingflags;
 							this->config.blittingflags = (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX;
 
-							this->dfbsurface_invert_lock = true;
+							this->surface_invert_lock = true;
 							this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
-							this->dfbsurface_invert_lock = false;
+							this->surface_invert_lock = false;
 
 							this->config.blittingflags = savedbf;
 						}
@@ -7261,9 +7288,9 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 					MMSFBSurfaceBlittingFlags savedbf = this->config.blittingflags;
 					this->config.blittingflags = (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX;
 
-					this->dfbsurface_invert_lock = true;
+					this->surface_invert_lock = true;
 					this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
-					this->dfbsurface_invert_lock = false;
+					this->surface_invert_lock = false;
 
 					this->config.blittingflags = savedbf;
 
@@ -7624,27 +7651,27 @@ void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch) {
 			*ptr = NULL;
 			*pitch = 0;
 			if ((DFBSurfaceLockFlags)flags == DSLF_READ) {
-				if (!tolock->dfbsurface_read_locked) {
+				if (!tolock->surface_read_locked) {
 					if (this->dfbsurface->Lock(this->dfbsurface, DSLF_READ, ptr, pitch) != DFB_OK) {
 						*ptr = NULL;
 						*pitch = 0;
 					}
 					else {
-						tolock->dfbsurface_read_locked = true;
-						tolock->dfbsurface_read_lock_cnt = tolock->Lock_cnt;
+						tolock->surface_read_locked = true;
+						tolock->surface_read_lock_cnt = tolock->Lock_cnt;
 					}
 				}
 			}
 			else
 			if ((DFBSurfaceLockFlags)flags == DSLF_WRITE) {
-				if (!tolock->dfbsurface_write_locked) {
+				if (!tolock->surface_write_locked) {
 					if (this->dfbsurface->Lock(this->dfbsurface, DSLF_WRITE, ptr, pitch) != DFB_OK) {
 						*ptr = NULL;
 						*pitch = 0;
 					}
 					else {
-						tolock->dfbsurface_write_locked = true;
-						tolock->dfbsurface_write_lock_cnt = tolock->Lock_cnt;
+						tolock->surface_write_locked = true;
+						tolock->surface_write_lock_cnt = tolock->Lock_cnt;
 					}
 				}
 			}
@@ -7658,20 +7685,20 @@ void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch) {
 			*pitch = 0;
 			MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
 			if ((DFBSurfaceLockFlags)flags == DSLF_READ) {
-				if (!tolock->dfbsurface_read_locked) {
+				if (!tolock->surface_read_locked) {
 					*ptr = sb->buffers[sb->currbuffer_read];
 					*pitch = sb->pitch;
-					tolock->dfbsurface_read_locked = true;
-					tolock->dfbsurface_read_lock_cnt = tolock->Lock_cnt;
+					tolock->surface_read_locked = true;
+					tolock->surface_read_lock_cnt = tolock->Lock_cnt;
 				}
 			}
 			else
 			if ((DFBSurfaceLockFlags)flags == DSLF_WRITE) {
-				if (!tolock->dfbsurface_write_locked) {
+				if (!tolock->surface_write_locked) {
 					*ptr = sb->buffers[sb->currbuffer_write];
 					*pitch = sb->pitch;
-					tolock->dfbsurface_write_locked = true;
-					tolock->dfbsurface_write_lock_cnt = tolock->Lock_cnt;
+					tolock->surface_write_locked = true;
+					tolock->surface_write_lock_cnt = tolock->Lock_cnt;
 				}
 			}
 		}
@@ -7714,24 +7741,24 @@ void MMSFBSurface::unlock() {
     	return;
 
 	// unlock dfb surface?
-	if ((tolock->dfbsurface_read_locked)&&(tolock->dfbsurface_read_lock_cnt == tolock->Lock_cnt)) {
+	if ((tolock->surface_read_locked)&&(tolock->surface_read_lock_cnt == tolock->Lock_cnt)) {
 		if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
 			this->dfbsurface->Unlock(this->dfbsurface);
 #endif
 		}
-		tolock->dfbsurface_read_locked = false;
-		tolock->dfbsurface_read_lock_cnt = 0;
+		tolock->surface_read_locked = false;
+		tolock->surface_read_lock_cnt = 0;
 	}
 	else
-	if ((tolock->dfbsurface_write_locked)&&(tolock->dfbsurface_write_lock_cnt == tolock->Lock_cnt)) {
+	if ((tolock->surface_write_locked)&&(tolock->surface_write_lock_cnt == tolock->Lock_cnt)) {
 		if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
 			this->dfbsurface->Unlock(this->dfbsurface);
 #endif
 		}
-		tolock->dfbsurface_write_locked = false;
-		tolock->dfbsurface_write_lock_cnt = 0;
+		tolock->surface_write_locked = false;
+		tolock->surface_write_lock_cnt = 0;
 	}
 
     tolock->Lock_cnt--;

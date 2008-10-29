@@ -23,16 +23,11 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 
-#include <sys/shm.h>
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
 
 #define INITCHECK  if(!this->dfb){MMSFB_SetError(0,"not initialized");return false;}
-
-#ifdef __HAVE_XLIB__
-#define GUID_YUV12_PLANAR 0x32315659
-#endif
 
 
 MMSFB::MMSFB() {
@@ -137,19 +132,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h) {
         /* get the last xv blitter -> needs detection */
         printf("DISKO: Using xv adaptor '%s'\n", ai[num_adaptors-1].name);
         this->xv_port = ai[num_adaptors-1].base_id;
-
-        this->xv_image = XvShmCreateImage(this->x_display, this->xv_port, GUID_YUV12_PLANAR, 0, this->w, this->h, &this->xv_shminfo);
-
-        /* map shared memory for x-server commuinication */
-        this->xv_shminfo.shmid    = shmget(IPC_PRIVATE, this->xv_image->data_size, IPC_CREAT | 0777);
-        this->xv_shminfo.shmaddr  = this->xv_image->data = (char *)shmat(this->xv_shminfo.shmid, 0, 0);
-        this->xv_shminfo.readOnly = False;
-
-        /* attach the x-server to that seg */
-        if (!XShmAttach(this->x_display, &this->xv_shminfo)) {
-			MMSFB_SetError(0, "XShmAttach() failed");
-        	return false;
-        }
 #endif
     }
 
@@ -211,11 +193,16 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 }
 
 void *MMSFB::getX11Window() {
-#ifdef __HAVE_XLIB__
-	return &this->x_window;
-#else
-	return NULL;
+    if (this->backend == MMSFB_BACKEND_DFB) {
+#ifdef  __HAVE_DIRECTFB__
 #endif
+    }
+    else {
+#ifdef __HAVE_XLIB__
+    	return &this->x_window;
+#endif
+    }
+    return NULL;
 }
 
 bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {

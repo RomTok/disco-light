@@ -28,7 +28,6 @@
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfbwindow.h"
 
-
 //! describes the config of a layer
 typedef struct {
 	//! layer's id
@@ -53,6 +52,11 @@ class MMSFBLayer {
     private:
     	// interface to the dfb layer
         IDirectFBDisplayLayer   *dfblayer;
+
+#ifdef __HAVE_XLIB__
+        XvImage  		*xv_image;
+        XShmSegmentInfo xv_shminfo;
+#endif
 
         // layer configuration
         MMSFBLayerConfig        config;

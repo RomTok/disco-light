@@ -59,6 +59,7 @@ typedef struct {
     int     backbuffer;
     //! true, if surface is stored in system memory
     bool	systemonly;
+
     void	*buffers[MMSFBSurfaceMaxBuffers];
     int 	numbuffers;
     int 	currbuffer_read;
@@ -87,11 +88,15 @@ typedef struct {
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
-        bool				dfbsurface_read_locked;
-        int					dfbsurface_read_lock_cnt;
-        bool				dfbsurface_write_locked;
-        int					dfbsurface_write_lock_cnt;
-        bool				dfbsurface_invert_lock;
+        bool				surface_read_locked;
+        int					surface_read_lock_cnt;
+        bool				surface_write_locked;
+        int					surface_write_lock_cnt;
+        bool				surface_invert_lock;
+
+#ifdef __HAVE_XLIB__
+        XvImage  			*xv_image;
+#endif
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
@@ -342,6 +347,10 @@ class MMSFBSurface {
         MMSFBSurface(IDirectFBSurface *dfbsurface,
 					 MMSFBSurface *parent = NULL,
 					 DFBRectangle *sub_surface_rect = NULL);
+#ifdef __HAVE_XLIB__
+        MMSFBSurface(int type, XvImage *xv_image);
+#endif
+
         virtual ~MMSFBSurface();
 
         bool isInitialized();
