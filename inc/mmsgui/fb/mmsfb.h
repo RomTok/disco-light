@@ -68,6 +68,8 @@ class MMSFB {
         bool release();
         bool isInitialized();
 
+        MMSFB_BACKEND getBackend();
+
         bool getLayer(int id, MMSFBLayer **layer);
 
         void *getX11Window();

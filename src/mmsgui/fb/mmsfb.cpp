@@ -171,6 +171,10 @@ bool MMSFB::isInitialized() {
     }
 }
 
+MMSFB_BACKEND MMSFB::getBackend() {
+	return this->backend;
+}
+
 bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 
 	// check if initialized
