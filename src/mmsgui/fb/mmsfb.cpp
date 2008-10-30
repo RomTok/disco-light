@@ -96,7 +96,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h) {
         this->x_screen = DefaultScreen(this->x_display);
 
         XSetWindowAttributes x_window_attr;
-        x_window_attr.event_mask        = StructureNotifyMask | ExposureMask;
+        x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask;
         x_window_attr.background_pixel  = 0;
         x_window_attr.border_pixel      = 0;
         x_window_attr.override_redirect = 0;
@@ -208,6 +208,19 @@ void *MMSFB::getX11Window() {
     }
     return NULL;
 }
+void *MMSFB::getX11Display() {
+    if (this->backend == MMSFB_BACKEND_DFB) {
+#ifdef  __HAVE_DIRECTFB__
+#endif
+    }
+    else {
+#ifdef __HAVE_XLIB__
+    	return this->x_display;
+#endif
+    }
+    return NULL;
+}
+
 
 bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {
     /* check if initialized */

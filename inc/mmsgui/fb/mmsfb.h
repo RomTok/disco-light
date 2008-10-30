@@ -73,6 +73,7 @@ class MMSFB {
         bool getLayer(int id, MMSFBLayer **layer);
 
         void *getX11Window();
+        void *getX11Display();
 
         bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0, bool systemonly = false);
 

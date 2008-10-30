@@ -22,6 +22,11 @@
 
 #include "mmsinput/mmsinputthread.h"
 #include "mmsinput/mmsinputdfbhandler.h"
+#include "mmsinput/mmsinputx11handler.h"
+#include "mmsgui/fb/mmsfb.h"
+
+extern MMSFB *mmsfb;
+
 
 MMSInputThread::MMSInputThread(class MMSInputManager *manager, MMS_INPUT_DEVICE device, int inputinterval) {
 	this->manager = manager;
@@ -45,9 +50,21 @@ void MMSInputThread::threadMain() {
 
 	if (this->handler == NULL) {
 		if(config->getOutputType()!= MMS_OT_X11FB) {
+			//create dfb input backend
 			this->handler = new MMSInputDFBHandler(this->device);
-		} else
-			this->handler = new MMSInputDFBHandler(this->device);
+		} else {
+			#ifdef __HAVE_XLIB__
+				if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
+					this->handler = new MMSInputX11Handler(this->device);
+				} else {
+					//allthough we have xlib directfb is used;
+					this->handler = new MMSInputDFBHandler(this->device);
+				}
+			#else
+				//we have no xlib so its dfb x11
+				this->handler = new MMSInputDFBHandler(this->device);
+			#endif
+		}
 
 	}
 
