@@ -240,15 +240,33 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 }
 
 #ifdef __HAVE_XLIB__
-MMSFBSurface::MMSFBSurface(int type, XvImage *xv_image) {
+MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image) {
     // init me
-	this->xv_image = xv_image;
-	this->config.surface_buffer.numbuffers = 1;
-	this->config.surface_buffer.buffers[0] = this->xv_image->data;
-	this->config.surface_buffer.currbuffer_read = 0;
-	this->config.surface_buffer.currbuffer_write = 0;
-	this->config.surface_buffer.pitch = *(this->xv_image->pitches);
+    this->dfbsurface = NULL;
+    this->surface_read_locked = false;
+    this->surface_read_lock_cnt = 0;
+    this->surface_write_locked = false;
+    this->surface_write_lock_cnt = 0;
+    this->surface_invert_lock = false;
 	this->use_own_alloc = true;
+
+    // setup surface attributes
+	MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+	sb->w = w;
+	sb->h = h;
+	sb->pixelformat = pixelformat;
+	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
+	sb->premultiplied = true;
+	sb->backbuffer = true;
+	sb->systemonly = true;
+
+	// set the surface buffer
+	this->xv_image = xv_image;
+	sb->numbuffers = 1;
+	sb->buffers[0] = this->xv_image->data;
+	sb->currbuffer_read = 0;
+	sb->currbuffer_write = 0;
+	sb->pitch = *(this->xv_image->pitches);
 
 	init((IDirectFBSurface*)1, NULL, NULL);
 }

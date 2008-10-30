@@ -456,7 +456,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
         }
 
         // create a new surface instance
-		*surface = new MMSFBSurface(0, this->xv_image);
+		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->xv_image);
 		if (!*surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;

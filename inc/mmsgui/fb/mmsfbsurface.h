@@ -348,7 +348,7 @@ class MMSFBSurface {
 					 MMSFBSurface *parent = NULL,
 					 DFBRectangle *sub_surface_rect = NULL);
 #ifdef __HAVE_XLIB__
-        MMSFBSurface(int type, XvImage *xv_image);
+        MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image);
 #endif
 
         virtual ~MMSFBSurface();
