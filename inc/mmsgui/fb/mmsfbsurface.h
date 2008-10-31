@@ -199,6 +199,9 @@ class MMSFBSurface {
         // first time flag for eAFR_blend_ayuv()
         static bool				firsttime_eAFR_blend_ayuv;
 
+        // first time flag for eAFR_yv12()
+        static bool				firsttime_eAFR_yv12;
+
         void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);
@@ -316,6 +319,9 @@ class MMSFBSurface {
 
         void eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
+
+        void eAFR_yv12(unsigned char *dst, int dst_pitch, int dst_height,
+					   int dx, int dy, int dw, int dh, MMSFBColor color);
 
         bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
         bool extendedAccelFillRectangle(int x, int y, int w, int h);

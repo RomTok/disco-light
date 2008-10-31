@@ -66,6 +66,7 @@ bool MMSFBSurface::firsttime_eAFR_argb							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_argb					= true;
 bool MMSFBSurface::firsttime_eAFR_rgb16							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_ayuv					= true;
+bool MMSFBSurface::firsttime_eAFR_yv12							= true;
 
 
 
@@ -4839,10 +4840,6 @@ void MMSFBSurface::eAB_blend_srcalpha_ayuv_to_yv12(unsigned int *src, int src_pi
 
 bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
 
-	// extended acceleration on?
-	if (!this->extendedaccel)
-		return false;
-
 	// premultiplied surface?
 	if (!source->config.surface_buffer.premultiplied)
 		return false;
@@ -5282,6 +5279,10 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source, DFBRectangle *src_r
 }
 
 bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+	// extended acceleration on?
+	if (!this->extendedaccel)
+		return false;
+
 	if (!extendedAccelBlitEx(source, src_rect, x, y))
 		return printMissingCombination("extendedAccelBlit()", source);
 }
@@ -6134,10 +6135,6 @@ void MMSFBSurface::eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_p
 
 bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
 
-	// extended acceleration on?
-	if (!this->extendedaccel)
-		return false;
-
 	// premultiplied surface?
 	if (!source->config.surface_buffer.premultiplied)
 		return false;
@@ -6382,6 +6379,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 
 
 bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+	// extended acceleration on?
+	if (!this->extendedaccel)
+		return false;
+
 	if (!extendedAccelStretchBlitEx(source, src_rect, dest_rect))
 		return printMissingCombination("extendedAccelStretchBlit()", source);
 }
@@ -6675,12 +6676,21 @@ void MMSFBSurface::eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_hei
 }
 
 
+void MMSFBSurface::eAFR_yv12(unsigned char *dst, int dst_pitch, int dst_height,
+						     int dx, int dy, int dw, int dh, MMSFBColor color) {
+
+	// first time?
+	if (firsttime_eAFR_yv12) {
+		printf("DISKO: Using accelerated fill rectangle to YV12.\n");
+		firsttime_eAFR_yv12 = false;
+	}
+
+
+}
+
+
 
 bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
-
-	// extended acceleration on?
-	if (!this->extendedaccel)
-		return false;
 
 	// a few help and clipping values
 	void *dst_ptr;
@@ -6765,7 +6775,6 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			color = this->config.color;
 			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
 				eAFR_argb((unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 						  sx, sy, sw, sh, color);
@@ -6798,14 +6807,12 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			color = this->config.color;
-			color.a = 0xff;
-			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
-				eAFR_blend_ayuv((unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
-							    sx, sy, sw, sh, color);
+/*			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
+				eAFR_ayuv((unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+						  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
-			}
+			}*/
 
 			return false;
 		}
@@ -6832,9 +6839,27 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			color = this->config.color;
 			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
 				eAFR_rgb16((unsigned short *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+						  sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
+	if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+		// destination is YV12
+		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
+				eAFR_yv12((unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 						  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
@@ -6853,6 +6878,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 
 bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
+	// extended acceleration on?
+	if (!this->extendedaccel)
+		return false;
+
 	if (!extendedAccelFillRectangleEx(x, y, w, h))
 		return printMissingCombination("extendedAccelFillRectangle()");
 }
@@ -7348,17 +7377,17 @@ bool MMSFBSurface::refresh() {
 	}
 	else {
 #ifdef __HAVE_XLIB__
-		this->lock();
 		MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
+			this->lock();
 			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 						  0, 0, mmsfb->w, mmsfb->h,
 						  0, 0, mmsfb->w, mmsfb->h, True);
 			XSync(mmsfb->x_display, True);
 			XFlush(mmsfb->x_display);
+			this->unlock();
 		}
-		this->unlock();
 #endif
 	}
 

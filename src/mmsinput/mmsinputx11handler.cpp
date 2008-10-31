@@ -168,7 +168,7 @@ MMSInputX11Handler::MMSInputX11Handler(MMS_INPUT_DEVICE device) {
 
 
 #else
-	throw new MMSError(0,typeid(this).name() + " is empty. compile X11 support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
 #endif
 }
 
@@ -204,7 +204,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     }
 
 #else
-	throw new MMSError(0,typeid(this).name() + " is empty. compile X11 support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
 #endif
 
 }
