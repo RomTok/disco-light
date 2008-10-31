@@ -7338,6 +7338,32 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 	}
 }
 
+bool MMSFBSurface::refresh() {
+    /* check if initialized */
+    INITCHECK;
+
+	if (!this->use_own_alloc) {
+#ifdef  __HAVE_DIRECTFB__
+#endif
+	}
+	else {
+#ifdef __HAVE_XLIB__
+		this->lock();
+		MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+		if (sb->xv_image[0]) {
+			// put the image to the x-server
+			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+						  0, 0, mmsfb->w, mmsfb->h,
+						  0, 0, mmsfb->w, mmsfb->h, True);
+			XSync(mmsfb->x_display, True);
+			XFlush(mmsfb->x_display);
+		}
+		this->unlock();
+#endif
+	}
+
+	return true;
+}
 
 bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
                               bool copycontent, bool withbackbuffer) {

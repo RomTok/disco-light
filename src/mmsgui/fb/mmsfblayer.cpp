@@ -66,7 +66,11 @@ MMSFBLayer::MMSFBLayer(int id) {
     }
     else {
 #ifdef __HAVE_XLIB__
-		this->dfblayer = (IDirectFBDisplayLayer*)1;
+        if (this->config.id != 0) {
+			MMSFB_SetError(0, "x11 support needs layer 0!");
+        	return;
+        }
+        this->dfblayer = (IDirectFBDisplayLayer*)1;
 
 		// fill my config partly from mmsfb
 		this->config.w = mmsfb->w;

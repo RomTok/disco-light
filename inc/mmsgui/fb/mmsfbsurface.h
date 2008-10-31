@@ -396,6 +396,7 @@ class MMSFBSurface {
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
         bool flip(DFBRegion *region = NULL);
+        bool refresh();
 
         bool createCopy(MMSFBSurface **dstsurface, int w = 0, int h = 0,
                         bool copycontent = false, bool withbackbuffer = false);

@@ -56,6 +56,9 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h) {
     this->argc = argc;
     this->argv = argv;
 
+    // init layer pointers
+    memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
+
     // basic information mainly needed by X11 initialization
     this->outputtype = outputtype;
     this->w = w;
@@ -180,6 +183,12 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 	// check if initialized
     INITCHECK;
 
+    if (this->layer[id]) {
+        // i have already the layer
+        *layer = this->layer[id];
+        return true;
+    }
+
     // create a new layer instance
     *layer = new MMSFBLayer(id);
     if (!*layer) {
@@ -192,6 +201,9 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 		MMSFB_SetError(0, "cannot initialize MMSFBLayer");
 		return false;
 	}
+
+    // save this for the next call
+    this->layer[id] = *layer;
 
     return true;
 }
@@ -221,6 +233,22 @@ void *MMSFB::getX11Display() {
     return NULL;
 }
 
+bool MMSFB::refresh() {
+    // check if initialized
+    INITCHECK;
+
+    if (this->backend == MMSFB_BACKEND_DFB) {
+#ifdef  __HAVE_DIRECTFB__
+#endif
+    }
+    else {
+#ifdef __HAVE_XLIB__
+    	MMSFBSurface *suf;
+    	if (this->layer[0]->getSurface(&suf))
+    		suf->refresh();
+#endif
+    }
+}
 
 bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {
     /* check if initialized */

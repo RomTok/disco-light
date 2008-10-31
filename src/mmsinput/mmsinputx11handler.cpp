@@ -22,8 +22,6 @@
 #include "mmsinput/mmsinputx11handler.h"
 #include "mmsgui/fb/mmsfb.h"
 
-extern MMSFB *mmsfb;
-
 #ifdef __HAVE_XLIB__
 #include <X11/keysym.h>
 
@@ -200,9 +198,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	}
 
     	if(event.type==Expose) {
-    		printf("\nrefresh\n");
-    		//call refresh
-    		//return;
+    		mmsfb->refresh();
     	}
 
     }
