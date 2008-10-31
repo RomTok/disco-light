@@ -55,6 +55,19 @@ extern "C" {
 #define MMSFB_BREAK()    do {} while (0)
 #endif
 
+// output types
+#define MMS_OT_VESAFB       "vesafb"
+#define MMS_OT_MATROXFB     "matroxfb"
+#define MMS_OT_VIAFB        "viafb"
+#define MMS_OT_X11FB        "x11"
+#define MMS_OT_SDLFB        "sdl"
+
+typedef enum {
+	MMSFB_BACKEND_DFB = 0,
+	MMSFB_BACKEND_X11
+} MMSFB_BACKEND;
+
+
 /* switch between window managers */
 //#define USE_DFB_WINMAN
 #define USE_MMSFB_WINMAN

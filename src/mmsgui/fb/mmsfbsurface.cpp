@@ -146,10 +146,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, int backbuffer, boo
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
-#ifdef __HAVE_XLIB__
-	this->xv_image = NULL;
-#endif
 	this->config.surface_buffer.numbuffers = 0;
+#ifdef __HAVE_XLIB__
+    this->config.surface_buffer.xv_image[0] = NULL;
+#endif
 	this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
 	if (!this->use_own_alloc) {
@@ -227,10 +227,10 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 	        		       MMSFBSurface *parent,
 						   DFBRectangle *sub_surface_rect) {
     // init me
-#ifdef __HAVE_XLIB__
-	this->xv_image = NULL;
-#endif
 	this->config.surface_buffer.numbuffers = 0;
+#ifdef __HAVE_XLIB__
+    this->config.surface_buffer.xv_image[0] = NULL;
+#endif
 	if (dfbsurface > (IDirectFBSurface *)1)
 		this->use_own_alloc = false;
 	else
@@ -240,7 +240,7 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 }
 
 #ifdef __HAVE_XLIB__
-MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image) {
+MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image1, XvImage *xv_image2) {
     // init me
     this->dfbsurface = NULL;
     this->surface_read_locked = false;
@@ -261,12 +261,14 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image) 
 	sb->systemonly = true;
 
 	// set the surface buffer
-	this->xv_image = xv_image;
-	sb->numbuffers = 1;
-	sb->buffers[0] = this->xv_image->data;
+	sb->numbuffers = 2;
+	sb->xv_image[0] = xv_image1;
+	sb->buffers[0] = sb->xv_image[0]->data;
+	sb->xv_image[1] = xv_image2;
+	sb->buffers[1] = sb->xv_image[1]->data;
 	sb->currbuffer_read = 0;
-	sb->currbuffer_write = 0;
-	sb->pitch = *(this->xv_image->pitches);
+	sb->currbuffer_write = 1;
+	sb->pitch = *(sb->xv_image[0]->pitches);
 
 	init((IDirectFBSurface*)1, NULL, NULL);
 }
@@ -398,7 +400,7 @@ void MMSFBSurface::freeSurfaceBuffer() {
 	//free my surface buffers
 	MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
 #ifdef __HAVE_XLIB__
-	if (!this->xv_image) {
+	if (!sb->xv_image[0]) {
 #endif
 	for (int i = 0; i < sb->numbuffers; i++)
 		if (sb->buffers[i]) {
@@ -514,14 +516,13 @@ bool MMSFBSurface::clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *
 	return true;
 }
 
+void *MMSFBSurface::getDFBSurface() {
 #ifdef  __HAVE_DIRECTFB__
-IDirectFBSurface *MMSFBSurface::getDFBSurface() {
 	if (!this->use_own_alloc)
 		return this->dfbsurface;
-	else
-		return NULL;
-}
 #endif
+	return NULL;
+}
 
 bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	DFBSurfaceCapabilities  caps;
@@ -6887,7 +6888,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 		/* blit */
 		if (!this->is_sub_surface) {
 			if (!extendedAccelBlit(source, &srcr, x, y))
-				if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &srcr, x, y)) != DFB_OK) {
+				if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &srcr, x, y)) != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, srcr="
 										   +iToStr(srcr.x)+","+iToStr(srcr.y)+","+iToStr(srcr.w)+","+iToStr(srcr.h)
 										   +", dst="+iToStr(x)+","+iToStr(y));
@@ -6909,7 +6910,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 			if (extendedAccelBlit(source, &srcr, x, y))
 				ret = true;
 			else
-				if (this->dfbsurface->Blit(this->dfbsurface, source->getDFBSurface(), &srcr, x, y) == DFB_OK)
+				if (this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &srcr, x, y) == DFB_OK)
 					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -7039,7 +7040,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 					temp.h=dst.h;
 
 					dfbres = DFB_OK;
-					dfbres=tempsuf->getDFBSurface()->StretchBlit(tempsuf->getDFBSurface(), source->getDFBSurface(), &src, &temp);
+					dfbres=((IDirectFBSurface *)tempsuf->getDFBSurface())->StretchBlit((IDirectFBSurface *)tempsuf->getDFBSurface(), (IDirectFBSurface *)source->getDFBSurface(), &src, &temp);
 					if (dfbres == DFB_OK) {
 						if (!this->is_sub_surface) {
 							if (extendedAccelBlit(tempsuf, &temp, dst.x, dst.y)) {
@@ -7047,7 +7048,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 								ret = true;
 							}
 							else
-							if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, tempsuf->getDFBSurface(), &temp, dst.x, dst.y)) == DFB_OK) {
+							if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), &temp, dst.x, dst.y)) == DFB_OK) {
 								blit_done = true;
 								ret = true;
 							}
@@ -7064,7 +7065,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 #endif
 
 							if (!extendedAccelBlit(tempsuf, &temp, dst.x, dst.y))
-								this->dfbsurface->Blit(this->dfbsurface, tempsuf->getDFBSurface(), &temp, dst.x, dst.y);
+								this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), &temp, dst.x, dst.y);
 
 #ifndef USE_DFB_SUBSURFACE
 							RESETSUBSURFACE_BLITTINGFLAGS;
@@ -7091,7 +7092,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 			if (!this->is_sub_surface) {
 				dfbres = DFB_OK;
 				if (!extendedAccelStretchBlit(source, &src, &dst))
-					dfbres=this->dfbsurface->StretchBlit(this->dfbsurface, source->getDFBSurface(), &src, &dst);
+					dfbres=this->dfbsurface->StretchBlit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, &dst);
 				if (dfbres != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::StretchBlit() failed");
 					return false;
@@ -7110,7 +7111,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 #endif
 
 				if (!extendedAccelStretchBlit(source, &src, &dst))
-					this->dfbsurface->StretchBlit(this->dfbsurface, source->getDFBSurface(), &src, &dst);
+					this->dfbsurface->StretchBlit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, &dst);
 				ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -7234,7 +7235,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 #endif
 	}
 	else {
-
+		// flip my own surfaces
 		MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
 		if (sb->numbuffers > 1) {
 			// flip is only needed, if we have at least one backbuffer
@@ -7316,6 +7317,17 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 				}
 			}
 		}
+
+#ifdef __HAVE_XLIB__
+		if (sb->xv_image[0]) {
+			// put the image to the x-server
+			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+						  0, 0, mmsfb->w, mmsfb->h,
+						  0, 0, mmsfb->w, mmsfb->h, True);
+			XSync(mmsfb->x_display, True);
+			XFlush(mmsfb->x_display);
+		}
+#endif
 
 		if (this->config.iswinsurface) {
 			/* inform the window manager */

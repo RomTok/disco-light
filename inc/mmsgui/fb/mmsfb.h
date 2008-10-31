@@ -28,18 +28,6 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 
-// output types
-#define MMS_OT_VESAFB       "vesafb"
-#define MMS_OT_MATROXFB     "matroxfb"
-#define MMS_OT_VIAFB        "viafb"
-#define MMS_OT_X11FB        "x11"
-#define MMS_OT_SDLFB        "sdl"
-
-typedef enum {
-	MMSFB_BACKEND_DFB = 0,
-	MMSFB_BACKEND_X11
-} MMSFB_BACKEND;
-
 class MMSFB {
     private:
         int             argc;       /* commandline arguments */

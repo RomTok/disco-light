@@ -54,8 +54,10 @@ class MMSFBLayer {
         IDirectFBDisplayLayer   *dfblayer;
 
 #ifdef __HAVE_XLIB__
-        XvImage  		*xv_image;
-        XShmSegmentInfo xv_shminfo;
+        XvImage  		*xv_image1;
+        XShmSegmentInfo xv_shminfo1;
+        XvImage  		*xv_image2;
+        XShmSegmentInfo xv_shminfo2;
 #endif
 
         // layer configuration

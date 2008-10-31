@@ -65,6 +65,9 @@ typedef struct {
     int 	currbuffer_read;
     int 	currbuffer_write;
     int 	pitch;
+#ifdef __HAVE_XLIB__
+    XvImage *xv_image[MMSFBSurfaceMaxBuffers];
+#endif
 } MMSFBSurfaceBuffer;
 
 typedef struct {
@@ -93,10 +96,6 @@ class MMSFBSurface {
         bool				surface_write_locked;
         int					surface_write_lock_cnt;
         bool				surface_invert_lock;
-
-#ifdef __HAVE_XLIB__
-        XvImage  			*xv_image;
-#endif
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
@@ -348,16 +347,14 @@ class MMSFBSurface {
 					 MMSFBSurface *parent = NULL,
 					 DFBRectangle *sub_surface_rect = NULL);
 #ifdef __HAVE_XLIB__
-        MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image);
+        MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
 
         virtual ~MMSFBSurface();
 
         bool isInitialized();
 
-#ifdef  __HAVE_DIRECTFB__
-        IDirectFBSurface *getDFBSurface();
-#endif
+        void *getDFBSurface();
 
         bool getConfiguration(MMSFBSurfaceConfig *config = NULL);
 

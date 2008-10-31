@@ -973,7 +973,7 @@ bool MMSFBWindowManager::loadPointer() {
     }
 
     // render to the surface
-    if (imageprov->RenderTo(imageprov, this->pointer_surface->getDFBSurface(), NULL)!=DFB_OK) {
+    if (imageprov->RenderTo(imageprov, (IDirectFBSurface *)this->pointer_surface->getDFBSurface(), NULL)!=DFB_OK) {
         imageprov->Release(imageprov);
         delete this->pointer_surface;
         return false;

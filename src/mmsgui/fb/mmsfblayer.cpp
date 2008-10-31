@@ -75,22 +75,46 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
 
-		// create x11 backbuffer
-        this->xv_image = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, this->config.w, this->config.h, &this->xv_shminfo);
-        if (!this->xv_image) {
+		// create x11 buffer #1
+        this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, this->config.w, this->config.h, &this->xv_shminfo1);
+        if (!this->xv_image1) {
 			MMSFB_SetError(0, "XvShmCreateImage() failed");
         	return;
         }
 
         // map shared memory for x-server commuinication
-        this->xv_shminfo.shmid    = shmget(IPC_PRIVATE, this->xv_image->data_size, IPC_CREAT | 0777);
-        this->xv_shminfo.shmaddr  = this->xv_image->data = (char *)shmat(this->xv_shminfo.shmid, 0, 0);
-        this->xv_shminfo.readOnly = False;
+        this->xv_shminfo1.shmid    = shmget(IPC_PRIVATE, this->xv_image1->data_size, IPC_CREAT | 0777);
+        this->xv_shminfo1.shmaddr  = this->xv_image1->data = (char *)shmat(this->xv_shminfo1.shmid, 0, 0);
+        this->xv_shminfo1.readOnly = False;
 
         // attach the x-server to that segment
-        if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo)) {
-        	XFree(this->xv_image);
-        	this->xv_image = NULL;
+        if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo1)) {
+        	XFree(this->xv_image1);
+        	this->xv_image1 = NULL;
+			MMSFB_SetError(0, "XShmAttach() failed");
+        	return;
+        }
+
+		// create x11 buffer #2
+        this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, this->config.w, this->config.h, &this->xv_shminfo2);
+        if (!this->xv_image2) {
+        	XFree(this->xv_image1);
+        	this->xv_image1 = NULL;
+			MMSFB_SetError(0, "XvShmCreateImage() failed");
+        	return;
+        }
+
+        // map shared memory for x-server commuinication
+        this->xv_shminfo2.shmid    = shmget(IPC_PRIVATE, this->xv_image2->data_size, IPC_CREAT | 0777);
+        this->xv_shminfo2.shmaddr  = this->xv_image2->data = (char *)shmat(this->xv_shminfo2.shmid, 0, 0);
+        this->xv_shminfo2.readOnly = False;
+
+        // attach the x-server to that segment
+        if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo2)) {
+        	XFree(this->xv_image1);
+        	XFree(this->xv_image2);
+        	this->xv_image1 = NULL;
+        	this->xv_image2 = NULL;
 			MMSFB_SetError(0, "XShmAttach() failed");
         	return;
         }
@@ -114,8 +138,10 @@ MMSFBLayer::~MMSFBLayer() {
     }
     else {
 #ifdef __HAVE_XLIB__
-    	if (this->xv_image)
-    		XFree(this->xv_image);
+    	if (this->xv_image1)
+    		XFree(this->xv_image1);
+    	if (this->xv_image2)
+    		XFree(this->xv_image2);
 #endif
     }
 }
@@ -128,7 +154,7 @@ bool MMSFBLayer::isInitialized() {
     }
     else {
 #ifdef __HAVE_XLIB__
-    	return (this->xv_image != NULL);
+    	return (this->xv_image1 != NULL);
 #endif
     }
 }
@@ -450,13 +476,13 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     }
     else {
 #ifdef __HAVE_XLIB__
-        if (!this->xv_image) {
+        if ((!this->xv_image1)||(!this->xv_image2)) {
 			MMSFB_SetError(0, "xv_image not available, cannot get surface");
         	return false;
         }
 
         // create a new surface instance
-		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->xv_image);
+		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->xv_image1, this->xv_image2);
 		if (!*surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
@@ -667,7 +693,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         /* use the layer surface */
 
         /* create a new surface instance */
-        surface = new MMSFBSurface(this->surface->getDFBSurface());
+        surface = new MMSFBSurface((IDirectFBSurface *)this->surface->getDFBSurface());
         if (!surface) {
             MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
             return false;
