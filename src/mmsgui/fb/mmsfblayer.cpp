@@ -491,6 +491,9 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
 		}
+
+		// we must switch extended accel on
+		(*surface)->setExtendedAcceleration(true);
 #endif
     }
 

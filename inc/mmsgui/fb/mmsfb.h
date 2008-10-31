@@ -56,7 +56,7 @@ class MMSFB {
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv, string outputtype, int w, int h);
+        bool init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel);
         bool release();
         bool isInitialized();
 

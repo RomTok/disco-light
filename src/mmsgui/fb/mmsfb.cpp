@@ -43,7 +43,7 @@ MMSFB::MMSFB() {
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h) {
+bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel) {
     DFBResult dfbres;
 
     // check if already initialized
@@ -67,7 +67,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h) {
     // which backend should i use?
     this->backend = MMSFB_BACKEND_DFB;
 #ifdef __HAVE_XLIB__
-    if (this->outputtype == MMS_OT_X11FB)
+    if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel))
     	this->backend = MMSFB_BACKEND_X11;
 #endif
 
