@@ -25,6 +25,8 @@
 extern MMSFB *mmsfb;
 
 #ifdef __HAVE_XLIB__
+#include <X11/keysym.h>
+
 static MMSKeySymbol getKeyFromX11(KeySym xSymbol) {
 
 	switch(xSymbol) {
@@ -182,17 +184,24 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     XEvent event;
     while(1) {
     	//
-    	XNextEvent(this->display,  &event);
+    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask, &event);
     	if(event.type==KeyPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYPRESS;
     		KeySym xSymbol = XKeycodeToKeysym(this->display , event.xkey.keycode,0 );
     		inputevent->key = getKeyFromX11(xSymbol);
     		return;
     	}
+
     	if(event.type==KeyRelease) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYRELEASE;
     		KeySym xSymbol = XKeycodeToKeysym(this->display , event.xkey.keycode,0 );
     		inputevent->key = getKeyFromX11(xSymbol);
+    		return;
+    	}
+
+    	if(event.type==Expose) {
+    		printf("\nrefresh\n");
+    		//call refresh
     		return;
     	}
 
