@@ -202,7 +202,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	if(event.type==Expose) {
     		printf("\nrefresh\n");
     		//call refresh
-    		return;
+    		//return;
     	}
 
     }
