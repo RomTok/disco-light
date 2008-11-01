@@ -154,6 +154,9 @@ class MMSFBSurface {
         static bool 			firsttime_eAB_blend_ayuv_to_rgb16;
 
 
+        // first time flag for eAB_yv12_to_yv12()
+        static bool 			firsttime_eAB_yv12_to_yv12;
+
         // first time flag for eAB_blend_argb_to_yv12()
         static bool 			firsttime_eAB_blend_argb_to_yv12;
 
@@ -206,6 +209,9 @@ class MMSFBSurface {
 
         void deleteSubSurface(MMSFBSurface *surface);
 
+        int calcPitch(int width);
+        int calcSize(int pitch, int height);
+
         void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
 
         bool clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *tmp, bool *tmpset);
@@ -218,7 +224,8 @@ class MMSFBSurface {
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
         				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
-        bool printMissingCombination(char *method, MMSFBSurface *source = NULL);
+        bool printMissingCombination(char *method, MMSFBSurface *source = NULL,
+									 void *src_ptr = NULL, int src_pitch = 0, string src_pixelformat = "", int src_width = 0, int src_height = 0);
         //////////
 
 
@@ -266,6 +273,8 @@ class MMSFBSurface {
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
+        void eAB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        					  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_argb_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
         				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
@@ -277,8 +286,12 @@ class MMSFBSurface {
         				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
         				 					 unsigned char alpha);
 
-        bool extendedAccelBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        bool extendedAccelBlitEx(MMSFBSurface *source,
+								 void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+        						 DFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        bool extendedAccelBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+									 DFBRectangle *src_rect, int x, int y);
         //////////
 
 
@@ -399,6 +412,8 @@ class MMSFBSurface {
 
         bool setBlittingFlags(MMSFBSurfaceBlittingFlags flags);
         bool blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        bool blitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+						DFBRectangle *src_rect, int x, int y);
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
         bool flip(DFBRegion *region = NULL);
