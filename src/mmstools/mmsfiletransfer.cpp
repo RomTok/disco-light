@@ -21,6 +21,8 @@
  ***************************************************************************/
 
 #include "mmstools/mmsfiletransfer.h"
+#include <string.h>
+#include <stdlib.h>
 
 size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
 	return fread(ptr, size, nmemb, (FILE*) stream);

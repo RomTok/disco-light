@@ -22,7 +22,7 @@
 
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
-
+#include <string.h>
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();

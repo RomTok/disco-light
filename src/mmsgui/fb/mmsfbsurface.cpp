@@ -25,6 +25,7 @@
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 
 D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 
