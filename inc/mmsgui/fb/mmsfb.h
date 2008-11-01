@@ -28,6 +28,8 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 
+#define MMSFBLAYER_MAXNUM 32
+
 class MMSFB {
     private:
         int             argc;       /* commandline arguments */
@@ -35,15 +37,36 @@ class MMSFB {
 
         IDirectFB       *dfb;       /* interface to dfb */
 
+        MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
+
+        string 			outputtype;
+        int				w;
+        int				h;
+        MMSFB_BACKEND	backend;
+
+#ifdef __HAVE_XLIB__
+        Display 		*x_display;
+        int				x_screen;
+        Window 			x_window;
+        GC 				x_gc;
+        int 			xv_port;
+#endif
+
     public:
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv);
+        bool init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel);
         bool release();
         bool isInitialized();
 
+        MMSFB_BACKEND getBackend();
+
         bool getLayer(int id, MMSFBLayer **layer);
+
+        void *getX11Window();
+        void *getX11Display();
+        bool refresh();
 
         bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0, bool systemonly = false);
 

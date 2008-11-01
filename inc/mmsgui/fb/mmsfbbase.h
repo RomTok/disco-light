@@ -25,6 +25,14 @@
 
 #include "mmstools/base.h"
 
+#ifdef __HAVE_XLIB__
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/XShm.h>
+#include <X11/extensions/Xvlib.h>
+#endif
+
 extern "C" {
 #include <direct/debug.h>
 #include <direct/trace.h>
@@ -46,6 +54,19 @@ extern "C" {
 #else
 #define MMSFB_BREAK()    do {} while (0)
 #endif
+
+// output types
+#define MMS_OT_VESAFB       "vesafb"
+#define MMS_OT_MATROXFB     "matroxfb"
+#define MMS_OT_VIAFB        "viafb"
+#define MMS_OT_X11FB        "x11"
+#define MMS_OT_SDLFB        "sdl"
+
+typedef enum {
+	MMSFB_BACKEND_DFB = 0,
+	MMSFB_BACKEND_X11
+} MMSFB_BACKEND;
+
 
 /* switch between window managers */
 //#define USE_DFB_WINMAN

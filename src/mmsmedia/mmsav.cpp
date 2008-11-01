@@ -249,11 +249,11 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         if(!this->vodesc.winsurface->flip())
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
 
-        if(vodesc.winsurface->getDFBSurface()->SetBlittingFlags(vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+        if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
             DEBUGMSG("MMSMedia", "set blitting failed");
 
         /* fill the visual structure for the video output driver */
-        this->visual.destination  = vodesc.winsurface->getDFBSurface();
+        this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
         this->visual.subpicture   = NULL;
         this->visual.output_cb    = output_cb;
         this->visual.output_cdata = (void*) &(this->vodesc);

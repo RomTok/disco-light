@@ -47,6 +47,13 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	try {
         MMSRcParser rcparser;
 
+        //check if config file is given per commandline
+        for (int i = 1; i < argc; i++) {
+        	if (memcmp(argv[i], "--disko:config=", 15)==0)
+        		// yes
+        		configfile = &(argv[i][15]);
+        }
+
         if(configfile != "") {
         	DEBUGOUT("set configfile: %s\n", configfile.c_str());
 	        rcparser.parseFile(configfile);

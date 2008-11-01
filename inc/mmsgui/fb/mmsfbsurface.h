@@ -59,11 +59,15 @@ typedef struct {
     int     backbuffer;
     //! true, if surface is stored in system memory
     bool	systemonly;
+
     void	*buffers[MMSFBSurfaceMaxBuffers];
     int 	numbuffers;
     int 	currbuffer_read;
     int 	currbuffer_write;
     int 	pitch;
+#ifdef __HAVE_XLIB__
+    XvImage *xv_image[MMSFBSurfaceMaxBuffers];
+#endif
 } MMSFBSurfaceBuffer;
 
 typedef struct {
@@ -87,11 +91,11 @@ typedef struct {
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
-        bool				dfbsurface_read_locked;
-        int					dfbsurface_read_lock_cnt;
-        bool				dfbsurface_write_locked;
-        int					dfbsurface_write_lock_cnt;
-        bool				dfbsurface_invert_lock;
+        bool				surface_read_locked;
+        int					surface_read_lock_cnt;
+        bool				surface_write_locked;
+        int					surface_write_lock_cnt;
+        bool				surface_invert_lock;
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 
@@ -194,6 +198,9 @@ class MMSFBSurface {
 
         // first time flag for eAFR_blend_ayuv()
         static bool				firsttime_eAFR_blend_ayuv;
+
+        // first time flag for eAFR_yv12()
+        static bool				firsttime_eAFR_yv12;
 
         void freeSurfaceBuffer();
 
@@ -313,6 +320,9 @@ class MMSFBSurface {
         void eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
 
+        void eAFR_yv12(unsigned char *dst, int dst_pitch, int dst_height,
+					   int dx, int dy, int dw, int dh, MMSFBColor color);
+
         bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
         bool extendedAccelFillRectangle(int x, int y, int w, int h);
         //////////
@@ -342,13 +352,15 @@ class MMSFBSurface {
         MMSFBSurface(IDirectFBSurface *dfbsurface,
 					 MMSFBSurface *parent = NULL,
 					 DFBRectangle *sub_surface_rect = NULL);
+#ifdef __HAVE_XLIB__
+        MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image1, XvImage *xv_image2);
+#endif
+
         virtual ~MMSFBSurface();
 
         bool isInitialized();
 
-#ifdef  __HAVE_DIRECTFB__
-        IDirectFBSurface *getDFBSurface();
-#endif
+        void *getDFBSurface();
 
         bool getConfiguration(MMSFBSurfaceConfig *config = NULL);
 
@@ -390,6 +402,7 @@ class MMSFBSurface {
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
         bool flip(DFBRegion *region = NULL);
+        bool refresh();
 
         bool createCopy(MMSFBSurface **dstsurface, int w = 0, int h = 0,
                         bool copycontent = false, bool withbackbuffer = false);

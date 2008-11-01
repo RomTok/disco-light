@@ -616,7 +616,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
             }
 
             /* render to the surface */
-            if (imageprovider->RenderTo(imageprovider, im_desc->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
+            if (imageprovider->RenderTo(imageprovider, (IDirectFBSurface *)im_desc->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
                 /* release imageprovider */
                 imageprovider->Release(imageprovider);
                 delete im_desc->suf[0].surface;
@@ -653,7 +653,7 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
                 this->images.at(reload_image)->suf[0].surface->resize(surface_desc.width, surface_desc.height);
 
             /* render to the surface */
-            if (imageprovider->RenderTo(imageprovider, this->images.at(reload_image)->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
+            if (imageprovider->RenderTo(imageprovider, (IDirectFBSurface *)this->images.at(reload_image)->suf[0].surface->getDFBSurface(), NULL)!=DFB_OK) {
                 /* release imageprovider */
                 imageprovider->Release(imageprovider);
                 DEBUGMSG("MMSGUI", "cannot render image file '%s'", imagefile.c_str());

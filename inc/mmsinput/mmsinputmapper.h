@@ -28,7 +28,6 @@
 #include "mmsinput/mmsinputhandler.h"
 #include "mmsinput/mmskeymap.h"
 
-#include <directfb.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 //#include <directfb_keynames.h>
@@ -50,7 +49,6 @@ class MMSInputMapper {
 		MMSInputMapper(string mapfile, string name = "default");
 		~MMSInputMapper();
 		void mapkey(MMSInputEvent *inputevent, vector<MMSInputEvent> *inputeventset);
-        string lookUpKeyName(DFBInputDeviceKeySymbol key);
 };
 
 #endif /*MMSINPUTMAPPER_H_*/
