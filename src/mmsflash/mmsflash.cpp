@@ -55,7 +55,9 @@ MMSFlash::MMSFlash(MMSWindow *window) {
 	this->playerthread			= new MMSFlashThread(this, MMSFLASHTHREAD_MODE_PLAYER, "MMSFlashPlayerThread");
 
 	if (!this->swfdec_initialized) {
+		DEBUGMSG("MMSFLASH", "initializing swfdec");
 		swfdec_init();
+		DEBUGMSG("MMSFLASH", "swfdec initialized");
 		this->swfdec_initialized = true;
 	}
 }
@@ -79,19 +81,22 @@ void MMSFlash::loader(bool &stop) {
     // new player object
 	if (this->swfdec_player)
 		g_object_unref(this->swfdec_player);
+	DEBUGMSG("MMSFLASH", "creating swfdec player");
     this->swfdec_player = swfdec_player_new(NULL);
     if (!this->swfdec_player) {
     	lock.unlock();
-    	fprintf(stderr, "Cannot get a new SwfdecPlayer object\n");
+    	DEBUGMSG("MMSFLASH", "Cannot get a new SwfdecPlayer object");
     	return;
     }
 
     // set url
+	DEBUGMSG("MMSFLASH", "setting swfdec player url");
 	SwfdecURL *url = swfdec_url_new(this->filename.c_str());
     swfdec_player_set_url((SwfdecPlayer*)this->swfdec_player, url);
     swfdec_url_free(url);
 
     // check if player is initialized
+	DEBUGMSG("MMSFLASH", "checking swfdec player");
     swfdec_player_advance((SwfdecPlayer*)this->swfdec_player, 0);
     if (!swfdec_player_is_initialized((SwfdecPlayer*)this->swfdec_player)) {
     	g_object_unref(this->swfdec_player);
@@ -103,28 +108,32 @@ void MMSFlash::loader(bool &stop) {
 
     // get frame rate
     this->swfdec_rate = swfdec_player_get_rate((SwfdecPlayer*)this->swfdec_player);
+	DEBUGMSG("MMSFLASH", "frame rate = %d", this->swfdec_rate);
 
     // get size of the flash image
     guint ww,hh;
     swfdec_player_get_default_size((SwfdecPlayer*)this->swfdec_player, &ww, &hh);
     this->width=ww;
     this->height=hh;
+	DEBUGMSG("MMSFLASH", "size = %d x %d", this->width, this->height);
 
     // (re-)create surface for cairo/swfdec
     if (this->flash_temp_surface)
     	delete flash_temp_surface;
+    DEBUGMSG("MMSFLASH", "creating surface for cairo/swfdec");
 	this->window->getLayer()->createSurface(&(this->flash_temp_surface), this->width, this->height, MMSFB_PF_ARGB, 0);
 	if (!this->flash_temp_surface) {
     	g_object_unref(this->swfdec_player);
     	this->swfdec_player = NULL;
     	lock.unlock();
-    	fprintf(stderr, "Cannot create temporary surface\n");
+    	DEBUGMSG("MMSFLASH", "Cannot create temporary surface");
     	return;
 	}
 	void *ptr;
 	int pitch;
 	this->flash_temp_surface->lock(DSLF_WRITE, &ptr, &pitch);
 	this->flash_temp_surface->unlock();
+    DEBUGMSG("MMSFLASH", "creating cairo surface");
     this->cairosurface = cairo_image_surface_create_for_data((unsigned char*)ptr, CAIRO_FORMAT_ARGB32,
     															this->width, this->height, pitch);
 	if (!this->cairosurface) {
@@ -133,9 +142,10 @@ void MMSFlash::loader(bool &stop) {
     	g_object_unref(this->swfdec_player);
     	this->swfdec_player = NULL;
     	lock.unlock();
-    	fprintf(stderr, "Cannot create cairo surface\n");
+    	DEBUGMSG("MMSFLASH", "Cannot create cairo surface");
     	return;
 	}
+    DEBUGMSG("MMSFLASH", "creating cairo object");
     this->cairo = cairo_create((cairo_surface_t *)cairosurface);
     cairo_surface_destroy((cairo_surface_t *)cairosurface);
     if (!this->cairo) {
@@ -144,7 +154,7 @@ void MMSFlash::loader(bool &stop) {
     	g_object_unref(this->swfdec_player);
     	this->swfdec_player = NULL;
     	lock.unlock();
-    	fprintf(stderr, "Cannot create cairo surface\n");
+    	DEBUGMSG("MMSFLASH", "Cannot create cairo object");
     	return;
 	}
 
@@ -153,6 +163,7 @@ void MMSFlash::loader(bool &stop) {
 
     // unlock me
 	lock.unlock();
+	DEBUGMSG("MMSFLASH", "loading finished");
 }
 
 void MMSFlash::player(bool &stop) {
@@ -185,7 +196,9 @@ void MMSFlash::player(bool &stop) {
 	    this->flash_temp_surface->clear( (bg >> 16) & 0xff, (bg >> 8) & 0xff, bg & 0xff, bg >> 24 );
 
 	    // let swfdec render to the temporary surface
+	    DEBUGMSG("MMSFLASH", "rendering");
 	    swfdec_player_render((SwfdecPlayer*)this->swfdec_player, (cairo_t *)this->cairo);
+	    DEBUGMSG("MMSFLASH", "finished rendering");
 
 		// unlock me
 		lock.unlock();

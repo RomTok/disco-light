@@ -148,12 +148,23 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             vrect.h = config->getVRect().h;
 
             windowmanager = new MMSWindowManager(vrect);
+	        if(!windowmanager) {
+	        	DEBUGMSG("Core", "couldn't create windowmanager.");
+	        	return false;
+	        }
 
 	        DEBUGMSG("Core", "creating background window");
 	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","","",
 	        											MMSALIGNMENT_NOTSET,MMSW_VIDEO);
+	        if(!rootwin) {
+	        	DEBUGMSG("Core", "couldn't create background window.");
+	        	return false;
+	        }
+	        DEBUGMSG("Core", "setting windowmanager for background window");
 	        rootwin->setWindowManager((IMMSWindowManager*)windowmanager);
+	        DEBUGMSG("Core", "setting window as background window");
 	        windowmanager->setBackgroundWindow(rootwin);
+	        DEBUGMSG("Core", "windowmanager initialization done");
         }
 
         DEBUGMSG("Core", "creating input manager");
