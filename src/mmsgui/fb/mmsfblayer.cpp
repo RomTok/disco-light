@@ -364,6 +364,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     if (this->surface) {
         /* i have already a surface */
         *surface = this->surface;
+        DEBUGMSG("MMSGUI", "have already a surface");
         return true;
     }
 
@@ -371,10 +372,12 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     /* get layers surface */
     DFBResult           dfbres;
     IDirectFBSurface    *dfbsurface;
+    DEBUGMSG("MMSGUI", "calling DFB->GetSurface()");
     if ((dfbres=this->dfblayer->GetSurface(this->dfblayer, &dfbsurface)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::GetSurface() failed");
         return false;
     }
+    DEBUGMSG("MMSGUI", "setting blitting flags");
 	dfbsurface->SetBlittingFlags( dfbsurface, DSBLIT_NOFX );
     /* create a new surface instance */
     *surface = new MMSFBSurface(dfbsurface);

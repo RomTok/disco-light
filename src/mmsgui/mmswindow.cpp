@@ -237,7 +237,7 @@ bool MMSWindow::resize(bool refresh) {
     string dx, dy, width, height;
 
 
-//    logger.writeLog("resize... flags: " + iToStr(this->flags));
+    DEBUGMSG("MMSGUI", "resize... flags: " + iToStr(this->flags));
 
 	if (this->layer == NULL) {
 		DEBUGMSG("MMSGUI", "have no layer... returning");
@@ -252,12 +252,14 @@ bool MMSWindow::resize(bool refresh) {
             if (!this->surface) {
             	DEBUGMSG("MMSGUI", "have a video window, use the layer surface");
         		this->layer->getSurface(&this->surface);
+        		DEBUGMSG("MMSGUI", "after layer->getSurface() (surface = 0x%x)", this->surface);
                 if (this->windowmanager)
                     this->windowmanager->addWindow(this);
 
                 this->geom.x = 0;
                 this->geom.y = 0;
                 this->layer->getResolution(&this->geom.w, &this->geom.h);
+                DEBUGMSG("MMSGUI", "resolution: %d x %d", this->geom.w, this->geom.h);
             }
             else
             	DEBUGMSG("MMSGUI", "cannot resize the layer surface");
@@ -330,6 +332,7 @@ bool MMSWindow::resize(bool refresh) {
     this->dxpix = wdesc.posx;
     this->dypix = wdesc.posy;
 
+    DEBUGMSG("MMSGUI", "dx: %d, dy: %d", this->dxpix, this->dypix);
 
     /* calculate the window size */
     if (!getWidth(width)) width = "";
@@ -348,6 +351,8 @@ bool MMSWindow::resize(bool refresh) {
             wdesc.height = vrect.h;
         }
     }
+
+    DEBUGMSG("MMSGUI", "window resolution: %d x %d", wdesc.width, wdesc.height);
 
     if ((wdesc.width == 0)&&(wdesc.height == 0)) {
         /* bad values */
@@ -454,6 +459,7 @@ bool MMSWindow::resize(bool refresh) {
                 this->layer->createWindow(&(this->window),
                                           wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
                                           pixelformat, true, false);
+                DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
             }
             else {
                 /* video window, do not use alpha */
@@ -466,6 +472,7 @@ bool MMSWindow::resize(bool refresh) {
                 this->layer->createWindow(&(this->window),
                                           wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
                                           pixelformat, false, true);
+                DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
             }
 
             this->window->setOpacity(0);
@@ -473,14 +480,17 @@ bool MMSWindow::resize(bool refresh) {
             /* get window surface */
             this->window->getSurface(&(this->surface));
 
+            DEBUGMSG("MMSGUI", "setting blitting flags for window");
             this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
 
             /* set the window to bottom */
 //            this->window->lowerToBottom();
 
             /* add window to managers list */
-            if (this->windowmanager)
+            if (this->windowmanager) {
+                DEBUGMSG("MMSGUI", "adding window to window manager");
                 this->windowmanager->addWindow(this);
+            }
         }
         else {
             /* change the window (new size/pos) */
@@ -554,6 +564,8 @@ bool MMSWindow::resize(bool refresh) {
             }
         }
     }
+
+    DEBUGMSG("MMSGUI", "resizing done");
 
     return true;
 }
@@ -3456,15 +3468,20 @@ int MMSWindow::getNumberOfFocusableChildWins() {
 
 void MMSWindow::setWindowManager(IMMSWindowManager *wm) {
     if (this->windowmanager != wm) {
+    	DEBUGMSG("MMSGUI", "windowmanager != wm");
         /* set new window manager */
         if (this->windowmanager != NULL) {
+        	DEBUGMSG("MMSGUI", "windowmanager != NULL");
             this->windowmanager = wm;
             /* and add the window to it */
-            if (this->windowmanager)
+            if (this->windowmanager) {
+            	DEBUGMSG("MMSGUI", "windowmanager->addWindow");
                 this->windowmanager->addWindow(this);
+            }
         }
         else {
             this->windowmanager = wm;
+        	DEBUGMSG("MMSGUI", "resize");
             this->resize();
         }
     }
