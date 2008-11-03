@@ -1490,11 +1490,8 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source,
 										   void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height) {
 #ifdef  __HAVE_DIRECTFB__
 	// failed, check if it must not
-	if ((!this->use_own_alloc)&&(!source->use_own_alloc)) {
-		printf("no own alloc\n");
+	if ((!this->use_own_alloc)&&(!source->use_own_alloc))
 		return false;
-
-	}
 #endif
 
 	// fatal error!!!
