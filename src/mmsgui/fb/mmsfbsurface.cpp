@@ -916,13 +916,10 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
                 a, r, g, b, this->config.surface_buffer.w, this->config.surface_buffer.h );
 
     MMSFB_TRACE();
-printf("1\n");
     /* check if initialized */
     INITCHECK;
-printf("2\n");
 
 	if (!this->use_own_alloc) {
-		printf("3\n");
 #ifdef  __HAVE_DIRECTFB__
 		if ((a < 0xff)&&(this->config.surface_buffer.premultiplied)) {
 			// premultiplied surface, have to premultiply the color
@@ -966,27 +963,19 @@ printf("2\n");
 		this->config.drawingflags = (MMSFBSurfaceDrawingFlags)DSDRAW_SRC_PREMULTIPLY;
 
 		if (!this->is_sub_surface) {
-			printf("10\n");
 			ret = extendedAccelFillRectangle(0, 0, this->config.surface_buffer.w, this->config.surface_buffer.h);
-			printf("11\n");
-			if(!ret)
-				printf("false\n");
 		}
 		else {
 			CLIPSUBSURFACE
 
-			printf("4\n");
 			ret = extendedAccelFillRectangle(0, 0, this->config.surface_buffer.w, this->config.surface_buffer.h);
-			printf("5\n");
 			UNCLIPSUBSURFACE
-			printf("6\n");
 		}
 
 		*col = savedcol;
 		this->config.drawingflags = saveddf;
 	}
 
-	printf("7\n");
 
     return ret;
 }
@@ -7983,10 +7972,6 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 
 bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
-	if(!this->extendedaccel) {
-		printf("no extended accel\n");
-	} else
-		printf("extended accel\n");
 
 	// extended acceleration on?
 	if (!this->extendedaccel)
