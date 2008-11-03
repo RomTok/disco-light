@@ -980,18 +980,16 @@ int MMSTaffFile::getNextTag(bool &eof) {
 
 				/* check if name of attribute is stored instead of id */
 				if (this->taff_buf[this->taff_buf_pos-1] == MMSTAFF_ATTR_WITHOUT_ID) {
-					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
+					len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 					this->taff_buf_pos+=len;
 				}
 
 				/* get the length of the value */
-printf("taff %x>\n",&this->taff_buf[this->taff_buf_pos]);
 				len = (int)this->taff_buf[this->taff_buf_pos];
-printf("<taff %x\n",&this->taff_buf[this->taff_buf_pos]);
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
-					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
+					len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 				}
 				this->taff_buf_pos+=len;
