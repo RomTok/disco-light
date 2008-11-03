@@ -986,7 +986,7 @@ int MMSTaffFile::getNextTag(bool &eof) {
 				}
 
 				/* get the length of the value */
-				len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
+				len = (int)this->taff_buf[this->taff_buf_pos];
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
 					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
@@ -1100,7 +1100,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 	do {
 		switch (this->taff_buf[this->taff_buf_pos]) {
 		case MMSTAFF_TAGTABLE_TYPE_ATTR: {
-			    int attrid = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos+1]);
+				int attrid = (int)this->taff_buf[this->taff_buf_pos+1];
 			    int len;
 				this->taff_buf_pos+=2;
 
@@ -1116,7 +1116,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					if (name) *name=NULL;
 
 				/* get the length of the value */
-				len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
+				len = (int)this->taff_buf[this->taff_buf_pos];
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
 					len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
