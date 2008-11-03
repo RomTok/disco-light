@@ -189,6 +189,8 @@ class MMSFBSurface {
         // first time flag for eASB_blend_srcalpha_ayuv_to_ayuv()
         static bool 			firsttime_eASB_blend_srcalpha_ayuv_to_ayuv;
 
+        // first time flag for eASB_yv12_to_yv12()
+        static bool 			firsttime_eASB_yv12_to_yv12;
 
         // first time flag for eAFR_argb()
         static bool				firsttime_eAFR_argb;
@@ -314,8 +316,15 @@ class MMSFBSurface {
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
 
-        bool extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
+        void eASB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+							   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
+
+        bool extendedAccelStretchBlitEx(MMSFBSurface *source,
+										void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+										DFBRectangle *src_rect, DFBRectangle *dest_rect);
         bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
+        bool extendedAccelStretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+											DFBRectangle *src_rect, DFBRectangle *dest_rect);
         //////////
 
 
@@ -415,6 +424,8 @@ class MMSFBSurface {
         bool blitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
 						DFBRectangle *src_rect, int x, int y);
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
+        bool stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
         bool flip(DFBRegion *region = NULL);
         bool refresh();
