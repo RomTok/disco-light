@@ -333,10 +333,8 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
                         throw new MMSAVError(0, "Cannot open the DFB video driver");
 #endif
         }
-
-
         DEBUGMSG("MMSMedia", "opening video driver done.");
-    }
+
 
     /* open the audio output driver */
     const char* const *ao_list;
