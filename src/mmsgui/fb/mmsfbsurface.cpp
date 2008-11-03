@@ -5918,8 +5918,11 @@ bool MMSFBSurface::extendedAccelBlitBuffer(void *src_ptr, int src_pitch, string 
 }
 
 
-void MMSFBSurface::eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 										   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh) {
+
+	unsigned int *src = (unsigned int *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
 
 	// first time?
 	if (firsttime_eASB_blend_argb_to_argb) {
@@ -6050,14 +6053,17 @@ void MMSFBSurface::eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int
 
 
 
-void MMSFBSurface::eASB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 										   			unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 										   			unsigned char alpha) {
+
+	unsigned int *src = (unsigned int *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
 
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		eASB_blend_argb_to_argb(src, src_pitch, src_height, sx, sy, sw, sh,
+		eASB_blend_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
 							    dst, dst_pitch, dst_height, dx, dy, dw, dh);
 		return;
 	}
@@ -6193,8 +6199,11 @@ void MMSFBSurface::eASB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_p
 }
 
 
-void MMSFBSurface::eASB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_blend_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 										     unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh) {
+
+	unsigned int *src = (unsigned int *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
 
 	// first time?
 	if (firsttime_eASB_blend_airgb_to_airgb) {
@@ -6321,14 +6330,17 @@ void MMSFBSurface::eASB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, i
 }
 
 
-void MMSFBSurface::eASB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 										   			  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 										   			  unsigned char alpha) {
+
+	unsigned int *src = (unsigned int *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
 
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		eASB_blend_airgb_to_airgb(src, src_pitch, src_height, sx, sy, sw, sh,
+		eASB_blend_airgb_to_airgb(extbuf, src_height, sx, sy, sw, sh,
 							      dst, dst_pitch, dst_height, dx, dy, dw, dh);
 		return;
 	}
@@ -6460,8 +6472,11 @@ void MMSFBSurface::eASB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src
 }
 
 
-void MMSFBSurface::eASB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_blend_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 										   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh) {
+
+	unsigned int *src = (unsigned int *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
 
 	// first time?
 	if (firsttime_eASB_blend_ayuv_to_ayuv) {
@@ -6601,14 +6616,17 @@ void MMSFBSurface::eASB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int
 
 }
 
-void MMSFBSurface::eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 										   			unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 										   			unsigned char alpha) {
+
+	unsigned int *src = (unsigned int *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
 
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		eASB_blend_ayuv_to_ayuv(src, src_pitch, src_height, sx, sy, sw, sh,
+		eASB_blend_ayuv_to_ayuv(extbuf, src_height, sx, sy, sw, sh,
 							    dst, dst_pitch, dst_height, dx, dy, dw, dh);
 		return;
 	}
@@ -6763,8 +6781,12 @@ void MMSFBSurface::eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_p
 	}
 }
 
-void MMSFBSurface::eASB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void MMSFBSurface::eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 								     unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh) {
+
+	unsigned char *src = (unsigned char *)extbuf->ptr;
+	int src_pitch = extbuf->pitch;
+
 	// first time?
 	if (firsttime_eASB_yv12_to_yv12) {
 		printf("DISKO: Using accelerated stretch YV12 to YV12.\n");
@@ -6807,6 +6829,10 @@ void MMSFBSurface::eASB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_
 	unsigned char *dst_y = dst + dx + dy * dst_pitch_pix;
 	unsigned char *dst_u = dst + dst_pitch_pix * (dst_height + (dst_height >> 2)) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
 	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                      + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	if ((extbuf->ptr2)&&(extbuf->ptr3)) {
+		src_u = (unsigned char *)extbuf->ptr2 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+		src_v = (unsigned char *)extbuf->ptr3 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+	}
 
 	// offsets to the other three pixels
 	unsigned int src_y2_offs = 1;
@@ -7415,9 +7441,9 @@ void MMSFBSurface::eASB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_
 
 
 bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
-											  void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+											  MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 											  DFBRectangle *src_rect, DFBRectangle *dest_rect) {
-
+	MMSFBExternalSurfaceBuffer myextbuf;
 	if (source) {
 		// premultiplied surface?
 		if (!source->config.surface_buffer.premultiplied)
@@ -7426,7 +7452,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		src_pixelformat = source->config.surface_buffer.pixelformat;
 		src_width = (!source->root_parent)?source->config.surface_buffer.w:source->root_parent->config.surface_buffer.w;
 		src_height = (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h;
+		memset(&myextbuf, 0, sizeof(MMSFBExternalSurfaceBuffer));
 	}
+	else
+		myextbuf = *extbuf;
 
 	// a few help and clipping values
 	void *dst_ptr;
@@ -7542,8 +7571,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is ARGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_argb_to_argb((unsigned int *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_argb_to_argb(&myextbuf, src_height,
 											sx, sy, sw, sh,
 											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 											dx, dy, dw, dh);
@@ -7557,8 +7586,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_srcalpha_argb_to_argb((unsigned int *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_srcalpha_argb_to_argb(&myextbuf, src_height,
 													 sx, sy, sw, sh,
 													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 													 dx, dy, dw, dh,
@@ -7584,8 +7613,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is AiRGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_airgb_to_airgb(&myextbuf, src_height,
 											  sx, sy, sw, sh,
 											  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 											  dx, dy, dw, dh);
@@ -7599,8 +7628,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_srcalpha_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_srcalpha_airgb_to_airgb(&myextbuf, src_height,
 													   sx, sy, sw, sh,
 													   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 													   dx, dy, dw, dh,
@@ -7626,8 +7655,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is AYUV
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_ayuv_to_ayuv((unsigned int *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_ayuv_to_ayuv(&myextbuf, src_height,
 											sx, sy, sw, sh,
 											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 											dx, dy, dw, dh);
@@ -7641,8 +7670,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA))
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_srcalpha_ayuv_to_ayuv((unsigned int *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_blend_srcalpha_ayuv_to_ayuv(&myextbuf, src_height,
 													 sx, sy, sw, sh,
 													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 													 dx, dy, dw, dh,
@@ -7670,8 +7699,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
-				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_yv12_to_yv12((unsigned char *)src_ptr, src_pitch, src_height,
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_yv12_to_yv12(&myextbuf, src_height,
 									   sx, sy, sw, sh,
 									   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 									   dx, dy, dw, dh);
@@ -7701,23 +7730,23 @@ bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *
 		return false;
 
 	if (!extendedAccelStretchBlitEx(source,
-			                        NULL, 0, "", 0, 0,
+			                        NULL, "", 0, 0,
 			                        src_rect, dest_rect))
 		return printMissingCombination("extendedAccelStretchBlit()", source);
 	else
 		return true;
 }
 
-bool MMSFBSurface::extendedAccelStretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+bool MMSFBSurface::extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 												  DFBRectangle *src_rect, DFBRectangle *dest_rect) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
 	if (!extendedAccelStretchBlitEx(NULL,
-							        src_ptr, src_pitch, src_pixelformat, src_width, src_height,
+							        extbuf, src_pixelformat, src_width, src_height,
 							        src_rect, dest_rect))
-		return printMissingCombination("extendedAccelStretchBlitBuffer()", NULL, src_ptr, src_pitch, src_pixelformat, src_width, src_height);
+		return printMissingCombination("extendedAccelStretchBlitBuffer()", NULL, extbuf->ptr, extbuf->pitch, src_pixelformat, src_width, src_height);
 	else
 		return true;
 }
@@ -8992,7 +9021,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
     return ret;
 }
 
-bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 									 DFBRectangle *src_rect, DFBRectangle *dest_rect) {
     DFBResult    dfbres;
     DFBRectangle src;
@@ -9022,7 +9051,7 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pi
 
     // check if i can blit without stretching
     if (src.w == dst.w && src.h == dst.h)
-        return blitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, dst.x, dst.y);
+        return blitBuffer(extbuf->ptr, extbuf->pitch, src_pixelformat, src_width, src_height, &src, dst.x, dst.y);
 
     /* check if initialized */
     INITCHECK;
@@ -9034,7 +9063,7 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pi
 	else {
 		/* normal stretch blit */
 		if (!this->is_sub_surface) {
-			ret = extendedAccelStretchBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, &dst);
+			ret = extendedAccelStretchBlitBuffer(extbuf, src_pixelformat, src_width, src_height, &src, &dst);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -9042,7 +9071,7 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pi
 			dst.x+=this->sub_surface_xoff;
 			dst.y+=this->sub_surface_yoff;
 
-			ret = extendedAccelStretchBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, &dst);
+			ret = extendedAccelStretchBlitBuffer(extbuf, src_pixelformat, src_width, src_height, &src, &dst);
 
 			dst.x-=this->sub_surface_xoff;
 			dst.y-=this->sub_surface_yoff;
