@@ -261,11 +261,13 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     DEBUGMSG("MMSMedia", "xineInit() done.");
 
     if(window) {
+    }
+#ifdef __HAVE_XLIB__
 		this->rawvisual.raw_output_cb = raw_frame_cb;
 		this->rawvisual.supported_formats = XINE_VORAW_YV12;
 		this->rawvisual.user_data = (void *)window->getSurface();
 		this->rawvisual.raw_overlay_cb=NULL;
-
+#endif
 
     	this->window           = window;
         this->vodesc.format    = DSPF_UNKNOWN;
@@ -331,10 +333,8 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
                         throw new MMSAVError(0, "Cannot open the DFB video driver");
 #endif
         }
-
-
         DEBUGMSG("MMSMedia", "opening video driver done.");
-    }
+
 
     /* open the audio output driver */
     const char* const *ao_list;
