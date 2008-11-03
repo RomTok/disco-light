@@ -88,6 +88,15 @@ typedef struct {
 } MMSFBSurfaceConfig;
 
 
+typedef struct {
+	void	*ptr;
+	int 	pitch;
+	void	*ptr2;
+	int 	pitch2;
+	void	*ptr3;
+	int 	pitch3;
+} MMSFBExternalSurfaceBuffer;
+
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
@@ -298,32 +307,32 @@ class MMSFBSurface {
 
 
         //////////
-        void eASB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
-        void eASB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
 
-        void eASB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_blend_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 									   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
-        void eASB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         									    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									    unsigned char alpha);
 
-        void eASB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_blend_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
-        void eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
 
-        void eASB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
-										void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+										MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 										DFBRectangle *src_rect, DFBRectangle *dest_rect);
         bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        bool extendedAccelStretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+        bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 											DFBRectangle *src_rect, DFBRectangle *dest_rect);
         //////////
 
@@ -424,7 +433,7 @@ class MMSFBSurface {
         bool blitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
 						DFBRectangle *src_rect, int x, int y);
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        bool stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+        bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
         bool flip(DFBRegion *region = NULL);
