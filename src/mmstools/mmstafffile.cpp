@@ -986,7 +986,9 @@ int MMSTaffFile::getNextTag(bool &eof) {
 				}
 
 				/* get the length of the value */
+printf("taff %x>\n",&this->taff_buf[this->taff_buf_pos]);
 				len = (int)this->taff_buf[this->taff_buf_pos];
+printf("<taff %x\n",&this->taff_buf[this->taff_buf_pos]);
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
 					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
