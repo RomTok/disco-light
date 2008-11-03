@@ -21,6 +21,7 @@
  ***************************************************************************/
 #include "mmsinput/mmsinputx11handler.h"
 #include "mmsgui/fb/mmsfb.h"
+#include <typeinfo>
 
 #ifdef __HAVE_XLIB__
 #include <X11/keysym.h>
