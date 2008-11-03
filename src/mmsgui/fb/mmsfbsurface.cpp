@@ -63,6 +63,7 @@ bool MMSFBSurface::firsttime_eASB_blend_srcalpha_airgb_to_airgb = true;
 
 bool MMSFBSurface::firsttime_eASB_blend_ayuv_to_ayuv 			= true;
 bool MMSFBSurface::firsttime_eASB_blend_srcalpha_ayuv_to_ayuv 	= true;
+bool MMSFBSurface::firsttime_eASB_yv12_to_yv12 					= true;
 
 bool MMSFBSurface::firsttime_eAFR_argb							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_argb					= true;
@@ -3021,25 +3022,6 @@ void MMSFBSurface::eAB_blend_ayuv_to_rgb16(unsigned int *src, int src_pitch, int
 	}
 
 
-/*
-void MMSFBSurface::eAB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
-								    unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
-	// first time?
-	if (firsttime_eAB_yv12_to_yv12) {
-		printf("DISKO: Using accelerated copy YV12 to YV12.\n");
-		firsttime_eAB_yv12_to_yv12 = false;
-	}
-
-	printf("jhjhskfsfs %d %d %d %d\n", src_height, dst_height, src_pitch, dst_pitch);
-	//TODO
-	if ((src_height == 600)&&(src_pitch==800)
-	   &&(dst_height == 600)&&(dst_pitch==800)) {
-		printf("jhjhskfsfs\n");
-	   memcpy(dst, src, src_pitch * src_height);
-	}
-
-}
-*/
 
 void MMSFBSurface::eAB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
 								    unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
@@ -5908,17 +5890,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	return false;
 }
 
-/*
-bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
-
-	// premultiplied surface?
-	if (!source->config.surface_buffer.premultiplied)
-		return false;
-
-	extendedAccelBlitInt(source, NULL, 0, "", 0, 0,
-							   src_rect, x, y);
-}*/
-
 bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
@@ -6792,15 +6763,674 @@ void MMSFBSurface::eASB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_p
 	}
 }
 
-bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+void MMSFBSurface::eASB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+								     unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh) {
+	// first time?
+	if (firsttime_eASB_yv12_to_yv12) {
+		printf("DISKO: Using accelerated stretch YV12 to YV12.\n");
+		firsttime_eASB_yv12_to_yv12 = false;
+	}
 
-	// premultiplied surface?
-	if (!source->config.surface_buffer.premultiplied)
-		return false;
+	// prepare...
+	int src_pitch_pix 		= src_pitch;
+	int src_pitch_pix_half	= src_pitch_pix >> 1;
+	int dst_pitch_pix 		= dst_pitch;
+	int dst_pitch_pix_half	= dst_pitch_pix >> 1;
+
+//	src+= sx + sy * src_pitch_pix;
+
+	// check the surface range
+	if (dst_pitch_pix - dx < sw - sx)
+		sw = dst_pitch_pix - dx - sx;
+	if (dst_height - dy < sh - sy)
+		sh = dst_height - dy - sy;
+	if ((sw <= 0)||(sh <= 0))
+		return;
+
+//	unsigned int OLDSRC  = (*src) + 1;
+//	unsigned int old_y;
+//	unsigned int old_u;
+//	unsigned int old_v;
+
+	int  src_pixels = src_pitch_pix * sh;
+
+	// check odd/even
+	bool odd_left 	= (dx & 0x01);
+	bool odd_top 	= (dy & 0x01);
+	bool odd_right 	= ((dx + sw) & 0x01);
+	bool odd_bottom = ((dy + sh) & 0x01);
+
+	// pointer to the pixel components of the first pixel
+	unsigned char *src_y = src + sx + sy * src_pitch_pix;
+	unsigned char *src_u = src + src_pitch_pix * (src_height + (src_height >> 2)) + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+	unsigned char *src_v = src + src_pitch_pix *  src_height                      + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+	unsigned char *dst_y = dst + dx + dy * dst_pitch_pix;
+	unsigned char *dst_u = dst + dst_pitch_pix * (dst_height + (dst_height >> 2)) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                      + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+
+	// offsets to the other three pixels
+	unsigned int src_y2_offs = 1;
+	unsigned int src_y3_offs = src_pitch_pix;
+	unsigned int src_y4_offs = src_y3_offs + 1;
+	unsigned int dst_y2_offs = 1;
+	unsigned int dst_y3_offs = dst_pitch_pix;
+	unsigned int dst_y4_offs = dst_y3_offs + 1;
+
+	// arithmetic mean
+	register unsigned int d_u;
+	register unsigned int d_v;
+
+	// draw odd pixels around the even rectangle
+	if (odd_top && odd_left) {
+/*		// odd top-left pixel
+		register unsigned int SRC;
+		register unsigned int A;
+
+		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+		d_u = (*dst_u) * 3;
+		d_v = (*dst_v) * 3;
+
+	    // calculate my pixel...
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+
+		// calulate the arithmetic mean
+		*dst_u = d_u >> 2;
+		*dst_v = d_v >> 2;*/
+	}
+
+	if (odd_top && odd_right) {
+/*		// odd top-right pixel
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// go to the pixel in the current line
+		src   += sw - 1;
+		dst_y += sw - 1;
+		if (odd_left) {
+			dst_u += sw >> 1;
+			dst_v += sw >> 1;
+		}
+		else {
+			dst_u += (sw - 1) >> 1;
+			dst_v += (sw - 1) >> 1;
+		}
+
+		register unsigned int SRC;
+		register unsigned int A;
+
+		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+		d_u = (*dst_u) * 3;
+		d_v = (*dst_v) * 3;
+
+	    // calculate my pixel...
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+
+		// calulate the arithmetic mean
+		*dst_u = d_u >> 2;
+		*dst_v = d_v >> 2;
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	if (odd_bottom && odd_left) {
+/*		// odd bottom-left pixel
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// go to the line
+		src   += src_pitch_pix * (sh-1);
+		dst_y += dst_pitch_pix * (sh-1);
+		if (odd_top) {
+			dst_u += dst_pitch_pix_half * (sh >> 1);
+			dst_v += dst_pitch_pix_half * (sh >> 1);
+		}
+		else {
+			dst_u += dst_pitch_pix_half * ((sh-1) >> 1);
+			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
+		}
+
+		register unsigned int SRC;
+		register unsigned int A;
+
+		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+		d_u = (*dst_u) * 3;
+		d_v = (*dst_v) * 3;
+
+	    // calculate my pixel...
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+
+		// calulate the arithmetic mean
+		*dst_u = d_u >> 2;
+		*dst_v = d_v >> 2;
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	if (odd_bottom && odd_right) {
+/*		// odd bottom-right pixel
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// go to the line
+		src   += src_pitch_pix * (sh-1);
+		dst_y += dst_pitch_pix * (sh-1);
+		if (odd_top) {
+			dst_u += dst_pitch_pix_half * (sh >> 1);
+			dst_v += dst_pitch_pix_half * (sh >> 1);
+		}
+		else {
+			dst_u += dst_pitch_pix_half * ((sh-1) >> 1);
+			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
+		}
+
+		// go to the pixel in the current line
+		src   += sw - 1;
+		dst_y += sw - 1;
+		if (odd_left) {
+			dst_u += sw >> 1;
+			dst_v += sw >> 1;
+		}
+		else {
+			dst_u += (sw - 1) >> 1;
+			dst_v += (sw - 1) >> 1;
+		}
+
+		register unsigned int SRC;
+		register unsigned int A;
+
+		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+		d_u = (*dst_u) * 3;
+		d_v = (*dst_v) * 3;
+
+	    // calculate my pixel...
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+
+		// calulate the arithmetic mean
+		*dst_u = d_u >> 2;
+		*dst_v = d_v >> 2;
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	if (odd_top) {
+/*		// odd top line
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// calculate start and end
+		unsigned int *line_end = src + sw;
+		if (odd_left) {
+			src++;
+			dst_y++;
+			dst_u++;
+			dst_v++;
+			line_end--;
+		}
+		if (odd_right)
+			line_end--;
+
+		// through the line
+		while (src < line_end) {
+			register unsigned int SRC;
+			register unsigned int A;
+
+			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+			d_u = (*dst_u) << 1;
+			d_v = (*dst_v) << 1;
+
+		    // calculate my two pixels...
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+
+			// calulate the arithmetic mean
+			*dst_u = d_u >> 2;
+			*dst_v = d_v >> 2;
+
+			// go to the next two pixels
+		    src+=2;
+		    dst_y+=2;
+		    dst_u++;
+		    dst_v++;
+		}
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	if (odd_bottom) {
+/*		// odd bottom line
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// calculate start and end
+		src   += src_pitch_pix * (sh-1);
+		dst_y += dst_pitch_pix * (sh-1);
+		if (odd_top) {
+			dst_u += dst_pitch_pix_half * (sh >> 1);
+			dst_v += dst_pitch_pix_half * (sh >> 1);
+		}
+		else {
+			dst_u += dst_pitch_pix_half * ((sh-1) >> 1);
+			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
+		}
+
+		unsigned int *line_end = src + sw;
+		if (odd_left) {
+			src++;
+			dst_y++;
+			dst_u++;
+			dst_v++;
+			line_end--;
+		}
+		if (odd_right)
+			line_end--;
+
+		// through the line
+		while (src < line_end) {
+			register unsigned int SRC;
+			register unsigned int A;
+
+			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+			d_u = (*dst_u) << 1;
+			d_v = (*dst_v) << 1;
+
+		    // calculate my two pixels...
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+
+			// calulate the arithmetic mean
+			*dst_u = d_u >> 2;
+			*dst_v = d_v >> 2;
+
+			// go to the next two pixels
+		    src+=2;
+		    dst_y+=2;
+		    dst_u++;
+		    dst_v++;
+		}
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	if (odd_left) {
+/*		// odd left line
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// calculate start and end
+		unsigned int *src_end = src + src_pixels;
+		int src_pitch_diff    = src_pitch_pix << 1;
+		int dst_pitch_diff    = dst_pitch_pix << 1;
+		int dst_pitch_uvdiff  = dst_pitch_pix_half;
+		if (odd_top) {
+			src     += src_pitch_pix;
+			src_end -= src_pitch_pix;
+			dst_y   += dst_pitch_pix;
+			dst_u   += dst_pitch_pix_half;
+			dst_v   += dst_pitch_pix_half;
+		}
+		if (odd_bottom)
+			src_end -= src_pitch_pix;
+
+		// through all lines
+		while (src < src_end) {
+			// for the first pixel in the line
+			register unsigned int SRC;
+			register unsigned int A;
+
+			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+			d_u = (*dst_u) << 1;
+			d_v = (*dst_v) << 1;
+
+		    // calculate my two pixels...
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+
+			// calulate the arithmetic mean
+			*dst_u = d_u >> 2;
+			*dst_v = d_v >> 2;
+
+			// go to the next two lines
+			src   += src_pitch_diff;
+			dst_y += dst_pitch_diff;
+			dst_u += dst_pitch_uvdiff;
+			dst_v += dst_pitch_uvdiff;
+		}
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	if (odd_right) {
+/*		// odd right line
+		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+
+		// calculate start and end
+		unsigned int *src_end = src + src_pixels;
+		int src_pitch_diff    = src_pitch_pix << 1;
+		int dst_pitch_diff    = dst_pitch_pix << 1;
+		int dst_pitch_uvdiff  = dst_pitch_pix_half;
+		src   += sw - 1;
+		dst_y += sw - 1;
+		if (odd_left) {
+			dst_u += sw >> 1;
+			dst_v += sw >> 1;
+		}
+		else {
+			dst_u += (sw - 1) >> 1;
+			dst_v += (sw - 1) >> 1;
+		}
+		if (odd_top) {
+			src     += src_pitch_pix;
+			src_end -= src_pitch_pix;
+			dst_y   += dst_pitch_pix;
+			dst_u   += dst_pitch_pix_half;
+			dst_v   += dst_pitch_pix_half;
+		}
+		if (odd_bottom)
+			src_end -= src_pitch_pix;
+
+		// through all lines
+		while (src < src_end) {
+			// for the first pixel in the line
+			register unsigned int SRC;
+			register unsigned int A;
+
+			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
+			d_u = (*dst_u) << 1;
+			d_v = (*dst_v) << 1;
+
+		    // calculate my two pixels...
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+
+			// calulate the arithmetic mean
+			*dst_u = d_u >> 2;
+			*dst_v = d_v >> 2;
+
+			// go to the next two lines
+			src   += src_pitch_diff;
+			dst_y += dst_pitch_diff;
+			dst_u += dst_pitch_uvdiff;
+			dst_v += dst_pitch_uvdiff;
+		}
+
+		// restore the pointers
+		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;*/
+	}
+
+	// calc even positions...
+	if (odd_top) {
+		// odd top
+		dy++;
+		sh--;
+		src_y+=src_pitch;
+		src_pixels-=src_pitch_pix;
+		dst_y+=dst_pitch;
+		dst_u+=dst_pitch >> 1;
+		dst_v+=dst_pitch >> 1;
+	}
+
+	if (odd_bottom) {
+		// odd bottom
+		src_height--;
+		src_pixels-=src_pitch_pix;
+	}
+
+	if (odd_left) {
+		// odd left
+		dx++;
+		sw--;
+		src_y++;
+		dst_y++;
+		dst_u++;
+		dst_v++;
+	}
+
+	if (odd_right) {
+		// odd right
+		sw--;
+	}
+
+	// now we are even aligned and can go through a optimized loop
+	////////////////////////////////////////////////////////////////////////
+/*	unsigned char *src_end = src_y + src_pixels;
+	int src_pitch_diff = src_pitch_pix << 1;
+	int src_pitch_uvdiff = src_pitch_pix_half;
+	int dst_pitch_diff = dst_pitch_pix << 1;
+	int dst_pitch_uvdiff = dst_pitch_pix_half;
+
+	// for all lines
+	while (src_y < src_end) {
+		// for all pixels in the line
+		memcpy(dst_y, src_y, sw);
+		memcpy(&dst_y[dst_y3_offs], &src_y[src_y3_offs], sw);
+		memcpy(dst_u, src_u, sw >> 1);
+		memcpy(dst_v, src_v, sw >> 1);
+
+		// go to the next two lines
+		src_y += src_pitch_diff;
+		src_u += src_pitch_uvdiff;
+		src_v += src_pitch_uvdiff;
+		dst_y += dst_pitch_diff;
+		dst_u += dst_pitch_uvdiff;
+		dst_v += dst_pitch_uvdiff;
+	}*/
+
+
+
+	src = src_y;
+	dst = dst_y;
+
+
+//	int  src_pitch_pix = src_pitch >> 2;
+//	int  dst_pitch_pix = dst_pitch >> 2;
+	unsigned char *src_end = src + sx + src_pitch_pix * (sy + sh);
+	if (src_end > src + src_pitch_pix * src_height)
+		src_end = src + src_pitch_pix * src_height;
+	unsigned char *dst_end = dst + dst_pitch_pix * dst_height;
+//	src+=sx + sy * src_pitch_pix;
+//	dst+=dx + dy * dst_pitch_pix;
+
+
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+
+
+
+	// for all lines
+	int vertcnt = 0x8000;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned char *line_end = src + sw;
+			unsigned char *old_dst = dst;
+
+			do {
+				int horicnt = 0x8000;
+				while (src < line_end) {
+					// load pixel from memory and check if the previous pixel is the same
+
+					horicnt+=horifact;
+
+					if (horicnt & 0xffff0000) {
+						register unsigned char SRC  = *src;
+
+						do {
+							*dst = SRC;
+							dst++;
+							horicnt-=0x10000;
+						} while (horicnt & 0xffff0000);
+					}
+
+				    src++;
+				}
+				src-=sw;
+				vertcnt-=0x10000;
+//				dst = old_dst +  dst_pitch/4;
+				dst = old_dst +  dst_pitch;
+				old_dst = dst;
+			} while (vertcnt & 0xffff0000);
+		}
+
+		// next line
+		src+=src_pitch;
+	}
+
+
+
+
+
+
+
+
+	sw /= 2;
+	dw /= 2;
+	sh /= 2;
+	dh /= 2;
+
+	{
+	src = src_u;
+	dst = dst_u;
+
+//	int  src_pitch_pix = src_pitch >> 2;
+//	int  dst_pitch_pix = dst_pitch >> 2;
+	unsigned char *src_end = src + sx + src_pitch_pix_half * (sy + sh);
+	if (src_end > src + src_pitch_pix_half * src_height)
+		src_end = src + src_pitch_pix_half * src_height;
+	unsigned char *dst_end = dst + dst_pitch_pix_half * dst_height;
+//	src+=sx + sy * src_pitch_pix;
+//	dst+=dx + dy * dst_pitch_pix;
+
+
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+
+
+
+	// for all lines
+	int vertcnt = 0x8000;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned char *line_end = src + sw;
+			unsigned char *old_dst = dst;
+
+			do {
+				int horicnt = 0x8000;
+				while (src < line_end) {
+					// load pixel from memory and check if the previous pixel is the same
+
+					horicnt+=horifact;
+
+					if (horicnt & 0xffff0000) {
+						register unsigned char SRC  = *src;
+
+						do {
+							*dst = SRC;
+							dst++;
+							horicnt-=0x10000;
+						} while (horicnt & 0xffff0000);
+					}
+
+				    src++;
+				}
+				src-=sw;
+				vertcnt-=0x10000;
+//				dst = old_dst +  dst_pitch/4;
+				dst = old_dst +  dst_pitch_pix_half;
+				old_dst = dst;
+			} while (vertcnt & 0xffff0000);
+		}
+
+		// next line
+		src+=src_pitch_pix_half;
+	}
+	}
+
+
+
+
+	{
+	src = src_v;
+	dst = dst_v;
+
+//	int  src_pitch_pix = src_pitch >> 2;
+//	int  dst_pitch_pix = dst_pitch >> 2;
+	unsigned char *src_end = src + sx + src_pitch_pix_half * (sy + sh);
+	if (src_end > src + src_pitch_pix_half * src_height)
+		src_end = src + src_pitch_pix_half * src_height;
+	unsigned char *dst_end = dst + dst_pitch_pix_half * dst_height;
+//	src+=sx + sy * src_pitch_pix;
+//	dst+=dx + dy * dst_pitch_pix;
+
+
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+
+
+
+	// for all lines
+	int vertcnt = 0x8000;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned char *line_end = src + sw;
+			unsigned char *old_dst = dst;
+
+			do {
+				int horicnt = 0x8000;
+				while (src < line_end) {
+					// load pixel from memory and check if the previous pixel is the same
+
+					horicnt+=horifact;
+
+					if (horicnt & 0xffff0000) {
+						register unsigned char SRC  = *src;
+
+						do {
+							*dst = SRC;
+							dst++;
+							horicnt-=0x10000;
+						} while (horicnt & 0xffff0000);
+					}
+
+				    src++;
+				}
+				src-=sw;
+				vertcnt-=0x10000;
+//				dst = old_dst +  dst_pitch/4;
+				dst = old_dst +  dst_pitch_pix_half;
+				old_dst = dst;
+			} while (vertcnt & 0xffff0000);
+		}
+
+		// next line
+		src+=src_pitch_pix_half;
+	}
+	}
+
+}
+
+
+bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
+											  void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+											  DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+
+	if (source) {
+		// premultiplied surface?
+		if (!source->config.surface_buffer.premultiplied)
+			return false;
+
+		src_pixelformat = source->config.surface_buffer.pixelformat;
+		src_width = (!source->root_parent)?source->config.surface_buffer.w:source->root_parent->config.surface_buffer.w;
+		src_height = (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h;
+	}
 
 	// a few help and clipping values
-	void *src_ptr, *dst_ptr;
-	int  src_pitch, dst_pitch;
+	void *dst_ptr;
+	int  dst_pitch;
 	int sx = src_rect->x;
 	int sy = src_rect->y;
 	int sw = src_rect->w;
@@ -6906,14 +7536,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 
 
 	// checking pixelformats...
-	if (source->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
+	if (src_pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
 		if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_argb_to_argb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h,
+					eASB_blend_argb_to_argb((unsigned int *)src_ptr, src_pitch, src_height,
 											sx, sy, sw, sh,
 											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 											dx, dy, dw, dh);
@@ -6928,7 +7558,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_srcalpha_argb_to_argb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h,
+					eASB_blend_srcalpha_argb_to_argb((unsigned int *)src_ptr, src_pitch, src_height,
 													 sx, sy, sw, sh,
 													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 													 dx, dy, dw, dh,
@@ -6948,14 +7578,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 		return false;
 	}
 	else
-	if (source->config.surface_buffer.pixelformat == MMSFB_PF_AiRGB) {
+	if (src_pixelformat == MMSFB_PF_AiRGB) {
 		// source is AiRGB
 		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h,
+					eASB_blend_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, src_height,
 											  sx, sy, sw, sh,
 											  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 											  dx, dy, dw, dh);
@@ -6970,7 +7600,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_srcalpha_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h,
+					eASB_blend_srcalpha_airgb_to_airgb((unsigned int *)src_ptr, src_pitch, src_height,
 													   sx, sy, sw, sh,
 													   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 													   dx, dy, dw, dh,
@@ -6990,14 +7620,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 		return false;
 	}
 	else
-	if (source->config.surface_buffer.pixelformat == MMSFB_PF_AYUV) {
+	if (src_pixelformat == MMSFB_PF_AYUV) {
 		// source is AYUV
 		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_ayuv_to_ayuv((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h,
+					eASB_blend_ayuv_to_ayuv((unsigned int *)src_ptr, src_pitch, src_height,
 											sx, sy, sw, sh,
 											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 											dx, dy, dw, dh);
@@ -7012,7 +7642,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 				||(this->config.blittingflags == (MMSFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA|DSBLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
-					eASB_blend_srcalpha_ayuv_to_ayuv((unsigned int *)src_ptr, src_pitch, (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h,
+					eASB_blend_srcalpha_ayuv_to_ayuv((unsigned int *)src_ptr, src_pitch, src_height,
 													 sx, sy, sw, sh,
 													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
 													 dx, dy, dw, dh,
@@ -7021,6 +7651,34 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source, DFBRectangle
 
 					return true;
 				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+
+
+	else
+	if (src_pixelformat == MMSFB_PF_YV12) {
+		// source is YV12
+		if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+			// destination is YV12
+			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
+				// convert without alpha channel
+				if (extendedLock(source, &src_ptr, &src_pitch, this, &dst_ptr, &dst_pitch)) {
+					eASB_yv12_to_yv12((unsigned char *)src_ptr, src_pitch, src_height,
+									   sx, sy, sw, sh,
+									   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   dx, dy, dw, dh);
+					extendedUnlock(source, this);
+					return true;
+				}
+
 				return false;
 			}
 
@@ -7042,8 +7700,24 @@ bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *
 	if (!this->extendedaccel)
 		return false;
 
-	if (!extendedAccelStretchBlitEx(source, src_rect, dest_rect))
+	if (!extendedAccelStretchBlitEx(source,
+			                        NULL, 0, "", 0, 0,
+			                        src_rect, dest_rect))
 		return printMissingCombination("extendedAccelStretchBlit()", source);
+	else
+		return true;
+}
+
+bool MMSFBSurface::extendedAccelStretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+												  DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+	// extended acceleration on?
+	if (!this->extendedaccel)
+		return false;
+
+	if (!extendedAccelStretchBlitEx(NULL,
+							        src_ptr, src_pitch, src_pixelformat, src_width, src_height,
+							        src_rect, dest_rect))
+		return printMissingCombination("extendedAccelStretchBlitBuffer()", NULL, src_ptr, src_pitch, src_pixelformat, src_width, src_height);
 	else
 		return true;
 }
@@ -7984,17 +8658,17 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 
 bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
     DFBResult    dfbres;
-    DFBRectangle srcr;
+    DFBRectangle src;
     bool 		 ret = false;
 
     if (src_rect) {
-         srcr = *src_rect;
+         src = *src_rect;
     }
     else {
-         srcr.x = 0;
-         srcr.y = 0;
-         srcr.w = source->config.surface_buffer.w;
-         srcr.h = source->config.surface_buffer.h;
+         src.x = 0;
+         src.y = 0;
+         src.w = source->config.surface_buffer.w;
+         src.h = source->config.surface_buffer.h;
     }
 
     D_DEBUG_AT( MMS_Surface, "blit( %d,%d - %dx%d -> %d,%d ) <- %dx%d\n",
@@ -8010,10 +8684,10 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 #ifdef  __HAVE_DIRECTFB__
 		/* blit */
 		if (!this->is_sub_surface) {
-			if (!extendedAccelBlit(source, &srcr, x, y))
-				if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &srcr, x, y)) != DFB_OK) {
-					MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, srcr="
-										   +iToStr(srcr.x)+","+iToStr(srcr.y)+","+iToStr(srcr.w)+","+iToStr(srcr.h)
+			if (!extendedAccelBlit(source, &src, x, y))
+				if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, x, y)) != DFB_OK) {
+					MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, src rect="
+										   +iToStr(src.x)+","+iToStr(src.y)+","+iToStr(src.w)+","+iToStr(src.h)
 										   +", dst="+iToStr(x)+","+iToStr(y));
 					return false;
 				}
@@ -8030,10 +8704,10 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 			SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 
-			if (extendedAccelBlit(source, &srcr, x, y))
+			if (extendedAccelBlit(source, &src, x, y))
 				ret = true;
 			else
-				if (this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &srcr, x, y) == DFB_OK)
+				if (this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, x, y) == DFB_OK)
 					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -8049,7 +8723,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 
 		/* blit */
 		if (!this->is_sub_surface) {
-			ret = extendedAccelBlit(source, &srcr, x, y);
+			ret = extendedAccelBlit(source, &src, x, y);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -8057,7 +8731,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 			x+=this->sub_surface_xoff;
 			y+=this->sub_surface_yoff;
 
-			ret = extendedAccelBlit(source, &srcr, x, y);
+			ret = extendedAccelBlit(source, &src, x, y);
 
 			UNCLIPSUBSURFACE
 
@@ -8071,17 +8745,17 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 
 bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
 							  DFBRectangle *src_rect, int x, int y) {
-    DFBRectangle srcr;
+    DFBRectangle src;
     bool 		 ret = false;
 
     if (src_rect) {
-         srcr = *src_rect;
+         src = *src_rect;
     }
     else {
-         srcr.x = 0;
-         srcr.y = 0;
-         srcr.w = src_width;
-         srcr.h = src_height;
+         src.x = 0;
+         src.y = 0;
+         src.w = src_width;
+         src.h = src_height;
     }
 
     /* check if initialized */
@@ -8094,7 +8768,7 @@ bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, string src_pixelform
 	else {
 		/* blit buffer */
 		if (!this->is_sub_surface) {
-			ret = extendedAccelBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &srcr, x, y);
+			ret = extendedAccelBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, x, y);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -8102,7 +8776,7 @@ bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, string src_pixelform
 			x+=this->sub_surface_xoff;
 			y+=this->sub_surface_yoff;
 
-			ret = extendedAccelBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &srcr, x, y);
+			ret = extendedAccelBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, x, y);
 
 			UNCLIPSUBSURFACE
 
@@ -8306,6 +8980,69 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 			dst.y+=this->sub_surface_yoff;
 
 			ret = extendedAccelStretchBlit(source, &src, &dst);
+
+			dst.x-=this->sub_surface_xoff;
+			dst.y-=this->sub_surface_yoff;
+
+			UNCLIPSUBSURFACE
+		}
+
+	}
+
+    return ret;
+}
+
+bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+									 DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+    DFBResult    dfbres;
+    DFBRectangle src;
+    DFBRectangle dst;
+    bool         blit_done = false;
+    bool 		 ret = false;
+
+    if (src_rect) {
+         src = *src_rect;
+    }
+    else {
+         src.x = 0;
+         src.y = 0;
+         src.w = src_width;
+         src.h = src_height;
+    }
+
+    if (dest_rect) {
+         dst = *dest_rect;
+    }
+    else {
+         dst.x = 0;
+         dst.y = 0;
+         dst.w = this->config.surface_buffer.w;
+         dst.h = this->config.surface_buffer.h;
+    }
+
+    // check if i can blit without stretching
+    if (src.w == dst.w && src.h == dst.h)
+        return blitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, dst.x, dst.y);
+
+    /* check if initialized */
+    INITCHECK;
+
+	if (!this->use_own_alloc) {
+#ifdef  __HAVE_DIRECTFB__
+#endif
+	}
+	else {
+		/* normal stretch blit */
+		if (!this->is_sub_surface) {
+			ret = extendedAccelStretchBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, &dst);
+		}
+		else {
+			CLIPSUBSURFACE
+
+			dst.x+=this->sub_surface_xoff;
+			dst.y+=this->sub_surface_yoff;
+
+			ret = extendedAccelStretchBlitBuffer(src_ptr, src_pitch, src_pixelformat, src_width, src_height, &src, &dst);
 
 			dst.x-=this->sub_surface_xoff;
 			dst.y-=this->sub_surface_yoff;
