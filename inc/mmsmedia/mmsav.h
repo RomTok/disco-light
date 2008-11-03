@@ -34,7 +34,7 @@
 
 /**
  * @brief   Video output description structure.
- * 
+ *
  * This structure is needed for the callbacks that are used by the
  * xine video output driver.
  */
@@ -54,7 +54,7 @@ typedef void (*DVOutputCallback) (void *cdata, int width, int height,
 
 /**
  * @brief   Structure needed by xine_open_video_driver().
- * 
+ *
  * This structure holds surfaces and callbacks that handle
  * video playback.
  */
@@ -69,13 +69,13 @@ typedef struct {
 
 /**
  * @brief   MMS Audio/Video handling class.
- * 
+ *
  * @ingroup     mmsmedia mmslibs
  *
  * @author      Matthias Hardt (mattmax@morphine.tv)
  * @version     1.0.3
  * @date        11/07/2007
- * 
+ *
  * It is the base class for all audio and video related
  * classes.
  */
@@ -85,15 +85,16 @@ class MMSAV
         MMSWindow                       *window;                                /**< window for classes that use video  */
         VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
+        raw_visual_t					rawvisual;
         bool							didXineOpen;							/**< true if xine_open() was called		*/
-    
+
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
-    
+
     protected:
         bool                            verbose;                                /**< should logging be verbose?         */
         short                           status;                                 /**< current playback status            */
         int                             pos;                                    /**< remember position where the stream stopped last time */
-        
+
         // xine related attributes
         xine_t                          *xine;                                  /**< global xine structure                  */
         xine_video_port_t               *vo;                                    /**< xine video ports                       */
@@ -140,9 +141,9 @@ class MMSAV
         void pause();
         void ffwd();
         void slow();
-        
+
         bool getTimes(int *pos, int *length);
-        
+
         void setBrightness(int count);
         void brightnessUp(int count);
         void brightnessDown(int count);
@@ -155,10 +156,10 @@ class MMSAV
         void setHue(int count);
         void hueUp(int count);
         void hueDown(int count);
-        
+
         bool hasVideo();
         bool hasAudio();
-        
+
         /**
          * Callback that is used to receive errors.
          */
@@ -167,7 +168,7 @@ class MMSAV
          * Callback that is used to receive status changes.
          */
         sigc::signal<void, const unsigned short, const unsigned short> *onStatusChange;
-        
+
 };
 
 #endif /*MMSAV_H_*/

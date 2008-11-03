@@ -986,7 +986,7 @@ int MMSTaffFile::getNextTag(bool &eof) {
 				}
 
 				/* get the length of the value */
-				len = (int)this->taff_buf[this->taff_buf_pos];
+				len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
 					len = *((int*)&this->taff_buf[this->taff_buf_pos]);
@@ -1094,21 +1094,19 @@ int MMSTaffFile::getFirstAttribute(char **value_str, int *value_int, char **name
 
 	return -1;
 }
-#define GET_INT32_FROM_UCHAR_STREAM(stream) \
-     ((int)( (stream)[0] | ((stream)[1] << 8) | ((stream)[2] << 16) | ((stream)[3] << 24) ))
 
 int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name) {
 	/* searching for next attribute */
 	do {
 		switch (this->taff_buf[this->taff_buf_pos]) {
 		case MMSTAFF_TAGTABLE_TYPE_ATTR: {
-			    int attrid = (int)this->taff_buf[this->taff_buf_pos+1];
+			    int attrid = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos+1]);
 			    int len;
 				this->taff_buf_pos+=2;
 
 				/* check if name of attribute is stored instead of id */
 				if (attrid == MMSTAFF_ATTR_WITHOUT_ID) {
-					len = GET_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
+					len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 					if (name)
 						*name = (char*)&this->taff_buf[this->taff_buf_pos];
@@ -1118,10 +1116,10 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					if (name) *name=NULL;
 
 				/* get the length of the value */
-				len = (int)this->taff_buf[this->taff_buf_pos];
+				len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 				this->taff_buf_pos++;
 				if (len >= 0xff) {
-					len = GET_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
+					len = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 					this->taff_buf_pos+=sizeof(int);
 				}
 
@@ -1134,7 +1132,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					case TAFF_ATTRTYPE_UCHAR100:
 					case TAFF_ATTRTYPE_INT:
 						*value_str = NULL;
-						*value_int = GET_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
+						*value_int = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 						break;
 					default:
 						*value_str = (char*)&this->taff_buf[this->taff_buf_pos];

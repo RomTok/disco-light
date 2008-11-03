@@ -26,7 +26,11 @@
 #include <stdlib.h>
 
 MMS_CREATEERROR(MMSAVError);
+#ifdef __HAVE_DIRECTFB__
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
+#else
+#define THROW_DFB_ERROR(dfbres,msg)
+#endif
 
 /**
  * Callback, that will be called before a frame is drawn.
@@ -40,6 +44,7 @@ MMS_CREATEERROR(MMSAVError);
  * @param   format      [in]        pixel format of dvd stream
  * @param   dest_rect   [out]       the current rectangle will be returned
  */
+#ifdef __HAVE_DIRECTFB__
 static void output_cb(void *cdata, int width, int height, double ratio,
                       DFBSurfacePixelFormat format, DFBRectangle* dest_rect) {
     VODESC *vodesc = (VODESC *) cdata;
@@ -89,6 +94,32 @@ static void output_cb(void *cdata, int width, int height, double ratio,
     //DEBUGOUT("\nrect %d:%d:%d:%d",dest_rect->x,dest_rect->y,dest_rect->w,dest_rect->h);
 
 }
+#endif
+
+#ifdef __HAVE_XLIB__
+static void printFrameFormat(int frame_format) {
+	switch(frame_format) {
+		case XINE_VORAW_YV12:
+			printf("YV12 frame\n");
+			break;
+		case XINE_VORAW_YUY2:
+			printf("YUY2 frame\n");
+			break;
+		case XINE_VORAW_RGB:
+			printf("RGB frame\n");
+			break;
+		default:
+			printf("unknown frame format\n");
+	}
+}
+
+void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
+	MMSFBSurface *surf =(MMSFBSurface *)user_data;
+	//printFrameFormat(frame_format);
+	surf->blitBuffer(data0,frame_width,"YV12",frame_width,frame_height,NULL,0,0);
+	surf->flip(NULL);
+}
+#endif
 
 /**
  * Callback, that will be called after a frame is drawn.
@@ -97,6 +128,7 @@ static void output_cb(void *cdata, int width, int height, double ratio,
  *
  * @param   cdata       [in/out]    pointer to VODESC structure
  */
+#ifdef __HAVE_DIRECTFB__
 #if DIRECTFB_MAJOR_VERSION == 1
 static void frame_cb(void *cdata) {
 #else
@@ -159,7 +191,7 @@ static int frame_cb(void *cdata) {
     return 0;
 #endif
 }
-
+#endif
 /**
  * Initializes some xine stuff.
  *
@@ -229,7 +261,13 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     DEBUGMSG("MMSMedia", "xineInit() done.");
 
     if(window) {
-        this->window           = window;
+		this->rawvisual.raw_output_cb = raw_frame_cb;
+		this->rawvisual.supported_formats = XINE_VORAW_YV12;
+		this->rawvisual.user_data = (void *)window->getSurface();
+		this->rawvisual.raw_overlay_cb=NULL;
+
+
+    	this->window           = window;
         this->vodesc.format    = DSPF_UNKNOWN;
         this->vodesc.ratio     = 1.25;
         this->vodesc.width     = 720;
@@ -242,16 +280,26 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 
         this->vodesc.rect.w = this->vodesc.windsc.width;
         this->vodesc.rect.h = (int)((double)(this->vodesc.windsc.width) / this->vodesc.ratio + 0.5);
-
+        //this->vodesc.winsurface
         /* clear surface */
         if(!this->vodesc.winsurface->clear())
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::clear() failed");
         if(!this->vodesc.winsurface->flip())
             THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
 
-        if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
-            DEBUGMSG("MMSMedia", "set blitting failed");
+        MMSConfigData config;
+        if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
+#ifdef __HAVE_XLIB__
+        vodesc.winsurface->setBlittingFlags(DSBLIT_NOFX);
+        DEBUGMSG("MMSMedia", "opening video driver...");
+        /* open the video output driver */
+        if (!(this->vo = xine_open_video_driver(this->xine, "raw",
+                                    XINE_VISUAL_TYPE_RAW, (void*) &this->rawvisual)))
+                    throw new MMSAVError(0, "Cannot open the DFB video driver");
 
+#else
+        if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+        	DEBUGMSG("MMSMedia", "set blitting failed");
         /* fill the visual structure for the video output driver */
         this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
         this->visual.subpicture   = NULL;
@@ -260,13 +308,30 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         this->visual.frame_cb     = frame_cb;
         this->visual.frame_cdata  = (void*) &(this->vodesc);
         //this->visual.destination->SetField( this->visual.destination, 0 );
-
         DEBUGMSG("MMSMedia", "opening video driver...");
-
-        /* open the video output driver */
         if (!(this->vo = xine_open_video_driver(this->xine, "DFB",
-                            XINE_VISUAL_TYPE_DFB, (void*) &this->visual)))
-            throw new MMSAVError(0, "Cannot open the DFB video driver");
+                                    XINE_VISUAL_TYPE_DFB, (void*) &this->visual)))
+                    throw new MMSAVError(0, "Cannot open the DFB video driver");
+#endif
+        }else {
+#ifdef __HAVE_DIRECTFB__
+            if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+            	DEBUGMSG("MMSMedia", "set blitting failed");
+            /* fill the visual structure for the video output driver */
+            this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+            this->visual.subpicture   = NULL;
+            this->visual.output_cb    = output_cb;
+            this->visual.output_cdata = (void*) &(this->vodesc);
+            this->visual.frame_cb     = frame_cb;
+            this->visual.frame_cdata  = (void*) &(this->vodesc);
+            //this->visual.destination->SetField( this->visual.destination, 0 );
+            DEBUGMSG("MMSMedia", "opening video driver...");
+            if (!(this->vo = xine_open_video_driver(this->xine, "DFB",
+                                        XINE_VISUAL_TYPE_DFB, (void*) &this->visual)))
+                        throw new MMSAVError(0, "Cannot open the DFB video driver");
+#endif
+        }
+
 
         DEBUGMSG("MMSMedia", "opening video driver done.");
     }

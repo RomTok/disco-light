@@ -110,6 +110,9 @@ typedef enum {
 	MMSTAFF_PF_AYUV
 } MMSTAFF_PF;
 
+//! convert 4 bytes from byte stream to an 32 bit integer (needed especially by ARM)
+#define MMSTAFF_INT32_FROM_UCHAR_STREAM(stream) \
+     ((int)( (stream)[0] | ((stream)[1] << 8) | ((stream)[2] << 16) | ((stream)[3] << 24) ))
 
 //! A data access class for Tagged Attributes File Format (TAFF).
 /*!
@@ -153,16 +156,16 @@ class MMSTaffFile {
 
 		//!	print warnings?
 		bool    print_warnings;
-		
+
 		//! convert image to this pixelformat
 		MMSTAFF_PF	destination_pixelformat;
-		
+
 		//! should the destination pixels premultiplied?
 		bool		destination_premultiplied;
 
 		//! size of the mirror in pixel
 		unsigned int mirror_size;
-		
+
 		//! is the TAFF buffer loaded?
 		bool	loaded;
 
@@ -200,7 +203,7 @@ class MMSTaffFile {
         \param taff_desc			the user of this class have to support this tag/attribute description, use NULL
                                     here if you use the external type MMSTAFF_EXTERNAL_TYPE_IMAGE
         \param external_filename	name of the external file for conversion
-        							set to blank if no conversion is to be done in the constructor 
+        							set to blank if no conversion is to be done in the constructor
         \param external_type		type of the external file
         \param ignore_blank_values	ignore blank values during the conversion from external file
         \param trace				print trace messages?
