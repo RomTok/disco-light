@@ -115,7 +115,7 @@ static void printFrameFormat(int frame_format) {
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSFBSurface *surf =(MMSFBSurface *)user_data;
-	printFrameFormat(frame_format);
+	//printFrameFormat(frame_format);
 	surf->blitBuffer(data0,frame_width,"YV12",frame_width,frame_height,NULL,0,0);
 	surf->flip(NULL);
 }
