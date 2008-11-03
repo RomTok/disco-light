@@ -20,7 +20,7 @@ ifndef LIBPNG_CHECKED
     $(info check for libpng version >= 1.2)
     ASK=$(shell pkg-config --atleast-version=1.2 libpng && echo "1")
     ifeq ($(ASK),)
-        $(info ### INFO ###: libpng was not found or version is older than 1.2. Either adjust PKG_CONFIG_PATH or install the package.)
+        $(info --- INFO ---: libpng was not found or version is older than 1.2. Either adjust PKG_CONFIG_PATH or install the package.)
         HAVE_ALL_DEPS=0
     else
         export LIBPNG_INC=$(shell pkg-config --cflags libpng)
@@ -34,7 +34,7 @@ ifndef LIBXML_CHECKED
     $(info check for libxml2 version >= 2.6)
     ASK=$(shell pkg-config --atleast-version=2.6 libxml-2.0 && echo "1")
     ifeq ($(ASK),)
-        $(info ### INFO ###: libxml-2.0 was not found or version is older than 2.6. Either adjust PKG_CONFIG_PATH or install the package.)
+        $(info --- INFO ---: libxml-2.0 was not found or version is older than 2.6. Either adjust PKG_CONFIG_PATH or install the package.)
         HAVE_ALL_DEPS=0
     else
         export LIBXML_INC=$(shell pkg-config --cflags libxml-2.0)
@@ -48,7 +48,7 @@ ifndef SQLITE3_CHECKED
     $(info check for sqlite3)
     export SQLITE3_INC=$(shell pkg-config --cflags sqlite3)
     ifeq ($(SQLITE3_INC),)
-        $(info ### INFO ###: sqlite3 not found. Building without sqlite3 support.)
+        $(info --- INFO ---: sqlite3 not found. Building without sqlite3 support.)
     else
         export CFLAGS+=-D__ENABLE_SQLITE__ 
         export SQLITE3_LIBS=$(shell pkg-config --libs sqlite3)
@@ -61,7 +61,7 @@ ifndef MYSQL_CHECKED
     $(info check for mysql)
     ASK=$(shell which mysql_config)
     ifeq ($(ASK),)
-        $(info ### INFO ###: mysql not found. Building without mysql support.)
+        $(info --- INFO ---: mysql not found. Building without mysql support.)
     else
         export MYSQL_INC=$(shell mysql_config --cflags)
         export MYSQL_LIBS=$(shell mysql_config --libs_r)
@@ -77,7 +77,7 @@ ifndef ODBC_CHECKED
     ifeq ($(ASK),)
         ASK=$(shell ls $(DESTDIR)/usr/local/include/sql.h 2>/dev/null)
         ifeq ($(ASK),)
-            $(info ### INFO ###: unix-odbc not found. Building without ODBC support.)
+            $(info --- INFO ---: unix-odbc not found. Building without ODBC support.)
         else
             export FREETDS_PREFIX=$(DESTIR)/usr/local
         endif
@@ -96,7 +96,7 @@ endif
 ifndef SQLITE3_INC
     ifndef FREETDS_INC
         ifndef MYSQL_INC
-            $(info ### ERROR ###: No database backend found. Please install either sqlite3, mysql or unix odbc and a fitting driver.)
+            $(info --- ERROR ---: No database backend found. Please install either sqlite3, mysql or unix odbc and a fitting driver.)
             HAVE_ALL_DEPS=0
         endif
     endif
@@ -107,7 +107,7 @@ ifndef CURL_CHECKED
     $(info check for libcurl)
     export CURL_INC=$(shell pkg-config --cflags libcurl)
     ifeq ($(CURL_INC),)
-        $(info ### INFO ###: libcurl was not found. Either adjust PKG_CONFIG_PATH or install the package.)
+        $(info --- INFO ---: libcurl was not found. Either adjust PKG_CONFIG_PATH or install the package.)
         HAVE_ALL_DEPS=0
     else
         export CURL_LIBS=$(shell pkg-config --libs libcurl)
@@ -123,7 +123,7 @@ ifndef DIRECTFB_CHECKED
         $(info check for directfb)
         export DIRECTFB_INC=$(shell pkg-config --cflags directfb)
         ifeq ($(DIRECTFB_INC),)
-            $(info ### INFO ###: directfb was not found. Building without DirectFB core support.)
+            $(info --- INFO ---: directfb was not found. Building without DirectFB core support.)
             HAVE_ALL_DEPS=0
         else
             export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
@@ -140,11 +140,11 @@ ifndef X11_CHECKED
         $(info check for X11 and Xv development libraries)
         ASK_X11=$(shell pkg-config --silence-errors --cflags x11)
         ifeq ($(ASK_X11),)
-            $(info ### INFO ###: X11 development libraries were not found. Building without X11 core support.)
+            $(info --- INFO ---: X11 development libraries were not found. Building without X11 core support.)
         else
             ASK_XV=$(shell pkg-config --silence-errors --cflags xv)
             ifeq ($(ASK_XV),)
-                $(info ### INFO ###: Xv development libraries were not found. Building without X11 core support.)
+                $(info --- INFO ---: Xv development libraries were not found. Building without X11 core support.)
             else
                 $(info Building with X11 core)
                 export X11_INC=$(ASK_X11) $(ASK_XV)
@@ -158,7 +158,7 @@ endif
 #graphic backends?
 ifndef DIRECTFB_INC
     ifndef X11_INC
-        $(info ### ERROR ###: No graphics backend found. Please install either directfb or x11 development libs.)
+        $(info --- ERROR ---: No graphics backend found. Please install either directfb or x11 development libs.)
         HAVE_ALL_DEPS=0
     endif
 endif
@@ -168,7 +168,7 @@ ifndef XINE_CHECKED
     $(info check for libxine)
     export XINE_LIBS=$(shell pkg-config --silence-errors --libs libxine)
     ifeq ($(XINE_LIBS),)
-        $(info ### INFO ###: libxine was not found. Building without mmsmedia support.)
+        $(info --- INFO ---: libxine was not found. Building without mmsmedia support.)
         export CFLAGS+=-D_NO_MMSMEDIA
     else
         # have to do some extra checks because openSuse 10.3 installs libxine.pc even if no
@@ -177,7 +177,7 @@ ifndef XINE_CHECKED
         ifeq ($(strip $(XINE_INC)),)
             ASK=$(shell ls /usr/include/xine.h 2>/dev/null)
             ifeq ($(ASK),)
-                $(info ### INFO ###: xine headers were not found. Building without mmsmedia support.)
+                $(info --- INFO ---: xine headers were not found. Building without mmsmedia support.)
                 export CFLAGS+=-D_NO_MMSMEDIA
             else
                 export __WITH_MMSMEDIA__=1
@@ -194,7 +194,7 @@ ifndef SIGC_CHECKED
     $(info check for sigc++)
     export SIGC_INC=$(shell pkg-config --cflags sigc++-2.0)
     ifeq ($(SIGC_INC),)
-        $(info ### ERROR ###: sigc++-2.0 was not found. Either adjust PKG_CONFIG_PATH or install the package.)
+        $(info --- ERROR ---: sigc++-2.0 was not found. Either adjust PKG_CONFIG_PATH or install the package.)
         HAVE_ALL_DEPS=0
     else
         export SIGC_LIBS=$(shell pkg-config --libs sigc++-2.0)
@@ -208,7 +208,7 @@ ifndef ALSA_CHECKED
         $(info check for alsa)
         export ALSA_LIBS=$(shell pkg-config --silence-errors --libs alsa)
         ifeq ($(ALSA_LIBS),)
-            $(info ### INFO ###: alsa was not found. Building without mixer support.)
+            $(info --- INFO ---: alsa was not found. Building without mixer support.)
 	        export CFLAGS+=-D_NO_MIXER
         else
 	        export ALSA_INC=$(shell pkg-config --cflags alsa)
@@ -222,7 +222,7 @@ ifndef OPENSSL_CHECKED
     $(info check for openssl)
     export OPENSSL_LIBS=$(shell pkg-config --silence-errors --libs openssl)
     ifeq ($(OPENSSL_LIBS),)
-        $(info ### INFO ###: openssl was not found. Building without mmscrypt support.)
+        $(info --- INFO ---: openssl was not found. Building without mmscrypt support.)
         export OPENSSL_INC=-D_NO_MMSCRYPT
     else
         export OPENSSL_INC=$(shell pkg-config --cflags openssl)
@@ -235,7 +235,7 @@ ifndef PJ_CHECKED
     $(info check for libpj)
     export PJ_INC=$(shell pkg-config --silence-errors --cflags libpj)
     ifeq ($(PJ_INC),)
-        $(info ### INFO ###: libpj was not found. Building without mmssip support.)
+        $(info --- INFO ---: libpj was not found. Building without mmssip support.)
         export CFLAGS+=-D_NO_MMSSIP
     else
         export PJ_LIBS=$(shell pkg-config --libs libpj)
@@ -249,7 +249,7 @@ ifndef SWFDEC_CHECKED
     $(info check for swfdec)
     export SWFDEC_INC=$(shell pkg-config --silence-errors --cflags swfdec-0.8)
     ifeq ($(SWFDEC_INC),)
-        $(info ### INFO ###: swfdec-0.8 was not found. Building without mmsflash support.)
+        $(info --- INFO ---: swfdec-0.8 was not found. Building without mmsflash support.)
         export CFLAGS+=-D_NO_MMSFLASH
     else
         export SWFDEC_LIBS=$(shell pkg-config --libs swfdec-0.8)
