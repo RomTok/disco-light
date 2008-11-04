@@ -23,10 +23,24 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <string.h>
+#include <X11/extensions/xf86vmode.h>
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
-
+#ifdef __HAVE_XLIB__
+static XF86VidModeModeLine origmode;
+static void myexit() {
+	int cnt;
+	XF86VidModeModeInfo **info;
+	XF86VidModeGetAllModeLines((Display *)mmsfb->getX11Display(), 0, &cnt, &info);
+	for(int i=0;i<cnt;i++) {
+		if((info[i]->hdisplay==origmode.hdisplay)&&(info[i]->vdisplay==origmode.vdisplay)) {
+			XF86VidModeSwitchToMode((Display *)mmsfb->getX11Display(), 0, info[i]);
+			return;
+		}
+	}
+}
+#endif
 #define INITCHECK  if(!this->dfb){MMSFB_SetError(0,"not initialized");return false;}
 
 
@@ -38,12 +52,13 @@ MMSFB::MMSFB() {
     this->outputtype = "";
     this->w = 0;
     this->h = 0;
+
 }
 
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel) {
+bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen) {
     DFBResult dfbres;
 
     // check if already initialized
@@ -99,12 +114,41 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         this->x_screen = DefaultScreen(this->x_display);
 
         XSetWindowAttributes x_window_attr;
-        x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask;
+		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask;
         x_window_attr.background_pixel  = 0;
         x_window_attr.border_pixel      = 0;
-        x_window_attr.override_redirect = 0;
 
-        unsigned long x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask;
+
+        unsigned long x_window_mask;
+        if(fullscreen) {
+        	x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
+        	x_window_attr.override_redirect = True;
+        	int cnt;
+        	XF86VidModeModeInfo **info;
+        	XF86VidModeGetAllModeLines(this->x_display, 0, &cnt, &info);
+        	int best=-1;
+        	for(int i=0;i<cnt;i++) {
+        		if((info[i]->hdisplay==w)&&(info[i]->vdisplay==h)) {
+        			best=i;
+        			break;
+        		}
+        		//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
+        	}
+
+    		int clock;
+    		XF86VidModeGetModeLine(this->x_display, 0, &clock, &origmode);
+        	if(best!=-1) {
+        		atexit(myexit);
+        		// found a mode to try
+        		XF86VidModeSwitchToMode(this->x_display, 0, info[best]);
+        		 XF86VidModeSetViewPort(this->x_display, 0,0,0);
+        	}
+
+        } else {
+        	x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
+        	x_window_attr.override_redirect = 0;
+        }
+
         int x_depth = DefaultDepth(this->x_display, this->x_screen);
 
         this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->w, this->h, 0, x_depth,
@@ -118,7 +162,8 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
             XNextEvent(this->x_display, &x_event);
         }
         while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
-
+        XRaiseWindow(this->x_display, this->x_window);
+        XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
         int CompletionType = XShmGetEventBase(this->x_display) + ShmCompletion;
 
         unsigned int num_adaptors;
