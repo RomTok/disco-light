@@ -79,6 +79,18 @@ typedef struct {
  * It is the base class for all audio and video related
  * classes.
  */
+#ifdef __HAVE_XLIB__
+#include <directfb.h>
+
+typedef struct {
+	MMSFBSurface *surf;
+	DFBRectangle size;
+	DFBRectangle lastdest;
+	double lastaspect;
+} MMSRAW_USERDATA;
+
+#endif
+
 class MMSAV
 {
     private:
@@ -87,7 +99,9 @@ class MMSAV
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
         raw_visual_t					rawvisual;
         bool							didXineOpen;							/**< true if xine_open() was called		*/
-
+#ifdef __HAVE_XLIB__
+        MMSRAW_USERDATA					userd;
+#endif
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
 
     protected:

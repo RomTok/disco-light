@@ -113,8 +113,10 @@ static void printFrameFormat(int frame_format) {
 	}
 }
 
+
+
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
-	MMSFBSurface *surf =(MMSFBSurface *)user_data;
+	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
 /*	printf("-------\nframe format: ");
 	printFrameFormat(frame_format);
 	printf("frame_width: %d\n", frame_width);
@@ -131,11 +133,11 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	src.y = 0;
 	src.w = 200;
 	src.h = 200;
-	DFBRectangle dest;
-	dest.x = 0;
+	DFBRectangle dest = userd->size;
+/*	dest.x = 0;
 	dest.y = 0;
 	dest.w = 1280;
-	dest.h = 800;
+	dest.h = 800;*/
 
 	MMSFBExternalSurfaceBuffer buf;
 	buf.ptr = data0;
@@ -145,8 +147,8 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	buf.ptr3 = data2;
 	buf.pitch3 = frame_width / 2;
 
-	surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&dest);
-	surf->flip(NULL);
+	userd->surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&dest);
+	userd->surf->flip(NULL);
 }
 #endif
 
@@ -295,7 +297,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 		this->rawvisual.raw_output_cb = raw_frame_cb;
 		this->rawvisual.supported_formats = XINE_VORAW_YV12;
         if(window) {
-        	this->rawvisual.user_data = (void *)window->getSurface();
+        	this->rawvisual.user_data = (void *)&(this->userd);
         }
 		this->rawvisual.raw_overlay_cb=NULL;
 #endif
@@ -326,6 +328,15 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 #ifdef __HAVE_XLIB__
 		if(window) {
 			vodesc.winsurface->setBlittingFlags(DSBLIT_NOFX);
+			int w,h;
+			vodesc.winsurface->getSize(&w,&h);
+			this->userd.surf=window->getSurface();
+			this->userd.size.x=0;
+			this->userd.size.y=0;
+			this->userd.size.w=w;
+			this->userd.size.h=h;
+			this->userd.lastaspect=0.0;
+
 		}
         DEBUGMSG("MMSMedia", "opening video driver...");
         /* open the video output driver */
