@@ -113,11 +113,42 @@ static void printFrameFormat(int frame_format) {
 	}
 }
 
+
+
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
-	MMSFBSurface *surf =(MMSFBSurface *)user_data;
-	//printFrameFormat(frame_format);
-	surf->blitBuffer(data0,frame_width,"YV12",frame_width,frame_height,NULL,0,0);
-	surf->flip(NULL);
+	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
+/*	printf("-------\nframe format: ");
+	printFrameFormat(frame_format);
+	printf("frame_width: %d\n", frame_width);
+	printf("frame_height: %d\n", frame_height);
+	printf("frame_height: %f\n", frame_aspect);
+	printf("plane0: %p\n", data0);
+	printf("plane1: %p\n", data1);
+	printf("plane2: %p\n", data2);
+	printf("-------\n");*/
+
+	//surf->blitBuffer(data0,frame_width,"YV12",frame_width,frame_height,NULL,0,0);
+	DFBRectangle src;
+	src.x = 0;
+	src.y = 0;
+	src.w = 200;
+	src.h = 200;
+	DFBRectangle dest = userd->size;
+/*	dest.x = 0;
+	dest.y = 0;
+	dest.w = 1280;
+	dest.h = 800;*/
+
+	MMSFBExternalSurfaceBuffer buf;
+	buf.ptr = data0;
+	buf.pitch = frame_width;
+	buf.ptr2 = data1;
+	buf.pitch2 = frame_width / 2;
+	buf.ptr3 = data2;
+	buf.pitch3 = frame_width / 2;
+
+	userd->surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&dest);
+	userd->surf->flip(NULL);
 }
 #endif
 
@@ -265,7 +296,9 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 #ifdef __HAVE_XLIB__
 		this->rawvisual.raw_output_cb = raw_frame_cb;
 		this->rawvisual.supported_formats = XINE_VORAW_YV12;
-		this->rawvisual.user_data = (void *)window->getSurface();
+        if(window) {
+        	this->rawvisual.user_data = (void *)&(this->userd);
+        }
 		this->rawvisual.raw_overlay_cb=NULL;
 #endif
 
@@ -277,22 +310,34 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         this->vodesc.rect.x    = 0;
         this->vodesc.rect.y    = 0;
 
-        window->getSurface()->getSize(&(this->vodesc.windsc.width), &(this->vodesc.windsc.height));
-        this->vodesc.winsurface = window->getSurface();
-
+        if(window) {
+			window->getSurface()->getSize(&(this->vodesc.windsc.width), &(this->vodesc.windsc.height));
+			this->vodesc.winsurface = window->getSurface();
+	        if(!this->vodesc.winsurface->clear())
+	            THROW_DFB_ERROR(dfbres, "MMSFBSurface::clear() failed");
+	        if(!this->vodesc.winsurface->flip())
+	            THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
+        }
         this->vodesc.rect.w = this->vodesc.windsc.width;
         this->vodesc.rect.h = (int)((double)(this->vodesc.windsc.width) / this->vodesc.ratio + 0.5);
         //this->vodesc.winsurface
         /* clear surface */
-        if(!this->vodesc.winsurface->clear())
-            THROW_DFB_ERROR(dfbres, "MMSFBSurface::clear() failed");
-        if(!this->vodesc.winsurface->flip())
-            THROW_DFB_ERROR(dfbres, "MMSFBSurface::flip() failed");
 
         MMSConfigData config;
         if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
 #ifdef __HAVE_XLIB__
-        vodesc.winsurface->setBlittingFlags(DSBLIT_NOFX);
+		if(window) {
+			vodesc.winsurface->setBlittingFlags(DSBLIT_NOFX);
+			int w,h;
+			vodesc.winsurface->getSize(&w,&h);
+			this->userd.surf=window->getSurface();
+			this->userd.size.x=0;
+			this->userd.size.y=0;
+			this->userd.size.w=w;
+			this->userd.size.h=h;
+			this->userd.lastaspect=0.0;
+
+		}
         DEBUGMSG("MMSMedia", "opening video driver...");
         /* open the video output driver */
         if (!(this->vo = xine_open_video_driver(this->xine, "raw",
@@ -300,10 +345,13 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
                     throw new MMSAVError(0, "Cannot open the DFB video driver");
 
 #else
-        if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
-        	DEBUGMSG("MMSMedia", "set blitting failed");
-        /* fill the visual structure for the video output driver */
-        this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+        if(window) {
+
+			if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+				DEBUGMSG("MMSMedia", "set blitting failed");
+			/* fill the visual structure for the video output driver */
+			this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+        }
         this->visual.subpicture   = NULL;
         this->visual.output_cb    = output_cb;
         this->visual.output_cdata = (void*) &(this->vodesc);

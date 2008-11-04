@@ -66,7 +66,7 @@ install-pkgconfig:
 	@echo  >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Name: $(PROJECTNAME)" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo "Description: Multimedia Framework on top of DirectFB" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
-	@echo "Version: 1.1.1" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
+	@echo "Version: 1.5.0" >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo $(req_str) >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
 	@echo $(libs_str)   >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc 
 	@echo $(cflags_str) >> $(DESTDIR)$(libdir)/../pkgconfig/$(PROJECTNAME).pc
