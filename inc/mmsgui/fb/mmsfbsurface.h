@@ -26,6 +26,7 @@
 #include "mmstools/mmslogger.h"
 #include "mmstools/mmsmutex.h"
 #include "mmsgui/fb/mmsfbbase.h"
+#include "mmsgui/fb/mmsfbfont.h"
 
 /* use DFB subsurfaces? */
 //#define USE_DFB_SUBSURFACE
@@ -81,7 +82,7 @@ typedef struct {
                                 	/*       this layer flag */
     MMSFBSurfaceDrawingFlags 	drawingflags;	/* drawing flags */
     MMSFBSurfaceBlittingFlags 	blittingflags;	/* blitting flags */
-    IDirectFBFont				*font;			/* font */
+    MMSFBFont					*font;			/* font */
 
     //! the surface buffer(s)
     MMSFBSurfaceBuffer	surface_buffer;
@@ -472,7 +473,7 @@ class MMSFBSurface {
         bool setDrawingColorAndFlagsByBrightnessAndOpacity(
                     DFBColor color, unsigned char brightness, unsigned char opacity);
 
-        bool setFont(IDirectFBFont *font);
+        bool setFont(MMSFBFont *font);
         bool drawString(string text, int len, int x, int y);
 
         void lock(MMSFBSurfaceLockFlags flags = 0, void **ptr = NULL, int *pitch = NULL);

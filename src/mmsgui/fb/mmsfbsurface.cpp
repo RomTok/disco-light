@@ -9750,7 +9750,7 @@ bool MMSFBSurface::setDrawingColorAndFlagsByBrightnessAndOpacity(
 }
 
 
-bool MMSFBSurface::setFont(IDirectFBFont *font) {
+bool MMSFBSurface::setFont(MMSFBFont *font) {
     DFBResult   dfbres;
 
     /* check if initialized */
@@ -9759,7 +9759,7 @@ bool MMSFBSurface::setFont(IDirectFBFont *font) {
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
 		/* set font */
-		if ((dfbres=this->dfbsurface->SetFont(this->dfbsurface, font)) != DFB_OK) {
+		if ((dfbres=this->dfbsurface->SetFont(this->dfbsurface, font->dfbfont)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetFont() failed");
 			return false;
 		}

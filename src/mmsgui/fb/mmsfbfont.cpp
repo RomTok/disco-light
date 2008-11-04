@@ -20,65 +20,33 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSFB_H_
-#define MMSFB_H_
-
-#include "mmstools/mmslogger.h"
-
-#include "mmsgui/fb/mmsfblayer.h"
-#include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"
 
-#define MMSFBLAYER_MAXNUM 32
-
-class MMSFB {
-    private:
-        int             argc;       /* commandline arguments */
-        char            **argv;
-
-        IDirectFB       *dfb;       /* interface to dfb */
-
-        MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
-
-        string 			outputtype;
-        int				w;
-        int				h;
-        MMSFB_BACKEND	backend;
-
+// static variables
 #ifdef __HAVE_XLIB__
-        Display 		*x_display;
-        int				x_screen;
-        Window 			x_window;
-        GC 				x_gc;
-        int 			xv_port;
+FT_Library MMSFBFont::ft_library = NULL;
 #endif
 
-    public:
-        MMSFB();
-        virtual ~MMSFB();
+MMSFBFont::MMSFBFont(IDirectFBFont *dfbfont, int w, int h) {
+	this->dfbfont = dfbfont;
+	this->w = w;
+	this->h = h;
+}
 
-        bool init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel);
-        bool release();
-        bool isInitialized();
+MMSFBFont::~MMSFBFont() {
+}
 
-        MMSFB_BACKEND getBackend();
+bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
+    if (this->dfbfont->GetStringWidth(this->dfbfont, text.c_str(), -1, width) != DFB_OK)
+    	return false;
+    return true;
+}
 
-        bool getLayer(int id, MMSFBLayer **layer);
+bool MMSFBFont::getHeight(int *height) {
+	if (this->dfbfont->GetHeight(this->dfbfont, height) != DFB_OK)
+		return false;
+	return true;
+}
 
-        void *getX11Window();
-        void *getX11Display();
-        bool refresh();
 
-        bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0, bool systemonly = false);
 
-        bool createImageProvider(IDirectFBImageProvider **provider, string filename);
-        bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);
-
-    friend class MMSFBLayer;
-    friend class MMSFBSurface;
-};
-
-/* access to global mmsfb */
-extern MMSFB *mmsfb;
-
-#endif /*MMSFB_H_*/
