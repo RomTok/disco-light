@@ -235,73 +235,73 @@ class MMSFBSurface {
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
         				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
-        bool printMissingCombination(char *method, MMSFBSurface *source = NULL,
-									 void *src_ptr = NULL, int src_pitch = 0, string src_pixelformat = "", int src_width = 0, int src_height = 0);
+        bool printMissingCombination(char *method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
+									 string src_pixelformat = "", int src_width = 0, int src_height = 0);
         //////////
 
 
         //////////
-        void eAB_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_argb_to_argb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
         									 unsigned char alpha);
 
-        void eAB_blend_argb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_argb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
-        void eAB_rgb16_to_rgb16(unsigned short int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_rgb16_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_argb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
-        void eAB_blend_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_airgb_to_airgb(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         									   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
         									   unsigned char alpha);
-        void eAB_airgb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_airgb_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         						      unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
 
 
-        void eAB_blend_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_ayuv_to_ayuv(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
         									 unsigned char alpha);
-        void eAB_ayuv_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_ayuv_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_ayuv_to_rgb16(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_ayuv_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
-        void eAB_yv12_to_yv12(unsigned char *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_argb_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_argb_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
         				 					 unsigned char alpha);
-        void eAB_blend_srcalpha_ayuv_to_yv12(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+        void eAB_blend_srcalpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
         				 					 unsigned char alpha);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
-								 void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+								 MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
         						 DFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
-        bool extendedAccelBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+        bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 									 DFBRectangle *src_rect, int x, int y);
         //////////
 
@@ -430,10 +430,14 @@ class MMSFBSurface {
 
         bool setBlittingFlags(MMSFBSurfaceBlittingFlags flags);
         bool blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+						DFBRectangle *src_rect, int x, int y);
         bool blitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
 						DFBRectangle *src_rect, int x, int y);
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
+        bool stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
 							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
         bool flip(DFBRegion *region = NULL);
