@@ -40,6 +40,7 @@
 #include "mmstools/mmstcpserverthread.h"
 #include "mmstools/mmstcpclient.h"
 #include "mmstools/mmsmutex.h"
+#include "mmstools/mmsmail.h"
 #include "mmstools/mmsconverter.h"
 #include "mmstools/mmstafffile.h"
 #include "mmstools/mmsdatetime.h"
