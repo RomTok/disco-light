@@ -30,6 +30,9 @@ class MMSFBFont {
         //! true if initialized
         bool 		initialized;
 
+        //! to make it thread-safe
+        MMSMutex  	Lock;
+
     	//! pointer to the directfb font
     	void 		*dfbfont;
 
@@ -50,6 +53,8 @@ class MMSFBFont {
         virtual ~MMSFBFont();
 
         bool isInitialized();
+        void lock();
+        void unlock();
 
         bool getStringWidth(string text, int bytes, int *width);
         bool getHeight(int *height);

@@ -24,6 +24,7 @@
 #define MMSFBBASE_H_
 
 #include "mmstools/base.h"
+#include "mmstools/mmsmutex.h"
 
 #ifdef __HAVE_XLIB__
 #include <X11/Xlib.h>

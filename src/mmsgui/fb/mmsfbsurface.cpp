@@ -27,6 +27,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef __HAVE_XLIB__
+#include <ft2build.h>
+#include FT_GLYPH_H
+#endif
+
+
 D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 
 
@@ -9775,51 +9781,101 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
     return true;
 }
 
+void MMSFBSurface::blitCharBitmap_to_argb(unsigned char *src_ptr, int src_pitch, int src_width, int src_height,
+								          unsigned int *dst_ptr, int dst_pitch, int x, int y) {
+
+	int dst_pitch_pix = dst_pitch >> 2;
+	unsigned char *src_end = src_ptr + src_height * src_pitch;
+
+	dst_ptr+=x + y * dst_pitch_pix;
+
+	while (src_ptr < src_end) {
+		  for (int i=0; i<src_width; i++)
+			  dst_ptr[i] = (src_ptr[i] << 24) | 0xFFFFFF;
+		 src_ptr += src_pitch;
+		 dst_ptr+=dst_pitch_pix;
+	}
+}
 
 bool MMSFBSurface::drawString(string text, int len, int x, int y) {
-    DFBResult   dfbres;
 
-    D_DEBUG_AT( MMS_Surface, "drawString( '%s', %d, %d,%d ) <- %dx%d\n",
-                text.c_str(), len, x, y, this->config.w, this->config.h );
-
-    MMSFB_TRACE();
-
-
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+
+    if (!this->config.font)
+    	return false;
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-    /* draw a string */
-    if (!this->is_sub_surface) {
-	    if ((dfbres=this->dfbsurface->DrawString(this->dfbsurface, text.c_str(), len, x, y, DSTF_TOPLEFT)) != DFB_OK) {
-	        MMSFB_SetError(dfbres, "IDirectFBSurface::DrawString() failed");
+	    D_DEBUG_AT( MMS_Surface, "drawString( '%s', %d, %d,%d ) <- %dx%d\n",
+	                text.c_str(), len, x, y, this->config.w, this->config.h );
+	    MMSFB_TRACE();
 
-	        return false;
-	    }
-    }
-    else {
+	    // draw a string
+	    DFBResult dfbres;
+		if (!this->is_sub_surface) {
+			if ((dfbres=this->dfbsurface->DrawString(this->dfbsurface, text.c_str(), len, x, y, DSTF_TOPLEFT)) != DFB_OK) {
+				MMSFB_SetError(dfbres, "IDirectFBSurface::DrawString() failed");
+
+				return false;
+			}
+		}
+		else {
 #ifndef USE_DFB_SUBSURFACE
-	    CLIPSUBSURFACE
+			CLIPSUBSURFACE
 
-	    x+=this->sub_surface_xoff;
-	    y+=this->sub_surface_yoff;
+			x+=this->sub_surface_xoff;
+			y+=this->sub_surface_yoff;
 
-	    SETSUBSURFACE_DRAWINGFLAGS;
+			SETSUBSURFACE_DRAWINGFLAGS;
 #endif
 
-		this->dfbsurface->DrawString(this->dfbsurface, text.c_str(), len, x, y, DSTF_TOPLEFT);
+			this->dfbsurface->DrawString(this->dfbsurface, text.c_str(), len, x, y, DSTF_TOPLEFT);
 
 #ifndef USE_DFB_SUBSURFACE
-	    RESETSUBSURFACE_DRAWINGFLAGS;
+			RESETSUBSURFACE_DRAWINGFLAGS;
 
-        UNCLIPSUBSURFACE
+			UNCLIPSUBSURFACE
 #endif
-    }
+		}
 #endif
 	}
 	else {
-		//TODO
+#ifdef __HAVE_XLIB__
+		// draw a string
+		if (!this->is_sub_surface) {
+		}
+		else {
+			CLIPSUBSURFACE
+
+			x+=this->sub_surface_xoff;
+			y+=this->sub_surface_yoff;
+
+			// lock the font
+			MMSFBFont *font = this->config.font;
+			font->lock();
+
+			// lock the surface
+			void *ptr;
+			int pitch;
+			this->lock((MMSFBSurfaceLockFlags)DSLF_WRITE, &ptr, &pitch);
+
+			if (!FT_Load_Glyph((FT_Face)font->ft_face, FT_Get_Char_Index((FT_Face)font->ft_face, (FT_ULong)text[0]), FT_LOAD_RENDER)) {
+				FT_GlyphSlotRec *glyph = ((FT_Face)font->ft_face)->glyph;
+
+		        blitCharBitmap_to_argb(glyph->bitmap.buffer, glyph->bitmap.pitch, glyph->bitmap.width, glyph->bitmap.rows,
+		        					   (unsigned int *)ptr, pitch, x, y);
+
+
+			}
+
+			// unlock all
+			this->unlock();
+			font->unlock();
+
+			UNCLIPSUBSURFACE
+		}
+#endif
 	}
 
     return true;

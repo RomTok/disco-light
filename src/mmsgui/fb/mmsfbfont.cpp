@@ -64,28 +64,52 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
     }
     else {
 #ifdef  __HAVE_XLIB__
-/*
+		// init freetype library
     	if (!ft_library) {
-    		// init freetype library
-    		if (FT_Init_FreeType(&ft_library)) {
+    		if (FT_Init_FreeType((FT_Library*)&this->ft_library)) {
     			MMSFB_SetError(0, "FT_Init_FreeType() failed");
-    			return false;
+    			return;
 			}
 		}
-    	FT_Face face;
-    	if (FT_New_Face(library, "/home/jys/workspace_local/disko-tutorials/firststeps/04/themes/default/DejaVuSansMono.ttf", 0, &face))
-    		return -1;
-    	if (FT_Select_Charmap(face, ft_encoding_unicode))
-    		return -1;
-    	int fw = 250;
-    	int fh = 250;
-    	if (FT_Set_Char_Size(face, fw << 6, fh << 6, 0, 0))
-    		return -1;
-    	FT_Int load_flags = FT_LOAD_DEFAULT;
-    	face->generic.data = (void *)(unsigned long) load_flags;
-    	face->generic.finalizer = NULL;
-*/
 
+    	// load the face
+    	if (FT_New_Face((FT_Library)ft_library, this->filename.c_str(), 0, (FT_Face*)&this->ft_face)) {
+    		this->ft_face = NULL;
+			MMSFB_SetError(0, "FT_New_Face(" + this->filename + ") failed");
+			return;
+    	}
+
+    	// select the charmap
+    	if (FT_Select_Charmap((FT_Face)this->ft_face, ft_encoding_unicode)) {
+    		FT_Done_Face((FT_Face)this->ft_face);
+    		this->ft_face = NULL;
+			MMSFB_SetError(0, "FT_Select_Charmap(ft_encoding_unicode) for " + this->filename + " failed");
+			return;
+    	}
+
+    	// set the font size
+    	if (FT_Set_Char_Size((FT_Face)this->ft_face, w << 6, h << 6, 0, 0)) {
+    		FT_Done_Face((FT_Face)this->ft_face);
+    		this->ft_face = NULL;
+			MMSFB_SetError(0, "FT_Set_Char_Size(" + iToStr(w << 6) + "," + iToStr(h << 6) + ") for " + this->filename + " failed");
+			return;
+    	}
+
+    	// try to load a first glyph
+    	if (FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, '0'), FT_LOAD_RENDER)) {
+    		FT_Done_Face((FT_Face)this->ft_face);
+    		this->ft_face = NULL;
+			MMSFB_SetError(0, "FT_Load_Glyph('0') for " + this->filename + " failed");
+			return;
+    	}
+    	if (((FT_Face)this->ft_face)->glyph->format != ft_glyph_format_bitmap) {
+    		FT_Done_Face((FT_Face)this->ft_face);
+    		this->ft_face = NULL;
+			MMSFB_SetError(0, "Glyph format is not ft_glyph_format_bitmap for " + this->filename);
+			return;
+    	}
+
+    	this->initialized = true;
 #endif
     }
 }
@@ -95,6 +119,14 @@ MMSFBFont::~MMSFBFont() {
 
 bool MMSFBFont::isInitialized() {
     return this->initialized;
+}
+
+void MMSFBFont::lock() {
+	this->Lock.lock();
+}
+
+void MMSFBFont::unlock() {
+	this->Lock.unlock();
 }
 
 bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
@@ -111,6 +143,16 @@ bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
     }
     else {
 #ifdef  __HAVE_XLIB__
+    	lock();
+    	*width = 0;
+    	unsigned int len = text.size();
+    	for (unsigned int i = 0; i < len; i++) {
+			if (FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)text[i]), FT_LOAD_RENDER))
+				break;
+			*width+=((FT_Face)this->ft_face)->glyph->bitmap_left + ((FT_Face)this->ft_face)->glyph->bitmap.width;
+    	}
+    	unlock();
+printf("font width %d\n", *width);
     	return true;
 #endif
     }
@@ -131,6 +173,10 @@ bool MMSFBFont::getHeight(int *height) {
     }
     else {
 #ifdef  __HAVE_XLIB__
+    	lock();
+    	*height = this->h;
+    	unlock();
+printf("font height %d\n", *height);
     	return true;
 #endif
     }

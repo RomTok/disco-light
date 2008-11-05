@@ -24,7 +24,6 @@
 #define MMSFBSURFACE_H_
 
 #include "mmstools/mmslogger.h"
-#include "mmstools/mmsmutex.h"
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
 
@@ -374,6 +373,11 @@ class MMSFBSurface {
         bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
         bool extendedAccelFillRectangle(int x, int y, int w, int h);
         //////////
+
+
+        void blitCharBitmap_to_argb(unsigned char *src_ptr, int src_pitch, int src_width, int src_height,
+        							unsigned int *dst_ptr, int dst_pitch, int x, int y);
+
 
 
         MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
