@@ -9781,21 +9781,78 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
     return true;
 }
 
-void MMSFBSurface::blitCharBitmap_to_argb(unsigned char *src_ptr, int src_pitch, int src_width, int src_height,
-								          unsigned int *dst_ptr, int dst_pitch, int x, int y) {
+#ifdef __HAVE_XLIB__
 
+#define MMSFBSURFACE_BLIT_TEXT_LOCK \
+	MMSFBFont *font = this->config.font; \
+	font->lock(); \
+	void *ptr; int dst_pitch; \
+	this->lock((MMSFBSurfaceLockFlags)DSLF_WRITE, &ptr, &dst_pitch); \
 	int dst_pitch_pix = dst_pitch >> 2;
-	unsigned char *src_end = src_ptr + src_height * src_pitch;
 
-	dst_ptr+=x + y * dst_pitch_pix;
+#define MMSFBSURFACE_BLIT_TEXT_UNLOCK this->unlock(); font->unlock();
 
-	while (src_ptr < src_end) {
-		  for (int i=0; i<src_width; i++)
-			  dst_ptr[i] = (src_ptr[i] << 24) | 0xFFFFFF;
-		 src_ptr += src_pitch;
-		 dst_ptr+=dst_pitch_pix;
+#define MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character) \
+	FT_GlyphSlotRec *glyph = NULL; \
+	unsigned char *src_ptr; \
+	unsigned char *src_end; \
+	unsigned int  *dst_ptr; \
+	if (!FT_Load_Glyph((FT_Face)font->ft_face, FT_Get_Char_Index((FT_Face)font->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) \
+		glyph = ((FT_Face)font->ft_face)->glyph; else MMSFB_SetError(0, "FT_Load_Glyph() failed for " + font->filename); \
+	if (!((glyph)&&(glyph->bitmap.pixel_mode == ft_pixel_mode_grays))) { \
+		glyph = NULL; MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + font->filename); } \
+	else { \
+		src_ptr = glyph->bitmap.buffer; \
+		src_end = src_ptr + glyph->bitmap.rows * glyph->bitmap.pitch; \
+		dst_ptr = (unsigned int *)ptr; \
 	}
+
+
+void MMSFBSurface::blit_text_to_argb(string &text, int len, int x, int y) {
+	// lock font and surface
+	MMSFBSURFACE_BLIT_TEXT_LOCK;
+
+	for (unsigned int cnt = 0; cnt < text.size(); cnt++) {
+		// load the glyph
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(text[cnt]);
+		if (glyph) {
+
+			dst_ptr += x + (y - glyph->bitmap_top) * dst_pitch_pix;
+
+			while (src_ptr < src_end) {
+				 for (int i=0; i < glyph->bitmap.width; i++)
+					  dst_ptr[i] = (src_ptr[i] << 24) | 0xFFFFFF;
+				 src_ptr += glyph->bitmap.pitch;
+				 dst_ptr += dst_pitch_pix;
+			}
+
+			if (glyph->bitmap.width > 0)
+				// normal char
+				x += glyph->bitmap_left + glyph->bitmap.width;
+			else
+				// blank
+				x += 4;
+		}
+	}
+
+	// unlock
+	MMSFBSURFACE_BLIT_TEXT_UNLOCK;
 }
+
+bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
+	// checking pixelformats...
+	if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
+		// destination is ARGB
+		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
+			blit_text_to_argb(text, len, x, y);
+			return true;
+		}
+	}
+	return printMissingCombination("drawString()", NULL, NULL, "", 0, 0);
+}
+
+#endif
 
 bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 
@@ -9844,6 +9901,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 #ifdef __HAVE_XLIB__
 		// draw a string
 		if (!this->is_sub_surface) {
+			blit_text(text, len, x, y);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -9851,27 +9909,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 			x+=this->sub_surface_xoff;
 			y+=this->sub_surface_yoff;
 
-			// lock the font
-			MMSFBFont *font = this->config.font;
-			font->lock();
-
-			// lock the surface
-			void *ptr;
-			int pitch;
-			this->lock((MMSFBSurfaceLockFlags)DSLF_WRITE, &ptr, &pitch);
-
-			if (!FT_Load_Glyph((FT_Face)font->ft_face, FT_Get_Char_Index((FT_Face)font->ft_face, (FT_ULong)text[0]), FT_LOAD_RENDER)) {
-				FT_GlyphSlotRec *glyph = ((FT_Face)font->ft_face)->glyph;
-
-		        blitCharBitmap_to_argb(glyph->bitmap.buffer, glyph->bitmap.pitch, glyph->bitmap.width, glyph->bitmap.rows,
-		        					   (unsigned int *)ptr, pitch, x, y);
-
-
-			}
-
-			// unlock all
-			this->unlock();
-			font->unlock();
+			blit_text(text, len, x, y);
 
 			UNCLIPSUBSURFACE
 		}
