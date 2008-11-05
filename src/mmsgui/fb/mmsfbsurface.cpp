@@ -1453,15 +1453,15 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
 bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
 								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch) {
 	if (src) {
-		src->lock(DSLF_READ, src_ptr, src_pitch);
+		src->lock(DSLF_READ, src_ptr, src_pitch, false);
 		if (!*src_ptr)
 			return false;
 	}
 	if (dst) {
-		dst->lock(DSLF_WRITE, dst_ptr, dst_pitch);
+		dst->lock(DSLF_WRITE, dst_ptr, dst_pitch, false);
 		if (!*dst_ptr) {
 			if (src)
-				src->unlock();
+				src->unlock(false);
 			return false;
 		}
 	}
@@ -1484,9 +1484,9 @@ bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitc
 
 void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst) {
 	if (dst)
-		dst->unlock();
+		dst->unlock(false);
 	if (src)
-		src->unlock();
+		src->unlock(false);
 }
 
 
@@ -9825,7 +9825,51 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
     return true;
 }
 
-void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch) {
+void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch, bool pthread_lock) {
+	if (!pthread_lock) {
+		// no pthread lock needed
+		if (!this->use_own_alloc) {
+#ifdef  __HAVE_DIRECTFB__
+			if (flags && ptr && pitch) {
+				// get the access to the surface buffer
+				*ptr = NULL;
+				*pitch = 0;
+				if ((DFBSurfaceLockFlags)flags == DSLF_READ) {
+					if (this->dfbsurface->Lock(this->dfbsurface, DSLF_READ, ptr, pitch) != DFB_OK) {
+						*ptr = NULL;
+						*pitch = 0;
+					}
+				}
+				else
+				if ((DFBSurfaceLockFlags)flags == DSLF_WRITE) {
+					if (this->dfbsurface->Lock(this->dfbsurface, DSLF_WRITE, ptr, pitch) != DFB_OK) {
+						*ptr = NULL;
+						*pitch = 0;
+					}
+				}
+			}
+#endif
+		}
+		else {
+			if (flags && ptr && pitch) {
+				// get the access to the surface buffer
+				*ptr = NULL;
+				*pitch = 0;
+				MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+				if ((DFBSurfaceLockFlags)flags == DSLF_READ) {
+					*ptr = sb->buffers[sb->currbuffer_read];
+					*pitch = sb->pitch;
+				}
+				else
+				if ((DFBSurfaceLockFlags)flags == DSLF_WRITE) {
+					*ptr = sb->buffers[sb->currbuffer_write];
+					*pitch = sb->pitch;
+				}
+			}
+		}
+		return;
+	}
+
 	// which surface is to lock?
 	MMSFBSurface *tolock = this;
 	if (this->root_parent)
@@ -9911,29 +9955,23 @@ void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch) {
 			}
 		}
 	}
-
-/*
-    if (this->Lock.trylock() == 0) {
-        // I have got the lock the first time
-        this->TID = pthread_self();
-        this->Lock_cnt = 1;
-    }
-    else {
-        if ((this->TID == pthread_self())&&(this->Lock_cnt > 0)) {
-            // I am the thread which has already locked this surface
-            this->Lock_cnt++;
-        }
-        else {
-            // another thread has already locked this surface, waiting for...
-            this->Lock.lock();
-            this->TID = pthread_self();
-            this->Lock_cnt = 1;
-        }
-    }
-*/
 }
 
-void MMSFBSurface::unlock() {
+void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch) {
+	lock(flags, ptr, pitch, true);
+}
+
+void MMSFBSurface::unlock(bool pthread_unlock) {
+	if (!pthread_unlock) {
+		// no pthread unlock needed
+		if (!this->use_own_alloc) {
+#ifdef  __HAVE_DIRECTFB__
+			this->dfbsurface->Unlock(this->dfbsurface);
+#endif
+		}
+		return;
+	}
+
 	// which surface is to lock?
 	MMSFBSurface *tolock = this;
 	if (this->root_parent)
@@ -9973,20 +10011,11 @@ void MMSFBSurface::unlock() {
 
     if (tolock->Lock_cnt == 0)
     	tolock->Lock.unlock();
-
-/*
-	if (this->TID != pthread_self())
-        return;
-
-    if(this->Lock_cnt==0)
-    	return;
-
-    this->Lock_cnt--;
-
-    if (this->Lock_cnt == 0)
-        this->Lock.unlock();*/
 }
 
+void MMSFBSurface::unlock() {
+	unlock(true);
+}
 
 MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
     IDirectFBSurface    *subsuf = NULL;

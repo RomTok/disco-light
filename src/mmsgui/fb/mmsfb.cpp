@@ -23,7 +23,6 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <string.h>
-#include <X11/extensions/xf86vmode.h>
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();

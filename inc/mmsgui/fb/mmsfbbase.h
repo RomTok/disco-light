@@ -31,6 +31,7 @@
 #include <X11/extensions/Xv.h>
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/Xvlib.h>
+#include <X11/extensions/xf86vmode.h>
 #endif
 
 extern "C" {

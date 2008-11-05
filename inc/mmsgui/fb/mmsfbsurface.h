@@ -395,6 +395,9 @@ class MMSFBSurface {
 				  MMSFBSurface *parent,
 				  DFBRectangle *sub_surface_rect);
 
+        void lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch, bool pthread_lock);
+        void unlock(bool pthread_unlock);
+
     public:
         MMSFBSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly);
         MMSFBSurface(IDirectFBSurface *dfbsurface,
