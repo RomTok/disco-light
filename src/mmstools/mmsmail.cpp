@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #include "mmstools/mmsmail.h"
-
+#ifdef __HAVE_VMIME__
 MMSMail::MMSMail(const std::string _subject, const std::string _returnAddress, const std::string _host) :
 	subject(_subject), returnAddress(_returnAddress) {
 	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
@@ -121,3 +121,4 @@ void MMSMail::send() {
 		throw new MMSError(0, e.what());
 	}
 }
+#endif

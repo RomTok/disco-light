@@ -22,7 +22,7 @@
 
 #ifndef MMSMAIL_H_
 #define MMSMAIL_H_
-
+#ifdef __HAVE_VMIME__
 #include "mmstools/base.h"
 #include "mmstools/mmserror.h"
 #include <vmime/vmime.hpp>
@@ -146,4 +146,5 @@ public:
     void send();
 };
 
+#endif
 #endif /* MMSMAIL_H_ */
