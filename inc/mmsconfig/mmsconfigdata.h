@@ -47,6 +47,7 @@ class MMSConfigDataGlobal {
     	string firstplugin;
         bool   shutdown;
         string shutdowncmd;
+        bool   fullscreen;
 };
 
 class MMSConfigDataDB {
@@ -146,6 +147,7 @@ class MMSConfigData {
         const string getGraphicsSurfacePixelformat();
         const bool   getExtendedAccel();
         const string getAllocMethod();
+        const bool   getFullscreen();
 };
 
 #endif /*MMSCONFIGDATA_H_*/

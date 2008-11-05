@@ -117,6 +117,7 @@ static void printFrameFormat(int frame_format) {
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
+	int newW,newH;
 /*	printf("-------\nframe format: ");
 	printFrameFormat(frame_format);
 	printf("frame_width: %d\n", frame_width);
@@ -127,17 +128,46 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	printf("plane2: %p\n", data2);
 	printf("-------\n");*/
 
-	//surf->blitBuffer(data0,frame_width,"YV12",frame_width,frame_height,NULL,0,0);
-	DFBRectangle src;
-	src.x = 0;
-	src.y = 0;
-	src.w = 200;
-	src.h = 200;
-	DFBRectangle dest = userd->size;
-/*	dest.x = 0;
-	dest.y = 0;
-	dest.w = 1280;
-	dest.h = 800;*/
+    if (userd->lastaspect != frame_aspect) {
+    	printf("format change %f\n", frame_aspect);
+    	newW = (int)((double)(userd->size.h) * frame_aspect + 0.5);
+    	newH = (int)((double)(userd->size.w) / frame_aspect + 0.5);
+
+    	/* ratio has changed */
+        if (frame_aspect<1.0) {
+        	if(newW > userd->size.w) {
+        		userd->dest.w = userd->size.w;
+        		userd->dest.h = newH;
+        	} else {
+        		userd->dest.w = newW;
+        		userd->dest.h = userd->size.w;
+        	}
+
+        	userd->dest.x = (userd->size.w - userd->dest.w) / 2;
+        	userd->dest.y = 0;
+        } else {
+        	if(newH > userd->size.h) {
+        		userd->dest.h = userd->size.h;
+        		userd->dest.w = newW;
+        	} else {
+        		userd->dest.w = userd->size.w;
+        		userd->dest.h = newH;
+        	}
+        	userd->dest.x = 0;
+        	userd->dest.y = (userd->size.h - userd->dest.h) / 2;
+        }
+
+        userd->lastaspect  = frame_aspect;
+        /* clear surface */
+        userd->surf->clear();
+
+        printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
+        userd->dest.w&=~0x01;
+        userd->dest.h&=~0x01;
+        userd->dest.x&=~0x01;
+        userd->dest.y&=~0x01;
+        printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
+    }
 
 	MMSFBExternalSurfaceBuffer buf;
 	buf.ptr = data0;
@@ -147,7 +177,7 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	buf.ptr3 = data2;
 	buf.pitch3 = frame_width / 2;
 
-	userd->surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&dest);
+	userd->surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&userd->dest);
 	userd->surf->flip(NULL);
 }
 #endif

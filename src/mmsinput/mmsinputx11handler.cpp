@@ -184,6 +184,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     while(1) {
     	//
     	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask, &event);
+    	//XNextEvent(this->display, &event);
     	if(event.type==KeyPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYPRESS;
     		KeySym xSymbol = XKeycodeToKeysym(this->display , event.xkey.keycode,0 );

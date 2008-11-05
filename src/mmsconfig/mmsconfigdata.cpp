@@ -247,6 +247,9 @@ const bool MMSConfigData::getExtendedAccel() {
 const string MMSConfigData::getAllocMethod() {
     return this->dfb.allocmethod;
 }
+const bool   MMSConfigData::getFullscreen() {
+	return this->global.fullscreen;
+}
 
 /* static variables */
 MMSConfigDataGlobal MMSConfigData::global;

@@ -80,12 +80,10 @@ typedef struct {
  * classes.
  */
 #ifdef __HAVE_XLIB__
-#include <directfb.h>
-
 typedef struct {
 	MMSFBSurface *surf;
 	DFBRectangle size;
-	DFBRectangle lastdest;
+	DFBRectangle dest;
 	double lastaspect;
 } MMSRAW_USERDATA;
 

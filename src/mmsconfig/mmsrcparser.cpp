@@ -31,6 +31,7 @@ MMSRcParser::MMSRcParser() {
     this->global.stdout        = false;
     this->global.inputinterval = 0;
 	this->global.shutdown      = false;
+	this->global.fullscreen    = false;
 
     this->configdb.database = "/tmp/mmsconfigdb";
 	this->datadb.database   = "/tmp/mmsdatadb";
@@ -195,6 +196,8 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdown = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "shutdowncmd"))
             this->global.shutdowncmd = string((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen"))
+            this->global.fullscreen = strToBool(string((const char *)parvalue));
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);

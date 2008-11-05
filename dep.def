@@ -148,7 +148,7 @@ ifndef X11_CHECKED
             else
                 $(info Building with X11 core)
                 export X11_INC=$(ASK_X11) $(ASK_XV)
-                export X11_LIBS=$(shell pkg-config --libs x11 xv)
+                export X11_LIBS=$(shell pkg-config --libs x11 xv xxf86vm)
                 export CFLAGS+='-D__HAVE_XLIB__ -D__ENABLE_MMSFB_X11_CORE__ -D__ENABLE_MMSFBSURFACE_X11_CORE__'
             endif
         endif
