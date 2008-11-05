@@ -95,9 +95,9 @@ class MMSAV
         MMSWindow                       *window;                                /**< window for classes that use video  */
         VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
-        raw_visual_t					rawvisual;
         bool							didXineOpen;							/**< true if xine_open() was called		*/
 #ifdef __HAVE_XLIB__
+        raw_visual_t					rawvisual;
         MMSRAW_USERDATA					userd;
 #endif
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
