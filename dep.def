@@ -202,6 +202,19 @@ ifndef SIGC_CHECKED
     export SIGC_CHECKED=1
 endif
 
+#vmime
+ifndef VMIME_CHECKED
+    $(info check for vmime)
+    export VMIME_INC=$(shell pkg-config --cflags vmime)
+    ifeq ($(VMIME_INC),)
+        $(warning vmime was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        HAVE_ALL_DEPS=0
+    else
+        export VMIME_LIBS=$(shell pkg-config --libs vmime)
+    endif
+    export VMIME_CHECKED=1
+endif
+
 #alsa
 ifndef ALSA_CHECKED
     ifdef __WITH_MMSMEDIA__ 
