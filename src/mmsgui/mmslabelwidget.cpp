@@ -59,7 +59,7 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 
 MMSWidget *MMSLabelWidget::copyWidget() {
     /* create widget */
-    MMSLabelWidget *newWidget = new MMSLabelWidget(this->rootwindow, className); 
+    MMSLabelWidget *newWidget = new MMSLabelWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -67,7 +67,7 @@ MMSWidget *MMSLabelWidget::copyWidget() {
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-    /* reload my font */    
+    /* reload my font */
     newWidget->font = NULL;
     newWidget->labelThread = NULL;
     if (this->rootwindow) {
@@ -123,13 +123,13 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 
             string text = getText();
 
-            /* get width and height of the string to be drawn */            
-            this->font->GetStringWidth(this->font, text.c_str(), -1, &width);
-            this->font->GetHeight(this->font, &height);
-    
+            /* get width and height of the string to be drawn */
+            this->font->getStringWidth(text, -1, &width);
+            this->font->getHeight(&height);
+
             // save the width of the text
             this->slid_width = width;
-            
+
             switch (getAlignment()) {
                 case MMSALIGNMENT_LEFT:
                     x = surfaceGeom.x;
@@ -172,16 +172,16 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                     y = ((surfaceGeom.h - height) / 2) + surfaceGeom.y;
                     break;
             }
-            
+
             DFBColor color;
-            
+
             if (isSelected())
                 color = getSelColor();
             else
                 color = getColor();
-            
+
             if (color.a) {
-                /* prepare for drawing */        
+                /* prepare for drawing */
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
                 /* draw the text */

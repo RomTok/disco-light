@@ -76,7 +76,7 @@ bool MMSFBSurface::firsttime_eAFR_yv12							= true;
 
 
 
-#define INITCHECK  if((!mmsfb->isInitialized())||(!this->dfbsurface)){MMSFB_SetError(0,"not initialized");return false;}
+#define INITCHECK  if((!mmsfb->isInitialized())||(!this->dfbsurface)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
 
 #define CLIPSUBSURFACE \
 	DFBRegion reg, tmp; \
@@ -9759,7 +9759,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
 		/* set font */
-		if ((dfbres=this->dfbsurface->SetFont(this->dfbsurface, font->dfbfont)) != DFB_OK) {
+		if ((dfbres=this->dfbsurface->SetFont(this->dfbsurface, (IDirectFBFont*)font->dfbfont)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetFont() failed");
 			return false;
 		}

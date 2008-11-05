@@ -68,7 +68,7 @@ bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer = NULL, IDirect
 
 bool loadImage(IDirectFBImageProvider **image, string path, string filename);
 
-bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int size);
+bool loadFont(MMSFBFont **font, string path, string filename, int width, int height);
 
 unsigned int getFrameNum(unsigned int delay_time);
 

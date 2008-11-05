@@ -116,14 +116,14 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
             string text = getText();
 
             // get width and height of the string to be drawn
-            this->font->GetStringWidth(this->font, text.c_str(), -1, &width);
-            this->font->GetHeight(this->font, &height);
+            this->font->getStringWidth(text, -1, &width);
+            this->font->getHeight(&height);
 
             // calc cursor position
             if (text.size() < (unsigned int)this->cursor_pos)
             	cursor_x = width;
             else
-            	this->font->GetStringWidth(this->font, text.substr(0,this->cursor_pos).c_str(), -1, &cursor_x);
+            	this->font->getStringWidth(text.substr(0,this->cursor_pos), -1, &cursor_x);
 
             MMSALIGNMENT alignment = getAlignment();
             switch (alignment) {

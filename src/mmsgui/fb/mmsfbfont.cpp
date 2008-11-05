@@ -21,31 +21,120 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbfont.h"
+#include "mmsgui/fb/mmsfb.h"
 
-// static variables
 #ifdef __HAVE_XLIB__
-FT_Library MMSFBFont::ft_library = NULL;
+#include <ft2build.h>
+#include FT_GLYPH_H
 #endif
 
-MMSFBFont::MMSFBFont(IDirectFBFont *dfbfont, int w, int h) {
-	this->dfbfont = dfbfont;
-	this->w = w;
-	this->h = h;
+// static variables
+void *MMSFBFont::ft_library = NULL;
+
+#define INITCHECK  if(!this->isInitialized()){MMSFB_SetError(0,"MMSFBFont is not initialized");return false;}
+
+MMSFBFont::MMSFBFont(string filename, int w, int h) {
+	this->initialized 	= false;
+	this->dfbfont 		= NULL;
+	this->ft_library 	= NULL;
+	this->ft_face 		= NULL;
+	this->filename 		= filename;
+	this->w 			= w;
+	this->h 			= h;
+
+    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+#ifdef  __HAVE_DIRECTFB__
+		// create the dfb font
+		DFBResult   		dfbres;
+		DFBFontDescription 	desc;
+		if (this->w > 0) {
+			desc.flags = DFDESC_WIDTH;
+			desc.width = this->w;
+		}
+		if (this->h > 0) {
+			desc.flags = DFDESC_HEIGHT;
+			desc.height = this->h;
+		}
+		if ((dfbres=mmsfb->dfb->CreateFont(mmsfb->dfb, this->filename.c_str(), &desc, (IDirectFBFont**)&this->dfbfont)) != DFB_OK) {
+			MMSFB_SetError(dfbres, "IDirectFB::CreateFont(" + this->filename + ") failed");
+			return;
+		}
+		this->initialized = true;
+#endif
+    }
+    else {
+#ifdef  __HAVE_XLIB__
+/*
+    	if (!ft_library) {
+    		// init freetype library
+    		if (FT_Init_FreeType(&ft_library)) {
+    			MMSFB_SetError(0, "FT_Init_FreeType() failed");
+    			return false;
+			}
+		}
+    	FT_Face face;
+    	if (FT_New_Face(library, "/home/jys/workspace_local/disko-tutorials/firststeps/04/themes/default/DejaVuSansMono.ttf", 0, &face))
+    		return -1;
+    	if (FT_Select_Charmap(face, ft_encoding_unicode))
+    		return -1;
+    	int fw = 250;
+    	int fh = 250;
+    	if (FT_Set_Char_Size(face, fw << 6, fh << 6, 0, 0))
+    		return -1;
+    	FT_Int load_flags = FT_LOAD_DEFAULT;
+    	face->generic.data = (void *)(unsigned long) load_flags;
+    	face->generic.finalizer = NULL;
+*/
+
+#endif
+    }
 }
 
 MMSFBFont::~MMSFBFont() {
 }
 
+bool MMSFBFont::isInitialized() {
+    return this->initialized;
+}
+
 bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
-    if (this->dfbfont->GetStringWidth(this->dfbfont, text.c_str(), -1, width) != DFB_OK)
-    	return false;
-    return true;
+    // check if initialized
+    INITCHECK;
+
+    // get the width of the whole string
+    if (this->dfbfont) {
+#ifdef  __HAVE_DIRECTFB__
+		if (((IDirectFBFont*)this->dfbfont)->GetStringWidth((IDirectFBFont*)this->dfbfont, text.c_str(), -1, width) != DFB_OK)
+			return false;
+		return true;
+#endif
+    }
+    else {
+#ifdef  __HAVE_XLIB__
+    	return true;
+#endif
+    }
+    return false;
 }
 
 bool MMSFBFont::getHeight(int *height) {
-	if (this->dfbfont->GetHeight(this->dfbfont, height) != DFB_OK)
-		return false;
-	return true;
+    // check if initialized
+    INITCHECK;
+
+    // get the height of the font
+	if (this->dfbfont) {
+#ifdef  __HAVE_DIRECTFB__
+		if (((IDirectFBFont*)this->dfbfont)->GetHeight((IDirectFBFont*)this->dfbfont, height) != DFB_OK)
+			return false;
+		return true;
+#endif
+    }
+    else {
+#ifdef  __HAVE_XLIB__
+    	return true;
+#endif
+    }
+    return false;
 }
 
 

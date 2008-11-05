@@ -76,6 +76,7 @@ class MMSFB {
 
     friend class MMSFBLayer;
     friend class MMSFBSurface;
+    friend class MMSFBFont;
 };
 
 /* access to global mmsfb */

@@ -37,22 +37,22 @@ class MMSInputWidget : public MMSWidget {
         MMSInputWidgetClass *inputWidgetClass;
         MMSInputWidgetClass myInputWidgetClass;
 
-        IDirectFBFont 	*font;
+        MMSFBFont 		*font;
         int				cursor_pos;
         bool			cursor_on;
         int 			scroll_x;
-        
+
         class MMSInputWidgetThread	*iwt;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void handleInput(MMSInputEvent *inputevent);
-        
+
         bool init();
         bool draw(bool *backgroundFilled = NULL);
         void drawCursor(bool cursor_on);
 
-    public: 
+    public:
         MMSInputWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         ~MMSInputWidget();
 
@@ -61,7 +61,7 @@ class MMSInputWidget : public MMSWidget {
         void setCursorPos(int cursor_pos, bool refresh = true);
         void addTextAfterCursorPos(string text, bool refresh = true);
         void removeTextBeforeCursorPos(int textlen, bool refresh = true);
-        
+
     public:
     	/* theme access methods */
         string getFontPath();

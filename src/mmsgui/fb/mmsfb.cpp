@@ -289,61 +289,21 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 }
 
 bool MMSFB::createFont(MMSFBFont **font, string filename, int width, int height) {
-    if (this->backend == MMSFB_BACKEND_DFB) {
-#ifdef  __HAVE_DIRECTFB__
-		// check if initialized
-		INITCHECK;
+	// check if initialized
+	INITCHECK;
 
-		// create the font
-		DFBResult   		dfbres;
-		IDirectFBFont 		*dfbfont;
-	    DFBFontDescription 	desc;
-	    if (width > 0) {
-		    desc.flags = DFDESC_WIDTH;
-		    desc.width = width;
-	    }
-	    if (height > 0) {
-			desc.flags = DFDESC_HEIGHT;
-			desc.height = height;
-	    }
-		if ((dfbres=this->dfb->CreateFont(this->dfb, filename.c_str(), &desc, &dfbfont)) != DFB_OK) {
-			MMSFB_SetError(dfbres, "IDirectFB::CreateFont(" + filename + ") failed");
-			return false;
-		}
-
-		// create new instance of MMSFBFont
-		*font = new MMSFBFont(dfbfont, width, height);
-
-		return true;
-#endif
-    }
-    else {
-#ifdef __HAVE_XLIB__
-/*
-    	if (!ft_library) {
-    		// init freetype library
-    		if (FT_Init_FreeType(&ft_library)) {
-    			MMSFB_SetError(0, "FT_Init_FreeType() failed");
-    			return false;
-			}
-		}
-    	FT_Face face;
-    	if (FT_New_Face(library, "/home/jys/workspace_local/disko-tutorials/firststeps/04/themes/default/DejaVuSansMono.ttf", 0, &face))
-    		return -1;
-    	if (FT_Select_Charmap(face, ft_encoding_unicode))
-    		return -1;
-    	int fw = 250;
-    	int fh = 250;
-    	if (FT_Set_Char_Size(face, fw << 6, fh << 6, 0, 0))
-    		return -1;
-    	FT_Int load_flags = FT_LOAD_DEFAULT;
-    	face->generic.data = (void *)(unsigned long) load_flags;
-    	face->generic.finalizer = NULL;
-*/
-
-    	*font = NULL;
+	// create new instance of MMSFBFont
+	*font = new MMSFBFont(filename, width, height);
+	if (!*font) {
+		MMSFB_SetError(0, "cannot create new MMSFBFont instance for " + filename);
 		return false;
-#endif
-    }
+	}
+	if (!(*font)->isInitialized()) {
+		delete *font;
+		*font = NULL;
+		MMSFB_SetError(0, "cannot initialize new MMSFBFont instance for " + filename);
+		return false;
+	}
+	return true;
 }
 

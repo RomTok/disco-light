@@ -28,11 +28,12 @@ MMSFontManager::MMSFontManager() {
 MMSFontManager::~MMSFontManager() {
     /* free all fonts */
     for (unsigned int i = 0; i < this->fonts.size(); i++) {
-        this->fonts.at(i).font->Release(this->fonts.at(i).font);
+    	if (this->fonts.at(i).font)
+    		delete this->fonts.at(i).font;
     }
 }
 
-IDirectFBFont *MMSFontManager::getFont(string path, string filename, unsigned int size) {
+MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int size) {
     string          fontfile;
     MMSFM_DESC      fm_desc;
 
@@ -52,7 +53,7 @@ IDirectFBFont *MMSFontManager::getFont(string path, string filename, unsigned in
 
     /* load font */
     fm_desc.font = NULL;
-    if (!loadFont(&(fm_desc.font), "", fontfile, size)) {
+    if (!loadFont(&(fm_desc.font), "", fontfile, 0, size)) {
         DEBUGMSG("MMSGUI", "cannot load font file '%s'", fontfile.c_str());
         return NULL;
     }
@@ -68,7 +69,7 @@ void MMSFontManager::releaseFont(string path, string filename, unsigned int size
     /*TODO*/
 }
 
-void MMSFontManager::releaseFont(IDirectFBFont *font) {
+void MMSFontManager::releaseFont(MMSFBFont *font) {
     /*TODO*/
 }
 

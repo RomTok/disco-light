@@ -46,7 +46,7 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSTextBoxWidgetClass 	*textBoxWidgetClass;
         MMSTextBoxWidgetClass 	myTextBoxWidgetClass;
 
-        IDirectFBFont *font;
+        MMSFBFont *font;
 
         vector<TEXTBOX_WORDGEOM *> wordgeom;
 

@@ -25,27 +25,31 @@
 
 #include "mmsgui/fb/mmsfbbase.h"
 
-#ifdef __HAVE_XLIB__
-#include <ft2build.h>
-#include FT_GLYPH_H
-#endif
-
 class MMSFBFont {
     private:
-#ifdef  __HAVE_DIRECTFB__
-    	IDirectFBFont *dfbfont;
-#endif
+        //! true if initialized
+        bool 		initialized;
 
-#ifdef __HAVE_XLIB__
-        static FT_Library	ft_library;
-#endif
+    	//! pointer to the directfb font
+    	void 		*dfbfont;
 
-    	int	w;
-    	int h;
+    	//! static pointer to the freetype library
+        static void *ft_library;
+
+        //! pointer to the loaded freetype face
+        void 		*ft_face;
+
+        //! font file
+        string 	filename;
+
+    	int		w;
+    	int 	h;
 
     public:
-        MMSFBFont(IDirectFBFont *dfbfont, int w, int h);
+        MMSFBFont(string filename, int w, int h);
         virtual ~MMSFBFont();
+
+        bool isInitialized();
 
         bool getStringWidth(string text, int bytes, int *width);
         bool getHeight(int *height);

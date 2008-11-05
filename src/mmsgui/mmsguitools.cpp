@@ -197,10 +197,9 @@ bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
 }
 
 
-bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int size) {
-//    IDirectFB       *mydfb = NULL;
-    IDirectFBFont   *myfont = NULL;
-    string          fontfile;
+bool loadFont(MMSFBFont **font, string path, string filename, int width, int height) {
+    MMSFBFont	*myfont = NULL;
+    string    	fontfile;
 
     /* build filename */
     fontfile = path;
@@ -215,33 +214,15 @@ bool loadFont(IDirectFBFont **font, string path, string filename, unsigned int s
     if (filename.substr(filename.size()-1) == "/")
         return false;
 
-    /* open dfb access */
-/*    if (!dfb) {
-        if(DirectFBCreate(&mydfb)!= DFB_OK)
-            return false;
-    }
-    else
-        mydfb = dfb;*/
-
-    DFBFontDescription desc;
-    desc.flags = DFDESC_HEIGHT;
-    desc.height = size;
-
-//    if (mydfb->CreateFont(mydfb, fontfile.c_str(), &desc, &myfont) != DFB_OK) {
-    if (!mmsfb->createFont(&myfont, fontfile, &desc)) {
-/*        if (!dfb)
-            mydfb->Release(mydfb);*/
+    if (!mmsfb->createFont(&myfont, fontfile, width, height)) {
         if (myfont)
-            myfont->Release(myfont);
+            delete myfont;
         DEBUGMSG("MMSGUI", "cannot load font file '%s'", fontfile.c_str());
         return false;
     }
 
-/*    if (!dfb)
-        mydfb->Release(mydfb);*/
-
     if (*font)
-        (*font)->Release(*font);
+        delete *font;
 
     *font = myfont;
 

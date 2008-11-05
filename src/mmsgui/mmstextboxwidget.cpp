@@ -52,7 +52,7 @@ bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme
 
 MMSWidget *MMSTextBoxWidget::copyWidget() {
     /* create widget */
-    MMSTextBoxWidget *newWidget = new MMSTextBoxWidget(this->rootwindow, className); 
+    MMSTextBoxWidget *newWidget = new MMSTextBoxWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -60,7 +60,7 @@ MMSWidget *MMSTextBoxWidget::copyWidget() {
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-    /* reload my font */    
+    /* reload my font */
     newWidget->font = NULL;
     if (this->rootwindow) {
         newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
@@ -89,7 +89,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
     *paragraphs = 0;
 
     /* get font height */
-    this->font->GetHeight(this->font, &fontHeight);
+    this->font->getHeight(&fontHeight);
     *scrollDX = fontHeight;
     *scrollDY = fontHeight;
 
@@ -110,7 +110,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         return true;
 
     /* get width of a blank character */
-    this->font->GetStringWidth(this->font, " ", -1, &blankWidth);
+    this->font->getStringWidth(" ", -1, &blankWidth);
 
     /* through the text and extract single words */
     do {
@@ -152,12 +152,12 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         mywordgeom->word  =text.substr(0, index);
 
 
-        this->font->GetStringWidth(this->font, mywordgeom->word.c_str(), -1, &mywordgeom->geom.w);
+        this->font->getStringWidth(mywordgeom->word, -1, &mywordgeom->geom.w);
 
         if (x > 0)
             x += blankWidth;
 
-        unsigned int endpos = x + mywordgeom->geom.w; 
+        unsigned int endpos = x + mywordgeom->geom.w;
 
         bool gotonext = true;
 
@@ -168,7 +168,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
                 while ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
                     index--;
                     mywordgeom->word = text.substr(0, index);
-                    this->font->GetStringWidth(this->font, mywordgeom->word.c_str(), -1, &mywordgeom->geom.w);
+                    this->font->getStringWidth(mywordgeom->word, -1, &mywordgeom->geom.w);
                     endpos = x + mywordgeom->geom.w;
                 }
 
@@ -182,7 +182,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
                 if (wrap==false)
                     *realWidth = endpos;
                 else {
-                    mywordgeom->geom.w-= endpos - *realWidth;  
+                    mywordgeom->geom.w-= endpos - *realWidth;
                     endpos = *realWidth;
                 }
 
@@ -190,7 +190,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
             mywordgeom->geom.y = y;
 
             x = endpos;
-            
+
             mywordgeom->line = *lines;
             mywordgeom->paragraph = *paragraphs;
         }
@@ -222,8 +222,8 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         if (gotonext) {
             if (index + 1 < (int)text.size())
                 text = text.substr(index + 1);
-            else 
-                text = ""; 
+            else
+                text = "";
         }
     } while (text != "");
 
@@ -233,14 +233,14 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
     for (unsigned int i = 0; i < wordgeom.size(); i++) {
         if (wordgeom.at(i)->line != oldline) {
             if   ((alignment == MMSALIGNMENT_CENTER)||(alignment == MMSALIGNMENT_TOP_CENTER)||(alignment == MMSALIGNMENT_BOTTOM_CENTER)) {
-                unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / 2; 
+                unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / 2;
                 for (unsigned int j = oldpos; j < i; j++)
                     wordgeom.at(j)->geom.x += diff;
             }
             else
             if   ((alignment == MMSALIGNMENT_RIGHT)||(alignment == MMSALIGNMENT_TOP_RIGHT)
                 ||(alignment == MMSALIGNMENT_BOTTOM_RIGHT)) {
-                unsigned int diff = *realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w; 
+                unsigned int diff = *realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w;
                 for (unsigned int j = oldpos; j < i; j++)
                     wordgeom.at(j)->geom.x += diff;
             }
@@ -248,7 +248,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
             if  (((alignment == MMSALIGNMENT_JUSTIFY)||(alignment == MMSALIGNMENT_TOP_JUSTIFY)
                 ||(alignment == MMSALIGNMENT_BOTTOM_JUSTIFY))&&(wordgeom.at(i)->paragraph == wordgeom.at(i-1)->paragraph)) {
                 if (oldpos < i-1) {
-                    unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / (i-1-oldpos); 
+                    unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / (i-1-oldpos);
                     for (unsigned int j = oldpos; j < i; j++) {
                         wordgeom.at(j)->geom.x += (j - oldpos) * diff;
                     }
@@ -259,14 +259,14 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         }
     }
     if   ((alignment == MMSALIGNMENT_CENTER)||(alignment == MMSALIGNMENT_TOP_CENTER)||(alignment == MMSALIGNMENT_BOTTOM_CENTER)) {
-        unsigned int diff = (*realWidth - wordgeom.at(wordgeom.size()-1)->geom.x - wordgeom.at(wordgeom.size()-1)->geom.w) / 2; 
+        unsigned int diff = (*realWidth - wordgeom.at(wordgeom.size()-1)->geom.x - wordgeom.at(wordgeom.size()-1)->geom.w) / 2;
         for (unsigned int j = oldpos; j < wordgeom.size(); j++)
             wordgeom.at(j)->geom.x += diff;
     }
     else
     if   ((alignment == MMSALIGNMENT_RIGHT)||(alignment == MMSALIGNMENT_TOP_RIGHT)
         ||(alignment == MMSALIGNMENT_BOTTOM_RIGHT)) {
-        unsigned int diff = *realWidth - wordgeom.at(wordgeom.size()-1)->geom.x - wordgeom.at(wordgeom.size()-1)->geom.w; 
+        unsigned int diff = *realWidth - wordgeom.at(wordgeom.size()-1)->geom.x - wordgeom.at(wordgeom.size()-1)->geom.w;
         for (unsigned int j = oldpos; j < wordgeom.size(); j++)
             wordgeom.at(j)->geom.x += diff;
     }
@@ -335,7 +335,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         	setScrollSize(scrollDX, scrollDY);
           	setSurfaceGeometry(realWidth, realHeight);
         }
-    }    
+    }
 
     /* draw widget basics */
     if (MMSWidget::draw(backgroundFilled)) {
@@ -348,17 +348,17 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         	DFBRectangle surfaceGeom = getSurfaceGeometry();
 
             DFBColor color;
-            
+
             if (isSelected())
                 color = getSelColor();
             else
                 color = getColor();
-            
+
             if (color.a) {
                 /* set the font */
                 this->surface->setFont(this->font);
 
-                /* prepare for drawing */        
+                /* prepare for drawing */
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
                 /* draw single words into surface */

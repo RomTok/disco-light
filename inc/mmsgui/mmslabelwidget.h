@@ -39,19 +39,19 @@ class MMSLabelWidget : public MMSWidget {
         MMSLabelWidgetClass *labelWidgetClass;
         MMSLabelWidgetClass myLabelWidgetClass;
 
-        IDirectFBFont *font;
+        MMSFBFont *font;
 
         int slid_width;
         int slid_offset;
 
         unsigned int frame_delay;
         unsigned int frame_delay_set;
-        
+
         class MMSLabelWidgetThread  *labelThread;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
-    public: 
+    public:
         MMSLabelWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         ~MMSLabelWidget();
 

@@ -28,7 +28,7 @@
 typedef struct {
     string          fontfile;
     unsigned int    size;
-    IDirectFBFont   *font;
+    MMSFBFont   	*font;
 } MMSFM_DESC;
 
 class MMSFontManager {
@@ -38,9 +38,9 @@ class MMSFontManager {
     public:
         MMSFontManager();
         ~MMSFontManager();
-        IDirectFBFont *getFont(string path, string filename, unsigned int size);
+        MMSFBFont *getFont(string path, string filename, unsigned int size);
         void releaseFont(string path, string filename, unsigned int size);
-        void releaseFont(IDirectFBFont *font);
+        void releaseFont(MMSFBFont *font);
 };
 
 #endif /*MMSFONTMANAGER_H_*/
