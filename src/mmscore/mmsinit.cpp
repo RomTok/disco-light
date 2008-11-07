@@ -131,52 +131,54 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             DEBUGMSG("Core", "Extended acceleration:        no");
 
 
-        DEBUGMSG("Core", "initialize frame buffer");
+        if(flags & MMSINIT_GRAPHICS || flags == MMSINIT_FULL) {
+            DEBUGMSG("Core", "initialize frame buffer");
 
-        mmsfbmanager.init(argc,argv);
-        mmsfbmanager.applySettings();
+            mmsfbmanager.init(argc,argv);
+            mmsfbmanager.applySettings();
 
-        DEBUGMSG("Core", "starting theme manager");
-        themeManager = new MMSThemeManager(config->getData(),config->getTheme());
+            DEBUGMSG("Core", "starting theme manager");
+            themeManager = new MMSThemeManager(config->getData(),config->getTheme());
+            if(flags & MMSINIT_WINDOWMANAGER || flags == MMSINIT_FULL) {
+                DEBUGMSG("Core", "starting window manager");
+                DFBRectangle vrect;
+                vrect.x = config->getVRect().x;
+                vrect.y = config->getVRect().y;
+                vrect.w = config->getVRect().w;
+                vrect.h = config->getVRect().h;
 
-        if(flags & MMSINIT_WINDOWMANAGER || flags == MMSINIT_FULL) {
-            DEBUGMSG("Core", "starting window manager");
-            DFBRectangle vrect;
-            vrect.x = config->getVRect().x;
-            vrect.y = config->getVRect().y;
-            vrect.w = config->getVRect().w;
-            vrect.h = config->getVRect().h;
+                windowmanager = new MMSWindowManager(vrect);
+    	        if(!windowmanager) {
+    	        	DEBUGMSG("Core", "couldn't create windowmanager.");
+    	        	return false;
+    	        }
 
-            windowmanager = new MMSWindowManager(vrect);
-	        if(!windowmanager) {
-	        	DEBUGMSG("Core", "couldn't create windowmanager.");
-	        	return false;
-	        }
+    	        DEBUGMSG("Core", "creating background window");
+    	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","","",
+    	        											MMSALIGNMENT_NOTSET,MMSW_VIDEO);
+    	        if(!rootwin) {
+    	        	DEBUGMSG("Core", "couldn't create background window.");
+    	        	return false;
+    	        }
+    	        DEBUGMSG("Core", "setting windowmanager for background window");
+    	        rootwin->setWindowManager((IMMSWindowManager*)windowmanager);
+    	        DEBUGMSG("Core", "setting window as background window");
+    	        windowmanager->setBackgroundWindow(rootwin);
+    	        DEBUGMSG("Core", "windowmanager initialization done");
+            }
+            if(flags  & MMSINIT_INPUTS) {
+    			DEBUGMSG("Core", "creating input manager");
+    			inputs = new MMSInputManager(config->getSysConfig() + "/inputmap.xml", config->getInputMap());
+    			inputs->setWindowManager((IMMSWindowManager*)windowmanager);
 
-	        DEBUGMSG("Core", "creating background window");
-	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","","",
-	        											MMSALIGNMENT_NOTSET,MMSW_VIDEO);
-	        if(!rootwin) {
-	        	DEBUGMSG("Core", "couldn't create background window.");
-	        	return false;
-	        }
-	        DEBUGMSG("Core", "setting windowmanager for background window");
-	        rootwin->setWindowManager((IMMSWindowManager*)windowmanager);
-	        DEBUGMSG("Core", "setting window as background window");
-	        windowmanager->setBackgroundWindow(rootwin);
-	        DEBUGMSG("Core", "windowmanager initialization done");
+    			//inputs
+    			DEBUGMSG("Core", "add input device");
+    			inputs->addDevice(MMS_INPUT_KEYBOARD, config->getInputInterval());
+
+    			DEBUGMSG("Core", "creating master subscription");
+    			MMSInputSubscription sub1(inputs);
+            }
         }
-
-        DEBUGMSG("Core", "creating input manager");
-        inputs = new MMSInputManager(config->getSysConfig() + "/inputmap.xml", config->getInputMap());
-		inputs->setWindowManager((IMMSWindowManager*)windowmanager);
-
-        //inputs
-		DEBUGMSG("Core", "add input device");
-		inputs->addDevice(MMS_INPUT_KEYBOARD, config->getInputInterval());
-
-		DEBUGMSG("Core", "creating master subscription");
-	  	MMSInputSubscription sub1(inputs);
 
         if(flags & MMSINIT_PLUGINMANAGER || flags == MMSINIT_FULL) {
 	        DEBUGMSG("Core", "creating PluginManager");
