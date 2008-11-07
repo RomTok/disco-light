@@ -223,9 +223,12 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 //        DEBUGMSG("Core", "starting music manager");
 //        soundmanager = new MMSMusicManager();
 
-        DEBUGMSG("Core", "wait for inputs");
 		/* here must be a barrier implemented */
-        inputs->startListen();
+        if(flags & MMSINIT_INPUTS && flags & MMSINIT_GRAPHICS || flags & MMSINIT_FULL ) {
+            DEBUGMSG("Core", "wait for inputs");
+            inputs->startListen();
+
+        }
 
 
     	atexit(on_exit);

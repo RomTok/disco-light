@@ -6,11 +6,12 @@
  */
 
 #include "mmstools/mmsprocessmonitor.h"
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
 
-MMSProcessMonitor::MMSProcessMonitor() {
+MMSProcessMonitor::MMSProcessMonitor(unsigned int interval) : monitoringInterval(interval) {
 	this->shutdown = false;
 }
 
@@ -19,6 +20,7 @@ MMSProcessMonitor::~MMSProcessMonitor() {
 }
 
 void MMSProcessMonitor::commenceShutdown() {
+    DEBUGMSG("PROCESSMONITOR", "Processmonitor shutdown initiated.");
 	this->shutdown = true;
 }
 
@@ -44,9 +46,9 @@ bool MMSProcessMonitor::startprocess(MMSPROCESS_TASKLIST::iterator &it) {
 		char *argv[255];
 		argv[0]=(char *)it->cmdline.c_str();
 		argv[1]=NULL;
-		// I am the new...
+		DEBUGMSG("PROCESSMONITOR", "Starting process %s", it->cmdline.c_str());
 		execv(it->cmdline.c_str(),argv);
-		//something went wrong...
+		DEBUGMSG("PROCESSMONITOR", "Starting of process %s failed. (ERRNO: %d)", it->cmdline.c_str(), errno);
 		exit(1);
 	}
 	//Iam the caller...
@@ -62,7 +64,8 @@ bool MMSProcessMonitor::checkprocess(MMSPROCESS_TASKLIST::iterator &it) {
 
 }
 bool MMSProcessMonitor::killprocess(MMSPROCESS_TASKLIST::iterator &it) {
-	if(kill(it->pid,SIGTERM)==0)
+    DEBUGMSG("PROCESSMONITOR", "Killing process %s (%d)", it->cmdline.c_str(), it->pid);
+    if(kill(it->pid,SIGTERM)==0)
 		return true;
 	else
 		return false;
@@ -71,7 +74,7 @@ bool MMSProcessMonitor::killprocess(MMSPROCESS_TASKLIST::iterator &it) {
 
 void MMSProcessMonitor::threadMain() {
 	for(MMSPROCESS_TASKLIST::iterator it = this->processes.begin();it != this->processes.end();it++) {
-		startprocess(it);
+	    startprocess(it);
 	}
 
 	while(1) {
@@ -89,7 +92,7 @@ void MMSProcessMonitor::threadMain() {
 		}
 		int status;
 		while(waitpid(-1, &status, WNOHANG)>0);
-		sleep(1);
+		sleep(this->monitoringInterval);
 	}
 
 }

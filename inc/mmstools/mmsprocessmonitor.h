@@ -24,6 +24,7 @@
 #ifndef MMSPROCESSMONITOR_H_
 #define MMSPROCESSMONITOR_H_
 
+#include "mmstools/mmstools.h"
 #include "mmsthread.h"
 #include <vector>
 #include <string>
@@ -44,9 +45,10 @@ class MMSProcessMonitor : public MMSThread {
 		bool checkprocess(MMSPROCESS_TASKLIST::iterator &it);
 		bool killprocess(MMSPROCESS_TASKLIST::iterator &it);
 
+		unsigned int monitoringInterval;
 
 	public:
-		MMSProcessMonitor();
+		MMSProcessMonitor(unsigned int interval = 5);
 		~MMSProcessMonitor();
 		void commenceShutdown();
 		void addProcess(std::string process);
