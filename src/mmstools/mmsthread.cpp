@@ -50,7 +50,8 @@ MMSThread::MMSThread(string identity, int priority) {
     this->identity = identity;
     this->priority = priority;
 
-    this->isrunning=false;
+    this->isrunning = false;
+    this->isdetached = false;
 }
 
 void MMSThread::run() {
@@ -85,6 +86,7 @@ void MMSThread::start() {
 
 void MMSThread::detach() {
 	pthread_detach(this->id);
+	this->isdetached = true;
 }
 
 bool MMSThread::isRunning() {
@@ -99,3 +101,9 @@ int MMSThread::cancel() {
 	return status;
 
 }
+
+void MMSThread::join() {
+    if (!this->isdetached)
+        pthread_join(this->id, NULL);
+}
+

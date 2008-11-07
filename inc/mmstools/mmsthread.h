@@ -35,7 +35,8 @@ class MMSThread {
         sched_param		param;
 		pthread_t 		id;
 		bool 			isrunning;
-		
+		bool            isdetached;
+
 	public:
         string    identity;
 
@@ -50,6 +51,7 @@ class MMSThread {
 		void detach();
 		bool isRunning();
 		int cancel();
+		void join();
 };
 
 #endif /*MMSTHREAD_H_*/
