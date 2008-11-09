@@ -148,7 +148,7 @@ ifndef X11_CHECKED
             else
                 $(info Building with X11 core)
                 export X11_INC=$(ASK_X11) $(ASK_XV)
-                export X11_LIBS=$(shell pkg-config --libs x11 xv xxf86vm)
+                export X11_LIBS=$(shell pkg-config --libs x11 xv xxf86vm freetype2)
                 export CFLAGS+='-D__HAVE_XLIB__ -D__ENABLE_MMSFB_X11_CORE__ -D__ENABLE_MMSFBSURFACE_X11_CORE__'
             endif
         endif
@@ -207,9 +207,10 @@ ifndef VMIME_CHECKED
     $(info check for vmime)
     export VMIME_INC=$(shell pkg-config --cflags vmime)
     ifeq ($(VMIME_INC),)
-        $(warning vmime was not found. Either adjust PKG_CONFIG_PATH or install the package)
-        HAVE_ALL_DEPS=0
+        $(info vmime was not found. Either adjust PKG_CONFIG_PATH or install the package)
+        #HAVE_ALL_DEPS=
     else
+        export CFLAGS+=-D__HAVE_VMIME__
         export VMIME_LIBS=$(shell pkg-config --libs vmime)
     endif
     export VMIME_CHECKED=1

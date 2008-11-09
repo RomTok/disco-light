@@ -20,25 +20,40 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSINIT_H_
-#define MMSINIT_H_
 
-#include <stdlib.h>
+#ifndef MMSPROCESSMONITOR_H_
+#define MMSPROCESSMONITOR_H_
+
+#include "mmstools/mmstools.h"
+#include "mmsthread.h"
+#include <vector>
 #include <string>
-#include <mmsbase/interfaces/immsswitcher.h>
+#include <unistd.h>
 
-typedef enum {
-	MMSINIT_NONE = 0x00000000,
-	MMSINIT_WINDOWMANAGER = 0x00000001,
-	MMSINIT_PLUGINMANAGER = 0x00000002,
-	MMSINIT_EVENTS = 0x00000004,
-	MMSINIT_GRAPHICS = 0x00000008,
-	MMSINIT_INPUTS = 0x00000010,
-	MMSINIT_FULL = 0x00000020
-} MMSINIT_FLAGS;
+typedef struct {
+	pid_t pid;
+	std::string cmdline;
+} MMSPROCESS_TASK;
 
-bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "");
+typedef std::vector<MMSPROCESS_TASK> MMSPROCESS_TASKLIST;
+class MMSProcessMonitor : public MMSThread {
 
-bool registerSwitcher(IMMSSwitcher *switcher);
+	private:
+		MMSPROCESS_TASKLIST processes;
+		bool shutdown;
+		bool startprocess(MMSPROCESS_TASKLIST::iterator &it);
+		bool checkprocess(MMSPROCESS_TASKLIST::iterator &it);
+		bool killprocess(MMSPROCESS_TASKLIST::iterator &it);
 
-#endif /*MMSINIT_H_*/
+		unsigned int monitoringInterval;
+
+	public:
+		MMSProcessMonitor(unsigned int interval = 5);
+		~MMSProcessMonitor();
+		void commenceShutdown();
+		void addProcess(std::string process);
+		void addProcess(const char *process);
+		void threadMain();
+};
+
+#endif /* MMSPROCESSMONITOR_H_ */

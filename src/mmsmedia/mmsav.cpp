@@ -153,12 +153,14 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
         		userd->dest.w = userd->size.w;
         		userd->dest.h = newH;
         	}
-        	userd->dest.x = 0;
+        	userd->dest.x = (userd->size.w - userd->dest.w) / 2;;
         	userd->dest.y = (userd->size.h - userd->dest.h) / 2;
         }
 
         userd->lastaspect  = frame_aspect;
         /* clear surface */
+        userd->surf->clear();
+    	userd->surf->flip(NULL);
         userd->surf->clear();
 
         printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
