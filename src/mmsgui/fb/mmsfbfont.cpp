@@ -109,6 +109,10 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
 			return;
     	}
 
+    	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender >> 6;
+    	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender >> 6);
+    	this->height = this->ascender + this->descender + 1;
+
     	this->initialized = true;
 #endif
     }
@@ -149,10 +153,12 @@ bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
     	for (unsigned int i = 0; i < len; i++) {
 			if (FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)text[i]), FT_LOAD_RENDER))
 				break;
-			*width+=((FT_Face)this->ft_face)->glyph->bitmap_left + ((FT_Face)this->ft_face)->glyph->bitmap.width;
+			if (((FT_Face)this->ft_face)->glyph->format != ft_glyph_format_bitmap)
+				if (FT_Render_Glyph(((FT_Face)this->ft_face)->glyph, ft_render_mode_normal))
+					break;
+			*width+=((FT_Face)this->ft_face)->glyph->advance.x >> 6;
     	}
     	unlock();
-printf("font width %d\n", *width);
     	return true;
 #endif
     }
@@ -174,9 +180,8 @@ bool MMSFBFont::getHeight(int *height) {
     else {
 #ifdef  __HAVE_XLIB__
     	lock();
-    	*height = this->h;
+    	*height = this->height;
     	unlock();
-printf("font height %d\n", *height);
     	return true;
 #endif
     }

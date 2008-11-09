@@ -45,8 +45,20 @@ class MMSFBFont {
         //! font file
         string 	filename;
 
+        //! input width
     	int		w;
+
+    	//! input height
     	int 	h;
+
+    	//! ascender
+    	int 	ascender;
+
+    	//! descender
+    	int		descender;
+
+    	//! real height of one line
+    	int 	height;
 
     public:
         MMSFBFont(string filename, int w, int h);

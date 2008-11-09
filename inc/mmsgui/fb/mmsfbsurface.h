@@ -376,10 +376,7 @@ class MMSFBSurface {
 
 
 #ifdef __HAVE_XLIB__
-/*        void blit_charbitmap_to_argb(unsigned char *src_ptr, int src_pitch, int src_width, int src_height,
-									 unsigned int *dst_ptr, int dst_pitch, int x, int y);
-*/
-        void blit_text_to_argb(string &text, int len, int x, int y);
+        void blit_text_to_argb(DFBRegion *clipreg, string &text, int len, int x, int y);
         bool blit_text(string &text, int len, int x, int y);
 #endif
 
