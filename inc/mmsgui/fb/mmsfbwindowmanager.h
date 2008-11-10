@@ -45,6 +45,10 @@ typedef struct {
     MMSFBSurface    *saved_surface; /* copy of surface if window works direct on the layer */
 } VISIBLE_WINDOWS;
 
+//! Manager for MMSFBWindows will be instantiated once in an application.
+/*!
+\author Jens Schneider
+*/
 class MMSFBWindowManager {
     private:
         MMSFBLayer      *layer;         /* layer on which the windows will be drawn */

@@ -35,6 +35,10 @@ typedef struct {
     bool                shown;          /* is the window currently shown */
 } MMSFBWindowConfig;
 
+//! This class describes a window on a specific layer.
+/*!
+\author Jens Schneider
+*/
 class MMSFBWindow {
     private:
         IDirectFBWindow     *dfbwindow; /* dfb window if used */

@@ -25,6 +25,10 @@
 
 #include "mmsgui/fb/mmsfbbase.h"
 
+//! Font rendering class.
+/*!
+\author Jens Schneider
+*/
 class MMSFBFont {
     private:
         //! true if initialized

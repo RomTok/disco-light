@@ -48,6 +48,10 @@ typedef struct {
     string  surface_pixelformat;
 } MMSFBLayerConfig;
 
+//! This class describes a display layer.
+/*!
+\author Jens Schneider
+*/
 class MMSFBLayer {
     private:
     	// interface to the dfb layer

@@ -97,6 +97,10 @@ typedef struct {
 	int 	pitch3;
 } MMSFBExternalSurfaceBuffer;
 
+//! This class describes a surface.
+/*!
+\author Jens Schneider
+*/
 class MMSFBSurface {
     private:
         IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */

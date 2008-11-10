@@ -31,6 +31,10 @@
 
 #define MMSFBLAYER_MAXNUM 32
 
+//! The lowest layer to the backends like DFB or X11(XV).
+/*!
+\author Jens Schneider
+*/
 class MMSFB {
     private:
         int             argc;       /* commandline arguments */
