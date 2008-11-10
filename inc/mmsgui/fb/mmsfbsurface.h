@@ -408,7 +408,7 @@ class MMSFBSurface {
 
         MMSMutex  				Lock;       		/* to make it thread-safe */
         unsigned long       	TID;        		/* save the id of the thread which has locked the surface */
-        unsigned long       	Lock_cnt;   		/* count the number of times the thread has call lock() */
+        int       				Lock_cnt;   		/* count the number of times the thread has call lock() */
 
         bool					is_sub_surface;		/* is it a sub surface? */
         MMSFBSurface    		*parent;			/* parent surface in case of subsurface */

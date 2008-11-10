@@ -743,7 +743,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     if ((!config)&&(!this->is_sub_surface)) {
     	DEBUGMSG("MMSGUI", "Surface properties:");
 
-    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.surface_buffer->w) + "x" + iToStr(this->config.surface_buffer->h));
+    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
 	    if (this->config.surface_buffer->alphachannel)
 	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer->pixelformat + ",ALPHACHANNEL");

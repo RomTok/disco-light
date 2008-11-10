@@ -163,7 +163,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
         XRaiseWindow(this->x_display, this->x_window);
         XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
-        int CompletionType = XShmGetEventBase(this->x_display) + ShmCompletion;
+//        int CompletionType = XShmGetEventBase(this->x_display) + ShmCompletion;
 
         unsigned int num_adaptors;
         XvAdaptorInfo *ai;
@@ -292,6 +292,8 @@ bool MMSFB::refresh() {
     		suf->refresh();
 #endif
     }
+
+    return true;
 }
 
 bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {
