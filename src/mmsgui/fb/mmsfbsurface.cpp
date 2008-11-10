@@ -9804,11 +9804,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 	int 		  src_w; \
 	int 		  src_h; \
 	unsigned char *src; \
-	if (!FT_Load_Glyph((FT_Face)font->ft_face, FT_Get_Char_Index((FT_Face)font->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) \
-		glyph = ((FT_Face)font->ft_face)->glyph; else MMSFB_SetError(0, "FT_Load_Glyph() failed for " + font->filename); \
-	if (!((glyph)&&(glyph->format != ft_glyph_format_bitmap))) \
-		if (FT_Render_Glyph(glyph, ft_render_mode_normal)) { \
-			glyph = NULL; MMSFB_SetError(0, "FT_Render_Glyph() failed for " + font->filename); } \
+	glyph = (FT_GlyphSlotRec *)font->getGlyph(character); \
 	if (!((glyph)&&(glyph->bitmap.pixel_mode == ft_pixel_mode_grays))) { \
 		glyph = NULL; MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + font->filename); } \
 	else { \
