@@ -164,9 +164,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, int backbuffer, boo
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
-	this->config.surface_buffer.numbuffers = 0;
+    this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	this->config.surface_buffer->numbuffers = 0;
 #ifdef __HAVE_XLIB__
-    this->config.surface_buffer.xv_image[0] = NULL;
+    this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 	this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
@@ -214,9 +215,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, int backbuffer, boo
 	}
 	else {
 		// setup surface attributes
-		MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
-		sb->w = w;
-		sb->h = h;
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		this->config.w = sb->sbw = w;
+		this->config.h = sb->sbh = h;
 		sb->pixelformat = pixelformat;
 		sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 		sb->premultiplied = true;
@@ -235,7 +236,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, int backbuffer, boo
 			sb->currbuffer_write = 0;
 		sb->pitch = calcPitch(w);
 		for (int i = 0; i < sb->numbuffers; i++)
-			sb->buffers[i] = malloc(calcSize(sb->pitch, sb->h));
+			sb->buffers[i] = malloc(calcSize(sb->pitch, sb->sbh));
 
 		init((IDirectFBSurface*)1, NULL, NULL);
 	}
@@ -245,9 +246,16 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 	        		       MMSFBSurface *parent,
 						   DFBRectangle *sub_surface_rect) {
     // init me
-	this->config.surface_buffer.numbuffers = 0;
+    if ((!this->parent)||(!this->use_own_alloc))
+    	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+    else
+    	this->config.surface_buffer = NULL;
+
+   if (this->config.surface_buffer)
+	   this->config.surface_buffer->numbuffers = 0;
 #ifdef __HAVE_XLIB__
-    this->config.surface_buffer.xv_image[0] = NULL;
+    if (this->config.surface_buffer)
+    	this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 	if (dfbsurface > (IDirectFBSurface *)1)
 		this->use_own_alloc = false;
@@ -269,9 +277,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image1,
 	this->use_own_alloc = true;
 
     // setup surface attributes
-	MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
-	sb->w = w;
-	sb->h = h;
+	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+	this->config.w = sb->sbw = w;
+	this->config.h = sb->sbh = h;
 	sb->pixelformat = pixelformat;
 	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 	sb->premultiplied = true;
@@ -287,7 +296,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image1,
 	sb->currbuffer_read = 0;
 	sb->currbuffer_write = 1;
 	sb->pitch = *(sb->xv_image[0]->pitches);
-
 	init((IDirectFBSurface*)1, NULL, NULL);
 }
 #endif
@@ -416,15 +424,18 @@ void MMSFBSurface::freeSurfaceBuffer() {
 	this->dfbsurface = NULL;
 
 	//free my surface buffers
-	MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 #ifdef __HAVE_XLIB__
 	if (!sb->xv_image[0]) {
 #endif
-	for (int i = 0; i < sb->numbuffers; i++)
-		if (sb->buffers[i]) {
-			free(sb->buffers[i]);
-			sb->buffers[i] = NULL;
-		}
+	if (!this->is_sub_surface) {
+		for (int i = 0; i < sb->numbuffers; i++)
+			if (sb->buffers[i]) {
+				free(sb->buffers[i]);
+				sb->buffers[i] = NULL;
+			}
+		delete sb;
+	}
 #ifdef __HAVE_XLIB__
 	}
 #endif
@@ -451,7 +462,7 @@ void MMSFBSurface::deleteSubSurface(MMSFBSurface *surface) {
 
 int MMSFBSurface::calcPitch(int width) {
 
-    string pf = this->config.surface_buffer.pixelformat;
+    string pf = this->config.surface_buffer->pixelformat;
     int    pitch = width;
 
     if(pf == MMSFB_PF_ARGB1555)
@@ -526,7 +537,7 @@ int MMSFBSurface::calcPitch(int width) {
 
 int MMSFBSurface::calcSize(int pitch, int height) {
 
-    string pf = this->config.surface_buffer.pixelformat;
+    string pf = this->config.surface_buffer->pixelformat;
     int    size = pitch * height;
 
     if(pf == MMSFB_PF_I420)
@@ -644,20 +655,22 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 
 		/* get size */
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.surface_buffer.w), &(this->config.surface_buffer.h))) != DFB_OK) {
+			if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
 				return false;
 			}
+			this->config.surface_buffer->sbw = this->config.w;
+			this->config.surface_buffer->sbh = this->config.h;
 		}
 		else {
 #ifdef USE_DFB_SUBSURFACE
-			if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.surface_buffer.w), &(this->config.surface_buffer.h))) != DFB_OK) {
+			if ((dfbres=this->dfbsurface->GetSize(this->dfbsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
 				return false;
 			}
 #else
-			this->config.surface_buffer.w = this->sub_surface_rect.w;
-			this->config.surface_buffer.h = this->sub_surface_rect.h;
+			this->config.w = this->sub_surface_rect.w;
+			this->config.h = this->sub_surface_rect.h;
 #endif
 		}
 
@@ -668,8 +681,8 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 		}
 
 		/* build a format string */
-		this->config.surface_buffer.pixelformat = getDFBPixelFormatString(mypf);
-		this->config.surface_buffer.alphachannel = isAlphaPixelFormat(this->config.surface_buffer.pixelformat);
+		this->config.surface_buffer->pixelformat = getDFBPixelFormatString(mypf);
+		this->config.surface_buffer->alphachannel = isAlphaPixelFormat(this->config.surface_buffer->pixelformat);
 
 		/* get capabilities */
 		if ((dfbres=this->dfbsurface->GetCapabilities(this->dfbsurface, &caps)) != DFB_OK) {
@@ -681,17 +694,17 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	else {
 		/* get size */
 		if (this->is_sub_surface) {
-			this->config.surface_buffer.w = this->sub_surface_rect.w;
-			this->config.surface_buffer.h = this->sub_surface_rect.h;
+			this->config.w = this->sub_surface_rect.w;
+			this->config.h = this->sub_surface_rect.h;
 		}
 
 		/* get capabilities */
-		if (this->config.surface_buffer.premultiplied)
+		if (this->config.surface_buffer->premultiplied)
 			caps = (DFBSurfaceCapabilities)DSCAPS_PREMULTIPLIED;
 		else
 			caps = (DFBSurfaceCapabilities)0;
 
-		switch (this->config.surface_buffer.backbuffer) {
+		switch (this->config.surface_buffer->backbuffer) {
 		case 0:
 			break;
 		case 1:
@@ -702,25 +715,25 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			break;
 		}
 
-		if (this->config.surface_buffer.systemonly)
+		if (this->config.surface_buffer->systemonly)
 			caps = (DFBSurfaceCapabilities)(caps | DSCAPS_SYSTEMONLY);
 	}
 
     /* is it a premultiplied surface? */
-	this->config.surface_buffer.premultiplied = caps & DSCAPS_PREMULTIPLIED;
+	this->config.surface_buffer->premultiplied = caps & DSCAPS_PREMULTIPLIED;
 
     /* get the buffer mode */
-	this->config.surface_buffer.backbuffer = 0;
+	this->config.surface_buffer->backbuffer = 0;
     if (caps & DSCAPS_DOUBLE)
-    	this->config.surface_buffer.backbuffer = 1;
+    	this->config.surface_buffer->backbuffer = 1;
     else
     if (caps & DSCAPS_TRIPLE)
-    	this->config.surface_buffer.backbuffer = 2;
+    	this->config.surface_buffer->backbuffer = 2;
 
     /* system only? */
-    this->config.surface_buffer.systemonly = false;
+    this->config.surface_buffer->systemonly = false;
     if (caps & DSCAPS_SYSTEMONLY)
-    	this->config.surface_buffer.systemonly = true;
+    	this->config.surface_buffer->systemonly = true;
 
     /* fill return config */
     if (config)
@@ -730,12 +743,12 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     if ((!config)&&(!this->is_sub_surface)) {
     	DEBUGMSG("MMSGUI", "Surface properties:");
 
-    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.surface_buffer.w) + "x" + iToStr(this->config.surface_buffer.h));
+    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.surface_buffer->w) + "x" + iToStr(this->config.surface_buffer->h));
 
-	    if (this->config.surface_buffer.alphachannel)
-	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer.pixelformat + ",ALPHACHANNEL");
+	    if (this->config.surface_buffer->alphachannel)
+	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer->pixelformat + ",ALPHACHANNEL");
 	    else
-	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer.pixelformat);
+	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer->pixelformat);
 
 	    DEBUGMSG("MMSGUI", " capabilities:");
 
@@ -818,7 +831,7 @@ bool MMSFBSurface::getPixelFormat(string *pixelformat) {
     INITCHECK;
 
     /* return the pixelformat */
-    *pixelformat = this->config.surface_buffer.pixelformat;
+    *pixelformat = this->config.surface_buffer->pixelformat;
 
     return true;
 }
@@ -829,8 +842,8 @@ bool MMSFBSurface::getSize(int *w, int *h) {
     INITCHECK;
 
     /* return values */
-    *w = this->config.surface_buffer.w;
-    *h = this->config.surface_buffer.h;
+    *w = this->config.w;
+    *h = this->config.h;
 
     return true;
 }
@@ -845,8 +858,8 @@ bool MMSFBSurface::getMemSize(int *size) {
     	return false;
     *size = 0;
 
-    string pf = this->config.surface_buffer.pixelformat;
-    int    px = this->config.surface_buffer.pitch * this->config.surface_buffer.h * (this->config.surface_buffer.backbuffer+1);
+    string pf = this->config.surface_buffer->pixelformat;
+    int    px = this->config.surface_buffer->pitch * this->config.h * (this->config.surface_buffer->backbuffer+1);
 
     if(pf == MMSFB_PF_ARGB1555)
     	*size = px * 2;
@@ -928,7 +941,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
     bool 		ret = false;
 
     D_DEBUG_AT( MMS_Surface, "clear( argb %02x %02x %02x %02x ) <- %dx%d\n",
-                a, r, g, b, this->config.surface_buffer.w, this->config.surface_buffer.h );
+                a, r, g, b, this->config.surface_buffer->w, this->config.surface_buffer->h );
 
     MMSFB_TRACE();
     /* check if initialized */
@@ -936,7 +949,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-		if ((a < 0xff)&&(this->config.surface_buffer.premultiplied)) {
+		if ((a < 0xff)&&(this->config.surface_buffer->premultiplied)) {
 			// premultiplied surface, have to premultiply the color
 			register int aa = a + 1;
 			r = (aa * r) >> 8;
@@ -978,12 +991,12 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 		this->config.drawingflags = (MMSFBSurfaceDrawingFlags)DSDRAW_SRC_PREMULTIPLY;
 
 		if (!this->is_sub_surface) {
-			ret = extendedAccelFillRectangle(0, 0, this->config.surface_buffer.w, this->config.surface_buffer.h);
+			ret = extendedAccelFillRectangle(0, 0, this->config.w, this->config.h);
 		}
 		else {
 			CLIPSUBSURFACE
 
-			ret = extendedAccelFillRectangle(0, 0, this->config.surface_buffer.w, this->config.surface_buffer.h);
+			ret = extendedAccelFillRectangle(0, 0, this->config.w, this->config.h);
 			UNCLIPSUBSURFACE
 		}
 
@@ -1097,8 +1110,8 @@ bool MMSFBSurface::getClip(DFBRegion *clip) {
     else {
     	clip->x1 = 0;
     	clip->y1 = 0;
-    	clip->x2 = this->config.surface_buffer.w - 1;
-    	clip->y2 = this->config.surface_buffer.h - 1;
+    	clip->x2 = this->config.w - 1;
+    	clip->y2 = this->config.h - 1;
     }
 
 	return true;
@@ -1237,7 +1250,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     bool		ret = false;
 
     D_DEBUG_AT( MMS_Surface, "fill( %d,%d - %dx%d ) <- %dx%d, %02x %02x %02x %02x\n",
-                x, y, w, h, this->config.surface_buffer.w, this->config.surface_buffer.h,
+                x, y, w, h, this->config.surface_buffer->w, this->config.surface_buffer->h,
                 this->config.color.a, this->config.color.r, this->config.color.g, this->config.color.b );
 
     MMSFB_TRACE();
@@ -1435,7 +1448,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBSurfaceBlittingFlags flags) {
 #ifdef  __HAVE_DIRECTFB__
 		if ((flags & DSBLIT_BLEND_ALPHACHANNEL)||(flags & DSBLIT_BLEND_COLORALPHA)) {
 			/* if we do alpha channel blitting, we have to change the default settings to become correct results */
-			if (this->config.surface_buffer.alphachannel)
+			if (this->config.surface_buffer->alphachannel)
 				dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)DSBF_ONE);
 			else
 				dfbsurface->SetSrcBlendFunction(dfbsurface,(DFBSurfaceBlendFunction)DSBF_SRCALPHA);
@@ -1516,8 +1529,8 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	if (source) {
 		printf("  source type:             %s\n", (source->is_sub_surface)?"subsurface":"surface");
 		printf("  source memory:           %s\n", (source->use_own_alloc)?"managed by disko":"managed by dfb");
-		printf("  source pixelformat:      %s\n", source->config.surface_buffer.pixelformat.c_str());
-		printf("  source premultiplied:    %s\n", (source->config.surface_buffer.premultiplied)?"yes":"no");
+		printf("  source pixelformat:      %s\n", source->config.surface_buffer->pixelformat.c_str());
+		printf("  source premultiplied:    %s\n", (source->config.surface_buffer->premultiplied)?"yes":"no");
 	}
 	if (extbuf) {
 		printf("  source type:             surface\n");
@@ -1532,7 +1545,7 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	}
 	printf("  destination type:        %s\n", (this->is_sub_surface)?"subsurface":"surface");
 	printf("  destination memory:      %s\n", (this->use_own_alloc)?"managed by disko":"managed by dfb");
-	printf("  destination pixelformat: %s\n", this->config.surface_buffer.pixelformat.c_str());
+	printf("  destination pixelformat: %s\n", this->config.surface_buffer->pixelformat.c_str());
 	printf("  destination color:       r=%d, g=%d, b=%d, a=%d\n",
 						this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
 	if ((source)||(extbuf)) {
@@ -5554,12 +5567,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	MMSFBExternalSurfaceBuffer myextbuf;
 	if (source) {
 		// premultiplied surface?
-		if (!source->config.surface_buffer.premultiplied)
+		if (!source->config.surface_buffer->premultiplied)
 			return false;
 
-		src_pixelformat = source->config.surface_buffer.pixelformat;
-		src_width = (!source->root_parent)?source->config.surface_buffer.w:source->root_parent->config.surface_buffer.w;
-		src_height = (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h;
+		src_pixelformat = source->config.surface_buffer->pixelformat;
+		src_width = (!source->root_parent)?source->config.w:source->root_parent->config.w;
+		src_height = (!source->root_parent)?source->config.h:source->root_parent->config.h;
 		memset(&myextbuf, 0, sizeof(MMSFBExternalSurfaceBuffer));
 	}
 	else
@@ -5580,8 +5593,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		if (!this->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->config.surface_buffer.w - 1;
-			clipreg.y2 = this->config.surface_buffer.h - 1;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
 		}
 		else
 			clipreg = this->config.clip;
@@ -5592,8 +5605,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		if (!this->root_parent->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->root_parent->config.surface_buffer.w - 1;
-			clipreg.y2 = this->root_parent->config.surface_buffer.h - 1;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
 		}
 		else
 			clipreg = this->root_parent->config.clip;
@@ -5634,14 +5647,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	// checking pixelformats...
 	if (src_pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_argb_to_argb(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5655,7 +5668,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_argb_to_argb(&myextbuf, src_height,
 										   sx, sy, sw, sh,
-										   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5670,7 +5683,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_srcalpha_argb_to_argb(&myextbuf, src_height,
 										   			sx, sy, sw, sh,
-										   			(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   			(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   			x, y,
 										   			this->config.color.a);
 					extendedUnlock(source, this);
@@ -5684,14 +5697,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AiRGB) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_argb_to_airgb(&myextbuf, src_height,
 										    sx, sy, sw, sh,
-										    (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										    (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										    x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5704,14 +5717,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_RGB16) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_argb_to_rgb16(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5724,7 +5737,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_argb_to_rgb16(&myextbuf, src_height,
 											sx, sy, sw, sh,
-										    (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										    (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										    x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5741,14 +5754,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_argb_to_yv12(&myextbuf, src_height,
 										   sx, sy, sw, sh,
-										   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5763,7 +5776,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_srcalpha_argb_to_yv12(&myextbuf, src_height,
 										   			sx, sy, sw, sh,
-										   			(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   			(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   			x, y,
 										   			this->config.color.a);
 					extendedUnlock(source, this);
@@ -5783,14 +5796,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_RGB16) {
 		// source is RGB16 (RGB565)
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_RGB16) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_rgb16_to_rgb16(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5809,14 +5822,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_AiRGB) {
 		// source is AiRGB
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AiRGB) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_airgb_to_airgb(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5830,7 +5843,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_airgb_to_airgb(&myextbuf, src_height,
 										   	 sx, sy, sw, sh,
-										     (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										     (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										     x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5845,7 +5858,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_srcalpha_airgb_to_airgb(&myextbuf, src_height,
 										   			  sx, sy, sw, sh,
-										   			  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   			  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   			  x, y,
 										   			  this->config.color.a);
 					extendedUnlock(source, this);
@@ -5859,14 +5872,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_RGB16) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_airgb_to_rgb16(&myextbuf, src_height,
 									    sx, sy, sw, sh,
-									    (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									    (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									    x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5880,7 +5893,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_airgb_to_rgb16(&myextbuf, src_height,
 											 sx, sy, sw, sh,
-										     (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										     (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										     x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5899,14 +5912,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_AYUV) {
 		// source is AYUV
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AYUV) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_ayuv_to_ayuv(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5920,7 +5933,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_ayuv_to_ayuv(&myextbuf, src_height,
 										   sx, sy, sw, sh,
-										   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5935,7 +5948,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_srcalpha_ayuv_to_ayuv(&myextbuf, src_height,
 										   			sx, sy, sw, sh,
-										   			(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   			(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   			x, y,
 										   			this->config.color.a);
 					extendedUnlock(source, this);
@@ -5949,14 +5962,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_RGB16) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_ayuv_to_rgb16(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5970,7 +5983,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_ayuv_to_rgb16(&myextbuf, src_height,
 											sx, sy, sw, sh,
-										    (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										    (unsigned short int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										    x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -5983,14 +5996,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_ayuv_to_yv12(&myextbuf, src_height,
 										   sx, sy, sw, sh,
-										   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -6005,7 +6018,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_blend_srcalpha_ayuv_to_yv12(&myextbuf, src_height,
 										   			sx, sy, sw, sh,
-										   			(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+										   			(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										   			x, y,
 										   			this->config.color.a);
 					extendedUnlock(source, this);
@@ -6025,14 +6038,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_YV12) {
 		// source is YV12
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_yv12_to_yv12(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -7620,12 +7633,12 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	MMSFBExternalSurfaceBuffer myextbuf;
 	if (source) {
 		// premultiplied surface?
-		if (!source->config.surface_buffer.premultiplied)
+		if (!source->config.surface_buffer->premultiplied)
 			return false;
 
-		src_pixelformat = source->config.surface_buffer.pixelformat;
-		src_width = (!source->root_parent)?source->config.surface_buffer.w:source->root_parent->config.surface_buffer.w;
-		src_height = (!source->root_parent)?source->config.surface_buffer.h:source->root_parent->config.surface_buffer.h;
+		src_pixelformat = source->config.surface_buffer->pixelformat;
+		src_width = (!source->root_parent)?source->config.w:source->root_parent->config.w;
+		src_height = (!source->root_parent)?source->config.h:source->root_parent->config.h;
 		memset(&myextbuf, 0, sizeof(MMSFBExternalSurfaceBuffer));
 	}
 	else
@@ -7656,8 +7669,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		if (!this->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->config.surface_buffer.w - 1;
-			clipreg.y2 = this->config.surface_buffer.h - 1;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
 		}
 		else
 			clipreg = this->config.clip;
@@ -7668,8 +7681,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		if (!this->root_parent->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->root_parent->config.surface_buffer.w - 1;
-			clipreg.y2 = this->root_parent->config.surface_buffer.h - 1;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
 		}
 		else
 			clipreg = this->root_parent->config.clip;
@@ -7741,14 +7754,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	// checking pixelformats...
 	if (src_pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_blend_argb_to_argb(&myextbuf, src_height,
 											sx, sy, sw, sh,
-											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											dx, dy, dw, dh);
 					extendedUnlock(source, this);
 
@@ -7763,7 +7776,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_blend_srcalpha_argb_to_argb(&myextbuf, src_height,
 													 sx, sy, sw, sh,
-													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 													 dx, dy, dw, dh,
 													 this->config.color.a);
 					extendedUnlock(source, this);
@@ -7783,14 +7796,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_AiRGB) {
 		// source is AiRGB
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AiRGB) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_blend_airgb_to_airgb(&myextbuf, src_height,
 											  sx, sy, sw, sh,
-											  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+											  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											  dx, dy, dw, dh);
 					extendedUnlock(source, this);
 
@@ -7805,7 +7818,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_blend_srcalpha_airgb_to_airgb(&myextbuf, src_height,
 													   sx, sy, sw, sh,
-													   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+													   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 													   dx, dy, dw, dh,
 													   this->config.color.a);
 					extendedUnlock(source, this);
@@ -7825,14 +7838,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_AYUV) {
 		// source is AYUV
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_AYUV) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_blend_ayuv_to_ayuv(&myextbuf, src_height,
 											sx, sy, sw, sh,
-											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+											(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											dx, dy, dw, dh);
 					extendedUnlock(source, this);
 
@@ -7847,7 +7860,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_blend_srcalpha_ayuv_to_ayuv(&myextbuf, src_height,
 													 sx, sy, sw, sh,
-													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 													 dx, dy, dw, dh,
 													 this->config.color.a);
 					extendedUnlock(source, this);
@@ -7869,14 +7882,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_YV12) {
 		// source is YV12
-		if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if (this->config.blittingflags == (MMSFBSurfaceBlittingFlags)DSBLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eASB_yv12_to_yv12(&myextbuf, src_height,
 									   sx, sy, sw, sh,
-									   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h,
+									   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 									   dx, dy, dw, dh);
 					extendedUnlock(source, this);
 					return true;
@@ -8707,7 +8720,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	int sw = w;
 	int sh = h;
 	DFBRegion clipreg;
-	int dst_height = (!this->root_parent)?this->config.surface_buffer.h:this->root_parent->config.surface_buffer.h;
+	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
 
 #ifndef USE_DFB_SUBSURFACE
 	if (!this->is_sub_surface) {
@@ -8716,8 +8729,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		if (!this->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->config.surface_buffer.w - 1;
-			clipreg.y2 = this->config.surface_buffer.h - 1;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
 		}
 		else
 			clipreg = this->config.clip;
@@ -8728,8 +8741,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		if (!this->root_parent->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->root_parent->config.surface_buffer.w - 1;
-			clipreg.y2 = this->root_parent->config.surface_buffer.h - 1;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
 		}
 		else
 			clipreg = this->root_parent->config.clip;
@@ -8779,7 +8792,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	}
 
 	// checking pixelformats...
-	if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 		// destination is ARGB
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
@@ -8811,7 +8824,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		return false;
 	}
 	else
-	if (this->config.surface_buffer.pixelformat == MMSFB_PF_AYUV) {
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 		// destination is AYUV
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
@@ -8843,7 +8856,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		return false;
 	}
 	else
-	if (this->config.surface_buffer.pixelformat == MMSFB_PF_RGB16) {
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 		// destination is RGB16 (RGB565)
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
@@ -8862,7 +8875,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		return false;
 	}
 	else
-	if (this->config.surface_buffer.pixelformat == MMSFB_PF_YV12) {
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 		// destination is YV12
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
@@ -8911,12 +8924,12 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
     else {
          src.x = 0;
          src.y = 0;
-         src.w = source->config.surface_buffer.w;
-         src.h = source->config.surface_buffer.h;
+         src.w = source->config.w;
+         src.h = source->config.h;
     }
 
     D_DEBUG_AT( MMS_Surface, "blit( %d,%d - %dx%d -> %d,%d ) <- %dx%d\n",
-                DFB_RECTANGLE_VALS(&srcr), x, y, this->config.surface_buffer.w, this->config.surface_buffer.h );
+                DFB_RECTANGLE_VALS(&srcr), x, y, this->config.w, this->config.h );
 
     MMSFB_TRACE();
 
@@ -9052,8 +9065,8 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
     else {
          src.x = 0;
          src.y = 0;
-         src.w = source->config.surface_buffer.w;
-         src.h = source->config.surface_buffer.h;
+         src.w = source->config.w;
+         src.h = source->config.h;
     }
 
     if (dest_rect) {
@@ -9062,12 +9075,12 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
     else {
          dst.x = 0;
          dst.y = 0;
-         dst.w = this->config.surface_buffer.w;
-         dst.h = this->config.surface_buffer.h;
+         dst.w = this->config.w;
+         dst.h = this->config.h;
     }
 
     D_DEBUG_AT( MMS_Surface, "stretchBlit( %d,%d - %dx%d  ->  %d,%d - %dx%d ) <- %dx%d\n",
-                DFB_RECTANGLE_VALS(&src), DFB_RECTANGLE_VALS(&dst), this->config.surface_buffer.w, this->config.surface_buffer.h);
+                DFB_RECTANGLE_VALS(&src), DFB_RECTANGLE_VALS(&dst), this->config.w, this->config.h);
 
     /* check if i can blit without stretching */
     if (src.w == dst.w && src.h == dst.h)
@@ -9268,8 +9281,8 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string 
     else {
          dst.x = 0;
          dst.y = 0;
-         dst.w = this->config.surface_buffer.w;
-         dst.h = this->config.surface_buffer.h;
+         dst.w = this->config.w;
+         dst.h = this->config.h;
     }
 
     // check if i can blit without stretching
@@ -9364,8 +9377,8 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 				if (!region) {
 					myregion.x1 = 0;
 					myregion.y1 = 0;
-					myregion.x2 = this->config.surface_buffer.w - 1;
-					myregion.y2 = this->config.surface_buffer.h - 1;
+					myregion.x2 = this->config.w - 1;
+					myregion.y2 = this->config.h - 1;
 				}
 				else
 					myregion = *region;
@@ -9401,7 +9414,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 	}
 	else {
 		// flip my own surfaces
-		MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		if (sb->numbuffers > 1) {
 			// flip is only needed, if we have at least one backbuffer
 			if (!this->config.islayersurface) {
@@ -9426,7 +9439,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 
 						// check if region is equal to the whole surface
 						if   ((src_rect.x == 0) && (src_rect.y == 0)
-							&&(src_rect.w == this->config.surface_buffer.w) && (src_rect.h == this->config.surface_buffer.h)) {
+							&&(src_rect.w == this->config.w) && (src_rect.h == this->config.h)) {
 							// yes, flip my buffers without blitting
 							sb->currbuffer_read++;
 							if (sb->currbuffer_read >= sb->numbuffers)
@@ -9455,8 +9468,8 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 					if (!region) {
 						src_rect.x = 0;
 						src_rect.y = 0;
-						src_rect.w = this->config.surface_buffer.w;
-						src_rect.h = this->config.surface_buffer.h;
+						src_rect.w = this->config.w;
+						src_rect.h = this->config.h;
 					}
 					else {
 						src_rect.x = region->x1;
@@ -9512,7 +9525,7 @@ bool MMSFBSurface::refresh() {
 	}
 	else {
 #ifdef __HAVE_XLIB__
-		MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
 			this->lock();
@@ -9546,12 +9559,12 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
 
     *dstsurface = NULL;
 
-    if (!w) w = config.surface_buffer.w;
-    if (!h) h = config.surface_buffer.h;
+    if (!w) w = config.w;
+    if (!h) h = config.h;
 
     /* create new surface */
-    if (!mmsfb->createSurface(dstsurface, w, h, this->config.surface_buffer.pixelformat,
-                             (withbackbuffer)?this->config.surface_buffer.backbuffer:0,this->config.surface_buffer.systemonly)) {
+    if (!mmsfb->createSurface(dstsurface, w, h, this->config.surface_buffer->pixelformat,
+                             (withbackbuffer)?this->config.surface_buffer->backbuffer:0,this->config.surface_buffer->systemonly)) {
         if (*dstsurface)
             delete *dstsurface;
         *dstsurface = NULL;
@@ -9609,7 +9622,7 @@ bool MMSFBSurface::resize(int w, int h) {
 		}
 		else {
 			// move the surface buffer data
-			MMSFBSurfaceBuffer sb = this->config.surface_buffer;
+			MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 			this->config.surface_buffer = dstsurface->config.surface_buffer;
 			dstsurface->config.surface_buffer = sb;
 
@@ -9721,7 +9734,7 @@ bool MMSFBSurface::setDrawingFlagsByAlpha(unsigned char alpha) {
     INITCHECK;
 
     // set the drawing flags
-    if (this->config.surface_buffer.premultiplied) {
+    if (this->config.surface_buffer->premultiplied) {
     	// premultiplied surface, have to premultiply the color
 	    if (alpha == 255)
 	        setDrawingFlags((MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY));
@@ -10043,8 +10056,8 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if (!this->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->config.surface_buffer.w - 1;
-			clipreg.y2 = this->config.surface_buffer.h - 1;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
 		}
 		else
 			clipreg = this->config.clip;
@@ -10055,8 +10068,8 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if (!this->root_parent->config.clipped) {
 			clipreg.x1 = 0;
 			clipreg.y1 = 0;
-			clipreg.x2 = this->root_parent->config.surface_buffer.w - 1;
-			clipreg.y2 = this->root_parent->config.surface_buffer.h - 1;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
 		}
 		else
 			clipreg = this->root_parent->config.clip;
@@ -10075,7 +10088,7 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 	}
 
 	// checking pixelformats...
-	if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 		// destination is ARGB
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
@@ -10189,7 +10202,7 @@ void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch, boo
 				// get the access to the surface buffer
 				*ptr = NULL;
 				*pitch = 0;
-				MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+				MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 				if ((DFBSurfaceLockFlags)flags == DSLF_READ) {
 					*ptr = sb->buffers[sb->currbuffer_read];
 					*pitch = sb->pitch;
@@ -10269,7 +10282,7 @@ void MMSFBSurface::lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch, boo
 			// get the access to the surface buffer
 			*ptr = NULL;
 			*pitch = 0;
-			MMSFBSurfaceBuffer *sb = &this->config.surface_buffer;
+			MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 			if ((DFBSurfaceLockFlags)flags == DSLF_READ) {
 				if (!tolock->surface_read_locked) {
 					*ptr = sb->buffers[sb->currbuffer_read];

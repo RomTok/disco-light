@@ -43,8 +43,8 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelforma
     /* searching for free surface */
     for (unsigned int i = 0; i < this->free_surfaces.size(); i++) {
         surface = free_surfaces.at(i).surface;
-        MMSFBSurfaceBuffer *sb = &surface->config.surface_buffer;
-        if   ((sb->w == w) && (sb->h == h)
+        MMSFBSurfaceBuffer *sb = surface->config.surface_buffer;
+        if   ((surface->config.w == w) && (surface->config.h == h)
             &&(sb->pixelformat == pixelformat) && (sb->backbuffer == backbuffer)) {
             /* found, return it */
             this->free_surfaces.erase(this->free_surfaces.begin()+i);

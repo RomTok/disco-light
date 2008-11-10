@@ -46,9 +46,9 @@ typedef enum {
 
 typedef struct {
 	//! width
-    int     w;
+    int     sbw;
     //! height
-    int     h;
+    int     sbh;
     //! pixel format
     string  pixelformat;
     //! the pixel format has alphachannel
@@ -59,7 +59,7 @@ typedef struct {
     int     backbuffer;
     //! true, if surface is stored in system memory
     bool	systemonly;
-
+    //! real storage
     void	*buffers[MMSFBSurfaceMaxBuffers];
     int 	numbuffers;
     int 	currbuffer_read;
@@ -71,20 +71,29 @@ typedef struct {
 } MMSFBSurfaceBuffer;
 
 typedef struct {
-    MMSFBColor  	color;          /* color for drawing/blitting */
-    bool			clipped;		/* is a clip region set? */
-    DFBRegion		clip;			/* current clip region */
-    bool        	iswinsurface;   /* the surface is a window surface */
-    bool        	islayersurface; /* the surface is the layer surface */
-                                	/* note: for example it is possible to have */
-                                	/*       a window surface in combination with */
-                                	/*       this layer flag */
-    MMSFBSurfaceDrawingFlags 	drawingflags;	/* drawing flags */
-    MMSFBSurfaceBlittingFlags 	blittingflags;	/* blitting flags */
-    MMSFBFont					*font;			/* font */
-
+	//! width
+    int     w;
+    //! height
+    int     h;
+    //! color for drawing/blitting
+    MMSFBColor  	color;
+    //! is a clip region set?
+    bool			clipped;
+    //! current clip region
+    DFBRegion		clip;
+    //! the surface is a window surface
+    bool        	iswinsurface;
+    //! the surface is the layer surface
+    //!note: for example it is possible to have a window surface in combination with this layer flag
+    bool        	islayersurface;
+    //! drawing flags
+    MMSFBSurfaceDrawingFlags 	drawingflags;
+    //! blitting flags
+    MMSFBSurfaceBlittingFlags 	blittingflags;
+    //! font
+    MMSFBFont					*font;
     //! the surface buffer(s)
-    MMSFBSurfaceBuffer	surface_buffer;
+    MMSFBSurfaceBuffer	*surface_buffer;
 } MMSFBSurfaceConfig;
 
 

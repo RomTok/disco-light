@@ -436,8 +436,8 @@ bool MMSFBWindow::getSize(int *w, int *h) {
     INITCHECK;
 
     /* return the size */
-    *w = this->config.surface_config.surface_buffer.w;
-    *h = this->config.surface_config.surface_buffer.h;
+    *w = this->config.surface_config.w;
+    *h = this->config.surface_config.h;
 
     return true;
 }
