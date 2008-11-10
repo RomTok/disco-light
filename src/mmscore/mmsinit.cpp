@@ -131,7 +131,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             DEBUGMSG("Core", "Extended acceleration:        no");
 
 
-        if(flags & MMSINIT_GRAPHICS || flags == MMSINIT_FULL) {
+        if(flags & MMSINIT_GRAPHICS) {
             DEBUGMSG("Core", "initialize frame buffer");
 
             mmsfbmanager.init(argc,argv);
@@ -139,7 +139,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 
             DEBUGMSG("Core", "starting theme manager");
             themeManager = new MMSThemeManager(config->getData(),config->getTheme());
-            if(flags & MMSINIT_WINDOWMANAGER || flags == MMSINIT_FULL) {
+            if(flags & MMSINIT_WINDOWMANAGER) {
                 DEBUGMSG("Core", "starting window manager");
                 DFBRectangle vrect;
                 vrect.x = config->getVRect().x;
@@ -180,7 +180,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             }
         }
 
-        if(flags & MMSINIT_PLUGINMANAGER || flags == MMSINIT_FULL) {
+        if(flags & MMSINIT_PLUGINMANAGER) {
 	        DEBUGMSG("Core", "creating PluginManager");
 	        pluginmanager = new MMSPluginManager();
 
@@ -200,7 +200,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 	        pluginmanager->initializeImportPlugins();
         }
 
-        if(flags & MMSINIT_EVENTS || flags == MMSINIT_FULL) {
+        if(flags & MMSINIT_EVENTS) {
 
         	DEBUGMSG("Core", "creating EventSignupManager");
         	eventsignupmanager = new MMSEventSignupManager();
@@ -224,7 +224,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
 //        soundmanager = new MMSMusicManager();
 
 		/* here must be a barrier implemented */
-        if(flags & MMSINIT_INPUTS && flags & MMSINIT_GRAPHICS || flags & MMSINIT_FULL ) {
+        if((flags & MMSINIT_INPUTS) && (flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "wait for inputs");
             inputs->startListen();
 
