@@ -80,6 +80,11 @@ bool MMSFBSurface::firsttime_eAFR_ayuv							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_ayuv					= true;
 bool MMSFBSurface::firsttime_eAFR_yv12							= true;
 
+#ifdef __HAVE_XLIB__
+bool MMSFBSurface::firsttime_blend_text_to_argb					= true;
+bool MMSFBSurface::firsttime_blend_text_srcalpha_to_argb		= true;
+#endif
+
 
 
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->dfbsurface)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
@@ -1551,14 +1556,14 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 		printf("\n");
 	}
 	else {
-		printf("  drawing flags (%06x): ");
+		printf("  drawing flags (%06x): ", this->config.drawingflags);
 		if (this->config.drawingflags == DSDRAW_NOFX)
 			printf(" NOFX");
-		if (this->config.drawingflags == DSDRAW_BLEND)
+		if (this->config.drawingflags & DSDRAW_BLEND)
 			printf(" BLEND");
-		if (this->config.drawingflags == DSDRAW_SRC_PREMULTIPLY)
+		if (this->config.drawingflags & DSDRAW_SRC_PREMULTIPLY)
 			printf(" SRC_PREMULTIPLY");
-		if (this->config.drawingflags == DSDRAW_DST_PREMULTIPLY)
+		if (this->config.drawingflags & DSDRAW_DST_PREMULTIPLY)
 			printf(" DST_PREMULTIPLY");
 		printf("\n");
 	}
@@ -9783,12 +9788,13 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 
 #ifdef __HAVE_XLIB__
 
-#define MMSFBSURFACE_BLIT_TEXT_LOCK \
+#define MMSFBSURFACE_BLIT_TEXT_LOCK(pw) \
 	MMSFBFont *font = this->config.font; \
 	font->lock(); \
 	int DY = font->height - font->descender - 1; \
 	void *ptr; int dst_pitch; \
-	this->lock((MMSFBSurfaceLockFlags)DSLF_WRITE, &ptr, &dst_pitch);
+	this->lock((MMSFBSurfaceLockFlags)DSLF_WRITE, &ptr, &dst_pitch); \
+	int dst_pitch_pix = dst_pitch >> pw;
 
 #define MMSFBSURFACE_BLIT_TEXT_UNLOCK this->unlock(); font->unlock();
 
@@ -9797,7 +9803,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 	int			  src_pitch_pix; \
 	int 		  src_w; \
 	int 		  src_h; \
-	unsigned char *src_ptr; \
+	unsigned char *src; \
 	if (!FT_Load_Glyph((FT_Face)font->ft_face, FT_Get_Char_Index((FT_Face)font->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) \
 		glyph = ((FT_Face)font->ft_face)->glyph; else MMSFB_SetError(0, "FT_Load_Glyph() failed for " + font->filename); \
 	if (!((glyph)&&(glyph->format != ft_glyph_format_bitmap))) \
@@ -9809,56 +9815,217 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 		src_pitch_pix = glyph->bitmap.pitch; \
 		src_w         = glyph->bitmap.width; \
 		src_h         = glyph->bitmap.rows; \
-		src_ptr       = glyph->bitmap.buffer; \
+		src           = glyph->bitmap.buffer; \
 	}
 
-#define MMSFBSURFACE_BLIT_TEXT_START_RENDER \
+#define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
 	if (glyph) { \
-		if   (((x + src_w > clipreg->x1)&&(x <= clipreg->x2)) \
-			&&((y + src_h > clipreg->y1)&&(y <= clipreg->y2))) { \
+		if   (((x + src_w > clipreg.x1)&&(x <= clipreg.x2)) \
+			&&((y + src_h > clipreg.y1)&&(y <= clipreg.y2))) { \
 			int dx = x; \
 			int dy = y + DY - glyph->bitmap_top; \
-			if (dx < clipreg->x1) { \
-				src_w  -= clipreg->x1 - dx; \
-				src_ptr+= clipreg->x1 - dx; \
-				dx      = clipreg->x1; } \
-			if (dx + src_w - 1 > clipreg->x2) src_w = clipreg->x2 - dx + 1; \
-			if (dy < clipreg->y1) { \
-				src_h  -= clipreg->y1 - dy; \
-				src_ptr+=(clipreg->y1 - dy) * src_pitch_pix; \
-				dy      = clipreg->y1; } \
-			if (dy + src_h - 1 > clipreg->y2) src_h = clipreg->y2 - dy + 1; \
-			unsigned char *src_end = src_ptr + src_h * src_pitch_pix; \
-			unsigned char *line_end = src_ptr + src_w; \
+			if (dx < clipreg.x1) { \
+				src_w -= clipreg.x1 - dx; \
+				src   += clipreg.x1 - dx; \
+				dx     = clipreg.x1; } \
+			if (dx + src_w - 1 > clipreg.x2) src_w = clipreg.x2 - dx + 1; \
+			if (dy < clipreg.y1) { \
+				src_h -= clipreg.y1 - dy; \
+				src   +=(clipreg.y1 - dy) * src_pitch_pix; \
+				dy     = clipreg.y1; } \
+			if (dy + src_h - 1 > clipreg.y2) src_h = clipreg.y2 - dy + 1; \
+			unsigned char *src_end = src + src_h * src_pitch_pix; \
+			unsigned char *line_end = src + src_w; \
 			int src_pitch_pix_diff = src_pitch_pix - src_w; \
-			int dst_pitch_pix_diff = dst_pitch_pix - src_w;
+			int dst_pitch_pix_diff = dst_pitch_pix - src_w; \
+			pt *dst = ((pt *)ptr) + dx + dy * dst_pitch_pix;
 
 #define MMSFBSURFACE_BLIT_TEXT_END_RENDER } x+=glyph->advance.x >> 6; }
 
 
-void MMSFBSurface::blit_text_to_argb(DFBRegion *clipreg, string &text, int len, int x, int y) {
-	// lock font and destination surface
-	MMSFBSURFACE_BLIT_TEXT_LOCK;
-	int dst_pitch_pix = dst_pitch >> 2;
 
+void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
+
+	// first time?
+	if (firsttime_blend_text_to_argb) {
+		printf("DISKO: Using blend text to ARGB.\n");
+		firsttime_blend_text_to_argb = false;
+	}
+
+	// lock font and destination surface
+	MMSFBSURFACE_BLIT_TEXT_LOCK(2);
+
+	// for all characters
+	unsigned int OLDDST = 0;
+	unsigned int OLDSRC = 0;
+	register unsigned int d = 0;
+	register unsigned int SRCPIX = 0xff000000 | (((unsigned int)color.r) << 16) | (((unsigned int)color.g) << 8) | (unsigned int)color.b;
 	for (unsigned int cnt = 0; cnt < text.size(); cnt++) {
 		// load the glyph
 		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(text[cnt]);
 
 		// start rendering of glyph to destination
-		MMSFBSURFACE_BLIT_TEXT_START_RENDER;
+		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned int);
 
-		unsigned int *dst_ptr = ((unsigned int *)ptr) + dx + dy * dst_pitch_pix;
+		// through the pixels
+		while (src < src_end) {
+			while (src < line_end) {
+				// load pixel from memory
+				register unsigned int SRC = *src;
 
-		while (src_ptr < src_end) {
-			while (src_ptr < line_end) {
-				*dst_ptr = (*src_ptr << 24) | 0xFFFFFF;
-				src_ptr++;
-				dst_ptr++;
+				// is the source alpha channel 0x00 or 0xff?
+				register unsigned int A = SRC;
+				if (A == 0xff) {
+					// source pixel is not transparent, copy it directly to the destination
+					*dst = SRCPIX;
+				}
+				else
+				if (A) {
+					// source alpha is > 0x00 and < 0xff
+					register unsigned int DST = *dst;
+
+					if ((DST==OLDDST)&&(SRC==OLDSRC)) {
+						// same pixel, use the previous value
+						*dst = d;
+					    dst++;
+					    src++;
+						continue;
+					}
+					OLDDST = DST;
+					OLDSRC = SRC;
+
+					register unsigned int SA= 0x100 - A;
+					unsigned int a = DST >> 24;
+					unsigned int r = (DST << 8) >> 24;
+					unsigned int g = (DST << 16) >> 24;
+					unsigned int b = DST & 0xff;
+
+					// invert src alpha
+				    a = (SA * a) >> 8;
+				    r = (SA * r) >> 8;
+				    g = (SA * g) >> 8;
+				    b = (SA * b) >> 8;
+
+				    // add src to dst
+				    a += A;
+				    A++;
+				    r += (A * color.r) >> 8;
+				    g += (A * color.g) >> 8;
+				    b += (A * color.b) >> 8;
+				    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+						| ((r >> 8) ? 0xff0000   : (r << 16))
+						| ((g >> 8) ? 0xff00     : (g << 8))
+				    	| ((b >> 8) ? 0xff 		 :  b);
+					*dst = d;
+				}
+
+				src++;
+				dst++;
 			}
 			line_end+= src_pitch_pix;
-			src_ptr += src_pitch_pix_diff;
-			dst_ptr += dst_pitch_pix_diff;
+			src     += src_pitch_pix_diff;
+			dst     += dst_pitch_pix_diff;
+		}
+
+		// prepare for next loop
+		MMSFBSURFACE_BLIT_TEXT_END_RENDER;
+
+	}
+
+	// unlock
+	MMSFBSURFACE_BLIT_TEXT_UNLOCK;
+}
+
+void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
+
+	// check for full alpha value
+	if (color.a == 0xff) {
+		// max alpha is specified, so i can ignore it and use faster routine
+		blend_text_to_argb(clipreg, text, len, x, y, color);
+		return;
+	}
+
+	// first time?
+	if (firsttime_blend_text_srcalpha_to_argb) {
+		printf("DISKO: Using blend text srcalpha to ARGB.\n");
+		firsttime_blend_text_srcalpha_to_argb = false;
+	}
+
+	// something to do?
+	if (!color.a)
+		// source should blitted full transparent, so leave destination as is
+		return;
+
+	// lock font and destination surface
+	MMSFBSURFACE_BLIT_TEXT_LOCK(2);
+
+	// for all characters
+	unsigned int OLDDST = 0;
+	unsigned int OLDSRC = 0;
+	register unsigned int d = 0;
+	register unsigned int ALPHA = color.a;
+	ALPHA++;
+	for (unsigned int cnt = 0; cnt < text.size(); cnt++) {
+		// load the glyph
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(text[cnt]);
+
+		// start rendering of glyph to destination
+		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned int);
+
+		// through the pixels
+		while (src < src_end) {
+			while (src < line_end) {
+				// load pixel from memory
+				register unsigned int SRC = *src;
+
+				// is the source alpha channel 0x00 or 0xff?
+				register unsigned int A = SRC;
+				if (A) {
+					// source alpha is > 0x00 and < 0xff
+					register unsigned int DST = *dst;
+
+					if ((DST==OLDDST)&&(SRC==OLDSRC)) {
+						// same pixel, use the previous value
+						*dst = d;
+					    dst++;
+					    src++;
+						continue;
+					}
+					OLDDST = DST;
+					OLDSRC = SRC;
+
+				    A = (ALPHA * A) >> 8;
+					register unsigned int SA= 0x100 - A;
+					unsigned int a = DST >> 24;
+					unsigned int r = (DST << 8) >> 24;
+					unsigned int g = (DST << 16) >> 24;
+					unsigned int b = DST & 0xff;
+
+					// invert src alpha
+				    a = (SA * a) >> 8;
+				    r = (SA * r) >> 8;
+				    g = (SA * g) >> 8;
+				    b = (SA * b) >> 8;
+
+				    // add src to dst
+				    a += A;
+				    A++;
+				    r += (A * color.r) >> 8;
+				    g += (A * color.g) >> 8;
+				    b += (A * color.b) >> 8;
+				    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+						| ((r >> 8) ? 0xff0000   : (r << 16))
+						| ((g >> 8) ? 0xff00     : (g << 8))
+				    	| ((b >> 8) ? 0xff 		 :  b);
+					*dst = d;
+				}
+
+				src++;
+				dst++;
+			}
+			line_end+= src_pitch_pix;
+			src     += src_pitch_pix_diff;
+			dst     += dst_pitch_pix_diff;
 		}
 
 		// prepare for next loop
@@ -9900,12 +10067,29 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 	}
 #endif
 
+	// calculate the color
+	MMSFBColor color = this->config.color;
+	if (this->config.drawingflags & (MMSFBSurfaceDrawingFlags)DSDRAW_SRC_PREMULTIPLY) {
+		// pre-multiplication needed
+		if (color.a != 0xff) {
+			color.r = ((color.a+1) * color.r) >> 8;
+			color.g = ((color.a+1) * color.g) >> 8;
+			color.b = ((color.a+1) * color.b) >> 8;
+		}
+	}
+
 	// checking pixelformats...
 	if (this->config.surface_buffer.pixelformat == MMSFB_PF_ARGB) {
 		// destination is ARGB
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
-			blit_text_to_argb(&clipreg, text, len, x, y);
+			blend_text_to_argb(clipreg, text, len, x, y, color);
+			return true;
+		}
+		else
+		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND))
+			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND|DSDRAW_SRC_PREMULTIPLY))) {
+			blend_text_srcalpha_to_argb(clipreg, text, len, x, y, color);
 			return true;
 		}
 	}

@@ -225,6 +225,14 @@ class MMSFBSurface {
         // first time flag for eAFR_yv12()
         static bool				firsttime_eAFR_yv12;
 
+#ifdef __HAVE_XLIB__
+        // first time flag for blend_text_to_argb()
+        static bool				firsttime_blend_text_to_argb;
+
+        // first time flag for blend_text_srcalpha_to_argb()
+        static bool				firsttime_blend_text_srcalpha_to_argb;
+#endif
+
         void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);
@@ -376,7 +384,9 @@ class MMSFBSurface {
 
 
 #ifdef __HAVE_XLIB__
-        void blit_text_to_argb(DFBRegion *clipreg, string &text, int len, int x, int y);
+        void blend_text_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+        void blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+
         bool blit_text(string &text, int len, int x, int y);
 #endif
 
