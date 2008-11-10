@@ -9865,7 +9865,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 	if (glyph) { \
 		if   (((x + src_w > clipreg.x1)&&(x <= clipreg.x2)) \
 			&&((y + src_h > clipreg.y1)&&(y <= clipreg.y2))) { \
-			int dx = x; \
+			int dx = x + glyph->bitmap_left; \
 			int dy = y + DY - glyph->bitmap_top; \
 			if (dx < clipreg.x1) { \
 				src_w -= clipreg.x1 - dx; \
