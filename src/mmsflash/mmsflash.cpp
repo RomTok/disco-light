@@ -418,9 +418,9 @@ unsigned int MMSFlash::mapKey(MMSKeySymbol key) {
 		return SWFDEC_KEY_GRAVE;
 	case MMSKEY_APOSTROPHE:
 		return SWFDEC_KEY_APOSTROPHE;
+	default:
+		return 0;
 	}
-
-	return 0;
 }
 
 bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
@@ -438,17 +438,12 @@ bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
 	// calculate the pointer position within flash image
 	int posx = input->posx;
 	int posy = input->posy;
-	switch (input->type) {
-	case MMSINPUTEVENTTYPE_BUTTONPRESS:
-	case MMSINPUTEVENTTYPE_BUTTONRELEASE:
-	case MMSINPUTEVENTTYPE_AXISMOTION: {
+	if (input->type == MMSINPUTEVENTTYPE_BUTTONPRESS || input->type == MMSINPUTEVENTTYPE_BUTTONRELEASE || input->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 		DFBRectangle ig = window->getGeometry();
 		if (this->width != ig.w)
 			posx = ((posx * (this->width << 8)) / ig.w) >> 8;
 		if (this->height != ig.h)
 			posy = ((posy * (this->height << 8)) / ig.h) >> 8;
-		break;
-	}
 	}
 
 	// send event to the player
@@ -469,6 +464,8 @@ bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
 		break;
 	case MMSINPUTEVENTTYPE_AXISMOTION:
 		swfdec_player_mouse_move((SwfdecPlayer*)this->swfdec_player, posx, posy);
+		break;
+	default:
 		break;
 	}
 
