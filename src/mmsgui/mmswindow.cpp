@@ -1674,27 +1674,27 @@ bool MMSWindow::showAction(bool *stopaction) {
         	    switch (movein) {
         	    	case MMSDIRECTION_LEFT:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x + i * move_step, rect.y);
+        	    			this->window->moveTo((rect.x + i * move_step) & ~0x01, rect.y);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x + i * move_step, rect.y);
+        	    			this->parent->moveChildWindow(this, (rect.x + i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_RIGHT:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x - i * move_step, rect.y);
+        	    			this->window->moveTo((rect.x - i * move_step) & ~0x01, rect.y);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x - i * move_step, rect.y);
+        	    			this->parent->moveChildWindow(this, (rect.x - i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_UP:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x, rect.y + i * move_step);
+        	    			this->window->moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, rect.y + i * move_step);
+        	    			this->parent->moveChildWindow(this, rect.x, (rect.y + i * move_step) & ~0x01);
         	    		break;
         	    	case MMSDIRECTION_DOWN:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x, rect.y - i * move_step);
+        	    			this->window->moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, rect.y - i * move_step);
+        	    			this->parent->moveChildWindow(this, rect.x, (rect.y - i * move_step) & ~0x01);
         	    		break;
         	    	default:
         	    		break;
@@ -1870,27 +1870,27 @@ bool MMSWindow::hideAction(bool *stopaction) {
     	    	switch (moveout) {
         	    	case MMSDIRECTION_LEFT:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x - i * move_step, rect.y);
+        	    			this->window->moveTo((rect.x - i * move_step) & ~0x01, rect.y);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x - i * move_step, rect.y);
+        	    			this->parent->moveChildWindow(this, (rect.x - i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_RIGHT:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x + i * move_step, rect.y);
+        	    			this->window->moveTo((rect.x + i * move_step) & ~0x01, rect.y);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x + i * move_step, rect.y);
+        	    			this->parent->moveChildWindow(this, (rect.x + i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_UP:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x, rect.y - i * move_step);
+        	    			this->window->moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, rect.y - i * move_step);
+        	    			this->parent->moveChildWindow(this, rect.x, (rect.y - i * move_step) & ~0x01);
         	    		break;
         	    	case MMSDIRECTION_DOWN:
         	    		if (!parent)
-        	    			this->window->moveTo(rect.x, rect.y + i * move_step);
+        	    			this->window->moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
         	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, rect.y + i * move_step);
+        	    			this->parent->moveChildWindow(this, rect.x, (rect.y + i * move_step) & ~0x01);
         	    		break;
         	    	default:
         	    		break;
