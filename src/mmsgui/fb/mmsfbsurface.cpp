@@ -1153,20 +1153,23 @@ bool MMSFBSurface::setDrawingFlags(MMSFBSurfaceDrawingFlags flags) {
 
 bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
     DFBResult   dfbres;
+    bool		ret = false;
 
     MMSFB_BREAK();
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-		/* draw a line */
+		// draw a line
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->dfbsurface->DrawLine(this->dfbsurface, x1, y1, x2, y2)) != DFB_OK) {
-				MMSFB_SetError(dfbres, "IDirectFBSurface::DrawLine() failed");
-				return false;
-			}
+			if (!extendedAccelDrawLine(x1, y1, x2, y2))
+				if ((dfbres=this->dfbsurface->DrawLine(this->dfbsurface, x1, y1, x2, y2)) != DFB_OK) {
+					MMSFB_SetError(dfbres, "IDirectFBSurface::DrawLine() failed");
+					return false;
+				}
+			ret = true;
 		}
 		else {
 
@@ -1181,68 +1184,68 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
 			SETSUBSURFACE_DRAWINGFLAGS;
 #endif
 
-			this->dfbsurface->DrawLine(this->dfbsurface, x1, y1, x2, y2);
+			if (extendedAccelDrawLine(x1, y1, x2, y2))
+				ret = true;
+			else
+				if (this->dfbsurface->DrawLine(this->dfbsurface, x1, y1, x2, y2) == DFB_OK)
+					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
 			RESETSUBSURFACE_DRAWINGFLAGS;
 
 			UNCLIPSUBSURFACE
 #endif
-
 		}
+
 #endif
 	}
 	else {
-		//TODO
+
+		if (!this->is_sub_surface) {
+			ret = extendedAccelDrawLine(x1, y1, x2, y2);
+		}
+		else {
+			CLIPSUBSURFACE
+
+			x1+=this->sub_surface_xoff;
+			y1+=this->sub_surface_yoff;
+			x2+=this->sub_surface_xoff;
+			y2+=this->sub_surface_yoff;
+
+			ret = extendedAccelDrawLine(x1, y1, x2, y2);
+
+			UNCLIPSUBSURFACE
+		}
+
 	}
 
-    return true;
+    return ret;
 }
 
 bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
-    DFBResult   dfbres;
+	bool ret = false;
 
-    MMSFB_BREAK();
-
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+    if (w < 1 || h < 1)
+    	return false;
 
-	if (!this->use_own_alloc) {
-#ifdef  __HAVE_DIRECTFB__
-		/* draw rectangle */
-		if (!this->is_sub_surface) {
-			if ((dfbres=this->dfbsurface->DrawRectangle(this->dfbsurface, x, y, w, h)) != DFB_OK) {
-				MMSFB_SetError(dfbres, "IDirectFBSurface::DrawRectangle() failed");
-				return false;
-			}
-		}
-		else {
+    // draw lines...
+    if (w==1)
+    	ret = drawLine(x, y, x, y+h-1);
+    else
+    if (h==1)
+    	ret = drawLine(x, y, x+w-1, y);
+    else {
+    	ret = drawLine(x, y, x+w-1, y);
+    	ret = drawLine(x, y+h-1, x+w-1, y+h-1);
+    	if (h>2) {
+        	ret = drawLine(x, y+1, x, y+h-2);
+        	ret = drawLine(x+w-1, y+1, x+w-1, y+h-2);
+    	}
+    }
 
-#ifndef USE_DFB_SUBSURFACE
-			CLIPSUBSURFACE
-
-			x+=this->sub_surface_xoff;
-			y+=this->sub_surface_yoff;
-
-			SETSUBSURFACE_DRAWINGFLAGS;
-#endif
-
-			this->dfbsurface->DrawRectangle(this->dfbsurface, x, y, w, h);
-
-#ifndef USE_DFB_SUBSURFACE
-			RESETSUBSURFACE_DRAWINGFLAGS;
-
-			UNCLIPSUBSURFACE
-#endif
-
-		}
-#endif
-	}
-	else {
-		//TODO
-	}
-
-    return true;
+    return ret;
 }
 
 bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
@@ -8910,6 +8913,37 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 	else
 		return true;
 }
+
+
+
+
+bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
+
+	// check if we can use fill rectangle
+	if (x1 == x2)
+		return extendedAccelFillRectangle(x1, y1, 1, y2);
+	else
+	if (y1 == y2)
+		return extendedAccelFillRectangle(x1, y1, x2, 1);
+
+	// does not match
+	return false;
+}
+
+
+bool MMSFBSurface::extendedAccelDrawLine(int x1, int y1, int x2, int y2) {
+
+	// extended acceleration on?
+	if (!this->extendedaccel)
+		return false;
+
+	if (!extendedAccelDrawLineEx(x1, y1, x2, y2))
+		return printMissingCombination("extendedAccelDrawLine()");
+	else
+		return true;
+}
+
+
 
 
 

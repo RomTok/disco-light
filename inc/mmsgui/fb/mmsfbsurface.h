@@ -396,6 +396,11 @@ class MMSFBSurface {
         //////////
 
 
+        //////////
+        bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
+        bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
+        //////////
+
 #ifdef __HAVE_XLIB__
         void blend_text_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
         void blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
