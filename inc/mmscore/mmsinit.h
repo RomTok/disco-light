@@ -41,4 +41,6 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string conf
 
 bool registerSwitcher(IMMSSwitcher *switcher);
 
+IMMSWindowManager *getWindowManager();
+
 #endif /*MMSINIT_H_*/

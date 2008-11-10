@@ -263,3 +263,8 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
 
     return true;
 }
+
+IMMSWindowManager *getWindowManager() {
+	return windowmanager;
+}
+
