@@ -81,6 +81,7 @@ bool MMSFBSurface::firsttime_eAFR_blend_ayuv					= true;
 bool MMSFBSurface::firsttime_eAFR_yv12							= true;
 
 bool MMSFBSurface::firsttime_eADL_argb							= true;
+bool MMSFBSurface::firsttime_eADL_blend_argb					= true;
 
 #ifdef __HAVE_XLIB__
 bool MMSFBSurface::firsttime_blend_text_to_argb					= true;
@@ -8924,6 +8925,30 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 	if ((x >= clipreg.x1)&&(x <= clipreg.x2)&&(y >= clipreg.y1)&&(y <= clipreg.y2)) \
 		dst[x+y*dst_pitch_pix]=SRC;
 
+#define MMSFBSURFACE_DRAWLINE_BLEND_PIXEL \
+	if ((x >= clipreg.x1)&&(x <= clipreg.x2)&&(y >= clipreg.y1)&&(y <= clipreg.y2)) { \
+		register unsigned int DST = dst[x+y*dst_pitch_pix]; \
+		if (DST==OLDDST) dst[x+y*dst_pitch_pix] = d;  else { \
+		OLDDST = DST; \
+		register int SA= 0x100 - A; \
+		unsigned int a = DST >> 24; \
+		unsigned int r = (DST << 8) >> 24; \
+		unsigned int g = (DST << 16) >> 24; \
+		unsigned int b = DST & 0xff; \
+	    a = (SA * a) >> 8; \
+	    r = (SA * r) >> 8; \
+	    g = (SA * g) >> 8; \
+	    b = (SA * b) >> 8; \
+	    a += A; \
+	    r += (SRC << 8) >> 24; \
+	    g += (SRC << 16) >> 24; \
+	    b += SRC & 0xff; \
+	    d =   ((a >> 8) ? 0xff000000 : (a << 24)) \
+			| ((r >> 8) ? 0xff0000   : (r << 16)) \
+			| ((g >> 8) ? 0xff00     : (g << 8)) \
+	    	| ((b >> 8) ? 0xff 		 :  b); \
+	    dst[x+y*dst_pitch_pix] = d; } }
+
 #define MMSFBSURFACE_DRAWLINE_BRESENHAM(putpixel) { \
 	int x = x1; int y = y1; \
 	int dx = x2 - x1; int dy = y2 - y1; \
@@ -8957,6 +8982,43 @@ void MMSFBSurface::eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
 
 	// draw a line with Bresenham-Algorithm
 	MMSFBSURFACE_DRAWLINE_BRESENHAM(MMSFBSURFACE_DRAWLINE_PUT_PIXEL);
+}
+
+
+void MMSFBSurface::eADL_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
+							       DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
+	if (color.a == 0xff) {
+		// source pixel is not transparent
+		eADL_argb(dst, dst_pitch, dst_height, clipreg, x1, y1, x2, y2, color);
+		return;
+	}
+
+	// first time?
+	if (firsttime_eADL_blend_argb) {
+		printf("DISKO: Using accelerated blend line to ARGB.\n");
+		firsttime_eADL_blend_argb = false;
+	}
+
+	// return immediately if alpha channel of the color is 0x00
+	if (!color.a)
+		return;
+
+	// prepare...
+	int dst_pitch_pix = dst_pitch >> 2;
+	unsigned int OLDDST = 0;
+	register unsigned int d = 0;
+
+	// prepare the color
+	register unsigned int A = color.a;
+	register unsigned int SRC;
+	SRC =     (A << 24)
+			| (color.r << 16)
+			| (color.g << 8)
+			| color.b;
+	d = SRC;
+
+	// draw a line with Bresenham-Algorithm
+	MMSFBSURFACE_DRAWLINE_BRESENHAM(MMSFBSURFACE_DRAWLINE_BLEND_PIXEL);
 }
 
 
@@ -9027,12 +9089,16 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 
 			return false;
 		}
-/*		else
+		else
 		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND))
 			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND|DSDRAW_SRC_PREMULTIPLY))) {
-			blend_text_srcalpha_to_argb(clipreg, text, len, x, y, color);
-			return true;
-		}*/
+			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
+				// drawing with alpha channel
+				eADL_blend_argb((unsigned int *)dst_ptr, dst_pitch, dst_height, clipreg, x1, y1, x2, y2, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+		}
 	}
 
 	// does not match

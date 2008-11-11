@@ -241,6 +241,9 @@ class MMSFBSurface {
         // first time flag for eADL_argb()
         static bool				firsttime_eADL_argb;
 
+        // first time flag for eADL_blend_argb()
+        static bool				firsttime_eADL_blend_argb;
+
 #ifdef __HAVE_XLIB__
         // first time flag for blend_text_to_argb()
         static bool				firsttime_blend_text_to_argb;
@@ -402,6 +405,8 @@ class MMSFBSurface {
         //////////
         void eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
 					   DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
+        void eADL_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
+							 DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
 
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
