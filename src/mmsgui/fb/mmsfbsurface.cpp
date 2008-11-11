@@ -9709,9 +9709,16 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
 			mmsfb->xlock.lock();
-			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-						  0, 0, mmsfb->w, mmsfb->h,
-						  0, 0, mmsfb->w, mmsfb->h, True);
+			if(mmsfb->fullscreen) {
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->display_w, mmsfb->display_h, True);
+
+			} else {
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->w, mmsfb->h, True);
+			}
 #ifndef __NO_XSYNC__
 			XSync(mmsfb->x_display, True);
 #endif
@@ -9744,9 +9751,16 @@ bool MMSFBSurface::refresh() {
 			// put the image to the x-server
 			this->lock();
 			mmsfb->xlock.lock();
-			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-						  0, 0, mmsfb->w, mmsfb->h,
-						  0, 0, mmsfb->w, mmsfb->h, True);
+			if(mmsfb->fullscreen) {
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->display_w, mmsfb->display_h, True);
+
+			} else {
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->w, mmsfb->h, True);
+			}
 #ifndef __NO_XSYNC__
 			XSync(mmsfb->x_display, True);
 #endif
