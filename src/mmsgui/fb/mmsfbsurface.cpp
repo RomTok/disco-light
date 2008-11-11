@@ -9530,6 +9530,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 						  0, 0, mmsfb->w, mmsfb->h,
 						  0, 0, mmsfb->w, mmsfb->h, True);
+			XSync(mmsfb->x_display, True);
 			XFlush(mmsfb->x_display);
 		}
 #endif
@@ -9560,6 +9561,7 @@ bool MMSFBSurface::refresh() {
 			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 						  0, 0, mmsfb->w, mmsfb->h,
 						  0, 0, mmsfb->w, mmsfb->h, True);
+			XSync(mmsfb->x_display, True);
 			XFlush(mmsfb->x_display);
 			this->unlock();
 		}
@@ -9879,6 +9881,19 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 
 #define MMSFBSURFACE_BLIT_TEXT_END_RENDER } x+=glyph->advance.x >> 6; }
 
+#define MMSFBSURFACE_BLIT_TEXT_GET_UNICODE_CHAR(text) \
+	for (unsigned int cnt = 0; cnt < text.size(); cnt++) { \
+		unsigned char c = text[cnt]; \
+		unsigned int character = (unsigned int)c; \
+		if ((character >= 0xc0)&&(character <= 0xf7)) { \
+			if ((character & 0xe0) == 0xc0) { c = text[++cnt]; character = ((character & 0x1f) << 6) | (c & 0x3f); } \
+			if ((character & 0xf0) == 0xe0) { c = text[++cnt]; character = ((character & 0x0f) << 6) | (c & 0x3f); \
+				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
+			if ((character & 0xf8) == 0xf0) { c = text[++cnt]; character = ((character & 0x07) << 6) | (c & 0x3f); \
+				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } \
+				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
+		}
+
 
 
 void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
@@ -9897,9 +9912,9 @@ void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len,
 	unsigned int OLDSRC = 0;
 	register unsigned int d = 0;
 	register unsigned int SRCPIX = 0xff000000 | (((unsigned int)color.r) << 16) | (((unsigned int)color.g) << 8) | (unsigned int)color.b;
-	for (unsigned int cnt = 0; cnt < text.size(); cnt++) {
+	MMSFBSURFACE_BLIT_TEXT_GET_UNICODE_CHAR(text) {
 		// load the glyph
-		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(text[cnt]);
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
 
 		// start rendering of glyph to destination
 		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned int);
@@ -9966,8 +9981,7 @@ void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len,
 
 		// prepare for next loop
 		MMSFBSURFACE_BLIT_TEXT_END_RENDER;
-
-	}
+	}}
 
 	// unlock
 	MMSFBSURFACE_BLIT_TEXT_UNLOCK;
