@@ -246,7 +246,7 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 	        		       MMSFBSurface *parent,
 						   DFBRectangle *sub_surface_rect) {
     // init me
-    if ((!this->parent)||(!this->use_own_alloc))
+    if ((!parent)||(!this->use_own_alloc))
     	this->config.surface_buffer = new MMSFBSurfaceBuffer;
     else
     	this->config.surface_buffer = NULL;
@@ -354,18 +354,11 @@ void MMSFBSurface::init(IDirectFBSurface *dfbsurface,
 
     	this->sub_surface_rect = *sub_surface_rect;
 
+		this->config.surface_buffer = this->root_parent->config.surface_buffer;
+
 #ifndef USE_DFB_SUBSURFACE
 
     	this->dfbsurface = this->root_parent->dfbsurface;
-
-    	if (!this->use_own_alloc) {
-#ifdef  __HAVE_DIRECTFB__
-#endif
-    	}
-    	else {
-    		// copy all surface relevant data to subsurface
-    		this->config.surface_buffer = this->root_parent->config.surface_buffer;
-    	}
 
     	getRealSubSurfacePos();
 #endif
@@ -394,6 +387,7 @@ void MMSFBSurface::init(IDirectFBSurface *dfbsurface,
         this->config.islayersurface = false;
         this->config.drawingflags = DSDRAW_NOFX;
         this->config.blittingflags = DSBLIT_NOFX;
+        this->config.font = NULL;
     }
 }
 
