@@ -41,6 +41,7 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
 	this->filename 		= filename;
 	this->w 			= w;
 	this->h 			= h;
+	memset(&this->glyph, 0, sizeof(MMSFBFont_Glyph));
 
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -133,29 +134,45 @@ void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
 
-void *MMSFBFont::getGlyph(unsigned int character) {
+MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
     else {
 #ifdef  __HAVE_XLIB__
-	FT_GlyphSlotRec *glyph = NULL;
+	FT_GlyphSlotRec *g = NULL;
 	if (!FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER))
-		glyph = ((FT_Face)this->ft_face)->glyph;
+		g = ((FT_Face)this->ft_face)->glyph;
 	else
 		MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
-	if (!((glyph)&&(glyph->format != ft_glyph_format_bitmap)))
-		if (FT_Render_Glyph(glyph, ft_render_mode_normal)) {
-			glyph = NULL;
+	if (!((g)&&(g->format != ft_glyph_format_bitmap)))
+		if (FT_Render_Glyph(g, ft_render_mode_normal)) {
+			g = NULL;
 			MMSFB_SetError(0, "FT_Render_Glyph() failed for " + this->filename);
 		}
-	return glyph;
+	if (!((g)&&(g->bitmap.pixel_mode == ft_pixel_mode_grays))) {
+		g = NULL;
+		MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + this->filename);
+	}
+
+
+	this->glyph.buffer	= g->bitmap.buffer;
+	this->glyph.pitch	= g->bitmap.pitch;
+	this->glyph.top		= g->bitmap_top;
+	this->glyph.left	= g->bitmap_left;
+	this->glyph.width	= g->bitmap.width;
+	this->glyph.height	= g->bitmap.rows;
+	this->glyph.advanceX= g->advance.x;
+
+
+	return &this->glyph;
 #endif
     }
 
     return NULL;
 }
+
 
 bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
     // check if initialized
@@ -173,15 +190,11 @@ bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
 #ifdef  __HAVE_XLIB__
     	lock();
     	*width = 0;
-    	unsigned int len = text.size();
-    	for (unsigned int i = 0; i < len; i++) {
-			if (FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)text[i]), FT_LOAD_RENDER))
-				break;
-			if (((FT_Face)this->ft_face)->glyph->format != ft_glyph_format_bitmap)
-				if (FT_Render_Glyph(((FT_Face)this->ft_face)->glyph, ft_render_mode_normal))
-					break;
-			*width+=((FT_Face)this->ft_face)->glyph->advance.x >> 6;
-    	}
+    	MMSFBFONT_GET_UNICODE_CHAR(text) {
+    		MMSFBFont_Glyph *g = getGlyph(character);
+    		if (!g) break;
+			(*width)+=g->advanceX >> 6;
+    	} }
     	unlock();
     	return true;
 #endif

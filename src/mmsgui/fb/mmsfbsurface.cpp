@@ -10031,27 +10031,24 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 #define MMSFBSURFACE_BLIT_TEXT_UNLOCK this->unlock(); font->unlock();
 
 #define MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character) \
-	FT_GlyphSlotRec *glyph = NULL; \
 	int			  src_pitch_pix; \
 	int 		  src_w; \
 	int 		  src_h; \
 	unsigned char *src; \
-	glyph = (FT_GlyphSlotRec *)font->getGlyph(character); \
-	if (!((glyph)&&(glyph->bitmap.pixel_mode == ft_pixel_mode_grays))) { \
-		glyph = NULL; MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + font->filename); } \
-	else { \
-		src_pitch_pix = glyph->bitmap.pitch; \
-		src_w         = glyph->bitmap.width; \
-		src_h         = glyph->bitmap.rows; \
-		src           = glyph->bitmap.buffer; \
+	MMSFBFont_Glyph *glyph = font->getGlyph(character); \
+	if (glyph) { \
+		src_pitch_pix = glyph->pitch; \
+		src_w         = glyph->width; \
+		src_h         = glyph->height; \
+		src           = glyph->buffer; \
 	}
 
 #define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
 	if (glyph) { \
 		if   (((x + src_w > clipreg.x1)&&(x <= clipreg.x2)) \
 			&&((y + src_h > clipreg.y1)&&(y <= clipreg.y2))) { \
-			int dx = x + glyph->bitmap_left; \
-			int dy = y + DY - glyph->bitmap_top; \
+			int dx = x + glyph->left; \
+			int dy = y + DY - glyph->top; \
 			if (dx < clipreg.x1) { \
 				src_w -= clipreg.x1 - dx; \
 				src   += clipreg.x1 - dx; \
@@ -10068,20 +10065,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 			int dst_pitch_pix_diff = dst_pitch_pix - src_w; \
 			pt *dst = ((pt *)ptr) + dx + dy * dst_pitch_pix;
 
-#define MMSFBSURFACE_BLIT_TEXT_END_RENDER } x+=glyph->advance.x >> 6; }
-
-#define MMSFBSURFACE_BLIT_TEXT_GET_UNICODE_CHAR(text) \
-	for (unsigned int cnt = 0; cnt < text.size(); cnt++) { \
-		unsigned char c = text[cnt]; \
-		unsigned int character = (unsigned int)c; \
-		if ((character >= 0xc0)&&(character <= 0xf7)) { \
-			if ((character & 0xe0) == 0xc0) { c = text[++cnt]; character = ((character & 0x1f) << 6) | (c & 0x3f); } \
-			if ((character & 0xf0) == 0xe0) { c = text[++cnt]; character = ((character & 0x0f) << 6) | (c & 0x3f); \
-				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
-			if ((character & 0xf8) == 0xf0) { c = text[++cnt]; character = ((character & 0x07) << 6) | (c & 0x3f); \
-				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } \
-				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
-		}
+#define MMSFBSURFACE_BLIT_TEXT_END_RENDER } x+=glyph->advanceX >> 6; }
 
 
 
@@ -10101,7 +10085,7 @@ void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len,
 	unsigned int OLDSRC = 0;
 	register unsigned int d = 0;
 	register unsigned int SRCPIX = 0xff000000 | (((unsigned int)color.r) << 16) | (((unsigned int)color.g) << 8) | (unsigned int)color.b;
-	MMSFBSURFACE_BLIT_TEXT_GET_UNICODE_CHAR(text) {
+	MMSFBFONT_GET_UNICODE_CHAR(text) {
 		// load the glyph
 		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
 
@@ -10205,7 +10189,7 @@ void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text,
 	register unsigned int d = 0;
 	register unsigned int ALPHA = color.a;
 	ALPHA++;
-	MMSFBSURFACE_BLIT_TEXT_GET_UNICODE_CHAR(text) {
+	MMSFBFONT_GET_UNICODE_CHAR(text) {
 		// load the glyph
 		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
 
