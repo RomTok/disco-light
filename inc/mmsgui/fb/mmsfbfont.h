@@ -64,7 +64,7 @@ class MMSFBFont {
     	//! real height of one line
     	int 	height;
 
-    	void *getGlyph(unsigned long character);
+    	void *getGlyph(unsigned int character);
 
     public:
         MMSFBFont(string filename, int w, int h);

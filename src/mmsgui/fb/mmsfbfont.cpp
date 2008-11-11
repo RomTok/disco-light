@@ -133,7 +133,7 @@ void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
 
-void *MMSFBFont::getGlyph(unsigned long character) {
+void *MMSFBFont::getGlyph(unsigned int character) {
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif

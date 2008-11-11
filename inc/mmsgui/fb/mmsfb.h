@@ -55,6 +55,7 @@ class MMSFB {
         Window 			x_window;
         GC 				x_gc;
         int 			xv_port;
+        MMSMutex		xlock;
 #endif
 
     public:

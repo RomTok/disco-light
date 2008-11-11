@@ -80,6 +80,8 @@ bool MMSFBSurface::firsttime_eAFR_ayuv							= true;
 bool MMSFBSurface::firsttime_eAFR_blend_ayuv					= true;
 bool MMSFBSurface::firsttime_eAFR_yv12							= true;
 
+bool MMSFBSurface::firsttime_eADL_argb							= true;
+
 #ifdef __HAVE_XLIB__
 bool MMSFBSurface::firsttime_blend_text_to_argb					= true;
 bool MMSFBSurface::firsttime_blend_text_srcalpha_to_argb		= true;
@@ -1090,6 +1092,15 @@ bool MMSFBSurface::setClip(DFBRegion *clip) {
     	this->config.clipped = false;
 
     return true;
+}
+
+bool MMSFBSurface::setClip(int x1, int y1, int x2, int y2) {
+	DFBRegion clip;
+	clip.x1=x1;
+	clip.y1=y1;
+	clip.x2=x2;
+	clip.y2=y2;
+	return setClip(&clip);
 }
 
 bool MMSFBSurface::getClip(DFBRegion *clip) {
@@ -8909,6 +8920,44 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 }
 
 
+#define MMSFBSURFACE_DRAWLINE_PUT_PIXEL \
+	if ((x >= clipreg.x1)&&(x <= clipreg.x2)&&(y >= clipreg.y1)&&(y <= clipreg.y2)) \
+		dst[x+y*dst_pitch_pix]=SRC;
+
+#define MMSFBSURFACE_DRAWLINE_BRESENHAM(putpixel) { \
+	int x = x1; int y = y1; \
+	int dx = x2 - x1; int dy = y2 - y1; \
+	int ix = (dx > 0) ? 1 : (dx < 0) ? -1 : 0; int iy = (dy > 0) ? 1 : (dy < 0) ? -1 : 0; \
+	if (!dx && !dy) { putpixel; } else { \
+	if (dx < 0) dx = -dx; if (dy < 0) dy = -dy; \
+	int pdx, pdy, ddx, ddy, es, el; \
+	if (dx > dy) { pdx=ix; pdy=0; ddx=ix; ddy=iy; es=dy; el=dx; } else { pdx=0;  pdy=iy; ddx=ix; ddy=iy; es=dx; el=dy; } \
+	int err = el >> 1; putpixel; \
+	for(int i = 0; i < el; ++i) { err-=es; if (err < 0) { err+=el; x+=ddx; y+=ddy; } else { x+=pdx; y+=pdy; } putpixel; } } }
+
+
+void MMSFBSurface::eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
+							 DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
+	// first time?
+	if (firsttime_eADL_argb) {
+		printf("DISKO: Using accelerated draw line to ARGB.\n");
+		firsttime_eADL_argb = false;
+	}
+
+	// prepare...
+	int dst_pitch_pix = dst_pitch >> 2;
+
+	// prepare the color
+	register unsigned int A = color.a;
+	register unsigned int SRC;
+	SRC =     (A << 24)
+			| (color.r << 16)
+			| (color.g << 8)
+			| color.b;
+
+	// draw a line with Bresenham-Algorithm
+	MMSFBSURFACE_DRAWLINE_BRESENHAM(MMSFBSURFACE_DRAWLINE_PUT_PIXEL);
+}
 
 
 bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
@@ -8919,6 +8968,72 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 	else
 	if (y1 == y2)
 		return extendedAccelFillRectangle(x1, y1, x2, 1);
+
+	// a few help and clipping values
+	void *dst_ptr;
+	int  dst_pitch;
+	DFBRegion clipreg;
+	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
+
+#ifndef USE_DFB_SUBSURFACE
+	if (!this->is_sub_surface) {
+#endif
+		// normal surface or dfb subsurface
+		if (!this->config.clipped) {
+			clipreg.x1 = 0;
+			clipreg.y1 = 0;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
+		}
+		else
+			clipreg = this->config.clip;
+#ifndef USE_DFB_SUBSURFACE
+	}
+	else {
+		// subsurface
+		if (!this->root_parent->config.clipped) {
+			clipreg.x1 = 0;
+			clipreg.y1 = 0;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
+		}
+		else
+			clipreg = this->root_parent->config.clip;
+	}
+#endif
+
+	// calculate the color
+	MMSFBColor color = this->config.color;
+	if (this->config.drawingflags & (MMSFBSurfaceDrawingFlags)DSDRAW_SRC_PREMULTIPLY) {
+		// pre-multiplication needed
+		if (color.a != 0xff) {
+			color.r = ((color.a+1) * color.r) >> 8;
+			color.g = ((color.a+1) * color.g) >> 8;
+			color.b = ((color.a+1) * color.b) >> 8;
+		}
+	}
+
+	// checking pixelformats...
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
+		// destination is ARGB
+		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_NOFX|DSDRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
+				eADL_argb((unsigned int *)dst_ptr, dst_pitch, dst_height, clipreg, x1, y1, x2, y2, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+/*		else
+		if   ((this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND))
+			| (this->config.drawingflags == (MMSFBSurfaceDrawingFlags)(DSDRAW_BLEND|DSDRAW_SRC_PREMULTIPLY))) {
+			blend_text_srcalpha_to_argb(clipreg, text, len, x, y, color);
+			return true;
+		}*/
+	}
 
 	// does not match
 	return false;
@@ -9527,11 +9642,15 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 #ifdef __HAVE_XLIB__
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
+			mmsfb->xlock.lock();
 			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 						  0, 0, mmsfb->w, mmsfb->h,
 						  0, 0, mmsfb->w, mmsfb->h, True);
+#ifndef __NO_XSYNC__
 			XSync(mmsfb->x_display, True);
+#endif
 			XFlush(mmsfb->x_display);
+			mmsfb->xlock.unlock();
 		}
 #endif
 
@@ -9558,11 +9677,15 @@ bool MMSFBSurface::refresh() {
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
 			this->lock();
+			mmsfb->xlock.lock();
 			XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 						  0, 0, mmsfb->w, mmsfb->h,
 						  0, 0, mmsfb->w, mmsfb->h, True);
+#ifndef __NO_XSYNC__
 			XSync(mmsfb->x_display, True);
+#endif
 			XFlush(mmsfb->x_display);
+			mmsfb->xlock.unlock();
 			this->unlock();
 		}
 #endif
@@ -10016,9 +10139,9 @@ void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text,
 	register unsigned int d = 0;
 	register unsigned int ALPHA = color.a;
 	ALPHA++;
-	for (unsigned int cnt = 0; cnt < text.size(); cnt++) {
+	MMSFBSURFACE_BLIT_TEXT_GET_UNICODE_CHAR(text) {
 		// load the glyph
-		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(text[cnt]);
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
 
 		// start rendering of glyph to destination
 		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned int);
@@ -10081,8 +10204,7 @@ void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text,
 
 		// prepare for next loop
 		MMSFBSURFACE_BLIT_TEXT_END_RENDER;
-
-	}
+	}}
 
 	// unlock
 	MMSFBSURFACE_BLIT_TEXT_UNLOCK;
