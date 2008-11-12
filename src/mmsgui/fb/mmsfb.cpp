@@ -112,6 +112,13 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
         this->x_screen = DefaultScreen(this->x_display);
 
+        XF86VidModeModeLine line;
+        int dot;
+        XF86VidModeGetModeLine(this->x_display, 0,&dot, &line);
+        this->display_w=line.hdisplay;
+        this->display_h=line.vdisplay;
+        printf("w: %d, h: %d\n", this->display_w, this->display_h);
+
         XSetWindowAttributes x_window_attr;
 		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask;
         x_window_attr.background_pixel  = 0;
@@ -119,7 +126,9 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 
 
         unsigned long x_window_mask;
+        //this->window_w
         if(fullscreen) {
+        	this->fullscreen = true;
         	x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
         	x_window_attr.override_redirect = True;
         	int cnt;
@@ -135,23 +144,21 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         	}
 
     		int clock;
-    		XF86VidModeGetModeLine(this->x_display, 0, &clock, &origmode);
-        	if(best!=-1) {
-        		atexit(myexit);
-        		// found a mode to try
-        		XF86VidModeSwitchToMode(this->x_display, 0, info[best]);
-        		 XF86VidModeSetViewPort(this->x_display, 0,0,0);
-        	}
 
+            int x_depth = DefaultDepth(this->x_display, this->x_screen);
+            this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
+    									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
         } else {
+        	this->fullscreen = false;
         	x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
         	x_window_attr.override_redirect = 0;
+            int x_depth = DefaultDepth(this->x_display, this->x_screen);
+            this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->w, this->h, 0, x_depth,
+    									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
         }
 
-        int x_depth = DefaultDepth(this->x_display, this->x_screen);
 
-        this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->w, this->h, 0, x_depth,
-									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
+
         XStoreName(this->x_display, this->x_window, "DISKO WINDOW");
         XSetIconName(this->x_display, this->x_window, "DISKO ICON");
         this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);

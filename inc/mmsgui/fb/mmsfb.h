@@ -56,6 +56,9 @@ class MMSFB {
         GC 				x_gc;
         int 			xv_port;
         MMSMutex		xlock;
+        int				display_w;
+        int				display_h;
+        bool            fullscreen;
 #endif
 
     public:
@@ -78,6 +81,7 @@ class MMSFB {
 
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
         bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);
+        bool toggleFullscreen();
 
     friend class MMSFBLayer;
     friend class MMSFBSurface;
