@@ -195,6 +195,11 @@ class MMSFBSurface {
         static bool 			firsttime_eAB_blend_srcalpha_ayuv_to_yv12;
 
 
+        // first time flag for eADB_blend_argb_to_yv12()
+        static bool 			firsttime_eADB_blend_argb_to_yv12;
+
+
+
         // first time flag for eASB_blend_argb_to_argb()
         static bool 			firsttime_eASB_blend_argb_to_argb;
 
@@ -269,8 +274,9 @@ class MMSFBSurface {
 
         //////////
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
-        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
-        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
+        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch,
+        				  MMSFBSurface *dstsrc = NULL, void **dstsrc_ptr = NULL, int *dstsrc_pitch = NULL);
+        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSurface *dstsrc = NULL);
         bool printMissingCombination(char *method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
 									 string src_pixelformat = "", int src_width = 0, int src_height = 0);
         //////////
@@ -343,6 +349,18 @@ class MMSFBSurface {
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
 									 DFBRectangle *src_rect, int x, int y);
+        ////////
+
+
+
+        ////////
+        void eADB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+        				 			 unsigned char *dst, int dst_pitch, int dst_height, unsigned char *dstsrc, int dx, int dy);
+
+        bool extendedAccelDoubleBlitEx(MMSFBSurface *dstsrc, MMSFBSurface *source,
+        							   MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+        							   DFBRectangle *src_rect, int x, int y);
+        bool extendedAccelDoubleBlit(MMSFBSurface *dstsrc, MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
         //////////
 
 
