@@ -41,7 +41,9 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
 	this->filename 		= filename;
 	this->w 			= w;
 	this->h 			= h;
-	memset(&this->glyph, 0, sizeof(MMSFBFont_Glyph));
+	this->glyphpool_size= 0;
+	this->glyphpool 	= NULL;
+	this->glyphpool_ptr = NULL;
 
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -114,12 +116,19 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender >> 6);
     	this->height = this->ascender + this->descender + 1;
 
+    	// allocate my glyph pool, currently fixed size of 50000 byte should be enough for up to 100 glyphs
+    	this->glyphpool_size = 50000;
+    	this->glyphpool = (unsigned char *)malloc(this->glyphpool_size);
+    	this->glyphpool_ptr = this->glyphpool;
+
     	this->initialized = true;
 #endif
     }
 }
 
 MMSFBFont::~MMSFBFont() {
+	if (this->glyphpool)
+		free (this->glyphpool);
 }
 
 bool MMSFBFont::isInitialized() {
@@ -141,32 +150,71 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
     }
     else {
 #ifdef  __HAVE_XLIB__
-	FT_GlyphSlotRec *g = NULL;
-	if (!FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER))
-		g = ((FT_Face)this->ft_face)->glyph;
-	else
-		MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
-	if (!((g)&&(g->format != ft_glyph_format_bitmap)))
-		if (FT_Render_Glyph(g, ft_render_mode_normal)) {
-			g = NULL;
-			MMSFB_SetError(0, "FT_Render_Glyph() failed for " + this->filename);
-		}
-	if (!((g)&&(g->bitmap.pixel_mode == ft_pixel_mode_grays))) {
-		g = NULL;
-		MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + this->filename);
-	}
+    	// check if requested character is already loaded
+    	std::map<unsigned int, MMSFBFont_Glyph>::iterator it;
+    	it = this->charmap.find(character);
+    	if (it == this->charmap.end()) {
+    		// no, have to load it
+			FT_GlyphSlotRec *g = NULL;
+			if (!FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER))
+				g = ((FT_Face)this->ft_face)->glyph;
+			else
+				MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
+			if (!((g)&&(g->format != ft_glyph_format_bitmap)))
+				if (FT_Render_Glyph(g, ft_render_mode_normal)) {
+					g = NULL;
+					MMSFB_SetError(0, "FT_Render_Glyph() failed for " + this->filename);
+				}
+			if (!((g)&&(g->bitmap.pixel_mode == ft_pixel_mode_grays))) {
+				g = NULL;
+				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + this->filename);
+			}
 
+			// setup glyph values
+			this->glyph.buffer	= g->bitmap.buffer;
+			this->glyph.pitch	= g->bitmap.pitch;
+			this->glyph.left	= g->bitmap_left;
+			this->glyph.top		= g->bitmap_top;
+			this->glyph.width	= g->bitmap.width;
+			this->glyph.height	= g->bitmap.rows;
+			this->glyph.advanceX= g->advance.x;
 
-	this->glyph.buffer	= g->bitmap.buffer;
-	this->glyph.pitch	= g->bitmap.pitch;
-	this->glyph.top		= g->bitmap_top;
-	this->glyph.left	= g->bitmap_left;
-	this->glyph.width	= g->bitmap.width;
-	this->glyph.height	= g->bitmap.rows;
-	this->glyph.advanceX= g->advance.x;
+			// add glyph to charmap
+	    	lock();
+			unsigned int glyph_size = this->glyph.width * this->glyph.height;
+			if (this->glyphpool + this->glyphpool_size - this->glyphpool_ptr >= glyph_size) {
+				// have free space in glyph pool
+				if (this->glyph.pitch != this->glyph.width) {
+					// different pitch, copy line per line
+					for (int i = 0; i < this->glyph.height; i++) {
+						memcpy(this->glyphpool_ptr, this->glyph.buffer, this->glyph.width);
+						this->glyph.buffer+=this->glyph.pitch;
+						this->glyphpool_ptr+=this->glyph.width;
+					}
+					this->glyph.pitch = this->glyph.width;
+				}
+				else {
+					// one copy can do it
+					memcpy(this->glyphpool_ptr, this->glyph.buffer, glyph_size);
+					this->glyphpool_ptr+=glyph_size;
+				}
 
+				// add to charmap
+				this->glyph.buffer = this->glyphpool_ptr - glyph_size;
+				this->charmap.insert(std::make_pair(character, this->glyph));
+			}
+			else {
+				// sorry, glyph pool is full
+				MMSFB_SetError(0, "no free space in glyph pool (" + iToStr(this->charmap.size()) + " glyphs stored) for " + this->filename);
+			}
+	    	unlock();
+    	}
+    	else {
+    		// already loaded
+    		this->glyph = it->second;
+    	}
 
-	return &this->glyph;
+		return &this->glyph;
 #endif
     }
 

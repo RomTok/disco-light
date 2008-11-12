@@ -31,10 +31,10 @@ typedef struct {
 	unsigned char	*buffer;
 	//! pitch in byte of one row in the buffer
 	int 			pitch;
-	//! y-offset
-	int				top;
 	//! x-offset
 	int				left;
+	//! y-offset
+	int				top;
 	//! width in pixel of the glyph bitmap
 	int 			width;
 	//! height in pixel of the glyph bitmap
@@ -82,8 +82,20 @@ class MMSFBFont {
     	//! real height of one line
     	int 	height;
 
+    	//! maps a character id to a already loaded glyph (see glyphpool)
+    	std::map<unsigned int, MMSFBFont_Glyph> charmap;
+
+    	//! glyph pool
+    	unsigned char *glyphpool;
+
+    	//! size of glyph pool
+    	unsigned int glyphpool_size;
+
+    	//! pointer to next free memory
+    	unsigned char *glyphpool_ptr;
+
+    	//! stores the glyph infos for method getGlyph()
     	MMSFBFont_Glyph glyph;
-    	MMSFBFont_Glyph *getGlyph(unsigned int character);
 
     public:
         MMSFBFont(string filename, int w, int h);
@@ -95,6 +107,8 @@ class MMSFBFont {
 
         bool getStringWidth(string text, int bytes, int *width);
         bool getHeight(int *height);
+
+    	MMSFBFont_Glyph *getGlyph(unsigned int character);
 
 	friend class MMSFBSurface;
 };
