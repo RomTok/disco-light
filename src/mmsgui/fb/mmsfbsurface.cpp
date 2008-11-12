@@ -9541,7 +9541,6 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pi
 
 
 bool MMSFBSurface::doubleBlit(MMSFBSurface *dstsrc, MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
-	printf("fff\n");
 	MMSFBSurfaceBlittingFlags sf = this->config.blittingflags;
 	this->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_NOFX);
 	this->blit(dstsrc, src_rect, x, y);
