@@ -28,5 +28,6 @@ using namespace std;
 #include <string>
 #include <iostream>
 #include <vector>
+#include <map>
 
 #endif /*BASE_H_*/
