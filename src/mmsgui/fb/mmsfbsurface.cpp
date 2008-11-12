@@ -10099,7 +10099,7 @@ void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len,
 	unsigned int OLDSRC = 0;
 	register unsigned int d = 0;
 	register unsigned int SRCPIX = 0xff000000 | (((unsigned int)color.r) << 16) | (((unsigned int)color.g) << 8) | (unsigned int)color.b;
-	MMSFBFONT_GET_UNICODE_CHAR(text) {
+	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
 		// load the glyph
 		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
 
@@ -10203,7 +10203,7 @@ void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text,
 	register unsigned int d = 0;
 	register unsigned int ALPHA = color.a;
 	ALPHA++;
-	MMSFBFONT_GET_UNICODE_CHAR(text) {
+	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
 		// load the glyph
 		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
 
@@ -10342,6 +10342,10 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 
     if (!this->config.font)
     	return false;
+
+	// get the length of the string
+	if (len < 0) len = text.size();
+	if (!len) return true;
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__

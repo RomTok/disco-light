@@ -222,14 +222,18 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
 }
 
 
-bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
+bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     // check if initialized
     INITCHECK;
+
+	// get the length of the string
+	if (len < 0) len = text.size();
+	if (!len) return true;
 
     // get the width of the whole string
     if (this->dfbfont) {
 #ifdef  __HAVE_DIRECTFB__
-		if (((IDirectFBFont*)this->dfbfont)->GetStringWidth((IDirectFBFont*)this->dfbfont, text.c_str(), -1, width) != DFB_OK)
+		if (((IDirectFBFont*)this->dfbfont)->GetStringWidth((IDirectFBFont*)this->dfbfont, text.c_str(), len, width) != DFB_OK)
 			return false;
 		return true;
 #endif
@@ -238,7 +242,7 @@ bool MMSFBFont::getStringWidth(string text, int bytes, int *width) {
 #ifdef  __HAVE_XLIB__
     	lock();
     	*width = 0;
-    	MMSFBFONT_GET_UNICODE_CHAR(text) {
+    	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
     		MMSFBFont_Glyph *g = getGlyph(character);
     		if (!g) break;
 			(*width)+=g->advanceX >> 6;

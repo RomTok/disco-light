@@ -105,7 +105,7 @@ class MMSFBFont {
         void lock();
         void unlock();
 
-        bool getStringWidth(string text, int bytes, int *width);
+        bool getStringWidth(string text, int len, int *width);
         bool getHeight(int *height);
 
     	MMSFBFont_Glyph *getGlyph(unsigned int character);
@@ -113,17 +113,17 @@ class MMSFBFont {
 	friend class MMSFBSurface;
 };
 
-#define MMSFBFONT_GET_UNICODE_CHAR(text) \
-	for (unsigned int cnt = 0; cnt < text.size(); cnt++) { \
+#define MMSFBFONT_GET_UNICODE_CHAR(text, len) \
+	for (unsigned int cnt = 0; cnt < len; cnt++) { \
 		unsigned char c = text[cnt]; \
 		unsigned int character = (unsigned int)c; \
 		if ((character >= 0xc0)&&(character <= 0xf7)) { \
 			if ((character & 0xe0) == 0xc0) { c = text[++cnt]; character = ((character & 0x1f) << 6) | (c & 0x3f); } \
 			if ((character & 0xf0) == 0xe0) { c = text[++cnt]; character = ((character & 0x0f) << 6) | (c & 0x3f); \
-				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
+				if (cnt < len) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
 			if ((character & 0xf8) == 0xf0) { c = text[++cnt]; character = ((character & 0x07) << 6) | (c & 0x3f); \
-				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } \
-				if (cnt < text.size()) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
+				if (cnt < len) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } \
+				if (cnt < len) { c = text[++cnt]; character = (character << 6) | (c & 0x3f); } } \
 		}
 
 #endif /*MMSFBFONT_H_*/
