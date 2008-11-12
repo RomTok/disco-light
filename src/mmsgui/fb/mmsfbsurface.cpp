@@ -9538,6 +9538,18 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pi
 	return stretchBlitBuffer(&extbuf, src_pixelformat, src_width, src_height, src_rect, dest_rect);
 }
 
+
+
+bool MMSFBSurface::doubleBlit(MMSFBSurface *dstsrc, MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+	printf("fff\n");
+	MMSFBSurfaceBlittingFlags sf = this->config.blittingflags;
+	this->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_NOFX);
+	this->blit(dstsrc, src_rect, x, y);
+	this->setBlittingFlags(sf);
+	this->blit(source, src_rect, x, y);
+}
+
+
 bool MMSFBSurface::flip(DFBRegion *region) {
     DFBResult   dfbres;
 

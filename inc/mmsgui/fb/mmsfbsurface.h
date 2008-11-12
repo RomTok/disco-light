@@ -505,6 +505,8 @@ class MMSFBSurface {
         bool stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
 							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
+        bool doubleBlit(MMSFBSurface *dstsrc, MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+
         bool flip(DFBRegion *region = NULL);
         bool refresh();
 

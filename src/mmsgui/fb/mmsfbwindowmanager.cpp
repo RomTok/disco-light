@@ -414,6 +414,10 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
     bool            high_freq = false;
     bool            cleared = false;
     bool			win_found = false;
+	MMSFBSurface	*full_nofx_surface = NULL;
+	DFBRectangle	full_nofx_src_rect;
+	int				full_nofx_dst_x;
+	int				full_nofx_dst_y;
 
     /* check if initialized */
     INITCHECK;
@@ -572,10 +576,11 @@ logger.writeLog("BBB>");
     else
         cleared = (!((vw->alphachannel==false)&&(vw->opacity==255)));
 
-    // searching for other affected windows and draw parts of it
+	// searching for other affected windows and draw parts of it
     for (unsigned int i=0; i < this->vwins.size(); i++) {
         VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
         DFBRegion *myregion = &(aw->region);
+        bool full_nofx = false;
 
         // if the window has no opacity then continue
         if (!aw->opacity)
@@ -654,6 +659,10 @@ logger.writeLog("BBB>");
                     	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2))) {
                     		this->layer_surface->clear();
                     	}
+                    	else {
+                    		// full layer with nofx
+                    		full_nofx = true;
+                    	}
                 	win_found = true;
                 }
             }
@@ -665,15 +674,41 @@ logger.writeLog("BBB>");
                 }
             }
             else {
-                this->layer_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
+            	if (full_nofx) {
+            		// this is the first window which is using the full layer with nofx
+            		// we try to blit this window if the second window matches the terms
+            		// so i should save the meta info and look for another window which is to blit over this window
+            		full_nofx_surface = aw->surface;
+            		full_nofx_src_rect = src_rect;
+            		full_nofx_dst_x = dst_x;
+            		full_nofx_dst_y = dst_y;
+            	}
+            	else {
+            		if ((full_nofx_surface)&&(memcmp(&src_rect, &full_nofx_src_rect, sizeof(full_nofx_src_rect))==0)&&(dst_x==full_nofx_dst_x)&&(dst_y==full_nofx_dst_y)) {
+						// second window matches to the first one, so use double blit
+						this->layer_surface->doubleBlit(full_nofx_surface, aw->surface, &src_rect, dst_x, dst_y);
+					}
+					else {
+            			// 'normal' blit
+            			this->layer_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
+            		}
+					full_nofx_surface = NULL;
+            	}
             }
         }
     }
 
-    // if no window is drawn, check if we have to clear the layer region
-    if (!win_found)
+    if (!win_found) {
+        // if no window is drawn, check if we have to clear the layer region
 	    if (cleared)
 	        this->layer_surface->clear();
+    }
+    else {
+    	// check if we have only one window with full_nofx_surface, so blit it now
+		if (full_nofx_surface) {
+			this->layer_surface->blit(full_nofx_surface, &full_nofx_src_rect, full_nofx_dst_x, full_nofx_dst_y);
+		}
+    }
 
     // draw the pointer
     drawPointer(&ls_region);
