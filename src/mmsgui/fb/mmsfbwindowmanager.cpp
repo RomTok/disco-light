@@ -654,7 +654,7 @@ logger.writeLog("BBB>");
                 	// yes, clear the layer before blitting the first window surface
                 	// but only, if the first window does not use the whole layer region
                 	// else we do not have to clear the layer region and can save CPU
-                    if (cleared)
+                    if (cleared) {
                     	if ((aw->opacity < 255)||((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
                     	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2))) {
                     		this->layer_surface->clear();
@@ -663,6 +663,12 @@ logger.writeLog("BBB>");
                     		// full layer with nofx
                     		full_nofx = true;
                     	}
+                    }
+                	else {
+                		// full layer with nofx
+                		full_nofx = true;
+                	}
+
                 	win_found = true;
                 }
             }
