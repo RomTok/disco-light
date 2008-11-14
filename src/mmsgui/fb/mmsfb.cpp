@@ -120,7 +120,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
         XSetWindowAttributes x_window_attr;
-		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask;
+		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
         x_window_attr.background_pixel  = 0;
         x_window_attr.border_pixel      = 0;
 

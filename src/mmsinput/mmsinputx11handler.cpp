@@ -165,7 +165,7 @@ MMSInputX11Handler::MMSInputX11Handler(MMS_INPUT_DEVICE device) {
 #ifdef __HAVE_XLIB__
 	this->window = *((Window*) mmsfb->getX11Window());
 	this->display = (Display *)mmsfb->getX11Display();
-	printf("\nwindow %d, %x\n",window, display);
+	//printf("\nwindow %d, %x\n",window, display);
 
 
 #else
@@ -183,7 +183,8 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     XEvent event;
     while(1) {
     	//
-    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask, &event);
+    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask, &event);
+    	//printf("\n%d",event.type);
     	//XNextEvent(this->display, &event);
     	if(event.type==KeyPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYPRESS;
@@ -196,6 +197,20 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYRELEASE;
     		KeySym xSymbol = XKeycodeToKeysym(this->display , event.xkey.keycode,0 );
     		inputevent->key = getKeyFromX11(xSymbol);
+    		return;
+    	}
+    	if(event.type==ButtonPress) {
+    		inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
+    		inputevent->posx = event.xbutton.x;
+    		inputevent->posy = event.xbutton.y;
+    		printf("press x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
+    		return;
+    	}
+    	if(event.type==ButtonRelease) {
+    		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+    		inputevent->posx = event.xbutton.x;
+    		inputevent->posy = event.xbutton.y;
+    		printf("release x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
     		return;
     	}
 
