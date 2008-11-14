@@ -86,6 +86,7 @@ class MMSFB {
     friend class MMSFBLayer;
     friend class MMSFBSurface;
     friend class MMSFBFont;
+    friend class MMSInputX11Handler;
 };
 
 /* access to global mmsfb */

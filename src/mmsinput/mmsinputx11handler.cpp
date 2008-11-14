@@ -201,16 +201,28 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	}
     	if(event.type==ButtonPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-    		inputevent->posx = event.xbutton.x;
-    		inputevent->posy = event.xbutton.y;
-    		printf("press x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
-    		return;
+    		if(!mmsfb->fullscreen) {
+				inputevent->posx = event.xbutton.x;
+				inputevent->posy = event.xbutton.y;
+    		} else {
+				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
+				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+    		}
+			/*printf("press x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
+			printf("rect x: %d y: %d \n\n",inputevent->posx,inputevent->posy);*/
+			return;
     	}
     	if(event.type==ButtonRelease) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-    		inputevent->posx = event.xbutton.x;
-    		inputevent->posy = event.xbutton.y;
-    		printf("release x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
+    		if(!mmsfb->fullscreen) {
+				inputevent->posx = event.xbutton.x;
+				inputevent->posy = event.xbutton.y;
+    		} else {
+				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
+				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+    		}
+/*    		printf("release x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
+			printf("rect x: %d y: %d \n\n",inputevent->posx,inputevent->posy);*/
     		return;
     	}
 
