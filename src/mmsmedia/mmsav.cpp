@@ -179,7 +179,7 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	buf.ptr3 = data2;
 	buf.pitch3 = frame_width / 2;
 
-	userd->surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&userd->dest);
+	userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
 	userd->surf->flip(NULL);
 }
 #endif
