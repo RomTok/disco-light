@@ -34,7 +34,7 @@ MMSFBSurfaceManager::MMSFBSurfaceManager() {
 MMSFBSurfaceManager::~MMSFBSurfaceManager() {
 }
 
-MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly) {
+MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
 //    DFBResult               dfbres;
 //    IDirectFBSurface        *dfbsurface;
 //    DFBSurfaceDescription   surface_desc;
@@ -147,7 +147,7 @@ return;*/
 
 
 
-bool MMSFBSurfaceManager::createTemporarySurface(int w, int h, string pixelformat, bool systemonly) {
+bool MMSFBSurfaceManager::createTemporarySurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, bool systemonly) {
 	if (!this->tempsuf)
 		mmsfb->createSurface(&this->tempsuf, w, h, pixelformat, 0, systemonly);
 	if (!this->tempsuf)

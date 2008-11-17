@@ -77,7 +77,7 @@ class MMSFB {
         void *getX11Display();
         bool refresh();
 
-        bool createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer = 0, bool systemonly = false);
+        bool createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0, bool systemonly = false);
 
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
         bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);

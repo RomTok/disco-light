@@ -116,11 +116,11 @@ void MMSFBManager::applySettings() {
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (!this->graphicslayer->setConfiguration(config.getXres(), config.getYres(),
-                                               config.getGraphicsLayerPixelformat(),
+											   getMMSFBPixelFormatFromString(config.getGraphicsLayerPixelformat()),
                                                config.getGraphicsLayerBufferMode(),
                                                config.getGraphicsLayerOptions(),
-                                               config.getGraphicsWindowPixelformat(),
-                                               config.getGraphicsSurfacePixelformat()))
+                                               getMMSFBPixelFormatFromString(config.getGraphicsWindowPixelformat()),
+                                               getMMSFBPixelFormatFromString(config.getGraphicsSurfacePixelformat())))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
@@ -138,7 +138,7 @@ void MMSFBManager::applySettings() {
 
         /* set video layer's config */
         if (!this->videolayer->setConfiguration(config.getXres(), config.getYres(),
-                                                config.getVideoLayerPixelformat(),
+												getMMSFBPixelFormatFromString(config.getVideoLayerPixelformat()),
                                                 config.getVideoLayerBufferMode(),
                                                 config.getVideoLayerOptions()))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
@@ -158,12 +158,12 @@ void MMSFBManager::applySettings() {
     mmsfbwindowmanager->init(this->graphicslayer, config.getPointer());
 
     // create a global temporary surface
-    string pixelformat = config.getGraphicsLayerPixelformat();
+    MMSFBSurfacePixelFormat pixelformat = getMMSFBPixelFormatFromString(config.getGraphicsLayerPixelformat());
     if (!isAlphaPixelFormat(pixelformat)) {
     	// the gui internally needs surfaces with alpha channel
     	// now we have to decide if we are working in RGB or YUV color space
-    	pixelformat = config.getGraphicsSurfacePixelformat();
-    	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+    	MMSFBSurfacePixelFormat pixelformat = getMMSFBPixelFormatFromString(config.getGraphicsSurfacePixelformat());
+    	if ((pixelformat == MMSFB_PF_NONE)||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
     		// use autodetection
 	        if (!isRGBPixelFormat(pixelformat))
 	            // so switch all non-alpha pixelformats to AYUV

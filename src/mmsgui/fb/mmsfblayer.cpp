@@ -223,7 +223,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 		/* fill my config */
 		this->config.w = dlc.width;
 		this->config.h = dlc.height;
-		this->config.pixelformat = getDFBPixelFormatString(dlc.pixelformat);
+		this->config.pixelformat = getMMSFBPixelFormatFromDFBPixelFormat(dlc.pixelformat);
 		this->config.buffermode = getDFBLayerBufferModeString(dlc.buffermode);
 		this->config.options = getDFBLayerOptionsString(dlc.options);
 #endif
@@ -282,7 +282,7 @@ bool MMSFBLayer::getResolution(int *w, int *h) {
     return true;
 }
 
-bool MMSFBLayer::getPixelformat(string *pixelformat) {
+bool MMSFBLayer::getPixelformat(MMSFBSurfacePixelFormat *pixelformat) {
 
     /* check if initialized */
     INITCHECK;
@@ -298,8 +298,8 @@ bool MMSFBLayer::getPixelformat(string *pixelformat) {
     return true;
 }
 
-bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffermode, string options,
-								  string window_pixelformat, string surface_pixelformat) {
+bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelformat, string buffermode, string options,
+								  MMSFBSurfacePixelFormat window_pixelformat, MMSFBSurfacePixelFormat surface_pixelformat) {
 
     /* check if initialized */
     INITCHECK;
@@ -319,7 +319,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
 		dlc.flags = DLCONF_NONE;
 		dlc.width = w;
 		dlc.height = h;
-		dlc.pixelformat = getDFBPixelFormatFromString(pixelformat);
+		dlc.pixelformat = getDFBPixelFormatFromMMSFBPixelFormat(pixelformat);
 		dlc.buffermode = getDFBLayerBufferModeFromString(buffermode);
 		dlc.options = getDFBLayerOptionsFromString(options);
 
@@ -340,17 +340,17 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
 		DFBDisplayLayerConfigFlags failedFlags;
 		if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
 			if(failedFlags & DLCONF_PIXELFORMAT) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
 				DEBUGMSG("MMSGUI", "Your configuration contains a pixelformat that is not supported.");
 				return false;
 			}
 			if(failedFlags & DLCONF_BUFFERMODE) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
 				DEBUGMSG("MMSGUI", "Your configuration contains a buffermode that is not supported.");
 				return false;
 			}
 			if(failedFlags & DLCONF_OPTIONS) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
 				DEBUGMSG("MMSGUI", "Your configuration contains options that are not supported.");
 				return false;
 			}
@@ -361,7 +361,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
 			if(failedFlags & DLCONF_HEIGHT)
 				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_HEIGHT);
 			if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
 				return false;
 			}
 			DEBUGMSG("MMSGUI", "Your configuration contains a resolution that is not supported.");
@@ -369,7 +369,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, string pixelformat, string buffe
 
 		/* set configuration */
 		if((dfbres = this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
-			MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + pixelformat + "," + buffermode + "," + options + ") failed");
+			MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
 			return false;
 		}
 
@@ -535,7 +535,7 @@ bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
 }
 
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
-                               string pixelformat, int backbuffer) {
+							   MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 
 
     D_DEBUG_AT( MMS_Layer, "createSurface( %dx%d, %s, %s buffer )\n", w, h, pixelformat.c_str(),
@@ -552,7 +552,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
         	// the gui internally needs surfaces with alpha channel
         	// now we have to decide if we are working in RGB or YUV color space
         	pixelformat = this->config.surface_pixelformat;
-        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AiRGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+        	if ((pixelformat == MMSFB_PF_NONE)||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AiRGB)&&(pixelformat != MMSFB_PF_AYUV))) {
         		// use autodetection
 	        	if (!isRGBPixelFormat(pixelformat))
 		            // so switch all non-alpha pixelformats to AYUV
@@ -570,14 +570,14 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
     }
 
     if (firsttime_createsurface) {
-    	printf("DISKO: Pixelformat %s is used for surfaces.\n", pixelformat.c_str());
+    	printf("DISKO: Pixelformat %s is used for surfaces.\n", getMMSFBPixelFormatString(pixelformat).c_str());
     	firsttime_createsurface = false;
     }
     return mmsfb->createSurface(surface, w, h, pixelformat, backbuffer, (this->config.buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
-                              string pixelformat, bool usealpha, bool uselayersurface) {
+							  MMSFBSurfacePixelFormat pixelformat, bool usealpha, bool uselayersurface) {
 
     /* check if initialized */
     INITCHECK;
@@ -600,7 +600,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         	// switch all non-alpha pixelformats to alpha
         	// now we have to decide if we are working in RGB or YUV color space
         	pixelformat = this->config.window_pixelformat;
-        	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AiRGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+        	if ((pixelformat == MMSFB_PF_NONE)||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AiRGB)&&(pixelformat != MMSFB_PF_AYUV))) {
         		// use autodetection
 	        	if (!isRGBPixelFormat(pixelformat))
 		            // so switch all non-alpha pixelformats to AYUV
@@ -630,13 +630,13 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 
     if (usealpha) {
 	    if (firsttime_createwindow_usealpha) {
-	    	printf("DISKO: Pixelformat %s is used for windows with alphachannel.\n", pixelformat.c_str());
+	    	printf("DISKO: Pixelformat %s is used for windows with alphachannel.\n", getMMSFBPixelFormatString(pixelformat).c_str());
 	    	firsttime_createwindow_usealpha = false;
 	    }
     }
     else
 	    if (firsttime_createwindow_noalpha) {
-	    	printf("DISKO: Pixelformat %s is used for windows with no alphachannel.\n", pixelformat.c_str());
+	    	printf("DISKO: Pixelformat %s is used for windows with no alphachannel.\n", getMMSFBPixelFormatString(pixelformat).c_str());
 	    	firsttime_createwindow_noalpha = false;
 	    }
 

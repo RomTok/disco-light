@@ -303,7 +303,7 @@ bool MMSFB::refresh() {
     return true;
 }
 
-bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {
+bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
     /* check if initialized */
     INITCHECK;
 

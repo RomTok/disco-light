@@ -34,7 +34,7 @@ MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
 	this->layer = layer;
 
     // get the pixelformat, create a little temp surface
-	this->pixelformat = "";
+	this->pixelformat = MMSFB_PF_NONE;
 	MMSFBSurface *ts;
     if (this->layer->createSurface(&ts, 8, 1)) {
     	// okay, get the pixelformat from surface
@@ -678,7 +678,7 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
     }
 }
 
-MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, unsigned int height, string pixelformat) {
+MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, unsigned int height, MMSFBSurfacePixelFormat pixelformat) {
 //    DFBSurfaceDescription   desc;
     MMSIM_DESC              *im_desc = NULL;
 
@@ -709,7 +709,7 @@ MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, 
     desc.pixelformat = pixelformat;
 */
 //    if (this->dfb->CreateSurface(this->dfb, &desc, &(im_desc.surface)) != DFB_OK)
-    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat=="")?this->pixelformat:pixelformat))
+    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat==MMSFB_PF_NONE)?this->pixelformat:pixelformat))
         return NULL;
     im_desc->sufcount = 1;
     im_desc->imagefile = "";

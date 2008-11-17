@@ -50,7 +50,7 @@ typedef struct {
     //! height
     int     sbh;
     //! pixel format
-    string  pixelformat;
+    MMSFBSurfacePixelFormat pixelformat;
     //! the pixel format has alphachannel
     bool    alphachannel;
     //! premultiplied surface
@@ -278,7 +278,7 @@ class MMSFBSurface {
         				  MMSFBSurface *dstsrc = NULL, void **dstsrc_ptr = NULL, int *dstsrc_pitch = NULL);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSurface *dstsrc = NULL);
         bool printMissingCombination(char *method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
-									 string src_pixelformat = "", int src_width = 0, int src_height = 0);
+									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
         //////////
 
 
@@ -344,24 +344,14 @@ class MMSFBSurface {
         				 					 unsigned char alpha);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
-								 MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+								 MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
         						 DFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
-        bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+        bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 									 DFBRectangle *src_rect, int x, int y);
         ////////
 
 
-
-        ////////
-        void eADB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        				 			 unsigned char *dst, int dst_pitch, int dst_height, unsigned char *dstsrc, int dx, int dy);
-
-        bool extendedAccelDoubleBlitEx(MMSFBSurface *dstsrc, MMSFBSurface *source,
-        							   MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
-        							   DFBRectangle *src_rect, int x, int y);
-        bool extendedAccelDoubleBlit(MMSFBSurface *dstsrc, MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
-        //////////
 
 
         //////////
@@ -387,10 +377,10 @@ class MMSFBSurface {
 							   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
-										MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 										DFBRectangle *src_rect, DFBRectangle *dest_rect);
         bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+        bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 											DFBRectangle *src_rect, DFBRectangle *dest_rect);
         //////////
 
@@ -461,12 +451,12 @@ class MMSFBSurface {
         void unlock(bool pthread_unlock);
 
     public:
-        MMSFBSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly);
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly);
         MMSFBSurface(IDirectFBSurface *dfbsurface,
 					 MMSFBSurface *parent = NULL,
 					 DFBRectangle *sub_surface_rect = NULL);
 #ifdef __HAVE_XLIB__
-        MMSFBSurface(int w, int h, string pixelformat, XvImage *xv_image1, XvImage *xv_image2);
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
 
         virtual ~MMSFBSurface();
@@ -486,7 +476,7 @@ class MMSFBSurface {
         bool isWinSurface();
         bool isLayerSurface();
 
-        bool getPixelFormat(string *pf);
+        bool getPixelFormat(MMSFBSurfacePixelFormat *pf);
         bool getSize(int *w, int *h);
         bool getMemSize(int *size);
 
@@ -513,17 +503,16 @@ class MMSFBSurface {
 
         bool setBlittingFlags(MMSFBSurfaceBlittingFlags flags);
         bool blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
-        bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+        bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						DFBRectangle *src_rect, int x, int y);
-        bool blitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+        bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						DFBRectangle *src_rect, int x, int y);
         bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, string src_pixelformat, int src_width, int src_height,
+        bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        bool stretchBlitBuffer(void *src_ptr, int src_pitch, string src_pixelformat, int src_width, int src_height,
+        bool stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
 
-        bool doubleBlit(MMSFBSurface *dstsrc, MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
 
         bool flip(DFBRegion *region = NULL);
         bool refresh();

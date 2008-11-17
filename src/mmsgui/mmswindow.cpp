@@ -445,7 +445,7 @@ bool MMSWindow::resize(bool refresh) {
         if (!this->window) {
             /* create window */
             /* get layers pixelformat */
-            string pixelformat;
+        	MMSFBSurfacePixelFormat pixelformat;
             this->layer->getPixelformat(&pixelformat);
 
             if (!(this->flags & MMSW_VIDEO)) {
@@ -454,7 +454,7 @@ bool MMSWindow::resize(bool refresh) {
                                                     + iToStr(wdesc.posy) + ","
                                                     + iToStr(wdesc.width) + ","
                                                     + iToStr(wdesc.height)
-                                                    + ") with pixelformat " + pixelformat
+                                                    + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
                                                     + " (use alpha)");
                 this->layer->createWindow(&(this->window),
                                           wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
@@ -467,7 +467,7 @@ bool MMSWindow::resize(bool refresh) {
                                                           + iToStr(wdesc.posy) + ","
                                                           + iToStr(wdesc.width) + ","
                                                           + iToStr(wdesc.height)
-                                                          + ") with pixelformat " + pixelformat
+                                                          + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
                                                           + " (do not use alpha)");
                 this->layer->createWindow(&(this->window),
                                           wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
@@ -513,7 +513,7 @@ bool MMSWindow::resize(bool refresh) {
         if (!this->surface) {
             /* create surface for child window */
             /* get layers pixelformat */
-            string pixelformat;
+        	MMSFBSurfacePixelFormat pixelformat;
             this->layer->getPixelformat(&pixelformat);
 
             bool os;
@@ -523,7 +523,7 @@ bool MMSWindow::resize(bool refresh) {
 	                                                                  + iToStr(wdesc.posy) + ","
 	                                                                  + iToStr(wdesc.width) + ","
 	                                                                  + iToStr(wdesc.height)
-	                                                                  + ") with pixelformat " + pixelformat
+	                                                                  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                  + " (use alpha)");
 
 	            this->layer->createSurface(&(this->surface),
@@ -534,7 +534,7 @@ bool MMSWindow::resize(bool refresh) {
 	                                                                      + iToStr(wdesc.posy) + ","
 	                                                                      + iToStr(wdesc.width) + ","
 	                                                                      + iToStr(wdesc.height)
-	                                                                      + ") with pixelformat " + pixelformat
+	                                                                      + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                      + " (use alpha)");
 
 	            DFBRectangle rect;
