@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <stdlib.h>
 
 MMSProcessMonitor::MMSProcessMonitor(unsigned int interval) : monitoringInterval(interval) {
 	this->shutdown = false;
