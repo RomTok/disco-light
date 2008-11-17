@@ -25,7 +25,7 @@
 
 #include "mmsgui/mmswidget.h"
 
-//! With this class you can draw an arrow. 
+//! With this class you can draw an arrow.
 /*!
 The arrow here is nothing more than a triangle with a specified direction.
 The arrow widget cannot be focused.
@@ -50,12 +50,12 @@ class MMSArrowWidget : public MMSWidget {
 
     public:
         /* theme access methods */
-        DFBColor getColor();
-        DFBColor getSelColor();
+        MMSFBColor getColor();
+        MMSFBColor getSelColor();
         MMSDIRECTION getDirection();
 
-        void setColor(DFBColor color, bool refresh = true);
-        void setSelColor(DFBColor selcolor, bool refresh = true);
+        void setColor(MMSFBColor color, bool refresh = true);
+        void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setDirection(MMSDIRECTION direction, bool refresh = true);
 
         void updateFromThemeClass(MMSArrowWidgetClass *themeClass);

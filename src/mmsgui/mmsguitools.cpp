@@ -93,7 +93,7 @@ bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis
     }
 }
 
-bool getColorFromString(string input, DFBColor *color) {
+bool getColorFromString(string input, MMSFBColor *color) {
 
     color->r = 0;
     color->g = 0;

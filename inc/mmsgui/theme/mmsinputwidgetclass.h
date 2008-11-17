@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSInputWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSInputWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_INPUTWIDGET_ATTR {
 
 	#define MMSGUI_INPUTWIDGET_ATTR_ATTRDESC \
@@ -44,7 +44,7 @@ namespace MMSGUI_INPUTWIDGET_ATTR {
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
 		{ "text", TAFF_ATTRTYPE_STRING }
-	
+
 	#define MMSGUI_INPUTWIDGET_ATTR_IDS \
 		MMSGUI_INPUTWIDGET_ATTR_IDS_font_path, \
 		MMSGUI_INPUTWIDGET_ATTR_IDS_font_name, \
@@ -61,7 +61,7 @@ namespace MMSGUI_INPUTWIDGET_ATTR {
 		MMSGUI_INPUTWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_INPUTWIDGET_ATTR_IDS_selcolor_b, \
 		MMSGUI_INPUTWIDGET_ATTR_IDS_text
-	
+
 	#define MMSGUI_INPUTWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -84,7 +84,7 @@ extern TAFF_ATTRDESC MMSGUI_INPUTWIDGET_ATTR_I[];
 //! A data access class for the input widget.
 /*!
 This class is the base for the MMSInputWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSInputWidget.
@@ -94,46 +94,46 @@ class MMSInputWidgetClass {
     private:
     	//! name of the theme class
         string          className;
-        
+
         //! is fontpath set?
         bool            isfontpath;
-        
+
         //! path to the font
         string          fontpath;
-        
+
         //! is fontname set?
         bool            isfontname;
-        
+
         //! name of the font
         string          fontname;
-        
+
         //! is fontsize set?
         bool            isfontsize;
-        
+
         //! size of the font
         unsigned int    fontsize;
-        
+
         //! is alignment set?
         bool            isalignment;
-        
+
         //! alignment of the text
         MMSALIGNMENT    alignment;
-        
+
         //! is color set?
         bool            iscolor;
-        
+
         //! color of the text if the widget is not selected
-        DFBColor        color;
-        
+        MMSFBColor      color;
+
         //! is selcolor set?
         bool            isselcolor;
-        
+
         //! color of the text if the widget is selected
-        DFBColor        selcolor;
-        
+        MMSFBColor      selcolor;
+
         //! is text set?
         bool            istext;
-        
+
         //! text to draw
         string          text;
 
@@ -147,7 +147,7 @@ class MMSInputWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSInputWidgetClass.
         MMSInputWidgetClass();
@@ -246,7 +246,7 @@ class MMSInputWidgetClass {
         /*!
         \param color  color for unselected text
         */
-        void setColor(DFBColor color);
+        void setColor(MMSFBColor color);
 
         //! Mark the color as not set.
         void unsetColor();
@@ -255,7 +255,7 @@ class MMSInputWidgetClass {
         /*!
         \return color for unselected text
         */
-        DFBColor getColor();
+        MMSFBColor getColor();
 
         //! Check if the color is set. This color will be used for the selected text.
         bool isSelColor();
@@ -264,7 +264,7 @@ class MMSInputWidgetClass {
         /*!
         \param selcolor  color for selected text
         */
-        void setSelColor(DFBColor selcolor);
+        void setSelColor(MMSFBColor selcolor);
 
         //! Mark the color as not set.
         void unsetSelColor();
@@ -273,7 +273,7 @@ class MMSInputWidgetClass {
         /*!
         \return color for selected text
         */
-        DFBColor getSelColor();
+        MMSFBColor getSelColor();
 
         //! Check if the text is set.
         bool isText();

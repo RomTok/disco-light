@@ -79,8 +79,8 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSALIGNMENT getAlignment();
         bool getWrap();
         bool getSplitWords();
-        DFBColor getColor();
-        DFBColor getSelColor();
+        MMSFBColor getColor();
+        MMSFBColor getSelColor();
         string getText();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
@@ -90,8 +90,8 @@ class MMSTextBoxWidget : public MMSWidget {
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setWrap(bool wrap, bool refresh = true);
         void setSplitWords(bool splitwords, bool refresh = true);
-        void setColor(DFBColor color, bool refresh = true);
-        void setSelColor(DFBColor selcolor, bool refresh = true);
+        void setColor(MMSFBColor color, bool refresh = true);
+        void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true);
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);

@@ -62,7 +62,7 @@ typedef struct {
 */
 bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis);
 
-bool getColorFromString(string input, DFBColor *color);
+bool getColorFromString(string input, MMSFBColor *color);
 
 bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer = NULL, IDirectFB *dfb = NULL);
 

@@ -24,7 +24,7 @@
 
 MMSArrowWidget::MMSArrowWidget(MMSWindow *root, string className, MMSTheme *theme) {
     create(root, className, theme);
-} 
+}
 
 MMSArrowWidget::~MMSArrowWidget() {
 }
@@ -42,7 +42,7 @@ bool MMSArrowWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 
 MMSWidget *MMSArrowWidget::copyWidget() {
     /* create widget */
-    MMSArrowWidget *newWidget = new MMSArrowWidget(this->rootwindow, className); 
+    MMSArrowWidget *newWidget = new MMSArrowWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -81,14 +81,14 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
         DFBRectangle surfaceGeom = getSurfaceGeometry();
 
         /* get color */
-        DFBColor color;
+        MMSFBColor color;
         if (isSelected())
             color = getSelColor();
         else
             color = getColor();
 
         if (color.a) {
-            /* prepare for drawing */        
+            /* prepare for drawing */
             this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
             /* draw triangle */
@@ -165,11 +165,11 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
     else if ((arrowWidgetClass)&&(arrowWidgetClass->is##x())) return arrowWidgetClass->get##x(); \
     else return this->theme->arrowWidgetClass.get##x();
 
-DFBColor MMSArrowWidget::getColor() {
+MMSFBColor MMSArrowWidget::getColor() {
     GETARROW(Color);
 }
 
-DFBColor MMSArrowWidget::getSelColor() {
+MMSFBColor MMSArrowWidget::getSelColor() {
     GETARROW(SelColor);
 }
 
@@ -181,13 +181,13 @@ MMSDIRECTION MMSArrowWidget::getDirection() {
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
-void MMSArrowWidget::setColor(DFBColor color, bool refresh) {
+void MMSArrowWidget::setColor(MMSFBColor color, bool refresh) {
     myArrowWidgetClass.setColor(color);
     if (refresh)
         this->refresh();
 }
 
-void MMSArrowWidget::setSelColor(DFBColor selcolor, bool refresh) {
+void MMSArrowWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myArrowWidgetClass.setSelColor(selcolor);
     if (refresh)
         this->refresh();

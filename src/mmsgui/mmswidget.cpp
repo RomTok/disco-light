@@ -814,7 +814,7 @@ if (!this->has_own_surface) {
     /* draw background */
     do {
         /* searching for the background color or image */
-        DFBColor col;
+        MMSFBColor col;
         MMSFBSurface *suf = NULL;
         col.a = 0;
 
@@ -947,7 +947,7 @@ if (!this->has_own_surface) {
             else {
                 /* no parent found, use background from window */
                 if (this->rootwindow) {
-                    DFBColor bgcolor;
+                    MMSFBColor bgcolor;
                     this->rootwindow->getBgColor(bgcolor);
                     if (!this->rootwindow->bgimage) {
                         /* draw background with window bgcolor */
@@ -1053,7 +1053,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
     /* draw background */
     do {
         /* searching for the background color or image */
-        DFBColor col;
+        MMSFBColor col;
         MMSFBSurface *suf = NULL;
         col.a = 0;
 
@@ -1068,7 +1068,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                     suf = this->bgimage;
                 }
             	if (isPressed()) {
-                    DFBColor mycol;
+                    MMSFBColor mycol;
                     if (isSelected()) {
                         getSelBgColor_p(mycol);
                         if (mycol.a>0) col=mycol;
@@ -1202,7 +1202,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
             else {
                 /* no parent found, use background from window */
                 if (this->rootwindow) {
-                    DFBColor bgcolor;
+                    MMSFBColor bgcolor;
                     this->rootwindow->getBgColor(bgcolor);
                     if (!this->rootwindow->bgimage) {
                         /* draw background with window bgcolor */
@@ -1304,7 +1304,7 @@ void MMSWidget::drawMyBorder() {
     	borderrcorners = false;
 
     if (isSelected()) {
-        DFBColor c;
+        MMSFBColor c;
         getBorderSelColor(c);
         drawBorder(borderthickness, borderrcorners, this->borderselimages,
                    this->borderselgeom, &(this->borderselgeomset), this->windowSurface,
@@ -1312,7 +1312,7 @@ void MMSWidget::drawMyBorder() {
                    getBrightness(), getOpacity());
     }
     else {
-        DFBColor c;
+        MMSFBColor c;
         getBorderColor(c);
         drawBorder(borderthickness, borderrcorners, this->borderimages,
                    this->bordergeom, &(this->bordergeomset), this->windowSurface,
@@ -1491,7 +1491,7 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
 
 	//OLD code, has to be deleted...
 
-	DFBColor c;
+	MMSFBColor c;
 
 	if (this->needsparentdraw)
         return true;
@@ -1510,13 +1510,13 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
                 return true;
             else
             if (this->selected) {
-                DFBColor c;
+                MMSFBColor c;
                 getBorderSelColor(c);
                 if (c.a!=255)
                     return true;
             }
             else {
-                DFBColor c;
+                MMSFBColor c;
                 getBorderColor(c);
                 if (c.a!=255)
                     return true;
@@ -2114,27 +2114,27 @@ bool MMSWidget::canNavigateRight() {
     else return myWidgetClass.get##x(y);
 
 
-bool MMSWidget::getBgColor(DFBColor &bgcolor) {
+bool MMSWidget::getBgColor(MMSFBColor &bgcolor) {
     GETWIDGET(BgColor, bgcolor);
 }
 
-bool MMSWidget::getSelBgColor(DFBColor &selbgcolor) {
+bool MMSWidget::getSelBgColor(MMSFBColor &selbgcolor) {
     GETWIDGET(SelBgColor, selbgcolor);
 }
 
-bool MMSWidget::getBgColor_p(DFBColor &bgcolor_p) {
+bool MMSWidget::getBgColor_p(MMSFBColor &bgcolor_p) {
     GETWIDGET(BgColor_p, bgcolor_p);
 }
 
-bool MMSWidget::getSelBgColor_p(DFBColor &selbgcolor_p) {
+bool MMSWidget::getSelBgColor_p(MMSFBColor &selbgcolor_p) {
     GETWIDGET(SelBgColor_p, selbgcolor_p);
 }
 
-bool MMSWidget::getBgColor_i(DFBColor &bgcolor_i) {
+bool MMSWidget::getBgColor_i(MMSFBColor &bgcolor_i) {
     GETWIDGET(BgColor_i, bgcolor_i);
 }
 
-bool MMSWidget::getSelBgColor_i(DFBColor &selbgcolor_i) {
+bool MMSWidget::getSelBgColor_i(MMSFBColor &selbgcolor_i) {
     GETWIDGET(SelBgColor_i, selbgcolor_i);
 }
 
@@ -2285,11 +2285,11 @@ bool MMSWidget::getScrollOnFocus(bool &scrollonfocus) {
 
 
 
-bool MMSWidget::getBorderColor(DFBColor &color) {
+bool MMSWidget::getBorderColor(MMSFBColor &color) {
     GETBORDER(Color, color);
 }
 
-bool MMSWidget::getBorderSelColor(DFBColor &selcolor) {
+bool MMSWidget::getBorderSelColor(MMSFBColor &selcolor) {
     GETBORDER(SelColor, selcolor);
 }
 
@@ -2325,37 +2325,37 @@ bool MMSWidget::getBorderRCorners(bool &rcorners) {
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
-void MMSWidget::setBgColor(DFBColor bgcolor, bool refresh) {
+void MMSWidget::setBgColor(MMSFBColor bgcolor, bool refresh) {
     myWidgetClass.setBgColor(bgcolor);
     if (refresh)
         this->refresh();
 }
 
-void MMSWidget::setSelBgColor(DFBColor selbgcolor, bool refresh) {
+void MMSWidget::setSelBgColor(MMSFBColor selbgcolor, bool refresh) {
     myWidgetClass.setSelBgColor(selbgcolor);
     if (refresh)
         this->refresh();
 }
 
-void MMSWidget::setBgColor_p(DFBColor bgcolor_p, bool refresh) {
+void MMSWidget::setBgColor_p(MMSFBColor bgcolor_p, bool refresh) {
     myWidgetClass.setBgColor_p(bgcolor_p);
     if (refresh)
         this->refresh();
 }
 
-void MMSWidget::setSelBgColor_p(DFBColor selbgcolor_p, bool refresh) {
+void MMSWidget::setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh) {
     myWidgetClass.setSelBgColor(selbgcolor_p);
     if (refresh)
         this->refresh();
 }
 
-void MMSWidget::setBgColor_i(DFBColor bgcolor_i, bool refresh) {
+void MMSWidget::setBgColor_i(MMSFBColor bgcolor_i, bool refresh) {
     myWidgetClass.setBgColor_i(bgcolor_i);
     if (refresh)
         this->refresh();
 }
 
-void MMSWidget::setSelBgColor_i(DFBColor selbgcolor_i, bool refresh) {
+void MMSWidget::setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh) {
     myWidgetClass.setSelBgColor(selbgcolor_i);
     if (refresh)
         this->refresh();
@@ -2656,13 +2656,13 @@ void MMSWidget::setScrollOnFocus(bool scrollonfocus) {
     myWidgetClass.setScrollOnFocus(scrollonfocus);
 }
 
-void MMSWidget::setBorderColor(DFBColor bordercolor, bool refresh) {
+void MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
     myWidgetClass.border.setColor(bordercolor);
     if (refresh)
         this->refresh();
 }
 
-void MMSWidget::setBorderSelColor(DFBColor borderselcolor, bool refresh) {
+void MMSWidget::setBorderSelColor(MMSFBColor borderselcolor, bool refresh) {
     myWidgetClass.border.setSelColor(borderselcolor);
     if (refresh)
         this->refresh();
@@ -2767,7 +2767,7 @@ void MMSWidget::setBorderRCorners(bool borderrcorners, bool refresh) {
 void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
 
 	bool 			b;
-	DFBColor		c;
+	MMSFBColor		c;
 	string 			s;
 	unsigned int	u;
 	double			d;

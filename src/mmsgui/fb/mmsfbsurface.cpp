@@ -9917,7 +9917,7 @@ bool MMSFBSurface::resize(int w, int h) {
 
 
 
-void MMSFBSurface::modulateBrightness(DFBColor *color, unsigned char brightness) {
+void MMSFBSurface::modulateBrightness(MMSFBColor *color, unsigned char brightness) {
 
     /* full brightness? */
     if (brightness == 255) return;
@@ -9946,7 +9946,7 @@ void MMSFBSurface::modulateBrightness(DFBColor *color, unsigned char brightness)
     }
 }
 
-void MMSFBSurface::modulateOpacity(DFBColor *color, unsigned char opacity) {
+void MMSFBSurface::modulateOpacity(MMSFBColor *color, unsigned char opacity) {
 
     /* full opacity? */
     if (opacity == 255) return;
@@ -9968,7 +9968,7 @@ void MMSFBSurface::modulateOpacity(DFBColor *color, unsigned char opacity) {
 
 bool MMSFBSurface::setBlittingFlagsByBrightnessAlphaAndOpacity(
                     unsigned char brightness, unsigned char alpha, unsigned char opacity) {
-    DFBColor color;
+    MMSFBColor color;
 
     /* check if initialized */
     INITCHECK;
@@ -10022,7 +10022,7 @@ bool MMSFBSurface::setDrawingFlagsByAlpha(unsigned char alpha) {
 
 
 bool MMSFBSurface::setDrawingColorAndFlagsByBrightnessAndOpacity(
-                        DFBColor color, unsigned char brightness, unsigned char opacity) {
+                        MMSFBColor color, unsigned char brightness, unsigned char opacity) {
 
     /* check if initialized */
     INITCHECK;

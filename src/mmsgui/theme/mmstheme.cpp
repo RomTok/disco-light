@@ -385,7 +385,7 @@ MMSInputWidgetClass* MMSTheme::getInputWidgetClass(string className) {
 MMSTheme::MMSTheme() {
 
     /* initialize the theme with default values */
-    DFBColor color;
+    MMSFBColor color;
     color.a = 0;
     color.r = 0;
     color.g = 0;
@@ -610,7 +610,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setFontName("decker.ttf");
         this->labelWidgetClass.setFontSize(16);
         this->labelWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
@@ -801,7 +801,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.border.setRCorners(false);
 
         /* progressbar settings */
-        DFBColor c;
+        MMSFBColor c;
         c.a = 0;
         c.r = 0;
         c.g = 0;
@@ -955,7 +955,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         this->textBoxWidgetClass.setWrap(true);
         this->textBoxWidgetClass.setSplitWords(true);
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
@@ -1021,7 +1021,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.border.setRCorners(false);
 
         /* arrow settings */
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
@@ -1158,7 +1158,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.setFontName("decker.ttf");
         this->inputWidgetClass.setFontSize(16);
         this->inputWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;

@@ -521,14 +521,14 @@ class MMSFBSurface {
                         bool copycontent = false, bool withbackbuffer = false);
         bool resize(int w = 0, int h = 0);
 
-        void modulateBrightness(DFBColor *color, unsigned char brightness);
-        void modulateOpacity(DFBColor *color, unsigned char opacity);
+        void modulateBrightness(MMSFBColor *color, unsigned char brightness);
+        void modulateOpacity(MMSFBColor *color, unsigned char opacity);
 
         bool setBlittingFlagsByBrightnessAlphaAndOpacity(
                     unsigned char brightness, unsigned char alpha, unsigned char opacity);
         bool setDrawingFlagsByAlpha(unsigned char alpha);
         bool setDrawingColorAndFlagsByBrightnessAndOpacity(
-                    DFBColor color, unsigned char brightness, unsigned char opacity);
+                    MMSFBColor color, unsigned char brightness, unsigned char opacity);
 
         bool setFont(MMSFBFont *font);
         bool drawString(string text, int len, int x, int y);

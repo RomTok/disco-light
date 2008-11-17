@@ -815,7 +815,7 @@ class MMSWindow {
         \param bgcolor	returns the bgcolor
         \return true, if bgcolor is successfully returned
         */
-        bool getBgColor(DFBColor &bgcolor);
+        bool getBgColor(MMSFBColor &bgcolor);
 
         //! Get the path to the background image of the window.
         /*!
@@ -968,7 +968,7 @@ class MMSWindow {
         \param color	returns the border color
         \return true, if color is successfully returned
         */
-        bool getBorderColor(DFBColor &color);
+        bool getBorderColor(MMSFBColor &color);
 
         //! Get the path to the window border images.
         /*!
@@ -1070,7 +1070,7 @@ class MMSWindow {
         \param bgcolor	the bgcolor
         \param refresh	refresh the window after changing the bgcolor?
         */
-        void setBgColor(DFBColor bgcolor, bool refresh = true);
+        void setBgColor(MMSFBColor bgcolor, bool refresh = true);
 
         //! Set the path to the background image of the window.
         /*!
@@ -1217,7 +1217,7 @@ class MMSWindow {
         \param color	the border color
         \param refresh	refresh the window after changing the border color?
         */
-        void setBorderColor(DFBColor color, bool refresh = true);
+        void setBorderColor(MMSFBColor color, bool refresh = true);
 
         //! Set the path to the window border images.
         /*!

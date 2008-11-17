@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_WIDGET_ATTR_I[] = MMSGUI_WIDGET_ATTR_INIT;
 
 //address attribute names
@@ -39,7 +39,7 @@ MMSWidgetClass::MMSWidgetClass() {
     initSelBgColor_p();
     initBgColor_i();
     initSelBgColor_i();
-    
+
     initBgImagePath();
     initBgImageName();
     initSelBgImagePath();
@@ -87,7 +87,7 @@ MMSWidgetClass::~MMSWidgetClass() {
     freeSelBgColor_p();
     freeBgColor_i();
     freeSelBgColor_i();
-    
+
     freeBgImagePath();
     freeBgImageName();
     freeSelBgImagePath();
@@ -128,10 +128,10 @@ MMSWidgetClass::~MMSWidgetClass() {
     freeScrollOnFocus();
 }
 
-MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) { 
+MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
 	if (this != &c) {
 		/* copy internal fix data area */
-		this->border = c.border; 
+		this->border = c.border;
 		this->id = c.id;
 
 		/* copy external data */
@@ -193,7 +193,7 @@ void MMSWidgetClass::unsetAll() {
     unsetSelBgColor_p();
     unsetBgColor_i();
     unsetSelBgColor_i();
-    
+
     unsetBgImagePath();
     unsetBgImageName();
     unsetSelBgImagePath();
@@ -235,7 +235,7 @@ void MMSWidgetClass::unsetAll() {
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
-    DFBColor color;
+    MMSFBColor color;
     bool class_set = false;
 
     if (!prefix) {
@@ -248,7 +248,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setBgColor(color);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_a:
@@ -278,7 +278,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor()) getSelBgColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelBgColor(color);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_a:
@@ -308,7 +308,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_p()) getBgColor_p(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setBgColor_p(color);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_a:
@@ -338,7 +338,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_p()) getSelBgColor_p(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelBgColor_p(color);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_a:
@@ -368,7 +368,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_i()) getBgColor_i(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setBgColor_i(color);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_a:
@@ -398,7 +398,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_i()) getSelBgColor_i(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelBgColor_i(color);
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_a:
@@ -581,7 +581,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -592,217 +592,217 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(bgcolor)) { 
+            if (ISATTRNAME(bgcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setBgColor(color);
             }
             else
-            if (ISATTRNAME(bgcolor_a)) { 
+            if (ISATTRNAME(bgcolor_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
 	            color.a = attrval_int;
 	            setBgColor(color);
             }
             else
-            if (ISATTRNAME(bgcolor_r)) { 
+            if (ISATTRNAME(bgcolor_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
 	            color.r = attrval_int;
 	            setBgColor(color);
             }
             else
-            if (ISATTRNAME(bgcolor_g)) { 
+            if (ISATTRNAME(bgcolor_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
 	            color.g = attrval_int;
 	            setBgColor(color);
             }
             else
-            if (ISATTRNAME(bgcolor_b)) { 
+            if (ISATTRNAME(bgcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
 	            color.b = attrval_int;
 	            setBgColor(color);
             }
             else
-            if (ISATTRNAME(selbgcolor)) { 
+            if (ISATTRNAME(selbgcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor()) getSelBgColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelBgColor(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_a)) { 
+            if (ISATTRNAME(selbgcolor_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor()) getSelBgColor(color);
 	            color.a = attrval_int;
 	            setSelBgColor(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_r)) { 
+            if (ISATTRNAME(selbgcolor_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor()) getSelBgColor(color);
 	            color.r = attrval_int;
 	            setSelBgColor(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_g)) { 
+            if (ISATTRNAME(selbgcolor_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor()) getSelBgColor(color);
 	            color.g = attrval_int;
 	            setSelBgColor(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_b)) { 
+            if (ISATTRNAME(selbgcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor()) getSelBgColor(color);
 	            color.b = attrval_int;
 	            setSelBgColor(color);
             }
             else
-            if (ISATTRNAME(bgcolor_p)) { 
+            if (ISATTRNAME(bgcolor_p)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_p()) getBgColor_p(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setBgColor_p(color);
             }
             else
-            if (ISATTRNAME(bgcolor_p_a)) { 
+            if (ISATTRNAME(bgcolor_p_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_p()) getBgColor_p(color);
 	            color.a = attrval_int;
 	            setBgColor_p(color);
             }
             else
-            if (ISATTRNAME(bgcolor_p_r)) { 
+            if (ISATTRNAME(bgcolor_p_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_p()) getBgColor_p(color);
 	            color.r = attrval_int;
 	            setBgColor_p(color);
             }
             else
-            if (ISATTRNAME(bgcolor_p_g)) { 
+            if (ISATTRNAME(bgcolor_p_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_p()) getBgColor_p(color);
 	            color.g = attrval_int;
 	            setBgColor_p(color);
             }
             else
-            if (ISATTRNAME(bgcolor_b)) { 
+            if (ISATTRNAME(bgcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_p()) getBgColor_p(color);
 	            color.b = attrval_int;
 	            setBgColor_p(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_p)) { 
+            if (ISATTRNAME(selbgcolor_p)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_p()) getSelBgColor_p(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelBgColor_p(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_p_a)) { 
+            if (ISATTRNAME(selbgcolor_p_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_p()) getSelBgColor_p(color);
 	            color.a = attrval_int;
 	            setSelBgColor_p(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_p_r)) { 
+            if (ISATTRNAME(selbgcolor_p_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_p()) getSelBgColor_p(color);
 	            color.r = attrval_int;
 	            setSelBgColor_p(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_p_g)) { 
+            if (ISATTRNAME(selbgcolor_p_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_p()) getSelBgColor_p(color);
 	            color.g = attrval_int;
 	            setSelBgColor_p(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_p_b)) { 
+            if (ISATTRNAME(selbgcolor_p_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_p()) getSelBgColor_p(color);
 	            color.b = attrval_int;
 	            setSelBgColor_p(color);
             }
             else
-            if (ISATTRNAME(bgcolor_i)) { 
+            if (ISATTRNAME(bgcolor_i)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_i()) getBgColor_i(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setBgColor_i(color);
             }
             else
-            if (ISATTRNAME(bgcolor_i_a)) { 
+            if (ISATTRNAME(bgcolor_i_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_i()) getBgColor_i(color);
 	            color.a = attrval_int;
 	            setBgColor_i(color);
             }
             else
-            if (ISATTRNAME(bgcolor_i_r)) { 
+            if (ISATTRNAME(bgcolor_i_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_i()) getBgColor_i(color);
 	            color.r = attrval_int;
 	            setBgColor_i(color);
             }
             else
-            if (ISATTRNAME(bgcolor_i_g)) { 
+            if (ISATTRNAME(bgcolor_i_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_i()) getBgColor_i(color);
 	            color.g = attrval_int;
 	            setBgColor_i(color);
             }
             else
-            if (ISATTRNAME(bgcolor_i_b)) { 
+            if (ISATTRNAME(bgcolor_i_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor_i()) getBgColor_i(color);
 	            color.b = attrval_int;
 	            setBgColor_i(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_i)) { 
+            if (ISATTRNAME(selbgcolor_i)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_i()) getSelBgColor_i(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelBgColor_i(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_i_a)) { 
+            if (ISATTRNAME(selbgcolor_i_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_i()) getSelBgColor_i(color);
 	            color.a = attrval_int;
 	            setSelBgColor_i(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_i_r)) { 
+            if (ISATTRNAME(selbgcolor_i_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_i()) getSelBgColor_i(color);
 	            color.r = attrval_int;
 	            setSelBgColor_i(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_i_g)) { 
+            if (ISATTRNAME(selbgcolor_i_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_i()) getSelBgColor_i(color);
 	            color.g = attrval_int;
 	            setSelBgColor_i(color);
             }
             else
-            if (ISATTRNAME(selbgcolor_i_b)) { 
+            if (ISATTRNAME(selbgcolor_i_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelBgColor_i()) getSelBgColor_i(color);
 	            color.b = attrval_int;
 	            setSelBgColor_i(color);
             }
             else
-            if (ISATTRNAME(bgimage)) { 
+            if (ISATTRNAME(bgimage)) {
 	            if (*attrval_str)
 	                setBgImagePath("");
 	            else
@@ -810,18 +810,18 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setBgImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(bgimage_path)) { 
+            if (ISATTRNAME(bgimage_path)) {
 	            if (*attrval_str)
 	                setBgImagePath(attrval_str);
 	            else
 	                setBgImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(bgimage_name)) { 
+            if (ISATTRNAME(bgimage_name)) {
 	            setBgImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(selbgimage)) { 
+            if (ISATTRNAME(selbgimage)) {
 	            if (*attrval_str)
 	                setSelBgImagePath("");
 	            else
@@ -829,18 +829,18 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setSelBgImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(selbgimage_path)) { 
+            if (ISATTRNAME(selbgimage_path)) {
 	            if (*attrval_str)
 	                setSelBgImagePath(attrval_str);
 	            else
 	                setSelBgImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selbgimage_name)) { 
+            if (ISATTRNAME(selbgimage_name)) {
 	            setSelBgImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(bgimage_p)) { 
+            if (ISATTRNAME(bgimage_p)) {
 	            if (*attrval_str)
 	                setBgImagePath_p("");
 	            else
@@ -848,18 +848,18 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setBgImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(bgimage_p_path)) { 
+            if (ISATTRNAME(bgimage_p_path)) {
 	            if (*attrval_str)
 	                setBgImagePath_p(attrval_str);
 	            else
 	                setBgImagePath_p((path)?*path:"");
             }
             else
-            if (ISATTRNAME(bgimage_p_name)) { 
+            if (ISATTRNAME(bgimage_p_name)) {
 	            setBgImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(selbgimage_p)) { 
+            if (ISATTRNAME(selbgimage_p)) {
 	            if (*attrval_str)
 	                setSelBgImagePath_p("");
 	            else
@@ -867,18 +867,18 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setSelBgImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(selbgimage_p_path)) { 
+            if (ISATTRNAME(selbgimage_p_path)) {
 	            if (*attrval_str)
 	                setSelBgImagePath_p(attrval_str);
 	            else
 	                setSelBgImagePath_p((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selbgimage_p_name)) { 
+            if (ISATTRNAME(selbgimage_p_name)) {
 	            setSelBgImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(bgimage_i)) { 
+            if (ISATTRNAME(bgimage_i)) {
 	            if (*attrval_str)
 	                setBgImagePath_i("");
 	            else
@@ -886,18 +886,18 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setBgImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(bgimage_i_path)) { 
+            if (ISATTRNAME(bgimage_i_path)) {
 	            if (*attrval_str)
 	                setBgImagePath_i(attrval_str);
 	            else
 	                setBgImagePath_i((path)?*path:"");
             }
             else
-            if (ISATTRNAME(bgimage_i_name)) { 
+            if (ISATTRNAME(bgimage_i_name)) {
 	            setBgImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(selbgimage_i)) { 
+            if (ISATTRNAME(selbgimage_i)) {
 	            if (*attrval_str)
 	                setSelBgImagePath_i("");
 	            else
@@ -905,86 +905,86 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setSelBgImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(selbgimage_i_path)) { 
+            if (ISATTRNAME(selbgimage_i_path)) {
 	            if (*attrval_str)
 	                setSelBgImagePath_i(attrval_str);
 	            else
 	                setSelBgImagePath_i((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selbgimage_i_name)) { 
+            if (ISATTRNAME(selbgimage_i_name)) {
 	            setSelBgImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(margin)) { 
+            if (ISATTRNAME(margin)) {
 	            setMargin(attrval_int);
             }
             else
-            if (ISATTRNAME(focusable)) { 
+            if (ISATTRNAME(focusable)) {
 	            setFocusable((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(selectable)) { 
+            if (ISATTRNAME(selectable)) {
 	            setSelectable((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(up_arrow)) { 
+            if (ISATTRNAME(up_arrow)) {
 	            setUpArrow(attrval_str);
             }
             else
-            if (ISATTRNAME(down_arrow)) { 
+            if (ISATTRNAME(down_arrow)) {
 	            setDownArrow(attrval_str);
             }
             else
-            if (ISATTRNAME(left_arrow)) { 
+            if (ISATTRNAME(left_arrow)) {
 	            setLeftArrow(attrval_str);
             }
             else
-            if (ISATTRNAME(right_arrow)) { 
+            if (ISATTRNAME(right_arrow)) {
 	            setRightArrow(attrval_str);
             }
             else
-            if (ISATTRNAME(data)) { 
+            if (ISATTRNAME(data)) {
 	            setData(attrval_str);
             }
             else
-            if (ISATTRNAME(navigate_up)) { 
+            if (ISATTRNAME(navigate_up)) {
 	            setNavigateUp(attrval_str);
             }
             else
-            if (ISATTRNAME(navigate_down)) { 
+            if (ISATTRNAME(navigate_down)) {
 	            setNavigateDown(attrval_str);
             }
             else
-            if (ISATTRNAME(navigate_left)) { 
+            if (ISATTRNAME(navigate_left)) {
 	            setNavigateLeft(attrval_str);
             }
             else
-            if (ISATTRNAME(navigate_right)) { 
+            if (ISATTRNAME(navigate_right)) {
 	            setNavigateRight(attrval_str);
             }
             else
-            if (ISATTRNAME(vslider)) { 
+            if (ISATTRNAME(vslider)) {
 	            setVSlider(attrval_str);
             }
             else
-            if (ISATTRNAME(hslider)) { 
+            if (ISATTRNAME(hslider)) {
 	            setHSlider(attrval_str);
             }
             else
-            if (ISATTRNAME(imagesondemand)) { 
+            if (ISATTRNAME(imagesondemand)) {
 	            setImagesOnDemand((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(blend)) { 
+            if (ISATTRNAME(blend)) {
 	            setBlend(attrval_int);
             }
             else
-            if (ISATTRNAME(blend_factor)) { 
+            if (ISATTRNAME(blend_factor)) {
 	            setBlendFactor(atof(attrval_str));
 			}
             else
-            if (ISATTRNAME(scroll_onfocus)) { 
+            if (ISATTRNAME(scroll_onfocus)) {
 	            setScrollOnFocus((attrval_int) ? true : false);
             }
     	}
@@ -1023,11 +1023,11 @@ void MMSWidgetClass::unsetBgColor() {
 	MMSTHEMECLASS_UNSET(bgcolor);
 }
 
-void MMSWidgetClass::setBgColor(const DFBColor &bgcolor) {
+void MMSWidgetClass::setBgColor(const MMSFBColor &bgcolor) {
 	MMSTHEMECLASS_SET_BASIC(bgcolor);
 }
 
-bool MMSWidgetClass::getBgColor(DFBColor &bgcolor) {
+bool MMSWidgetClass::getBgColor(MMSFBColor &bgcolor) {
 	MMSTHEMECLASS_GET_BASIC(bgcolor);
 }
 
@@ -1047,11 +1047,11 @@ void MMSWidgetClass::unsetSelBgColor() {
 	MMSTHEMECLASS_UNSET(selbgcolor);
 }
 
-void MMSWidgetClass::setSelBgColor(const DFBColor &selbgcolor) {
+void MMSWidgetClass::setSelBgColor(const MMSFBColor &selbgcolor) {
 	MMSTHEMECLASS_SET_BASIC(selbgcolor);
 }
 
-bool MMSWidgetClass::getSelBgColor(DFBColor &selbgcolor) {
+bool MMSWidgetClass::getSelBgColor(MMSFBColor &selbgcolor) {
 	MMSTHEMECLASS_GET_BASIC(selbgcolor);
 }
 
@@ -1072,11 +1072,11 @@ void MMSWidgetClass::unsetBgColor_p() {
 	MMSTHEMECLASS_UNSET(bgcolor_p);
 }
 
-void MMSWidgetClass::setBgColor_p(const DFBColor &bgcolor_p) {
+void MMSWidgetClass::setBgColor_p(const MMSFBColor &bgcolor_p) {
 	MMSTHEMECLASS_SET_BASIC(bgcolor_p);
 }
 
-bool MMSWidgetClass::getBgColor_p(DFBColor &bgcolor_p) {
+bool MMSWidgetClass::getBgColor_p(MMSFBColor &bgcolor_p) {
 	MMSTHEMECLASS_GET_BASIC(bgcolor_p);
 }
 
@@ -1096,11 +1096,11 @@ void MMSWidgetClass::unsetSelBgColor_p() {
 	MMSTHEMECLASS_UNSET(selbgcolor_p);
 }
 
-void MMSWidgetClass::setSelBgColor_p(const DFBColor &selbgcolor_p) {
+void MMSWidgetClass::setSelBgColor_p(const MMSFBColor &selbgcolor_p) {
 	MMSTHEMECLASS_SET_BASIC(selbgcolor_p);
 }
 
-bool MMSWidgetClass::getSelBgColor_p(DFBColor &selbgcolor_p) {
+bool MMSWidgetClass::getSelBgColor_p(MMSFBColor &selbgcolor_p) {
 	MMSTHEMECLASS_GET_BASIC(selbgcolor_p);
 }
 
@@ -1120,11 +1120,11 @@ void MMSWidgetClass::unsetBgColor_i() {
 	MMSTHEMECLASS_UNSET(bgcolor_i);
 }
 
-void MMSWidgetClass::setBgColor_i(const DFBColor &bgcolor_i) {
+void MMSWidgetClass::setBgColor_i(const MMSFBColor &bgcolor_i) {
 	MMSTHEMECLASS_SET_BASIC(bgcolor_i);
 }
 
-bool MMSWidgetClass::getBgColor_i(DFBColor &bgcolor_i) {
+bool MMSWidgetClass::getBgColor_i(MMSFBColor &bgcolor_i) {
 	MMSTHEMECLASS_GET_BASIC(bgcolor_i);
 }
 
@@ -1144,11 +1144,11 @@ void MMSWidgetClass::unsetSelBgColor_i() {
 	MMSTHEMECLASS_UNSET(selbgcolor_i);
 }
 
-void MMSWidgetClass::setSelBgColor_i(const DFBColor &selbgcolor_i) {
+void MMSWidgetClass::setSelBgColor_i(const MMSFBColor &selbgcolor_i) {
 	MMSTHEMECLASS_SET_BASIC(selbgcolor_i);
 }
 
-bool MMSWidgetClass::getSelBgColor_i(DFBColor &selbgcolor_i) {
+bool MMSWidgetClass::getSelBgColor_i(MMSFBColor &selbgcolor_i) {
 	MMSTHEMECLASS_GET_BASIC(selbgcolor_i);
 }
 

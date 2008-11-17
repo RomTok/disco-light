@@ -1345,7 +1345,7 @@ void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
 		this->surface->clear();
 
 	/* draw background */
-    DFBColor bgcolor;
+    MMSFBColor bgcolor;
     getBgColor(bgcolor);
     if (this->bgimage) {
         /* prepare for blitting */
@@ -1395,7 +1395,7 @@ void MMSWindow::drawMyBorder() {
 	bool borderRCorners;
 	if (!getBorderRCorners(borderRCorners))
 		borderRCorners = false;
-	DFBColor c;
+	MMSFBColor c;
 
 	getBorderColor(c);
     drawBorder(borderThickness, borderRCorners, this->borderimages,
@@ -3658,7 +3658,7 @@ bool MMSWindow::getHeight(string &height) {
     GETWINDOW(Height, height);
 }
 
-bool MMSWindow::getBgColor(DFBColor &bgcolor) {
+bool MMSWindow::getBgColor(MMSFBColor &bgcolor) {
     GETWINDOW(BgColor, bgcolor);
 }
 
@@ -3746,7 +3746,7 @@ bool MMSWindow::getMoveOut(MMSDIRECTION &moveout) {
     else return baseWindowClass->border.get##x(p,y);
 
 
-bool MMSWindow::getBorderColor(DFBColor &color) {
+bool MMSWindow::getBorderColor(MMSFBColor &color) {
     GETBORDER(Color, color);
 }
 
@@ -3824,7 +3824,7 @@ void MMSWindow::setHeight(string height, bool refresh, bool resize) {
         this->refresh();
 }
 
-void MMSWindow::setBgColor(DFBColor bgcolor, bool refresh) {
+void MMSWindow::setBgColor(MMSFBColor bgcolor, bool refresh) {
     myWindowClass.setBgColor(bgcolor);
     if (refresh)
         this->refresh();
@@ -3959,7 +3959,7 @@ void MMSWindow::setMoveOut(MMSDIRECTION moveout) {
 
 
 
-void MMSWindow::setBorderColor(DFBColor color, bool refresh) {
+void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
     if (refresh)
         this->refresh();
@@ -4024,7 +4024,7 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
 
 	MMSALIGNMENT	a;
 	bool 			b;
-	DFBColor		c;
+	MMSFBColor		c;
 	MMSDIRECTION	d;
 	string 			s;
 	unsigned int	u;

@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmsborderclass.h"
 
-//! describe attributes for MMSWidget which are additional to the MMSBorderClass 
+//! describe attributes for MMSWidget which are additional to the MMSBorderClass
 namespace MMSGUI_WIDGET_ATTR {
 
 	#define MMSGUI_WIDGET_ATTR_ATTRDESC \
@@ -184,7 +184,7 @@ namespace MMSGUI_WIDGET_ATTR {
 /*!
 This class is the base for all widget classes.
 With this data store you have access to all changeable widget attributes
-used for all widgets. 
+used for all widgets.
 \note This class will be internally used by class MMSWidget.
 \author Jens Schneider
 */
@@ -193,220 +193,220 @@ class MMSWidgetClass {
     	struct {
     		//! is bgcolor set?
 	    	bool            isbgcolor;
-	    	
+
 	    	//! background color if the widget is not selected
-	        DFBColor        bgcolor;
-	        
+	        MMSFBColor      bgcolor;
+
 	        //! is selbgcolor set?
 	        bool            isselbgcolor;
-	        
+
 	        //! background color if the widget is selected
-	        DFBColor        selbgcolor;
-	        
+	        MMSFBColor      selbgcolor;
+
 	        //! is pressed bgcolor set?
 	    	bool            isbgcolor_p;
-	    	
+
 	    	//! pressed background color if the widget is not selected
-	        DFBColor        bgcolor_p;
-	        
+	        MMSFBColor      bgcolor_p;
+
 	        //! is pressed selbgcolor set?
 	        bool            isselbgcolor_p;
-	        
+
 	        //! pressed background color if the widget is selected
-	        DFBColor        selbgcolor_p;
-	        
+	        MMSFBColor      selbgcolor_p;
+
 	        //! is inactive bgcolor set?
 	        bool            isbgcolor_i;
-	        
+
 	        //! inactive background color if the widget is not selected
-	        DFBColor        bgcolor_i;
-	        
+	        MMSFBColor      bgcolor_i;
+
 	        //! is inactive selbgcolor set?
 	        bool            isselbgcolor_i;
-	        
+
 	        //! inactive background color if the widget is selected
-	        DFBColor        selbgcolor_i;
-	        
+	        MMSFBColor      selbgcolor_i;
+
 	        //! is bgimagepath set?
 	        bool            isbgimagepath;
-	        
+
 	        //! is bgimagename set?
 	        bool            isbgimagename;
-	        
+
 	        //! is selbgimagepath set?
 	        bool            isselbgimagepath;
-	        
+
 	        //! is selbgimagename set?
 	        bool            isselbgimagename;
-	        
+
 	        //! is pressed bgimagepath set?
 	        bool            isbgimagepath_p;
-	        
+
 	        //! is pressed bgimagename set?
 	        bool            isbgimagename_p;
-	        
+
 	        //! is pressed selbgimagepath set?
 	        bool            isselbgimagepath_p;
-	        
+
 	        //! is pressed selbgimagename set?
 	        bool            isselbgimagename_p;
-	        
+
 	        //! is inactive bgimagepath set?
 	        bool            isbgimagepath_i;
-	        
+
 	        //! is inactive bgimagename set?
 	        bool            isbgimagename_i;
-	        
+
 	        //! is inactive selbgimagepath set?
 	        bool            isselbgimagepath_i;
-	        
+
 	        //! is inactive selbgimagename set?
 	        bool            isselbgimagename_i;
-	        
+
 	        //! is margin set?
 	        bool            ismargin;
-	        
+
 	        //! margin in pixel
 	        unsigned int    margin;
-	        
+
 	        //! is the focusable flag set?
 	        bool            isfocusable;
-	        
+
 	        //! widget can get the focus true/false
 	        bool            focusable;
-	        
+
 	        //! is the selectable flag set?
 	        bool            isselectable;
-	        
+
 	        //! widget can be selected true/false
 	        bool            selectable;
-	        
+
 	        //! is the uparrow set?
 	        bool            isuparrow;
-	        
+
 	        //! is the downarrow set?
 	        bool            isdownarrow;
-	        
+
 	        //! is the leftarrow set?
 	        bool            isleftarrow;
-	        
+
 	        //! is the rightarrow set?
 	        bool            isrightarrow;
-	        
+
 	        //! is the data value set?
 	        bool            isdata;
-	        
+
 	        //! is the navigateup set?
 	        bool            isnavigateup;
-	        
+
 	        //! is the navigatedown set?
 	        bool            isnavigatedown;
-	        
+
 	        //! is the navigateleft set?
 	        bool            isnavigateleft;
-	        
+
 	        //! is the navigateright set?
 	        bool            isnavigateright;
-	        
+
 	        //! is the vslider set?
 	        bool            isvslider;
-	        
+
 	        //! is the hslider set?
 	        bool            ishslider;
-	        
+
 	        //! is images on demand flag set?
 	        bool            isimagesondemand;
-	        
+
 	        //! use images on demand (true/false)
 	        bool            imagesondemand;
-	        
+
 	        //! is blend set?
 	        bool            isblend;
-	        
+
 	        //! blend 0..255, default 0
-	        unsigned int    blend; 
-	        
+	        unsigned int    blend;
+
 	        //! is blend factor set?
 	        bool            isblendfactor;
-	        
+
 	        //! blend factor 0.0.., default 0.0
-	        double          blendfactor; 
+	        double          blendfactor;
 
 	        //! is scroll on focus flag set?
 	        bool            isscrollonfocus;
-	        
+
 	        //! use scroll on focus (true/false)
 	        bool            scrollonfocus;
-	        
+
     	} id;
 
     	struct {
     		//! path to the background image if the widget is not selected
             string          *bgimagepath;
-            
+
             //! background image filename if the widget is not selected
             string          *bgimagename;
-            
+
             //! path to the background image if the widget is selected
             string          *selbgimagepath;
-            
+
             //! background image filename if the widget is selected
             string          *selbgimagename;
-            
+
             //! path to the pressed background image if the widget is not selected
             string          *bgimagepath_p;
-            
+
             //! pressed background image filename if the widget is not selected
             string          *bgimagename_p;
-            
+
             //! path to the pressed background image if the widget is selected
             string          *selbgimagepath_p;
-            
+
             //! pressed background image filename if the widget is selected
             string          *selbgimagename_p;
-            
+
             //! path to the inactive background image if the widget is not selected
             string          *bgimagepath_i;
-            
+
             //! inactive background image filename if the widget is not selected
             string          *bgimagename_i;
-            
+
             //! path to the inactive background image if the widget is selected
             string          *selbgimagepath_i;
-            
+
             //! inactive background image filename if the widget is selected
             string          *selbgimagename_i;
-            
+
             //! the name of the widget which represents the scroll up arrow
             string          *uparrow;
-            
+
             //! the name of the widget which represents the scroll down arrow
             string          *downarrow;
-            
+
             //! the name of the widget which represents the scroll left arrow
             string          *leftarrow;
-            
+
             //! the name of the widget which represents the scroll right arrow
             string          *rightarrow;
-            
+
             //! any string which can store additional information (will not displayed)
             string          *data;
-            
+
             //! the name of the widget to which should navigate up
             string          *navigateup;
-            
+
             //! the name of the widget to which should navigate down
             string          *navigatedown;
-            
+
             //! the name of the widget to which should navigate left
             string          *navigateleft;
-            
+
             //! the name of the widget to which should navigate right
             string          *navigateright;
-            
+
             //! the name of the widget which represents the vertical slider
             string          *vslider;
-            
+
             //! the name of the widget which represents the horizontal slider
             string          *hslider;
     	} ed;
@@ -447,7 +447,7 @@ class MMSWidgetClass {
         void initNavigateDown();
         void initNavigateLeft();
         void initNavigateRight();
-        
+
         void initVSlider();
         void initHSlider();
 
@@ -457,7 +457,7 @@ class MMSWidgetClass {
         void initBlendFactor();
 
         void initScrollOnFocus();
-        
+
 
         /* free routines */
         void freeBgColor();
@@ -495,7 +495,7 @@ class MMSWidgetClass {
         void freeNavigateDown();
         void freeNavigateLeft();
         void freeNavigateRight();
-        
+
         void freeVSlider();
         void freeHSlider();
 
@@ -505,7 +505,7 @@ class MMSWidgetClass {
         void freeBlendFactor();
 
         void freeScrollOnFocus();
-        
+
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -513,7 +513,7 @@ class MMSWidgetClass {
         \param path    optional, path needed for empty path values from the TAFF buffer
         */
         void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
-        
+
     public:
         MMSBorderClass border;           	//! stores base border attributes
 
@@ -524,8 +524,8 @@ class MMSWidgetClass {
         ~MMSWidgetClass();
 
         //! operator=
-        MMSWidgetClass &operator=(const MMSWidgetClass &c); 
-        
+        MMSWidgetClass &operator=(const MMSWidgetClass &c);
+
         //! Mark all attributes as not set.
         void unsetAll();
 
@@ -539,14 +539,14 @@ class MMSWidgetClass {
         /*!
         \param bgcolor  color for unselected background
         */
-        void setBgColor(const DFBColor &bgcolor);
+        void setBgColor(const MMSFBColor &bgcolor);
 
         //! Get the background color which is used to draw the unselected widget.
         /*!
         \param bgcolor  background color
         \return true if set
         */
-        bool getBgColor(DFBColor &bgcolor);
+        bool getBgColor(MMSFBColor &bgcolor);
 
         //! Check if the background color is set. This color will be used for the selected widget.
         bool isSelBgColor();
@@ -558,14 +558,14 @@ class MMSWidgetClass {
         /*!
         \param selbgcolor  color for selected background
         */
-        void setSelBgColor(const DFBColor &selbgcolor);
+        void setSelBgColor(const MMSFBColor &selbgcolor);
 
         //! Get the background color which is used to draw the selected widget.
         /*!
         \param selbgcolor  background color
         \return true if set
         */
-        bool getSelBgColor(DFBColor &selbgcolor);
+        bool getSelBgColor(MMSFBColor &selbgcolor);
 
         //! Check if the pressed background color is set. This color will be used for the unselected widget.
         bool isBgColor_p();
@@ -577,14 +577,14 @@ class MMSWidgetClass {
         /*!
         \param bgcolor_p  pressed background color
         */
-        void setBgColor_p(const DFBColor &bgcolor_p);
+        void setBgColor_p(const MMSFBColor &bgcolor_p);
 
         //! Get the pressed background color which is used to draw the unselected widget.
         /*!
         \param bgcolor_p  pressed background color
         \return true if set
         */
-        bool getBgColor_p(DFBColor &bgcolor_p);
+        bool getBgColor_p(MMSFBColor &bgcolor_p);
 
         //! Check if the pressed background color is set. This color will be used for the selected widget.
         bool isSelBgColor_p();
@@ -596,14 +596,14 @@ class MMSWidgetClass {
         /*!
         \param selbgcolor_p  pressed color for selected background
         */
-        void setSelBgColor_p(const DFBColor &selbgcolor_p);
+        void setSelBgColor_p(const MMSFBColor &selbgcolor_p);
 
         //! Get the pressed background color which is used to draw the selected widget.
         /*!
         \param selbgcolor_p  pressed background color
         \return true if set
         */
-        bool getSelBgColor_p(DFBColor &selbgcolor_p);
+        bool getSelBgColor_p(MMSFBColor &selbgcolor_p);
 
         //! Check if the inactive background color is set. This color will be used for the unselected widget.
         bool isBgColor_i();
@@ -615,14 +615,14 @@ class MMSWidgetClass {
         /*!
         \param bgcolor_i  color for inactive unselected background
         */
-        void setBgColor_i(const DFBColor &bgcolor_i);
+        void setBgColor_i(const MMSFBColor &bgcolor_i);
 
         //! Get the inactive background color which is used to draw the unselected widget.
         /*!
         \param bgcolor_i  inactive background color
         \return true if set
         */
-        bool getBgColor_i(DFBColor &bgcolor_i);
+        bool getBgColor_i(MMSFBColor &bgcolor_i);
 
         //! Check if the inactive background color is set. This color will be used for the selected widget.
         bool isSelBgColor_i();
@@ -634,18 +634,18 @@ class MMSWidgetClass {
         /*!
         \param selbgcolor_i  color for inactive selected background
         */
-        void setSelBgColor_i(const DFBColor &selbgcolor_i);
+        void setSelBgColor_i(const MMSFBColor &selbgcolor_i);
 
         //! Get the inactive background color which is used to draw the selected widget.
         /*!
         \param selbgcolor_i  inactive background color
         \return true if set
         */
-        bool getSelBgColor_i(DFBColor &selbgcolor_i);
+        bool getSelBgColor_i(MMSFBColor &selbgcolor_i);
 
         //! Check if the imagepath for background is set. This path will be used for the unselected widget.
         bool isBgImagePath();
- 
+
         //! Mark the bgimagepath as not set.
         void unsetBgImagePath();
 
@@ -664,7 +664,7 @@ class MMSWidgetClass {
 
         //! Check if the imagename for background is set. This name will be used for the unselected widget.
         bool isBgImageName();
- 
+
         //! Mark the bgimagename as not set.
         void unsetBgImageName();
 
@@ -683,7 +683,7 @@ class MMSWidgetClass {
 
         //! Check if the selimagepath for background is set. This path will be used for the selected widget.
         bool isSelBgImagePath();
- 
+
         //! Mark the selbgimagepath as not set.
         void unsetSelBgImagePath();
 
@@ -702,7 +702,7 @@ class MMSWidgetClass {
 
         //! Check if the selimagename for background is set. This name will be used for the selected widget.
         bool isSelBgImageName();
- 
+
         //! Mark the selbgimagename as not set.
         void unsetSelBgImageName();
 
@@ -718,11 +718,11 @@ class MMSWidgetClass {
         \return true if set
         */
         bool getSelBgImageName(string &selbgimagename);
-        
-        
+
+
         //! Check if the pressed imagepath for background is set. This path will be used for the unselected widget.
         bool isBgImagePath_p();
- 
+
         //! Mark the pressed bgimagepath as not set.
         void unsetBgImagePath_p();
 
@@ -741,7 +741,7 @@ class MMSWidgetClass {
 
         //! Check if the pressed imagename for background is set. This name will be used for the unselected widget.
         bool isBgImageName_p();
- 
+
         //! Mark the pressed bgimagename as not set.
         void unsetBgImageName_p();
 
@@ -760,7 +760,7 @@ class MMSWidgetClass {
 
         //! Check if the pressed selimagepath for background is set. This path will be used for the selected widget.
         bool isSelBgImagePath_p();
- 
+
         //! Mark the pressed selbgimagepath as not set.
         void unsetSelBgImagePath_p();
 
@@ -779,7 +779,7 @@ class MMSWidgetClass {
 
         //! Check if the pressed selimagename for background is set. This name will be used for the selected widget.
         bool isSelBgImageName_p();
- 
+
         //! Mark the pressed selbgimagename as not set.
         void unsetSelBgImageName_p();
 
@@ -798,7 +798,7 @@ class MMSWidgetClass {
 
         //! Check if the inactive imagepath for background is set. This path will be used for the unselected widget.
         bool isBgImagePath_i();
- 
+
         //! Mark the inactive bgimagepath as not set.
         void unsetBgImagePath_i();
 
@@ -817,7 +817,7 @@ class MMSWidgetClass {
 
         //! Check if the imagename for inactive background is set. This name will be used for the unselected widget.
         bool isBgImageName_i();
- 
+
         //! Mark the inactive bgimagename as not set.
         void unsetBgImageName_i();
 
@@ -836,7 +836,7 @@ class MMSWidgetClass {
 
         //! Check if the selimagepath for inactive background is set. This path will be used for the selected widget.
         bool isSelBgImagePath_i();
- 
+
         //! Mark the inactive selbgimagepath as not set.
         void unsetSelBgImagePath_i();
 
@@ -855,7 +855,7 @@ class MMSWidgetClass {
 
         //! Check if the selimagename for inactive background is set. This name will be used for the selected widget.
         bool isSelBgImageName_i();
- 
+
         //! Mark the inactive selbgimagename as not set.
         void unsetSelBgImageName_i();
 
@@ -902,7 +902,7 @@ class MMSWidgetClass {
         \param focusable  the widget can get the focus if set to true
         \note There is a difference between focused and selected. Only one widget
               can get the focus at the same time. The focused widget gets the keyboard input.
-              A focused widget is also selected.  
+              A focused widget is also selected.
         */
         void setFocusable(bool focusable);
 
@@ -924,7 +924,7 @@ class MMSWidgetClass {
         \param selectable  the widget can be selected if set to true
         \note There is a difference between focused and selected. Only one widget
               can get the focus at the same time. But all other widgets can be switched
-              between selected and unselected independently.    
+              between selected and unselected independently.
         */
         void setSelectable(bool selectable);
 
@@ -1147,7 +1147,7 @@ class MMSWidgetClass {
 
         //! Check if the images on demand is set.
         bool isImagesOnDemand();
- 
+
         //! Mark the images on demand flag as not set.
         void unsetImagesOnDemand();
 
@@ -1202,10 +1202,10 @@ class MMSWidgetClass {
         */
         bool getBlendFactor(double &blendfactor);
 
-        
+
         //! Check if the scroll on focus is set.
         bool isScrollOnFocus();
- 
+
         //! Mark the scroll on focus flag as not set.
         void unsetScrollOnFocus();
 
@@ -1222,7 +1222,7 @@ class MMSWidgetClass {
         */
         bool getScrollOnFocus(bool &scrollonfocus);
 
-        
+
     /* friends */
     friend class MMSThemeManager;
     friend class MMSDialogManager;

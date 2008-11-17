@@ -42,7 +42,7 @@ bool MMSProgressBarWidget::create(MMSWindow *root, string className, MMSTheme *t
 
 MMSWidget *MMSProgressBarWidget::copyWidget() {
     /* create widget */
-    MMSProgressBarWidget *newWidget = new MMSProgressBarWidget(this->rootwindow, className); 
+    MMSProgressBarWidget *newWidget = new MMSProgressBarWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -80,16 +80,16 @@ bool MMSProgressBarWidget::draw(bool *backgroundFilled) {
 
         /* draw my things */
         DFBRectangle surfaceGeom = getSurfaceGeometry();
-    
-        DFBColor color;
-    
+
+        MMSFBColor color;
+
         if (isSelected())
             color = getSelColor();
         else
             color = getColor();
-    
+
         if (color.a) {
-            /* prepare for drawing */        
+            /* prepare for drawing */
             this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
             /* fill the rectangle */
@@ -117,11 +117,11 @@ bool MMSProgressBarWidget::draw(bool *backgroundFilled) {
     else if ((progressBarWidgetClass)&&(progressBarWidgetClass->is##x())) return progressBarWidgetClass->get##x(); \
     else return this->theme->progressBarWidgetClass.get##x();
 
-DFBColor MMSProgressBarWidget::getColor() {
+MMSFBColor MMSProgressBarWidget::getColor() {
     GETPBAR(Color);
 }
 
-DFBColor MMSProgressBarWidget::getSelColor() {
+MMSFBColor MMSProgressBarWidget::getSelColor() {
     GETPBAR(SelColor);
 }
 
@@ -132,13 +132,13 @@ unsigned int MMSProgressBarWidget::getProgress() {
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
-void MMSProgressBarWidget::setColor(DFBColor color, bool refresh) {
+void MMSProgressBarWidget::setColor(MMSFBColor color, bool refresh) {
     myProgressBarWidgetClass.setColor(color);
     if (refresh)
         this->refresh();
 }
 
-void MMSProgressBarWidget::setSelColor(DFBColor selcolor, bool refresh) {
+void MMSProgressBarWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myProgressBarWidgetClass.setSelColor(selcolor);
     if (refresh)
         this->refresh();

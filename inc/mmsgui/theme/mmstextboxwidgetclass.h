@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSTextBoxWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSTextBoxWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_ATTRDESC \
@@ -46,7 +46,7 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
 		{ "text", TAFF_ATTRTYPE_STRING }
-	
+
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_IDS \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_path, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name, \
@@ -65,7 +65,7 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_b, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_text
-	
+
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -88,7 +88,7 @@ extern TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[];
 //! A data access class for the textbox widget.
 /*!
 This class is the base for the MMSTextBoxWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSTextBoxWidget.
@@ -98,58 +98,58 @@ class MMSTextBoxWidgetClass {
     private:
     	//! name of the theme class
         string          className;
-        
+
         //! is fontpath set?
         bool            isfontpath;
-        
+
         //! path to the font
         string          fontpath;
-        
+
         //! is fontname set?
         bool            isfontname;
-        
+
         //! name of the font
         string          fontname;
-        
+
         //! is fontsize set?
         bool            isfontsize;
-        
+
         //! size of the font
         unsigned int    fontsize;
-        
+
         //! is alignment set?
         bool            isalignment;
-        
+
         //! alignment of the text
         MMSALIGNMENT    alignment;
-        
+
         //! is wrap flag set?
         bool            iswrap;
-        
+
         //! wrap (true/false) the text
         bool            wrap;
-        
+
         //! is splitwords flag set?
         bool            issplitwords;
-        
+
         //! splitwords (true/false)
         bool            splitwords;
-        
+
         //! is color set?
         bool            iscolor;
-        
+
         //! color of the text if the widget is not selected
-        DFBColor        color;
-        
+        MMSFBColor        color;
+
         //! is selcolor set?
         bool            isselcolor;
-        
+
         //! color of the text if the widget is selected
-        DFBColor        selcolor;
-        
+        MMSFBColor      selcolor;
+
         //! is text set?
         bool            istext;
-        
+
         //! text to draw
         string          text;
 
@@ -160,10 +160,10 @@ class MMSTextBoxWidgetClass {
         \param path    optional, path needed for empty path values from the TAFF buffer
         */
         void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
-        
+
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSTextBoxWidgetClass.
         MMSTextBoxWidgetClass();
@@ -299,7 +299,7 @@ class MMSTextBoxWidgetClass {
         /*!
         \param color  color for unselected text
         */
-        void setColor(DFBColor color);
+        void setColor(MMSFBColor color);
 
         //! Mark the color as not set.
         void unsetColor();
@@ -308,7 +308,7 @@ class MMSTextBoxWidgetClass {
         /*!
         \return color for unselected text
         */
-        DFBColor getColor();
+        MMSFBColor getColor();
 
         //! Check if the color is set. This color will be used for the selected text.
         bool isSelColor();
@@ -317,7 +317,7 @@ class MMSTextBoxWidgetClass {
         /*!
         \param selcolor  color for selected text
         */
-        void setSelColor(DFBColor selcolor);
+        void setSelColor(MMSFBColor selcolor);
 
         //! Mark the color as not set.
         void unsetSelColor();
@@ -326,7 +326,7 @@ class MMSTextBoxWidgetClass {
         /*!
         \return color for selected text
         */
-        DFBColor getSelColor();
+        MMSFBColor getSelColor();
 
         //! Check if the text is set.
         bool isText();

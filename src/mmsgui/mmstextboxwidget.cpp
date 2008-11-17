@@ -347,7 +347,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         if (this->font) {
         	DFBRectangle surfaceGeom = getSurfaceGeometry();
 
-            DFBColor color;
+            MMSFBColor color;
 
             if (isSelected())
                 color = getSelColor();
@@ -422,11 +422,11 @@ bool MMSTextBoxWidget::getSplitWords() {
     GETTEXTBOX(SplitWords);
 }
 
-DFBColor MMSTextBoxWidget::getColor() {
+MMSFBColor MMSTextBoxWidget::getColor() {
     GETTEXTBOX(Color);
 }
 
-DFBColor MMSTextBoxWidget::getSelColor() {
+MMSFBColor MMSTextBoxWidget::getSelColor() {
     GETTEXTBOX(SelColor);
 }
 
@@ -502,13 +502,13 @@ void MMSTextBoxWidget::setSplitWords(bool splitwords, bool refresh) {
         this->refresh();
 }
 
-void MMSTextBoxWidget::setColor(DFBColor color, bool refresh) {
+void MMSTextBoxWidget::setColor(MMSFBColor color, bool refresh) {
     myTextBoxWidgetClass.setColor(color);
     if (refresh)
         this->refresh();
 }
 
-void MMSTextBoxWidget::setSelColor(DFBColor selcolor, bool refresh) {
+void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myTextBoxWidgetClass.setSelColor(selcolor);
     if (refresh)
         this->refresh();

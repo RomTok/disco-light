@@ -23,7 +23,7 @@
 #include "mmsgui/theme/mmsprogressbarwidgetclass.h"
 #include <string.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_PROGRESSBARWIDGET_ATTR_I[] = MMSGUI_PROGRESSBARWIDGET_ATTR_INIT;
 
 //address attribute names
@@ -43,7 +43,7 @@ void MMSProgressBarWidgetClass::unsetAll() {
 }
 
 void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
-    DFBColor color;
+    MMSFBColor color;
 
     if (!prefix) {
 		startTAFFScan
@@ -55,7 +55,7 @@ void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string
 			case MMSGUI_PROGRESSBARWIDGET_ATTR::MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
 	            break;
 			case MMSGUI_PROGRESSBARWIDGET_ATTR::MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_color_a:
@@ -85,7 +85,7 @@ void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string
 			case MMSGUI_PROGRESSBARWIDGET_ATTR::MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_selcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
 	            break;
 			case MMSGUI_PROGRESSBARWIDGET_ATTR::MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_selcolor_a:
@@ -121,7 +121,7 @@ void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -132,77 +132,77 @@ void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(color)) { 
+            if (ISATTRNAME(color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
     		}
             else
-            if (ISATTRNAME(color_a)) { 
+            if (ISATTRNAME(color_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.a = attrval_int;
 	            setColor(color);
     		}
             else
-            if (ISATTRNAME(color_r)) { 
+            if (ISATTRNAME(color_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.r = attrval_int;
 	            setColor(color);
     		}
             else
-            if (ISATTRNAME(color_g)) { 
+            if (ISATTRNAME(color_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.g = attrval_int;
 	            setColor(color);
     		}
             else
-            if (ISATTRNAME(color_b)) { 
+            if (ISATTRNAME(color_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.b = attrval_int;
 	            setColor(color);
     		}
             else
-            if (ISATTRNAME(selcolor)) { 
+            if (ISATTRNAME(selcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
     		}
             else
-            if (ISATTRNAME(selcolor_a)) { 
+            if (ISATTRNAME(selcolor_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.a = attrval_int;
 	            setSelColor(color);
     		}
             else
-            if (ISATTRNAME(selcolor_r)) { 
+            if (ISATTRNAME(selcolor_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.r = attrval_int;
 	            setSelColor(color);
     		}
             else
-            if (ISATTRNAME(selcolor_g)) { 
+            if (ISATTRNAME(selcolor_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.g = attrval_int;
 	            setSelColor(color);
     		}
             else
-            if (ISATTRNAME(selcolor_b)) { 
+            if (ISATTRNAME(selcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.b = attrval_int;
 	            setSelColor(color);
     		}
             else
-            if (ISATTRNAME(progress)) { 
+            if (ISATTRNAME(progress)) {
 	            setProgress(attrval_int);
 			}
     	}
@@ -222,7 +222,7 @@ bool MMSProgressBarWidgetClass::isColor() {
     return this->iscolor;
 }
 
-void MMSProgressBarWidgetClass::setColor(DFBColor color) {
+void MMSProgressBarWidgetClass::setColor(MMSFBColor color) {
     this->color = color;
     this->iscolor = true;
 }
@@ -231,7 +231,7 @@ void MMSProgressBarWidgetClass::unsetColor() {
     this->iscolor = false;
 }
 
-DFBColor MMSProgressBarWidgetClass::getColor() {
+MMSFBColor MMSProgressBarWidgetClass::getColor() {
     return this->color;
 }
 
@@ -239,7 +239,7 @@ bool MMSProgressBarWidgetClass::isSelColor() {
     return this->isselcolor;
 }
 
-void MMSProgressBarWidgetClass::setSelColor(DFBColor selcolor) {
+void MMSProgressBarWidgetClass::setSelColor(MMSFBColor selcolor) {
     this->selcolor = selcolor;
     this->isselcolor = true;
 }
@@ -248,7 +248,7 @@ void MMSProgressBarWidgetClass::unsetSelColor() {
     this->isselcolor = false;
 }
 
-DFBColor MMSProgressBarWidgetClass::getSelColor() {
+MMSFBColor MMSProgressBarWidgetClass::getSelColor() {
     return this->selcolor;
 }
 

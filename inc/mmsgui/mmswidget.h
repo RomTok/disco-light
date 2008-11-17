@@ -388,12 +388,12 @@ class MMSWidget {
 
     public:
         /* theme access methods */
-        bool 	getBgColor(DFBColor &bgcolor);
-        bool 	getSelBgColor(DFBColor &selbgcolor);
-        bool	getBgColor_p(DFBColor &bgcolor_p);
-        bool	getSelBgColor_p(DFBColor &selbgcolor_p);
-        bool	getBgColor_i(DFBColor &bgcolor_i);
-        bool	getSelBgColor_i(DFBColor &selbgcolor_i);
+        bool 	getBgColor(MMSFBColor &bgcolor);
+        bool 	getSelBgColor(MMSFBColor &selbgcolor);
+        bool	getBgColor_p(MMSFBColor &bgcolor_p);
+        bool	getSelBgColor_p(MMSFBColor &selbgcolor_p);
+        bool	getBgColor_i(MMSFBColor &bgcolor_i);
+        bool	getSelBgColor_i(MMSFBColor &selbgcolor_i);
         bool    getBgImagePath(string &bgimagepath);
         bool    getBgImageName(string &bgimagename);
         bool    getSelBgImagePath(string &selbgimagepath);
@@ -425,8 +425,8 @@ class MMSWidget {
         bool 	getBlendFactor(double &blendfactor);
         bool 	getScrollOnFocus(bool &scrollonfocus);
 
-        bool	getBorderColor(DFBColor &color);
-        bool 	getBorderSelColor(DFBColor &selcolor);
+        bool	getBorderColor(MMSFBColor &color);
+        bool 	getBorderSelColor(MMSFBColor &selcolor);
         bool 	getBorderImagePath(string &imagepath);
         bool	getBorderImageNames(MMSBORDER_IMAGE_NUM num, string &imagename);
         bool	getBorderSelImagePath(string &selimagepath);
@@ -435,12 +435,12 @@ class MMSWidget {
         bool	getBorderMargin(unsigned int &margin);
         bool 	getBorderRCorners(bool &rcorners);
 
-        void setBgColor(DFBColor bgcolor, bool refresh = true);
-        void setSelBgColor(DFBColor selbgcolor, bool refresh = true);
-        void setBgColor_p(DFBColor bgcolor_p, bool refresh = true);
-        void setSelBgColor_p(DFBColor selbgcolor_p, bool refresh = true);
-        void setBgColor_i(DFBColor bgcolor_i, bool refresh = true);
-        void setSelBgColor_i(DFBColor selbgcolor_i, bool refresh = true);
+        void setBgColor(MMSFBColor bgcolor, bool refresh = true);
+        void setSelBgColor(MMSFBColor selbgcolor, bool refresh = true);
+        void setBgColor_p(MMSFBColor bgcolor_p, bool refresh = true);
+        void setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh = true);
+        void setBgColor_i(MMSFBColor bgcolor_i, bool refresh = true);
+        void setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh = true);
         void setBgImagePath(string bgimagepath, bool load = true, bool refresh = true);
         void setBgImageName(string bgimagename, bool load = true, bool refresh = true);
         void setSelBgImagePath(string selbgimagepath, bool load = true, bool refresh = true);
@@ -472,8 +472,8 @@ class MMSWidget {
         void setBlendFactor(double blendfactor, bool refresh = true);
         void setScrollOnFocus(bool scrollonfocus);
 
-        void setBorderColor(DFBColor bordercolor, bool refresh = true);
-        void setBorderSelColor(DFBColor borderselcolor, bool refresh = true);
+        void setBorderColor(MMSFBColor bordercolor, bool refresh = true);
+        void setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);
         void setBorderImagePath(string borderimagepath, bool load = true, bool refresh = true);
         void setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
                                  string imagename_5, string imagename_6, string imagename_7, string imagename_8,
