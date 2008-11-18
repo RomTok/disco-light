@@ -407,10 +407,10 @@ bool MMSFBWindowManager::hideWindow(MMSFBWindow *window, bool locked, bool refre
     return false;
 }
 
-bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
+bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
                                      bool locked, bool refresh) {
     VISIBLE_WINDOWS *vw = NULL;
-    DFBRegion       ls_region;
+    MMSFBRegion     ls_region;
     bool            high_freq = false;
     bool            cleared = false;
     bool			win_found = false;
@@ -429,7 +429,7 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
             if (this->vwins.at(i).surface == surface) {
                 // surface found
                 vw = &(this->vwins.at(i));
-                DFBRegion *myregion = &(vw->region);
+                MMSFBRegion *myregion = &(vw->region);
 
                 // calculate the affected region on the layer surface
                 if (region == NULL) {
@@ -575,7 +575,7 @@ logger.writeLog("BBB>");
 	// searching for other affected windows and draw parts of it
     for (unsigned int i=0; i < this->vwins.size(); i++) {
         VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
-        DFBRegion *myregion = &(aw->region);
+        MMSFBRegion *myregion = &(aw->region);
 
         // if the window has no opacity then continue
         if (!aw->opacity)
@@ -756,7 +756,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             /* redraw the old rects */
             if (old_vwin.region.y1 < this->vwins.at(i).region.y1) {
                 /* redraw above */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if (region.y2 >= this->vwins.at(i).region.y1)
                     region.y2 = this->vwins.at(i).region.y1 - 1;
@@ -765,7 +765,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             else
             if (old_vwin.region.y1 > this->vwins.at(i).region.y1) {
                 /* redraw below */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if (region.y1 <= this->vwins.at(i).region.y2)
                     region.y1 = this->vwins.at(i).region.y2 + 1;
@@ -773,7 +773,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             }
             if (old_vwin.region.x1 < this->vwins.at(i).region.x1) {
                 /* redraw left side */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if  ((region.y2 >= this->vwins.at(i).region.y1)
                    &&(region.y1 <= this->vwins.at(i).region.y2)) {
@@ -787,7 +787,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             else
             if (old_vwin.region.x1 > this->vwins.at(i).region.x1) {
                 /* redraw right side */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if  ((region.y2 >= this->vwins.at(i).region.y1)
                    &&(region.y1 <= this->vwins.at(i).region.y2)) {
@@ -904,7 +904,7 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, 
 		}
 
 	// save the old region
-	DFBRegion old_region = this->pointer_region;
+	MMSFBRegion old_region = this->pointer_region;
 
 	// set the rectangle/region position
 	this->pointer_rect.x = this->pointer_posx - (this->pointer_rect.w >> 1);
@@ -990,7 +990,7 @@ bool MMSFBWindowManager::loadPointer() {
     return true;
 }
 
-void MMSFBWindowManager::drawPointer(DFBRegion *region) {
+void MMSFBWindowManager::drawPointer(MMSFBRegion *region) {
 	// should draw the pointer?
 	if (!this->show_pointer)
 		return;

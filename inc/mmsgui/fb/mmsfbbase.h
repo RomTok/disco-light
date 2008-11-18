@@ -93,6 +93,14 @@ typedef struct {
 	int	h;
 } MMSFBRectangle;
 
+//! describes a region
+typedef struct {
+	int	x1;
+	int	y1;
+	int	x2;
+	int	y2;
+} MMSFBRegion;
+
 // supported pixel format strings
 #define MMSFB_PF_NONE_STR       ""
 // 16 bit RGB (2 byte, red 5@11, green 6@5, blue 5@0)

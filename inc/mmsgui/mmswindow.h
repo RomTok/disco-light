@@ -83,7 +83,7 @@ class MMSWindow {
         	//! points to the child window
             MMSWindow       *window;
             //! region of the window within parent window
-            DFBRegion       region;
+            MMSFBRegion     region;
             //! opacity of the window
             unsigned char   opacity;
          	//! old opacity of the window
@@ -297,10 +297,10 @@ class MMSWindow {
         bool moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh = true);
 
         //! Internal method: Draw a child window.
-        void drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region = NULL, int offsX = 0, int offsY = 0);
+        void drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region = NULL, int offsX = 0, int offsY = 0);
 
         //! Internal method: Flip a window.
-        bool flipWindow(MMSWindow *win = NULL, DFBRegion *region = NULL,
+        bool flipWindow(MMSWindow *win = NULL, MMSFBRegion *region = NULL,
                         MMSFBSurfaceFlipFlags flags = (MMSFBSurfaceFlipFlags)0,
                         bool flipChildSurface = true, bool locked = false);
 

@@ -37,7 +37,7 @@ typedef struct {
 typedef struct {
     MMSFBWindow     *window;        /* window */
     MMSFBSurface    *surface;       /* surface of the window */
-    DFBRegion       region;         /* region of the window within layer */
+    MMSFBRegion     region;         /* region of the window within layer */
     bool            alphachannel;   /* use of alpha value */
     unsigned char   opacity;        /* opacity of the window */
     int             lastflip;       /* last flip time in milliseconds */
@@ -60,14 +60,14 @@ class MMSFBWindowManager {
 
         MMSFBSurface    *high_freq_surface; /* surface which will flipped with high frequency */
         MMSFBSurface    *high_freq_saved_surface;
-        DFBRegion       high_freq_region;   /* rectangle which will flipped with high frequency */
+        MMSFBRegion     high_freq_region;   /* rectangle which will flipped with high frequency */
         int             high_freq_lastflip; /* last flip time of the high_freq_region */
 
         bool 			show_pointer;
         int				pointer_posx;
         int				pointer_posy;
         MMSFBRectangle	pointer_rect;
-        DFBRegion		pointer_region;
+        MMSFBRegion		pointer_region;
         MMSFBSurface	*pointer_surface;
         unsigned char	pointer_opacity;
         bool			button_pressed;
@@ -90,7 +90,7 @@ class MMSFBWindowManager {
         bool showWindow(MMSFBWindow *window, bool locked = false, bool refresh = true);
         bool hideWindow(MMSFBWindow *window, bool locked = false, bool refresh = true);
 
-        bool flipSurface(MMSFBSurface *surface, DFBRegion *region = NULL,
+        bool flipSurface(MMSFBSurface *surface, MMSFBRegion *region = NULL,
                          bool locked = false, bool refresh = true);
 
         bool setWindowOpacity(MMSFBWindow *window);
@@ -98,7 +98,7 @@ class MMSFBWindowManager {
         bool setWindowSize(MMSFBWindow *window, int w, int h);
 
         bool loadPointer();
-        void drawPointer(DFBRegion *region);
+        void drawPointer(MMSFBRegion *region);
         unsigned char getPointerOpacity();
         void setPointerOpacity(unsigned char opacity);
 

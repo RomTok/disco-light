@@ -908,7 +908,7 @@ if (!this->has_own_surface) {
             }
             else {
                 /* working direct on the window surface */
-                DFBRegion clip;
+                MMSFBRegion clip;
                 clip.x1 = innerGeom.x;
                 clip.y1 = innerGeom.y;
                 clip.x2 = innerGeom.x + innerGeom.w - 1;
@@ -1170,7 +1170,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
             }
             else {
                 /* working direct on the window surface */
-                DFBRegion clip;
+                MMSFBRegion clip;
                 clip.x1 = innerGeom.x;
                 clip.y1 = innerGeom.y;
                 clip.x2 = innerGeom.x + innerGeom.w - 1;

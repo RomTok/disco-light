@@ -177,7 +177,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		/* got through subscriptions */
 		for(unsigned int i = 0; i < subscriptions.size();i++) {
 			for(unsigned int y = 0; y < inputeventset.size(); y++) {
-				DFBRectangle pointer_area;
+				MMSFBRectangle pointer_area;
 				if (subscriptions.at(i)->getPointerArea(pointer_area))
 					if ((inputevent->posx >= pointer_area.x)&&(inputevent->posy >= pointer_area.y)
 				      &&(inputevent->posx < pointer_area.x + pointer_area.w)&&(inputevent->posy < pointer_area.y + pointer_area.h)) {

@@ -751,8 +751,8 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
     for (unsigned int i = 0; i < this->childwins.size(); i++)
         if (this->childwins.at(i).window == childwin) {
             /* get old region */
-            DFBRegion *currregion = &this->childwins.at(i).region;
-            DFBRegion oldregion = *currregion;
+            MMSFBRegion *currregion = &this->childwins.at(i).region;
+            MMSFBRegion oldregion = *currregion;
 
             if   ((oldregion.x1 != childwin->geom.x)
                 ||(oldregion.y1 != childwin->geom.y)
@@ -795,7 +795,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                 /* redraw the old rects */
                 if (oldregion.y1 < currregion->y1) {
                     /* redraw above */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if (region.y2 >= currregion->y1)
                         region.y2 = currregion->y1 - 1;
@@ -808,7 +808,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                 }
                 if (oldregion.y2 > currregion->y2) {
                     /* redraw below */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if (region.y1 <= currregion->y2)
                         region.y1 = currregion->y2 + 1;
@@ -821,7 +821,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                 }
                 if (oldregion.x1 < currregion->x1) {
                     /* redraw left side */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if  ((region.y2 >= currregion->y1)
                        &&(region.y1 <= currregion->y2)) {
@@ -837,7 +837,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                 }
                 if (oldregion.x2 > currregion->x2) {
                     /* redraw right side */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if  ((region.y2 >= currregion->y1)
                        &&(region.y1 <= currregion->y2)) {
@@ -870,8 +870,8 @@ bool MMSWindow::moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh)
 	return setChildWindowRegion(childwin, refresh);
 }
 
-void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, int offsX, int offsY) {
-    DFBRegion       pw_region;
+void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region, int offsX, int offsY) {
+    MMSFBRegion       pw_region;
 
 
     if (region == NULL) {
@@ -889,7 +889,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
     /* draw all affected child windows */
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
         CHILDWINS *cw = &(this->childwins.at(i));
-        DFBRegion *myregion = &(cw->region);
+        MMSFBRegion *myregion = &(cw->region);
 
         /* if the window has no opacity then continue */
         if (!cw->opacity)
@@ -951,7 +951,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
         	}
 
             /* draw the children of this child */
-            DFBRegion reg;
+            MMSFBRegion reg;
             reg.x1 = src_rect.x;
             reg.y1 = src_rect.y;
             reg.x2 = src_rect.x + src_rect.w - 1;
@@ -961,10 +961,10 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
     }
 }
 
-bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFlags flags,
+bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBSurfaceFlipFlags flags,
                            bool flipChildSurface, bool locked) {
     MMSFBSurface    *pw_surface;
-    DFBRegion       pw_region;
+    MMSFBRegion       pw_region;
 
 
     /* stop parallel processing */
@@ -1036,7 +1036,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFl
         }
 
         /* calculate the affected region on the parent surface */
-        DFBRegion *myregion = &(this->childwins.at(z).region);
+        MMSFBRegion *myregion = &(this->childwins.at(z).region);
         if (region == NULL) {
             /* complete surface */
             pw_region = *myregion;
@@ -1332,7 +1332,7 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 
     if (rect2update) {
         /* use a small rectangle */
-        DFBRegion clip;
+        MMSFBRegion clip;
         clip.x1 = rect2update->x;
         clip.y1 = rect2update->y;
         clip.x2 = rect2update->x + rect2update->w - 1;
@@ -1996,7 +1996,7 @@ void MMSWindow::remove(MMSWidget *child) {
 
 
 void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, bool check_shown) {
-    DFBRegion  	region;
+    MMSFBRegion  	region;
 
 	bool os;
 	getOwnSurface(os);

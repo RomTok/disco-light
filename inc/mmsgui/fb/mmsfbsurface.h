@@ -80,7 +80,7 @@ typedef struct {
     //! is a clip region set?
     bool			clipped;
     //! current clip region
-    DFBRegion		clip;
+    MMSFBRegion		clip;
     //! the surface is a window surface
     bool        	iswinsurface;
     //! the surface is the layer surface
@@ -266,7 +266,7 @@ class MMSFBSurface {
 
         void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
 
-        bool clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *tmp, bool *tmpset);
+        bool clipSubSurface(MMSFBRegion *region, bool regionset, MMSFBRegion *tmp, bool *tmpset);
 
         bool setWinSurface(bool iswinsurface = true);
         bool setLayerSurface(bool islayersurface = true);
@@ -412,17 +412,17 @@ class MMSFBSurface {
 
         //////////
         void eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
-					   DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
+					   MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
         void eADL_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
-							 DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
+							 MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
 
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
         //////////
 
 #ifdef __HAVE_XLIB__
-        void blend_text_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
-        void blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+        void blend_text_to_argb(MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+        void blend_text_srcalpha_to_argb(MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
 
         bool blit_text(string &text, int len, int x, int y);
 #endif
@@ -489,9 +489,9 @@ class MMSFBSurface {
                       unsigned char b, unsigned char a);
         bool getColor(MMSFBColor *color);
 
-        bool setClip(DFBRegion *clip);
+        bool setClip(MMSFBRegion *clip);
         bool setClip(int x1, int y1, int x2, int y2);
-        bool getClip(DFBRegion *clip);
+        bool getClip(MMSFBRegion *clip);
 
         bool setDrawingFlags(MMSFBSurfaceDrawingFlags flags);
         bool drawLine(int x1, int y1, int x2, int y2);
@@ -514,7 +514,7 @@ class MMSFBSurface {
 							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
 
 
-        bool flip(DFBRegion *region = NULL);
+        bool flip(MMSFBRegion *region = NULL);
         bool refresh();
 
         bool createCopy(MMSFBSurface **dstsurface, int w = 0, int h = 0,
@@ -538,7 +538,7 @@ class MMSFBSurface {
 
         MMSFBSurface *getSubSurface(MMSFBRectangle *rect);
         bool setSubSurface(MMSFBRectangle *rect);
-        bool setSubSurface(DFBRegion *region);
+        bool setSubSurface(MMSFBRegion *region);
         bool moveTo(int x, int y);
         bool move(int x, int y);
 

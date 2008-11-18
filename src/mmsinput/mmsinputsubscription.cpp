@@ -34,7 +34,7 @@ MMSInputSubscription::MMSInputSubscription(MMSKeySymbol key) {
 	this->key = key;
 }
 
-MMSInputSubscription::MMSInputSubscription(DFBRectangle &pointer_area) {
+MMSInputSubscription::MMSInputSubscription(MMSFBRectangle &pointer_area) {
 	this->key = MMSKEY_UNKNOWN;
 	this->pointer_area = pointer_area;
 }
@@ -48,7 +48,7 @@ bool MMSInputSubscription::getKey(MMSKeySymbol &key) {
 		return false;
 }
 
-bool MMSInputSubscription::getPointerArea(DFBRectangle &pointer_area) {
+bool MMSInputSubscription::getPointerArea(MMSFBRectangle &pointer_area) {
 	if (this->key == MMSKEY_UNKNOWN) {
 		pointer_area = this->pointer_area;
 		return true;

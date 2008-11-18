@@ -95,7 +95,7 @@ bool MMSFBSurface::firsttime_blend_text_srcalpha_to_argb		= true;
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->dfbsurface)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
 
 #define CLIPSUBSURFACE \
-	DFBRegion reg, tmp; \
+	MMSFBRegion reg, tmp; \
 	bool tmpset; \
 	if (clipSubSurface(&reg, false, &tmp, &tmpset)) {
 
@@ -564,8 +564,8 @@ void MMSFBSurface::getRealSubSurfacePos(MMSFBSurface *surface, bool refreshChild
 }
 
 
-bool MMSFBSurface::clipSubSurface(DFBRegion *region, bool regionset, DFBRegion *tmp, bool *tmpset) {
-	DFBRegion myregion;
+bool MMSFBSurface::clipSubSurface(MMSFBRegion *region, bool regionset, MMSFBRegion *tmp, bool *tmpset) {
+	MMSFBRegion myregion;
 
 	if (!region) {
 		if (*tmpset)
@@ -1061,7 +1061,7 @@ bool MMSFBSurface::getColor(MMSFBColor *color) {
     return true;
 }
 
-bool MMSFBSurface::setClip(DFBRegion *clip) {
+bool MMSFBSurface::setClip(MMSFBRegion *clip) {
     DFBResult   dfbres;
 
     /* check if initialized */
@@ -1071,13 +1071,13 @@ bool MMSFBSurface::setClip(DFBRegion *clip) {
 #ifdef  __HAVE_DIRECTFB__
 		/* set clip */
 #ifdef USE_DFB_SUBSURFACE
-		if ((dfbres=this->dfbsurface->SetClip(this->dfbsurface, clip)) != DFB_OK) {
+		if ((dfbres=this->dfbsurface->SetClip(this->dfbsurface, (DFBRegion*)clip)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetClip() failed");
 			return false;
 		}
 #else
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->dfbsurface->SetClip(this->dfbsurface, clip)) != DFB_OK) {
+			if ((dfbres=this->dfbsurface->SetClip(this->dfbsurface, (DFBRegion*)clip)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::SetClip() failed");
 				return false;
 			}
@@ -1098,7 +1098,7 @@ bool MMSFBSurface::setClip(DFBRegion *clip) {
 }
 
 bool MMSFBSurface::setClip(int x1, int y1, int x2, int y2) {
-	DFBRegion clip;
+	MMSFBRegion clip;
 	clip.x1=x1;
 	clip.y1=y1;
 	clip.x2=x2;
@@ -1106,7 +1106,7 @@ bool MMSFBSurface::setClip(int x1, int y1, int x2, int y2) {
 	return setClip(&clip);
 }
 
-bool MMSFBSurface::getClip(DFBRegion *clip) {
+bool MMSFBSurface::getClip(MMSFBRegion *clip) {
 
 	/* check if initialized */
     INITCHECK;
@@ -5615,7 +5615,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	int sy = src_rect->y;
 	int sw = src_rect->w;
 	int sh = src_rect->h;
-	DFBRegion clipreg;
+	MMSFBRegion clipreg;
 #ifndef USE_DFB_SUBSURFACE
 	if (!this->is_sub_surface) {
 #endif
@@ -7704,7 +7704,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 //printf("sx=%d,sy=%d,sw=%d,sh=%d,dx=%d,dy=%d,dw=%d,dh=%d\n", sx,sy,sw,sh,dx,dy,dw,dh);
 
 
-	DFBRegion clipreg;
+	MMSFBRegion clipreg;
 #ifndef USE_DFB_SUBSURFACE
 	if (!this->is_sub_surface) {
 #endif
@@ -8762,7 +8762,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	int sy = y;
 	int sw = w;
 	int sh = h;
-	DFBRegion clipreg;
+	MMSFBRegion clipreg;
 	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -8996,7 +8996,7 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 
 
 void MMSFBSurface::eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
-							 DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
+							 MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
 	// first time?
 	if (firsttime_eADL_argb) {
 		printf("DISKO: Using accelerated draw line to ARGB.\n");
@@ -9020,7 +9020,7 @@ void MMSFBSurface::eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
 
 
 void MMSFBSurface::eADL_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
-							       DFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
+							       MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
 	if (color.a == 0xff) {
 		// source pixel is not transparent
 		eADL_argb(dst, dst_pitch, dst_height, clipreg, x1, y1, x2, y2, color);
@@ -9068,7 +9068,7 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 	// a few help and clipping values
 	void *dst_ptr;
 	int  dst_pitch;
-	DFBRegion clipreg;
+	MMSFBRegion clipreg;
 	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -9572,7 +9572,7 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 
 
-bool MMSFBSurface::flip(DFBRegion *region) {
+bool MMSFBSurface::flip(MMSFBRegion *region) {
     DFBResult   dfbres;
 
     if (region)
@@ -9606,7 +9606,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 		if (!this->config.islayersurface) {
 			/* flip */
 			if (!this->is_sub_surface) {
-				if ((dfbres=this->dfbsurface->Flip(this->dfbsurface, region, this->flipflags)) != DFB_OK) {
+				if ((dfbres=this->dfbsurface->Flip(this->dfbsurface, (DFBRegion*)region, this->flipflags)) != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
 					return false;
@@ -9616,7 +9616,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 #ifndef USE_DFB_SUBSURFACE
 				CLIPSUBSURFACE
 
-				DFBRegion myregion;
+				MMSFBRegion myregion;
 				if (!region) {
 					myregion.x1 = 0;
 					myregion.y1 = 0;
@@ -9631,7 +9631,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 				myregion.x2+=this->sub_surface_xoff;
 				myregion.y2+=this->sub_surface_yoff;
 
-				this->dfbsurface->Flip(this->dfbsurface, &myregion, this->flipflags);
+				this->dfbsurface->Flip(this->dfbsurface, (DFBRegion*)&myregion, this->flipflags);
 
 #else
 				this->dfbsurface->Flip(this->dfbsurface, region, this->flipflags);
@@ -10117,7 +10117,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 
 
 
-void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
+void MMSFBSurface::blend_text_to_argb(MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
 
 	// first time?
 	if (firsttime_blend_text_to_argb) {
@@ -10208,7 +10208,7 @@ void MMSFBSurface::blend_text_to_argb(DFBRegion &clipreg, string &text, int len,
 	MMSFBSURFACE_BLIT_TEXT_UNLOCK;
 }
 
-void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
+void MMSFBSurface::blend_text_srcalpha_to_argb(MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
 
 	// check for full alpha value
 	if (color.a == 0xff) {
@@ -10309,7 +10309,7 @@ void MMSFBSurface::blend_text_srcalpha_to_argb(DFBRegion &clipreg, string &text,
 }
 
 bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
-	DFBRegion clipreg;
+	MMSFBRegion clipreg;
 
 #ifndef USE_DFB_SUBSURFACE
 	if (!this->is_sub_surface) {
@@ -10708,7 +10708,7 @@ bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
     return true;
 }
 
-bool MMSFBSurface::setSubSurface(DFBRegion *region) {
+bool MMSFBSurface::setSubSurface(MMSFBRegion *region) {
 	MMSFBRectangle rect;
 
 	if (!region)
