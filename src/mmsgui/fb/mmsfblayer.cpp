@@ -28,7 +28,9 @@
 #endif
 
 
+#ifdef  __HAVE_DIRECTFB__
 D_DEBUG_DOMAIN( MMS_Layer, "MMS/Layer", "MMS Layer" );
+#endif
 
 #ifdef __HAVE_XLIB__
 #define GUID_YUV12_PLANAR 0x32315659
@@ -41,14 +43,14 @@ bool MMSFBLayer::firsttime_createwindow_usealpha= true;
 bool MMSFBLayer::firsttime_createwindow_noalpha	= true;
 
 
-#define INITCHECK  if(!this->dfblayer){MMSFB_SetError(0,"not initialized");return false;}
+#define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
 
 MMSFBLayer::MMSFBLayer(int id) {
     // init me
-	this->dfblayer = NULL;
+	this->initialized = false;
     this->surface = NULL;
-    this->flipflags = (MMSFBSurfaceFlipFlags)0;
+    this->flipflags = MMSFB_FLIP_NONE;
     this->config.id = id;
     this->config.window_pixelformat = MMSFB_PF_ARGB;
     this->config.surface_pixelformat = MMSFB_PF_ARGB;
@@ -57,11 +59,13 @@ MMSFBLayer::MMSFBLayer(int id) {
 #ifdef  __HAVE_DIRECTFB__
 		// get the layer
 		DFBResult	dfbres;
+		this->dfblayer = NULL;
 		if ((dfbres = mmsfb->dfb->GetDisplayLayer(mmsfb->dfb, this->config.id, &this->dfblayer)) != DFB_OK) {
 			this->dfblayer = NULL;
 			MMSFB_SetError(dfbres, "IDirectFB::GetDisplayLayer(" + iToStr(id) + ") failed");
 			return;
 		}
+		this->initialized = true;
 #endif
     }
     else {
@@ -70,7 +74,6 @@ MMSFBLayer::MMSFBLayer(int id) {
 			MMSFB_SetError(0, "x11 support needs layer 0!");
         	return;
         }
-        this->dfblayer = (IDirectFBDisplayLayer*)1;
 
 		// fill my config partly from mmsfb
 		this->config.w = mmsfb->w;
@@ -122,11 +125,13 @@ MMSFBLayer::MMSFBLayer(int id) {
 			MMSFB_SetError(0, "XShmAttach() failed");
         	return;
         }
+
+		this->initialized = true;
 #endif
     }
 
     // get the current config
-    if (this->dfblayer) {
+    if (this->initialized) {
     	MMSFBLayerConfig config;
     	getConfiguration(&config);
     }
@@ -245,7 +250,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 
         DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
-    	DEBUGMSG("MMSGUI", " pixelformat: " + this->config.pixelformat);
+    	DEBUGMSG("MMSGUI", " pixelformat: " + getMMSFBPixelFormatString(this->config.pixelformat));
 
 	    if (this->config.buffermode!="")
 	    	DEBUGMSG("MMSGUI", " buffermode:  " + this->config.buffermode);
@@ -524,7 +529,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     return false;
 }
 
-bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
+bool MMSFBLayer::setFlipFlags(MMSFBFlipFlags flags) {
 	this->flipflags = flags;
 
 	/* if the layer surface does exist, update it */
@@ -536,12 +541,6 @@ bool MMSFBLayer::setFlipFlags(MMSFBSurfaceFlipFlags flags) {
 
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
 							   MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
-
-
-    D_DEBUG_AT( MMS_Layer, "createSurface( %dx%d, %s, %s buffer )\n", w, h, pixelformat.c_str(),
-                (backbuffer != 0) ? "double" : "single" );
-
-    MMSFB_TRACE();
 
     /* check if initialized */
     INITCHECK;
@@ -703,7 +702,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         /* use the layer surface */
 
         /* create a new surface instance */
-        surface = new MMSFBSurface((IDirectFBSurface *)this->surface->getDFBSurface());
+        surface = new MMSFBSurface(this->surface->getDFBSurface());
         if (!surface) {
             MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
             return false;

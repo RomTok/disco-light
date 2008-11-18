@@ -481,7 +481,7 @@ bool MMSWindow::resize(bool refresh) {
             this->window->getSurface(&(this->surface));
 
             DEBUGMSG("MMSGUI", "setting blitting flags for window");
-            this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
+            this->surface->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
             /* set the window to bottom */
 //            this->window->lowerToBottom();
@@ -546,7 +546,7 @@ bool MMSWindow::resize(bool refresh) {
 	            this->surface = this->parent->surface->getSubSurface(&rect);
 	        }
 
-            this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
+            this->surface->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
             /* set the window to bottom */
 //            this->window->lowerToBottom();
@@ -731,7 +731,7 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
             this->childwins.at(i).opacity = opacity;
 
-            flipWindow(childwin, NULL, (MMSFBSurfaceFlipFlags)0, false, true);
+            flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
 
 //PUP			flipLock.unlock();
             unlock();
@@ -790,7 +790,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     return true;
 
                 /* draw at new pos */
-                flipWindow(childwin, NULL, (MMSFBSurfaceFlipFlags)0, false, false);
+                flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, false);
 
                 /* redraw the old rects */
                 if (oldregion.y1 < currregion->y1) {
@@ -804,7 +804,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     region.x2-= currregion->x1;
                     region.y1-=currregion->y1;
                     region.y2-=currregion->y1;
-                    flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                    flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                 }
                 if (oldregion.y2 > currregion->y2) {
                     /* redraw below */
@@ -817,7 +817,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     region.x2-= currregion->x1;
                     region.y1-=currregion->y1;
                     region.y2-=currregion->y1;
-                    flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                    flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                 }
                 if (oldregion.x1 < currregion->x1) {
                     /* redraw left side */
@@ -832,7 +832,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                         region.y2 = currregion->y2 - currregion->y1;
                         region.x1-=currregion->x1;
                         region.x2-=currregion->x1;
-                        flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                        flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                     }
                 }
                 if (oldregion.x2 > currregion->x2) {
@@ -848,7 +848,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                         region.y2 = currregion->y2 - currregion->y1;
                         region.x1-=currregion->x1;
                         region.x2-=currregion->x1;
-                        flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                        flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                     }
                 }
             }
@@ -930,11 +930,11 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         	if (os) {
                 /* set the blitting flags and color */
                 if (cw->opacity < 255) {
-                    dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+                    dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
                     dst_surface->setColor(0, 0, 0, cw->opacity);
                 }
                 else
-                    dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+                    dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
                 /* blit window front buffer to destination surface */
         		dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
@@ -961,7 +961,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
     }
 }
 
-bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBSurfaceFlipFlags flags,
+bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags flags,
                            bool flipChildSurface, bool locked) {
     MMSFBSurface    *pw_surface;
     MMSFBRegion       pw_region;
@@ -2125,9 +2125,9 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
 
     /* flip region */
     if (!this->parent)
-        flipWindow(this, &region, DSFLIP_ONSYNC);
+        flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
     else
-        this->parent->flipWindow(this, &region, DSFLIP_ONSYNC);
+        this->parent->flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
 
     /* unlock drawing */
 //PUP    this->drawLock.unlock();

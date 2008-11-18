@@ -25,9 +25,9 @@
 
 #include "mmsinput/mmsinputmanager.h"
 
-#include <directfb.h>
+/*#include <directfb.h>
 #include <sigc++/sigc++.h>
-
+*/
 typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);
 
 class MMSInputSubscription {

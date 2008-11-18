@@ -125,7 +125,7 @@ return;*/
     }
 ///xxx
     /* set values to new surface */
-    new_surface->dfbsurface = surface->dfbsurface;
+    new_surface->llsurface = surface->llsurface;
     new_surface->config = surface->config;
 
     /* add to free surfaces */

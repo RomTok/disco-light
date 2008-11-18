@@ -54,8 +54,13 @@ typedef struct {
 */
 class MMSFBLayer {
     private:
-    	// interface to the dfb layer
+    	//! is initialized?
+    	bool initialized;
+
+#ifdef  __HAVE_DIRECTFB__
+    	//! interface to the dfb layer
         IDirectFBDisplayLayer   *dfblayer;
+#endif
 
 #ifdef __HAVE_XLIB__
         XvImage  		*xv_image1;
@@ -71,7 +76,7 @@ class MMSFBLayer {
         MMSFBSurface            *surface;
 
         // flags which are used when flipping
-        MMSFBSurfaceFlipFlags	flipflags;
+        MMSFBFlipFlags			flipflags;
 
         // first time flag for createSurface()
         static bool 			firsttime_createsurface;
@@ -97,7 +102,7 @@ class MMSFBLayer {
         bool setLevel(int level);
         bool getSurface(MMSFBSurface **surface);
 
-        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);
+        bool setFlipFlags(MMSFBFlipFlags flags);
 
         bool createSurface(MMSFBSurface **surface, int w, int h,
 						   MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE, int backbuffer = 0);

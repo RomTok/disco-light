@@ -30,11 +30,6 @@
 /* use DFB subsurfaces? */
 //#define USE_DFB_SUBSURFACE
 
-#define MMSFBSurfaceBlittingFlags   DFBSurfaceBlittingFlags
-#define MMSFBSurfaceDrawingFlags    DFBSurfaceDrawingFlags
-#define MMSFBSurfaceFlipFlags       DFBSurfaceFlipFlags
-#define MMSFBSurfaceLockFlags		int
-
 typedef enum {
 	//! using directfb surfaces
 	MMSFBSurfaceAllocMethod_dfb = 0,
@@ -87,9 +82,9 @@ typedef struct {
     //!note: for example it is possible to have a window surface in combination with this layer flag
     bool        	islayersurface;
     //! drawing flags
-    MMSFBSurfaceDrawingFlags 	drawingflags;
+    MMSFBDrawingFlags 	drawingflags;
     //! blitting flags
-    MMSFBSurfaceBlittingFlags 	blittingflags;
+    MMSFBBlittingFlags 	blittingflags;
     //! font
     MMSFBFont					*font;
     //! the surface buffer(s)
@@ -112,7 +107,13 @@ typedef struct {
 */
 class MMSFBSurface {
     private:
-        IDirectFBSurface    *dfbsurface;/* dfbsurface for drawing/blitting */
+#ifdef  __HAVE_DIRECTFB__
+        //! dfbsurface for drawing/blitting
+        IDirectFBSurface    *llsurface;
+#else
+    	//! pointer if compilied without dfb
+    	void 	*llsurface;
+#endif
         bool				surface_read_locked;
         int					surface_read_lock_cnt;
         bool				surface_write_locked;
@@ -428,7 +429,7 @@ class MMSFBSurface {
 #endif
 
 
-        MMSFBSurfaceFlipFlags	flipflags;		/* flags which are used when flipping */
+        MMSFBFlipFlags			flipflags;		/* flags which are used when flipping */
 
         MMSMutex  				Lock;       		/* to make it thread-safe */
         unsigned long       	TID;        		/* save the id of the thread which has locked the surface */
@@ -443,16 +444,16 @@ class MMSFBSurface {
         vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
 
 
-        void init(IDirectFBSurface *dfbsurface,
+        void init(void *llsurface,
 				  MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
 
-        void lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch, bool pthread_lock);
+        void lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthread_lock);
         void unlock(bool pthread_unlock);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly);
-        MMSFBSurface(IDirectFBSurface *dfbsurface,
+        MMSFBSurface(void *llsurface,
 					 MMSFBSurface *parent = NULL,
 					 MMSFBRectangle *sub_surface_rect = NULL);
 #ifdef __HAVE_XLIB__
@@ -480,7 +481,7 @@ class MMSFBSurface {
         bool getSize(int *w, int *h);
         bool getMemSize(int *size);
 
-        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);
+        bool setFlipFlags(MMSFBFlipFlags flags);
 
         bool clear(unsigned char r = 0, unsigned char g = 0,
                    unsigned char b = 0, unsigned char a = 0);
@@ -493,7 +494,7 @@ class MMSFBSurface {
         bool setClip(int x1, int y1, int x2, int y2);
         bool getClip(MMSFBRegion *clip);
 
-        bool setDrawingFlags(MMSFBSurfaceDrawingFlags flags);
+        bool setDrawingFlags(MMSFBDrawingFlags flags);
         bool drawLine(int x1, int y1, int x2, int y2);
         bool drawRectangle(int x, int y, int w, int h);
         bool fillRectangle(int x, int y, int w, int h);
@@ -501,7 +502,7 @@ class MMSFBSurface {
         bool fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
         bool drawCircle(int x, int y, int radius, int start_octant = 0, int end_octant = 7);
 
-        bool setBlittingFlags(MMSFBSurfaceBlittingFlags flags);
+        bool setBlittingFlags(MMSFBBlittingFlags flags);
         bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
         bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect, int x, int y);
@@ -533,7 +534,7 @@ class MMSFBSurface {
         bool setFont(MMSFBFont *font);
         bool drawString(string text, int len, int x, int y);
 
-        void lock(MMSFBSurfaceLockFlags flags = 0, void **ptr = NULL, int *pitch = NULL);
+        void lock(MMSFBLockFlags flags = MMSFB_LOCK_NONE, void **ptr = NULL, int *pitch = NULL);
         void unlock();
 
         MMSFBSurface *getSubSurface(MMSFBRectangle *rect);

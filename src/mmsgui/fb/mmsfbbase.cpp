@@ -30,9 +30,13 @@ string MMSFB_LastErrorString;
 string MMSFB_ErrorString(const int rc, const string msg) {
     if (rc)
     {
+#ifdef  __HAVE_DIRECTFB__
         string s1 = msg;
         string s2 = DirectFBErrorString((DFBResult)rc);
         return s1 + " [" + s2 + "]";
+#else
+        return msg;
+#endif
     }
     else
         return msg;
@@ -414,6 +418,47 @@ DFBDisplayLayerOptions getDFBLayerOptionsFromString(string opts) {
         o = (DFBDisplayLayerOptions)(o | DLOP_FIELD_PARITY);
     return o;
 }
+
+
+DFBSurfaceBlittingFlags getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(MMSFBBlittingFlags flags) {
+	switch (flags) {
+	case MMSFB_BLIT_NOFX: 				return DSBLIT_NOFX;
+	case MMSFB_BLIT_BLEND_ALPHACHANNEL:	return DSBLIT_BLEND_ALPHACHANNEL;
+	case MMSFB_BLIT_BLEND_COLORALPHA:	return DSBLIT_BLEND_COLORALPHA;
+	case MMSFB_BLIT_COLORIZE:			return DSBLIT_COLORIZE;
+	case MMSFB_BLIT_SRC_PREMULTIPLY:	return DSBLIT_SRC_PREMULTIPLY;
+	case MMSFB_BLIT_SRC_PREMULTCOLOR:	return DSBLIT_SRC_PREMULTCOLOR;
+	default: 							return DSBLIT_NOFX;
+	}
+}
+
+DFBSurfaceDrawingFlags getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(MMSFBDrawingFlags flags) {
+	switch (flags) {
+	case MMSFB_DRAW_NOFX:				return DSDRAW_NOFX;
+	case MMSFB_DRAW_BLEND:				return DSDRAW_BLEND;
+	case MMSFB_DRAW_SRC_PREMULTIPLY:	return DSDRAW_SRC_PREMULTIPLY;
+	default:							return DSDRAW_NOFX;
+	}
+}
+
+DFBSurfaceFlipFlags getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(MMSFBFlipFlags flags) {
+	switch (flags) {
+	case MMSFB_FLIP_NONE:		return DSFLIP_NONE;
+	case MMSFB_FLIP_WAIT:		return DSFLIP_WAIT;
+	case MMSFB_FLIP_ONSYNC:		return DSFLIP_ONSYNC;
+	case MMSFB_FLIP_WAITFORSYNC:return DSFLIP_WAITFORSYNC;
+	default:					return DSFLIP_NONE;
+	}
+}
+
+DFBSurfaceLockFlags getDFBSurfaceLockFlagsFromMMSFBLockFlags(MMSFBLockFlags flags) {
+	switch (flags) {
+	case MMSFB_LOCK_READ:	return DSLF_READ;
+	case MMSFB_LOCK_WRITE:	return DSLF_WRITE;
+	default:				return DSLF_READ;
+	}
+}
+
 
 #endif
 

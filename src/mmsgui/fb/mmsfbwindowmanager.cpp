@@ -23,7 +23,6 @@
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsinfo/mmsinfo.h"
 #include "mmsgui/fb/mmsfb.h"
-#include <directfb.h>
 
 /* initialize the mmsfbwindowmanager object */
 MMSFBWindowManager *mmsfbwindowmanager = new MMSFBWindowManager();
@@ -152,7 +151,7 @@ bool MMSFBWindowManager::addWindow(MMSFBWindow *window) {
         this->layer->createSurface(&(awin.saved_surface), w, h, pf, 0);
         if (awin.saved_surface) {
             awin.saved_surface->clear();
-            awin.saved_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+            awin.saved_surface->setBlittingFlags(MMSFB_BLIT_NOFX);
         }
     }
     this->windows.push_back(awin);
@@ -619,11 +618,11 @@ logger.writeLog("BBB>");
             if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.surface_buffer->alphachannel))) {
             	// the window has an alphachannel
                 if (aw->opacity < 255) {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
                 }
                 else {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
                 }
 
                 // first window?
@@ -637,11 +636,11 @@ logger.writeLog("BBB>");
             else {
             	// the window has no alphachannel
                 if (aw->opacity < 255) {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_COLORALPHA);
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_COLORALPHA);
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
                 }
                 else {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
                 }
 
                 // first window?
@@ -1003,13 +1002,13 @@ void MMSFBWindowManager::drawPointer(MMSFBRegion *region) {
 
 	// blit the pointer surface with given opacity
 	if (this->pointer_opacity < 255) {
-		this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+		this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
 	    this->layer_surface->setColor(0, 0, 0, this->pointer_opacity);
 	}
 	else
-		this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+		this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
 	this->layer_surface->blit(this->pointer_surface, NULL, this->pointer_rect.x, this->pointer_rect.y);
-	this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+	this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
     this->layer_surface->setColor(0, 0, 0, 0);
 }
 

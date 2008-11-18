@@ -396,3 +396,7 @@ ifdef X11_LIBS
     cflags_str += " $(X11_INC)"
 endif 
  
+#export CFLAGS+='-D__HAVE_XLIB__'
+#export CFLAGS+='-D__NO_XSYNC__'
+
+ 

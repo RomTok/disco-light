@@ -26,6 +26,7 @@
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
+
 #ifdef __HAVE_XLIB__
 static XF86VidModeModeLine origmode;
 static void myexit() {
@@ -40,14 +41,18 @@ static void myexit() {
 	}
 }
 #endif
-#define INITCHECK  if(!this->dfb){MMSFB_SetError(0,"not initialized");return false;}
+
+#define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
 
 MMSFB::MMSFB() {
     /* init me */
     this->argc = 0;
     this->argv = NULL;
+    this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
     this->dfb = NULL;
+#endif
     this->outputtype = "";
     this->w = 0;
     this->h = 0;
@@ -58,10 +63,9 @@ MMSFB::~MMSFB() {
 }
 
 bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen) {
-    DFBResult dfbres;
 
     // check if already initialized
-    if (this->dfb) {
+    if (this->initialized) {
         MMSFB_SetError(0, "already initialized");
         return false;
     }
@@ -87,7 +91,9 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-		/* init dfb */
+        DFBResult dfbres;
+
+        /* init dfb */
 		DirectFBInit(&this->argc,&this->argv);
 
 		/* get interface to dfb */
@@ -99,8 +105,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     }
     else {
 #ifdef __HAVE_XLIB__
-		this->dfb = (IDirectFB*)1;
-
 		// initialize the X11 window
         if (!(this->x_display = XOpenDisplay((char*)0))) {
 			MMSFB_SetError(0, "XOpenDisplay() failed");
@@ -156,7 +160,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
 
 
-
         XStoreName(this->x_display, this->x_window, "DISKO WINDOW");
         XSetIconName(this->x_display, this->x_window, "DISKO ICON");
         this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
@@ -187,40 +190,28 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 #endif
     }
 
+    this->initialized = true;
     return true;
 }
 
 bool MMSFB::release() {
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-		if (this->dfb) {
+		if (this->dfb)
 			this->dfb->Release(this->dfb);
-			this->dfb = NULL;
-		}
 #endif
     }
     else {
 #ifdef __HAVE_XLIB__
-		//TODO
-		this->dfb = NULL;
 #endif
     }
 
+	this->initialized = false;
     return true;
 }
 
 bool MMSFB::isInitialized() {
-    if (this->backend == MMSFB_BACKEND_DFB) {
-#ifdef  __HAVE_DIRECTFB__
-    	return (this->dfb != NULL);
-#endif
-    }
-    else {
-#ifdef __HAVE_XLIB__
-    	//TODO
-    	return true;
-#endif
-    }
+	return this->initialized;
 }
 
 MMSFB_BACKEND MMSFB::getBackend() {
@@ -314,6 +305,7 @@ bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixe
         return false;
 }
 
+#ifdef  __HAVE_DIRECTFB__
 bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filename) {
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -338,6 +330,7 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 #endif
     }
 }
+#endif
 
 bool MMSFB::createFont(MMSFBFont **font, string filename, int width, int height) {
 	// check if initialized

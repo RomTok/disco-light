@@ -24,7 +24,6 @@
 #define MMSBORDERCLASS_H_
 
 #include "mmsgui/theme/mmsthemebase.h"
-#include <directfb.h>
 
 //! describe attributes for MMSBorder
 namespace MMSGUI_BORDER_ATTR {

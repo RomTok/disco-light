@@ -41,7 +41,10 @@ typedef struct {
 */
 class MMSFBWindow {
     private:
-        IDirectFBWindow     *dfbwindow; /* dfb window if used */
+#ifdef  __HAVE_DIRECTFB__
+    	//! dfb window if used
+        IDirectFBWindow     *dfbwindow;
+#endif
 
         MMSFBSurface        *surface;   /* windows surface */
 

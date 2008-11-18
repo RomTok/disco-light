@@ -40,7 +40,13 @@ class MMSFB {
         int             argc;       /* commandline arguments */
         char            **argv;
 
-        IDirectFB       *dfb;       /* interface to dfb */
+    	//! is initialized?
+    	bool initialized;
+
+#ifdef  __HAVE_DIRECTFB__
+        // interface to dfb
+        IDirectFB       *dfb;
+#endif
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
 
@@ -79,7 +85,9 @@ class MMSFB {
 
         bool createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0, bool systemonly = false);
 
+#ifdef  __HAVE_DIRECTFB__
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
+#endif
         bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);
         bool toggleFullscreen();
 

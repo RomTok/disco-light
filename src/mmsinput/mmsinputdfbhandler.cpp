@@ -445,7 +445,7 @@ MMSInputDFBHandler::MMSInputDFBHandler(MMS_INPUT_DEVICE device) {
 
 	this->quit=false;
 #else
-	throw new MMSError(0,typeid(this).name() + " is empty. compile DirectFB support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile DirectFB support!");
 #endif
 }
 
@@ -453,7 +453,7 @@ MMSInputDFBHandler::~MMSInputDFBHandler()  {
 #ifdef __HAVE_DIRECTFB__
 	if(this->config) delete this->config;
 #else
-	throw new MMSError(0,typeid(this).name() + " is empty. compile DirectFB support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile DirectFB support!");
 #endif
 }
 
@@ -616,7 +616,7 @@ void MMSInputDFBHandler::grabEvents(MMSInputEvent *inputevent) {
 	    }
 	}
 #else
-	throw new MMSError(0,typeid(this).name() + " is empty. compile DirectFB support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile DirectFB support!");
 #endif
 }
 

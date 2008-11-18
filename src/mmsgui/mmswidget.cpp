@@ -701,7 +701,7 @@ void MMSWidget::updateWindowSurfaceWithSurface(bool useAlphaChannel) {
 	    /* lock */
 	    this->windowSurface->lock();
 
-	    this->windowSurface->setBlittingFlags((MMSFBSurfaceBlittingFlags)(DSBLIT_NOFX));
+	    this->windowSurface->setBlittingFlags(MMSFB_BLIT_NOFX);
 	    this->windowSurface->blit(this->surface, &area, innerGeom.x, innerGeom.y);
 
 	    /* unlock */
@@ -1190,12 +1190,12 @@ bool MMSWidget::draw(bool *backgroundFilled) {
 
                 if (this->drawable) {
                     /* copy background from parent */
-                	this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)(DSBLIT_NOFX));
+                	this->surface->setBlittingFlags(MMSFB_BLIT_NOFX);
                     this->surface->blit(widget->surface, &srcrect, 0, 0);
                 }
                 else {
                     /* this is for example <hbox> or <vbox> which has no own drawing */
-                    this->windowSurface->setBlittingFlags((MMSFBSurfaceBlittingFlags)(DSBLIT_NOFX));
+                    this->windowSurface->setBlittingFlags(MMSFB_BLIT_NOFX);
                     this->windowSurface->blit(widget->surface, &srcrect, innerGeom.x, innerGeom.y);
                 }
             }

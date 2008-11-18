@@ -117,34 +117,6 @@ bool getColorFromString(string input, MMSFBColor *color) {
     return true;
 }
 
-bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer, IDirectFB *dfb) {
-	IDirectFB 				*mydfb = NULL;
-	IDirectFBDisplayLayer 	*mylayer;
-    DFBDisplayLayerConfig 	cfg;
-
-	if (!dfb) {
-		if(DirectFBCreate(&mydfb)!= DFB_OK)
-        	return false;
-	}
-	else
-		mydfb = dfb;
-
-    mydfb->GetDisplayLayer(mydfb, DLID_PRIMARY, &mylayer);
-    mylayer->GetConfiguration(mylayer, &cfg);
-    *w=cfg.width;
-    *h=cfg.height;
-    DEBUGMSG("MMSGUI", "screen resolution: %d/%d", *w, *h);
-
-    if (!layer)
-    	mylayer->Release(mylayer);
-    else
-    	*layer = mylayer;
-
-    if (!dfb)
-    	mydfb->Release(mydfb);
-
-    return true;
-}
 
 bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
 //    IDirectFB              *mydfb = NULL;

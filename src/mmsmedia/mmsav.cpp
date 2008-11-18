@@ -359,7 +359,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
 #ifdef __HAVE_XLIB__
 		if(window) {
-			vodesc.winsurface->setBlittingFlags(DSBLIT_NOFX);
+			vodesc.winsurface->setBlittingFlags(MMSFB_BLIT_NOFX);
 			int w,h;
 			vodesc.winsurface->getSize(&w,&h);
 			this->userd.surf=window->getSurface();
@@ -378,7 +378,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 
 #else
         if(window) {
-
 			if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
 				DEBUGMSG("MMSMedia", "set blitting failed");
 			/* fill the visual structure for the video output driver */
@@ -397,10 +396,14 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 #endif
         }else {
 #ifdef __HAVE_DIRECTFB__
-            if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
-            	DEBUGMSG("MMSMedia", "set blitting failed");
-            /* fill the visual structure for the video output driver */
-            this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+            if(window) {
+				if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+					DEBUGMSG("MMSMedia", "set blitting failed");
+				/* fill the visual structure for the video output driver */
+				this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+            }
+            else
+            	this->visual.destination = NULL;
             this->visual.subpicture   = NULL;
             this->visual.output_cb    = output_cb;
             this->visual.output_cdata = (void*) &(this->vodesc);

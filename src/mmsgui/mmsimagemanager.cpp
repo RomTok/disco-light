@@ -203,7 +203,7 @@ bool read_png(const char *filename, void **buf, int *width, int *height, bool pr
 
 
 MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc,
-										unsigned int mirror_size) {
+										int mirror_size) {
     string                  imagefile;
     IDirectFBImageProvider  *imageprovider = NULL;
     MMSIM_DESC              *im_desc = NULL;
@@ -463,7 +463,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                /* copy img_buf to the surface */
 				                char *suf_ptr;
 				                int suf_pitch;
-				                im_desc->suf[0].surface->lock(DSLF_WRITE, (void**)&suf_ptr, &suf_pitch);
+				                im_desc->suf[0].surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
 
 				                if (img_pitch == suf_pitch)
 				                	memcpy(suf_ptr, img_buf, img_pitch * img_height);
@@ -511,7 +511,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                /* copy img_buf to the surface */
 				                char *suf_ptr;
 				                int suf_pitch;
-				                im_desc->suf[0].surface->lock(DSLF_WRITE, (void**)&suf_ptr, &suf_pitch);
+				                im_desc->suf[0].surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
 
 				                if (img_pitch == suf_pitch)
 				                	/* copy in one block */

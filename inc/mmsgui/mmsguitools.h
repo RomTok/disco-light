@@ -64,9 +64,9 @@ bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis
 
 bool getColorFromString(string input, MMSFBColor *color);
 
-bool getScreenInfo(int *w, int *h, IDirectFBDisplayLayer **layer = NULL, IDirectFB *dfb = NULL);
-
+#ifdef  __HAVE_DIRECTFB__
 bool loadImage(IDirectFBImageProvider **image, string path, string filename);
+#endif
 
 bool loadFont(MMSFBFont **font, string path, string filename, int width, int height);
 

@@ -301,7 +301,7 @@ class MMSWindow {
 
         //! Internal method: Flip a window.
         bool flipWindow(MMSWindow *win = NULL, MMSFBRegion *region = NULL,
-                        MMSFBSurfaceFlipFlags flags = (MMSFBSurfaceFlipFlags)0,
+                        MMSFBFlipFlags flags = MMSFB_FLIP_NONE,
                         bool flipChildSurface = true, bool locked = false);
 
         //! Internal method: Remove the focus from a child window.

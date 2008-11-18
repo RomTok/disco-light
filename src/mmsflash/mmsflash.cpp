@@ -131,7 +131,7 @@ void MMSFlash::loader(bool &stop) {
 	}
 	void *ptr;
 	int pitch;
-	this->flash_temp_surface->lock(DSLF_WRITE, &ptr, &pitch);
+	this->flash_temp_surface->lock(MMSFB_LOCK_WRITE, &ptr, &pitch);
 	this->flash_temp_surface->unlock();
     DEBUGMSG("MMSFLASH", "creating cairo surface");
     this->cairosurface = cairo_image_surface_create_for_data((unsigned char*)ptr, CAIRO_FORMAT_ARGB32,

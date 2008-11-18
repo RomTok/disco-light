@@ -35,6 +35,7 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 
+#ifdef  __HAVE_DIRECTFB__
 extern "C" {
 #include <direct/debug.h>
 #include <direct/trace.h>
@@ -44,6 +45,7 @@ extern "C" {
 #include <directfb_strings.h>
 #include <directfb_util.h>
 }
+#endif
 
 #ifdef MMSFB_TRACE_ENABLE
 #define MMSFB_TRACE()    direct_trace_print_stack(NULL)
@@ -100,6 +102,51 @@ typedef struct {
 	int	x2;
 	int	y2;
 } MMSFBRegion;
+
+typedef enum {
+	//! no effects
+	MMSFB_BLIT_NOFX = 0,
+	//! use alphachannel from source
+	MMSFB_BLIT_BLEND_ALPHACHANNEL,
+	//! use alphachannel from color
+	MMSFB_BLIT_BLEND_COLORALPHA,
+	//! modulates source pixel with color
+	MMSFB_BLIT_COLORIZE,
+	//! modulates the source color with the source alpha
+	MMSFB_BLIT_SRC_PREMULTIPLY,
+	//! modulates the source color with the color alpha
+	MMSFB_BLIT_SRC_PREMULTCOLOR
+} MMSFBBlittingFlags;
+
+typedef enum {
+	//! no effects
+	MMSFB_DRAW_NOFX = 0,
+	//! alpha from surface color
+	MMSFB_DRAW_BLEND,
+	//! multiplies the color with the alpha channel
+	MMSFB_DRAW_SRC_PREMULTIPLY
+} MMSFBDrawingFlags;
+
+typedef enum {
+	//! none
+	MMSFB_FLIP_NONE = 0,
+	//! returns upon vertical sync
+	MMSFB_FLIP_WAIT,
+	//! flip upon the next vertical sync
+	MMSFB_FLIP_ONSYNC,
+	//! WAIT and ONSYNC
+	MMSFB_FLIP_WAITFORSYNC
+} MMSFBFlipFlags;
+
+typedef enum {
+	//! none
+	MMSFB_LOCK_NONE = 0,
+	//! read access
+	MMSFB_LOCK_READ,
+	//! write access
+	MMSFB_LOCK_WRITE
+} MMSFBLockFlags;
+
 
 // supported pixel format strings
 #define MMSFB_PF_NONE_STR       ""
@@ -283,6 +330,12 @@ DFBDisplayLayerBufferMode getDFBLayerBufferModeFromString(string bm);
 // conversion routines for layer options
 string getDFBLayerOptionsString(DFBDisplayLayerOptions opts);
 DFBDisplayLayerOptions getDFBLayerOptionsFromString(string opts);
+
+
+DFBSurfaceBlittingFlags getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(MMSFBBlittingFlags flags);
+DFBSurfaceDrawingFlags getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(MMSFBDrawingFlags flags);
+DFBSurfaceFlipFlags getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(MMSFBFlipFlags flags);
+DFBSurfaceLockFlags getDFBSurfaceLockFlagsFromMMSFBLockFlags(MMSFBLockFlags flags);
 #endif
 
 #endif /*MMSFBBASE_H_*/

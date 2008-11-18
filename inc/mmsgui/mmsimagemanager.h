@@ -63,7 +63,7 @@ class MMSImageManager {
         MMSImageManager(MMSFBLayer *layer);
         ~MMSImageManager();
         MMSFBSurface *getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc = NULL,
-        					   unsigned int mirror_size = 0);
+        					   int mirror_size = 0);
         MMSFBSurface *newImage(const string &name, unsigned int width, unsigned int height, MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE);
         void releaseImage(const string &path, const string &filename);
         void releaseImage(MMSFBSurface *surface);

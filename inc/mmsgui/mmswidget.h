@@ -116,12 +116,12 @@ struct neg_bool_accumulator
     }
 #endif*/
 
-typedef void(*GUIINPUTCALLBACK)(DFBInputDeviceKeySymbol);
+/*typedef void(*GUIINPUTCALLBACK)(DFBInputDeviceKeySymbol);
 
 typedef struct {
 	DFBInputDeviceKeySymbol key;
 	GUIINPUTCALLBACK cb;
-} INPUT_CB;
+} INPUT_CB;*/
 
 MMS_CREATEERROR(MMSWidgetError);
 
