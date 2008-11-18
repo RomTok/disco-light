@@ -90,7 +90,7 @@ static void output_cb(void *cdata, int width, int height, double ratio,
     }
 
     /* return the current rect */
-    *dest_rect=vodesc->rect;
+    *dest_rect=(DFBRectangle&)vodesc->rect;
     //DEBUGOUT("\nrect %d:%d:%d:%d",dest_rect->x,dest_rect->y,dest_rect->w,dest_rect->h);
 
 }

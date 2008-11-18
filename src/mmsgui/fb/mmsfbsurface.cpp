@@ -249,7 +249,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 
 MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfbsurface,
 	        		       MMSFBSurface *parent,
-						   DFBRectangle *sub_surface_rect) {
+						   MMSFBRectangle *sub_surface_rect) {
     // init me
     if ((!parent)||(!this->use_own_alloc))
     	this->config.surface_buffer = new MMSFBSurfaceBuffer;
@@ -332,7 +332,7 @@ MMSFBSurface::~MMSFBSurface() {
 
 void MMSFBSurface::init(IDirectFBSurface *dfbsurface,
 	        		       MMSFBSurface *parent,
-						   DFBRectangle *sub_surface_rect) {
+						   MMSFBRectangle *sub_surface_rect) {
     /* init me */
     this->dfbsurface = dfbsurface;
     this->surface_read_locked = false;
@@ -745,9 +745,9 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
 	    if (this->config.surface_buffer->alphachannel)
-	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer->pixelformat + ",ALPHACHANNEL");
+	    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
 	    else
-	    	DEBUGMSG("MMSGUI", " pixelformat:  " + this->config.surface_buffer->pixelformat);
+	    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat));
 
 	    DEBUGMSG("MMSGUI", " capabilities:");
 
@@ -5593,7 +5593,7 @@ void MMSFBSurface::eAB_blend_srcalpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *e
 
 bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 									   MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									   DFBRectangle *src_rect, int x, int y) {
+									   MMSFBRectangle *src_rect, int x, int y) {
 	MMSFBExternalSurfaceBuffer myextbuf;
 	if (source) {
 		// premultiplied surface?
@@ -6096,7 +6096,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	return false;
 }
 
-bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
@@ -6110,7 +6110,7 @@ bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rec
 }
 
 bool MMSFBSurface::extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-										   DFBRectangle *src_rect, int x, int y) {
+										   MMSFBRectangle *src_rect, int x, int y) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
@@ -7672,7 +7672,7 @@ void MMSFBSurface::eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src
 
 bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 											  MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-											  DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+											  MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
 	MMSFBExternalSurfaceBuffer myextbuf;
 	if (source) {
 		// premultiplied surface?
@@ -7954,7 +7954,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 }
 
 
-bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
@@ -7968,7 +7968,7 @@ bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *
 }
 
 bool MMSFBSurface::extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-												  DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+												  MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
@@ -9156,9 +9156,9 @@ bool MMSFBSurface::extendedAccelDrawLine(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y) {
+bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y) {
     DFBResult    dfbres;
-    DFBRectangle src;
+    MMSFBRectangle src;
     bool 		 ret = false;
 
     /* check if initialized */
@@ -9185,7 +9185,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 		/* blit */
 		if (!this->is_sub_surface) {
 			if (!extendedAccelBlit(source, &src, x, y))
-				if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, x, y)) != DFB_OK) {
+				if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y)) != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, src rect="
 										   +iToStr(src.x)+","+iToStr(src.y)+","+iToStr(src.w)+","+iToStr(src.h)
 										   +", dst="+iToStr(x)+","+iToStr(y));
@@ -9207,7 +9207,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 			if (extendedAccelBlit(source, &src, x, y))
 				ret = true;
 			else
-				if (this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, x, y) == DFB_OK)
+				if (this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y) == DFB_OK)
 					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -9244,8 +9244,8 @@ bool MMSFBSurface::blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int
 
 
 bool MMSFBSurface::blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							  DFBRectangle *src_rect, int x, int y) {
-    DFBRectangle src;
+							  MMSFBRectangle *src_rect, int x, int y) {
+    MMSFBRectangle src;
     bool 		 ret = false;
 
     if (src_rect) {
@@ -9287,7 +9287,7 @@ bool MMSFBSurface::blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePi
 }
 
 bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							  DFBRectangle *src_rect, int x, int y) {
+							  MMSFBRectangle *src_rect, int x, int y) {
 	MMSFBExternalSurfaceBuffer extbuf;
 	memset(&extbuf, 0, sizeof(extbuf));
 	extbuf.ptr = src_ptr;
@@ -9295,10 +9295,10 @@ bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFor
 	return blitBuffer(&extbuf, src_pixelformat, src_width, src_height, src_rect, x, y);
 }
 
-bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
     DFBResult    dfbres;
-    DFBRectangle src;
-    DFBRectangle dst;
+    MMSFBRectangle src;
+    MMSFBRectangle dst;
     bool         blit_done = false;
     bool 		 ret = false;
 
@@ -9382,14 +9382,14 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 				MMSFBSurface *tempsuf = mmsfbsurfacemanager->getTemporarySurface(dst.w, dst.h);
 
 				if (tempsuf) {
-					DFBRectangle temp;
+					MMSFBRectangle temp;
 					temp.x=0;
 					temp.y=0;
 					temp.w=dst.w;
 					temp.h=dst.h;
 
 					dfbres = DFB_OK;
-					dfbres=((IDirectFBSurface *)tempsuf->getDFBSurface())->StretchBlit((IDirectFBSurface *)tempsuf->getDFBSurface(), (IDirectFBSurface *)source->getDFBSurface(), &src, &temp);
+					dfbres=((IDirectFBSurface *)tempsuf->getDFBSurface())->StretchBlit((IDirectFBSurface *)tempsuf->getDFBSurface(), (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&temp);
 					if (dfbres == DFB_OK) {
 						if (!this->is_sub_surface) {
 							if (extendedAccelBlit(tempsuf, &temp, dst.x, dst.y)) {
@@ -9397,7 +9397,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 								ret = true;
 							}
 							else
-							if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), &temp, dst.x, dst.y)) == DFB_OK) {
+							if ((dfbres=this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y)) == DFB_OK) {
 								blit_done = true;
 								ret = true;
 							}
@@ -9414,7 +9414,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 #endif
 
 							if (!extendedAccelBlit(tempsuf, &temp, dst.x, dst.y))
-								this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), &temp, dst.x, dst.y);
+								this->dfbsurface->Blit(this->dfbsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y);
 
 #ifndef USE_DFB_SUBSURFACE
 							RESETSUBSURFACE_BLITTINGFLAGS;
@@ -9441,7 +9441,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 			if (!this->is_sub_surface) {
 				dfbres = DFB_OK;
 				if (!extendedAccelStretchBlit(source, &src, &dst))
-					dfbres=this->dfbsurface->StretchBlit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, &dst);
+					dfbres=this->dfbsurface->StretchBlit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				if (dfbres != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::StretchBlit() failed");
 					return false;
@@ -9460,7 +9460,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 #endif
 
 				if (!extendedAccelStretchBlit(source, &src, &dst))
-					this->dfbsurface->StretchBlit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), &src, &dst);
+					this->dfbsurface->StretchBlit(this->dfbsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -9501,10 +9501,10 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFB
 }
 
 bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									 DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
     DFBResult    dfbres;
-    DFBRectangle src;
-    DFBRectangle dst;
+    MMSFBRectangle src;
+    MMSFBRectangle dst;
     bool         blit_done = false;
     bool 		 ret = false;
 
@@ -9564,7 +9564,7 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
 }
 
 bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									 DFBRectangle *src_rect, DFBRectangle *dest_rect) {
+									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
 	MMSFBExternalSurfaceBuffer extbuf;
 	memset(&extbuf, 0, sizeof(extbuf));
 	extbuf.ptr = src_ptr;
@@ -9676,7 +9676,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 							sb->currbuffer_write = 0;
 					}
 					else {
-						DFBRectangle src_rect;
+						MMSFBRectangle src_rect;
 						src_rect.x = region->x1;
 						src_rect.y = region->y1;
 						src_rect.w = region->x2 - region->x1 + 1;
@@ -9709,7 +9709,7 @@ bool MMSFBSurface::flip(DFBRegion *region) {
 				else {
 					CLIPSUBSURFACE
 
-					DFBRectangle src_rect;
+					MMSFBRectangle src_rect;
 					if (!region) {
 						src_rect.x = 0;
 						src_rect.y = 0;
@@ -9842,7 +9842,7 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
 
     if (copycontent) {
         /* copy the content */
-        DFBRectangle dstrect;
+        MMSFBRectangle dstrect;
         dstrect.x = 0;
         dstrect.y = 0;
         dstrect.w = w;
@@ -9907,7 +9907,7 @@ bool MMSFBSurface::resize(int w, int h) {
     }
     else  {
     	/* sub surface */
-	    DFBRectangle rect = this->sub_surface_rect;
+	    MMSFBRectangle rect = this->sub_surface_rect;
 	    rect.w = w;
 	    rect.h = h;
 	    return setSubSurface(&rect);
@@ -10632,7 +10632,7 @@ void MMSFBSurface::unlock() {
 	unlock(true);
 }
 
-MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
+MMSFBSurface *MMSFBSurface::getSubSurface(MMSFBRectangle *rect) {
     IDirectFBSurface    *subsuf = NULL;
     MMSFBSurface 		*surface;
 
@@ -10663,7 +10663,7 @@ MMSFBSurface *MMSFBSurface::getSubSurface(DFBRectangle *rect) {
     return surface;
 }
 
-bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
+bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
 
 	/* check if initialized */
     INITCHECK;
@@ -10711,7 +10711,7 @@ bool MMSFBSurface::setSubSurface(DFBRectangle *rect) {
 }
 
 bool MMSFBSurface::setSubSurface(DFBRegion *region) {
-	DFBRectangle rect;
+	MMSFBRectangle rect;
 
 	if (!region)
 		return false;
@@ -10725,7 +10725,7 @@ bool MMSFBSurface::setSubSurface(DFBRegion *region) {
 }
 
 bool MMSFBSurface::moveTo(int x, int y) {
-	DFBRectangle rect;
+	MMSFBRectangle rect;
 
 	rect = this->sub_surface_rect;
 	rect.x = x;
@@ -10735,7 +10735,7 @@ bool MMSFBSurface::moveTo(int x, int y) {
 }
 
 bool MMSFBSurface::move(int x, int y) {
-	DFBRectangle rect;
+	MMSFBRectangle rect;
 
 	rect = this->sub_surface_rect;
 	rect.x += x;

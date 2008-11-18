@@ -118,7 +118,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
 			/* get the window rect and check if the pointer is in there */
-			DFBRectangle rect = window->getGeometry();
+			MMSFBRectangle rect = window->getGeometry();
 
 			if ((inputevent->posx - rect.x < 0)||(inputevent->posy - rect.y < 0)
 					||(inputevent->posx - rect.x - rect.w >= 0)||(inputevent->posy - rect.y - rect.h >= 0)) {
@@ -152,7 +152,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			window = this->buttonpress_window;
 		if (window) {
 			/* get the window rect and check if the pointer is in there */
-			DFBRectangle rect = window->getGeometry();
+			MMSFBRectangle rect = window->getGeometry();
 
 			if ((window == this->buttonpress_window)
 				||   ((this->buttonpress_window)
@@ -203,7 +203,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
 			/* get the window rect and check if the pointer is in there */
-			DFBRectangle rect = window->getGeometry();
+			MMSFBRectangle rect = window->getGeometry();
 
 			if ((inputevent->posx - rect.x < 0)||(inputevent->posy - rect.y < 0)
 					||(inputevent->posx - rect.x - rect.w >= 0)||(inputevent->posy - rect.y - rect.h >= 0)) {

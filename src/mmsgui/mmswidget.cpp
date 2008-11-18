@@ -302,7 +302,7 @@ MMSWidget* MMSWidget::operator[](string name) {
 
 
 void MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
-    DFBRectangle mygeom;
+    MMSFBRectangle mygeom;
 
     if (!drawable)
         return;
@@ -350,12 +350,12 @@ void MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
     }
 }
 
-DFBRectangle MMSWidget::getSurfaceGeometry() {
+MMSFBRectangle MMSWidget::getSurfaceGeometry() {
     return this->surfaceGeom;
 }
 
 void MMSWidget::setInnerGeometry() {
-    DFBRectangle mygeom;
+    MMSFBRectangle mygeom;
     unsigned int diff = 0;
 
     /* check something */
@@ -399,13 +399,13 @@ void MMSWidget::setInnerGeometry() {
     }
 }
 
-DFBRectangle MMSWidget::getInnerGeometry() {
+MMSFBRectangle MMSWidget::getInnerGeometry() {
     return this->innerGeom;
 }
 
 
-void MMSWidget::setGeometry(DFBRectangle geom) {
-    DFBRectangle oldgeom;
+void MMSWidget::setGeometry(MMSFBRectangle geom) {
+    MMSFBRectangle oldgeom;
     bool dimChanged = true;
 
 
@@ -471,12 +471,12 @@ void MMSWidget::setGeometry(DFBRectangle geom) {
 
 }
 
-DFBRectangle MMSWidget::getGeometry() {
+MMSFBRectangle MMSWidget::getGeometry() {
     return this->geom;
 }
 
-DFBRectangle MMSWidget::getRealGeometry() {
-	DFBRectangle r1,r2;
+MMSFBRectangle MMSWidget::getRealGeometry() {
+	MMSFBRectangle r1,r2;
 
 	/* have a parent widget? */
 	if (!this->parent) {
@@ -681,8 +681,8 @@ bool MMSWidget::scrollTo(int posx, int posy, bool refresh) {
 	return false;
 }
 
-DFBRectangle MMSWidget::getVisibleSurfaceArea() {
-    DFBRectangle area;
+MMSFBRectangle MMSWidget::getVisibleSurfaceArea() {
+    MMSFBRectangle area;
 
     area.x = surfaceGeom.x + scrollPosX;
     area.y = surfaceGeom.y + scrollPosY;
@@ -696,7 +696,7 @@ void MMSWidget::updateWindowSurfaceWithSurface(bool useAlphaChannel) {
 
 	if (this->has_own_surface) {
 		/* have own surface */
-		DFBRectangle area = getVisibleSurfaceArea();
+		MMSFBRectangle area = getVisibleSurfaceArea();
 
 	    /* lock */
 	    this->windowSurface->lock();
@@ -924,7 +924,7 @@ if (!this->has_own_surface) {
 
             if (widget) {
                 /* drawable parent found, calculate rectangle to copy */
-                DFBRectangle srcrect = widget->getVisibleSurfaceArea();
+                MMSFBRectangle srcrect = widget->getVisibleSurfaceArea();
                 srcrect.x+= this->innerGeom.x - widget->innerGeom.x;
                 srcrect.y+= this->innerGeom.y - widget->innerGeom.y;
                 srcrect.w = this->innerGeom.w;
@@ -964,7 +964,7 @@ if (!this->has_own_surface) {
                     }
                     else {
                         /* draw background with a part of window bgimage */
-                        DFBRectangle src, dst;
+                        MMSFBRectangle src, dst;
                         int sw, sh;
 #ifdef __PUPTRACE__
                         DEBUGOUT("copy from window, win=%s -> w=%s\n", this->rootwindow->getName().c_str(), this->getName().c_str());
@@ -1182,7 +1182,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
 
             if (widget) {
                 /* drawable parent found, calculate rectangle to copy */
-                DFBRectangle srcrect = widget->getVisibleSurfaceArea();
+                MMSFBRectangle srcrect = widget->getVisibleSurfaceArea();
                 srcrect.x+= this->innerGeom.x - widget->innerGeom.x;
                 srcrect.y+= this->innerGeom.y - widget->innerGeom.y;
                 srcrect.w = this->innerGeom.w;
@@ -1219,7 +1219,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                     }
                     else {
                         /* draw background with a part of window bgimage */
-                        DFBRectangle src, dst;
+                        MMSFBRectangle src, dst;
                         int sw, sh;
 
                         /* get width and height of windows background image */
@@ -1288,7 +1288,7 @@ void MMSWidget::drawMyBorder() {
     if (!getMargin(margin))
     	margin = 0;
 
-    DFBRectangle mygeom;
+    MMSFBRectangle mygeom;
     mygeom = this->geom;
     mygeom.x+= margin;
     mygeom.y+= margin;
@@ -1430,7 +1430,7 @@ MMSWidget *MMSWidget::getDrawableParent(bool mark2Redraw, bool markChildren2Redr
 }
 
 void MMSWidget::refresh() {
-    DFBRectangle tobeupdated;
+    MMSFBRectangle tobeupdated;
     unsigned int margin = 0;
     MMSWindow *myroot = this->rootwindow;
 

@@ -203,7 +203,7 @@ void MMSFBManager::applySettings() {
     	}
     }
 
-    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d ,%s", config.getXres(), config.getYres(), pixelformat.c_str());
+    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d ,%s", config.getXres(), config.getYres(), getMMSFBPixelFormatString(pixelformat).c_str());
     mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
 /*    MMSFBSurface *ts = mmsfbsurfacemanager->getTemporarySurface(10,10);
     if (ts) {

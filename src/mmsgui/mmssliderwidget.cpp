@@ -24,7 +24,7 @@
 
 MMSSliderWidget::MMSSliderWidget(MMSWindow *root, string className, MMSTheme *theme) {
     create(root, className, theme);
-} 
+}
 
 MMSSliderWidget::~MMSSliderWidget() {
     if (this->rootwindow) {
@@ -45,7 +45,7 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->baseWidgetClass = &(this->theme->sliderWidgetClass.widgetClass);
     if (this->sliderWidgetClass) this->widgetClass = &(this->sliderWidgetClass->widgetClass); else this->widgetClass = NULL;
 
-    /* clear */    
+    /* clear */
     this->image = NULL;
     this->selimage = NULL;
     this->image_p = NULL;
@@ -59,7 +59,7 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
 
 MMSWidget *MMSSliderWidget::copyWidget() {
     /* create widget */
-    MMSSliderWidget *newWidget = new MMSSliderWidget(this->rootwindow, className); 
+    MMSSliderWidget *newWidget = new MMSSliderWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -67,7 +67,7 @@ MMSWidget *MMSSliderWidget::copyWidget() {
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-    /* reload my images */    
+    /* reload my images */
     newWidget->image = NULL;
     newWidget->selimage = NULL;
     newWidget->image_p = NULL;
@@ -91,7 +91,7 @@ bool MMSSliderWidget::init() {
     if (!MMSWidget::init())
         return false;
 
-    /* load images */    
+    /* load images */
     this->image = this->rootwindow->im->getImage(getImagePath(), getImageName());
     this->selimage = this->rootwindow->im->getImage(getSelImagePath(), getSelImageName());
     this->image_p = this->rootwindow->im->getImage(getImagePath_p(), getImageName_p());
@@ -119,8 +119,8 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
         this->surface->lock();
 
         /* draw my things */
-        DFBRectangle surfaceGeom = getSurfaceGeometry();
-        
+        MMSFBRectangle surfaceGeom = getSurfaceGeometry();
+
         /* searching for the image */
         MMSFBSurface *suf = NULL;
 
@@ -146,7 +146,7 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
         }
 
         if (suf) {
-            /* prepare for blitting */        
+            /* prepare for blitting */
             this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
 
             /* calculate position */

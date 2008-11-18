@@ -327,8 +327,6 @@ DFBSurfacePixelFormat getDFBPixelFormatFromMMSFBPixelFormat(MMSFBSurfacePixelFor
     return DSPF_UNKNOWN;
 }
 
-#endif
-
 
 
 string getDFBLayerBufferModeString(DFBDisplayLayerBufferMode bm) {
@@ -416,5 +414,8 @@ DFBDisplayLayerOptions getDFBLayerOptionsFromString(string opts) {
         o = (DFBDisplayLayerOptions)(o | DLOP_FIELD_PARITY);
     return o;
 }
+
+#endif
+
 
 

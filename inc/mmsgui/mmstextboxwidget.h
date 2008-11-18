@@ -36,7 +36,7 @@ If you want to display only one line of static text, you should use the MMSLabel
 class MMSTextBoxWidget : public MMSWidget {
     private:
         typedef struct {
-            DFBRectangle geom;
+            MMSFBRectangle geom;
             string       word;
             unsigned int line;
             unsigned int paragraph;

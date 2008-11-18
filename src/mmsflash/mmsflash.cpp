@@ -439,7 +439,7 @@ bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
 	int posx = input->posx;
 	int posy = input->posy;
 	if (input->type == MMSINPUTEVENTTYPE_BUTTONPRESS || input->type == MMSINPUTEVENTTYPE_BUTTONRELEASE || input->type == MMSINPUTEVENTTYPE_AXISMOTION) {
-		DFBRectangle ig = window->getGeometry();
+		MMSFBRectangle ig = window->getGeometry();
 		if (this->width != ig.w)
 			posx = ((posx * (this->width << 8)) / ig.w) >> 8;
 		if (this->height != ig.h)

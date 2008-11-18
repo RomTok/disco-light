@@ -537,7 +537,7 @@ bool MMSWindow::resize(bool refresh) {
 	                                                                      + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                      + " (use alpha)");
 
-	            DFBRectangle rect;
+	            MMSFBRectangle rect;
 
 	            rect.x = wdesc.posx;
 	            rect.y = wdesc.posy;
@@ -900,7 +900,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
 
             /* the window is affected */
             /* calc source and destination */
-            DFBRectangle src_rect;
+            MMSFBRectangle src_rect;
             int dst_x = pw_region.x1;
             int dst_y = pw_region.y1;
 
@@ -941,7 +941,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
         	}
         	else {
         		/* no own surface -> direct draw */
-				DFBRectangle r = cw->window->geom;
+				MMSFBRectangle r = cw->window->geom;
 				if ((src_rect.w == r.w)||(src_rect.h == r.h))
 					/* draw all (e.g. border) */
 					cw->window->draw(false, &src_rect, false);
@@ -1050,7 +1050,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFl
         }
 
         /* redraw the region within parent window */
-        DFBRectangle rect;
+        MMSFBRectangle rect;
         rect.x = pw_region.x1;
         rect.y = pw_region.y1;
         rect.w = pw_region.x2 - pw_region.x1 + 1;
@@ -1324,7 +1324,7 @@ bool MMSWindow::init() {
 
 
 
-void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
+void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear) {
 
     /* lock */
 //PUP    this->surface->lock();
@@ -1515,7 +1515,7 @@ lock();
 		    if ((w->parent)||((!w->parent)&&(w->window))) {
 			    unsigned int opacity;
 			    if (!w->getOpacity(opacity)) opacity = 255;
-		        DFBRectangle rect = w->getGeometry();
+		        MMSFBRectangle rect = w->getGeometry();
 
 			    /* set final opacity */
 				w->parent->setChildWindowOpacity(w, opacity);
@@ -1634,7 +1634,7 @@ bool MMSWindow::showAction(bool *stopaction) {
     if ((this->parent)||((!this->parent)&&(this->window))) {
 	    unsigned int opacity;
 	    if (!getOpacity(opacity)) opacity = 255;
-        DFBRectangle rect = getGeometry();
+        MMSFBRectangle rect = getGeometry();
 
 	    bool fadein;
 	    if (!getFadeIn(fadein)) fadein = false;
@@ -1829,7 +1829,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
     if ((this->parent)||((!this->parent)&&(this->window))) {
 	    unsigned int opacity;
 	    if (!getOpacity(opacity)) opacity = 255;
-        DFBRectangle rect = getGeometry();
+        MMSFBRectangle rect = getGeometry();
 
 	    bool fadeout;
 	    if (!getFadeOut(fadeout)) fadeout = false;
@@ -1995,7 +1995,7 @@ void MMSWindow::remove(MMSWidget *child) {
 }
 
 
-void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update, bool check_shown) {
+void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, bool check_shown) {
     DFBRegion  	region;
 
 	bool os;
@@ -2015,7 +2015,7 @@ void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update, bo
 
 
     // calculate region
-    DFBRectangle rect;
+    MMSFBRectangle rect;
     MMSWidget *c = child;
     if ((!c)&&(!children.empty()))
 	    c = children.at(0);
@@ -2291,7 +2291,7 @@ bool MMSWindow::setFirstFocus(bool cw) {
 #define MAXDGCODE   999999
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Up(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     MMSFB_BREAK();
 
@@ -2382,7 +2382,7 @@ double MMSWindow::calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle ca
 
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Down(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     /* check if candidate is under the current widget */
     if (candPos.y + candPos.h - 1 <= currPos.y + currPos.h - 1)
@@ -2471,7 +2471,7 @@ double MMSWindow::calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle 
 
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Left(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     /* check if candidate is left of the current widget */
     if (candPos.x >= currPos.x)
@@ -2559,7 +2559,7 @@ double MMSWindow::calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle 
 
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Right(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Right(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     /* check if candidate is right of the current widget */
     if (candPos.x + candPos.w - 1 <= currPos.x + currPos.w - 1)
@@ -2953,7 +2953,7 @@ void MMSWindow::preCalcNavigation() {
                 }
 
                 /* searching for next widget to become the focus */
-                DFBRectangle fGeom = fwidget->getGeometry();
+                MMSFBRectangle fGeom = fwidget->getGeometry();
                 MMSWidget *candidate = NULL;
                 double dgcode = MAXDGCODE;
 
@@ -2967,7 +2967,7 @@ void MMSWindow::preCalcNavigation() {
                         if (widget->getFocusable(b))
                         	if (b) {
 	                            /* basically it can be focused */
-	                            DFBRectangle wGeom = widget->getGeometry();
+	                            MMSFBRectangle wGeom = widget->getGeometry();
 	                            double cand_dgcode = MAXDGCODE;
 
 	                            if (key == MMSKEY_CURSOR_DOWN)
@@ -3076,7 +3076,7 @@ void MMSWindow::preCalcNavigation() {
 
 
                 /* searching for child window to become the focus */
-                DFBRectangle fGeom;
+                MMSFBRectangle fGeom;
                 fGeom.x = fWin->geom.x;
                 fGeom.y = fWin->geom.y;
                 fGeom.w = fWin->geom.w;
@@ -3099,7 +3099,7 @@ void MMSWindow::preCalcNavigation() {
                         int fwn = window->getNumberOfFocusableChildWins();
                         if ((fwd>0)||(fwn>0)) {
                             /* basically it can be focused */
-                            DFBRectangle wGeom;
+                            MMSFBRectangle wGeom;
                             wGeom.x = window->geom.x;
                             wGeom.y = window->geom.y;
                             wGeom.w = window->geom.w;
@@ -3266,7 +3266,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            			continue;
 	            		if (!w->isActivated())
 	            			continue;
-	            		DFBRectangle rect = this->children.at(j)->getGeometry();
+	            		MMSFBRectangle rect = this->children.at(j)->getGeometry();
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			// this is the widget under the pointer
@@ -3302,7 +3302,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            			continue;
 /*	            		if (!this->childwins.at(j).window->getNumberOfFocusableWidgets())
 	            			continue;*/
-	            		DFBRectangle rect = this->childwins.at(j).window->getGeometry();
+	            		MMSFBRectangle rect = this->childwins.at(j).window->getGeometry();
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			/* this is the childwin under the pointer */
@@ -3374,7 +3374,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	// window with childwindows
 	            	if (this->buttonpress_childwin) {
               			/* normalize the pointer position */
-	            		DFBRectangle rect = this->buttonpress_childwin->getGeometry();
+	            		MMSFBRectangle rect = this->buttonpress_childwin->getGeometry();
             			for (unsigned int k = 0; k < inputeventset->size(); k++) {
             				inputeventset->at(k).posx-=rect.x;
             				inputeventset->at(k).posy-=rect.y;
@@ -3418,17 +3418,17 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     return ret;
 }
 
-DFBRectangle MMSWindow::getGeometry() {
+MMSFBRectangle MMSWindow::getGeometry() {
 	return this->geom;
 }
 
-DFBRectangle MMSWindow::getRealGeometry() {
+MMSFBRectangle MMSWindow::getRealGeometry() {
 	/* childwin? */
 	if (!this->parent)
 		return this->geom;
 
 	/* yes */
-	DFBRectangle r1,r2;
+	MMSFBRectangle r1,r2;
 	r1 = this->geom;
 	r2 = this->parent->getRealGeometry();
 	r1.x+=r2.x;

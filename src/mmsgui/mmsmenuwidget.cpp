@@ -81,10 +81,10 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->smooth_selection = getSmoothSelection();
     this->selection_offset_x = 0;
     this->selection_offset_y = 0;
-    
+
     this->frame_delay = 0;
     this->frame_delay_set = false;
-    
+
     this->parent_window = NULL;
     this->curr_submenu = -1;
     this->parent_menu = NULL;
@@ -115,7 +115,7 @@ MMSWidget *MMSMenuWidget::copyWidget() {
             newWidget->selimage = this->rootwindow->im->getImage(path, name);
         }
     }
-    
+
     return newWidget;
 }
 
@@ -285,7 +285,7 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 		// draw the selection image behind the items
 		MMSWidget *w = getSelectedItem();
 		if (w) {
-			DFBRectangle wgeom = w->getGeometry();
+			MMSFBRectangle wgeom = w->getGeometry();
 			wgeom.x+=selection_offset_x-innerGeom.x;
 			wgeom.y+=selection_offset_y-innerGeom.y;
             if (getCols()==1) {
@@ -300,7 +300,7 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 			this->surface->stretchBlit(selimage, NULL, &wgeom);
 		}
 	}
-	
+
 	// draw the items
 	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled);
 
@@ -313,7 +313,7 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 }
 
 void MMSMenuWidget::recalculateChildren() {
-    DFBRectangle rect;
+    MMSFBRectangle rect;
     bool         firstTime;
     int 		 item_hmargin;
     int 		 item_vmargin;
@@ -390,7 +390,7 @@ void MMSMenuWidget::recalculateChildren() {
 
             bool visibleBefore = this->children.at(i)->isVisible();
             bool visibleAfter = (!((rect.x < item_xx) || (rect.y < item_yy) || (rect.x > menu_xx) || (rect.y > menu_yy)));
-            
+
             if (!visibleAfter) {
             	// checking for smooth scrolling
                 if (smooth_scrolling)
@@ -525,7 +525,7 @@ void MMSMenuWidget::recalculateChildren() {
                    		/* if one column, check if i have a separator */
                			MMSWidget *sep = this->iteminfos.at(i).separator;
                    		if (sep) {
-                   			DFBRectangle seprect;
+                   			MMSFBRectangle seprect;
                    			seprect.x = 0;
                    			seprect.y = rect.y + rect.h;
                    			seprect.w = this->geom.w;
@@ -1140,8 +1140,8 @@ bool MMSMenuWidget::switchToSubMenu() {
 bool MMSMenuWidget::switchBackToParentMenu(MMSDIRECTION direction, bool closeall) {
 	// check if we can go back to the parent menu
 	if (!this->parent_menu) return false;
-	DFBRectangle pgeom = this->parent_menu->parent_window->geom;
-	DFBRectangle mgeom = this->parent_window->geom;
+	MMSFBRectangle pgeom = this->parent_menu->parent_window->geom;
+	MMSFBRectangle mgeom = this->parent_window->geom;
 	switch (direction) {
 		case MMSDIRECTION_LEFT:
 			if (pgeom.x >= mgeom.x) return false;
@@ -1343,13 +1343,13 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 					for (int z = 0; z < sloop - 1; z++) {
 						// this first sleep is needed for continuous scrolling
 						MMSMENUWIDGET_SSLEEP;
-						
+
 						// next offset
 				        selection_offset_y+=soffs;
-				        
+
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 				        this->refresh();
 
@@ -1362,12 +1362,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 					// last sleep
 					MMSMENUWIDGET_SSLEEP;
-					
+
 					// reset offsets
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
-		        
+
 	        	// switch on new selection
 				selectItem(item, true, false, refresh);
 	        }
@@ -1376,7 +1376,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
-	            	 //scrolling animation, smooth scrolling 
+	            	 //scrolling animation, smooth scrolling
 					int sloop;
 					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
@@ -1390,7 +1390,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 						this->refresh();
 
@@ -1403,11 +1403,11 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 					// last sleep
 					MMSMENUWIDGET_SSLEEP;
-					
+
 					// reset offset
 					scrolling_offset=0;
 	            }
-	            
+
 	            if (refresh)
 	                recalculateChildren();
 
@@ -1571,13 +1571,13 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 					for (int z = 0; z < sloop - 1; z++) {
 						// this first sleep is needed for continuous scrolling
 						MMSMENUWIDGET_SSLEEP;
-						
+
 						// next offset
 				        selection_offset_y-=soffs;
-				        
+
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 				        this->refresh();
 
@@ -1595,7 +1595,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
-		        
+
 	        	// switch on new selection
 				selectItem(item, true, false, refresh);
 	        }
@@ -1604,7 +1604,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
-	            	 //scrolling animation, smooth scrolling 
+	            	 //scrolling animation, smooth scrolling
 					int sloop;
 					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
@@ -1618,7 +1618,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 						this->refresh();
 
@@ -1631,7 +1631,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
 					// last sleep
 					MMSMENUWIDGET_SSLEEP;
-					
+
 					// reset offset
 					scrolling_offset=0;
 	            }
@@ -1790,7 +1790,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        /* in test mode we can say that we can scroll */
 	        if (test)
 	            return true;
-	        
+
             // callback
             this->onBeforeScroll->emit(this);
 
@@ -1833,13 +1833,13 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 					for (int z = 0; z < sloop - 1; z++) {
 						// this first sleep is needed for continuous scrolling
 						MMSMENUWIDGET_SSLEEP;
-						
+
 						// next offset
 				        selection_offset_x+=soffs;
-				        
+
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 				        this->refresh();
 
@@ -1857,7 +1857,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
-		        
+
 	        	// switch on new selection
 				selectItem(item, true, false, refresh);
 	        }
@@ -1866,7 +1866,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            selectItem(olditem, false, false);
 
 	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
-	            	 //scrolling animation, smooth scrolling 
+	            	 //scrolling animation, smooth scrolling
 					int sloop;
 					MMSMENUWIDGET_GET_SLOOP(sloop);
 					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
@@ -1874,13 +1874,13 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 					for (int z = 0; z < sloop - 1; z++) {
 						// this first sleep is needed for continuous scrolling
 						MMSMENUWIDGET_SSLEEP;
-						
+
 						// next offset
 				        scrolling_offset-=soffs;
-				        
+
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 				        this->refresh();
 
@@ -1939,7 +1939,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             this->onBeforeScroll->emit(this);
 
             if ((smooth_scrolling)&&(refresh)) {
-           	 //scrolling animation, smooth scrolling 
+           	 //scrolling animation, smooth scrolling
 				int sloop;
 				MMSMENUWIDGET_GET_SLOOP(sloop);
 				int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
@@ -1947,13 +1947,13 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 				for (int z = 0; z < sloop - 1; z++) {
 					// this first sleep is needed for continuous scrolling
 					MMSMENUWIDGET_SSLEEP;
-					
+
 					// next offset
 			        scrolling_offset-=soffs;
-			        
+
 			        // get start timestamp if needed
 			        MMSMENUWIDGET_GET_SSTART;
-			        
+
 			        // update screen
 			        this->refresh();
 
@@ -2099,13 +2099,13 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 					for (int z = 0; z < sloop - 1; z++) {
 						// this first sleep is needed for continuous scrolling
 						MMSMENUWIDGET_SSLEEP;
-						
+
 						// next offset
 				        selection_offset_x-=soffs;
-				        
+
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 				        this->refresh();
 
@@ -2123,7 +2123,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 					selection_offset_x=0;
 					selection_offset_y=0;
 	            }
-		        
+
 	        	// switch on new selection
 				selectItem(item, true, false, refresh);
 			}
@@ -2140,13 +2140,13 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 					for (int z = 0; z < sloop - 1; z++) {
 						// this first sleep is needed for continuous scrolling
 						MMSMENUWIDGET_SSLEEP;
-						
+
 						// next offset
 				        scrolling_offset+=soffs;
-				        
+
 				        // get start timestamp if needed
 				        MMSMENUWIDGET_GET_SSTART;
-				        
+
 				        // update screen
 				        this->refresh();
 
@@ -2213,13 +2213,13 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 				for (int z = 0; z < sloop - 1; z++) {
 					// this first sleep is needed for continuous scrolling
 					MMSMENUWIDGET_SSLEEP;
-					
+
 					// next offset
 			        scrolling_offset+=soffs;
-			        
+
 			        // get start timestamp if needed
 			        MMSMENUWIDGET_GET_SSTART;
-			        
+
 			        // update screen
 			        this->refresh();
 
@@ -2339,8 +2339,8 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 	}
 	}*/
 ////
-	
-	
+
+
 	bool ret = scrollDownEx(count, refresh, test, leave_selection);
 
 	if ((!ret)&&(!test))
@@ -2421,9 +2421,9 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 		}
 		}*/
 	////
-	
-	
-	
+
+
+
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
 	    int fixedpos = getFixedPos();
 	    if (fixedpos >= 0) {
@@ -2507,7 +2507,7 @@ bool MMSMenuWidget::scrollTo(int posx, int posy, bool refresh) {
 	for (unsigned int i = 0; i < this->children.size(); i++) {
 		if (!this->children.at(i)->isVisible())
 			continue;
-		DFBRectangle mygeom = this->children.at(i)->getGeometry();
+		MMSFBRectangle mygeom = this->children.at(i)->getGeometry();
 		if   ((posx >= mygeom.x)&&(posy >= mygeom.y)
 			&&(posx < mygeom.x + mygeom.w)&&(posy < mygeom.y + mygeom.h)) {
 			/* that's the right menu item, scroll smooth to the position */
@@ -2742,7 +2742,7 @@ bool MMSMenuWidget::init() {
     if (!getSelImagePath(path)) path = "";
     if (!getSelImageName(name)) name = "";
     this->selimage = this->rootwindow->im->getImage(path, name);
-    
+
     return true;
 }
 

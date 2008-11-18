@@ -345,10 +345,10 @@ class MMSFBSurface {
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
 								 MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-        						 DFBRectangle *src_rect, int x, int y);
-        bool extendedAccelBlit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        						 MMSFBRectangle *src_rect, int x, int y);
+        bool extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									 DFBRectangle *src_rect, int x, int y);
+									 MMSFBRectangle *src_rect, int x, int y);
         ////////
 
 
@@ -378,10 +378,10 @@ class MMSFBSurface {
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
 										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-										DFBRectangle *src_rect, DFBRectangle *dest_rect);
-        bool extendedAccelStretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
+										MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
+        bool extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
         bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-											DFBRectangle *src_rect, DFBRectangle *dest_rect);
+											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
         //////////
 
 
@@ -437,7 +437,7 @@ class MMSFBSurface {
         bool					is_sub_surface;		/* is it a sub surface? */
         MMSFBSurface    		*parent;			/* parent surface in case of subsurface */
         MMSFBSurface    		*root_parent;		/* root parent surface in case of subsurface */
-        DFBRectangle 			sub_surface_rect;   /* sub surface position and size relative to the parent */
+        MMSFBRectangle 			sub_surface_rect;   /* sub surface position and size relative to the parent */
         int						sub_surface_xoff;	/* x offset which is added to sub_surface_rect */
         int						sub_surface_yoff;	/* y offset which is added to sub_surface_rect */
         vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
@@ -445,7 +445,7 @@ class MMSFBSurface {
 
         void init(IDirectFBSurface *dfbsurface,
 				  MMSFBSurface *parent,
-				  DFBRectangle *sub_surface_rect);
+				  MMSFBRectangle *sub_surface_rect);
 
         void lock(MMSFBSurfaceLockFlags flags, void **ptr, int *pitch, bool pthread_lock);
         void unlock(bool pthread_unlock);
@@ -454,7 +454,7 @@ class MMSFBSurface {
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly);
         MMSFBSurface(IDirectFBSurface *dfbsurface,
 					 MMSFBSurface *parent = NULL,
-					 DFBRectangle *sub_surface_rect = NULL);
+					 MMSFBRectangle *sub_surface_rect = NULL);
 #ifdef __HAVE_XLIB__
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
@@ -502,16 +502,16 @@ class MMSFBSurface {
         bool drawCircle(int x, int y, int radius, int start_octant = 0, int end_octant = 7);
 
         bool setBlittingFlags(MMSFBSurfaceBlittingFlags flags);
-        bool blit(MMSFBSurface *source, DFBRectangle *src_rect, int x, int y);
+        bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
         bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-						DFBRectangle *src_rect, int x, int y);
+						MMSFBRectangle *src_rect, int x, int y);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-						DFBRectangle *src_rect, int x, int y);
-        bool stretchBlit(MMSFBSurface *source, DFBRectangle *src_rect, DFBRectangle *dest_rect);
+						MMSFBRectangle *src_rect, int x, int y);
+        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
+							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
         bool stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							   DFBRectangle *src_rect, DFBRectangle *dest_rect);
+							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
 
 
         bool flip(DFBRegion *region = NULL);
@@ -536,8 +536,8 @@ class MMSFBSurface {
         void lock(MMSFBSurfaceLockFlags flags = 0, void **ptr = NULL, int *pitch = NULL);
         void unlock();
 
-        MMSFBSurface *getSubSurface(DFBRectangle *rect);
-        bool setSubSurface(DFBRectangle *rect);
+        MMSFBSurface *getSubSurface(MMSFBRectangle *rect);
+        bool setSubSurface(MMSFBRectangle *rect);
         bool setSubSurface(DFBRegion *region);
         bool moveTo(int x, int y);
         bool move(int x, int y);

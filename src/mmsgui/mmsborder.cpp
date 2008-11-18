@@ -25,7 +25,7 @@
 #include <math.h>
 
 void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface *borderimages[],
-                DFBRectangle bordergeom[], bool *bordergeomset, MMSFBSurface *surface,
+                MMSFBRectangle bordergeom[], bool *bordergeomset, MMSFBSurface *surface,
                 unsigned int x, unsigned int y, unsigned int width, unsigned int height, MMSFBColor color,
                 MMSImageManager *im, unsigned char brightness, unsigned char opacity) {
     int bic = 8;

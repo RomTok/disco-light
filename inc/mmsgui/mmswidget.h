@@ -182,10 +182,10 @@ class MMSWidget {
         MMSFBSurface        *selbgimage_i;
 
         MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
-        DFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
+        MMSFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                bordergeomset;
         MMSFBSurface        *borderselimages[MMSBORDER_IMAGE_NUM_SIZE];
-        DFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
+        MMSFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                borderselgeomset;
 
         //! window on which the widget is connected
@@ -269,11 +269,11 @@ class MMSWidget {
 
         virtual void add(MMSWidget *widget);
         MMSWindow *getRootWindow(MMSWindow **parentroot = NULL);
-        virtual void setGeometry(DFBRectangle geom);
-        DFBRectangle getGeometry();
-        DFBRectangle getRealGeometry();
-        DFBRectangle getInnerGeometry();
-        DFBRectangle getSurfaceGeometry();
+        virtual void setGeometry(MMSFBRectangle geom);
+        MMSFBRectangle getGeometry();
+        MMSFBRectangle getRealGeometry();
+        MMSFBRectangle getInnerGeometry();
+        MMSFBRectangle getSurfaceGeometry();
 
         int getId();
         string getName();
@@ -366,7 +366,7 @@ class MMSWidget {
         MMSFBSurface *windowSurface;
 
         MMSFBSurface *surface;
-        DFBRectangle surfaceGeom;
+        MMSFBRectangle surfaceGeom;
 
         virtual void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
         virtual void setInnerGeometry();
@@ -377,14 +377,14 @@ class MMSWidget {
         unsigned int scrollDY;
         bool setScrollSize(unsigned int dX = 8, unsigned int dY = 8);
         bool setScrollPos(int posX = 0, int posY = 0, bool refresh = true, bool test = false);
-        DFBRectangle getVisibleSurfaceArea();
+        MMSFBRectangle getVisibleSurfaceArea();
         void updateWindowSurfaceWithSurface(bool useAlphaChannel);
 
         MMSWidget *parent;
         vector<MMSWidget *> children;
 
-        DFBRectangle geom;
-        DFBRectangle innerGeom;
+        MMSFBRectangle geom;
+        MMSFBRectangle innerGeom;
 
     public:
         /* theme access methods */

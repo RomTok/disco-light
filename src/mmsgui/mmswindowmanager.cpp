@@ -24,7 +24,7 @@
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 
 
-MMSWindowManager::MMSWindowManager(DFBRectangle vrect) {
+MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
     this->vrect = vrect;
     this->toplevel = NULL;
 }
@@ -32,7 +32,7 @@ MMSWindowManager::MMSWindowManager(DFBRectangle vrect) {
 MMSWindowManager::~MMSWindowManager(){
 }
 
-DFBRectangle MMSWindowManager::getVRect() {
+MMSFBRectangle MMSWindowManager::getVRect() {
     return this->vrect;
 }
 

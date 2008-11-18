@@ -45,7 +45,7 @@ typedef struct {
     double                  ratio;              /**< ratio of video stream      */
     int                     width;              /**< width of video stream      */
     int                     height;             /**< height of video stream     */
-    DFBRectangle            rect;               /**< rectangle for video stream  */
+    MMSFBRectangle          rect;               /**< rectangle for video stream  */
 } VODESC;
 
 typedef void (*DVOutputCallback) (void *cdata, int width, int height,
@@ -82,8 +82,8 @@ typedef struct {
 #ifdef __HAVE_XLIB__
 typedef struct {
 	MMSFBSurface *surf;
-	DFBRectangle size;
-	DFBRectangle dest;
+	MMSFBRectangle size;
+	MMSFBRectangle dest;
 	double lastaspect;
 } MMSRAW_USERDATA;
 

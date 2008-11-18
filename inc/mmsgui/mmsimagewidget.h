@@ -29,7 +29,7 @@
 /*!
 All widgets derived from the base widget class can display pictures at its background.
 This image class additionally can display pictures over the background.
-As special feature the image class can play animations. Currently the GIF format will be supported.   
+As special feature the image class can play animations. Currently the GIF format will be supported.
 The image widget cannot be focused.
 \author Jens Schneider
 */
@@ -52,7 +52,7 @@ class MMSImageWidget : public MMSWidget {
         MMSFBSurface    *selimage_p;
         MMSIM_DESC_SUF  *selimage_p_suf;
         unsigned int    selimage_p_curr_index;
-        
+
         MMSFBSurface    *image_i;
         MMSIM_DESC_SUF  *image_i_suf;
         unsigned int    image_i_curr_index;
@@ -74,8 +74,8 @@ class MMSImageWidget : public MMSWidget {
         void loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc,
         				 unsigned int *index, unsigned int mirror_size);
 
-        void workWithRatio(MMSFBSurface *suf, DFBRectangle *surfaceGeom);
-        
+        void workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom);
+
     public:
         MMSImageWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         ~MMSImageWidget();

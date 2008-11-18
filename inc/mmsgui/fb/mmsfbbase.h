@@ -77,13 +77,21 @@ typedef enum {
 /* access to the last error text */
 extern string MMSFB_LastErrorString;
 
-/* describes a color with alpha */
+//! describes a color with alpha
 typedef struct {
     unsigned char r;
     unsigned char g;
     unsigned char b;
     unsigned char a;
 } MMSFBColor;
+
+//! describes a rectangle
+typedef struct {
+	int	x;
+	int	y;
+	int	w;
+	int	h;
+} MMSFBRectangle;
 
 // supported pixel format strings
 #define MMSFB_PF_NONE_STR       ""
@@ -246,23 +254,27 @@ typedef enum {
 string MMSFB_ErrorString(const int rc, const string msg);
 void MMSFB_SetError(const int rc, const string msg);
 
-/* conversion routines for pixel formats */
+// conversion routines for pixel formats
 string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf);
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf);
 bool isAlphaPixelFormat(MMSFBSurfacePixelFormat pf);
 bool isIndexedPixelFormat(MMSFBSurfacePixelFormat pf);
 bool isRGBPixelFormat(MMSFBSurfacePixelFormat pf);
+
 #ifdef  __HAVE_DIRECTFB__
+// dfb specific routines
+
+// conversion routines for pixel formats
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromDFBPixelFormat(DFBSurfacePixelFormat pf);
 DFBSurfacePixelFormat getDFBPixelFormatFromMMSFBPixelFormat(MMSFBSurfacePixelFormat pf);
-#endif
 
-/* conversion routines for layer buffer modes */
+// conversion routines for layer buffer modes
 string getDFBLayerBufferModeString(DFBDisplayLayerBufferMode bm);
 DFBDisplayLayerBufferMode getDFBLayerBufferModeFromString(string bm);
 
-/* conversion routines for layer options */
+// conversion routines for layer options
 string getDFBLayerOptionsString(DFBDisplayLayerOptions opts);
 DFBDisplayLayerOptions getDFBLayerOptionsFromString(string opts);
+#endif
 
 #endif /*MMSFBBASE_H_*/

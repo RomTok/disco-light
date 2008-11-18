@@ -78,7 +78,7 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
         this->surface->lock();
 
         /* draw my things */
-        DFBRectangle surfaceGeom = getSurfaceGeometry();
+        MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
         /* get color */
         MMSFBColor color;

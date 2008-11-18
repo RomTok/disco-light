@@ -345,7 +345,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 
         /* draw my things */
         if (this->font) {
-        	DFBRectangle surfaceGeom = getSurfaceGeometry();
+        	MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
             MMSFBColor color;
 

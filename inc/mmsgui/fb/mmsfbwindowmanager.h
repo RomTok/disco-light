@@ -66,7 +66,7 @@ class MMSFBWindowManager {
         bool 			show_pointer;
         int				pointer_posx;
         int				pointer_posy;
-        DFBRectangle	pointer_rect;
+        MMSFBRectangle	pointer_rect;
         DFBRegion		pointer_region;
         MMSFBSurface	*pointer_surface;
         unsigned char	pointer_opacity;

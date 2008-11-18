@@ -591,7 +591,7 @@ logger.writeLog("BBB>");
 
             // the window is affected
             // calc source and destination
-            DFBRectangle src_rect;
+            MMSFBRectangle src_rect;
             int dst_x = ls_region.x1;
             int dst_y = ls_region.y1;
 

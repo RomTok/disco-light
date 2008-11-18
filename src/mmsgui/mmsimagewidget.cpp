@@ -29,7 +29,7 @@
 
 MMSImageWidget::MMSImageWidget(MMSWindow *root, string className, MMSTheme *theme) {
     create(root, className, theme);
-} 
+}
 
 MMSImageWidget::~MMSImageWidget() {
     if (imageThread) {
@@ -55,7 +55,7 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->baseWidgetClass = &(this->theme->imageWidgetClass.widgetClass);
     if (this->imageWidgetClass) this->widgetClass = &(this->imageWidgetClass->widgetClass); else this->widgetClass = NULL;
 
-    /* clear */    
+    /* clear */
     this->image = NULL;
     image_loaded = false;
     image_curr_index = 0;
@@ -71,7 +71,7 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->selimage_p = NULL;
     selimage_p_loaded = false;
     selimage_p_curr_index = 0;
-    
+
     this->image_i = NULL;
     image_i_loaded = false;
     image_i_curr_index = 0;
@@ -91,7 +91,7 @@ void MMSImageWidget::loadMyImage(string path, string filename, MMSFBSurface **su
     /* pause the imageThread */
     if (this->imageThread)
         this->imageThread->pause(true);
-    
+
     /* get image from imagemanager */
     *surface = this->rootwindow->im->getImage(path, filename, surfdesc, mirror_size);
     *index = 0;
@@ -127,7 +127,7 @@ void MMSImageWidget::loadMyImage(string path, string filename, MMSFBSurface **su
 
 MMSWidget *MMSImageWidget::copyWidget() {
     /* create widget */
-    MMSImageWidget *newWidget = new MMSImageWidget(this->rootwindow, className); 
+    MMSImageWidget *newWidget = new MMSImageWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -135,7 +135,7 @@ MMSWidget *MMSImageWidget::copyWidget() {
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-    /* reload my images */    
+    /* reload my images */
     newWidget->image = NULL;
     newWidget->selimage = NULL;
     newWidget->image_p = NULL;
@@ -160,7 +160,7 @@ MMSWidget *MMSImageWidget::copyWidget() {
             loadMyImage(newWidget->getSelImagePath_p(), newWidget->getSelImageName_p(),
                         &newWidget->selimage_p, &(newWidget->selimage_p_suf), &selimage_p_curr_index, getMirrorSize());
             selimage_p_loaded = true;
-            
+
             loadMyImage(newWidget->getImagePath_i(), newWidget->getImageName_i(),
                         &newWidget->image_i, &(newWidget->image_i_suf), &image_i_curr_index, getMirrorSize());
             image_i_loaded = true;
@@ -183,7 +183,7 @@ bool MMSImageWidget::init() {
     	b = false;
 
     if ((!b)||(this->isVisible())) {
-        /* load images */    
+        /* load images */
         if (!image_loaded) {
             loadMyImage(getImagePath(), getImageName(), &this->image, &(this->image_suf), &image_curr_index, getMirrorSize());
             image_loaded = true;
@@ -216,30 +216,30 @@ bool MMSImageWidget::init() {
 }
 
 
-void MMSImageWidget::workWithRatio(MMSFBSurface *suf, DFBRectangle *surfaceGeom) {
+void MMSImageWidget::workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom) {
     int w, h, dw, dh, ratio;
 
     if (getUseRatio()) {
 	    /* use ratio from image */
 	    suf->getSize(&w, &h);
-	
+
 	    dw = w - surfaceGeom->w;
 	    dh = h - surfaceGeom->h;
-	
+
 	    if (dw || dh) {
 	        ratio = (10000 * w) / h;
 	        bool fw = false, fh = false;
-	
+
 	        if (getFitWidth())
 	        	fw = true;
 	        else
 	        if (getFitHeight())
 	        	fh = true;
-	
+
 	        if (((dw > dh)&&(!fh))||(fw)) {
 	        	/* change image height */
 	            int t = (10000 * surfaceGeom->w + 5000) / ratio;
-	
+
 	            /* work with alignment */
 	            MMSALIGNMENT alignment = getAlignment();
 	            if (alignment == MMSALIGNMENT_NOTSET) alignment = MMSALIGNMENT_CENTER;
@@ -275,13 +275,13 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, DFBRectangle *surfaceGeom)
 	                	surfaceGeom->y = 0;
 	                    break;
 	            }
-	            
+
 	            surfaceGeom->h = t;
 	        }
 	        else {
 	        	/* change image width */
 	            int t = (surfaceGeom->h * ratio + 5000) / 10000;
-	
+
 	            /* work with alignment */
 	            MMSALIGNMENT alignment = getAlignment();
 	            if (alignment == MMSALIGNMENT_NOTSET) alignment = MMSALIGNMENT_CENTER;
@@ -317,7 +317,7 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, DFBRectangle *surfaceGeom)
 	                	surfaceGeom->x = 0;
 	                    break;
 	            }
-	
+
 	            surfaceGeom->w = t;
 	        }
 	    }
@@ -342,18 +342,18 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
     if (MMSWidget::draw(backgroundFilled)) {
 
         /* draw my things */
-        DFBRectangle surfaceGeom;
+        MMSFBRectangle surfaceGeom;
 
         /* get the blend value */
         unsigned int blend;
         getBlend(blend);
-            
+
         /* searching for the image */
         MMSFBSurface *suf = NULL;
         MMSFBSurface *suf2= NULL;
 
         if (isActivated()) {
-        	
+
             if (isSelected()) {
                 suf = (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
                 suf2= (this->image)?this->image_suf[image_curr_index].surface:NULL;
@@ -391,15 +391,15 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 		if (!blend) {
 			/* blend not set */
 	        if (suf) {
-	            /* prepare for blitting */        
+	            /* prepare for blitting */
 	            this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
-	
+
 	            /* get surface geometry */
                 surfaceGeom = getSurfaceGeometry();
 
                 /* work with aspect ratio */
 	            workWithRatio(suf, &surfaceGeom);
-	
+
 	            /* normal stretchblit */
 	            this->surface->stretchBlit(suf, NULL, &surfaceGeom);
 	        }
@@ -423,22 +423,22 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 
                 /* work with aspect ratio */
                 workWithRatio(suf, &surfaceGeom);
-	
+
 	            /* normal stretchblit */
 	            this->surface->stretchBlit(suf, NULL, &surfaceGeom);
 	        }
 
 	        /* foreground image which will blended */
 	        if (suf2) {
-	            /* prepare for blitting */        
+	            /* prepare for blitting */
 	            this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, blend, opacity);
-	
+
 	            /* get surface geometry */
                 surfaceGeom = getSurfaceGeometry();
 
                 /* work with aspect ratio */
 	            workWithRatio(suf2, &surfaceGeom);
-	
+
 	            /* normal stretchblit */
 	            this->surface->stretchBlit(suf2, NULL, &surfaceGeom);
 	        }
@@ -459,7 +459,7 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 
 void MMSImageWidget::setVisible(bool visible, bool refresh) {
 	bool b;
-	
+
     if (getImagesOnDemand(b))
     	if (b) {
 	        /* load/unload on demand */

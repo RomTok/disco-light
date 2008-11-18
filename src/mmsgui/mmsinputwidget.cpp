@@ -109,7 +109,7 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
         /* draw my things */
         if (this->font) {
-            DFBRectangle surfaceGeom = getSurfaceGeometry();
+            MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
             this->surface->setFont(this->font);
 
