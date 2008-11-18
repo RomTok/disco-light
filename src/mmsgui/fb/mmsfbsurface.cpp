@@ -1558,13 +1558,13 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	}
 	if (extbuf) {
 		printf("  source type:             surface\n");
-		printf("  source memory:           extern (0x%08x, pitch=%d)\n", extbuf->ptr, extbuf->pitch);
+		printf("  source memory:           extern (0x%08x, pitch=%d)\n", (unsigned int)extbuf->ptr, extbuf->pitch);
 		if (extbuf->ptr2) {
-			printf("                                  (0x%08x, pitch=%d)\n", extbuf->ptr2, extbuf->pitch2);
+			printf("                                  (0x%08x, pitch=%d)\n",  (unsigned int)extbuf->ptr2, extbuf->pitch2);
 			if (extbuf->ptr3)
-				printf("                                  (0x%08x, pitch=%d)\n", extbuf->ptr3, extbuf->pitch3);
+				printf("                                  (0x%08x, pitch=%d)\n",  (unsigned int)extbuf->ptr3, extbuf->pitch3);
 		}
-		printf("  source memory:           extern (0x%08x, pitch=%d)\n", extbuf->ptr, extbuf->pitch);
+		printf("  source memory:           extern (0x%08x, pitch=%d)\n",  (unsigned int)extbuf->ptr, extbuf->pitch);
 		printf("  source pixelformat:      %s\n", getMMSFBPixelFormatString(src_pixelformat).c_str());
 	}
 	printf("  destination type:        %s\n", (this->is_sub_surface)?"subsurface":"surface");
@@ -9502,11 +9502,9 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 
 bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
-    DFBResult    dfbres;
     MMSFBRectangle src;
     MMSFBRectangle dst;
-    bool         blit_done = false;
-    bool 		 ret = false;
+    bool ret = false;
 
     if (src_rect) {
          src = *src_rect;

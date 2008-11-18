@@ -143,8 +143,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         		//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
         	}
 
-    		int clock;
-
             int x_depth = DefaultDepth(this->x_display, this->x_screen);
             this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
     									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
