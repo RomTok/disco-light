@@ -49,7 +49,7 @@ typedef struct {
 class MMSImageManager {
     private:
         MMSFBLayer          *layer;   		// this is the layer on which the image is to display
-        MMSFBSurfacePixelFormat	pixelformat;	// pixelformat for all my images
+        MMSFBSurfacePixelFormat	pixelformat;// pixelformat for all my images
         bool				usetaff;		// use the taff (image) format?
         MMSTAFF_PF			taffpf;			// pixelformat for the taff converter
 

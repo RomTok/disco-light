@@ -76,6 +76,10 @@ class MMSFBWindowManager {
 
         MMSFBWindowManagerThread *mmsfbwinmanthread;
 
+        MMSFBSurfacePixelFormat	pixelformat;	// pixelformat for all my images
+        bool					usetaff;		// use the taff (image) format?
+        MMSTAFF_PF				taffpf;			// pixelformat for the taff converter
+
         void lockWM();
         void unlockWM();
 

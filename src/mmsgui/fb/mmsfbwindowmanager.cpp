@@ -95,6 +95,32 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     if (!this->layer->getSurface(&this->layer_surface))
         return false;
 
+    // get the pixelformat, create a little temp surface
+	this->pixelformat = MMSFB_PF_NONE;
+	MMSFBSurface *ts;
+    if (this->layer->createSurface(&ts, 8, 1)) {
+    	// okay, get the pixelformat from surface
+    	ts->getPixelFormat(&this->pixelformat);
+    	delete ts;
+    }
+
+    // use taff?
+	this->usetaff = false;
+    if (this->pixelformat == MMSFB_PF_ARGB) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_ARGB;
+    }
+    else
+    if (this->pixelformat == MMSFB_PF_AiRGB) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_AiRGB;
+    }
+    else
+    if (this->pixelformat == MMSFB_PF_AYUV) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_AYUV;
+    }
+
     return true;
 }
 
@@ -950,10 +976,164 @@ bool MMSFBWindowManager::getPointerPosition(int &pointer_posx, int &pointer_posy
 }
 
 bool MMSFBWindowManager::loadPointer() {
+	string imagefile = (string)getPrefix() + "/share/disko/mmsgui/mmspointer.png";
+
+	// try to read from taff?
+	if (this->usetaff) {
+		// yes, try with taff
+		// assume: the taffpf (supported taff pixelformat) is correctly set
+    	// first : try to read taff image without special pixelformat
+		// second: try with pixelformat from my surfaces
+		bool retry = false;
+		do {
+			MMSTaffFile *tafff;
+			if (retry) {
+    			retry = false;
+    			DEBUGOUT("MMSFBWindowManager, retry\n");
+				// have to convert taff with special destination pixelformat
+				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    			if (tafff) {
+    				// set external file and requested pixelformat
+    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    				DEBUGOUT("MMSFBWindowManager, taffpf = %d\n", taffpf);
+    				tafff->setDestinationPixelFormat(taffpf);
+    				// convert it
+    				if (!tafff->convertExternal2TAFF()) {
+    					// conversion failed
+    					delete tafff;
+    					break;
+    				}
+    				delete tafff;
+    			}
+			}
+
+			// load image
+			tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+			if (tafff) {
+				if (!tafff->isLoaded()) {
+					printf("ha1.1\n");
+    				// set external file and mirror effect
+    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    				// convert it
+    				if (!tafff->convertExternal2TAFF()) {
+    					// conversion failed
+    					delete tafff;
+    					break;
+    				}
+    				delete tafff;
+    				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+    	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+				}
+			}
+			if (tafff) {
+	    		if (tafff->isLoaded()) {
+
+		    		// load the attributes
+	    	    	int 		attrid;
+	    	    	char 		*value_str;
+	    	    	int  		value_int;
+			    	void 		*img_buf = NULL;
+			    	int 		img_width = 0;
+			    	int 		img_height= 0;
+			    	int 		img_pitch = 0;
+			    	int 		img_size  = 0;
+			    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
+			    	bool 		img_premultiplied = true;
+			    	int 		img_mirror_size = 0;
+
+			    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
+			    		switch (attrid) {
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width:
+			    			img_width = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height:
+			    			img_height = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch:
+			    			img_pitch = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size:
+			    			img_size = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data:
+			    			img_buf = value_str;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat:
+			    			img_pixelformat = (MMSTAFF_PF)value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
+			    			img_premultiplied = (value_int);
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size:
+			    			img_mirror_size = value_int;
+			    			break;
+			    		}
+			    	}
+
+			    	if (img_pixelformat != taffpf) {
+			    		DEBUGOUT("MMSFBWindowManager, taffpf = %d\n", (int)taffpf);
+			    		// the image from the file has not the same pixelformat as the surface
+			    		if (!retry) {
+			    			// retry with surface pixelformat
+			    			DEBUGOUT("MMSFBWindowManager, request new pixf\n");
+			    			retry = true;
+			    			delete tafff;
+			    			continue;
+			    		}
+			    		else
+			    			retry = false;
+			    	}
+			    	else
+			    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
+			        	// successfully read, create a surface
+						if (!this->layer->createSurface(&this->pointer_surface, img_width, img_height, this->pixelformat)) {
+							DEBUGMSG("MMSFB", "cannot create surface for image file '%s'", imagefile.c_str());
+							return false;
+						}
+
+						// copy img_buf to the surface
+						char *suf_ptr;
+						int suf_pitch;
+						this->pointer_surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
+
+						if (img_pitch == suf_pitch)
+							memcpy(suf_ptr, img_buf, img_pitch * img_height);
+						else {
+							// copy each line
+							char *img_b = (char*)img_buf;
+							for (int i = 0; i < img_height; i++) {
+								memcpy(suf_ptr, img_b, img_pitch);
+								suf_ptr+=suf_pitch;
+								img_b+=img_pitch;
+							}
+						}
+						this->pointer_surface->unlock();
+
+						// free
+						delete tafff;
+
+						DEBUGMSG("MMSFB", "MMSFBWindowManager has loaded: '%s'", imagefile.c_str());
+
+					    // set pointer width & height
+					    this->pointer_rect.w = img_width;
+					    this->pointer_rect.h = img_height;
+
+					    return true;
+			    	}
+	    		}
+
+	            // free
+	            delete tafff;
+	        }
+		} while (retry);
+	}
+
+
 #ifdef  __HAVE_DIRECTFB__
     IDirectFBImageProvider *imageprov = NULL;
     DFBSurfaceDescription   surface_desc;
-	string 					imagefile = (string)getPrefix() + "/share/disko/mmsgui/mmspointer.png";
 
 	// create image provider
     if (!mmsfb->createImageProvider(&imageprov, imagefile)) {
@@ -989,7 +1169,8 @@ bool MMSFBWindowManager::loadPointer() {
     this->pointer_rect.h = surface_desc.height;
     return true;
 #endif
-    return false;
+
+	return false;
 }
 
 void MMSFBWindowManager::drawPointer(MMSFBRegion *region) {
