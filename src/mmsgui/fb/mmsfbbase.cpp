@@ -212,123 +212,71 @@ bool isRGBPixelFormat(MMSFBSurfacePixelFormat pf) {
 
 #ifdef  __HAVE_DIRECTFB__
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromDFBPixelFormat(DFBSurfacePixelFormat pf) {
-    if(pf == DSPF_RGB16)
-        return MMSFB_PF_RGB16;
-    if(pf == DSPF_RGB24)
-        return MMSFB_PF_RGB24;
-    if(pf == DSPF_RGB32)
-        return MMSFB_PF_RGB32;
-    if(pf == DSPF_ARGB)
-        return MMSFB_PF_ARGB;
-    if(pf == DSPF_A8)
-        return MMSFB_PF_A8;
-    if(pf == DSPF_YUY2)
-        return MMSFB_PF_YUY2;
-    if(pf == DSPF_UYVY)
-        return MMSFB_PF_UYVY;
-    if(pf == DSPF_I420)
-        return MMSFB_PF_I420;
-    if(pf == DSPF_YV12)
-        return MMSFB_PF_YV12;
-    if(pf == DSPF_AiRGB)
-        return MMSFB_PF_AiRGB;
-    if(pf == DSPF_A1)
-        return MMSFB_PF_A1;
-    if(pf == DSPF_NV12)
-        return MMSFB_PF_NV12;
-    if(pf == DSPF_NV16)
-        return MMSFB_PF_NV16;
-    if (pf == DSPF_NV21)
-        return MMSFB_PF_NV21;
-    if (pf == DSPF_AYUV)
-        return MMSFB_PF_AYUV;
-    if (pf == DSPF_A4)
-        return MMSFB_PF_A4;
-    if (pf == DSPF_ARGB1666)
-        return MMSFB_PF_ARGB1666;
-    if (pf == DSPF_ARGB6666)
-        return MMSFB_PF_ARGB6666;
-    if (pf == DSPF_RGB18)
-        return MMSFB_PF_RGB18;
-    if (pf == DSPF_LUT2)
-        return MMSFB_PF_LUT2;
-    if (pf == DSPF_RGB444)
-        return MMSFB_PF_RGB444;
-    if (pf == DSPF_RGB555)
-        return MMSFB_PF_RGB555;
-    if(pf == DSPF_ARGB1555)
-        return MMSFB_PF_ARGB1555;
-    if(pf == DSPF_RGB332)
-        return MMSFB_PF_RGB332;
-    if(pf == DSPF_ALUT44)
-        return MMSFB_PF_ALUT44;
-    if(pf == DSPF_LUT8)
-        return MMSFB_PF_LUT8;
-    if(pf == DSPF_ARGB2554)
-        return MMSFB_PF_ARGB2554;
-    if(pf == DSPF_ARGB4444)
-        return MMSFB_PF_ARGB4444;
-    return MMSFB_PF_NONE;
+	switch (pf) {
+    case DSPF_RGB16:    return MMSFB_PF_RGB16;
+    case DSPF_RGB24:    return MMSFB_PF_RGB24;
+    case DSPF_RGB32:    return MMSFB_PF_RGB32;
+    case DSPF_ARGB:     return MMSFB_PF_ARGB;
+    case DSPF_A8:       return MMSFB_PF_A8;
+    case DSPF_YUY2:     return MMSFB_PF_YUY2;
+    case DSPF_UYVY:     return MMSFB_PF_UYVY;
+    case DSPF_I420:     return MMSFB_PF_I420;
+    case DSPF_YV12:     return MMSFB_PF_YV12;
+    case DSPF_AiRGB:    return MMSFB_PF_AiRGB;
+    case DSPF_A1:       return MMSFB_PF_A1;
+    case DSPF_NV12:     return MMSFB_PF_NV12;
+    case DSPF_NV16:     return MMSFB_PF_NV16;
+    case DSPF_NV21:     return MMSFB_PF_NV21;
+    case DSPF_AYUV:     return MMSFB_PF_AYUV;
+    case DSPF_A4:       return MMSFB_PF_A4;
+    case DSPF_ARGB1666: return MMSFB_PF_ARGB1666;
+    case DSPF_ARGB6666: return MMSFB_PF_ARGB6666;
+    case DSPF_RGB18:    return MMSFB_PF_RGB18;
+    case DSPF_LUT2:     return MMSFB_PF_LUT2;
+    case DSPF_RGB444:   return MMSFB_PF_RGB444;
+    case DSPF_RGB555:   return MMSFB_PF_RGB555;
+    case DSPF_ARGB1555: return MMSFB_PF_ARGB1555;
+    case DSPF_RGB332:   return MMSFB_PF_RGB332;
+    case DSPF_ALUT44:   return MMSFB_PF_ALUT44;
+    case DSPF_LUT8:     return MMSFB_PF_LUT8;
+    case DSPF_ARGB2554: return MMSFB_PF_ARGB2554;
+    case DSPF_ARGB4444: return MMSFB_PF_ARGB4444;
+    default:            return MMSFB_PF_NONE;
+	}
 }
 
 DFBSurfacePixelFormat getDFBPixelFormatFromMMSFBPixelFormat(MMSFBSurfacePixelFormat pf) {
-    if(pf == MMSFB_PF_RGB16)
-        return DSPF_RGB16;
-    if(pf == MMSFB_PF_RGB24)
-        return DSPF_RGB24;
-    if(pf == MMSFB_PF_RGB32)
-        return DSPF_RGB32;
-    if(pf == MMSFB_PF_ARGB)
-        return DSPF_ARGB;
-    if(pf == MMSFB_PF_A8)
-        return DSPF_A8;
-    if(pf == MMSFB_PF_YUY2)
-        return DSPF_YUY2;
-    if(pf == MMSFB_PF_UYVY)
-        return DSPF_UYVY;
-    if(pf == MMSFB_PF_I420)
-        return DSPF_I420;
-    if(pf == MMSFB_PF_YV12)
-        return DSPF_YV12;
-    if(pf == MMSFB_PF_AiRGB)
-        return DSPF_AiRGB;
-    if(pf == MMSFB_PF_A1)
-        return DSPF_A1;
-    if(pf == MMSFB_PF_NV12)
-        return DSPF_NV12;
-    if(pf == MMSFB_PF_NV16)
-        return DSPF_NV16;
-    if(pf == MMSFB_PF_NV21)
-        return DSPF_NV21;
-    if(pf == MMSFB_PF_AYUV)
-        return DSPF_AYUV;
-    if(pf == MMSFB_PF_A4)
-        return DSPF_A4;
-    if(pf == MMSFB_PF_ARGB1666)
-        return DSPF_ARGB1666;
-    if(pf == MMSFB_PF_ARGB6666)
-        return DSPF_ARGB6666;
-    if(pf == MMSFB_PF_RGB18)
-        return DSPF_RGB18;
-    if(pf == MMSFB_PF_LUT2)
-        return DSPF_LUT2;
-    if(pf == MMSFB_PF_RGB444)
-        return DSPF_RGB444;
-    if(pf == MMSFB_PF_RGB555)
-        return DSPF_RGB555;
-    if(pf == MMSFB_PF_ARGB1555)
-        return DSPF_ARGB1555;
-    if(pf == MMSFB_PF_RGB332)
-        return DSPF_RGB332;
-    if(pf == MMSFB_PF_ALUT44)
-        return DSPF_ALUT44;
-    if(pf == MMSFB_PF_LUT8)
-        return DSPF_LUT8;
-    if(pf == MMSFB_PF_ARGB2554)
-        return DSPF_ARGB2554;
-    if(pf == MMSFB_PF_ARGB4444)
-        return DSPF_ARGB4444;
-    return DSPF_UNKNOWN;
+	switch (pf) {
+    case MMSFB_PF_RGB16:    return DSPF_RGB16;
+    case MMSFB_PF_RGB24:    return DSPF_RGB24;
+    case MMSFB_PF_RGB32:    return DSPF_RGB32;
+    case MMSFB_PF_ARGB:     return DSPF_ARGB;
+    case MMSFB_PF_A8:       return DSPF_A8;
+    case MMSFB_PF_YUY2:     return DSPF_YUY2;
+    case MMSFB_PF_UYVY:     return DSPF_UYVY;
+    case MMSFB_PF_I420:     return DSPF_I420;
+    case MMSFB_PF_YV12:     return DSPF_YV12;
+    case MMSFB_PF_AiRGB:    return DSPF_AiRGB;
+    case MMSFB_PF_A1:       return DSPF_A1;
+    case MMSFB_PF_NV12:     return DSPF_NV12;
+    case MMSFB_PF_NV16:     return DSPF_NV16;
+    case MMSFB_PF_NV21:     return DSPF_NV21;
+    case MMSFB_PF_AYUV:     return DSPF_AYUV;
+    case MMSFB_PF_A4:       return DSPF_A4;
+    case MMSFB_PF_ARGB1666: return DSPF_ARGB1666;
+    case MMSFB_PF_ARGB6666: return DSPF_ARGB6666;
+    case MMSFB_PF_RGB18:    return DSPF_RGB18;
+    case MMSFB_PF_LUT2:     return DSPF_LUT2;
+    case MMSFB_PF_RGB444:   return DSPF_RGB444;
+    case MMSFB_PF_RGB555:   return DSPF_RGB555;
+    case MMSFB_PF_ARGB1555: return DSPF_ARGB1555;
+    case MMSFB_PF_RGB332:   return DSPF_RGB332;
+    case MMSFB_PF_ALUT44:   return DSPF_ALUT44;
+    case MMSFB_PF_LUT8:     return DSPF_LUT8;
+    case MMSFB_PF_ARGB2554: return DSPF_ARGB2554;
+    case MMSFB_PF_ARGB4444: return DSPF_ARGB4444;
+    default:                return DSPF_UNKNOWN;
+	}
 }
 
 
@@ -421,42 +369,45 @@ DFBDisplayLayerOptions getDFBLayerOptionsFromString(string opts) {
 
 
 DFBSurfaceBlittingFlags getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(MMSFBBlittingFlags flags) {
-	switch (flags) {
-	case MMSFB_BLIT_NOFX: 				return DSBLIT_NOFX;
-	case MMSFB_BLIT_BLEND_ALPHACHANNEL:	return DSBLIT_BLEND_ALPHACHANNEL;
-	case MMSFB_BLIT_BLEND_COLORALPHA:	return DSBLIT_BLEND_COLORALPHA;
-	case MMSFB_BLIT_COLORIZE:			return DSBLIT_COLORIZE;
-	case MMSFB_BLIT_SRC_PREMULTIPLY:	return DSBLIT_SRC_PREMULTIPLY;
-	case MMSFB_BLIT_SRC_PREMULTCOLOR:	return DSBLIT_SRC_PREMULTCOLOR;
-	default: 							return DSBLIT_NOFX;
-	}
+	DFBSurfaceBlittingFlags retflags = DSBLIT_NOFX;
+	if (flags & MMSFB_BLIT_BLEND_ALPHACHANNEL)
+		retflags = (DFBSurfaceBlittingFlags)(retflags | DSBLIT_BLEND_ALPHACHANNEL);
+	if (flags & MMSFB_BLIT_BLEND_COLORALPHA)
+		retflags = (DFBSurfaceBlittingFlags)(retflags | DSBLIT_BLEND_COLORALPHA);
+	if (flags & MMSFB_BLIT_COLORIZE)
+		retflags = (DFBSurfaceBlittingFlags)(retflags | DSBLIT_COLORIZE);
+	if (flags & MMSFB_BLIT_SRC_PREMULTIPLY)
+		retflags = (DFBSurfaceBlittingFlags)(retflags | DSBLIT_SRC_PREMULTIPLY);
+	if (flags & MMSFB_BLIT_SRC_PREMULTCOLOR)
+		retflags = (DFBSurfaceBlittingFlags)(retflags | DSBLIT_SRC_PREMULTCOLOR);
+	return retflags;
 }
 
 DFBSurfaceDrawingFlags getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(MMSFBDrawingFlags flags) {
-	switch (flags) {
-	case MMSFB_DRAW_NOFX:				return DSDRAW_NOFX;
-	case MMSFB_DRAW_BLEND:				return DSDRAW_BLEND;
-	case MMSFB_DRAW_SRC_PREMULTIPLY:	return DSDRAW_SRC_PREMULTIPLY;
-	default:							return DSDRAW_NOFX;
-	}
+	DFBSurfaceDrawingFlags retflags = DSDRAW_NOFX;
+	if (flags & MMSFB_DRAW_BLEND)
+		retflags = (DFBSurfaceDrawingFlags)(retflags | DSDRAW_BLEND);
+	if (flags & MMSFB_DRAW_SRC_PREMULTIPLY)
+		retflags = (DFBSurfaceDrawingFlags)(retflags | DSDRAW_SRC_PREMULTIPLY);
+	return retflags;
 }
 
 DFBSurfaceFlipFlags getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(MMSFBFlipFlags flags) {
-	switch (flags) {
-	case MMSFB_FLIP_NONE:		return DSFLIP_NONE;
-	case MMSFB_FLIP_WAIT:		return DSFLIP_WAIT;
-	case MMSFB_FLIP_ONSYNC:		return DSFLIP_ONSYNC;
-	case MMSFB_FLIP_WAITFORSYNC:return DSFLIP_WAITFORSYNC;
-	default:					return DSFLIP_NONE;
-	}
+	DFBSurfaceFlipFlags retflags = DSFLIP_NONE;
+	if (flags & MMSFB_FLIP_WAIT)
+		retflags = (DFBSurfaceFlipFlags)(retflags | DSFLIP_WAIT);
+	if (flags & MMSFB_FLIP_ONSYNC)
+		retflags = (DFBSurfaceFlipFlags)(retflags | DSFLIP_ONSYNC);
+	if (flags & MMSFB_FLIP_WAITFORSYNC)
+		retflags = (DFBSurfaceFlipFlags)(retflags | DSFLIP_WAITFORSYNC);
+	return retflags;
 }
 
 DFBSurfaceLockFlags getDFBSurfaceLockFlagsFromMMSFBLockFlags(MMSFBLockFlags flags) {
-	switch (flags) {
-	case MMSFB_LOCK_READ:	return DSLF_READ;
-	case MMSFB_LOCK_WRITE:	return DSLF_WRITE;
-	default:				return DSLF_READ;
-	}
+	DFBSurfaceLockFlags retflags = DSLF_READ;
+	if (flags & MMSFB_LOCK_WRITE)
+		retflags = (DFBSurfaceLockFlags)(retflags | DSLF_WRITE);
+	return retflags;
 }
 
 

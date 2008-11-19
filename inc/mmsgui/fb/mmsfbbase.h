@@ -103,49 +103,57 @@ typedef struct {
 	int	y2;
 } MMSFBRegion;
 
-typedef enum {
-	//! no effects
-	MMSFB_BLIT_NOFX = 0,
-	//! use alphachannel from source
-	MMSFB_BLIT_BLEND_ALPHACHANNEL,
-	//! use alphachannel from color
-	MMSFB_BLIT_BLEND_COLORALPHA,
-	//! modulates source pixel with color
-	MMSFB_BLIT_COLORIZE,
-	//! modulates the source color with the source alpha
-	MMSFB_BLIT_SRC_PREMULTIPLY,
-	//! modulates the source color with the color alpha
-	MMSFB_BLIT_SRC_PREMULTCOLOR
-} MMSFBBlittingFlags;
 
-typedef enum {
-	//! no effects
-	MMSFB_DRAW_NOFX = 0,
-	//! alpha from surface color
-	MMSFB_DRAW_BLEND,
-	//! multiplies the color with the alpha channel
-	MMSFB_DRAW_SRC_PREMULTIPLY
-} MMSFBDrawingFlags;
+//! surface blitting flags
+typedef unsigned int MMSFBBlittingFlags;
 
-typedef enum {
-	//! none
-	MMSFB_FLIP_NONE = 0,
-	//! returns upon vertical sync
-	MMSFB_FLIP_WAIT,
-	//! flip upon the next vertical sync
-	MMSFB_FLIP_ONSYNC,
-	//! WAIT and ONSYNC
-	MMSFB_FLIP_WAITFORSYNC
-} MMSFBFlipFlags;
+//! surface blitting flag: no effects
+#define MMSFB_BLIT_NOFX					0x00000000
+//! surface blitting flag: use alphachannel from source
+#define MMSFB_BLIT_BLEND_ALPHACHANNEL	0x00000001
+//! surface blitting flag: use alphachannel from color
+#define MMSFB_BLIT_BLEND_COLORALPHA		0x00000002
+//! surface blitting flag: modulates source pixel with color
+#define MMSFB_BLIT_COLORIZE				0x00000004
+//! surface blitting flag: modulates the source color with the source alpha
+#define MMSFB_BLIT_SRC_PREMULTIPLY		0x00000008
+//! surface blitting flag: modulates the source color with the color alpha
+#define MMSFB_BLIT_SRC_PREMULTCOLOR		0x00000010
 
-typedef enum {
-	//! none
-	MMSFB_LOCK_NONE = 0,
-	//! read access
-	MMSFB_LOCK_READ,
-	//! write access
-	MMSFB_LOCK_WRITE
-} MMSFBLockFlags;
+
+//! surface drawing flags
+typedef unsigned int MMSFBDrawingFlags;
+
+//! surface drawing flag: no effects
+#define MMSFB_DRAW_NOFX					0x00000000
+//! surface drawing flag: alpha from surface color
+#define MMSFB_DRAW_BLEND				0x00000001
+//! surface drawing flag: multiplies the color with the alpha channel
+#define MMSFB_DRAW_SRC_PREMULTIPLY		0x00000002
+
+
+//! surface flip flags
+typedef unsigned int MMSFBFlipFlags;
+
+//! surface flip flag: none
+#define MMSFB_FLIP_NONE					0x00000000
+//! surface flip flag: returns upon vertical sync
+#define MMSFB_FLIP_WAIT					0x00000001
+//! surface flip flag: flip upon the next vertical sync
+#define MMSFB_FLIP_ONSYNC				0x00000002
+//! surface flip flag: WAIT and ONSYNC
+#define MMSFB_FLIP_WAITFORSYNC			0x00000004
+
+
+//! surface lock flags
+typedef unsigned int MMSFBLockFlags;
+
+//! surface lock flag: none
+#define MMSFB_LOCK_NONE					0x00000000
+//! surface lock flag: read access
+#define MMSFB_LOCK_READ					0x00000001
+//! surface lock flag: write access
+#define MMSFB_LOCK_WRITE				0x00000002
 
 
 // supported pixel format strings
@@ -207,7 +215,7 @@ typedef enum {
 // 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
 #define MMSFB_PF_ARGB4444_STR   "ARGB4444"
 
-
+/*
 #define MMSFB_SURFACE_PIXELFORMAT(index, color_bits, alpha_bits, has_alpha,     \
                                   row_bits, row_bytes, align, mul_f, mul_d,     \
                                   has_lut, inv_alpha )                          \
@@ -284,6 +292,70 @@ typedef enum {
     // 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
     MMSFB_PF_ARGB4444  = MMSFB_SURFACE_PIXELFORMAT( 18, 12, 4, 1, 0, 2, 0, 0, 0, 0, 0 )
 } MMSFBSurfacePixelFormat;
+*/
+
+// supported pixel formats
+typedef enum {
+	// none
+	MMSFB_PF_NONE = 0,
+    // 16 bit RGB (2 byte, red 5@11, green 6@5, blue 5@0)
+	MMSFB_PF_RGB16,
+    // 24 bit RGB (3 byte, red 8@16, green 8@8, blue 8@0)
+    MMSFB_PF_RGB24,
+    // 24 bit RGB (4 byte, nothing@24, red 8@16, green 8@8, blue 8@0)
+    MMSFB_PF_RGB32,
+    // 32 bit ARGB (4 byte, alpha 8@24, red 8@16, green 8@8, blue 8@0)
+    MMSFB_PF_ARGB,
+    // 8 bit alpha (1 byte, alpha 8@0), e.g. anti-aliased glyphs
+    MMSFB_PF_A8,
+    // 16 bit YUV (4 byte/ 2 pixel, macropixel contains CbYCrY [31:0])
+    MMSFB_PF_YUY2,
+    // 16 bit YUV (4 byte/ 2 pixel, macropixel contains YCbYCr [31:0])
+    MMSFB_PF_UYVY,
+    // 12 bit YUV (8 bit Y plane followed by 8 bit quarter size U/V planes)
+    MMSFB_PF_I420,
+    // 12 bit YUV (8 bit Y plane followed by 8 bit quarter size V/U planes)
+    MMSFB_PF_YV12,
+    // 32 bit ARGB (4 byte, inv. alpha 8@24, red 8@16, green 8@8, blue 8@0)
+    MMSFB_PF_AiRGB,
+    // 1 bit alpha (1 byte/ 8 pixel, most significant bit used first)
+    MMSFB_PF_A1,
+    // 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CbCr [15:0] plane)
+    MMSFB_PF_NV12,
+    // 16 bit YUV (8 bit Y plane followed by one 16 bit half width CbCr [15:0] plane)
+    MMSFB_PF_NV16,
+    // 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CrCb [15:0] plane)
+    MMSFB_PF_NV21,
+    // 32 bit AYUV (4 byte, alpha 8@24, Y 8@16, Cb 8@8, Cr 8@0)
+    MMSFB_PF_AYUV,
+    // 4 bit alpha (1 byte/ 2 pixel, more significant nibble used first)
+    MMSFB_PF_A4,
+    // 1 bit alpha (3 byte/  alpha 1@18, red 6@16, green 6@6, blue 6@0)
+    MMSFB_PF_ARGB1666,
+    // 6 bit alpha (3 byte/  alpha 6@18, red 6@16, green 6@6, blue 6@0)
+    MMSFB_PF_ARGB6666,
+    // 6 bit RGB (3 byte/   red 6@16, green 6@6, blue 6@0)
+    MMSFB_PF_RGB18,
+    // 2 bit LUT (1 byte/ 4 pixel, 2 bit color and alpha lookup from palette)
+    MMSFB_PF_LUT2,
+    // 16 bit RGB (2 byte, nothing @12, red 4@8, green 4@4, blue 4@0)
+    MMSFB_PF_RGB444,
+    // 16 bit RGB (2 byte, nothing @15, red 5@10, green 5@5, blue 5@0)
+    MMSFB_PF_RGB555,
+	// 16 bit ARGB (2 byte, alpha 1@15, red 5@10, green 5@5, blue 5@0)
+	MMSFB_PF_ARGB1555,
+    // 8 bit RGB (1 byte, red 3@5, green 3@2, blue 2@0)
+    MMSFB_PF_RGB332,
+    // 8 bit ALUT (1 byte, alpha 4@4, color lookup 4@0)
+    MMSFB_PF_ALUT44,
+    // 8 bit LUT (8 bit color and alpha lookup from palette)
+    MMSFB_PF_LUT8,
+    // 16 bit ARGB (2 byte, alpha 2@14, red 5@9, green 5@4, blue 4@0)
+    MMSFB_PF_ARGB2554,
+    // 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
+    MMSFB_PF_ARGB4444
+} MMSFBSurfacePixelFormat;
+
 
 /* supported buffer modes */
 #define MMSFB_BM_NONE       ""          // none
