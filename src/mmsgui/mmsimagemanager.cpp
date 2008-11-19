@@ -437,7 +437,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	else
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	/* successfully read */
-				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
+//				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
 				            im_desc->imagefile = imagefile;
 
 				            if (reload_image < 0) {
