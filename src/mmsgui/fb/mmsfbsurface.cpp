@@ -7024,10 +7024,6 @@ void MMSFBSurface::eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src
 //	src+= sx + sy * src_pitch_pix;
 
 	// check the surface range
-	if (dst_pitch_pix - dx < sw - sx)
-		sw = dst_pitch_pix - dx - sx;
-	if (dst_height - dy < sh - sy)
-		sh = dst_height - dy - sy;
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
