@@ -118,6 +118,7 @@ bool getColorFromString(string input, MMSFBColor *color) {
 }
 
 
+#ifdef  __HAVE_DIRECTFB__
 bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
 //    IDirectFB              *mydfb = NULL;
     IDirectFBImageProvider *myimage = NULL;
@@ -167,7 +168,7 @@ bool loadImage(IDirectFBImageProvider **image, string path, string filename) {
 
     return true;
 }
-
+#endif
 
 bool loadFont(MMSFBFont **font, string path, string filename, int width, int height) {
     MMSFBFont	*myfont = NULL;

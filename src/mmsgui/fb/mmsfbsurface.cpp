@@ -647,13 +647,13 @@ void *MMSFBSurface::getDFBSurface() {
 }
 
 bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
-	DFBSurfaceCapabilities  caps;
 
     /* check if initialized */
     INITCHECK;
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
+		DFBSurfaceCapabilities  caps;
 		DFBResult               dfbres;
 		DFBSurfacePixelFormat   mypf;
 
@@ -693,6 +693,55 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::GetCapabilities() failed");
 			return false;
 		}
+
+	    /* is it a premultiplied surface? */
+		this->config.surface_buffer->premultiplied = caps & DSCAPS_PREMULTIPLIED;
+
+	    /* get the buffer mode */
+		this->config.surface_buffer->backbuffer = 0;
+	    if (caps & DSCAPS_DOUBLE)
+	    	this->config.surface_buffer->backbuffer = 1;
+	    else
+	    if (caps & DSCAPS_TRIPLE)
+	    	this->config.surface_buffer->backbuffer = 2;
+
+	    /* system only? */
+	    this->config.surface_buffer->systemonly = false;
+	    if (caps & DSCAPS_SYSTEMONLY)
+	    	this->config.surface_buffer->systemonly = true;
+
+	    /* fill return config */
+	    if (config)
+	        *config = this->config;
+
+	    /* log some infos */
+	    if ((!config)&&(!this->is_sub_surface)) {
+	    	DEBUGMSG("MMSGUI", "Surface properties:");
+
+	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+
+		    if (this->config.surface_buffer->alphachannel)
+		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
+		    else
+		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat));
+
+		    DEBUGMSG("MMSGUI", " capabilities:");
+
+		    if (caps & DSCAPS_PRIMARY)
+		    	DEBUGMSG("MMSGUI", "  PRIMARY");
+		    if (caps & DSCAPS_SYSTEMONLY)
+		    	DEBUGMSG("MMSGUI", "  SYSTEMONLY");
+		    if (caps & DSCAPS_VIDEOONLY)
+		    	DEBUGMSG("MMSGUI", "  VIDEOONLY");
+		    if (caps & DSCAPS_DOUBLE)
+		    	DEBUGMSG("MMSGUI", "  DOUBLE");
+		    if (caps & DSCAPS_TRIPLE)
+		    	DEBUGMSG("MMSGUI", "  TRIPLE");
+		    if (caps & DSCAPS_PREMULTIPLIED)
+		    	DEBUGMSG("MMSGUI", "  PREMULTIPLIED");
+	    }
+
+	    return true;
 #endif
 	}
 	else {
@@ -702,75 +751,35 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			this->config.h = this->sub_surface_rect.h;
 		}
 
-		/* get capabilities */
-		if (this->config.surface_buffer->premultiplied)
-			caps = (DFBSurfaceCapabilities)DSCAPS_PREMULTIPLIED;
-		else
-			caps = (DFBSurfaceCapabilities)0;
+		/* fill return config */
+		if (config)
+			*config = this->config;
 
-		switch (this->config.surface_buffer->backbuffer) {
-		case 0:
-			break;
-		case 1:
-			caps = (DFBSurfaceCapabilities)(caps | DSCAPS_DOUBLE);
-			break;
-		case 2:
-			caps = (DFBSurfaceCapabilities)(caps | DSCAPS_TRIPLE);
-			break;
+		/* log some infos */
+		if ((!config)&&(!this->is_sub_surface)) {
+			DEBUGMSG("MMSGUI", "Surface properties:");
+
+			DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+
+			if (this->config.surface_buffer->alphachannel)
+				DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
+			else
+				DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat));
+
+			DEBUGMSG("MMSGUI", " capabilities:");
+
+			if (this->config.surface_buffer->systemonly)
+				DEBUGMSG("MMSGUI", "  SYSTEMONLY");
+			if (this->config.surface_buffer->backbuffer == 1)
+				DEBUGMSG("MMSGUI", "  DOUBLE");
+			if (this->config.surface_buffer->backbuffer == 2)
+				DEBUGMSG("MMSGUI", "  TRIPLE");
+			if (this->config.surface_buffer->premultiplied)
+				DEBUGMSG("MMSGUI", "  PREMULTIPLIED");
 		}
-
-		if (this->config.surface_buffer->systemonly)
-			caps = (DFBSurfaceCapabilities)(caps | DSCAPS_SYSTEMONLY);
+	    return true;
 	}
-
-    /* is it a premultiplied surface? */
-	this->config.surface_buffer->premultiplied = caps & DSCAPS_PREMULTIPLIED;
-
-    /* get the buffer mode */
-	this->config.surface_buffer->backbuffer = 0;
-    if (caps & DSCAPS_DOUBLE)
-    	this->config.surface_buffer->backbuffer = 1;
-    else
-    if (caps & DSCAPS_TRIPLE)
-    	this->config.surface_buffer->backbuffer = 2;
-
-    /* system only? */
-    this->config.surface_buffer->systemonly = false;
-    if (caps & DSCAPS_SYSTEMONLY)
-    	this->config.surface_buffer->systemonly = true;
-
-    /* fill return config */
-    if (config)
-        *config = this->config;
-
-    /* log some infos */
-    if ((!config)&&(!this->is_sub_surface)) {
-    	DEBUGMSG("MMSGUI", "Surface properties:");
-
-    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
-
-	    if (this->config.surface_buffer->alphachannel)
-	    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
-	    else
-	    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat));
-
-	    DEBUGMSG("MMSGUI", " capabilities:");
-
-	    if (caps & DSCAPS_PRIMARY)
-	    	DEBUGMSG("MMSGUI", "  PRIMARY");
-	    if (caps & DSCAPS_SYSTEMONLY)
-	    	DEBUGMSG("MMSGUI", "  SYSTEMONLY");
-	    if (caps & DSCAPS_VIDEOONLY)
-	    	DEBUGMSG("MMSGUI", "  VIDEOONLY");
-	    if (caps & DSCAPS_DOUBLE)
-	    	DEBUGMSG("MMSGUI", "  DOUBLE");
-	    if (caps & DSCAPS_TRIPLE)
-	    	DEBUGMSG("MMSGUI", "  TRIPLE");
-	    if (caps & DSCAPS_PREMULTIPLIED)
-	    	DEBUGMSG("MMSGUI", "  PREMULTIPLIED");
-    }
-
-    return true;
+	return false;
 }
 
 void MMSFBSurface::setExtendedAcceleration(bool extendedaccel) {
@@ -9566,20 +9575,20 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 bool MMSFBSurface::flip(MMSFBRegion *region) {
 
-    if (region)
-         D_DEBUG_AT( MMS_Surface, "flip( %d,%d - %dx%d ) <- %dx%d\n",
-                     DFB_RECTANGLE_VALS_FROM_REGION(region), this->config.w, this->config.h );
-    else
-         D_DEBUG_AT( MMS_Surface, "flip( %d,%d - %dx%d ) <- %dx%d\n",
-                     0, 0, this->config.w, this->config.h, this->config.w, this->config.h );
-
-    MMSFB_TRACE();
-
     /* check if initialized */
     INITCHECK;
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
+	    if (region)
+	         D_DEBUG_AT( MMS_Surface, "flip( %d,%d - %dx%d ) <- %dx%d\n",
+	                     DFB_RECTANGLE_VALS_FROM_REGION(region), this->config.w, this->config.h );
+	    else
+	         D_DEBUG_AT( MMS_Surface, "flip( %d,%d - %dx%d ) <- %dx%d\n",
+	                     0, 0, this->config.w, this->config.h, this->config.w, this->config.h );
+
+	    MMSFB_TRACE();
+
 	    DFBResult   dfbres;
 
 #ifdef USE_DFB_WINMAN
@@ -9803,13 +9812,6 @@ bool MMSFBSurface::refresh() {
 bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
                               bool copycontent, bool withbackbuffer) {
 
-    D_DEBUG_AT( MMS_Surface, "createCopy( %dx%d -> %dx%d, %s, %s )\n",
-                this->config.w, this->config.h, w, h,
-                copycontent ? "CONTENT COPY!" : "no content copy",
-                withbackbuffer ? "BACK BUFFER!" : "no back buffer" );
-
-    MMSFB_TRACE();
-
     /* check if initialized */
     INITCHECK;
 
@@ -9850,11 +9852,6 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
 
 bool MMSFBSurface::resize(int w, int h) {
 
-    D_DEBUG_AT( MMS_Surface, "resize( %dx%d -> %dx%d )\n",
-                this->config.w, this->config.h, w, h );
-
-    MMSFB_TRACE();
-
     /* check if initialized */
     INITCHECK;
 
@@ -9868,7 +9865,12 @@ bool MMSFBSurface::resize(int w, int h) {
 
 		if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-			/* move the dfb pointers */
+		    D_DEBUG_AT( MMS_Surface, "resize( %dx%d -> %dx%d )\n",
+		                this->config.w, this->config.h, w, h );
+
+		    MMSFB_TRACE();
+
+		    /* move the dfb pointers */
 			IDirectFBSurface *s = this->llsurface;
 			this->llsurface = dstsurface->llsurface;
 			dstsurface->llsurface = s;

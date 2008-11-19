@@ -950,6 +950,7 @@ bool MMSFBWindowManager::getPointerPosition(int &pointer_posx, int &pointer_posy
 }
 
 bool MMSFBWindowManager::loadPointer() {
+#ifdef  __HAVE_DIRECTFB__
     IDirectFBImageProvider *imageprov = NULL;
     DFBSurfaceDescription   surface_desc;
 	string 					imagefile = (string)getPrefix() + "/share/disko/mmsgui/mmspointer.png";
@@ -987,6 +988,8 @@ bool MMSFBWindowManager::loadPointer() {
     this->pointer_rect.w = surface_desc.width;
     this->pointer_rect.h = surface_desc.height;
     return true;
+#endif
+    return false;
 }
 
 void MMSFBWindowManager::drawPointer(MMSFBRegion *region) {

@@ -28,7 +28,7 @@
 /*#include <directfb.h>
 #include <sigc++/sigc++.h>
 */
-typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);
+//typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);
 
 class MMSInputSubscription {
 	private:

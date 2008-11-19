@@ -33,7 +33,7 @@
 //#include <directfb_keynames.h>
 #include <map>
 
-typedef vector<DFBInputDeviceKeySymbol> MMS_KEYSET;
+//typedef vector<DFBInputDeviceKeySymbol> MMS_KEYSET;
 
 /* this class is used to map device input to keyset known to my application */
 class MMSInputMapper {

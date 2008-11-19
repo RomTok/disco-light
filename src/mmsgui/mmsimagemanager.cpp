@@ -205,9 +205,7 @@ bool read_png(const char *filename, void **buf, int *width, int *height, bool pr
 MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc,
 										int mirror_size) {
     string                  imagefile;
-    IDirectFBImageProvider  *imageprovider = NULL;
     MMSIM_DESC              *im_desc = NULL;
-    DFBSurfaceDescription   surface_desc;
     int                     reload_image = -1;
 
     /* build filename */
@@ -548,6 +546,10 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
     	}
 
 
+#ifdef  __HAVE_DIRECTFB__
+        IDirectFBImageProvider  *imageprovider = NULL;
+        DFBSurfaceDescription   surface_desc;
+
         /* failed, try it with DFB providers */
     	if (!loadImage(&imageprovider, "", imagefile)) {
         	DEBUGMSG("MMSGUI", "cannot load image file '%s'", imagefile.c_str());
@@ -575,7 +577,6 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         }
 
 
-#ifdef  __HAVE_DIRECTFB__
         /* get surface description */
         if (imageprovider->GetSurfaceDescription(imageprovider, &surface_desc)!=DFB_OK) {
             /* release imageprovider */

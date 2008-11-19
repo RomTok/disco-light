@@ -288,7 +288,9 @@ bool MMSFBWindow::lowerToBottom() {
 
 MMSFBWindow::MMSFBWindow(MMSFBSurface *surface, int x, int y) {
     /* init me */
+#ifdef  __HAVE_DIRECTFB__
     this->dfbwindow = NULL;
+#endif
     this->surface = surface;
 
     /* get the current config */

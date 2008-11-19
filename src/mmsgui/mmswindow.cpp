@@ -28,8 +28,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-D_DEBUG_DOMAIN( MMS_Window, "MMS/Window", "MMS Window" );
-
 
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
@@ -126,11 +124,6 @@ MMSWINDOWTYPE MMSWindow::getType() {
 
 bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
 		               bool *own_surface) {
-    D_DEBUG_AT( MMS_Window, "create( %s,%s - %sx%s, align %d, flags 0x%08x )\n",
-                dx.c_str(), dy.c_str(), w.c_str(), h.c_str(), alignment, flags );
-
-    MMSFB_TRACE();
-
     /* save flags */
     this->flags = flags;
 
@@ -233,7 +226,7 @@ bool MMSWindow::create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLA
 
 
 bool MMSWindow::resize(bool refresh) {
-    DFBWindowDescription wdesc;
+    int wdesc_posx, wdesc_posy, wdesc_width, wdesc_height;
     string dx, dy, width, height;
 
 
@@ -302,75 +295,75 @@ bool MMSWindow::resize(bool refresh) {
     /* calculate the window position */
     /* first try with xpos */
     if (!getDx(dx)) dx = "";
-    if (getPixelFromSizeHint(&wdesc.posx, dx, vrect.w, 0) == false) {
-        if (getPixelFromSizeHint(&wdesc.posx, dx, 10000, 0) == false) {
+    if (getPixelFromSizeHint(&wdesc_posx, dx, vrect.w, 0) == false) {
+        if (getPixelFromSizeHint(&wdesc_posx, dx, 10000, 0) == false) {
         	DEBUGMSG("MMSGUI", "window dx %s is wrong, using 0px", dx.c_str());
             myWindowClass.setDx("0px");
-            wdesc.posx = 0;
+            wdesc_posx = 0;
         }
     }
     /* ypos */
     if (!getDy(dy)) dy = "";
-    if (getPixelFromSizeHint(&wdesc.posy, dy, vrect.h, wdesc.posx) == false) {
-        if (getPixelFromSizeHint(&wdesc.posy, dy, 10000, wdesc.posx) == false) {
+    if (getPixelFromSizeHint(&wdesc_posy, dy, vrect.h, wdesc_posx) == false) {
+        if (getPixelFromSizeHint(&wdesc_posy, dy, 10000, wdesc_posx) == false) {
         	DEBUGMSG("MMSGUI", "window dy %s is wrong, using 0px", dy.c_str());
             myWindowClass.setDy("0px");
-            wdesc.posy = 0;
+            wdesc_posy = 0;
         }
     }
     /* second try with xpos (because of "<factor>$") */
     if (!getDx(dx)) dx = "";
-    if (getPixelFromSizeHint(&wdesc.posx, dx, vrect.w, wdesc.posy) == false) {
-        if (getPixelFromSizeHint(&wdesc.posx, dx, 10000, wdesc.posy) == false) {
+    if (getPixelFromSizeHint(&wdesc_posx, dx, vrect.w, wdesc_posy) == false) {
+        if (getPixelFromSizeHint(&wdesc_posx, dx, 10000, wdesc_posy) == false) {
         	DEBUGMSG("MMSGUI", "window dx %s is wrong, using 0px", dx.c_str());
             myWindowClass.setDx("0px");
-            wdesc.posx = 0;
+            wdesc_posx = 0;
         }
     }
 
     /* save the real dx / dy */
-    this->dxpix = wdesc.posx;
-    this->dypix = wdesc.posy;
+    this->dxpix = wdesc_posx;
+    this->dypix = wdesc_posy;
 
     DEBUGMSG("MMSGUI", "dx: %d, dy: %d", this->dxpix, this->dypix);
 
     /* calculate the window size */
     if (!getWidth(width)) width = "";
-    if (getPixelFromSizeHint(&wdesc.width, width, vrect.w, 0) == false) {
-        if (getPixelFromSizeHint(&wdesc.width, width, 10000, 0) == false) {
+    if (getPixelFromSizeHint(&wdesc_width, width, vrect.w, 0) == false) {
+        if (getPixelFromSizeHint(&wdesc_width, width, 10000, 0) == false) {
         	DEBUGMSG("MMSGUI", "window width %s is wrong, using %d px", width.c_str(), vrect.w);
             myWindowClass.setWidth(iToStr(vrect.w) + "px");
-            wdesc.width = vrect.w;
+            wdesc_width = vrect.w;
         }
     }
     if (!getHeight(height)) height = "";
-    if (getPixelFromSizeHint(&wdesc.height, height, vrect.h, 0) == false) {
-        if (getPixelFromSizeHint(&wdesc.height, height, 10000, 0) == false) {
+    if (getPixelFromSizeHint(&wdesc_height, height, vrect.h, 0) == false) {
+        if (getPixelFromSizeHint(&wdesc_height, height, 10000, 0) == false) {
         	DEBUGMSG("MMSGUI", "window height %s is wrong, using %d px", height.c_str(), vrect.h);
             myWindowClass.setHeight(iToStr(vrect.h) + "px");
-            wdesc.height = vrect.h;
+            wdesc_height = vrect.h;
         }
     }
 
-    DEBUGMSG("MMSGUI", "window resolution: %d x %d", wdesc.width, wdesc.height);
+    DEBUGMSG("MMSGUI", "window resolution: %d x %d", wdesc_width, wdesc_height);
 
-    if ((wdesc.width == 0)&&(wdesc.height == 0)) {
+    if ((wdesc_width == 0)&&(wdesc_height == 0)) {
         /* bad values */
     	DEBUGMSG("MMSGUI", "window width " + width + " is wrong, using " + iToStr(vrect.w) + "px");
         myWindowClass.setWidth(iToStr(vrect.w) + "px");
-        wdesc.width = vrect.w;
+        wdesc_width = vrect.w;
         DEBUGMSG("MMSGUI", "window height " + height + " is wrong, using " + iToStr(vrect.h) + "px");
         myWindowClass.setHeight(iToStr(vrect.h) + "px");
-        wdesc.height = vrect.h;
+        wdesc_height = vrect.h;
     }
     else {
-        if (wdesc.width == 0) {
+        if (wdesc_width == 0) {
             /* it seems that width should be a factor of height */
-            getPixelFromSizeHint(&wdesc.width, width, vrect.w, wdesc.height);
+            getPixelFromSizeHint(&wdesc_width, width, vrect.w, wdesc_height);
         }
         else {
             /* it seems that height should be a factor of width */
-            getPixelFromSizeHint(&wdesc.height, height, vrect.h, wdesc.width);
+            getPixelFromSizeHint(&wdesc_height, height, vrect.h, wdesc_width);
         }
     }
 
@@ -378,56 +371,56 @@ bool MMSWindow::resize(bool refresh) {
     unsigned int margin;
     if (!getMargin(margin))
     	margin = 0;
-    wdesc.posx+= vrect.x;
-    wdesc.posy+= vrect.y;
-    wdesc.width-= margin*2;
-    wdesc.height-= margin*2;
+    wdesc_posx+= vrect.x;
+    wdesc_posy+= vrect.y;
+    wdesc_width-= margin*2;
+    wdesc_height-= margin*2;
 
     /* work with alignment */
     MMSALIGNMENT alignment;
     if (!getAlignment(alignment)) alignment = MMSALIGNMENT_CENTER;
     switch (alignment) {
         case MMSALIGNMENT_CENTER:
-            wdesc.posx+= (vrect.w - wdesc.width) / 2;
-            wdesc.posy+= (vrect.h - wdesc.height) / 2;
+            wdesc_posx+= (vrect.w - wdesc_width) / 2;
+            wdesc_posy+= (vrect.h - wdesc_height) / 2;
             break;
         case MMSALIGNMENT_LEFT:
-            wdesc.posy+= (vrect.h - wdesc.height) / 2;
+            wdesc_posy+= (vrect.h - wdesc_height) / 2;
             break;
         case MMSALIGNMENT_RIGHT:
-            wdesc.posx+= (vrect.w - wdesc.width);
-            wdesc.posy+= (vrect.h - wdesc.height) / 2;
+            wdesc_posx+= (vrect.w - wdesc_width);
+            wdesc_posy+= (vrect.h - wdesc_height) / 2;
             break;
         case MMSALIGNMENT_TOP_CENTER:
-            wdesc.posx+= (vrect.w - wdesc.width) / 2;
+            wdesc_posx+= (vrect.w - wdesc_width) / 2;
             break;
         case MMSALIGNMENT_TOP_LEFT:
             break;
         case MMSALIGNMENT_TOP_RIGHT:
-            wdesc.posx+= (vrect.w - wdesc.width);
+            wdesc_posx+= (vrect.w - wdesc_width);
             break;
         case MMSALIGNMENT_BOTTOM_CENTER:
-            wdesc.posx+= (vrect.w - wdesc.width) / 2;
-            wdesc.posy+= (vrect.h - wdesc.height);
+            wdesc_posx+= (vrect.w - wdesc_width) / 2;
+            wdesc_posy+= (vrect.h - wdesc_height);
             break;
         case MMSALIGNMENT_BOTTOM_LEFT:
-            wdesc.posy+= (vrect.h - wdesc.height);
+            wdesc_posy+= (vrect.h - wdesc_height);
             break;
         case MMSALIGNMENT_BOTTOM_RIGHT:
-            wdesc.posx+= (vrect.w - wdesc.width);
-            wdesc.posy+= (vrect.h - wdesc.height);
+            wdesc_posx+= (vrect.w - wdesc_width);
+            wdesc_posy+= (vrect.h - wdesc_height);
             break;
         default:
             break;
     }
     int oldx = this->geom.x;
     int oldy = this->geom.y;
-    this->geom.x = wdesc.posx;
-    this->geom.y = wdesc.posy;
+    this->geom.x = wdesc_posx;
+    this->geom.y = wdesc_posy;
     int oldw = this->geom.w;
     int oldh = this->geom.h;
-    this->geom.w = wdesc.width;
-    this->geom.h = wdesc.height;
+    this->geom.w = wdesc_width;
+    this->geom.h = wdesc_height;
     unsigned int borderMargin;
     if (!getBorderMargin(borderMargin))
     	borderMargin = 0;
@@ -450,27 +443,27 @@ bool MMSWindow::resize(bool refresh) {
 
             if (!(this->flags & MMSW_VIDEO)) {
                 /* no video window, use alpha */
-            	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc.posx) + ","
-                                                    + iToStr(wdesc.posy) + ","
-                                                    + iToStr(wdesc.width) + ","
-                                                    + iToStr(wdesc.height)
+            	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+                                                    + iToStr(wdesc_posy) + ","
+                                                    + iToStr(wdesc_width) + ","
+                                                    + iToStr(wdesc_height)
                                                     + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
                                                     + " (use alpha)");
                 this->layer->createWindow(&(this->window),
-                                          wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
+                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                           pixelformat, true, false);
                 DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
             }
             else {
                 /* video window, do not use alpha */
-            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc.posx) + ","
-                                                          + iToStr(wdesc.posy) + ","
-                                                          + iToStr(wdesc.width) + ","
-                                                          + iToStr(wdesc.height)
+            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
+                                                          + iToStr(wdesc_posy) + ","
+                                                          + iToStr(wdesc_width) + ","
+                                                          + iToStr(wdesc_height)
                                                           + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
                                                           + " (do not use alpha)");
                 this->layer->createWindow(&(this->window),
-                                          wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
+                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                           pixelformat, false, true);
                 DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
             }
@@ -519,30 +512,30 @@ bool MMSWindow::resize(bool refresh) {
             bool os;
             getOwnSurface(os);
         	if (os) {
-        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc.posx) + ","
-	                                                                  + iToStr(wdesc.posy) + ","
-	                                                                  + iToStr(wdesc.width) + ","
-	                                                                  + iToStr(wdesc.height)
+        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
+	                                                                  + iToStr(wdesc_posy) + ","
+	                                                                  + iToStr(wdesc_width) + ","
+	                                                                  + iToStr(wdesc_height)
 	                                                                  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                  + " (use alpha)");
 
 	            this->layer->createSurface(&(this->surface),
-	                                      wdesc.width, wdesc.height, MMSFB_PF_NONE, 1);
+	                                      wdesc_width, wdesc_height, MMSFB_PF_NONE, 1);
 	        }
 	        else {
-	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc.posx) + ","
-	                                                                      + iToStr(wdesc.posy) + ","
-	                                                                      + iToStr(wdesc.width) + ","
-	                                                                      + iToStr(wdesc.height)
+	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc_posx) + ","
+	                                                                      + iToStr(wdesc_posy) + ","
+	                                                                      + iToStr(wdesc_width) + ","
+	                                                                      + iToStr(wdesc_height)
 	                                                                      + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                      + " (use alpha)");
 
 	            MMSFBRectangle rect;
 
-	            rect.x = wdesc.posx;
-	            rect.y = wdesc.posy;
-	            rect.w = wdesc.width;
-	            rect.h = wdesc.height;
+	            rect.x = wdesc_posx;
+	            rect.y = wdesc_posy;
+	            rect.w = wdesc_width;
+	            rect.h = wdesc_height;
 	            this->surface = this->parent->surface->getSubSurface(&rect);
 	        }
 
