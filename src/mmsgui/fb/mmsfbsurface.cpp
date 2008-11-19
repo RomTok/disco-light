@@ -1503,8 +1503,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 
 
 bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
-								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch,
-								MMSFBSurface *dstsrc, void **dstsrc_ptr, int *dstsrc_pitch) {
+								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch) {
 	if (src) {
 		src->lock(MMSFB_LOCK_READ, src_ptr, src_pitch, false);
 		if (!*src_ptr)
@@ -1515,16 +1514,6 @@ bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitc
 		if (!*dst_ptr) {
 			if (src)
 				src->unlock(false);
-			return false;
-		}
-	}
-	if (dstsrc) {
-		dstsrc->lock(MMSFB_LOCK_READ, dstsrc_ptr, dstsrc_pitch, false);
-		if (!*dstsrc_ptr) {
-			if (src)
-				src->unlock(false);
-			if (dst)
-				dst->unlock(false);
 			return false;
 		}
 	}
@@ -1545,9 +1534,7 @@ bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitc
 	return true;
 }
 
-void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSurface *dstsrc) {
-	if (dstsrc)
-		dstsrc->unlock(false);
+void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst) {
 	if (dst)
 		dst->unlock(false);
 	if (src)
@@ -9754,10 +9741,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							  0, 0, mmsfb->w, mmsfb->h,
 							  0, 0, mmsfb->w, mmsfb->h, True);
 			}
+			XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
 			XSync(mmsfb->x_display, True);
 #endif
-			XFlush(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}
 #endif
@@ -9796,10 +9783,10 @@ bool MMSFBSurface::refresh() {
 							  0, 0, mmsfb->w, mmsfb->h,
 							  0, 0, mmsfb->w, mmsfb->h, True);
 			}
+			XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
 			XSync(mmsfb->x_display, True);
 #endif
-			XFlush(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 			this->unlock();
 		}

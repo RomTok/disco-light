@@ -275,9 +275,8 @@ class MMSFBSurface {
 
         //////////
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
-        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch,
-        				  MMSFBSurface *dstsrc = NULL, void **dstsrc_ptr = NULL, int *dstsrc_pitch = NULL);
-        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSurface *dstsrc = NULL);
+        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
+        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
         bool printMissingCombination(char *method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
 									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
         //////////
