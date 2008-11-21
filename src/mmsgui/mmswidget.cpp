@@ -2860,6 +2860,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setBlendFactor(d);
     if (themeClass->getScrollOnFocus(b))
         setScrollOnFocus(b);
+    if (themeClass->getClickable(b))
+        setClickable(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))
