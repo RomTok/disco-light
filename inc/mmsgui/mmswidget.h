@@ -203,6 +203,7 @@ class MMSWidget {
         bool selectable_initial;
         bool canhavechildren;
         bool canselectchildren;
+        bool clickable_initial;
 
         bool focused;
         bool selected;
@@ -246,7 +247,7 @@ class MMSWidget {
         virtual void switchArrowWidgets();
 
         bool create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
-                    bool canhavechildren, bool canselectchildren);
+                    bool canhavechildren, bool canselectchildren, bool clickable);
 
         virtual bool init();
         virtual bool draw(bool *backgroundFilled = NULL);
@@ -424,6 +425,7 @@ class MMSWidget {
         bool 	getBlend(unsigned int &blend);
         bool 	getBlendFactor(double &blendfactor);
         bool 	getScrollOnFocus(bool &scrollonfocus);
+        bool 	getClickable(bool &clickable);
 
         bool	getBorderColor(MMSFBColor &color);
         bool 	getBorderSelColor(MMSFBColor &selcolor);
@@ -471,6 +473,7 @@ class MMSWidget {
         void setBlend(unsigned int blend, bool refresh = true);
         void setBlendFactor(double blendfactor, bool refresh = true);
         void setScrollOnFocus(bool scrollonfocus);
+        void setClickable(bool clickable);
 
         void setBorderColor(MMSFBColor bordercolor, bool refresh = true);
         void setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);

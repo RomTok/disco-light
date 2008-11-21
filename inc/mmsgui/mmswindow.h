@@ -489,9 +489,10 @@ class MMSWindow {
 
         //! Get the number of focusable widgets.
         /*!
+        \param cw	go recursive through child windows if set to true
         \return number of focusable widgets
         */
-        int getNumberOfFocusableWidgets();
+        int getNumberOfFocusableWidgets(bool cw = false);
 
         //! Get the number of focusable child windows.
         /*!

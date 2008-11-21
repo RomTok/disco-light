@@ -47,7 +47,7 @@ bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme
     this->lasttext = "";
     this->surfaceChanged = true;
 
-    return MMSWidget::create(root, true, false, true, true, false, false);
+    return MMSWidget::create(root, true, false, true, true, false, false, true);
 }
 
 MMSWidget *MMSTextBoxWidget::copyWidget() {

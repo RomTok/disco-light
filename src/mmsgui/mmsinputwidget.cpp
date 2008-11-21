@@ -55,7 +55,7 @@ bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 	if (this->iwt)
 		this->iwt->start();
 
-    return MMSWidget::create(root, true, false, true, true, false, false);
+    return MMSWidget::create(root, true, false, true, true, false, false, true);
 }
 
 MMSWidget *MMSInputWidget::copyWidget() {

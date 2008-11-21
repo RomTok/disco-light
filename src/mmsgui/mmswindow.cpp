@@ -3163,15 +3163,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     if (this->shown == false)
         return false;
 
-//    logger.writeLog("got input to deal with");
-
     for(unsigned int i=0; i < inputeventset->size();i++) {
 
     	if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_KEYPRESS) {
     		/* keyboard inputs */
 	        try {
 	            if(this->focusedwidget != NULL) {
-//	                logger.writeLog("try to execute input on widget");
 	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
 
 	                switch(inputeventset->at(i).key) {
@@ -3253,7 +3250,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	bool b;
 	            	for (unsigned int j = 0; j < this->children.size(); j++) {
 	            		MMSWidget *w = this->children.at(j);
-	            		if (!w->getFocusable(b, false))
+	            		if (!w->getClickable(b))
 	            			continue;
 	            		if (!b)
 	            			continue;
@@ -3300,9 +3297,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			/* this is the childwin under the pointer */
 	            			if (!this->childwins.at(j).window->getFocus()) {
-	            				/* set focus to this childwin */
-	            				DEBUGMSG("MMSGUI", "try to change focus");
-		    	            	this->childwins.at(j).window->setFocus();
+	            				if (this->childwins.at(j).window->getNumberOfFocusableWidgets(true)>0)
+	            				{
+									/* set focus to this childwin */
+									DEBUGMSG("MMSGUI", "try to change focus");
+									this->childwins.at(j).window->setFocus();
+	            				}
 	            			}
 
 	            			/* normalize the pointer position */
@@ -3434,14 +3434,22 @@ MMSWidget *MMSWindow::getFocusedWidget() {
     return this->focusedwidget;
 }
 
-int MMSWindow::getNumberOfFocusableWidgets() {
+int MMSWindow::getNumberOfFocusableWidgets(bool cw) {
     int		cnt = 0;
     bool 	b;
 
-    for (unsigned int i = 0; i < children.size(); i++)
-        if (children.at(i)->getFocusable(b))
-        	if (b)
-        		cnt++;
+    if (!children.empty()) {
+		for (unsigned int i = 0; i < children.size(); i++)
+			if (children.at(i)->getFocusable(b))
+				if (b)
+					cnt++;
+    }
+    else {
+    	if (cw) {
+			for (unsigned int i = 0; i < childwins.size(); i++)
+				cnt += childwins.at(i).window->getNumberOfFocusableWidgets(cw);
+    	}
+    }
 
     return cnt;
 }

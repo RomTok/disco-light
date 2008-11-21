@@ -29,6 +29,9 @@
 /*!
 The arrow here is nothing more than a triangle with a specified direction.
 The arrow widget cannot be focused.
+But if you click on it (e.g. mouse or touch screen), the arrow widget submits an input
+event (MMSKEY_CURSOR_LEFT, MMSKEY_CURSOR_RIGHT, MMSKEY_CURSOR_UP, MMSKEY_CURSOR_DOWN)
+to the toplevel parent window according to the direction parameter (see setDirection()).
 \author Jens Schneider
 */
 class MMSArrowWidget : public MMSWidget {
@@ -37,7 +40,11 @@ class MMSArrowWidget : public MMSWidget {
         MMSArrowWidgetClass *arrowWidgetClass;
         MMSArrowWidgetClass myArrowWidgetClass;
 
+        bool last_pressed;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
+
+        void handleInput(MMSInputEvent *inputevent);
 
     public:
         MMSArrowWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);

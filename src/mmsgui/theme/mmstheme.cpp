@@ -71,7 +71,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 2, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 3, mmsgui_taff_tagtable };
 
 
 
@@ -593,6 +593,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.widgetClass.setBlend(0);
         this->labelWidgetClass.widgetClass.setBlendFactor(0);
         this->labelWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->labelWidgetClass.widgetClass.setClickable(false);
 
         /* base widget border settings */
         this->labelWidgetClass.widgetClass.border.setColor(color);
@@ -665,6 +666,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.widgetClass.setBlend(0);
         this->imageWidgetClass.widgetClass.setBlendFactor(0);
         this->imageWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->imageWidgetClass.widgetClass.setClickable(false);
 
         /* base widget border settings */
         this->imageWidgetClass.widgetClass.border.setColor(color);
@@ -736,6 +738,7 @@ MMSTheme::MMSTheme() {
         this->buttonWidgetClass.widgetClass.setBlend(0);
         this->buttonWidgetClass.widgetClass.setBlendFactor(0);
         this->buttonWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->buttonWidgetClass.widgetClass.setClickable(true);
 
         /* base widget border settings */
         this->buttonWidgetClass.widgetClass.border.setColor(color);
@@ -788,6 +791,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.setBlend(0);
         this->progressBarWidgetClass.widgetClass.setBlendFactor(0);
         this->progressBarWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->progressBarWidgetClass.widgetClass.setClickable(false);
 
         /* base widget border settings */
         this->progressBarWidgetClass.widgetClass.border.setColor(color);
@@ -854,6 +858,7 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.widgetClass.setBlend(0);
         this->menuWidgetClass.widgetClass.setBlendFactor(0);
         this->menuWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->menuWidgetClass.widgetClass.setClickable(true);
 
         /* base widget border settings */
         this->menuWidgetClass.widgetClass.border.setColor(color);
@@ -936,6 +941,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.widgetClass.setBlend(0);
         this->textBoxWidgetClass.widgetClass.setBlendFactor(0);
         this->textBoxWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->textBoxWidgetClass.widgetClass.setClickable(true);
 
         /* base widget border settings */
         this->textBoxWidgetClass.widgetClass.border.setColor(color);
@@ -1008,6 +1014,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.setBlend(0);
         this->arrowWidgetClass.widgetClass.setBlendFactor(0);
         this->arrowWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->arrowWidgetClass.widgetClass.setClickable(true);
 
         /* base widget border settings */
         this->arrowWidgetClass.widgetClass.border.setColor(color);
@@ -1074,6 +1081,7 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setBlend(0);
         this->sliderWidgetClass.widgetClass.setBlendFactor(0);
         this->sliderWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->sliderWidgetClass.widgetClass.setClickable(false);
 
         /* base widget border settings */
         this->sliderWidgetClass.widgetClass.border.setColor(color);
@@ -1141,6 +1149,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setBlend(0);
         this->inputWidgetClass.widgetClass.setBlendFactor(0);
         this->inputWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->inputWidgetClass.widgetClass.setClickable(true);
 
         /* base widget border settings */
         this->inputWidgetClass.widgetClass.border.setColor(color);

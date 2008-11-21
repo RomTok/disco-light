@@ -28,7 +28,7 @@ MMSVBoxWidget::MMSVBoxWidget(MMSWindow *root) : MMSWidget::MMSWidget() {
 
 bool MMSVBoxWidget::create(MMSWindow *root) {
 	this->type = MMSWIDGETTYPE_VBOX;
-    return MMSWidget::create(root, false, true, false, false, true, true);
+    return MMSWidget::create(root, false, true, false, false, true, true, false);
 }
 
 MMSWidget *MMSVBoxWidget::copyWidget() {

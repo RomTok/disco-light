@@ -28,7 +28,7 @@ MMSHBoxWidget::MMSHBoxWidget(MMSWindow *root) : MMSWidget::MMSWidget() {
 
 bool MMSHBoxWidget::create(MMSWindow *root) {
 	this->type = MMSWIDGETTYPE_HBOX;
-    return MMSWidget::create(root, false, true, false, false, true, true);
+    return MMSWidget::create(root, false, true, false, false, true, true, false);
 }
 
 MMSWidget *MMSHBoxWidget::copyWidget() {

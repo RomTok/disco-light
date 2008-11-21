@@ -78,6 +78,7 @@ MMSWidgetClass::MMSWidgetClass() {
     initBlendFactor();
 
     initScrollOnFocus();
+    initClickable();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -126,6 +127,7 @@ MMSWidgetClass::~MMSWidgetClass() {
     freeBlendFactor();
 
     freeScrollOnFocus();
+    freeClickable();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
@@ -232,6 +234,7 @@ void MMSWidgetClass::unsetAll() {
     unsetBlendFactor();
 
     unsetScrollOnFocus();
+    unsetClickable();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -574,6 +577,9 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus:
 	            setScrollOnFocus((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_clickable:
+	            setClickable((attrval_int) ? true : false);
 	            break;
 			}
 		}
@@ -986,6 +992,10 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             else
             if (ISATTRNAME(scroll_onfocus)) {
 	            setScrollOnFocus((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(clickable)) {
+	            setClickable((attrval_int) ? true : false);
             }
     	}
     	endTAFFScan_WITHOUT_ID
@@ -1887,5 +1897,32 @@ void MMSWidgetClass::setScrollOnFocus(bool scrollonfocus) {
 
 bool MMSWidgetClass::getScrollOnFocus(bool &scrollonfocus) {
 	MMSTHEMECLASS_GET_BASIC(scrollonfocus);
+}
+
+void MMSWidgetClass::initClickable() {
+    this->id.clickable = false;
+    MMSTHEMECLASS_INIT_BASIC(clickable);
+}
+
+void MMSWidgetClass::freeClickable() {
+    this->id.clickable = false;
+    MMSTHEMECLASS_FREE_BASIC(clickable);
+}
+
+bool MMSWidgetClass::isClickable() {
+	MMSTHEMECLASS_ISSET(clickable);
+}
+
+void MMSWidgetClass::unsetClickable() {
+    this->id.clickable = false;
+    MMSTHEMECLASS_UNSET(clickable);
+}
+
+void MMSWidgetClass::setClickable(bool clickable) {
+	MMSTHEMECLASS_SET_BASIC(clickable);
+}
+
+bool MMSWidgetClass::getClickable(bool &clickable) {
+	MMSTHEMECLASS_GET_BASIC(clickable);
 }
 

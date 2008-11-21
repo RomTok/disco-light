@@ -122,7 +122,7 @@ MMSWIDGETTYPE MMSWidget::getType() {
 }
 
 bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
-                       bool canhavechildren, bool canselectchildren) {
+                       bool canhavechildren, bool canselectchildren, bool clickable) {
     bool		b;
 
 //    logger.writeLog("Create MMSWidget");
@@ -141,6 +141,11 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 				setSelectable(false, false);
     this->canhavechildren = canhavechildren;
     this->canselectchildren = canselectchildren;
+    this->clickable_initial = clickable;
+    if (!this->clickable_initial)
+        if (getClickable(b))
+			if (b)
+				setClickable(false);
 
     setRootWindow(root);
     if (this->rootwindow) {
@@ -1870,7 +1875,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 		/* button pressed */
-		if (getFocusable(b, false))
+		if (getClickable(b))
 			if (b) {
 				/* save last inputevent */
 				last_inputevent = *inputevent;
@@ -1885,7 +1890,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		/* button released */
-        if (getFocusable(b, false))
+        if (getClickable(b))
         	if (b) {
 	    		if (last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 
@@ -1893,15 +1898,18 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
     				if (isPressed())
     					setPressed(false);
 
-					/* check if the pointer is within widget */
-	    			if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
-	    				&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
-	    				/* yes, scroll to the position if possible */
-	    				scrollTo(inputevent->posx, inputevent->posy);
+    		        if (getFocusable(b, false))
+    		        	if (b) {
+							/* check if the pointer is within widget */
+							if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
+								&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
+								/* yes, scroll to the position if possible */
+								scrollTo(inputevent->posx, inputevent->posy);
 
-	    				/* emit the onReturn */
-	    				if (callOnReturn()) this->onReturn->emit(this);
-	    			}
+								/* emit the onReturn */
+								if (callOnReturn()) this->onReturn->emit(this);
+							}
+    		        	}
 	    		}
 
 	    		/* save last inputevent */
@@ -1912,7 +1920,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 		/* axis motion */
-        if (getFocusable(b, false))
+        if (getClickable(b))
         	if (b) {
 	    		if (last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 					/* check if the pointer is within widget */
@@ -2271,6 +2279,10 @@ bool MMSWidget::getBlendFactor(double &blendfactor) {
 
 bool MMSWidget::getScrollOnFocus(bool &scrollonfocus) {
     GETWIDGET(ScrollOnFocus, scrollonfocus);
+}
+
+bool MMSWidget::getClickable(bool &clickable) {
+    GETWIDGET(Clickable, clickable);
 }
 
 #define GETBORDER(x,y) \
@@ -2654,6 +2666,10 @@ void MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
 
 void MMSWidget::setScrollOnFocus(bool scrollonfocus) {
     myWidgetClass.setScrollOnFocus(scrollonfocus);
+}
+
+void MMSWidget::setClickable(bool clickable) {
+	myWidgetClass.setClickable(clickable);
 }
 
 void MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {

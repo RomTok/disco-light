@@ -90,7 +90,7 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->parent_menu = NULL;
     this->back_item = -1;
 
-    return MMSWidget::create(root, true, false, true, true, true, false);
+    return MMSWidget::create(root, true, false, true, true, true, false, true);
 }
 
 MMSWidget *MMSMenuWidget::copyWidget() {

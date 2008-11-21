@@ -94,7 +94,8 @@ namespace MMSGUI_WIDGET_ATTR {
 	{ "imagesondemand", TAFF_ATTRTYPE_BOOL }, \
 	{ "blend", TAFF_ATTRTYPE_UCHAR }, \
 	{ "blend_factor", TAFF_ATTRTYPE_STRING }, \
-	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }
+	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }, \
+	{ "clickable", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WIDGET_ATTR_IDS \
 		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
@@ -162,7 +163,8 @@ namespace MMSGUI_WIDGET_ATTR {
 		MMSGUI_WIDGET_ATTR_IDS_imagesondemand, \
 		MMSGUI_WIDGET_ATTR_IDS_blend, \
 		MMSGUI_WIDGET_ATTR_IDS_blend_factor, \
-		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus
+		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus, \
+		MMSGUI_WIDGET_ATTR_IDS_clickable
 
 	#define MMSGUI_WIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -338,6 +340,12 @@ class MMSWidgetClass {
 	        //! use scroll on focus (true/false)
 	        bool            scrollonfocus;
 
+	        //! is the clickable flag set?
+	        bool            isclickable;
+
+	        //! user can click onto widget true/false
+	        bool            clickable;
+
     	} id;
 
     	struct {
@@ -457,6 +465,7 @@ class MMSWidgetClass {
         void initBlendFactor();
 
         void initScrollOnFocus();
+        void initClickable();
 
 
         /* free routines */
@@ -505,6 +514,7 @@ class MMSWidgetClass {
         void freeBlendFactor();
 
         void freeScrollOnFocus();
+        void freeClickable();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -1221,6 +1231,26 @@ class MMSWidgetClass {
         \return true if set
         */
         bool getScrollOnFocus(bool &scrollonfocus);
+
+        //! Check if the clickable flag is set.
+        bool isClickable();
+
+        //! Mark the clickable flag as not set.
+        void unsetClickable();
+
+        //! Set the clickable flag.
+        /*!
+        \param clickable  user can click onto the widget if set to true
+        \note Widgets which are not focusable can be clickable anyway. See for example the MMSArrowWidget.
+        */
+        void setClickable(bool clickable);
+
+        //! Get the clickable flag.
+        /*!
+        \param clickable  clickable true or false
+        \return true if set
+        */
+        bool getClickable(bool &clickable);
 
 
     /* friends */

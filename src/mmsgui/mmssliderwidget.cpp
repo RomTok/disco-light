@@ -54,7 +54,7 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->selimage_i = NULL;
 
     /* create widget base */
-    return MMSWidget::create(root, true, false, false, true, true, true);
+    return MMSWidget::create(root, true, false, false, true, true, true, false);
 }
 
 MMSWidget *MMSSliderWidget::copyWidget() {

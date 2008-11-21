@@ -54,7 +54,7 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->frame_delay_set = false;
     this->labelThread = NULL;
 
-    return MMSWidget::create(root, true, false, false, true, false, false);
+    return MMSWidget::create(root, true, false, false, true, false, false, false);
 }
 
 MMSWidget *MMSLabelWidget::copyWidget() {

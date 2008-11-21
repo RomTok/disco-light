@@ -37,7 +37,7 @@ bool MMSProgressBarWidget::create(MMSWindow *root, string className, MMSTheme *t
     this->baseWidgetClass = &(this->theme->progressBarWidgetClass.widgetClass);
     if (this->progressBarWidgetClass) this->widgetClass = &(this->progressBarWidgetClass->widgetClass); else this->widgetClass = NULL;
 
-    return MMSWidget::create(root, true, false, false, true, true, true);
+    return MMSWidget::create(root, true, false, false, true, true, true, false);
 }
 
 MMSWidget *MMSProgressBarWidget::copyWidget() {
