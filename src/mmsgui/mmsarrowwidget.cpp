@@ -168,8 +168,8 @@ void MMSArrowWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		if (this->last_pressed) {
-			if (this->parent_rootwindow) {
-				// per default the arrow widget submits an input event
+			if ((this->parent_rootwindow)&&(isSelected())) {
+				// if selected the arrow widget submits an input event
 				// according to its direction
 				MMSInputEvent ievt;
 				ievt.type = MMSINPUTEVENTTYPE_KEYPRESS;
