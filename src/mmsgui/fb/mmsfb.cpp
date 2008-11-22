@@ -64,6 +64,10 @@ MMSFB::~MMSFB() {
 
 bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen) {
 
+
+#ifdef __HAVE_XLIB__
+	XInitThreads();
+#endif
     // check if already initialized
     if (this->initialized) {
         MMSFB_SetError(0, "already initialized");

@@ -181,9 +181,18 @@ MMSInputX11Handler::~MMSInputX11Handler() {
 void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
 #ifdef __HAVE_XLIB__
     XEvent event;
+    Bool ret;
     while(1) {
     	//
+    	//XLockDisplay(mmsfb->x_display);
+    	//ret=XCheckWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask, &event);
     	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask, &event);
+		/*XUnlockDisplay(mmsfb->x_display);
+		if(ret==False) {
+//			usleep(10000);
+			continue;
+		}*/
+
     	//printf("\n%d",event.type);
     	//XNextEvent(this->display, &event);
     	if(event.type==KeyPress) {

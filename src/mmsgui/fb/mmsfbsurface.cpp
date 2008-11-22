@@ -1560,6 +1560,7 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 		printf("  source pixelformat:      %s\n", getMMSFBPixelFormatString(source->config.surface_buffer->pixelformat).c_str());
 		printf("  source premultiplied:    %s\n", (source->config.surface_buffer->premultiplied)?"yes":"no");
 	}
+#if 0
 	if (extbuf) {
 		printf("  source type:             surface\n");
 		printf("  source memory:           extern (0x%08x, pitch=%d)\n", (unsigned int)extbuf->ptr, extbuf->pitch);
@@ -1575,7 +1576,9 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	printf("  destination memory:      %s\n", (this->use_own_alloc)?"managed by disko":"managed by dfb");
 	printf("  destination pixelformat: %s\n", getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str());
 	printf("  destination color:       r=%d, g=%d, b=%d, a=%d\n",
-						this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+
+					this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+#endif
 	if ((source)||(extbuf)) {
 		printf("  blitting flags (%06x):", this->config.blittingflags);
 		if (this->config.blittingflags == MMSFB_BLIT_NOFX)
@@ -9889,6 +9892,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
 			mmsfb->xlock.lock();
+			XLockDisplay(mmsfb->x_display);
 			if(mmsfb->fullscreen) {
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
@@ -9901,8 +9905,9 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 			XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
-			XSync(mmsfb->x_display, True);
+//			XSync(mmsfb->x_display, True);
 #endif
+			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}
 #endif
@@ -9931,6 +9936,7 @@ bool MMSFBSurface::refresh() {
 			// put the image to the x-server
 			this->lock();
 			mmsfb->xlock.lock();
+			XLockDisplay(mmsfb->x_display);
 			if(mmsfb->fullscreen) {
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
@@ -9943,8 +9949,9 @@ bool MMSFBSurface::refresh() {
 			}
 			XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
-			XSync(mmsfb->x_display, True);
+//			XSync(mmsfb->x_display, True);
 #endif
+			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 			this->unlock();
 		}
