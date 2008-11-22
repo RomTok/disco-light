@@ -79,6 +79,7 @@ MMSWidgetClass::MMSWidgetClass() {
 
     initScrollOnFocus();
     initClickable();
+    initReturnOnScroll();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -128,6 +129,7 @@ MMSWidgetClass::~MMSWidgetClass() {
 
     freeScrollOnFocus();
     freeClickable();
+    freeReturnOnScroll();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
@@ -235,6 +237,7 @@ void MMSWidgetClass::unsetAll() {
 
     unsetScrollOnFocus();
     unsetClickable();
+    unsetReturnOnScroll();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -580,6 +583,9 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_clickable:
 	            setClickable((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_return_onscroll:
+	            setReturnOnScroll((attrval_int) ? true : false);
 	            break;
 			}
 		}
@@ -996,6 +1002,10 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             else
             if (ISATTRNAME(clickable)) {
 	            setClickable((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(return_onscroll)) {
+	            setReturnOnScroll((attrval_int) ? true : false);
             }
     	}
     	endTAFFScan_WITHOUT_ID
@@ -1900,12 +1910,10 @@ bool MMSWidgetClass::getScrollOnFocus(bool &scrollonfocus) {
 }
 
 void MMSWidgetClass::initClickable() {
-    this->id.clickable = false;
     MMSTHEMECLASS_INIT_BASIC(clickable);
 }
 
 void MMSWidgetClass::freeClickable() {
-    this->id.clickable = false;
     MMSTHEMECLASS_FREE_BASIC(clickable);
 }
 
@@ -1914,7 +1922,6 @@ bool MMSWidgetClass::isClickable() {
 }
 
 void MMSWidgetClass::unsetClickable() {
-    this->id.clickable = false;
     MMSTHEMECLASS_UNSET(clickable);
 }
 
@@ -1924,5 +1931,29 @@ void MMSWidgetClass::setClickable(bool clickable) {
 
 bool MMSWidgetClass::getClickable(bool &clickable) {
 	MMSTHEMECLASS_GET_BASIC(clickable);
+}
+
+void MMSWidgetClass::initReturnOnScroll() {
+    MMSTHEMECLASS_INIT_BASIC(returnonscroll);
+}
+
+void MMSWidgetClass::freeReturnOnScroll() {
+    MMSTHEMECLASS_FREE_BASIC(returnonscroll);
+}
+
+bool MMSWidgetClass::isReturnOnScroll() {
+	MMSTHEMECLASS_ISSET(returnonscroll);
+}
+
+void MMSWidgetClass::unsetReturnOnScroll() {
+    MMSTHEMECLASS_UNSET(returnonscroll);
+}
+
+void MMSWidgetClass::setReturnOnScroll(bool returnonscroll) {
+	MMSTHEMECLASS_SET_BASIC(returnonscroll);
+}
+
+bool MMSWidgetClass::getReturnOnScroll(bool &returnonscroll) {
+	MMSTHEMECLASS_GET_BASIC(returnonscroll);
 }
 

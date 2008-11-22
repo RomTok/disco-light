@@ -95,7 +95,8 @@ namespace MMSGUI_WIDGET_ATTR {
 	{ "blend", TAFF_ATTRTYPE_UCHAR }, \
 	{ "blend_factor", TAFF_ATTRTYPE_STRING }, \
 	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }, \
-	{ "clickable", TAFF_ATTRTYPE_BOOL }
+	{ "clickable", TAFF_ATTRTYPE_BOOL }, \
+	{ "return_onscroll", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WIDGET_ATTR_IDS \
 		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
@@ -164,7 +165,8 @@ namespace MMSGUI_WIDGET_ATTR {
 		MMSGUI_WIDGET_ATTR_IDS_blend, \
 		MMSGUI_WIDGET_ATTR_IDS_blend_factor, \
 		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus, \
-		MMSGUI_WIDGET_ATTR_IDS_clickable
+		MMSGUI_WIDGET_ATTR_IDS_clickable, \
+		MMSGUI_WIDGET_ATTR_IDS_return_onscroll
 
 	#define MMSGUI_WIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -346,6 +348,12 @@ class MMSWidgetClass {
 	        //! user can click onto widget true/false
 	        bool            clickable;
 
+	        //! is the returnonscroll flag set?
+	        bool            isreturnonscroll;
+
+	        //! emit on return callback (true/false) if user changes the selection e.g. in a menu
+	        bool            returnonscroll;
+
     	} id;
 
     	struct {
@@ -466,6 +474,7 @@ class MMSWidgetClass {
 
         void initScrollOnFocus();
         void initClickable();
+        void initReturnOnScroll();
 
 
         /* free routines */
@@ -515,6 +524,7 @@ class MMSWidgetClass {
 
         void freeScrollOnFocus();
         void freeClickable();
+        void freeReturnOnScroll();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -1251,6 +1261,25 @@ class MMSWidgetClass {
         \return true if set
         */
         bool getClickable(bool &clickable);
+
+        //! Check if the returnonscroll flag is set.
+        bool isReturnOnScroll();
+
+        //! Mark the returnonscroll flag as not set.
+        void unsetReturnOnScroll();
+
+        //! Set the returnonscroll flag.
+        /*!
+        \param returnonscroll  if true emit on return callback if user changes the selection e.g. in a menu
+        */
+        void setReturnOnScroll(bool returnonscroll);
+
+        //! Get the returnonscroll flag.
+        /*!
+        \param returnonscroll  returnonscroll true or false
+        \return true if set
+        */
+        bool getReturnOnScroll(bool &returnonscroll);
 
 
     /* friends */

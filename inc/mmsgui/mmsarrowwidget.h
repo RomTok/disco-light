@@ -60,10 +60,12 @@ class MMSArrowWidget : public MMSWidget {
         MMSFBColor getColor();
         MMSFBColor getSelColor();
         MMSDIRECTION getDirection();
+        bool getCheckSelected();
 
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setDirection(MMSDIRECTION direction, bool refresh = true);
+        void setCheckSelected(bool checkselected);
 
         void updateFromThemeClass(MMSArrowWidgetClass *themeClass);
 };

@@ -168,32 +168,37 @@ void MMSArrowWidget::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		if (this->last_pressed) {
-			if ((this->parent_rootwindow)&&(isSelected())) {
-				// if selected the arrow widget submits an input event
-				// according to its direction
-				MMSInputEvent ievt;
-				ievt.type = MMSINPUTEVENTTYPE_KEYPRESS;
-				switch (getDirection()) {
-				case MMSDIRECTION_LEFT:
-					ievt.key = MMSKEY_CURSOR_LEFT;
-					break;
-				case MMSDIRECTION_RIGHT:
-					ievt.key = MMSKEY_CURSOR_RIGHT;
-					break;
-				case MMSDIRECTION_UP:
-					ievt.key = MMSKEY_CURSOR_UP;
-					break;
-				case MMSDIRECTION_DOWN:
-					ievt.key = MMSKEY_CURSOR_DOWN;
-					break;
-				default:
-					ievt.key = MMSKEY_UNKNOWN;
-					break;
-				}
-				if (ievt.key != MMSKEY_UNKNOWN) {
-					vector<MMSInputEvent> ievtset;
-					ievtset.push_back(ievt);
-					this->parent_rootwindow->handleInput(&ievtset);
+			if (this->parent_rootwindow) {
+				bool submitinput = true;
+				if (getCheckSelected())
+					submitinput = (isSelected());
+				if (submitinput) {
+					// if selected the arrow widget submits an input event
+					// according to its direction
+					MMSInputEvent ievt;
+					ievt.type = MMSINPUTEVENTTYPE_KEYPRESS;
+					switch (getDirection()) {
+					case MMSDIRECTION_LEFT:
+						ievt.key = MMSKEY_CURSOR_LEFT;
+						break;
+					case MMSDIRECTION_RIGHT:
+						ievt.key = MMSKEY_CURSOR_RIGHT;
+						break;
+					case MMSDIRECTION_UP:
+						ievt.key = MMSKEY_CURSOR_UP;
+						break;
+					case MMSDIRECTION_DOWN:
+						ievt.key = MMSKEY_CURSOR_DOWN;
+						break;
+					default:
+						ievt.key = MMSKEY_UNKNOWN;
+						break;
+					}
+					if (ievt.key != MMSKEY_UNKNOWN) {
+						vector<MMSInputEvent> ievtset;
+						ievtset.push_back(ievt);
+						this->parent_rootwindow->handleInput(&ievtset);
+					}
 				}
 			}
 			this->last_pressed = false;
@@ -226,6 +231,10 @@ MMSDIRECTION MMSArrowWidget::getDirection() {
     GETARROW(Direction);
 }
 
+bool MMSArrowWidget::getCheckSelected() {
+    GETARROW(CheckSelected);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
@@ -248,6 +257,10 @@ void MMSArrowWidget::setDirection(MMSDIRECTION direction, bool refresh) {
         this->refresh();
 }
 
+void MMSArrowWidget::setCheckSelected(bool checkselected) {
+    myArrowWidgetClass.setCheckSelected(checkselected);
+}
+
 void MMSArrowWidget::updateFromThemeClass(MMSArrowWidgetClass *themeClass) {
     if (themeClass->isColor())
         setColor(themeClass->getColor());
@@ -255,6 +268,8 @@ void MMSArrowWidget::updateFromThemeClass(MMSArrowWidgetClass *themeClass) {
         setSelColor(themeClass->getSelColor());
     if (themeClass->isDirection())
         setDirection(themeClass->getDirection());
+    if (themeClass->isCheckSelected())
+        setCheckSelected(themeClass->getCheckSelected());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

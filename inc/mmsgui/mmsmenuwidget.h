@@ -148,7 +148,7 @@ class MMSMenuWidget : public MMSWidget {
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
 
-        bool setSelected(unsigned int item, bool refresh = true);
+        bool setSelected(unsigned int item, bool refresh = true, bool *changed = NULL);
         unsigned int getSelected();
 
         MMSWidget *getItem(unsigned int item);
@@ -166,7 +166,7 @@ class MMSMenuWidget : public MMSWidget {
         bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
-        bool scrollTo(int posx, int posy, bool refresh = true);
+        bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
 
         bool setSubMenuName(unsigned int item, const char *name);
         bool setSubMenuName(unsigned int item, string &name);

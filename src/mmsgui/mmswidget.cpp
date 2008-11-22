@@ -682,7 +682,9 @@ bool MMSWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool lea
     return false;
 }
 
-bool MMSWidget::scrollTo(int posx, int posy, bool refresh) {
+bool MMSWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
+	if (changed)
+		*changed = false;
 	return false;
 }
 
@@ -1691,7 +1693,9 @@ bool MMSWidget::isFocused() {
     return this->focused;
 }
 
-bool MMSWidget::setSelected(bool set, bool refresh) {
+bool MMSWidget::setSelected(bool set, bool refresh, bool *changed) {
+	if (changed)
+		*changed = false;
 
     /* check if selected status already set */
     if (this->selected == set) {
@@ -1715,8 +1719,10 @@ bool MMSWidget::setSelected(bool set, bool refresh) {
     bool canselchildren = canSelectChildren();
 
     /* switch selected on/off if possible */
-    if (selectable)
+    if (selectable) {
         this->selected=set;
+    	if (changed) *changed = true;
+    }
 
     /* refresh my children */
     if (canselchildren)
@@ -1904,10 +1910,18 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 							if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
 								&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
 								/* yes, scroll to the position if possible */
-								scrollTo(inputevent->posx, inputevent->posy);
-
-								/* emit the onReturn */
-								if (callOnReturn()) this->onReturn->emit(this);
+								bool changed;
+								scrollTo(inputevent->posx, inputevent->posy, true, &changed);
+						        if (changed) {
+						        	// check if have to emit onReturn
+						        	bool r;
+						        	if (!getReturnOnScroll(r)) r = true;
+						        	if (r) changed = false;
+						        }
+								if (!changed) {
+									// emit the onReturn
+									if (callOnReturn()) this->onReturn->emit(this);
+								}
 							}
     		        	}
 	    		}
@@ -2283,6 +2297,10 @@ bool MMSWidget::getScrollOnFocus(bool &scrollonfocus) {
 
 bool MMSWidget::getClickable(bool &clickable) {
     GETWIDGET(Clickable, clickable);
+}
+
+bool MMSWidget::getReturnOnScroll(bool &returnonscroll) {
+    GETWIDGET(ReturnOnScroll, returnonscroll);
 }
 
 #define GETBORDER(x,y) \
@@ -2672,6 +2690,10 @@ void MMSWidget::setClickable(bool clickable) {
 	myWidgetClass.setClickable(clickable);
 }
 
+void MMSWidget::setReturnOnScroll(bool returnonscroll) {
+	myWidgetClass.setClickable(returnonscroll);
+}
+
 void MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
     myWidgetClass.border.setColor(bordercolor);
     if (refresh)
@@ -2862,6 +2884,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setScrollOnFocus(b);
     if (themeClass->getClickable(b))
         setClickable(b);
+    if (themeClass->getReturnOnScroll(b))
+        setReturnOnScroll(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))

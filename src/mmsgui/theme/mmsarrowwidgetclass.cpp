@@ -40,6 +40,7 @@ void MMSArrowWidgetClass::unsetAll() {
     unsetColor();
     unsetSelColor();
     unsetDirection();
+    unsetCheckSelected();
 }
 
 void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -114,6 +115,9 @@ void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            break;
 			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_direction:
 	            setDirection(getDirectionFromString(attrval_str));
+	            break;
+			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_check_selected:
+	            setCheckSelected((attrval_int) ? true : false);
 	            break;
 			}
 		}
@@ -205,6 +209,10 @@ void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (ISATTRNAME(direction)) {
 	            setDirection(getDirectionFromString(attrval_str));
 			}
+            else
+            if (ISATTRNAME(check_selected)) {
+	            setCheckSelected((attrval_int) ? true : false);
+			}
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -267,5 +275,22 @@ void MMSArrowWidgetClass::unsetDirection() {
 
 MMSDIRECTION MMSArrowWidgetClass::getDirection() {
     return this->direction;
+}
+
+bool MMSArrowWidgetClass::isCheckSelected() {
+    return this->ischeckselected;
+}
+
+void MMSArrowWidgetClass::setCheckSelected(bool checkselected) {
+    this->checkselected = checkselected;
+    this->ischeckselected = true;
+}
+
+void MMSArrowWidgetClass::unsetCheckSelected() {
+    this->ischeckselected = false;
+}
+
+bool MMSArrowWidgetClass::getCheckSelected() {
+    return this->checkselected;
 }
 

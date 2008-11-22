@@ -71,7 +71,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 3, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 4, mmsgui_taff_tagtable };
 
 
 
@@ -594,6 +594,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.widgetClass.setBlendFactor(0);
         this->labelWidgetClass.widgetClass.setScrollOnFocus(false);
         this->labelWidgetClass.widgetClass.setClickable(false);
+        this->labelWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->labelWidgetClass.widgetClass.border.setColor(color);
@@ -667,6 +668,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.widgetClass.setBlendFactor(0);
         this->imageWidgetClass.widgetClass.setScrollOnFocus(false);
         this->imageWidgetClass.widgetClass.setClickable(false);
+        this->imageWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->imageWidgetClass.widgetClass.border.setColor(color);
@@ -739,6 +741,7 @@ MMSTheme::MMSTheme() {
         this->buttonWidgetClass.widgetClass.setBlendFactor(0);
         this->buttonWidgetClass.widgetClass.setScrollOnFocus(false);
         this->buttonWidgetClass.widgetClass.setClickable(true);
+        this->buttonWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->buttonWidgetClass.widgetClass.border.setColor(color);
@@ -792,6 +795,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.setBlendFactor(0);
         this->progressBarWidgetClass.widgetClass.setScrollOnFocus(false);
         this->progressBarWidgetClass.widgetClass.setClickable(false);
+        this->progressBarWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->progressBarWidgetClass.widgetClass.border.setColor(color);
@@ -859,6 +863,7 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.widgetClass.setBlendFactor(0);
         this->menuWidgetClass.widgetClass.setScrollOnFocus(false);
         this->menuWidgetClass.widgetClass.setClickable(true);
+        this->menuWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->menuWidgetClass.widgetClass.border.setColor(color);
@@ -942,6 +947,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.widgetClass.setBlendFactor(0);
         this->textBoxWidgetClass.widgetClass.setScrollOnFocus(false);
         this->textBoxWidgetClass.widgetClass.setClickable(true);
+        this->textBoxWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->textBoxWidgetClass.widgetClass.border.setColor(color);
@@ -1015,6 +1021,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.setBlendFactor(0);
         this->arrowWidgetClass.widgetClass.setScrollOnFocus(false);
         this->arrowWidgetClass.widgetClass.setClickable(true);
+        this->arrowWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->arrowWidgetClass.widgetClass.border.setColor(color);
@@ -1040,6 +1047,7 @@ MMSTheme::MMSTheme() {
         c.b = 255;
         this->arrowWidgetClass.setSelColor(c);
         this->arrowWidgetClass.setDirection(MMSDIRECTION_LEFT);
+        this->arrowWidgetClass.setCheckSelected(false);
     }
 
     /* MMSSliderWidget */
@@ -1082,6 +1090,7 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setBlendFactor(0);
         this->sliderWidgetClass.widgetClass.setScrollOnFocus(false);
         this->sliderWidgetClass.widgetClass.setClickable(false);
+        this->sliderWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->sliderWidgetClass.widgetClass.border.setColor(color);
@@ -1150,6 +1159,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setBlendFactor(0);
         this->inputWidgetClass.widgetClass.setScrollOnFocus(false);
         this->inputWidgetClass.widgetClass.setClickable(true);
+        this->inputWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->inputWidgetClass.widgetClass.border.setColor(color);

@@ -39,7 +39,8 @@ namespace MMSGUI_ARROWWIDGET_ATTR {
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "direction", TAFF_ATTRTYPE_STRING }
+		{ "direction", TAFF_ATTRTYPE_STRING }, \
+		{ "check_selected", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_ARROWWIDGET_ATTR_IDS \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_color, \
@@ -52,7 +53,8 @@ namespace MMSGUI_ARROWWIDGET_ATTR {
 		MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_r, \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_b, \
-		MMSGUI_ARROWWIDGET_ATTR_IDS_direction
+		MMSGUI_ARROWWIDGET_ATTR_IDS_direction, \
+		MMSGUI_ARROWWIDGET_ATTR_IDS_check_selected
 
 	#define MMSGUI_ARROWWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -104,6 +106,12 @@ class MMSArrowWidgetClass {
 
         //! direction of the arrow
         MMSDIRECTION direction;
+
+        //! is checkselected set?
+        bool         ischeckselected;
+
+        //! if true the input event will only be submitted if widget is in selected state
+        bool		checkselected;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -197,6 +205,27 @@ class MMSArrowWidgetClass {
         \return direction
         */
         MMSDIRECTION getDirection();
+
+        //! Check if the checkselected is set.
+        /*!
+        \return true if the checkselected is set
+        */
+        bool isCheckSelected();
+
+        //! Set the checkselected flag.
+        /*!
+        \param checkselected  if true the input event will only be submitted if widget is in selected state
+        */
+        void setCheckSelected(bool checkselected);
+
+        //! Mark the checkselected flag as not set.
+        void unsetCheckSelected();
+
+        //! Get the checkselected flag.
+        /*!
+        \return checkselected
+        */
+        bool getCheckSelected();
 
     /* friends */
     friend class MMSThemeManager;

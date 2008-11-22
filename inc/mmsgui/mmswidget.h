@@ -284,7 +284,7 @@ class MMSWidget {
 
         virtual void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
         bool isFocused();
-        virtual bool setSelected(bool set, bool refresh = true);
+        virtual bool setSelected(bool set, bool refresh = true, bool *changed = NULL);
         bool isSelected();
         void unsetFocusableForAllChildren(bool refresh);
 
@@ -338,7 +338,7 @@ class MMSWidget {
         virtual bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
-        virtual bool scrollTo(int posx, int posy, bool refresh = true);
+        virtual bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
 
         sigc::signal<void, MMSWidget*> *onSelect;
         sigc::signal<void, MMSWidget*, bool> *onFocus;
@@ -426,6 +426,7 @@ class MMSWidget {
         bool 	getBlendFactor(double &blendfactor);
         bool 	getScrollOnFocus(bool &scrollonfocus);
         bool 	getClickable(bool &clickable);
+        bool 	getReturnOnScroll(bool &returnonscroll);
 
         bool	getBorderColor(MMSFBColor &color);
         bool 	getBorderSelColor(MMSFBColor &selcolor);
@@ -474,6 +475,7 @@ class MMSWidget {
         void setBlendFactor(double blendfactor, bool refresh = true);
         void setScrollOnFocus(bool scrollonfocus);
         void setClickable(bool clickable);
+        void setReturnOnScroll(bool returnonscroll);
 
         void setBorderColor(MMSFBColor bordercolor, bool refresh = true);
         void setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);
