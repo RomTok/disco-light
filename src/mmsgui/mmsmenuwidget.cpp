@@ -2287,7 +2287,6 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 }
 
 bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
-	printf("down count=%d\n",count);
 
 	if (this->children.size()==0)
 		return false;
@@ -2356,7 +2355,6 @@ bool MMSMenuWidget::scrollDown(unsigned int count, bool refresh, bool test, bool
 }
 
 bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
-	printf("up count=%d\n",count);
 
 	if (this->children.size()==0)
 		return false;
@@ -2399,7 +2397,6 @@ bool MMSMenuWidget::scrollUp(unsigned int count, bool refresh, bool test, bool l
 }
 
 bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
-	printf("right count=%d\n",count);
 
 	if (this->children.size()==0)
 		return false;
@@ -2465,7 +2462,6 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 }
 
 bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
-	printf("left count=%d\n",count);
 
 	if (this->children.size()==0)
 		return false;
@@ -2666,8 +2662,6 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed) 
     unsigned int cols = getCols();
     unsigned int mx = item % cols;
     unsigned int my = item / cols;
-
-printf("mx=%d, my=%d\n", mx,my);
 
     /* scroll left-down */
     if (((int)mx < this->x)&&((int)my > this->y)) {
