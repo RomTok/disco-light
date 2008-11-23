@@ -79,6 +79,7 @@ MMSWidget::MMSWidget() {
     onSelect = new sigc::signal<void, MMSWidget*>;
     onFocus  = new sigc::signal<void, MMSWidget*, bool>;
     onReturn = new sigc::signal<void, MMSWidget*>;
+    onClick  = new sigc::signal<void, MMSWidget*>;
 
 //TODO: textbox widget should have its one surface
 this->has_own_surface = false;
@@ -90,6 +91,7 @@ MMSWidget::~MMSWidget() {
     if (onSelect) delete onSelect;
     if (onFocus)  delete onFocus;
     if (onReturn) delete onReturn;
+    if (onClick)  delete onClick;
 
     // delete images
     if (this->rootwindow) {
@@ -1907,9 +1909,13 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 					/* check if the pointer is within widget */
 					if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
 						&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
-						/* yes, scroll to the position if possible */
+						// yes, scroll to the position if possible
 						bool changed;
 						scrollTo(inputevent->posx, inputevent->posy, true, &changed);
+
+						// fire the onclick callback
+						this->onClick->emit(this);
+
 						if (changed) {
 							// check if have to emit onReturn
 							bool r;

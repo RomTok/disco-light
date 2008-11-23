@@ -343,6 +343,7 @@ class MMSWidget {
         sigc::signal<void, MMSWidget*> *onSelect;
         sigc::signal<void, MMSWidget*, bool> *onFocus;
         sigc::signal<void, MMSWidget*> *onReturn;
+        sigc::signal<void, MMSWidget*> *onClick;
 
     protected:
         virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);

@@ -83,7 +83,7 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     imageThread = NULL;
 
     /* create widget base */
-    return MMSWidget::create(root, true, false, false, true, true, true, false);
+    return MMSWidget::create(root, true, false, false, true, true, true, true);
 }
 
 void MMSImageWidget::loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc,
