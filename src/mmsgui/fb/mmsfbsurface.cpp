@@ -1561,13 +1561,13 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	}
 	if (extbuf) {
 		printf("  source type:             surface\n");
-		printf("  source memory:           extern (0x%08x, pitch=%d)\n", (unsigned int)extbuf->ptr, extbuf->pitch);
+		printf("  source memory:           extern (0x%08x, pitch=%d)\n", (unsigned long)extbuf->ptr, extbuf->pitch);
 		if (extbuf->ptr2) {
-			printf("                                  (0x%08x, pitch=%d)\n",  (unsigned int)extbuf->ptr2, extbuf->pitch2);
+			printf("                                  (0x%08x, pitch=%d)\n",  (unsigned long)extbuf->ptr2, extbuf->pitch2);
 			if (extbuf->ptr3)
-				printf("                                  (0x%08x, pitch=%d)\n",  (unsigned int)extbuf->ptr3, extbuf->pitch3);
+				printf("                                  (0x%08x, pitch=%d)\n",  (unsigned long)extbuf->ptr3, extbuf->pitch3);
 		}
-		printf("  source memory:           extern (0x%08x, pitch=%d)\n",  (unsigned int)extbuf->ptr, extbuf->pitch);
+		printf("  source memory:           extern (0x%08x, pitch=%d)\n",  (unsigned long)extbuf->ptr, extbuf->pitch);
 		printf("  source pixelformat:      %s\n", getMMSFBPixelFormatString(src_pixelformat).c_str());
 	}
 	printf("  destination type:        %s\n", (this->is_sub_surface)?"subsurface":"surface");

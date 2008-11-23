@@ -190,6 +190,7 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     onSelect = new sigc::signal<void, MMSWidget*>;
     onFocus  = new sigc::signal<void, MMSWidget*, bool>;
     onReturn = new sigc::signal<void, MMSWidget*>;
+    onClick = new sigc::signal<void, MMSWidget*>;
 
     /* reload my images */
     newWidget->bgimage = NULL;
