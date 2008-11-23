@@ -1904,26 +1904,26 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
     				if (isPressed())
     					setPressed(false);
 
-    		        if (getFocusable(b, false))
-    		        	if (b) {
-							/* check if the pointer is within widget */
-							if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
-								&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
-								/* yes, scroll to the position if possible */
-								bool changed;
-								scrollTo(inputevent->posx, inputevent->posy, true, &changed);
-						        if (changed) {
-						        	// check if have to emit onReturn
-						        	bool r;
-						        	if (!getReturnOnScroll(r)) r = true;
-						        	if (r) changed = false;
-						        }
-								if (!changed) {
+					/* check if the pointer is within widget */
+					if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
+						&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
+						/* yes, scroll to the position if possible */
+						bool changed;
+						scrollTo(inputevent->posx, inputevent->posy, true, &changed);
+						if (changed) {
+							// check if have to emit onReturn
+							bool r;
+							if (!getReturnOnScroll(r)) r = true;
+							if (r) changed = false;
+						}
+						if (!changed) {
+		    		        if (getFocusable(b, false))
+		    		        	if (b) {
 									// emit the onReturn
 									if (callOnReturn()) this->onReturn->emit(this);
-								}
-							}
-    		        	}
+		    		        	}
+						}
+					}
 	    		}
 
 	    		/* save last inputevent */

@@ -27,6 +27,10 @@ MMSSliderWidget::MMSSliderWidget(MMSWindow *root, string className, MMSTheme *th
 }
 
 MMSSliderWidget::~MMSSliderWidget() {
+	// delete the callbacks
+    if (this->onSliderIncrement) delete this->onSliderIncrement;
+    if (this->onSliderDecrement) delete this->onSliderDecrement;
+
     if (this->rootwindow) {
         this->rootwindow->im->releaseImage(this->image);
         this->rootwindow->im->releaseImage(this->selimage);
@@ -53,8 +57,12 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->image_i = NULL;
     this->selimage_i = NULL;
 
+    /* initialize the callbacks */
+    this->onSliderIncrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
+    this->onSliderDecrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
+
     /* create widget base */
-    return MMSWidget::create(root, true, false, false, true, true, true, false);
+    return MMSWidget::create(root, true, false, false, true, true, true, true);
 }
 
 MMSWidget *MMSSliderWidget::copyWidget() {
@@ -102,6 +110,57 @@ bool MMSSliderWidget::init() {
     return true;
 }
 
+void MMSSliderWidget::getImage(MMSFBSurface **suf) {
+	// searching for the image
+	*suf = NULL;
+
+	if (isActivated()) {
+		if (isSelected())
+			*suf = this->selimage;
+		else
+			*suf = this->image;
+		if (isPressed()) {
+			if (isSelected()) {
+				if (this->selimage_p)
+					*suf = this->selimage_p;
+			}
+			else {
+				if (this->image_p)
+					*suf = this->image_p;
+			}
+		}
+	}
+	else {
+		if (isSelected())
+			*suf = this->selimage_i;
+		else
+			*suf = this->image_i;
+	}
+}
+
+void MMSSliderWidget::calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical) {
+    // calculate position of the slider
+	int w, h;
+	suf->getSize(&w, &h);
+	if (surfaceGeom->w < w) w = surfaceGeom->w;
+	if (surfaceGeom->h < h) h = surfaceGeom->h;
+	if (surfaceGeom->w - w < surfaceGeom->h - h) {
+		// vertical slider
+		surfaceGeom->y += ((surfaceGeom->h - h) * getPosition()) / 100;
+		w = surfaceGeom->w;
+		surfaceGeom->h = h;
+		*vertical = true;
+	}
+	else {
+		// horizontal slider
+		surfaceGeom->x += ((surfaceGeom->w - w) * getPosition()) / 100;
+		surfaceGeom->w = w;
+		h = surfaceGeom->h;
+		*vertical = false;
+	}
+}
+
+
 bool MMSSliderWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
 
@@ -121,51 +180,18 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
         /* draw my things */
         MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
-        /* searching for the image */
+        // searching for the image
         MMSFBSurface *suf = NULL;
-
-        if (isActivated()) {
-        	if (!isPressed()) {
-	            if (isSelected())
-	                suf = this->selimage;
-	            else
-	                suf = this->image;
-        	}
-        	else {
-                if (isSelected())
-                    suf = this->selimage_p;
-                else
-                    suf = this->image_p;
-        	}
-        }
-        else {
-            if (isSelected())
-                suf = this->selimage_i;
-            else
-                suf = this->image_i;
-        }
-
+        getImage(&suf);
         if (suf) {
-            /* prepare for blitting */
+            // prepare for blitting
             this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
 
-            /* calculate position */
-            int w, h;
-            suf->getSize(&w, &h);
-            if (surfaceGeom.w < w) w = surfaceGeom.w;
-            if (surfaceGeom.h < h) h = surfaceGeom.h;
-            if (surfaceGeom.w - w < surfaceGeom.h - h) {
-                surfaceGeom.y += ((surfaceGeom.h - h) * getPosition()) / 100;
-                w = surfaceGeom.w;
-                surfaceGeom.h = h;
-            }
-            else {
-                surfaceGeom.x += ((surfaceGeom.w - w) * getPosition()) / 100;
-                surfaceGeom.w = w;
-                h = surfaceGeom.h;
-            }
+            // calculate position of the slider
+            bool vertical;
+            calcPos(suf, &surfaceGeom, &vertical);
 
-            /* blit */
+            // blit
             this->surface->stretchBlit(suf, NULL, &surfaceGeom);
         }
 
@@ -178,6 +204,68 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
 
     /* draw widgets debug frame */
     return MMSWidget::drawDebug();
+}
+
+bool MMSSliderWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
+	if (changed)
+		*changed = false;
+
+	// searching for the image
+    MMSFBSurface *suf = NULL;
+    getImage(&suf);
+    if (suf) {
+        // calculate position of the slider
+        MMSFBRectangle sgeom = getGeometry();
+        bool vertical;
+        calcPos(suf, &sgeom, &vertical);
+
+        if (vertical) {
+        	// vertical slider
+            if (posy < sgeom.y) {
+            	// slider decrement
+            	if (!this->onSliderDecrement->emit(this)) {
+            		// here we can dec the slider
+
+            	}
+            	if (changed) *changed = true;
+           		return true;
+            }
+            else
+            if (posy >= sgeom.y + sgeom.h) {
+            	// slider increment
+            	if (!this->onSliderIncrement->emit(this)) {
+            		// here we can inc the slider
+
+            	}
+           		if (changed) *changed = true;
+           		return true;
+            }
+        }
+        else {
+        	// horizontal slider
+            if (posx < sgeom.x) {
+            	// slider decrement
+            	if (!this->onSliderDecrement->emit(this)) {
+            		// here we can dec the slider
+
+            	}
+            	if (changed) *changed = true;
+           		return true;
+            }
+            else
+            if (posx >= sgeom.x + sgeom.w) {
+            	// slider increment
+            	if (!this->onSliderIncrement->emit(this)) {
+            		// here we can inc the slider
+
+            	}
+           		if (changed) *changed = true;
+           		return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 /***********************************************/

@@ -1089,7 +1089,7 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setBlend(0);
         this->sliderWidgetClass.widgetClass.setBlendFactor(0);
         this->sliderWidgetClass.widgetClass.setScrollOnFocus(false);
-        this->sliderWidgetClass.widgetClass.setClickable(false);
+        this->sliderWidgetClass.widgetClass.setClickable(true);
         this->sliderWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */

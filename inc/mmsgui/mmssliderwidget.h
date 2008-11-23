@@ -53,7 +53,13 @@ class MMSSliderWidget : public MMSWidget {
         MMSWidget *copyWidget();
 
         bool init();
+        void getImage(MMSFBSurface **suf);
+        void calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical);
         bool draw(bool *backgroundFilled = NULL);
+        bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
+
+        sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator> *onSliderIncrement;
+        sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator> *onSliderDecrement;
 
     public:
         /* theme access methods */
