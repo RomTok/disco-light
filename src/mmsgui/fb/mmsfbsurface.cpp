@@ -421,29 +421,28 @@ void MMSFBSurface::freeSurfaceBuffer() {
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-		if (this->llsurface)
+		if (this->llsurface > (IDirectFBSurface*)1)
 			this->llsurface->Release(this->llsurface);
 #endif
 	}
-	this->llsurface = NULL;
-
-	//free my surface buffers
-	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+	else {
 #ifdef __HAVE_XLIB__
-	if (!sb->xv_image[0]) {
-#endif
-	if (!this->is_sub_surface) {
-		for (int i = 0; i < sb->numbuffers; i++)
-			if (sb->buffers[i]) {
-				free(sb->buffers[i]);
-				sb->buffers[i] = NULL;
+		//free my surface buffers
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		if (!sb->xv_image[0]) {
+			if (!this->is_sub_surface) {
+				for (int i = 0; i < sb->numbuffers; i++)
+					if (sb->buffers[i]) {
+						free(sb->buffers[i]);
+						sb->buffers[i] = NULL;
+					}
+				delete sb;
 			}
-		delete sb;
-	}
-#ifdef __HAVE_XLIB__
-	}
+		}
+		sb->numbuffers = 0;
 #endif
-	sb->numbuffers = 0;
+	}
+	this->llsurface = NULL;
 }
 
 void MMSFBSurface::deleteSubSurface(MMSFBSurface *surface) {
@@ -1560,7 +1559,6 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 		printf("  source pixelformat:      %s\n", getMMSFBPixelFormatString(source->config.surface_buffer->pixelformat).c_str());
 		printf("  source premultiplied:    %s\n", (source->config.surface_buffer->premultiplied)?"yes":"no");
 	}
-#if 0
 	if (extbuf) {
 		printf("  source type:             surface\n");
 		printf("  source memory:           extern (0x%08x, pitch=%d)\n", (unsigned int)extbuf->ptr, extbuf->pitch);
@@ -1575,10 +1573,7 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	printf("  destination type:        %s\n", (this->is_sub_surface)?"subsurface":"surface");
 	printf("  destination memory:      %s\n", (this->use_own_alloc)?"managed by disko":"managed by dfb");
 	printf("  destination pixelformat: %s\n", getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str());
-	printf("  destination color:       r=%d, g=%d, b=%d, a=%d\n",
-
-					this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
-#endif
+	printf("  destination color:       r=%d, g=%d, b=%d, a=%d\n", this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
 	if ((source)||(extbuf)) {
 		printf("  blitting flags (%06x):", this->config.blittingflags);
 		if (this->config.blittingflags == MMSFB_BLIT_NOFX)
@@ -6121,14 +6116,6 @@ bool MMSFBSurface::extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, M
 	else
 		return true;
 }
-
-
-
-
-
-
-
-
 
 
 

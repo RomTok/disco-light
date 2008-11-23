@@ -60,9 +60,6 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixel
             /* this surface is not the right one, check the timestamp */
             if (free_surfaces.at(i).insert_time < time(NULL) - 30) {
                 /* the surface is longer than 30 seconds in the free_surfaces list, remove it */
-
-//DEBUGOUT("remove surface=%2,%d\n", w,h);
-
 				surface->freeSurfaceBuffer();
                 delete surface;
                 this->free_surfaces.erase(this->free_surfaces.begin()+i);
@@ -123,7 +120,7 @@ return;*/
 		surface->freeSurfaceBuffer();
         return;
     }
-///xxx
+
     /* set values to new surface */
     new_surface->llsurface = surface->llsurface;
     new_surface->config = surface->config;
