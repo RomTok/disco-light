@@ -9885,7 +9885,12 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							  0, 0, mmsfb->w, mmsfb->h,
 							  0, 0, mmsfb->display_w, mmsfb->display_h, True);
 
-			} else {
+			} else if(mmsfb->resized) {
+				printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, True);
+			}else{
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
 							  0, 0, mmsfb->w, mmsfb->h, True);
@@ -9928,8 +9933,11 @@ bool MMSFBSurface::refresh() {
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
 							  0, 0, mmsfb->display_w, mmsfb->display_h, True);
-
-			} else {
+			} else if(mmsfb->resized) {
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, True);
+			}else{
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
 							  0, 0, mmsfb->w, mmsfb->h, True);

@@ -72,7 +72,7 @@ void MMSMusicManager::next() {
     }
     else {
     	this->offset++;
-    	if(this->offset==(int)this->playlist.size()) {
+    	if(this->offset>=(int)this->playlist.size()) {
             if(!this->repeat) return;
     		this->offset=0;
     	}

@@ -186,15 +186,21 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	//
     	//XLockDisplay(mmsfb->x_display);
     	//ret=XCheckWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask, &event);
-    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask, &event);
+    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|ResizeRedirectMask, &event);
 		/*XUnlockDisplay(mmsfb->x_display);
 		if(ret==False) {
 //			usleep(10000);
 			continue;
 		}*/
-
+    	//printf("have event\n");
     	//printf("\n%d",event.type);
     	//XNextEvent(this->display, &event);
+    	if(event.type==ResizeRequest) {
+    		mmsfb->resized=true;
+    		mmsfb->target_window_w = event.xresizerequest.width;
+    		mmsfb->target_window_h = event.xresizerequest.height;
+    		mmsfb->resizewindow();
+    	}
     	if(event.type==KeyPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYPRESS;
     		KeySym xSymbol = XKeycodeToKeysym(this->display , event.xkey.keycode,0 );
@@ -224,6 +230,19 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	if(event.type==ButtonRelease) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
     		if(!mmsfb->fullscreen) {
+				inputevent->posx = event.xbutton.x;
+				inputevent->posy = event.xbutton.y;
+    		} else {
+				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
+				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+    		}
+/*    		printf("release x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
+			printf("rect x: %d y: %d \n\n",inputevent->posx,inputevent->posy);*/
+    		return;
+    	}
+    	if(event.type==MotionNotify) {
+    		inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+    		if(!mmsfb->fullscreen&& !mmsfb->resized) {
 				inputevent->posx = event.xbutton.x;
 				inputevent->posy = event.xbutton.y;
     		} else {

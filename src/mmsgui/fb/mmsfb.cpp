@@ -67,6 +67,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 
 #ifdef __HAVE_XLIB__
 	XInitThreads();
+    this->resized=false;
 #endif
     // check if already initialized
     if (this->initialized) {
@@ -77,7 +78,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     // save arguments
     this->argc = argc;
     this->argv = argv;
-
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
 
@@ -128,7 +128,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
         XSetWindowAttributes x_window_attr;
-		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
+		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |PointerMotionMask|EnterWindowMask|ResizeRedirectMask;
         x_window_attr.background_pixel  = 0;
         x_window_attr.border_pixel      = 0;
 
@@ -174,6 +174,29 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
         while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
         XRaiseWindow(this->x_display, this->x_window);
+
+
+
+
+		// hide X Cursor should we use X Cursor instead of our own?
+        Pixmap bm_no;
+		Colormap cmap;
+		Cursor no_ptr;
+		XColor black, dummy;
+		static char bm_no_data[] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+		cmap = DefaultColormap(this->x_display, DefaultScreen(this->x_display));
+		XAllocNamedColor(this->x_display, cmap, "black", &black, &dummy);
+		bm_no = XCreateBitmapFromData(this->x_display, this->x_window, bm_no_data, 8, 8);
+		no_ptr = XCreatePixmapCursor(this->x_display, bm_no, bm_no, &black, &black, 0, 0);
+
+		XDefineCursor(this->x_display, this->x_window, no_ptr);
+		XFreeCursor(this->x_display, no_ptr);
+		if (bm_no != None)
+				XFreePixmap(this->x_display, bm_no);
+		XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
+
+
         XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 //        int CompletionType = XShmGetEventBase(this->x_display) + ShmCompletion;
 
@@ -355,3 +378,14 @@ bool MMSFB::createFont(MMSFBFont **font, string filename, int width, int height)
 	return true;
 }
 
+#ifdef __HAVE_XLIB__
+bool MMSFB::resizewindow() {
+	printf("resize w,h: %d,%d\n", this->target_window_w, this->target_window_h );
+	XWindowChanges chg;
+	chg.width=this->target_window_w;
+	chg.height=this->target_window_h;
+	printf("rc %d\n",XConfigureWindow(this->x_display, this->x_window,CWWidth|CWHeight, &chg));
+	//XMoveResizeWindow(this->x_display, this->x_window, this->target_window_w, this->target_window_h);
+	return true;
+}
+#endif

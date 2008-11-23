@@ -64,7 +64,11 @@ class MMSFB {
         MMSMutex		xlock;
         int				display_w;
         int				display_h;
+        int				target_window_w;
+        int				target_window_h;
         bool            fullscreen;
+        bool            resized;
+        bool 			resizewindow();
 #endif
 
     public:

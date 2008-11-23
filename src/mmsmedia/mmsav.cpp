@@ -118,7 +118,7 @@ static void printFrameFormat(int frame_format) {
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
 	int newW,newH;
-/*	printf("-------\nframe format: ");
+	/*printf("-------\nframe format: ");
 	printFrameFormat(frame_format);
 	printf("frame_width: %d\n", frame_width);
 	printf("frame_height: %d\n", frame_height);
@@ -179,7 +179,12 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	buf.ptr3 = data2;
 	buf.pitch3 = frame_width / 2;
 
-	userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
+	if(frame_format == XINE_VORAW_RGB) {
+		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_ARGB,frame_width,frame_height,NULL,&userd->dest);
+	}
+	else {
+		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
+	}
 	userd->surf->flip(NULL);
 }
 #endif
