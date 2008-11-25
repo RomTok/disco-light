@@ -75,6 +75,10 @@ MMSWidget *MMSSliderWidget::copyWidget() {
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
+    /* initialize the callbacks */
+    this->onSliderIncrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
+    this->onSliderDecrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
+
     /* reload my images */
     newWidget->image = NULL;
     newWidget->selimage = NULL;
