@@ -177,7 +177,7 @@ class MMSFBSurface {
         static bool 			firsttime_eAB_yv12_to_yv12;
 
         // first time flag for eAB_blend_argb_to_yv12()
-        static bool 			firsttime_eAB_blend_argb_to_yv12;
+//        static bool 			firsttime_eAB_blend_argb_to_yv12;
 
         // first time flag for eAB_blend_srcalpha_argb_to_yv12()
         static bool 			firsttime_eAB_blend_srcalpha_argb_to_yv12;
@@ -325,8 +325,8 @@ class MMSFBSurface {
 
         void eAB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         					  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+//        void eAB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+  //      				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
