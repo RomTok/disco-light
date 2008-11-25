@@ -26,6 +26,7 @@
 #include "mmstools/mmslogger.h"
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
+#include "mmsgui/fb/mmsfbconv.h"
 
 /* use DFB subsurfaces? */
 //#define USE_DFB_SUBSURFACE
@@ -92,14 +93,6 @@ typedef struct {
 } MMSFBSurfaceConfig;
 
 
-typedef struct {
-	void	*ptr;
-	int 	pitch;
-	void	*ptr2;
-	int 	pitch2;
-	void	*ptr3;
-	int 	pitch3;
-} MMSFBExternalSurfaceBuffer;
 
 //! This class describes a surface.
 /*!
@@ -224,7 +217,7 @@ class MMSFBSurface {
         static bool 			firsttime_eASB_blend_srcalpha_ayuv_to_ayuv;
 
         // first time flag for eASB_yv12_to_yv12()
-        static bool 			firsttime_eASB_yv12_to_yv12;
+//        static bool 			firsttime_eASB_yv12_to_yv12;
 
         // first time flag for eAFR_argb()
         static bool				firsttime_eAFR_argb;
@@ -373,8 +366,8 @@ class MMSFBSurface {
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
 
-        void eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
+//        void eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+	//						   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
 										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
