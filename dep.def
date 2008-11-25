@@ -359,6 +359,10 @@ endif
 req_str    = "Requires: libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2"
 libs_str   = "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmstools -lmmsinfo"
 cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
+
+ifneq ($(DIRECTFB_LIBS),)
+    req_str += ", directfb"
+#endif
 ifneq ($(XINE_LIBS),)
     req_str += ", libxine"
     libs_str += " -lmmsmedia"
