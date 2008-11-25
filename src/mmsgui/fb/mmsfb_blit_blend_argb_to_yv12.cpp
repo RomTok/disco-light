@@ -93,7 +93,7 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
@@ -102,7 +102,7 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 
 	if (odd_top && odd_right) {
 		// odd top-right pixel
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// go to the pixel in the current line
 		src   += sw - 1;
@@ -124,19 +124,19 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
 		*dst_v = d_v >> 2;
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	if (odd_bottom && odd_left) {
 		// odd bottom-left pixel
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// go to the line
 		src   += src_pitch_pix * (sh-1);
@@ -158,19 +158,19 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
 		*dst_v = d_v >> 2;
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	if (odd_bottom && odd_right) {
 		// odd bottom-right pixel
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// go to the line
 		src   += src_pitch_pix * (sh-1);
@@ -204,19 +204,19 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
 		*dst_v = d_v >> 2;
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	if (odd_top) {
 		// odd top line
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
 		unsigned int *line_end = src + sw;
@@ -240,8 +240,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -255,12 +255,12 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		}
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	if (odd_bottom) {
 		// odd bottom line
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
 		src   += src_pitch_pix * (sh-1);
@@ -295,8 +295,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -310,12 +310,12 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		}
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	if (odd_left) {
 		// odd left line
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
 		unsigned int *src_end = src + src_pixels;
@@ -343,8 +343,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -358,12 +358,12 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		}
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	if (odd_right) {
 		// odd right line
-		MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
 		unsigned int *src_end = src + src_pixels;
@@ -401,8 +401,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -416,7 +416,7 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		}
 
 		// restore the pointers
-		MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
 	}
 
 	// calc even positions...
@@ -470,10 +470,10 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			register unsigned int A;
 
 		    // calculate the four pixels...
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u=, d_v=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src[src4_offs], dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u=, d_v=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL(src[src4_offs], dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
