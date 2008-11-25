@@ -34,15 +34,15 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 	}
 
 	// get the first source ptr/pitch
-	unsigned char *src = (unsigned char *)extbuf->ptr;			//
+	unsigned char *src = (unsigned char *)extbuf->ptr;
 	int src_pitch = extbuf->pitch;
 
 	// prepare...
-	int  src_pitch_pix 		= src_pitch / 3;					//
+	int  src_pitch_pix 		= src_pitch / 3;
 	int dst_pitch_pix 		= dst_pitch;
 	int dst_pitch_pix_half	= dst_pitch_pix >> 1;
 
-	src+= (sx + sy * src_pitch_pix) * 3;						//
+	src+= (sx + sy * src_pitch_pix) * 3;
 
 	// check the surface range
 	if (dst_pitch_pix - dx < sw - sx)
@@ -51,11 +51,6 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 		sh = dst_height - dy - sy;
 	if ((sw <= 0)||(sh <= 0))
 		return;
-
-	unsigned int OLDSRC  = (*src) + 1;
-	unsigned int old_y;
-	unsigned int old_u;
-	unsigned int old_v;
 
 	int  src_pixels = src_pitch_pix * sh;
 
@@ -74,9 +69,6 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 	unsigned int dst_y2_offs = 1;
 	unsigned int dst_y3_offs = dst_pitch;
 	unsigned int dst_y4_offs = dst_y3_offs + 1;
-/*	unsigned int src2_offs = 1;
-	unsigned int src3_offs = src_pitch_pix;
-	unsigned int src4_offs = src3_offs + 1;*/
 	unsigned int src2_offs = 3;
 	unsigned int src3_offs = src_pitch;
 	unsigned int src4_offs = src3_offs + 3;
@@ -88,9 +80,6 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 	// draw odd pixels around the even rectangle
 	if (odd_top && odd_left) {
 		// odd top-left pixel
-		register unsigned int SRC;
-		register unsigned int A;
-
 		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 		d_u = (*dst_u) * 3;
 		d_v = (*dst_v) * 3;
@@ -118,9 +107,6 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 			dst_u += (sw - 1) >> 1;
 			dst_v += (sw - 1) >> 1;
 		}
-
-		register unsigned int SRC;
-		register unsigned int A;
 
 		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 		d_u = (*dst_u) * 3;
@@ -152,9 +138,6 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 			dst_u += dst_pitch_pix_half * ((sh-1) >> 1);
 			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
 		}
-
-		register unsigned int SRC;
-		register unsigned int A;
 
 		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 		d_u = (*dst_u) * 3;
@@ -199,9 +182,6 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 			dst_v += (sw - 1) >> 1;
 		}
 
-		register unsigned int SRC;
-		register unsigned int A;
-
 		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 		d_u = (*dst_u) * 3;
 		d_v = (*dst_v) * 3;
@@ -235,16 +215,13 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 
 		// through the line
 		while (src < line_end) {
-			register unsigned int SRC;
-			register unsigned int A;
-
 			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 			d_u = (*dst_u) << 1;
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
 			MMSFBSurface_RGB24_TO_YV12_PIXEL(src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src2_offs, dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -290,16 +267,13 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 
 		// through the line
 		while (src < line_end) {
-			register unsigned int SRC;
-			register unsigned int A;
-
 			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 			d_u = (*dst_u) << 1;
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
 			MMSFBSurface_RGB24_TO_YV12_PIXEL(src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src2_offs, dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -322,7 +296,7 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 
 		// calculate start and end
 		unsigned char *src_end = src + src_pixels * 3;
-		int src_pitch_diff    = src_pitch_pix << 1;
+		int src_pitch_diff    = (src_pitch_pix << 1) * 3;
 		int dst_pitch_diff    = dst_pitch_pix << 1;
 		int dst_pitch_uvdiff  = dst_pitch_pix_half;
 		if (odd_top) {
@@ -338,23 +312,20 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 		// through all lines
 		while (src < src_end) {
 			// for the first pixel in the line
-			register unsigned int SRC;
-			register unsigned int A;
-
 			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 			d_u = (*dst_u) << 1;
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
 			MMSFBSurface_RGB24_TO_YV12_PIXEL(src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src3_offs, dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
 			*dst_v = d_v >> 2;
 
 			// go to the next two lines
-			src   += src_pitch_diff * 3;
+			src   += src_pitch_diff;
 			dst_y += dst_pitch_diff;
 			dst_u += dst_pitch_uvdiff;
 			dst_v += dst_pitch_uvdiff;
@@ -370,7 +341,7 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 
 		// calculate start and end
 		unsigned char *src_end = src + src_pixels * 3;
-		int src_pitch_diff    = src_pitch_pix << 1;
+		int src_pitch_diff    = (src_pitch_pix << 1) * 3;
 		int dst_pitch_diff    = dst_pitch_pix << 1;
 		int dst_pitch_uvdiff  = dst_pitch_pix_half;
 		src   += (sw - 1) * 3;
@@ -396,23 +367,20 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 		// through all lines
 		while (src < src_end) {
 			// for the first pixel in the line
-			register unsigned int SRC;
-			register unsigned int A;
-
 			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 			d_u = (*dst_u) << 1;
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
 			MMSFBSurface_RGB24_TO_YV12_PIXEL(src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src3_offs, dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
 			*dst_v = d_v >> 2;
 
 			// go to the next two lines
-			src   += src_pitch_diff * 3;
+			src   += src_pitch_diff;
 			dst_y += dst_pitch_diff;
 			dst_u += dst_pitch_uvdiff;
 			dst_v += dst_pitch_uvdiff;
@@ -458,25 +426,23 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
 	unsigned char *src_end = src + src_pixels * 3;
-	int src_pitch_diff = (src_pitch_pix << 1) - sw;
+	int src_pitch_diff = ((src_pitch_pix << 1) - sw) * 3;
 	int dst_pitch_diff = (dst_pitch_pix << 1) - sw;
 	int dst_pitch_uvdiff = (dst_pitch_pix - sw) >> 1;
+	int swb = sw * 3;
 
 	// for all lines
 	while (src < src_end) {
 		// for all pixels in the line
-		unsigned char *line_end = src + sw * 3;
+		unsigned char *line_end = src + swb;
 
 		// go through two lines in parallel (square 2x2 pixel)
 		while (src < line_end) {
-			register unsigned int SRC;
-			register unsigned int A;
-
 		    // calculate the four pixels...
 			MMSFBSurface_RGB24_TO_YV12_PIXEL(src, *dst_y, *dst_u, *dst_v, d_u=, d_v=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFBSurface_RGB24_TO_YV12_PIXEL(&src[src4_offs], dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src2_offs, dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src3_offs, dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFBSurface_RGB24_TO_YV12_PIXEL(src+src4_offs, dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -490,7 +456,7 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 		}
 
 		// go to the next two lines
-		src   += src_pitch_diff * 3;
+		src   += src_pitch_diff;
 		dst_y += dst_pitch_diff;
 		dst_u += dst_pitch_uvdiff;
 		dst_v += dst_pitch_uvdiff;

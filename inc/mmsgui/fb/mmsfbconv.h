@@ -49,6 +49,16 @@ typedef struct {
 	dst_u = saved_dst_u; \
 	dst_v = saved_dst_v;
 
+#define MMSFBSurface_RGB24_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
+	{	register int r = *(src);				\
+		register int g = *(src+1);				\
+		register int b = *(src+2);				\
+		dst_y = MMSFB_CONV_RGB2Y(r,g,b);		\
+		d_u     MMSFB_CONV_RGB2U(r,g,b);		\
+		d_v     MMSFB_CONV_RGB2V(r,g,b); }
+
+
+
 #define MMSFBSurface_ARGB_TO_YV12_PUSHPTR \
 	unsigned int  *saved_src   = src;   \
 	unsigned char *saved_dst_y = dst_y; \
@@ -60,33 +70,6 @@ typedef struct {
 	dst_y = saved_dst_y; \
 	dst_u = saved_dst_u; \
 	dst_v = saved_dst_v;
-
-#define MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR \
-	unsigned int  *saved_src   = src;   \
-	unsigned char *saved_dst_y = dst_y; \
-	unsigned char *saved_dst_u = dst_u; \
-	unsigned char *saved_dst_v = dst_v;
-
-#define MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR \
-	src   = saved_src;   \
-	dst_y = saved_dst_y; \
-	dst_u = saved_dst_u; \
-	dst_v = saved_dst_v;
-
-
-#define MMSFBSurface_RGB24_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
-	{ int r = *src;						\
-	int g = *(src+1);					\
-	int b = *(src+2);					\
-	old_y = MMSFB_CONV_RGB2Y(r,g,b);	\
-	old_u = MMSFB_CONV_RGB2U(r,g,b);	\
-	old_v = MMSFB_CONV_RGB2V(r,g,b);}	\
-	dst_y = old_y;						\
-	d_u     old_u;						\
-	d_v     old_v;
-
-
-
 
 #define MMSFBSurface_ARGB_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
 	SRC = src;										\
@@ -103,6 +86,24 @@ typedef struct {
 	dst_y = old_y;									\
 	d_u     old_u;									\
 	d_v     old_v;
+
+
+
+#define MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR \
+	unsigned int  *saved_src   = src;   \
+	unsigned char *saved_dst_y = dst_y; \
+	unsigned char *saved_dst_u = dst_u; \
+	unsigned char *saved_dst_v = dst_v;
+
+#define MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR \
+	src   = saved_src;   \
+	dst_y = saved_dst_y; \
+	dst_u = saved_dst_u; \
+	dst_v = saved_dst_v;
+
+
+
+
 
 
 
