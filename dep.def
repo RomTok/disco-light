@@ -362,7 +362,7 @@ cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
 
 ifneq ($(DIRECTFB_LIBS),)
     req_str += ", directfb"
-#endif
+endif
 ifneq ($(XINE_LIBS),)
     req_str += ", libxine"
     libs_str += " -lmmsmedia"
