@@ -117,6 +117,8 @@ static void printFrameFormat(int frame_format) {
 }
 
 
+static MMSFBSurface *interim=NULL;
+
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
@@ -172,23 +174,37 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
         userd->dest.x&=~0x01;
         userd->dest.y&=~0x01;
         printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
+
+        if(frame_format == XINE_VORAW_RGB) {
+    		if(interim)
+    			delete interim;
+    		interim=NULL;
+
+    	}
+
     }
 
-	MMSFBExternalSurfaceBuffer buf;
-	buf.ptr = data0;
-	buf.pitch = frame_width;
-	buf.ptr2 = data1;
-	buf.pitch2 = frame_width / 2;
-	buf.ptr3 = data2;
-	buf.pitch3 = frame_width / 2;
 
-	if(frame_format == XINE_VORAW_RGB) {
-		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_ARGB,frame_width,frame_height,NULL,&userd->dest);
-	}
-	else {
+    if(frame_format == XINE_VORAW_RGB) {
+    	if(!interim)
+    		interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+
+    	interim->blitBuffer(data0,frame_width*3,MMSFB_PF_RGB24,frame_width,frame_height,NULL,0,0);
+		userd->surf->stretchBlit(interim,NULL,&userd->dest);
+
+    }else {
+		MMSFBExternalSurfaceBuffer buf;
+		buf.ptr = data0;
+		buf.pitch = frame_width;
+		buf.ptr2 = data1;
+		buf.pitch2 = frame_width / 2;
+		buf.ptr3 = data2;
+		buf.pitch3 = frame_width / 2;
+
 		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
 	}
-	userd->surf->flip(NULL);
+
+    userd->surf->flip(NULL);
 }
 #endif
 

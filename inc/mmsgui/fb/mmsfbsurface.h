@@ -444,7 +444,7 @@ class MMSFBSurface {
         void unlock(bool pthread_unlock);
 
     public:
-        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly);
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);
         MMSFBSurface(void *llsurface,
 					 MMSFBSurface *parent = NULL,
 					 MMSFBRectangle *sub_surface_rect = NULL);
