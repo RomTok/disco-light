@@ -62,9 +62,9 @@ typedef struct {
 	dst_v = saved_dst_v;
 
 #define MMSFB_CONV_RGB24_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
-	{	register int r = *(src+2);				\
+	{	register int r = *(src);				\
 		register int g = *(src+1);				\
-		register int b = *(src);				\
+		register int b = *(src+2);				\
 		dst_y = MMSFB_CONV_RGB2Y(r,g,b);		\
 		d_u     MMSFB_CONV_RGB2U(r,g,b);		\
 		d_v     MMSFB_CONV_RGB2V(r,g,b); }
