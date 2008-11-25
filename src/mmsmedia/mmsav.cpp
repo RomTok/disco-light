@@ -29,6 +29,7 @@
 
 MMS_CREATEERROR(MMSAVError);
 #ifdef __HAVE_DIRECTFB__
+DFBResult dfbres;
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
 #else
 #define THROW_DFB_ERROR(dfbres,msg)
@@ -120,7 +121,7 @@ static void printFrameFormat(int frame_format) {
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
 	int newW,newH;
-	/*printf("-------\nframe format: ");
+/*	printf("-------\nframe format: ");
 	printFrameFormat(frame_format);
 	printf("frame_width: %d\n", frame_width);
 	printf("frame_height: %d\n", frame_height);
