@@ -60,7 +60,7 @@ bool MMSFBSurface::firsttime_eAB_ayuv_to_rgb16				    = true;
 bool MMSFBSurface::firsttime_eAB_blend_ayuv_to_rgb16			= true;
 
 bool MMSFBSurface::firsttime_eAB_yv12_to_yv12 					= true;
-bool MMSFBSurface::firsttime_eAB_blend_argb_to_yv12 			= true;
+//bool MMSFBSurface::firsttime_eAB_blend_argb_to_yv12 			= true;
 bool MMSFBSurface::firsttime_eAB_blend_srcalpha_argb_to_yv12	= true;
 bool MMSFBSurface::firsttime_eAB_blend_ayuv_to_yv12 			= true;
 bool MMSFBSurface::firsttime_eAB_blend_srcalpha_ayuv_to_yv12	= true;
@@ -124,10 +124,12 @@ bool MMSFBSurface::firsttime_blend_text_srcalpha_to_argb		= true;
     this->llsurface->SetBlittingFlags(this->llsurface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(this->root_parent->config.blittingflags));
 
 
-
+/*
 #define MMSFBSurface_RGB2Y(r,g,b) ((((66*r+129*g+25*b+128)>>8)+16) & 0xff)
 #define MMSFBSurface_RGB2U(r,g,b) ((((-38*r-74*g+112*b+128)>>8)+128) & 0xff)
 #define MMSFBSurface_RGB2V(r,g,b) ((((112*r-94*g-18*b+128)>>8)+128) & 0xff)
+*/
+
 
 #define MMSFBSurface_PREPARE_YUV2RGB(y,u,v)  y=(int)y-16;u=(int)u-128;v=(int)v-128;
 #define MMSFBSurface_PREPARE_YUVBLEND(y,u,v) y=(int)y-16;u=(int)u-128;v=(int)v-128;
@@ -2967,111 +2969,7 @@ void MMSFBSurface::eAB_blend_ayuv_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, i
 
 
 
-#define MMSFBSurface_BLEND_ARGB_TO_YV12_PUSHPTR \
-	unsigned int  *saved_src   = src;   \
-	unsigned char *saved_dst_y = dst_y; \
-	unsigned char *saved_dst_u = dst_u; \
-	unsigned char *saved_dst_v = dst_v;
 
-#define MMSFBSurface_BLEND_ARGB_TO_YV12_POPPTR \
-	src   = saved_src;   \
-	dst_y = saved_dst_y; \
-	dst_u = saved_dst_u; \
-	dst_v = saved_dst_v;
-
-
-
-
-#define MMSFBSurface_BLEND_ARGB_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
-	SRC = src;											\
-	A = SRC >> 24;										\
-														\
-	if (A == 0xff) {									\
-		if (SRC!=OLDSRC) {								\
-			int r = (SRC >> 16) & 0xff;					\
-			int g = (SRC >> 8) & 0xff;					\
-			int b = SRC  & 0xff;						\
-			old_y = MMSFBSurface_RGB2Y(r,g,b);			\
-			old_u = MMSFBSurface_RGB2U(r,g,b);			\
-			old_v = MMSFBSurface_RGB2V(r,g,b);			\
-			OLDSRC = SRC;								\
-		}												\
-		dst_y = old_y;									\
-		d_u     old_u;									\
-		d_v     old_v;									\
-	}													\
-	else												\
-	if (!A) {											\
-		d_u dst_u;										\
-		d_v dst_v;										\
-	}													\
-	else												\
-	{													\
-		if (SRC!=OLDSRC) {								\
-			int r = (SRC >> 16) & 0xff;					\
-			int g = (SRC >> 8) & 0xff;					\
-			int b = SRC  & 0xff;						\
-			old_y = A * MMSFBSurface_RGB2Y(r,g,b);		\
-			old_u = A * MMSFBSurface_RGB2U(r,g,b);		\
-			old_v = A * MMSFBSurface_RGB2V(r,g,b);		\
-			OLDSRC = SRC;								\
-		}												\
-														\
-		register unsigned int SA = 0x100 - A;			\
-		unsigned int y = dst_y;							\
-		unsigned int u = dst_u;							\
-		unsigned int v = dst_v;							\
-														\
-	    y = SA * y + old_y;								\
-	    u = SA * u + old_u;								\
-	    v = SA * v + old_v;								\
-	    												\
-	    dst_y = y >> 8;									\
-		d_u     u >> 8;									\
-		d_v     v >> 8;									\
-	}
-
-
-
-
-
-
-#define MMSFBSurface_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
-	SRC = src;											\
-	A = SRC >> 24;										\
-														\
-	if (!A) {											\
-		d_u dst_u;										\
-		d_v dst_v;										\
-	}													\
-	else												\
-	{													\
-		if (SRC!=OLDSRC) {								\
-			int r = (ALPHA * (SRC & 0xff0000)) >> 24;	\
-			int g = (ALPHA * (SRC & 0xff00)) >> 16;		\
-			int b = (ALPHA * (SRC & 0xff)) >> 8;		\
-			old_y = A * MMSFBSurface_RGB2Y(r,g,b);		\
-			A = (ALPHA * A) >> 8;						\
-			old_u = A * MMSFBSurface_RGB2U(r,g,b);		\
-			old_v = A * MMSFBSurface_RGB2V(r,g,b);		\
-			OLDSRC = SRC;								\
-		}												\
-		else											\
-			A = (ALPHA * A) >> 8;						\
-														\
-		register unsigned int SA = 0x100 - A;			\
-		unsigned int y = dst_y;							\
-		unsigned int u = dst_u;							\
-		unsigned int v = dst_v;							\
-														\
-	    y = SA * y + old_y;								\
-	    u = SA * u + old_u;								\
-	    v = SA * v + old_v;								\
-	    												\
-	    dst_y = y >> 8;									\
-		d_u     u >> 8;									\
-		d_v     v >> 8;									\
-	}
 
 
 #define MMSFBSurface_BLEND_AYUV_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
@@ -3657,6 +3555,7 @@ void MMSFBSurface::eAB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 
 }
 
+#ifdef ssfsfs
 void MMSFBSurface::eAB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 				 			 			  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
 
@@ -4126,7 +4025,7 @@ void MMSFBSurface::eAB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, in
 		dst_v += dst_pitch_uvdiff;
 	}
 }
-
+#endif
 
 void MMSFBSurface::eAB_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 				 			 		  			   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
@@ -4135,8 +4034,8 @@ void MMSFBSurface::eAB_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *e
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		eAB_blend_argb_to_yv12(extbuf, src_height, sx, sy, sw, sh,
-						       dst, dst_pitch, dst_height, dx, dy);
+		mmsfb_blit_blend_argb_to_yv12(extbuf, src_height, sx, sy, sw, sh,
+								      dst, dst_pitch, dst_height, dx, dy);
 		return;
 	}
 
@@ -5780,13 +5679,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
-				// blitting with alpha channel
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
-					eAB_blend_argb_to_yv12(&myextbuf, src_height,
-										   sx, sy, sw, sh,
-										   (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-										   x, y);
+					mmsfb_blit_argb_to_yv12(
+							&myextbuf, src_height,
+							sx, sy, sw, sh,
+							(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -5794,6 +5694,21 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
+				if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+					// blitting with alpha channel
+					if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+						mmsfb_blit_blend_argb_to_yv12(
+								&myextbuf, src_height,
+								sx, sy, sw, sh,
+								(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+						extendedUnlock(source, this);
+						return true;
+					}
+
+					return false;
+				}
+				else
 			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
@@ -6085,6 +6000,35 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// does not match
 		return false;
 	}
+
+	else
+	if (src_pixelformat == MMSFB_PF_RGB24) {
+		// source is RGB24
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
+			// destination is YV12
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_rgb24_to_yv12(
+							&myextbuf, src_height,
+							sx, sy, sw, sh,
+							(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+
 
 	// does not match
 	return false;
@@ -8329,9 +8273,9 @@ void MMSFBSurface::eAFR_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
 	register unsigned int A = color.a;
 	register unsigned int SRC;
 	SRC =     (A << 24)
-			| ((MMSFBSurface_RGB2Y(color.r, color.g, color.b)) << 16)
-			| ((MMSFBSurface_RGB2U(color.r, color.g, color.b)) << 8)
-			| MMSFBSurface_RGB2V(color.r, color.g, color.b);
+			| ((MMSFB_CONV_RGB2Y(color.r, color.g, color.b)) << 16)
+			| ((MMSFB_CONV_RGB2U(color.r, color.g, color.b)) << 8)
+			| MMSFB_CONV_RGB2V(color.r, color.g, color.b);
 
 	// copy pixel directly to the destination
 	// for all lines
@@ -8375,9 +8319,9 @@ void MMSFBSurface::eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_hei
 	register unsigned int A = color.a;
 	register unsigned int SRC;
 	SRC =     (A << 24)
-			| ((MMSFBSurface_RGB2Y(color.r, color.g, color.b)) << 16)
-			| ((MMSFBSurface_RGB2U(color.r, color.g, color.b)) << 8)
-			| MMSFBSurface_RGB2V(color.r, color.g, color.b);
+			| ((MMSFB_CONV_RGB2Y(color.r, color.g, color.b)) << 16)
+			| ((MMSFB_CONV_RGB2U(color.r, color.g, color.b)) << 8)
+			| MMSFB_CONV_RGB2V(color.r, color.g, color.b);
 
 	if (color.a == 0xff) {
 		// source pixel is not transparent, copy it directly to the destination
@@ -8503,9 +8447,9 @@ void MMSFBSurface::eAFR_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 	register unsigned int d_v;
 
 	// prepare the color
-	unsigned int SRC_Y = MMSFBSurface_RGB2Y(color.r, color.g, color.b);
-	unsigned int SRC_U = MMSFBSurface_RGB2U(color.r, color.g, color.b);
-	unsigned int SRC_V = MMSFBSurface_RGB2V(color.r, color.g, color.b);
+	unsigned int SRC_Y = MMSFB_CONV_RGB2Y(color.r, color.g, color.b);
+	unsigned int SRC_U = MMSFB_CONV_RGB2U(color.r, color.g, color.b);
+	unsigned int SRC_V = MMSFB_CONV_RGB2V(color.r, color.g, color.b);
 
 	// draw odd pixels around the even rectangle
 	if (odd_top && odd_left) {
