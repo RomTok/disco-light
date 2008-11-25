@@ -124,7 +124,7 @@ ifndef DIRECTFB_CHECKED
         export DIRECTFB_INC=$(shell pkg-config --cflags directfb)
         ifeq ($(DIRECTFB_INC),)
             $(info --- INFO ---: directfb was not found. Building without DirectFB core support.)
-            HAVE_ALL_DEPS=0
+#            HAVE_ALL_DEPS=
         else
             export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
             export CFLAGS+=-D__HAVE_DIRECTFB__
@@ -356,7 +356,7 @@ ifndef LOG_FLAG_SET
 endif
 
 # set variables for pkg-config file
-req_str    = "Requires: libxml-2.0 >= 2.6, libcurl, directfb, sigc++-2.0, libpng >= 1.2"
+req_str    = "Requires: libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2"
 libs_str   = "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmstools -lmmsinfo"
 cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
 ifneq ($(XINE_LIBS),)

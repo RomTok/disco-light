@@ -21,7 +21,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "mmsmedia/mmsav.h"
+#ifdef __HAVE_DIRECTFB__
 #include <directfb_version.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 
@@ -317,7 +319,6 @@ void MMSAV::xineInit() {
  * @exception   MMSAVError  Cannot open the DFB video driver
  */
 void MMSAV::initialize(const bool verbose, MMSWindow *window) {
-    DFBResult   dfbres;
 
     this->verbose          = verbose;
 
@@ -338,7 +339,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         }
 		this->rawvisual.raw_overlay_cb=NULL;
 #endif
-
+#ifdef __HAVE_DIRECTFB__
     	this->window           = window;
         this->vodesc.format    = DSPF_UNKNOWN;
         this->vodesc.ratio     = 1.25;
@@ -357,6 +358,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         }
         this->vodesc.rect.w = this->vodesc.windsc.width;
         this->vodesc.rect.h = (int)((double)(this->vodesc.windsc.width) / this->vodesc.ratio + 0.5);
+#endif
         //this->vodesc.winsurface
         /* clear surface */
 
@@ -364,9 +366,10 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
 #ifdef __HAVE_XLIB__
 		if(window) {
-			vodesc.winsurface->setBlittingFlags(MMSFB_BLIT_NOFX);
+			this->userd.surf=window->getSurface();
+			this->userd.surf->setBlittingFlags(MMSFB_BLIT_NOFX);
 			int w,h;
-			vodesc.winsurface->getSize(&w,&h);
+			this->userd.surf->getSize(&w,&h);
 			this->userd.surf=window->getSurface();
 			this->userd.size.x=0;
 			this->userd.size.y=0;

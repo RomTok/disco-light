@@ -40,14 +40,17 @@
  */
 typedef struct {
     MMSFBSurface            *winsurface;        /**< surface of window          */
+#ifdef __HAVE_DIRECTFB__
     DFBWindowDescription    windsc;             /**< description of window      */
     DFBSurfacePixelFormat   format;             /**< pixel format of surface    */
+#endif
     double                  ratio;              /**< ratio of video stream      */
     int                     width;              /**< width of video stream      */
     int                     height;             /**< height of video stream     */
     MMSFBRectangle          rect;               /**< rectangle for video stream  */
 } VODESC;
 
+#ifdef __HAVE_DIRECTFB__
 typedef void (*DVOutputCallback) (void *cdata, int width, int height,
                                   double ratio, DFBSurfacePixelFormat format,
                                   DFBRectangle *dest_rect);
@@ -66,6 +69,7 @@ typedef struct {
     DVFrameCallback     frame_cb;               /**< frame callback for DirectFB's xine video driver    */
     void                *frame_cdata;           /**< data given as an argument to frame_cb              */
 } dfb_visual_t;
+#endif
 
 /**
  * @brief   MMS Audio/Video handling class.
@@ -94,7 +98,9 @@ class MMSAV
     private:
         MMSWindow                       *window;                                /**< window for classes that use video  */
         VODESC                          vodesc;                                 /**< video output settings              */
+#ifdef __HAVE_DIRECTFB__
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
+#endif
         bool							didXineOpen;							/**< true if xine_open() was called		*/
 #ifdef __HAVE_XLIB__
         raw_visual_t					rawvisual;
