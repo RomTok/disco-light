@@ -23,6 +23,157 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include <stdio.h>
 
+#include "mmstools/mmstools.h"
+
+#ifdef __SSE__
+
+#define MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC_ALPHA					\
+			__asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# load src: x1 -> mm0, x2 -> mm1, A -> mm2	\n\t"	\
+					"movq		%[src],		%%mm0				\n\t"	\
+					"movq		%%mm0,		%%mm1				\n\t"	\
+					"pand		%[X1],		%%mm0				\n\t"	\
+					"psrlw		$8,			%%mm1				\n\t"	\
+					"movq		%%mm1,		%%mm2				\n\t"	\
+					"psrld		$16,		%%mm2				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [src] "m" (*ssrc->i), [X1] "m" (*X1)				\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc Y in mm3							\n\t"	\
+					"movq		%%mm0,		%%mm3				\n\t"	\
+					"pmaddwd	%[Y_RBRB],	%%mm3				\n\t"	\
+					"movq		%%mm1,		%%mm7				\n\t"	\
+					"pmaddwd	%[Y_GG],	%%mm7				\n\t"	\
+					"paddd		%%mm7,		%%mm3				\n\t"	\
+					"psrld		$8,			%%mm3				\n\t"	\
+					"paddd		%[YY],		%%mm3				\n\t"	\
+					"pmullw		%%mm2,		%%mm3				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [Y_RBRB] "m" (*Y_RBRB), [Y_GG] "m" (*Y_GG), [YY] "m" (*YY)	\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc U in mm4							\n\t"	\
+					"movq		%%mm0,		%%mm4				\n\t"	\
+					"pmaddwd	%[U_RBRB],	%%mm4				\n\t"	\
+					"movq		%%mm1,		%%mm7				\n\t"	\
+					"pmaddwd	%[U_GG],	%%mm7				\n\t"	\
+					"paddd		%%mm7,		%%mm4				\n\t"	\
+					"psrld		$8,			%%mm4				\n\t"	\
+					"paddd		%[UV],		%%mm4				\n\t"	\
+					"pmullw		%%mm2,		%%mm4				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [U_RBRB] "m" (*U_RBRB), [U_GG] "m" (*U_GG), [UV] "m" (*UV)	\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc V in mm5							\n\t"	\
+					"movq		%%mm0,		%%mm5				\n\t"	\
+					"pmaddwd	%[V_RBRB],	%%mm5				\n\t"	\
+					"movq		%%mm1,		%%mm7				\n\t"	\
+					"pmaddwd	%[V_GG],	%%mm7				\n\t"	\
+					"paddd		%%mm7,		%%mm5				\n\t"	\
+					"psrld		$8,			%%mm5				\n\t"	\
+					"paddd		%[UV],		%%mm5				\n\t"	\
+					"pmullw		%%mm2,		%%mm5				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [V_RBRB] "m" (*V_RBRB), [V_GG] "m" (*V_GG), [UV] "m" (*UV)	\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc A in mm2							\n\t"	\
+					"movq		%%mm2,		%%mm7				\n\t"	\
+					"movq		%[TTTT],	%%mm2				\n\t"	\
+					"psubd		%%mm7,		%%mm2				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [TTTT] "m" (*TTTT)								\
+					);
+
+
+
+
+#define MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC							\
+			__asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# load src: x1 -> mm0, x2 -> mm1			\n\t"	\
+					"movq		%[src],		%%mm0				\n\t"	\
+					"movq		%%mm0,		%%mm1				\n\t"	\
+					"pand		%[X1],		%%mm0				\n\t"	\
+					"psrlw		$8,			%%mm1				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [src] "m" (*ssrc->i), [X1] "m" (*X1)				\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc Y in mm3							\n\t"	\
+					"movq		%%mm0,		%%mm3				\n\t"	\
+					"pmaddwd	%[Y_RBRB],	%%mm3				\n\t"	\
+					"movq		%%mm1,		%%mm7				\n\t"	\
+					"pmaddwd	%[Y_GG],	%%mm7				\n\t"	\
+					"paddd		%%mm7,		%%mm3				\n\t"	\
+					"psrld		$8,			%%mm3				\n\t"	\
+					"paddd		%[YY],		%%mm3				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [Y_RBRB] "m" (*Y_RBRB), [Y_GG] "m" (*Y_GG), [YY] "m" (*YY)	\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc U in mm4							\n\t"	\
+					"movq		%%mm0,		%%mm4				\n\t"	\
+					"pmaddwd	%[U_RBRB],	%%mm4				\n\t"	\
+					"movq		%%mm1,		%%mm7				\n\t"	\
+					"pmaddwd	%[U_GG],	%%mm7				\n\t"	\
+					"paddd		%%mm7,		%%mm4				\n\t"	\
+					"psrld		$8,			%%mm4				\n\t"	\
+					"paddd		%[UV],		%%mm4				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [U_RBRB] "m" (*U_RBRB), [U_GG] "m" (*U_GG), [UV] "m" (*UV)	\
+					);													\
+		    __asm__ __volatile__ (										\
+					"###########################################\n\t"	\
+					"# calc V in mm5							\n\t"	\
+					"movq		%%mm0,		%%mm5				\n\t"	\
+					"pmaddwd	%[V_RBRB],	%%mm5				\n\t"	\
+					"movq		%%mm1,		%%mm7				\n\t"	\
+					"pmaddwd	%[V_GG],	%%mm7				\n\t"	\
+					"paddd		%%mm7,		%%mm5				\n\t"	\
+					"psrld		$8,			%%mm5				\n\t"	\
+					"paddd		%[UV],		%%mm5				\n\t"	\
+					"###########################################\n\t"	\
+					: /* no outputs */									\
+					: [V_RBRB] "m" (*V_RBRB), [V_GG] "m" (*V_GG), [UV] "m" (*UV)	\
+					);
+
+
+
+
+
+
+	v4si X1 = { 0x00ff00ff, 0x00ff00ff };
+	v4six Y_RBRB = { 25, 66, 25, 66 };
+	v4six Y_GG   = { 129, 0, 129, 0 };
+	v4six U_RBRB = { 112, -38, 112, -38 };
+	v4six U_GG   = { -74, 0, -74, 0 };
+	v4six V_RBRB = { -18, 112, -18, 112 };
+	v4six V_GG   = { -94, 0, -94, 0 };
+
+	v4six YY = { 16, 0, 16, 0 };
+	v4six UV = { 128, 0, 128, 0 };
+
+#endif
+
+
 void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 								   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
 
@@ -53,6 +204,7 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		return;
 
 	unsigned int OLDSRC  = (*src) + 1;
+
 	unsigned int old_y;
 	unsigned int old_u;
 	unsigned int old_v;
@@ -454,6 +606,10 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
+
+#ifndef __SSE__
+
+	// without mmx/sse
 	unsigned int *src_end = src + src_pixels;
 	int src_pitch_diff = (src_pitch_pix << 1) - sw;
 	int dst_pitch_diff = (dst_pitch_pix << 1) - sw;
@@ -492,6 +648,371 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 		dst_u += dst_pitch_uvdiff;
 		dst_v += dst_pitch_uvdiff;
 	}
+
+#else
+
+	// with mmx/sse
+
+	v4six TTT = { 0,0,0,0 };
+	v4six TTTT = { 0x100,0,0x100,0 };
+
+
+	_v4si *src_end = (_v4si *)(src + src_pixels);
+	_v4si *ssrc = (_v4si *)src;
+	int src_pitch_diff = (src_pitch_pix << 1) - sw;
+	int dst_pitch_diff = (dst_pitch_pix << 1) - sw;
+	int dst_pitch_uvdiff = (dst_pitch_pix - sw) >> 1;
+
+	_v4si	OLDSRC_MMX;
+
+	src3_offs = src3_offs>>1;
+	sw = sw >> 1;
+	src_pitch_diff = src_pitch_diff >> 1;
+
+
+	// for all lines
+	while (ssrc < src_end) {
+		// for all pixels in the line
+		_v4si *line_end = ssrc + sw;
+
+		// go through two lines in parallel (square 2x2 pixel)
+		while (ssrc < line_end) {
+
+
+			if ((ssrc->c[3]==0xff)&&(ssrc->c[7]==0xff)) {
+				// alpha channel == 0xff for both pixels
+				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
+					// convert argb source to yv12
+					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC;
+					OLDSRC_MMX = *ssrc;
+				}
+
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# save the two Y values					\n\t"
+						"pextrw		$0, 		%%mm3,		%%eax	\n\t"
+						"pextrw		$2, 		%%mm3,		%%ebx	\n\t"
+						"mov		%%bl, 		%%ah				\n\t"
+						"mov		%%ax,		%[dst_y]			\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the U value			\n\t"
+						"movq		%%mm4,		%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the U result in mm6					\n\t"
+						"movq		%%mm0,		%%mm6				\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the V value			\n\t"
+						"movq		%%mm5,		%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"# save the V result in mm6					\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm6	\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_y] "+m" (*dst_y)
+						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v), [TTT] "m" (*TTT)
+						);
+
+			}
+			else
+			if ((!ssrc->c[3])&&(!ssrc->c[7])) {
+				// alpha channel == 0x00 for both pixels
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the U value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_u], 	%%al				\n\t"
+						"# calc U * 2								\n\t"
+						"shl		$1,			%%ax				\n\t"
+						"# save the U result in mm6					\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm6	\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the V value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_v], 	%%al				\n\t"
+						"# calc V * 2								\n\t"
+						"shl		$1,			%%ax				\n\t"
+						"# save the V result in mm6					\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm6	\n\t"
+						"###########################################\n\t"
+						"pop		%%eax							\n\t"
+						: /* no outputs */
+						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v)
+						);
+			}
+			else {
+				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
+					// convert argb source to yv12
+					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC_ALPHA;
+					OLDSRC_MMX = *ssrc;
+				}
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the two Y values		\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"mov		%[dst_y], 	%%ax				\n\t"
+						"mov		%%ax,		%%bx				\n\t"
+						"xor		%%ah,		%%ah				\n\t"
+						"shr		$8,			%%bx				\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%ebx,		%%mm0	\n\t"
+						"# calc Y									\n\t"
+						"pmullw		%%mm2,		%%mm0				\n\t"
+						"paddw		%%mm3,		%%mm0				\n\t"
+						"psrlw		$8,			%%mm0				\n\t"
+						"# save the two Y results					\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pextrw		$2, 		%%mm0,		%%ebx	\n\t"
+						"mov		%%bl, 		%%ah				\n\t"
+						"mov		%%ax,		%[dst_y]			\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the U value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_u], 	%%al				\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
+						"# calc U									\n\t"
+						"pmullw		%%mm2,		%%mm0				\n\t"
+						"paddw		%%mm4,		%%mm0				\n\t"
+						"psrlw		$8,			%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the U result in mm6					\n\t"
+						"movq		%%mm0,		%%mm6				\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the V value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_v], 	%%al				\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
+						"# calc V									\n\t"
+						"pmullw		%%mm2,		%%mm0				\n\t"
+						"paddw		%%mm5,		%%mm0				\n\t"
+						"psrlw		$8,			%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the V result in mm6					\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm6	\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_y] "+m" (*dst_y)
+						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v), [TTT] "m" (*TTT)
+						);
+			}
+
+			ssrc+=src3_offs;
+			dst_y+=dst_y3_offs;
+
+			if ((ssrc->c[3]==0xff)&&(ssrc->c[7]==0xff)) {
+				// alpha channel == 0xff for both pixels
+				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
+					// convert argb source to yv12
+					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC;
+					OLDSRC_MMX = *ssrc;
+				}
+
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# save the two Y values					\n\t"
+						"pextrw		$0, 		%%mm3,		%%eax	\n\t"
+						"pextrw		$2, 		%%mm3,		%%ebx	\n\t"
+						"mov		%%bl, 		%%ah				\n\t"
+						"mov		%%ax,		%[dst_y]			\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_y] "+m" (*dst_y)
+						);
+
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the U value			\n\t"
+						"movq		%%mm4,		%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the U result to memory				\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pextrw		$0, 		%%mm6,		%%ebx	\n\t"
+						"add		%%ebx, 		%%eax				\n\t"
+						"shr		$2, 		%%eax				\n\t"
+						"mov		%%al, 		%[dst_u]			\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the V value			\n\t"
+						"movq		%%mm5,		%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the V result to memory				\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pextrw		$2, 		%%mm6,		%%ebx	\n\t"
+						"add		%%ebx, 		%%eax				\n\t"
+						"shr		$2, 		%%eax				\n\t"
+						"mov		%%al, 		%[dst_v]			\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_u] "+m" (*dst_u), [dst_v] "+m" (*dst_v)
+						: [TTT] "m" (*TTT)
+						);
+
+			}
+			else
+			if ((!ssrc->c[3])&&(!ssrc->c[7])) {
+				// alpha channel == 0x00 for both pixels
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the U value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_u], 	%%al				\n\t"
+						"# calc U * 2								\n\t"
+						"shl		$1,			%%ax				\n\t"
+						"# save the U result to memory				\n\t"
+						"pextrw		$0, 		%%mm6,		%%ebx	\n\t"
+						"add		%%ebx, 		%%eax				\n\t"
+						"shr		$2, 		%%eax				\n\t"
+						"mov		%%al, 		%[dst_u]			\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the V value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_v], 	%%al				\n\t"
+						"# calc V * 2								\n\t"
+						"shl		$1,			%%ax				\n\t"
+						"# save the V result to memory				\n\t"
+						"pextrw		$2, 		%%mm6,		%%ebx	\n\t"
+						"add		%%ebx, 		%%eax				\n\t"
+						"shr		$2, 		%%eax				\n\t"
+						"mov		%%al, 		%[dst_v]			\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_u] "+m" (*dst_u), [dst_v] "+m" (*dst_v)
+						);
+			}
+			else {
+
+				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
+					// convert argb source to yv12
+					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC_ALPHA;
+					OLDSRC_MMX = *ssrc;
+				}
+
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the two Y values		\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"mov		%[dst_y], 	%%ax				\n\t"
+						"mov		%%ax,		%%bx				\n\t"
+						"xor		%%ah,		%%ah				\n\t"
+						"shr		$8,			%%bx				\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%ebx,		%%mm0	\n\t"
+						"# calc Y									\n\t"
+						"pmullw		%%mm2,		%%mm0				\n\t"
+						"paddw		%%mm3,		%%mm0				\n\t"
+						"psrlw		$8,			%%mm0				\n\t"
+						"# save the two Y results					\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pextrw		$2, 		%%mm0,		%%ebx	\n\t"
+						"mov		%%bl, 		%%ah				\n\t"
+						"mov		%%ax,		%[dst_y]			\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_y] "+m" (*dst_y)
+						: [TTT] "m" (*TTT)
+						);
+
+				__asm__ __volatile__ (
+						"push		%%eax							\n\t"
+						"push		%%ebx							\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the U value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_u], 	%%al				\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
+						"# calc U									\n\t"
+						"pmullw		%%mm2,		%%mm0				\n\t"
+						"paddw		%%mm4,		%%mm0				\n\t"
+						"psrlw		$8,			%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the U result to memory				\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pextrw		$0, 		%%mm6,		%%ebx	\n\t"
+						"add		%%ebx, 		%%eax				\n\t"
+						"shr		$2, 		%%eax				\n\t"
+						"mov		%%al, 		%[dst_u]			\n\t"
+						"###########################################\n\t"
+						"# load reg mm0 with the V value			\n\t"
+						"pxor		%%mm0,		%%mm0				\n\t"
+						"xor		%%eax,		%%eax				\n\t"
+						"mov		%[dst_v], 	%%al				\n\t"
+						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
+						"# calc V									\n\t"
+						"pmullw		%%mm2,		%%mm0				\n\t"
+						"paddw		%%mm5,		%%mm0				\n\t"
+						"psrlw		$8,			%%mm0				\n\t"
+						"psadbw		%[TTT],		%%mm0				\n\t"
+						"# save the V result to memory				\n\t"
+						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+						"pextrw		$2, 		%%mm6,		%%ebx	\n\t"
+						"add		%%ebx, 		%%eax				\n\t"
+						"shr		$2, 		%%eax				\n\t"
+						"mov		%%al, 		%[dst_v]			\n\t"
+						"###########################################\n\t"
+						"pop		%%ebx							\n\t"
+						"pop		%%eax							\n\t"
+						: [dst_u] "+m" (*dst_u), [dst_v] "+m" (*dst_v)
+						: [TTT] "m" (*TTT)
+						);
+			}
+
+			ssrc-=src3_offs;
+			dst_y-=dst_y3_offs;
+
+
+			// go to the next two pixels
+		    ssrc++;
+		    dst_y+=2;
+		    dst_u++;
+		    dst_v++;
+		}
+
+		// go to the next two lines
+		ssrc  += src_pitch_diff;
+		dst_y += dst_pitch_diff;
+		dst_u += dst_pitch_uvdiff;
+		dst_v += dst_pitch_uvdiff;
+	}
+
+
+    __asm__ __volatile__ (
+			"###########################################\n\t"
+			"# clear the MMX state						\n\t"
+    		"emms										\n\t"
+			"###########################################\n\t"
+    		);
+#endif
+
 }
 
 
