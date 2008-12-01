@@ -217,7 +217,6 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return NULL;
 
-
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
         if (this->images.at(i)->imagefile == imagefile) {
@@ -677,6 +676,8 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
         }
 #endif
     }
+
+    return NULL;
 }
 
 MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, unsigned int height, MMSFBSurfacePixelFormat pixelformat) {
