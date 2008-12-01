@@ -306,7 +306,7 @@ if (!AA) { \
 	}
 
 */
-//	     __asm__ __volatile__ ( "mov %%eax,%%ebx" : [x] "=m" (x)); \
+//	     __asm__ __volatile__ ( "mov %%eax,%%ebx" : [x] "=m" (x));
 
 /*
 #define MMSFB_CONV_BLEND_ARGB_TO_YV12_PIXEL_MMX(src, dst_y1, dst_y2, dst_u, dst_v, d_u, d_v) \
