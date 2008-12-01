@@ -163,15 +163,21 @@ void MMSFBManager::applySettings() {
     	if (buffermode == MMSFB_BM_BACKSYSTEM) {
     		gls->setExtendedAcceleration(config.getExtendedAccel());
 
+
     		// set the global alloc method
-    		// do it ONLY, if extended acceleration is ON
+#ifdef  __HAVE_DIRECTFB__
     		string am = config.getAllocMethod();
     		if (am == "malloc") {
             	if (config.getExtendedAccel())
             		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
+            	else
+            		gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
     		}
     		else
     			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
+#else
+    		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
+#endif
     	}
     	else {
 			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
