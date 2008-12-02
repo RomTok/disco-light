@@ -131,7 +131,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             DEBUGMSG("Core", "Extended acceleration:        no");
 
 
-        if(flags & MMSINIT_GRAPHICS) {
+        if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");
 
             mmsfbmanager.init(argc,argv);
