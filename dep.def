@@ -159,7 +159,7 @@ endif
 ifndef DIRECTFB_INC
     ifndef X11_INC
         $(info --- ERROR ---: No graphics backend found. Please install either directfb or x11 development libs.)
-        HAVE_ALL_DEPS=0
+#        HAVE_ALL_DEPS=0
     endif
 endif
 
@@ -352,6 +352,14 @@ ifndef LOG_FLAG_SET
     ifneq ($(messages),)
         $(info Building with log messages)
         export CFLAGS+=-D__ENABLE_LOG__
+    endif
+endif
+
+ifndef SSE_FLAG_SET
+    export SSE_FLAG_SET=1
+    ifneq ($(sse),)
+        $(info Building with MMX/SSE support)
+        export CFLAGS+=-msse -D__HAVE_SSE__
     endif
 endif
 
