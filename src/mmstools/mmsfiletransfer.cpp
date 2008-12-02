@@ -233,7 +233,7 @@ bool MMSFiletransfer::deleteRemoteFile(const string remoteFile) {
 	struct curl_slist *slist=NULL;
 
 	ftpcommand = "DELE " + remoteFile;
-	slist = curl_slist_append(slist, "CWD /");
+	slist = curl_slist_append(slist, "CWD ~");
 	slist = curl_slist_append(slist, ftpcommand.c_str());
 	/* pass the list of custom commands to the handle */
 	curl_easy_setopt(this->ehandle, CURLOPT_QUOTE, slist);
