@@ -215,6 +215,8 @@ unsigned char c[8];
 } _v4si;
 */
 
+#ifdef __HAVE_SSE__
+
 typedef int v4si[2];
 typedef short int v4six[4];
 typedef signed char v4siy[8];
@@ -229,6 +231,7 @@ int i[2];
 unsigned char c[8];
 } _v4si;
 
+#endif
 
 //#ifdef __SSE2__
 //#ifdef __MMX__
@@ -725,8 +728,6 @@ void mmsfb_blit_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height,
 /*!
 \author Jens Schneider
 */
-//void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-//								   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) __attribute__((__optimize__("Os")));
 void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 								   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
 

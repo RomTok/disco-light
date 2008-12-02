@@ -25,7 +25,20 @@
 
 #include "mmstools/mmstools.h"
 
-#ifdef __SSE__
+#ifdef __HAVE_SSE__
+
+	v4si X1 = { 0x00ff00ff, 0x00ff00ff };
+	v4six Y_RBRB = { 25, 66, 25, 66 };
+	v4six Y_GG   = { 129, 0, 129, 0 };
+	v4six U_RBRB = { 112, -38, 112, -38 };
+	v4six U_GG   = { -74, 0, -74, 0 };
+	v4six V_RBRB = { -18, 112, -18, 112 };
+	v4six V_GG   = { -94, 0, -94, 0 };
+
+	v4six YY = { 16, 0, 16, 0 };
+	v4six UV = { 128, 0, 128, 0 };
+
+
 
 #define MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC_ALPHA					\
 			__asm__ __volatile__ (										\
@@ -159,17 +172,6 @@
 
 
 
-
-	v4si X1 = { 0x00ff00ff, 0x00ff00ff };
-	v4six Y_RBRB = { 25, 66, 25, 66 };
-	v4six Y_GG   = { 129, 0, 129, 0 };
-	v4six U_RBRB = { 112, -38, 112, -38 };
-	v4six U_GG   = { -74, 0, -74, 0 };
-	v4six V_RBRB = { -18, 112, -18, 112 };
-	v4six V_GG   = { -94, 0, -94, 0 };
-
-	v4six YY = { 16, 0, 16, 0 };
-	v4six UV = { 128, 0, 128, 0 };
 
 #endif
 
@@ -607,7 +609,7 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
 
-#ifndef __SSE__
+#ifndef __HAVE_SSE__
 
 	// without mmx/sse
 	unsigned int *src_end = src + src_pixels;
@@ -652,9 +654,11 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 #else
 
 	// with mmx/sse
+	static v4six TTT = { 0,0,0,0 };
+	static v4six TTTT = { 0x100,0,0x100,0 };
 
-	v4six TTT = { 0,0,0,0 };
-	v4six TTTT = { 0x100,0,0x100,0 };
+
+
 
 
 	_v4si *src_end = (_v4si *)(src + src_pixels);
@@ -663,12 +667,19 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 	int dst_pitch_diff = (dst_pitch_pix << 1) - sw;
 	int dst_pitch_uvdiff = (dst_pitch_pix - sw) >> 1;
 
-	_v4si	OLDSRC_MMX;
 
 	src3_offs = src3_offs>>1;
 	sw = sw >> 1;
 	src_pitch_diff = src_pitch_diff >> 1;
 
+
+
+	int src3_offsX = src3_offs-1;
+	int dst_y3_offsX = dst_y3_offs-2;
+
+	_v4si	OLDSRC_MMX;
+	OLDSRC_MMX.i[0] = ssrc->i[0]+1;
+	OLDSRC_MMX.i[1] = ssrc->i[1]+1;
 
 	// for all lines
 	while (ssrc < src_end) {
@@ -677,8 +688,6 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 
 		// go through two lines in parallel (square 2x2 pixel)
 		while (ssrc < line_end) {
-
-
 			if ((ssrc->c[3]==0xff)&&(ssrc->c[7]==0xff)) {
 				// alpha channel == 0xff for both pixels
 				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
@@ -688,13 +697,11 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 				}
 
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
 						"# save the two Y values					\n\t"
 						"pextrw		$0, 		%%mm3,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm3,		%%ebx	\n\t"
-						"mov		%%bl, 		%%ah				\n\t"
+						"pextrw		$2, 		%%mm3,		%%ecx	\n\t"
+						"mov		%%cl, 		%%ah				\n\t"
 						"mov		%%ax,		%[dst_y]			\n\t"
 						"###########################################\n\t"
 						"# load reg mm0 with the U value			\n\t"
@@ -710,10 +717,9 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"# save the V result in mm6					\n\t"
 						"pinsrw		$2, 		%%eax,		%%mm6	\n\t"
 						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_y] "+m" (*dst_y)
-						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v), [TTT] "m" (*TTT)
+						: [dst_y] "=m" (*dst_y)				// outputs
+						: [TTT] "m" (*TTT)					// inputs
+						: "cc", "%eax", "%ecx"				// clobber
 						);
 
 			}
@@ -721,10 +727,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			if ((!ssrc->c[3])&&(!ssrc->c[7])) {
 				// alpha channel == 0x00 for both pixels
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
 						"###########################################\n\t"
-						"# load reg mm0 with the U value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
+						"# load reg eax with the U value			\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_u], 	%%al				\n\t"
 						"# calc U * 2								\n\t"
@@ -732,8 +736,7 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"# save the U result in mm6					\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm6	\n\t"
 						"###########################################\n\t"
-						"# load reg mm0 with the V value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
+						"# load reg eax with the V value			\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_v], 	%%al				\n\t"
 						"# calc V * 2								\n\t"
@@ -741,10 +744,11 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"# save the V result in mm6					\n\t"
 						"pinsrw		$2, 		%%eax,		%%mm6	\n\t"
 						"###########################################\n\t"
-						"pop		%%eax							\n\t"
-						: /* no outputs */
-						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v)
+						: 												// outputs
+						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v)	// inputs
+						: "cc", "%eax"									// clobber
 						);
+
 			}
 			else {
 				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
@@ -753,29 +757,33 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 					OLDSRC_MMX = *ssrc;
 				}
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
 						"# load reg mm0 with the two Y values		\n\t"
 						"pxor		%%mm0,		%%mm0				\n\t"
 						"mov		%[dst_y], 	%%ax				\n\t"
-						"mov		%%ax,		%%bx				\n\t"
+						"mov		%%ax,		%%cx				\n\t"
 						"xor		%%ah,		%%ah				\n\t"
-						"shr		$8,			%%bx				\n\t"
+						"shr		$8,			%%cx				\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
-						"pinsrw		$2, 		%%ebx,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%ecx,		%%mm0	\n\t"
 						"# calc Y									\n\t"
 						"pmullw		%%mm2,		%%mm0				\n\t"
 						"paddw		%%mm3,		%%mm0				\n\t"
 						"psrlw		$8,			%%mm0				\n\t"
 						"# save the two Y results					\n\t"
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm0,		%%ebx	\n\t"
-						"mov		%%bl, 		%%ah				\n\t"
+						"pextrw		$2, 		%%mm0,		%%ecx	\n\t"
+						"mov		%%cl, 		%%ah				\n\t"
 						"mov		%%ax,		%[dst_y]			\n\t"
 						"###########################################\n\t"
+						: [dst_y] "+m" (*dst_y)				// outputs
+						: 									// inputs
+						: "cc", "%eax", "%ecx"				// clobber
+						);
+
+				__asm__ __volatile__ (
+						"###########################################\n\t"
 						"# load reg mm0 with the U value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_u], 	%%al				\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
@@ -789,7 +797,6 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"movq		%%mm0,		%%mm6				\n\t"
 						"###########################################\n\t"
 						"# load reg mm0 with the V value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_v], 	%%al				\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
@@ -803,10 +810,9 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
 						"pinsrw		$2, 		%%eax,		%%mm6	\n\t"
 						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_y] "+m" (*dst_y)
-						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v), [TTT] "m" (*TTT)
+						: 																// outputs
+						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v), [TTT] "m" (*TTT)	// inputs
+						: "cc", "%eax"													// clobber
 						);
 			}
 
@@ -820,33 +826,20 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC;
 					OLDSRC_MMX = *ssrc;
 				}
-
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
 						"# save the two Y values					\n\t"
 						"pextrw		$0, 		%%mm3,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm3,		%%ebx	\n\t"
-						"mov		%%bl, 		%%ah				\n\t"
+						"pextrw		$2, 		%%mm3,		%%ecx	\n\t"
+						"mov		%%cl, 		%%ah				\n\t"
 						"mov		%%ax,		%[dst_y]			\n\t"
-						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_y] "+m" (*dst_y)
-						);
-
-				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
 						"# load reg mm0 with the U value			\n\t"
 						"movq		%%mm4,		%%mm0				\n\t"
 						"psadbw		%[TTT],		%%mm0				\n\t"
 						"# save the U result to memory				\n\t"
+						"paddw		%%mm6, 		%%mm0				\n\t"
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$0, 		%%mm6,		%%ebx	\n\t"
-						"add		%%ebx, 		%%eax				\n\t"
 						"shr		$2, 		%%eax				\n\t"
 						"mov		%%al, 		%[dst_u]			\n\t"
 						"###########################################\n\t"
@@ -855,52 +848,53 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"psadbw		%[TTT],		%%mm0				\n\t"
 						"# save the V result to memory				\n\t"
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm6,		%%ebx	\n\t"
-						"add		%%ebx, 		%%eax				\n\t"
+						"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
+						"add		%%ecx, 		%%eax				\n\t"
 						"shr		$2, 		%%eax				\n\t"
 						"mov		%%al, 		%[dst_v]			\n\t"
 						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_u] "+m" (*dst_u), [dst_v] "+m" (*dst_v)
-						: [TTT] "m" (*TTT)
+						: [dst_y] "=m" (*dst_y), [dst_u] "=m" (*dst_u), [dst_v] "=m" (*dst_v)	// outputs
+						: [TTT] "m" (*TTT)														// inputs
+						: "cc", "%eax", "%ecx"													// clobber
 						);
-
 			}
 			else
 			if ((!ssrc->c[3])&&(!ssrc->c[7])) {
 				// alpha channel == 0x00 for both pixels
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
-						"# load reg mm0 with the U value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
+						"# load reg eax with the U value			\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_u], 	%%al				\n\t"
 						"# calc U * 2								\n\t"
 						"shl		$1,			%%ax				\n\t"
 						"# save the U result to memory				\n\t"
-						"pextrw		$0, 		%%mm6,		%%ebx	\n\t"
-						"add		%%ebx, 		%%eax				\n\t"
+						"pextrw		$0, 		%%mm6,		%%ecx	\n\t"
+						"add		%%ecx, 		%%eax				\n\t"
 						"shr		$2, 		%%eax				\n\t"
 						"mov		%%al, 		%[dst_u]			\n\t"
 						"###########################################\n\t"
-						"# load reg mm0 with the V value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
+						: [dst_u] "+m" (*dst_u)				// outputs
+						: 									// inputs
+						: "cc", "%eax", "%ecx"				// clobber
+						);
+
+				__asm__ __volatile__ (
+						"###########################################\n\t"
+						"# load reg eax with the V value			\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_v], 	%%al				\n\t"
 						"# calc V * 2								\n\t"
 						"shl		$1,			%%ax				\n\t"
 						"# save the V result to memory				\n\t"
-						"pextrw		$2, 		%%mm6,		%%ebx	\n\t"
-						"add		%%ebx, 		%%eax				\n\t"
+						"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
+						"add		%%ecx, 		%%eax				\n\t"
 						"shr		$2, 		%%eax				\n\t"
 						"mov		%%al, 		%[dst_v]			\n\t"
 						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_u] "+m" (*dst_u), [dst_v] "+m" (*dst_v)
+						: [dst_v] "+m" (*dst_v)				// outputs
+						: 									// inputs
+						: "cc", "%eax", "%ecx"				// clobber
 						);
 			}
 			else {
@@ -912,39 +906,32 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 				}
 
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
 						"# load reg mm0 with the two Y values		\n\t"
 						"pxor		%%mm0,		%%mm0				\n\t"
 						"mov		%[dst_y], 	%%ax				\n\t"
-						"mov		%%ax,		%%bx				\n\t"
+						"mov		%%ax,		%%cx				\n\t"
 						"xor		%%ah,		%%ah				\n\t"
-						"shr		$8,			%%bx				\n\t"
+						"shr		$8,			%%cx				\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
-						"pinsrw		$2, 		%%ebx,		%%mm0	\n\t"
+						"pinsrw		$2, 		%%ecx,		%%mm0	\n\t"
 						"# calc Y									\n\t"
 						"pmullw		%%mm2,		%%mm0				\n\t"
 						"paddw		%%mm3,		%%mm0				\n\t"
 						"psrlw		$8,			%%mm0				\n\t"
 						"# save the two Y results					\n\t"
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm0,		%%ebx	\n\t"
-						"mov		%%bl, 		%%ah				\n\t"
+						"pextrw		$2, 		%%mm0,		%%ecx	\n\t"
+						"mov		%%cl, 		%%ah				\n\t"
 						"mov		%%ax,		%[dst_y]			\n\t"
-						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_y] "+m" (*dst_y)
-						: [TTT] "m" (*TTT)
+						: [dst_y] "+m" (*dst_y)				// outputs
+						: 									// inputs
+						: "cc", "%eax", "%ecx"				// clobber
 						);
 
 				__asm__ __volatile__ (
-						"push		%%eax							\n\t"
-						"push		%%ebx							\n\t"
 						"###########################################\n\t"
 						"# load reg mm0 with the U value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_u], 	%%al				\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
@@ -955,14 +942,19 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"psrlw		$8,			%%mm0				\n\t"
 						"psadbw		%[TTT],		%%mm0				\n\t"
 						"# save the U result to memory				\n\t"
+						"paddw		%%mm6,		%%mm0				\n\t"
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$0, 		%%mm6,		%%ebx	\n\t"
-						"add		%%ebx, 		%%eax				\n\t"
 						"shr		$2, 		%%eax				\n\t"
 						"mov		%%al, 		%[dst_u]			\n\t"
 						"###########################################\n\t"
+						: [dst_u] "+m" (*dst_u)				// outputs
+						: [TTT] "m" (*TTT)					// inputs
+						: "cc", "%eax"						// clobber
+						);
+
+				__asm__ __volatile__ (
+						"###########################################\n\t"
 						"# load reg mm0 with the V value			\n\t"
-						"pxor		%%mm0,		%%mm0				\n\t"
 						"xor		%%eax,		%%eax				\n\t"
 						"mov		%[dst_v], 	%%al				\n\t"
 						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
@@ -974,25 +966,22 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"psadbw		%[TTT],		%%mm0				\n\t"
 						"# save the V result to memory				\n\t"
 						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm6,		%%ebx	\n\t"
-						"add		%%ebx, 		%%eax				\n\t"
+						"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
+						"add		%%ecx, 		%%eax				\n\t"
 						"shr		$2, 		%%eax				\n\t"
 						"mov		%%al, 		%[dst_v]			\n\t"
 						"###########################################\n\t"
-						"pop		%%ebx							\n\t"
-						"pop		%%eax							\n\t"
-						: [dst_u] "+m" (*dst_u), [dst_v] "+m" (*dst_v)
-						: [TTT] "m" (*TTT)
+						: [dst_v] "+m" (*dst_v)				// outputs
+						: [TTT] "m" (*TTT)					// inputs
+						: "cc", "%eax", "%ecx"				// clobber
 						);
 			}
 
-			ssrc-=src3_offs;
-			dst_y-=dst_y3_offs;
 
 
 			// go to the next two pixels
-		    ssrc++;
-		    dst_y+=2;
+			ssrc-=src3_offsX;
+			dst_y-=dst_y3_offsX;
 		    dst_u++;
 		    dst_v++;
 		}
