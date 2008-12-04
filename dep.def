@@ -359,7 +359,7 @@ ifndef SSE_FLAG_SET
     export SSE_FLAG_SET=1
     ifneq ($(sse),)
         $(info Building with MMX/SSE support)
-        export CFLAGS+=-msse -D__HAVE_SSE__
+        export CFLAGS+=-D__HAVE_SSE__
     endif
 endif
 
