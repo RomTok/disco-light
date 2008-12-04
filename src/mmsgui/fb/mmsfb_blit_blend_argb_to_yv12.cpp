@@ -732,6 +732,12 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			else
 			if ((!ssrc->c[3])&&(!ssrc->c[7])) {
 				// alpha channel == 0x00 for both pixels
+				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
+					// pixel value has changed
+					OLDSRC_MMX = *ssrc;
+				}
+
+				// calculate U/V values, do it because we don't know if the next too pixels have also alpha 0x00
 				__asm__ __volatile__ (
 						"###########################################\n\t"
 						"# load reg eax with the U value			\n\t"
@@ -754,7 +760,6 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						: [dst_u] "m" (*dst_u), [dst_v] "m" (*dst_v)	// inputs
 						: "cc", "%eax"									// clobbers
 						);
-
 			}
 			else {
 				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
@@ -828,10 +833,60 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 			if ((ssrc->c[3]==0xff)&&(ssrc->c[7]==0xff)) {
 				// alpha channel == 0xff for both pixels
 				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
-					// convert argb source to yv12
+					// pixel value has changed, convert argb source to yv12
 					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC;
 					OLDSRC_MMX = *ssrc;
+
+					// calculate the U/V values
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# load reg mm0 with the U value			\n\t"
+							"movq		%%mm4,		%%mm0				\n\t"
+							"psadbw		%%mm7,		%%mm0				\n\t"
+							"# save the U result to memory				\n\t"
+							"paddw		%%mm6, 		%%mm0				\n\t"
+							"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+							"shr		$2, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_u]			\n\t"
+							"###########################################\n\t"
+							"# load reg mm0 with the V value			\n\t"
+							"movq		%%mm5,		%%mm0				\n\t"
+							"psadbw		%%mm7,		%%mm0				\n\t"
+							"# save the V result to memory				\n\t"
+							"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+							"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
+							"add		%%ecx, 		%%eax				\n\t"
+							"shr		$2, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_v]			\n\t"
+							"###########################################\n\t"
+							: [dst_u] "=m" (*dst_u), [dst_v] "=m" (*dst_v)	// outputs
+							: 												// inputs
+							: "cc", "%eax", "%ecx"							// clobbers
+							);
 				}
+				else {
+					// pixel value has NOT changed, so we can use a optimized calculation of U and V
+
+					// calculate the U/V values
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# save the U result to memory				\n\t"
+							"pextrw		$0, 		%%mm6,		%%eax	\n\t"
+							"shr		$1, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_u]			\n\t"
+							"###########################################\n\t"
+							"# save the V result to memory				\n\t"
+							"pextrw		$2, 		%%mm6,		%%eax	\n\t"
+							"shr		$1, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_v]			\n\t"
+							"###########################################\n\t"
+							: [dst_u] "=m" (*dst_u), [dst_v] "=m" (*dst_v)	// outputs
+							: 												// inputs
+							: "cc", "%eax"									// clobbers
+							);
+				}
+
+				// calculate the two Y values
 				__asm__ __volatile__ (
 						"###########################################\n\t"
 						"# save the two Y values					\n\t"
@@ -840,77 +895,132 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						"mov		%%cl, 		%%ah				\n\t"
 						"mov		%%ax,		%[dst_y]			\n\t"
 						"###########################################\n\t"
-						"# load reg mm0 with the U value			\n\t"
-						"movq		%%mm4,		%%mm0				\n\t"
-						"psadbw		%%mm7,		%%mm0				\n\t"
-						"# save the U result to memory				\n\t"
-						"paddw		%%mm6, 		%%mm0				\n\t"
-						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"shr		$2, 		%%eax				\n\t"
-						"mov		%%al, 		%[dst_u]			\n\t"
-						"###########################################\n\t"
-						"# load reg mm0 with the V value			\n\t"
-						"movq		%%mm5,		%%mm0				\n\t"
-						"psadbw		%%mm7,		%%mm0				\n\t"
-						"# save the V result to memory				\n\t"
-						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
-						"add		%%ecx, 		%%eax				\n\t"
-						"shr		$2, 		%%eax				\n\t"
-						"mov		%%al, 		%[dst_v]			\n\t"
-						"###########################################\n\t"
-						: [dst_y] "=m" (*dst_y), [dst_u] "=m" (*dst_u), [dst_v] "=m" (*dst_v)	// outputs
-						: 																		// inputs
-						: "cc", "%eax", "%ecx"													// clobbers
+						: [dst_y] "=m" (*dst_y)				// outputs
+						: 									// inputs
+						: "cc", "%eax", "%ecx"				// clobbers
 						);
 			}
 			else
 			if ((!ssrc->c[3])&&(!ssrc->c[7])) {
 				// alpha channel == 0x00 for both pixels
-				__asm__ __volatile__ (
-						"###########################################\n\t"
-						"# load reg eax with the U value			\n\t"
-						"xor		%%eax,		%%eax				\n\t"
-						"mov		%[dst_u], 	%%al				\n\t"
-						"# calc U * 2								\n\t"
-						"shl		$1,			%%ax				\n\t"
-						"# save the U result to memory				\n\t"
-						"pextrw		$0, 		%%mm6,		%%ecx	\n\t"
-						"add		%%ecx, 		%%eax				\n\t"
-						"shr		$2, 		%%eax				\n\t"
-						"mov		%%al, 		%[dst_u]			\n\t"
-						"###########################################\n\t"
-						: [dst_u] "+m" (*dst_u)				// outputs
-						: 									// inputs
-						: "cc", "%eax", "%ecx"				// clobbers
-						);
+				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
+					// pixel value has changed, calculate U/V values
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# load reg eax with the U value			\n\t"
+							"xor		%%eax,		%%eax				\n\t"
+							"mov		%[dst_u], 	%%al				\n\t"
+							"# calc U * 2								\n\t"
+							"shl		$1,			%%ax				\n\t"
+							"# save the U result to memory				\n\t"
+							"pextrw		$0, 		%%mm6,		%%ecx	\n\t"
+							"add		%%ecx, 		%%eax				\n\t"
+							"shr		$2, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_u]			\n\t"
+							"###########################################\n\t"
+							: [dst_u] "+m" (*dst_u)				// outputs
+							: 									// inputs
+							: "cc", "%eax", "%ecx"				// clobbers
+							);
 
-				__asm__ __volatile__ (
-						"###########################################\n\t"
-						"# load reg eax with the V value			\n\t"
-						"xor		%%eax,		%%eax				\n\t"
-						"mov		%[dst_v], 	%%al				\n\t"
-						"# calc V * 2								\n\t"
-						"shl		$1,			%%ax				\n\t"
-						"# save the V result to memory				\n\t"
-						"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
-						"add		%%ecx, 		%%eax				\n\t"
-						"shr		$2, 		%%eax				\n\t"
-						"mov		%%al, 		%[dst_v]			\n\t"
-						"###########################################\n\t"
-						: [dst_v] "+m" (*dst_v)				// outputs
-						: 									// inputs
-						: "cc", "%eax", "%ecx"				// clobbers
-						);
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# load reg eax with the V value			\n\t"
+							"xor		%%eax,		%%eax				\n\t"
+							"mov		%[dst_v], 	%%al				\n\t"
+							"# calc V * 2								\n\t"
+							"shl		$1,			%%ax				\n\t"
+							"# save the V result to memory				\n\t"
+							"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
+							"add		%%ecx, 		%%eax				\n\t"
+							"shr		$2, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_v]			\n\t"
+							"###########################################\n\t"
+							: [dst_v] "+m" (*dst_v)				// outputs
+							: 									// inputs
+							: "cc", "%eax", "%ecx"				// clobbers
+							);
+				}
 			}
 			else {
-
+				// alpha channel > 0x00 and < 0xff for both pixels
 				if ((ssrc->i[0] != OLDSRC_MMX.i[0])||(ssrc->i[1] != OLDSRC_MMX.i[1])) {
-					// convert argb source to yv12
+					// pixel value has changed, convert argb source to yv12
 					MMSFB_BLIT_BLEND_ARGB_TO_YV12_LOAD_SRC_ALPHA;
 					OLDSRC_MMX = *ssrc;
+
+					// calculate the U value
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# load reg mm0 with the U value			\n\t"
+							"xor		%%eax,		%%eax				\n\t"
+							"mov		%[dst_u], 	%%al				\n\t"
+							"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+							"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
+							"# calc U									\n\t"
+							"pmullw		%%mm2,		%%mm0				\n\t"
+							"paddw		%%mm4,		%%mm0				\n\t"
+							"psrlw		$8,			%%mm0				\n\t"
+							"psadbw		%%mm7,		%%mm0				\n\t"
+							"# save the U result to memory				\n\t"
+							"paddw		%%mm6,		%%mm0				\n\t"
+							"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+							"shr		$2, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_u]			\n\t"
+							"###########################################\n\t"
+							: [dst_u] "+m" (*dst_u)				// outputs
+							: 									// inputs
+							: "cc", "%eax"						// clobbers
+							);
+
+					// calculate the V value
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# load reg mm0 with the V value			\n\t"
+							"xor		%%eax,		%%eax				\n\t"
+							"mov		%[dst_v], 	%%al				\n\t"
+							"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
+							"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
+							"# calc V									\n\t"
+							"pmullw		%%mm2,		%%mm0				\n\t"
+							"paddw		%%mm5,		%%mm0				\n\t"
+							"psrlw		$8,			%%mm0				\n\t"
+							"psadbw		%%mm7,		%%mm0				\n\t"
+							"# save the V result to memory				\n\t"
+							"pextrw		$0, 		%%mm0,		%%eax	\n\t"
+							"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
+							"add		%%ecx, 		%%eax				\n\t"
+							"shr		$2, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_v]			\n\t"
+							"###########################################\n\t"
+							: [dst_v] "+m" (*dst_v)				// outputs
+							: 									// inputs
+							: "cc", "%eax", "%ecx"				// clobbers
+							);
+				}
+				else {
+					// pixel value has NOT changed, so we can use a optimized calculation of U and V
+
+					// calculate the U/V values, we do not need to load the destination because of same pixel value
+					__asm__ __volatile__ (
+							"###########################################\n\t"
+							"# save the U result to memory				\n\t"
+							"pextrw		$0, 		%%mm6,		%%eax	\n\t"
+							"shr		$1, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_u]			\n\t"
+							"###########################################\n\t"
+							"# save the V result to memory				\n\t"
+							"pextrw		$2, 		%%mm6,		%%eax	\n\t"
+							"shr		$1, 		%%eax				\n\t"
+							"mov		%%al, 		%[dst_v]			\n\t"
+							"###########################################\n\t"
+							: [dst_u] "=m" (*dst_u), [dst_v] "=m" (*dst_v)	// outputs
+							: 												// inputs
+							: "cc", "%eax"									// clobbers
+							);
 				}
 
+				// calculate the two Y values
 				__asm__ __volatile__ (
 						"###########################################\n\t"
 						"# load reg mm0 with the two Y values		\n\t"
@@ -935,52 +1045,6 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 						: "cc", "%eax", "%ecx"				// clobbers
 						);
 
-				__asm__ __volatile__ (
-						"###########################################\n\t"
-						"# load reg mm0 with the U value			\n\t"
-						"xor		%%eax,		%%eax				\n\t"
-						"mov		%[dst_u], 	%%al				\n\t"
-						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
-						"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
-						"# calc U									\n\t"
-						"pmullw		%%mm2,		%%mm0				\n\t"
-						"paddw		%%mm4,		%%mm0				\n\t"
-						"psrlw		$8,			%%mm0				\n\t"
-						"psadbw		%%mm7,		%%mm0				\n\t"
-						"# save the U result to memory				\n\t"
-						"paddw		%%mm6,		%%mm0				\n\t"
-						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"shr		$2, 		%%eax				\n\t"
-						"mov		%%al, 		%[dst_u]			\n\t"
-						"###########################################\n\t"
-						: [dst_u] "+m" (*dst_u)				// outputs
-						: 									// inputs
-						: "cc", "%eax"						// clobbers
-						);
-
-				__asm__ __volatile__ (
-						"###########################################\n\t"
-						"# load reg mm0 with the V value			\n\t"
-						"xor		%%eax,		%%eax				\n\t"
-						"mov		%[dst_v], 	%%al				\n\t"
-						"pinsrw		$0, 		%%eax,		%%mm0	\n\t"
-						"pinsrw		$2, 		%%eax,		%%mm0	\n\t"
-						"# calc V									\n\t"
-						"pmullw		%%mm2,		%%mm0				\n\t"
-						"paddw		%%mm5,		%%mm0				\n\t"
-						"psrlw		$8,			%%mm0				\n\t"
-						"psadbw		%%mm7,		%%mm0				\n\t"
-						"# save the V result to memory				\n\t"
-						"pextrw		$0, 		%%mm0,		%%eax	\n\t"
-						"pextrw		$2, 		%%mm6,		%%ecx	\n\t"
-						"add		%%ecx, 		%%eax				\n\t"
-						"shr		$2, 		%%eax				\n\t"
-						"mov		%%al, 		%[dst_v]			\n\t"
-						"###########################################\n\t"
-						: [dst_v] "+m" (*dst_v)				// outputs
-						: 									// inputs
-						: "cc", "%eax", "%ecx"				// clobbers
-						);
 			}
 
 
