@@ -23,7 +23,7 @@
 #include "mmsgui/theme/mmsborderclass.h"
 #include <string.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_BORDER_ATTR_I[] = MMSGUI_BORDER_ATTR_INIT;
 
 //address attribute names
@@ -59,7 +59,7 @@ MMSBorderClass::~MMSBorderClass() {
     freeRCorners();
 }
 
-MMSBorderClass &MMSBorderClass::operator=(const MMSBorderClass &c) { 
+MMSBorderClass &MMSBorderClass::operator=(const MMSBorderClass &c) {
 	if (this != &c) {
 		/* copy internal fix data area */
 		this->id = c.id;
@@ -95,7 +95,7 @@ void MMSBorderClass::unsetAll() {
 }
 
 void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
-    DFBColor color;
+    MMSFBColor color;
     bool class_set = false;
 
     if (!prefix) {
@@ -108,7 +108,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color_a:
@@ -138,7 +138,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selcolor_a:
@@ -240,7 +240,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -251,169 +251,169 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(border_color)) { 
+            if (ISATTRNAME(border_color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
             }
             else
-            if (ISATTRNAME(border_color_a)) { 
+            if (ISATTRNAME(border_color_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
 	            color.a = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(border_color_r)) { 
+            if (ISATTRNAME(border_color_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
 	            color.r = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(border_color_g)) { 
+            if (ISATTRNAME(border_color_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
 	            color.g = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(border_color_b)) { 
+            if (ISATTRNAME(border_color_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
 	            color.b = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(border_selcolor)) { 
+            if (ISATTRNAME(border_selcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
             }
             else
-            if (ISATTRNAME(border_selcolor_a)) { 
+            if (ISATTRNAME(border_selcolor_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
 	            color.a = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(border_selcolor_r)) { 
+            if (ISATTRNAME(border_selcolor_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
 	            color.r = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(border_selcolor_g)) { 
+            if (ISATTRNAME(border_selcolor_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
 	            color.g = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(border_selcolor_b)) { 
+            if (ISATTRNAME(border_selcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
 	            color.b = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(border_image_path)) { 
+            if (ISATTRNAME(border_image_path)) {
 	            if (*attrval_str)
 	                setImagePath(attrval_str);
 	            else
 	                setImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(border_image_top_left)) { 
+            if (ISATTRNAME(border_image_top_left)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_top)) { 
+            if (ISATTRNAME(border_image_top)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_TOP, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_top_right)) { 
+            if (ISATTRNAME(border_image_top_right)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_right)) { 
+            if (ISATTRNAME(border_image_right)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_RIGHT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_bottom_right)) { 
+            if (ISATTRNAME(border_image_bottom_right)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_bottom)) { 
+            if (ISATTRNAME(border_image_bottom)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_bottom_left)) { 
+            if (ISATTRNAME(border_image_bottom_left)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_image_left)) { 
+            if (ISATTRNAME(border_image_left)) {
 	            setImageNames(MMSBORDER_IMAGE_NUM_LEFT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_path)) { 
+            if (ISATTRNAME(border_selimage_path)) {
 	            if (*attrval_str)
 	                setSelImagePath(attrval_str);
 	            else
 	                setSelImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(border_selimage_top_left)) { 
+            if (ISATTRNAME(border_selimage_top_left)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_LEFT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_top)) { 
+            if (ISATTRNAME(border_selimage_top)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_top_right)) { 
+            if (ISATTRNAME(border_selimage_top_right)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_TOP_RIGHT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_right)) { 
+            if (ISATTRNAME(border_selimage_right)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_RIGHT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_bottom_right)) { 
+            if (ISATTRNAME(border_selimage_bottom_right)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_RIGHT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_bottom)) { 
+            if (ISATTRNAME(border_selimage_bottom)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_bottom_left)) { 
+            if (ISATTRNAME(border_selimage_bottom_left)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_BOTTOM_LEFT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_selimage_left)) { 
+            if (ISATTRNAME(border_selimage_left)) {
 	            setSelImageNames(MMSBORDER_IMAGE_NUM_LEFT, attrval_str);
             }
             else
-            if (ISATTRNAME(border_thickness)) { 
+            if (ISATTRNAME(border_thickness)) {
 	            setThickness(attrval_int);
             }
             else
-            if (ISATTRNAME(border_margin)) { 
+            if (ISATTRNAME(border_margin)) {
 	            setMargin(attrval_int);
             }
             else
-            if (ISATTRNAME(border_rcorners)) { 
+            if (ISATTRNAME(border_rcorners)) {
 	            setRCorners((attrval_int) ? true : false);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
     }
-    
+
     if ((!class_set)&&(path)&&(*path!="")) {
 		if (!isImagePath())
 		    setImagePath(*path);
@@ -439,11 +439,11 @@ void MMSBorderClass::unsetColor() {
 	MMSTHEMECLASS_UNSET(color);
 }
 
-void MMSBorderClass::setColor(const DFBColor &color) {
+void MMSBorderClass::setColor(const MMSFBColor &color) {
 	MMSTHEMECLASS_SET_BASIC(color);
 }
 
-bool MMSBorderClass::getColor(DFBColor &color) {
+bool MMSBorderClass::getColor(MMSFBColor &color) {
 	MMSTHEMECLASS_GET_BASIC(color);
 }
 
@@ -464,11 +464,11 @@ void MMSBorderClass::unsetSelColor() {
 	MMSTHEMECLASS_UNSET(selcolor);
 }
 
-void MMSBorderClass::setSelColor(const DFBColor &selcolor) {
+void MMSBorderClass::setSelColor(const MMSFBColor &selcolor) {
 	MMSTHEMECLASS_SET_BASIC(selcolor);
 }
 
-bool MMSBorderClass::getSelColor(DFBColor &selcolor) {
+bool MMSBorderClass::getSelColor(MMSFBColor &selcolor) {
 	MMSTHEMECLASS_GET_BASIC(selcolor);
 }
 

@@ -77,10 +77,10 @@ MMSWindowClass::~MMSWindowClass() {
     freeMoveOut();
 }
 
-MMSWindowClass &MMSWindowClass::operator=(const MMSWindowClass &c) { 
+MMSWindowClass &MMSWindowClass::operator=(const MMSWindowClass &c) {
 	if (this != &c) {
 		/* copy internal fix data area */
-		this->border = c.border; 
+		this->border = c.border;
 		this->id = c.id;
 
 		/* copy external data */
@@ -145,7 +145,7 @@ void MMSWindowClass::unsetAll() {
 }
 
 void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
-    DFBColor color;
+    MMSFBColor color;
     bool class_set = false;
 
 	startTAFFScan
@@ -172,7 +172,7 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor:
 			color.a = color.r = color.g = color.b = 0;
             if (isBgColor()) getBgColor(color);
-            if (getColorFromString(attrval_str, &color))    
+            if (getColorFromString(attrval_str, &color))
                 setBgColor(color);
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor_a:
@@ -266,7 +266,7 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
 		}
 	}
 	endTAFFScan
-    
+
     if ((!class_set)&&(path)&&(*path!="")) {
     	if (!isBgImagePath())
     		setBgImagePath(*path);
@@ -409,11 +409,11 @@ void MMSWindowClass::unsetBgColor() {
 	MMSTHEMECLASS_UNSET(bgcolor);
 }
 
-void MMSWindowClass::setBgColor(const DFBColor &bgcolor) {
+void MMSWindowClass::setBgColor(const MMSFBColor &bgcolor) {
 	MMSTHEMECLASS_SET_BASIC(bgcolor);
 }
 
-bool MMSWindowClass::getBgColor(DFBColor &bgcolor) {
+bool MMSWindowClass::getBgColor(MMSFBColor &bgcolor) {
 	MMSTHEMECLASS_GET_BASIC(bgcolor);
 }
 

@@ -84,11 +84,11 @@ void MMSLabelWidgetThread::doIt() {
         bool changed = false;
         if (label->getSlidable()) {
             if (label->slid_width > 0) {
-            	DFBRectangle surfaceGeom = label->getSurfaceGeometry();
+            	MMSFBRectangle surfaceGeom = label->getSurfaceGeometry();
                 if (label->slid_width > surfaceGeom.w) {
                 	// we should slide the label text
                 	if (label->slid_offset >= label->slid_width)
-                		// from the beginning 
+                		// from the beginning
                 		label->slid_offset = -surfaceGeom.w;
                 	else
                 		// increase offset
@@ -97,12 +97,12 @@ void MMSLabelWidgetThread::doIt() {
                 }
             }
         }
-        
+
         /* refresh the widget */
         if (changed) {
             unsigned int start_ts;
             unsigned int end_ts;
-            
+
             // get start timestamp if needed
             if (!this->label->frame_delay_set)
             	start_ts = getMTimeStamp();

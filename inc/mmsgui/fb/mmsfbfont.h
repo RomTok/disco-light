@@ -114,7 +114,7 @@ class MMSFBFont {
 };
 
 #define MMSFBFONT_GET_UNICODE_CHAR(text, len) \
-	for (unsigned int cnt = 0; cnt < len; cnt++) { \
+	for (int cnt = 0; cnt < len; cnt++) { \
 		unsigned char c = text[cnt]; \
 		unsigned int character = (unsigned int)c; \
 		if ((character >= 0xc0)&&(character <= 0xf7)) { \

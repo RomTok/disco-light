@@ -24,7 +24,7 @@
 
 MMSArrowWidget::MMSArrowWidget(MMSWindow *root, string className, MMSTheme *theme) {
     create(root, className, theme);
-} 
+}
 
 MMSArrowWidget::~MMSArrowWidget() {
 }
@@ -37,12 +37,14 @@ bool MMSArrowWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->baseWidgetClass = &(this->theme->arrowWidgetClass.widgetClass);
     if (this->arrowWidgetClass) this->widgetClass = &(this->arrowWidgetClass->widgetClass); else this->widgetClass = NULL;
 
-    return MMSWidget::create(root, true, false, false, true, true, true);
+	this->last_pressed = false;
+
+    return MMSWidget::create(root, true, false, false, true, true, true, true);
 }
 
 MMSWidget *MMSArrowWidget::copyWidget() {
     /* create widget */
-    MMSArrowWidget *newWidget = new MMSArrowWidget(this->rootwindow, className); 
+    MMSArrowWidget *newWidget = new MMSArrowWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;
@@ -78,17 +80,17 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
         this->surface->lock();
 
         /* draw my things */
-        DFBRectangle surfaceGeom = getSurfaceGeometry();
+        MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
         /* get color */
-        DFBColor color;
+        MMSFBColor color;
         if (isSelected())
             color = getSelColor();
         else
             color = getColor();
 
         if (color.a) {
-            /* prepare for drawing */        
+            /* prepare for drawing */
             this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
             /* draw triangle */
@@ -156,6 +158,58 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
     return MMSWidget::drawDebug();
 }
 
+
+void MMSArrowWidget::handleInput(MMSInputEvent *inputevent) {
+	MMSWidget::handleInput(inputevent);
+
+	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
+		this->last_pressed = isPressed();
+	}
+	else
+	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
+		if (this->last_pressed) {
+			if (this->parent_rootwindow) {
+				bool submitinput = true;
+				if (getCheckSelected())
+					submitinput = (isSelected());
+				if (submitinput) {
+					// if selected the arrow widget submits an input event
+					// according to its direction
+					MMSInputEvent ievt;
+					ievt.type = MMSINPUTEVENTTYPE_KEYPRESS;
+					switch (getDirection()) {
+					case MMSDIRECTION_LEFT:
+						ievt.key = MMSKEY_CURSOR_LEFT;
+						break;
+					case MMSDIRECTION_RIGHT:
+						ievt.key = MMSKEY_CURSOR_RIGHT;
+						break;
+					case MMSDIRECTION_UP:
+						ievt.key = MMSKEY_CURSOR_UP;
+						break;
+					case MMSDIRECTION_DOWN:
+						ievt.key = MMSKEY_CURSOR_DOWN;
+						break;
+					default:
+						ievt.key = MMSKEY_UNKNOWN;
+						break;
+					}
+					if (ievt.key != MMSKEY_UNKNOWN) {
+						vector<MMSInputEvent> ievtset;
+						ievtset.push_back(ievt);
+						this->parent_rootwindow->handleInput(&ievtset);
+					}
+				}
+			}
+			this->last_pressed = false;
+		}
+	}
+	else
+	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
+		this->last_pressed = isPressed();
+	}
+}
+
 /***********************************************/
 /* begin of theme access methods (get methods) */
 /***********************************************/
@@ -165,11 +219,11 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
     else if ((arrowWidgetClass)&&(arrowWidgetClass->is##x())) return arrowWidgetClass->get##x(); \
     else return this->theme->arrowWidgetClass.get##x();
 
-DFBColor MMSArrowWidget::getColor() {
+MMSFBColor MMSArrowWidget::getColor() {
     GETARROW(Color);
 }
 
-DFBColor MMSArrowWidget::getSelColor() {
+MMSFBColor MMSArrowWidget::getSelColor() {
     GETARROW(SelColor);
 }
 
@@ -177,17 +231,21 @@ MMSDIRECTION MMSArrowWidget::getDirection() {
     GETARROW(Direction);
 }
 
+bool MMSArrowWidget::getCheckSelected() {
+    GETARROW(CheckSelected);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
-void MMSArrowWidget::setColor(DFBColor color, bool refresh) {
+void MMSArrowWidget::setColor(MMSFBColor color, bool refresh) {
     myArrowWidgetClass.setColor(color);
     if (refresh)
         this->refresh();
 }
 
-void MMSArrowWidget::setSelColor(DFBColor selcolor, bool refresh) {
+void MMSArrowWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myArrowWidgetClass.setSelColor(selcolor);
     if (refresh)
         this->refresh();
@@ -199,6 +257,10 @@ void MMSArrowWidget::setDirection(MMSDIRECTION direction, bool refresh) {
         this->refresh();
 }
 
+void MMSArrowWidget::setCheckSelected(bool checkselected) {
+    myArrowWidgetClass.setCheckSelected(checkselected);
+}
+
 void MMSArrowWidget::updateFromThemeClass(MMSArrowWidgetClass *themeClass) {
     if (themeClass->isColor())
         setColor(themeClass->getColor());
@@ -206,6 +268,8 @@ void MMSArrowWidget::updateFromThemeClass(MMSArrowWidgetClass *themeClass) {
         setSelColor(themeClass->getSelColor());
     if (themeClass->isDirection())
         setDirection(themeClass->getDirection());
+    if (themeClass->isCheckSelected())
+        setCheckSelected(themeClass->getCheckSelected());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

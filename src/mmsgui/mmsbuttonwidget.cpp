@@ -37,12 +37,12 @@ bool MMSButtonWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->baseWidgetClass = &(this->theme->buttonWidgetClass.widgetClass);
     if (this->buttonWidgetClass) this->widgetClass = &(this->buttonWidgetClass->widgetClass); else this->widgetClass = NULL;
 
-    return MMSWidget::create(root, true, false, true, true, true, true);
+    return MMSWidget::create(root, true, false, true, true, true, true, true);
 }
 
 MMSWidget *MMSButtonWidget::copyWidget() {
     /* create widget */
-    MMSButtonWidget *newWidget = new MMSButtonWidget(this->rootwindow, className); 
+    MMSButtonWidget *newWidget = new MMSButtonWidget(this->rootwindow, className);
 
     /* copy widget */
     *newWidget = *this;

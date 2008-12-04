@@ -392,7 +392,7 @@ bool MMSGIFLoader::loadBlocks() {
                 /* get direct access to the surface */
                 unsigned char *sufbuf, *sufbuf_start, *sufbuf_end;
                 int pitch;
-                newsuf->lock(DSLF_WRITE, (void**)&sufbuf, &pitch);
+                newsuf->lock(MMSFB_LOCK_WRITE, (void**)&sufbuf, &pitch);
                 sufbuf+= gif_id.x*4 + gif_id.y * pitch;
                 sufbuf_start = sufbuf;
                 sufbuf_end = sufbuf_start + gif_lsd.height * pitch;

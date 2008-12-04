@@ -23,7 +23,7 @@
 #include "mmsgui/theme/mmstextboxwidgetclass.h"
 #include <string.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[] = MMSGUI_TEXTBOXWIDGET_ATTR_INIT;
 
 //address attribute names
@@ -49,7 +49,7 @@ void MMSTextBoxWidgetClass::unsetAll() {
 }
 
 void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
-    DFBColor color;
+    MMSFBColor color;
     bool class_set = false;
 
     if (!prefix) {
@@ -84,7 +84,7 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
 	            break;
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color_a:
@@ -114,7 +114,7 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
 	            break;
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_a:
@@ -150,7 +150,7 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -161,104 +161,104 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(font_path)) { 
+            if (ISATTRNAME(font_path)) {
 	            if (*attrval_str)
 	                setFontPath(attrval_str);
 	            else
 	                setFontPath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(font_name)) { 
+            if (ISATTRNAME(font_name)) {
 	            setFontName(attrval_str);
             }
             else
-            if (ISATTRNAME(font_size)) { 
+            if (ISATTRNAME(font_size)) {
 	            setFontSize(attrval_int);
             }
             else
-            if (ISATTRNAME(alignment)) { 
+            if (ISATTRNAME(alignment)) {
 	            setAlignment(getAlignmentFromString(attrval_str));
             }
             else
-            if (ISATTRNAME(wrap)) { 
+            if (ISATTRNAME(wrap)) {
 	            setWrap((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(splitwords)) { 
+            if (ISATTRNAME(splitwords)) {
 	            setSplitWords((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(color)) { 
+            if (ISATTRNAME(color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
             }
             else
-            if (ISATTRNAME(color_a)) { 
+            if (ISATTRNAME(color_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.a = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(color_r)) { 
+            if (ISATTRNAME(color_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.r = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(color_g)) { 
+            if (ISATTRNAME(color_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.g = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(color_b)) { 
+            if (ISATTRNAME(color_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.b = attrval_int;
 	            setColor(color);
             }
             else
-            if (ISATTRNAME(selcolor)) { 
+            if (ISATTRNAME(selcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
             }
             else
-            if (ISATTRNAME(selcolor_a)) { 
+            if (ISATTRNAME(selcolor_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.a = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(selcolor_r)) { 
+            if (ISATTRNAME(selcolor_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.r = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(selcolor_g)) { 
+            if (ISATTRNAME(selcolor_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.g = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(selcolor_b)) { 
+            if (ISATTRNAME(selcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.b = attrval_int;
 	            setSelColor(color);
             }
             else
-            if (ISATTRNAME(text)) { 
+            if (ISATTRNAME(text)) {
 	            setText(attrval_str);
 			}
     	}
@@ -385,7 +385,7 @@ bool MMSTextBoxWidgetClass::isColor() {
     return this->iscolor;
 }
 
-void MMSTextBoxWidgetClass::setColor(DFBColor color) {
+void MMSTextBoxWidgetClass::setColor(MMSFBColor color) {
     this->color = color;
     this->iscolor = true;
 }
@@ -394,7 +394,7 @@ void MMSTextBoxWidgetClass::unsetColor() {
     this->iscolor = false;
 }
 
-DFBColor MMSTextBoxWidgetClass::getColor() {
+MMSFBColor MMSTextBoxWidgetClass::getColor() {
     return this->color;
 }
 
@@ -402,7 +402,7 @@ bool MMSTextBoxWidgetClass::isSelColor() {
     return this->isselcolor;
 }
 
-void MMSTextBoxWidgetClass::setSelColor(DFBColor selcolor) {
+void MMSTextBoxWidgetClass::setSelColor(MMSFBColor selcolor) {
     this->selcolor = selcolor;
     this->isselcolor = true;
 }
@@ -411,7 +411,7 @@ void MMSTextBoxWidgetClass::unsetSelColor() {
     this->isselcolor = false;
 }
 
-DFBColor MMSTextBoxWidgetClass::getSelColor() {
+MMSFBColor MMSTextBoxWidgetClass::getSelColor() {
     return this->selcolor;
 }
 

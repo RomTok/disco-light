@@ -131,7 +131,7 @@ void MMSFlash::loader(bool &stop) {
 	}
 	void *ptr;
 	int pitch;
-	this->flash_temp_surface->lock(DSLF_WRITE, &ptr, &pitch);
+	this->flash_temp_surface->lock(MMSFB_LOCK_WRITE, &ptr, &pitch);
 	this->flash_temp_surface->unlock();
     DEBUGMSG("MMSFLASH", "creating cairo surface");
     this->cairosurface = cairo_image_surface_create_for_data((unsigned char*)ptr, CAIRO_FORMAT_ARGB32,
@@ -439,7 +439,7 @@ bool MMSFlash::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
 	int posx = input->posx;
 	int posy = input->posy;
 	if (input->type == MMSINPUTEVENTTYPE_BUTTONPRESS || input->type == MMSINPUTEVENTTYPE_BUTTONRELEASE || input->type == MMSINPUTEVENTTYPE_AXISMOTION) {
-		DFBRectangle ig = window->getGeometry();
+		MMSFBRectangle ig = window->getGeometry();
 		if (this->width != ig.w)
 			posx = ((posx * (this->width << 8)) / ig.w) >> 8;
 		if (this->height != ig.h)

@@ -28,8 +28,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-D_DEBUG_DOMAIN( MMS_Window, "MMS/Window", "MMS Window" );
-
 
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
@@ -126,11 +124,6 @@ MMSWINDOWTYPE MMSWindow::getType() {
 
 bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
 		               bool *own_surface) {
-    D_DEBUG_AT( MMS_Window, "create( %s,%s - %sx%s, align %d, flags 0x%08x )\n",
-                dx.c_str(), dy.c_str(), w.c_str(), h.c_str(), alignment, flags );
-
-    MMSFB_TRACE();
-
     /* save flags */
     this->flags = flags;
 
@@ -233,7 +226,7 @@ bool MMSWindow::create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLA
 
 
 bool MMSWindow::resize(bool refresh) {
-    DFBWindowDescription wdesc;
+    int wdesc_posx, wdesc_posy, wdesc_width, wdesc_height;
     string dx, dy, width, height;
 
 
@@ -302,75 +295,75 @@ bool MMSWindow::resize(bool refresh) {
     /* calculate the window position */
     /* first try with xpos */
     if (!getDx(dx)) dx = "";
-    if (getPixelFromSizeHint(&wdesc.posx, dx, vrect.w, 0) == false) {
-        if (getPixelFromSizeHint(&wdesc.posx, dx, 10000, 0) == false) {
+    if (getPixelFromSizeHint(&wdesc_posx, dx, vrect.w, 0) == false) {
+        if (getPixelFromSizeHint(&wdesc_posx, dx, 10000, 0) == false) {
         	DEBUGMSG("MMSGUI", "window dx %s is wrong, using 0px", dx.c_str());
             myWindowClass.setDx("0px");
-            wdesc.posx = 0;
+            wdesc_posx = 0;
         }
     }
     /* ypos */
     if (!getDy(dy)) dy = "";
-    if (getPixelFromSizeHint(&wdesc.posy, dy, vrect.h, wdesc.posx) == false) {
-        if (getPixelFromSizeHint(&wdesc.posy, dy, 10000, wdesc.posx) == false) {
+    if (getPixelFromSizeHint(&wdesc_posy, dy, vrect.h, wdesc_posx) == false) {
+        if (getPixelFromSizeHint(&wdesc_posy, dy, 10000, wdesc_posx) == false) {
         	DEBUGMSG("MMSGUI", "window dy %s is wrong, using 0px", dy.c_str());
             myWindowClass.setDy("0px");
-            wdesc.posy = 0;
+            wdesc_posy = 0;
         }
     }
     /* second try with xpos (because of "<factor>$") */
     if (!getDx(dx)) dx = "";
-    if (getPixelFromSizeHint(&wdesc.posx, dx, vrect.w, wdesc.posy) == false) {
-        if (getPixelFromSizeHint(&wdesc.posx, dx, 10000, wdesc.posy) == false) {
+    if (getPixelFromSizeHint(&wdesc_posx, dx, vrect.w, wdesc_posy) == false) {
+        if (getPixelFromSizeHint(&wdesc_posx, dx, 10000, wdesc_posy) == false) {
         	DEBUGMSG("MMSGUI", "window dx %s is wrong, using 0px", dx.c_str());
             myWindowClass.setDx("0px");
-            wdesc.posx = 0;
+            wdesc_posx = 0;
         }
     }
 
     /* save the real dx / dy */
-    this->dxpix = wdesc.posx;
-    this->dypix = wdesc.posy;
+    this->dxpix = wdesc_posx;
+    this->dypix = wdesc_posy;
 
     DEBUGMSG("MMSGUI", "dx: %d, dy: %d", this->dxpix, this->dypix);
 
     /* calculate the window size */
     if (!getWidth(width)) width = "";
-    if (getPixelFromSizeHint(&wdesc.width, width, vrect.w, 0) == false) {
-        if (getPixelFromSizeHint(&wdesc.width, width, 10000, 0) == false) {
+    if (getPixelFromSizeHint(&wdesc_width, width, vrect.w, 0) == false) {
+        if (getPixelFromSizeHint(&wdesc_width, width, 10000, 0) == false) {
         	DEBUGMSG("MMSGUI", "window width %s is wrong, using %d px", width.c_str(), vrect.w);
             myWindowClass.setWidth(iToStr(vrect.w) + "px");
-            wdesc.width = vrect.w;
+            wdesc_width = vrect.w;
         }
     }
     if (!getHeight(height)) height = "";
-    if (getPixelFromSizeHint(&wdesc.height, height, vrect.h, 0) == false) {
-        if (getPixelFromSizeHint(&wdesc.height, height, 10000, 0) == false) {
+    if (getPixelFromSizeHint(&wdesc_height, height, vrect.h, 0) == false) {
+        if (getPixelFromSizeHint(&wdesc_height, height, 10000, 0) == false) {
         	DEBUGMSG("MMSGUI", "window height %s is wrong, using %d px", height.c_str(), vrect.h);
             myWindowClass.setHeight(iToStr(vrect.h) + "px");
-            wdesc.height = vrect.h;
+            wdesc_height = vrect.h;
         }
     }
 
-    DEBUGMSG("MMSGUI", "window resolution: %d x %d", wdesc.width, wdesc.height);
+    DEBUGMSG("MMSGUI", "window resolution: %d x %d", wdesc_width, wdesc_height);
 
-    if ((wdesc.width == 0)&&(wdesc.height == 0)) {
+    if ((wdesc_width == 0)&&(wdesc_height == 0)) {
         /* bad values */
     	DEBUGMSG("MMSGUI", "window width " + width + " is wrong, using " + iToStr(vrect.w) + "px");
         myWindowClass.setWidth(iToStr(vrect.w) + "px");
-        wdesc.width = vrect.w;
+        wdesc_width = vrect.w;
         DEBUGMSG("MMSGUI", "window height " + height + " is wrong, using " + iToStr(vrect.h) + "px");
         myWindowClass.setHeight(iToStr(vrect.h) + "px");
-        wdesc.height = vrect.h;
+        wdesc_height = vrect.h;
     }
     else {
-        if (wdesc.width == 0) {
+        if (wdesc_width == 0) {
             /* it seems that width should be a factor of height */
-            getPixelFromSizeHint(&wdesc.width, width, vrect.w, wdesc.height);
+            getPixelFromSizeHint(&wdesc_width, width, vrect.w, wdesc_height);
         }
         else {
             /* it seems that height should be a factor of width */
-            getPixelFromSizeHint(&wdesc.height, height, vrect.h, wdesc.width);
+            getPixelFromSizeHint(&wdesc_height, height, vrect.h, wdesc_width);
         }
     }
 
@@ -378,56 +371,56 @@ bool MMSWindow::resize(bool refresh) {
     unsigned int margin;
     if (!getMargin(margin))
     	margin = 0;
-    wdesc.posx+= vrect.x;
-    wdesc.posy+= vrect.y;
-    wdesc.width-= margin*2;
-    wdesc.height-= margin*2;
+    wdesc_posx+= vrect.x;
+    wdesc_posy+= vrect.y;
+    wdesc_width-= margin*2;
+    wdesc_height-= margin*2;
 
     /* work with alignment */
     MMSALIGNMENT alignment;
     if (!getAlignment(alignment)) alignment = MMSALIGNMENT_CENTER;
     switch (alignment) {
         case MMSALIGNMENT_CENTER:
-            wdesc.posx+= (vrect.w - wdesc.width) / 2;
-            wdesc.posy+= (vrect.h - wdesc.height) / 2;
+            wdesc_posx+= (vrect.w - wdesc_width) / 2;
+            wdesc_posy+= (vrect.h - wdesc_height) / 2;
             break;
         case MMSALIGNMENT_LEFT:
-            wdesc.posy+= (vrect.h - wdesc.height) / 2;
+            wdesc_posy+= (vrect.h - wdesc_height) / 2;
             break;
         case MMSALIGNMENT_RIGHT:
-            wdesc.posx+= (vrect.w - wdesc.width);
-            wdesc.posy+= (vrect.h - wdesc.height) / 2;
+            wdesc_posx+= (vrect.w - wdesc_width);
+            wdesc_posy+= (vrect.h - wdesc_height) / 2;
             break;
         case MMSALIGNMENT_TOP_CENTER:
-            wdesc.posx+= (vrect.w - wdesc.width) / 2;
+            wdesc_posx+= (vrect.w - wdesc_width) / 2;
             break;
         case MMSALIGNMENT_TOP_LEFT:
             break;
         case MMSALIGNMENT_TOP_RIGHT:
-            wdesc.posx+= (vrect.w - wdesc.width);
+            wdesc_posx+= (vrect.w - wdesc_width);
             break;
         case MMSALIGNMENT_BOTTOM_CENTER:
-            wdesc.posx+= (vrect.w - wdesc.width) / 2;
-            wdesc.posy+= (vrect.h - wdesc.height);
+            wdesc_posx+= (vrect.w - wdesc_width) / 2;
+            wdesc_posy+= (vrect.h - wdesc_height);
             break;
         case MMSALIGNMENT_BOTTOM_LEFT:
-            wdesc.posy+= (vrect.h - wdesc.height);
+            wdesc_posy+= (vrect.h - wdesc_height);
             break;
         case MMSALIGNMENT_BOTTOM_RIGHT:
-            wdesc.posx+= (vrect.w - wdesc.width);
-            wdesc.posy+= (vrect.h - wdesc.height);
+            wdesc_posx+= (vrect.w - wdesc_width);
+            wdesc_posy+= (vrect.h - wdesc_height);
             break;
         default:
             break;
     }
     int oldx = this->geom.x;
     int oldy = this->geom.y;
-    this->geom.x = wdesc.posx;
-    this->geom.y = wdesc.posy;
+    this->geom.x = wdesc_posx;
+    this->geom.y = wdesc_posy;
     int oldw = this->geom.w;
     int oldh = this->geom.h;
-    this->geom.w = wdesc.width;
-    this->geom.h = wdesc.height;
+    this->geom.w = wdesc_width;
+    this->geom.h = wdesc_height;
     unsigned int borderMargin;
     if (!getBorderMargin(borderMargin))
     	borderMargin = 0;
@@ -445,32 +438,32 @@ bool MMSWindow::resize(bool refresh) {
         if (!this->window) {
             /* create window */
             /* get layers pixelformat */
-            string pixelformat;
+        	MMSFBSurfacePixelFormat pixelformat;
             this->layer->getPixelformat(&pixelformat);
 
             if (!(this->flags & MMSW_VIDEO)) {
                 /* no video window, use alpha */
-            	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc.posx) + ","
-                                                    + iToStr(wdesc.posy) + ","
-                                                    + iToStr(wdesc.width) + ","
-                                                    + iToStr(wdesc.height)
-                                                    + ") with pixelformat " + pixelformat
+            	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+                                                    + iToStr(wdesc_posy) + ","
+                                                    + iToStr(wdesc_width) + ","
+                                                    + iToStr(wdesc_height)
+                                                    + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
                                                     + " (use alpha)");
                 this->layer->createWindow(&(this->window),
-                                          wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
+                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                           pixelformat, true, false);
                 DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
             }
             else {
                 /* video window, do not use alpha */
-            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc.posx) + ","
-                                                          + iToStr(wdesc.posy) + ","
-                                                          + iToStr(wdesc.width) + ","
-                                                          + iToStr(wdesc.height)
-                                                          + ") with pixelformat " + pixelformat
+            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
+                                                          + iToStr(wdesc_posy) + ","
+                                                          + iToStr(wdesc_width) + ","
+                                                          + iToStr(wdesc_height)
+                                                          + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
                                                           + " (do not use alpha)");
                 this->layer->createWindow(&(this->window),
-                                          wdesc.posx, wdesc.posy, wdesc.width, wdesc.height,
+                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                           pixelformat, false, true);
                 DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
             }
@@ -481,7 +474,7 @@ bool MMSWindow::resize(bool refresh) {
             this->window->getSurface(&(this->surface));
 
             DEBUGMSG("MMSGUI", "setting blitting flags for window");
-            this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
+            this->surface->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
             /* set the window to bottom */
 //            this->window->lowerToBottom();
@@ -513,40 +506,40 @@ bool MMSWindow::resize(bool refresh) {
         if (!this->surface) {
             /* create surface for child window */
             /* get layers pixelformat */
-            string pixelformat;
+        	MMSFBSurfacePixelFormat pixelformat;
             this->layer->getPixelformat(&pixelformat);
 
             bool os;
             getOwnSurface(os);
         	if (os) {
-        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc.posx) + ","
-	                                                                  + iToStr(wdesc.posy) + ","
-	                                                                  + iToStr(wdesc.width) + ","
-	                                                                  + iToStr(wdesc.height)
-	                                                                  + ") with pixelformat " + pixelformat
+        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
+	                                                                  + iToStr(wdesc_posy) + ","
+	                                                                  + iToStr(wdesc_width) + ","
+	                                                                  + iToStr(wdesc_height)
+	                                                                  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                  + " (use alpha)");
 
 	            this->layer->createSurface(&(this->surface),
-	                                      wdesc.width, wdesc.height, MMSFB_PF_NONE, 1);
+	                                      wdesc_width, wdesc_height, MMSFB_PF_NONE, 1);
 	        }
 	        else {
-	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc.posx) + ","
-	                                                                      + iToStr(wdesc.posy) + ","
-	                                                                      + iToStr(wdesc.width) + ","
-	                                                                      + iToStr(wdesc.height)
-	                                                                      + ") with pixelformat " + pixelformat
+	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc_posx) + ","
+	                                                                      + iToStr(wdesc_posy) + ","
+	                                                                      + iToStr(wdesc_width) + ","
+	                                                                      + iToStr(wdesc_height)
+	                                                                      + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
 	                                                                      + " (use alpha)");
 
-	            DFBRectangle rect;
+	            MMSFBRectangle rect;
 
-	            rect.x = wdesc.posx;
-	            rect.y = wdesc.posy;
-	            rect.w = wdesc.width;
-	            rect.h = wdesc.height;
+	            rect.x = wdesc_posx;
+	            rect.y = wdesc_posy;
+	            rect.w = wdesc_width;
+	            rect.h = wdesc_height;
 	            this->surface = this->parent->surface->getSubSurface(&rect);
 	        }
 
-            this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)DSBLIT_BLEND_ALPHACHANNEL);
+            this->surface->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
             /* set the window to bottom */
 //            this->window->lowerToBottom();
@@ -731,7 +724,7 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
             this->childwins.at(i).opacity = opacity;
 
-            flipWindow(childwin, NULL, (MMSFBSurfaceFlipFlags)0, false, true);
+            flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
 
 //PUP			flipLock.unlock();
             unlock();
@@ -751,8 +744,8 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
     for (unsigned int i = 0; i < this->childwins.size(); i++)
         if (this->childwins.at(i).window == childwin) {
             /* get old region */
-            DFBRegion *currregion = &this->childwins.at(i).region;
-            DFBRegion oldregion = *currregion;
+            MMSFBRegion *currregion = &this->childwins.at(i).region;
+            MMSFBRegion oldregion = *currregion;
 
             if   ((oldregion.x1 != childwin->geom.x)
                 ||(oldregion.y1 != childwin->geom.y)
@@ -790,12 +783,12 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     return true;
 
                 /* draw at new pos */
-                flipWindow(childwin, NULL, (MMSFBSurfaceFlipFlags)0, false, false);
+                flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, false);
 
                 /* redraw the old rects */
                 if (oldregion.y1 < currregion->y1) {
                     /* redraw above */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if (region.y2 >= currregion->y1)
                         region.y2 = currregion->y1 - 1;
@@ -804,11 +797,11 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     region.x2-= currregion->x1;
                     region.y1-=currregion->y1;
                     region.y2-=currregion->y1;
-                    flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                    flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                 }
                 if (oldregion.y2 > currregion->y2) {
                     /* redraw below */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if (region.y1 <= currregion->y2)
                         region.y1 = currregion->y2 + 1;
@@ -817,11 +810,11 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     region.x2-= currregion->x1;
                     region.y1-=currregion->y1;
                     region.y2-=currregion->y1;
-                    flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                    flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                 }
                 if (oldregion.x1 < currregion->x1) {
                     /* redraw left side */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if  ((region.y2 >= currregion->y1)
                        &&(region.y1 <= currregion->y2)) {
@@ -832,12 +825,12 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                         region.y2 = currregion->y2 - currregion->y1;
                         region.x1-=currregion->x1;
                         region.x2-=currregion->x1;
-                        flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                        flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                     }
                 }
                 if (oldregion.x2 > currregion->x2) {
                     /* redraw right side */
-                    DFBRegion region;
+                    MMSFBRegion region;
                     region = oldregion;
                     if  ((region.y2 >= currregion->y1)
                        &&(region.y1 <= currregion->y2)) {
@@ -848,7 +841,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                         region.y2 = currregion->y2 - currregion->y1;
                         region.x1-=currregion->x1;
                         region.x2-=currregion->x1;
-                        flipWindow(childwin, &region, (MMSFBSurfaceFlipFlags)0, false, false);
+                        flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                     }
                 }
             }
@@ -870,8 +863,8 @@ bool MMSWindow::moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh)
 	return setChildWindowRegion(childwin, refresh);
 }
 
-void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, int offsX, int offsY) {
-    DFBRegion       pw_region;
+void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region, int offsX, int offsY) {
+    MMSFBRegion       pw_region;
 
 
     if (region == NULL) {
@@ -889,7 +882,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
     /* draw all affected child windows */
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
         CHILDWINS *cw = &(this->childwins.at(i));
-        DFBRegion *myregion = &(cw->region);
+        MMSFBRegion *myregion = &(cw->region);
 
         /* if the window has no opacity then continue */
         if (!cw->opacity)
@@ -900,7 +893,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
 
             /* the window is affected */
             /* calc source and destination */
-            DFBRectangle src_rect;
+            MMSFBRectangle src_rect;
             int dst_x = pw_region.x1;
             int dst_y = pw_region.y1;
 
@@ -930,18 +923,18 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
         	if (os) {
                 /* set the blitting flags and color */
                 if (cw->opacity < 255) {
-                    dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+                    dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
                     dst_surface->setColor(0, 0, 0, cw->opacity);
                 }
                 else
-                    dst_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+                    dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
                 /* blit window front buffer to destination surface */
         		dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
         	}
         	else {
         		/* no own surface -> direct draw */
-				DFBRectangle r = cw->window->geom;
+				MMSFBRectangle r = cw->window->geom;
 				if ((src_rect.w == r.w)||(src_rect.h == r.h))
 					/* draw all (e.g. border) */
 					cw->window->draw(false, &src_rect, false);
@@ -951,7 +944,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
         	}
 
             /* draw the children of this child */
-            DFBRegion reg;
+            MMSFBRegion reg;
             reg.x1 = src_rect.x;
             reg.y1 = src_rect.y;
             reg.x2 = src_rect.x + src_rect.w - 1;
@@ -961,10 +954,10 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region, i
     }
 }
 
-bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFlags flags,
+bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags flags,
                            bool flipChildSurface, bool locked) {
     MMSFBSurface    *pw_surface;
-    DFBRegion       pw_region;
+    MMSFBRegion       pw_region;
 
 
     /* stop parallel processing */
@@ -1036,7 +1029,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFl
         }
 
         /* calculate the affected region on the parent surface */
-        DFBRegion *myregion = &(this->childwins.at(z).region);
+        MMSFBRegion *myregion = &(this->childwins.at(z).region);
         if (region == NULL) {
             /* complete surface */
             pw_region = *myregion;
@@ -1050,7 +1043,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, DFBRegion *region, MMSFBSurfaceFlipFl
         }
 
         /* redraw the region within parent window */
-        DFBRectangle rect;
+        MMSFBRectangle rect;
         rect.x = pw_region.x1;
         rect.y = pw_region.y1;
         rect.w = pw_region.x2 - pw_region.x1 + 1;
@@ -1324,7 +1317,7 @@ bool MMSWindow::init() {
 
 
 
-void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
+void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear) {
 
     /* lock */
 //PUP    this->surface->lock();
@@ -1332,7 +1325,7 @@ void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
 
     if (rect2update) {
         /* use a small rectangle */
-        DFBRegion clip;
+        MMSFBRegion clip;
         clip.x1 = rect2update->x;
         clip.y1 = rect2update->y;
         clip.x2 = rect2update->x + rect2update->w - 1;
@@ -1345,7 +1338,7 @@ void MMSWindow::draw(bool toRedrawOnly, DFBRectangle *rect2update, bool clear) {
 		this->surface->clear();
 
 	/* draw background */
-    DFBColor bgcolor;
+    MMSFBColor bgcolor;
     getBgColor(bgcolor);
     if (this->bgimage) {
         /* prepare for blitting */
@@ -1395,7 +1388,7 @@ void MMSWindow::drawMyBorder() {
 	bool borderRCorners;
 	if (!getBorderRCorners(borderRCorners))
 		borderRCorners = false;
-	DFBColor c;
+	MMSFBColor c;
 
 	getBorderColor(c);
     drawBorder(borderThickness, borderRCorners, this->borderimages,
@@ -1515,7 +1508,7 @@ lock();
 		    if ((w->parent)||((!w->parent)&&(w->window))) {
 			    unsigned int opacity;
 			    if (!w->getOpacity(opacity)) opacity = 255;
-		        DFBRectangle rect = w->getGeometry();
+		        MMSFBRectangle rect = w->getGeometry();
 
 			    /* set final opacity */
 				w->parent->setChildWindowOpacity(w, opacity);
@@ -1634,7 +1627,7 @@ bool MMSWindow::showAction(bool *stopaction) {
     if ((this->parent)||((!this->parent)&&(this->window))) {
 	    unsigned int opacity;
 	    if (!getOpacity(opacity)) opacity = 255;
-        DFBRectangle rect = getGeometry();
+        MMSFBRectangle rect = getGeometry();
 
 	    bool fadein;
 	    if (!getFadeIn(fadein)) fadein = false;
@@ -1829,7 +1822,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
     if ((this->parent)||((!this->parent)&&(this->window))) {
 	    unsigned int opacity;
 	    if (!getOpacity(opacity)) opacity = 255;
-        DFBRectangle rect = getGeometry();
+        MMSFBRectangle rect = getGeometry();
 
 	    bool fadeout;
 	    if (!getFadeOut(fadeout)) fadeout = false;
@@ -1995,8 +1988,8 @@ void MMSWindow::remove(MMSWidget *child) {
 }
 
 
-void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update, bool check_shown) {
-    DFBRegion  	region;
+void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, bool check_shown) {
+    MMSFBRegion  	region;
 
 	bool os;
 	getOwnSurface(os);
@@ -2015,7 +2008,7 @@ void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update, bo
 
 
     // calculate region
-    DFBRectangle rect;
+    MMSFBRectangle rect;
     MMSWidget *c = child;
     if ((!c)&&(!children.empty()))
 	    c = children.at(0);
@@ -2125,9 +2118,9 @@ void MMSWindow::refreshFromChild(MMSWidget *child, DFBRectangle *rect2update, bo
 
     /* flip region */
     if (!this->parent)
-        flipWindow(this, &region, DSFLIP_ONSYNC);
+        flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
     else
-        this->parent->flipWindow(this, &region, DSFLIP_ONSYNC);
+        this->parent->flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
 
     /* unlock drawing */
 //PUP    this->drawLock.unlock();
@@ -2291,7 +2284,7 @@ bool MMSWindow::setFirstFocus(bool cw) {
 #define MAXDGCODE   999999
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Up(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     MMSFB_BREAK();
 
@@ -2382,7 +2375,7 @@ double MMSWindow::calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle ca
 
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Down(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     /* check if candidate is under the current widget */
     if (candPos.y + candPos.h - 1 <= currPos.y + currPos.h - 1)
@@ -2471,7 +2464,7 @@ double MMSWindow::calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle 
 
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Left(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     /* check if candidate is left of the current widget */
     if (candPos.x >= currPos.x)
@@ -2559,7 +2552,7 @@ double MMSWindow::calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle 
 
 
 /* a lower return value is better than an higher value */
-double MMSWindow::calculateDistGradCode_Right(DFBRectangle currPos, DFBRectangle candPos) {
+double MMSWindow::calculateDistGradCode_Right(MMSFBRectangle currPos, MMSFBRectangle candPos) {
 
     /* check if candidate is right of the current widget */
     if (candPos.x + candPos.w - 1 <= currPos.x + currPos.w - 1)
@@ -2953,7 +2946,7 @@ void MMSWindow::preCalcNavigation() {
                 }
 
                 /* searching for next widget to become the focus */
-                DFBRectangle fGeom = fwidget->getGeometry();
+                MMSFBRectangle fGeom = fwidget->getGeometry();
                 MMSWidget *candidate = NULL;
                 double dgcode = MAXDGCODE;
 
@@ -2967,7 +2960,7 @@ void MMSWindow::preCalcNavigation() {
                         if (widget->getFocusable(b))
                         	if (b) {
 	                            /* basically it can be focused */
-	                            DFBRectangle wGeom = widget->getGeometry();
+	                            MMSFBRectangle wGeom = widget->getGeometry();
 	                            double cand_dgcode = MAXDGCODE;
 
 	                            if (key == MMSKEY_CURSOR_DOWN)
@@ -3076,7 +3069,7 @@ void MMSWindow::preCalcNavigation() {
 
 
                 /* searching for child window to become the focus */
-                DFBRectangle fGeom;
+                MMSFBRectangle fGeom;
                 fGeom.x = fWin->geom.x;
                 fGeom.y = fWin->geom.y;
                 fGeom.w = fWin->geom.w;
@@ -3099,7 +3092,7 @@ void MMSWindow::preCalcNavigation() {
                         int fwn = window->getNumberOfFocusableChildWins();
                         if ((fwd>0)||(fwn>0)) {
                             /* basically it can be focused */
-                            DFBRectangle wGeom;
+                            MMSFBRectangle wGeom;
                             wGeom.x = window->geom.x;
                             wGeom.y = window->geom.y;
                             wGeom.w = window->geom.w;
@@ -3170,15 +3163,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     if (this->shown == false)
         return false;
 
-//    logger.writeLog("got input to deal with");
-
     for(unsigned int i=0; i < inputeventset->size();i++) {
 
     	if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_KEYPRESS) {
     		/* keyboard inputs */
 	        try {
 	            if(this->focusedwidget != NULL) {
-//	                logger.writeLog("try to execute input on widget");
 	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
 
 	                switch(inputeventset->at(i).key) {
@@ -3260,13 +3250,13 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	bool b;
 	            	for (unsigned int j = 0; j < this->children.size(); j++) {
 	            		MMSWidget *w = this->children.at(j);
-	            		if (!w->getFocusable(b, false))
+	            		if (!w->getClickable(b))
 	            			continue;
 	            		if (!b)
 	            			continue;
 	            		if (!w->isActivated())
 	            			continue;
-	            		DFBRectangle rect = this->children.at(j)->getGeometry();
+	            		MMSFBRectangle rect = this->children.at(j)->getGeometry();
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			// this is the widget under the pointer
@@ -3302,14 +3292,17 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            			continue;
 /*	            		if (!this->childwins.at(j).window->getNumberOfFocusableWidgets())
 	            			continue;*/
-	            		DFBRectangle rect = this->childwins.at(j).window->getGeometry();
+	            		MMSFBRectangle rect = this->childwins.at(j).window->getGeometry();
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			/* this is the childwin under the pointer */
 	            			if (!this->childwins.at(j).window->getFocus()) {
-	            				/* set focus to this childwin */
-	            				DEBUGMSG("MMSGUI", "try to change focus");
-		    	            	this->childwins.at(j).window->setFocus();
+	            				if (this->childwins.at(j).window->getNumberOfFocusableWidgets(true)>0)
+	            				{
+									/* set focus to this childwin */
+									DEBUGMSG("MMSGUI", "try to change focus");
+									this->childwins.at(j).window->setFocus();
+	            				}
 	            			}
 
 	            			/* normalize the pointer position */
@@ -3374,7 +3367,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	// window with childwindows
 	            	if (this->buttonpress_childwin) {
               			/* normalize the pointer position */
-	            		DFBRectangle rect = this->buttonpress_childwin->getGeometry();
+	            		MMSFBRectangle rect = this->buttonpress_childwin->getGeometry();
             			for (unsigned int k = 0; k < inputeventset->size(); k++) {
             				inputeventset->at(k).posx-=rect.x;
             				inputeventset->at(k).posy-=rect.y;
@@ -3418,17 +3411,17 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     return ret;
 }
 
-DFBRectangle MMSWindow::getGeometry() {
+MMSFBRectangle MMSWindow::getGeometry() {
 	return this->geom;
 }
 
-DFBRectangle MMSWindow::getRealGeometry() {
+MMSFBRectangle MMSWindow::getRealGeometry() {
 	/* childwin? */
 	if (!this->parent)
 		return this->geom;
 
 	/* yes */
-	DFBRectangle r1,r2;
+	MMSFBRectangle r1,r2;
 	r1 = this->geom;
 	r2 = this->parent->getRealGeometry();
 	r1.x+=r2.x;
@@ -3441,14 +3434,22 @@ MMSWidget *MMSWindow::getFocusedWidget() {
     return this->focusedwidget;
 }
 
-int MMSWindow::getNumberOfFocusableWidgets() {
+int MMSWindow::getNumberOfFocusableWidgets(bool cw) {
     int		cnt = 0;
     bool 	b;
 
-    for (unsigned int i = 0; i < children.size(); i++)
-        if (children.at(i)->getFocusable(b))
-        	if (b)
-        		cnt++;
+    if (!children.empty()) {
+		for (unsigned int i = 0; i < children.size(); i++)
+			if (children.at(i)->getFocusable(b))
+				if (b)
+					cnt++;
+    }
+    else {
+    	if (cw) {
+			for (unsigned int i = 0; i < childwins.size(); i++)
+				cnt += childwins.at(i).window->getNumberOfFocusableWidgets(cw);
+    	}
+    }
 
     return cnt;
 }
@@ -3658,7 +3659,7 @@ bool MMSWindow::getHeight(string &height) {
     GETWINDOW(Height, height);
 }
 
-bool MMSWindow::getBgColor(DFBColor &bgcolor) {
+bool MMSWindow::getBgColor(MMSFBColor &bgcolor) {
     GETWINDOW(BgColor, bgcolor);
 }
 
@@ -3746,7 +3747,7 @@ bool MMSWindow::getMoveOut(MMSDIRECTION &moveout) {
     else return baseWindowClass->border.get##x(p,y);
 
 
-bool MMSWindow::getBorderColor(DFBColor &color) {
+bool MMSWindow::getBorderColor(MMSFBColor &color) {
     GETBORDER(Color, color);
 }
 
@@ -3824,7 +3825,7 @@ void MMSWindow::setHeight(string height, bool refresh, bool resize) {
         this->refresh();
 }
 
-void MMSWindow::setBgColor(DFBColor bgcolor, bool refresh) {
+void MMSWindow::setBgColor(MMSFBColor bgcolor, bool refresh) {
     myWindowClass.setBgColor(bgcolor);
     if (refresh)
         this->refresh();
@@ -3959,7 +3960,7 @@ void MMSWindow::setMoveOut(MMSDIRECTION moveout) {
 
 
 
-void MMSWindow::setBorderColor(DFBColor color, bool refresh) {
+void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
     if (refresh)
         this->refresh();
@@ -4024,7 +4025,7 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
 
 	MMSALIGNMENT	a;
 	bool 			b;
-	DFBColor		c;
+	MMSFBColor		c;
 	MMSDIRECTION	d;
 	string 			s;
 	unsigned int	u;

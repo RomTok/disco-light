@@ -25,22 +25,22 @@
 
 #include "mmsinput/mmsinputmanager.h"
 
-#include <directfb.h>
+/*#include <directfb.h>
 #include <sigc++/sigc++.h>
-
-typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);
+*/
+//typedef void(*INPUTCALLBACK)(DFBInputDeviceKeyIdentifier);
 
 class MMSInputSubscription {
 	private:
 		static MMSInputManager *manager;
 		MMSKeySymbol			key;
-		DFBRectangle			pointer_area;
+		MMSFBRectangle			pointer_area;
 	public:
 		MMSInputSubscription(MMSInputManager *manager);
 		MMSInputSubscription(MMSKeySymbol key);
-		MMSInputSubscription(DFBRectangle &pointer_area);
+		MMSInputSubscription(MMSFBRectangle &pointer_area);
 		bool getKey(MMSKeySymbol &key);
-		bool getPointerArea(DFBRectangle &pointer_area);
+		bool getPointerArea(MMSFBRectangle &pointer_area);
 
 		void registerMe();
 

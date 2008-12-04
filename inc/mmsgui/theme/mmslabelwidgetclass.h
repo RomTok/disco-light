@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSLabelWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSLabelWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_LABELWIDGET_ATTR {
 
 	#define MMSGUI_LABELWIDGET_ATTR_ATTRDESC \
@@ -46,7 +46,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		{ "text", TAFF_ATTRTYPE_STRING }, \
 		{ "slidable", TAFF_ATTRTYPE_BOOL }, \
 		{ "slide_delay", TAFF_ATTRTYPE_INT }
-	
+
 	#define MMSGUI_LABELWIDGET_ATTR_IDS \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_path, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_name, \
@@ -65,7 +65,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_LABELWIDGET_ATTR_IDS_text, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_slidable, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay
-	
+
 	#define MMSGUI_LABELWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -88,7 +88,7 @@ extern TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[];
 //! A data access class for the label widget.
 /*!
 This class is the base for the MMSLabelWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSLabelWidget.
@@ -98,61 +98,61 @@ class MMSLabelWidgetClass {
     private:
     	//! name of the theme class
         string          className;
-        
+
         //! is fontpath set?
         bool            isfontpath;
-        
+
         //! path to the font
         string          fontpath;
-        
+
         //! is fontname set?
         bool            isfontname;
-        
+
         //! name of the font
         string          fontname;
-        
+
         //! is fontsize set?
         bool            isfontsize;
-        
+
         //! size of the font
         unsigned int    fontsize;
-        
+
         //! is alignment set?
         bool            isalignment;
-        
+
         //! alignment of the text
         MMSALIGNMENT    alignment;
-        
+
         //! is color set?
         bool            iscolor;
-        
+
         //! color of the text if the widget is not selected
-        DFBColor        color;
-        
+        MMSFBColor      color;
+
         //! is selcolor set?
         bool            isselcolor;
-        
+
         //! color of the text if the widget is selected
-        DFBColor        selcolor;
-        
+        MMSFBColor      selcolor;
+
         //! is text set?
         bool            istext;
-        
+
         //! text to draw
         string          text;
 
         //! is slidable set?
         bool            isslidable;
-        
+
         //! if true and size of the text string is greater than widget dimension, the text will slide over the widget
         bool          	slidable;
-        
+
         //! is slide delay set?
         bool            isslidedelay;
-        
+
         //! slide delay used if slidable set to true
         unsigned int   	slidedelay;
-        
+
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
@@ -163,7 +163,7 @@ class MMSLabelWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSLabelWidgetClass.
         MMSLabelWidgetClass();
@@ -262,7 +262,7 @@ class MMSLabelWidgetClass {
         /*!
         \param color  color for unselected text
         */
-        void setColor(DFBColor color);
+        void setColor(MMSFBColor color);
 
         //! Mark the color as not set.
         void unsetColor();
@@ -271,7 +271,7 @@ class MMSLabelWidgetClass {
         /*!
         \return color for unselected text
         */
-        DFBColor getColor();
+        MMSFBColor getColor();
 
         //! Check if the color is set. This color will be used for the selected text.
         bool isSelColor();
@@ -280,7 +280,7 @@ class MMSLabelWidgetClass {
         /*!
         \param selcolor  color for selected text
         */
-        void setSelColor(DFBColor selcolor);
+        void setSelColor(MMSFBColor selcolor);
 
         //! Mark the color as not set.
         void unsetSelColor();
@@ -289,7 +289,7 @@ class MMSLabelWidgetClass {
         /*!
         \return color for selected text
         */
-        DFBColor getSelColor();
+        MMSFBColor getSelColor();
 
         //! Check if the text is set.
         bool isText();
@@ -309,7 +309,7 @@ class MMSLabelWidgetClass {
         */
         string getText();
 
-        
+
         //! Check if the slidable flag is set.
         bool isSlidable();
 
@@ -327,7 +327,7 @@ class MMSLabelWidgetClass {
         \return true/false
         */
         bool getSlidable();
-        
+
         //! Check if the slide delay is set.
         bool isSlideDelay();
 
@@ -345,7 +345,7 @@ class MMSLabelWidgetClass {
         \return slide delay
         */
         unsigned int getSlideDelay();
-        
+
     /* friends */
     friend class MMSThemeManager;
     friend class MMSDialogManager;

@@ -49,7 +49,7 @@ typedef struct {
 class MMSImageManager {
     private:
         MMSFBLayer          *layer;   		// this is the layer on which the image is to display
-        string				pixelformat;	// pixelformat for all my images
+        MMSFBSurfacePixelFormat	pixelformat;// pixelformat for all my images
         bool				usetaff;		// use the taff (image) format?
         MMSTAFF_PF			taffpf;			// pixelformat for the taff converter
 
@@ -63,8 +63,8 @@ class MMSImageManager {
         MMSImageManager(MMSFBLayer *layer);
         ~MMSImageManager();
         MMSFBSurface *getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc = NULL,
-        					   unsigned int mirror_size = 0);
-        MMSFBSurface *newImage(const string &name, unsigned int width, unsigned int height, string pixelformat = "");
+        					   int mirror_size = 0);
+        MMSFBSurface *newImage(const string &name, unsigned int width, unsigned int height, MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE);
         void releaseImage(const string &path, const string &filename);
         void releaseImage(MMSFBSurface *surface);
 };

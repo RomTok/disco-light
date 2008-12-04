@@ -66,8 +66,8 @@ class MMSLabelWidget : public MMSWidget {
         string getFontName();
         unsigned int getFontSize();
         MMSALIGNMENT getAlignment();
-        DFBColor getColor();
-        DFBColor getSelColor();
+        MMSFBColor getColor();
+        MMSFBColor getSelColor();
         string getText();
         bool getSlidable();
         unsigned int getSlideDelay();
@@ -77,8 +77,8 @@ class MMSLabelWidget : public MMSWidget {
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
         void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
-        void setColor(DFBColor color, bool refresh = true);
-        void setSelColor(DFBColor selcolor, bool refresh = true);
+        void setColor(MMSFBColor color, bool refresh = true);
+        void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true);
         void setSlidable(bool slidable);
         void setSlideDelay(unsigned int slidedelay);

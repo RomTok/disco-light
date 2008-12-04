@@ -32,7 +32,7 @@ class MMSInputManager;
 class IMMSSwitcher {
     public:
         virtual ~IMMSSwitcher() {};
-        
+
         virtual void show() = 0;
         virtual void hide() = 0;
 
@@ -49,23 +49,6 @@ class IMMSSwitcher {
 
         virtual bool switchToPlugin() = 0;
         virtual bool leavePlugin(bool show_switcher) = 0;
-        
-        
-/*        virtual DFBRectangle getVRect() = 0;
-
-        virtual void addWindow(MMSWindow *window) = 0;
-        virtual void removeWindow(MMSWindow *window) = 0;
-
-        virtual bool hideAllMainWindows(bool goback = false) = 0;
-        virtual bool hideAllPopupWindows() = 0;
-        virtual bool hideAllRootWindows() = 0;
-
-        virtual void setToplevelWindow(MMSWindow *window) = 0;
-        virtual MMSWindow *getToplevelWindow() = 0;
-        virtual void removeWindowFromToplevel(MMSWindow *window) = 0;
-
-        virtual void setBackgroundWindow(MMSWindow *window) = 0;
-        virtual MMSWindow *getBackgroundWindow() = 0;*/
 };
 
 #endif /*IMMSSWITCHER_H_*/

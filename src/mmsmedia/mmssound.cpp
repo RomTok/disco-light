@@ -31,6 +31,10 @@ MMS_CREATEERROR(MMSSoundError);
  * @param   event       [in]        pointer to event structure
  */
 static void queue_cb(void *userData, const xine_event_t *event) {
+
+	if(!userData)
+		return;
+
     MMSSound *mmssound = (MMSSound*)userData;
 
     if(event->type == XINE_EVENT_UI_PLAYBACK_FINISHED)

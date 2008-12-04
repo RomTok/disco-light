@@ -55,7 +55,7 @@ bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 	if (this->iwt)
 		this->iwt->start();
 
-    return MMSWidget::create(root, true, false, true, true, false, false);
+    return MMSWidget::create(root, true, false, true, true, false, false, true);
 }
 
 MMSWidget *MMSInputWidget::copyWidget() {
@@ -109,7 +109,7 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
         /* draw my things */
         if (this->font) {
-            DFBRectangle surfaceGeom = getSurfaceGeometry();
+            MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
             this->surface->setFont(this->font);
 
@@ -214,7 +214,7 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
                     break;
             }
 
-            DFBColor color;
+            MMSFBColor color;
 
             if (isSelected())
                 color = getSelColor();
@@ -569,11 +569,11 @@ MMSALIGNMENT MMSInputWidget::getAlignment() {
     GETINPUT(Alignment);
 }
 
-DFBColor MMSInputWidget::getColor() {
+MMSFBColor MMSInputWidget::getColor() {
     GETINPUT(Color);
 }
 
-DFBColor MMSInputWidget::getSelColor() {
+MMSFBColor MMSInputWidget::getSelColor() {
     GETINPUT(SelColor);
 }
 
@@ -637,13 +637,13 @@ void MMSInputWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
         this->refresh();
 }
 
-void MMSInputWidget::setColor(DFBColor color, bool refresh) {
+void MMSInputWidget::setColor(MMSFBColor color, bool refresh) {
     myInputWidgetClass.setColor(color);
     if (refresh)
         this->refresh();
 }
 
-void MMSInputWidget::setSelColor(DFBColor selcolor, bool refresh) {
+void MMSInputWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myInputWidgetClass.setSelColor(selcolor);
     if (refresh)
         this->refresh();

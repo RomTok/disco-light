@@ -20,18 +20,20 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifdef  __HAVE_DIRECTFB__
+
 #include "mmsmedia/mmsvideoctrl.h"
 
 MMS_CREATEERROR(MMSVideoCtrlError);
 
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSVideoCtrlError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSVideoCtrlError(0,msg); }}
 
-DFBDisplayLayerDescription    MMSVideoCtrl::desc;   
+DFBDisplayLayerDescription    MMSVideoCtrl::desc;
 DFBColorAdjustment           MMSVideoCtrl::cadj;
 
 /**
  * Constructor of class MMSVideoCtrl.
- * 
+ *
  * It initializes some DirectFB stuff.
  */
 MMSVideoCtrl::MMSVideoCtrl() {
@@ -80,7 +82,7 @@ MMSVideoCtrl::~MMSVideoCtrl() {
 
 /**
  * Gets the description of the Display Layer.
- * 
+ *
  * @note Take a look at http://www.directfb.org for the
  * documentation of this structure.
  */
@@ -90,7 +92,7 @@ DFBDisplayLayerDescription MMSVideoCtrl::getDisplayLayerDescription() {
 
 /**
  * Gets the color adjustment.
- * 
+ *
  * @note Take a look at http://www.directfb.org for the
  * documentation of this structure.
  */
@@ -101,7 +103,7 @@ DFBColorAdjustment MMSVideoCtrl::getColorAdjustment() {
 /**
  * Sets the brightness.
  *
- * @param   val [in]    amount of brightness 
+ * @param   val [in]    amount of brightness
  */
 void MMSVideoCtrl::adjustBrightness(unsigned val) {
     DFBResult   dfbres;
@@ -117,7 +119,7 @@ void MMSVideoCtrl::adjustBrightness(unsigned val) {
 /**
  * Sets the contrast.
  *
- * @param   val [in]    amount of contrast 
+ * @param   val [in]    amount of contrast
  */
 void MMSVideoCtrl::adjustContrast(unsigned val) {
     DFBResult   dfbres;
@@ -133,7 +135,7 @@ void MMSVideoCtrl::adjustContrast(unsigned val) {
 /**
  * Sets the hue.
  *
- * @param   val [in]    amount of hue 
+ * @param   val [in]    amount of hue
  */
 void MMSVideoCtrl::adjustHue(unsigned val) {
     DFBResult   dfbres;
@@ -149,7 +151,7 @@ void MMSVideoCtrl::adjustHue(unsigned val) {
 /**
  * Sets the saturation.
  *
- * @param   val [in]    amount of saturation 
+ * @param   val [in]    amount of saturation
  */
 void MMSVideoCtrl::adjustSaturation(unsigned val) {
     DFBResult   dfbres;
@@ -161,3 +163,5 @@ void MMSVideoCtrl::adjustSaturation(unsigned val) {
     if ((dfbres = this->layer->SetColorAdjustment(this->layer, &this->cadj)) != DFB_OK)
         THROW_DFB_ERROR(dfbres, "IDirectFBDisplayLayer::SetColorAdjustment(saturation) failed");
 }
+
+#endif

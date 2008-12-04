@@ -26,6 +26,7 @@
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
+
 #ifdef __HAVE_XLIB__
 static XF86VidModeModeLine origmode;
 static void myexit() {
@@ -40,14 +41,18 @@ static void myexit() {
 	}
 }
 #endif
-#define INITCHECK  if(!this->dfb){MMSFB_SetError(0,"not initialized");return false;}
+
+#define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
 
 MMSFB::MMSFB() {
     /* init me */
     this->argc = 0;
     this->argv = NULL;
+    this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
     this->dfb = NULL;
+#endif
     this->outputtype = "";
     this->w = 0;
     this->h = 0;
@@ -58,10 +63,14 @@ MMSFB::~MMSFB() {
 }
 
 bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen) {
-    DFBResult dfbres;
 
+
+#ifdef __HAVE_XLIB__
+	XInitThreads();
+    this->resized=false;
+#endif
     // check if already initialized
-    if (this->dfb) {
+    if (this->initialized) {
         MMSFB_SetError(0, "already initialized");
         return false;
     }
@@ -69,7 +78,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     // save arguments
     this->argc = argc;
     this->argv = argv;
-
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
 
@@ -87,7 +95,9 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-		/* init dfb */
+        DFBResult dfbres;
+
+        /* init dfb */
 		DirectFBInit(&this->argc,&this->argv);
 
 		/* get interface to dfb */
@@ -99,8 +109,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     }
     else {
 #ifdef __HAVE_XLIB__
-		this->dfb = (IDirectFB*)1;
-
 		// initialize the X11 window
         if (!(this->x_display = XOpenDisplay((char*)0))) {
 			MMSFB_SetError(0, "XOpenDisplay() failed");
@@ -120,7 +128,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
         XSetWindowAttributes x_window_attr;
-		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
+		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |PointerMotionMask|EnterWindowMask|ResizeRedirectMask;
         x_window_attr.background_pixel  = 0;
         x_window_attr.border_pixel      = 0;
 
@@ -143,8 +151,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         		//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
         	}
 
-    		int clock;
-
             int x_depth = DefaultDepth(this->x_display, this->x_screen);
             this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
     									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
@@ -158,7 +164,6 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
 
 
-
         XStoreName(this->x_display, this->x_window, "DISKO WINDOW");
         XSetIconName(this->x_display, this->x_window, "DISKO ICON");
         this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
@@ -169,6 +174,29 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
         while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
         XRaiseWindow(this->x_display, this->x_window);
+
+
+
+
+		// hide X Cursor should we use X Cursor instead of our own?
+        Pixmap bm_no;
+		Colormap cmap;
+		Cursor no_ptr;
+		XColor black, dummy;
+		static char bm_no_data[] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+		cmap = DefaultColormap(this->x_display, DefaultScreen(this->x_display));
+		XAllocNamedColor(this->x_display, cmap, "black", &black, &dummy);
+		bm_no = XCreateBitmapFromData(this->x_display, this->x_window, bm_no_data, 8, 8);
+		no_ptr = XCreatePixmapCursor(this->x_display, bm_no, bm_no, &black, &black, 0, 0);
+
+		XDefineCursor(this->x_display, this->x_window, no_ptr);
+		XFreeCursor(this->x_display, no_ptr);
+		if (bm_no != None)
+				XFreePixmap(this->x_display, bm_no);
+		XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
+
+
         XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 //        int CompletionType = XShmGetEventBase(this->x_display) + ShmCompletion;
 
@@ -189,40 +217,28 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 #endif
     }
 
+    this->initialized = true;
     return true;
 }
 
 bool MMSFB::release() {
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-		if (this->dfb) {
+		if (this->dfb)
 			this->dfb->Release(this->dfb);
-			this->dfb = NULL;
-		}
 #endif
     }
     else {
 #ifdef __HAVE_XLIB__
-		//TODO
-		this->dfb = NULL;
 #endif
     }
 
+	this->initialized = false;
     return true;
 }
 
 bool MMSFB::isInitialized() {
-    if (this->backend == MMSFB_BACKEND_DFB) {
-#ifdef  __HAVE_DIRECTFB__
-    	return (this->dfb != NULL);
-#endif
-    }
-    else {
-#ifdef __HAVE_XLIB__
-    	//TODO
-    	return true;
-#endif
-    }
+	return this->initialized;
 }
 
 MMSFB_BACKEND MMSFB::getBackend() {
@@ -303,7 +319,7 @@ bool MMSFB::refresh() {
     return true;
 }
 
-bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelformat, int backbuffer, bool systemonly) {
+bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
     /* check if initialized */
     INITCHECK;
 
@@ -316,6 +332,7 @@ bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, string pixelform
         return false;
 }
 
+#ifdef  __HAVE_DIRECTFB__
 bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filename) {
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -340,6 +357,7 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 #endif
     }
 }
+#endif
 
 bool MMSFB::createFont(MMSFBFont **font, string filename, int width, int height) {
 	// check if initialized
@@ -360,3 +378,14 @@ bool MMSFB::createFont(MMSFBFont **font, string filename, int width, int height)
 	return true;
 }
 
+#ifdef __HAVE_XLIB__
+bool MMSFB::resizewindow() {
+	printf("resize w,h: %d,%d\n", this->target_window_w, this->target_window_h );
+	XWindowChanges chg;
+	chg.width=this->target_window_w;
+	chg.height=this->target_window_h;
+	printf("rc %d\n",XConfigureWindow(this->x_display, this->x_window,CWWidth|CWHeight, &chg));
+	//XMoveResizeWindow(this->x_display, this->x_window, this->target_window_w, this->target_window_h);
+	return true;
+}
+#endif

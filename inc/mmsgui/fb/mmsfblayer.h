@@ -37,15 +37,15 @@ typedef struct {
     //! height
     int     h;
     //! pixelformat
-    string  pixelformat;
+    MMSFBSurfacePixelFormat pixelformat;
     //! buffer mode
     string  buffermode;
     //! options
     string  options;
     //! pixelformat for windows
-    string  window_pixelformat;
+    MMSFBSurfacePixelFormat window_pixelformat;
     //! pixelformat for surfaces
-    string  surface_pixelformat;
+    MMSFBSurfacePixelFormat surface_pixelformat;
 } MMSFBLayerConfig;
 
 //! This class describes a display layer.
@@ -54,8 +54,13 @@ typedef struct {
 */
 class MMSFBLayer {
     private:
-    	// interface to the dfb layer
+    	//! is initialized?
+    	bool initialized;
+
+#ifdef  __HAVE_DIRECTFB__
+    	//! interface to the dfb layer
         IDirectFBDisplayLayer   *dfblayer;
+#endif
 
 #ifdef __HAVE_XLIB__
         XvImage  		*xv_image1;
@@ -71,7 +76,7 @@ class MMSFBLayer {
         MMSFBSurface            *surface;
 
         // flags which are used when flipping
-        MMSFBSurfaceFlipFlags	flipflags;
+        MMSFBFlipFlags			flipflags;
 
         // first time flag for createSurface()
         static bool 			firsttime_createsurface;
@@ -90,19 +95,19 @@ class MMSFBLayer {
         bool setExclusiveAccess();
         bool getConfiguration(MMSFBLayerConfig *config = NULL);
         bool getResolution(int *w, int *h);
-        bool getPixelformat(string *pixelformat);
-        bool setConfiguration(int w=0, int h=0, string pixelformat="", string buffermode="", string options="",
-        					  string window_pixelformat = "", string surface_pixelformat = "");
+        bool getPixelformat(MMSFBSurfacePixelFormat *pixelformat);
+        bool setConfiguration(int w=0, int h=0, MMSFBSurfacePixelFormat pixelformat=MMSFB_PF_NONE, string buffermode="", string options="",
+							  MMSFBSurfacePixelFormat window_pixelformat=MMSFB_PF_NONE, MMSFBSurfacePixelFormat surface_pixelformat=MMSFB_PF_NONE);
         bool setOpacity(unsigned char opacity);
         bool setLevel(int level);
         bool getSurface(MMSFBSurface **surface);
 
-        bool setFlipFlags(MMSFBSurfaceFlipFlags flags);
+        bool setFlipFlags(MMSFBFlipFlags flags);
 
         bool createSurface(MMSFBSurface **surface, int w, int h,
-                           string pixelformat = MMSFB_PF_NONE, int backbuffer = 0);
+						   MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE, int backbuffer = 0);
         bool createWindow(MMSFBWindow **window, int x, int y, int w, int h,
-                           string pixelformat = MMSFB_PF_NONE,
+						   MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE,
                            bool usealpha = true, bool uselayersurface = false);
 
 		friend class MMSFBManager;

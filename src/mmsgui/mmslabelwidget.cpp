@@ -54,7 +54,7 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->frame_delay_set = false;
     this->labelThread = NULL;
 
-    return MMSWidget::create(root, true, false, false, true, false, false);
+    return MMSWidget::create(root, true, false, false, true, false, false, false);
 }
 
 MMSWidget *MMSLabelWidget::copyWidget() {
@@ -117,7 +117,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 
         /* draw my things */
         if (this->font) {
-            DFBRectangle surfaceGeom = getSurfaceGeometry();
+            MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
             this->surface->setFont(this->font);
 
@@ -173,7 +173,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                     break;
             }
 
-            DFBColor color;
+            MMSFBColor color;
 
             if (isSelected())
                 color = getSelColor();
@@ -225,11 +225,11 @@ MMSALIGNMENT MMSLabelWidget::getAlignment() {
     GETLABEL(Alignment);
 }
 
-DFBColor MMSLabelWidget::getColor() {
+MMSFBColor MMSLabelWidget::getColor() {
     GETLABEL(Color);
 }
 
-DFBColor MMSLabelWidget::getSelColor() {
+MMSFBColor MMSLabelWidget::getSelColor() {
     GETLABEL(SelColor);
 }
 
@@ -301,13 +301,13 @@ void MMSLabelWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
         this->refresh();
 }
 
-void MMSLabelWidget::setColor(DFBColor color, bool refresh) {
+void MMSLabelWidget::setColor(MMSFBColor color, bool refresh) {
     myLabelWidgetClass.setColor(color);
     if (refresh)
         this->refresh();
 }
 
-void MMSLabelWidget::setSelColor(DFBColor selcolor, bool refresh) {
+void MMSLabelWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myLabelWidgetClass.setSelColor(selcolor);
     if (refresh)
         this->refresh();

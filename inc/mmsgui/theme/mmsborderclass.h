@@ -24,7 +24,6 @@
 #define MMSBORDERCLASS_H_
 
 #include "mmsgui/theme/mmsthemebase.h"
-#include <directfb.h>
 
 //! describe attributes for MMSBorder
 namespace MMSGUI_BORDER_ATTR {
@@ -136,9 +135,9 @@ class MMSBorderClass {
     private:
     	struct {
 	    	bool         iscolor;
-	        DFBColor     color;
+	        MMSFBColor   color;
 	        bool         isselcolor;
-	        DFBColor     selcolor;
+	        MMSFBColor   selcolor;
 	        bool         isimagepath;
 	        bool         isimagenames;
 	        bool         isselimagepath;
@@ -201,13 +200,13 @@ class MMSBorderClass {
 
         bool isColor();
         void unsetColor();
-        void setColor(const DFBColor &color);
-        bool getColor(DFBColor &color);
+        void setColor(const MMSFBColor &color);
+        bool getColor(MMSFBColor &color);
         //
         bool isSelColor();
         void unsetSelColor();
-        void setSelColor(const DFBColor &selcolor);
-        bool getSelColor(DFBColor &selcolor);
+        void setSelColor(const MMSFBColor &selcolor);
+        bool getSelColor(MMSFBColor &selcolor);
         //
         bool isImagePath();
         void unsetImagePath();

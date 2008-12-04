@@ -27,15 +27,15 @@
 #include <string>
 #include <mmsbase/interfaces/immsswitcher.h>
 
-typedef enum {
-	MMSINIT_NONE 			= 0x00000000,
-	MMSINIT_WINDOWMANAGER 	= 0x00000001,
-	MMSINIT_PLUGINMANAGER 	= 0x00000002,
-	MMSINIT_EVENTS 			= 0x00000004,
-	MMSINIT_GRAPHICS 		= 0x00000008,
-	MMSINIT_INPUTS 			= 0x00000010,
-	MMSINIT_FULL 			= 0x0000001f
-} MMSINIT_FLAGS;
+typedef int MMSINIT_FLAGS;
+
+#define MMSINIT_NONE			0x00000000
+#define MMSINIT_WINDOWMANAGER 	0x00000001
+#define MMSINIT_PLUGINMANAGER 	0x00000002
+#define MMSINIT_EVENTS 			0x00000004
+#define MMSINIT_GRAPHICS 		0x00000008
+#define MMSINIT_INPUTS 			0x00000010
+#define MMSINIT_FULL 			0x0000001f
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "");
 

@@ -23,7 +23,7 @@
 #include "mmsgui/theme/mmsarrowwidgetclass.h"
 #include <string.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_ARROWWIDGET_ATTR_I[] = MMSGUI_ARROWWIDGET_ATTR_INIT;
 
 //address attribute names
@@ -40,10 +40,11 @@ void MMSArrowWidgetClass::unsetAll() {
     unsetColor();
     unsetSelColor();
     unsetDirection();
+    unsetCheckSelected();
 }
 
 void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
-    DFBColor color;
+    MMSFBColor color;
 
     if (!prefix) {
 		startTAFFScan
@@ -55,7 +56,7 @@ void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
 	            break;
 			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_color_a:
@@ -85,7 +86,7 @@ void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
 	            break;
 			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_a:
@@ -115,13 +116,16 @@ void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_direction:
 	            setDirection(getDirectionFromString(attrval_str));
 	            break;
+			case MMSGUI_ARROWWIDGET_ATTR::MMSGUI_ARROWWIDGET_ATTR_IDS_check_selected:
+	            setCheckSelected((attrval_int) ? true : false);
+	            break;
 			}
 		}
 		endTAFFScan
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -132,78 +136,82 @@ void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(color)) { 
+            if (ISATTRNAME(color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setColor(color);
 			}
             else
-            if (ISATTRNAME(color_a)) { 
+            if (ISATTRNAME(color_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.a = attrval_int;
 	            setColor(color);
 			}
             else
-            if (ISATTRNAME(color_r)) { 
+            if (ISATTRNAME(color_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.r = attrval_int;
 	            setColor(color);
 			}
             else
-            if (ISATTRNAME(color_g)) { 
+            if (ISATTRNAME(color_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.g = attrval_int;
 	            setColor(color);
 			}
             else
-            if (ISATTRNAME(color_b)) { 
+            if (ISATTRNAME(color_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
 	            color.b = attrval_int;
 	            setColor(color);
 			}
             else
-            if (ISATTRNAME(selcolor)) { 
+            if (ISATTRNAME(selcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))    
+	            if (getColorFromString(attrval_str, &color))
 	                setSelColor(color);
 			}
             else
-            if (ISATTRNAME(selcolor_a)) { 
+            if (ISATTRNAME(selcolor_a)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.a = attrval_int;
 	            setSelColor(color);
 			}
             else
-            if (ISATTRNAME(selcolor_r)) { 
+            if (ISATTRNAME(selcolor_r)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.r = attrval_int;
 	            setSelColor(color);
 			}
             else
-            if (ISATTRNAME(selcolor_g)) { 
+            if (ISATTRNAME(selcolor_g)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.g = attrval_int;
 	            setSelColor(color);
 			}
             else
-            if (ISATTRNAME(selcolor_b)) { 
+            if (ISATTRNAME(selcolor_b)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
 	            color.b = attrval_int;
 	            setSelColor(color);
 			}
             else
-            if (ISATTRNAME(direction)) { 
+            if (ISATTRNAME(direction)) {
 	            setDirection(getDirectionFromString(attrval_str));
+			}
+            else
+            if (ISATTRNAME(check_selected)) {
+	            setCheckSelected((attrval_int) ? true : false);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -222,7 +230,7 @@ bool MMSArrowWidgetClass::isColor() {
     return this->iscolor;
 }
 
-void MMSArrowWidgetClass::setColor(DFBColor color) {
+void MMSArrowWidgetClass::setColor(MMSFBColor color) {
     this->color = color;
     this->iscolor = true;
 }
@@ -231,7 +239,7 @@ void MMSArrowWidgetClass::unsetColor() {
     this->iscolor = false;
 }
 
-DFBColor MMSArrowWidgetClass::getColor() {
+MMSFBColor MMSArrowWidgetClass::getColor() {
     return this->color;
 }
 
@@ -239,7 +247,7 @@ bool MMSArrowWidgetClass::isSelColor() {
     return this->isselcolor;
 }
 
-void MMSArrowWidgetClass::setSelColor(DFBColor selcolor) {
+void MMSArrowWidgetClass::setSelColor(MMSFBColor selcolor) {
     this->selcolor = selcolor;
     this->isselcolor = true;
 }
@@ -248,7 +256,7 @@ void MMSArrowWidgetClass::unsetSelColor() {
     this->isselcolor = false;
 }
 
-DFBColor MMSArrowWidgetClass::getSelColor() {
+MMSFBColor MMSArrowWidgetClass::getSelColor() {
     return this->selcolor;
 }
 
@@ -267,5 +275,22 @@ void MMSArrowWidgetClass::unsetDirection() {
 
 MMSDIRECTION MMSArrowWidgetClass::getDirection() {
     return this->direction;
+}
+
+bool MMSArrowWidgetClass::isCheckSelected() {
+    return this->ischeckselected;
+}
+
+void MMSArrowWidgetClass::setCheckSelected(bool checkselected) {
+    this->checkselected = checkselected;
+    this->ischeckselected = true;
+}
+
+void MMSArrowWidgetClass::unsetCheckSelected() {
+    this->ischeckselected = false;
+}
+
+bool MMSArrowWidgetClass::getCheckSelected() {
+    return this->checkselected;
 }
 

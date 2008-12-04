@@ -80,13 +80,13 @@ bool MMSFBManager::init(int argc, char **argv) {
         if (!mmsfb->getLayer(this->config.getGraphicsLayerId(), &this->graphicslayer))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
-    	this->graphicslayer->setFlipFlags((MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
+    	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
     }
 
 	if (config.getOutputType() == MMS_OT_MATROXFB)
-    	this->videolayer->setFlipFlags((MMSFBSurfaceFlipFlags)DSFLIP_WAITFORSYNC);
+    	this->videolayer->setFlipFlags(MMSFB_FLIP_WAITFORSYNC);
     else
-    	this->videolayer->setFlipFlags((MMSFBSurfaceFlipFlags)DSFLIP_ONSYNC);
+    	this->videolayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
 
     if (!this->graphicslayer->getID(&this->graphicslayerid))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
@@ -116,11 +116,11 @@ void MMSFBManager::applySettings() {
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (!this->graphicslayer->setConfiguration(config.getXres(), config.getYres(),
-                                               config.getGraphicsLayerPixelformat(),
+											   getMMSFBPixelFormatFromString(config.getGraphicsLayerPixelformat()),
                                                config.getGraphicsLayerBufferMode(),
                                                config.getGraphicsLayerOptions(),
-                                               config.getGraphicsWindowPixelformat(),
-                                               config.getGraphicsSurfacePixelformat()))
+                                               getMMSFBPixelFormatFromString(config.getGraphicsWindowPixelformat()),
+                                               getMMSFBPixelFormatFromString(config.getGraphicsSurfacePixelformat())))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
@@ -138,7 +138,7 @@ void MMSFBManager::applySettings() {
 
         /* set video layer's config */
         if (!this->videolayer->setConfiguration(config.getXres(), config.getYres(),
-                                                config.getVideoLayerPixelformat(),
+												getMMSFBPixelFormatFromString(config.getVideoLayerPixelformat()),
                                                 config.getVideoLayerBufferMode(),
                                                 config.getVideoLayerOptions()))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
@@ -154,16 +154,46 @@ void MMSFBManager::applySettings() {
         }
     }
 
-    /* init the mmsfbwindowmanager */
+    // set global surface attributes
+    string buffermode = config.getGraphicsLayerBufferMode();
+    MMSFBSurface *gls;
+    if (this->graphicslayer->getSurface(&gls)) {
+        // currently we do not accelerate using video hardware
+    	// if buffermode is not MMSFB_BM_BACKSYSTEM we use the directfb hardware acceleration
+    	if (buffermode == MMSFB_BM_BACKSYSTEM) {
+    		gls->setExtendedAcceleration(config.getExtendedAccel());
+
+
+    		// set the global alloc method
+#ifdef  __HAVE_DIRECTFB__
+    		string am = config.getAllocMethod();
+    		if (am == "malloc") {
+            	if (config.getExtendedAccel())
+            		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
+            	else
+            		gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
+    		}
+    		else
+    			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
+#else
+    		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
+#endif
+    	}
+    	else {
+			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
+    	}
+    }
+
+    // init the mmsfbwindowmanager
     mmsfbwindowmanager->init(this->graphicslayer, config.getPointer());
 
     // create a global temporary surface
-    string pixelformat = config.getGraphicsLayerPixelformat();
+    MMSFBSurfacePixelFormat pixelformat = getMMSFBPixelFormatFromString(config.getGraphicsLayerPixelformat());
     if (!isAlphaPixelFormat(pixelformat)) {
     	// the gui internally needs surfaces with alpha channel
     	// now we have to decide if we are working in RGB or YUV color space
-    	pixelformat = config.getGraphicsSurfacePixelformat();
-    	if ((pixelformat == "")||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
+    	MMSFBSurfacePixelFormat pixelformat = getMMSFBPixelFormatFromString(config.getGraphicsSurfacePixelformat());
+    	if ((pixelformat == MMSFB_PF_NONE)||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
     		// use autodetection
 	        if (!isRGBPixelFormat(pixelformat))
 	            // so switch all non-alpha pixelformats to AYUV
@@ -179,54 +209,8 @@ void MMSFBManager::applySettings() {
         // so switch all indexed pixelformats to ARGB
         pixelformat = MMSFB_PF_ARGB;
 
-    // set global surface attributes
-    string buffermode = config.getGraphicsLayerBufferMode();
-    MMSFBSurface *gls;
-    if (this->graphicslayer->getSurface(&gls)) {
-        // currently we do not accelerate using video hardware
-    	// if buffermode is not MMSFB_BM_BACKSYSTEM we use the directfb hardware acceleration
-    	if (buffermode == MMSFB_BM_BACKSYSTEM) {
-    		gls->setExtendedAcceleration(config.getExtendedAccel());
-
-    		// set the global alloc method
-    		// do it ONLY, if extended acceleration is ON
-    		string am = config.getAllocMethod();
-    		if (am == "malloc") {
-            	if (config.getExtendedAccel())
-            		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
-    		}
-    		else
-    			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-    	}
-    	else {
-			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-    	}
-    }
-
-    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d ,%s", config.getXres(), config.getYres(), pixelformat.c_str());
+    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d ,%s", config.getXres(), config.getYres(), getMMSFBPixelFormatString(pixelformat).c_str());
     mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
-/*    MMSFBSurface *ts = mmsfbsurfacemanager->getTemporarySurface(10,10);
-    if (ts) {
-        // currently we do not accelerate using video hardware
-    	// if buffermode is not MMSFB_BM_BACKSYSTEM we use the directfb hardware acceleration
-    	if (buffermode == MMSFB_BM_BACKSYSTEM) {
-    		ts->setExtendedAcceleration(config.getExtendedAccel());
-
-    		// set the global alloc method
-    		// do it ONLY, if extended acceleration is ON
-    		string am = config.getAllocMethod();
-    		if (am == "malloc") {
-            	if (config.getExtendedAccel())
-            		ts->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
-    		}
-    		else
-    			ts->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-    	}
-    	else {
-
-    	}
-    	mmsfbsurfacemanager->releaseTemporarySurface(ts);
-    }*/
 }
 
 

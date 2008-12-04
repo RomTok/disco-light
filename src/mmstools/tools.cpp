@@ -591,7 +591,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
 	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	                    tv.tv_usec/10000, pthread_self(), identity, buffer, filename, lineno);
+	                    tv.tv_usec/10000, (unsigned int)pthread_self(), identity, buffer, filename, lineno);
 
 	fwrite(buffer2, 1, num, fp);
 
@@ -619,7 +619,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
 	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	               tv.tv_usec/10000, pthread_self(), identity, msg.c_str(), filename, lineno);
+	               tv.tv_usec/10000, (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno);
 
 	fwrite(buffer, 1, num, fp);
 	fclose(fp);
@@ -646,7 +646,7 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
 	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	                    tv.tv_usec/10000, pthread_self(), identity, buffer, filename, lineno);
+	                    tv.tv_usec/10000, (unsigned int)pthread_self(), identity, buffer, filename, lineno);
 
 	fwrite(buffer2, 1, num, stdout);
 
@@ -666,7 +666,7 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
 	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	               tv.tv_usec/10000, pthread_self(), identity, msg.c_str(), filename, lineno);
+	               tv.tv_usec/10000, (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno);
 
 	fwrite(buffer, 1, num, stdout);
 

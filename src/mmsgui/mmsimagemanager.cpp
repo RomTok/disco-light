@@ -34,7 +34,7 @@ MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
 	this->layer = layer;
 
     // get the pixelformat, create a little temp surface
-	this->pixelformat = "";
+	this->pixelformat = MMSFB_PF_NONE;
 	MMSFBSurface *ts;
     if (this->layer->createSurface(&ts, 8, 1)) {
     	// okay, get the pixelformat from surface
@@ -203,11 +203,9 @@ bool read_png(const char *filename, void **buf, int *width, int *height, bool pr
 
 
 MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc,
-										unsigned int mirror_size) {
+										int mirror_size) {
     string                  imagefile;
-    IDirectFBImageProvider  *imageprovider = NULL;
     MMSIM_DESC              *im_desc = NULL;
-    DFBSurfaceDescription   surface_desc;
     int                     reload_image = -1;
 
     /* build filename */
@@ -218,7 +216,6 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
         return NULL;
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return NULL;
-
 
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
@@ -439,7 +436,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	else
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	/* successfully read */
-				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
+//				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
 				            im_desc->imagefile = imagefile;
 
 				            if (reload_image < 0) {
@@ -463,7 +460,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                /* copy img_buf to the surface */
 				                char *suf_ptr;
 				                int suf_pitch;
-				                im_desc->suf[0].surface->lock(DSLF_WRITE, (void**)&suf_ptr, &suf_pitch);
+				                im_desc->suf[0].surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
 
 				                if (img_pitch == suf_pitch)
 				                	memcpy(suf_ptr, img_buf, img_pitch * img_height);
@@ -511,7 +508,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                /* copy img_buf to the surface */
 				                char *suf_ptr;
 				                int suf_pitch;
-				                im_desc->suf[0].surface->lock(DSLF_WRITE, (void**)&suf_ptr, &suf_pitch);
+				                im_desc->suf[0].surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
 
 				                if (img_pitch == suf_pitch)
 				                	/* copy in one block */
@@ -548,6 +545,10 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
     	}
 
 
+#ifdef  __HAVE_DIRECTFB__
+        IDirectFBImageProvider  *imageprovider = NULL;
+        DFBSurfaceDescription   surface_desc;
+
         /* failed, try it with DFB providers */
     	if (!loadImage(&imageprovider, "", imagefile)) {
         	DEBUGMSG("MMSGUI", "cannot load image file '%s'", imagefile.c_str());
@@ -575,7 +576,6 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         }
 
 
-#ifdef  __HAVE_DIRECTFB__
         /* get surface description */
         if (imageprovider->GetSurfaceDescription(imageprovider, &surface_desc)!=DFB_OK) {
             /* release imageprovider */
@@ -676,9 +676,11 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
         }
 #endif
     }
+
+    return NULL;
 }
 
-MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, unsigned int height, string pixelformat) {
+MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, unsigned int height, MMSFBSurfacePixelFormat pixelformat) {
 //    DFBSurfaceDescription   desc;
     MMSIM_DESC              *im_desc = NULL;
 
@@ -709,7 +711,7 @@ MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, 
     desc.pixelformat = pixelformat;
 */
 //    if (this->dfb->CreateSurface(this->dfb, &desc, &(im_desc.surface)) != DFB_OK)
-    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat=="")?this->pixelformat:pixelformat))
+    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat==MMSFB_PF_NONE)?this->pixelformat:pixelformat))
         return NULL;
     im_desc->sufcount = 1;
     im_desc->imagefile = "";

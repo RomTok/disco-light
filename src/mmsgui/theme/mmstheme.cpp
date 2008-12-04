@@ -71,7 +71,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 2, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 4, mmsgui_taff_tagtable };
 
 
 
@@ -385,7 +385,7 @@ MMSInputWidgetClass* MMSTheme::getInputWidgetClass(string className) {
 MMSTheme::MMSTheme() {
 
     /* initialize the theme with default values */
-    DFBColor color;
+    MMSFBColor color;
     color.a = 0;
     color.r = 0;
     color.g = 0;
@@ -593,6 +593,8 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.widgetClass.setBlend(0);
         this->labelWidgetClass.widgetClass.setBlendFactor(0);
         this->labelWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->labelWidgetClass.widgetClass.setClickable(false);
+        this->labelWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->labelWidgetClass.widgetClass.border.setColor(color);
@@ -610,7 +612,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setFontName("decker.ttf");
         this->labelWidgetClass.setFontSize(16);
         this->labelWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
@@ -665,6 +667,8 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.widgetClass.setBlend(0);
         this->imageWidgetClass.widgetClass.setBlendFactor(0);
         this->imageWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->imageWidgetClass.widgetClass.setClickable(false);
+        this->imageWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->imageWidgetClass.widgetClass.border.setColor(color);
@@ -736,6 +740,8 @@ MMSTheme::MMSTheme() {
         this->buttonWidgetClass.widgetClass.setBlend(0);
         this->buttonWidgetClass.widgetClass.setBlendFactor(0);
         this->buttonWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->buttonWidgetClass.widgetClass.setClickable(true);
+        this->buttonWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->buttonWidgetClass.widgetClass.border.setColor(color);
@@ -788,6 +794,8 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.setBlend(0);
         this->progressBarWidgetClass.widgetClass.setBlendFactor(0);
         this->progressBarWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->progressBarWidgetClass.widgetClass.setClickable(false);
+        this->progressBarWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->progressBarWidgetClass.widgetClass.border.setColor(color);
@@ -801,7 +809,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.border.setRCorners(false);
 
         /* progressbar settings */
-        DFBColor c;
+        MMSFBColor c;
         c.a = 0;
         c.r = 0;
         c.g = 0;
@@ -854,6 +862,8 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.widgetClass.setBlend(0);
         this->menuWidgetClass.widgetClass.setBlendFactor(0);
         this->menuWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->menuWidgetClass.widgetClass.setClickable(true);
+        this->menuWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->menuWidgetClass.widgetClass.border.setColor(color);
@@ -936,6 +946,8 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.widgetClass.setBlend(0);
         this->textBoxWidgetClass.widgetClass.setBlendFactor(0);
         this->textBoxWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->textBoxWidgetClass.widgetClass.setClickable(true);
+        this->textBoxWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->textBoxWidgetClass.widgetClass.border.setColor(color);
@@ -955,7 +967,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         this->textBoxWidgetClass.setWrap(true);
         this->textBoxWidgetClass.setSplitWords(true);
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
@@ -1008,6 +1020,8 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.setBlend(0);
         this->arrowWidgetClass.widgetClass.setBlendFactor(0);
         this->arrowWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->arrowWidgetClass.widgetClass.setClickable(true);
+        this->arrowWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->arrowWidgetClass.widgetClass.border.setColor(color);
@@ -1021,7 +1035,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.border.setRCorners(false);
 
         /* arrow settings */
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;
@@ -1033,6 +1047,7 @@ MMSTheme::MMSTheme() {
         c.b = 255;
         this->arrowWidgetClass.setSelColor(c);
         this->arrowWidgetClass.setDirection(MMSDIRECTION_LEFT);
+        this->arrowWidgetClass.setCheckSelected(false);
     }
 
     /* MMSSliderWidget */
@@ -1074,6 +1089,8 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setBlend(0);
         this->sliderWidgetClass.widgetClass.setBlendFactor(0);
         this->sliderWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->sliderWidgetClass.widgetClass.setClickable(true);
+        this->sliderWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->sliderWidgetClass.widgetClass.border.setColor(color);
@@ -1141,6 +1158,8 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setBlend(0);
         this->inputWidgetClass.widgetClass.setBlendFactor(0);
         this->inputWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->inputWidgetClass.widgetClass.setClickable(true);
+        this->inputWidgetClass.widgetClass.setReturnOnScroll(true);
 
         /* base widget border settings */
         this->inputWidgetClass.widgetClass.border.setColor(color);
@@ -1158,7 +1177,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.setFontName("decker.ttf");
         this->inputWidgetClass.setFontSize(16);
         this->inputWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
-        DFBColor c;
+        MMSFBColor c;
         c.a = 255;
         c.r = 192;
         c.g = 192;

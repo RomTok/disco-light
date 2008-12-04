@@ -21,12 +21,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "mmsmedia/mmsav.h"
+#ifdef __HAVE_DIRECTFB__
 #include <directfb_version.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 
 MMS_CREATEERROR(MMSAVError);
 #ifdef __HAVE_DIRECTFB__
+DFBResult dfbres;
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
 #else
 #define THROW_DFB_ERROR(dfbres,msg)
@@ -90,7 +93,7 @@ static void output_cb(void *cdata, int width, int height, double ratio,
     }
 
     /* return the current rect */
-    *dest_rect=vodesc->rect;
+    *dest_rect=(DFBRectangle&)vodesc->rect;
     //DEBUGOUT("\nrect %d:%d:%d:%d",dest_rect->x,dest_rect->y,dest_rect->w,dest_rect->h);
 
 }
@@ -113,6 +116,8 @@ static void printFrameFormat(int frame_format) {
 	}
 }
 
+
+static MMSFBSurface *interim=NULL;
 
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
@@ -169,18 +174,37 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
         userd->dest.x&=~0x01;
         userd->dest.y&=~0x01;
         printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
+
+        if(frame_format == XINE_VORAW_RGB) {
+    		if(interim)
+    			delete interim;
+    		interim=NULL;
+
+    	}
+
     }
 
-	MMSFBExternalSurfaceBuffer buf;
-	buf.ptr = data0;
-	buf.pitch = frame_width;
-	buf.ptr2 = data1;
-	buf.pitch2 = frame_width / 2;
-	buf.ptr3 = data2;
-	buf.pitch3 = frame_width / 2;
 
-	userd->surf->stretchBlitBuffer(&buf,"YV12",frame_width,frame_height,NULL,&userd->dest);
-	userd->surf->flip(NULL);
+    if(frame_format == XINE_VORAW_RGB) {
+    	if(!interim)
+    		interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+
+    	interim->blitBuffer(data0,frame_width*3,MMSFB_PF_RGB24,frame_width,frame_height,NULL,0,0);
+		userd->surf->stretchBlit(interim,NULL,&userd->dest);
+
+    }else {
+		MMSFBExternalSurfaceBuffer buf;
+		buf.ptr = data0;
+		buf.pitch = frame_width;
+		buf.ptr2 = data1;
+		buf.pitch2 = frame_width / 2;
+		buf.ptr3 = data2;
+		buf.pitch3 = frame_width / 2;
+
+		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
+	}
+
+    userd->surf->flip(NULL);
 }
 #endif
 
@@ -312,7 +336,6 @@ void MMSAV::xineInit() {
  * @exception   MMSAVError  Cannot open the DFB video driver
  */
 void MMSAV::initialize(const bool verbose, MMSWindow *window) {
-    DFBResult   dfbres;
 
     this->verbose          = verbose;
 
@@ -333,7 +356,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         }
 		this->rawvisual.raw_overlay_cb=NULL;
 #endif
-
+#ifdef __HAVE_DIRECTFB__
     	this->window           = window;
         this->vodesc.format    = DSPF_UNKNOWN;
         this->vodesc.ratio     = 1.25;
@@ -352,6 +375,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         }
         this->vodesc.rect.w = this->vodesc.windsc.width;
         this->vodesc.rect.h = (int)((double)(this->vodesc.windsc.width) / this->vodesc.ratio + 0.5);
+#endif
         //this->vodesc.winsurface
         /* clear surface */
 
@@ -359,9 +383,10 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
 #ifdef __HAVE_XLIB__
 		if(window) {
-			vodesc.winsurface->setBlittingFlags(DSBLIT_NOFX);
+			this->userd.surf=window->getSurface();
+			this->userd.surf->setBlittingFlags(MMSFB_BLIT_NOFX);
 			int w,h;
-			vodesc.winsurface->getSize(&w,&h);
+			this->userd.surf->getSize(&w,&h);
 			this->userd.surf=window->getSurface();
 			this->userd.size.x=0;
 			this->userd.size.y=0;
@@ -378,7 +403,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 
 #else
         if(window) {
-
 			if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
 				DEBUGMSG("MMSMedia", "set blitting failed");
 			/* fill the visual structure for the video output driver */
@@ -397,10 +421,14 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 #endif
         }else {
 #ifdef __HAVE_DIRECTFB__
-            if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
-            	DEBUGMSG("MMSMedia", "set blitting failed");
-            /* fill the visual structure for the video output driver */
-            this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+            if(window) {
+				if(((IDirectFBSurface *)vodesc.winsurface->getDFBSurface())->SetBlittingFlags((IDirectFBSurface *)vodesc.winsurface->getDFBSurface(), DSBLIT_NOFX) != DFB_OK)
+					DEBUGMSG("MMSMedia", "set blitting failed");
+				/* fill the visual structure for the video output driver */
+				this->visual.destination  = (IDirectFBSurface *)vodesc.winsurface->getDFBSurface();
+            }
+            else
+            	this->visual.destination = NULL;
             this->visual.subpicture   = NULL;
             this->visual.output_cb    = output_cb;
             this->visual.output_cdata = (void*) &(this->vodesc);

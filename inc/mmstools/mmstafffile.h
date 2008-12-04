@@ -164,7 +164,7 @@ class MMSTaffFile {
 		bool		destination_premultiplied;
 
 		//! size of the mirror in pixel
-		unsigned int mirror_size;
+		int mirror_size;
 
 		//! is the TAFF buffer loaded?
 		bool	loaded;
@@ -268,7 +268,7 @@ class MMSTaffFile {
         /*!
         \param size	size of the mirror effect in pixel
         */
-        void setMirrorEffect(unsigned int size);
+        void setMirrorEffect(int size);
 
         //! Get the first tag id.
         /*!

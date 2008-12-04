@@ -124,7 +124,7 @@ ifndef DIRECTFB_CHECKED
         export DIRECTFB_INC=$(shell pkg-config --cflags directfb)
         ifeq ($(DIRECTFB_INC),)
             $(info --- INFO ---: directfb was not found. Building without DirectFB core support.)
-            HAVE_ALL_DEPS=0
+#            HAVE_ALL_DEPS=
         else
             export DIRECTFB_LIBS=$(shell pkg-config --libs directfb) -Wl,-rpath=$(shell pkg-config --libs-only-L directfb | cut --complement -c1-2)
             export CFLAGS+=-D__HAVE_DIRECTFB__
@@ -159,7 +159,7 @@ endif
 ifndef DIRECTFB_INC
     ifndef X11_INC
         $(info --- ERROR ---: No graphics backend found. Please install either directfb or x11 development libs.)
-        HAVE_ALL_DEPS=0
+#        HAVE_ALL_DEPS=0
     endif
 endif
 
@@ -355,10 +355,22 @@ ifndef LOG_FLAG_SET
     endif
 endif
 
+ifndef SSE_FLAG_SET
+    export SSE_FLAG_SET=1
+    ifneq ($(sse),)
+        $(info Building with MMX/SSE support)
+        export CFLAGS+=-D__HAVE_SSE__
+    endif
+endif
+
 # set variables for pkg-config file
-req_str    = "Requires: libxml-2.0 >= 2.6, libcurl, directfb, sigc++-2.0, libpng >= 1.2"
+req_str    = "Requires: libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2"
 libs_str   = "Libs: $(LDFLAGS) -L\$${libdir} -lmmsbase -lmmsconfig -lmmscore -lmmsgui -lmmsinput -lmmstools -lmmsinfo"
 cflags_str = "Cflags: $(CFLAGS) -I\$${includedir}"
+
+ifneq ($(DIRECTFB_LIBS),)
+    req_str += ", directfb"
+endif
 ifneq ($(XINE_LIBS),)
     req_str += ", libxine"
     libs_str += " -lmmsmedia"
@@ -395,4 +407,8 @@ ifdef X11_LIBS
     libs_str   += " $(X11_LIBS)"
     cflags_str += " $(X11_INC)"
 endif 
+ 
+#export CFLAGS+='-D__HAVE_XLIB__'
+#export CFLAGS+='-D__NO_XSYNC__'
+
  

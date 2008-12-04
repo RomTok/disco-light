@@ -131,7 +131,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             DEBUGMSG("Core", "Extended acceleration:        no");
 
 
-        if(flags & MMSINIT_GRAPHICS) {
+        if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");
 
             mmsfbmanager.init(argc,argv);
@@ -141,7 +141,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
             themeManager = new MMSThemeManager(config->getData(),config->getTheme());
             if(flags & MMSINIT_WINDOWMANAGER) {
                 DEBUGMSG("Core", "starting window manager");
-                DFBRectangle vrect;
+                MMSFBRectangle vrect;
                 vrect.x = config->getVRect().x;
                 vrect.y = config->getVRect().y;
                 vrect.w = config->getVRect().w;

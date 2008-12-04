@@ -32,7 +32,7 @@ The progressbar widget cannot be focused.
 \author Jens Schneider
 */
 class MMSProgressBarWidget : public MMSWidget {
-	
+
 	private:
         string              		className;
         MMSProgressBarWidgetClass 	*progressBarWidgetClass;
@@ -51,12 +51,12 @@ class MMSProgressBarWidget : public MMSWidget {
 
     public:
         /* theme access methods */
-        DFBColor getColor();
-        DFBColor getSelColor();
+        MMSFBColor getColor();
+        MMSFBColor getSelColor();
         unsigned int getProgress();
 
-        void setColor(DFBColor color, bool refresh = true);
-        void setSelColor(DFBColor selcolor, bool refresh = true);
+        void setColor(MMSFBColor color, bool refresh = true);
+        void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setProgress(unsigned int progress, bool refresh = true);
 
         void updateFromThemeClass(MMSProgressBarWidgetClass *themeClass);

@@ -30,7 +30,7 @@ class IMMSWindowManager {
     public:
         virtual ~IMMSWindowManager() {};
 
-        virtual DFBRectangle getVRect() = 0;
+        virtual MMSFBRectangle getVRect() = 0;
 
         virtual void addWindow(MMSWindow *window) = 0;
         virtual void removeWindow(MMSWindow *window) = 0;

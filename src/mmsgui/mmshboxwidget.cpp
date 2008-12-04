@@ -28,12 +28,12 @@ MMSHBoxWidget::MMSHBoxWidget(MMSWindow *root) : MMSWidget::MMSWidget() {
 
 bool MMSHBoxWidget::create(MMSWindow *root) {
 	this->type = MMSWIDGETTYPE_HBOX;
-    return MMSWidget::create(root, false, true, false, false, true, true);
+    return MMSWidget::create(root, false, true, false, false, true, true, false);
 }
 
 MMSWidget *MMSHBoxWidget::copyWidget() {
     /* create widget */
-    MMSHBoxWidget *newWidget = new MMSHBoxWidget(this->rootwindow); 
+    MMSHBoxWidget *newWidget = new MMSHBoxWidget(this->rootwindow);
 
     /* copy widget */
     *newWidget = *this;
@@ -61,7 +61,7 @@ void MMSHBoxWidget::recalculateChildren() {
     /* check something */
     if(this->children.empty())
         return;
-        
+
     if(this->geomset == false)
         return;
 
@@ -71,9 +71,9 @@ void MMSHBoxWidget::recalculateChildren() {
     /* first pass get and apply size hints */
     nextx = this->geom.x;
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        DFBRectangle rect;
-        
-        string sizehint = children.at(i)->getSizeHint(); 
+        MMSFBRectangle rect;
+
+        string sizehint = children.at(i)->getSizeHint();
 
 		if (sizehint == "") {
             /* have no sizehint */
@@ -85,37 +85,37 @@ void MMSHBoxWidget::recalculateChildren() {
 	        /* calculate max width */
 	        getPixelFromSizeHint(&rect.w, sizehint, this->geom.w, this->geom.h);
             safepix -= rect.w;
-            if ((safepix < 0)||((int)rect.w < 0)) 
+            if ((safepix < 0)||((int)rect.w < 0))
                 throw new MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
 
-            rect.h = this->geom.h; 
+            rect.h = this->geom.h;
 	        rect.y = this->geom.y;
             rect.x = nextx;
 
-            /* set childs geometry */	
+            /* set childs geometry */
 	        this->children.at(i)->setGeometry(rect);
 
             /* next position */
             nextx+= rect.w;
 		}
     }
-    
+
 	/* every child has a geometry */
 	if (safechildren == 0)
 		return;
     unsigned int safe_w = safepix / safechildren;
-    
+
     /* second pass calculate rest */
     nextx = this->geom.x;
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        DFBRectangle rect;
+        MMSFBRectangle rect;
 
      	if(this->children.at(i)->isGeomSet()==false) {
             /* calculate complete geometry, max width */
             rect.w = safe_w;
             if (i == lastsafechild)
                 rect.w+= safepix % safechildren;
-            rect.h = this->geom.h; 
+            rect.h = this->geom.h;
 	        rect.y = this->geom.y;
             rect.x = nextx;
      	}
@@ -124,8 +124,8 @@ void MMSHBoxWidget::recalculateChildren() {
      		rect = children.at(i)->getGeometry();
             rect.x = nextx;
      	}
-	
-        /* set childs geometry */   
+
+        /* set childs geometry */
         this->children.at(i)->setGeometry(rect);
 
         /* next position */

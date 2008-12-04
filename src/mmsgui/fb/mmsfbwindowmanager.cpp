@@ -23,7 +23,6 @@
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsinfo/mmsinfo.h"
 #include "mmsgui/fb/mmsfb.h"
-#include <directfb.h>
 
 /* initialize the mmsfbwindowmanager object */
 MMSFBWindowManager *mmsfbwindowmanager = new MMSFBWindowManager();
@@ -96,6 +95,32 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     if (!this->layer->getSurface(&this->layer_surface))
         return false;
 
+    // get the pixelformat, create a little temp surface
+	this->pixelformat = MMSFB_PF_NONE;
+	MMSFBSurface *ts;
+    if (this->layer->createSurface(&ts, 8, 1)) {
+    	// okay, get the pixelformat from surface
+    	ts->getPixelFormat(&this->pixelformat);
+    	delete ts;
+    }
+
+    // use taff?
+	this->usetaff = false;
+    if (this->pixelformat == MMSFB_PF_ARGB) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_ARGB;
+    }
+    else
+    if (this->pixelformat == MMSFB_PF_AiRGB) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_AiRGB;
+    }
+    else
+    if (this->pixelformat == MMSFB_PF_AYUV) {
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_AYUV;
+    }
+
     return true;
 }
 
@@ -147,12 +172,12 @@ bool MMSFBWindowManager::addWindow(MMSFBWindow *window) {
         awin.islayersurface = true;
         int w, h;
         s->getSize(&w, &h);
-        string pf;
+        MMSFBSurfacePixelFormat pf;
         s->getPixelFormat(&pf);
         this->layer->createSurface(&(awin.saved_surface), w, h, pf, 0);
         if (awin.saved_surface) {
             awin.saved_surface->clear();
-            awin.saved_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+            awin.saved_surface->setBlittingFlags(MMSFB_BLIT_NOFX);
         }
     }
     this->windows.push_back(awin);
@@ -407,17 +432,13 @@ bool MMSFBWindowManager::hideWindow(MMSFBWindow *window, bool locked, bool refre
     return false;
 }
 
-bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
+bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
                                      bool locked, bool refresh) {
     VISIBLE_WINDOWS *vw = NULL;
-    DFBRegion       ls_region;
+    MMSFBRegion     ls_region;
     bool            high_freq = false;
     bool            cleared = false;
     bool			win_found = false;
-	MMSFBSurface	*full_nofx_surface = NULL;
-	DFBRectangle	full_nofx_src_rect;
-	int				full_nofx_dst_x;
-	int				full_nofx_dst_y;
 
     /* check if initialized */
     INITCHECK;
@@ -433,7 +454,7 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, DFBRegion *region,
             if (this->vwins.at(i).surface == surface) {
                 // surface found
                 vw = &(this->vwins.at(i));
-                DFBRegion *myregion = &(vw->region);
+                MMSFBRegion *myregion = &(vw->region);
 
                 // calculate the affected region on the layer surface
                 if (region == NULL) {
@@ -579,8 +600,7 @@ logger.writeLog("BBB>");
 	// searching for other affected windows and draw parts of it
     for (unsigned int i=0; i < this->vwins.size(); i++) {
         VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
-        DFBRegion *myregion = &(aw->region);
-        bool full_nofx = false;
+        MMSFBRegion *myregion = &(aw->region);
 
         // if the window has no opacity then continue
         if (!aw->opacity)
@@ -596,7 +616,7 @@ logger.writeLog("BBB>");
 
             // the window is affected
             // calc source and destination
-            DFBRectangle src_rect;
+            MMSFBRectangle src_rect;
             int dst_x = ls_region.x1;
             int dst_y = ls_region.y1;
 
@@ -624,11 +644,11 @@ logger.writeLog("BBB>");
             if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.surface_buffer->alphachannel))) {
             	// the window has an alphachannel
                 if (aw->opacity < 255) {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
                 }
                 else {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
                 }
 
                 // first window?
@@ -642,11 +662,11 @@ logger.writeLog("BBB>");
             else {
             	// the window has no alphachannel
                 if (aw->opacity < 255) {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_COLORALPHA);
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_COLORALPHA);
                     this->layer_surface->setColor(0, 0, 0, aw->opacity);
                 }
                 else {
-                    this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+                    this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
                 }
 
                 // first window?
@@ -654,20 +674,11 @@ logger.writeLog("BBB>");
                 	// yes, clear the layer before blitting the first window surface
                 	// but only, if the first window does not use the whole layer region
                 	// else we do not have to clear the layer region and can save CPU
-                    if (cleared) {
+                    if (cleared)
                     	if ((aw->opacity < 255)||((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
                     	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2))) {
                     		this->layer_surface->clear();
                     	}
-                    	else {
-                    		// full layer with nofx
-                    		full_nofx = true;
-                    	}
-                    }
-                	else {
-                		// full layer with nofx
-                		full_nofx = true;
-                	}
 
                 	win_found = true;
                 }
@@ -680,26 +691,7 @@ logger.writeLog("BBB>");
                 }
             }
             else {
-            	if (full_nofx) {
-            		// this is the first window which is using the full layer with nofx
-            		// we try to blit this window if the second window matches the terms
-            		// so i should save the meta info and look for another window which is to blit over this window
-            		full_nofx_surface = aw->surface;
-            		full_nofx_src_rect = src_rect;
-            		full_nofx_dst_x = dst_x;
-            		full_nofx_dst_y = dst_y;
-            	}
-            	else {
-            		if ((full_nofx_surface)&&(memcmp(&src_rect, &full_nofx_src_rect, sizeof(full_nofx_src_rect))==0)&&(dst_x==full_nofx_dst_x)&&(dst_y==full_nofx_dst_y)) {
-						// second window matches to the first one, so use double blit
-						this->layer_surface->doubleBlit(full_nofx_surface, aw->surface, &src_rect, dst_x, dst_y);
-					}
-					else {
-            			// 'normal' blit
-            			this->layer_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
-            		}
-					full_nofx_surface = NULL;
-            	}
+				this->layer_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
             }
         }
     }
@@ -708,12 +700,6 @@ logger.writeLog("BBB>");
         // if no window is drawn, check if we have to clear the layer region
 	    if (cleared)
 	        this->layer_surface->clear();
-    }
-    else {
-    	// check if we have only one window with full_nofx_surface, so blit it now
-		if (full_nofx_surface) {
-			this->layer_surface->blit(full_nofx_surface, &full_nofx_src_rect, full_nofx_dst_x, full_nofx_dst_y);
-		}
     }
 
     // draw the pointer
@@ -795,7 +781,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             /* redraw the old rects */
             if (old_vwin.region.y1 < this->vwins.at(i).region.y1) {
                 /* redraw above */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if (region.y2 >= this->vwins.at(i).region.y1)
                     region.y2 = this->vwins.at(i).region.y1 - 1;
@@ -804,7 +790,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             else
             if (old_vwin.region.y1 > this->vwins.at(i).region.y1) {
                 /* redraw below */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if (region.y1 <= this->vwins.at(i).region.y2)
                     region.y1 = this->vwins.at(i).region.y2 + 1;
@@ -812,7 +798,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             }
             if (old_vwin.region.x1 < this->vwins.at(i).region.x1) {
                 /* redraw left side */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if  ((region.y2 >= this->vwins.at(i).region.y1)
                    &&(region.y1 <= this->vwins.at(i).region.y2)) {
@@ -826,7 +812,7 @@ bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
             else
             if (old_vwin.region.x1 > this->vwins.at(i).region.x1) {
                 /* redraw right side */
-                DFBRegion region;
+                MMSFBRegion region;
                 region = old_vwin.region;
                 if  ((region.y2 >= this->vwins.at(i).region.y1)
                    &&(region.y1 <= this->vwins.at(i).region.y2)) {
@@ -943,7 +929,7 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, 
 		}
 
 	// save the old region
-	DFBRegion old_region = this->pointer_region;
+	MMSFBRegion old_region = this->pointer_region;
 
 	// set the rectangle/region position
 	this->pointer_rect.x = this->pointer_posx - (this->pointer_rect.w >> 1);
@@ -990,9 +976,164 @@ bool MMSFBWindowManager::getPointerPosition(int &pointer_posx, int &pointer_posy
 }
 
 bool MMSFBWindowManager::loadPointer() {
+	string imagefile = (string)getPrefix() + "/share/disko/mmsgui/mmspointer.png";
+
+	// try to read from taff?
+	if (this->usetaff) {
+		// yes, try with taff
+		// assume: the taffpf (supported taff pixelformat) is correctly set
+    	// first : try to read taff image without special pixelformat
+		// second: try with pixelformat from my surfaces
+		bool retry = false;
+		do {
+			MMSTaffFile *tafff;
+			if (retry) {
+    			retry = false;
+    			DEBUGOUT("MMSFBWindowManager, retry\n");
+				// have to convert taff with special destination pixelformat
+				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    			if (tafff) {
+    				// set external file and requested pixelformat
+    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    				DEBUGOUT("MMSFBWindowManager, taffpf = %d\n", taffpf);
+    				tafff->setDestinationPixelFormat(taffpf);
+    				// convert it
+    				if (!tafff->convertExternal2TAFF()) {
+    					// conversion failed
+    					delete tafff;
+    					break;
+    				}
+    				delete tafff;
+    			}
+			}
+
+			// load image
+			tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+			if (tafff) {
+				if (!tafff->isLoaded()) {
+					printf("ha1.1\n");
+    				// set external file and mirror effect
+    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+    				// convert it
+    				if (!tafff->convertExternal2TAFF()) {
+    					// conversion failed
+    					delete tafff;
+    					break;
+    				}
+    				delete tafff;
+    				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
+    	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+				}
+			}
+			if (tafff) {
+	    		if (tafff->isLoaded()) {
+
+		    		// load the attributes
+	    	    	int 		attrid;
+	    	    	char 		*value_str;
+	    	    	int  		value_int;
+			    	void 		*img_buf = NULL;
+			    	int 		img_width = 0;
+			    	int 		img_height= 0;
+			    	int 		img_pitch = 0;
+			    	int 		img_size  = 0;
+			    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
+			    	bool 		img_premultiplied = true;
+			    	int 		img_mirror_size = 0;
+
+			    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
+			    		switch (attrid) {
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width:
+			    			img_width = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height:
+			    			img_height = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch:
+			    			img_pitch = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size:
+			    			img_size = value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data:
+			    			img_buf = value_str;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat:
+			    			img_pixelformat = (MMSTAFF_PF)value_int;
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
+			    			img_premultiplied = (value_int);
+			    			break;
+			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size:
+			    			img_mirror_size = value_int;
+			    			break;
+			    		}
+			    	}
+
+			    	if (img_pixelformat != taffpf) {
+			    		DEBUGOUT("MMSFBWindowManager, taffpf = %d\n", (int)taffpf);
+			    		// the image from the file has not the same pixelformat as the surface
+			    		if (!retry) {
+			    			// retry with surface pixelformat
+			    			DEBUGOUT("MMSFBWindowManager, request new pixf\n");
+			    			retry = true;
+			    			delete tafff;
+			    			continue;
+			    		}
+			    		else
+			    			retry = false;
+			    	}
+			    	else
+			    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
+			        	// successfully read, create a surface
+						if (!this->layer->createSurface(&this->pointer_surface, img_width, img_height, this->pixelformat)) {
+							DEBUGMSG("MMSFB", "cannot create surface for image file '%s'", imagefile.c_str());
+							return false;
+						}
+
+						// copy img_buf to the surface
+						char *suf_ptr;
+						int suf_pitch;
+						this->pointer_surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
+
+						if (img_pitch == suf_pitch)
+							memcpy(suf_ptr, img_buf, img_pitch * img_height);
+						else {
+							// copy each line
+							char *img_b = (char*)img_buf;
+							for (int i = 0; i < img_height; i++) {
+								memcpy(suf_ptr, img_b, img_pitch);
+								suf_ptr+=suf_pitch;
+								img_b+=img_pitch;
+							}
+						}
+						this->pointer_surface->unlock();
+
+						// free
+						delete tafff;
+
+						DEBUGMSG("MMSFB", "MMSFBWindowManager has loaded: '%s'", imagefile.c_str());
+
+					    // set pointer width & height
+					    this->pointer_rect.w = img_width;
+					    this->pointer_rect.h = img_height;
+
+					    return true;
+			    	}
+	    		}
+
+	            // free
+	            delete tafff;
+	        }
+		} while (retry);
+	}
+
+
+#ifdef  __HAVE_DIRECTFB__
     IDirectFBImageProvider *imageprov = NULL;
     DFBSurfaceDescription   surface_desc;
-	string 					imagefile = (string)getPrefix() + "/share/disko/mmsgui/mmspointer.png";
 
 	// create image provider
     if (!mmsfb->createImageProvider(&imageprov, imagefile)) {
@@ -1027,9 +1168,12 @@ bool MMSFBWindowManager::loadPointer() {
     this->pointer_rect.w = surface_desc.width;
     this->pointer_rect.h = surface_desc.height;
     return true;
+#endif
+
+	return false;
 }
 
-void MMSFBWindowManager::drawPointer(DFBRegion *region) {
+void MMSFBWindowManager::drawPointer(MMSFBRegion *region) {
 	// should draw the pointer?
 	if (!this->show_pointer)
 		return;
@@ -1042,13 +1186,13 @@ void MMSFBWindowManager::drawPointer(DFBRegion *region) {
 
 	// blit the pointer surface with given opacity
 	if (this->pointer_opacity < 255) {
-		this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA));
+		this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
 	    this->layer_surface->setColor(0, 0, 0, this->pointer_opacity);
 	}
 	else
-		this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_BLEND_ALPHACHANNEL);
+		this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
 	this->layer_surface->blit(this->pointer_surface, NULL, this->pointer_rect.x, this->pointer_rect.y);
-	this->layer_surface->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+	this->layer_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
     this->layer_surface->setColor(0, 0, 0, 0);
 }
 

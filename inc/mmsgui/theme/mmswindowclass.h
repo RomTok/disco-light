@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmsborderclass.h"
 
-//! describe attributes for MMSWindow which are additional to the MMSBorderClass 
+//! describe attributes for MMSWindow which are additional to the MMSBorderClass
 namespace MMSGUI_WINDOW_ATTR {
 
 	#define MMSGUI_WINDOW_ATTR_ATTRDESC \
@@ -108,7 +108,7 @@ class MMSWindowClass {
 	        bool         iswidth;
 	        bool         isheight;
 	        bool         isbgcolor;
-	        DFBColor     bgcolor;
+	        MMSFBColor   bgcolor;
 	        bool         isbgimagepath;
 	        bool         isbgimagename;
 	        bool         isopacity;
@@ -136,7 +136,7 @@ class MMSWindowClass {
 	        bool         ismoveout;
 	        MMSDIRECTION moveout;
     	} id;
-    	
+
         struct {
 	        string       *dx;
 	        string       *dy;
@@ -218,10 +218,10 @@ class MMSWindowClass {
 
         MMSWindowClass();
         ~MMSWindowClass();
-        MMSWindowClass &operator=(const MMSWindowClass &c); 
+        MMSWindowClass &operator=(const MMSWindowClass &c);
         //
         void unsetAll();
-        
+
         bool isAlignment();
         void unsetAlignment();
         void setAlignment(MMSALIGNMENT alignment);
@@ -249,8 +249,8 @@ class MMSWindowClass {
         //
         bool isBgColor();
         void unsetBgColor();
-        void setBgColor(const DFBColor &bgcolor);
-        bool getBgColor(DFBColor &bgcolor);
+        void setBgColor(const MMSFBColor &bgcolor);
+        bool getBgColor(MMSFBColor &bgcolor);
         //
         bool isBgImagePath();
         void unsetBgImagePath();

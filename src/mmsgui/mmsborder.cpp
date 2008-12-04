@@ -25,8 +25,8 @@
 #include <math.h>
 
 void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface *borderimages[],
-                DFBRectangle bordergeom[], bool *bordergeomset, MMSFBSurface *surface,
-                unsigned int x, unsigned int y, unsigned int width, unsigned int height, DFBColor color,
+                MMSFBRectangle bordergeom[], bool *bordergeomset, MMSFBSurface *surface,
+                unsigned int x, unsigned int y, unsigned int width, unsigned int height, MMSFBColor color,
                 MMSImageManager *im, unsigned char brightness, unsigned char opacity) {
     int bic = 8;
 
@@ -39,7 +39,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
 
     /* set the blitting flags */
     unsigned char alpha = 255;
-    if (color.a) alpha = color.a; 
+    if (color.a) alpha = color.a;
     surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, alpha, opacity);
 
     /* draw images around the widget */
@@ -48,7 +48,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
     if (borderimages[0]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[0]->getSize(&ww, &hh); 
+            borderimages[0]->getSize(&ww, &hh);
             bordergeom[0].x = x;
             bordergeom[0].y = y;
             bordergeom[0].w = ww;
@@ -75,7 +75,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
     if (borderimages[2]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[2]->getSize(&ww, &hh); 
+            borderimages[2]->getSize(&ww, &hh);
             bordergeom[2].x = x + width - ww;
             bordergeom[2].y = y;
             bordergeom[2].w = ww;
@@ -102,7 +102,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
     if (borderimages[4]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[4]->getSize(&ww, &hh); 
+            borderimages[4]->getSize(&ww, &hh);
             bordergeom[4].x = x + width - ww;
             bordergeom[4].y = y + height - hh;
             bordergeom[4].w = ww;
@@ -128,7 +128,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
     if (borderimages[6]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[6]->getSize(&ww, &hh); 
+            borderimages[6]->getSize(&ww, &hh);
             bordergeom[6].x = x;
             bordergeom[6].y = y + height - hh;
             bordergeom[6].w = ww;
@@ -149,14 +149,14 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
             bordergeom[6].w = borderThickness;
             bordergeom[6].h = borderThickness;
         }
-    }        
+    }
 
     /* SECOND: horizontal/vertical lines */
     /* image #2 (top) */
     if (borderimages[1]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[1]->getSize(&ww, &hh); 
+            borderimages[1]->getSize(&ww, &hh);
             bordergeom[1].x = bordergeom[0].x + bordergeom[0].w;
             bordergeom[1].y = y;
             bordergeom[1].w = bordergeom[2].x - bordergeom[1].x;
@@ -164,7 +164,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
         }
         surface->stretchBlit(borderimages[1], NULL, &bordergeom[1]);
         bic--;
-    }        
+    }
     else {
         bordergeom[1].x = bordergeom[0].x + bordergeom[0].w;
         bordergeom[1].y = y;
@@ -175,7 +175,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
     if (borderimages[3]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[3]->getSize(&ww, &hh); 
+            borderimages[3]->getSize(&ww, &hh);
             bordergeom[3].x = x + width - ww;
             bordergeom[3].y = bordergeom[2].y + bordergeom[2].h;
             bordergeom[3].w = ww;
@@ -194,7 +194,7 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
     if (borderimages[5]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[5]->getSize(&ww, &hh); 
+            borderimages[5]->getSize(&ww, &hh);
             bordergeom[5].x = bordergeom[6].x + bordergeom[6].w;
             bordergeom[5].y = y + height - hh;
             bordergeom[5].w = bordergeom[4].x - bordergeom[5].x;
@@ -208,12 +208,12 @@ void drawBorder(unsigned int borderThickness, bool borderRCorners, MMSFBSurface 
         bordergeom[5].y = y + height - borderThickness;
         bordergeom[5].w = bordergeom[4].x - bordergeom[5].x;
         bordergeom[5].h = borderThickness;
-    }        
+    }
     /* image #8 (left) */
     if (borderimages[7]) {
         if (!*bordergeomset) {
             int ww, hh;
-            borderimages[7]->getSize(&ww, &hh); 
+            borderimages[7]->getSize(&ww, &hh);
             bordergeom[7].x = x;
             bordergeom[7].y = bordergeom[0].y + bordergeom[0].h;
             bordergeom[7].w = ww;
@@ -246,7 +246,7 @@ pixelformat=DSPF_ALUT44;
         /* (top-left) */
         if (!borderimages[0]) {
             /* create newImage surface */
-            if ((borderimages[0] = im->newImage("", bordergeom[0].w, bordergeom[0].h))) { 
+            if ((borderimages[0] = im->newImage("", bordergeom[0].w, bordergeom[0].h))) {
                 borderimages[0]->clear();
                 if (color.a) {
                     borderimages[0]->setColor(color.r, color.g, color.b, 255);
@@ -286,7 +286,7 @@ pixelformat=DSPF_ALUT44;
         /* (top-right) */
         if (!borderimages[2]) {
             /* create newImage surface */
-            if ((borderimages[2] = im->newImage("", bordergeom[2].w, bordergeom[2].h))) { 
+            if ((borderimages[2] = im->newImage("", bordergeom[2].w, bordergeom[2].h))) {
                 borderimages[2]->clear();
                 if (color.a) {
                     borderimages[2]->setColor(color.r, color.g, color.b, 255);
@@ -322,7 +322,7 @@ pixelformat=DSPF_ALUT44;
         /* (bottom-right) */
         if (!borderimages[4]) {
             /* create newImage surface */
-            if ((borderimages[4] = im->newImage("", bordergeom[4].w, bordergeom[4].h))) { 
+            if ((borderimages[4] = im->newImage("", bordergeom[4].w, bordergeom[4].h))) {
                 borderimages[4]->clear();
                 if (color.a) {
                     borderimages[4]->setColor(color.r, color.g, color.b, 255);
@@ -357,7 +357,7 @@ pixelformat=DSPF_ALUT44;
         /* (bottom-left) */
         if (!borderimages[6]) {
             /* create newImage surface */
-            if ((borderimages[6] = im->newImage("", bordergeom[6].w, bordergeom[6].h))) { 
+            if ((borderimages[6] = im->newImage("", bordergeom[6].w, bordergeom[6].h))) {
                 borderimages[6]->clear();
                 if (color.a) {
                     borderimages[6]->setColor(color.r, color.g, color.b, 255);
@@ -395,7 +395,7 @@ pixelformat=DSPF_ALUT44;
         /* (top) */
         if (!borderimages[1]) {
             /* create newImage surface */
-            if ((borderimages[1] = im->newImage("", bordergeom[1].w, bordergeom[1].h))) { 
+            if ((borderimages[1] = im->newImage("", bordergeom[1].w, bordergeom[1].h))) {
                 borderimages[1]->clear();
                 if (color.a) {
                     borderimages[1]->setColor(color.r, color.g, color.b, 255);
@@ -413,7 +413,7 @@ pixelformat=DSPF_ALUT44;
         /* (right) */
         if (!borderimages[3]) {
             /* create newImage surface */
-            if ((borderimages[3] = im->newImage("", bordergeom[3].w, bordergeom[3].h))) { 
+            if ((borderimages[3] = im->newImage("", bordergeom[3].w, bordergeom[3].h))) {
                 borderimages[3]->clear();
                 if (color.a) {
                     borderimages[3]->setColor(color.r, color.g, color.b, 255);
@@ -431,7 +431,7 @@ pixelformat=DSPF_ALUT44;
         /* (bottom) */
         if (!borderimages[5]) {
             /* create newImage surface */
-            if ((borderimages[5] = im->newImage("", bordergeom[5].w, bordergeom[5].h))) { 
+            if ((borderimages[5] = im->newImage("", bordergeom[5].w, bordergeom[5].h))) {
                 borderimages[5]->clear();
                 if (color.a) {
                     borderimages[5]->setColor(color.r, color.g, color.b, 255);
@@ -449,7 +449,7 @@ pixelformat=DSPF_ALUT44;
         /* (left) */
         if (!borderimages[7]) {
             /* create newImage surface */
-            if ((borderimages[7] = im->newImage("", bordergeom[7].w, bordergeom[7].h))) { 
+            if ((borderimages[7] = im->newImage("", bordergeom[7].w, bordergeom[7].h))) {
                 borderimages[7]->clear();
                 if (color.a) {
                     borderimages[7]->setColor(color.r, color.g, color.b, 255);

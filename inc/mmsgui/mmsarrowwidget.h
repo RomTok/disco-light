@@ -25,10 +25,13 @@
 
 #include "mmsgui/mmswidget.h"
 
-//! With this class you can draw an arrow. 
+//! With this class you can draw an arrow.
 /*!
 The arrow here is nothing more than a triangle with a specified direction.
 The arrow widget cannot be focused.
+But if you click on it (e.g. mouse or touch screen), the arrow widget submits an input
+event (MMSKEY_CURSOR_LEFT, MMSKEY_CURSOR_RIGHT, MMSKEY_CURSOR_UP, MMSKEY_CURSOR_DOWN)
+to the toplevel parent window according to the direction parameter (see setDirection()).
 \author Jens Schneider
 */
 class MMSArrowWidget : public MMSWidget {
@@ -37,7 +40,11 @@ class MMSArrowWidget : public MMSWidget {
         MMSArrowWidgetClass *arrowWidgetClass;
         MMSArrowWidgetClass myArrowWidgetClass;
 
+        bool last_pressed;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
+
+        void handleInput(MMSInputEvent *inputevent);
 
     public:
         MMSArrowWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
@@ -50,13 +57,15 @@ class MMSArrowWidget : public MMSWidget {
 
     public:
         /* theme access methods */
-        DFBColor getColor();
-        DFBColor getSelColor();
+        MMSFBColor getColor();
+        MMSFBColor getSelColor();
         MMSDIRECTION getDirection();
+        bool getCheckSelected();
 
-        void setColor(DFBColor color, bool refresh = true);
-        void setSelColor(DFBColor selcolor, bool refresh = true);
+        void setColor(MMSFBColor color, bool refresh = true);
+        void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setDirection(MMSDIRECTION direction, bool refresh = true);
+        void setCheckSelected(bool checkselected);
 
         void updateFromThemeClass(MMSArrowWidgetClass *themeClass);
 };

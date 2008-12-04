@@ -32,7 +32,7 @@ Menu items are normal widgets. But the root widget of an menu item has to be a f
 The root widget is normally a MMSButton widget.
 Please note that you can nesting all other widgets under the root widget of the menu item.
 So you can build complex menu items. But think about the performance if you work with menus
-with an high number of items. 
+with an high number of items.
 \author Jens Schneider
 */
 class MMSMenuWidget : public MMSWidget {
@@ -43,7 +43,7 @@ class MMSMenuWidget : public MMSWidget {
     		MMSMenuWidget	*menu;
     		MMSWidget		*separator;
     	} MMSMENUITEMINFOS;
-    	
+
         string          	className;
         MMSMenuWidgetClass  *menuWidgetClass;
         MMSMenuWidgetClass  myMenuWidgetClass;
@@ -51,13 +51,13 @@ class MMSMenuWidget : public MMSWidget {
         MMSFBSurface    *selimage;
         MMSWidget       *itemTemplate;
 
-        int    			item_w;     /* width of an item */ 
+        int    			item_w;     /* width of an item */
         int    			item_h;     /* height of an item */
         int    			v_items;    /* number of visible vertical items */
         int    			h_items;    /* number of visible horizontal items */
 
         //! x position of the selected item
-        int    			x; 
+        int    			x;
         //! y position of the selected item
         int    			y;
         //! scroll x-offset
@@ -69,9 +69,9 @@ class MMSMenuWidget : public MMSWidget {
         bool            firstSelection;
 
         bool			zoomsel;		/* should the selected item zoomed? */
-        unsigned int 	zoomselwidth;	/* this value will be added to item_w for the selected item */      
+        unsigned int 	zoomselwidth;	/* this value will be added to item_w for the selected item */
         unsigned int 	zoomselheight;	/* this value will be added to item_h for the selected item */
-        int 			zoomselshiftx;	/* x-move the unselected items around the selected item */  
+        int 			zoomselshiftx;	/* x-move the unselected items around the selected item */
         int 			zoomselshifty;	/* y-move the unselected items around the selected item */
 
         bool 			smooth_scrolling;
@@ -80,30 +80,30 @@ class MMSMenuWidget : public MMSWidget {
         bool 			smooth_selection;
         int  			selection_offset_x;
         int  			selection_offset_y;
-        
+
         unsigned int 	frame_delay;
         unsigned int 	frame_delay_set;
 
-        
-        DFBRectangle 	virtualGeom;
+
+        MMSFBRectangle 	virtualGeom;
 
         //! this will be used to show/hide the menu and its whole parent window(s)
-        //! normally this is the same as widgets rootwindow, but it can also be the a parent from widgets rootwindow 
+        //! normally this is the same as widgets rootwindow, but it can also be the a parent from widgets rootwindow
         MMSWindow		*parent_window;
-        
+
         //! represents additional informations for each menu item
-        vector<MMSMENUITEMINFOS>	iteminfos; 
+        vector<MMSMENUITEMINFOS>	iteminfos;
 
         //! if != -1 then currently activated submenu is set
         int 			curr_submenu;
-        
-        //! if a submenu does appear, we will save the parent menu here which will used to go back 
+
+        //! if a submenu does appear, we will save the parent menu here which will used to go back
         MMSMenuWidget	*parent_menu;
-        
+
         //! if != -1 then the item with this id is set as go-back-item
         //! if the user enters this item, the parent menu (if does exist) will be shown
         int				back_item;
-        
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void add(MMSWidget *widget);
@@ -117,7 +117,7 @@ class MMSMenuWidget : public MMSWidget {
 
         void initParentWindow(void);
         void setRootWindow(MMSWindow *root, MMSWindow *parentroot = NULL);
-        
+
         void switchArrowWidgets();
         void setSliders();
 
@@ -133,7 +133,7 @@ class MMSMenuWidget : public MMSWidget {
 
         bool switchToSubMenu();
         bool switchBackToParentMenu(MMSDIRECTION direction = MMSDIRECTION_NOTSET, bool closeall = false);
-        
+
     public:
         MMSMenuWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         ~MMSMenuWidget();
@@ -148,7 +148,7 @@ class MMSMenuWidget : public MMSWidget {
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
 
-        bool setSelected(unsigned int item, bool refresh = true);
+        bool setSelected(unsigned int item, bool refresh = true, bool *changed = NULL);
         unsigned int getSelected();
 
         MMSWidget *getItem(unsigned int item);
@@ -166,13 +166,13 @@ class MMSMenuWidget : public MMSWidget {
         bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
-        bool scrollTo(int posx, int posy, bool refresh = true);
+        bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
 
         bool setSubMenuName(unsigned int item, const char *name);
         bool setSubMenuName(unsigned int item, string &name);
         bool setBackItem(unsigned int item);
         bool setSeparator(unsigned int item, MMSWidget *widget, bool refresh = true);
-        
+
         sigc::signal<void, MMSWidget*> *onSelectItem;
         sigc::signal<void, MMSWidget*> *onBeforeScroll;
 

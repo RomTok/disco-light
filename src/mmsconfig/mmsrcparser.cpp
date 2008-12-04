@@ -188,7 +188,7 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
 			this->global.sysconfig = string((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "data"))
 			this->global.data = string((const char *)parvalue);
-        else if(!xmlStrcmp(parname, (const xmlChar *) "inputintervall"))
+        else if(!xmlStrcmp(parname, (const xmlChar *) "inputinterval"))
             this->global.inputinterval = strToInt(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "firstplugin"))
 			this->global.firstplugin = string((const char *)parvalue);

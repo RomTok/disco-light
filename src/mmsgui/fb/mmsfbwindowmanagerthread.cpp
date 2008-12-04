@@ -80,12 +80,12 @@ void MMSFBWindowManagerThread::threadMain() {
         }
         if (*(this->high_freq_saved_surface)) {
             /* copy saved surface because window works direct with layer */
-            (*(this->high_freq_surface))->setBlittingFlags((MMSFBSurfaceBlittingFlags) DSBLIT_NOFX);
+            (*(this->high_freq_surface))->setBlittingFlags(MMSFB_BLIT_NOFX);
             (*(this->high_freq_surface))->blit(*(this->high_freq_saved_surface), NULL, 0, 0);
         }
         DEBUGOUT("flipped not fast enough");
         mmsfbwindowmanager->flipSurface(*(this->high_freq_surface), NULL,
-                                       (MMSFBSurfaceFlipFlags)0, true);
+                                       MMSFB_FLIP_NONE, true);
         *(this->high_freq_surface) = NULL;
         *(this->high_freq_saved_surface) = NULL;
         *(this->high_freq_lastflip) = 0;

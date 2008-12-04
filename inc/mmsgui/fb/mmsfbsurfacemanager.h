@@ -43,10 +43,10 @@ class MMSFBSurfaceManager {
     public:
         MMSFBSurfaceManager();
         ~MMSFBSurfaceManager();
-        MMSFBSurface *createSurface(int w, int h, string pixelformat, int backbuffer, bool systemonly);
+        MMSFBSurface *createSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly);
         void releaseSurface(MMSFBSurface *surface);
 
-        bool createTemporarySurface(int w, int h, string pixelformat, bool systemonly);
+        bool createTemporarySurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, bool systemonly);
         MMSFBSurface *getTemporarySurface(int w, int h);
         void releaseTemporarySurface(MMSFBSurface *tempsuf);
 };

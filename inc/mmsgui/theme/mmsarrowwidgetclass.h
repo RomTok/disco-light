@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSArrowWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSArrowWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_ARROWWIDGET_ATTR {
 
 	#define MMSGUI_ARROWWIDGET_ATTR_ATTRDESC \
@@ -39,8 +39,9 @@ namespace MMSGUI_ARROWWIDGET_ATTR {
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "direction", TAFF_ATTRTYPE_STRING }
-	
+		{ "direction", TAFF_ATTRTYPE_STRING }, \
+		{ "check_selected", TAFF_ATTRTYPE_BOOL }
+
 	#define MMSGUI_ARROWWIDGET_ATTR_IDS \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_color, \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_color_a, \
@@ -52,8 +53,9 @@ namespace MMSGUI_ARROWWIDGET_ATTR {
 		MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_r, \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_ARROWWIDGET_ATTR_IDS_selcolor_b, \
-		MMSGUI_ARROWWIDGET_ATTR_IDS_direction
-	
+		MMSGUI_ARROWWIDGET_ATTR_IDS_direction, \
+		MMSGUI_ARROWWIDGET_ATTR_IDS_check_selected
+
 	#define MMSGUI_ARROWWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -76,7 +78,7 @@ extern TAFF_ATTRDESC MMSGUI_ARROWWIDGET_ATTR_I[];
 //! A data access class for the arrow widget.
 /*!
 This class is the base for the MMSArrowWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSArrowWidget.
@@ -86,24 +88,30 @@ class MMSArrowWidgetClass {
     private:
     	//! name of the theme class
         string       className;
-        
+
         //! is color set?
         bool         iscolor;
-        
+
         //! color if the arrow is not selected
-        DFBColor     color;
-        
+        MMSFBColor   color;
+
         //! is selcolor set?
         bool         isselcolor;
-        
+
         //! color if the arrow is selected
-        DFBColor     selcolor;
-        
+        MMSFBColor   selcolor;
+
         //! is direction set?
         bool         isdirection;
-        
+
         //! direction of the arrow
         MMSDIRECTION direction;
+
+        //! is checkselected set?
+        bool         ischeckselected;
+
+        //! if true the input event will only be submitted if widget is in selected state
+        bool		checkselected;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -115,7 +123,7 @@ class MMSArrowWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSArrowWidgetClass.
         MMSArrowWidgetClass();
@@ -145,7 +153,7 @@ class MMSArrowWidgetClass {
         /*!
         \param color  color for unselected arrow
         */
-        void setColor(DFBColor color);
+        void setColor(MMSFBColor color);
 
         //! Mark the color as not set.
         void unsetColor();
@@ -154,7 +162,7 @@ class MMSArrowWidgetClass {
         /*!
         \return color which is used for the unselected arrow
         */
-        DFBColor getColor();
+        MMSFBColor getColor();
 
         //! Check if the color is set. This color will be used for the selected arrow.
         /*!
@@ -166,7 +174,7 @@ class MMSArrowWidgetClass {
         /*!
         \param selcolor  color for selected arrow
         */
-        void setSelColor(DFBColor selcolor);
+        void setSelColor(MMSFBColor selcolor);
 
         //! Mark the color as not set.
         void unsetSelColor();
@@ -175,7 +183,7 @@ class MMSArrowWidgetClass {
         /*!
         \return color which is used for the selected arrow
         */
-        DFBColor getSelColor();
+        MMSFBColor getSelColor();
 
         //! Check if the direction is set.
         /*!
@@ -197,6 +205,27 @@ class MMSArrowWidgetClass {
         \return direction
         */
         MMSDIRECTION getDirection();
+
+        //! Check if the checkselected is set.
+        /*!
+        \return true if the checkselected is set
+        */
+        bool isCheckSelected();
+
+        //! Set the checkselected flag.
+        /*!
+        \param checkselected  if true the input event will only be submitted if widget is in selected state
+        */
+        void setCheckSelected(bool checkselected);
+
+        //! Mark the checkselected flag as not set.
+        void unsetCheckSelected();
+
+        //! Get the checkselected flag.
+        /*!
+        \return checkselected
+        */
+        bool getCheckSelected();
 
     /* friends */
     friend class MMSThemeManager;

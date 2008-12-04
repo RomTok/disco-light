@@ -81,7 +81,7 @@ public:
 	MMSFiletransfer(const string url, const unsigned int ftpPort);
 
 	/** Destructor of class MMSFiletransfer. */
-	~MMSFiletransfer();
+	virtual ~MMSFiletransfer();
 
 	/**
 	 * Performs a ftp upload for the specified local file.

@@ -27,7 +27,7 @@
 
 class MMSWindowManager : public IMMSWindowManager {
 	private:
-        DFBRectangle        vrect;  // visible screen area
+        MMSFBRectangle        vrect;  // visible screen area
 
         vector<MMSWindow*>  windows;
         MMSWindow           *toplevel;
@@ -36,10 +36,10 @@ class MMSWindowManager : public IMMSWindowManager {
         void showBackgroundWindow();
 
 	public:
-		MMSWindowManager(DFBRectangle vrect);
+		MMSWindowManager(MMSFBRectangle vrect);
 		virtual ~MMSWindowManager();
 
-        DFBRectangle getVRect();
+        MMSFBRectangle getVRect();
 
 		void addWindow(MMSWindow *window);
         void removeWindow(MMSWindow *window);

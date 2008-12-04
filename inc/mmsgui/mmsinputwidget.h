@@ -68,8 +68,8 @@ class MMSInputWidget : public MMSWidget {
         string getFontName();
         unsigned int getFontSize();
         MMSALIGNMENT getAlignment();
-        DFBColor getColor();
-        DFBColor getSelColor();
+        MMSFBColor getColor();
+        MMSFBColor getSelColor();
         string getText();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
@@ -77,8 +77,8 @@ class MMSInputWidget : public MMSWidget {
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
         void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
-        void setColor(DFBColor color, bool refresh = true);
-        void setSelColor(DFBColor selcolor, bool refresh = true);
+        void setColor(MMSFBColor color, bool refresh = true);
+        void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true, bool reset_cursor = true);
 
         void updateFromThemeClass(MMSInputWidgetClass *themeClass);

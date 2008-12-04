@@ -83,7 +83,7 @@ class MMSWindow {
         	//! points to the child window
             MMSWindow       *window;
             //! region of the window within parent window
-            DFBRegion       region;
+            MMSFBRegion     region;
             //! opacity of the window
             unsigned char   opacity;
          	//! old opacity of the window
@@ -180,7 +180,7 @@ class MMSWindow {
         MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
 
         //! border geometry
-        DFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
+        MMSFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
 
         //! border geometry set?
         bool                bordergeomset;
@@ -195,7 +195,7 @@ class MMSWindow {
         MMSFBSurface        *surface;
 
         //! visible screen area (that means the visible area e.g. on the TV set), see the initialization of the MMSWindowManager
-        DFBRectangle 		vrect;
+        MMSFBRectangle 		vrect;
 
         //! x-movement of the window based on the alignment attribute
         int                 dxpix;
@@ -204,10 +204,10 @@ class MMSWindow {
         int                 dypix;
 
         //! geometry of the window based on the margin attribute
-        DFBRectangle        geom;
+        MMSFBRectangle        geom;
 
         //! inner geometry of the window based on the border margin attribute
-        DFBRectangle        innerGeom;
+        MMSFBRectangle        innerGeom;
 
         //! check and recalc the geometry of the widgets during the next draw()?
         bool				draw_setgeom;
@@ -297,11 +297,11 @@ class MMSWindow {
         bool moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh = true);
 
         //! Internal method: Draw a child window.
-        void drawChildWindows(MMSFBSurface *dst_surface, DFBRegion *region = NULL, int offsX = 0, int offsY = 0);
+        void drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region = NULL, int offsX = 0, int offsY = 0);
 
         //! Internal method: Flip a window.
-        bool flipWindow(MMSWindow *win = NULL, DFBRegion *region = NULL,
-                        MMSFBSurfaceFlipFlags flags = (MMSFBSurfaceFlipFlags)0,
+        bool flipWindow(MMSWindow *win = NULL, MMSFBRegion *region = NULL,
+                        MMSFBFlipFlags flags = MMSFB_FLIP_NONE,
                         bool flipChildSurface = true, bool locked = false);
 
         //! Internal method: Remove the focus from a child window.
@@ -320,7 +320,7 @@ class MMSWindow {
         virtual bool init();
 
         //! Internal method: Draw me.
-        virtual void draw(bool toRedrawOnly = false, DFBRectangle *rect2update = NULL,
+        virtual void draw(bool toRedrawOnly = false, MMSFBRectangle *rect2update = NULL,
         				  bool clear = true);
 
 
@@ -338,16 +338,16 @@ class MMSWindow {
         bool setFirstFocus(bool cw = false);
 
         //! Internal method: Used to find best candidate to navigate up from currPos.
-        double calculateDistGradCode_Up(DFBRectangle currPos, DFBRectangle candPos);
+        double calculateDistGradCode_Up(MMSFBRectangle currPos, MMSFBRectangle candPos);
 
         //! Internal method: Used to find best candidate to navigate down from currPos.
-        double calculateDistGradCode_Down(DFBRectangle currPos, DFBRectangle candPos);
+        double calculateDistGradCode_Down(MMSFBRectangle currPos, MMSFBRectangle candPos);
 
         //! Internal method: Used to find best candidate to navigate left from currPos.
-        double calculateDistGradCode_Left(DFBRectangle currPos, DFBRectangle candPos);
+        double calculateDistGradCode_Left(MMSFBRectangle currPos, MMSFBRectangle candPos);
 
         //! Internal method: Used to find best candidate to navigate right from currPos.
-        double calculateDistGradCode_Right(DFBRectangle currPos, DFBRectangle candPos);
+        double calculateDistGradCode_Right(MMSFBRectangle currPos, MMSFBRectangle candPos);
 
         //! Internal method: Handle widget navigation (up/down/left/right).
         bool handleNavigationForWidgets(MMSInputEvent *inputevent);
@@ -377,7 +377,7 @@ class MMSWindow {
         virtual bool hideAction(bool *stopaction);
 
         //! Internal method: Refresh a part of a window. Will be used by the widgets.
-        void refreshFromChild(MMSWidget *child, DFBRectangle *rect2update = NULL, bool check_shown = true);
+        void refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update = NULL, bool check_shown = true);
 
         //! Internal method: Set the focused widget.
         void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false);
@@ -461,13 +461,13 @@ class MMSWindow {
         /*!
         \return the rectangle of the window on the layer or parent window
         */
-        DFBRectangle getGeometry();
+        MMSFBRectangle getGeometry();
 
         //! Get the geometry of the window based on the layer.
         /*!
         \return the rectangle of the window on the layer
         */
-        DFBRectangle getRealGeometry();
+        MMSFBRectangle getRealGeometry();
 
         //! Add a widget to the window.
         /*!
@@ -489,9 +489,10 @@ class MMSWindow {
 
         //! Get the number of focusable widgets.
         /*!
+        \param cw	go recursive through child windows if set to true
         \return number of focusable widgets
         */
-        int getNumberOfFocusableWidgets();
+        int getNumberOfFocusableWidgets(bool cw = false);
 
         //! Get the number of focusable child windows.
         /*!
@@ -815,7 +816,7 @@ class MMSWindow {
         \param bgcolor	returns the bgcolor
         \return true, if bgcolor is successfully returned
         */
-        bool getBgColor(DFBColor &bgcolor);
+        bool getBgColor(MMSFBColor &bgcolor);
 
         //! Get the path to the background image of the window.
         /*!
@@ -968,7 +969,7 @@ class MMSWindow {
         \param color	returns the border color
         \return true, if color is successfully returned
         */
-        bool getBorderColor(DFBColor &color);
+        bool getBorderColor(MMSFBColor &color);
 
         //! Get the path to the window border images.
         /*!
@@ -1070,7 +1071,7 @@ class MMSWindow {
         \param bgcolor	the bgcolor
         \param refresh	refresh the window after changing the bgcolor?
         */
-        void setBgColor(DFBColor bgcolor, bool refresh = true);
+        void setBgColor(MMSFBColor bgcolor, bool refresh = true);
 
         //! Set the path to the background image of the window.
         /*!
@@ -1217,7 +1218,7 @@ class MMSWindow {
         \param color	the border color
         \param refresh	refresh the window after changing the border color?
         */
-        void setBorderColor(DFBColor color, bool refresh = true);
+        void setBorderColor(MMSFBColor color, bool refresh = true);
 
         //! Set the path to the window border images.
         /*!

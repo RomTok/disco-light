@@ -206,7 +206,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     }
 
     // should create a mirror effect?
-    if (this->mirror_size) {
+    if (this->mirror_size > 0) {
     	// yes
 		unsigned int *dst = (unsigned int*)*buf;
 		dst+=*width * *height;
@@ -947,7 +947,7 @@ void MMSTaffFile::setDestinationPixelFormat(MMSTAFF_PF pixelformat, bool premult
 	this->destination_premultiplied = premultiplied;
 }
 
-void MMSTaffFile::setMirrorEffect(unsigned int size) {
+void MMSTaffFile::setMirrorEffect(int size) {
 	this->mirror_size = size;
 }
 

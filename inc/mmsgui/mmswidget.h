@@ -116,12 +116,12 @@ struct neg_bool_accumulator
     }
 #endif*/
 
-typedef void(*GUIINPUTCALLBACK)(DFBInputDeviceKeySymbol);
+/*typedef void(*GUIINPUTCALLBACK)(DFBInputDeviceKeySymbol);
 
 typedef struct {
 	DFBInputDeviceKeySymbol key;
 	GUIINPUTCALLBACK cb;
-} INPUT_CB;
+} INPUT_CB;*/
 
 MMS_CREATEERROR(MMSWidgetError);
 
@@ -182,10 +182,10 @@ class MMSWidget {
         MMSFBSurface        *selbgimage_i;
 
         MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
-        DFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
+        MMSFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                bordergeomset;
         MMSFBSurface        *borderselimages[MMSBORDER_IMAGE_NUM_SIZE];
-        DFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
+        MMSFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
         bool                borderselgeomset;
 
         //! window on which the widget is connected
@@ -203,6 +203,7 @@ class MMSWidget {
         bool selectable_initial;
         bool canhavechildren;
         bool canselectchildren;
+        bool clickable_initial;
 
         bool focused;
         bool selected;
@@ -246,7 +247,7 @@ class MMSWidget {
         virtual void switchArrowWidgets();
 
         bool create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
-                    bool canhavechildren, bool canselectchildren);
+                    bool canhavechildren, bool canselectchildren, bool clickable);
 
         virtual bool init();
         virtual bool draw(bool *backgroundFilled = NULL);
@@ -269,11 +270,11 @@ class MMSWidget {
 
         virtual void add(MMSWidget *widget);
         MMSWindow *getRootWindow(MMSWindow **parentroot = NULL);
-        virtual void setGeometry(DFBRectangle geom);
-        DFBRectangle getGeometry();
-        DFBRectangle getRealGeometry();
-        DFBRectangle getInnerGeometry();
-        DFBRectangle getSurfaceGeometry();
+        virtual void setGeometry(MMSFBRectangle geom);
+        MMSFBRectangle getGeometry();
+        MMSFBRectangle getRealGeometry();
+        MMSFBRectangle getInnerGeometry();
+        MMSFBRectangle getSurfaceGeometry();
 
         int getId();
         string getName();
@@ -283,7 +284,7 @@ class MMSWidget {
 
         virtual void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
         bool isFocused();
-        virtual bool setSelected(bool set, bool refresh = true);
+        virtual bool setSelected(bool set, bool refresh = true, bool *changed = NULL);
         bool isSelected();
         void unsetFocusableForAllChildren(bool refresh);
 
@@ -337,11 +338,12 @@ class MMSWidget {
         virtual bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
-        virtual bool scrollTo(int posx, int posy, bool refresh = true);
+        virtual bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
 
         sigc::signal<void, MMSWidget*> *onSelect;
         sigc::signal<void, MMSWidget*, bool> *onFocus;
         sigc::signal<void, MMSWidget*> *onReturn;
+        sigc::signal<void, MMSWidget*> *onClick;
 
     protected:
         virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
@@ -366,7 +368,7 @@ class MMSWidget {
         MMSFBSurface *windowSurface;
 
         MMSFBSurface *surface;
-        DFBRectangle surfaceGeom;
+        MMSFBRectangle surfaceGeom;
 
         virtual void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
         virtual void setInnerGeometry();
@@ -377,23 +379,23 @@ class MMSWidget {
         unsigned int scrollDY;
         bool setScrollSize(unsigned int dX = 8, unsigned int dY = 8);
         bool setScrollPos(int posX = 0, int posY = 0, bool refresh = true, bool test = false);
-        DFBRectangle getVisibleSurfaceArea();
+        MMSFBRectangle getVisibleSurfaceArea();
         void updateWindowSurfaceWithSurface(bool useAlphaChannel);
 
         MMSWidget *parent;
         vector<MMSWidget *> children;
 
-        DFBRectangle geom;
-        DFBRectangle innerGeom;
+        MMSFBRectangle geom;
+        MMSFBRectangle innerGeom;
 
     public:
         /* theme access methods */
-        bool 	getBgColor(DFBColor &bgcolor);
-        bool 	getSelBgColor(DFBColor &selbgcolor);
-        bool	getBgColor_p(DFBColor &bgcolor_p);
-        bool	getSelBgColor_p(DFBColor &selbgcolor_p);
-        bool	getBgColor_i(DFBColor &bgcolor_i);
-        bool	getSelBgColor_i(DFBColor &selbgcolor_i);
+        bool 	getBgColor(MMSFBColor &bgcolor);
+        bool 	getSelBgColor(MMSFBColor &selbgcolor);
+        bool	getBgColor_p(MMSFBColor &bgcolor_p);
+        bool	getSelBgColor_p(MMSFBColor &selbgcolor_p);
+        bool	getBgColor_i(MMSFBColor &bgcolor_i);
+        bool	getSelBgColor_i(MMSFBColor &selbgcolor_i);
         bool    getBgImagePath(string &bgimagepath);
         bool    getBgImageName(string &bgimagename);
         bool    getSelBgImagePath(string &selbgimagepath);
@@ -424,9 +426,11 @@ class MMSWidget {
         bool 	getBlend(unsigned int &blend);
         bool 	getBlendFactor(double &blendfactor);
         bool 	getScrollOnFocus(bool &scrollonfocus);
+        bool 	getClickable(bool &clickable);
+        bool 	getReturnOnScroll(bool &returnonscroll);
 
-        bool	getBorderColor(DFBColor &color);
-        bool 	getBorderSelColor(DFBColor &selcolor);
+        bool	getBorderColor(MMSFBColor &color);
+        bool 	getBorderSelColor(MMSFBColor &selcolor);
         bool 	getBorderImagePath(string &imagepath);
         bool	getBorderImageNames(MMSBORDER_IMAGE_NUM num, string &imagename);
         bool	getBorderSelImagePath(string &selimagepath);
@@ -435,12 +439,12 @@ class MMSWidget {
         bool	getBorderMargin(unsigned int &margin);
         bool 	getBorderRCorners(bool &rcorners);
 
-        void setBgColor(DFBColor bgcolor, bool refresh = true);
-        void setSelBgColor(DFBColor selbgcolor, bool refresh = true);
-        void setBgColor_p(DFBColor bgcolor_p, bool refresh = true);
-        void setSelBgColor_p(DFBColor selbgcolor_p, bool refresh = true);
-        void setBgColor_i(DFBColor bgcolor_i, bool refresh = true);
-        void setSelBgColor_i(DFBColor selbgcolor_i, bool refresh = true);
+        void setBgColor(MMSFBColor bgcolor, bool refresh = true);
+        void setSelBgColor(MMSFBColor selbgcolor, bool refresh = true);
+        void setBgColor_p(MMSFBColor bgcolor_p, bool refresh = true);
+        void setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh = true);
+        void setBgColor_i(MMSFBColor bgcolor_i, bool refresh = true);
+        void setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh = true);
         void setBgImagePath(string bgimagepath, bool load = true, bool refresh = true);
         void setBgImageName(string bgimagename, bool load = true, bool refresh = true);
         void setSelBgImagePath(string selbgimagepath, bool load = true, bool refresh = true);
@@ -471,9 +475,11 @@ class MMSWidget {
         void setBlend(unsigned int blend, bool refresh = true);
         void setBlendFactor(double blendfactor, bool refresh = true);
         void setScrollOnFocus(bool scrollonfocus);
+        void setClickable(bool clickable);
+        void setReturnOnScroll(bool returnonscroll);
 
-        void setBorderColor(DFBColor bordercolor, bool refresh = true);
-        void setBorderSelColor(DFBColor borderselcolor, bool refresh = true);
+        void setBorderColor(MMSFBColor bordercolor, bool refresh = true);
+        void setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);
         void setBorderImagePath(string borderimagepath, bool load = true, bool refresh = true);
         void setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
                                  string imagename_5, string imagename_6, string imagename_7, string imagename_8,

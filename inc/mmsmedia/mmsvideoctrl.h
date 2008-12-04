@@ -20,6 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifdef  __HAVE_DIRECTFB__
+
 #ifndef MMSVIDEOCTRL_H_
 #define MMSVIDEOCTRL_H_
 
@@ -29,20 +31,20 @@
 
 /**
  * @brief   Controls the video device.
- * 
+ *
  * @ingroup     mmsmedia mmslibs
  *
  * @author      Jens Schneider (pupeider@morphine.tv)
  * @version     1.0.3
  * @date        11/07/2007
- * 
+ *
  * This class controls global video output settings.
  */
 class MMSVideoCtrl {
     private:
         IDirectFB                           *dfb;
         IDirectFBDisplayLayer               *layer;
-        static DFBDisplayLayerDescription   desc;   
+        static DFBDisplayLayerDescription   desc;
         static DFBColorAdjustment           cadj;
 
     public:
@@ -72,3 +74,5 @@ class MMSVideoCtrl {
 };
 
 #endif /*MMSVIDEOCTRL_H_*/
+
+#endif

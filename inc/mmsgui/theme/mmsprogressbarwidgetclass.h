@@ -25,7 +25,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSProgressBarWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSProgressBarWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_PROGRESSBARWIDGET_ATTR {
 
 	#define MMSGUI_PROGRESSBARWIDGET_ATTR_ATTRDESC \
@@ -40,7 +40,7 @@ namespace MMSGUI_PROGRESSBARWIDGET_ATTR {
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
 		{ "progress", TAFF_ATTRTYPE_UCHAR100 }
-	
+
 	#define MMSGUI_PROGRESSBARWIDGET_ATTR_IDS \
 		MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_color, \
 		MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_color_a, \
@@ -53,7 +53,7 @@ namespace MMSGUI_PROGRESSBARWIDGET_ATTR {
 		MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_selcolor_b, \
 		MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_progress
-	
+
 	#define MMSGUI_PROGRESSBARWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -76,7 +76,7 @@ extern TAFF_ATTRDESC MMSGUI_PROGRESSBARWIDGET_ATTR_I[];
 //! A data access class for the progressbar widget.
 /*!
 This class is the base for the MMSProgressBarWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSProgressBarWidget.
@@ -86,22 +86,22 @@ class MMSProgressBarWidgetClass {
     private:
     	//! name of the theme class
         string          className;
-        
+
         //! is color set?
         bool            iscolor;
-        
+
         //! color if the widget is not selected
-        DFBColor        color;
-        
+        MMSFBColor      color;
+
         //! is selcolor set?
         bool            isselcolor;
-        
+
         //! color if the widget is selected
-        DFBColor        selcolor;
-        
+        MMSFBColor      selcolor;
+
         //! is progress value set?
         bool            isprogress;
-        
+
         //! progress value in percent
         unsigned int    progress;
 
@@ -115,7 +115,7 @@ class MMSProgressBarWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSProgressBarWidgetClass.
         MMSProgressBarWidgetClass();
@@ -142,7 +142,7 @@ class MMSProgressBarWidgetClass {
         /*!
         \param color  color for unselected bar
         */
-        void setColor(DFBColor color);
+        void setColor(MMSFBColor color);
 
         //! Mark the color as not set.
         void unsetColor();
@@ -151,7 +151,7 @@ class MMSProgressBarWidgetClass {
         /*!
         \return color which is used for the unselected progress bar
         */
-        DFBColor getColor();
+        MMSFBColor getColor();
 
         //! Check if the color is set. This color will be used for the selected progress bar.
         bool isSelColor();
@@ -160,7 +160,7 @@ class MMSProgressBarWidgetClass {
         /*!
         \param selcolor  color for selected bar
         */
-        void setSelColor(DFBColor selcolor);
+        void setSelColor(MMSFBColor selcolor);
 
         //! Mark the color as not set.
         void unsetSelColor();
@@ -169,7 +169,7 @@ class MMSProgressBarWidgetClass {
         /*!
         \return color which is used for the selected progress bar
         */
-        DFBColor getSelColor();
+        MMSFBColor getSelColor();
 
         //! Check if the progress value is set.
         bool isProgress();

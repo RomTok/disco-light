@@ -181,7 +181,7 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
 
 			// add glyph to charmap
 	    	lock();
-			unsigned int glyph_size = this->glyph.width * this->glyph.height;
+			int glyph_size = this->glyph.width * this->glyph.height;
 			if (this->glyphpool + this->glyphpool_size - this->glyphpool_ptr >= glyph_size) {
 				// have free space in glyph pool
 				if (this->glyph.pitch != this->glyph.width) {

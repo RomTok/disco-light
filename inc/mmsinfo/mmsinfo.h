@@ -2,7 +2,7 @@
 #define MMSINFO_H_
 
 #ifndef DISKO_PREFIX
-#define DISKO_PREFIX "/usr"
+#define DISKO_PREFIX "/home/jys/disko"
 #endif
 
 const char *getPrefix();
