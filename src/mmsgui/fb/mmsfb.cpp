@@ -27,20 +27,6 @@
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
 
-#ifdef __HAVE_XLIB__
-static XF86VidModeModeLine origmode;
-static void myexit() {
-	int cnt;
-	XF86VidModeModeInfo **info;
-	XF86VidModeGetAllModeLines((Display *)mmsfb->getX11Display(), 0, &cnt, &info);
-	for(int i=0;i<cnt;i++) {
-		if((info[i]->hdisplay==origmode.hdisplay)&&(info[i]->vdisplay==origmode.vdisplay)) {
-			XF86VidModeSwitchToMode((Display *)mmsfb->getX11Display(), 0, info[i]);
-			return;
-		}
-	}
-}
-#endif
 
 #define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
@@ -62,13 +48,14 @@ MMSFB::MMSFB() {
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen) {
-
+bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen,
+				 string appl_name, string appl_icon_name) {
 
 #ifdef __HAVE_XLIB__
 	XInitThreads();
     this->resized=false;
 #endif
+
     // check if already initialized
     if (this->initialized) {
         MMSFB_SetError(0, "already initialized");
@@ -164,8 +151,8 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
 
 
-        XStoreName(this->x_display, this->x_window, "DISKO WINDOW");
-        XSetIconName(this->x_display, this->x_window, "DISKO ICON");
+        XStoreName(this->x_display, this->x_window, appl_name.c_str());
+        XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
         this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
         XMapWindow(this->x_display, this->x_window);
         XEvent x_event;

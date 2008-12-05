@@ -48,7 +48,7 @@ MMSFBManager::MMSFBManager() {
 MMSFBManager::~MMSFBManager() {
 }
 
-bool MMSFBManager::init(int argc, char **argv) {
+bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_icon_name) {
 	int myargc=argc;
 	char *myargv[255];
 	int i;
@@ -58,12 +58,23 @@ bool MMSFBManager::init(int argc, char **argv) {
 	for(i=0;i<argc;i++)
 		myargv[i]=strdup(argv[i]);
 
+#ifdef  __HAVE_DIRECTFB__
 	if(config.getOutputType() == MMS_OT_X11FB) {
 		myargv[myargc]=strdup("--dfb:system=x11");
 		myargc++;
 	}
+#endif
+
     DEBUGMSG("MMSGUI", "init mmsfb");
-    if (!mmsfb->init(myargc, myargv, config.getOutputType(), config.getXres(), config.getYres(), config.getExtendedAccel(), config.getFullscreen()))
+    bool ea = config.getExtendedAccel();
+#ifdef  __HAVE_DIRECTFB__
+	if (config.getAllocMethod() == "dfb") {
+		// use dfb even if extended accel
+		ea = false;
+	}
+#endif
+    if (!mmsfb->init(myargc, myargv, config.getOutputType(), config.getXres(), config.getYres(), ea, config.getFullscreen(),
+					 appl_name, appl_icon_name))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");
@@ -163,21 +174,18 @@ void MMSFBManager::applySettings() {
     	if (buffermode == MMSFB_BM_BACKSYSTEM) {
     		gls->setExtendedAcceleration(config.getExtendedAccel());
 
-
-    		// set the global alloc method
+    		// set the global alloc method (default is malloc)
+    		if (mmsfb->getBackend() == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-    		string am = config.getAllocMethod();
-    		if (am == "malloc") {
-            	if (config.getExtendedAccel())
-            		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
-            	else
-            		gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-    		}
-    		else
-    			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-#else
-    		gls->setAllocMethod(MMSFBSurfaceAllocMethod_malloc);
+				string am = config.getAllocMethod();
+				if (am == "malloc") {
+					if (!config.getExtendedAccel())
+						gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
+				}
+				else
+					gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
 #endif
+    		}
     	}
     	else {
 			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
