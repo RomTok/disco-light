@@ -10180,27 +10180,25 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
 
 #define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
 	if (glyph) { \
-		if   (((x + src_w > clipreg.x1)&&(x <= clipreg.x2)) \
-			&&((y + src_h > clipreg.y1)&&(y <= clipreg.y2))) { \
-			int dx = x + glyph->left; \
-			int dy = y + DY - glyph->top; \
-			if (dx < clipreg.x1) { \
-				src_w -= clipreg.x1 - dx; \
-				src   += clipreg.x1 - dx; \
-				dx     = clipreg.x1; } \
-			if (dx + src_w - 1 > clipreg.x2) src_w = clipreg.x2 - dx + 1; \
-			if (dy < clipreg.y1) { \
-				src_h -= clipreg.y1 - dy; \
-				src   +=(clipreg.y1 - dy) * src_pitch_pix; \
-				dy     = clipreg.y1; } \
-			if (dy + src_h - 1 > clipreg.y2) src_h = clipreg.y2 - dy + 1; \
-			unsigned char *src_end = src + src_h * src_pitch_pix; \
-			unsigned char *line_end = src + src_w; \
-			int src_pitch_pix_diff = src_pitch_pix - src_w; \
-			int dst_pitch_pix_diff = dst_pitch_pix - src_w; \
-			pt *dst = ((pt *)ptr) + dx + dy * dst_pitch_pix;
+		int dx = x + glyph->left; \
+		int dy = y + DY - glyph->top; \
+		if (dx < clipreg.x1) { \
+			src_w -= clipreg.x1 - dx; \
+			src   += clipreg.x1 - dx; \
+			dx     = clipreg.x1; } \
+		if (dx + src_w - 1 > clipreg.x2) src_w = clipreg.x2 - dx + 1; \
+		if (dy < clipreg.y1) { \
+			src_h -= clipreg.y1 - dy; \
+			src   +=(clipreg.y1 - dy) * src_pitch_pix; \
+			dy     = clipreg.y1; } \
+		if (dy + src_h - 1 > clipreg.y2) src_h = clipreg.y2 - dy + 1; \
+		unsigned char *src_end = src + src_h * src_pitch_pix; \
+		unsigned char *line_end = src + src_w; \
+		int src_pitch_pix_diff = src_pitch_pix - src_w; \
+		int dst_pitch_pix_diff = dst_pitch_pix - src_w; \
+		pt *dst = ((pt *)ptr) + dx + dy * dst_pitch_pix;
 
-#define MMSFBSURFACE_BLIT_TEXT_END_RENDER } x+=glyph->advanceX >> 6; }
+#define MMSFBSURFACE_BLIT_TEXT_END_RENDER x+=glyph->advanceX >> 6; }
 
 
 
