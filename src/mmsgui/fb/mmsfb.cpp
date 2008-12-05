@@ -27,20 +27,6 @@
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
 
-#ifdef __HAVE_XLIB__
-static XF86VidModeModeLine origmode;
-static void myexit() {
-	int cnt;
-	XF86VidModeModeInfo **info;
-	XF86VidModeGetAllModeLines((Display *)mmsfb->getX11Display(), 0, &cnt, &info);
-	for(int i=0;i<cnt;i++) {
-		if((info[i]->hdisplay==origmode.hdisplay)&&(info[i]->vdisplay==origmode.vdisplay)) {
-			XF86VidModeSwitchToMode((Display *)mmsfb->getX11Display(), 0, info[i]);
-			return;
-		}
-	}
-}
-#endif
 
 #define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
