@@ -31,35 +31,35 @@ MMSRcParser::MMSRcParser() {
     this->global.stdout        = false;
     this->global.inputinterval = 0;
 	this->global.shutdown      = false;
-	this->global.fullscreen    = false;
 
     this->configdb.database = "/tmp/mmsconfigdb";
 	this->datadb.database   = "/tmp/mmsdatadb";
 
-    this->dfb.xres                       = 800;
-    this->dfb.yres                       = 600;
-    this->dfb.outputtype                 = "vesafb";
-    this->dfb.videolayerid               = 0;
-    this->dfb.videolayerpixelformat      = "RGB16";
-    this->dfb.videolayeroptions          = "";
-    this->dfb.videolayerbuffermode       = "BACKSYSTEM";
-	this->dfb.graphicslayerid            = 0;
-	this->dfb.graphicslayerpixelformat   = "RGB16";
-    this->dfb.graphicslayeroptions       = "";
-    this->dfb.graphicslayerbuffermode    = "BACKSYSTEM";
-    this->dfb.vrect.x                    = 0;
-    this->dfb.vrect.y                    = 0;
-    this->dfb.vrect.w                    = 0;
-    this->dfb.vrect.h                    = 0;
-    this->dfb.touchrect.x                = 0;
-    this->dfb.touchrect.y                = 0;
-    this->dfb.touchrect.w                = 0;
-    this->dfb.touchrect.h                = 0;
-    this->dfb.pointer                    = false;	// show the mouse pointer, default no
-	this->dfb.graphicswindowpixelformat  = "";		// supported values: ARGB or AYUV, empty string means autodetection
-	this->dfb.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
-    this->dfb.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
-    this->dfb.allocmethod                = "";		// the current alloc method
+    this->graphics.xres                       = 800;
+    this->graphics.yres                       = 600;
+    this->graphics.outputtype                 = "vesafb";
+    this->graphics.videolayerid               = 0;
+    this->graphics.videolayerpixelformat      = "RGB16";
+    this->graphics.videolayeroptions          = "";
+    this->graphics.videolayerbuffermode       = "BACKSYSTEM";
+	this->graphics.graphicslayerid            = 0;
+	this->graphics.graphicslayerpixelformat   = "RGB16";
+    this->graphics.graphicslayeroptions       = "";
+    this->graphics.graphicslayerbuffermode    = "BACKSYSTEM";
+    this->graphics.vrect.x                    = 0;
+    this->graphics.vrect.y                    = 0;
+    this->graphics.vrect.w                    = 0;
+    this->graphics.vrect.h                    = 0;
+    this->graphics.touchrect.x                = 0;
+    this->graphics.touchrect.y                = 0;
+    this->graphics.touchrect.w                = 0;
+    this->graphics.touchrect.h                = 0;
+    this->graphics.pointer                    = false;	// show the mouse pointer, default no
+	this->graphics.graphicswindowpixelformat  = "";		// supported values: ARGB or AYUV, empty string means autodetection
+	this->graphics.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
+    this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
+    this->graphics.allocmethod                = "";		// the current alloc method
+	this->graphics.fullscreen    			 = false;	// x11 fullscreen?, default no
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -88,18 +88,18 @@ void MMSRcParser::parseFile(string filename) {
 	  		}
 	      	this->throughFile(pNode);
 
-            if (this->dfb.vrect.w <= 0)
-                this->dfb.vrect.w = this->dfb.xres;
-            if (this->dfb.vrect.h <= 0)
-                this->dfb.vrect.h = this->dfb.yres;
-            if ((this->dfb.vrect.x < 0)||(this->dfb.vrect.x > this->dfb.xres))
-                this->dfb.vrect.x = 0;
-            if ((this->dfb.vrect.y < 0)||(this->dfb.vrect.y > this->dfb.yres))
-                this->dfb.vrect.y = 0;
-            if (this->dfb.vrect.w - this->dfb.vrect.x > this->dfb.xres)
-                this->dfb.vrect.w = this->dfb.xres - this->dfb.vrect.x;
-            if (this->dfb.vrect.h - this->dfb.vrect.y > this->dfb.yres)
-                this->dfb.vrect.h = this->dfb.yres - this->dfb.vrect.y;
+            if (this->graphics.vrect.w <= 0)
+                this->graphics.vrect.w = this->graphics.xres;
+            if (this->graphics.vrect.h <= 0)
+                this->graphics.vrect.h = this->graphics.yres;
+            if ((this->graphics.vrect.x < 0)||(this->graphics.vrect.x > this->graphics.xres))
+                this->graphics.vrect.x = 0;
+            if ((this->graphics.vrect.y < 0)||(this->graphics.vrect.y > this->graphics.yres))
+                this->graphics.vrect.y = 0;
+            if (this->graphics.vrect.w - this->graphics.vrect.x > this->graphics.xres)
+                this->graphics.vrect.w = this->graphics.xres - this->graphics.vrect.x;
+            if (this->graphics.vrect.h - this->graphics.vrect.y > this->graphics.yres)
+                this->graphics.vrect.h = this->graphics.yres - this->graphics.vrect.y;
 
 
     	    /*free the document */
@@ -120,14 +120,14 @@ void MMSRcParser::parseFile(string filename) {
 
 }
 
-void MMSRcParser::getMMSRc(MMSConfigDataGlobal &global,
-		                   MMSConfigDataDB     &configdb,
-		                   MMSConfigDataDB     &datadb,
-		                   MMSConfigDataDFB    &dfb) {
+void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		&global,
+		                   MMSConfigDataDB     		&configdb,
+		                   MMSConfigDataDB     		&datadb,
+		                   MMSConfigDataGraphics    &graphics) {
 	global   = this->global;
 	configdb = this->configdb;
 	datadb   = this->datadb;
-	dfb      = this->dfb;
+	graphics = this->graphics;
 }
 
 /**
@@ -167,8 +167,12 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
 	node = node->xmlChildrenNode;
 
 	for (cur_node = node; cur_node; cur_node = cur_node->next) {
-		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter"))
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
+		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
+			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
 			continue;
+		}
 
     	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
     	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
@@ -196,8 +200,6 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdown = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "shutdowncmd"))
             this->global.shutdowncmd = string((const char *)parvalue);
-        else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen"))
-            this->global.fullscreen = strToBool(string((const char *)parvalue));
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);
@@ -227,8 +229,12 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 	xmlChar *parvalue;
 
 	for (cur_node = node->xmlChildrenNode; cur_node; cur_node = cur_node->next) {
-		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter"))
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
+		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
+			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
 			continue;
+		}
 
 		parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
 		parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
@@ -252,7 +258,7 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 	}
 }
 
-void MMSRcParser::throughDFBSettings(xmlNode* node) {
+void MMSRcParser::throughGraphics(xmlNode* node) {
 
 	xmlNode *cur_node = NULL;
 	xmlChar *parname;
@@ -261,60 +267,66 @@ void MMSRcParser::throughDFBSettings(xmlNode* node) {
 	node = node->xmlChildrenNode;
 
 	for (cur_node = node; cur_node; cur_node = cur_node->next) {
-		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter"))
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
+		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
+			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
 			continue;
+		}
 
     	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
     	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
 
 		if(!xmlStrcmp(parname, (const xmlChar *) "xres"))
-			this->dfb.xres = strToInt(string((const char *)parvalue));
+			this->graphics.xres = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres"))
-	        this->dfb.yres = strToInt(string((const char *)parvalue));
+	        this->graphics.yres = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype"))
-	        this->dfb.outputtype = string((const char *)parvalue);
+	        this->graphics.outputtype = string((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
-			this->dfb.videolayerid = atoi((const char *)parvalue);
+			this->graphics.videolayerid = atoi((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat"))
-	        this->dfb.videolayerpixelformat = string((const char *)parvalue);
+	        this->graphics.videolayerpixelformat = string((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayeroptions"))
-	        this->dfb.videolayeroptions = string((const char *)parvalue);
+	        this->graphics.videolayeroptions = string((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerbuffermode"))
-	        this->dfb.videolayerbuffermode = string((const char *)parvalue);
+	        this->graphics.videolayerbuffermode = string((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerid"))
-			this->dfb.graphicslayerid = atoi((const char *)parvalue);
+			this->graphics.graphicslayerid = atoi((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerpixelformat"))
-			this->dfb.graphicslayerpixelformat = string((const char *)parvalue);
+			this->graphics.graphicslayerpixelformat = string((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayeroptions"))
-	        this->dfb.graphicslayeroptions = string((const char *)parvalue);
+	        this->graphics.graphicslayeroptions = string((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode"))
-	        this->dfb.graphicslayerbuffermode = string((const char *)parvalue);
+	        this->graphics.graphicslayerbuffermode = string((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.x"))
-	        this->dfb.vrect.x = strToInt(string((const char *)parvalue));
+	        this->graphics.vrect.x = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.y"))
-	        this->dfb.vrect.y = strToInt(string((const char *)parvalue));
+	        this->graphics.vrect.y = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.w"))
-	        this->dfb.vrect.w = strToInt(string((const char *)parvalue));
+	        this->graphics.vrect.w = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.h"))
-	        this->dfb.vrect.h = strToInt(string((const char *)parvalue));
+	        this->graphics.vrect.h = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrec.x"))
-	        this->dfb.touchrect.x = strToInt(string((const char *)parvalue));
+	        this->graphics.touchrect.x = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.y"))
-	        this->dfb.touchrect.y = strToInt(string((const char *)parvalue));
+	        this->graphics.touchrect.y = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.w"))
-	        this->dfb.touchrect.w = strToInt(string((const char *)parvalue));
+	        this->graphics.touchrect.w = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.h"))
-	    	this->dfb.touchrect.h = strToInt(string((const char *)parvalue));
+	    	this->graphics.touchrect.h = strToInt(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "pointer"))
-            this->dfb.pointer = strToBool(string((const char *)parvalue));
+            this->graphics.pointer = strToBool(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat"))
-			this->dfb.graphicswindowpixelformat = string((const char *)parvalue);
+			this->graphics.graphicswindowpixelformat = string((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat"))
-			this->dfb.graphicssurfacepixelformat = string((const char *)parvalue);
+			this->graphics.graphicssurfacepixelformat = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
-            this->dfb.extendedaccel = strToBool(string((const char *)parvalue));
+            this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
-			this->dfb.allocmethod = string((const char *)parvalue);
+			this->graphics.allocmethod = string((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen"))
+            this->graphics.fullscreen = strToBool(string((const char *)parvalue));
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);
@@ -341,12 +353,18 @@ void MMSRcParser::throughFile(xmlNode* node) {
 
 	for (cur_node = node; cur_node; cur_node = cur_node->next) {
 
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
+
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "global"))
 			throughGlobal(cur_node);
 		else if(!xmlStrcmp(cur_node->name, (const xmlChar *) "dbsettings"))
 			throughDBSettings(cur_node);
-		else if(!xmlStrcmp(cur_node->name, (const xmlChar *) "dfbsettings"))
-			throughDFBSettings(cur_node);
+		else if((!xmlStrcmp(cur_node->name, (const xmlChar *) "dfbsettings"))
+			  ||(!xmlStrcmp(cur_node->name, (const xmlChar *) "graphics")))
+			throughGraphics(cur_node);
+		else
+			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
 	}
 }
 

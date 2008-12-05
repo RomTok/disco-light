@@ -34,14 +34,14 @@ MMSConfigDataDB::MMSConfigDataDB (const string database) :
 }
 
 
-MMSConfigData::MMSConfigData(MMSConfigDataGlobal global,
-                             MMSConfigDataDB     configdb,
-                             MMSConfigDataDB     datadb,
-                             MMSConfigDataDFB    dfb) {
+MMSConfigData::MMSConfigData(MMSConfigDataGlobal 	global,
+                             MMSConfigDataDB     	configdb,
+                             MMSConfigDataDB     	datadb,
+                             MMSConfigDataGraphics  graphics) {
     this->global   = global;
     this->configdb = configdb;
     this->datadb   = datadb;
-    this->dfb      = dfb;
+    this->graphics = graphics;
 #ifdef HARD_PREFIX
     this->global.prefix = HARD_PREFIX;
 #endif
@@ -175,84 +175,85 @@ const string MMSConfigData::getDataDBDatabase() {
     return this->datadb.database;
 };
 
-/* dfb section getters */
+/* graphics section getters */
 const int MMSConfigData::getXres() {
-    return this->dfb.xres;
+    return this->graphics.xres;
 }
 
 const int MMSConfigData::getYres() {
-    return this->dfb.yres;
+    return this->graphics.yres;
 }
 
 const string MMSConfigData::getOutputType() {
-    return this->dfb.outputtype;
+    return this->graphics.outputtype;
 }
 
 const int MMSConfigData::getVideoLayerId() {
-	return this->dfb.videolayerid;
+	return this->graphics.videolayerid;
 }
 
 const string MMSConfigData::getVideoLayerPixelformat() {
-    return this->dfb.videolayerpixelformat;
+    return this->graphics.videolayerpixelformat;
 }
 
 const string MMSConfigData::getVideoLayerOptions() {
-    return this->dfb.videolayeroptions;
+    return this->graphics.videolayeroptions;
 }
 
 const string MMSConfigData::getVideoLayerBufferMode() {
-    return this->dfb.videolayerbuffermode;
+    return this->graphics.videolayerbuffermode;
 }
 
 const int MMSConfigData::getGraphicsLayerId() {
-	return this->dfb.graphicslayerid;
+	return this->graphics.graphicslayerid;
 }
 
 const string MMSConfigData::getGraphicsLayerPixelformat() {
-    return this->dfb.graphicslayerpixelformat;
+    return this->graphics.graphicslayerpixelformat;
 }
 
 const string MMSConfigData::getGraphicsLayerOptions() {
-    return this->dfb.graphicslayeroptions;
+    return this->graphics.graphicslayeroptions;
 }
 
 const string MMSConfigData::getGraphicsLayerBufferMode() {
-    return this->dfb.graphicslayerbuffermode;
+    return this->graphics.graphicslayerbuffermode;
 }
 
 const CVRECT MMSConfigData::getVRect() {
-    return this->dfb.vrect;
+    return this->graphics.vrect;
 }
 
 const CVRECT MMSConfigData::getTouchRect() {
-    return this->dfb.touchrect;
+    return this->graphics.touchrect;
 }
 
 const bool MMSConfigData::getPointer() {
-    return this->dfb.pointer;
+    return this->graphics.pointer;
 }
 
 const string MMSConfigData::getGraphicsWindowPixelformat() {
-    return this->dfb.graphicswindowpixelformat;
+    return this->graphics.graphicswindowpixelformat;
 }
 
 const string MMSConfigData::getGraphicsSurfacePixelformat() {
-    return this->dfb.graphicssurfacepixelformat;
+    return this->graphics.graphicssurfacepixelformat;
 }
 
 const bool MMSConfigData::getExtendedAccel() {
-    return this->dfb.extendedaccel;
+    return this->graphics.extendedaccel;
 }
 
 const string MMSConfigData::getAllocMethod() {
-    return this->dfb.allocmethod;
+    return this->graphics.allocmethod;
 }
+
 const bool   MMSConfigData::getFullscreen() {
-	return this->global.fullscreen;
+	return this->graphics.fullscreen;
 }
 
 /* static variables */
-MMSConfigDataGlobal MMSConfigData::global;
-MMSConfigDataDB     MMSConfigData::configdb;
-MMSConfigDataDB     MMSConfigData::datadb;
-MMSConfigDataDFB    MMSConfigData::dfb;
+MMSConfigDataGlobal 	MMSConfigData::global;
+MMSConfigDataDB     	MMSConfigData::configdb;
+MMSConfigDataDB     	MMSConfigData::datadb;
+MMSConfigDataGraphics   MMSConfigData::graphics;

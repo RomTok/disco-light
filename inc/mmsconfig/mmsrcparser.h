@@ -31,25 +31,25 @@
 
 class MMSRcParser {
 	private:
-    	MMSConfigDataGlobal global;
-    	MMSConfigDataDB     configdb, datadb;
-    	MMSConfigDataDFB    dfb;
-	 	
+    	MMSConfigDataGlobal		global;
+    	MMSConfigDataDB     	configdb, datadb;
+    	MMSConfigDataGraphics	graphics;
+
     	void checkVersion(xmlNode* node);
     	void throughGlobal(xmlNode* node);
     	void throughDBSettings(xmlNode* node);
-    	void throughDFBSettings(xmlNode* node);
+    	void throughGraphics(xmlNode* node);
     	void throughFile(xmlNode* node);
 
 	public:
 		MMSRcParser();
 		~MMSRcParser();
-		
+
 		void parseFile(string filename);
-		void getMMSRc(MMSConfigDataGlobal &global,
-			          MMSConfigDataDB     &configdb,
-			          MMSConfigDataDB     &datadb,
-			          MMSConfigDataDFB    &dfb);
+		void getMMSRc(MMSConfigDataGlobal 	&global,
+			          MMSConfigDataDB     	&configdb,
+			          MMSConfigDataDB     	&datadb,
+			          MMSConfigDataGraphics	&graphics);
 };
 
 MMS_CREATEERROR(MMSRcParserError);

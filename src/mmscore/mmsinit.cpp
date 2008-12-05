@@ -34,7 +34,7 @@ static MMSEventSignup               *mastereventsignup  = NULL;
 static MMSInputManager              *inputs             = NULL;
 static MMSConfigDataGlobal          rcGlobal;
 static MMSConfigDataDB              rcConfigDB, rcDataDB;
-static MMSConfigDataDFB             rcDFB;
+static MMSConfigDataGraphics        rcGraphics;
 static MMSWindowManager             *windowmanager = NULL;
 
 static void on_exit() {
@@ -58,18 +58,18 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         if(configfile != "") {
         	DEBUGOUT("set configfile: %s\n", configfile.c_str());
 	        rcparser.parseFile(configfile);
-	        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
+	        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcGraphics);
         } else {
 
 		    try {
 		    	string filename = getenv("HOME") + string("/.disko/diskorc.xml");
 		        rcparser.parseFile("./etc/diskorc.xml");
-		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
+		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcGraphics);
 
 		    } catch (MMSRcParserError *ex) {
 		        try {
 		        rcparser.parseFile("/etc/diskorc.xml");
-		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
+		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcGraphics);
 
 
 		        } catch (MMSRcParserError *ex) {
@@ -81,7 +81,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 		        }
 		    }
         }
-        config = new MMSConfigData(rcGlobal, rcConfigDB, rcDataDB, rcDFB);
+        config = new MMSConfigData(rcGlobal, rcConfigDB, rcDataDB, rcGraphics);
 
         DEBUGMSG("Core", "ConfigDB:                     " + config->getConfigDBDatabase() + " (" + config->getConfigDBAddress() + ")");
         DEBUGMSG("Core", "DataDB:                       " + config->getDataDBDatabase() + " (" + config->getDataDBAddress() + ")");

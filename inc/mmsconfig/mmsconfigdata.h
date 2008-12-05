@@ -47,7 +47,6 @@ class MMSConfigDataGlobal {
     	string firstplugin;
         bool   shutdown;
         string shutdowncmd;
-        bool   fullscreen;
 };
 
 class MMSConfigDataDB {
@@ -62,7 +61,7 @@ class MMSConfigDataDB {
    	    MMSConfigDataDB(const string database = "");
 };
 
-class MMSConfigDataDFB {
+class MMSConfigDataGraphics {
     public:
 	    int    xres;
 	    int    yres;
@@ -82,20 +81,21 @@ class MMSConfigDataDFB {
 		string graphicssurfacepixelformat;
 	    bool   extendedaccel;
 	    string allocmethod;
+        bool   fullscreen;
 };
 
 class MMSConfigData {
     private:
-    	static MMSConfigDataGlobal global;
-    	static MMSConfigDataDB     configdb, datadb;
-    	static MMSConfigDataDFB    dfb;
+    	static MMSConfigDataGlobal 		global;
+    	static MMSConfigDataDB     		configdb, datadb;
+    	static MMSConfigDataGraphics    graphics;
 
     public:
         /* call this to set the values */
-        MMSConfigData(MMSConfigDataGlobal global,
-                      MMSConfigDataDB     configdb,
-                      MMSConfigDataDB     datadb,
-                      MMSConfigDataDFB    dfb);
+        MMSConfigData(MMSConfigDataGlobal 	global,
+                      MMSConfigDataDB     	configdb,
+                      MMSConfigDataDB     	datadb,
+                      MMSConfigDataGraphics graphics);
 
         /* call if you want to read the values */
         MMSConfigData();
@@ -128,7 +128,7 @@ class MMSConfigData {
         const string       getDataDBPassword();
         const string       getDataDBDatabase();
 
-        /* dfb section getters */
+        /* graphics section getters */
         const int    getXres();
         const int    getYres();
         const string getOutputType();
