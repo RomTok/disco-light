@@ -27,14 +27,24 @@
 #include <string>
 #include <mmsbase/interfaces/immsswitcher.h>
 
+//! type of the init flags
 typedef int MMSINIT_FLAGS;
 
+//! none
 #define MMSINIT_NONE			0x00000000
+//! initializing the window manager
 #define MMSINIT_WINDOWMANAGER 	0x00000001
+//! initializing the plugin manager (the configdb where the plugins are defined is required)
 #define MMSINIT_PLUGINMANAGER 	0x00000002
+//! initializing the event manager
 #define MMSINIT_EVENTS 			0x00000004
+//! initializing the graphic backends (x11/dfb)
 #define MMSINIT_GRAPHICS 		0x00000008
+//! initializing the input manager
 #define MMSINIT_INPUTS 			0x00000010
+//! initializing the graphic backends including the window and the input manager
+#define MMSINIT_WINDOWS			0x00000019
+//! initializing all components
 #define MMSINIT_FULL 			0x0000001f
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
