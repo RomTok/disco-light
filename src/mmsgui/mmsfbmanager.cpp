@@ -48,7 +48,7 @@ MMSFBManager::MMSFBManager() {
 MMSFBManager::~MMSFBManager() {
 }
 
-bool MMSFBManager::init(int argc, char **argv) {
+bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_icon_name) {
 	int myargc=argc;
 	char *myargv[255];
 	int i;
@@ -58,12 +58,16 @@ bool MMSFBManager::init(int argc, char **argv) {
 	for(i=0;i<argc;i++)
 		myargv[i]=strdup(argv[i]);
 
+#ifdef  __HAVE_DIRECTFB__
 	if(config.getOutputType() == MMS_OT_X11FB) {
 		myargv[myargc]=strdup("--dfb:system=x11");
 		myargc++;
 	}
+#endif
+
     DEBUGMSG("MMSGUI", "init mmsfb");
-    if (!mmsfb->init(myargc, myargv, config.getOutputType(), config.getXres(), config.getYres(), config.getExtendedAccel(), config.getFullscreen()))
+    if (!mmsfb->init(myargc, myargv, config.getOutputType(), config.getXres(), config.getYres(), config.getExtendedAccel(), config.getFullscreen(),
+					 appl_name, appl_icon_name))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");

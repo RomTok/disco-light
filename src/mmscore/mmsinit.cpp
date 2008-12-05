@@ -42,7 +42,8 @@ static void on_exit() {
 }
 
 
-bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
+bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
+			 string appl_name, string appl_icon_name) {
 
 	try {
         MMSRcParser rcparser;
@@ -134,7 +135,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile) {
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");
 
-            mmsfbmanager.init(argc,argv);
+            mmsfbmanager.init(argc, argv, appl_name, appl_icon_name);
             mmsfbmanager.applySettings();
 
             DEBUGMSG("Core", "starting theme manager");

@@ -44,7 +44,8 @@ class MMSFBManager {
         /* destructor */
         ~MMSFBManager();
 
-        bool init(int argc, char **argv);
+        bool init(int argc, char **argv,
+				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application");
         void release();
 
         void applySettings();

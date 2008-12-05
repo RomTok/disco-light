@@ -62,13 +62,14 @@ MMSFB::MMSFB() {
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen) {
-
+bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen,
+				 string appl_name, string appl_icon_name) {
 
 #ifdef __HAVE_XLIB__
 	XInitThreads();
     this->resized=false;
 #endif
+
     // check if already initialized
     if (this->initialized) {
         MMSFB_SetError(0, "already initialized");
@@ -164,8 +165,8 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         }
 
 
-        XStoreName(this->x_display, this->x_window, "DISKO WINDOW");
-        XSetIconName(this->x_display, this->x_window, "DISKO ICON");
+        XStoreName(this->x_display, this->x_window, appl_name.c_str());
+        XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
         this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
         XMapWindow(this->x_display, this->x_window);
         XEvent x_event;

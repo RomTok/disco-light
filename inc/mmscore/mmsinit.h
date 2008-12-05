@@ -37,7 +37,8 @@ typedef int MMSINIT_FLAGS;
 #define MMSINIT_INPUTS 			0x00000010
 #define MMSINIT_FULL 			0x0000001f
 
-bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "");
+bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
+			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application");
 
 bool registerSwitcher(IMMSSwitcher *switcher);
 
