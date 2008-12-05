@@ -22,6 +22,7 @@
 
 #include "mmsinput/mmsinputdfbhandler.h"
 #include "mmsinput/mmskeymap.h"
+#include <typeinfo>
 #ifdef __HAVE_DIRECTFB__
 #include <directfb_keynames.h>
 
