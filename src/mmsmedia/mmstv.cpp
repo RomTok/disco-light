@@ -117,24 +117,38 @@ void MMSTV::open() {
 void MMSTV::startPlaying(const string channel) {
     if(!this->stream) this->open();
 
-    /* first try using our own input plugin */
-    if(this->usingInputDVBMorphine) {
-        try {
-            MMSAV::startPlaying("mmsdvb://" + channel, false);
-        }
-        catch(MMSError *e) {
-            /* now use the xine input plugin */
-            this->usingInputDVBMorphine = false;
-            DEBUGMSG("MMSMedia", "Error while using Morphine's DVB input plugin [" + e->getMessage() + "]");
-            DEBUGMSG("MMSMedia", "Using xine's plugin. Not all features will be available.");
-            delete e;
-            MMSAV::startPlaying("dvb://" + channel, false);
-        }
-    }
-    else
-        MMSAV::startPlaying("dvb://" + channel, false);
+    if(strncasecmp(channel.c_str(), "OTH:",4)==0) {
+    	FILE *fp;
+    	fp=fopen(channel.c_str(),"r");
+    	if(fp!=NULL){
+        	char line[1024];
+        	fgets(line,1024,fp);
+        	this->channel = line;
+        	fclose(fp);
+        	printf("play %s\n", this->channel.c_str());
+            MMSAV::startPlaying(this->channel, false);
 
-    this->channel = channel;
+    	}
+
+    } else {
+		/* first try using our own input plugin */
+		if(this->usingInputDVBMorphine) {
+			try {
+				MMSAV::startPlaying("mmsdvb://" + channel, false);
+			}
+			catch(MMSError *e) {
+				/* now use the xine input plugin */
+				this->usingInputDVBMorphine = false;
+				DEBUGMSG("MMSMedia", "Error while using Morphine's DVB input plugin [" + e->getMessage() + "]");
+				DEBUGMSG("MMSMedia", "Using xine's plugin. Not all features will be available.");
+				delete e;
+				MMSAV::startPlaying("dvb://" + channel, false);
+			}
+		}
+		else
+			MMSAV::startPlaying("dvb://" + channel, false);
+		this->channel = channel;
+	}
 }
 
 /**
