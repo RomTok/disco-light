@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,7 +31,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSImageWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSImageWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_IMAGEWIDGET_ATTR {
 
 	#define MMSGUI_IMAGEWIDGET_ATTR_ATTRDESC \
@@ -52,7 +58,7 @@ namespace MMSGUI_IMAGEWIDGET_ATTR {
 		{ "fit_height", TAFF_ATTRTYPE_BOOL }, \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
 		{ "mirror_size", TAFF_ATTRTYPE_INT }
-	
+
 	#define MMSGUI_IMAGEWIDGET_ATTR_IDS \
 		MMSGUI_IMAGEWIDGET_ATTR_IDS_image, \
 		MMSGUI_IMAGEWIDGET_ATTR_IDS_image_path, \
@@ -100,7 +106,7 @@ extern TAFF_ATTRDESC MMSGUI_IMAGEWIDGET_ATTR_I[];
 //! A data access class for the image widget.
 /*!
 This class is the base for the MMSImageWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSImageWidget.
@@ -110,82 +116,82 @@ class MMSImageWidgetClass {
     private:
     	//! name of the theme class
         string       className;
-        
+
         //! is imagepath set?
         bool         isimagepath;
-        
+
         //! path to the image if the widget is not selected
         string       imagepath;
-        
+
         //! is imagename set?
         bool         isimagename;
-        
+
         //! image filename if the widget is not selected
         string       imagename;
-        
+
         //! is selimagepath set?
         bool         isselimagepath;
-        
+
         //! path to the image if the widget is selected
         string       selimagepath;
-        
+
         //! is selimagename set?
         bool         isselimagename;
-        
+
         //! image filename if the widget is selected
         string       selimagename;
-        
+
         //! is pressed imagepath set?
         bool         isimagepath_p;
-        
+
         //! path to the pressed image if the widget is not selected
         string       imagepath_p;
-        
+
         //! is pressed imagename set?
         bool         isimagename_p;
-        
+
         //! pressed image filename if the widget is not selected
         string       imagename_p;
-        
+
         //! is pressed selimagepath set?
         bool         isselimagepath_p;
-        
+
         //! path to the pressed image if the widget is selected
         string       selimagepath_p;
-        
+
         //! is pressed selimagename set?
         bool         isselimagename_p;
-        
+
         //! pressed image filename if the widget is selected
         string       selimagename_p;
-        
+
         //! is inactive imagepath set?
         bool         isimagepath_i;
-        
+
         //! path to the inactive image if the widget is not selected
         string       imagepath_i;
-        
+
         //! is inactive imagename set?
         bool         isimagename_i;
-        
+
         //! inactive image filename if the widget is not selected
         string       imagename_i;
-        
+
         //! is inactive selimagepath set?
         bool         isselimagepath_i;
-        
+
         //! path to the inactive image if the widget is selected
         string       selimagepath_i;
-        
+
         //! is inactive selimagename set?
         bool         isselimagename_i;
-        
+
         //! inactive image filename if the widget is selected
         string       selimagename_i;
-        
+
         //! is use aspect ratio flag set?
         bool         isuseratio;
-        
+
         //! use aspect ratio of the images (true/false)
         bool         useratio;
 
@@ -203,13 +209,13 @@ class MMSImageWidgetClass {
 
         //! is the alignment set?
         bool         isalignment;
-        
+
         //! the alignment of the image within the widget
         MMSALIGNMENT alignment;
 
         //! is the mirror size set?
         bool         ismirrorsize;
-        
+
         //! the size of the mirror effect
         unsigned int mirrorsize;
 
@@ -223,7 +229,7 @@ class MMSImageWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSImageWidgetClass.
         MMSImageWidgetClass();
@@ -245,7 +251,7 @@ class MMSImageWidgetClass {
 
         //! Check if the imagepath is set. This path will be used for the unselected widget.
         bool isImagePath();
- 
+
         //! Set the imagepath which is used to draw the unselected widget.
         /*!
         \param imagepath  path to unselected image
@@ -263,7 +269,7 @@ class MMSImageWidgetClass {
 
         //! Check if the imagename is set. This name will be used for the unselected widget.
         bool isImageName();
- 
+
         //! Set the imagename which is used to draw the unselected widget.
         /*!
         \param imagename  name of the unselected image
@@ -281,7 +287,7 @@ class MMSImageWidgetClass {
 
         //! Check if the selimagepath is set. This path will be used for the selected widget.
         bool isSelImagePath();
- 
+
         //! Set the selimagepath which is used to draw the selected widget.
         /*!
         \param selimagepath  path to selected image
@@ -299,7 +305,7 @@ class MMSImageWidgetClass {
 
         //! Check if the selimagename is set. This name will be used for the selected widget.
         bool isSelImageName();
- 
+
         //! Set the selimagename which is used to draw the selected widget.
         /*!
         \param selimagename  name of the selected image
@@ -317,7 +323,7 @@ class MMSImageWidgetClass {
 
         //! Check if the pressed imagepath is set. This path will be used for the unselected widget.
         bool isImagePath_p();
- 
+
         //! Set the pressed imagepath which is used to draw the unselected widget.
         /*!
         \param imagepath_p  path to pressed unselected image
@@ -335,7 +341,7 @@ class MMSImageWidgetClass {
 
         //! Check if the pressed imagename is set. This name will be used for the unselected widget.
         bool isImageName_p();
- 
+
         //! Set the pressed imagename which is used to draw the unselected widget.
         /*!
         \param imagename_p  name of the pressed unselected image
@@ -353,7 +359,7 @@ class MMSImageWidgetClass {
 
         //! Check if the pressed selimagepath is set. This path will be used for the selected widget.
         bool isSelImagePath_p();
- 
+
         //! Set the pressed selimagepath which is used to draw the selected widget.
         /*!
         \param selimagepath_p  path to pressed selected image
@@ -371,7 +377,7 @@ class MMSImageWidgetClass {
 
         //! Check if the pressed selimagename is set. This name will be used for the selected widget.
         bool isSelImageName_p();
- 
+
         //! Set the pressed selimagename which is used to draw the selected widget.
         /*!
         \param selimagename_p  name of the pressed selected image
@@ -389,7 +395,7 @@ class MMSImageWidgetClass {
 
         //! Check if the inactive imagepath is set. This path will be used for the unselected widget.
         bool isImagePath_i();
- 
+
         //! Set the inactive imagepath which is used to draw the unselected widget.
         /*!
         \param imagepath_i  path to inactive unselected image
@@ -407,7 +413,7 @@ class MMSImageWidgetClass {
 
         //! Check if the inactive imagename is set. This name will be used for the unselected widget.
         bool isImageName_i();
- 
+
         //! Set the inactive imagename which is used to draw the unselected widget.
         /*!
         \param imagename_i  name of the inactive unselected image
@@ -425,7 +431,7 @@ class MMSImageWidgetClass {
 
         //! Check if the inactive selimagepath is set. This path will be used for the selected widget.
         bool isSelImagePath_i();
- 
+
         //! Set the inactive selimagepath which is used to draw the selected widget.
         /*!
         \param selimagepath_i  path to inactive selected image
@@ -443,7 +449,7 @@ class MMSImageWidgetClass {
 
         //! Check if the inactive selimagename is set. This name will be used for the selected widget.
         bool isSelImageName_i();
- 
+
         //! Set the inactive selimagename which is used to draw the selected widget.
         /*!
         \param selimagename_i  name of the inactive selected image
@@ -461,7 +467,7 @@ class MMSImageWidgetClass {
 
         //! Check if the use acpect ratio is set.
         bool isUseRatio();
- 
+
         //! Set the use aspect ratio flag.
         /*!
         \param useratio  use aspect ratio true/false
@@ -479,7 +485,7 @@ class MMSImageWidgetClass {
 
         //! Check if the fitwidth flag is set.
         bool isFitWidth();
- 
+
         //! Set the fitwidth flag.
         /*!
         \param fitwidth  fit width true/false
@@ -497,7 +503,7 @@ class MMSImageWidgetClass {
 
         //! Check if the fitheight flag is set.
         bool isFitHeight();
- 
+
         //! Set the fitheight flag.
         /*!
         \param fitheight  fit height true/false

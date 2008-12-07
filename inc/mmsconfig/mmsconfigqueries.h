@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,6 +25,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #ifndef MMSCONFIGQUERIES_H_
 #define MMSCONFIGQUERIES_H_
 
@@ -51,7 +58,7 @@
 		"select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.Active = 'Y'"
 
 #define PLUGINDAO_FIND_ALL_PLUGINS	 \
-	    "select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID" 
+	    "select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID"
 
 #define PLUGINDAO_F_PLUGIN_BY_NAME(Name) \
 	    "select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.PluginName = '" + Name + "';"
@@ -60,10 +67,10 @@
     	"select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.ID = " + ID
 
 #define PLUGINDAO_F_ACTIVE_PLUGINS_BY_CATEGORY(CATEGORY) \
-	    "select Plug.*,Cat.CategoryName,Types.PluginTypename from Plugins Plug left join Category Cat ON Cat.CategoryName ='" + CATEGORY + "' left join PluginTypes Types ON Types.ID = Plug.PluginTypeID WHERE Plug.CategoryID = Cat.ID and Plug.Active = 'Y'" 
+	    "select Plug.*,Cat.CategoryName,Types.PluginTypename from Plugins Plug left join Category Cat ON Cat.CategoryName ='" + CATEGORY + "' left join PluginTypes Types ON Types.ID = Plug.PluginTypeID WHERE Plug.CategoryID = Cat.ID and Plug.Active = 'Y'"
 
 #define PLUGINDAO_F_ALL_PLUGINS_BY_CATEGORY(CATEGORY) \
-	    "select Plug.*,Cat.CategoryName,Types.PluginTypename from Plugins Plug left join Category Cat ON Cat.CategoryName ='" + CATEGORY + "' left join PluginTypes Types ON Types.ID = Plug.PluginTypeID WHERE Plug.CategoryID = Cat.ID" 
+	    "select Plug.*,Cat.CategoryName,Types.PluginTypename from Plugins Plug left join Category Cat ON Cat.CategoryName ='" + CATEGORY + "' left join PluginTypes Types ON Types.ID = Plug.PluginTypeID WHERE Plug.CategoryID = Cat.ID"
 
 #define PLUGINDAO_F_ACTIVE_PLUGINS_BY_TYPE(TYPE) \
     	"select Plug.*,Cat.CategoryName,Types.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID  = Plug.CategoryID left join PluginTypes Types ON Types.ID = Plug.PluginTypeID where Types.PluginTypeName = '" + TYPE + "' and Plug.Active = 'Y'"

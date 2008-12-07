@@ -1,7 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Berlinux Solutions                              *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Matthias Hardt <MHardt@berlinux-solutions.de>                      *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -17,6 +25,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #ifndef MMSHANDLER_H_
 #define MMSHANDLER_H_
 
@@ -59,7 +68,7 @@ template<class X> class MMSHandle {
         		if(data) delete data;
         		delete refCount;
         		delete lock;
-        	} 
+        	}
         }
 
         /**
@@ -67,10 +76,10 @@ template<class X> class MMSHandle {
          * Just returns the data object.
          */
         X* operator->() throw() {
-        	return data; 
+        	return data;
         }
 
-        /** 
+        /**
          * Overloaded = operator.
          */
         void operator=(const MMSHandle& orig) throw() {
@@ -84,27 +93,27 @@ template<class X> class MMSHandle {
 	        		if(data) delete data;
 	        		delete refCount;
 	        		delete lock;
-	        	} 
-	
+	        	}
+
 	            /* create a copy */
 	            data     = orig.data;
 	            refCount = orig.refCount;
 	            lock     = orig.lock;
-	
+
 	            /* increase reference counter */
 	            lock->lock();
 	            refCount++;
 	            lock->unlock();
             }
         }
-        
+
         /**
          * Get data object.
          */
         X& operator*() const throw() {
             return *data;
         }
-        
+
         /**
          * Get data object.
          */

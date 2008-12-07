@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,7 +34,7 @@
 #include "mmsconfig/mmsplugindata.h"
 
 class MMSImportSourceDAO {
-    
+
     private:
         IMMSDB *dbConnection;
 
@@ -47,9 +53,9 @@ class MMSImportSourceDAO {
         void saveOrUpdate(MMSImportSourceData *data);
         void saveOrUpdate(vector<MMSImportSourceData *> dataList);
 
-        vector<MMSImportSourceData *> findImportSourcesByPlugin(MMSPluginData *plugin);    
-        MMSImportSourceData *   findImportSourcesByID(int id);    
-        MMSImportSourceData *   findImportSourcesByName(string name);    
+        vector<MMSImportSourceData *> findImportSourcesByPlugin(MMSPluginData *plugin);
+        MMSImportSourceData *   findImportSourcesByID(int id);
+        MMSImportSourceData *   findImportSourcesByName(string name);
 };
 
 #endif /*MMSIMPORTSOURCEDAO_H_*/

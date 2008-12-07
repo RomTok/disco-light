@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -34,14 +40,14 @@ MMS_CREATEERROR(MMSCryptError);
 class MMSCrypt {
     private:
         EVP_CIPHER_CTX mmsCtx, userCtx;
-        
+
         unsigned char* createUserKey(string keyfile);
         unsigned char* getUserKey(string keyfile);
 
     public:
         MMSCrypt(string keyfile = MMSCRYPT_DEFAULT_KEY_FILENAME);
         ~MMSCrypt();
-        
+
         unsigned char* encrypt(unsigned char *in, unsigned int size = 0, bool useMMSCtx = false);
         unsigned char* decrypt(unsigned char *in, unsigned int size = 0, bool useMMSCtx = false);
 };

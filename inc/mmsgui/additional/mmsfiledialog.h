@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,12 +38,12 @@ class MMSFileDialog {
     	string 				dialogfile;
     	MMSDialogManager	*dm;
     	MMSWindow			*dialogwindow;
-    	
+
     	MMSLabelWidget		*filedialog_title;
-    	
+
     	MMSWidget			*filedialog_ok;
     	MMSWidget			*filedialog_cancel;
-    	
+
     	MMSLabelWidget		*filedialog_path;
     	MMSInputWidget		*filedialog_name;
 
@@ -48,10 +54,10 @@ class MMSFileDialog {
 
     	string				path;
     	string				filename;
-    	
+
     	void onReturn(MMSWidget *widget);
     	void onSelectItem(MMSWidget *widget);
-    	
+
     	bool fillMenu();
 
     public:
@@ -62,9 +68,9 @@ class MMSFileDialog {
         bool isInitialized();
 
         bool setTitle(string title);
-        
+
         bool show();
-        
+
         sigc::signal<void, MMSFileDialog*> *onOK;
         sigc::signal<void> *onCancel;
 };

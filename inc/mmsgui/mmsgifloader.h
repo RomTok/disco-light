@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -75,14 +81,14 @@ class MMSGIFLoader : public MMSThread {
 
         //display layer
         MMSFBLayer *layer;
-        
+
         //file pointer
         MMSFile     *myfile;
 
         //gif data
         MMS_GIF_HEADER  gif_header;
         MMS_GIF_LSD     gif_lsd;
-        MMS_GIF_CT      gif_gct;     
+        MMS_GIF_CT      gif_gct;
 
         pthread_cond_t	cond;
         pthread_mutex_t	mutex;
@@ -93,9 +99,9 @@ class MMSGIFLoader : public MMSThread {
         void threadMain();
 
     public:
-        MMSGIFLoader(MMSIM_DESC      *desc, 
+        MMSGIFLoader(MMSIM_DESC      *desc,
         		     MMSFBLayer      *layer);
-        
+
         void block();
 };
 

@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,15 +31,15 @@
 
 #include "mmsgui/theme/mmswindowclass.h"
 
-//! describe attributes for MMSPopupWindow which are additional to the MMSWindowClass 
+//! describe attributes for MMSPopupWindow which are additional to the MMSWindowClass
 namespace MMSGUI_POPUPWINDOW_ATTR {
 
 	#define MMSGUI_POPUPWINDOW_ATTR_ATTRDESC \
 		{ "duration", TAFF_ATTRTYPE_UCHAR }
-	
+
 	#define MMSGUI_POPUPWINDOW_ATTR_IDS \
 		MMSGUI_POPUPWINDOW_ATTR_IDS_duration
-	
+
 	#define MMSGUI_POPUPWINDOW_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \

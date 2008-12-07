@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,7 +31,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSMenuWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSMenuWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_MENUWIDGET_ATTR {
 
 	#define MMSGUI_MENUWIDGET_ATTR_ATTRDESC \
@@ -89,7 +95,7 @@ namespace MMSGUI_MENUWIDGET_ATTR {
 		MMSGUI_MENUWIDGET_ATTR_IDS_selimage_name, \
 		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_selection, \
 		MMSGUI_MENUWIDGET_ATTR_IDS_smooth_delay
-	
+
 	#define MMSGUI_MENUWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -112,7 +118,7 @@ extern TAFF_ATTRDESC MMSGUI_MENUWIDGET_ATTR_I[];
 //! A data access class for the menu widget.
 /*!
 This class is the base for the MMSMenuWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSMenuWidget.
@@ -128,139 +134,139 @@ class MMSMenuWidgetClass {
 
         //! is itemwidth set?
         bool            isitemwidth;
-        
+
         //! width of an item (percent or pixel)
         string          itemwidth;
-        
+
         //! is itemheight set?
         bool            isitemheight;
-        
+
         //! height of an item (percent or pixel)
         string          itemheight;
-        
+
         //! is horizontal item margin set?
         bool            isitemhmargin;
-        
+
         //! horizontal item margin
         unsigned int    itemhmargin;
-        
+
         //! is vertical item margin set?
         bool            isitemvmargin;
-        
+
         //! vertical item margin
         unsigned int    itemvmargin;
-        
+
         //! is the number of columns set?
         bool            iscols;
-        
+
         //! number of columns
         unsigned int    cols;
-        
+
         //! is the dimitems value set?
         bool            isdimitems;
-        
+
         //! dimitems if the menu has not the focus
         unsigned int    dimitems;
-        
+
         //! is the fixedpos value set?
         bool            isfixedpos;
-        
+
         //! fixed position of the selected item
         unsigned int    fixedpos;
-        
+
         //! is the hloop flag set?
         bool            ishloop;
-        
+
         //! loop horizontal (left/right) without jumping out of the menu
         unsigned int    hloop;
-        
+
         //! is the vloop flag set?
         bool            isvloop;
-        
+
         //! loop vertical (up/down) without jumping out of the menu
         unsigned int    vloop;
-        
+
         //! is the transitems value set?
         bool            istransitems;
-        
+
         //! transitems if the menu has not the focus
         unsigned int    transitems;
-        
+
         //! is the dimtop value set?
         bool            isdimtop;
-        
+
         //! dim the items at the top of the menu
         unsigned int    dimtop;
-        
+
         //! is the dimbottom value set?
         bool            isdimbottom;
-        
+
         //! dim the items at the bottom of the menu
         unsigned int    dimbottom;
-        
+
         //! is the dimleft value set?
         bool            isdimleft;
-        
+
         //! dim the items at the left of the menu
         unsigned int    dimleft;
-        
+
         //! is the dimright value set?
         bool            isdimright;
-        
+
         //! dim the items at the right of the menu
         unsigned int    dimright;
-        
+
         //! is the transtop value set?
         bool            istranstop;
-        
+
         //! transparent the items at the top of the menu
         unsigned int    transtop;
-        
+
         //! is the transbottom value set?
         bool            istransbottom;
-        
+
         //! transparent the items at the bottom of the menu
         unsigned int    transbottom;
-        
+
         //! is the transleft value set?
         bool            istransleft;
-        
+
         //! transparent the items at the left of the menu
         unsigned int    transleft;
-        
+
         //! is the transright value set?
         bool            istransright;
-        
+
         //! transparent the items at the right of the menu
         unsigned int    transright;
 
         //! is zoom in (width) value set?
         bool			iszoomselwidth;
-        
+
         //! zoom in (width) the selected item (percent or pixel)
         string			zoomselwidth;
-        
+
         //! is zoom in (height) value set?
         bool			iszoomselheight;
-        
+
         //! zoom in (height) the selected item (percent or pixel)
         string          zoomselheight;
-        
+
         //! is horizontal shift value set?
         bool			iszoomselshiftx;
-        
+
         //! horizontal shift of the selected item (percent or pixel)
         string			zoomselshiftx;
-        
+
         //! is vertical shift value set?
         bool			iszoomselshifty;
-        
+
         //! vertical shift of the selected item (percent or pixel)
         string 			zoomselshifty;
 
         //! is smooth scrolling enabled?
         bool			issmoothscrolling;
-        
+
         //! do smooth scrolling yes/no if user navigates in the menu
         bool  			smoothscrolling;
 
@@ -269,28 +275,28 @@ class MMSMenuWidgetClass {
 
         //! name of the parent window
         string 			parentwindow;
-        
+
         //! is selimage path set?
         bool			isselimagepath;
 
         //! selimage path
         string 			selimagepath;
-        
+
         //! is selimage name set?
         bool			isselimagename;
 
         //! selimage filename
         string 			selimagename;
-        
+
         //! is smooth selection enabled?
         bool			issmoothselection;
-        
+
         //! do smooth selection yes/no if user navigates in the menu
         bool  			smoothselection;
 
         //! is smooth delay set?
         bool			issmoothdelay;
-        
+
         //! smooth delay
         unsigned int	smoothdelay;
 
@@ -310,7 +316,7 @@ class MMSMenuWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSMenuWidgetClass.
         MMSMenuWidgetClass();
@@ -663,7 +669,7 @@ class MMSMenuWidgetClass {
         */
         unsigned int getTransRight();
 
-        
+
         bool isZoomSelWidth();
         void setZoomSelWidth(string zoomselwidth);
         void unsetZoomSelWidth();
@@ -680,7 +686,7 @@ class MMSMenuWidgetClass {
         void setZoomSelShiftY(string zoomselshifty);
         void unsetZoomSelShiftY();
         string getZoomSelShiftY();
-        
+
         bool isSmoothScrolling();
         void setSmoothScrolling(bool smoothscrolling);
         void unsetSmoothScrolling();
@@ -690,7 +696,7 @@ class MMSMenuWidgetClass {
         void setParentWindow(string parentwindow);
         void unsetParentWindow();
         string getParentWindow();
-        
+
 
         bool isSelImagePath();
         void setSelImagePath(string selimagepath);
@@ -706,12 +712,12 @@ class MMSMenuWidgetClass {
         void setSmoothSelection(bool smoothselection);
         void unsetSmoothSelection();
         bool getSmoothSelection();
-        
+
         bool isSmoothDelay();
         void setSmoothDelay(unsigned int smoothdelay);
         void unsetSmoothDelay();
         unsigned int getSmoothDelay();
-        
+
     /* friends */
     friend class MMSThemeManager;
     friend class MMSDialogManager;

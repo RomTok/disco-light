@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,13 +33,13 @@
 
 /**
  * @brief   Handles Video playback.
- * 
+ *
  * @ingroup     mmsmedia mmslibs
  *
  * @author      Matthias Hardt (mattmax@morphine.tv)
  * @version     1.0.3
  * @date        11/07/2007
- * 
+ *
  * This class is derived from MMSAV and specialized in
  * handling the playback of video files.
  */
@@ -41,7 +47,7 @@ class MMSVideo : public MMSAV {
     public:
         MMSVideo(MMSWindow *window, const bool verbose = false);
         ~MMSVideo();
-        
+
         void open();
         void startPlaying(const string file, const bool cont = true);
 };

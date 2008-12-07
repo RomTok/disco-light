@@ -1,10 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
- *      Matthias Hardt   <mattmax@morphine.tv>                             *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,13 +33,13 @@
 
 /**
  * @brief   Handles DVD playback.
- * 
+ *
  * @ingroup     mmsmedia mmslibs
  *
  * @author      Matthias Hardt (mattmax@morphine.tv)
  * @version     1.0.3
  * @date        11/07/2007
- * 
+ *
  * This class is derived from MMSAV and specialized in
  * handling DVD playback.
  */
@@ -44,13 +49,13 @@ class MMSDVD : public MMSAV {
         int     audioChannel,       /**< current audio channel                  */
                 spuChannel;         /**< current subtitle channel               */
         int     maxAudioChannels,   /**< number of available audio channels     */
-                maxSpuChannels;     /**< number of available subtitle channels  */ 
-    
+                maxSpuChannels;     /**< number of available subtitle channels  */
+
         void checkDevice(const string device);
         void initialize(MMSWindow *window, const string device, const bool verbose);
-        
+
     protected:
-    
+
     public:
         /* status constants */
         static const unsigned short STATUS_PREVIOUS                 =  100;     /**< playing previous chapter           */
@@ -62,11 +67,11 @@ class MMSDVD : public MMSAV {
         static const unsigned short STATUS_AUDIO_NEXT               =  106;     /**< using next audio channel           */
         static const unsigned short STATUS_SPU_PREVIOUS             =  107;     /**< using previous subtitle channel    */
         static const unsigned short STATUS_SPU_NEXT                 =  108;     /**< using next subtitle channel        */
-        
+
 
         MMSDVD(MMSWindow *window, const string device = "/dev/dvd", const bool verbose = false);
         ~MMSDVD();
-        
+
         void open();
         void startPlaying(const bool cont = true);
         void rewind();
@@ -78,7 +83,7 @@ class MMSDVD : public MMSAV {
         void audioChannelNext();
         void spuChannelPrevious();
         void spuChannelNext();
-        
+
         void eject();
 
 		void menuUp();
@@ -95,7 +100,7 @@ class MMSDVD : public MMSAV {
         int    getChapterCount();
         int    getTitleNumber();
         int    getTitleCount();
-        
+
         void   updateChannelInfo();
 };
 

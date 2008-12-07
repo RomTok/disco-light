@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -38,7 +44,7 @@ class MMSPluginManager {
         MMSPluginData						*activeosdplugin;
         MMSPluginData						*activecentralplugin;
         IMMSSwitcher 					    *switcher;
-        
+
     public:
         MMSPluginManager();
         ~MMSPluginManager();
@@ -52,13 +58,13 @@ class MMSPluginManager {
         void initializeCentralPlugins();
         void initializeImportPlugins();
         void initializeBackendPlugins();
-        
+
         void setActiceOSDPlugin(MMSPluginData *plugin);
         MMSPluginData *getActiveOSDPlugin();
 
         void setActiceCentralPlugin(MMSPluginData *plugin);
         MMSPluginData *getActiveCentralPlugin();
-        
+
         void setSwitcher(IMMSSwitcher *switcher);
 
         vector<MMSOSDPluginHandler *> getOSDPluginHandlers(vector<MMSPluginData *> data);

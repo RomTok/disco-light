@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,7 +31,7 @@
 
 #include "mmstools/base.h"
 
-#include <curl/curl.h> 
+#include <curl/curl.h>
 #include <sys/stat.h>
 
 //! Specifies supported types of files.
@@ -74,16 +80,16 @@ class MMSFile {
     private:
     	//! ALL files: name of the file
         string      name;
-        
+
         //! ALL files: open mode
         MMSFileMode mode;
-        
+
         //! ALL files: use a separate cache for all file types?
         bool        usecache;
-        
+
         //! ALL files: type of file
         MMSFileType type;
-        
+
         //! ALL files: last error (0 if last call was sucessfull)
         int         lasterror;
 
@@ -92,28 +98,28 @@ class MMSFile {
 
         //! MMSFT_URL: pointer to a multi handle, if an url is used
         CURLM       *mhandle;
-        
+
         //! MMSFT_URL: pointer to a curl, if an url is used
         CURL        *curl;
-        
+
         //! MMSFT_URL: buffer to cached data from url
         char        *buffer;
-        
+
         //! MMSFT_URL: buffer length
         unsigned    buf_len;
-        
+
         //! MMSFT_URL: fill pointer within buffer
         unsigned    buf_pos;
-        
+
         //! MMSFT_URLL: url fetch is not finished and working in background
         int         still_progr;
 
         //! USECACHE=TRUE: pointer to the whole file data
         char        *cache;
-        
+
         //! USECACHE=TRUE: file size
         size_t      cache_fsize;
-        
+
         //! USECACHE=TRUE: current position in cache
         size_t      cache_fpos;
 
@@ -147,12 +153,12 @@ class MMSFile {
         //! Destructor of class MMSFile.
         virtual ~MMSFile();
 
-        /** 
+        /**
          * Returns the name of the file which was set with the constructor MMSFile().
          *
          * @param   effectiveUrl    [in] if set and filetype is MMSFT_URL the effective URL will be returned.
          *
-         */ 
+         */
         string getName(const bool effectiveUrl = false);
 
         //! Returns the open mode of the file which was set with the constructor MMSFile().

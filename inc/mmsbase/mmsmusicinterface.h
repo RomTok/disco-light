@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,6 +25,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #ifndef MMSMUSICINTERFACE_H_
 #define MMSMUSICINTERFACE_H_
 
@@ -29,10 +36,10 @@ class MMSMusicInterface {
 	private:
 		static IMMSMusicManager *manager;
 		void setManager(IMMSMusicManager *manager);
-		
+
 	public:
-			MMSMusicInterface(); 
-			~MMSMusicInterface(); 
+			MMSMusicInterface();
+			~MMSMusicInterface();
 			void init(string file);
 			void init(PLAYLIST list, int offset=0);
 			void stop();
@@ -50,7 +57,7 @@ class MMSMusicInterface {
             bool getTimes(int *pos, int *length);
             void setRepeat(bool repeat);
             void setShuffle(bool shuffle);
-	
+
 	friend class MMSMusicManager;
 };
 

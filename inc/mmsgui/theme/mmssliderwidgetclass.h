@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,7 +31,7 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSSliderWidget which are additional to the MMSWidgetClass 
+//! describe attributes for MMSSliderWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_SLIDERWIDGET_ATTR {
 
 	#define MMSGUI_SLIDERWIDGET_ATTR_ATTRDESC \
@@ -48,7 +54,7 @@ namespace MMSGUI_SLIDERWIDGET_ATTR {
 		{ "selimage_i.path", TAFF_ATTRTYPE_STRING }, \
 		{ "selimage_i.name", TAFF_ATTRTYPE_STRING }, \
 		{ "position", TAFF_ATTRTYPE_UCHAR100 }
-	
+
 	#define MMSGUI_SLIDERWIDGET_ATTR_IDS \
 		MMSGUI_SLIDERWIDGET_ATTR_IDS_image, \
 		MMSGUI_SLIDERWIDGET_ATTR_IDS_image_path, \
@@ -69,7 +75,7 @@ namespace MMSGUI_SLIDERWIDGET_ATTR {
 		MMSGUI_SLIDERWIDGET_ATTR_IDS_selimage_i_path, \
 		MMSGUI_SLIDERWIDGET_ATTR_IDS_selimage_i_name, \
 		MMSGUI_SLIDERWIDGET_ATTR_IDS_position
-	
+
 	#define MMSGUI_SLIDERWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
@@ -92,7 +98,7 @@ extern TAFF_ATTRDESC MMSGUI_SLIDERWIDGET_ATTR_I[];
 //! A data access class for the slider widget.
 /*!
 This class is the base for the MMSSliderWidget class.
-With this data store you have access to all changeable widget attributes. 
+With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSSliderWidget.
@@ -102,82 +108,82 @@ class MMSSliderWidgetClass {
     private:
     	//! name of the theme class
         string       className;
-        
+
         //! is imagepath set?
         bool         isimagepath;
-        
+
         //! path to the image if the widget is not selected
         string       imagepath;
-        
+
         //! is imagename set?
         bool         isimagename;
-        
+
         //! image filename if the widget is not selected
         string       imagename;
-        
+
         //! is selimagepath set?
         bool         isselimagepath;
-        
+
         //! path to the image if the widget is selected
         string       selimagepath;
-        
+
         //! is selimagename set?
         bool         isselimagename;
-        
+
         //! image filename if the widget is selected
         string       selimagename;
-        
+
         //! is pressed imagepath set?
         bool         isimagepath_p;
-        
+
         //! path to the pressed image if the widget is not selected
         string       imagepath_p;
-        
+
         //! is pressed imagename set?
         bool         isimagename_p;
-        
+
         //! pressed image filename if the widget is not selected
         string       imagename_p;
-        
+
         //! is pressed selimagepath set?
         bool         isselimagepath_p;
-        
+
         //! path to the pressed image if the widget is selected
         string       selimagepath_p;
-        
+
         //! is pressed selimagename set?
         bool         isselimagename_p;
-        
+
         //! pressed image filename if the widget is selected
         string       selimagename_p;
-        
+
         //! is inactive imagepath set?
         bool         isimagepath_i;
-        
+
         //! path to the inactive image if the widget is not selected
         string       imagepath_i;
-        
+
         //! is inactive imagename set?
         bool         isimagename_i;
-        
+
         //! inactive image filename if the widget is not selected
         string       imagename_i;
-        
+
         //! is inactive selimagepath set?
         bool         isselimagepath_i;
-        
+
         //! path to the inactive image if the widget is selected
         string       selimagepath_i;
-        
+
         //! is inactive selimagename set?
         bool         isselimagename_i;
-        
+
         //! inactive image filename if the widget is selected
         string       selimagename_i;
-        
+
         //! is position set?
         bool         isposition;
-        
+
         //! position between 0 and 100 percent
         unsigned int position;
 
@@ -191,7 +197,7 @@ class MMSSliderWidgetClass {
 
     public:
     	//! stores base widget attributes
-        MMSWidgetClass widgetClass; 
+        MMSWidgetClass widgetClass;
 
         //! Constructor of class MMSSliderWidgetClass.
         MMSSliderWidgetClass();
@@ -213,7 +219,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the imagepath is set. This path will be used for the unselected widget.
         bool isImagePath();
- 
+
         //! Set the imagepath which is used to draw the unselected widget.
         /*!
         \param imagepath  path to unselected image
@@ -231,7 +237,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the imagename is set. This name will be used for the unselected widget.
         bool isImageName();
- 
+
         //! Set the imagename which is used to draw the unselected widget.
         /*!
         \param imagename  name of the unselected image
@@ -249,7 +255,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the selimagepath is set. This path will be used for the selected widget.
         bool isSelImagePath();
- 
+
         //! Set the selimagepath which is used to draw the selected widget.
         /*!
         \param selimagepath  path to selected image
@@ -267,7 +273,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the selimagename is set. This name will be used for the selected widget.
         bool isSelImageName();
- 
+
         //! Set the selimagename which is used to draw the selected widget.
         /*!
         \param selimagename  name of the selected image
@@ -285,7 +291,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the pressed imagepath is set. This path will be used for the unselected widget.
         bool isImagePath_p();
- 
+
         //! Set the pressed imagepath which is used to draw the unselected widget.
         /*!
         \param imagepath_p  path to pressed unselected image
@@ -303,7 +309,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the pressed imagename is set. This name will be used for the unselected widget.
         bool isImageName_p();
- 
+
         //! Set the pressed imagename which is used to draw the unselected widget.
         /*!
         \param imagename_p  name of the pressed unselected image
@@ -321,7 +327,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the pressed selimagepath is set. This path will be used for the selected widget.
         bool isSelImagePath_p();
- 
+
         //! Set the pressed selimagepath which is used to draw the selected widget.
         /*!
         \param selimagepath_p  path to pressed selected image
@@ -339,7 +345,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the pressed selimagename is set. This name will be used for the selected widget.
         bool isSelImageName_p();
- 
+
         //! Set the pressed selimagename which is used to draw the selected widget.
         /*!
         \param selimagename_p  name of the pressed selected image
@@ -357,7 +363,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the inactive imagepath is set. This path will be used for the unselected widget.
         bool isImagePath_i();
- 
+
         //! Set the inactive imagepath which is used to draw the unselected widget.
         /*!
         \param imagepath_i  path to inactive unselected image
@@ -375,7 +381,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the inactive imagename is set. This name will be used for the unselected widget.
         bool isImageName_i();
- 
+
         //! Set the inactive imagename which is used to draw the unselected widget.
         /*!
         \param imagename_i  name of the inactive unselected image
@@ -393,7 +399,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the inactive selimagepath is set. This path will be used for the selected widget.
         bool isSelImagePath_i();
- 
+
         //! Set the inactive selimagepath which is used to draw the selected widget.
         /*!
         \param selimagepath_i  path to inactive selected image
@@ -411,7 +417,7 @@ class MMSSliderWidgetClass {
 
         //! Check if the inactive selimagename is set. This name will be used for the selected widget.
         bool isSelImageName_i();
- 
+
         //! Set the inactive selimagename which is used to draw the selected widget.
         /*!
         \param selimagename_i  name of the inactive selected image
