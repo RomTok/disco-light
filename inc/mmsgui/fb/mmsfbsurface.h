@@ -130,39 +130,6 @@ class MMSFBSurface {
         // how surface memory will be allocated?
         static MMSFBSurfaceAllocMethod	allocmethod;
 
-        // first time flag for eAB_argb_to_argb()
-        static bool 			firsttime_eAB_argb_to_argb;
-
-        // first time flag for eAB_blend_argb_to_argb()
-        static bool 			firsttime_eAB_blend_argb_to_argb;
-
-        // first time flag for eAB_blend_srcalpha_argb_to_argb()
-        static bool 			firsttime_eAB_blend_srcalpha_argb_to_argb;
-
-        // first time flag for eAB_blend_argb_to_airgb()
-        static bool 			firsttime_eAB_blend_argb_to_airgb;
-
-        // first time flag for eAB_rgb16_to_rgb16()
-        static bool 			firsttime_eAB_rgb16_to_rgb16;
-
-        // first time flag for eAB_argb_to_rgb16()
-        static bool 			firsttime_eAB_argb_to_rgb16;
-
-        // first time flag for eAB_blend_argb_to_rgb16()
-        static bool 			firsttime_eAB_blend_argb_to_rgb16;
-
-        // first time flag for eAB_airgb_to_airgb()
-        static bool 			firsttime_eAB_airgb_to_airgb;
-
-        // first time flag for eAB_blend_airgb_to_airgb()
-        static bool 			firsttime_eAB_blend_airgb_to_airgb;
-
-        // first time flag for eAB_blend_srcalpha_airgb_to_airgb()
-        static bool 			firsttime_eAB_blend_srcalpha_airgb_to_airgb;
-
-        // first time flag for eAB_airgb_to_rgb16()
-        static bool 			firsttime_eAB_airgb_to_rgb16;
-
         // first time flag for eAB_blend_airgb_to_rgb16()
         static bool 			firsttime_eAB_blend_airgb_to_rgb16;
 
@@ -178,25 +145,6 @@ class MMSFBSurface {
         // first time flag for eAB_blend_ayuv_to_rgb16()
         static bool 			firsttime_eAB_blend_ayuv_to_rgb16;
 
-
-        // first time flag for eAB_yv12_to_yv12()
-        static bool 			firsttime_eAB_yv12_to_yv12;
-
-        // first time flag for eAB_blend_argb_to_yv12()
-//        static bool 			firsttime_eAB_blend_argb_to_yv12;
-
-        // first time flag for eAB_blend_srcalpha_argb_to_yv12()
-        static bool 			firsttime_eAB_blend_srcalpha_argb_to_yv12;
-
-        // first time flag for eAB_blend_ayuv_to_yv12()
-        static bool 			firsttime_eAB_blend_ayuv_to_yv12;
-
-        // first time flag for eAB_blend_srcalpha_ayuv_to_yv12()
-        static bool 			firsttime_eAB_blend_srcalpha_ayuv_to_yv12;
-
-
-        // first time flag for eADB_blend_argb_to_yv12()
-        static bool 			firsttime_eADB_blend_argb_to_yv12;
 
 
 
@@ -222,9 +170,6 @@ class MMSFBSurface {
         // first time flag for eASB_blend_srcalpha_ayuv_to_ayuv()
         static bool 			firsttime_eASB_blend_srcalpha_ayuv_to_ayuv;
 
-        // first time flag for eASB_yv12_to_yv12()
-//        static bool 			firsttime_eASB_yv12_to_yv12;
-
         // first time flag for eAFR_argb()
         static bool				firsttime_eAFR_argb;
 
@@ -239,9 +184,6 @@ class MMSFBSurface {
 
         // first time flag for eAFR_blend_ayuv()
         static bool				firsttime_eAFR_blend_ayuv;
-
-        // first time flag for eAFR_yv12()
-        static bool				firsttime_eAFR_yv12;
 
         // first time flag for eADL_argb()
         static bool				firsttime_eADL_argb;
@@ -282,34 +224,8 @@ class MMSFBSurface {
 
 
         //////////
-        void eAB_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        					  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        							unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
-        									 unsigned char alpha);
-
-        void eAB_blend_argb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-
-        void eAB_rgb16_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        					   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
-        void eAB_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        					    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        									   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
-        									   unsigned char alpha);
-        void eAB_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        					    unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
         void eAB_blend_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         						      unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
@@ -328,19 +244,6 @@ class MMSFBSurface {
         void eAB_blend_ayuv_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
         						     unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
-
-        void eAB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        					  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-//        void eAB_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-  //      				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        				 			unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
-        void eAB_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
-        				 					 unsigned char alpha);
-        void eAB_blend_srcalpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-        				 					 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
-        				 					 unsigned char alpha);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
 								 MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -372,8 +275,6 @@ class MMSFBSurface {
         									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
         									  unsigned char alpha);
 
-//        void eASB_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-	//						   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
 										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -400,9 +301,6 @@ class MMSFBSurface {
 
         void eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
         						int dx, int dy, int dw, int dh, MMSFBColor color);
-
-        void eAFR_yv12(unsigned char *dst, int dst_pitch, int dst_height,
-					   int dx, int dy, int dw, int dh, MMSFBColor color);
 
         bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
         bool extendedAccelFillRectangle(int x, int y, int w, int h);

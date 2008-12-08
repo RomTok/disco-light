@@ -29,6 +29,8 @@
 #ifndef MMSFBCONV_H_
 #define MMSFBCONV_H_
 
+#include "mmsgui/fb/mmsfbbase.h"
+
 //! Describes up to 3 planes of an external surface buffer.
 typedef struct {
 	void	*ptr;
@@ -714,6 +716,198 @@ if (!AA) { \
 
 
 
+
+
+
+#define MMSFB_CONV_BLEND_AYUV_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
+	SRC = src;											\
+	A = SRC >> 24;										\
+														\
+	if (A == 0xff) {									\
+		if (SRC!=OLDSRC) {								\
+			old_y = (SRC >> 16) & 0xff;					\
+			old_u = (SRC >> 8) & 0xff;					\
+			old_v = SRC  & 0xff;						\
+			OLDSRC = SRC;								\
+		}												\
+		dst_y = old_y;									\
+		d_u     old_u;									\
+		d_v     old_v;									\
+	}													\
+	else												\
+	if (!A) {											\
+		d_u dst_u;										\
+		d_v dst_v;										\
+	}													\
+	else												\
+	{													\
+		if (SRC!=OLDSRC) {								\
+			old_y = A * ((SRC >> 16) & 0xff);			\
+			old_u = A * ((SRC >> 8) & 0xff);			\
+			old_v = A * (SRC  & 0xff);					\
+			OLDSRC = SRC;								\
+		}												\
+														\
+		register unsigned int SA = 0x100 - A;			\
+		unsigned int y = dst_y;							\
+		unsigned int u = dst_u;							\
+		unsigned int v = dst_v;							\
+														\
+	    y = SA * y + old_y;								\
+	    u = SA * u + old_u;								\
+	    v = SA * v + old_v;								\
+	    												\
+	    dst_y = y >> 8;									\
+		d_u     u >> 8;									\
+		d_v     v >> 8;									\
+	}
+
+
+#define MMSFB_CONV_BLEND_SRCALPHA_AYUV_TO_YV12_PIXEL(src, dst_y, dst_u, dst_v, d_u, d_v) \
+	SRC = src;											\
+	A = SRC >> 24;										\
+														\
+	if (!A) {											\
+		d_u dst_u;										\
+		d_v dst_v;										\
+	}													\
+	else												\
+	{													\
+		if (SRC!=OLDSRC) {								\
+			int sy = (SRC << 8) >> 24;					\
+			int su = (SRC << 16) >> 24;					\
+			int sv = SRC & 0xff;						\
+			MMSFB_CONV_PREPARE_YUVBLEND(sy,su,sv);	\
+			sy = (ALPHA * sy) >> 8;						\
+			su = (ALPHA * su) >> 8;						\
+			sv = (ALPHA * sv) >> 8;						\
+			MMSFB_CONV_RESET_YUVBLEND(sy,su,sv);		\
+			old_y = A * sy;								\
+			A = (ALPHA * A) >> 8;						\
+			old_u = A * su;								\
+			old_v = A * sv;								\
+			OLDSRC = SRC;								\
+		}												\
+		else 											\
+			A = (ALPHA * A) >> 8;						\
+														\
+		register unsigned int SA = 0x100 - A;			\
+		unsigned int y = dst_y;							\
+		unsigned int u = dst_u;							\
+		unsigned int v = dst_v;							\
+														\
+	    y = SA * y + old_y;								\
+	    u = SA * u + old_u;								\
+	    v = SA * v + old_v;								\
+	    												\
+	    dst_y = y >> 8;									\
+		d_u     u >> 8;									\
+		d_v     v >> 8;									\
+	}
+
+
+
+
+
+
+
+
+//! Blit ARGB to ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending ARGB to ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+								   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending with alpha from color ARGB to ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+								  		    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+										  	unsigned char alpha);
+
+
+
+//! Blit AiRGB to AiRGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending AiRGB to AiRGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+								  	 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending with alpha from color AiRGB to AiRGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+											  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+											  unsigned char alpha);
+
+//! Blit with alpha blending ARGB to AiRGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+								    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
+
+
+
+
+//! Blit RGB16 to RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_rgb16_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit ARGB to RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							  unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending ARGB to RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
+//! Blit AiRGB to RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
+
+//! Blit YV12 to YV12.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+
 //! Blit RGB24 to YV12.
 /*!
 \author Jens Schneider
@@ -738,6 +932,32 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 								   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
+//! Blit with alpha blending with alpha from color ARGB to YV12.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+											unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
+				 			 		  		unsigned char alpha);
+
+
+//! Blit with alpha blending AYUV to YV12.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+				 			 	   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending with alpha from color AYUV to YV12.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_srcalpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+					 		  			    unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
+				 			 		  		unsigned char alpha);
+
+
+
 //! Stretch blit YV12 to YV12 with antialiasing.
 /*!
 \author Jens Schneider
@@ -746,6 +966,14 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 									bool h_antialiasing, bool v_antialiasing);
 
+
+
+//! Fill rectangle YV12.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
+						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
 #endif /* MMSFBCONV_H_ */

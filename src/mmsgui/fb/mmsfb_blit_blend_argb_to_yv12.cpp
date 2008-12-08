@@ -27,9 +27,8 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
-#include <stdio.h>
-
 #include "mmstools/mmstools.h"
+
 
 #ifdef __HAVE_SSE__
 
@@ -233,8 +232,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 
 	// pointer to the pixel components of the first pixel
 	unsigned char *dst_y = dst + dx + dy * dst_pitch_pix;
-	unsigned char *dst_u = dst + dst_pitch_pix * (dst_height + (dst_height >> 2)) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
-	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                      + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_v = dst + dst_pitch_pix * dst_height                                          + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
 
 	// offsets to the other three pixels
 	unsigned int dst_y2_offs = 1;

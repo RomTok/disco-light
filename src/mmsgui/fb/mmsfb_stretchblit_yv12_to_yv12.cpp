@@ -27,12 +27,11 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
-#include <stdio.h>
+#include "mmstools/mmstools.h"
 
 void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 									bool h_antialiasing, bool v_antialiasing) {
-
 	// first time?
 	static bool firsttime_mmsfb_stretchblit_yv12_to_yv12 = true;
 	if (firsttime_mmsfb_stretchblit_yv12_to_yv12) {
@@ -78,12 +77,12 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 		src_v = (unsigned char *)extbuf->ptr3 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
 	}
 	else {
-		src_u = src + src_pitch_pix * (src_height + (src_height >> 2)) + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
-		src_v = src + src_pitch_pix *  src_height                      + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+		src_u = src + src_pitch_pix * src_height + src_pitch_pix_half * (src_height >> 1) + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+		src_v = src + src_pitch_pix * src_height                                          + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
 	}
 	unsigned char *dst_y = dst + dx + dy * dst_pitch_pix;
-	unsigned char *dst_u = dst + dst_pitch_pix * (dst_height + (dst_height >> 2)) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
-	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                      + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                                         + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
 
 	// offsets to the other three pixels
 	unsigned int src_y2_offs = 1;
