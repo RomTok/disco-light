@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,7 +33,7 @@
 MMSImportScheduler::MMSImportScheduler(MMSPluginManager *pluginManager) {
 
     MMSConfigData *config = new MMSConfigData();
-    DataSource    *source = new DataSource(config->getConfigDBDBMS(), 
+    DataSource    *source = new DataSource(config->getConfigDBDBMS(),
     		                               config->getConfigDBDatabase(),
     		                               config->getConfigDBAddress(),
     		                               config->getConfigDBPort(),
@@ -35,7 +41,7 @@ MMSImportScheduler::MMSImportScheduler(MMSPluginManager *pluginManager) {
     		                               config->getConfigDBPassword());
     delete config;
 
-    /* run with the minimum priority */	
+    /* run with the minimum priority */
 //	this->setSchedulePriority(PRIORITY_MIN);
 
     /* save access to plugin manager */
@@ -110,16 +116,16 @@ void MMSImportScheduler::getImportPlugins() {
         if (!found) {
             /* have to create new importPlugins entry */
             IMPORT_PLUGINS *ip = new IMPORT_PLUGINS;
-        
+
             /* fill plugin */
             ip->plugin = pluginList.at(i);
-    
+
             /* fill import property */
             ip->importProperty = this->importPropertyService->getImportPropertyByPlugin(ip->plugin);
-    
+
             /* get the handler */
             ip->pluginHandler = this->pluginManager->getImportPluginHandler(ip->plugin->getId());
-    
+
             /* calculate the nextTime */
             ip->nextTime = base_time;
             if (!ip->importProperty->getOnStartUp())
@@ -128,7 +134,7 @@ void MMSImportScheduler::getImportPlugins() {
                 else
                     ip->nextTime = 0;
             base_time += SCHEDULER_SLEEP_TIME;
-    
+
             /* add item */
             importPlugins.push_back(ip);
         }
@@ -136,10 +142,10 @@ void MMSImportScheduler::getImportPlugins() {
             /* take the old entry and update it */
             /* update plugin */
             importPlugins.at(j)->plugin = pluginList.at(i);
-    
+
             /* update import property */
             importPlugins.at(j)->importProperty = this->importPropertyService->getImportPropertyByPlugin(importPlugins.at(j)->plugin);
-    
+
             /* get the handler */
             importPlugins.at(j)->pluginHandler = this->pluginManager->getImportPluginHandler(importPlugins.at(j)->plugin->getId());
         }
@@ -156,10 +162,10 @@ void MMSImportScheduler::threadMain() {
 	    while(1) {
     	        /* get all import plugins */
     	        getImportPlugins();
-    	
+
     	        /* get the current time */
     	        curr_time = time(NULL);
-    	
+
     	        /* through all my import plugins */
     	        for(unsigned int i=0; i<importPlugins.size(); i++) {
     	            /* check something */
@@ -169,17 +175,17 @@ void MMSImportScheduler::threadMain() {
     	                importPlugins.at(i)->nextTime = 0;
     	            else
     	                importPlugins.at(i)->nextTime = curr_time + importPlugins.at(i)->importProperty->getInterval();
-    	
+
     	            /* invoke execute import */
                     /* TODO: open a thread */
                     try {
     	                importPlugins.at(i)->pluginHandler->invokeExecute(NULL);
-                    } catch(MMSError *error) { 
+                    } catch(MMSError *error) {
                     	DEBUGMSG("IMPORTSCHEDULER", "Abort import due to: %s", error->getMessage().c_str());
                     }
-                    
+
     	        }
-    	
+
     	        sleep(SCHEDULER_SLEEP_TIME);
 	    }
     } catch(MMSError *error) {

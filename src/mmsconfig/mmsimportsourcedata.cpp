@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,7 +34,7 @@ MMSImportSourceData::MMSImportSourceData() {
     this->name = "";
     this->source = "";
     this->lifeTime = 0;
-}        
+}
 
 MMSImportSourceData::~MMSImportSourceData() {
 }
@@ -56,7 +62,7 @@ string MMSImportSourceData::getName() {
 void MMSImportSourceData::setName(string name) {
     this->name = name;
 }
- 
+
 string MMSImportSourceData::getSource() {
     return this->source;
 }
@@ -64,7 +70,7 @@ string MMSImportSourceData::getSource() {
 void MMSImportSourceData::setSource(string source) {
     this->source = source;
 }
- 
+
 int MMSImportSourceData::getLifeTime() {
     return this->lifeTime;
 }

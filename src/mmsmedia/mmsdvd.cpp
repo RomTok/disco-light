@@ -1,10 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
- *      Matthias Hardt   <mattmax@morphine.tv>                             *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,19 +34,19 @@ MMS_CREATEERROR(MMSDVDError);
 
 /**
  * Callback, that will be called if xine sends event messages.
- * 
+ *
  * At the moment it just handles the error message if an encrypted
  * dvd cannot be played and it updates the channel information.
- * 
+ *
  * It also emits signals that can be handled by sigc++ connectors.
- * 
+ *
  * @param   userData    [in/out]    pointer to the MMSDVD object
  * @param   event       [in]        pointer to event structure
  */
 static void queue_cb(void *userData, const xine_event_t *event) {
 	MMSDVD                 *mmsdvd = (MMSDVD*)userData;
     xine_ui_message_data_t *msg    = (xine_ui_message_data_t*)event->data;
-	
+
 	switch(event->type) {
         case XINE_EVENT_UI_MESSAGE:
 			if(msg->type == XINE_MSG_ENCRYPTED_SOURCE)
@@ -57,22 +62,22 @@ static void queue_cb(void *userData, const xine_event_t *event) {
 
 /**
  * Check for DVD device.
- * 
+ *
  * It uses xine health check to implement this.
  * First it will check for a given device. If it fails
  * it also checks for '/dev/dvd'.
- * 
+ *
  * @param   device  [in]    device to check as dvd device
- * 
+ *
  * @exception   MMSDVDError no usable dvd device found
  */
 void MMSDVD::checkDevice(const string device) {
     string                  d = device;
     xine_health_check_t hc, *result;
-    
+
     if(d.length() == 0)
         d = "/dev/dvd";
-    
+
     hc.dvd_dev = xine_config_register_string(xine, "input.dvd_device", d.c_str(), "device used as dvd drive", NULL, 0, NULL, NULL);
     result = xine_health_check(&hc, CHECK_DVDROM);
     if(result->status != XINE_HEALTH_CHECK_OK) {
@@ -92,11 +97,11 @@ void MMSDVD::checkDevice(const string device) {
 
 /**
  * Constructor of MMSDVD class.
- * 
+ *
  * It does initializing by calling MMSAV::initialize()
- * and checks the given device. If the device is not correct 
+ * and checks the given device. If the device is not correct
  * "/dev/dvd" will be used.
- * 
+ *
  * @param   window  [in]    main window for dvd playing
  * @param   device  [in]    device to check as dvd device
  * @param   verbose [in]    if true the xine engine writes debug messages to stdout
@@ -129,22 +134,22 @@ void MMSDVD::open() {
  * Starts playing.
  *
  * If the continue flag is set it tries to continue
- * at the position where it was stopped before. 
- * 
+ * at the position where it was stopped before.
+ *
  * @param   cont    if true it tries to continue at a position stopped before
  */
 void MMSDVD::startPlaying(const bool cont) {
 	string mrl = "dvd://" + this->device;
-	
+
 	/* play root title if not continuing (otherwise */
 	/* xine uses last played chapter                */
 	if(!cont) mrl += "/0";
-    MMSAV::startPlaying(mrl, cont); 
+    MMSAV::startPlaying(mrl, cont);
 }
 
 /**
  * Playback will be switched to rewind.
- * 
+ *
  * @see MMSDVD::slow()
  * @see MMSDVD::ffwd()
  */
@@ -160,7 +165,7 @@ void MMSDVD::rewind() {
 
 /**
  * Jump to previous chapter.
- * 
+ *
  * @see MMSDVD::next()
  */
 void MMSDVD::previous() {
@@ -170,7 +175,7 @@ void MMSDVD::previous() {
 
 /**
  * Jump to next chapter.
- * 
+ *
  * @see MMSDVD::previous()
  */
 void MMSDVD::next() {
@@ -180,7 +185,7 @@ void MMSDVD::next() {
 
 /**
  * Use the previous available angle.
- * 
+ *
  * @see MMSDVD::angleNext()
  */
 void MMSDVD::anglePrevious() {
@@ -190,7 +195,7 @@ void MMSDVD::anglePrevious() {
 
 /**
  * Use the next available angle.
- * 
+ *
  * @see MMSDVD::anglePrevious()
  */
 void MMSDVD::angleNext() {
@@ -200,58 +205,58 @@ void MMSDVD::angleNext() {
 
 /**
  * Use the previous available subtitle channel.
- * 
+ *
  * @see MMSDVD::audioChannelNext()
  */
 void MMSDVD::audioChannelPrevious() {
-    if(--audioChannel < 0) 
+    if(--audioChannel < 0)
         audioChannel = maxAudioChannels;
     xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, audioChannel);
     this->setStatus(this->STATUS_AUDIO_PREVIOUS);
-}   
+}
 
 /**
  * Use the next available audio channel.
- * 
+ *
  * @see MMSDVD::audioChannelPrevious()
  */
 void MMSDVD::audioChannelNext() {
-    if(++audioChannel >= maxAudioChannels) 
+    if(++audioChannel >= maxAudioChannels)
         audioChannel = 0;
     xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, audioChannel);
     this->setStatus(this->STATUS_AUDIO_NEXT);
-}   
+}
 
 /**
  * Use the previous available subtitle channel.
- * 
+ *
  * @see MMSDVD::spuChannelNext()
  */
 void MMSDVD::spuChannelPrevious() {
-    if(--spuChannel < -1) 
+    if(--spuChannel < -1)
         spuChannel = maxSpuChannels;
     xine_set_param(this->stream, XINE_PARAM_SPU_CHANNEL, spuChannel);
     this->setStatus(this->STATUS_SPU_PREVIOUS);
-}   
+}
 
 /**
  * Use the next available subtitle channel.
- * 
+ *
  * @see MMSDVD::spuChannelNext()
  */
 void MMSDVD::spuChannelNext() {
-    if(++spuChannel >= maxSpuChannels) 
+    if(++spuChannel >= maxSpuChannels)
         spuChannel = -1;
     xine_set_param(this->stream, XINE_PARAM_SPU_CHANNEL, spuChannel);
     this->setStatus(this->STATUS_SPU_NEXT);
-}   
+}
 
 /**
  * Eject the dvd.
- * 
+ *
  * It disposes the xine stream and sends a shell
  * command to eject the dvd.
- * 
+ *
  * @todo    use libhal for ejecting
  */
 void MMSDVD::eject() {
@@ -266,7 +271,7 @@ void MMSDVD::eject() {
 
 /**
  * The same as pressing 'Up' in a dvd menu.
- * 
+ *
  * @see MMSDVD::menuDown()
  * @see MMSDVD::menuLeft()
  * @see MMSDVD::menuRight()
@@ -278,7 +283,7 @@ void MMSDVD::menuUp() {
 
 /**
  * The same as pressing 'Down' in a dvd menu.
- * 
+ *
  * @see MMSDVD::menuUp()
  * @see MMSDVD::menuLeft()
  * @see MMSDVD::menuRight()
@@ -327,7 +332,7 @@ void MMSDVD::menuSelect() {
 /**
  * Jump to dvd main menu.
  *
- * @note This may not be possible if the dvd just 
+ * @note This may not be possible if the dvd just
  * started playing and the menu wasn't shown before.
  */
 void MMSDVD::showMainMenu() {
@@ -338,7 +343,7 @@ void MMSDVD::showMainMenu() {
  * Determines if the dvd menu is currently shown.
  *
  * @note It assumes that menus don't have chapters.
- * 
+ *
  * @return  true if in dvd menu
  *
  * @see MMSDVD::getChapterNumber()
@@ -350,11 +355,11 @@ bool MMSDVD::inMenu() {
 /**
  * Gets the name of the dvd.
  * If this is not supported, it will be set to 'UNKNOWN'.
- * 
+ *
  * @return  title name
  */
 string MMSDVD::getTitle() {
-    
+
     if(this->status > STATUS_NONE) {
         char *title;
         title = (char*)xine_get_meta_info(this->stream, XINE_META_INFO_TITLE);
@@ -371,13 +376,13 @@ string MMSDVD::getTitle() {
             }
         }
     }
-    
+
     return "";
 }
 
 /**
  * Gets the chapter number that is currently being played.
- * 
+ *
  * @return  chapter number
  */
 int MMSDVD::getChapterNumber() {
@@ -386,7 +391,7 @@ int MMSDVD::getChapterNumber() {
 
 /**
  * Gets amount of chapters available for the current title.
- * 
+ *
  * @return  chapter count
  */
 int MMSDVD::getChapterCount() {
@@ -395,7 +400,7 @@ int MMSDVD::getChapterCount() {
 
 /**
  * Gets the title number that is currently being played.
- * 
+ *
  * @return  title number
  */
 int MMSDVD::getTitleNumber() {
@@ -404,7 +409,7 @@ int MMSDVD::getTitleNumber() {
 
 /**
  * Gets amount of titles available on the current dvd.
- * 
+ *
  * @return  title count
  */
 int MMSDVD::getTitleCount() {

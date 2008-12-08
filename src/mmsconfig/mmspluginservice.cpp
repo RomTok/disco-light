@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -45,14 +51,14 @@ void MMSPluginService::setPlugin(MMSPluginData *data) {
     myPluginDAO.saveOrUpdate(data);
 
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
-    myPropertyDAO.saveOrUpdate(data);    
+    myPropertyDAO.saveOrUpdate(data);
 }
 
 void MMSPluginService::setPlugin(vector<MMSPluginData *> dataList) {
     MMSPluginDAO myPluginDAO(this->dbconn);
     myPluginDAO.saveOrUpdate(dataList);
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
-    myPropertyDAO.saveOrUpdate(dataList);    
+    myPropertyDAO.saveOrUpdate(dataList);
 }
 
 MMSPluginData *MMSPluginService::getPluginByName(string name) {
@@ -63,12 +69,12 @@ MMSPluginData *MMSPluginService::getPluginByName(string name) {
     if(plugin == NULL) {
         return NULL;
     }
-    
+
     vector <MMSPropertyData *> properties;
     properties = myPropertyDAO.findAllPluginPropertiesByPlugin(plugin);
     plugin->setProperties(properties);
 
-    return plugin;    
+    return plugin;
 }
 
 MMSPluginData *MMSPluginService::getPluginByID(int id) {
@@ -76,12 +82,12 @@ MMSPluginData *MMSPluginService::getPluginByID(int id) {
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
 
     MMSPluginData *plugin = myPluginDAO.findPluginByID(id);
-    
+
     vector <MMSPropertyData *> properties;
     properties = myPropertyDAO.findAllPluginPropertiesByPlugin(plugin);
     plugin->setProperties(properties);
 
-    return plugin;    
+    return plugin;
 }
 
 vector<MMSPluginData*> MMSPluginService::getAllPlugins(const bool inactiveToo) {
@@ -97,16 +103,16 @@ vector<MMSPluginData*> MMSPluginService::getAllPlugins(const bool inactiveToo) {
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
         pluginList.at(i)->setProperties(properties);
-    }    
-    
-    return pluginList;    
+    }
+
+    return pluginList;
 }
 
 vector<MMSPluginData *> MMSPluginService::getOSDPlugins(const bool inactiveToo) {
-	
+
 	DEBUGMSG("PLUGINSERVICE", "create dao");
     MMSPluginDAO myPluginDAO(this->dbconn);
-    
+
     DEBUGMSG("PLUGINSERVICE", "create property dao");
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
 
@@ -118,11 +124,11 @@ vector<MMSPluginData *> MMSPluginService::getOSDPlugins(const bool inactiveToo) 
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
         DEBUGMSG("PLUGINSERVICE", "get the properties of: %s (%d)", pluginList.at(i)->getName().c_str(), pluginList.at(i)->getId());
         pluginList.at(i)->setProperties(properties);
-    }    
-    
+    }
+
     DEBUGMSG("PLUGINSERVICE", "Working with %d OSD plugins", pluginList.size());
-    
-    return pluginList;    
+
+    return pluginList;
 }
 
 vector<MMSPluginData *> MMSPluginService::getCentralPlugins(const bool inactiveToo) {
@@ -136,9 +142,9 @@ vector<MMSPluginData *> MMSPluginService::getCentralPlugins(const bool inactiveT
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
         pluginList.at(i)->setProperties(properties);
-    }    
-    
-    return pluginList;    
+    }
+
+    return pluginList;
 }
 
 vector<MMSPluginData *> MMSPluginService::getImportPlugins(const bool inactiveToo) {
@@ -152,24 +158,24 @@ vector<MMSPluginData *> MMSPluginService::getImportPlugins(const bool inactiveTo
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
         pluginList.at(i)->setProperties(properties);
-    }    
-    
-    return pluginList;    
+    }
+
+    return pluginList;
 }
 
 vector<MMSPluginData *> MMSPluginService::getBackendPlugins(const bool inactiveToo) {
     MMSPluginDAO myPluginDAO(this->dbconn);
     MMSPluginPropertyDAO myPropertyDAO(this->dbconn);
-    
+
     vector <MMSPluginData *> pluginList = myPluginDAO.findAllPluginsByType(PT_BACKEND_PLUGIN, inactiveToo);
 
     for(unsigned i=0; i<pluginList.size(); i++) {
         vector <MMSPropertyData *> properties;
         properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
         pluginList.at(i)->setProperties(properties);
-    }    
-    
-    return pluginList;    
+    }
+
+    return pluginList;
 }
 
 /* getAllPluginsByCategory */
@@ -181,7 +187,7 @@ vector<MMSPluginData*> MMSPluginService::getPluginsByCategory(MMSPluginCategoryD
 
     for(unsigned i=0; i<pluginList.size(); i++) {
         if (pluginList.at(i)->getType()->getName() != PT_IMPORT_PLUGIN) {
-            
+
             /* select the plugin properties*/
             vector <MMSPropertyData *> properties;
             properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
@@ -193,9 +199,9 @@ vector<MMSPluginData*> MMSPluginService::getPluginsByCategory(MMSPluginCategoryD
             i_properties = myImportPropertyDAO.findImportPropertyByPlugin(pluginList.at(i));
             pluginList.at(i)->setImportProperties(i_properties);
         }
-    }    
-    
-    return pluginList;    
+    }
+
+    return pluginList;
 }
 vector<MMSPluginData*> MMSPluginService::getPluginsByType(MMSPluginTypeData *type, const bool inactiveToo) {
     MMSPluginDAO myPluginDAO(this->dbconn);
@@ -205,7 +211,7 @@ vector<MMSPluginData*> MMSPluginService::getPluginsByType(MMSPluginTypeData *typ
 
     for(unsigned i=0; i<pluginList.size(); i++) {
         if (pluginList.at(i)->getType()->getName() != PT_IMPORT_PLUGIN) {
-            
+
             /* select the plugin properties*/
             vector <MMSPropertyData *> properties;
             properties = myPropertyDAO.findAllPluginPropertiesByPlugin(pluginList.at(i));
@@ -217,9 +223,9 @@ vector<MMSPluginData*> MMSPluginService::getPluginsByType(MMSPluginTypeData *typ
             i_properties = myImportPropertyDAO.findImportPropertyByPlugin(pluginList.at(i));
             pluginList.at(i)->setImportProperties(i_properties);
         }
-    }    
-    
-    return pluginList;    
+    }
+
+    return pluginList;
 }
 
 MMSPluginCategoryData* MMSPluginService::getPluginCategoryByName(string name) {

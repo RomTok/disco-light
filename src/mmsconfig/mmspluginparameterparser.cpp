@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,13 +25,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #include "mmsconfig/mmspluginparameterparser.h"
 
 MMSPluginParameterParser::MMSPluginParameterParser() {
 }
 
 MMSPluginParameterParser::~MMSPluginParameterParser() {
- 
+
 }
 
 bool MMSPluginParameterParser::validate(MMSPluginData *plugin) {
@@ -33,17 +40,17 @@ bool MMSPluginParameterParser::validate(MMSPluginData *plugin) {
 
 #ifdef __NOT_USED__
     xmlpp::Document *doc;
-    
+
     if(plugin== NULL)
         return false;
-    
+
     logger.writeLog("validate property");
-    
+
     //all is well if there are no parameters
     if(plugin->getProperties().empty()) {
         return true;
     }
-    
+
     parameterfile = plugin->getPath() + "/parameter.xml";
     logger.writeLog("parse file: " +plugin->getPath() + "/parameter.xml");
     try {
@@ -65,8 +72,8 @@ bool MMSPluginParameterParser::validate(MMSPluginData *plugin) {
             }
             delete doc;
             return true;
-            
-            
+
+
         }
     }
     catch(const std::exception& ex) {
@@ -75,7 +82,7 @@ bool MMSPluginParameterParser::validate(MMSPluginData *plugin) {
     }
 #endif
     return false;
-}       
+}
 
 void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name) {
     string parameterfile;
@@ -83,15 +90,15 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
 
     if(plugin== NULL)
         return;
-    
+
     DEBUGMSG("PLUGINPARAMETERPARSER", "CreateProperty");
 
     if(plugin->getProperty(name)!=NULL) {
         return;
     }
-    
+
 	LIBXML_TEST_VERSION
-	
+
     parameterfile = plugin->getPath() + "/parameter.xml";
     try {
     	parser = xmlReadFile((char *)parameterfile.c_str(), NULL, 0);
@@ -99,9 +106,9 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
 		if(parser == NULL) {
 			throw new MMSPluginParameterParserError(1,"Could not parse file:" + parameterfile);
 		}
-		else {	
+		else {
 			xmlNode* pNode = xmlDocGetRootElement(parser);
-			
+
             string query;
             query.append("//plugin/parameter[@name=\"");
             query.append(name);
@@ -111,11 +118,11 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
 	  			DEBUGMSG("PLUGINPARAMETERPARSER", "invalid configuration file (%s) - does not contain correct root node", parameterfile.c_str());
                 throw new MMSPluginParameterParserError(0,"Plugin " + plugin->getName() + " has no parameter named " + name);
 	  		}
-            
+
             // ok we  have a parameter description create a new property
             MMSPropertyData *data = new MMSPropertyData();
-            data->setParameter(name); 
-                
+            data->setParameter(name);
+
         	xmlChar *type;
         	type = xmlGetProp(pNode, (const xmlChar*) "type");
 
@@ -137,7 +144,7 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
                 data->setMin(atoi((char*)min));
             }
             xmlFree(min);
-            
+
         	xmlChar *max;
         	max = xmlGetProp(pNode, (const xmlChar*)"max");
             if(max!=NULL) {
@@ -153,21 +160,21 @@ void MMSPluginParameterParser::createProperty(MMSPluginData *plugin,string name)
             vector<MMSPropertyData *> result = plugin->getProperties();
             result.push_back(data);
             plugin->setProperties(result);
-            
+
             return;
-            
-            
+
+
         }
     }
     catch(const std::exception& ex) {
         return;
     }
-}       
+}
 
 
 //fills properites from the db whith unset properties from xml
 void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
-    string parameterfile;   
+    string parameterfile;
 #ifdef __NOT_USED__
 	xmlDoc *parser = NULL;
 
@@ -175,12 +182,12 @@ void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
 
     if(plugin== NULL)
         throw new MMSPluginParameterParserError(0,"no plugin given");
-    
+
     LIBXML_TEST_VERSION
-	
+
     parameterfile = plugin->getPath() + "/parameter.xml";
     logger.writeLog("parse file: " +parameterfile );
-    	
+
     try {
     	parser = xmlReadFile((char *)parameterfile.c_str(), NULL, 0);
 
@@ -192,7 +199,7 @@ void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
 
             string query;
             query.append("/plugin/parameter");
-	  		
+
             if(xmlStrcmp(pNode->name, (const xmlChar *) query.c_str())) {
 	  			logger.writeLog("invalid configuration file (" + parameterfile + ") - does not contain correct root node");
                 throw new MMSPluginParameterParserError(0,"Plugin " + plugin->getName() + " has no parameter named " + string((char *)pNode->name));
@@ -200,11 +207,11 @@ void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
 
             if(myset.empty())
                 throw new MMSPluginParameterParserError(MMSPLUGINPARAMETERPARSER_ERROR_NOPARAMETERS,"Plugin has no parameters");
-            else 
-                logger.writeLog("got " + iToStr(myset.size()) + " parameters"); 
-            
+            else
+                logger.writeLog("got " + iToStr(myset.size()) + " parameters");
+
             vector<MMSPropertyData *> properties = plugin->getProperties();
-            //go through the set 
+            //go through the set
             for(unsigned int i= 0;i<myset.size();i++) {
                 logger.writeLog("vor get_name()");
                 //logger.writeLog(((xmlpp::Element *)myset.at(i))->get_name());
@@ -214,7 +221,7 @@ void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
                 logger.writeLog(attr->get_name());
                 logger.writeLog(attr->get_value());
 
-                //see if we have the parameter already in the list 
+                //see if we have the parameter already in the list
                 bool found = false;
                 for(vector<MMSPropertyData *>::iterator props=properties.begin();props!=properties.end();props++) {
                     if(((MMSPropertyData *)(*props))->getParameter()==attr->get_value()) {
@@ -222,17 +229,17 @@ void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
                         break;
                     }
                 }
-                
+
                 //add parameter if not found
                 if(found == false) {
                     logger.writeLog("create missing property");
                     this->createProperty(plugin,attr->get_value());
                 }
-            
+
             }
             //delete doc;
             return;
-            
+
         }
     }
     catch(const std::exception& ex) {
@@ -240,5 +247,5 @@ void MMSPluginParameterParser::fillProperties(MMSPluginData *plugin) {
 //        throw new MMSPluginParameterParserError(0,ex.what());
     }
 #endif
-    
+
 }

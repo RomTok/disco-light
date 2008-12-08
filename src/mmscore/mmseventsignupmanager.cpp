@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -40,12 +46,12 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
 
     for(unsigned int i=0;i<this->signups.size();i++) {
         for(unsigned int y=0;y<this->signups.at(i)->getSubScriptions().size();y++) {
-      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", this->signups.at(i)->getSubScriptions().at(y)->c_str(), event->getHeading().c_str(), this->signups.at(i)->getSubScriptions().at(y)->size()); 
+      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", this->signups.at(i)->getSubScriptions().at(y)->c_str(), event->getHeading().c_str(), this->signups.at(i)->getSubScriptions().at(y)->size());
             /*compare heading of event with subsciptions */
             if(strncmp(this->signups.at(i)->getSubScriptions().at(y)->c_str(),
                        event->getHeading().c_str(),
                        this->signups.at(i)->getSubScriptions().at(y)->size())==0) {
-                      
+
                 /* add plugindata to return vector*/
                 MMSPluginData *myplugin = new MMSPluginData;
 /* PUPEIDER
@@ -56,13 +62,13 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
                 myplugin->setProperties(signups.at(i)->getPluginData().getProperties());
 */
                 *myplugin = signups.at(i)->getPluginData();
-                
+
                 mydata.push_back(myplugin);
             }
         }
     }
     if(mydata.empty())
         throw new MMSEventSignupManagerError(0,"no subscriptions found");
-    
+
     return mydata;
 }

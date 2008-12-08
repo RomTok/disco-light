@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,7 +32,7 @@ MMSPluginData::MMSPluginData() :
     id(-1), type(NULL), name(""), title(""), description(""), path(""), filename(""),
     active(false), icon(""), selectedicon(""), smallicon(""), smallselectedicon(""),
     importProperties(NULL), category(NULL) {
-}        
+}
 
 MMSPluginData::~MMSPluginData() {
 	this->properties.clear();
@@ -37,7 +43,7 @@ int MMSPluginData::getId() {
 }
 
 void MMSPluginData::setId(int id) {
-    this->id = id;   
+    this->id = id;
 }
 
 MMSPluginTypeData *MMSPluginData::getType() {
@@ -127,17 +133,17 @@ void MMSPluginData::setSmallSelectedIcon(string icon) {
 vector<MMSPropertyData *>  MMSPluginData::getProperties() {
     return this->properties;
 }
-    
+
 void MMSPluginData::setProperties(vector <MMSPropertyData *> props) {
-    this->properties = props;    
+    this->properties = props;
 }
 
 MMSImportPropertyData *MMSPluginData::getImportProperties() {
     return this->importProperties;
 }
-    
+
 void MMSPluginData::setImportProperties(MMSImportPropertyData *props) {
-    this->importProperties = props;    
+    this->importProperties = props;
 }
 
 MMSPluginCategoryData *MMSPluginData::getCategory() {
@@ -152,7 +158,7 @@ void MMSPluginData::setCategory(MMSPluginCategoryData *category){
 MMSPropertyData*  MMSPluginData::getProperty(string name) {
 
     for(vector<MMSPropertyData*>::iterator it=properties.begin();it!=properties.end();it++) {
-        
+
         if ((*it)->getParameter()==name)
             return (*it);
     }

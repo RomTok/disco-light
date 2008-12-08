@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -45,7 +51,7 @@ unsigned char* MMSCrypt::createUserKey(string keyfile) {
     file = new MMSFile(keyfile, MMSFM_WRITE);
     file->writeBuffer((void*)userKeyEnc, &numWritten, 16, 1);
     delete(file);
-    
+
     return userKey;
 }
 
@@ -53,7 +59,7 @@ unsigned char* MMSCrypt::getUserKey(string keyfile) {
     unsigned char *userKey, *userKeyEnc;
     MMSFile       *file;
     size_t  numRead = 0;
-    
+
     /* try to open keyfile for reading                   */
     /* if it fails and the filename differs from default */
     /* try the default file                              */
@@ -61,9 +67,9 @@ unsigned char* MMSCrypt::getUserKey(string keyfile) {
     if((file->getLastError() != 0) &&
        (keyfile != MMSCRYPT_DEFAULT_KEY_FILENAME))
        file = new MMSFile(MMSCRYPT_DEFAULT_KEY_FILENAME);
-    
+
     switch(file->getLastError()) {
-        case 0 :   
+        case 0 :
             file->readBufferEx((void**)&userKeyEnc, &numRead);
             userKey = decrypt(userKeyEnc, EVP_MAX_KEY_LENGTH + EVP_MAX_IV_LENGTH, true);
             delete(file);
@@ -76,7 +82,7 @@ unsigned char* MMSCrypt::getUserKey(string keyfile) {
             delete(file);
             throw new MMSCryptError(0, "file " + keyfile + " could not be opened (" + strerror(file->getLastError()) + ")");
     }
-    
+
     return userKey;
 }
 
@@ -85,7 +91,7 @@ MMSCrypt::MMSCrypt(string keyfile) {
     unsigned char mmsiv[]  = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     unsigned char *userKey = NULL;
 
-    /* initialise our private cipher context */ 
+    /* initialise our private cipher context */
     EVP_CIPHER_CTX_init(&mmsCtx);
     EVP_EncryptInit_ex(&mmsCtx, EVP_aes_128_cbc(), 0, mmskey, mmsiv);
 
@@ -93,7 +99,7 @@ MMSCrypt::MMSCrypt(string keyfile) {
     userKey = getUserKey(keyfile);
     EVP_CIPHER_CTX_init(&userCtx);
     EVP_EncryptInit_ex(&userCtx, EVP_aes_128_cbc(), 0, &userKey[0], &userKey[EVP_MAX_KEY_LENGTH - 1]);
-    
+
     /* free memory */
     free(userKey);
 }
@@ -107,25 +113,25 @@ unsigned char* MMSCrypt::encrypt(unsigned char *in, unsigned int size, bool useM
     unsigned char  *out;
     int            inl, tmp, ol = 0;
     EVP_CIPHER_CTX *ctx;
-    
+
     ((size == 0) ? inl = strlen((char*)in) : inl = size);
     (useMMSCtx ? ctx = &mmsCtx : ctx = &userCtx);
-    
+
     if(!(out = (unsigned char*)malloc(inl + EVP_CIPHER_CTX_block_size(ctx))))
         throw new MMSCryptError(0, "not enough memory available");
-    
+
     for(int i = 0; i < inl / 128; i++) {
         if(!EVP_EncryptUpdate(ctx, &out[ol], &tmp, &in[ol], 128))
             throw new MMSCryptError(0, "error while encrypting data");
         ol += tmp;
     }
-     
+
     if(inl % 128) {
         if(!EVP_EncryptUpdate(ctx, &out[ol], &tmp, &in[ol], inl % 128))
             throw new MMSCryptError(0, "error while encrypting data");
         ol += tmp;
     }
-            
+
     if(!EVP_EncryptFinal_ex(ctx, &out[ol], &tmp))
         throw new MMSCryptError(0, "error while encrypting data");
 
@@ -136,7 +142,7 @@ unsigned char* MMSCrypt::decrypt(unsigned char *in, unsigned int size, bool useM
     unsigned char  *out;
     int            inl, ol;
     EVP_CIPHER_CTX *ctx;
-    
+
     ((size == 0) ? inl = strlen((char*)in) : inl = size);
     (useMMSCtx ? ctx = &mmsCtx : ctx = &userCtx);
 
@@ -144,14 +150,14 @@ unsigned char* MMSCrypt::decrypt(unsigned char *in, unsigned int size, bool useM
         throw new MMSCryptError(0, "not enough memory available");
 
     EVP_DecryptUpdate(ctx, out, &ol, in, inl);
-    
+
     /* nothing to decrypt */
     if(!ol) {
         free(out);
-        return 0;   
+        return 0;
     }
 
-    /* null-terminate output */    
+    /* null-terminate output */
     out[ol] = 0;
     return out;
 }

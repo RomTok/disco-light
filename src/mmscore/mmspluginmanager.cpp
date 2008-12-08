@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,7 +32,7 @@
 
 MMSPluginManager::MMSPluginManager() {
     MMSConfigData *config = new MMSConfigData();
-    this->source          = new DataSource(config->getConfigDBDBMS(), 
+    this->source          = new DataSource(config->getConfigDBDBMS(),
     		                               config->getConfigDBDatabase(),
     		                               config->getConfigDBAddress(),
     		                               config->getConfigDBPort(),
@@ -59,7 +65,7 @@ void MMSPluginManager::loadOSDPlugins() {
 
     DEBUGMSG("MMSCore", "getOSDPlugins from service");
     data = this->service->getOSDPlugins();
-    
+
     for(unsigned int i=0;i<data.size();i++) {
         MMSOSDPluginHandler *myhandler;
         myhandler = new MMSOSDPluginHandler(*(data.at(i)),true);
@@ -76,7 +82,7 @@ void MMSPluginManager::loadCentralPlugins() {
     }
 
     data = this->service->getCentralPlugins();
-    
+
     for(unsigned int i=0;i<data.size();i++) {
         MMSCentralPluginHandler *myhandler;
         myhandler = new MMSCentralPluginHandler(*(data.at(i)),true);
@@ -93,7 +99,7 @@ void MMSPluginManager::loadImportPlugins() {
     }
 
     data = this->service->getImportPlugins();
-    
+
     for(unsigned int i=0;i<data.size();i++) {
         MMSImportPluginHandler *myhandler;
         myhandler = new MMSImportPluginHandler(*(data.at(i)),true);
@@ -110,7 +116,7 @@ void MMSPluginManager::loadBackendPlugins() {
     }
 
     data = this->service->getBackendPlugins();
-    
+
     for(unsigned int i=0;i<data.size();i++) {
         MMSBackendPluginHandler *myhandler;
         myhandler = new MMSBackendPluginHandler(*(data.at(i)),true);

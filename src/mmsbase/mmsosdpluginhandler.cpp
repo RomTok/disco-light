@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,7 +34,7 @@ MMSOSDPluginHandler::MMSOSDPluginHandler(MMSPluginData plugindata, bool autoload
     this->plugindata = plugindata;
     this->handler = NULL;
     this->switcher = NULL;
-    
+
     if(autoload) {
         this->load();
     }
@@ -75,7 +81,7 @@ void MMSOSDPluginHandler::invokeShowPreview(void *data) {
         throw new MMSOSDPluginError(1,"OSD Plugin " + this->plugindata.getName() + " has nothing to display (showPreview())");
     }
     this->calllock.unlock();
-    
+
 }
 
 void MMSOSDPluginHandler::invokeShow(void *data) {
@@ -88,7 +94,7 @@ void MMSOSDPluginHandler::invokeShow(void *data) {
         throw new MMSOSDPluginError(1,"OSD Plugin " + this->plugindata.getName() + " has nothing to display (show())");
     }
     this->calllock.unlock();
-	
+
 }
 
 void MMSOSDPluginHandler::load() {

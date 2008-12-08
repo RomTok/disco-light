@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -77,7 +83,7 @@ void MMSFileSearch::setCaseInsensitive(bool caseinsensitive) {
 void MMSFileSearch::seperateMask() {
 	int pos = 0;
 	int tmppos = 0;
-	
+
 	while(pos!=-1) {
 		pos = this->mask.find_first_of(";",tmppos);
 		if(pos != -1) {
@@ -95,7 +101,7 @@ void MMSFileSearch::seperateMask() {
 	} else if(strncmp(this->singlemask.at(0).c_str(),MMSFILESEARCH_DEEPESTDIRENTRY_OF_FILE,strlen(MMSFILESEARCH_DEEPESTDIRENTRY_OF_FILE)-1)==0) {
 		this->option = MMSFILESEARCH_DEEPESTDIR_OF_FILE;
 	}
-	
+
 }
 
 
@@ -104,18 +110,18 @@ list<MMSFILE_ENTRY *> MMSFileSearch::execute() {
 
     this->dirhandle = opendir(this->directory.c_str());
 	scanDir(&result,this->dirhandle,(this->directory!="/")?this->directory:"");
-    closedir(this->dirhandle);	 
+    closedir(this->dirhandle);
     return result;
 }
 
 void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string cwd) {
-	
+
 	struct dirent *entry = readdir(dirhandle);
 	bool filefound = false;
 	bool dirfound = false;
-	int  pos;	
+	int  pos;
 	while(entry != NULL) {
-		
+
 		if(strcmp(entry->d_name,".")==0) {
 			entry = readdir(dirhandle);
 			continue;
@@ -124,19 +130,19 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 			entry = readdir(dirhandle);
 			continue;
 		}
-					
+
 		if(entry->d_type == DT_DIR) {
 			if (this->getdirs) {
 				// put name of directory to the list
 				if((this->option == MMSFILESEARCH_NONE)||(this->option == MMSFILESEARCH_DEEPESTDIR_OF_FILE)) {
-					
+
 					// we have a regular file -> and want to check it
 					if(match(entry->d_name) == true) {
 						filefound = true;
 
 						// we have found sth;
 						if((this->option != MMSFILESEARCH_DEEPESTDIR_OF_FILE)&&(this->option != MMSFILESEARCH_DEEPESTDIR)) {
-														
+
 							//we really really want it
 							MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
 							file->isdir = true;
@@ -147,7 +153,7 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 						}
 					}
 				}
-				
+
 			}
 			if(this->recursive == true) {
 				// we have a directory -> recurse
@@ -163,14 +169,14 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
 
 		if(entry->d_type == DT_REG) {
 			if((this->option == MMSFILESEARCH_NONE)||(this->option == MMSFILESEARCH_DEEPESTDIR_OF_FILE)) {
-				
+
 				// we have a regular file -> and want to check it
 				if(match(entry->d_name) == true) {
 					filefound = true;
 
 					// we have found sth;
 					if((this->option != MMSFILESEARCH_DEEPESTDIR_OF_FILE)&&(this->option != MMSFILESEARCH_DEEPESTDIR)) {
-													
+
 						//we really really want it
 						MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
 						file->isdir = false;
@@ -191,10 +197,10 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
                     // we have a regular file -> and want to check it
                     if(match(entry->d_name) == true) {
                         filefound = true;
-    
+
                         // we have found sth;
                         if((this->option != MMSFILESEARCH_DEEPESTDIR_OF_FILE)&&(this->option != MMSFILESEARCH_DEEPESTDIR)) {
-                                                        
+
                             //we really really want it
                             MMSFILE_ENTRY *file = new MMSFILE_ENTRY;
 							file->isdir = false;
@@ -217,7 +223,7 @@ void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string
                         closedir(directory);
                     }
                 }
-            }            
+            }
         }
         entry = readdir(dirhandle);
 	}

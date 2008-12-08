@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +29,7 @@
 #include "mmsgui/theme/mmsmenuwidgetclass.h"
 #include <string.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_MENUWIDGET_ATTR_I[] = MMSGUI_MENUWIDGET_ATTR_INIT;
 
 //address attribute names
@@ -188,7 +194,7 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -199,103 +205,103 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(item_width)) { 
+            if (ISATTRNAME(item_width)) {
 	            setItemWidth(attrval_str);
             }
             else
-            if (ISATTRNAME(item_height)) { 
+            if (ISATTRNAME(item_height)) {
 	            setItemHeight(attrval_str);
             }
             else
-            if (ISATTRNAME(item_hmargin)) { 
+            if (ISATTRNAME(item_hmargin)) {
 	            setItemHMargin(attrval_int);
             }
             else
-            if (ISATTRNAME(item_vmargin)) { 
+            if (ISATTRNAME(item_vmargin)) {
 	            setItemVMargin(attrval_int);
             }
             else
-            if (ISATTRNAME(cols)) { 
+            if (ISATTRNAME(cols)) {
 	            setCols(attrval_int);
             }
             else
-            if (ISATTRNAME(dim_items)) { 
+            if (ISATTRNAME(dim_items)) {
 	            setDimItems(attrval_int);
             }
             else
-            if (ISATTRNAME(fixed_pos)) { 
+            if (ISATTRNAME(fixed_pos)) {
 	            setFixedPos(attrval_int);
             }
             else
-            if (ISATTRNAME(hloop)) { 
+            if (ISATTRNAME(hloop)) {
 	            setHLoop((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(vloop)) { 
+            if (ISATTRNAME(vloop)) {
 	            setVLoop((attrval_int) ? true : false);
             }
             else
-            if (ISATTRNAME(trans_items)) { 
+            if (ISATTRNAME(trans_items)) {
 	            setTransItems(attrval_int);
             }
             else
-            if (ISATTRNAME(dim_top)) { 
+            if (ISATTRNAME(dim_top)) {
 	            setDimTop(attrval_int);
             }
             else
-            if (ISATTRNAME(dim_bottom)) { 
+            if (ISATTRNAME(dim_bottom)) {
 	            setDimBottom(attrval_int);
             }
             else
-            if (ISATTRNAME(dim_left)) { 
+            if (ISATTRNAME(dim_left)) {
 	            setDimLeft(attrval_int);
             }
             else
-            if (ISATTRNAME(dim_right)) { 
+            if (ISATTRNAME(dim_right)) {
 	            setDimRight(attrval_int);
             }
             else
-            if (ISATTRNAME(trans_top)) { 
+            if (ISATTRNAME(trans_top)) {
 	            setTransTop(attrval_int);
             }
             else
-            if (ISATTRNAME(trans_bottom)) { 
+            if (ISATTRNAME(trans_bottom)) {
 	            setTransBottom(attrval_int);
             }
             else
-            if (ISATTRNAME(trans_left)) { 
+            if (ISATTRNAME(trans_left)) {
 	            setTransLeft(attrval_int);
             }
             else
-            if (ISATTRNAME(trans_right)) { 
+            if (ISATTRNAME(trans_right)) {
 	            setTransRight(attrval_int);
             }
             else
-            if (ISATTRNAME(zoomsel_width)) { 
+            if (ISATTRNAME(zoomsel_width)) {
 	            setZoomSelWidth(attrval_str);
             }
             else
-            if (ISATTRNAME(zoomsel_height)) { 
+            if (ISATTRNAME(zoomsel_height)) {
 	            setZoomSelHeight(attrval_str);
             }
             else
-            if (ISATTRNAME(zoomsel_shiftx)) { 
+            if (ISATTRNAME(zoomsel_shiftx)) {
 	            setZoomSelShiftX(attrval_str);
             }
             else
-            if (ISATTRNAME(zoomsel_shifty)) {  
+            if (ISATTRNAME(zoomsel_shifty)) {
 	            setZoomSelShiftY(attrval_str);
             }
             else
-            if (ISATTRNAME(smooth_scrolling)) { 
+            if (ISATTRNAME(smooth_scrolling)) {
 	            setSmoothScrolling((attrval_int) ? true : false);
 			}
             else
-            if (ISATTRNAME(parent_window)) {  
+            if (ISATTRNAME(parent_window)) {
 	            setParentWindow(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage)) { 
+            if (ISATTRNAME(selimage)) {
 	            if (*attrval_str)
 	                setSelImagePath("");
 	            else
@@ -303,22 +309,22 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
 	            setSelImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage_path)) { 
+            if (ISATTRNAME(selimage_path)) {
 	            if (*attrval_str)
 	                setSelImagePath(attrval_str);
 	            else
 	                setSelImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selimage_name)) { 
+            if (ISATTRNAME(selimage_name)) {
 	            setSelImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(smooth_selection)) { 
+            if (ISATTRNAME(smooth_selection)) {
 	            setSmoothSelection((attrval_int) ? true : false);
 			}
             else
-            if (ISATTRNAME(smooth_delay)) { 
+            if (ISATTRNAME(smooth_delay)) {
 	            setSmoothDelay(attrval_int);
 			}
     	}

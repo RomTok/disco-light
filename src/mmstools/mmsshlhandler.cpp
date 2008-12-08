@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,7 +33,7 @@
 MMSShlHandler::~MMSShlHandler() {
     if(this->isloaded) {
         dlclose(this->handle);
-    }    
+    }
 }
 
 void MMSShlHandler::close() {
@@ -48,7 +54,7 @@ void MMSShlHandler::open() {
 
         if(this->handle == NULL)
             throw new MMSShlError(0,"shared library " + this->name + " cannot be loaded: " + dlerror());
-        
+
         this->isloaded = true;
     }
 }
@@ -63,15 +69,15 @@ string MMSShlHandler::getName() {
 
 void *MMSShlHandler::getFunction(string name) {
     void *ret = NULL;
-    
+
     if(this->isloaded) {
         ret = dlsym(this->handle,name.c_str());
-        if(ret == NULL) 
+        if(ret == NULL)
             throw new MMSShlError(0,"symbol " + name + " cannot be retrieved: " + dlerror());
     } else {
         throw new MMSShlError(0,"shared library " + this->name + " is not loaded");
     }
-    
+
     return ret;
 }
 

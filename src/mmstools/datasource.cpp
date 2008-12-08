@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,11 +26,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmstools/datasource.h" 
+#include "mmstools/datasource.h"
 
-DataSource::DataSource(const string _dbms, 
-    		           const string _dbName, 
-    			       const string _address, 
+DataSource::DataSource(const string _dbms,
+    		           const string _dbName,
+    			       const string _address,
     			       const unsigned int _port,
     			       const string _user,
     			       const string _password) :
@@ -34,7 +40,7 @@ DataSource::DataSource(const string _dbms,
     dbName(_dbName),
     user(_user),
     password(_password) {
-	
+
 }
 
 DataSource::DataSource(const DataSource& d) :
@@ -47,7 +53,7 @@ DataSource::DataSource(const DataSource& d) :
 }
 
 DataSource::~DataSource() {
-	
+
 }
 
 

@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,6 +25,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #include "mmsbase/mmsmusicinterface.h"
 
 MMSMusicInterface::MMSMusicInterface() {
@@ -33,11 +40,11 @@ MMSMusicInterface::~MMSMusicInterface() {
 
 	if(this->onPrevSong)
 		delete this->onPrevSong;
-		
+
 	if(this->manager) {
-		this->manager->setOnNextSong(NULL);		
+		this->manager->setOnNextSong(NULL);
 		this->manager->setOnPrevSong(NULL);
-	}		
+	}
 }
 
 void MMSMusicInterface::setManager(IMMSMusicManager *manager) {
@@ -100,46 +107,46 @@ bool MMSMusicInterface::hasPlaylist()  {
 
 PLAYLIST MMSMusicInterface::getPlaylist() {
 	PLAYLIST list;
-	if(this->manager) 
+	if(this->manager)
 		return this->manager->getPlaylist();
-		
+
 	return list;
 }
 
 int MMSMusicInterface::getPlaylistOffset() {
 	if(this->manager)
 		return this->manager->getPlaylistOffset();
-		
+
 	return -1;
 }
 
 bool MMSMusicInterface::isPlaying() {
 	if(this->manager)
 		return manager->isPlaying();
-	
+
 	return false;
 }
 
 bool MMSMusicInterface::isPaused() {
 	if(this->manager)
 		return manager->isPaused();
-	
+
 	return true;
 }
 
 bool MMSMusicInterface::getTimes(int *pos, int *length) {
     if(this->manager)
         return manager->getTimes(pos, length);
-    
+
     return false;
 }
 
 void MMSMusicInterface::setRepeat(bool repeat) {
-    this->manager->setRepeat(repeat);   
+    this->manager->setRepeat(repeat);
 }
 
 void MMSMusicInterface::setShuffle(bool shuffle) {
-    this->manager->setShuffle(shuffle);   
+    this->manager->setShuffle(shuffle);
 }
 
 IMMSMusicManager *MMSMusicInterface::manager=NULL;

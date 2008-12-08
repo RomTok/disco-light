@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,7 +38,7 @@ void MMSImportPropertyDAO::setMMSDBConnection(IMMSDB *connection) {
 }
 
 IMMSDB *MMSImportPropertyDAO::getMMSDBConnection() {
-    return this->dbConnection;   
+    return this->dbConnection;
 }
 
 void MMSImportPropertyDAO::save(MMSImportPropertyData *data) {
@@ -75,13 +81,13 @@ MMSImportPropertyData *MMSImportPropertyDAO::moveRecordToData(MMSRecordSet &rs) 
     data->setOnStartUp((rs["onStartUp"]=="Y"));
     data->setTime(atoi(rs["Time"].c_str()));
     data->setInterval(atoi(rs["Interval"].c_str()));
-    
+
     return data;
 }
 
 MMSImportPropertyData *MMSImportPropertyDAO::findImportPropertyByPlugin(MMSPluginData *plugin) {
     MMSRecordSet    rs;
-    
+
     this->getMMSDBConnection()->query(
         "select * from ImportProperties where PluginID = " + iToStr(plugin->getId()),
         &rs);

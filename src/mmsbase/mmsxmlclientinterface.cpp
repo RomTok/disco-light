@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -44,7 +50,7 @@ bool MMSXMLClientInterface::parseAnswer(string *answer, int *rc, string *error) 
         DEBUGMSG("MMSXMLClientInterface", "Error initializing xmlReader()");
         return false;
     }
-    
+
     if(xmlTextReaderRead(reader)) {
         if(checkRoot(reader, rc, error))
             ret = true;
@@ -84,7 +90,7 @@ bool MMSXMLClientInterface::checkRoot(xmlTextReaderPtr reader, int *rc, string *
 
 bool MMSXMLClientInterface::funcSendEvent(string heading, int pluginid, int *rc, string *error) {
 	string rbuf, abuf;
-	
+
 	/* build request */
 	rbuf = "<func name=\"SendEvent\" heading=\"" + heading + "\"";
 	if (pluginid>=0) rbuf+= " pluginid=\"" + iToStr(pluginid) + "\"";

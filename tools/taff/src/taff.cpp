@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by Berlinux Solutions                         *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>                *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
  *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,6 +25,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+/*
+ * taff.cpp
+ *
+ *  Created on: 01.04.2008
+ *      Author: Jens Schneider
+ */
 
 #include "mms.h"
 
@@ -47,7 +60,7 @@ void help() {
 bool getparams(int argc, char *argv[],
 			   string &mode, string &tafffile, TAFF_DESCRIPTION **tafftype,
 			   string &extfile, MMSTAFF_EXTERNAL_TYPE *exttype, bool &ignore_blanks, bool &trace, bool &print_warnings) {
-	
+
 	if ((argc<3)||((argc-1)%2)) {
 		printf("Error: wrong parameter list\n");
 		return false;
@@ -164,7 +177,7 @@ bool getparams(int argc, char *argv[],
 		printf("Error: --mode is not specified\n");
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -175,7 +188,7 @@ int main(int argc, char *argv[]) {
 	bool ignore_blanks, trace, print_warnings;
 	TAFF_DESCRIPTION *tafftype;
 	MMSTAFF_EXTERNAL_TYPE exttype;
-	
+
 	if (!getparams(argc, argv, mode, tafffile, &tafftype, extfile, &exttype, ignore_blanks, trace, print_warnings)) {
 		help();
 		return 1;
@@ -193,7 +206,7 @@ int main(int argc, char *argv[]) {
 			printf("Error: external file not specified\n");
 			return 1;
 		}
-		
+
 		MMSTaffFile *tafff = new MMSTaffFile(tafffile, tafftype, extfile, exttype, ignore_blanks, trace, print_warnings, true);
 		if (!tafff) {
 			printf("Error: creating MMSTaffFile()\n");
@@ -207,7 +220,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("TAFF created.\n");
-		
+
 		delete tafff;
 		return 0;
 	}
@@ -220,14 +233,14 @@ int main(int argc, char *argv[]) {
 			printf("Error: external file not specified\n");
 			return 1;
 		}
-		
+
 		MMSTaffFile *tafff = new MMSTaffFile("", tafftype, "", exttype, ignore_blanks, trace, print_warnings, true);
 		if (!tafff) {
 			printf("Error: creating MMSTaffFile()\n");
 			help();
 			return 2;
 		}
-		
+
 		tafff->setExternal(extfile, exttype);
 		if (!tafff->convertExternal2TAFF()) {
 			printf("Error: conversion external to TAFF\n");
@@ -235,7 +248,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("Creation test was successful.\n");
-		
+
 		delete tafff;
 		return 0;
 	}
@@ -252,7 +265,7 @@ int main(int argc, char *argv[]) {
 			printf("Error: external file not specified\n");
 			return 1;
 		}
-		
+
 		MMSTaffFile *tafff = new MMSTaffFile(tafffile, tafftype, "", exttype, ignore_blanks, trace, print_warnings, false);
 		if (!tafff) {
 			printf("Error: creating MMSTaffFile()\n");
@@ -271,9 +284,9 @@ int main(int argc, char *argv[]) {
 		tafff->setExternal(extfile, exttype);
 		if (!tafff->convertTAFF2External())
 			return 2;
-		
+
 		printf("External file created.\n");
-		
+
 		delete tafff;
 		return 0;
 	}
@@ -308,12 +321,12 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("Creation test was successful.\n");
-		
+
 		delete tafff;
 		return 0;
 	}
-	
-	
+
+
 	return 0;
 }
 

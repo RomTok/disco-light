@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +29,7 @@
 #include "mmsgui/theme/mmssliderwidgetclass.h"
 #include <string.h>
 
-//store attribute descriptions here 
+//store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_SLIDERWIDGET_ATTR_I[] = MMSGUI_SLIDERWIDGET_ATTR_INIT;
 
 //address attribute names
@@ -168,7 +174,7 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
     }
     else {
     	unsigned int pl = strlen(prefix->c_str());
-    	
+
     	startTAFFScan_WITHOUT_ID
     	{
     		/* check if attrname has correct prefix */
@@ -179,7 +185,7 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
             attrname = &attrname[pl];
 
     		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(image)) { 
+            if (ISATTRNAME(image)) {
 	            if (*attrval_str)
 	                setImagePath("");
 	            else
@@ -187,18 +193,18 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	            setImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(image_path)) { 
+            if (ISATTRNAME(image_path)) {
 	            if (*attrval_str)
 	                setImagePath(attrval_str);
 	            else
 	                setImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(image_name)) { 
+            if (ISATTRNAME(image_name)) {
 	            setImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage)) { 
+            if (ISATTRNAME(selimage)) {
 	            if (*attrval_str)
 	                setSelImagePath("");
 	            else
@@ -206,18 +212,18 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	            setSelImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage_path)) { 
+            if (ISATTRNAME(selimage_path)) {
 	            if (*attrval_str)
 	                setSelImagePath(attrval_str);
 	            else
 	                setSelImagePath((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selimage_name)) { 
+            if (ISATTRNAME(selimage_name)) {
 	            setSelImageName(attrval_str);
             }
             else
-            if (ISATTRNAME(image_p)) { 
+            if (ISATTRNAME(image_p)) {
 	            if (*attrval_str)
 	                setImagePath_p("");
 	            else
@@ -225,18 +231,18 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	            setImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(image_p_path)) { 
+            if (ISATTRNAME(image_p_path)) {
 	            if (*attrval_str)
 	                setImagePath_p(attrval_str);
 	            else
 	                setImagePath_p((path)?*path:"");
             }
             else
-            if (ISATTRNAME(image_p_name)) { 
+            if (ISATTRNAME(image_p_name)) {
 	            setImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage_p)) { 
+            if (ISATTRNAME(selimage_p)) {
 	            if (*attrval_str)
 	                setSelImagePath_p("");
 	            else
@@ -244,18 +250,18 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	            setSelImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage_p_path)) { 
+            if (ISATTRNAME(selimage_p_path)) {
 	            if (*attrval_str)
 	                setSelImagePath_p(attrval_str);
 	            else
 	                setSelImagePath_p((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selimage_p_name)) {  
+            if (ISATTRNAME(selimage_p_name)) {
 	            setSelImageName_p(attrval_str);
             }
             else
-            if (ISATTRNAME(image_i)) { 
+            if (ISATTRNAME(image_i)) {
 	            if (*attrval_str)
 	                setImagePath_i("");
 	            else
@@ -263,18 +269,18 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	            setImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(image_i_path)) { 
+            if (ISATTRNAME(image_i_path)) {
 	            if (*attrval_str)
 	                setImagePath_i(attrval_str);
 	            else
 	                setImagePath_i((path)?*path:"");
             }
             else
-            if (ISATTRNAME(image_i_name)) { 
+            if (ISATTRNAME(image_i_name)) {
 	            setImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage_i)) { 
+            if (ISATTRNAME(selimage_i)) {
 	            if (*attrval_str)
 	                setSelImagePath_i("");
 	            else
@@ -282,24 +288,24 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	            setSelImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(selimage_i_path)) { 
+            if (ISATTRNAME(selimage_i_path)) {
 	            if (*attrval_str)
 	                setSelImagePath_i(attrval_str);
 	            else
 	                setSelImagePath_i((path)?*path:"");
             }
             else
-            if (ISATTRNAME(selimage_i_name)) { 
+            if (ISATTRNAME(selimage_i_name)) {
 	            setSelImageName_i(attrval_str);
             }
             else
-            if (ISATTRNAME(position)) { 
+            if (ISATTRNAME(position)) {
 	            setPosition(attrval_int);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
     }
-    
+
     if ((!class_set)&&(path)&&(*path!="")) {
 	    if (!isImagePath())
 	        setImagePath(*path);

@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -51,7 +57,7 @@ bool MMSXMLServerInterface::processRequest(string *request, string *answer) {
         DEBUGMSG("MMSXMLServerInterface", "Error initializing xmlReader()");
         return false;
     }
-    
+
     if(xmlTextReaderRead(reader)) {
         throughDoc(reader, answer);
         if(*answer == "") *answer = "<ret error=\"Unknown error.\"/>";
@@ -90,7 +96,7 @@ bool MMSXMLServerInterface::throughFunc(xmlTextReaderPtr reader, string *answer)
         DEBUGMSG("MMSXMLServerInterface", "Function not specified.");
 		return false;
 	}
-    
+
 	/* check function */
     if(!xmlStrEqual(name, (const xmlChar*)"SendEvent")) {
 		/* unknown function */
@@ -116,7 +122,7 @@ bool MMSXMLServerInterface::funcSendEvent(xmlTextReaderPtr reader, string *answe
 
 	/* construct event object */
 	event = new MMSEvent((const char*)heading);
-    
+
     /* through <func/> childs */
     while(xmlTextReaderRead(reader)) {
         name = (xmlChar*)xmlTextReaderConstName(reader);

@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,7 +38,7 @@ void MMSImportSourceDAO::setMMSDBConnection(IMMSDB *connection) {
 }
 
 IMMSDB *MMSImportSourceDAO::getMMSDBConnection() {
-    return this->dbConnection;   
+    return this->dbConnection;
 }
 
 void MMSImportSourceDAO::deleteImportSource(MMSImportSourceData *source) {
@@ -92,7 +98,7 @@ MMSImportSourceData *MMSImportSourceDAO::moveRecordToData(MMSRecordSet &rs) {
     data->setName(rs["Name"]);
     data->setSource(rs["Source"]);
     data->setLifeTime(atoi(rs["LifeTime"].c_str()));
-    
+
     return data;
 }
 
@@ -116,12 +122,12 @@ vector<MMSImportSourceData *> MMSImportSourceDAO::findImportSourcesByPlugin(MMSP
         /* push to list */
         sourceList.push_back(source);
     } while(rs.next() == true);
-        
+
     return sourceList;
 }
 MMSImportSourceData *   MMSImportSourceDAO::findImportSourcesByID(int id) {
     MMSRecordSet                    rs;
-    
+
     /* do query */
     this->getMMSDBConnection()->query(
         "select * from ImportSource where ID = " + iToStr(id),&rs);
@@ -131,10 +137,10 @@ MMSImportSourceData *   MMSImportSourceDAO::findImportSourcesByID(int id) {
 
     MMSImportSourceData *source = moveRecordToData(rs);
 
-        
+
     return source;
 
-}    
+}
 
 MMSImportSourceData *   MMSImportSourceDAO::findImportSourcesByName(string name) {
     MMSRecordSet                    rs;
@@ -148,6 +154,6 @@ MMSImportSourceData *   MMSImportSourceDAO::findImportSourcesByName(string name)
 
     MMSImportSourceData *source = moveRecordToData(rs);
 
-        
+
     return source;
-}    
+}

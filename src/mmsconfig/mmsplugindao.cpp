@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -47,7 +53,7 @@ void MMSPluginDAO::save(MMSPluginData *data) {
     MMSRecordSet    rs;
 
     /* do the insert */
-    this->getMMSDBConnection()->query(PLUGINDAO_SAVE(iToStr(data->getType()->getID()), 
+    this->getMMSDBConnection()->query(PLUGINDAO_SAVE(iToStr(data->getType()->getID()),
     									data->getName(),
     									data->getTitle(),
     									data->getDescription(),
@@ -55,10 +61,10 @@ void MMSPluginDAO::save(MMSPluginData *data) {
     									data->getPath(),
     									((data->getActive())?"Y":"N"),
     									data->getIcon(),
-    									data->getSelectedIcon(),	
+    									data->getSelectedIcon(),
     									data->getSmallIcon(),
     									data->getSmallSelectedIcon()));
-    
+
 
     /* set the ID */
     data->setId(this->getMMSDBConnection()->getLastInsertedID());
@@ -110,7 +116,7 @@ MMSPluginData *MMSPluginDAO::moveRecordToData(MMSRecordSet &rs) {
     data->setSelectedIcon(rs["SelectedIcon"]);
     data->setSmallIcon(rs["SmallIcon"]);
     data->setSmallSelectedIcon(rs["SmallSelectedIcon"]);
-    
+
     return data;
 }
 
@@ -124,7 +130,7 @@ MMSPluginData *MMSPluginDAO::findPluginByName(string name) {
     /* check if result is empty */
     if (rs.getCount()==0)
         return NULL;
-    
+
     /* set the values */
     plugin = moveRecordToData(rs);
     MMSPluginCategoryData *category = new MMSPluginCategoryData();
@@ -132,7 +138,7 @@ MMSPluginData *MMSPluginDAO::findPluginByName(string name) {
 
     if(!rs["CategoryID"].empty())
         category->setID(atoi(rs["CategoryID"].c_str()));
-    
+
     if(!rs["CategoryName"].empty())
         category->setName(rs["CategoryName"]);
 
@@ -156,7 +162,7 @@ MMSPluginData *MMSPluginDAO::findPluginByID(int id) {
     /* check if result is empty */
     if (rs.getCount()==0)
         return NULL;
-    
+
     /* set the values */
     plugin = moveRecordToData(rs);
     MMSPluginCategoryData *category = new MMSPluginCategoryData();
@@ -164,7 +170,7 @@ MMSPluginData *MMSPluginDAO::findPluginByID(int id) {
 
     if(!rs["CategoryID"].empty())
         category->setID(atoi(rs["CategoryID"].c_str()));
-    
+
     if(!rs["CategoryName"].empty())
         category->setName(rs["CategoryName"]);
 
@@ -178,7 +184,7 @@ MMSPluginData *MMSPluginDAO::findPluginByID(int id) {
 }
 
 vector<MMSPluginData *> MMSPluginDAO::findAllPlugins(const bool inactiveToo){
-    string                  query;    
+    string                  query;
     vector<MMSPluginData *> pluginList;
     MMSRecordSet            rs;
 
@@ -186,9 +192,9 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPlugins(const bool inactiveToo){
     	query = PLUGINDAO_FIND_ALL_ACTIVE_PLUGINS;
     else
     	query = PLUGINDAO_FIND_ALL_PLUGINS;
-    
+
     this->getMMSDBConnection()->query(query, &rs);
-    
+
     /* check if result is empty */
     if (rs.getCount()==0) return pluginList;
 
@@ -201,7 +207,7 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPlugins(const bool inactiveToo){
 
         if(!rs["CategoryID"].empty())
         	category->setID(atoi(rs["CategoryID"].c_str()));
-        
+
         if(!rs["CategoryName"].empty())
             category->setName(rs["CategoryName"]);
 
@@ -214,21 +220,21 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPlugins(const bool inactiveToo){
         /* push to list */
         pluginList.push_back(plugin);
     } while(rs.next() == true);
-    
+
     return pluginList;
 }
 
 vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByCategory(MMSPluginCategoryData *category, const bool inactiveToo){
-    string                  query;    
+    string                  query;
     vector<MMSPluginData *> pluginList;
     MMSRecordSet            rs;
-    
+
     // select all plugins
     if(!inactiveToo)
     	query = PLUGINDAO_F_ACTIVE_PLUGINS_BY_CATEGORY(category->getName());
     else
     	query = PLUGINDAO_F_ALL_PLUGINS_BY_CATEGORY(category->getName());
-    	
+
     this->getMMSDBConnection()->query(query, &rs);
 
     /* check if result is empty */
@@ -247,20 +253,20 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByCategory(MMSPluginCategory
         /* push to list */
         pluginList.push_back(plugin);
     } while(rs.next() == true);
-        
+
     return pluginList;
 }
 
 vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(MMSPluginTypeData *type, const bool inactiveToo){
-        
+
     return this->findAllPluginsByType((char *)type->getName().c_str(), inactiveToo);
 }
 
 vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, const bool inactiveToo) {
-    string                  query;    
+    string                  query;
     vector<MMSPluginData *> pluginList;
     MMSRecordSet            rs;
-    
+
     // select all plugins
     if(!inactiveToo)
     	query = PLUGINDAO_F_ACTIVE_PLUGINS_BY_TYPE(typeName);
@@ -273,10 +279,10 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, cons
 
     /* check if result is empty */
     if (rs.getCount()==0) return pluginList;
-    
+
     // rewind the resultset
     rs.setRecordNum(0);
-    
+
     /* for each result record */
     do {
         /* set the values */
@@ -286,7 +292,7 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, cons
 
         if(!rs["CategoryID"].empty())
             plugincategory->setID(atoi(rs["CategoryID"].c_str()));
-        
+
         if(!rs["CategoryName"].empty())
             plugincategory->setName(rs["CategoryName"]);
 
@@ -298,6 +304,6 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, cons
         /* push to list */
         pluginList.push_back(plugin);
     } while(rs.next() == true);
-        
+
     return pluginList;
 }

@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by                                            *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <sxs@morphine.tv>                                 *
- *      Guido Madaus     <bere@morphine.tv>                                *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
+ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,12 +31,12 @@
 
 MMSImportSourceService::MMSImportSourceService(DataSource *datasource) :
     dbconn(NULL) {
-    MMSDBConnMgr connMgr(datasource); 
+    MMSDBConnMgr connMgr(datasource);
     if((this->dbconn = connMgr.getConnection()))
     	this->dbconn->connect();
 }
 
-MMSImportSourceService::~MMSImportSourceService() {	
+MMSImportSourceService::~MMSImportSourceService() {
 	if(this->dbconn) {
 		this->dbconn->disconnect();
 		delete this->dbconn;
@@ -46,7 +52,7 @@ vector<MMSImportSourceData *> MMSImportSourceService::getImportSourcesByPlugin(M
     MMSImportSourceDAO myImportSourceDAO(this->dbconn);
     vector<MMSImportSourceData *> importSources;
     importSources = myImportSourceDAO.findImportSourcesByPlugin(plugin);
-    
+
     /* substitute env vars in the sources */
     for (unsigned i = 0; i < importSources.size(); i++) {
         importSources.at(i)->setSource(substituteEnvVars(importSources.at(i)->getSource()));

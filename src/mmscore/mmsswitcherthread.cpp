@@ -1,9 +1,15 @@
 /***************************************************************************
- *   Copyright (C) 2005-2008 by Berlinux Solutions                         *
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>                *
+ *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
+ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
+ *      Jens Schneider   <pupeider@gmx.de>                                 *
  *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
- *      Jens Schneider   <pupeider@morphine.tv>                            *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -60,7 +66,7 @@ void MMSSwitcherThread::invokeShowPreview() {
     this->invoke_plugin = this->sw->curr_plugin;
     this->plugin_invoked = 0;
     this->my_spt = NULL;
-    
+
     /* unlock me */
     this->lock.unlock();
 }
@@ -73,23 +79,23 @@ void MMSSwitcherThread::threadMain() {
 
     if (this->mode == 0) {
         unsigned int cnt = 0;
-        
+
         while (1) {
             /* lock me */
             this->lock.lock();
-    
+
             if (cnt % 10 == 0) {
                 /* check and update date & time */
             	if ((date_s)||(date_p)||(time_s)||(time_p)) {
 		            string datestr, timestr;
 		            getCurrentTimeString(NULL, &datestr, &timestr);
-		    
+
 		            if (datestr != this->curr_date) {
 		                this->curr_date = datestr;
 		                if (date_s) date_s->setText(this->curr_date);
 		                if (date_p) date_p->setText(this->curr_date);
 		            }
-		    
+
 		            if (timestr.substr(0, 5) != this->curr_time) {
 		                this->curr_time = timestr.substr(0, 5);
 		                if (time_s) time_s->setText(this->curr_time);
@@ -97,7 +103,7 @@ void MMSSwitcherThread::threadMain() {
 		            }
             	}
             }
- 
+
             if (this->plugin_invoked) {
                 if (cnt - this->plugin_invoked >= 3) {
 /*                    if (this->sw->curr_previewWin < 0)
@@ -120,7 +126,7 @@ void MMSSwitcherThread::threadMain() {
 	                    }*/
                     this->my_spt = NULL;
                 }
-            
+
             if (this->invoke_plugin >= 0) {
                 /* start the showPreviewThread only if it does not running */
             	map<int, plugin_data_t *>::iterator i = this->sw->plugins.find(this->invoke_plugin);
@@ -129,15 +135,15 @@ void MMSSwitcherThread::threadMain() {
             		this->my_spt = i->second->switcher->showPreviewThread;
 	                this->plugin_invoked = cnt;
 	                this->preview_shown = false;
-	
+
 	                if (!this->my_spt->isRunning())
 	                    this->my_spt->start();
             	}
             }
-            
+
             /* unlock me */
             this->lock.unlock();
-    
+
             /* sleep a little bit */
             while (this->sleepcnt > 0) {
                 this->sleepcnt--;
