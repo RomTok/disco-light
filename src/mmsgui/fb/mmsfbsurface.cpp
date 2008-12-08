@@ -1594,6 +1594,10 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 			printf(" COLORIZE");
 		if (this->config.blittingflags & MMSFB_BLIT_SRC_PREMULTIPLY)
 			printf(" SRC_PREMULTIPLY");
+		if (this->config.blittingflags & MMSFB_BLIT_H_ANTIALIASING)
+			printf(" H_ANTIALIASING");
+		if (this->config.blittingflags & MMSFB_BLIT_V_ANTIALIASING)
+			printf(" V_ANTIALIASING");
 		printf("\n");
 	}
 	else {
@@ -5985,7 +5989,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
+				||(this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					eAB_yv12_to_yv12(&myextbuf, src_height,
@@ -8022,14 +8027,17 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// convert without alpha channel
+			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
+				||(this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)) {
+				// stretch without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_yv12_to_yv12(
 							&myextbuf, src_height,
 							sx, sy, sw, sh,
 							(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh);
+							dx, dy, dw, dh,
+							this->config.blittingflags & MMSFB_BLIT_H_ANTIALIASING,
+							this->config.blittingflags & MMSFB_BLIT_V_ANTIALIASING);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -10833,5 +10841,69 @@ bool MMSFBSurface::move(int x, int y) {
 	rect.y += y;
 
 	return setSubSurface(&rect);
+}
+
+bool MMSFBSurface::dump(string filename, int x, int y, int w, int h) {
+	if ((x < 0)||(y < 0)||(w < 0)||(h < 0))
+		return false;
+	if (w == 0)
+		w = this->config.w;
+	if (h == 0)
+		h = this->config.h;
+	if ((x + w > this->config.w)||(y + h > this->config.h))
+		return false;
+
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
+		unsigned char 	*buf;
+		int				pitch;
+		this->lock(MMSFB_LOCK_READ, (void**)&buf, &pitch);
+		if (filename == "") {
+			// dump to stdout
+			printf("\n* YV12: x=%d, y=%d, w=%d, h=%d", x, y, w, h);
+			unsigned char *buf_y = buf + x + y * pitch;
+			unsigned char *buf_u = buf + pitch * (this->config.h + (this->config.h >> 2)) + (x >> 1) + (y >> 1) * (pitch >> 1);
+			unsigned char *buf_v = buf + pitch * this->config.h + (x >> 1) + (y >> 1) * (pitch >> 1);
+			printf("pitch = %d\n", pitch);
+			printf("buf_y=%x\n", buf_y);
+			printf("buf_u=%x\n", buf_u);
+			printf("buf_v=%x\n", buf_v);
+			printf("\n* Y plane *****************************************************************");
+			for (int j = 0; j < h; j++) {
+				int i = j * pitch;
+				printf("\n%02x", buf_y[i++]);
+				while (i < w + j * pitch) {
+					printf(",%02x", buf_y[i]);
+					i++;
+				}
+			}
+			printf("\n* U plane *****************************************************************");
+			x = x >> 1;
+			y = y >> 1;
+			w = w >> 1;
+			h = h >> 1;
+			for (int j = 0; j < h; j++) {
+				int i = j * (pitch >> 1);
+				printf("\n%02x", buf_u[i++]);
+				while (i < w + j * (pitch >> 1)) {
+					printf(",%02x", buf_u[i]);
+					i++;
+				}
+			}
+			printf("\n* V plane *****************************************************************");
+			for (int j = 0; j < h; j++) {
+				int i = j * (pitch >> 1);
+				printf("\n%02x", buf_v[i++]);
+				while (i < w + j * (pitch >> 1)) {
+					printf(",%02x", buf_v[i]);
+					i++;
+				}
+			}
+			printf("\n***************************************************************************");
+		}
+		this->unlock();
+		return true;
+	}
+
+	return false;
 }
 

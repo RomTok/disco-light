@@ -66,15 +66,22 @@ extern "C" {
 #define MMSFB_BREAK()    do {} while (0)
 #endif
 
-// output types
+//! output type: vesafb
 #define MMS_OT_VESAFB       "vesafb"
+//! output type: matroxfb
 #define MMS_OT_MATROXFB     "matroxfb"
+//! output type: viafb
 #define MMS_OT_VIAFB        "viafb"
+//! output type: x11 (for dfb and disko x11 backend)
 #define MMS_OT_X11FB        "x11"
+//! output type: sdl
 #define MMS_OT_SDLFB        "sdl"
 
+//! supported backends
 typedef enum {
+	//! directfb
 	MMSFB_BACKEND_DFB = 0,
+	//! x11 backend from disko framework
 	MMSFB_BACKEND_X11
 } MMSFB_BACKEND;
 
@@ -88,25 +95,37 @@ extern string MMSFB_LastErrorString;
 
 //! describes a color with alpha
 typedef struct {
+	//! red
     unsigned char r;
+    //! green
     unsigned char g;
+    //! blue
     unsigned char b;
+    //! alphachannel
     unsigned char a;
 } MMSFBColor;
 
 //! describes a rectangle
 typedef struct {
+	//! x
 	int	x;
+	//! y
 	int	y;
+	//! width
 	int	w;
+	//! height
 	int	h;
 } MMSFBRectangle;
 
 //! describes a region
 typedef struct {
+	//! x1
 	int	x1;
+	//! y1
 	int	y1;
+	//! x2
 	int	x2;
+	//! y2
 	int	y2;
 } MMSFBRegion;
 
@@ -126,6 +145,12 @@ typedef unsigned int MMSFBBlittingFlags;
 #define MMSFB_BLIT_SRC_PREMULTIPLY		0x00000008
 //! surface blitting flag: modulates the source color with the color alpha
 #define MMSFB_BLIT_SRC_PREMULTCOLOR		0x00000010
+//! surface blitting flag: horizontal antialiasing (stretchBlit(), not all pixelformats will be supported)
+#define MMSFB_BLIT_H_ANTIALIASING		0x00000020
+//! surface blitting flag: vertical antialiasing (stretchBlit(), not all pixelformats will be supported)
+#define MMSFB_BLIT_V_ANTIALIASING		0x00000040
+//! surface blitting flag: horizontal and vertical antialiasing (stretchBlit(), not all pixelformats will be supported)
+#define MMSFB_BLIT_ANTIALIASING			0x00000060
 
 
 //! surface drawing flags
@@ -223,90 +248,102 @@ typedef unsigned int MMSFBLockFlags;
 #define MMSFB_PF_ARGB4444_STR   "ARGB4444"
 
 
-// supported pixel formats
+//! supported pixel formats
 typedef enum {
-	// none
+	//! none
 	MMSFB_PF_NONE = 0,
-    // 16 bit RGB (2 byte, red 5@11, green 6@5, blue 5@0)
+    //! 16 bit RGB (2 byte, red 5@11, green 6@5, blue 5@0)
 	MMSFB_PF_RGB16,
-    // 24 bit RGB (3 byte, red 8@16, green 8@8, blue 8@0)
+    //! 24 bit RGB (3 byte, red 8@16, green 8@8, blue 8@0)
     MMSFB_PF_RGB24,
-    // 24 bit RGB (4 byte, nothing@24, red 8@16, green 8@8, blue 8@0)
+    //! 24 bit RGB (4 byte, nothing@24, red 8@16, green 8@8, blue 8@0)
     MMSFB_PF_RGB32,
-    // 32 bit ARGB (4 byte, alpha 8@24, red 8@16, green 8@8, blue 8@0)
+    //! 32 bit ARGB (4 byte, alpha 8@24, red 8@16, green 8@8, blue 8@0)
     MMSFB_PF_ARGB,
-    // 8 bit alpha (1 byte, alpha 8@0), e.g. anti-aliased glyphs
+    //! 8 bit alpha (1 byte, alpha 8@0), e.g. anti-aliased glyphs
     MMSFB_PF_A8,
-    // 16 bit YUV (4 byte/ 2 pixel, macropixel contains CbYCrY [31:0])
+    //! 16 bit YUV (4 byte/ 2 pixel, macropixel contains CbYCrY [31:0])
     MMSFB_PF_YUY2,
-    // 16 bit YUV (4 byte/ 2 pixel, macropixel contains YCbYCr [31:0])
+    //! 16 bit YUV (4 byte/ 2 pixel, macropixel contains YCbYCr [31:0])
     MMSFB_PF_UYVY,
-    // 12 bit YUV (8 bit Y plane followed by 8 bit quarter size U/V planes)
+    //! 12 bit YUV (8 bit Y plane followed by 8 bit quarter size U/V planes)
     MMSFB_PF_I420,
-    // 12 bit YUV (8 bit Y plane followed by 8 bit quarter size V/U planes)
+    //! 12 bit YUV (8 bit Y plane followed by 8 bit quarter size V/U planes)
     MMSFB_PF_YV12,
-    // 32 bit ARGB (4 byte, inv. alpha 8@24, red 8@16, green 8@8, blue 8@0)
+    //! 32 bit ARGB (4 byte, inv. alpha 8@24, red 8@16, green 8@8, blue 8@0)
     MMSFB_PF_AiRGB,
-    // 1 bit alpha (1 byte/ 8 pixel, most significant bit used first)
+    //! 1 bit alpha (1 byte/ 8 pixel, most significant bit used first)
     MMSFB_PF_A1,
-    // 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CbCr [15:0] plane)
+    //! 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CbCr [15:0] plane)
     MMSFB_PF_NV12,
-    // 16 bit YUV (8 bit Y plane followed by one 16 bit half width CbCr [15:0] plane)
+    //! 16 bit YUV (8 bit Y plane followed by one 16 bit half width CbCr [15:0] plane)
     MMSFB_PF_NV16,
-    // 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CrCb [15:0] plane)
+    //! 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CrCb [15:0] plane)
     MMSFB_PF_NV21,
-    // 32 bit AYUV (4 byte, alpha 8@24, Y 8@16, Cb 8@8, Cr 8@0)
+    //! 32 bit AYUV (4 byte, alpha 8@24, Y 8@16, Cb 8@8, Cr 8@0)
     MMSFB_PF_AYUV,
-    // 4 bit alpha (1 byte/ 2 pixel, more significant nibble used first)
+    //! 4 bit alpha (1 byte/ 2 pixel, more significant nibble used first)
     MMSFB_PF_A4,
-    // 1 bit alpha (3 byte/  alpha 1@18, red 6@16, green 6@6, blue 6@0)
+    //! 1 bit alpha (3 byte/  alpha 1@18, red 6@16, green 6@6, blue 6@0)
     MMSFB_PF_ARGB1666,
-    // 6 bit alpha (3 byte/  alpha 6@18, red 6@16, green 6@6, blue 6@0)
+    //! 6 bit alpha (3 byte/  alpha 6@18, red 6@16, green 6@6, blue 6@0)
     MMSFB_PF_ARGB6666,
-    // 6 bit RGB (3 byte/   red 6@16, green 6@6, blue 6@0)
+    //! 6 bit RGB (3 byte/   red 6@16, green 6@6, blue 6@0)
     MMSFB_PF_RGB18,
-    // 2 bit LUT (1 byte/ 4 pixel, 2 bit color and alpha lookup from palette)
+    //! 2 bit LUT (1 byte/ 4 pixel, 2 bit color and alpha lookup from palette)
     MMSFB_PF_LUT2,
-    // 16 bit RGB (2 byte, nothing @12, red 4@8, green 4@4, blue 4@0)
+    //! 16 bit RGB (2 byte, nothing @12, red 4@8, green 4@4, blue 4@0)
     MMSFB_PF_RGB444,
-    // 16 bit RGB (2 byte, nothing @15, red 5@10, green 5@5, blue 5@0)
+    //! 16 bit RGB (2 byte, nothing @15, red 5@10, green 5@5, blue 5@0)
     MMSFB_PF_RGB555,
-	// 16 bit ARGB (2 byte, alpha 1@15, red 5@10, green 5@5, blue 5@0)
+	//! 16 bit ARGB (2 byte, alpha 1@15, red 5@10, green 5@5, blue 5@0)
 	MMSFB_PF_ARGB1555,
-    // 8 bit RGB (1 byte, red 3@5, green 3@2, blue 2@0)
+    //! 8 bit RGB (1 byte, red 3@5, green 3@2, blue 2@0)
     MMSFB_PF_RGB332,
-    // 8 bit ALUT (1 byte, alpha 4@4, color lookup 4@0)
+    //! 8 bit ALUT (1 byte, alpha 4@4, color lookup 4@0)
     MMSFB_PF_ALUT44,
-    // 8 bit LUT (8 bit color and alpha lookup from palette)
+    //! 8 bit LUT (8 bit color and alpha lookup from palette)
     MMSFB_PF_LUT8,
-    // 16 bit ARGB (2 byte, alpha 2@14, red 5@9, green 5@4, blue 4@0)
+    //! 16 bit ARGB (2 byte, alpha 2@14, red 5@9, green 5@4, blue 4@0)
     MMSFB_PF_ARGB2554,
-    // 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
+    //! 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
     MMSFB_PF_ARGB4444
 } MMSFBSurfacePixelFormat;
 
 
-/* supported buffer modes */
-#define MMSFB_BM_NONE       ""          // none
-#define MMSFB_BM_FRONTONLY  "FRONTONLY" // no backbuffer
-#define MMSFB_BM_BACKVIDEO  "BACKVIDEO" // backbuffer in video memory
-#define MMSFB_BM_BACKSYSTEM "BACKSYSTEM"// backbuffer in system memory
-#define MMSFB_BM_TRIPLE     "TRIPLE"    // triple buffering
-#define MMSFB_BM_WINDOWS    "WINDOWS"   // no layer buffers at all, using buffer of each window
+//! buffer mode: none
+#define MMSFB_BM_NONE       ""
+//! buffer mode: no backbuffer
+#define MMSFB_BM_FRONTONLY  "FRONTONLY"
+//! buffer mode: backbuffer in video memory
+#define MMSFB_BM_BACKVIDEO  "BACKVIDEO"
+//! buffer mode: backbuffer in system memory
+#define MMSFB_BM_BACKSYSTEM "BACKSYSTEM"
+//! buffer mode: triple buffering
+#define MMSFB_BM_TRIPLE     "TRIPLE"
+//! buffer mode: no layer buffers at all, using buffer of each window
+#define MMSFB_BM_WINDOWS    "WINDOWS"
 
 
-/* supported layer options */
-#define MMSFB_LO_NONE               ""                  // none
-#define MMSFB_LO_ALPHACHANNEL       "ALPHACHANNEL"      // Make usage of alpha channel for blending on a pixel per pixel basis.
-#define MMSFB_LO_FLICKER_FILTERING  "FLICKER_FILTERING" // Enable flicker filtering.
-#define MMSFB_LO_DEINTERLACING      "DEINTERLACING"     // Enable deinterlacing of an interlaced (video) source.
-#define MMSFB_LO_SRC_COLORKEY       "SRC_COLORKEY"      // Enable source color key.
-#define MMSFB_LO_DST_COLORKEY       "DST_COLORKEY"      // Enable dest. color key.
-#define MMSFB_LO_OPACITY            "OPACITY"           // Make usage of the global alpha factor set by SetOpacity.
-#define MMSFB_LO_FIELD_PARITY       "FIELD_PARITY"      // Set field parity
+//! layer option: none
+#define MMSFB_LO_NONE               ""
+//! layer option: Make usage of alpha channel for blending on a pixel per pixel basis.
+#define MMSFB_LO_ALPHACHANNEL       "ALPHACHANNEL"
+//! layer option: Enable flicker filtering.
+#define MMSFB_LO_FLICKER_FILTERING  "FLICKER_FILTERING"
+//! layer option: Enable deinterlacing of an interlaced (video) source.
+#define MMSFB_LO_DEINTERLACING      "DEINTERLACING"
+//! layer option: Enable source color key.
+#define MMSFB_LO_SRC_COLORKEY       "SRC_COLORKEY"
+//! layer option: Enable dest. color key.
+#define MMSFB_LO_DST_COLORKEY       "DST_COLORKEY"
+//! layer option: Make usage of the global alpha factor set by SetOpacity.
+#define MMSFB_LO_OPACITY            "OPACITY"
+//! layer option: Set field parity.
+#define MMSFB_LO_FIELD_PARITY       "FIELD_PARITY"
 
 
-/* error logging routines */
+// error logging routines
 string MMSFB_ErrorString(const int rc, const string msg);
 void MMSFB_SetError(const int rc, const string msg);
 

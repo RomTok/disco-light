@@ -743,7 +743,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 \author Jens Schneider
 */
 void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
+									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									bool h_antialiasing, bool v_antialiasing);
 
 
 

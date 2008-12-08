@@ -541,6 +541,8 @@ class MMSFBSurface {
         bool moveTo(int x, int y);
         bool move(int x, int y);
 
+        bool dump(string filename = "", int x = 0, int y = 0, int w = 0, int h = 0);
+
     friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;
     friend class MMSFBWindowManager;
