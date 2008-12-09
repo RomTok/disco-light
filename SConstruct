@@ -49,7 +49,8 @@ opts.AddOptions(
     BoolOption('messages',     'Build with logfile support', False),
     BoolOption('profile',      'Build with profiling support (includes debug option)', False),
     BoolOption('use_sse',      'Use SSE optimization', False),
-    ListOption('graphics',     'Set graphics backend', 'dfb', ['dfb', 'x11']),
+    ListOption('graphics',     'Set graphics backend', 'none', ['dfb', 'x11']),
+    ListOption('database',     'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
     BoolOption('enable_media', 'Build with mmsmedia support', True),
     BoolOption('enable_flash', 'Build with mmsflash support', False),
     BoolOption('enable_sip',   'Build with mmssip support', False),
@@ -87,6 +88,8 @@ if env['use_sse']:
 # format output
 env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
 env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
+env['CXXCOMSTR']    = '  [CXX] $SOURCE'
+env['LINKCOMSTR']   = '  [LD]  $TARGET'
 
 Export('env idir_prefix idir_lib idir_bin idir_inc idir_data')
 
@@ -175,9 +178,9 @@ def createDiskoPC(env = None):
 		disko_pc_libs     += ' -ldirectfb'
 	  
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
-	disko_pc.write('exec_prefix=' + env['prefix'] + '\n')
-	disko_pc.write('libdir=' + idir_lib + '\n')
-	disko_pc.write('includedir=' + idir_inc + '\n\n')
+	disko_pc.write('exec_prefix=${prefix}\n')
+	disko_pc.write('libdir=${exec_prefix}/lib\n')
+	disko_pc.write('includedir=${exec_prefix}/include\n\n')
 	disko_pc.write('Name: ' + packageRealName + '\n')
 	disko_pc.write('Description: ' + packageDescription + '\n')
 	disko_pc.write('Version: ' + packageVersion + '\n')
@@ -191,6 +194,22 @@ def createDiskoPC(env = None):
 # Check dependencies                                                  #
 #######################################################################
 def checkDeps(target = None, source = None, env = None):
+	# check if graphics backend was chosen
+	if not env['graphics']:
+		print 'Please choose a graphics backend by using:'
+		print '  \'scons graphics=dfb\' or'
+		print '  \'scons graphics=x11\' or'
+		print '  \'scons graphics=all\'\n'
+		Exit(1)
+
+	if not env['database']:
+		print 'Please choose a graphics backend by using:'
+		print '  \'scons database=sqlite3\' or'
+		print '  \'scons database=mysql\' or'
+		print '  \'scons database=odbc\'\n'
+		Exit(1)
+
+
 	# checks that are required everytime
 	conf.checkSimpleLib(['sigc++-2.0'], 'sigc++-2.0/sigc++/sigc++.h')
 	conf.checkSimpleLib(['libxml-2.0'], 'libxml2/libxml/parser.h')
@@ -221,18 +240,23 @@ def checkDeps(target = None, source = None, env = None):
 	dbs = []
 	mmscrypt = 0
 	
-	if conf.checkSimpleLib(['sqlite3'],    'sqlite3.h', required = 0):
+	if 'sqlite3' in env['database']:
+		conf.checkSimpleLib(['sqlite3'],    'sqlite3.h')
 		env.Append(CCFLAGS = '-D__ENABLE_SQLITE__')
-		dbs.append('sqlite3')
-	if conf.checkSimpleLib(['mysql'],      'mysql.h',   required = 0):
+	if 'mysql' in env['database']:
+		conf.checkSimpleLib(['mysql'],      'mysql.h')
 		env.Append(CCFLAGS = '-D__ENABLE_MYSQL__')
-		dbs.append('mysql')
-	if conf.CheckCXXHeader('/usr/include/sql.h'):
-		env.Append(CCFLAGS = '-D__ENABLE_FREETDS__', LIBS = 'odbc')
-		dbs.append('odbc')
-	elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
-		env.Append(CCFLAGS = '-D__ENABLE_FREETDS__ -I/usr/local/include', LIBPATH = '/usr/local/lib', LIBS = 'odbc')
-		dbs.append('odbc')
+	if 'odbc' in env['database']:
+		if conf.CheckCXXHeader('/usr/include/sql.h'):
+			env.Append(CCFLAGS = '-D__ENABLE_FREETDS__', LIBS = 'odbc')
+			dbs.append('odbc')
+		elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
+			env.Append(CCFLAGS = '-D__ENABLE_FREETDS__ -I/usr/local/include', LIBPATH = '/usr/local/lib', LIBS = 'odbc')
+			dbs.append('odbc')
+		else:
+			Exit(1)
+	
+	# check for openssl
 	if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
 		env.Append(CCFLAGS = '-D_NO_MMSCRYPT')
 	else:
@@ -256,14 +280,10 @@ def checkDeps(target = None, source = None, env = None):
 		env.Append(CCFLAGS = '-D__HAVE_VMIME__')
 
 	env = conf.Finish()
-
-	if not 'sqlite3' in env['LIBS'] and not 'odbc' in env['LIBS']:
-		print 'No database backend found. Please install either sqlite3 or unix-odbc.'
-		Exit(1)
 		
 	print '\n********************* Summary *********************\n'
 	print 'Graphic backends  : %s' % env['graphics']
-	print 'Database backends : %s\n' % ', '.join(dbs)
+	print 'Database backends : %s\n' % ', '.join(env['database'])
 	if(mmscrypt == 1):
 		print 'Building mmscrypt : yes'
 	else:
@@ -321,7 +341,7 @@ SConscript(Split(libList), options = opts)
 BuildDir('build/tools', 'tools', duplicate = 0)
 SConscript(Split(toolList), options = opts)
 	
-env.Install(idir_lib + '/pkgconfig', 'disko.pc')
+env.Install(idir_lib + '/../pkgconfig', 'disko.pc')
 Clean(all, 'disko.pc')
 
 #######################################################################
