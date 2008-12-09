@@ -32,10 +32,10 @@
 void mmsfb_blit_rgb16_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
-	static bool firsttime_mmsfb_blit_rgb16_to_rgb16 = true;
-	if (firsttime_mmsfb_blit_rgb16_to_rgb16) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated copy RGB16 to RGB16.\n");
-		firsttime_mmsfb_blit_rgb16_to_rgb16 = false;
+		firsttime = false;
 	}
 
 	// get the first source ptr/pitch

@@ -32,10 +32,10 @@
 void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color) {
 	// first time?
-	static bool firsttime_mmsfb_fillrectangle_yv12 = true;
-	if (firsttime_mmsfb_fillrectangle_yv12) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated fill rectangle to YV12.\n");
-		firsttime_mmsfb_fillrectangle_yv12 = false;
+		firsttime = false;
 	}
 
 	// prepare...

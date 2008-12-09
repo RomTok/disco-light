@@ -32,10 +32,10 @@
 void mmsfb_blit_blend_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 								  	 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
-	static bool firsttime_mmsfb_blit_blend_airgb_to_airgb = true;
-	if (firsttime_mmsfb_blit_blend_airgb_to_airgb) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated blend AiRGB to AiRGB.\n");
-		firsttime_mmsfb_blit_blend_airgb_to_airgb = false;
+		firsttime = false;
 	}
 
 	// get the first source ptr/pitch

@@ -33,10 +33,10 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 									bool h_antialiasing, bool v_antialiasing) {
 	// first time?
-	static bool firsttime_mmsfb_stretchblit_yv12_to_yv12 = true;
-	if (firsttime_mmsfb_stretchblit_yv12_to_yv12) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated stretch YV12 to YV12.\n");
-		firsttime_mmsfb_stretchblit_yv12_to_yv12 = false;
+		firsttime = false;
 	}
 
 	// get the first source ptr/pitch

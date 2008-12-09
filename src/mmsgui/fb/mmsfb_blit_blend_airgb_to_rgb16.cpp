@@ -29,28 +29,14 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-											  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
-											  unsigned char alpha) {
-	// check for full alpha value
-	if (alpha == 0xff) {
-		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_blit_blend_airgb_to_airgb(extbuf, src_height, sx, sy, sw, sh,
-										dst, dst_pitch, dst_height, dx, dy);
-		return;
-	}
-
+void mmsfb_blit_blend_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									 unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend srcalpha AiRGB to AiRGB.\n");
+		printf("DISKO: Using accelerated blend AiRGB to RGB16.\n");
 		firsttime = false;
 	}
-
-	// something to do?
-	if (!alpha)
-		// source should blitted full transparent, so leave destination as is
-		return;
 
 	// get the first source ptr/pitch
 	unsigned int *src = (unsigned int *)extbuf->ptr;
@@ -58,7 +44,7 @@ void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf
 
 	// prepare...
 	int src_pitch_pix = src_pitch >> 2;
-	int dst_pitch_pix = dst_pitch >> 2;
+	int dst_pitch_pix = dst_pitch >> 1;
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
 
@@ -70,15 +56,13 @@ void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
-	unsigned int OLDDST = (*dst) + 1;
+	unsigned short int OLDDST = (*dst) + 1;
 	unsigned int OLDSRC  = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch_pix - sw;
-	register unsigned int d;
+	register unsigned short int d;
 
-	register unsigned int ALPHA = alpha;
-	ALPHA++;
 
 	// for all lines
 	while (src < src_end) {
@@ -86,13 +70,23 @@ void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf
 		unsigned int *line_end = src + sw;
 		while (src < line_end) {
 			// load pixel from memory and check if the previous pixel is the same
-			register unsigned int SRC = *src;
+			register unsigned int SRC  = *src;
 
 			// is the source alpha channel 0x00 or 0xff?
 			register unsigned int A = SRC >> 24;
+			if (!A) {
+				// source pixel is not transparent, copy it directly to the destination
+				unsigned int r = (SRC << 8) >> 27;
+				unsigned int g = (SRC << 16) >> 26;
+				unsigned int b = (SRC & 0xff) >> 3;
+			    *dst =    (r << 11)
+			    		| (g << 5)
+			    		| b;
+			}
+			else
 			if (A < 0xff) {
-				// source alpha is >= 0x00 and < 0xff
-				register unsigned int DST = *dst;
+				// source alpha is > 0x00 and < 0xff
+				register unsigned short int DST = *dst;
 
 				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
 					// same pixel, use the previous value
@@ -104,32 +98,23 @@ void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf
 				OLDDST = DST;
 				OLDSRC = SRC;
 
-				// load source pixel and multiply it with given ALPHA
-			    A = 0x100 - ((ALPHA * (0x100 - A)) >> 8);
-				unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
-				unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
-				unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
-
-				unsigned int a = DST >> 24;
-				unsigned int r = (DST << 8) >> 24;
-				unsigned int g = (DST << 16) >> 24;
-				unsigned int b = DST & 0xff;
+				register unsigned int SA= 0x100 - A;
+				unsigned int r = DST >> 11;
+				unsigned int g = DST & 0x07e0;
+				unsigned int b = DST & 0x1f;
 
 				// invert src alpha
-			    a = (A * (0x100 - a)) >> 8;
-			    r = (A * r) >> 8;
-			    g = (A * g) >> 8;
-			    b = (A * b) >> 8;
+			    r = A * r;
+			    g = A * g;
+			    b = (A * b) >> 5;
 
 			    // add src to dst
-			    a += 0x100 - A;
-			    r += sr;
-			    g += sg;
-			    b += sb;
-				d =	  ((r >> 8) ? 0xff0000   : (r << 16))
-					| ((g >> 8) ? 0xff00     : (g << 8))
-			    	| ((b >> 8) ? 0xff 		 :  b);
-			    if (!(a >> 8)) d |= (0x100 - a) << 24;
+			    r += (SA*(SRC & 0xf80000)) >> 19;
+				g += (SA*(SRC & 0xfc00)) >> 5;
+				b += (SA*(SRC & 0xf8)) >> 8;
+			    d =   ((r & 0xffe000)   ? 0xf800 : ((r >> 8) << 11))
+			    	| ((g & 0xfff80000) ? 0x07e0 : ((g >> 13) << 5))
+			    	| ((b & 0xff00)     ? 0x1f 	 : (b >> 3));
 				*dst = d;
 			}
 
@@ -142,5 +127,4 @@ void mmsfb_blit_blend_srcalpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf
 		dst+= dst_pitch_diff;
 	}
 }
-
 

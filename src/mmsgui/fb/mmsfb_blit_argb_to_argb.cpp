@@ -32,10 +32,10 @@
 void mmsfb_blit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
-	static bool firsttime_mmsfb_blit_argb_to_argb = true;
-	if (firsttime_mmsfb_blit_argb_to_argb) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated copy ARGB to ARGB.\n");
-		firsttime_mmsfb_blit_argb_to_argb = false;
+		firsttime = false;
 	}
 
 	// get the first source ptr/pitch

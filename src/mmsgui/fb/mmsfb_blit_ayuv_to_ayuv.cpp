@@ -29,17 +29,17 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							   unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy) {
+void mmsfb_blit_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated conversion AiRGB to RGB16.\n");
+		printf("DISKO: Using accelerated copy AYUV to AYUV.\n");
 		firsttime = false;
 	}
 
-	// no difference to argb, use argb to rgb16 routine
-	mmsfb_blit_argb_to_rgb16(extbuf, src_height, sx, sy, sw, sh,
-							 dst, dst_pitch, dst_height, dx, dy);
+	// no difference to argb, use argb to argb routine
+	mmsfb_blit_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
+							dst, dst_pitch, dst_height, dx, dy);
 }
 

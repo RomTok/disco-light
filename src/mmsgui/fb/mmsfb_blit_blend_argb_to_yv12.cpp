@@ -191,10 +191,10 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 								   unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
 
 	// first time?
-	static bool firsttime_mmsfb_blit_blend_argb_to_yv12 = true;
-	if (firsttime_mmsfb_blit_blend_argb_to_yv12) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated blend ARGB to YV12.\n");
-		firsttime_mmsfb_blit_blend_argb_to_yv12 = false;
+		firsttime = false;
 	}
 
 	// get the first source ptr/pitch

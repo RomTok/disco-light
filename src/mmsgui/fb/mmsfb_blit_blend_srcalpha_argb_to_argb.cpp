@@ -41,10 +41,10 @@ void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, 
 	}
 
 	// first time?
-	static bool firsttime_mmsfb_blit_blend_srcalpha_argb_to_argb = true;
-	if (firsttime_mmsfb_blit_blend_srcalpha_argb_to_argb) {
+	static bool firsttime = true;
+	if (firsttime) {
 		printf("DISKO: Using accelerated blend srcalpha ARGB to ARGB.\n");
-		firsttime_mmsfb_blit_blend_srcalpha_argb_to_argb = false;
+		firsttime = false;
 	}
 
 	// something to do?
