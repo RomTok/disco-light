@@ -2,3 +2,12 @@
 *.[oa]
 # ignore disko.pc
 disko.pc
+# ignore scons files
+.sconsign.dblite
+disko.conf
+bin
+build
+lib
+# ignore doxygen files
+doc/doxygen.log
+doc/html
