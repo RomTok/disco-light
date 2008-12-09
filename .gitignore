@@ -1,0 +1,4 @@
+# ignore objects, archives anywhere
+*.[oa]
+# ignore disko.pc
+disko.pc
