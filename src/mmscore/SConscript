@@ -1,3 +1,5 @@
-Import('env')
-env = env.Copy()
-env.SharedLibrary('../../../lib/libmmscore', Glob('*.cpp'))
+Import('env idir_lib idir_inc')
+libmmscore = env.SharedLibrary('../../../lib/libmmscore', Glob('*.cpp'), LIBS = "")
+env.Install(idir_lib, libmmscore)
+env.Install(idir_inc + '/mmscore', Glob('../../../inc/mmscore/*.h'))
+Export('libmmscore')

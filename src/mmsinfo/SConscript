@@ -1,4 +1,4 @@
-Import('env')
-env = env.Copy()
-libmmsinfo = env.SharedLibrary('../../../lib/libmmsinfo', Glob('*.cpp'))
+Import('env idir_lib')
+libmmsinfo = env.SharedLibrary('../../../lib/libmmsinfo', Glob('*.cpp'), LIBS = "")
+env.Install(idir_lib, libmmsinfo)
 Export('libmmsinfo')
