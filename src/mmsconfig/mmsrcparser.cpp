@@ -141,8 +141,6 @@ void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		&global,
  *
  * If the version does not match, an exception is thrown.
  *
- * @note	By now it checks exactly for version 1.1.0.
- *
  * @param	node	should be the mmsrc root node
  */
 void MMSRcParser::checkVersion(xmlNode* node) {
@@ -156,7 +154,14 @@ void MMSRcParser::checkVersion(xmlNode* node) {
 		throw new MMSRcParserError(1, "missing version");
 	}
 
-	if(xmlStrcmp(version, (const xmlChar *) "1.1.0")) {
+	// sep version
+	version[1]=0;
+	version[3]=0;
+	int mav = atoi((char*)&version[0]);
+	int miv = atoi((char*)&version[2]);
+
+	// currently check for disko 1.5
+	if ((mav > 1)||(miv > 5)) {
 		std::cout << "Version of configuration file does not match!" << std::endl;
 		xmlFree(version);
 		throw new MMSRcParserError(1, "version mismatch");
