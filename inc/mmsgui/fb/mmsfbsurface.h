@@ -131,41 +131,6 @@ class MMSFBSurface {
         static MMSFBSurfaceAllocMethod	allocmethod;
 
 
-
-
-
-
-
-
-        // first time flag for eAFR_argb()
-        static bool				firsttime_eAFR_argb;
-
-        // first time flag for eAFR_blend_argb()
-        static bool				firsttime_eAFR_blend_argb;
-
-        // first time flag for eAFR_rgb16()
-        static bool				firsttime_eAFR_rgb16;
-
-        // first time flag for eAFR_ayuv()
-        static bool				firsttime_eAFR_ayuv;
-
-        // first time flag for eAFR_blend_ayuv()
-        static bool				firsttime_eAFR_blend_ayuv;
-
-        // first time flag for eADL_argb()
-        static bool				firsttime_eADL_argb;
-
-        // first time flag for eADL_blend_argb()
-        static bool				firsttime_eADL_blend_argb;
-
-#ifdef __HAVE_XLIB__
-        // first time flag for blend_text_to_argb()
-        static bool				firsttime_blend_text_to_argb;
-
-        // first time flag for blend_text_srcalpha_to_argb()
-        static bool				firsttime_blend_text_srcalpha_to_argb;
-#endif
-
         void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);
@@ -181,21 +146,12 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
 
-        //////////
         bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
         				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
+
         bool printMissingCombination(char *method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
 									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
-        //////////
-
-
-        //////////
-
-
-
-
-
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
 								 MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -203,13 +159,6 @@ class MMSFBSurface {
         bool extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 									 MMSFBRectangle *src_rect, int x, int y);
-        ////////
-
-
-
-
-        //////////
-
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
 										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -217,45 +166,14 @@ class MMSFBSurface {
         bool extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
         bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
-        //////////
-
-
-
-        //////////
-        void eAFR_argb(unsigned int *dst, int dst_pitch, int dst_height,
-					   int dx, int dy, int dw, int dh, MMSFBColor color);
-
-        void eAFR_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
-        						int dx, int dy, int dw, int dh, MMSFBColor color);
-
-        void eAFR_rgb16(unsigned short int *dst, int dst_pitch, int dst_height,
-					    int dx, int dy, int dw, int dh, MMSFBColor color);
-
-        void eAFR_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
-					   int dx, int dy, int dw, int dh, MMSFBColor color);
-
-        void eAFR_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
-        						int dx, int dy, int dw, int dh, MMSFBColor color);
 
         bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
         bool extendedAccelFillRectangle(int x, int y, int w, int h);
-        //////////
-
-
-        //////////
-        void eADL_argb(unsigned int *dst, int dst_pitch, int dst_height,
-					   MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
-        void eADL_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
-							 MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
 
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
-        //////////
 
 #ifdef __HAVE_XLIB__
-        void blend_text_to_argb(MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
-        void blend_text_srcalpha_to_argb(MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
-
         bool blit_text(string &text, int len, int x, int y);
 #endif
 

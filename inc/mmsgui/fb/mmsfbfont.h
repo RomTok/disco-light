@@ -114,6 +114,9 @@ class MMSFBFont {
         bool getStringWidth(string text, int len, int *width);
         bool getHeight(int *height);
 
+        bool getAscender(int *ascender);
+        bool getDescender(int *descender);
+
     	MMSFBFont_Glyph *getGlyph(unsigned int character);
 
 	friend class MMSFBSurface;

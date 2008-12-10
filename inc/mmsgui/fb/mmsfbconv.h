@@ -30,6 +30,7 @@
 #define MMSFBCONV_H_
 
 #include "mmsgui/fb/mmsfbbase.h"
+#include "mmsgui/fb/mmsfbfont.h"
 
 //! Describes up to 3 planes of an external surface buffer.
 typedef struct {
@@ -809,6 +810,68 @@ if (!AA) { \
 
 
 
+//! bresenham algorithm
+#define MMSFB_DRAWLINE_BRESENHAM(putpixel) { \
+	int x = x1; int y = y1; \
+	int dx = x2 - x1; int dy = y2 - y1; \
+	int ix = (dx > 0) ? 1 : (dx < 0) ? -1 : 0; int iy = (dy > 0) ? 1 : (dy < 0) ? -1 : 0; \
+	if (!dx && !dy) { putpixel; } else { \
+	if (dx < 0) dx = -dx; if (dy < 0) dy = -dy; \
+	int pdx, pdy, ddx, ddy, es, el; \
+	if (dx > dy) { pdx=ix; pdy=0; ddx=ix; ddy=iy; es=dy; el=dx; } else { pdx=0;  pdy=iy; ddx=ix; ddy=iy; es=dx; el=dy; } \
+	int err = el >> 1; putpixel; \
+	for(int i = 0; i < el; ++i) { err-=es; if (err < 0) { err+=el; x+=ddx; y+=ddy; } else { x+=pdx; y+=pdy; } putpixel; } } }
+
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_LOCK(pw) \
+	font->lock(); \
+	int DY = 0;   font->getHeight(&DY); \
+	int desc = 0; font->getDescender(&desc); \
+	DY -= desc + 1; \
+	int dst_pitch_pix = dst_pitch >> pw;
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_UNLOCK font->unlock();
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character) \
+	int			  src_pitch_pix; \
+	int 		  src_w; \
+	int 		  src_h; \
+	unsigned char *src; \
+	MMSFBFont_Glyph *glyph = font->getGlyph(character); \
+	if (glyph) { \
+		src_pitch_pix = glyph->pitch; \
+		src_w         = glyph->width; \
+		src_h         = glyph->height; \
+		src           = glyph->buffer; \
+	}
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
+	if (glyph) { \
+		int dx = x + glyph->left; \
+		int dy = y + DY - glyph->top; \
+		if (dx < clipreg.x1) { \
+			src_w -= clipreg.x1 - dx; \
+			src   += clipreg.x1 - dx; \
+			dx     = clipreg.x1; } \
+		if (dx + src_w - 1 > clipreg.x2) src_w = clipreg.x2 - dx + 1; \
+		if (dy < clipreg.y1) { \
+			src_h -= clipreg.y1 - dy; \
+			src   +=(clipreg.y1 - dy) * src_pitch_pix; \
+			dy     = clipreg.y1; } \
+		if (dy + src_h - 1 > clipreg.y2) src_h = clipreg.y2 - dy + 1; \
+		unsigned char *src_end = src + src_h * src_pitch_pix; \
+		unsigned char *line_end = src + src_w; \
+		int src_pitch_pix_diff = src_pitch_pix - src_w; \
+		int dst_pitch_pix_diff = dst_pitch_pix - src_w; \
+		pt *dst = ((pt *)dst_ptr) + dx + dy * dst_pitch_pix;
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_END_RENDER x+=glyph->advanceX >> 6; }
+
 
 
 
@@ -1064,12 +1127,81 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 
 
 
+//! Fill rectangle ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_argb(unsigned int *dst, int dst_pitch, int dst_height,
+						      int dx, int dy, int dw, int dh, MMSFBColor color);
+
+//! Fill rectangle with alpha blending ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
+									int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
+
+//! Fill rectangle RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_rgb16(unsigned short int *dst, int dst_pitch, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
+//! Fill rectangle AYUV.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
+						      int dx, int dy, int dw, int dh, MMSFBColor color);
+
+//! Fill rectangle with alpha blending AYUV.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
+									int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
 //! Fill rectangle YV12.
 /*!
 \author Jens Schneider
 */
 void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
+//! Draw line ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawline_argb(unsigned int *dst, int dst_pitch, int dst_height,
+						 MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
+
+//! Draw line with alpha blending ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawline_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
+						       MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color);
+
+
+//! Draw string with alpha blending ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawstring_blend_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+								 MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+
+//! Draw string with alpha blending with alpha from color ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawstring_blend_srcalpha_to_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+											 MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
 
 
 #endif /* MMSFBCONV_H_ */

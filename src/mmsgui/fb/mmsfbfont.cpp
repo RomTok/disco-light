@@ -283,5 +283,42 @@ bool MMSFBFont::getHeight(int *height) {
     return false;
 }
 
+bool MMSFBFont::getAscender(int *ascender) {
+    // check if initialized
+    INITCHECK;
+
+    // get the ascender of the font
+	if (this->dfbfont) {
+	}
+	else {
+#ifdef  __HAVE_XLIB__
+		lock();
+		*ascender = this->ascender;
+		unlock();
+		return true;
+#endif
+	}
+	return false;
+}
+
+bool MMSFBFont::getDescender(int *descender) {
+    // check if initialized
+    INITCHECK;
+
+    // get the ascender of the font
+	if (this->dfbfont) {
+	}
+	else {
+#ifdef  __HAVE_XLIB__
+		lock();
+		*descender = this->descender;
+		unlock();
+		return true;
+#endif
+	}
+	return false;
+}
+
+
 
 
