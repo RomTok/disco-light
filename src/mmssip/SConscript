@@ -1,3 +1,5 @@
-Import('env')
-env = env.Copy()
-env.SharedLibrary('../../../lib/libmmssip', Glob('*.cpp'))
+Import('env idir_lib idir_inc')
+libmmssip = env.SharedLibrary('../../../lib/libmmssip', Glob('*.cpp'), LIBS = "")
+env.Install(idir_lib, libmmssip)
+env.Install(idir_inc + '/mmssip', Glob('../../../inc/mmssip/*.h'))
+Export('libmmssip')
