@@ -118,7 +118,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         XF86VidModeGetModeLine(this->x_display, 0,&dot, &line);
         this->display_w=line.hdisplay;
         this->display_h=line.vdisplay;
-        printf("w: %d, h: %d\n", this->display_w, this->display_h);
+//        printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
         XSetWindowAttributes x_window_attr;
 		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |PointerMotionMask|EnterWindowMask|ResizeRedirectMask;

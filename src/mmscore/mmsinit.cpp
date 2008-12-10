@@ -89,53 +89,75 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         }
         config = new MMSConfigData(rcGlobal, rcConfigDB, rcDataDB, rcGraphics);
 
-        DEBUGMSG("Core", "ConfigDB:                     " + config->getConfigDBDatabase() + " (" + config->getConfigDBAddress() + ")");
-        DEBUGMSG("Core", "DataDB:                       " + config->getDataDBDatabase() + " (" + config->getDataDBAddress() + ")");
-        DEBUGMSG("Core", "Logfile:                      " + config->getLogfile());
-        DEBUGMSG("Core", "First plugin:                 " + config->getFirstPlugin());
-        DEBUGMSG("Core", "Input map:                    " + config->getInputMap());
-        DEBUGMSG("Core", "Prefix:                       " + config->getPrefix());
-        DEBUGMSG("Core", "Theme:                        " + config->getTheme());
-        DEBUGMSG("Core", "Resolution:                   " + iToStr(config->getXres()) + "x" + iToStr(config->getYres()));
-        DEBUGMSG("Core", "Output type:                  " + config->getOutputType());
-        DEBUGMSG("Core", "Video layer id:               " + iToStr(config->getVideoLayerId()));
-        DEBUGMSG("Core", "Video layer pixelformat:      " + config->getVideoLayerPixelformat());
-        DEBUGMSG("Core", "Video layer options:          " + config->getVideoLayerOptions());
-        DEBUGMSG("Core", "Video layer buffermode:       " + config->getVideoLayerBufferMode());
-        DEBUGMSG("Core", "Graphics layer id:            " + iToStr(config->getGraphicsLayerId()));
-        DEBUGMSG("Core", "Graphics layer pixelformat:   " + config->getGraphicsLayerPixelformat());
-        DEBUGMSG("Core", "Graphics layer options:       " + config->getGraphicsLayerOptions());
-        DEBUGMSG("Core", "Graphics layer buffermode:    " + config->getGraphicsLayerBufferMode());
-        DEBUGMSG("Core", "Visible screen area:          " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
+        printf("\n");
+        printf("****   *   ***   *  *   ***\n");
+        printf(" *  *  *  *      * *   *   *\n");
+        printf(" *  *  *   ***   **    *   *\n");
+        printf(" *  *  *      *  * *   *   *\n");
+        printf("****   *   ***   *  *   ***  V1.5\n");
+        printf("----------------------------------------------------------------------\n");
+        printf("The Linux application framework for embedded devices.\n");
+        printf("\n");
+        printf("   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,\n");
+        printf("                           Matthias Hardt, Guido Madaus\n");
+        printf("   Copyright (C) 2007-2008 Berlinux Solutions GbR\n");
+        printf("                           Stefan Schwarzer & Guido Madaus\n");
+        printf("----------------------------------------------------------------------\n");
+
+        DEBUGMSG_OUTSTR("Core", "ConfigDB:                     " + config->getConfigDBDatabase() + " (" + config->getConfigDBAddress() + ")");
+        DEBUGMSG_OUTSTR("Core", "DataDB:                       " + config->getDataDBDatabase() + " (" + config->getDataDBAddress() + ")");
+        DEBUGMSG_OUTSTR("Core", "Logfile:                      " + config->getLogfile());
+        DEBUGMSG_OUTSTR("Core", "First plugin:                 " + config->getFirstPlugin());
+        DEBUGMSG_OUTSTR("Core", "Input map:                    " + config->getInputMap());
+        DEBUGMSG_OUTSTR("Core", "Prefix:                       " + config->getPrefix());
+        DEBUGMSG_OUTSTR("Core", "Theme:                        " + config->getTheme());
+        DEBUGMSG_OUTSTR("Core", "Resolution:                   " + iToStr(config->getXres()) + "x" + iToStr(config->getYres()));
+        DEBUGMSG_OUTSTR("Core", "Output type:                  " + config->getOutputType());
+        DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(config->getVideoLayerId()));
+        DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + config->getVideoLayerPixelformat());
+        DEBUGMSG_OUTSTR("Core", "Video layer options:          " + config->getVideoLayerOptions());
+        DEBUGMSG_OUTSTR("Core", "Video layer buffermode:       " + config->getVideoLayerBufferMode());
+        DEBUGMSG_OUTSTR("Core", "Graphics layer id:            " + iToStr(config->getGraphicsLayerId()));
+        DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + config->getGraphicsLayerPixelformat());
+        DEBUGMSG_OUTSTR("Core", "Graphics layer options:       " + config->getGraphicsLayerOptions());
+        DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + config->getGraphicsLayerBufferMode());
+        DEBUGMSG_OUTSTR("Core", "Visible screen area:          " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
 
         if (config->getStdout())
-            DEBUGMSG("Core", "Log to stdout:                yes");
+            DEBUGMSG_OUTSTR("Core", "Log to stdout:                yes");
         else
-            DEBUGMSG("Core", "Log to stdout:                no");
+            DEBUGMSG_OUTSTR("Core", "Log to stdout:                no");
 
-        DEBUGMSG("Core", "Input Interval:               " + iToStr(config->getInputInterval()) + " ms");
+        DEBUGMSG_OUTSTR("Core", "Input Interval:               " + iToStr(config->getInputInterval()) + " ms");
 
         if (config->getShutdown())
-            DEBUGMSG("Core", "Call shutdown command:        yes");
+            DEBUGMSG_OUTSTR("Core", "Call shutdown command:        yes");
         else
-            DEBUGMSG("Core", "Call shutdown command:        no");
+            DEBUGMSG_OUTSTR("Core", "Call shutdown command:        no");
 
-        DEBUGMSG("Core", "Shutdown command:             " + config->getShutdownCmd());
+        DEBUGMSG_OUTSTR("Core", "Shutdown command:             " + config->getShutdownCmd());
 
-        DEBUGMSG("Core", "Touch pad/screen area:        " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
+        DEBUGMSG_OUTSTR("Core", "Touch pad/screen area:        " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
 
         if (config->getPointer())
-            DEBUGMSG("Core", "Show mouse pointer:           yes");
+            DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           yes");
         else
-            DEBUGMSG("Core", "Show mouse pointer:           no");
+            DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           no");
 
-        DEBUGMSG("Core", "Graphics window pixelformat:  " + config->getGraphicsWindowPixelformat());
-        DEBUGMSG("Core", "Graphics surface pixelformat: " + config->getGraphicsSurfacePixelformat());
+        DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat:  " + config->getGraphicsWindowPixelformat());
+        DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat: " + config->getGraphicsSurfacePixelformat());
 
         if (config->getExtendedAccel())
-            DEBUGMSG("Core", "Extended acceleration:        yes");
+            DEBUGMSG_OUTSTR("Core", "Extended acceleration:        yes");
         else
-            DEBUGMSG("Core", "Extended acceleration:        no");
+            DEBUGMSG_OUTSTR("Core", "Extended acceleration:        no");
+
+        DEBUGMSG_OUTSTR("Core", "Alloc Method:                 " + config->getAllocMethod());
+
+        printf("----------------------------------------------------------------------\n");
+
+        if (appl_name!="")
+        	DEBUGMSG_OUTSTR("Core", "Starting " + appl_name + "...");
 
 
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {

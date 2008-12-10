@@ -38,8 +38,10 @@
 
 #ifdef __ENABLE_LOG__
 #define DEBUGMSG(ident, msg...) writeDebugMessage(ident, __FILE__, __LINE__, msg)
+#define DEBUGMSG_OUTSTR(ident, msg...) writeDebugMessage(ident, __FILE__, __LINE__, msg);printf("%s\n", ((string)(msg)).c_str())
 #else
 #define DEBUGMSG(ident, msg...)
+#define DEBUGMSG_OUTSTR(ident, msg...) printf("%s\n", ((string)(msg)).c_str())
 #endif
 
 #ifdef __ENABLE_DEBUG__
