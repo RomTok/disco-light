@@ -154,6 +154,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         DEBUGMSG_OUTSTR("Core", "Alloc Method:                 " + config->getAllocMethod());
 
+        if (config->getFullscreen())
+            DEBUGMSG_OUTSTR("Core", "Fullscreen:                   yes");
+        else
+            DEBUGMSG_OUTSTR("Core", "Fullscreen:                   no");
+
         printf("----------------------------------------------------------------------\n");
 
         if (appl_name!="")

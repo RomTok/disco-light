@@ -181,7 +181,7 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
-			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
+			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
 			continue;
 		}
 
@@ -211,6 +211,8 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdown = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "shutdowncmd"))
             this->global.shutdowncmd = string((const char *)parvalue);
+		else
+			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);
@@ -243,7 +245,7 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
-			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
+			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
 			continue;
 		}
 
@@ -260,9 +262,10 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
             db->user = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "password"))
             db->password = string((const char *)parvalue);
-		else if(!xmlStrcmp(parname, (const xmlChar *) "database")) {
+		else if(!xmlStrcmp(parname, (const xmlChar *) "database"))
 		    db->database = string((const char *)parvalue);
-		}
+		else
+			printf("RcParser: ignoring parameter '%s' in tag <dbsettings/>\n", parname);
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);
@@ -281,7 +284,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
-			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
+			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
 			continue;
 		}
 
@@ -318,7 +321,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	        this->graphics.vrect.w = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.h"))
 	        this->graphics.vrect.h = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrec.x"))
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.x"))
 	        this->graphics.touchrect.x = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.y"))
 	        this->graphics.touchrect.y = strToInt(string((const char *)parvalue));
@@ -338,6 +341,8 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 			this->graphics.allocmethod = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen"))
             this->graphics.fullscreen = strToBool(string((const char *)parvalue));
+		else
+			printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);
@@ -375,7 +380,7 @@ void MMSRcParser::throughFile(xmlNode* node) {
 			  ||(!xmlStrcmp(cur_node->name, (const xmlChar *) "graphics")))
 			throughGraphics(cur_node);
 		else
-			printf("RcParser: ignoring tag <%s\\>\n", cur_node->name);
+			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
 	}
 }
 
