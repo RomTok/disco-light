@@ -1017,23 +1017,8 @@ bool MMSFBWindowManager::loadPointer() {
 
 			// load image
 			tafff = new MMSTaffFile(imagefile + ".taff", NULL,
-    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
-			if (tafff) {
-				if (!tafff->isLoaded()) {
-					printf("ha1.1\n");
-    				// set external file and mirror effect
-    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
-    				// convert it
-    				if (!tafff->convertExternal2TAFF()) {
-    					// conversion failed
-    					delete tafff;
-    					break;
-    				}
-    				delete tafff;
-    				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
-    	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
-				}
-			}
+									imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+
 			if (tafff) {
 	    		if (tafff->isLoaded()) {
 

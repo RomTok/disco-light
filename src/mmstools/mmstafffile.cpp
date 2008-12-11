@@ -39,7 +39,8 @@
 
 MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 			             string external_filename, MMSTAFF_EXTERNAL_TYPE external_type,
-			             bool ignore_blank_values, bool trace, bool print_warnings, bool rewrite_taff) {
+			             bool ignore_blank_values, bool trace, bool print_warnings,
+			             bool force_rewrite_taff, bool auto_rewrite_taff) {
 	this->taff_filename = taff_filename;
 	this->taff_desc = taff_desc;
 	this->taff_buf = NULL;
@@ -66,15 +67,16 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 	if ((this->taff_filename == "")&&(this->external_filename == ""))
 		return;
 
-	/* read the file into taff_buf */
+	// read the file into taff_buf
 	bool ret = false;
-	if (!rewrite_taff)
+	if (!force_rewrite_taff)
 		ret = readFile();
 	if (!ret)
-		/* failed or rewrite, try to convert from external_filename */
-		if (convertExternal2TAFF())
-			/* auto read in */
-			readFile();
+		// failed or rewrite, try to convert from external_filename
+		if ((force_rewrite_taff)||(auto_rewrite_taff))
+			if (convertExternal2TAFF())
+				// auto read in
+				readFile();
 }
 
 MMSTaffFile::~MMSTaffFile() {

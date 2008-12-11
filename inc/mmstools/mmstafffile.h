@@ -214,11 +214,13 @@ class MMSTaffFile {
         \param ignore_blank_values	ignore blank values during the conversion from external file
         \param trace				print trace messages?
         \param print_warnings		print warnings?
-        \param rewrite_taff			(re-)convert from external file before loading TAFF
+        \param force_rewrite_taff	(re-)convert from external file before loading TAFF
+        \param auto_rewrite_taff	(re-)convert from external file if the TAFF file is older than the external file
         */
 		MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
         			string external_filename = "", MMSTAFF_EXTERNAL_TYPE external_type = MMSTAFF_EXTERNAL_TYPE_XML,
-        			bool ignore_blank_values = false, bool trace = false, bool print_warnings = false, bool rewrite_taff = false);
+        			bool ignore_blank_values = false, bool trace = false, bool print_warnings = false,
+        			bool force_rewrite_taff = false, bool auto_rewrite_taff = true);
 
         //! Destructor of class MMSTaffFile.
 		~MMSTaffFile();

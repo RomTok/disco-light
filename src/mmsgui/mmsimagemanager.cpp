@@ -32,7 +32,6 @@
 #include <string.h>
 #include "mmsgui/mmsimagemanager.h"
 #include "mmsgui/mmsgifloader.h"
-//#include <png.h>
 
 
 MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
@@ -75,137 +74,6 @@ MMSImageManager::~MMSImageManager() {
         delete this->images.at(i);
     }
 }
-
-#ifdef sfsfsfs
-bool read_png(const char *filename, void **buf, int *width, int *height, bool premultiplied) {
-	FILE 			*fp;
-	char			png_sig[8];
-    png_structp     png_ptr = NULL;
-    png_infop       info_ptr = NULL;
-    png_infop       end_info_ptr = NULL;
-    png_bytep       *row_pointers = NULL;
-
-    /* check if file does exist and if it is an png format */
-    *buf = NULL;
-    fp = fopen(filename, "rb");
-    if (!fp)
-    	return false;
-    if (fread(png_sig, 1, sizeof(png_sig), fp)!=sizeof(png_sig)) {
-        fclose(fp);
-    	return false;
-    }
-    if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
-        fclose(fp);
-    	return false;
-    }
-
-    /* init png structs and abend handler */
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png_ptr) {
-        fclose(fp);
-    	return false;
-    }
-    png_set_sig_bytes(png_ptr, sizeof(png_sig));
-
-    if (setjmp(png_ptr->jmpbuf)) {
-    	//abend from libpng
-    	DEBUGOUT("png read error\n");
-    	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
-        if (row_pointers) free(row_pointers);
-    	if (*buf) free(*buf);
-        *buf = NULL;
-        fclose(fp);
-        return false;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
-    	png_destroy_read_struct(&png_ptr, NULL, NULL);
-        fclose(fp);
-    	return false;
-    }
-
-    end_info_ptr = png_create_info_struct(png_ptr);
-    if (!end_info_ptr) {
-    	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
-    	return false;
-    }
-
-    /* read png infos */
-    png_init_io(png_ptr, fp);
-    png_read_info(png_ptr, info_ptr);
-    png_uint_32 w;
-    png_uint_32 h;
-    int bit_depth;
-    int color_type;
-    png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
-
-    /* check the png format */
-    if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
-    	/* we only support ARGB png images */
-    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        fclose(fp);
-    	return false;
-    }
-    *width = w;
-    *height = h;
-
-    /* set input transformations */
-    if (bit_depth == 16)
-    	png_set_strip_16(png_ptr);
-    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
-    png_set_bgr(png_ptr);
-    png_set_interlace_handling(png_ptr);
-    png_read_update_info(png_ptr, info_ptr);
-
-    /* allocate memory for row pointers */
-    row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
-    if (!row_pointers) {
-    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        fclose(fp);
-    	return false;
-    }
-
-    /* allocate memory for image data */
-    int ww=(*width)*4;
-    *buf = malloc(ww * *height);
-    if (!*buf) {
-    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        free(row_pointers);
-        fclose(fp);
-    	return false;
-    }
-    char *b = (char*)*buf;
-    for (int i = 0; i < *height; i++) {
-    	row_pointers[i]=(png_byte*)b;
-    	b+=ww;
-    }
-
-    /* read the image data */
-    png_read_image(png_ptr, row_pointers);
-    png_read_end(png_ptr, end_info_ptr);
-
-    /* should i pre-multiply with alpha channel? */
-    if (premultiplied) {
-		unsigned int *src = (unsigned int*)*buf;
-	    for (int i = *width * *height; i > 0; i--) {
-	    	register unsigned int s = *src;
-	        register unsigned int a = (s >> 24) + 1;
-	        *src = ((((s & 0x00ff00ff) * a) >> 8) & 0x00ff00ff) |
-	               ((((s & 0x0000ff00) * a) >> 8) & 0x0000ff00) |
-	               ((((s & 0xff000000))));
-	        src++;
-	    }
-    }
-
-    /* all right */
-	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-    free(row_pointers);
-    fclose(fp);
-	return true;
-}
-#endif
 
 
 MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc,
@@ -348,13 +216,13 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         			}
     			}
 
-				// load image
+				// load image, but do not auto rewrite taff because have to set special attributes like mirror effect
 				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
-	    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
+										imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE,
+	    								false, false, false, false, false);
     			if (tafff) {
     				if (!tafff->isLoaded()) {
-        				// set external file and mirror effect
-	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
+        				// set special attributes like mirror effect
 	    				tafff->setMirrorEffect(mirror_size);
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
