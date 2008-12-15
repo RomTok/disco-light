@@ -123,41 +123,46 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + config->getGraphicsLayerBufferMode());
         DEBUGMSG_OUTSTR("Core", "Visible screen area:          " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
 
-        if (config->getStdout())
+        if (config->getStdout()) {
             DEBUGMSG_OUTSTR("Core", "Log to stdout:                yes");
-        else
+        } else {
             DEBUGMSG_OUTSTR("Core", "Log to stdout:                no");
+        }
 
         DEBUGMSG_OUTSTR("Core", "Input Interval:               " + iToStr(config->getInputInterval()) + " ms");
 
-        if (config->getShutdown())
+        if (config->getShutdown()) {
             DEBUGMSG_OUTSTR("Core", "Call shutdown command:        yes");
-        else
+        } else {
             DEBUGMSG_OUTSTR("Core", "Call shutdown command:        no");
+        }
 
         DEBUGMSG_OUTSTR("Core", "Shutdown command:             " + config->getShutdownCmd());
 
         DEBUGMSG_OUTSTR("Core", "Touch pad/screen area:        " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
 
-        if (config->getPointer())
+        if (config->getPointer()) {
             DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           yes");
-        else
+        } else {
             DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           no");
+        }
 
         DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat:  " + config->getGraphicsWindowPixelformat());
         DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat: " + config->getGraphicsSurfacePixelformat());
 
-        if (config->getExtendedAccel())
+        if (config->getExtendedAccel()) {
             DEBUGMSG_OUTSTR("Core", "Extended acceleration:        yes");
-        else
+        } else {
             DEBUGMSG_OUTSTR("Core", "Extended acceleration:        no");
+        }
 
         DEBUGMSG_OUTSTR("Core", "Alloc Method:                 " + config->getAllocMethod());
 
-        if (config->getFullscreen())
+        if (config->getFullscreen()) {
             DEBUGMSG_OUTSTR("Core", "Fullscreen:                   yes");
-        else
+        } else {
             DEBUGMSG_OUTSTR("Core", "Fullscreen:                   no");
+        }
 
         printf("----------------------------------------------------------------------\n");
 
