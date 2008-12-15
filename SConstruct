@@ -214,7 +214,7 @@ def createDiskoPC(env = None):
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
 	disko_pc.write('libdir=${exec_prefix}/lib\n')
-	disko_pc.write('includedir=${exec_prefix}/include\n\n')
+	disko_pc.write('includedir=${exec_prefix}/include/disko\n\n')
 	disko_pc.write('Name: ' + packageRealName + '\n')
 	disko_pc.write('Description: ' + packageDescription + '\n')
 	disko_pc.write('Version: ' + packageVersion + '\n')
