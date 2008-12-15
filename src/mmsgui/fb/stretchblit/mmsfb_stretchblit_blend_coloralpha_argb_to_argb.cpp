@@ -29,13 +29,13 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_stretchblit_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-										   		   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
-										   		   unsigned char alpha) {
+void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+													 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+													 unsigned char alpha) {
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_stretchblit_blend_ayuv_to_ayuv(extbuf, src_height, sx, sy, sw, sh,
+		mmsfb_stretchblit_blend_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
 											 dst, dst_pitch, dst_height, dx, dy, dw, dh);
 		return;
 	}
@@ -43,7 +43,7 @@ void mmsfb_stretchblit_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *e
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated stretch & blend srcalpha AYUV to AYUV.\n");
+		printf("DISKO: Using accelerated stretch & blend coloralpha ARGB to ARGB.\n");
 		firsttime = false;
 	}
 
@@ -73,7 +73,7 @@ void mmsfb_stretchblit_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *e
 	int vertfact = (dh<<16)/sh;
 
 
-	register int ALPHA = alpha;
+	register unsigned int ALPHA = alpha;
 	ALPHA++;
 
 
@@ -111,21 +111,12 @@ void mmsfb_stretchblit_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *e
 							unsigned int OLDDST = DST + 1;
 							register unsigned int d;
 
-							// load source pixel
+							// load source pixel and multiply it with given ALPHA
 						    A = (ALPHA * A) >> 8;
-							int sy = (SRC << 8) >> 24;
-							int su = (SRC << 16) >> 24;
-							int sv = SRC & 0xff;
-							register int SA= 0x100 - A;
-
-							// multiply source with given ALPHA
-							// we have to move the 0 point of the coordinate system
-							// this make it a little slower than ARGB to ARGB blending
-							MMSFB_CONV_PREPARE_YUVBLEND(sy,su,sv);
-						    sy = (ALPHA * sy) >> 8;
-						    su = (ALPHA * su) >> 8;
-						    sv = (ALPHA * sv) >> 8;
-							MMSFB_CONV_RESET_YUVBLEND(sy,su,sv);
+							unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
+							unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
+							unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
+							register unsigned int SA= 0x100 - A;
 
 							do {
 								if (DST==OLDDST) {
@@ -143,37 +134,26 @@ void mmsfb_stretchblit_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *e
 
 								// extract destination
 								unsigned int a = DST >> 24;
-								int y = (DST << 8) >> 24;
-								int u = (DST << 16) >> 24;
-								int v = DST & 0xff;
-
-								// we have to move the 0 point of the coordinate system
-								// this make it a little slower than ARGB to ARGB blending
-								MMSFB_CONV_PREPARE_YUVBLEND(y,u,v);
+								unsigned int r = (DST << 8) >> 24;
+								unsigned int g = (DST << 16) >> 24;
+								unsigned int b = DST & 0xff;
 
 								// invert src alpha
 							    a = (SA * a) >> 8;
-							    y = (SA * y) >> 8;
-							    u = (SA * u) >> 8;
-							    v = (SA * v) >> 8;
+							    r = (SA * r) >> 8;
+							    g = (SA * g) >> 8;
+							    b = (SA * b) >> 8;
 
 							    // add src to dst
 							    a += A;
-							    y += sy;
-							    u += su;
-							    v += sv;
-
-							    // build destination pixel, have to check for negative values
-								// this make it a little slower than ARGB to ARGB blending
-							    d = ((a >> 8) ? 0xff000000 : (a << 24));
-							    if (y > 0)
-							    	d |= ((y >> 8) ? 0xff0000 : (y << 16));
-							    if (u > 0)
-							    	d |= ((u >> 8) ? 0xff00 : (u << 8));
-							    if (v > 0)
-							    	d |= ((v >> 8) ? 0xff : v);
-
-							    *dst = d;
+							    r += sr;
+							    g += sg;
+							    b += sb;
+							    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+									| ((r >> 8) ? 0xff0000   : (r << 16))
+									| ((g >> 8) ? 0xff00     : (g << 8))
+							    	| ((b >> 8) ? 0xff 		 :  b);
+								*dst = d;
 								dst++;
 								DST = *dst;
 								horicnt-=0x10000;
@@ -194,4 +174,5 @@ void mmsfb_stretchblit_blend_srcalpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *e
 		src+=src_pitch/4;
 	}
 }
+
 

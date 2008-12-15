@@ -29,21 +29,21 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-											unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
-				 			 		  		unsigned char alpha) {
+void mmsfb_blit_blend_coloralpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+											  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
+											  unsigned char alpha) {
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_blit_blend_argb_to_yv12(extbuf, src_height, sx, sy, sw, sh,
-								      dst, dst_pitch, dst_height, dx, dy);
+		mmsfb_blit_blend_ayuv_to_yv12(extbuf, src_height, sx, sy, sw, sh,
+									  dst, dst_pitch, dst_height, dx, dy);
 		return;
 	}
 
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend srcalpha ARGB to YV12.\n");
+		printf("DISKO: Using accelerated blend coloralpha AYUV to YV12.\n");
 		firsttime = false;
 	}
 
@@ -116,7 +116,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
@@ -147,7 +147,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
@@ -181,7 +181,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
@@ -227,7 +227,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 		d_v = (*dst_v) * 3;
 
 	    // calculate my pixel...
-		MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+		MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
@@ -263,8 +263,8 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -318,8 +318,8 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -366,8 +366,8 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -424,8 +424,8 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -493,10 +493,10 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 			register unsigned int A;
 
 		    // calculate the four pixels...
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u=, d_v=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_BLEND_SRCALPHA_ARGB_TO_YV12_PIXEL(src[src4_offs], dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u=, d_v=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_BLEND_COLORALPHA_AYUV_TO_YV12_PIXEL(src[src4_offs], dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -516,5 +516,8 @@ void mmsfb_blit_blend_srcalpha_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, 
 		dst_v += dst_pitch_uvdiff;
 	}
 }
+
+
+
 
 

@@ -29,13 +29,13 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-								  		    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
-										  	unsigned char alpha) {
+void mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+											  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+											  unsigned char alpha) {
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_blit_blend_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
+		mmsfb_blit_blend_ayuv_to_ayuv(extbuf, src_height, sx, sy, sw, sh,
 									  dst, dst_pitch, dst_height, dx, dy);
 		return;
 	}
@@ -43,7 +43,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, 
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend srcalpha ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated blend coloralpha AYUV to AYUV.\n");
 		firsttime = false;
 	}
 
@@ -77,7 +77,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, 
 	int dst_pitch_diff = dst_pitch_pix - sw;
 	register unsigned int d;
 
-	register unsigned int ALPHA = alpha;
+	register int ALPHA = alpha;
 	ALPHA++;
 
 	// for all lines
@@ -91,7 +91,7 @@ void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, 
 			// is the source alpha channel 0x00 or 0xff?
 			register unsigned int A = SRC >> 24;
 			if (A) {
-				// source alpha is > 0x00 and <= 0xff
+				// source alpha is > 0x00 and < 0xff
 				register unsigned int DST = *dst;
 
 				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
@@ -104,33 +104,48 @@ void mmsfb_blit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, 
 				OLDDST = DST;
 				OLDSRC = SRC;
 
-				// load source pixel and multiply it with given ALPHA
+				// load source pixel
 			    A = (ALPHA * A) >> 8;
-				unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
-				unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
-				unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
-				register unsigned int SA= 0x100 - A;
+				int sy = (SRC << 8) >> 24;
+				int su = (SRC << 16) >> 24;
+				int sv = SRC & 0xff;
+				register int SA= 0x100 - A;
 
+				// multiply source with given ALPHA
+				// we have to move the 0 point of the coordinate system
+				// this make it a little slower than ARGB to ARGB blending
+				MMSFB_CONV_PREPARE_YUVBLEND(sy,su,sv);
+			    sy = (ALPHA * sy) >> 8;
+			    su = (ALPHA * su) >> 8;
+			    sv = (ALPHA * sv) >> 8;
+				MMSFB_CONV_RESET_YUVBLEND(sy,su,sv);
+
+				// extract destination
 				unsigned int a = DST >> 24;
-				unsigned int r = (DST << 8) >> 24;
-				unsigned int g = (DST << 16) >> 24;
-				unsigned int b = DST & 0xff;
+				int y = (DST << 8) >> 24;
+				int u = (DST << 16) >> 24;
+				int v = DST & 0xff;
 
-				// invert src alpha
-			    a = (SA * a) >> 8;
-			    r = (SA * r) >> 8;
-			    g = (SA * g) >> 8;
-			    b = (SA * b) >> 8;
+				// we have to move the 0 point of the coordinate system
+				// this make it a little slower than ARGB to ARGB blending
+				MMSFB_CONV_PREPARE_YUVBLEND(y,u,v);
 
 			    // add src to dst
 			    a += A;
-			    r += sr;
-			    g += sg;
-			    b += sb;
-			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
-					| ((r >> 8) ? 0xff0000   : (r << 16))
-					| ((g >> 8) ? 0xff00     : (g << 8))
-			    	| ((b >> 8) ? 0xff 		 :  b);
+			    y += sy;
+			    u += su;
+			    v += sv;
+
+			    // build destination pixel, have to check for negative values
+				// this make it a little slower than ARGB to ARGB blending
+			    d = ((a >> 8) ? 0xff000000 : (a << 24));
+			    if (y > 0)
+			    	d |= ((y >> 8) ? 0xff0000 : (y << 16));
+			    if (u > 0)
+			    	d |= ((u >> 8) ? 0xff00 : (u << 8));
+			    if (v > 0)
+			    	d |= ((v >> 8) ? 0xff : v);
+
 				*dst = d;
 			}
 

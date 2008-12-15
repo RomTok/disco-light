@@ -34,7 +34,7 @@ void mmsfb_drawstring_blend_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using blend text to ARGB.\n");
+		printf("DISKO: Using blend text ARGB.\n");
 		firsttime = false;
 	}
 

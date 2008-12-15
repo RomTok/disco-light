@@ -29,8 +29,8 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_drawstring_blend_srcalpha_to_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
-											 MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
+void mmsfb_drawstring_blend_coloralpha_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+											MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color) {
 	// check for full alpha value
 	if (color.a == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
@@ -41,7 +41,7 @@ void mmsfb_drawstring_blend_srcalpha_to_argb(MMSFBFont *font, void *dst_ptr, int
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using blend text srcalpha to ARGB.\n");
+		printf("DISKO: Using blend text coloralpha ARGB.\n");
 		firsttime = false;
 	}
 

@@ -29,21 +29,21 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_stretchblit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-										   		   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
-										   		   unsigned char alpha) {
+void mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+													   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+													   unsigned char alpha) {
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_stretchblit_blend_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
-											 dst, dst_pitch, dst_height, dx, dy, dw, dh);
+		mmsfb_stretchblit_blend_airgb_to_airgb(extbuf, src_height, sx, sy, sw, sh,
+											   dst, dst_pitch, dst_height, dx, dy, dw, dh);
 		return;
 	}
 
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated stretch & blend srcalpha ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated stretch & blend coloralpha AiRGB to AiRGB.\n");
 		firsttime = false;
 	}
 
@@ -65,9 +65,6 @@ void mmsfb_stretchblit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *e
 	unsigned int *dst_end = dst + dst_pitch_pix * dst_height;
 	src+=sx + sy * src_pitch_pix;
 	dst+=dx + dy * dst_pitch_pix;
-
-
-//	printf("sw=%d,sh=%d\n", sw,sh);
 
 	int horifact = (dw<<16)/sw;
 	int vertfact = (dh<<16)/sh;
@@ -97,7 +94,7 @@ void mmsfb_stretchblit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *e
 						register unsigned int SRC = *src;
 						register unsigned int A = SRC >> 24;
 
-						if (!A) {
+						if (A == 0xff) {
 							// source pixel is full transparent, do not change the destination
 							do {
 								dst++;
@@ -106,22 +103,21 @@ void mmsfb_stretchblit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *e
 						}
 						else
 						{
-							// source alpha is > 0x00 and <= 0xff
+							// source alpha is >= 0x00 and < 0xff
 							register unsigned int DST = *dst;
 							unsigned int OLDDST = DST + 1;
 							register unsigned int d;
 
 							// load source pixel and multiply it with given ALPHA
-						    A = (ALPHA * A) >> 8;
+						    A = 0x100 - ((ALPHA * (0x100 - A)) >> 8);
 							unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
 							unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
 							unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
-							register unsigned int SA= 0x100 - A;
 
 							do {
 								if (DST==OLDDST) {
 									// same pixel, use the previous value
-									if (A) {
+									if (A < 0xff) {
 										// source has an alpha
 										*dst = d;
 									}
@@ -139,20 +135,20 @@ void mmsfb_stretchblit_blend_srcalpha_argb_to_argb(MMSFBExternalSurfaceBuffer *e
 								unsigned int b = DST & 0xff;
 
 								// invert src alpha
-							    a = (SA * a) >> 8;
-							    r = (SA * r) >> 8;
-							    g = (SA * g) >> 8;
-							    b = (SA * b) >> 8;
+							    a = (A * (0x100 - a)) >> 8;
+							    r = (A * r) >> 8;
+							    g = (A * g) >> 8;
+							    b = (A * b) >> 8;
 
 							    // add src to dst
-							    a += A;
+							    a += 0x100 - A;
 							    r += sr;
 							    g += sg;
 							    b += sb;
-							    d =   ((a >> 8) ? 0xff000000 : (a << 24))
-									| ((r >> 8) ? 0xff0000   : (r << 16))
+								d =   ((r >> 8) ? 0xff0000   : (r << 16))
 									| ((g >> 8) ? 0xff00     : (g << 8))
 							    	| ((b >> 8) ? 0xff 		 :  b);
+							    if (!(a >> 8)) d |= (0x100 - a) << 24;
 								*dst = d;
 								dst++;
 								DST = *dst;
