@@ -198,8 +198,25 @@ def createDiskoPC(env = None):
 	
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
-		disko_pc_libs     += ' -ldirectfb'
 	  
+	if('x11' in env['graphics']):
+		disko_pc_requires += ', x11, xv, xxf86vm, freetype2'
+		
+	if(env['enable_media']):
+		if('x11' in env['graphics']):
+			disko_pc_requires += ', alsa , libxine >= 1.1.15'
+		else:
+			disko_pc_requires += ', alsa, libxine'
+
+	if(env['enable_flash']):
+		disko_pc_requires += ', swfdec-0.8'
+
+	if(env['enable_sip']):
+		disko_pc_requires += ', libpj'
+		
+	if(env['enable_mail']):
+		disko_pc_requires += ', vmime'
+		
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
 	disko_pc.write('libdir=${exec_prefix}/lib\n')
@@ -209,7 +226,7 @@ def createDiskoPC(env = None):
 	disko_pc.write('Version: ' + packageVersion + '\n')
 	disko_pc.write('Requires: ' + disko_pc_requires + '\n')
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
-	disko_pc.write('Cflags: -I${includedir}/\n')
+	disko_pc.write('Cflags: -I${includedir}/' + ' '.join(env['CCFLAGS']) + '\n')
 	
 	disko_pc.close()
 
