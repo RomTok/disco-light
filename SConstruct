@@ -185,10 +185,17 @@ conf = Configure(env,
 #######################################################################
 # Creating pkg-config file                                            #
 #######################################################################
+# TODO: handle disko_pc_libs                                          #
 def createDiskoPC(env = None):
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
-	disko_pc_libs     = '%s -l%s' % (' -L'.join(env['LIBPATH']).replace('../../../lib',''), ' -l'.join(env['LIBS']))
+	#disko_pc_libs     = '%s -l%s' % (' -L'.join(env['LIBPATH']).replace('../../../lib',''), ' -l'.join(env['LIBS']))
+	disko_pc_libs     = '%s' % ' -L'.join(env['LIBPATH']).replace('../../../lib','')
+	disko_pc_libs    += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
+	if(env['enable_flash']):
+		disko_pc_libs += ' -lmmsflash'
+	if(env['enable_sip']):
+		disko_pc_libs += ' -lmmssip'
 	
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
@@ -213,7 +220,7 @@ def createDiskoPC(env = None):
 		
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
-	disko_pc.write('libdir=${exec_prefix}/lib\n')
+	disko_pc.write('libdir=${exec_prefix}/lib/disko\n')
 	disko_pc.write('includedir=${exec_prefix}/include/disko\n\n')
 	disko_pc.write('Name: ' + packageRealName + '\n')
 	disko_pc.write('Description: ' + packageDescription + '\n')
@@ -307,7 +314,8 @@ def checkDeps(target = None, source = None, env = None):
 	
 	# checks required if building mmssip
 	if(env['enable_sip']):
-		conf.checkSimpleLib(['libpj'], 'pjlib.h')
+		if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
+			env.Append(LIBS = 'pjnath')
 	else:
 		env.Append(CCFLAGS = '-D_NO_MMSSIP')
 		
@@ -389,6 +397,7 @@ all = env.Alias('all', [check, 'lib', 'bin'])
 install = env.Alias('install', [check, idir_prefix])
 Depends(install, all)
 env.Default(all)
+env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
 env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
 Clean('lib', 'disko.pc')
 
