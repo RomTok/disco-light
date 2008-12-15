@@ -137,6 +137,12 @@ def tryConfigCommand(context, cmd):
 		context.env.ParseConfig(cmd)
 	return ret
 
+def checkPKGConfig(context):
+	context.Message('Checking for pkg-config... ')
+	ret = context.TryAction('pkg-config --version')[0]
+	context.Result(ret)
+	return ret
+
 def checkPKG(context, name):
 	return tryConfigCommand(context, 'pkg-config --libs --cflags \'%s\'' % name)
 
@@ -173,9 +179,14 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 	return False
 
 conf = Configure(env, 
-                 custom_tests = {'checkConf': checkConf, 'checkPKG': checkPKG, 'checkSimpleLib': checkSimpleLib},
+                 custom_tests = {'checkPKGConfig' : checkPKGConfig,
+                 				 'checkConf': checkConf, 
+                 				 'checkPKG': checkPKG, 
+                 				 'checkSimpleLib': checkSimpleLib},
                  conf_dir = 'build/.sconf_temp',
-                 log_file = 'build/config.log')
+                 log_file = 'build/config.log',
+                 clean = False,
+                 help  = False)
 
 #######################################################################
 # Creating pkg-config file                                            #
@@ -221,12 +232,12 @@ def checkDeps(target = None, source = None, env = None):
 		print '  \'scons database=odbc\'\n'
 		Exit(1)
 
-
 	# checks that are required everytime
-	conf.checkSimpleLib(['sigc++-2.0'], 'sigc++-2.0/sigc++/sigc++.h')
-	conf.checkSimpleLib(['libxml-2.0'], 'libxml2/libxml/parser.h')
-	conf.checkSimpleLib(['libpng'],     'libpng/png.h')
-	conf.checkSimpleLib(['libcurl'],    'curl/curl.h')
+	conf.checkPKGConfig()
+	conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
+	conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
+	conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
+	conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
 
 	# checks required if building DirectFB backend
 	if('dfb' in env['graphics']):
@@ -243,7 +254,10 @@ def checkDeps(target = None, source = None, env = None):
 		
 	# checks required if building mmsmedia
 	if(env['enable_media']):
-		conf.checkSimpleLib(['libxine'],    'xine.h')
+		if('x11' in env['graphics']):
+			conf.checkSimpleLib(['libxine >= 1.1.15'],    'xine.h')
+		else:
+			conf.checkSimpleLib(['libxine'],    'xine.h')
 		conf.checkSimpleLib(['alsa'],       'alsa/version.h')
 	else:
 		env.Append(CCFLAGS = '-D_NO_MMSMEDIA -D_NO_MIXER')
