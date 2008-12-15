@@ -93,9 +93,9 @@ if env['use_sse']:
 
 # format output
 env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
-#env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
+env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
 env['CXXCOMSTR']    = '  [CXX] $SOURCE'
-#env['LINKCOMSTR']   = '  [LD]  $TARGET'
+env['LINKCOMSTR']   = '  [LD]  $TARGET'
 
 Export('env idir_prefix idir_lib idir_bin idir_inc idir_data')
 
