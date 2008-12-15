@@ -18,6 +18,11 @@
 import os, sys
 
 #######################################################################
+# Scons configuration                                                 #
+#######################################################################
+SetOption('implicit_cache', 1)
+
+#######################################################################
 # Version                                                             #
 #######################################################################
 packageVersionMajor = 1
@@ -340,20 +345,20 @@ SConscript(Split(libList), options = opts)
 
 BuildDir('build/tools', 'tools', duplicate = 0)
 SConscript(Split(toolList), options = opts)
-	
-env.Install(idir_lib + '/../pkgconfig', 'disko.pc')
-Clean(all, 'disko.pc')
 
 #######################################################################
 # Create targets                                                      #
 #######################################################################
+env.Decider('MD5-timestamp')
 check = env.Alias(target = 'check', 
                   action = Action(checkDeps, "\nChecking for dependencies:\n"))
 env.AlwaysBuild(check)
 all = env.Alias('all', [check, 'lib', 'bin'])
-install = env.Alias('install', [check, idir_lib, idir_bin, idir_inc, idir_data])
+install = env.Alias('install', [check, idir_prefix])
 Depends(install, all)
 env.Default(all)
+env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
+Clean('lib', 'disko.pc')
 
 #######################################################################
 #  Documentation                                                      #

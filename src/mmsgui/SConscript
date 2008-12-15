@@ -1,16 +1,27 @@
+# TODO: optimize installation of headers
+
+import os, fnmatch, string
 Import('env idir_lib idir_inc idir_data')
-files = Glob('*.cpp')
-files.append(Glob('*/*.cpp'))
-libmmsgui = env.SharedLibrary('../../../lib/libmmsgui', files, LIBS = "")
+
+def findFiles(searchDir, pattern):
+	files = []
+	for entry in os.listdir(searchDir):
+		entrypath = os.path.join(searchDir, entry)
+		if os.path.isfile(entrypath) and fnmatch.fnmatch(entry, pattern):
+			files.append(entrypath)
+		elif os.path.isdir(entrypath):
+			files.extend(findFiles(entrypath, pattern))
+
+	return files
+
+sourceFiles = findFiles('../../../src/mmsgui', '*.cpp')
+libmmsgui = env.SharedLibrary('../../../lib/libmmsgui', sourceFiles, LIBS = "")
 env.Install(idir_lib, libmmsgui)
-headers = Glob('../../../inc/mmsgui/*.h')
-env.Install(idir_inc + '/mmsgui', headers)
-headers = Glob('../../../inc/mmsgui/fb/*.h')
-env.Install(idir_inc + '/mmsgui/additional', headers)
-headers = Glob('../../../inc/mmsgui/additional/*.h')
-env.Install(idir_inc + '/mmsgui/fb', headers)
-headers = Glob('../../../inc/mmsgui/interfaces/*.h')
-env.Install(idir_inc + '/mmsgui/interfaces', headers)
+
+headerFiles = findFiles('../../../inc/mmsgui', '*.h')
+for header in headerFiles:
+	env.Install(os.path.dirname(header.replace('../../../inc/mmsgui', idir_inc + '/mmsgui')), header)
+
 share = Glob('../../../share/mmsgui/*')
 env.Install(idir_data + '/mmsgui', share)
 Export('libmmsgui')
