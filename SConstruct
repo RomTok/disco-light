@@ -188,7 +188,7 @@ conf = Configure(env,
 def createDiskoPC(env = None):
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
-	disko_pc_libs     = '%s %s' % (' -L'.join(env['LIBPATH']).replace('../../../lib',''), ' -l'.join(env['LIBS']))
+	disko_pc_libs     = '%s -l%s' % (' -L'.join(env['LIBPATH']).replace('../../../lib',''), ' -l'.join(env['LIBS']))
 	
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
