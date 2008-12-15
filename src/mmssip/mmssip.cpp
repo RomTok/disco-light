@@ -43,11 +43,6 @@
 #include "mmstools/mmserror.h"
 #include "mmssip/mmssip.h"
 
-/*
- * TODO:
- * - using STUN server
- */
-
 static MMSSip *thiz = NULL;
 static bool   registered = false;
 
@@ -61,11 +56,13 @@ MMSSip::MMSSip(const string    &user,
 		       const string    &passwd,
 		       const string    &registrar,
 		       const string    &realm,
+		       const string    &stun,
 		       const short int &localPort) :
     user(user),
     passwd(passwd),
     registrar(registrar),
-    realm(realm) {
+    realm(realm),
+    stun(stun) {
 
 	/* only one instance of mmssip allowed */
 	if(thiz) {
@@ -90,6 +87,11 @@ MMSSip::MMSSip(const string    &user,
     pjsua_logging_config logCfg;
 
     pjsua_config_default(&cfg);
+    cfg.user_agent             = pj_str((char*)"Disko SIP stack");
+    if(stun != "") {
+    	DEBUGMSG("MMSSIP", "Using STUN server " + stun);
+    	cfg.stun_host          = pj_str((char*)stun.c_str());
+    }
     cfg.cb.on_incoming_call    = &onIncomingCall;
     cfg.cb.on_call_media_state = &onCallMediaState;
     cfg.cb.on_call_state       = &onCallState;
@@ -134,29 +136,20 @@ MMSSip::MMSSip(const string    &user,
     /* register to SIP server */
     pjsua_acc_config accCfg;
 
-    char *tmpid = (char*)malloc(80);
-    snprintf(tmpid, 80, "sip:%s@%s", user.c_str(), registrar.c_str());
-    char *tmpreg = (char*)malloc(80);
-    snprintf(tmpreg, 80, "sip:%s", realm.c_str());
-    char *tmprealm = (char*)malloc(80);
-    snprintf(tmprealm, 80, "*");
-    char *tmpuser = (char*)malloc(80);
-    snprintf(tmpuser, 80, "%s", user.c_str());
-    char *tmppasswd = (char*)malloc(80);
-    snprintf(tmppasswd, 80, "%s", passwd.c_str());
-    char *tmpscheme = (char*)malloc(80);
-    snprintf(tmpscheme, 80, "Digest");
+    char tmpid[256], tmpreg[256];
+    snprintf(tmpid, sizeof(tmpid), "sip:%s@%s", user.c_str(), registrar.c_str());
+    snprintf(tmpreg, sizeof(tmpreg), "sip:%s", realm.c_str());
 
     pjsua_acc_config_default(&accCfg);
     accCfg.reg_timeout  = 60;
     accCfg.id         = pj_str(tmpid);
     accCfg.reg_uri    = pj_str(tmpreg);
     accCfg.cred_count = 1;
-    accCfg.cred_info[0].realm     = pj_str(tmprealm);
-    accCfg.cred_info[0].scheme    = pj_str(tmpscheme);
-    accCfg.cred_info[0].username  = pj_str(tmpuser);
+    accCfg.cred_info[0].realm     = pj_str((char*)"*");
+    accCfg.cred_info[0].scheme    = pj_str((char*)"Digest");
+    accCfg.cred_info[0].username  = pj_str((char*)user.c_str());
     accCfg.cred_info[0].data_type = 0;
-    accCfg.cred_info[0].data      = pj_str(tmppasswd);
+    accCfg.cred_info[0].data      = pj_str((char*)passwd.c_str());
     accCfg.publish_enabled        = PJ_FALSE;
 
     status = pjsua_acc_add(&accCfg, PJ_TRUE, &this->accID);
@@ -164,8 +157,6 @@ MMSSip::MMSSip(const string    &user,
 		DEBUGMSG("MMSSIP", "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 		throw MMSError(0, "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 	}
-
-    DEBUGMSG("MMSSIP", "SIP account registered");
 
     this->onCallSuccessfull    = new sigc::signal<void, int>;
     this->onCallIncoming       = new sigc::signal<void, int, string>;
@@ -414,11 +405,19 @@ static void onRegistrationState(pjsua_acc_id id) {
 
 	if(pjsua_acc_get_info(id, &info) == PJ_SUCCESS) {
 		if(info.status == 200) registered = true;
-	    DEBUGMSG("MMSSIP", (info.has_registration ? "registered" : "not registered"));
+	    DEBUGMSG("MMSSIP", (registered ? "registered" : "not registered"));
 	    DEBUGMSG("MMSSIP", "status: %d", info.status);
 	    DEBUGMSG("MMSSIP", "status_text: %s", info.status_text);
 	    DEBUGMSG("MMSSIP", "online_status: %d", info.online_status);
 	    DEBUGMSG("MMSSIP", "online_status_text: %s", info.online_status_text);
+
+	    /* set online if registration successfull and online status 0 */
+	    if(registered) {
+	    	if(pjsua_acc_set_online_status(id,	PJ_TRUE) == PJ_SUCCESS)
+	    		DEBUGMSG("MMSSIP", "Setting online status successfull");
+	    	else
+	    		DEBUGMSG("MMSSIP", "Setting online status failed");
+	    }
 	}
 }
 

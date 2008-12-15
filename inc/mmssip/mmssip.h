@@ -55,7 +55,8 @@ class MMSSip {
         string       user,
                      passwd,
                      registrar,
-                     realm;
+                     realm,
+                     stun;
         short int    localPort;
 
         pjsua_acc_id          accID;
@@ -69,6 +70,7 @@ class MMSSip {
     		   const string    &passwd,
     		   const string    &registrar,
     		   const string    &realm = "",
+    		   const string    &stun = "",
     		   const short int &localPort = 5060);
 
     	~MMSSip();
