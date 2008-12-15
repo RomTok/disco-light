@@ -66,6 +66,7 @@ env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
 opts.Update(env)
 opts.Save('disko.conf', env)
 Help(opts.GenerateHelpText(env))
+env['TOP_DIR'] = os.getcwd()
 
 # Here are our installation paths:
 idir_prefix = '$prefix'
@@ -92,9 +93,9 @@ if env['use_sse']:
 
 # format output
 env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
-env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
+#env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
 env['CXXCOMSTR']    = '  [CXX] $SOURCE'
-env['LINKCOMSTR']   = '  [LD]  $TARGET'
+#env['LINKCOMSTR']   = '  [LD]  $TARGET'
 
 Export('env idir_prefix idir_lib idir_bin idir_inc idir_data')
 
