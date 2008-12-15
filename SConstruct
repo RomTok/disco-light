@@ -17,12 +17,6 @@
 
 import os, sys
 
-
-#######################################################################
-# Scons version check                                                 #
-#######################################################################
-EnsureSConsVersion(0,98,00)
-
 #######################################################################
 # Scons configuration                                                 #
 #######################################################################
@@ -194,7 +188,7 @@ conf = Configure(env,
 def createDiskoPC(env = None):
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
-	disko_pc_libs     = '%s' % ' -l'.join(env['LIBS'])
+	disko_pc_libs     = '%s %s' % (' -L'.join(env['LIBPATH']).replace('../../../lib',''), ' -l'.join(env['LIBS']))
 	
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
@@ -226,7 +220,7 @@ def createDiskoPC(env = None):
 	disko_pc.write('Version: ' + packageVersion + '\n')
 	disko_pc.write('Requires: ' + disko_pc_requires + '\n')
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
-	disko_pc.write('Cflags: -I${includedir}/' + ' '.join(env['CCFLAGS']) + '\n')
+	disko_pc.write('Cflags: -I${includedir}/ ' + ' '.join(env['CCFLAGS']) + '\n')
 	
 	disko_pc.close()
 
