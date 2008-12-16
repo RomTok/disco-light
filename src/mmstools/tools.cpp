@@ -582,7 +582,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	struct  timeval tv;
 	char    timebuf[12];
 	char 	buffer[1024]={0};
-	char 	buffer2[1024]={0};
+	char 	buffer2[1088]={0};
 	int		num;
 
     debugMsgMutex.lock();
@@ -590,7 +590,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
 	va_start(arglist, (char *)msg);
-	vsprintf(buffer, msg, arglist);
+	vsnprintf(buffer, sizeof(buffer), msg, arglist);
 
 	gettimeofday(&tv, NULL);
 
@@ -599,7 +599,8 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
 	                    tv.tv_usec/10000, (unsigned int)pthread_self(), identity, buffer, filename, lineno);
 
-	fwrite(buffer2, 1, num, fp);
+	if(fwrite(buffer2, 1, num, fp) == 0)
+		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
 	va_end(arglist);
 
@@ -627,7 +628,9 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
 	               tv.tv_usec/10000, (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno);
 
-	fwrite(buffer, 1, num, fp);
+	if(fwrite(buffer, 1, num, fp) == 0)
+		fprintf(stderr, "DISKO: Error writing to logfile\n");
+
 	fclose(fp);
     debugMsgMutex.unlock();
 
@@ -641,11 +644,11 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	struct  timeval tv;
 	char    timebuf[12];
 	char 	buffer[1024]={0};
-	char 	buffer2[1024]={0};
+	char 	buffer2[1088]={0};
 	int		num;
 
 	va_start(arglist, (char *)msg);
-	vsprintf(buffer, msg, arglist);
+	vsnprintf(buffer, sizeof(buffer), msg, arglist);
 
 	gettimeofday(&tv, NULL);
 
@@ -654,7 +657,8 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
 	                    tv.tv_usec/10000, (unsigned int)pthread_self(), identity, buffer, filename, lineno);
 
-	fwrite(buffer2, 1, num, stdout);
+	if(fwrite(buffer2, 1, num, fp) == 0)
+		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
 	va_end(arglist);
 
@@ -674,7 +678,8 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
 	               tv.tv_usec/10000, (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno);
 
-	fwrite(buffer, 1, num, stdout);
+	if(fwrite(buffer, 1, num, fp) == 0)
+		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
 	return;
 }
