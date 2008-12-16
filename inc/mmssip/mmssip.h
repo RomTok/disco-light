@@ -38,6 +38,13 @@
 
 using namespace std;
 
+typedef struct {
+	string user;
+	string passwd;
+	string registrar;
+	string realm;
+} MMSSipAccount;
+
 typedef enum {
 	BUDDY_ONLINE		= PJSUA_BUDDY_STATUS_ONLINE,
 	BUDDY_OFFLINE		= PJSUA_BUDDY_STATUS_OFFLINE,
@@ -52,29 +59,33 @@ typedef struct {
 
 class MMSSip {
     private:
-        string       user,
-                     passwd,
-                     registrar,
-                     realm,
-                     stun;
+        string       stunserver,
+                     nameserver;
         short int    localPort;
 
-        pjsua_acc_id          accID;
         pj_thread_desc        pjThreadDesc;
         pj_thread_t           *pjThread;
 
-        map<int, MMSSipBuddy> buddies;
+        map<int, MMSSipAccount>	accounts;
+        int						defaultAccount;
+        map<int, MMSSipBuddy> 	buddies;
 
     public:
     	MMSSip(const string    &user,
     		   const string    &passwd,
     		   const string    &registrar,
     		   const string    &realm = "",
-    		   const string    &stun = "",
+    		   const string    &stunserver = "",
+    		   const string    &nameserver = "",
     		   const short int &localPort = 5060);
 
     	~MMSSip();
 
+    	const bool registerAccount(const string &user,
+								   const string &passwd,
+								   const string &registrar,
+								   const string &realm,
+								   const bool defaultAccount = false);
     	const int call(const string &user, const string &domain = "");
     	void hangup(int id);
     	void answer(int id);
