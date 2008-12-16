@@ -1,24 +1,14 @@
 # TODO: optimize installation of headers
 
-import os, fnmatch, string
+import os
+import scons.helpers
 Import('env idir_lib idir_inc idir_data')
 
-def findFiles(searchDir, pattern):
-	files = []
-	for entry in os.listdir(searchDir):
-		entrypath = os.path.join(searchDir, entry)
-		if os.path.isfile(entrypath) and fnmatch.fnmatch(entry, pattern):
-			files.append(entrypath)
-		elif os.path.isdir(entrypath):
-			files.extend(findFiles(entrypath, pattern))
-
-	return files
-
-sourceFiles = findFiles(env['TOP_DIR'] + '/src/mmsgui', '*.cpp')
+sourceFiles = scons.helpers.findFiles(env['TOP_DIR'] + '/src/mmsgui', '*.cpp')
 libmmsgui = env.SharedLibrary(env['TOP_DIR'] + '/lib/libmmsgui', sourceFiles, LIBS = "")
 env.Install(idir_lib, libmmsgui)
 
-headerFiles = findFiles(env['TOP_DIR'] + '/inc/mmsgui', '*.h')
+headerFiles = scons.helpers.findFiles(env['TOP_DIR'] + '/inc/mmsgui', '*.h')
 for header in headerFiles:
 	env.Install(os.path.dirname(header.replace(env['TOP_DIR'] + '/inc/mmsgui', idir_inc + '/mmsgui')), header)
 
