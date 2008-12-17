@@ -52,6 +52,10 @@ static void onCallMediaState(pjsua_call_id);
 static void onRegistrationState(pjsua_acc_id);
 static void onBuddyState(pjsua_buddy_id);
 
+static void logCallback(int level, const char *data, int len) {
+	DEBUGMSG("MMSSIP", data);
+}
+
 MMSSip::MMSSip(const string    &user,
 		       const string    &passwd,
 		       const string    &registrar,
@@ -62,7 +66,7 @@ MMSSip::MMSSip(const string    &user,
     stunserver(stunserver),
     nameserver(nameserver),
     localPort(localPort),
-    defaultAccount(NULL) {
+    defaultAccount(-1) {
 
 	/* only one instance of mmssip allowed */
 	if(thiz) {
@@ -103,7 +107,13 @@ MMSSip::MMSSip(const string    &user,
     cfg.cb.on_buddy_state      = &onBuddyState;
 
     pjsua_logging_config_default(&logCfg);
-    logCfg.console_level = 1;
+    logCfg.level = 1;
+#ifdef __ENABLE_LOG__
+    logCfg.console_level = 4;
+    logCfg.cb = logCallback;
+#else
+    logCfg.console_level = 0;
+#endif
 
     status = pjsua_init(&cfg, &logCfg, NULL);
     if(status != PJ_SUCCESS) {
@@ -135,9 +145,7 @@ MMSSip::MMSSip(const string    &user,
 
     DEBUGMSG("MMSSIP", "SIP stack started");
 
-    //sleep(1);
-
-    if(!this->registerAccount(user, passwd, registrar, realm)) {
+    if(!this->registerAccount(user, passwd, registrar, realm, true)) {
 		DEBUGMSG("MMSSIP", "Error registering account");
 		throw MMSError(0, "Error registering account");
     }
@@ -150,7 +158,7 @@ MMSSip::MMSSip(const string    &user,
 }
 
 MMSSip::~MMSSip() {
-	pjsua_destroy();
+    pjsua_destroy();
 	if(this->onCallSuccessfull) {
 		this->onCallSuccessfull->clear();
 		delete this->onCallSuccessfull;
@@ -238,7 +246,7 @@ const int MMSSip::call(const string &user, const string &domain) {
     }
 
     const char *cDomain;
-    if((user.find("@") == string::npos) && this->defaultAccount) {
+    if((user.find("@") == string::npos) && this->defaultAccount >= 0) {
         cDomain = ((domain != "") ? domain.c_str() : this->accounts[defaultAccount].registrar.c_str());
         snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), cDomain);
     }
