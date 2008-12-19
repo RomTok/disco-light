@@ -578,33 +578,33 @@ bool file_exist( string filename ) {
 
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const char *msg, ...) {
 #ifdef __ENABLE_LOG__
-	va_list arglist;
-	struct  timeval tv;
-	char    timebuf[12];
-	char 	buffer[1024]={0};
-	char 	buffer2[1088]={0};
-	int		num;
+	va_list 	arglist;
+	struct  	timeval tv;
+	char    	timebuf[12];
+	int			num;
+	const char 	*logfile = config.getLogfile().c_str();
 
     debugMsgMutex.lock();
-	if((fp=fopen(config.getLogfile().c_str(), "a+"))==NULL)
+    if(!strlen(logfile))
+    	fp = stderr;
+	else if((fp=fopen(logfile, "a+"))==NULL)
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
-	va_start(arglist, (char *)msg);
-	vsnprintf(buffer, sizeof(buffer), msg, arglist);
-
 	gettimeofday(&tv, NULL);
-
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	                    tv.tv_usec/10000, (unsigned int)pthread_self(), identity, buffer, filename, lineno);
-
-	if(fwrite(buffer2, 1, num, fp) == 0)
+	num = fprintf(fp, "%s:%02ld %010u %s: ", timebuf, tv.tv_usec/10000, (unsigned int)pthread_self(), identity);
+	if(num) {
+		va_start(arglist, (char *)msg);
+		num = vfprintf(fp, msg, arglist);
+		va_end(arglist);
+	}
+	if(num) num = fprintf(fp, " [%s:%d]\n", filename, lineno);
+	if(!num)
 		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
-	va_end(arglist);
-
-	fclose(fp);
+	if(fp != stderr)
+		fclose(fp);
     debugMsgMutex.unlock();
 
 	return;
@@ -613,25 +613,25 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 
 void writeDebugMessage(const char *identity, const char *filename, const int lineno, const string &msg) {
 #ifdef __ENABLE_LOG__
-	struct  timeval tv;
-	char    timebuf[12];
-	char 	buffer[1024]={0};
-	int		num;
+	struct  	timeval tv;
+	char    	timebuf[12];
+	const char 	*logfile = config.getLogfile().c_str();
 
     debugMsgMutex.lock();
-	if((fp=fopen(config.getLogfile().c_str(), "a+"))==NULL)
+    if(!strlen(logfile))
+    	fp = stderr;
+	else if((fp=fopen(logfile, "a+"))==NULL)
 		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	               tv.tv_usec/10000, (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno);
-
-	if(fwrite(buffer, 1, num, fp) == 0)
+	if(fprintf(fp, "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf, tv.tv_usec/10000, 
+	           (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno) == 0)
 		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
-	fclose(fp);
+	if(fp != stderr)
+		fclose(fp);
     debugMsgMutex.unlock();
 
 	return;
@@ -643,24 +643,20 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	va_list arglist;
 	struct  timeval tv;
 	char    timebuf[12];
-	char 	buffer[1024]={0};
-	char 	buffer2[1088]={0};
 	int		num;
 
-	va_start(arglist, (char *)msg);
-	vsnprintf(buffer, sizeof(buffer), msg, arglist);
-
 	gettimeofday(&tv, NULL);
-
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = snprintf(buffer2, sizeof(buffer2), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	                    tv.tv_usec/10000, (unsigned int)pthread_self(), identity, buffer, filename, lineno);
-
-	if(fwrite(buffer2, 1, num, fp) == 0)
+	num = fprintf(fp, "%s:%02ld %010u %s: ", timebuf, tv.tv_usec/10000, (unsigned int)pthread_self(), identity);
+	if(num) {
+		va_start(arglist, (char *)msg);
+		num = vfprintf(fp, msg, arglist);
+		va_end(arglist);
+	}
+	if(num) num = fprintf(fp, " [%s:%d]\n", filename, lineno);
+	if(!num)
 		fprintf(stderr, "DISKO: Error writing to logfile\n");
-
-	va_end(arglist);
 
 	return;
 }
@@ -669,16 +665,12 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 void writeMessage2Stdout(const char *identity, const char *filename, const int lineno, const string &msg) {
 	struct  timeval tv;
 	char    timebuf[12];
-	char 	buffer[1024]={0};
-	int		num;
 
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = snprintf(buffer, sizeof(buffer), "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf,
-	               tv.tv_usec/10000, (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno);
-
-	if(fwrite(buffer, 1, num, fp) == 0)
+	if(printf("%s:%02ld %010u %s: %s [%s:%d]\n", timebuf, tv.tv_usec/10000, 
+	           (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno) == 0)
 		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
 	return;
