@@ -445,7 +445,7 @@ bool MMSWindow::resize(bool refresh) {
             /* create window */
             /* get layers pixelformat */
         	MMSFBSurfacePixelFormat pixelformat;
-            this->layer->getPixelformat(&pixelformat);
+            this->layer->getPixelFormat(&pixelformat);
 
             if (!(this->flags & MMSW_VIDEO)) {
                 /* no video window, use alpha */
@@ -513,7 +513,7 @@ bool MMSWindow::resize(bool refresh) {
             /* create surface for child window */
             /* get layers pixelformat */
         	MMSFBSurfacePixelFormat pixelformat;
-            this->layer->getPixelformat(&pixelformat);
+            this->layer->getPixelFormat(&pixelformat);
 
             bool os;
             getOwnSurface(os);

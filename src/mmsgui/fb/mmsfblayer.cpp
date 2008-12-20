@@ -293,7 +293,7 @@ bool MMSFBLayer::getResolution(int *w, int *h) {
     return true;
 }
 
-bool MMSFBLayer::getPixelformat(MMSFBSurfacePixelFormat *pixelformat) {
+bool MMSFBLayer::getPixelFormat(MMSFBSurfacePixelFormat *pixelformat) {
 
     /* check if initialized */
     INITCHECK;
