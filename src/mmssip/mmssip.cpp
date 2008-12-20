@@ -52,17 +52,21 @@ static void onCallMediaState(pjsua_call_id);
 static void onRegistrationState(pjsua_acc_id);
 static void onBuddyState(pjsua_buddy_id);
 
+static void logCallback(int level, const char *data, int len) {
+	DEBUGMSG("MMSSIP", data);
+}
+
 MMSSip::MMSSip(const string    &user,
 		       const string    &passwd,
 		       const string    &registrar,
 		       const string    &realm,
-		       const string    &stun,
+		       const string    &stunserver,
+		       const string    &nameserver,
 		       const short int &localPort) :
-    user(user),
-    passwd(passwd),
-    registrar(registrar),
-    realm(realm),
-    stun(stun) {
+    stunserver(stunserver),
+    nameserver(nameserver),
+    localPort(localPort),
+    defaultAccount(-1) {
 
 	/* only one instance of mmssip allowed */
 	if(thiz) {
@@ -88,9 +92,13 @@ MMSSip::MMSSip(const string    &user,
 
     pjsua_config_default(&cfg);
     cfg.user_agent             = pj_str((char*)"Disko SIP stack");
-    if(stun != "") {
-    	DEBUGMSG("MMSSIP", "Using STUN server " + stun);
-    	cfg.stun_host          = pj_str((char*)stun.c_str());
+    if(stunserver != "") {
+    	DEBUGMSG("MMSSIP", "Using STUN server " + stunserver);
+    	cfg.stun_host          = pj_str((char*)stunserver.c_str());
+    }
+    if(nameserver != "") {
+    	DEBUGMSG("MMSSIP", "Using nameserver " + nameserver);
+    	cfg.nameserver[0]      = pj_str((char*)nameserver.c_str());
     }
     cfg.cb.on_incoming_call    = &onIncomingCall;
     cfg.cb.on_call_media_state = &onCallMediaState;
@@ -99,7 +107,13 @@ MMSSip::MMSSip(const string    &user,
     cfg.cb.on_buddy_state      = &onBuddyState;
 
     pjsua_logging_config_default(&logCfg);
-    logCfg.console_level = 1;
+    logCfg.level = 1;
+#ifdef __ENABLE_LOG__
+    logCfg.console_level = 4;
+    logCfg.cb = logCallback;
+#else
+    logCfg.console_level = 0;
+#endif
 
     status = pjsua_init(&cfg, &logCfg, NULL);
     if(status != PJ_SUCCESS) {
@@ -131,12 +145,55 @@ MMSSip::MMSSip(const string    &user,
 
     DEBUGMSG("MMSSIP", "SIP stack started");
 
-    sleep(1);
+    if(!this->registerAccount(user, passwd, registrar, realm, true)) {
+		DEBUGMSG("MMSSIP", "Error registering account");
+		throw MMSError(0, "Error registering account");
+    }
 
-    /* register to SIP server */
-    pjsua_acc_config accCfg;
+    this->onCallSuccessfull    = new sigc::signal<void, int>;
+    this->onCallIncoming       = new sigc::signal<void, int, string>;
+    this->onCallDisconnected   = new sigc::signal<void, int>;
+    this->onCalling            = new sigc::signal<void, int>;
+    this->onBuddyStatus        = new sigc::signal<void, MMSSipBuddy>;
+}
 
-    char tmpid[256], tmpreg[256];
+MMSSip::~MMSSip() {
+    pjsua_destroy();
+	if(this->onCallSuccessfull) {
+		this->onCallSuccessfull->clear();
+		delete this->onCallSuccessfull;
+	}
+	if(this->onCallIncoming) {
+		this->onCallIncoming->clear();
+		delete this->onCallIncoming;
+	}
+	if(this->onCallDisconnected) {
+		this->onCallDisconnected->clear();
+		delete this->onCallDisconnected;
+	}
+	if(this->onCalling) {
+		this->onCalling->clear();
+		delete this->onCalling;
+	}
+	if(this->onBuddyStatus) {
+		this->onBuddyStatus->clear();
+		delete this->onBuddyStatus;
+	}
+	this->accounts.clear();
+	this->buddies.clear();
+}
+
+/* register to SIP server */
+const bool MMSSip::registerAccount(const string &user,
+								   const string &passwd,
+								   const string &registrar,
+								   const string &realm,
+								   const bool defaultAcc) {
+	pj_status_t 		status;
+    pjsua_acc_config 	accCfg;
+    pjsua_acc_id		accID;
+    char 				tmpid[256], tmpreg[256];
+
     snprintf(tmpid, sizeof(tmpid), "sip:%s@%s", user.c_str(), registrar.c_str());
     snprintf(tmpreg, sizeof(tmpreg), "sip:%s", realm.c_str());
 
@@ -152,25 +209,16 @@ MMSSip::MMSSip(const string    &user,
     accCfg.cred_info[0].data      = pj_str((char*)passwd.c_str());
     accCfg.publish_enabled        = PJ_FALSE;
 
-    status = pjsua_acc_add(&accCfg, PJ_TRUE, &this->accID);
+    status = pjsua_acc_add(&accCfg, (defaultAcc ? PJ_TRUE : PJ_FALSE), &accID);
     if(status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 		throw MMSError(0, "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 	}
 
-    this->onCallSuccessfull    = new sigc::signal<void, int>;
-    this->onCallIncoming       = new sigc::signal<void, int, string>;
-    this->onCallDisconnected   = new sigc::signal<void, int>;
-    this->onCalling            = new sigc::signal<void, int>;
-    this->onBuddyStatus        = new sigc::signal<void, MMSSipBuddy>;
-}
-
-MMSSip::~MMSSip() {
-	pjsua_destroy();
-	if(this->onCallSuccessfull) {
-		this->onCallSuccessfull->clear();
-		delete this->onCallSuccessfull;
-	}
+ 	MMSSipAccount acc = {user, passwd, registrar, realm};
+    this->accounts[accID] = acc;
+    if(defaultAcc)
+    	this->defaultAccount = accID;
 }
 
 /*
@@ -198,8 +246,8 @@ const int MMSSip::call(const string &user, const string &domain) {
     }
 
     const char *cDomain;
-    if(user.find("@") == string::npos) {
-        cDomain = ((domain != "") ? domain.c_str() : this->registrar.c_str());
+    if((user.find("@") == string::npos) && this->defaultAccount >= 0) {
+        cDomain = ((domain != "") ? domain.c_str() : this->accounts[defaultAccount].registrar.c_str());
         snprintf(tmp, 1024, "sip:%s@%s", user.c_str(), cDomain);
     }
     else
@@ -225,7 +273,7 @@ const int MMSSip::call(const string &user, const string &domain) {
 	}
 
     uri = pj_str(tmp);
-	status = pjsua_call_make_call(this->accID, &uri, 0, NULL, NULL, &call);
+	status = pjsua_call_make_call(this->defaultAccount, &uri, 0, NULL, NULL, &call);
 	if (status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Error calling sip:" + user + "@" + cDomain);
 		throw MMSError(0, "Error calling sip:" + user + "@" + cDomain);
@@ -404,8 +452,11 @@ static void onRegistrationState(pjsua_acc_id id) {
 	pjsua_acc_info info;
 
 	if(pjsua_acc_get_info(id, &info) == PJ_SUCCESS) {
-		if(info.status == 200) registered = true;
-	    DEBUGMSG("MMSSIP", (registered ? "registered" : "not registered"));
+		if(info.status == 200 && info.is_default) {
+			registered = true;
+		    DEBUGMSG("MMSSIP", (registered ? "registered" : "not registered"));
+		}
+	    DEBUGMSG("MMSSIP", "account: %s", info.acc_uri);
 	    DEBUGMSG("MMSSIP", "status: %d", info.status);
 	    DEBUGMSG("MMSSIP", "status_text: %s", info.status_text);
 	    DEBUGMSG("MMSSIP", "online_status: %d", info.online_status);

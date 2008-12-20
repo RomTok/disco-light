@@ -79,7 +79,11 @@ void MMSRcParser::parseFile(string filename) {
 
 		LIBXML_TEST_VERSION
 
-		parser = xmlReadFile((char *)filename.c_str(), NULL, 0);
+#ifdef __ENABLE_LOG__
+		parser = xmlReadFile((char *)filename.c_str(), NULL, XML_PARSE_NOBLANKS | XML_PARSE_NONET);
+#else
+		parser = xmlReadFile((char *)filename.c_str(), NULL, XML_PARSE_NOBLANKS | XML_PARSE_NONET | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+#endif
 
 		if(parser == NULL) {
 			throw new MMSRcParserError(1,"Could not parse file:" + filename);

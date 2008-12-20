@@ -2,10 +2,11 @@
 
 import os
 import scons.helpers
-Import('env idir_lib idir_inc idir_data')
+Import('env idir_lib idir_inc idir_data libmmsinfo')
 
 sourceFiles = scons.helpers.findFiles(env['TOP_DIR'] + '/src/mmsgui', '*.cpp')
 libmmsgui = env.SharedLibrary(env['TOP_DIR'] + '/lib/libmmsgui', sourceFiles, LIBS = "")
+env.Requires(libmmsgui, libmmsinfo)
 env.Install(idir_lib, libmmsgui)
 
 headerFiles = scons.helpers.findFiles(env['TOP_DIR'] + '/inc/mmsgui', '*.h')
