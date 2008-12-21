@@ -35,7 +35,11 @@ MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
     this->toplevel = NULL;
 }
 
-MMSWindowManager::~MMSWindowManager(){
+MMSWindowManager::~MMSWindowManager() {
+}
+
+void MMSWindowManager::reset() {
+	mmsfbwindowmanager->reset();
 }
 
 MMSFBRectangle MMSWindowManager::getVRect() {

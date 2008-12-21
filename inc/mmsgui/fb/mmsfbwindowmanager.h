@@ -117,6 +117,7 @@ class MMSFBWindowManager {
         virtual ~MMSFBWindowManager();
 
         bool init(MMSFBLayer *layer, bool show_pointer = false);
+        bool reset();
         bool getLayer(MMSFBLayer **layer);
 
         void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = false);
