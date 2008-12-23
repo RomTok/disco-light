@@ -323,7 +323,7 @@ def checkDeps(target = None, source = None, env = None):
 	# checks required if building mmssip
 	if(env['enable_sip']):
 		if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
-			env.Append(LIBS = 'pjnath')
+			conf.checkSimpleLib(['libuuid'], 'uuid/uuid.h', required = 0)	
 	else:
 		env.Append(CCFLAGS = '-D_NO_MMSSIP')
 		
