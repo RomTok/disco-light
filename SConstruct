@@ -192,8 +192,7 @@ conf = Configure(env,
 def createDiskoPC(env = None):
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
-	#disko_pc_libs     = '%s -l%s' % (' -L'.join(env['LIBPATH']).replace('../../../lib',''), ' -l'.join(env['LIBS']))
-	disko_pc_libs     = '%s' % ' -L'.join(env['LIBPATH']).replace('../../../lib','')
+	disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	disko_pc_libs    += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
 	
 	if 'dfb' in env['graphics']:
@@ -216,6 +215,8 @@ def createDiskoPC(env = None):
 	if(env['enable_sip']):
 		disko_pc_requires += ', libpj'
 		disko_pc_libs += ' -lmmssip'
+		if('uuid' in env['LIBS']):
+			disko_pc_requires += ', uuid'
 		
 	if(env['enable_mail']):
 		disko_pc_requires += ', vmime'
@@ -323,7 +324,7 @@ def checkDeps(target = None, source = None, env = None):
 	# checks required if building mmssip
 	if(env['enable_sip']):
 		if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
-			conf.checkSimpleLib(['libuuid'], 'uuid/uuid.h', required = 0)	
+			conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)	
 	else:
 		env.Append(CCFLAGS = '-D_NO_MMSSIP')
 		
