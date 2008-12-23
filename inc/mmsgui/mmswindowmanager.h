@@ -44,6 +44,7 @@ class MMSWindowManager : public IMMSWindowManager {
 	public:
 		MMSWindowManager(MMSFBRectangle vrect);
 		virtual ~MMSWindowManager();
+		void reset();
 
         MMSFBRectangle getVRect();
 

@@ -131,6 +131,19 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     return true;
 }
 
+bool MMSFBWindowManager::reset() {
+
+    // check if initialized
+    INITCHECK;
+
+    // reset the high freq surface pointer
+    this->high_freq_surface = NULL;
+	this->high_freq_saved_surface = NULL;
+	this->high_freq_lastflip = 0;
+
+	return true;
+}
+
 bool MMSFBWindowManager::getLayer(MMSFBLayer **layer) {
 
     /* check if initialized */

@@ -101,7 +101,7 @@ class MMSFBLayer {
         bool setExclusiveAccess();
         bool getConfiguration(MMSFBLayerConfig *config = NULL);
         bool getResolution(int *w, int *h);
-        bool getPixelformat(MMSFBSurfacePixelFormat *pixelformat);
+        bool getPixelFormat(MMSFBSurfacePixelFormat *pixelformat);
         bool setConfiguration(int w=0, int h=0, MMSFBSurfacePixelFormat pixelformat=MMSFB_PF_NONE, string buffermode="", string options="",
 							  MMSFBSurfacePixelFormat window_pixelformat=MMSFB_PF_NONE, MMSFBSurfacePixelFormat surface_pixelformat=MMSFB_PF_NONE);
         bool setOpacity(unsigned char opacity);
