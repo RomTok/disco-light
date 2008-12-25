@@ -368,6 +368,10 @@ MMSFBRectangle MMSWidget::getSurfaceGeometry() {
     return this->surfaceGeom;
 }
 
+MMSFBSurface *MMSWidget::getSurface() {
+    return this->surface;
+}
+
 void MMSWidget::setInnerGeometry() {
     MMSFBRectangle mygeom;
     unsigned int diff = 0;

@@ -282,6 +282,8 @@ class MMSWidget {
         MMSFBRectangle getInnerGeometry();
         MMSFBRectangle getSurfaceGeometry();
 
+        MMSFBSurface *getSurface();
+
         int getId();
         string getName();
         void   setName(string name);
