@@ -2407,6 +2407,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
+				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
 				||(this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)) {
 				// stretch without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
