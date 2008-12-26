@@ -2796,10 +2796,25 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 	                DFB_RECTANGLE_VALS(&srcr), x, y, this->config.w, this->config.h );
 	    MMSFB_TRACE();
 
-	    /* blit */
+#ifndef USE_DFB_SUBSURFACE
+		// prepare source rectangle
+		if (source->is_sub_surface) {
+			src.x+=source->sub_surface_xoff;
+			src.y+=source->sub_surface_yoff;
+		}
+#endif
+
+	    // blit
 		if (!this->is_sub_surface) {
 			if (!extendedAccelBlit(source, &src, x, y))
 				if ((dfbres=this->llsurface->Blit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y)) != DFB_OK) {
+#ifndef USE_DFB_SUBSURFACE
+					// reset source rectangle
+					if (source->is_sub_surface) {
+						src.x-=source->sub_surface_xoff;
+						src.y-=source->sub_surface_yoff;
+					}
+#endif
 					MMSFB_SetError(dfbres, "IDirectFBSurface::Blit() failed, src rect="
 										   +iToStr(src.x)+","+iToStr(src.y)+","+iToStr(src.w)+","+iToStr(src.h)
 										   +", dst="+iToStr(x)+","+iToStr(y));
@@ -2831,11 +2846,26 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 #endif
 
 		}
+
+#ifndef USE_DFB_SUBSURFACE
+		// reset source rectangle
+		if (source->is_sub_surface) {
+			src.x-=source->sub_surface_xoff;
+			src.y-=source->sub_surface_yoff;
+		}
+#endif
+
 #endif
 	}
 	else {
 
-		/* blit */
+		// prepare source rectangle
+		if (source->is_sub_surface) {
+			src.x+=source->sub_surface_xoff;
+			src.y+=source->sub_surface_yoff;
+		}
+
+		// blit
 		if (!this->is_sub_surface) {
 			ret = extendedAccelBlit(source, &src, x, y);
 		}
@@ -2848,9 +2878,13 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 			ret = extendedAccelBlit(source, &src, x, y);
 
 			UNCLIPSUBSURFACE
-
 		}
 
+		// reset source rectangle
+		if (source->is_sub_surface) {
+			src.x-=source->sub_surface_xoff;
+			src.y-=source->sub_surface_yoff;
+		}
 	}
 
     return ret;
@@ -2949,6 +2983,14 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 	                DFB_RECTANGLE_VALS(&src), DFB_RECTANGLE_VALS(&dst), this->config.w, this->config.h);
 	    MMSFB_BREAK();
 
+#ifndef USE_DFB_SUBSURFACE
+		// prepare source rectangle
+		if (source->is_sub_surface) {
+			src.x+=source->sub_surface_xoff;
+			src.y+=source->sub_surface_yoff;
+		}
+#endif
+
 		if (this->config.blittingflags != MMSFB_BLIT_NOFX) {
 			/* stretch blit with blitting flags */
 
@@ -3045,12 +3087,19 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 		}
 
 		if (!blit_done) {
-			/* normal stretch blit */
+			// normal stretch blit
 			if (!this->is_sub_surface) {
 				dfbres = DFB_OK;
 				if (!extendedAccelStretchBlit(source, &src, &dst))
 					dfbres=this->llsurface->StretchBlit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				if (dfbres != DFB_OK) {
+#ifndef USE_DFB_SUBSURFACE
+					// reset source rectangle
+					if (source->is_sub_surface) {
+						src.x-=source->sub_surface_xoff;
+						src.y-=source->sub_surface_yoff;
+					}
+#endif
 					MMSFB_SetError(dfbres, "IDirectFBSurface::StretchBlit() failed");
 					return false;
 				}
@@ -3081,11 +3130,26 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 #endif
 			}
 		}
+
+#ifndef USE_DFB_SUBSURFACE
+		// reset source rectangle
+		if (source->is_sub_surface) {
+			src.x-=source->sub_surface_xoff;
+			src.y-=source->sub_surface_yoff;
+		}
+#endif
+
 #endif
 	}
 	else {
 
-		/* normal stretch blit */
+		// prepare source rectangle
+		if (source->is_sub_surface) {
+			src.x+=source->sub_surface_xoff;
+			src.y+=source->sub_surface_yoff;
+		}
+
+		// normal stretch blit
 		if (!this->is_sub_surface) {
 			ret = extendedAccelStretchBlit(source, &src, &dst);
 		}
@@ -3103,6 +3167,11 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 			UNCLIPSUBSURFACE
 		}
 
+		// reset source rectangle
+		if (source->is_sub_surface) {
+			src.x-=source->sub_surface_xoff;
+			src.y-=source->sub_surface_yoff;
+		}
 	}
 
     return ret;
