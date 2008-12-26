@@ -11,17 +11,18 @@ Generally you would do the following:
 
     # tar -jxvf disko-<version>.tar.bz2
     # cd disko-<version>
-    # make
-    # make install
+    # scons -h
+    # followed by the selection of parameters by your choice
+    # scons install
     
-This will install disko into your home directory. If you want to
-install it somewhere else, you can replace the last command with:
+This will install disko into /usr. If you want to
+install it somewhere else, you can set the prefix option in the scons commandlne.
 
-    # make prefix=<somewhere_else> install
+If you choose to compile disko with other parameters, it is recommended to issue a 
+
+    # scons -c
     
-If you want to have debug symbols use: 
-    
-    # make debug=yes
+before you do so. Every other approach will lead to unexpected results! 
     
 ------------------------------------------------------------------------------
 2. What about documentation?
@@ -32,7 +33,7 @@ from our code.
 
 To create it, just enter:
     
-    # make dox
+    # scons doc
     
 Now there will be a directory disko-<version>/doc/html. Point your browser
-to index.html and you will have access to our API documentation.
+to index.html and you will have access to our doxgen API documentation.
