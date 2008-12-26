@@ -28,7 +28,7 @@ SetOption('implicit_cache', 1)
 packageVersionMajor = 1
 packageVersionMinor = 5
 packageVersionMicro = 0
-packageVersionRC    = '_rc2'
+packageVersionRC    = ''
 
 # Package information
 packageName        = 'disko'
