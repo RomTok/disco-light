@@ -11,3 +11,5 @@ lib
 # ignore doxygen files
 doc/doxygen.log
 doc/html
+# ignore python compilations
+*.pyc
