@@ -1,5 +1,6 @@
 # ignore objects, archives anywhere
 *.[oa]
+*.os
 # ignore disko.pc
 disko.pc
 # ignore scons files
