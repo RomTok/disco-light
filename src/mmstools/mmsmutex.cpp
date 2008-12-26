@@ -35,7 +35,6 @@ MMSMutex::MMSMutex() {
     pthread_mutexattr_settype( &mutex_attr, PTHREAD_MUTEX_ERRORCHECK );
 
     pthread_mutex_init(&this->mutex, &mutex_attr);
-
 }
 
 MMSMutex::~MMSMutex() {

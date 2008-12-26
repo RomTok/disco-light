@@ -76,7 +76,8 @@ idir_inc    = '$prefix/include/disko'
 idir_data   = '$prefix/share/disko'
 
 # link with -rpath
-env.Append(CCFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+#env.Append(CCFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+env.Append(LDFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 
 # extra flags
 if env['messages']:
