@@ -31,7 +31,7 @@
 
 void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
-									bool h_antialiasing, bool v_antialiasing) {
+									bool antialiasing) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
@@ -95,6 +95,14 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	// arithmetic mean
 	register unsigned int d_u;
 	register unsigned int d_v;
+
+	// antialiasing horizontal/vertical/both
+	bool h_antialiasing = false;
+	bool v_antialiasing = false;
+	if (antialiasing) {
+		h_antialiasing = true;
+		v_antialiasing = true;
+	}
 
 	// draw odd pixels around the even rectangle
 	if (odd_top && odd_left) {

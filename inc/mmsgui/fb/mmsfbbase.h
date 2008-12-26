@@ -145,12 +145,8 @@ typedef unsigned int MMSFBBlittingFlags;
 #define MMSFB_BLIT_SRC_PREMULTIPLY		0x00000008
 //! surface blitting flag: modulates the source color with the color alpha
 #define MMSFB_BLIT_SRC_PREMULTCOLOR		0x00000010
-//! surface blitting flag: horizontal antialiasing (stretchBlit(), not all pixelformats will be supported)
-#define MMSFB_BLIT_H_ANTIALIASING		0x00000020
-//! surface blitting flag: vertical antialiasing (stretchBlit(), not all pixelformats will be supported)
-#define MMSFB_BLIT_V_ANTIALIASING		0x00000040
-//! surface blitting flag: horizontal and vertical antialiasing (stretchBlit(), not all pixelformats will be supported)
-#define MMSFB_BLIT_ANTIALIASING			0x00000060
+//! surface blitting flag: antialiasing (stretchBlit(), not all pixelformats will be supported)
+#define MMSFB_BLIT_ANTIALIASING			0x00000020
 
 
 //! surface drawing flags

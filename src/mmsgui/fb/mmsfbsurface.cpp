@@ -1545,10 +1545,8 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 			printf(" COLORIZE");
 		if (this->config.blittingflags & MMSFB_BLIT_SRC_PREMULTIPLY)
 			printf(" SRC_PREMULTIPLY");
-		if (this->config.blittingflags & MMSFB_BLIT_H_ANTIALIASING)
-			printf(" H_ANTIALIASING");
-		if (this->config.blittingflags & MMSFB_BLIT_V_ANTIALIASING)
-			printf(" V_ANTIALIASING");
+		if (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)
+			printf(" ANTIALIASING");
 		printf("\n");
 	}
 	else {
@@ -2065,7 +2063,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
 				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
-				||(this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)) {
+				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
+				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING)) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_yv12_to_yv12(&myextbuf, src_height,
@@ -2409,7 +2408,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
 				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
-				||(this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)) {
+				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
+				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING)) {
 				// stretch without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_yv12_to_yv12(
@@ -2417,8 +2417,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 							sx, sy, sw, sh,
 							(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
-							this->config.blittingflags & MMSFB_BLIT_H_ANTIALIASING,
-							this->config.blittingflags & MMSFB_BLIT_V_ANTIALIASING);
+							this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
 					extendedUnlock(source, this);
 					return true;
 				}
