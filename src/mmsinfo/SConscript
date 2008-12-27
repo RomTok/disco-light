@@ -7,8 +7,7 @@ def prefixAdd():
 	o.write(re.sub('__DISKO_PREFIX__', env['prefix'], data))
 	o.close()
 
-if 'install' in BUILD_TARGETS:
-	prefixAdd()
+prefixAdd()
 libmmsinfo = env.SharedLibrary('../../../lib/libmmsinfo', Glob('*.cpp'), LIBS = "")
 env.Install(idir_lib, libmmsinfo)
 env.Install(idir_inc + '/mmsinfo', Glob('../../../inc/mmsinfo/*.h'))
