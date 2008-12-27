@@ -1,5 +1,6 @@
 # ignore objects, archives anywhere
 *.[oa]
+*.os
 # ignore disko.pc
 disko.pc
 # ignore scons files
@@ -11,3 +12,5 @@ lib
 # ignore doxygen files
 doc/doxygen.log
 doc/html
+# ignore python compilations
+*.pyc

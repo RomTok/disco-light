@@ -41,6 +41,8 @@ packageVersion     = '%d.%d.%d%s' % (packageVersionMajor, packageVersionMinor, p
 #######################################################################
 Help("Type: 'scons [options]' to build disko.\n" +
      "      'scons [options] check' to check the requirements for building disko.\n" +
+     "      'scons -c' to clean.\n" +
+     "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
      "      'scons install' to install disko.\n\n" +
      "The following options are available:\n")
 
@@ -76,7 +78,8 @@ idir_inc    = '$prefix/include/disko'
 idir_data   = '$prefix/share/disko'
 
 # link with -rpath
-env.Append(CCFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+#env.Append(CCFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+env.Append(LDFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 
 # extra flags
 if env['messages']:
