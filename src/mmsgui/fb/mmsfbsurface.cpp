@@ -4201,9 +4201,9 @@ bool MMSFBSurface::dump(string filename, int x, int y, int w, int h) {
 	if ((x < 0)||(y < 0)||(w < 0)||(h < 0))
 		return false;
 	if (w == 0)
-		w = this->config.w;
+		w = this->config.w - x;
 	if (h == 0)
-		h = this->config.h;
+		h = this->config.h - y;
 	if ((x + w > this->config.w)||(y + h > this->config.h))
 		return false;
 
