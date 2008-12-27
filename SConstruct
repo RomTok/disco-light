@@ -126,6 +126,24 @@ else:
 #######################################################################
 # Helper functions                                                    #
 #######################################################################
+def checkOptions(context):
+	# check if graphics backend was chosen
+	if not env['graphics']:
+		print 'Please choose a graphics backend by using:'
+		print '  \'scons graphics=dfb\' or'
+		print '  \'scons graphics=x11\' or'
+		print '  \'scons graphics=all\'\n'
+		Exit(1)
+
+	if not env['database']:
+		print 'Please choose a graphics backend by using:'
+		print '  \'scons database=sqlite3\' or'
+		print '  \'scons database=mysql\' or'
+		print '  \'scons database=odbc\'\n'
+		Exit(1)
+		
+	return True
+
 def tryConfigCommand(context, cmd):
 	ret = context.TryAction(cmd)[0]
 	context.Result(ret)
@@ -220,29 +238,17 @@ def printSummary():
 # Check dependencies                                                  #
 #######################################################################
 conf = Configure(env, 
-                 custom_tests = {'checkPKGConfig' : checkPKGConfig,
-                 				 'checkConf': checkConf, 
-                 				 'checkPKG': checkPKG, 
-                 				 'checkSimpleLib': checkSimpleLib},
+                 custom_tests = {'checkOptions' : checkOptions,
+                 				 'checkPKGConfig' : checkPKGConfig,
+                 				 'checkConf' : checkConf, 
+                 				 'checkPKG' : checkPKG, 
+                 				 'checkSimpleLib' : checkSimpleLib},
                  conf_dir = 'build/.sconf_temp',
                  log_file = '/dev/null',
                  clean = False,
                  help  = False)
 
-# check if graphics backend was chosen
-if not env['graphics']:
-	print 'Please choose a graphics backend by using:'
-	print '  \'scons graphics=dfb\' or'
-	print '  \'scons graphics=x11\' or'
-	print '  \'scons graphics=all\'\n'
-	Exit(1)
-
-if not env['database']:
-	print 'Please choose a graphics backend by using:'
-	print '  \'scons database=sqlite3\' or'
-	print '  \'scons database=mysql\' or'
-	print '  \'scons database=odbc\'\n'
-	Exit(1)
+conf.checkOptions()
 
 # checks that are required everytime
 conf.checkPKGConfig()
