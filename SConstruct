@@ -68,17 +68,15 @@ env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
 opts.Update(env)
 opts.Save('disko.conf', env)
 Help(opts.GenerateHelpText(env))
-env['TOP_DIR'] = os.getcwd()
 
 # Here are our installation paths:
-idir_prefix = '$prefix'
-idir_lib    = '$prefix/lib/disko'
-idir_bin    = '$prefix/bin'
-idir_inc    = '$prefix/include/disko'
-idir_data   = '$prefix/share/disko'
+idir_prefix = env['prefix']
+idir_lib    = env['prefix'] + '/lib/disko'
+idir_bin    = env['prefix'] + '/bin'
+idir_inc    = env['prefix'] + '/include/disko'
+idir_data   = env['prefix'] + '/share/disko'
 
 # link with -rpath
-#env.Append(CCFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 env.Append(LDFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 
 # extra flags
@@ -102,8 +100,6 @@ env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
 env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
 env['CXXCOMSTR']    = '  [CXX] $SOURCE'
 env['LINKCOMSTR']   = '  [LD]  $TARGET'
-
-Export('env idir_prefix idir_lib idir_bin idir_inc idir_data')
 
 #######################################################################
 # Subdirectories                                                      #
@@ -173,26 +169,163 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 			return ret
 
 	if required:
-		print 'required lib %s not found :(' % lib
+		print 'required lib %s not found' % lib
 		Exit(1)
 
 	return False
+		
+def printSummary():
+	print '\n********************* Summary *********************\n'
+	print 'Graphic backends  : %s' % conf.env['graphics']
+	print 'Database backends : %s\n' % ', '.join(conf.env['database'])
+	if(conf.env['mmscrypt']):
+		print 'Building mmscrypt : yes'
+	else:
+		print 'Building mmscrypt : no'
+	if(conf.env['enable_flash']):
+		print 'Building mmsflash : yes'
+	else:
+		print 'Building mmsflash : no'
+	if(conf.env['enable_sip']):
+		print 'Building mmssip   : yes'
+	else:
+		print 'Building mmssip   : no'
+	if(conf.env['enable_mail']):
+		print 'E-Mail support    : yes'
+	else:
+		print 'E-Mail support    : no'
+	if(conf.env['enable_tools']):
+		print 'Building tools    : yes\n'
+	else:
+		print 'Building tools    : no\n'
+	if(conf.env['messages']):
+		print 'log messages      : yes'
+	else:
+		print 'log messages      : no'
+	if(conf.env['debug']):
+		print 'debug symbols     : yes'
+	else:
+		print 'debug symbols     : no'
+	if(conf.env['profile']):
+		print 'profiling info    : yes'
+	else:
+		print 'profiling info    : no'
+	if(conf.env['use_sse']):
+		print 'SSE optimization  : yes'
+	else:
+		print 'SSE optimization  : no'
+	print '\n***************************************************\n'
 
+#######################################################################
+# Check dependencies                                                  #
+#######################################################################
 conf = Configure(env, 
                  custom_tests = {'checkPKGConfig' : checkPKGConfig,
                  				 'checkConf': checkConf, 
                  				 'checkPKG': checkPKG, 
                  				 'checkSimpleLib': checkSimpleLib},
                  conf_dir = 'build/.sconf_temp',
-                 log_file = 'build/config.log',
+                 log_file = '/dev/null',
                  clean = False,
                  help  = False)
+
+# check if graphics backend was chosen
+if not env['graphics']:
+	print 'Please choose a graphics backend by using:'
+	print '  \'scons graphics=dfb\' or'
+	print '  \'scons graphics=x11\' or'
+	print '  \'scons graphics=all\'\n'
+	Exit(1)
+
+if not env['database']:
+	print 'Please choose a graphics backend by using:'
+	print '  \'scons database=sqlite3\' or'
+	print '  \'scons database=mysql\' or'
+	print '  \'scons database=odbc\'\n'
+	Exit(1)
+
+# checks that are required everytime
+conf.checkPKGConfig()
+conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
+conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
+conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
+conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
+
+# checks required if building DirectFB backend
+if('dfb' in env['graphics']):
+	conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
+	conf.env.Append(CCFLAGS = '-D__HAVE_DIRECTFB__')
+	
+# checks required if building X11 backend
+if('x11' in env['graphics']):
+	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
+	conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
+	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
+	conf.checkSimpleLib(['freetype2'], 'freetype/freetype.h')
+	conf.env.Append(CCFLAGS = '-D__HAVE_XLIB__ -D__ENABLE_MMSFB_X11_CORE__ -D__ENABLE_MMSFBSURFACE_X11_CORE__')
+	
+# checks required if building mmsmedia
+if(env['enable_media']):
+	if('x11' in env['graphics']):
+		conf.checkSimpleLib(['libxine >= 1.1.15'],    'xine.h')
+	else:
+		conf.checkSimpleLib(['libxine'],    'xine.h')
+	conf.checkSimpleLib(['alsa'],       'alsa/version.h')
+else:
+	conf.env.Append(CCFLAGS = '-D_NO_MMSMEDIA -D_NO_MIXER')
+	
+# checks required for database backends
+if 'sqlite3' in env['database']:
+	conf.checkSimpleLib(['sqlite3'],    'sqlite3.h')
+	conf.env.Append(CCFLAGS = '-D__ENABLE_SQLITE__')
+if 'mysql' in env['database']:
+	conf.checkSimpleLib(['mysql'],      'mysql.h')
+	conf.env.Append(CCFLAGS = '-D__ENABLE_MYSQL__')
+if 'odbc' in env['database']:
+	if conf.CheckCXXHeader('/usr/include/sql.h'):
+		conf.env.Append(CCFLAGS = '-D__ENABLE_FREETDS__', LIBS = 'odbc')
+	elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
+		conf.env.Append(CCFLAGS = '-D__ENABLE_FREETDS__ -I/usr/local/include', LIBPATH = '/usr/local/lib', LIBS = 'odbc')
+	else:
+		Exit(1)
+
+# check for openssl
+if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
+	conf.env.Append(CCFLAGS = '-D_NO_MMSCRYPT')
+else:
+	conf.env['mmscrypt'] = 1
+	
+# checks required if building mmsflash
+if(env['enable_flash']):
+	conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
+else:
+	conf.env.Append(CCFLAGS = '-D_NO_MMSFLASH')
+
+# checks required if building mmssip
+if(env['enable_sip']):
+	if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
+		conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)	
+else:
+	conf.env.Append(CCFLAGS = '-D_NO_MMSSIP')
+	
+# checks required if building with email support
+if(env['enable_mail']):
+	conf.checkSimpleLib(['vmime'], 'vmime.h')
+	conf.env.Append(CCFLAGS = '-D__HAVE_VMIME__')
+
+env2 = conf.Finish()
+if env2:
+	env = env2
+	printSummary()
+	
+if 'check' in BUILD_TARGETS:
+	Exit(0)
 
 #######################################################################
 # Creating pkg-config file                                            #
 #######################################################################
 # TODO: handle disko_pc_libs                                          #
-def createDiskoPC(env = None):
+if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
 	disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
@@ -244,169 +377,12 @@ def createDiskoPC(env = None):
 	disko_pc.close()
 
 #######################################################################
-# Check dependencies                                                  #
-#######################################################################
-def checkDeps(target = None, source = None, env = None):
-	# check if graphics backend was chosen
-	if not env['graphics']:
-		print 'Please choose a graphics backend by using:'
-		print '  \'scons graphics=dfb\' or'
-		print '  \'scons graphics=x11\' or'
-		print '  \'scons graphics=all\'\n'
-		Exit(1)
-
-	if not env['database']:
-		print 'Please choose a graphics backend by using:'
-		print '  \'scons database=sqlite3\' or'
-		print '  \'scons database=mysql\' or'
-		print '  \'scons database=odbc\'\n'
-		Exit(1)
-
-	# checks that are required everytime
-	conf.checkPKGConfig()
-	conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
-	conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
-	conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
-	conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
-
-	# checks required if building DirectFB backend
-	if('dfb' in env['graphics']):
-		conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
-		env.Append(CCFLAGS = '-D__HAVE_DIRECTFB__')
-		
-	# checks required if building X11 backend
-	if('x11' in env['graphics']):
-		conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
-		conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
-		conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
-		conf.checkSimpleLib(['freetype2'], 'freetype/freetype.h')
-		env.Append(CCFLAGS = '-D__HAVE_XLIB__ -D__ENABLE_MMSFB_X11_CORE__ -D__ENABLE_MMSFBSURFACE_X11_CORE__')
-		
-	# checks required if building mmsmedia
-	if(env['enable_media']):
-		if('x11' in env['graphics']):
-			conf.checkSimpleLib(['libxine >= 1.1.15'],    'xine.h')
-		else:
-			conf.checkSimpleLib(['libxine'],    'xine.h')
-		conf.checkSimpleLib(['alsa'],       'alsa/version.h')
-	else:
-		env.Append(CCFLAGS = '-D_NO_MMSMEDIA -D_NO_MIXER')
-		
-	# checks required for database backends
-	dbs = []
-	mmscrypt = 0
-	
-	if 'sqlite3' in env['database']:
-		conf.checkSimpleLib(['sqlite3'],    'sqlite3.h')
-		env.Append(CCFLAGS = '-D__ENABLE_SQLITE__')
-	if 'mysql' in env['database']:
-		conf.checkSimpleLib(['mysql'],      'mysql.h')
-		env.Append(CCFLAGS = '-D__ENABLE_MYSQL__')
-	if 'odbc' in env['database']:
-		if conf.CheckCXXHeader('/usr/include/sql.h'):
-			env.Append(CCFLAGS = '-D__ENABLE_FREETDS__', LIBS = 'odbc')
-			dbs.append('odbc')
-		elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
-			env.Append(CCFLAGS = '-D__ENABLE_FREETDS__ -I/usr/local/include', LIBPATH = '/usr/local/lib', LIBS = 'odbc')
-			dbs.append('odbc')
-		else:
-			Exit(1)
-	
-	# check for openssl
-	if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
-		env.Append(CCFLAGS = '-D_NO_MMSCRYPT')
-	else:
-		mmscrypt = 1
-		
-	# checks required if building mmsflash
-	if(env['enable_flash']):
-		conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
-	else:
-		env.Append(CCFLAGS = '-D_NO_MMSFLASH')
-	
-	# checks required if building mmssip
-	if(env['enable_sip']):
-		if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
-			conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)	
-	else:
-		env.Append(CCFLAGS = '-D_NO_MMSSIP')
-		
-	# checks required if building with email support
-	if(env['enable_mail']):
-		conf.checkSimpleLib(['vmime'], 'vmime.h')
-		env.Append(CCFLAGS = '-D__HAVE_VMIME__')
-
-	env = conf.Finish()
-		
-	print '\n********************* Summary *********************\n'
-	print 'Graphic backends  : %s' % env['graphics']
-	print 'Database backends : %s\n' % ', '.join(env['database'])
-	if(mmscrypt == 1):
-		print 'Building mmscrypt : yes'
-	else:
-		print 'Building mmscrypt : no'
-	if(env['enable_flash']):
-		print 'Building mmsflash : yes'
-	else:
-		print 'Building mmsflash : no'
-	if(env['enable_sip']):
-		print 'Building mmssip   : yes'
-	else:
-		print 'Building mmssip   : no'
-	if(env['enable_mail']):
-		print 'E-Mail support    : yes'
-	else:
-		print 'E-Mail support    : no'
-	if(env['enable_tools']):
-		print 'Building tools    : yes\n'
-	else:
-		print 'Building tools    : no\n'
-	if(env['messages']):
-		print 'log messages      : yes'
-	else:
-		print 'log messages      : no'
-	if(env['debug']):
-		print 'debug symbols     : yes'
-	else:
-		print 'debug symbols     : no'
-	if(env['profile']):
-		print 'profiling info    : yes'
-	else:
-		print 'profiling info    : no'
-	if(env['use_sse']):
-		print 'SSE optimization  : yes'
-	else:
-		print 'SSE optimization  : no'
-	print '\n***************************************************\n'
-	
-	createDiskoPC(env)
-
-#######################################################################
-# Building disko                                                      #
-#######################################################################
-libList = ""
-for libDir in diskoLibs:
-        libList += 'build/libs/' + libDir + "/SConscript "
-
-toolList = ""
-for toolDir in diskoTools:
-        toolList += 'build/tools/' + toolDir + "/SConscript "
-
-BuildDir('build/libs', 'src', duplicate = 0)
-SConscript(Split(libList), options = opts)
-
-BuildDir('build/tools', 'tools', duplicate = 0)
-SConscript(Split(toolList), options = opts)
-
-#######################################################################
 # Create targets                                                      #
 #######################################################################
+env['TOP_DIR'] = os.getcwd()
 env.Decider('MD5-timestamp')
-check = env.Alias(target = 'check', 
-                  action = Action(checkDeps, "\nChecking for dependencies:\n"))
-env.AlwaysBuild(check)
-all = env.Alias('all', [check, 'lib', 'bin'])
-install = env.Alias('install', [check, idir_prefix])
+all = env.Alias('all', ['lib', 'bin'])
+install = env.Alias('install', [idir_prefix])
 Depends(install, all)
 env.Default(all)
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
@@ -421,3 +397,22 @@ env.Append(BUILDERS = { 'DoxygenDoc' : doxygenBuilder })
 doxygenDocPath = '(doc)'
 env.DoxygenDoc(doxygenDocPath, 'doc/conf/disko.conf')
 env.Alias('doc', doxygenDocPath)
+
+#######################################################################
+# Building disko                                                      #
+#######################################################################
+Export('env idir_prefix idir_lib idir_bin idir_inc idir_data')
+
+libList = ""
+for libDir in diskoLibs:
+        libList += 'build/libs/' + libDir + "/SConscript "
+
+toolList = ""
+for toolDir in diskoTools:
+        toolList += 'build/tools/' + toolDir + "/SConscript "
+
+BuildDir('build/libs', 'src', duplicate = 0)
+SConscript(Split(libList), options = opts)
+
+BuildDir('build/tools', 'tools', duplicate = 0)
+SConscript(Split(toolList), options = opts)
