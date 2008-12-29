@@ -875,6 +875,25 @@ if (!AA) { \
 
 
 
+//! Stretching the source byte buffer to a destination.
+/*!
+\note src and dst have to point to the first pixel which is to process
+\author Jens Schneider
+*/
+void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
+						 unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+					     unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh);
+
+//! Compressing a 2x2 matrix (arithmetic mean), e.g. used for U/V components (YV12 pixel format).
+/*!
+\note src and dst have to point to the first pixel which is to process
+\author Jens Schneider
+*/
+void compress_2x2_matrix(unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+						 unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh);
+
+
+
 //! Blit ARGB to ARGB.
 /*!
 \author Jens Schneider
