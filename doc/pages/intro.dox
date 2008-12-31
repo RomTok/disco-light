@@ -33,43 +33,72 @@
  *
  * \section install_sec Installation
  *
- * \subsection required_sec Required and optional packages
+ * \subsection prerequisites_sec Prerequisites
+ * 
+ * \subsubsection required_sec Required packages
  *
- * The following development packages are required to build disko:
- * - libpng
- * - libjpeg
- * - libcurl
- * - libdirectfb
+ * <div style="border:1px solid #cccccc;background-color:#f5f5f5;">
+ * <table border="0" cellspacing="10"><tr>
+ *   <td><b>Package</b></td><td><b>Minimum version</b></td><td><b>Website</b></td>
+ * </tr><tr>
+ *   <td>libpng</td><td align="center">1.2</td><td><a href="http://www.libpng.org/pub/png/libpng.html">http://www.libpng.org/pub/png/libpng.html</a></td>
+ * </tr><tr>
+ *   <td>libjpeg</td><td align="center">*</td><td><a href="http://www.ijg.org">http://www.ijg.org</a></td>
+ * </tr><tr>
+ *   <td>libcurl</td><td align="center">*</td><td><a href="http://curl.haxx.se">http://curl.haxx.se</a></td>
+ * </tr><tr>
+ *   <td>libsigc++</td><td align="center">*</td><td><a href="http://libsigc.sourceforge.net">http://libsigc.sourceforge.net</a></td>
+ * </tr><tr>
+ *   <td>libxml2</td><td align="center">2.6</td><td><a href="http://xmlsoft.org">http://xmlsoft.org</a></td>
+ * </tr></table>
+ * </div>
  *
- * To enable all features of disko, the following packages have to be installed:
- * - libsqlite3
- * - libmysqlclient
- * - unix-odbc
- * - libxine
- * - libasound
- * - libswfdec
- * - libpj
+ * \subsubsection optional_sec Optional packages
  *
- * On Debian based systems you can install them like this:
- * \code
- * sudo aptitude install libpng12-dev       \
- *                       libjpeg62-dev      \
- *                       libcurl3-dev       \
- *                       libdirectfb-dev
- * \endcode
+ * \b Note: You have to choose one graphics backend (DirectFB or X11) and at least one database backend.
+ *
+ * <div style="border:1px solid #cccccc;background-color:#f5f5f5;">
+ * <table border="0" cellspacing="10"><tr>
+ *   <td><b>Feature</b></td><td><b>Package</b></td><td><b>Minimum version</b></td><td><b>Website</b></td>
+ * </tr><tr>
+ *   <td>DirectFB support</td><td>DirectFB</td><td align="center">*</td><td><a href="http://www.directfb.org">http://www.directfb.org</a></td>
+ * </tr><tr>
+ *   <td>X11 support</td><td>x11</td><td align="center">*</td><td><a href="http://www.x.org">http://www.x.org</a></td>
+ * </tr><tr>
+ *   <td></td><td>xv</td><td align="center">*</td><td><a href="http://www.x.org">http://www.x.org</a></td>
+ * </tr><tr>
+ *   <td></td><td>xxf86vm</td><td align="center">*</td><td><a href="http://www.x.org">http://www.x.org</a></td>
+ * </tr><tr>
+ *   <td></td><td>freetype2</td><td align="center">*</td><td><a href="http://www.freetype.org">http://www.freetype.org</a></td>
+ * </tr><tr>
+ *   <td>Database support</td><td>sqlite3</td><td align="center">*</td><td><a href="http://www.sqlite.org">http://www.sqlite.org</a></td>
+ * </tr><tr>
+ *   <td></td><td>mysql</td><td align="center">*</td><td><a href="http://www.mysql.com">http://www.mysql.com</a></td>
+ * </tr><tr>
+ *   <td></td><td>unix-odbc</td><td align="center">*</td><td><a href="http://www.unixodbc.org">http://www.unixodbc.org</a></td>
+ * </tr><tr>
+ *   <td>Media playback</td><td>xine</td><td align="center">1.1.15</td><td><a href="http://www.xinehq.de">http://www.xinehq.de</a></td>
+ * </tr><tr>
+ *   <td></td><td>alsa-lib</td><td align="center">*</td><td><a href="http://www.alsa-project.org">http://www.alsa-project.org</a></td>
+ * </tr><tr>
+ *   <td>Flash support</td><td>libswfdec</td><td align="center">0.8</td><td><a href="http://swfdec.freedesktop.org">http://swfdec.freedesktop.org</a></td>
+ * </tr><tr>
+ *   <td>SIP support</td><td>pjsip</td><td align="center">*</td><td><a href="http://www.pjsip.org">http://www.pjsip.org</a></td>
+ * </tr></table>
+ * </div>
  *
  * \subsection build_sec Building and installing
  *
- * Download the sources from <a href="http://www.diskohq.org/download/sources">diskohq.org</a> and build them.
+ * Download the sources from <a href="http://www.diskohq.org/download/packages">diskohq.org</a> and build them.
  *
  * \code
  * wget http://www.diskohq.org/downloads/disko-1.5.0.tar.bz2
  * cd <path-to-disko-1.5.0.tar.bz2>
  * tar jxf disko-1.5.0.tar.bz2
  * cd disko
- * make [prefix=<path>]
- * make install
+ * scons <options>
+ * scons install
  * \endcode
  *
- * If you don't specify prefix the default location will be \c $HOME/disko.
+ * If you don't specify prefix the default location will be \c /usr.
  */
