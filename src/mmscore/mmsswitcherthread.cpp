@@ -29,29 +29,35 @@
 #include "mmscore/mmsswitcher.h"
 #include "mmscore/mmsswitcherthread.h"
 
-MMSSwitcherThread::MMSSwitcherThread(MMSSwitcher *sw, MMSLabel *date_s, MMSLabel *time_s, MMSLabel *date_p, MMSLabel *time_p) : MMSThread("MMSSwitcherThread") {
-    /* init */
-    /* working as main thread */
-    this->mode = 0;
-    this->sw = sw;
-    this->curr_date = "";
-    this->curr_time = "";
-    this->date_s = date_s;
-    this->time_s = time_s;
-    this->date_p = date_p;
-    this->time_p = time_p;
-    this->sleepcnt = 10;
-    this->invoke_plugin = -1;
-    this->plugin_invoked = 0;
-    this->my_spt = NULL;
-    this->preview_shown = false;
+/**
+ * Constructor of main thread
+ */
+MMSSwitcherThread::MMSSwitcherThread(MMSSwitcher *sw, MMSLabelWidget *date_s, MMSLabelWidget *time_s, MMSLabelWidget *date_p, MMSLabelWidget *time_p) :
+	MMSThread("MMSSwitcherThread"),
+	mode(0),
+	curr_date(""),
+	curr_time(""),
+	sw(sw),
+	date_s(date_s),
+	time_s(time_s),
+	date_p(date_p),
+	time_p(time_p),
+	sleepcnt(10),
+	invoke_plugin(-1),
+	plugin_invoked(0),
+	my_spt(NULL),
+	preview_shown(false) {
 }
 
-MMSSwitcherThread::MMSSwitcherThread(MMSSwitcher *sw) {
-    /* init */
-    /* working for show preview method of a specific plugin */
-    this->mode = 1;
-    this->sw = sw;
+/**
+ * Constructor for plugin specific access to switcher
+ *
+ * This instance is used for the show preview method
+ * of the plugins.
+ */
+MMSSwitcherThread::MMSSwitcherThread(MMSSwitcher *sw) :
+	mode(1),
+	sw(sw) {
 }
 
 void MMSSwitcherThread::invokeShowPreview() {
