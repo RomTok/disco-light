@@ -419,6 +419,13 @@ bool MMSWindow::resize(bool refresh) {
         default:
             break;
     }
+
+    // use even pos/size because of pixelformats like YV12
+    wdesc_posx   &= 0xfffffffe;
+    wdesc_posy   &= 0xfffffffe;
+    wdesc_width  &= 0xfffffffe;
+    wdesc_height &= 0xfffffffe;
+
     int oldx = this->geom.x;
     int oldy = this->geom.y;
     this->geom.x = wdesc_posx;
