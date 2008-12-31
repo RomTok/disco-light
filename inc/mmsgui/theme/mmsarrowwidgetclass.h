@@ -122,7 +122,7 @@ class MMSArrowWidgetClass {
         //! Read and set all attributes from the given TAFF buffer.
         /*!
         \param tafff   pointer to the TAFF buffer
-        \param prefix  optional, prefix to all attribute names (<prefix><attrname>=<attrvalue>)
+        \param prefix  optional, prefix to all attribute names (\<prefix\>\<attrname\>=\<attrvalue\>)
         \param path    optional, path needed for empty path values from the TAFF buffer
         */
         void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
@@ -139,7 +139,7 @@ class MMSArrowWidgetClass {
 
         //! Set the name of the theme class.
         /*!
-        \param classname  name of the class
+        \param className  name of the class
         */
         void setClassName(string className);
 

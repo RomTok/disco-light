@@ -108,11 +108,11 @@ typedef enum {
 
 //! Supported pixelformats of taff images
 typedef enum {
-	//! 32 bit ARGB (4 byte, alpha 8@24, red 8@16, green 8@8, blue 8@0)
+	//! 32 bit ARGB (4 byte, alpha 8\@24, red 8\@16, green 8\@8, blue 8\@0)
 	MMSTAFF_PF_ARGB,
-	//! 32 bit ARGB (4 byte, inv. alpha 8@24, red 8@16, green 8@8, blue 8@0)
+	//! 32 bit ARGB (4 byte, inv. alpha 8\@24, red 8\@16, green 8\@8, blue 8\@0)
 	MMSTAFF_PF_AiRGB,
-	//! 32 bit AYUV (4 byte, alpha 8@24, Y 8@16, Cb 8@8, Cr 8@0)
+	//! 32 bit AYUV (4 byte, alpha 8\@24, Y 8\@16, Cb 8\@8, Cr 8\@0)
 	MMSTAFF_PF_AYUV
 } MMSTAFF_PF;
 

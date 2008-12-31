@@ -39,11 +39,11 @@ MMS_CREATEERROR(MMSAudioCtrlError);
 /**
  * @brief   Controls the audio device.
  *
- * @ingroup     mmsmedia mmslibs
+ * @ingroup     mmsmedia
  *
  * @author      Jens Schneider (pupeider@morphine.tv)
- * @version     1.0.3
- * @date        11/07/2007
+ * @version     1.5.0
+ * @date        12/31/2008
  */
 class MMSAudioCtrl {
     private:

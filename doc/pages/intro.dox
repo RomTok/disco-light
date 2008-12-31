@@ -1,3 +1,47 @@
+/**
+ * \defgroup mmslibs Disko Libraries
+ * \{
+ *   \defgroup mmsbase Base Libraries (mmsbase)
+ *     Implementation of basic Disko features like plugin and event handling.
+ *
+ *   \defgroup mmsconfig Configuration (mmsconfig)
+ *     Handling of plugin configuration settings.
+ *
+ *   \defgroup mmscore Core features (mmscore)
+ *     Basic Disko features on a more abstract level than provided by the Base Libraries.
+ *
+ *   \defgroup mmsflash Flash support (mmsflash)
+ *     Implementation of flash support.
+ *
+ *   \defgroup mmsgui Graphical user interface (mmsgui)
+ *     Classes for handling everything GUI related.
+ *
+ *   \defgroup mmsinfo Installation specific settings (mmsinfo)
+ *     Functions to get settings regarding the Disko installation.
+ *
+ *   \defgroup mmsinput Input handling (mmsinput)
+ *     Input handling classes.
+ *
+ *   \defgroup mmsmedia Media playback (mmsmedia)
+ *     Classes to implement audio and video playback.
+ *
+ *   \defgroup mmssip SIP support (mmssip)
+ *     Implementation of SIP support.
+ *
+ *   \defgroup mmstools Generic helper classes (mmstools)
+ *   \ingroup mmslibs
+ *     Helpful classes that didn't fit in any category.
+ * \}
+ *
+ * \defgroup tools Disko Tools
+ * \{
+ *    \defgroup taff Taff
+ *    \ingroup tools
+ *      Commandline-Tool to generate TAFF files from dialog files and images.
+ *
+ * \}
+ */
+
 /** \mainpage Disko
  *
  * \htmlonly
