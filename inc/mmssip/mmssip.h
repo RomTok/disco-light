@@ -36,6 +36,8 @@
 #include <sigc++/sigc++.h>
 #include <map>
 
+#define MAX_REGISTERED_THREADS	10
+
 using namespace std;
 
 typedef struct {
@@ -63,8 +65,8 @@ class MMSSip {
                      nameserver;
         short int    localPort;
 
-        pj_thread_desc        pjThreadDesc;
-        pj_thread_t           *pjThread;
+        unsigned char  numRegisteredThreads;
+        pj_thread_desc pjThreadInfo[MAX_REGISTERED_THREADS];
 
         map<int, MMSSipAccount>	accounts;
         int						defaultAccount;
