@@ -553,6 +553,7 @@ MMSAV::~MMSAV() {
  * calling open().
  *
  * @param   queue_cb    [in]    xine event queue callback
+ * @param	userData	[in]	data to be used in xine event callbacks
  *
  * @see MMSAV::registerAudioPostPlugin
  * @see MMSAV::registerVideoPostPlugin
@@ -860,7 +861,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
         this->open();
 
     if(currentMRL != mrl) {
-        if(this->didXineOpen) {
+    	if(this->didXineOpen) {
     	    xine_close(this->stream);
     	    this->didXineOpen = false;
         }
@@ -884,7 +885,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
                     msg = "Cannot play stream";
                     break;
             }
-            throw new MMSAVError(0, msg);
+            throw new MMSAVError(0, "Error in xine_open(): " + msg);
         }
 
         this->didXineOpen = true;
@@ -896,8 +897,27 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     /* playing... */
     if(!cont)
         this->pos = 0;
-    if (!xine_play(this->stream, this->pos, 0))
-        throw new MMSAVError(0,"cannot start playing");
+    if (!xine_play(this->stream, this->pos, 0)) {
+        string msg;
+        switch(xine_get_error(this->stream)) {
+            case XINE_ERROR_NO_INPUT_PLUGIN :
+                msg = "No input plugin";
+                break;
+            case XINE_ERROR_NO_DEMUX_PLUGIN :
+                msg = "No demux plugin";
+                break;
+            case XINE_ERROR_DEMUX_FAILED :
+                msg = "Error in demux plugin";
+                break;
+            case XINE_ERROR_INPUT_FAILED :
+                msg = "Error in input plugin (" + mrl + ")";
+                break;
+            default:
+                msg = "Cannot play stream";
+                break;
+        }
+        throw new MMSAVError(0, "Error in xine_play(): " + msg);
+    }
 
     this->setStatus(this->STATUS_PLAYING);
 }
