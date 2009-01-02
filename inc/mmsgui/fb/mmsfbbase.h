@@ -248,15 +248,15 @@ typedef unsigned int MMSFBLockFlags;
 typedef enum {
 	//! none
 	MMSFB_PF_NONE = 0,
-    //! 16 bit RGB (2 byte, red 5@11, green 6@5, blue 5@0)
+    //! 16 bit RGB (2 byte, red 5\@11, green 6\@5, blue 5\@0)
 	MMSFB_PF_RGB16,
-    //! 24 bit RGB (3 byte, red 8@16, green 8@8, blue 8@0)
+    //! 24 bit RGB (3 byte, red 8\@16, green 8\@8, blue 8\@0)
     MMSFB_PF_RGB24,
-    //! 24 bit RGB (4 byte, nothing@24, red 8@16, green 8@8, blue 8@0)
+    //! 24 bit RGB (4 byte, nothing\@24, red 8\@16, green 8\@8, blue 8\@0)
     MMSFB_PF_RGB32,
-    //! 32 bit ARGB (4 byte, alpha 8@24, red 8@16, green 8@8, blue 8@0)
+    //! 32 bit ARGB (4 byte, alpha 8\@24, red 8\@16, green 8\@8, blue 8\@0)
     MMSFB_PF_ARGB,
-    //! 8 bit alpha (1 byte, alpha 8@0), e.g. anti-aliased glyphs
+    //! 8 bit alpha (1 byte, alpha 8\@0), e.g. anti-aliased glyphs
     MMSFB_PF_A8,
     //! 16 bit YUV (4 byte/ 2 pixel, macropixel contains CbYCrY [31:0])
     MMSFB_PF_YUY2,
@@ -266,7 +266,7 @@ typedef enum {
     MMSFB_PF_I420,
     //! 12 bit YUV (8 bit Y plane followed by 8 bit quarter size V/U planes)
     MMSFB_PF_YV12,
-    //! 32 bit ARGB (4 byte, inv. alpha 8@24, red 8@16, green 8@8, blue 8@0)
+    //! 32 bit ARGB (4 byte, inv. alpha 8\@24, red 8\@16, green 8\@8, blue 8\@0)
     MMSFB_PF_AiRGB,
     //! 1 bit alpha (1 byte/ 8 pixel, most significant bit used first)
     MMSFB_PF_A1,
@@ -276,33 +276,33 @@ typedef enum {
     MMSFB_PF_NV16,
     //! 12 bit YUV (8 bit Y plane followed by one 16 bit quarter size CrCb [15:0] plane)
     MMSFB_PF_NV21,
-    //! 32 bit AYUV (4 byte, alpha 8@24, Y 8@16, Cb 8@8, Cr 8@0)
+    //! 32 bit AYUV (4 byte, alpha 8\@24, Y 8\@16, Cb 8\@8, Cr 8\@0)
     MMSFB_PF_AYUV,
     //! 4 bit alpha (1 byte/ 2 pixel, more significant nibble used first)
     MMSFB_PF_A4,
-    //! 1 bit alpha (3 byte/  alpha 1@18, red 6@16, green 6@6, blue 6@0)
+    //! 1 bit alpha (3 byte/  alpha 1\@18, red 6\@16, green 6\@6, blue 6\@0)
     MMSFB_PF_ARGB1666,
-    //! 6 bit alpha (3 byte/  alpha 6@18, red 6@16, green 6@6, blue 6@0)
+    //! 6 bit alpha (3 byte/  alpha 6\@18, red 6\@16, green 6\@6, blue 6\@0)
     MMSFB_PF_ARGB6666,
-    //! 6 bit RGB (3 byte/   red 6@16, green 6@6, blue 6@0)
+    //! 6 bit RGB (3 byte/   red 6\@16, green 6\@6, blue 6\@0)
     MMSFB_PF_RGB18,
     //! 2 bit LUT (1 byte/ 4 pixel, 2 bit color and alpha lookup from palette)
     MMSFB_PF_LUT2,
-    //! 16 bit RGB (2 byte, nothing @12, red 4@8, green 4@4, blue 4@0)
+    //! 16 bit RGB (2 byte, nothing \@12, red 4\@8, green 4\@4, blue 4\@0)
     MMSFB_PF_RGB444,
-    //! 16 bit RGB (2 byte, nothing @15, red 5@10, green 5@5, blue 5@0)
+    //! 16 bit RGB (2 byte, nothing \@15, red 5\@10, green 5\@5, blue 5\@0)
     MMSFB_PF_RGB555,
-	//! 16 bit ARGB (2 byte, alpha 1@15, red 5@10, green 5@5, blue 5@0)
+	//! 16 bit ARGB (2 byte, alpha 1\@15, red 5\@10, green 5\@5, blue 5\@0)
 	MMSFB_PF_ARGB1555,
-    //! 8 bit RGB (1 byte, red 3@5, green 3@2, blue 2@0)
+    //! 8 bit RGB (1 byte, red 3\@5, green 3\@2, blue 2\@0)
     MMSFB_PF_RGB332,
-    //! 8 bit ALUT (1 byte, alpha 4@4, color lookup 4@0)
+    //! 8 bit ALUT (1 byte, alpha 4\@4, color lookup 4\@0)
     MMSFB_PF_ALUT44,
     //! 8 bit LUT (8 bit color and alpha lookup from palette)
     MMSFB_PF_LUT8,
-    //! 16 bit ARGB (2 byte, alpha 2@14, red 5@9, green 5@4, blue 4@0)
+    //! 16 bit ARGB (2 byte, alpha 2\@14, red 5\@9, green 5\@4, blue 4\@0)
     MMSFB_PF_ARGB2554,
-    //! 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
+    //! 16 bit ARGB (2 byte, alpha 4\@12, red 4\@8, green 4\@4, blue 4\@0)
     MMSFB_PF_ARGB4444
 } MMSFBSurfacePixelFormat;
 

@@ -54,16 +54,16 @@ typedef struct {
 //! Translate the size given in hint into pixel value.
 /*!
 \param retpix      return value
-       hint        size with following formats
-                     <size>px          - size in pixel, example "100px"
-                     <size>%           - size in percent, example "100%"
-                     <size>px-<size2>  - size in pixel minus pixel, example "100px-50"
-                     <size>%-<size2>   - size in percent minus pixel, example "100%-50"
-                     <factor>$         - factor which will used in conjunction with secondaxis
-                                           result=<factor>*secondaxis
-                                         example: "1.333$"
+\param hint        size with following formats
+                     \<size\>px            - size in pixel, example "100px"
+                     \<size\>%             - size in percent, example "100%"
+                     \<size\>px-\<size2\>  - size in pixel minus pixel, example "100px-50"
+                     \<size\>%-\<size2\>   - size in percent minus pixel, example "100%-50"
+                     \<factor\>$           - factor which will used in conjunction with secondaxis
+                                             result=\<factor\>*secondaxis
+                                           example: "1.333$"
 \param maxpixel    maximum pixel for calculation and check
-\param secondaxis  size of the second axis, will only used with hint <factor>$
+\param secondaxis  size of the second axis, will only used with hint \<factor\>$
 \return true if input is correct and retpix is filled
 */
 bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis);

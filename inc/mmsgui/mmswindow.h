@@ -119,11 +119,11 @@ class MMSWindow {
         //! base attributes of the window
         /*!
         This can be initialization values from theme.cpp
-        or from theme.xml (NOT a <class/> definition, but e.g. tag <mainwindow/>).
+        or from theme.xml (NOT a \<class/\> definition, but e.g. tag \<mainwindow/\>).
         */
         MMSWindowClass      *baseWindowClass;
 
-        //! attributes set by <class/> tag in theme.xml
+        //! attributes set by \<class/\> tag in theme.xml
         /*!
         Is NULL, if window has no theme class definition.
         Attributes set here, prevails over attributes from baseWindowClass.

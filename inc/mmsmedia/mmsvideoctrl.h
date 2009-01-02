@@ -38,11 +38,11 @@
 /**
  * @brief   Controls the video device.
  *
- * @ingroup     mmsmedia mmslibs
+ * @ingroup     mmsmedia
  *
- * @author      Jens Schneider (pupeider@morphine.tv)
- * @version     1.0.3
- * @date        11/07/2007
+ * @author      Jens Schneider (pupeider@gmx.de)
+ * @version     1.5.0
+ * @date        12/31/2008
  *
  * This class controls global video output settings.
  */

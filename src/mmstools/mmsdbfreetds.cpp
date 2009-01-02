@@ -93,8 +93,6 @@ string errmsg(SQLRETURN rc, SQLSMALLINT htype, SQLHANDLE handle) {
 /**
  * @brief Opens connection to database.
  *
- * @param datasource DataSource object which contains required information for database
- *
  * @return void
  */
 void MMSDBFreeTDS::connect() {
@@ -162,6 +160,7 @@ string MMSDBFreeTDS::getDBName() {
  *        This method is used for select statements
  *
  * @param statement buffer with database query
+ * @param rs		recordset containing result of query
  *
  * @return Returns the number of affected rows
  */
@@ -274,8 +273,9 @@ int MMSDBFreeTDS::getLastInsertedID() {
  * @brief This function executes given stored procedure and puts the results in MMSRecordSet.
  *        This method is used for insert, update and delete statements
  *
- * @param statement buffer with database query
- * @param list with arguments for stored procedure
+ * @param spName 	name of stored procedure
+ * @param argList	arguments for stored procedure
+ * @param rs		recordset containing result
  *
  * @return Returns the number of affected rows
  */
@@ -302,8 +302,8 @@ int MMSDBFreeTDS::executeSP(string spName, MMSDB_SP_ARGLIST argList, MMSRecordSe
  * @brief This function executes a stored procedure.
  *        This method is used for insert, update and delete statements
  *
- * @param statement buffer with database query
- * @param list with arguments for stored procedure
+ * @param spName 	name of stored procedure
+ * @param argList	arguments for stored procedure
  *
  * @return Returns the number of affected rows
  */

@@ -30,26 +30,30 @@
 #define MMSVIDEO_H_
 
 #include "mmsmedia/mmsav.h"
+#include <queue>
 
 /**
  * @brief   Handles Video playback.
  *
- * @ingroup     mmsmedia mmslibs
+ * @ingroup     mmsmedia
  *
- * @author      Matthias Hardt (mattmax@morphine.tv)
- * @version     1.0.3
- * @date        11/07/2007
+ * @author      Matthias Hardt (MHardt@berlinux-solutions.de)
  *
  * This class is derived from MMSAV and specialized in
  * handling the playback of video files.
  */
 class MMSVideo : public MMSAV {
+	private:
+		std::queue<string>	playlist;	/**< internal playlist */
+
     public:
         MMSVideo(MMSWindow *window, const bool verbose = false);
         ~MMSVideo();
 
         void open();
         void startPlaying(const string file, const bool cont = true);
+        void add2Playlist(const string file);
+        void playNext();
 };
 
 #endif /*MMSVIDEO_H_*/

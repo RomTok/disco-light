@@ -76,18 +76,6 @@ typedef struct {
 } dfb_visual_t;
 #endif
 
-/**
- * @brief   MMS Audio/Video handling class.
- *
- * @ingroup     mmsmedia mmslibs
- *
- * @author      Matthias Hardt (mattmax@morphine.tv)
- * @version     1.0.3
- * @date        11/07/2007
- *
- * It is the base class for all audio and video related
- * classes.
- */
 #ifdef __HAVE_XLIB__
 typedef struct {
 	MMSFBSurface *surf;
@@ -98,6 +86,21 @@ typedef struct {
 
 #endif
 
+/**
+ * @brief   MMS Audio/Video handling class.
+ *
+ * @ingroup     mmsmedia
+ *
+ * @author      Stefan Schwarzer (SSchwarzer@berlinux-solutions.de)
+ * @author      Matthias Hardt (MHardt@berlinux-solutions.de)
+ * @author      Jens Schneider (pupeider@gmx.de)
+ * @author      Guido Madaus (GMadaus@berlinux-solutions.de)
+ * @version     1.5.0
+ * @date        12/31/2008
+ *
+ * It is the base class for all audio and video related
+ * classes.
+ */
 class MMSAV
 {
     private:
