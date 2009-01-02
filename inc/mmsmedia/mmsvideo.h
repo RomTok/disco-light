@@ -38,15 +38,13 @@
  * @ingroup     mmsmedia
  *
  * @author      Matthias Hardt (MHardt@berlinux-solutions.de)
- * @version     1.5.0
- * @date        12/31/2008
  *
  * This class is derived from MMSAV and specialized in
  * handling the playback of video files.
  */
 class MMSVideo : public MMSAV {
 	private:
-		std::queue<string>	playlist;
+		std::queue<string>	playlist;	/**< internal playlist */
 
     public:
         MMSVideo(MMSWindow *window, const bool verbose = false);
@@ -56,7 +54,6 @@ class MMSVideo : public MMSAV {
         void startPlaying(const string file, const bool cont = true);
         void add2Playlist(const string file);
         void playNext();
-        void playPrev();
 };
 
 #endif /*MMSVIDEO_H_*/

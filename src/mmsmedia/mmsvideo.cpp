@@ -111,10 +111,20 @@ void MMSVideo::startPlaying(const string file, const bool cont) {
    }
 }
 
+/**
+ * Adds a file to the internal playlist.
+ *
+ * @param   file    file to add
+ */
 void MMSVideo::add2Playlist(const string file) {
 	   playlist.push(file);
 }
 
+/**
+ * Starts playing the next file from the playlist.
+ *
+ * @exception   MMSAVError stream could not be opened
+ */
 void MMSVideo::playNext() {
 	if(!playlist.empty()) {
 		string file = playlist.front();
