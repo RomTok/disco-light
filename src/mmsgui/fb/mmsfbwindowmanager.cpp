@@ -474,19 +474,23 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
             if (this->vwins.at(i).surface == surface) {
                 // surface found
                 vw = &(this->vwins.at(i));
-                MMSFBRegion *myregion = &(vw->region);
+                ls_region = vw->region;
 
                 // calculate the affected region on the layer surface
-                if (region == NULL) {
-                    // complete surface
-                    ls_region = *myregion;
-                }
-                else {
+                if (region != NULL) {
                     // only a region
-                    ls_region.x1 = myregion->x1 + region->x1;
-                    ls_region.y1 = myregion->y1 + region->y1;
-                    ls_region.x2 = myregion->x1 + region->x2;
-                    ls_region.y2 = myregion->y1 + region->y2;
+                	if (region->x1 > 0) {
+						ls_region.x2 = ls_region.x1 + region->x2;
+                		ls_region.x1 = ls_region.x1 + region->x1;
+					}
+                	else
+						ls_region.x2 = ls_region.x1 + region->x2;
+                	if (region->y1 > 0) {
+                		ls_region.y2 = ls_region.y1 + region->y2;
+                		ls_region.y1 = ls_region.y1 + region->y1;
+                	}
+                	else
+						ls_region.y2 = ls_region.y1 + region->y2;
                 }
 
                 // check region
