@@ -38,14 +38,23 @@ MMS_CREATEERROR(MMSVideoError);
  */
 static void queue_cb(void *userData, const xine_event_t *event) {
 	MMSVideo               *mmsvideo = (MMSVideo*)userData;
-    xine_ui_message_data_t *msg      = (xine_ui_message_data_t*)event->data;
 
-    DEBUGOUT("event: %d\n", event->type);
 	switch(event->type) {
-        case XINE_EVENT_UI_MESSAGE:
+        case XINE_EVENT_UI_MESSAGE: {
+            xine_ui_message_data_t *msg      = (xine_ui_message_data_t*)event->data;
 			if(msg->explanation)
 			    mmsvideo->onError->emit(string((char*)msg + msg->parameters));
     	    break;
+        }
+        case XINE_EVENT_MRL_REFERENCE_EXT: {
+            xine_mrl_reference_data_ext_t *mrl_ref = (xine_mrl_reference_data_ext_t*)event->data;
+        	DEBUGMSG("MMSVideo", "new mrl: %s\n", mrl_ref->mrl);
+        	mmsvideo->add2Playlist(mrl_ref->mrl);
+            break;
+        }
+        case XINE_EVENT_UI_PLAYBACK_FINISHED:
+        	mmsvideo->playNext();
+        	break;
         default:
             break;
     }
@@ -100,4 +109,16 @@ void MMSVideo::startPlaying(const string file, const bool cont) {
 	   /* we found no mrl type, it seems to be a file */
 	   MMSAV::startPlaying("file://" + file, cont);
    }
+}
+
+void MMSVideo::add2Playlist(const string file) {
+	   playlist.push(file);
+}
+
+void MMSVideo::playNext() {
+	if(!playlist.empty()) {
+		string file = playlist.front();
+		playlist.pop();
+		startPlaying(file, false);
+	}
 }

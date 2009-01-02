@@ -30,6 +30,7 @@
 #define MMSVIDEO_H_
 
 #include "mmsmedia/mmsav.h"
+#include <queue>
 
 /**
  * @brief   Handles Video playback.
@@ -44,12 +45,18 @@
  * handling the playback of video files.
  */
 class MMSVideo : public MMSAV {
+	private:
+		std::queue<string>	playlist;
+
     public:
         MMSVideo(MMSWindow *window, const bool verbose = false);
         ~MMSVideo();
 
         void open();
         void startPlaying(const string file, const bool cont = true);
+        void add2Playlist(const string file);
+        void playNext();
+        void playPrev();
 };
 
 #endif /*MMSVIDEO_H_*/
