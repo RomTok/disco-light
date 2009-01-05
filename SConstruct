@@ -334,7 +334,10 @@ if 'check' in BUILD_TARGETS:
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
-	disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
+	if(env['LIBPATH']):
+		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
+	else:
+		disko_pc_libs = ''
 	disko_pc_libs    += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
 	
 	if 'dfb' in env['graphics']:
