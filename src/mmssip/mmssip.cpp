@@ -66,7 +66,6 @@ MMSSip::MMSSip(const string    &user,
     stunserver(stunserver),
     nameserver(nameserver),
     localPort(localPort),
-    numRegisteredThreads(0),
     defaultAccount(-1) {
 
 	/* only one instance of mmssip allowed */
@@ -160,9 +159,9 @@ MMSSip::MMSSip(const string    &user,
 
 MMSSip::~MMSSip() {
 	if(!pj_thread_is_registered()) {
-		pj_thread_desc desc;
-		pj_bzero(desc, sizeof(desc));
-		if(pj_thread_register("MMSSIP", desc, NULL) == PJ_SUCCESS)
+		MMSSipThread tInfo;
+		pj_bzero(tInfo.desc, sizeof(pj_thread_desc));
+		if(pj_thread_register("MMSSIP", tInfo.desc, &tInfo.thread) == PJ_SUCCESS)
     		pjsua_destroy();
     }
 
@@ -219,13 +218,15 @@ const bool MMSSip::registerAccount(const string &user,
     status = pjsua_acc_add(&accCfg, (defaultAcc ? PJ_TRUE : PJ_FALSE), &accID);
     if(status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
-		throw MMSError(0, "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
+		return false;
 	}
 
  	MMSSipAccount acc = {user, passwd, registrar, realm};
     this->accounts[accID] = acc;
     if(defaultAcc)
     	this->defaultAccount = accID;
+
+    return true;
 }
 
 /*
@@ -260,14 +261,10 @@ const int MMSSip::call(const string &user, const string &domain) {
         snprintf(tmp, 1024, "sip:%s", user.c_str());
 
 	if(!pj_thread_is_registered()) {
-		if(numRegisteredThreads >= MAX_REGISTERED_THREADS) {
-			DEBUGMSG("MMSSIP", "Error registering thread (maximum reached)");
-			throw MMSError(0, "Error registering thread (maximum reached)");
-		}
-		pj_thread_desc desc;
-		pj_bzero(desc, sizeof(desc));
-		if(pj_thread_register("MMSSIP", desc, NULL) == PJ_SUCCESS) {
-    		memcpy(&(this->pjThreadInfo[numRegisteredThreads++]), desc, sizeof(desc));
+		MMSSipThread tInfo;
+		pj_bzero(tInfo.desc, sizeof(pj_thread_desc));
+		if(pj_thread_register("MMSSIP", tInfo.desc, &tInfo.thread) == PJ_SUCCESS) {
+			this->threadInfo.push_back(tInfo);
 		} else {
 			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
 			throw MMSError(0, "Error registering thread (pj_thread_register)");
@@ -294,14 +291,10 @@ void MMSSip::hangup(int id) {
     DEBUGMSG("MMSSIP", "calling pjsua_call_hangup");
 
 	if(!pj_thread_is_registered()) {
-		if(numRegisteredThreads >= MAX_REGISTERED_THREADS) {
-			DEBUGMSG("MMSSIP", "Error registering thread (maximum reached)");
-			throw MMSError(0, "Error registering thread (maximum reached)");
-		}
-		pj_thread_desc desc;
-		pj_bzero(desc, sizeof(desc));
-		if(pj_thread_register("MMSSIP", desc, NULL) == PJ_SUCCESS) {
-    		memcpy(&(this->pjThreadInfo[numRegisteredThreads++]), desc, sizeof(desc));
+		MMSSipThread tInfo;
+		pj_bzero(tInfo.desc, sizeof(pj_thread_desc));
+		if(pj_thread_register("MMSSIP", tInfo.desc, &tInfo.thread) == PJ_SUCCESS) {
+			this->threadInfo.push_back(tInfo);
 		} else {
 			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
 			throw MMSError(0, "Error registering thread (pj_thread_register)");
@@ -315,14 +308,10 @@ void MMSSip::answer(int id) {
     DEBUGMSG("MMSSIP", "calling pjsua_call_answer");
 
 	if(!pj_thread_is_registered()) {
-		if(numRegisteredThreads >= MAX_REGISTERED_THREADS) {
-			DEBUGMSG("MMSSIP", "Error registering thread (maximum reached)");
-			throw MMSError(0, "Error registering thread (maximum reached)");
-		}
-		pj_thread_desc desc;
-		pj_bzero(desc, sizeof(desc));
-		if(pj_thread_register("MMSSIP", desc, NULL) == PJ_SUCCESS) {
-    		memcpy(&(this->pjThreadInfo[numRegisteredThreads++]), desc, sizeof(desc));
+		MMSSipThread tInfo;
+		pj_bzero(tInfo.desc, sizeof(pj_thread_desc));
+		if(pj_thread_register("MMSSIP", tInfo.desc, &tInfo.thread) == PJ_SUCCESS) {
+			this->threadInfo.push_back(tInfo);
 		} else {
 			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
 			throw MMSError(0, "Error registering thread (pj_thread_register)");
@@ -343,14 +332,10 @@ void MMSSip::addBuddy(const string &name, const string &uri) {
     }
 
 	if(!pj_thread_is_registered()) {
-		if(numRegisteredThreads >= MAX_REGISTERED_THREADS) {
-			DEBUGMSG("MMSSIP", "Error registering thread (maximum reached)");
-			throw MMSError(0, "Error registering thread (maximum reached)");
-		}
-		pj_thread_desc desc;
-		pj_bzero(desc, sizeof(desc));
-		if(pj_thread_register("MMSSIP", desc, NULL) == PJ_SUCCESS) {
-    		memcpy(&(this->pjThreadInfo[numRegisteredThreads++]), desc, sizeof(desc));
+		MMSSipThread tInfo;
+		pj_bzero(tInfo.desc, sizeof(pj_thread_desc));
+		if(pj_thread_register("MMSSIP", tInfo.desc, &tInfo.thread) == PJ_SUCCESS) {
+			this->threadInfo.push_back(tInfo);
 		} else {
 			DEBUGMSG("MMSSIP", "Error registering thread (pj_thread_register)");
 			throw MMSError(0, "Error registering thread (pj_thread_register)");
