@@ -365,6 +365,25 @@ MMSSipBuddy MMSSip::getBuddy(const int &id) {
 	return this->buddies[id];
 }
 
+bool MMSSip::setSpeakerVolume(const unsigned int percent) {
+	if(percent > 100) return false;
+	if(!pjsua_conf_adjust_tx_level(0, (float)percent / 100) == PJ_SUCCESS) {
+		DEBUGMSG("MMSSIP", "setting speaker volume failed");
+		return false;
+	}
+	DEBUGMSG("MMSSIP", "setting speaker volume to %d%%", percent);
+
+	return true;
+}
+
+int MMSSip::getSpeakerVolume() {
+	unsigned int tx_level, rx_level;
+	if(pjsua_conf_get_signal_level(0, &tx_level, &rx_level) == PJ_SUCCESS)
+		return tx_level;
+
+	return -1;
+}
+
 /* Callback called by the library upon receiving incoming call */
 static void onIncomingCall(pjsua_acc_id  accId,
 		                   pjsua_call_id callId,

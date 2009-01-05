@@ -95,6 +95,8 @@ class MMSSip {
     	void answer(int id);
     	void addBuddy(const string &name, const string &uri);
         MMSSipBuddy	getBuddy(const int &id);
+        bool setSpeakerVolume(const unsigned int percent);
+        int  getSpeakerVolume();
 
         sigc::signal<void, int> 		           *onCallSuccessfull;
         sigc::signal<void, int, string>            *onCallIncoming;
