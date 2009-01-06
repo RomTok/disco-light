@@ -36,8 +36,6 @@
 #include <sigc++/sigc++.h>
 #include <map>
 
-#define MAX_REGISTERED_THREADS	10
-
 using namespace std;
 
 typedef struct {
@@ -59,14 +57,18 @@ typedef struct {
 	MMSSipBuddyStatus	status;
 } MMSSipBuddy;
 
+typedef struct {
+	pj_thread_desc	desc;
+	pj_thread_t		*thread;
+} MMSSipThread;
+
 class MMSSip {
     private:
         string       stunserver,
                      nameserver;
         short int    localPort;
 
-        unsigned char  numRegisteredThreads;
-        pj_thread_desc pjThreadInfo[MAX_REGISTERED_THREADS];
+        vector<MMSSipThread>	threadInfo;
 
         map<int, MMSSipAccount>	accounts;
         int						defaultAccount;
@@ -93,6 +95,8 @@ class MMSSip {
     	void answer(int id);
     	void addBuddy(const string &name, const string &uri);
         MMSSipBuddy	getBuddy(const int &id);
+        bool setSpeakerVolume(const unsigned int percent);
+        int  getSpeakerVolume();
 
         sigc::signal<void, int> 		           *onCallSuccessfull;
         sigc::signal<void, int, string>            *onCallIncoming;
