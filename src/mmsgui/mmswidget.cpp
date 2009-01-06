@@ -85,7 +85,7 @@ MMSWidget::MMSWidget() {
     onSelect = new sigc::signal<void, MMSWidget*>;
     onFocus  = new sigc::signal<void, MMSWidget*, bool>;
     onReturn = new sigc::signal<void, MMSWidget*>;
-    onClick  = new sigc::signal<void, MMSWidget*>;
+    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 
 //TODO: textbox widget should have its one surface
 this->has_own_surface = false;
@@ -196,7 +196,7 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     onSelect = new sigc::signal<void, MMSWidget*>;
     onFocus  = new sigc::signal<void, MMSWidget*, bool>;
     onReturn = new sigc::signal<void, MMSWidget*>;
-    onClick = new sigc::signal<void, MMSWidget*>;
+    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 
     /* reload my images */
     newWidget->bgimage = NULL;
@@ -1925,7 +1925,8 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 						scrollTo(inputevent->posx, inputevent->posy, true, &changed);
 
 						// fire the onclick callback
-						this->onClick->emit(this);
+						this->onClick->emit(this, inputevent->posx - this->geom.x, inputevent->posy - this->geom.y,
+											this->geom.w, this->geom.h);
 
 						if (changed) {
 							// check if have to emit onReturn

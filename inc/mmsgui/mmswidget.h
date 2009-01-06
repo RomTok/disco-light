@@ -351,7 +351,32 @@ class MMSWidget {
         sigc::signal<void, MMSWidget*> *onSelect;
         sigc::signal<void, MMSWidget*, bool> *onFocus;
         sigc::signal<void, MMSWidget*> *onReturn;
-        sigc::signal<void, MMSWidget*> *onClick;
+
+        //! Set one or more callbacks for the onClick event.
+        /*!
+        The connected callbacks will be called after the button release event.
+
+        A callback method must be defined like this:
+
+        	void myclass::mycallbackmethod(MMSWidget *widget, int posx, int posy, int widget_width, int widget_height);
+
+        	Parameters:
+
+        		widget -> is the pointer to the widget
+
+        		posx -> x-position of the maus pointer within the widget
+
+        		posy -> y-position of the maus pointer within the widget
+
+        		widget_width -> width of the widget
+
+        		widget_height -> height of the widget
+
+        To connect your callback to onClick do this:
+
+        	mywidget->onClick->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+        */
+        sigc::signal<void, MMSWidget*, int, int, int, int> *onClick;
 
     protected:
         virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
