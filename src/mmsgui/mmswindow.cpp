@@ -27,6 +27,7 @@
  ***************************************************************************/
 
 #include "mmsgui/mmswindow.h"
+#include "mmsgui/mmschildwindow.h"
 #include "mmstools/tools.h"
 #include "mmsgui/mmsborder.h"
 #include <math.h>
@@ -3204,8 +3205,11 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 //	                logger.writeLog("try to execute input on childwindow");
 	                if (!this->childwins.at(this->focusedChildWin).window->handleInput(inputeventset)) {
 	                    /* childwin cannot navigate further, so try to find the next childwin */
-//		                logger.writeLog("try to execute input on another childwindow");
-	                    this->handleNavigationForChildWins(&(inputeventset->at(i)));
+						bool modal = false;
+        				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
+        				if (!modal)
+        					// currently focused child window is NOT marked as modal, so try to change the focus
+        					this->handleNavigationForChildWins(&(inputeventset->at(i)));
 
 	                    return false;
 	                }
@@ -3310,6 +3314,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			/* this is the childwin under the pointer */
 	            			if (!this->childwins.at(j).window->getFocus()) {
+								bool modal = false;
+		        				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
+	            				if (modal)
+	            					// currently focused child window is marked as modal, so do not change the focus
+									continue;
+
 	            				if (this->childwins.at(j).window->getNumberOfFocusableWidgets(true)>0)
 	            				{
 									/* set focus to this childwin */

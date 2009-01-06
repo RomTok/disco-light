@@ -51,7 +51,26 @@ class MMSChildWindow : public MMSWindow {
         virtual ~MMSChildWindow();
 
     public:
-        /* theme access methods */
+        /* begin of theme access methods *************************************/
+
+    	//! Detect if the child window has to be modal if it is focused.
+        /*!
+        \param modal	returns the modal status
+        \return true, if modal is successfully returned
+        */
+        bool getModal(bool &modal);
+
+        //! Set the modal status of the child window.
+        /*!
+        \param modal	if true, the child window is marked as modal
+        */
+        void setModal(bool modal);
+
+        //! Update the current window settings with settings from another theme class.
+        /*!
+        \param themeClass	source theme class
+        \note Only this parameters which are set within the source theme class will be updated.
+        */
         void updateFromThemeClass(MMSChildWindowClass *themeClass);
 };
 

@@ -61,7 +61,25 @@ bool MMSChildWindow::create(string className, MMSWindow *parent,
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
+#define GETCHILDWINDOW(x,y) \
+    if (this->myChildWindowClass.is##x()) return myChildWindowClass.get##x(y); \
+    else if ((childWindowClass)&&(childWindowClass->is##x())) return childWindowClass->get##x(y); \
+    else return this->theme->childWindowClass.get##x(y);
+
+bool MMSChildWindow::getModal(bool &modal) {
+    GETCHILDWINDOW(Modal, modal);
+}
+
+void MMSChildWindow::setModal(bool modal) {
+    myChildWindowClass.setModal(modal);
+}
+
 void MMSChildWindow::updateFromThemeClass(MMSChildWindowClass *themeClass) {
+	bool b;
+
+	if (themeClass->getModal(b))
+        setModal(b);
+
     MMSWindow::updateFromThemeClass(&(themeClass->windowClass));
 }
 

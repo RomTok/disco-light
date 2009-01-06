@@ -74,6 +74,7 @@ typedef enum {
     MMSW_USEGRAPHICSLAYER   = 0x00000002
 } MMSWINDOW_FLAGS;
 
+class MMSChildWindow;
 
 //! This class is the base class for all windows.
 /*!
@@ -1242,7 +1243,7 @@ class MMSWindow {
         \param imagename_4	the right image
         \param imagename_5	the bottom-right image
         \param imagename_6	the bottom image
-        \param imagename_7	the bottom-left image
+        \param imagename_7	the bottom-left imagethis->focusedChildWin
         \param imagename_8	the left image
         \param load			reload the border images after changing the image names?
         \param refresh		refresh the window after changing the image names?
@@ -1276,7 +1277,7 @@ class MMSWindow {
         */
         void setBorderRCorners(bool rcorners, bool refresh = true);
 
-        //! Update the current widgets settings with settings from another theme class.
+        //! Update the current window settings with settings from another theme class.
         /*!
         \param themeClass	source theme class
         \note Only this parameters which are set within the source theme class will be updated.

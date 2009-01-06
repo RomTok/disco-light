@@ -38,6 +38,7 @@ MMSChildWindowClass::MMSChildWindowClass() {
 
 void MMSChildWindowClass::unsetAll() {
     this->className = "";
+    unsetModal();
 }
 
 void MMSChildWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
@@ -46,6 +47,9 @@ void MMSChildWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path
         switch (attrid) {
 		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
             setClassName(attrval_str);
+			break;
+		case MMSGUI_CHILDWINDOW_ATTR::MMSGUI_CHILDWINDOW_ATTR_IDS_modal:
+            setModal((attrval_int) ? true : false);
 			break;
 		}
 	}
@@ -60,3 +64,21 @@ string MMSChildWindowClass::getClassName() {
     return this->className;
 }
 
+bool MMSChildWindowClass::isModal() {
+	return this->ismodal;
+}
+
+void MMSChildWindowClass::unsetModal() {
+	this->ismodal = false;
+}
+
+void MMSChildWindowClass::setModal(bool modal) {
+    this->modal = modal;
+    this->ismodal = true;
+}
+
+bool MMSChildWindowClass::getModal(bool &modal) {
+    if (!this->ismodal) return false;
+    modal = this->modal;
+    return true;
+}

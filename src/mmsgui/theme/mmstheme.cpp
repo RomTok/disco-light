@@ -558,6 +558,9 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.border.setThickness(0);
         this->childWindowClass.windowClass.border.setMargin(0);
         this->childWindowClass.windowClass.border.setRCorners(false);
+
+        /* child window settings */
+        this->childWindowClass.setModal(false);
     }
 
     /* MMSLabelWidget */
