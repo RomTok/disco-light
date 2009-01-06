@@ -470,48 +470,49 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     /* search for item */
     if (surface) {
         /* surface given */
-        for (unsigned int i=0; i < this->vwins.size(); i++)
-            if (this->vwins.at(i).surface == surface) {
-                // surface found
-                vw = &(this->vwins.at(i));
-                ls_region = vw->region;
+        for (unsigned int i=0; i < this->vwins.size(); i++) {
+			if (this->vwins.at(i).surface == surface) {
+				// surface found
+				vw = &(this->vwins.at(i));
+				ls_region = vw->region;
 
-                // calculate the affected region on the layer surface
-                if (region != NULL) {
-                    // only a region
-                	if (region->x1 > 0) {
+				// calculate the affected region on the layer surface
+				if (region != NULL) {
+					// only a region
+					if (region->x1 > 0) {
 						ls_region.x2 = ls_region.x1 + region->x2;
-                		ls_region.x1 = ls_region.x1 + region->x1;
+						ls_region.x1 = ls_region.x1 + region->x1;
 					}
-                	else
+					else
 						ls_region.x2 = ls_region.x1 + region->x2;
-                	if (region->y1 > 0) {
-                		ls_region.y2 = ls_region.y1 + region->y2;
-                		ls_region.y1 = ls_region.y1 + region->y1;
-                	}
-                	else
+					if (region->y1 > 0) {
 						ls_region.y2 = ls_region.y1 + region->y2;
-                }
+						ls_region.y1 = ls_region.y1 + region->y1;
+					}
+					else
+						ls_region.y2 = ls_region.y1 + region->y2;
+				}
 
-                // check region
-                if (ls_region.x1 < 0) {
-                	ls_region.x2+= ls_region.x1;
-                	ls_region.x1 = 0;
-                }
-                if (ls_region.y1 < 0) {
-                	ls_region.y2+= ls_region.y1;
-                	ls_region.y1 = 0;
-                }
-                int ls_w, ls_h;
-                if (this->layer_surface->getSize(&ls_w, &ls_h)) {
-                	if (ls_region.x2 >= ls_w)
-                		ls_region.x2 = ls_w - 1;
-                	if (ls_region.y2 >= ls_h)
-                		ls_region.y2 = ls_h - 1;
-                }
+				// check region
+				if (ls_region.x1 < 0) {
+					ls_region.x2+= ls_region.x1;
+					ls_region.x1 = 0;
+				}
+				if (ls_region.y1 < 0) {
+					ls_region.y2+= ls_region.y1;
+					ls_region.y1 = 0;
+				}
+				int ls_w, ls_h;
+				if (this->layer_surface->getSize(&ls_w, &ls_h)) {
+					if (ls_region.x2 >= ls_w)
+						ls_region.x2 = ls_w - 1;
+					if (ls_region.y2 >= ls_h)
+						ls_region.y2 = ls_h - 1;
+				}
 
-                break;
-            }
+				break;
+			}
+		}
 
         if (!vw) {
             /* not found */

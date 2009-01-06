@@ -3446,8 +3446,30 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #endif
 
 		if (this->config.iswinsurface) {
-			/* inform the window manager */
+			// inform the window manager
 			mmsfbwindowmanager->flipSurface(this, region);
+		}
+		else {
+	    	if (this->is_sub_surface) {
+				// sub surface, use the root parent surface
+	    		if (this->root_parent->config.iswinsurface) {
+	    			// inform the window manager, use the correct region
+	    			MMSFBRegion reg;
+	    			if (region)
+	    				reg = *region;
+	    			else {
+	    				reg.x1=0;
+	    				reg.y1=0;
+	    				reg.x2=sub_surface_rect.w-1;
+	    				reg.y2=sub_surface_rect.h-1;
+	    			}
+	    			reg.x1+=this->sub_surface_xoff;
+	    			reg.y1+=this->sub_surface_yoff;
+	    			reg.x2+=this->sub_surface_xoff;
+	    			reg.y2+=this->sub_surface_yoff;
+	    			mmsfbwindowmanager->flipSurface(this->root_parent, &reg);
+	    		}
+			}
 		}
 
 		return true;
