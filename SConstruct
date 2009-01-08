@@ -298,6 +298,7 @@ if 'odbc' in env['database']:
 # check for openssl
 if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
 	conf.env.Append(CCFLAGS = '-D_NO_MMSCRYPT')
+	conf.env['mmscrypt'] = 0
 else:
 	conf.env['mmscrypt'] = 1
 	
