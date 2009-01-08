@@ -65,6 +65,9 @@ opts.AddOptions(
     BoolOption('enable_tools', 'Build disko tools', False))
 
 env = Environment(ENV = os.environ, CPPPATH = '../../../inc') 
+
+env['LIBPATH'] = ''
+
 opts.Update(env)
 opts.Save('disko.conf', env)
 Help(opts.GenerateHelpText(env))
