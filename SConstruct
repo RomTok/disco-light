@@ -100,10 +100,10 @@ if env['use_sse']:
 	env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # format output
-#env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
-#env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
-#env['CXXCOMSTR']    = '  [CXX] $SOURCE'
-#env['LINKCOMSTR']   = '  [LD]  $TARGET'
+env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
+env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
+env['CXXCOMSTR']    = '  [CXX] $SOURCE'
+env['LINKCOMSTR']   = '  [LD]  $TARGET'
 
 #######################################################################
 # Subdirectories                                                      #
