@@ -64,6 +64,13 @@ void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_he
 		// for all lines
 		while (dst < dst_end) {
 			// for all pixels in the line
+#ifdef __HAVE_SSE__
+			// fill memory 4-byte-wise (much faster than loop see below)
+			__asm__ __volatile__ ( "\trep stosl\n" : : "D" (dst), "a" (SRC), "c" (dw));
+
+			// go to the next line
+			dst+= dst_pitch_pix;
+#else
 			unsigned int *line_end = dst + dw;
 			while (dst < line_end) {
 				*dst = SRC;
@@ -72,6 +79,7 @@ void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_he
 
 			// go to the next line
 			dst+= dst_pitch_diff;
+#endif
 		}
 
 	}

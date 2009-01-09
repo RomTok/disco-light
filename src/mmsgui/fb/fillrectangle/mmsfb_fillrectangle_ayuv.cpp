@@ -43,7 +43,9 @@ void mmsfb_fillrectangle_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
 	dst+= dx + dy * dst_pitch_pix;
 
 	unsigned int *dst_end = dst + dst_pitch_pix * dh;
+#ifndef __HAVE_SSE__
 	int dst_pitch_diff = dst_pitch_pix - dw;
+#endif
 
 	// prepare the color
 	register unsigned int A = color.a;
@@ -57,6 +59,13 @@ void mmsfb_fillrectangle_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
 	// for all lines
 	while (dst < dst_end) {
 		// for all pixels in the line
+#ifdef __HAVE_SSE__
+		// fill memory 4-byte-wise (much faster than loop see below)
+		__asm__ __volatile__ ( "\trep stosl\n" : : "D" (dst), "a" (SRC), "c" (dw));
+
+		// go to the next line
+		dst+= dst_pitch_pix;
+#else
 		unsigned int *line_end = dst + dw;
 		while (dst < line_end) {
 			*dst = SRC;
@@ -65,6 +74,7 @@ void mmsfb_fillrectangle_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
 
 		// go to the next line
 		dst+= dst_pitch_diff;
+#endif
 	}
 }
 
