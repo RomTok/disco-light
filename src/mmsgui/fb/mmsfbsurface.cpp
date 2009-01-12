@@ -131,6 +131,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
     this->surface_invert_lock = false;
     this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	this->config.surface_buffer->numbuffers = 0;
+	this->config.surface_buffer->external_buffer = false;
 #ifdef __HAVE_XLIB__
     this->config.surface_buffer->xv_image[0] = NULL;
 #endif
@@ -216,8 +217,10 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
     else
     	this->config.surface_buffer = NULL;
 
-   if (this->config.surface_buffer)
+   if (this->config.surface_buffer) {
 	   this->config.surface_buffer->numbuffers = 0;
+	   this->config.surface_buffer->external_buffer = false;
+   }
 #ifdef __HAVE_XLIB__
     if (this->config.surface_buffer)
     	this->config.surface_buffer->xv_image[0] = NULL;
@@ -228,6 +231,51 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
 		this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
 	init(llsurface, parent, sub_surface_rect);
+}
+
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBExternalSurfaceBuffer *extbuf) {
+    // init me
+    this->llsurface = NULL;
+    this->surface_read_locked = false;
+    this->surface_read_lock_cnt = 0;
+    this->surface_write_locked = false;
+    this->surface_write_lock_cnt = 0;
+    this->surface_invert_lock = false;
+	this->use_own_alloc = true;
+
+    // setup surface attributes
+	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+	this->config.w = sb->sbw = w;
+	this->config.h = sb->sbh = h;
+	sb->pixelformat = pixelformat;
+	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
+	sb->premultiplied = true;
+	sb->backbuffer = true;
+	sb->systemonly = true;
+
+	// set the surface buffer
+	sb->numbuffers = 0;
+	if (extbuf->ptr) {
+		sb->buffers[0] = extbuf->ptr;
+		sb->numbuffers++;
+		if (extbuf->ptr2) {
+			sb->buffers[1] = extbuf->ptr2;
+			sb->numbuffers++;
+			if (extbuf->ptr3) {
+				sb->buffers[2] = extbuf->ptr3;
+				sb->numbuffers++;
+			}
+		}
+	}
+	sb->currbuffer_read = 0;
+	if (sb->numbuffers <= 1)
+		sb->currbuffer_write = 0;
+	else
+		sb->currbuffer_write = 1;
+	sb->pitch = extbuf->pitch;
+	sb->external_buffer = true;
+	init((void*)1, NULL, NULL);
 }
 
 #ifdef __HAVE_XLIB__
@@ -261,6 +309,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->currbuffer_read = 0;
 	sb->currbuffer_write = 1;
 	sb->pitch = *(sb->xv_image[0]->pitches);
+	sb->external_buffer = true;
 	init((void*)1, NULL, NULL);
 }
 #endif
@@ -385,10 +434,9 @@ void MMSFBSurface::freeSurfaceBuffer() {
 #endif
 	}
 	else {
-#ifdef __HAVE_XLIB__
 		//free my surface buffers
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
-		if (!sb->xv_image[0]) {
+		if (!sb->external_buffer) {
 			if (!this->is_sub_surface) {
 				for (int i = 0; i < sb->numbuffers; i++)
 					if (sb->buffers[i]) {
@@ -399,7 +447,6 @@ void MMSFBSurface::freeSurfaceBuffer() {
 			}
 		}
 		sb->numbuffers = 0;
-#endif
 	}
 	this->llsurface = NULL;
 }
@@ -3416,6 +3463,14 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 		}
 
+#ifdef __HAVE_VESAFB__
+		if (mmsfb->layer[0]->vesafb_surface) {
+			// put the image to the framebuffer
+			mmsfb->layer[0]->vesafb_surface->blit(this, NULL, 0, 0);
+		}
+		else {
+#endif
+
 #ifdef __HAVE_XLIB__
 		if (sb->xv_image[0]) {
 			// put the image to the x-server
@@ -3442,6 +3497,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #endif
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
+		}
+#endif
+
+#ifdef __HAVE_VESAFB__
 		}
 #endif
 
@@ -3770,7 +3829,6 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
     return true;
 }
 
-#ifdef __HAVE_XLIB__
 
 
 bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
@@ -3842,7 +3900,6 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 	return printMissingCombination("blit_text()", NULL, NULL, MMSFB_PF_NONE, 0, 0);
 }
 
-#endif
 
 bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 
@@ -3892,7 +3949,6 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 #endif
 	}
 	else {
-#ifdef __HAVE_XLIB__
 		// draw a string
 		if (!this->is_sub_surface) {
 			blit_text(text, len, x, y);
@@ -3907,7 +3963,6 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 
 			UNCLIPSUBSURFACE
 		}
-#endif
 	}
 
     return true;

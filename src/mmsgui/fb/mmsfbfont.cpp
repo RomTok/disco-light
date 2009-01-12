@@ -29,10 +29,8 @@
 #include "mmsgui/fb/mmsfbfont.h"
 #include "mmsgui/fb/mmsfb.h"
 
-#ifdef __HAVE_XLIB__
 #include <ft2build.h>
 #include FT_GLYPH_H
-#endif
 
 // static variables
 void *MMSFBFont::ft_library = NULL;
@@ -72,7 +70,6 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
 #endif
     }
     else {
-#ifdef  __HAVE_XLIB__
 		// init freetype library
     	if (!ft_library) {
     		if (FT_Init_FreeType((FT_Library*)&this->ft_library)) {
@@ -128,7 +125,6 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
     	this->glyphpool_ptr = this->glyphpool;
 
     	this->initialized = true;
-#endif
     }
 }
 
@@ -155,7 +151,6 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
 #endif
     }
     else {
-#ifdef  __HAVE_XLIB__
     	// check if requested character is already loaded
     	std::map<unsigned int, MMSFBFont_Glyph>::iterator it;
     	it = this->charmap.find(character);
@@ -221,7 +216,6 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
     	}
 
 		return &this->glyph;
-#endif
     }
 
     return NULL;
@@ -245,7 +239,6 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
 #endif
     }
     else {
-#ifdef  __HAVE_XLIB__
     	lock();
     	*width = 0;
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
@@ -255,7 +248,6 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     	} }
     	unlock();
     	return true;
-#endif
     }
     return false;
 }
@@ -273,12 +265,10 @@ bool MMSFBFont::getHeight(int *height) {
 #endif
     }
     else {
-#ifdef  __HAVE_XLIB__
     	lock();
     	*height = this->height;
     	unlock();
     	return true;
-#endif
     }
     return false;
 }
@@ -291,12 +281,10 @@ bool MMSFBFont::getAscender(int *ascender) {
 	if (this->dfbfont) {
 	}
 	else {
-#ifdef  __HAVE_XLIB__
 		lock();
 		*ascender = this->ascender;
 		unlock();
 		return true;
-#endif
 	}
 	return false;
 }
@@ -309,12 +297,10 @@ bool MMSFBFont::getDescender(int *descender) {
 	if (this->dfbfont) {
 	}
 	else {
-#ifdef  __HAVE_XLIB__
 		lock();
 		*descender = this->descender;
 		unlock();
 		return true;
-#endif
 	}
 	return false;
 }

@@ -41,15 +41,7 @@
 
 #include "mmsgui/fb/mmsfbdev.h"
 
-#define INITCHECK  if(!mmsfbdev->isinitialized){MMSFB_SetError(0,"MMSFBDev is not initialized");return false;}
-
-// initialize the mmsfbdev object
-MMSFBDev *mmsfbdev = new MMSFBDev();
-
-void MMSFBDev_AtExit() {
-	if (mmsfbdev)
-		mmsfbdev->closeDevice();
-}
+#define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDev is not initialized");return false;}
 
 MMSFBDev::MMSFBDev() {
 	// init fb vals
@@ -64,9 +56,6 @@ MMSFBDev::MMSFBDev() {
 	this->vt.number = -1;
 	this->vt.previous = -1;
 	this->vt.org_fb = -1;
-
-	// set the atexit routine
-	atexit(MMSFBDev_AtExit);
 }
 
 MMSFBDev::~MMSFBDev() {
@@ -314,8 +303,7 @@ bool MMSFBDev::getFrameBufferBase(unsigned char **base) {
 	return true;
 }
 
-bool MMSFBDev::getFrameBufferPtr(unsigned int number, unsigned char **ptr, unsigned int *pitch,
-							     unsigned int *width, unsigned int *height) {
+bool MMSFBDev::getFrameBufferPtr(unsigned int number, void **ptr, int *pitch, int *width, int *height) {
 	// is initialized?
 	INITCHECK;
 	if (number == 0) {

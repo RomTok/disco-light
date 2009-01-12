@@ -29,6 +29,7 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <string.h>
+#include <stdlib.h>
 
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
@@ -36,6 +37,10 @@ MMSFB *mmsfb = new MMSFB();
 
 #define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
+void MMSFB_AtExit() {
+	if (mmsfb)
+		mmsfb->release();
+}
 
 MMSFB::MMSFB() {
     /* init me */
@@ -45,10 +50,15 @@ MMSFB::MMSFB() {
 #ifdef  __HAVE_DIRECTFB__
     this->dfb = NULL;
 #endif
+#ifdef  __HAVE_VESAFB__
+    this->vesafb = NULL;
+#endif
     this->outputtype = "";
     this->w = 0;
     this->h = 0;
 
+	// set the atexit routine
+	atexit(MMSFB_AtExit);
 }
 
 MMSFB::~MMSFB() {
@@ -107,10 +117,12 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     else
     if (this->backend == MMSFB_BACKEND_VESAFB) {
 #ifdef __HAVE_VESAFB__
-    	if (!mmsfbdev->openDevice()) {
-			MMSFB_SetError(0, "VESAFB device cannot be opened");
-        	return false;
-    	}
+    	this->vesafb = new MMSFBDev();
+    	if (this->vesafb)
+			if (!this->vesafb->openDevice()) {
+				MMSFB_SetError(0, "VESAFB device cannot be opened");
+				return false;
+			}
 #endif
     }
     else {
@@ -235,7 +247,10 @@ bool MMSFB::release() {
     else
     if (this->backend == MMSFB_BACKEND_VESAFB) {
 #ifdef __HAVE_VESAFB__
-    	mmsfbdev->closeDevice();
+    	if (this->vesafb) {
+    		delete this->vesafb;
+    		this->vesafb = NULL;
+    	}
 #endif
     }
 	else {

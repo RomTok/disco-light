@@ -85,8 +85,7 @@ class MMSFBDev {
 
         bool getPixelFormat(MMSFBSurfacePixelFormat *pf);
         bool getFrameBufferBase(unsigned char **base);
-        bool getFrameBufferPtr(unsigned int number, unsigned char **ptr, unsigned int *pitch,
-							   unsigned int *width, unsigned int *height);
+        bool getFrameBufferPtr(unsigned int number, void **ptr, int *pitch, int *width, int *height);
 
     private:
         typedef struct {
@@ -123,8 +122,5 @@ class MMSFBDev {
         void vtClose();
 
 };
-
-// access to global mmsfbdev
-extern MMSFBDev *mmsfbdev;
 
 #endif /* MMSFBDEV_H_ */

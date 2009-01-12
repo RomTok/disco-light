@@ -67,6 +67,7 @@ typedef struct {
     int 	currbuffer_read;
     int 	currbuffer_write;
     int 	pitch;
+    bool	external_buffer;
 #ifdef __HAVE_XLIB__
     XvImage *xv_image[MMSFBSurfaceMaxBuffers];
 #endif
@@ -110,7 +111,7 @@ class MMSFBSurface {
         //! dfbsurface for drawing/blitting
         IDirectFBSurface    *llsurface;
 #else
-    	//! pointer if compilied without dfb
+    	//! pointer if compiled without dfb
     	void 	*llsurface;
 #endif
         bool				surface_read_locked;
@@ -205,6 +206,7 @@ class MMSFBSurface {
         MMSFBSurface(void *llsurface,
 					 MMSFBSurface *parent = NULL,
 					 MMSFBRectangle *sub_surface_rect = NULL);
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBExternalSurfaceBuffer *extbuf);
 #ifdef __HAVE_XLIB__
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif

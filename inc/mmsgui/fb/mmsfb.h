@@ -55,6 +55,11 @@ class MMSFB {
         IDirectFB       *dfb;
 #endif
 
+#ifdef  __HAVE_VESAFB__
+        // interface to own VESAFB
+        MMSFBDev		*vesafb;
+#endif
+
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
 
         string 			outputtype;

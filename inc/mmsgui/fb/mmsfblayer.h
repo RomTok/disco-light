@@ -68,6 +68,10 @@ class MMSFBLayer {
         IDirectFBDisplayLayer   *dfblayer;
 #endif
 
+#ifdef  __HAVE_VESAFB__
+        MMSFBSurface	*vesafb_surface;
+#endif
+
 #ifdef __HAVE_XLIB__
         XvImage  		*xv_image1;
         XShmSegmentInfo xv_shminfo1;
@@ -117,6 +121,7 @@ class MMSFBLayer {
                            bool usealpha = true, bool uselayersurface = false);
 
 		friend class MMSFBManager;
+		friend class MMSFBSurface;
 };
 
 #endif /*MMSFBLAYER_H_*/
