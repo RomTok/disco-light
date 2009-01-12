@@ -57,11 +57,6 @@ MMSFB::~MMSFB() {
 bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen,
 				 string appl_name, string appl_icon_name) {
 
-#ifdef __HAVE_XLIB__
-	XInitThreads();
-    this->resized=false;
-#endif
-
     // check if already initialized
     if (this->initialized) {
         MMSFB_SetError(0, "already initialized");
@@ -71,6 +66,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     // save arguments
     this->argc = argc;
     this->argv = argv;
+
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
 
@@ -82,8 +78,16 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     // which backend should i use?
     this->backend = MMSFB_BACKEND_DFB;
 #ifdef __HAVE_XLIB__
-    if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel))
+    if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel)) {
     	this->backend = MMSFB_BACKEND_X11;
+    	XInitThreads();
+        this->resized=false;
+    }
+#endif
+#ifdef __HAVE_VESAFB__
+    if ((this->outputtype == "VESAFB")&&(extendedaccel)) {
+    	this->backend = MMSFB_BACKEND_VESAFB;
+    }
 #endif
 
     if (this->backend == MMSFB_BACKEND_DFB) {
@@ -98,6 +102,15 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 			MMSFB_SetError(dfbres, "DirectFBCreate() failed");
 			return false;
 		}
+#endif
+    }
+    else
+    if (this->backend == MMSFB_BACKEND_VESAFB) {
+#ifdef __HAVE_VESAFB__
+    	if (!mmsfbdev->openDevice()) {
+			MMSFB_SetError(0, "VESAFB device cannot be opened");
+        	return false;
+    	}
 #endif
     }
     else {
@@ -169,9 +182,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         XRaiseWindow(this->x_display, this->x_window);
 
 
-
-
-		// hide X Cursor should we use X Cursor instead of our own?
+		// hide X cursor
         Pixmap bm_no;
 		Colormap cmap;
 		Cursor no_ptr;
@@ -221,7 +232,13 @@ bool MMSFB::release() {
 			this->dfb->Release(this->dfb);
 #endif
     }
-    else {
+    else
+    if (this->backend == MMSFB_BACKEND_VESAFB) {
+#ifdef __HAVE_VESAFB__
+    	mmsfbdev->closeDevice();
+#endif
+    }
+	else {
 #ifdef __HAVE_XLIB__
 #endif
     }
@@ -273,6 +290,11 @@ void *MMSFB::getX11Window() {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
+    else
+	if (this->backend == MMSFB_BACKEND_VESAFB) {
+#ifdef  __HAVE_VESAFB__
+#endif
+	}
     else {
 #ifdef __HAVE_XLIB__
     	return &this->x_window;
@@ -285,6 +307,11 @@ void *MMSFB::getX11Display() {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
+    else
+	if (this->backend == MMSFB_BACKEND_VESAFB) {
+#ifdef  __HAVE_VESAFB__
+#endif
+	}
     else {
 #ifdef __HAVE_XLIB__
     	return this->x_display;
@@ -301,6 +328,11 @@ bool MMSFB::refresh() {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
+    else
+	if (this->backend == MMSFB_BACKEND_VESAFB) {
+#ifdef  __HAVE_VESAFB__
+#endif
+	}
     else {
 #ifdef __HAVE_XLIB__
     	MMSFBSurface *suf;
@@ -372,7 +404,7 @@ bool MMSFB::createFont(MMSFBFont **font, string filename, int width, int height)
 }
 
 #ifdef __HAVE_XLIB__
-bool MMSFB::resizewindow() {
+bool MMSFB::resizeWindow() {
 	printf("resize w,h: %d,%d\n", this->target_window_w, this->target_window_h );
 	XWindowChanges chg;
 	chg.width=this->target_window_w;

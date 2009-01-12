@@ -124,4 +124,7 @@ class MMSFBDev {
 
 };
 
+// access to global mmsfbdev
+extern MMSFBDev *mmsfbdev;
+
 #endif /* MMSFBDEV_H_ */

@@ -46,6 +46,11 @@
 // initialize the mmsfbdev object
 MMSFBDev *mmsfbdev = new MMSFBDev();
 
+void MMSFBDev_AtExit() {
+	if (mmsfbdev)
+		mmsfbdev->closeDevice();
+}
+
 MMSFBDev::MMSFBDev() {
 	// init fb vals
 	this->isinitialized = false;
@@ -59,6 +64,9 @@ MMSFBDev::MMSFBDev() {
 	this->vt.number = -1;
 	this->vt.previous = -1;
 	this->vt.org_fb = -1;
+
+	// set the atexit routine
+	atexit(MMSFBDev_AtExit);
 }
 
 MMSFBDev::~MMSFBDev() {
@@ -318,7 +326,7 @@ bool MMSFBDev::getFrameBufferPtr(unsigned int number, unsigned char **ptr, unsig
 		*height = this->var_screeninfo.yres;
 	}
 	else {
-		// ...
+		//TODO ...
 	}
 	return true;
 }

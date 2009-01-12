@@ -31,6 +31,7 @@
 
 #include "mmstools/mmslogger.h"
 
+#include "mmsgui/fb/mmsfbdev.h"
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"
@@ -74,7 +75,7 @@ class MMSFB {
         int				target_window_h;
         bool            fullscreen;
         bool            resized;
-        bool 			resizewindow();
+        bool 			resizeWindow();
 #endif
 
     public:
@@ -100,7 +101,7 @@ class MMSFB {
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
 #endif
         bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);
-        bool toggleFullscreen();
+//        bool toggleFullscreen();
 
     friend class MMSFBLayer;
     friend class MMSFBSurface;

@@ -81,8 +81,10 @@ extern "C" {
 typedef enum {
 	//! directfb
 	MMSFB_BACKEND_DFB = 0,
-	//! x11 backend from disko framework
-	MMSFB_BACKEND_X11
+	//! X11 backend from disko framework
+	MMSFB_BACKEND_X11,
+	//! VESAFB backend from disko framework
+	MMSFB_BACKEND_VESAFB
 } MMSFB_BACKEND;
 
 

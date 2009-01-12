@@ -206,7 +206,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     		mmsfb->resized=true;
     		mmsfb->target_window_w = event.xresizerequest.width;
     		mmsfb->target_window_h = event.xresizerequest.height;
-    		mmsfb->resizewindow();
+    		mmsfb->resizeWindow();
     	}
     	if(event.type==KeyPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYPRESS;
