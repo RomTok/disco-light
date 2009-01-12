@@ -17,6 +17,7 @@
 
 import os, sys
 
+
 #######################################################################
 # Scons configuration                                                 #
 #######################################################################
@@ -84,19 +85,19 @@ env.Append(LDFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 
 # extra flags
 if env['messages']:
-	env.Append(CCFLAGS = '-D__ENABLE_LOG__')
+	env['CCFLAGS'].append('-D__ENABLE_LOG__')
 
 if env['profile']:
-	env.Append(CCFLAGS = '-pg')
+	env['CCFLAGS'].append('-pg')
 	env.Replace(debug = 1)
 
 if env['debug']:
-	env.Append(CCFLAGS = '-O0 -g -Wall -D__ENABLE_DEBUG__')
+	env['CCFLAGS'].append(['-O0', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
 else:
-	env.Append(CCFLAGS = '-O3')
+	env['CCFLAGS'].append('-O3')
 
 if env['use_sse']:
-	env.Append(CCFLAGS = '-msse2 -mfpmath=sse -D__HAVE_SSE__')
+	env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # format output
 env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
@@ -263,7 +264,7 @@ conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
 # checks required if building DirectFB backend
 if('dfb' in env['graphics']):
 	conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
-	conf.env.Append(CCFLAGS = '-D__HAVE_DIRECTFB__')
+	conf.env['CCFLAGS'].append('-D__HAVE_DIRECTFB__')
 	
 # checks required if building X11 backend
 if('x11' in env['graphics']):
@@ -271,7 +272,9 @@ if('x11' in env['graphics']):
 	conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
 	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
 	conf.checkSimpleLib(['freetype2'], 'freetype/freetype.h')
-	conf.env.Append(CCFLAGS = '-D__HAVE_XLIB__ -D__ENABLE_MMSFB_X11_CORE__ -D__ENABLE_MMSFBSURFACE_X11_CORE__')
+	conf.env['CCFLAGS'].append(['-D__HAVE_XLIB__',
+				'-D__ENABLE_MMSFB_X11_CORE__',
+				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
 	
 # checks required if building mmsmedia
 if(env['enable_media']):
@@ -281,26 +284,29 @@ if(env['enable_media']):
 		conf.checkSimpleLib(['libxine'],    'xine.h')
 	conf.checkSimpleLib(['alsa'],       'alsa/version.h')
 else:
-	conf.env.Append(CCFLAGS = '-D_NO_MMSMEDIA -D_NO_MIXER')
+	conf.env['CCFLAGS'].append(['-D_NO_MMSMEDIA', '-D_NO_MIXER'])
+	
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
 	conf.checkSimpleLib(['sqlite3'],    'sqlite3.h')
-	conf.env.Append(CCFLAGS = '-D__ENABLE_SQLITE__')
+	conf.env['CCFLAGS'].append('-D__ENABLE_SQLITE__')
 if 'mysql' in env['database']:
 	conf.checkSimpleLib(['mysql'],      'mysql.h')
-	conf.env.Append(CCFLAGS = '-D__ENABLE_MYSQL__')
+	conf.env['CCFLAGS'].append('-D__ENABLE_MYSQL__')
 if 'odbc' in env['database']:
 	if conf.CheckCXXHeader('/usr/include/sql.h'):
-		conf.env.Append(CCFLAGS = '-D__ENABLE_FREETDS__', LIBS = 'odbc')
+		conf.env.Append(LIBS = 'odbc')
+		conf.env['CCFLAGS'].append('-D__ENABLE_FREETDS__')
 	elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
-		conf.env.Append(CCFLAGS = '-D__ENABLE_FREETDS__ -I/usr/local/include', LIBPATH = '/usr/local/lib', LIBS = 'odbc')
+		conf.env.Append(LIBPATH = '/usr/local/lib', LIBS = 'odbc')
+		conf.env['CCFLAGS'].append(['-D__ENABLE_FREETDS__', '-I/usr/local/include'])
 	else:
 		Exit(1)
 
 # check for openssl
 if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
-	conf.env.Append(CCFLAGS = '-D_NO_MMSCRYPT')
+	conf.env['CCFLAGS'].append('-D_NO_MMSCRYPT')
 	conf.env['mmscrypt'] = 0
 else:
 	conf.env['mmscrypt'] = 1
@@ -309,19 +315,19 @@ else:
 if(env['enable_flash']):
 	conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
 else:
-	conf.env.Append(CCFLAGS = '-D_NO_MMSFLASH')
+	conf.env['CCFLAGS'].append('-D_NO_MMSFLASH')
 
 # checks required if building mmssip
 if(env['enable_sip']):
 	if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
 		conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)	
 else:
-	conf.env.Append(CCFLAGS = '-D_NO_MMSSIP')
+	conf.env['CCFLAGS'].append('-D_NO_MMSSIP')
 	
 # checks required if building with email support
 if(env['enable_mail']):
 	conf.checkSimpleLib(['vmime'], 'vmime.h')
-	conf.env.Append(CCFLAGS = '-D__HAVE_VMIME__')
+	conf.env['CCFLAGS'].append('-D__HAVE_VMIME__')
 
 env2 = conf.Finish()
 if env2:
@@ -385,7 +391,13 @@ if 'install' in BUILD_TARGETS:
 	disko_pc.write('Version: ' + packageVersion + '\n')
 	disko_pc.write('Requires: ' + disko_pc_requires + '\n')
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
-	disko_pc.write('Cflags: -I${includedir}/ ' + ' '.join(env['CCFLAGS']) + '\n')
+	disko_pc.write('Cflags: -I${includedir}/ ')
+	for ccflag in env['CCFLAGS']:
+		if(type(ccflag).__name__ == 'str'):
+			disko_pc.write(ccflag + ' ')
+		else:
+			disko_pc.write(' '.join(ccflag))
+	disko_pc.write('\n')
 	
 	disko_pc.close()
 
@@ -394,7 +406,10 @@ if 'install' in BUILD_TARGETS:
 #######################################################################
 env['TOP_DIR'] = os.getcwd()
 env.Decider('MD5-timestamp')
-all = env.Alias('all', ['lib', 'bin'])
+if(env['enable_tools']):
+	all = env.Alias('all', ['lib', 'bin'])
+else:
+	all = env.Alias('all', ['lib'])
 install = env.Alias('install', [idir_prefix])
 Depends(install, all)
 env.Default(all)
