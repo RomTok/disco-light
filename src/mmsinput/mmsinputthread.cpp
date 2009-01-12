@@ -29,6 +29,7 @@
 #include "mmsinput/mmsinputthread.h"
 #include "mmsinput/mmsinputdfbhandler.h"
 #include "mmsinput/mmsinputx11handler.h"
+#include "mmsinput/mmsinputlishandler.h"
 #include "mmsgui/fb/mmsfb.h"
 
 extern MMSFB *mmsfb;
@@ -55,7 +56,20 @@ void MMSInputThread::threadMain() {
     lastevent.type = MMSINPUTEVENTTYPE_NONE;
 
 	if (this->handler == NULL) {
-		if(config->getOutputType()!= MMS_OT_X11FB) {
+		if(mmsfb->getBackend()==MMSFB_BACKEND_DFB) {
+			this->handler = new MMSInputDFBHandler(this->device);
+		}
+		else
+		if(mmsfb->getBackend()==MMSFB_BACKEND_VESAFB) {
+			this->handler = new MMSInputLISHandler(this->device);
+		}
+		else
+		if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
+			this->handler = new MMSInputX11Handler(this->device);
+		}
+
+
+/*		if(config->getOutputType()!= MMS_OT_X11FB) {
 			//create dfb input backend
 			this->handler = new MMSInputDFBHandler(this->device);
 		} else {
@@ -71,7 +85,7 @@ void MMSInputThread::threadMain() {
 				this->handler = new MMSInputDFBHandler(this->device);
 			#endif
 		}
-
+*/
 	}
 
 	while (1) {

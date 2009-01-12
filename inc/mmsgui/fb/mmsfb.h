@@ -106,12 +106,12 @@ class MMSFB {
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
 #endif
         bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);
-//        bool toggleFullscreen();
 
     friend class MMSFBLayer;
     friend class MMSFBSurface;
     friend class MMSFBFont;
     friend class MMSInputX11Handler;
+    friend class MMSInputLISHandler;
 };
 
 /* access to global mmsfb */

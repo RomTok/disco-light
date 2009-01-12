@@ -121,6 +121,8 @@ class MMSFBDev {
         bool vtOpen(int console = -1);
         void vtClose();
 
+        friend class MMSInputLISHandler;
+
 };
 
 #endif /* MMSFBDEV_H_ */
