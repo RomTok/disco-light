@@ -376,6 +376,9 @@ if 'install' in BUILD_TARGETS:
 	if(env['enable_mail']):
 		disko_pc_requires += ', vmime'
 		
+	if(env['mmscrypt']):
+		disko_pc_requires += ', openssl'
+
 	if 'sqlite3' in env['database']:
 		disko_pc_requires += ', sqlite3'
 		
@@ -393,8 +396,9 @@ if 'install' in BUILD_TARGETS:
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
 	disko_pc.write('Cflags: -I${includedir}/ ')
 	for ccflag in env['CCFLAGS']:
+		disko_pc.write(' ')
 		if(type(ccflag).__name__ == 'str'):
-			disko_pc.write(ccflag + ' ')
+			disko_pc.write(ccflag)
 		else:
 			disko_pc.write(' '.join(ccflag))
 	disko_pc.write('\n')

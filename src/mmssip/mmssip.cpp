@@ -194,7 +194,8 @@ const bool MMSSip::registerAccount(const string &user,
 								   const string &passwd,
 								   const string &registrar,
 								   const string &realm,
-								   const bool defaultAcc) {
+								   const bool defaultAcc,
+								   const bool autoanswer) {
 	pj_status_t 		status;
     pjsua_acc_config 	accCfg;
     pjsua_acc_id		accID;
@@ -221,7 +222,7 @@ const bool MMSSip::registerAccount(const string &user,
 		return false;
 	}
 
- 	MMSSipAccount acc = {user, passwd, registrar, realm};
+ 	MMSSipAccount acc = {user, passwd, registrar, realm, autoanswer};
     this->accounts[accID] = acc;
     if(defaultAcc)
     	this->defaultAccount = accID;
@@ -384,21 +385,34 @@ int MMSSip::getSpeakerVolume() {
 	return -1;
 }
 
+bool MMSSip::getAutoAnswer(int accountId) {
+	try {
+		MMSSipAccount acc = this->accounts[accountId];
+		return acc.autoanswer;
+	}
+	catch(std::exception& e) {
+		throw MMSError(0, e.what());
+	}
+}
+
 /* Callback called by the library upon receiving incoming call */
 static void onIncomingCall(pjsua_acc_id  accId,
 		                   pjsua_call_id callId,
                            pjsip_rx_data *rdata) {
     pjsua_call_info ci;
 
-    PJ_UNUSED_ARG(accId);
     PJ_UNUSED_ARG(rdata);
 
-    pjsua_call_get_info(callId, &ci);
+    if(thiz->getAutoAnswer(accId)) {
+    	thiz->answer(callId);
+    } else {
+		pjsua_call_get_info(callId, &ci);
 
-    DEBUGMSG("MMSSIP", "Incoming call from %.*s (id=%d)", (int)ci.remote_info.slen, ci.remote_info.ptr, callId);
+		DEBUGMSG("MMSSIP", "Incoming call from %.*s (id=%d)", (int)ci.remote_info.slen, ci.remote_info.ptr, callId);
 
-	if(thiz && thiz->onCallIncoming)
-        thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
+		if(thiz && thiz->onCallIncoming)
+			thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
+    }
 }
 
 /* Callback called by the library when call's state has changed */
