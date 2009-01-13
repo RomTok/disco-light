@@ -48,7 +48,7 @@ class MMSFBDev {
         //! device abbreviation
         char    device[8];
 
-        //! file descriptor
+        //! file descriptor of the framebuffer
         int     fd;
 
         //! virtual framebuffer address
@@ -89,37 +89,27 @@ class MMSFBDev {
 
     private:
         typedef struct {
-			int fd0;                      /* file descriptor of /dev/tty0 */
-			int fd;                       /* file descriptor of /dev/ttyN
-										  where N is the number of the allocated VT,
-										  may be equal to 'fd0' if VT allocation
-										  is disabled by "--no-vt-switch" */
+        	//! /dev/tty0 file descriptor
+			int fd0;
 
-			// number of vt where disko is running
+			//! file descriptor of the allocated tty
+			int fd;
+
+			//! number of vt where disko is running
 			int number;
 
-			// number of vt from which disko was started
+			//! number of vt from which disko was started
 			int previous;
 
-			// save original fb
+			//! save original fb
 			int org_fb;
-
-//             struct sigaction sig_usr1;    /* previous signal handler for USR1 */
-//             struct sigaction sig_usr2;    /* previous signal handler for USR2 */
-
-//             struct vt_mode   vt_mode;     /* previous VT mode */
-
-//             DirectThread    *thread;
-//             pthread_mutex_t  lock;
-//             pthread_cond_t   wait;
-
-//             int              vt_sig;
         } VT;
 
         VT	vt;
 
         bool vtOpen(int console = -1);
         void vtClose();
+        bool vtGetFd(int *fd);
 
         friend class MMSInputLISHandler;
 

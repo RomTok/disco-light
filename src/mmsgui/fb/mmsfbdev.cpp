@@ -53,6 +53,7 @@ MMSFBDev::MMSFBDev() {
 
 	// init terminal vals
 	this->vt.fd0 = -1;
+	this->vt.fd = -1;
 	this->vt.number = -1;
 	this->vt.previous = -1;
 	this->vt.org_fb = -1;
@@ -381,7 +382,7 @@ bool MMSFBDev::vtOpen(int console) {
 
     // set console for our fb
     struct stat fbs;
-    if (fstat(this->fd, &fbs )) {
+    if (fstat(this->fd, &fbs)) {
 		printf("MMSFBDev: stat fb device failed\n");
 	    this->vt.org_fb = -1;
 		vtClose();
@@ -411,10 +412,50 @@ bool MMSFBDev::vtOpen(int console) {
 	}
 	usleep(50*1000);
 
+    // open my tty device
+	char tty[16];
+    sprintf(tty, "/dev/tty%d", this->vt.number);
+    this->vt.fd = open(tty, O_RDWR | O_NOCTTY);
+    if (this->vt.fd < 0) {
+		if (errno == ENOENT) {
+			sprintf(tty, "/dev/vc/%d", this->vt.number);
+			this->vt.fd = open(tty, O_RDWR | O_NOCTTY);
+			if (this->vt.fd < 0) {
+				printf("MMSFBDev: opening device /dev/tty%d and /dev/vc/%d failed\n", this->vt.number, this->vt.number);
+				vtClose();
+				return false;
+			}
+		}
+		else {
+			printf("MMSFBDev: opening device /dev/tty%d failed\n", this->vt.number);
+			vtClose();
+			return false;
+		}
+    }
+
+    // attach to the device
+    ioctl(this->vt.fd, TIOCSCTTY, 0);
+
+    // switch cursor off
+    const char cursor_off[] = "\033[?1;0;0c";
+    write(this->vt.fd, cursor_off, sizeof(cursor_off));
+
+    // put terminal into graphics mode
+	ioctl(this->vt.fd, KDSETMODE, KD_GRAPHICS);
+
     return true;
 }
 
 void MMSFBDev::vtClose() {
+	if (this->vt.fd != -1) {
+		// close tty
+		ioctl(this->vt.fd, KDSETMODE, KD_TEXT);
+	    const char cursor_on[] = "\033[?0;0;0c";
+	    write(this->vt.fd, cursor_on, sizeof(cursor_on));
+        close(this->vt.fd);
+        this->vt.fd = -1;
+	}
+
 	if (this->vt.org_fb != -1) {
 		// reset the fb for used console
 	    struct fb_con2fbmap c2f;
@@ -439,5 +480,13 @@ void MMSFBDev::vtClose() {
         close(this->vt.fd0);
         this->vt.fd0 = -1;
 	}
+}
+
+bool MMSFBDev::vtGetFd(int *fd) {
+	if (this->vt.fd != -1) {
+		*fd = this->vt.fd;
+		return true;
+	}
+	return false;
 }
 
