@@ -376,6 +376,9 @@ if 'install' in BUILD_TARGETS:
 	if(env['enable_mail']):
 		disko_pc_requires += ', vmime'
 		
+	if(env['mmscrypt']):
+		disko_pc_requires += ', openssl'
+
 	if 'sqlite3' in env['database']:
 		disko_pc_requires += ', sqlite3'
 		
