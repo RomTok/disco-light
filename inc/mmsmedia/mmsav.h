@@ -183,6 +183,8 @@ class MMSAV
         void hueUp(int count);
         void hueDown(int count);
 
+        void setVolume(int percent);
+
         bool hasVideo();
         bool hasAudio();
 

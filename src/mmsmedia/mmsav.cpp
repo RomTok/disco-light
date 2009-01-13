@@ -1220,6 +1220,16 @@ void MMSAV::hueDown(int count) {
 }
 
 /**
+ * Sets the volume of the audio output.
+ *
+ * @param   percent	[in]    volume in percent
+ */
+void MMSAV::setVolume(int percent) {
+	if(this->ao)
+		xine_set_param(this->stream, XINE_PARAM_AUDIO_VOLUME, percent);
+}
+
+/**
  * Send a xine event to the engine
  *
  * @param   type    [in]    type of event
