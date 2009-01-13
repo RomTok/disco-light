@@ -67,15 +67,15 @@ extern "C" {
 #endif
 
 //! output type: vesafb
-#define MMS_OT_VESAFB       "vesafb"
+#define MMS_OT_VESAFB       "VESAFB"
 //! output type: matroxfb
-#define MMS_OT_MATROXFB     "matroxfb"
+#define MMS_OT_MATROXFB     "MATROXFB"
 //! output type: viafb
-#define MMS_OT_VIAFB        "viafb"
+#define MMS_OT_VIAFB        "VIAFB"
 //! output type: x11 (for dfb and disko x11 backend)
-#define MMS_OT_X11FB        "x11"
+#define MMS_OT_X11FB        "X11"
 //! output type: sdl
-#define MMS_OT_SDLFB        "sdl"
+#define MMS_OT_SDLFB        "SDL"
 
 //! supported backends
 typedef enum {

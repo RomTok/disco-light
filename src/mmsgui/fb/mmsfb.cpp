@@ -95,7 +95,7 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     }
 #endif
 #ifdef __HAVE_VESAFB__
-    if ((this->outputtype == "VESAFB")&&(extendedaccel)) {
+    if ((this->outputtype == "VFB")&&(extendedaccel)) {
     	this->backend = MMSFB_BACKEND_VESAFB;
     }
 #endif

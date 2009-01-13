@@ -43,7 +43,7 @@ MMSRcParser::MMSRcParser() {
 
     this->graphics.xres                       = 800;
     this->graphics.yres                       = 600;
-    this->graphics.outputtype                 = "vesafb";
+    this->graphics.outputtype                 = "VESAFB";
     this->graphics.videolayerid               = 0;
     this->graphics.videolayerpixelformat      = "RGB16";
     this->graphics.videolayeroptions          = "";
@@ -65,7 +65,7 @@ MMSRcParser::MMSRcParser() {
 	this->graphics.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
-	this->graphics.fullscreen    			 = false;	// x11 fullscreen?, default no
+	this->graphics.fullscreen    			  = false;	// x11 fullscreen?, default no
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -300,23 +300,23 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres"))
 	        this->graphics.yres = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype"))
-	        this->graphics.outputtype = string((const char *)parvalue);
+	        this->graphics.outputtype = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
 			this->graphics.videolayerid = atoi((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat"))
-	        this->graphics.videolayerpixelformat = string((const char *)parvalue);
+	        this->graphics.videolayerpixelformat = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayeroptions"))
-	        this->graphics.videolayeroptions = string((const char *)parvalue);
+	        this->graphics.videolayeroptions = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerbuffermode"))
-	        this->graphics.videolayerbuffermode = string((const char *)parvalue);
+	        this->graphics.videolayerbuffermode = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerid"))
 			this->graphics.graphicslayerid = atoi((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerpixelformat"))
-			this->graphics.graphicslayerpixelformat = string((const char *)parvalue);
+			this->graphics.graphicslayerpixelformat = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayeroptions"))
-	        this->graphics.graphicslayeroptions = string((const char *)parvalue);
+	        this->graphics.graphicslayeroptions = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode"))
-	        this->graphics.graphicslayerbuffermode = string((const char *)parvalue);
+	        this->graphics.graphicslayerbuffermode = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.x"))
 	        this->graphics.vrect.x = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.y"))
@@ -336,13 +336,13 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
         else if(!xmlStrcmp(parname, (const xmlChar *) "pointer"))
             this->graphics.pointer = strToBool(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat"))
-			this->graphics.graphicswindowpixelformat = string((const char *)parvalue);
+			this->graphics.graphicswindowpixelformat = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat"))
-			this->graphics.graphicssurfacepixelformat = string((const char *)parvalue);
+			this->graphics.graphicssurfacepixelformat = strToUpr(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
             this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
-			this->graphics.allocmethod = string((const char *)parvalue);
+			this->graphics.allocmethod = strToUpr(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen"))
             this->graphics.fullscreen = strToBool(string((const char *)parvalue));
 		else

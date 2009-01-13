@@ -74,7 +74,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
     DEBUGMSG("MMSGUI", "init mmsfb");
     bool ea = config.getExtendedAccel();
 #ifdef  __HAVE_DIRECTFB__
-	if (config.getAllocMethod() == "dfb") {
+	if (config.getAllocMethod() == "DFB") {
 		// use dfb even if extended accel
 		ea = false;
 	}
@@ -184,7 +184,7 @@ void MMSFBManager::applySettings() {
     		if (mmsfb->getBackend() == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 				string am = config.getAllocMethod();
-				if (am == "malloc") {
+				if (am == "MALLOC") {
 					if (!config.getExtendedAccel())
 						gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
 				}
