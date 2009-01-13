@@ -43,6 +43,7 @@ typedef struct {
 	string passwd;
 	string registrar;
 	string realm;
+	bool   autoanswer;
 } MMSSipAccount;
 
 typedef enum {
@@ -89,7 +90,8 @@ class MMSSip {
 								   const string &passwd,
 								   const string &registrar,
 								   const string &realm,
-								   const bool defaultAccount = false);
+								   const bool defaultAccount = false,
+								   const bool autoanswer = false);
     	const int call(const string &user, const string &domain = "");
     	void hangup(int id);
     	void answer(int id);
@@ -97,6 +99,7 @@ class MMSSip {
         MMSSipBuddy	getBuddy(const int &id);
         bool setSpeakerVolume(const unsigned int percent);
         int  getSpeakerVolume();
+        bool getAutoAnswer(const int accountId);
 
         sigc::signal<void, int> 		           *onCallSuccessfull;
         sigc::signal<void, int, string>            *onCallIncoming;
