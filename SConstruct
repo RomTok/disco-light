@@ -393,8 +393,9 @@ if 'install' in BUILD_TARGETS:
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
 	disko_pc.write('Cflags: -I${includedir}/ ')
 	for ccflag in env['CCFLAGS']:
+		disko_pc.write(' ')
 		if(type(ccflag).__name__ == 'str'):
-			disko_pc.write(ccflag + ' ')
+			disko_pc.write(ccflag)
 		else:
 			disko_pc.write(' '.join(ccflag))
 	disko_pc.write('\n')
