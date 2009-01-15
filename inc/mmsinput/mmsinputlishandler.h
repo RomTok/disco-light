@@ -33,12 +33,28 @@
 #include "mmsbase/mmsbase.h"
 #include "mmsinput/mmsinputhandler.h"
 
+#define MMSINPUTLISHANDLER_EVENT_BUFFER_SIZE	100
 
 class MMSInputLISHandler : public MMSInputHandler {
 	private:
+		//! event ring buffer
+		MMSInputEvent 	ie_buffer[MMSINPUTLISHANDLER_EVENT_BUFFER_SIZE];
+
+		//! event ring buffer, read pos
+		int ie_read_pos;
+
+		//! event ring buffer, write pos
+		int ie_write_pos;
+
+		bool shift_pressed;
+
 		//! filedescriptor from which we read keyboard inputs (this should be the fd to the framebuffer console)
 		int	kb_fd;
 
+		MMSKeySymbol getSymbol(int code, unsigned short value);
+		unsigned short readValue(unsigned char table, unsigned char index);
+		MMSKeySymbol getKeyFromCode(bool pressed, unsigned char code);
+		void readKeyboardEvents();
 	public:
 		MMSInputLISHandler(MMS_INPUT_DEVICE device);
 		~MMSInputLISHandler();

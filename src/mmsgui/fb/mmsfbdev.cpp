@@ -443,12 +443,26 @@ bool MMSFBDev::vtOpen(int console) {
     // put terminal into graphics mode
 	ioctl(this->vt.fd, KDSETMODE, KD_GRAPHICS);
 
+    // init keyboard
+    ioctl(this->vt.fd, KDSKBMODE, K_MEDIUMRAW);
+    tcgetattr(this->vt.fd, &this->saved_ts);
+    struct termios ts;
+    ts = this->saved_ts;
+    ts.c_cc[VTIME] = 0;
+    ts.c_cc[VMIN] = 1;
+    ts.c_lflag &= ~(ICANON|ECHO|ISIG);
+    ts.c_iflag = 0;
+    tcsetattr(this->vt.fd, TCSAFLUSH, &ts);
+    tcsetpgrp(this->vt.fd, getpgrp());
+
     return true;
 }
 
 void MMSFBDev::vtClose() {
 	if (this->vt.fd != -1) {
 		// close tty
+		tcsetattr(this->vt.fd, TCSAFLUSH, &this->saved_ts);
+		ioctl(this->vt.fd, KDSKBMODE, K_XLATE);
 		ioctl(this->vt.fd, KDSETMODE, KD_TEXT);
 	    const char cursor_on[] = "\033[?0;0;0c";
 	    write(this->vt.fd, cursor_on, sizeof(cursor_on));

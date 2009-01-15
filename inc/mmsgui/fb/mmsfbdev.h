@@ -31,6 +31,7 @@
 
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/fb.h"
+#include <termios.h>
 
 // added missing ioctl
 #ifndef FBIO_WAITFORVSYNC
@@ -56,6 +57,9 @@ class MMSFBDev {
 
         //! have to reset the console acceleration
         bool	reset_console_accel;
+
+		//! saved settings from general terminal interface
+        struct termios saved_ts;
 
         //! fix screen infos
         struct fb_fix_screeninfo    fix_screeninfo;
