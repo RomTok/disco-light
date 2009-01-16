@@ -41,6 +41,8 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
 	this->ie_read_pos = 0;
 	this->ie_write_pos = 0;
 	this->shift_pressed = false;
+	this->altgr_pressed = false;
+	this->is_caps_lock = false;
 
 	// get access to the framebuffer console
 	this->kb_fd = -1;
@@ -234,21 +236,41 @@ MMSKeySymbol MMSInputLISHandler::getKeyFromCode(bool pressed, unsigned char code
 	value = readValue(K_NORMTAB, code);
 	MMSKeySymbol ks = getSymbol(code, value);
 
-    // is capslock on?
-	bool capslock = (KTYP(value) == KT_LETTER);
-
+	// check special keys
     switch (ks) {
     case MMSKEY_SHIFT:
     	this->shift_pressed = pressed;
     	break;
-    default:
+    case MMSKEY_ALTGR:
+    	this->altgr_pressed = pressed;
     	break;
-    }
-
-    if ((this->shift_pressed)/*||(capslock)*/) {
-    	// shift is pressed
-		value = readValue(K_SHIFTTAB, code);
-		ks = getSymbol(code, value);
+    case MMSKEY_CAPS_LOCK:
+    	if (!pressed) {
+    		// work only with the key release event
+   			this->is_caps_lock = !this->is_caps_lock;
+			updateLED();
+    	}
+    	break;
+    default:
+        if ((this->shift_pressed)||(this->is_caps_lock)) {
+            if (!this->altgr_pressed) {
+            	// shift is pressed
+            	value = readValue(K_SHIFTTAB, code);
+            	ks = getSymbol(code, value);
+            }
+            else {
+            	// shift+altgr is pressed
+        		value = readValue(K_ALTSHIFTTAB, code);
+        		ks = getSymbol(code, value);
+            }
+        }
+        else
+        if (this->altgr_pressed) {
+        	// altgr is pressed
+    		value = readValue(K_ALTTAB, code);
+    		ks = getSymbol(code, value);
+        }
+    	break;
     }
 
     return ks;
@@ -282,6 +304,13 @@ void MMSInputLISHandler::readKeyboardEvents() {
 	}
 }
 
+void MMSInputLISHandler::updateLED() {
+	int locks = 0;
+	if (this->is_caps_lock)
+		locks |= K_CAPSLOCK;
+    ioctl(this->kb_fd, KDSKBLED, locks);
+}
+
 void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
 #ifdef __HAVE_VESAFB__
 	while (1) {
@@ -305,5 +334,4 @@ void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
 	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile VESAFB support!");
 #endif
 }
-
 

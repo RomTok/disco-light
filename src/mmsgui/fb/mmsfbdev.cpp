@@ -445,6 +445,7 @@ bool MMSFBDev::vtOpen(int console) {
 
     // init keyboard
     ioctl(this->vt.fd, KDSKBMODE, K_MEDIUMRAW);
+    ioctl(this->vt.fd, KDSKBLED, 0);
     tcgetattr(this->vt.fd, &this->saved_ts);
     struct termios ts;
     ts = this->saved_ts;

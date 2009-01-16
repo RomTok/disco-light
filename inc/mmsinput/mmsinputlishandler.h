@@ -46,7 +46,14 @@ class MMSInputLISHandler : public MMSInputHandler {
 		//! event ring buffer, write pos
 		int ie_write_pos;
 
+		//! shift key pressed
 		bool shift_pressed;
+
+		//! altgr key pressed
+		bool altgr_pressed;
+
+		//! is caps lock?
+		bool is_caps_lock;
 
 		//! filedescriptor from which we read keyboard inputs (this should be the fd to the framebuffer console)
 		int	kb_fd;
@@ -55,6 +62,7 @@ class MMSInputLISHandler : public MMSInputHandler {
 		unsigned short readValue(unsigned char table, unsigned char index);
 		MMSKeySymbol getKeyFromCode(bool pressed, unsigned char code);
 		void readKeyboardEvents();
+		void updateLED();
 	public:
 		MMSInputLISHandler(MMS_INPUT_DEVICE device);
 		~MMSInputLISHandler();
