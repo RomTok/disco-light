@@ -260,6 +260,7 @@ conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
 conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
+conf.checkSimpleLib(['freetype2'], 'freetype/freetype.h')
 
 # checks required if building DirectFB backend
 if('dfb' in env['graphics']):
@@ -271,7 +272,6 @@ if('x11' in env['graphics']):
 	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
 	conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
 	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
-	conf.checkSimpleLib(['freetype2'], 'freetype/freetype.h')
 	conf.env['CCFLAGS'].append(['-D__HAVE_XLIB__',
 				'-D__ENABLE_MMSFB_X11_CORE__',
 				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
@@ -343,7 +343,7 @@ if 'check' in BUILD_TARGETS:
 # TODO: handle disko_pc_libs                                          #
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
-	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2'
+	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2, freetype2'
 	if(env['LIBPATH']):
 		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
@@ -354,7 +354,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', directfb'
 	  
 	if('x11' in env['graphics']):
-		disko_pc_requires += ', x11, xv, xxf86vm, freetype2'
+		disko_pc_requires += ', x11, xv, xxf86vm'
 		
 	if(env['enable_media']):
 		disko_pc_libs += ' -lmmsmedia'
