@@ -115,6 +115,19 @@ ifndef CURL_CHECKED
     export CURL_CHECKED=1
 endif
 
+#freetype2
+ifndef FREETYPE2_CHECKED
+    $(info check for freetype2)
+    export FREETYPE2_INC=$(shell pkg-config --cflags freetype2)
+    ifeq ($(FREETYPE2_INC),)
+        $(info --- INFO ---: freetype2 was not found. Either adjust PKG_CONFIG_PATH or install the package.)
+        HAVE_ALL_DEPS=0
+    else
+        export FREETYPE2_LIBS=$(shell pkg-config --libs freetype2)
+    endif
+    export FREETYPE2_CHECKED=1
+endif
+
 #directfb
 ifndef DIRECTFB_CHECKED
     export DIRECTFB_CHECKED=1
@@ -148,7 +161,7 @@ ifndef X11_CHECKED
             else
                 $(info Building with X11 core)
                 export X11_INC=$(ASK_X11) $(ASK_XV)
-                export X11_LIBS=$(shell pkg-config --libs x11 xv xxf86vm freetype2)
+                export X11_LIBS=$(shell pkg-config --libs x11 xv xxf86vm)
                 export CFLAGS+='-D__HAVE_XLIB__ -D__ENABLE_MMSFB_X11_CORE__ -D__ENABLE_MMSFBSURFACE_X11_CORE__'
             endif
         endif

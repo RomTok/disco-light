@@ -83,6 +83,8 @@ check:
 	@pkg-config --print-errors --exists sqlite3
 	@echo check for libcurl
 	@pkg-config --print-errors --exists libcurl
+	@echo check for freetype2
+	@pkg-config --print-errors --exists freetype2
 	@echo check for directfb
 	@pkg-config --print-errors --exists directfb
 	@echo check for libsigc++
