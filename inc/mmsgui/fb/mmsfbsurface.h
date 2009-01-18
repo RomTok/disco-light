@@ -174,9 +174,7 @@ class MMSFBSurface {
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
 
-#ifdef __HAVE_XLIB__
         bool blit_text(string &text, int len, int x, int y);
-#endif
 
 
         MMSFBFlipFlags			flipflags;		/* flags which are used when flipping */
