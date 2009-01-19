@@ -36,7 +36,7 @@ class MMSFBDevMatrox : public MMSFBDev {
 
     public:
         MMSFBDevMatrox();
-        ~MMSFBDevMatrox();
+        virtual ~MMSFBDevMatrox();
 
         bool openDevice(char *device_file = NULL, int console = -1);
         void closeDevice();

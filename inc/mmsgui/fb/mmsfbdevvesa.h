@@ -36,7 +36,7 @@ class MMSFBDevVesa : public MMSFBDev {
 
     public:
         MMSFBDevVesa();
-        ~MMSFBDevVesa();
+        virtual ~MMSFBDevVesa();
 
         bool openDevice(char *device_file = NULL, int console = -1);
         void closeDevice();
