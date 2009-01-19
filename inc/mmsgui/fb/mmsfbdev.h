@@ -89,7 +89,7 @@ class MMSFBDev {
 
     public:
         MMSFBDev();
-        ~MMSFBDev();
+        virtual ~MMSFBDev();
 
         virtual bool openDevice(char *device_file = NULL, int console = -1);
         virtual void closeDevice();
