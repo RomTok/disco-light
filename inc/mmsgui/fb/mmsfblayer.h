@@ -68,8 +68,8 @@ class MMSFBLayer {
         IDirectFBDisplayLayer   *dfblayer;
 #endif
 
-#ifdef  __HAVE_VESAFB__
-        MMSFBSurface	*vesafb_surface;
+#ifdef  __HAVE_MMSFBDEV__
+        MMSFBSurface	*mmsfbdev_surface;
 #endif
 
 #ifdef __HAVE_XLIB__

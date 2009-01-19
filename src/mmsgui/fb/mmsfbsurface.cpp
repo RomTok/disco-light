@@ -3463,10 +3463,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 		}
 
-#ifdef __HAVE_VESAFB__
-		if (mmsfb->layer[0]->vesafb_surface) {
+#ifdef __HAVE_MMSFBDEV__
+		if (mmsfb->layer[0]->mmsfbdev_surface) {
 			// put the image to the framebuffer
-			mmsfb->layer[0]->vesafb_surface->blit(this, NULL, 0, 0);
+			mmsfb->layer[0]->mmsfbdev_surface->blit(this, NULL, 0, 0);
 		}
 		else {
 #endif
@@ -3500,7 +3500,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 		}
 #endif
 
-#ifdef __HAVE_VESAFB__
+#ifdef __HAVE_MMSFBDEV__
 		}
 #endif
 

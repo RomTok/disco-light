@@ -62,8 +62,8 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->config.window_pixelformat = MMSFB_PF_ARGB;
     this->config.surface_pixelformat = MMSFB_PF_ARGB;
 
-#ifdef __HAVE_VESAFB__
-    this->vesafb_surface = NULL;
+#ifdef __HAVE_MMSFBDEV__
+    this->mmsfbdev_surface = NULL;
 #endif
 
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
@@ -80,34 +80,34 @@ MMSFBLayer::MMSFBLayer(int id) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
         if (this->config.id != 0) {
-			MMSFB_SetError(0, "VESAFB support needs layer 0!");
+			MMSFB_SetError(0, "MMSFBDEV support needs layer 0!");
         	return;
         }
 
-        if (mmsfb->vesafb) {
+        if (mmsfb->mmsfbdev) {
     		// fill my config partly from mmsfb
         	MMSFBExternalSurfaceBuffer extbuf;
         	memset(&extbuf, 0, sizeof(extbuf));
-            if (!mmsfb->vesafb->getFrameBufferPtr(0, &extbuf.ptr, &extbuf.pitch, &this->config.w, &this->config.h)) {
+            if (!mmsfb->mmsfbdev->getFrameBufferPtr(0, &extbuf.ptr, &extbuf.pitch, &this->config.w, &this->config.h)) {
     			MMSFB_SetError(0, "getFrameBufferPtr() failed");
             	return;
             }
-        	mmsfb->vesafb->getPixelFormat(&this->config.pixelformat);
+        	mmsfb->mmsfbdev->getPixelFormat(&this->config.pixelformat);
     		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
     		this->config.options = MMSFB_LO_NONE;
 
             // create a new surface instance for the framebuffer memory
-    		this->vesafb_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &extbuf);
-    		if (!this->vesafb_surface) {
+    		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &extbuf);
+    		if (!this->mmsfbdev_surface) {
     			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
     			return;
     		}
 
     		// we must switch extended accel on
-    		this->vesafb_surface->setExtendedAcceleration(true);
+    		this->mmsfbdev_surface->setExtendedAcceleration(true);
 
         	this->initialized = true;
         }
@@ -192,10 +192,10 @@ MMSFBLayer::~MMSFBLayer() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
-        if (this->vesafb_surface)
-        	delete this->vesafb_surface;
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
+        if (this->mmsfbdev_surface)
+        	delete this->mmsfbdev_surface;
 #endif
     }
     else {
@@ -215,9 +215,9 @@ bool MMSFBLayer::isInitialized() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
-    	return (this->vesafb_surface != NULL);
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
+    	return (this->mmsfbdev_surface != NULL);
 #endif
     }
     else {
@@ -262,8 +262,8 @@ bool MMSFBLayer::setExclusiveAccess() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
     	return true;
 #endif
     }
@@ -308,9 +308,9 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 #endif
         }
         else
-        if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
-            DEBUGMSG("MMSGUI", " backend:     VESAFB");
+        if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
+            DEBUGMSG("MMSGUI", " backend:     mmsfbdev");
 #endif
         }
         else {
@@ -465,9 +465,9 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
-		// if we use own VESAFB, currently we cannot change the layer attributes
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
+		// if we use own FB, currently we cannot change the layer attributes
 		this->config.window_pixelformat = window_pixelformat;
 		this->config.surface_pixelformat = surface_pixelformat;
 
@@ -568,8 +568,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
         // create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
 		if (!*surface) {
