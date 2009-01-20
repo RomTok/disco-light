@@ -43,8 +43,9 @@
 #include "mmstools/mmserror.h"
 #include "mmssip/mmssip.h"
 
-static MMSSip *thiz = NULL;
-static bool   registered = false;
+static MMSSip 			*thiz = NULL;
+static bool   			registered = false;
+static pjsua_player_id	ringtonePlayer = PJSUA_INVALID_ID;
 
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
@@ -302,7 +303,10 @@ void MMSSip::hangup(int id) {
 		}
     }
 
-    pjsua_call_hangup(id, 0, NULL, NULL);
+	if(id != PJSUA_INVALID_ID)
+		pjsua_call_hangup(id, 0, NULL, NULL);
+	else
+		pjsua_call_hangup_all();
 }
 
 void MMSSip::answer(int id) {
@@ -395,6 +399,21 @@ bool MMSSip::getAutoAnswer(int accountId) {
 	}
 }
 
+/**
+ * Register a .wav file as ringtone.
+ *
+ * @param	filename	[in]	wav-file to play
+ *
+ * @return	true, if successfull
+ */
+bool MMSSip::registerRingtone(const string &filename) {
+	pj_str_t tmp;
+	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), 0, &ringtonePlayer) == PJ_SUCCESS)
+		return true;
+
+	return false;
+}
+
 /* Callback called by the library upon receiving incoming call */
 static void onIncomingCall(pjsua_acc_id  accId,
 		                   pjsua_call_id callId,
@@ -438,6 +457,10 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_EARLY:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_EARLY");
+        	if(ringtonePlayer != PJSUA_INVALID_ID &&
+        	   ci.role == PJSIP_ROLE_UAC &&
+        	   ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_CONNECTING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONNECTING");
@@ -450,6 +473,8 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         case PJSIP_INV_STATE_DISCONNECTED:
         	DEBUGMSG("MMSSIP", "lastStatusText: %s", ci.last_status_text);
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_DISCONNECTED");
+        	if(ringtonePlayer != PJSUA_INVALID_ID)
+        		pjsua_conf_disconnect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	if(thiz && thiz->onCallDisconnected)
                 thiz->onCallDisconnected->emit(callId);
         	break;
@@ -462,6 +487,9 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
 /* Callback called by the library when call's media state has changed */
 static void onCallMediaState(pjsua_call_id callId) {
     pjsua_call_info ci;
+
+	if(ringtonePlayer != PJSUA_INVALID_ID)
+		pjsua_conf_disconnect(pjsua_player_get_conf_port(ringtonePlayer), 0);
 
     pjsua_call_get_info(callId, &ci);
 
