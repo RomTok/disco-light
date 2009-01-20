@@ -31,7 +31,8 @@
 
 #include "mmstools/mmslogger.h"
 
-#include "mmsgui/fb/mmsfbdev.h"
+#include "mmsgui/fb/mmsfbdevvesa.h"
+#include "mmsgui/fb/mmsfbdevmatrox.h"
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"
@@ -55,9 +56,9 @@ class MMSFB {
         IDirectFB       *dfb;
 #endif
 
-#ifdef  __HAVE_VESAFB__
-        // interface to own VESAFB
-        MMSFBDev		*vesafb;
+#ifdef  __HAVE_MMSFBDEV__
+        // interface to own FB device
+        MMSFBDev		*mmsfbdev;
 #endif
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];

@@ -60,7 +60,7 @@ void MMSInputThread::threadMain() {
 			this->handler = new MMSInputDFBHandler(this->device);
 		}
 		else
-		if(mmsfb->getBackend()==MMSFB_BACKEND_VESAFB) {
+		if(mmsfb->getBackend()==MMSFB_BACKEND_MMSFBDEV) {
 			this->handler = new MMSInputLISHandler(this->device);
 		}
 		else

@@ -50,6 +50,8 @@ MMSFBDev::MMSFBDev() {
 	this->framebuffer_base = NULL;
 	this->reset_console_accel = false;
 	this->pixelformat = MMSFB_PF_NONE;
+	memset(this->modes, 0, sizeof(this->modes));
+	this->modes_cnt = 0;
 
 	// init terminal vals
 	this->vt.fd0 = -1;
@@ -160,6 +162,82 @@ bool MMSFBDev::buildPixelFormat() {
 	return false;
 }
 
+bool MMSFBDev::readModes() {
+	// reset mode list
+	this->modes_cnt = 0;
+
+	// open fb.modes
+	FILE *fp;
+	if (!(fp = fopen("/etc/fb.modes","r")))
+		return false;
+
+	// through all lines
+	char line[128];
+	while (fgets(line, sizeof(line)-1, fp)) {
+		char label[32];
+		if (sscanf(line, "mode \"%31[^\"]\"", label) == 1) {
+			// mode found
+			bool geom_set = false;
+			bool timings_set = false;
+			struct fb_var_screeninfo *mode = &this->modes[this->modes_cnt];
+			memset(mode, 0, sizeof(struct fb_var_screeninfo));
+
+			// parse for settings
+			while (fgets(line, sizeof(line)-1, fp) && !(strstr(line, "endmode"))) {
+				char value[16];
+				int dummy;
+				if (sscanf(line, " geometry %d %d %d %d %d",
+								&mode->xres, &mode->yres, &dummy, &dummy, &mode->bits_per_pixel) == 5)
+					geom_set = true;
+				else
+				if (sscanf(line, " timings %d %d %d %d %d %d %d",
+								&mode->pixclock, &mode->left_margin,  &mode->right_margin,
+								&mode->upper_margin, &mode->lower_margin, &mode->hsync_len, &mode->vsync_len) == 7)
+					timings_set = true;
+				else
+				if ((sscanf(line, " hsync %15s", value) == 1) && !strcasecmp(value, "high"))
+					mode->sync |= FB_SYNC_HOR_HIGH_ACT;
+				else
+				if ((sscanf(line, " vsync %15s", value) == 1) && !strcasecmp(value, "high"))
+					mode->sync |= FB_SYNC_VERT_HIGH_ACT;
+				else
+				if ((sscanf(line, " csync %15s", value) == 1) && !strcasecmp(value, "high"))
+					mode->sync |= FB_SYNC_COMP_HIGH_ACT;
+				else
+				if ((sscanf(line, " gsync %15s", value) == 1) && !strcasecmp(value, "true"))
+					mode->sync |= FB_SYNC_ON_GREEN;
+				else
+				if ((sscanf(line, " extsync %15s", value) == 1) && !strcasecmp(value, "true"))
+					mode->sync |= FB_SYNC_EXT;
+				else
+				if ((sscanf(line, " bcast %15s", value) == 1) && !strcasecmp(value, "true"))
+					mode->sync |= FB_SYNC_BROADCAST;
+				else
+				if ((sscanf(line, " laced %15s", value) == 1) && !strcasecmp(value, "true"))
+					mode->vmode |= FB_VMODE_INTERLACED;
+				else
+				if ((sscanf(line, " double %15s", value) == 1) && !strcasecmp(value, "true"))
+					mode->vmode |= FB_VMODE_DOUBLE;
+			}
+
+			if (geom_set &&	timings_set) {
+				// add mode to list
+				this->modes_cnt++;
+
+			    printf("MMSFBDev: mode %s (%dx%d) loaded from /etc/fb.modes\n", label, mode->xres, mode->yres);
+			}
+			else {
+				// ignore mode
+			    printf("MMSFBDev: ignore mode %s (%dx%d) from /etc/fb.modes\n", label, mode->xres, mode->yres);
+			}
+		}
+	}
+
+	fclose (fp);
+	return true;
+}
+
+
 bool MMSFBDev::openDevice(char *device_file, int console) {
 	// close the device if opened
 	closeDevice();
@@ -199,6 +277,10 @@ bool MMSFBDev::openDevice(char *device_file, int console) {
     else
     if (this->device_file.substr(0, 7) == "/dev/fb")
         sprintf(this->device, "fb%s", this->device_file.substr(7, 5).c_str());
+
+    // read video modes
+    readModes();
+	printf("MMSFBDev: %d modes loaded from /etc/fb.modes\n", this->modes_cnt);
 
     // initialize virtual terminal
     if (!vtOpen(console)) {
@@ -319,6 +401,7 @@ bool MMSFBDev::getFrameBufferPtr(unsigned int number, void **ptr, int *pitch, in
 	}
 	return true;
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -50,8 +50,8 @@ MMSFB::MMSFB() {
 #ifdef  __HAVE_DIRECTFB__
     this->dfb = NULL;
 #endif
-#ifdef  __HAVE_VESAFB__
-    this->vesafb = NULL;
+#ifdef  __HAVE_MMSFBDEV__
+    this->mmsfbdev = NULL;
 #endif
     this->outputtype = "";
     this->w = 0;
@@ -94,9 +94,9 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
         this->resized=false;
     }
 #endif
-#ifdef __HAVE_VESAFB__
-    if ((this->outputtype == "VFB")&&(extendedaccel)) {
-    	this->backend = MMSFB_BACKEND_VESAFB;
+#ifdef __HAVE_MMSFBDEV__
+    if (((this->outputtype == "VFB")||(this->outputtype == "MFB"))&&(extendedaccel)) {
+    	this->backend = MMSFB_BACKEND_MMSFBDEV;
     }
 #endif
 
@@ -115,12 +115,21 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
 #endif
     }
     else
-    if (this->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
-    	this->vesafb = new MMSFBDev();
-    	if (this->vesafb)
-			if (!this->vesafb->openDevice()) {
-				MMSFB_SetError(0, "VESAFB device cannot be opened");
+    if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
+    	if (this->outputtype == "VFB")
+    		this->mmsfbdev = new MMSFBDevVesa();
+    	else
+		if (this->outputtype == "MFB")
+    		this->mmsfbdev = new MMSFBDevMatrox();
+		else {
+			MMSFB_SetError(0, "MMSFBDEV device, wrong output type " + this->outputtype);
+			return false;
+		}
+
+    	if (this->mmsfbdev)
+			if (!this->mmsfbdev->openDevice()) {
+				MMSFB_SetError(0, "MMSFBDEV device cannot be opened");
 				return false;
 			}
 #endif
@@ -245,11 +254,11 @@ bool MMSFB::release() {
 #endif
     }
     else
-    if (this->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef __HAVE_VESAFB__
-    	if (this->vesafb) {
-    		delete this->vesafb;
-    		this->vesafb = NULL;
+    if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
+    	if (this->mmsfbdev) {
+    		delete this->mmsfbdev;
+    		this->mmsfbdev = NULL;
     	}
 #endif
     }
@@ -306,8 +315,8 @@ void *MMSFB::getX11Window() {
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef  __HAVE_VESAFB__
+	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef  __HAVE_MMSFBDEV__
 #endif
 	}
     else {
@@ -323,8 +332,8 @@ void *MMSFB::getX11Display() {
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef  __HAVE_VESAFB__
+	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef  __HAVE_MMSFBDEV__
 #endif
 	}
     else {
@@ -344,8 +353,8 @@ bool MMSFB::refresh() {
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_VESAFB) {
-#ifdef  __HAVE_VESAFB__
+	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef  __HAVE_MMSFBDEV__
 #endif
 	}
     else {
@@ -374,6 +383,7 @@ bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixe
 
 #ifdef  __HAVE_DIRECTFB__
 bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filename) {
+	*provider = NULL;
     if (this->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
@@ -390,12 +400,15 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 		return true;
 #endif
     }
-    else {
-#ifdef __HAVE_XLIB__
-		*provider = NULL;
-		return false;
+    if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef __HAVE_MMSFBDEV__
 #endif
     }
+    else {
+#ifdef __HAVE_XLIB__
+#endif
+    }
+	return false;
 }
 #endif
 

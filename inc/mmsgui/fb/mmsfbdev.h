@@ -38,6 +38,8 @@
 #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, u_int32_t)
 #endif
 
+#define MMSFBDEV_MAX_MODES	128
+
 class MMSFBDev {
     private:
     	//! is initialized?
@@ -73,16 +75,24 @@ class MMSFBDev {
         //! pixelformat of the screen
         MMSFBSurfacePixelFormat		pixelformat;
 
+        //! available modes read from /etc/fb.modes
+        struct fb_var_screeninfo	modes[MMSFBDEV_MAX_MODES];
+
+        //! number of loaded modes
+        int modes_cnt;
+
         void printFixScreenInfo();
         void printVarScreenInfo();
         bool buildPixelFormat();
 
+        bool readModes();
+
     public:
         MMSFBDev();
-        ~MMSFBDev();
+        virtual ~MMSFBDev();
 
-        bool openDevice(char *device_file = NULL, int console = -1);
-        void closeDevice();
+        virtual bool openDevice(char *device_file = NULL, int console = -1);
+        virtual void closeDevice();
         bool isInitialized();
         void waitForVSync();
 
@@ -115,6 +125,8 @@ class MMSFBDev {
         void vtClose();
         bool vtGetFd(int *fd);
 
+        friend class MMSFBDevVesa;
+        friend class MMSFBDevMatrox;
         friend class MMSInputLISHandler;
 
 };
