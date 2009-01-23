@@ -515,7 +515,7 @@ static void onRegistrationState(pjsua_acc_id id) {
 	    DEBUGMSG("MMSSIP", "online_status_text: %s", info.online_status_text);
 
 	    /* set online if registration successfull and online status 0 */
-	    if(registered) {
+	    if(registered && !info.online_status) {
 	    	if(pjsua_acc_set_online_status(id,	PJ_TRUE) == PJ_SUCCESS)
 	    		DEBUGMSG("MMSSIP", "Setting online status successfull");
 	    	else
