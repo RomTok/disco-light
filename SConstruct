@@ -131,28 +131,35 @@ else:
 # Helper functions                                                    #
 #######################################################################
 def checkOptions(context):
+	context.Message('Checking for options...')
 	# check if graphics backend was chosen
 	if not env['graphics']:
-		print 'Please choose a graphics backend by using:'
+		print '\nPlease choose a graphics backend by using:'
 		print '  \'scons graphics=dfb\' or'
 		print '  \'scons graphics=x11\' or'
 		print '  \'scons graphics=all\'\n'
 		Exit(1)
 
 	if not env['database']:
-		print 'Please choose a graphics backend by using:'
+		print '\nPlease choose a graphics backend by using:'
 		print '  \'scons database=sqlite3\' or'
 		print '  \'scons database=mysql\' or'
 		print '  \'scons database=odbc\'\n'
 		Exit(1)
 		
+	# to avoid 'error: no result' msg
+	context.Result(True)
+	
 	return True
 
 def tryConfigCommand(context, cmd):
 	ret = context.TryAction(cmd)[0]
-	context.Result(ret)
+	
 	if ret:
-		context.env.ParseConfig(cmd)
+		try:
+			context.env.ParseConfig(cmd)
+		except OSError:
+			ret = 0
 	return ret
 
 def checkPKGConfig(context):
@@ -165,30 +172,42 @@ def checkPKG(context, name):
 	return tryConfigCommand(context, 'pkg-config --libs --cflags \'%s\'' % name)
 
 def checkConf(context, name):
-	binary = '%s_config' % name.lower()
-	configcall = '%s --libs --cflags' %binary
-	return tryConfigCommand(context, configcall)
+	seperators = ['-', '_']
+	for sep in seperators:
+		configcall = '%s%sconfig --libs --cflags' % (name.lower(), sep)
+		if(tryConfigCommand(context, configcall)):
+			return True
+	return False
 
 def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 	for lib in liblist:
 		context.Message('Checking for %s... ' % lib)
 		ret = checkPKG(context, lib)
 		if ret:
-			return ret
+			context.Result(True)
+			return True
 
 		ret = checkConf(context, lib)
 		if ret:
-			return ret
+			context.Result(True)
+			return True
 
+		# redirect stdout to suppress messages from built in checks
+		sys.stdout = open('/dev/null', 'a')
 		if len(header):
 			ret = conf.CheckLibWithHeader(lib, header, lang)
 		else:
 			ret = conf.CheckLib(lib)
-
+		# restore stdout
+		sys.stdout.close()
+		sys.stdout = sys.__stdout__
 		if ret:
 			#if not lib in conf.env['LIBS']:
 			#	conf.env.Append(LIBS = [lib])
-			return ret
+			context.Result(True)
+			return True
+
+	context.Result(False)
 
 	if required:
 		print 'required lib %s not found' % lib
@@ -241,11 +260,11 @@ def printSummary():
 #######################################################################
 # Check dependencies                                                  #
 #######################################################################
-conf = Configure(env, 
+conf = Configure(env,
                  custom_tests = {'checkOptions' : checkOptions,
                  				 'checkPKGConfig' : checkPKGConfig,
-                 				 'checkConf' : checkConf, 
-                 				 'checkPKG' : checkPKG, 
+                 				 'checkConf' : checkConf,
+                 				 'checkPKG' : checkPKG,
                  				 'checkSimpleLib' : checkSimpleLib},
                  conf_dir = 'build/.sconf_temp',
                  log_file = '/dev/null',
