@@ -102,6 +102,7 @@ class MMSSwitcher : public IMMSSwitcher {
         virtual IMMSSwitcher *newSwitcher(MMSPluginData *plugindata);
         virtual bool switchToPlugin();
         virtual bool leavePlugin(bool show_switcher);
+        virtual void* callback(void *data);
 
     friend class MMSSwitcherThread;
 };

@@ -55,6 +55,15 @@ class IMMSSwitcher {
 
         virtual bool switchToPlugin() = 0;
         virtual bool leavePlugin(bool show_switcher) = 0;
+
+        /**
+         * Generic callback for plugin->switcher communication.
+         *
+         * @param	application specific data
+         *
+         * @return	application specific data
+         */
+        virtual void* callback(void* data) = 0;
 };
 
 #endif /*IMMSSWITCHER_H_*/
