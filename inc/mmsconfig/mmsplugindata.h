@@ -65,7 +65,10 @@ class MMSPluginData {
 
     public:
         MMSPluginData();
+        MMSPluginData(const MMSPluginData &pd);
         ~MMSPluginData();
+
+        MMSPluginData& operator=(const MMSPluginData &pd);
 
         int     getId();
 
