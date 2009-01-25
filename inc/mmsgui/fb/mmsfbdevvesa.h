@@ -29,6 +29,8 @@
 #ifndef MMSFBDEVVESA_H_
 #define MMSFBDEVVESA_H_
 
+#ifdef __HAVE_FBDEV__
+
 #include "mmsgui/fb/mmsfbdev.h"
 
 class MMSFBDevVesa : public MMSFBDev {
@@ -41,5 +43,7 @@ class MMSFBDevVesa : public MMSFBDev {
         bool openDevice(char *device_file = NULL, int console = -1);
         void closeDevice();
 };
+
+#endif
 
 #endif /* MMSFBDEVVESA_H_ */

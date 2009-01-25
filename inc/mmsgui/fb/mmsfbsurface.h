@@ -57,7 +57,7 @@ typedef struct {
     bool    alphachannel;
     //! premultiplied surface
     bool    premultiplied;
-    //! premultiplied surface
+    //! number of backbuffers (e.g. 0 means FRONTONLY)
     int     backbuffer;
     //! true, if surface is stored in system memory
     bool	systemonly;
@@ -68,6 +68,9 @@ typedef struct {
     int 	currbuffer_write;
     int 	pitch;
     bool	external_buffer;
+#ifdef __HAVE_FBDEV__
+    class MMSFBSurface	*mmsfbdev_surface;
+#endif
 #ifdef __HAVE_XLIB__
     XvImage *xv_image[MMSFBSurfaceMaxBuffers];
 #endif
@@ -94,7 +97,7 @@ typedef struct {
     //! blitting flags
     MMSFBBlittingFlags 	blittingflags;
     //! font
-    MMSFBFont					*font;
+    MMSFBFont			*font;
     //! the surface buffer(s)
     MMSFBSurfaceBuffer	*surface_buffer;
 } MMSFBSurfaceConfig;
@@ -228,6 +231,7 @@ class MMSFBSurface {
 
         bool getPixelFormat(MMSFBSurfacePixelFormat *pf);
         bool getSize(int *w, int *h);
+        bool getNumberOfBuffers(int *num);
         bool getMemSize(int *size);
 
         bool setFlipFlags(MMSFBFlipFlags flags);

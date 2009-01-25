@@ -50,7 +50,7 @@ MMSFB::MMSFB() {
 #ifdef  __HAVE_DIRECTFB__
     this->dfb = NULL;
 #endif
-#ifdef  __HAVE_MMSFBDEV__
+#ifdef  __HAVE_FBDEV__
     this->mmsfbdev = NULL;
 #endif
     this->outputtype = "";
@@ -64,8 +64,8 @@ MMSFB::MMSFB() {
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool extendedaccel, bool fullscreen,
-				 string appl_name, string appl_icon_name) {
+bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w, int h,
+				 bool extendedaccel, bool fullscreen, string appl_name, string appl_icon_name) {
 
     // check if already initialized
     if (this->initialized) {
@@ -86,22 +86,53 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     this->h = h;
 
     // which backend should i use?
-    this->backend = MMSFB_BACKEND_DFB;
+	if (backend == MMS_BE_DFB) {
+#ifdef __HAVE_DIRECTFB__
+		this->backend = MMSFB_BACKEND_DFB;
+#else
+		MMSFB_SetError(0, "compile DFB support!");
+		return false;
+#endif
+	}
+    else
+    if (backend == MMS_BE_X11) {
 #ifdef __HAVE_XLIB__
-    if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel)) {
-    	this->backend = MMSFB_BACKEND_X11;
-    	XInitThreads();
-        this->resized=false;
-    }
+		this->backend = MMSFB_BACKEND_X11;
+		XInitThreads();
+		this->resized=false;
+#else
+		MMSFB_SetError(0, "compile X11 support!");
+		return false;
 #endif
-#ifdef __HAVE_MMSFBDEV__
-    if (((this->outputtype == "VFB")||(this->outputtype == "MFB"))&&(extendedaccel)) {
-    	this->backend = MMSFB_BACKEND_MMSFBDEV;
     }
+    else
+	if (backend == MMS_BE_FBDEV) {
+#ifdef __HAVE_FBDEV__
+		this->backend = MMSFB_BACKEND_MMSFBDEV;
+#else
+		MMSFB_SetError(0, "compile FBDEV support!");
+		return false;
 #endif
+	}
+	else
+	if (backend == "") {
+		// fall back, auto detection
+		this->backend = MMSFB_BACKEND_DFB;
+#ifdef __HAVE_XLIB__
+		if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel)) {
+			this->backend = MMSFB_BACKEND_X11;
+			XInitThreads();
+			this->resized=false;
+		}
+#endif
+	}
+	else {
+		MMSFB_SetError(0, "wrong backend " + backend);
+		return false;
+	}
 
     if (this->backend == MMSFB_BACKEND_DFB) {
-#ifdef  __HAVE_DIRECTFB__
+#ifdef __HAVE_DIRECTFB__
         DFBResult dfbres;
 
         /* init dfb */
@@ -116,11 +147,11 @@ bool MMSFB::init(int argc, char **argv, string outputtype, int w, int h, bool ex
     }
     else
     if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
-    	if (this->outputtype == "VFB")
+#ifdef __HAVE_FBDEV__
+    	if (this->outputtype == MMS_OT_VESAFB)
     		this->mmsfbdev = new MMSFBDevVesa();
     	else
-		if (this->outputtype == "MFB")
+		if (this->outputtype == MMS_OT_MATROXFB)
     		this->mmsfbdev = new MMSFBDevMatrox();
 		else {
 			MMSFB_SetError(0, "MMSFBDEV device, wrong output type " + this->outputtype);
@@ -255,7 +286,7 @@ bool MMSFB::release() {
     }
     else
     if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
     	if (this->mmsfbdev) {
     		delete this->mmsfbdev;
     		this->mmsfbdev = NULL;
@@ -316,7 +347,7 @@ void *MMSFB::getX11Window() {
     }
     else
 	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef  __HAVE_MMSFBDEV__
+#ifdef  __HAVE_FBDEV__
 #endif
 	}
     else {
@@ -333,7 +364,7 @@ void *MMSFB::getX11Display() {
     }
     else
 	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef  __HAVE_MMSFBDEV__
+#ifdef  __HAVE_FBDEV__
 #endif
 	}
     else {
@@ -354,7 +385,7 @@ bool MMSFB::refresh() {
     }
     else
 	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef  __HAVE_MMSFBDEV__
+#ifdef  __HAVE_FBDEV__
 #endif
 	}
     else {
@@ -401,7 +432,7 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 #endif
     }
     if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
 #endif
     }
     else {

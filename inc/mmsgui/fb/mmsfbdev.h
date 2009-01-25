@@ -29,6 +29,8 @@
 #ifndef MMSFBDEV_H_
 #define MMSFBDEV_H_
 
+#ifdef __HAVE_FBDEV__
+
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/fb.h"
 #include <termios.h>
@@ -39,6 +41,8 @@
 #endif
 
 #define MMSFBDEV_MAX_MODES	128
+#define MMSFBDEV_MAX_LAYERS	32
+
 
 class MMSFBDev {
     private:
@@ -72,14 +76,31 @@ class MMSFBDev {
         //! original variable screen infos
         struct fb_var_screeninfo    org_var_screeninfo;
 
-        //! pixelformat of the screen
-        MMSFBSurfacePixelFormat		pixelformat;
-
         //! available modes read from /etc/fb.modes
         struct fb_var_screeninfo	modes[MMSFBDEV_MAX_MODES];
 
         //! number of loaded modes
         int modes_cnt;
+
+        typedef struct {
+        	//! is initialized?
+        	bool	isinitialized;
+        	//! width of the layer
+        	int width;
+        	//! height of the layer
+        	int height;
+        	//! pitch (bytes per line)
+        	int pitch;
+			//! pixelformat of the layer
+			MMSFBSurfacePixelFormat	pixelformat;
+        } MMSFBDEV_LAYER;
+
+        //! layer infos
+        MMSFBDEV_LAYER layers[MMSFBDEV_MAX_LAYERS];
+
+        //! number of layers
+        int layers_cnt;
+
 
         void printFixScreenInfo();
         void printVarScreenInfo();
@@ -96,10 +117,18 @@ class MMSFBDev {
         bool isInitialized();
         void waitForVSync();
 
+        virtual bool testLayer(int layer_id);
+        virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
 
-        bool getPixelFormat(MMSFBSurfacePixelFormat *pf);
+        bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
+        bool getPhysicalMemory(unsigned long *mem);
         bool getFrameBufferBase(unsigned char **base);
-        bool getFrameBufferPtr(unsigned int number, void **ptr, int *pitch, int *width, int *height);
+        bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
+
+        bool mapMmio(unsigned char **mmio);
+        bool unmapMmio(unsigned char *mmio);
+
+        bool setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat);
 
     private:
         typedef struct {
@@ -130,5 +159,7 @@ class MMSFBDev {
         friend class MMSInputLISHandler;
 
 };
+
+#endif
 
 #endif /* MMSFBDEV_H_ */

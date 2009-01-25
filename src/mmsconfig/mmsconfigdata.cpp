@@ -190,6 +190,10 @@ const int MMSConfigData::getYres() {
     return this->graphics.yres;
 }
 
+const string MMSConfigData::getBackend() {
+    return this->graphics.backend;
+}
+
 const string MMSConfigData::getOutputType() {
     return this->graphics.outputtype;
 }

@@ -26,6 +26,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifdef __HAVE_FBDEV__
 
 #include "mmsgui/fb/mmsfbdevvesa.h"
 
@@ -36,13 +37,15 @@ MMSFBDevVesa::~MMSFBDevVesa() {
 }
 
 bool MMSFBDevVesa::openDevice(char *device_file, int console) {
-	if (MMSFBDev::openDevice(device_file, console)) {
-		// okay, init my special things here
-		return true;
-	}
+	// open frame buffer
+	if (!MMSFBDev::openDevice(device_file, console))
+		return false;
+
+	return true;
 }
 
 void MMSFBDevVesa::closeDevice() {
 	MMSFBDev::closeDevice();
 }
 
+#endif

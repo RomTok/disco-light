@@ -71,6 +71,7 @@ class MMSConfigDataGraphics {
     public:
 	    int    xres;
 	    int    yres;
+	    string backend;
 	    string outputtype;
 		int    videolayerid;
 	    string videolayerpixelformat;
@@ -137,6 +138,7 @@ class MMSConfigData {
         /* graphics section getters */
         const int    getXres();
         const int    getYres();
+        const string getBackend();
         const string getOutputType();
         const int    getVideoLayerId();
         const string getVideoLayerPixelformat();

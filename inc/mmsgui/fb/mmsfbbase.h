@@ -66,15 +66,22 @@ extern "C" {
 #define MMSFB_BREAK()    do {} while (0)
 #endif
 
-//! output type: vesafb
+//! backend: DFB
+#define MMS_BE_DFB       	"DFB"
+//! backend: X11
+#define MMS_BE_X11       	"X11"
+//! backend: FBDEV
+#define MMS_BE_FBDEV       	"FBDEV"
+
+//! output type: VESAFB
 #define MMS_OT_VESAFB       "VESAFB"
-//! output type: matroxfb
+//! output type: MATROXFB
 #define MMS_OT_MATROXFB     "MATROXFB"
-//! output type: viafb
+//! output type: VIAFB
 #define MMS_OT_VIAFB        "VIAFB"
-//! output type: x11 (for dfb and disko x11 backend)
+//! output type: X11 (for dfb and disko x11 backend)
 #define MMS_OT_X11FB        "X11"
-//! output type: sdl
+//! output type: SDL
 #define MMS_OT_SDLFB        "SDL"
 
 //! supported backends
@@ -83,7 +90,7 @@ typedef enum {
 	MMSFB_BACKEND_DFB = 0,
 	//! X11 backend from disko framework
 	MMSFB_BACKEND_X11,
-	//! FB backend from disko framework
+	//! FBDEV backend from disko framework
 	MMSFB_BACKEND_MMSFBDEV
 } MMSFB_BACKEND;
 
@@ -351,6 +358,11 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf);
 bool isAlphaPixelFormat(MMSFBSurfacePixelFormat pf);
 bool isIndexedPixelFormat(MMSFBSurfacePixelFormat pf);
 bool isRGBPixelFormat(MMSFBSurfacePixelFormat pf);
+int getBitsPerPixel(MMSFBSurfacePixelFormat pf,
+					int *red_length, int *red_offset,
+					int *green_length, int *green_offset,
+					int *blue_length, int *blue_offset,
+					int *transp_length, int *transp_offset);
 
 #ifdef  __HAVE_DIRECTFB__
 // dfb specific routines

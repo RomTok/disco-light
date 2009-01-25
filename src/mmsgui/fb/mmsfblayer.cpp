@@ -62,7 +62,7 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->config.window_pixelformat = MMSFB_PF_ARGB;
     this->config.surface_pixelformat = MMSFB_PF_ARGB;
 
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
     this->mmsfbdev_surface = NULL;
 #endif
 
@@ -81,41 +81,28 @@ MMSFBLayer::MMSFBLayer(int id) {
     }
     else
     if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
-        if (this->config.id != 0) {
-			MMSFB_SetError(0, "MMSFBDEV support needs layer 0!");
-        	return;
-        }
-
+#ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
-    		// fill my config partly from mmsfb
-        	MMSFBExternalSurfaceBuffer extbuf;
-        	memset(&extbuf, 0, sizeof(extbuf));
-            if (!mmsfb->mmsfbdev->getFrameBufferPtr(0, &extbuf.ptr, &extbuf.pitch, &this->config.w, &this->config.h)) {
-    			MMSFB_SetError(0, "getFrameBufferPtr() failed");
-            	return;
-            }
-        	mmsfb->mmsfbdev->getPixelFormat(&this->config.pixelformat);
-    		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
-    		this->config.options = MMSFB_LO_NONE;
+			// test layer initialization
+			if (!mmsfb->mmsfbdev->testLayer(this->config.id)) {
+				MMSFB_SetError(0, "init test of layer " + iToStr(this->config.id) + " failed!");
+				return;
+			}
 
-            // create a new surface instance for the framebuffer memory
-    		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &extbuf);
-    		if (!this->mmsfbdev_surface) {
-    			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
-    			return;
-    		}
+			// fill my config partly from mmsfb
+			this->config.w = mmsfb->w;
+			this->config.h = mmsfb->h;
+			this->config.pixelformat = MMSFB_PF_NONE;
+			this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+			this->config.options = MMSFB_LO_NONE;
 
-    		// we must switch extended accel on
-    		this->mmsfbdev_surface->setExtendedAcceleration(true);
-
-        	this->initialized = true;
+			this->initialized = true;
         }
-
 #endif
     }
     else {
 #ifdef __HAVE_XLIB__
+    	// check layer 0
         if (this->config.id != 0) {
 			MMSFB_SetError(0, "X11 support needs layer 0!");
         	return;
@@ -193,7 +180,7 @@ MMSFBLayer::~MMSFBLayer() {
     }
     else
     if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
         if (this->mmsfbdev_surface)
         	delete this->mmsfbdev_surface;
 #endif
@@ -216,8 +203,8 @@ bool MMSFBLayer::isInitialized() {
     }
     else
     if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
-    	return (this->mmsfbdev_surface != NULL);
+#ifdef __HAVE_FBDEV__
+    	return this->initialized;
 #endif
     }
     else {
@@ -225,6 +212,8 @@ bool MMSFBLayer::isInitialized() {
     	return (this->xv_image1 != NULL);
 #endif
     }
+
+    return false;
 }
 
 bool MMSFBLayer::getID(int *id) {
@@ -263,7 +252,7 @@ bool MMSFBLayer::setExclusiveAccess() {
     }
     else
     if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
     	return true;
 #endif
     }
@@ -272,6 +261,8 @@ bool MMSFBLayer::setExclusiveAccess() {
     	return true;
 #endif
     }
+
+    return false;
 }
 
 bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
@@ -298,24 +289,29 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 		this->config.options = getDFBLayerOptionsString(dlc.options);
 #endif
     }
+    else
+    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+#ifdef  __HAVE_FBDEV__
+#endif
+    }
 
     if (!config) {
     	DEBUGMSG("MMSGUI", "Layer properties:");
 
         if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-            DEBUGMSG("MMSGUI", " backend:     dfb");
+            DEBUGMSG("MMSGUI", " backend:     DFB");
 #endif
         }
         else
         if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
-            DEBUGMSG("MMSGUI", " backend:     mmsfbdev");
+#ifdef __HAVE_FBDEV__
+            DEBUGMSG("MMSGUI", " backend:     FBDEV");
 #endif
         }
         else {
 #ifdef __HAVE_XLIB__
-            DEBUGMSG("MMSGUI", " backend:     x11");
+            DEBUGMSG("MMSGUI", " backend:     X11");
 #endif
         }
 
@@ -466,8 +462,42 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
     }
     else
     if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
-		// if we use own FB, currently we cannot change the layer attributes
+#ifdef __HAVE_FBDEV__
+        if (!mmsfb->mmsfbdev)
+        	return false;
+
+        // initializing layer
+		if (!mmsfb->mmsfbdev->initLayer(this->config.id, w, h, pixelformat)) {
+			MMSFB_SetError(0, "init layer " + iToStr(this->config.id) + " failed!");
+			return false;
+		}
+
+		// get fb memory ptr
+		MMSFBExternalSurfaceBuffer extbuf;
+		memset(&extbuf, 0, sizeof(extbuf));
+		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, &extbuf.ptr, &extbuf.pitch, &this->config.w, &this->config.h)) {
+			MMSFB_SetError(0, "getFrameBufferPtr() failed");
+			return false;
+		}
+		mmsfb->mmsfbdev->getPixelFormat(this->config.id, &this->config.pixelformat);
+		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+		this->config.options = MMSFB_LO_NONE;
+
+		// create a new surface instance for the framebuffer memory
+		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &extbuf);
+		if (!this->mmsfbdev_surface) {
+			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+			return false;
+		}
+
+		// we must switch extended accel on
+		this->mmsfbdev_surface->setExtendedAcceleration(true);
+
+		// get configuration
+		if (!getConfiguration())
+			return false;
+
+		// set special config
 		this->config.window_pixelformat = window_pixelformat;
 		this->config.surface_pixelformat = surface_pixelformat;
 
@@ -483,6 +513,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		return true;
 #endif
     }
+
+    return false;
 }
 
 bool MMSFBLayer::setOpacity(unsigned char opacity) {
@@ -569,13 +601,16 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     }
     else
     if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
         // create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
 		if (!*surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
 		}
+
+		// the surface has to know the fbdev surface, so this->flip() can update the fbdev memory
+		(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
 
 		// we must switch extended accel on
 		(*surface)->setExtendedAcceleration(true);
@@ -604,15 +639,14 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     this->surface = *surface;
 
     if (this->surface) {
-		// clear the surface
+		// clear all surface buffers
+    	int bufnum = 0;
+    	this->surface->getNumberOfBuffers(&bufnum);
     	this->surface->clear();
-		if ((this->config.buffermode == MMSFB_BM_BACKSYSTEM) || (this->config.buffermode == MMSFB_BM_BACKVIDEO)) {
+    	while (bufnum > 1) {
 			this->surface->flip();
 			this->surface->clear();
-		}
-		if (this->config.buffermode == MMSFB_BM_TRIPLE) {
-			this->surface->flip();
-			this->surface->clear();
+			bufnum--;
 		}
 
 	    // initialize the flip flags for the layer surface

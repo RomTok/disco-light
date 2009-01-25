@@ -132,6 +132,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
     this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	this->config.surface_buffer->numbuffers = 0;
 	this->config.surface_buffer->external_buffer = false;
+#ifdef __HAVE_FBDEV__
+    this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
 #ifdef __HAVE_XLIB__
     this->config.surface_buffer->xv_image[0] = NULL;
 #endif
@@ -221,6 +224,10 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
 	   this->config.surface_buffer->numbuffers = 0;
 	   this->config.surface_buffer->external_buffer = false;
    }
+#ifdef __HAVE_FBDEV__
+    if (this->config.surface_buffer)
+    	this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
 #ifdef __HAVE_XLIB__
     if (this->config.surface_buffer)
     	this->config.surface_buffer->xv_image[0] = NULL;
@@ -251,7 +258,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 	sb->pixelformat = pixelformat;
 	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 	sb->premultiplied = true;
-	sb->backbuffer = true;
+	sb->backbuffer = 0;
 	sb->systemonly = true;
 
 	// set the surface buffer
@@ -267,6 +274,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 				sb->numbuffers++;
 			}
 		}
+		sb->backbuffer = sb->numbuffers - 1;
 	}
 	sb->currbuffer_read = 0;
 	if (sb->numbuffers <= 1)
@@ -297,7 +305,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->pixelformat = pixelformat;
 	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 	sb->premultiplied = true;
-	sb->backbuffer = true;
+	sb->backbuffer = 1;
 	sb->systemonly = true;
 
 	// set the surface buffer
@@ -319,8 +327,8 @@ MMSFBSurface::~MMSFBSurface() {
     if (!mmsfb->isInitialized()) return;
 
     // release memory - only if not the layer surface
-    if (this->llsurface)
-        if (!this->config.islayersurface)
+    if (this->llsurface) {
+        if (!this->config.islayersurface) {
         	if (!this->is_sub_surface) {
 #ifndef USE_DFB_SUBSURFACE
         		// delete all sub surfaces
@@ -336,6 +344,8 @@ MMSFBSurface::~MMSFBSurface() {
         		if (this->parent)
         			this->parent->deleteSubSurface(this);
         	}
+        }
+    }
 }
 
 
@@ -862,6 +872,17 @@ bool MMSFBSurface::getSize(int *w, int *h) {
     /* return values */
     *w = this->config.w;
     *h = this->config.h;
+
+    return true;
+}
+
+bool MMSFBSurface::getNumberOfBuffers(int *num) {
+
+    // check if initialized
+    INITCHECK;
+
+    // return value
+    *num = this->config.surface_buffer->backbuffer + 1;
 
     return true;
 }
@@ -2456,7 +2477,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
 				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
 				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
-				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING)) {
+				||(this->config.blittingflags == (MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING))) {
 				// stretch without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_yv12_to_yv12(
@@ -3463,10 +3484,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 		}
 
-#ifdef __HAVE_MMSFBDEV__
-		if (mmsfb->layer[0]->mmsfbdev_surface) {
+#ifdef __HAVE_FBDEV__
+		if (sb->mmsfbdev_surface) {
 			// put the image to the framebuffer
-			mmsfb->layer[0]->mmsfbdev_surface->blit(this, NULL, 0, 0);
+			sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
 		}
 		else {
 #endif
@@ -3500,7 +3521,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 		}
 #endif
 
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
 		}
 #endif
 
