@@ -54,6 +54,11 @@ class MMSVideo : public MMSAV {
         void startPlaying(const string file, const bool cont = true);
         void add2Playlist(const string file);
         void playNext();
+
+        /**
+         * Callback that is used to receive buffering progress changes.
+         */
+        sigc::signal<void, const unsigned short> onProgressChange;
 };
 
 #endif /*MMSVIDEO_H_*/

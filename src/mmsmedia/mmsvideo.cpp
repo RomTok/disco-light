@@ -52,6 +52,12 @@ static void queue_cb(void *userData, const xine_event_t *event) {
         	mmsvideo->add2Playlist(mrl_ref->mrl);
             break;
         }
+        case XINE_EVENT_PROGRESS: {
+            xine_progress_data_t *prog = (xine_progress_data_t*)event->data;
+            DEBUGMSG("MMSVideo", "event: %s (%d%%)", prog->description, prog->percent);
+            if(mmsvideo) mmsvideo->onProgressChange.emit(prog->percent);
+            break;
+        }
         case XINE_EVENT_UI_PLAYBACK_FINISHED:
         	mmsvideo->playNext();
         	break;

@@ -29,9 +29,58 @@
 #include "mmsconfig/mmsplugindata.h"
 
 MMSPluginData::MMSPluginData() :
-    id(-1), type(NULL), name(""), title(""), description(""), path(""), filename(""),
-    active(false), icon(""), selectedicon(""), smallicon(""), smallselectedicon(""),
-    importProperties(NULL), category(NULL) {
+    id(-1),
+    type(NULL),
+    name(""),
+    title(""),
+    description(""),
+    path(""),
+    filename(""),
+    active(false),
+    icon(""),
+    selectedicon(""),
+    smallicon(""),
+    smallselectedicon(""),
+    importProperties(NULL),
+    category(NULL) {
+}
+
+MMSPluginData::MMSPluginData(const MMSPluginData &pd) :
+    id(pd.id),
+    type(pd.type),
+    name(pd.name),
+    title(pd.title),
+    description(pd.description),
+    path(pd.path),
+    filename(pd.filename),
+    active(pd.active),
+    icon(pd.icon),
+    selectedicon(pd.selectedicon),
+    smallicon(pd.smallicon),
+    smallselectedicon(pd.smallselectedicon),
+    properties(pd.properties),
+    importProperties(pd.importProperties),
+    category(pd.category) {
+}
+
+MMSPluginData& MMSPluginData::operator=(const MMSPluginData &pd) {
+	this->id                = pd.id;
+	this->type              = pd.type;
+	this->name              = pd.name;
+	this->title             = pd.title;
+	this->description       = pd.description;
+	this->path              = pd.path;
+	this->filename          = pd.filename;
+	this->active            = pd.active;
+	this->icon              = pd.icon;
+	this->selectedicon      = pd.selectedicon;
+	this->smallicon         = pd.smallicon;
+	this->smallselectedicon = pd.smallselectedicon;
+	this->properties        = pd.properties;
+	this->importProperties  = pd.importProperties;
+	this->category          = pd.category;
+
+	return *this;
 }
 
 MMSPluginData::~MMSPluginData() {

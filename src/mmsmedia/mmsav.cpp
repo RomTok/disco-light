@@ -59,7 +59,7 @@ static void output_cb(void *cdata, int width, int height, double ratio,
     VODESC *vodesc = (VODESC *) cdata;
     int    newH, newW;
 
-	//DEBUGOUT("\noutput_cp %d:%d:%f:%d:%d",width,height,ratio,vodesc->windsc.width,vodesc->windsc.height);
+	//DEBUGOUT("\noutput_cb %d:%d:%f:%d:%d",width,height,ratio,vodesc->windsc.width,vodesc->windsc.height);
     if (vodesc->ratio != ratio) {
     	newW = (int)((double)(vodesc->windsc.height) * ratio + 0.5);
     	newH = (int)((double)(vodesc->windsc.width) / ratio + 0.5);
@@ -123,8 +123,9 @@ static void printFrameFormat(int frame_format) {
 }
 
 
-static MMSFBSurface *interim=NULL;
-
+static MMSFBSurface *interim = NULL;
+static raw_overlay_t *overlays = NULL;
+static int numOverlays = 0;
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
@@ -174,17 +175,18 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
     	userd->surf->flip(NULL);
         userd->surf->clear();
 
-        printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
+        // printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
         userd->dest.w&=~0x01;
         userd->dest.h&=~0x01;
         userd->dest.x&=~0x01;
         userd->dest.y&=~0x01;
-        printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
+        // printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
 
         if(frame_format == XINE_VORAW_RGB) {
-    		if(interim)
+    		if(interim) {
     			delete interim;
-    		interim=NULL;
+    		}
+    		interim = NULL;
 
     	}
 
@@ -192,13 +194,14 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 
 
     if(frame_format == XINE_VORAW_RGB) {
-    	if(!interim)
+    	if(!interim) {
     		interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+    	}
 
     	interim->blitBuffer(data0,frame_width*3,MMSFB_PF_RGB24,frame_width,frame_height,NULL,0,0);
 		userd->surf->stretchBlit(interim,NULL,&userd->dest);
 
-    }else {
+    } else {
 		MMSFBExternalSurfaceBuffer buf;
 		buf.ptr = data0;
 		buf.pitch = frame_width;
@@ -210,8 +213,30 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
 	}
 
+    // TODO: what if interim == NULL?
+    if(interim) {
+    	for(int i = 0; i < numOverlays; ++i) {
+    		raw_overlay_t ovl = overlays[i];
+
+    		interim->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
+    		interim->blitBuffer(ovl.ovl_rgba, ovl.ovl_w * 4, MMSFB_PF_ARGB, ovl.ovl_w, ovl.ovl_h, NULL, ovl.ovl_x, ovl.ovl_y);
+    		interim->setBlittingFlags(MMSFB_BLIT_NOFX);
+
+    		userd->surf->stretchBlit(interim, NULL, &userd->dest);
+    	}
+    }
+
     userd->surf->flip(NULL);
 }
+
+/**
+ * Callback, that will be called each time an overlay state changes @see: xine.h
+ */
+void raw_overlay_cb(void *user_data, int num_ovl, raw_overlay_t *overlays_array) {
+	numOverlays = num_ovl;
+	overlays = overlays_array;
+}
+
 #endif
 
 /**
@@ -360,7 +385,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         if(window) {
         	this->rawvisual.user_data = (void *)&(this->userd);
         }
-		this->rawvisual.raw_overlay_cb=NULL;
+		this->rawvisual.raw_overlay_cb = raw_overlay_cb;
 #endif
 #ifdef __HAVE_DIRECTFB__
     	this->window           = window;
@@ -918,7 +943,6 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
         }
         throw new MMSAVError(0, "Error in xine_play(): " + msg);
     }
-
     this->setStatus(this->STATUS_PLAYING);
 }
 
@@ -1239,12 +1263,22 @@ void MMSAV::setVolume(int percent) {
 void MMSAV::sendEvent(int type, void *data, int datalen) {
     xine_event_t evt;
 
+	std::cerr << "6: " << this->stream << " | ";
     evt.stream      = this->stream;
+
+	std::cerr << "5: " << data << " | ";
     evt.data        = data;
+
+	std::cerr << "4: " << datalen << " | ";
     evt.data_length = datalen;
+
+	std::cerr << "3: " << type << " | ";
     evt.type        = type;
 
+	std::cerr << "2: xine_event_send | ";
     xine_event_send(this->stream, &evt);
+
+	std::cerr << "1:" << std::endl;
 }
 
 /**

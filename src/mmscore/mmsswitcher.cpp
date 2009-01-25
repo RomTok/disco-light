@@ -559,3 +559,18 @@ bool MMSSwitcher::leavePlugin(bool show_switcher) {
 
 	return true;
 }
+
+/**
+ * Generic callback for plugin->switcher communication.
+ *
+ * If you implement your own switcher, you can call this
+ * method in your plugins to let the switcher handle
+ * whatever you want.
+ *
+ * @param	data	application specific data
+ *
+ * @return	application specific data
+ */
+void* MMSSwitcher::callback(void *data) {
+	return NULL;
+}

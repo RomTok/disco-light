@@ -76,7 +76,7 @@ class MMSSip {
         map<int, MMSSipBuddy> 	buddies;
 
     public:
-    	MMSSip(const string    &user,
+        MMSSip(const string    &user,
     		   const string    &passwd,
     		   const string    &registrar,
     		   const string    &realm = "",
@@ -93,13 +93,14 @@ class MMSSip {
 								   const bool defaultAccount = false,
 								   const bool autoanswer = false);
     	const int call(const string &user, const string &domain = "");
-    	void hangup(int id);
+    	void hangup(int id = PJSUA_INVALID_ID);
     	void answer(int id);
     	void addBuddy(const string &name, const string &uri);
         MMSSipBuddy	getBuddy(const int &id);
         bool setSpeakerVolume(const unsigned int percent);
         int  getSpeakerVolume();
         bool getAutoAnswer(const int accountId);
+        bool registerRingtone(const string &filename);
 
         sigc::signal<void, int> 		           *onCallSuccessfull;
         sigc::signal<void, int, string>            *onCallIncoming;
