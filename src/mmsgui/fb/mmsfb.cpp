@@ -108,7 +108,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
     else
 	if (backend == MMS_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
-		this->backend = MMSFB_BACKEND_MMSFBDEV;
+		this->backend = MMSFB_BACKEND_FBDEV;
 #else
 		MMSFB_SetError(0, "compile FBDEV support!");
 		return false;
@@ -146,7 +146,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 #endif
     }
     else
-    if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	if (this->outputtype == MMS_OT_VESAFB)
     		this->mmsfbdev = new MMSFBDevVesa();
@@ -285,7 +285,7 @@ bool MMSFB::release() {
 #endif
     }
     else
-    if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	if (this->mmsfbdev) {
     		delete this->mmsfbdev;
@@ -346,7 +346,7 @@ void *MMSFB::getX11Window() {
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+	if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
@@ -363,7 +363,7 @@ void *MMSFB::getX11Display() {
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+	if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
@@ -384,7 +384,7 @@ bool MMSFB::refresh() {
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+	if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
@@ -431,7 +431,7 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 		return true;
 #endif
     }
-    if (this->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
 #endif
     }

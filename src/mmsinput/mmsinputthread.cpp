@@ -56,15 +56,15 @@ void MMSInputThread::threadMain() {
     lastevent.type = MMSINPUTEVENTTYPE_NONE;
 
 	if (this->handler == NULL) {
-		if(mmsfb->getBackend()==MMSFB_BACKEND_DFB) {
+		if (mmsfb->getBackend()==MMSFB_BACKEND_DFB) {
 			this->handler = new MMSInputDFBHandler(this->device);
 		}
 		else
-		if(mmsfb->getBackend()==MMSFB_BACKEND_MMSFBDEV) {
+		if (mmsfb->getBackend()==MMSFB_BACKEND_FBDEV) {
 			this->handler = new MMSInputLISHandler(this->device);
 		}
 		else
-		if(mmsfb->getBackend()==MMSFB_BACKEND_X11) {
+		if (mmsfb->getBackend()==MMSFB_BACKEND_X11) {
 			this->handler = new MMSInputX11Handler(this->device);
 		}
 

@@ -91,7 +91,7 @@ typedef enum {
 	//! X11 backend from disko framework
 	MMSFB_BACKEND_X11,
 	//! FBDEV backend from disko framework
-	MMSFB_BACKEND_MMSFBDEV
+	MMSFB_BACKEND_FBDEV
 } MMSFB_BACKEND;
 
 

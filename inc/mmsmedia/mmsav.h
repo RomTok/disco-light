@@ -76,7 +76,6 @@ typedef struct {
 } dfb_visual_t;
 #endif
 
-#ifdef __HAVE_XLIB__
 typedef struct {
 	MMSFBSurface *surf;
 	MMSFBRectangle size;
@@ -84,7 +83,6 @@ typedef struct {
 	double lastaspect;
 } MMSRAW_USERDATA;
 
-#endif
 
 /**
  * @brief   MMS Audio/Video handling class.
@@ -110,10 +108,8 @@ class MMSAV
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
 #endif
         bool							didXineOpen;							/**< true if xine_open() was called		*/
-#ifdef __HAVE_XLIB__
         raw_visual_t					rawvisual;
         MMSRAW_USERDATA					userd;
-#endif
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
 
     protected:

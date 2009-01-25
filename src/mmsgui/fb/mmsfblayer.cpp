@@ -80,7 +80,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
 			// test layer initialization
@@ -179,7 +179,7 @@ MMSFBLayer::~MMSFBLayer() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (this->mmsfbdev_surface)
         	delete this->mmsfbdev_surface;
@@ -202,7 +202,7 @@ bool MMSFBLayer::isInitialized() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	return this->initialized;
 #endif
@@ -251,7 +251,7 @@ bool MMSFBLayer::setExclusiveAccess() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	return true;
 #endif
@@ -290,7 +290,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
     }
@@ -304,7 +304,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 #endif
         }
         else
-        if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+        if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
             DEBUGMSG("MMSGUI", " backend:     FBDEV");
 #endif
@@ -461,7 +461,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (!mmsfb->mmsfbdev)
         	return false;
@@ -600,7 +600,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_MMSFBDEV) {
+    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
         // create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
