@@ -88,7 +88,7 @@ MMSWindow::MMSWindow() {
 }
 
 MMSWindow::~MMSWindow() {
-
+return;
 	// hide the window if shown
 	instantHide();
 
@@ -1108,6 +1108,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
 void MMSWindow::removeFocusFromChildWindow() {
     /* check something */
     if (!this->parent) return;
+    if ((this->parent->focusedChildWin < 0) || (this->parent->focusedChildWin >= this->parent->childwins.size())) return;
     if (this->parent->childwins.at(this->parent->focusedChildWin).window != this) return;
 
     /* searching for other childwin to get the focus */
