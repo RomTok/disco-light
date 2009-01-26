@@ -159,7 +159,7 @@ class MMSAV
         bool isStopped();
         void startPlaying(const string mrl, const bool cont = true);
         void play();
-        void stop();
+        void stop(const bool savePosition = true);
         void pause();
         void ffwd();
         void slow();

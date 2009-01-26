@@ -100,6 +100,7 @@ class MMSSip {
         bool setSpeakerVolume(const unsigned int percent);
         int  getSpeakerVolume();
         bool getAutoAnswer(const int accountId);
+        void setAutoAnswer(const int accountId, const bool value = true);
         bool registerRingtone(const string &filename);
 
         sigc::signal<void, int> 		           *onCallSuccessfull;

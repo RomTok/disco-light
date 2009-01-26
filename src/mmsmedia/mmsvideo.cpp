@@ -59,7 +59,12 @@ static void queue_cb(void *userData, const xine_event_t *event) {
             break;
         }
         case XINE_EVENT_UI_PLAYBACK_FINISHED:
-        	mmsvideo->playNext();
+        	try {
+        		mmsvideo->playNext();
+        	} catch(MMSError *e) {
+        		DEBUGMSG("MMSVideo", "Error playing stream: " + e->getMessage());
+			    mmsvideo->onError->emit(e->getMessage());
+        	}
         	break;
         default:
             break;

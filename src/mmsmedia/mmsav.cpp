@@ -308,6 +308,14 @@ static int dfb_frame_cb(void *cdata) {
 }
 #endif
 
+static void* stopRoutine(void *data) {
+	if(!data) return NULL;
+	xine_stream_t *stream= (xine_stream_t*)data;
+    xine_stop(stream);
+
+    return NULL;
+}
+
 /**
  * Initializes some xine stuff.
  *
@@ -948,17 +956,26 @@ void MMSAV::play() {
 /**
  * Stops playing.
  *
+ * @param	savePosition	[in]	if true stream position will be saved for continuation
+ *
  * It saves the position, so if you call MMSAV::play()
  * afterwards with the continue flag set, it will continue
  * at this position.
  */
-void MMSAV::stop() {
+void MMSAV::stop(const bool savePosition) {
     /* save position */
-    xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
+	if(savePosition)
+		xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
 
-    /* stop streaming */
-    xine_stop(this->stream);
     this->setStatus(this->STATUS_STOPPED);
+
+    /* stop xine in extra thread to avoid blocking the application */
+    pthread_t thread;
+    if(pthread_create(&thread, NULL, stopRoutine, this->stream) == 0) {
+    	pthread_detach(thread);
+    }
+    else
+    	xine_stop(this->stream);
 }
 
 /**
