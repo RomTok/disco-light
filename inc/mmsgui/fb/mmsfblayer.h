@@ -73,6 +73,11 @@ class MMSFBLayer {
 #endif
 
 #ifdef __HAVE_XLIB__
+        XImage  		*x_image1;
+        XShmSegmentInfo x_shminfo1;
+        XImage  		*x_image2;
+        XShmSegmentInfo x_shminfo2;
+
         XvImage  		*xv_image1;
         XShmSegmentInfo xv_shminfo1;
         XvImage  		*xv_image2;

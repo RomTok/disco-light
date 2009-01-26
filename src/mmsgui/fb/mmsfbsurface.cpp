@@ -136,6 +136,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 #ifdef __HAVE_XLIB__
+    this->config.surface_buffer->x_image[0] = NULL;
     this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 	this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
@@ -229,8 +230,10 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
     	this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 #ifdef __HAVE_XLIB__
-    if (this->config.surface_buffer)
+    if (this->config.surface_buffer) {
+    	this->config.surface_buffer->x_image[0] = NULL;
     	this->config.surface_buffer->xv_image[0] = NULL;
+    }
 #endif
 	if (llsurface > (void *)1)
 		this->use_own_alloc = false;
@@ -317,6 +320,40 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->currbuffer_read = 0;
 	sb->currbuffer_write = 1;
 	sb->pitch = *(sb->xv_image[0]->pitches);
+	sb->external_buffer = true;
+	init((void*)1, NULL, NULL);
+}
+
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2) {
+    // init me
+    this->llsurface = NULL;
+    this->surface_read_locked = false;
+    this->surface_read_lock_cnt = 0;
+    this->surface_write_locked = false;
+    this->surface_write_lock_cnt = 0;
+    this->surface_invert_lock = false;
+	this->use_own_alloc = true;
+
+    // setup surface attributes
+	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+	this->config.w = sb->sbw = w;
+	this->config.h = sb->sbh = h;
+	sb->pixelformat = pixelformat;
+	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
+	sb->premultiplied = true;
+	sb->backbuffer = 1;
+	sb->systemonly = true;
+
+	// set the surface buffer
+	sb->numbuffers = 2;
+	sb->x_image[0] = x_image1;
+	sb->buffers[0] = sb->x_image[0]->data;
+	sb->x_image[1] = x_image2;
+	sb->buffers[1] = sb->x_image[1]->data;
+	sb->currbuffer_read = 0;
+	sb->currbuffer_write = 1;
+	sb->pitch = sb->x_image[0]->bytes_per_line;
 	sb->external_buffer = true;
 	init((void*)1, NULL, NULL);
 }
@@ -3493,8 +3530,23 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #endif
 
 #ifdef __HAVE_XLIB__
+		if (sb->x_image[0]) {
+			// XSHM, put the image to the x-server
+			mmsfb->xlock.lock();
+			XLockDisplay(mmsfb->x_display);
+			XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+						  0, 0, 0, 0,
+						  mmsfb->w, mmsfb->h, False);
+			XFlush(mmsfb->x_display);
+#ifndef __NO_XSYNC__
+//			XSync(mmsfb->x_display, True);
+#endif
+			XUnlockDisplay(mmsfb->x_display);
+			mmsfb->xlock.unlock();
+		}
+		else
 		if (sb->xv_image[0]) {
-			// put the image to the x-server
+			// XVSHM, put the image to the x-server
 			mmsfb->xlock.lock();
 			XLockDisplay(mmsfb->x_display);
 			if(mmsfb->fullscreen) {
@@ -3567,8 +3619,25 @@ bool MMSFBSurface::refresh() {
 	else {
 #ifdef __HAVE_XLIB__
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		if (sb->x_image[0]) {
+			// XSHM, put the image to the x-server
+			this->lock();
+			mmsfb->xlock.lock();
+			XLockDisplay(mmsfb->x_display);
+			XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+						  0, 0, 0, 0,
+						  mmsfb->w, mmsfb->h, False);
+			XFlush(mmsfb->x_display);
+#ifndef __NO_XSYNC__
+//			XSync(mmsfb->x_display, True);
+#endif
+			XUnlockDisplay(mmsfb->x_display);
+			mmsfb->xlock.unlock();
+			this->unlock();
+		}
+		else
 		if (sb->xv_image[0]) {
-			// put the image to the x-server
+			// XVSHM, put the image to the x-server
 			this->lock();
 			mmsfb->xlock.lock();
 			XLockDisplay(mmsfb->x_display);

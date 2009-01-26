@@ -83,6 +83,8 @@ extern "C" {
 #define MMS_OT_X11FB        "X11"
 //! output type: SDL
 #define MMS_OT_SDLFB        "SDL"
+//! output type: XSHM
+#define MMS_OT_XSHM			"XSHM"
 
 //! supported backends
 typedef enum {
