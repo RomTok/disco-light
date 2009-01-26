@@ -290,7 +290,7 @@ const int MMSSip::call(const string &user, const string &domain) {
 }
 
 void MMSSip::hangup(int id) {
-    DEBUGMSG("MMSSIP", "calling pjsua_call_hangup");
+    DEBUGMSG("MMSSIP", "calling pjsua_call_hangup (id=%d)", id);
 
 	if(!pj_thread_is_registered()) {
 		MMSSipThread tInfo;
@@ -303,8 +303,11 @@ void MMSSip::hangup(int id) {
 		}
     }
 
-	if(id != PJSUA_INVALID_ID)
-		pjsua_call_hangup(id, 0, NULL, NULL);
+	if(id != PJSUA_INVALID_ID) {
+		//pjsua_call_hangup(id, 0, NULL, NULL);
+		DEBUGMSG("MMSSIP", "answering with code 480");
+		pjsua_call_answer(id, 480, NULL, NULL);
+	}
 	else
 		pjsua_call_hangup_all();
 }
