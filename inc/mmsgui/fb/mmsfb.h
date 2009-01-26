@@ -73,6 +73,8 @@ class MMSFB {
         int				x_screen;
         Window 			x_window;
         GC 				x_gc;
+        Visual			*x_visual;
+        int				x_depth;
         int 			xv_port;
         MMSMutex		xlock;
         int				display_w;

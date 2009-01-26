@@ -66,6 +66,13 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->mmsfbdev_surface = NULL;
 #endif
 
+#ifdef __HAVE_XLIB__
+    this->x_image1 = NULL;
+    this->x_image2 = NULL;
+    this->xv_image1 = NULL;
+    this->xv_image2 = NULL;
+#endif
+
     if (mmsfb->backend == MMSFB_BACKEND_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// get the layer
@@ -115,55 +122,115 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
 
-		// important to set the image width to a multiple of 128
-		// a few hardware need this to create a buffer where to U/V planes immediately follows the Y plane
-		int image_width = this->config.w & ~0x7f;
-		if (this->config.w & 0x7f)
-			image_width += 0x80;
+		if (mmsfb->outputtype == MMS_OT_XSHM) {
+			// XSHM
+			switch (mmsfb->x_depth) {
+			case 16:
+				this->config.pixelformat = MMSFB_PF_RGB16;
+				break;
+			case 24:
+				this->config.pixelformat = MMSFB_PF_RGB24;
+				break;
+			case 32:
+				this->config.pixelformat = MMSFB_PF_ARGB;
+				break;
+			}
 
-		// create x11 buffer #1
-        this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo1);
-        if (!this->xv_image1) {
-			MMSFB_SetError(0, "XvShmCreateImage() failed");
-        	return;
-        }
+			// create x11 buffer #1
+			this->x_image1 = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
+											 NULL, &this->x_shminfo1, this->config.w, this->config.h);
+			if (!this->x_image1) {
+				MMSFB_SetError(0, "XShmCreateImage() failed");
+				return;
+			}
 
-        // map shared memory for x-server commuinication
-        this->xv_shminfo1.shmid    = shmget(IPC_PRIVATE, this->xv_image1->data_size, IPC_CREAT | 0777);
-        this->xv_shminfo1.shmaddr  = this->xv_image1->data = (char *)shmat(this->xv_shminfo1.shmid, 0, 0);
-        this->xv_shminfo1.readOnly = False;
+			// map shared memory for x-server communication
+			this->x_shminfo1.shmid    = shmget(IPC_PRIVATE, this->x_image1->bytes_per_line * this->x_image1->height, IPC_CREAT | 0777);
+			this->x_shminfo1.shmaddr  = this->x_image1->data = (char *)shmat(this->x_shminfo1.shmid, 0, 0);
+			this->x_shminfo1.readOnly = False;
 
-        // attach the x-server to that segment
-        if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo1)) {
-        	XFree(this->xv_image1);
-        	this->xv_image1 = NULL;
-			MMSFB_SetError(0, "XShmAttach() failed");
-        	return;
-        }
+			// attach the x-server to that segment
+			if (!XShmAttach(mmsfb->x_display, &this->x_shminfo1)) {
+				XFree(this->x_image1);
+				this->x_image1 = NULL;
+				MMSFB_SetError(0, "XShmAttach() failed");
+				return;
+			}
 
-		// create x11 buffer #2
-        this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo2);
-        if (!this->xv_image2) {
-        	XFree(this->xv_image1);
-        	this->xv_image1 = NULL;
-			MMSFB_SetError(0, "XvShmCreateImage() failed");
-        	return;
-        }
+			// create x11 buffer #2
+			this->x_image2 = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
+											 NULL, &this->x_shminfo2, this->config.w, this->config.h);
+			if (!this->x_image2) {
+				MMSFB_SetError(0, "XShmCreateImage() failed");
+				return;
+			}
 
-        // map shared memory for x-server communication
-        this->xv_shminfo2.shmid    = shmget(IPC_PRIVATE, this->xv_image2->data_size, IPC_CREAT | 0777);
-        this->xv_shminfo2.shmaddr  = this->xv_image2->data = (char *)shmat(this->xv_shminfo2.shmid, 0, 0);
-        this->xv_shminfo2.readOnly = False;
+			// map shared memory for x-server communication
+			this->x_shminfo2.shmid    = shmget(IPC_PRIVATE, this->x_image2->bytes_per_line * this->x_image2->height, IPC_CREAT | 0777);
+			this->x_shminfo2.shmaddr  = this->x_image2->data = (char *)shmat(this->x_shminfo2.shmid, 0, 0);
+			this->x_shminfo2.readOnly = False;
 
-        // attach the x-server to that segment
-        if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo2)) {
-        	XFree(this->xv_image1);
-        	XFree(this->xv_image2);
-        	this->xv_image1 = NULL;
-        	this->xv_image2 = NULL;
-			MMSFB_SetError(0, "XShmAttach() failed");
-        	return;
-        }
+			// attach the x-server to that segment
+			if (!XShmAttach(mmsfb->x_display, &this->x_shminfo2)) {
+				XFree(this->x_image2);
+				this->x_image2 = NULL;
+				MMSFB_SetError(0, "XShmAttach() failed");
+				return;
+			}
+		}
+		else {
+			// XVSHM
+
+			// important to set the image width to a multiple of 128
+			// a few hardware need this to create a buffer where to U/V planes immediately follows the Y plane
+			int image_width = this->config.w & ~0x7f;
+			if (this->config.w & 0x7f)
+				image_width += 0x80;
+
+			// create x11 buffer #1
+			this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo1);
+			if (!this->xv_image1) {
+				MMSFB_SetError(0, "XvShmCreateImage() failed");
+				return;
+			}
+
+			// map shared memory for x-server communication
+			this->xv_shminfo1.shmid    = shmget(IPC_PRIVATE, this->xv_image1->data_size, IPC_CREAT | 0777);
+			this->xv_shminfo1.shmaddr  = this->xv_image1->data = (char *)shmat(this->xv_shminfo1.shmid, 0, 0);
+			this->xv_shminfo1.readOnly = False;
+
+			// attach the x-server to that segment
+			if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo1)) {
+				XFree(this->xv_image1);
+				this->xv_image1 = NULL;
+				MMSFB_SetError(0, "XShmAttach() failed");
+				return;
+			}
+
+			// create x11 buffer #2
+			this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo2);
+			if (!this->xv_image2) {
+				XFree(this->xv_image1);
+				this->xv_image1 = NULL;
+				MMSFB_SetError(0, "XvShmCreateImage() failed");
+				return;
+			}
+
+			// map shared memory for x-server communication
+			this->xv_shminfo2.shmid    = shmget(IPC_PRIVATE, this->xv_image2->data_size, IPC_CREAT | 0777);
+			this->xv_shminfo2.shmaddr  = this->xv_image2->data = (char *)shmat(this->xv_shminfo2.shmid, 0, 0);
+			this->xv_shminfo2.readOnly = False;
+
+			// attach the x-server to that segment
+			if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo2)) {
+				XFree(this->xv_image1);
+				XFree(this->xv_image2);
+				this->xv_image1 = NULL;
+				this->xv_image2 = NULL;
+				MMSFB_SetError(0, "XShmAttach() failed");
+				return;
+			}
+		}
 
 		this->initialized = true;
 #endif
@@ -193,10 +260,20 @@ MMSFBLayer::~MMSFBLayer() {
     }
     else {
 #ifdef __HAVE_XLIB__
-    	if (this->xv_image1)
-    		XFree(this->xv_image1);
-    	if (this->xv_image2)
-    		XFree(this->xv_image2);
+		if (mmsfb->outputtype == MMS_OT_XSHM) {
+			// XSHM
+			if (this->x_image1)
+				XFree(this->x_image1);
+			if (this->x_image2)
+				XFree(this->x_image2);
+		}
+		else {
+			// XVSHM
+			if (this->xv_image1)
+				XFree(this->xv_image1);
+			if (this->xv_image2)
+				XFree(this->xv_image2);
+		}
 #endif
     }
 }
@@ -215,7 +292,16 @@ bool MMSFBLayer::isInitialized() {
     }
     else {
 #ifdef __HAVE_XLIB__
-    	return (this->xv_image1 != NULL);
+		if (mmsfb->outputtype == MMS_OT_XSHM) {
+			// XSHM
+
+			return (this->x_image1 != NULL);
+		}
+		else {
+			// XVSHM
+
+			return (this->xv_image1 != NULL);
+		}
 #endif
     }
 
@@ -317,7 +403,16 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
         }
         else {
 #ifdef __HAVE_XLIB__
-            DEBUGMSG("MMSGUI", " backend:     X11");
+    		if (mmsfb->outputtype == MMS_OT_XSHM) {
+    			// XSHM
+
+    			DEBUGMSG("MMSGUI", " backend:     XSHM");
+    		}
+    		else {
+    			// XVSHM
+
+    			DEBUGMSG("MMSGUI", " backend:     XVSHM");
+    		}
 #endif
         }
 
@@ -624,20 +719,40 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     }
     else {
 #ifdef __HAVE_XLIB__
-        if ((!this->xv_image1)||(!this->xv_image2)) {
-			MMSFB_SetError(0, "xv_image not available, cannot get surface");
-        	return false;
-        }
+		if (mmsfb->outputtype == MMS_OT_XSHM) {
+			// XSHM
+			if ((!this->x_image1)||(!this->x_image2)) {
+				MMSFB_SetError(0, "x_image not available, cannot get surface");
+				return false;
+			}
 
-        // create a new surface instance
-		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->xv_image1, this->xv_image2);
-		if (!*surface) {
-			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
-			return false;
+			// create a new surface instance
+			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->x_image1, this->x_image2);
+			if (!*surface) {
+				MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+				return false;
+			}
+
+			// we must switch extended accel on
+			(*surface)->setExtendedAcceleration(true);
 		}
+		else {
+			// XVSHM
+			if ((!this->xv_image1)||(!this->xv_image2)) {
+				MMSFB_SetError(0, "xv_image not available, cannot get surface");
+				return false;
+			}
 
-		// we must switch extended accel on
-		(*surface)->setExtendedAcceleration(true);
+			// create a new surface instance
+			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->xv_image1, this->xv_image2);
+			if (!*surface) {
+				MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+				return false;
+			}
+
+			// we must switch extended accel on
+			(*surface)->setExtendedAcceleration(true);
+		}
 #endif
     }
 

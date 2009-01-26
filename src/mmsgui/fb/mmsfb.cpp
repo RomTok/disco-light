@@ -172,70 +172,64 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 			MMSFB_SetError(0, "XOpenDisplay() failed");
         	return false;
         }
-        if (!XShmQueryExtension(this->x_display)) {
-			MMSFB_SetError(0, "XShmQueryExtension() failed");
-        	return false;
-        }
         this->x_screen = DefaultScreen(this->x_display);
 
-        XF86VidModeModeLine line;
-        int dot;
-        XF86VidModeGetModeLine(this->x_display, 0,&dot, &line);
-        this->display_w=line.hdisplay;
-        this->display_h=line.vdisplay;
+		XF86VidModeModeLine line;
+		int dot;
+		XF86VidModeGetModeLine(this->x_display, 0, &dot, &line);
+		this->display_w=line.hdisplay;
+		this->display_h=line.vdisplay;
 //        printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
-        XSetWindowAttributes x_window_attr;
+		XSetWindowAttributes x_window_attr;
 		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |PointerMotionMask|EnterWindowMask|ResizeRedirectMask;
-        x_window_attr.background_pixel  = 0;
-        x_window_attr.border_pixel      = 0;
+		x_window_attr.background_pixel  = 0;
+		x_window_attr.border_pixel      = 0;
 
 
-        unsigned long x_window_mask;
-        //this->window_w
-        if(fullscreen) {
-        	this->fullscreen = true;
-        	x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
-        	x_window_attr.override_redirect = True;
-        	int cnt;
-        	XF86VidModeModeInfo **info;
-        	XF86VidModeGetAllModeLines(this->x_display, 0, &cnt, &info);
-        	int best=-1;
-        	for(int i=0;i<cnt;i++) {
-        		if((info[i]->hdisplay==w)&&(info[i]->vdisplay==h)) {
-        			best=i;
-        			break;
-        		}
-        		//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
-        	}
+		unsigned long x_window_mask;
+		//this->window_w
+		if(fullscreen) {
+			this->fullscreen = true;
+			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
+			x_window_attr.override_redirect = True;
+			int cnt;
+			XF86VidModeModeInfo **info;
+			XF86VidModeGetAllModeLines(this->x_display, 0, &cnt, &info);
+			int best=-1;
+			for(int i=0;i<cnt;i++) {
+				if((info[i]->hdisplay==w)&&(info[i]->vdisplay==h)) {
+					best=i;
+					break;
+				}
+				//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
+			}
 
-            int x_depth = DefaultDepth(this->x_display, this->x_screen);
-            this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
-    									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
-        } else {
-        	this->fullscreen = false;
-        	x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
-        	x_window_attr.override_redirect = 0;
-            int x_depth = DefaultDepth(this->x_display, this->x_screen);
-            this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->w, this->h, 0, x_depth,
-    									   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
-        }
+			int x_depth = DefaultDepth(this->x_display, this->x_screen);
+			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
+										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
+		} else {
+			this->fullscreen = false;
+			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
+			x_window_attr.override_redirect = 0;
+			int x_depth = DefaultDepth(this->x_display, this->x_screen);
+			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->w, this->h, 0, x_depth,
+										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
+		}
 
-
-        XStoreName(this->x_display, this->x_window, appl_name.c_str());
-        XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
-        this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
-        XMapWindow(this->x_display, this->x_window);
-        XEvent x_event;
-        do {
-            XNextEvent(this->x_display, &x_event);
-        }
-        while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
-        XRaiseWindow(this->x_display, this->x_window);
-
+		XStoreName(this->x_display, this->x_window, appl_name.c_str());
+		XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
+		this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
+		XMapWindow(this->x_display, this->x_window);
+		XEvent x_event;
+		do {
+			XNextEvent(this->x_display, &x_event);
+		}
+		while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
+		XRaiseWindow(this->x_display, this->x_window);
 
 		// hide X cursor
-        Pixmap bm_no;
+		Pixmap bm_no;
 		Colormap cmap;
 		Cursor no_ptr;
 		XColor black, dummy;
@@ -252,24 +246,44 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 				XFreePixmap(this->x_display, bm_no);
 		XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
 
+		XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 
-        XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
-//        int CompletionType = XShmGetEventBase(this->x_display) + ShmCompletion;
 
-        unsigned int num_adaptors;
-        XvAdaptorInfo *ai;
-        if (XvQueryAdaptors(this->x_display, DefaultRootWindow(this->x_display), &num_adaptors, &ai)) {
-			MMSFB_SetError(0, "XvQueryAdaptors() failed");
-        	return false;
-        }
-        printf("DISKO: Available xv adaptors:\n");
-        for(unsigned int cnt=0;cnt<num_adaptors;cnt++) {
-        	printf("  %s\n", ai[cnt].name);
-        }
+		if (mmsfb->outputtype == MMS_OT_XSHM) {
+			// XSHM
+	        if (!XShmQueryExtension(this->x_display)) {
+				MMSFB_SetError(0, "XShmQueryExtension() failed");
+	        	return false;
+	        }
 
-        /* get the last xv blitter -> needs detection */
-        printf("DISKO: Using xv adaptor '%s'\n", ai[num_adaptors-1].name);
-        this->xv_port = ai[num_adaptors-1].base_id;
+	        this->x_visual = DefaultVisual(this->x_display, 0);
+	        this->x_depth = DefaultDepth(this->x_display, 0);
+
+//printf("depth=%d\n", this->x_depth);
+//exit(0);
+		}
+		else {
+			// XVSHM
+	        if (!XShmQueryExtension(this->x_display)) {
+				MMSFB_SetError(0, "XShmQueryExtension() failed");
+	        	return false;
+	        }
+
+	        unsigned int num_adaptors;
+			XvAdaptorInfo *ai;
+			if (XvQueryAdaptors(this->x_display, DefaultRootWindow(this->x_display), &num_adaptors, &ai)) {
+				MMSFB_SetError(0, "XvQueryAdaptors() failed");
+				return false;
+			}
+			printf("DISKO: Available xv adaptors:\n");
+			for(unsigned int cnt=0;cnt<num_adaptors;cnt++) {
+				printf("  %s\n", ai[cnt].name);
+			}
+
+			/* get the last xv blitter -> needs detection */
+			printf("DISKO: Using xv adaptor '%s'\n", ai[num_adaptors-1].name);
+			this->xv_port = ai[num_adaptors-1].base_id;
+		}
 #endif
     }
 
