@@ -177,6 +177,11 @@ MMSFBLayer::MMSFBLayer(int id) {
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
+
+			// check if rgb32 instead of rgb24
+			if (this->config.pixelformat == MMSFB_PF_RGB24)
+				if (this->x_image1->bytes_per_line / this->config.w >= 4)
+					this->config.pixelformat = MMSFB_PF_RGB32;
 		}
 		else {
 			// XVSHM

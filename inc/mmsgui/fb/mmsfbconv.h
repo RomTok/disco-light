@@ -1161,6 +1161,13 @@ void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_he
 									int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
+//! Fill rectangle RGB24.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color);
+
 
 //! Fill rectangle RGB16.
 /*!

@@ -28,54 +28,39 @@
 
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
+#include <string.h>
 
-void mmsfb_fillrectangle_argb(unsigned int *dst, int dst_pitch, int dst_height,
-						      int dx, int dy, int dw, int dh, MMSFBColor color) {
+void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated fill rectangle to ARGB.\n");
+		printf("DISKO: Using accelerated fill rectangle to RGB24.\n");
 		firsttime = false;
 	}
 
-	// prepare...
-	int dst_pitch_pix = dst_pitch >> 2;
-	dst+= dx + dy * dst_pitch_pix;
+	// prepare a rgb line
+	int size = dw * 3;
+	if (size > dst_pitch) size = dst_pitch;
+	unsigned char line[2048*3];
+	unsigned char *ls = line;
+	unsigned char *le = line + size;
+	unsigned char r = color.r;
+	unsigned char g = color.g;
+	unsigned char b = color.b;
+	while (ls < le) {
+		*ls = r; ls++;
+		*ls = g; ls++;
+		*ls = b; ls++;
+	}
+	dst+= dx*3 + dy * dst_pitch;
+	unsigned char *dst_end = dst + dst_pitch * dh;
 
-	unsigned int *dst_end = dst + dst_pitch_pix * dh;
-#ifndef __HAVE_SSE__
-	int dst_pitch_diff = dst_pitch_pix - dw;
-#endif
-
-	// prepare the color
-	register unsigned int A = color.a;
-	register unsigned int SRC;
-	SRC =     (A << 24)
-			| (color.r << 16)
-			| (color.g << 8)
-			| color.b;
-
-	// copy pixel directly to the destination
+	// copy line buffer directly to the destination
 	// for all lines
 	while (dst < dst_end) {
-		// for all pixels in the line
-#ifdef __HAVE_SSE__
-		// fill memory 4-byte-wise (much faster than loop see below)
-		__asm__ __volatile__ ( "\trep stosl\n" : : "D" (dst), "a" (SRC), "c" (dw));
-
-		// go to the next line
-		dst+= dst_pitch_pix;
-#else
-		unsigned int *line_end = dst + dw;
-		while (dst < line_end) {
-			*dst = SRC;
-			dst++;
-		}
-
-		// go to the next line
-		dst+= dst_pitch_diff;
-#endif
+		memcpy(dst, line, size);
+		dst+= dst_pitch;
 	}
 }
-
 

@@ -2719,6 +2719,25 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		return false;
 	}
 	else
+	if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
+		// destination is RGB24
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, NULL, this, &dst_ptr, &dst_pitch)) {
+				mmsfb_fillrectangle_rgb24((unsigned char *)dst_ptr, dst_pitch, dst_height,
+										  sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
 	if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 		// destination is RGB16 (RGB565)
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
