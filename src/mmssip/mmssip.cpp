@@ -285,7 +285,9 @@ const int MMSSip::call(const string &user, const string &domain) {
 	status = pjsua_call_make_call(this->defaultAccount, &uri, 0, NULL, NULL, &call);
 	if (status != PJ_SUCCESS) {
 		DEBUGMSG("MMSSIP", "Error calling sip:" + user + "@" + cDomain);
-		throw MMSError(0, "Error calling sip:" + user + "@" + cDomain);
+		char buf[1024];
+		pj_strerror(status, buf, sizeof(buf));
+		throw MMSError(0, buf);
 	}
 
 	return call;
@@ -306,9 +308,16 @@ void MMSSip::hangup(int id) {
     }
 
 	if(id != PJSUA_INVALID_ID) {
-		//pjsua_call_hangup(id, 0, NULL, NULL);
-		DEBUGMSG("MMSSIP", "answering with code 480");
-		pjsua_call_answer(id, 480, NULL, NULL);
+		// this is just a workaround, because sending 603/Decline didn't
+		// work if state < PJSIP_INV_STATE_CONNECTING
+		pjsua_call_info ci;
+		pjsua_call_get_info(id, &ci);
+		if(ci.state < PJSIP_INV_STATE_CONNECTING) {
+			DEBUGMSG("MMSSIP", "answering with code 480");
+			pjsua_call_answer(id, 480, NULL, NULL);
+		}
+		else
+			pjsua_call_hangup(id, 0, NULL, NULL);
 	}
 	else
 		pjsua_call_hangup_all();
@@ -469,13 +478,11 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_INCOMING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
+        	if(ringtonePlayer != PJSUA_INVALID_ID && ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_EARLY:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_EARLY");
-        	if(ringtonePlayer != PJSUA_INVALID_ID &&
-        	   ci.role == PJSIP_ROLE_UAC &&
-        	   ci.media_status == PJSUA_CALL_MEDIA_NONE)
-        		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_CONNECTING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONNECTING");
