@@ -478,13 +478,11 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_INCOMING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
+        	if(ringtonePlayer != PJSUA_INVALID_ID && ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_EARLY:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_EARLY");
-        	if(ringtonePlayer != PJSUA_INVALID_ID &&
-        	   ci.role == PJSIP_ROLE_UAC &&
-        	   ci.media_status == PJSUA_CALL_MEDIA_NONE)
-        		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_CONNECTING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONNECTING");
