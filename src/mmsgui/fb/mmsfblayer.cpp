@@ -118,7 +118,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 		// fill my config partly from mmsfb
 		this->config.w = mmsfb->w;
 		this->config.h = mmsfb->h;
-		this->config.pixelformat = MMSFB_PF_YV12;
+		this->config.pixelformat = MMSFB_PF_NONE;
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
 
@@ -132,7 +132,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 				this->config.pixelformat = MMSFB_PF_RGB24;
 				break;
 			case 32:
-				this->config.pixelformat = MMSFB_PF_ARGB;
+				this->config.pixelformat = MMSFB_PF_RGB32;
 				break;
 			}
 
@@ -180,6 +180,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 		}
 		else {
 			// XVSHM
+			this->config.pixelformat = MMSFB_PF_YV12;
 
 			// important to set the image width to a multiple of 128
 			// a few hardware need this to create a buffer where to U/V planes immediately follows the Y plane
