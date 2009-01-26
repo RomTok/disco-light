@@ -146,9 +146,11 @@ MMSSip::MMSSip(const string    &user,
 
     DEBUGMSG("MMSSIP", "SIP stack started");
 
-    if(!this->registerAccount(user, passwd, registrar, realm, true)) {
-		DEBUGMSG("MMSSIP", "Error registering account");
-		throw MMSError(0, "Error registering account");
+    if(user != "") {
+		if(!this->registerAccount(user, passwd, registrar, realm, true)) {
+			DEBUGMSG("MMSSIP", "Error registering account");
+			throw MMSError(0, "Error registering account");
+		}
     }
 
     this->onCallSuccessfull    = new sigc::signal<void, int>;
@@ -396,6 +398,16 @@ bool MMSSip::getAutoAnswer(int accountId) {
 	try {
 		MMSSipAccount acc = this->accounts[accountId];
 		return acc.autoanswer;
+	}
+	catch(std::exception& e) {
+		throw MMSError(0, e.what());
+	}
+}
+
+void MMSSip::setAutoAnswer(int accountId, const bool value) {
+	try {
+		MMSSipAccount acc = this->accounts[accountId];
+		acc.autoanswer = value;
 	}
 	catch(std::exception& e) {
 		throw MMSError(0, e.what());
