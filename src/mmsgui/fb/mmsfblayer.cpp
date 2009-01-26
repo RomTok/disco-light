@@ -115,8 +115,14 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
 
+		// important to set the image width to a multiple of 128
+		// a few hardware need this to create a buffer where to U/V planes immediately follows the Y plane
+		int image_width = this->config.w & ~0x7f;
+		if (this->config.w & 0x7f)
+			image_width += 0x80;
+
 		// create x11 buffer #1
-        this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, this->config.w, this->config.h, &this->xv_shminfo1);
+        this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo1);
         if (!this->xv_image1) {
 			MMSFB_SetError(0, "XvShmCreateImage() failed");
         	return;
@@ -136,7 +142,7 @@ MMSFBLayer::MMSFBLayer(int id) {
         }
 
 		// create x11 buffer #2
-        this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, this->config.w, this->config.h, &this->xv_shminfo2);
+        this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo2);
         if (!this->xv_image2) {
         	XFree(this->xv_image1);
         	this->xv_image1 = NULL;
