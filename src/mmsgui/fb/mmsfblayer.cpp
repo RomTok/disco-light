@@ -69,6 +69,8 @@ MMSFBLayer::MMSFBLayer(int id) {
 #ifdef __HAVE_XLIB__
     this->x_image1 = NULL;
     this->x_image2 = NULL;
+    this->x_image_scaler = NULL;
+    this->scaler = NULL;
     this->xv_image1 = NULL;
     this->xv_image2 = NULL;
 #endif
@@ -182,6 +184,40 @@ MMSFBLayer::MMSFBLayer(int id) {
 			if (this->config.pixelformat == MMSFB_PF_RGB24)
 				if (this->x_image1->bytes_per_line / this->config.w >= 4)
 					this->config.pixelformat = MMSFB_PF_RGB32;
+
+			if (mmsfb->fullscreen) {
+				// create scale buffer
+				this->x_image_scaler = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
+													   NULL, &this->x_shminfo_scaler, mmsfb->display_w, mmsfb->display_w);
+				if (!this->x_image_scaler) {
+					MMSFB_SetError(0, "XShmCreateImage() failed");
+					return;
+				}
+
+				// map shared memory for x-server communication
+				this->x_shminfo_scaler.shmid    = shmget(IPC_PRIVATE, this->x_image_scaler->bytes_per_line * this->x_image_scaler->height, IPC_CREAT | 0777);
+				this->x_shminfo_scaler.shmaddr  = this->x_image_scaler->data = (char *)shmat(this->x_shminfo_scaler.shmid, 0, 0);
+				this->x_shminfo_scaler.readOnly = False;
+
+				// attach the x-server to that segment
+				if (!XShmAttach(mmsfb->x_display, &this->x_shminfo_scaler)) {
+					XFree(this->x_image_scaler);
+					this->x_image_scaler = NULL;
+					MMSFB_SetError(0, "XShmAttach() failed");
+					return;
+				}
+
+				// create a scaler surface
+				this->scaler = new MMSFBSurface(mmsfb->display_w, mmsfb->display_h, this->config.pixelformat,
+											this->x_image_scaler, NULL, NULL);
+				if (!this->scaler) {
+					MMSFB_SetError(0, "cannot create scaler surface");
+					return;
+				}
+
+				// we must switch extended accel on
+				this->scaler->setExtendedAcceleration(true);
+			}
 		}
 		else {
 			// XVSHM
@@ -733,7 +769,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 			}
 
 			// create a new surface instance
-			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->x_image1, this->x_image2);
+			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
+										this->x_image1, this->x_image2, this->scaler);
 			if (!*surface) {
 				MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 				return false;

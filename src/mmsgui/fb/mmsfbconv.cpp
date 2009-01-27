@@ -273,3 +273,53 @@ void compress_2x2_matrix(unsigned char *src, int src_pitch, int src_pitch_pix, i
 	}
 }
 
+
+void stretch_uint_buffer(bool h_antialiasing, bool v_antialiasing,
+						 unsigned int *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+					     unsigned int *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
+	// please note that the src and dst have to point to the first pixel which is to process
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+	int vertcnt;
+	unsigned int *src_end = src + src_pitch_pix * sh;
+	if (src_end > src + src_pitch_pix * src_height)
+		src_end = src + src_pitch_pix * src_height;
+	unsigned int *dst_end = dst + dst_pitch_pix * dst_height;
+
+	// for all lines
+	vertcnt = 0x8000;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned int *line_end = src + sw;
+			unsigned int *old_dst = dst;
+
+			do {
+				int horicnt = 0x8000;
+				while (src < line_end) {
+					horicnt+=horifact;
+					if (horicnt & 0xffff0000) {
+						register unsigned int SRC  = *src;
+
+						do {
+							*dst = SRC;
+							dst++;
+							horicnt-=0x10000;
+						} while (horicnt & 0xffff0000);
+					}
+
+					src++;
+				}
+				src-=sw;
+				vertcnt-=0x10000;
+				dst = old_dst + dst_pitch_pix;
+				old_dst = dst;
+			} while (vertcnt & 0xffff0000);
+		}
+
+		// next line
+		src+=src_pitch_pix;
+	}
+}
+

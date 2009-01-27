@@ -77,6 +77,9 @@ class MMSFBLayer {
         XShmSegmentInfo x_shminfo1;
         XImage  		*x_image2;
         XShmSegmentInfo x_shminfo2;
+        XImage  		*x_image_scaler;
+        XShmSegmentInfo x_shminfo_scaler;
+        MMSFBSurface	*scaler;
 
         XvImage  		*xv_image1;
         XShmSegmentInfo xv_shminfo1;

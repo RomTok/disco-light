@@ -324,7 +324,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	init((void*)1, NULL, NULL);
 }
 
-MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2) {
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2, MMSFBSurface *scaler) {
     // init me
     this->llsurface = NULL;
     this->surface_read_locked = false;
@@ -339,22 +339,41 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 	this->config.w = sb->sbw = w;
 	this->config.h = sb->sbh = h;
+	this->config.scaler = scaler;
 	sb->pixelformat = pixelformat;
 	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 	sb->premultiplied = true;
-	sb->backbuffer = 1;
+	sb->backbuffer = 0;
 	sb->systemonly = true;
 
 	// set the surface buffer
-	sb->numbuffers = 2;
-	sb->x_image[0] = x_image1;
-	sb->buffers[0] = sb->x_image[0]->data;
-	sb->x_image[1] = x_image2;
-	sb->buffers[1] = sb->x_image[1]->data;
-	sb->currbuffer_read = 0;
-	sb->currbuffer_write = 1;
-	sb->pitch = sb->x_image[0]->bytes_per_line;
-	sb->external_buffer = true;
+	if (x_image2) {
+		// two ximages
+		sb->backbuffer = 1;
+		sb->numbuffers = 2;
+		sb->x_image[0] = x_image1;
+		sb->buffers[0] = sb->x_image[0]->data;
+		sb->x_image[1] = x_image2;
+		sb->buffers[1] = sb->x_image[1]->data;
+		sb->currbuffer_read = 0;
+		sb->currbuffer_write = 1;
+		sb->pitch = sb->x_image[0]->bytes_per_line;
+		sb->external_buffer = true;
+	}
+	else {
+		// only one buffer
+		sb->backbuffer = 0;
+		sb->numbuffers = 1;
+		sb->x_image[0] = x_image1;
+		sb->buffers[0] = sb->x_image[0]->data;
+		sb->x_image[1] = NULL;
+		sb->buffers[1] = NULL;
+		sb->currbuffer_read = 0;
+		sb->currbuffer_write = 0;
+		sb->pitch = sb->x_image[0]->bytes_per_line;
+		sb->external_buffer = true;
+	}
+
 	init((void*)1, NULL, NULL);
 }
 #endif
@@ -2468,6 +2487,21 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_stretchblit_argb_to_argb(&myextbuf, src_height,
+												   sx, sy, sw, sh,
+												   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   dx, dy, dw, dh,
+												   this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+			else
 			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
@@ -2491,6 +2525,33 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 																	(unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 																	dx, dy, dw, dh,
 																	this->config.color.a);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
+	if (src_pixelformat == MMSFB_PF_RGB32) {
+		// source is RGB32
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_stretchblit_rgb32_to_rgb32(&myextbuf, src_height,
+													 sx, sy, sw, sh,
+													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													 dx, dy, dw, dh,
+													 this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3655,17 +3716,25 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #ifdef __HAVE_XLIB__
 		if (sb->x_image[0]) {
 			// XSHM, put the image to the x-server
-			mmsfb->xlock.lock();
-			XLockDisplay(mmsfb->x_display);
-			XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-						  0, 0, 0, 0,
-						  mmsfb->w, mmsfb->h, False);
-			XFlush(mmsfb->x_display);
+			if (!this->config.scaler) {
+				// no scaler defined
+				mmsfb->xlock.lock();
+				XLockDisplay(mmsfb->x_display);
+				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+							  0, 0, 0, 0,
+							  this->config.w, this->config.h, False);
+				XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
-//			XSync(mmsfb->x_display, True);
+//				XSync(mmsfb->x_display, True);
 #endif
-			XUnlockDisplay(mmsfb->x_display);
-			mmsfb->xlock.unlock();
+				XUnlockDisplay(mmsfb->x_display);
+				mmsfb->xlock.unlock();
+			}
+			else {
+				// scale to scaler
+				this->config.scaler->stretchBlit(this, NULL, NULL);
+				this->config.scaler->flip();
+			}
 		}
 		else
 		if (sb->xv_image[0]) {
