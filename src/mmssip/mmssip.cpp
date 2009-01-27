@@ -155,10 +155,10 @@ MMSSip::MMSSip(const string    &user,
 		}
     }
 
-    this->onCallSuccessfull    = new sigc::signal<void, int>;
-    this->onCallIncoming       = new sigc::signal<void, int, string>;
-    this->onCallDisconnected   = new sigc::signal<void, int>;
-    this->onCalling            = new sigc::signal<void, int>;
+    this->onCallSuccessfull    = new sigc::signal<void, int, int>;
+    this->onCallIncoming       = new sigc::signal<void, int, string, int>;
+    this->onCallDisconnected   = new sigc::signal<void, int, int>;
+    this->onCalling            = new sigc::signal<void, int, int>;
     this->onBuddyStatus        = new sigc::signal<void, MMSSipBuddy>;
 }
 
@@ -194,7 +194,21 @@ MMSSip::~MMSSip() {
 	this->buddies.clear();
 }
 
-/* register to SIP server */
+/**
+ * Register an account.
+ *
+ * @param	user		[in]	user name
+ * @param	passwd		[in]	password
+ * @param	registrar	[in]	registrar
+ * @param	realm		[in]	realm
+ * @param	defaultAcc	[in]	use this as default account for incoming/outgoing calls
+ * @param	autoanswer	[in]	automatically answer incoming calls
+ *
+ * @note If you're using the autoanswer feature, all other active calls
+ * will be disconnected, when an incoming call arrives.
+ *
+ * @return	true, if account was registered successfully
+ */
 const bool MMSSip::registerAccount(const string &user,
 								   const string &passwd,
 								   const string &registrar,
@@ -485,8 +499,15 @@ static void onIncomingCall(pjsua_acc_id  accId,
 
     PJ_UNUSED_ARG(rdata);
 
+    /* if autoanswer is set, hangup all other calls */
     if(thiz->getAutoAnswer(accId)) {
     	DEBUGMSG("MMSSIP", "Incoming call on account %d which has autoanswer feature turned on", accId);
+    	pjsua_call_id *ids;
+    	unsigned int count;
+    	if(pjsua_enum_calls(ids, &count) == PJ_SUCCESS) {
+    		for(unsigned int i = 0; i < count; ++i)
+    			pjsua_call_hangup(ids[i], 481, NULL, NULL);
+    	}
     	thiz->answer(callId);
     } else {
 		pjsua_call_get_info(callId, &ci);
@@ -494,7 +515,7 @@ static void onIncomingCall(pjsua_acc_id  accId,
 		DEBUGMSG("MMSSIP", "Incoming call from %.*s (id=%d)", (int)ci.remote_info.slen, ci.remote_info.ptr, callId);
 
 		if(thiz && thiz->onCallIncoming)
-			thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
+			thiz->onCallIncoming->emit(callId, ci.remote_info.ptr, ci.last_status);
     }
 }
 
@@ -514,7 +535,7 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         case PJSIP_INV_STATE_CALLING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CALLING");
             if(thiz && thiz->onCalling)
-                thiz->onCalling->emit(callId);
+                thiz->onCalling->emit(callId, ci.last_status);
         	break;
         case PJSIP_INV_STATE_INCOMING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
@@ -538,7 +559,7 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	if(callingtonePlayer != PJSUA_INVALID_ID)
         		pjsua_conf_disconnect(pjsua_player_get_conf_port(callingtonePlayer), 0);
             if(thiz && thiz->onCallSuccessfull)
-                thiz->onCallSuccessfull->emit(callId);
+                thiz->onCallSuccessfull->emit(callId, ci.last_status);
         	break;
         case PJSIP_INV_STATE_DISCONNECTED:
         	DEBUGMSG("MMSSIP", "lastStatusText: %s", ci.last_status_text);
@@ -546,7 +567,7 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	if(ringtonePlayer != PJSUA_INVALID_ID)
         		pjsua_conf_disconnect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	if(thiz && thiz->onCallDisconnected)
-                thiz->onCallDisconnected->emit(callId);
+                thiz->onCallDisconnected->emit(callId, ci.last_status);
         	break;
         default:
 
