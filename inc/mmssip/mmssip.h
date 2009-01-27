@@ -102,11 +102,47 @@ class MMSSip {
         bool getAutoAnswer(const int accountId);
         void setAutoAnswer(const int accountId, const bool value = true);
         bool registerRingtone(const string &filename);
+        bool registerBusytone(const string &filename);
+        bool registerCallingtone(const string &filename);
 
-        sigc::signal<void, int> 		           *onCallSuccessfull;
-        sigc::signal<void, int, string>            *onCallIncoming;
-        sigc::signal<void, int>                    *onCallDisconnected;
-        sigc::signal<void, int>                    *onCalling;
+        /**
+         * sigc++-connector that will be emitted if a call is
+         * successfull connected.
+         *
+         * Parameters are callid and call state.
+         */
+        sigc::signal<void, int, int>               *onCallSuccessfull;
+
+        /**
+         * sigc++-connector that will be emitted if a call is
+         * incoming.
+         *
+         * Parameters are callid, calling user and call state.
+         */
+        sigc::signal<void, int, string, int>       *onCallIncoming;
+
+        /**
+         * sigc++-connector that will be emitted if a call is
+         * disconnected.
+         *
+         * Parameters are callid and call state.
+         */
+        sigc::signal<void, int, int>               *onCallDisconnected;
+
+        /**
+         * sigc++-connector that will be emitted if you are trying
+         * to call.
+         *
+         * Parameters are callid and call state.
+         */
+        sigc::signal<void, int, int>               *onCalling;
+
+        /**
+         * sigc++-connector that will be emitted if the status of
+         * one of your buddies changed.
+         *
+         * Parameter is MMSSipBuddy structure.
+         */
         sigc::signal<void, MMSSipBuddy>            *onBuddyStatus;
 };
 

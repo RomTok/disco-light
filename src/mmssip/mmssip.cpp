@@ -46,6 +46,8 @@
 static MMSSip 			*thiz = NULL;
 static bool   			registered = false;
 static pjsua_player_id	ringtonePlayer = PJSUA_INVALID_ID;
+static pjsua_player_id	busytonePlayer = PJSUA_INVALID_ID;
+static pjsua_player_id	callingtonePlayer = PJSUA_INVALID_ID;
 
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
@@ -153,10 +155,10 @@ MMSSip::MMSSip(const string    &user,
 		}
     }
 
-    this->onCallSuccessfull    = new sigc::signal<void, int>;
-    this->onCallIncoming       = new sigc::signal<void, int, string>;
-    this->onCallDisconnected   = new sigc::signal<void, int>;
-    this->onCalling            = new sigc::signal<void, int>;
+    this->onCallSuccessfull    = new sigc::signal<void, int, int>;
+    this->onCallIncoming       = new sigc::signal<void, int, string, int>;
+    this->onCallDisconnected   = new sigc::signal<void, int, int>;
+    this->onCalling            = new sigc::signal<void, int, int>;
     this->onBuddyStatus        = new sigc::signal<void, MMSSipBuddy>;
 }
 
@@ -192,7 +194,21 @@ MMSSip::~MMSSip() {
 	this->buddies.clear();
 }
 
-/* register to SIP server */
+/**
+ * Register an account.
+ *
+ * @param	user		[in]	user name
+ * @param	passwd		[in]	password
+ * @param	registrar	[in]	registrar
+ * @param	realm		[in]	realm
+ * @param	defaultAcc	[in]	use this as default account for incoming/outgoing calls
+ * @param	autoanswer	[in]	automatically answer incoming calls
+ *
+ * @note If you're using the autoanswer feature, all other active calls
+ * will be disconnected, when an incoming call arrives.
+ *
+ * @return	true, if account was registered successfully
+ */
 const bool MMSSip::registerAccount(const string &user,
 								   const string &passwd,
 								   const string &registrar,
@@ -204,6 +220,10 @@ const bool MMSSip::registerAccount(const string &user,
     pjsua_acc_id		accID;
     char 				tmpid[256], tmpreg[256];
 
+    DEBUGMSG("MMSSIP", "Registering account " + user + "@" + registrar +
+    		"(default: " + (defaultAcc ? "true" : "false") +
+    		 ", autoanswer: " + (autoanswer ? "true" : "false") + ")");
+
     snprintf(tmpid, sizeof(tmpid), "sip:%s@%s", user.c_str(), registrar.c_str());
     snprintf(tmpreg, sizeof(tmpreg), "sip:%s", realm.c_str());
 
@@ -211,6 +231,7 @@ const bool MMSSip::registerAccount(const string &user,
     accCfg.reg_timeout  = 60;
     accCfg.id         = pj_str(tmpid);
     accCfg.reg_uri    = pj_str(tmpreg);
+    if(defaultAcc) accCfg.priority += 1;
     accCfg.cred_count = 1;
     accCfg.cred_info[0].realm     = pj_str((char*)"*");
     accCfg.cred_info[0].scheme    = pj_str((char*)"Digest");
@@ -224,6 +245,8 @@ const bool MMSSip::registerAccount(const string &user,
 		DEBUGMSG("MMSSIP", "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 		return false;
 	}
+
+    DEBUGMSG("MMSSIP", "Account " + user + "@" + registrar + " has ID " + iToStr(accID));
 
  	MMSSipAccount acc = {user, passwd, registrar, realm, autoanswer};
     this->accounts[accID] = acc;
@@ -438,6 +461,38 @@ bool MMSSip::registerRingtone(const string &filename) {
 	return false;
 }
 
+/**
+ * Register a .wav file as busy-tone.
+ *
+ * @note 	This file won't be looped.
+ *
+ * @param	filename	[in]	wav-file to play
+ *
+ * @return	true, if successfull
+ */
+bool MMSSip::registerBusytone(const string &filename) {
+	pj_str_t tmp;
+	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), PJMEDIA_FILE_NO_LOOP, &busytonePlayer) == PJ_SUCCESS)
+		return true;
+
+	return false;
+}
+
+/**
+ * Register a .wav file as calling-tone.
+ *
+ * @param	filename	[in]	wav-file to play
+ *
+ * @return	true, if successfull
+ */
+bool MMSSip::registerCallingtone(const string &filename) {
+	pj_str_t tmp;
+	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), 0, &callingtonePlayer) == PJ_SUCCESS)
+		return true;
+
+	return false;
+}
+
 /* Callback called by the library upon receiving incoming call */
 static void onIncomingCall(pjsua_acc_id  accId,
 		                   pjsua_call_id callId,
@@ -446,7 +501,15 @@ static void onIncomingCall(pjsua_acc_id  accId,
 
     PJ_UNUSED_ARG(rdata);
 
+    /* if autoanswer is set, hangup all other calls */
     if(thiz->getAutoAnswer(accId)) {
+    	DEBUGMSG("MMSSIP", "Incoming call on account %d which has autoanswer feature turned on", accId);
+    	pjsua_call_id *ids;
+    	unsigned int count;
+    	if(pjsua_enum_calls(ids, &count) == PJ_SUCCESS) {
+    		for(unsigned int i = 0; i < count; ++i)
+    			pjsua_call_hangup(ids[i], 481, NULL, NULL);
+    	}
     	thiz->answer(callId);
     } else {
 		pjsua_call_get_info(callId, &ci);
@@ -454,7 +517,7 @@ static void onIncomingCall(pjsua_acc_id  accId,
 		DEBUGMSG("MMSSIP", "Incoming call from %.*s (id=%d)", (int)ci.remote_info.slen, ci.remote_info.ptr, callId);
 
 		if(thiz && thiz->onCallIncoming)
-			thiz->onCallIncoming->emit(callId, ci.remote_info.ptr);
+			thiz->onCallIncoming->emit(callId, ci.remote_info.ptr, ci.last_status);
     }
 }
 
@@ -474,11 +537,13 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         case PJSIP_INV_STATE_CALLING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CALLING");
             if(thiz && thiz->onCalling)
-                thiz->onCalling->emit(callId);
+                thiz->onCalling->emit(callId, ci.last_status);
         	break;
         case PJSIP_INV_STATE_INCOMING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
-        	if(ringtonePlayer != PJSUA_INVALID_ID && ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        	if(ringtonePlayer != PJSUA_INVALID_ID &&
+        		ci.role == PJSIP_ROLE_UAS &&
+        	    ci.media_status == PJSUA_CALL_MEDIA_NONE)
         		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_EARLY:
@@ -486,19 +551,27 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_CONNECTING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONNECTING");
+        	if(callingtonePlayer != PJSUA_INVALID_ID &&
+        		ci.role == PJSIP_ROLE_UAS &&
+        	    ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        		pjsua_conf_connect(pjsua_player_get_conf_port(callingtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_CONFIRMED:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONFIRMED");
+        	if(callingtonePlayer != PJSUA_INVALID_ID)
+        		pjsua_conf_disconnect(pjsua_player_get_conf_port(callingtonePlayer), 0);
             if(thiz && thiz->onCallSuccessfull)
-                thiz->onCallSuccessfull->emit(callId);
+                thiz->onCallSuccessfull->emit(callId, ci.last_status);
         	break;
         case PJSIP_INV_STATE_DISCONNECTED:
         	DEBUGMSG("MMSSIP", "lastStatusText: %s", ci.last_status_text);
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_DISCONNECTED");
         	if(ringtonePlayer != PJSUA_INVALID_ID)
         		pjsua_conf_disconnect(pjsua_player_get_conf_port(ringtonePlayer), 0);
+        	if((ci.last_status == 486) && (busytonePlayer != PJSUA_INVALID_ID))
+        		pjsua_conf_connect(pjsua_player_get_conf_port(busytonePlayer), 0);
         	if(thiz && thiz->onCallDisconnected)
-                thiz->onCallDisconnected->emit(callId);
+                thiz->onCallDisconnected->emit(callId, ci.last_status);
         	break;
         default:
 
