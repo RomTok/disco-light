@@ -46,6 +46,8 @@
 static MMSSip 			*thiz = NULL;
 static bool   			registered = false;
 static pjsua_player_id	ringtonePlayer = PJSUA_INVALID_ID;
+static pjsua_player_id	busytonePlayer = PJSUA_INVALID_ID;
+static pjsua_player_id	callingtonePlayer = PJSUA_INVALID_ID;
 
 static void onIncomingCall(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
 static void onCallState(pjsua_call_id, pjsip_event*);
@@ -438,6 +440,36 @@ bool MMSSip::registerRingtone(const string &filename) {
 	return false;
 }
 
+/**
+ * Register a .wav file as busy-tone.
+ *
+ * @param	filename	[in]	wav-file to play
+ *
+ * @return	true, if successfull
+ */
+bool MMSSip::registerBusytone(const string &filename) {
+	pj_str_t tmp;
+	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), 0, &busytonePlayer) == PJ_SUCCESS)
+		return true;
+
+	return false;
+}
+
+/**
+ * Register a .wav file as calling-tone.
+ *
+ * @param	filename	[in]	wav-file to play
+ *
+ * @return	true, if successfull
+ */
+bool MMSSip::registerCallingtone(const string &filename) {
+	pj_str_t tmp;
+	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), 0, &callingtonePlayer) == PJ_SUCCESS)
+		return true;
+
+	return false;
+}
+
 /* Callback called by the library upon receiving incoming call */
 static void onIncomingCall(pjsua_acc_id  accId,
 		                   pjsua_call_id callId,
@@ -478,7 +510,9 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_INCOMING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_INCOMING");
-        	if(ringtonePlayer != PJSUA_INVALID_ID && ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        	if(ringtonePlayer != PJSUA_INVALID_ID &&
+        		ci.role == PJSIP_ROLE_UAS &&
+        	    ci.media_status == PJSUA_CALL_MEDIA_NONE)
         		pjsua_conf_connect(pjsua_player_get_conf_port(ringtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_EARLY:
@@ -486,9 +520,15 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	break;
         case PJSIP_INV_STATE_CONNECTING:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONNECTING");
+        	if(callingtonePlayer != PJSUA_INVALID_ID &&
+        		ci.role == PJSIP_ROLE_UAS &&
+        	    ci.media_status == PJSUA_CALL_MEDIA_NONE)
+        		pjsua_conf_connect(pjsua_player_get_conf_port(callingtonePlayer), 0);
         	break;
         case PJSIP_INV_STATE_CONFIRMED:
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_CONFIRMED");
+        	if(callingtonePlayer != PJSUA_INVALID_ID)
+        		pjsua_conf_disconnect(pjsua_player_get_conf_port(callingtonePlayer), 0);
             if(thiz && thiz->onCallSuccessfull)
                 thiz->onCallSuccessfull->emit(callId);
         	break;

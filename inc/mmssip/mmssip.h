@@ -102,6 +102,8 @@ class MMSSip {
         bool getAutoAnswer(const int accountId);
         void setAutoAnswer(const int accountId, const bool value = true);
         bool registerRingtone(const string &filename);
+        bool registerBusytone(const string &filename);
+        bool registerCallingtone(const string &filename);
 
         sigc::signal<void, int> 		           *onCallSuccessfull;
         sigc::signal<void, int, string>            *onCallIncoming;
