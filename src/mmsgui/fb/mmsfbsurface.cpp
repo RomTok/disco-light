@@ -3827,19 +3827,25 @@ bool MMSFBSurface::refresh() {
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		if (sb->x_image[0]) {
 			// XSHM, put the image to the x-server
-			this->lock();
-			mmsfb->xlock.lock();
-			XLockDisplay(mmsfb->x_display);
-			XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-						  0, 0, 0, 0,
-						  mmsfb->w, mmsfb->h, False);
-			XFlush(mmsfb->x_display);
+			if (!this->config.scaler) {
+				// no scaler defined
+				mmsfb->xlock.lock();
+				XLockDisplay(mmsfb->x_display);
+				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+							  0, 0, 0, 0,
+							  this->config.w, this->config.h, False);
+				XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
-//			XSync(mmsfb->x_display, True);
+//				XSync(mmsfb->x_display, True);
 #endif
-			XUnlockDisplay(mmsfb->x_display);
-			mmsfb->xlock.unlock();
-			this->unlock();
+				XUnlockDisplay(mmsfb->x_display);
+				mmsfb->xlock.unlock();
+			}
+			else {
+				// scale to scaler
+				this->config.scaler->stretchBlit(this, NULL, NULL);
+				this->config.scaler->flip();
+			}
 		}
 		else
 		if (sb->xv_image[0]) {
