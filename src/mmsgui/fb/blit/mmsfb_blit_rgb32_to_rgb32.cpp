@@ -30,44 +30,18 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
+void mmsfb_blit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated copy ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated copy RGB32 to RGB32.\n");
 		firsttime = false;
 	}
 
-	// get the first source ptr/pitch
-	unsigned int *src = (unsigned int *)extbuf->ptr;
-	int src_pitch = extbuf->pitch;
-
-	// prepare...
-	int src_pitch_pix = src_pitch >> 2;
-	int dst_pitch_pix = dst_pitch >> 2;
-	src+= sx + sy * src_pitch_pix;
-	dst+= dx + dy * dst_pitch_pix;
-
-	// check the surface range
-	if (dst_pitch_pix - dx < sw - sx)
-		sw = dst_pitch_pix - dx - sx;
-	if (dst_height - dy < sh - sy)
-		sh = dst_height - dy - sy;
-	if ((sw <= 0)||(sh <= 0))
-		return;
-
-	unsigned int *src_end = src + src_pitch_pix * sh;
-
-	// for all lines
-	while (src < src_end) {
-		// copy the line
-		memcpy(dst, src, sw << 2);
-
-		// go to the next line
-		src+= src_pitch_pix;
-		dst+= dst_pitch_pix;
-	}
+	// no difference to argb, use argb to argb routine
+	mmsfb_blit_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
+							dst, dst_pitch, dst_height, dx, dy);
 }
 
 

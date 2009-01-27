@@ -1827,6 +1827,26 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_blend_argb_to_rgb32(&myextbuf, src_height,
+												   sx, sy, sw, sh,
+												   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
 			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
@@ -1905,6 +1925,32 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 															 (unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 															 x, y,
 															 this->config.color.a);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
+	if (src_pixelformat == MMSFB_PF_RGB32) {
+		// source is RGB32
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_rgb32_to_rgb32(&myextbuf, src_height,
+											  sx, sy, sw, sh,
+											  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
