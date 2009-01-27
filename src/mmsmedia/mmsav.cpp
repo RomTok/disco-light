@@ -193,27 +193,63 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		if (frame_format == XINE_VORAW_RGB) {
     		// we get RGB24 data
 			if (!interim) {
+				// allocate interim buffer for RGB24 to YV12 convertion
 				interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
 			}
     	}
-    }
 
-    if (interim) {
-    	// source is RGB24
-    	interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24, frame_width, frame_height, NULL, 0, 0);
-		userd->surf->stretchBlit(interim, NULL, &userd->dest);
+		if (interim) {
+			// source is RGB24
+			interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+							    frame_width, frame_height, NULL, 0, 0);
+			userd->surf->stretchBlit(interim, NULL, &userd->dest);
 
-    } else {
-    	// source is YV12
-		MMSFBExternalSurfaceBuffer buf;
-		buf.ptr = data0;
-		buf.pitch = frame_width;
-		buf.ptr2 = data1;
-		buf.pitch2 = frame_width / 2;
-		buf.ptr3 = data2;
-		buf.pitch3 = frame_width / 2;
+		} else {
+			// source is YV12
+			MMSFBExternalSurfaceBuffer buf;
+			buf.ptr = data0;
+			buf.pitch = frame_width;
+			buf.ptr2 = data1;
+			buf.pitch2 = frame_width / 2;
+			buf.ptr3 = data2;
+			buf.pitch3 = frame_width / 2;
 
-		userd->surf->stretchBlitBuffer(&buf,MMSFB_PF_YV12,frame_width,frame_height,NULL,&userd->dest);
+			userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+										   frame_width, frame_height, NULL, &userd->dest);
+		}
+	}
+	else {
+		// destination with any other pixelformat
+		if (frame_format == XINE_VORAW_YV12) {
+    		// we get YV12 data
+			if (!interim) {
+				// allocate interim buffer for YV12 stretch blit
+				interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
+			}
+    	}
+
+		if (interim) {
+			// source is YV12
+			MMSFBExternalSurfaceBuffer buf;
+			buf.ptr = data0;
+			buf.pitch = frame_width;
+			buf.ptr2 = data1;
+			buf.pitch2 = frame_width / 2;
+			buf.ptr3 = data2;
+			buf.pitch3 = frame_width / 2;
+			MMSFBRectangle mydest = userd->dest;
+			mydest.x = 0;
+			mydest.y = 0;
+
+			interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+									   frame_width, frame_height, NULL, &mydest);
+			userd->surf->blit(interim, NULL, userd->dest.x, userd->dest.y);
+
+		} else {
+			// source is RGB24
+			userd->surf->stretchBlitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+										   frame_width, frame_height, NULL, &userd->dest);
+		}
 	}
 
     // TODO: what if interim == NULL?
