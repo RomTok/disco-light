@@ -1773,6 +1773,20 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// to height
 		sh = clipreg.y2 - y + 1;
 
+	// adjust x/y
+	if (x < 0) {
+		sx -= x;
+		sw += x;
+		x = 0;
+	}
+	if (y < 0) {
+		sy -= y;
+		sh += y;
+		y = 0;
+	}
+	if ((sw <= 0)||(sh <= 0))
+		return true;
+
 	// checking pixelformats...
 	if (src_pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
