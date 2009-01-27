@@ -188,16 +188,20 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		}
     }
 
-    if (frame_format == XINE_VORAW_RGB) {
-    	if (!interim) {
-    		interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+	if (userd->surf_pixelformat == MMSFB_PF_YV12) {
+		// the destination has YV12 pixelformat
+		if (frame_format == XINE_VORAW_RGB) {
+    		// we get RGB24 data
+			if (!interim) {
+				interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+			}
     	}
     }
 
     if (interim) {
     	// source is RGB24
-    	interim->blitBuffer(data0,frame_width*3,MMSFB_PF_RGB24,frame_width,frame_height,NULL,0,0);
-		userd->surf->stretchBlit(interim,NULL,&userd->dest);
+    	interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24, frame_width, frame_height, NULL, 0, 0);
+		userd->surf->stretchBlit(interim, NULL, &userd->dest);
 
     } else {
     	// source is YV12
@@ -426,6 +430,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 		if(window) {
 			this->userd.surf=window->getSurface();
 			this->userd.surf->setBlittingFlags(MMSFB_BLIT_NOFX);
+			this->userd.surf->getPixelFormat(&this->userd.surf_pixelformat);
 			int w,h;
 			this->userd.surf->getSize(&w,&h);
 			this->userd.surf=window->getSurface();

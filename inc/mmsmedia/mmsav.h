@@ -78,6 +78,7 @@ typedef struct {
 
 typedef struct {
 	MMSFBSurface *surf;
+	MMSFBSurfacePixelFormat surf_pixelformat;
 	MMSFBRectangle size;
 	MMSFBRectangle dest;
 	double lastaspect;
