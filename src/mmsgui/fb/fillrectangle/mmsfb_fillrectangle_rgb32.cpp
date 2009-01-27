@@ -29,12 +29,12 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_fillrectangle_argb(unsigned int *dst, int dst_pitch, int dst_height,
-						      int dx, int dy, int dw, int dh, MMSFBColor color) {
+void mmsfb_fillrectangle_rgb32(unsigned int *dst, int dst_pitch, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated fill rectangle to ARGB.\n");
+		printf("DISKO: Using accelerated fill rectangle to RGB32.\n");
 		firsttime = false;
 	}
 
@@ -48,9 +48,8 @@ void mmsfb_fillrectangle_argb(unsigned int *dst, int dst_pitch, int dst_height,
 #endif
 
 	// prepare the color
-	register unsigned int A = color.a;
 	register unsigned int SRC;
-	SRC =     (A << 24)
+	SRC =     0xff000000
 			| (color.r << 16)
 			| (color.g << 8)
 			| color.b;
