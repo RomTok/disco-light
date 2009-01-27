@@ -464,13 +464,15 @@ bool MMSSip::registerRingtone(const string &filename) {
 /**
  * Register a .wav file as busy-tone.
  *
+ * @note 	This file won't be looped.
+ *
  * @param	filename	[in]	wav-file to play
  *
  * @return	true, if successfull
  */
 bool MMSSip::registerBusytone(const string &filename) {
 	pj_str_t tmp;
-	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), 0, &busytonePlayer) == PJ_SUCCESS)
+	if(pjsua_player_create(pj_cstr(&tmp, filename.c_str()), PJMEDIA_FILE_NO_LOOP, &busytonePlayer) == PJ_SUCCESS)
 		return true;
 
 	return false;
@@ -566,6 +568,8 @@ static void onCallState(pjsua_call_id callId, pjsip_event *e) {
         	DEBUGMSG("MMSSIP", "onCallState: PJSIP_INV_STATE_DISCONNECTED");
         	if(ringtonePlayer != PJSUA_INVALID_ID)
         		pjsua_conf_disconnect(pjsua_player_get_conf_port(ringtonePlayer), 0);
+        	if((ci.last_status == 486) && (busytonePlayer != PJSUA_INVALID_ID))
+        		pjsua_conf_connect(pjsua_player_get_conf_port(busytonePlayer), 0);
         	if(thiz && thiz->onCallDisconnected)
                 thiz->onCallDisconnected->emit(callId, ci.last_status);
         	break;
