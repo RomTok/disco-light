@@ -111,19 +111,16 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbu
 				unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
 				register unsigned int SA= 0x100 - A;
 
-//				unsigned int a = DST >> 24;
 				unsigned int r = (DST << 8) >> 24;
 				unsigned int g = (DST << 16) >> 24;
 				unsigned int b = DST & 0xff;
 
 				// invert src alpha
-//			    a = (SA * a) >> 8;
 			    r = (SA * r) >> 8;
 			    g = (SA * g) >> 8;
 			    b = (SA * b) >> 8;
 
 			    // add src to dst
-//			    a += A;
 			    r += (A * sr) >> 8;
 			    g += (A * sg) >> 8;
 			    b += (A * sb) >> 8;

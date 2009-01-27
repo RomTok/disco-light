@@ -63,7 +63,6 @@ void mmsfb_blit_blend_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	int dst_pitch_diff = dst_pitch_pix - sw;
 	register unsigned int d;
 
-
 	// for all lines
 	while (src < src_end) {
 		// for all pixels in the line
@@ -97,35 +96,21 @@ void mmsfb_blit_blend_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_
 				unsigned int r = (DST << 8) >> 24;
 				unsigned int g = (DST << 16) >> 24;
 				unsigned int b = DST & 0xff;
-//				unsigned int r = DST >> 11;
-//				unsigned int g = DST & 0x07e0;
-//				unsigned int b = DST & 0x1f;
 
 				// invert src alpha
 			    r = (SA * r) >> 8;
 			    g = (SA * g) >> 8;
 			    b = (SA * b) >> 8;
-//			    r = SA * r;
-//			    g = SA * g;
-//			    b = (SA * b) >> 5;
 
 			    // add src to dst
-			    r += (A*(SRC & 0xff0000)) >> 8;
-			    g += (A*(SRC & 0xff00)) >> 8;
+			    r += (A*(SRC & 0xff0000)) >> 24;
+			    g += (A*(SRC & 0xff00)) >> 16;
 			    b += (A*(SRC & 0xff)) >> 8;
 			    d =   0xff000000
 					| ((r >> 8) ? 0xff0000   : (r << 16))
 					| ((g >> 8) ? 0xff00     : (g << 8))
 			    	| ((b >> 8) ? 0xff 		 :  b);
 				*dst = d;
-
-/*				r += (A*(SRC & 0xf80000)) >> 19;
-				g += (A*(SRC & 0xfc00)) >> 5;
-				b += (A*(SRC & 0xf8)) >> 8;
-				d =   ((r & 0xffe000)   ? 0xf800 : ((r >> 8) << 11))
-			    	| ((g & 0xfff80000) ? 0x07e0 : ((g >> 13) << 5))
-			    	| ((b & 0xff00)     ? 0x1f 	 : (b >> 3));
-				*dst = d;*/
 			}
 
 		    dst++;
