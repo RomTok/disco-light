@@ -1842,6 +1842,22 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 				return false;
 			}
+			else
+			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+				// blitting with alpha channel and coloralpha
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_blend_coloralpha_argb_to_rgb32(&myextbuf, src_height,
+															  sx, sy, sw, sh,
+															  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+															  x, y,
+															  this->config.color.a);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
 
 			// does not match
 			return false;
