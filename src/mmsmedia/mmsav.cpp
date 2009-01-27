@@ -225,6 +225,7 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 			if (!interim) {
 				// allocate interim buffer for YV12 stretch blit
 				interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
+				if (interim) interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
 			}
     	}
 
