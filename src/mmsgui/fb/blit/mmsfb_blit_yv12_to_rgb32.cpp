@@ -30,12 +30,12 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
+void mmsfb_blit_yv12_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated copy YV12 to YV12.\n");
+		printf("DISKO: Using accelerated conversion YV12 to RGB32.\n");
 		firsttime = false;
 	}
 
@@ -43,6 +43,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height,
 	unsigned char *src = (unsigned char *)extbuf->ptr;
 	int src_pitch = extbuf->pitch;
 
+
+	memset(dst, 0xff, 4*1024*576/2);
+
+
+#ifdef sfsfs
 	// prepare...
 	int src_pitch_pix 		= src_pitch;
 	int src_pitch_pix_half	= src_pitch_pix >> 1;
@@ -522,6 +527,6 @@ void mmsfb_blit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height,
 		dst_u += dst_pitch_uvdiff;
 		dst_v += dst_pitch_uvdiff;
 	}
-
+#endif
 }
 

@@ -1107,6 +1107,14 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf
 
 
 
+//! Blit YV12 to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_yv12_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
 
 
 //! Stretch blit with alpha blending ARGB to ARGB.

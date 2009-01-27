@@ -2248,6 +2248,29 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// does not match
 			return false;
 		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
+				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
+				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
+				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING)) {
+				// convert without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_yv12_to_rgb32(&myextbuf, src_height,
+											 sx, sy, sw, sh,
+											 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											 x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
 
 		// does not match
 		return false;

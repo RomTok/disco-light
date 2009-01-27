@@ -139,6 +139,7 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	printf("-------\n");*/
 
     if (userd->lastaspect != frame_aspect) {
+    	// format changed
     	printf("format change %f\n", frame_aspect);
     	newW = (int)((double)(userd->size.h) * frame_aspect + 0.5);
     	newH = (int)((double)(userd->size.w) / frame_aspect + 0.5);
@@ -180,26 +181,26 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
         userd->dest.y&=~0x01;
         // printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
 
-        if(frame_format == XINE_VORAW_RGB) {
-    		if(interim) {
-    			delete interim;
-    		}
-    		interim = NULL;
-
-    	}
-
+        // delete iterim surface
+		if (interim) {
+			delete interim;
+			interim = NULL;
+		}
     }
 
-
-    if(frame_format == XINE_VORAW_RGB) {
-    	if(!interim) {
+    if (frame_format == XINE_VORAW_RGB) {
+    	if (!interim) {
     		interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
     	}
+    }
 
+    if (interim) {
+    	// source is RGB24
     	interim->blitBuffer(data0,frame_width*3,MMSFB_PF_RGB24,frame_width,frame_height,NULL,0,0);
 		userd->surf->stretchBlit(interim,NULL,&userd->dest);
 
     } else {
+    	// source is YV12
 		MMSFBExternalSurfaceBuffer buf;
 		buf.ptr = data0;
 		buf.pitch = frame_width;
