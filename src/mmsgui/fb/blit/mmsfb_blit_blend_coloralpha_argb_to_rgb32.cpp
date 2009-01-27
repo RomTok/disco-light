@@ -29,21 +29,21 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-											  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
-											  unsigned char alpha) {
+void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+											   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+											   unsigned char alpha) {
 	// check for full alpha value
 	if (alpha == 0xff) {
 		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_blit_blend_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
-									  dst, dst_pitch, dst_height, dx, dy);
+		mmsfb_blit_blend_argb_to_rgb32(extbuf, src_height, sx, sy, sw, sh,
+									   dst, dst_pitch, dst_height, dx, dy);
 		return;
 	}
 
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend coloralpha ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated blend coloralpha ARGB to RGB32.\n");
 		firsttime = false;
 	}
 
@@ -111,23 +111,23 @@ void mmsfb_blit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf
 				unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
 				register unsigned int SA= 0x100 - A;
 
-				unsigned int a = DST >> 24;
+//				unsigned int a = DST >> 24;
 				unsigned int r = (DST << 8) >> 24;
 				unsigned int g = (DST << 16) >> 24;
 				unsigned int b = DST & 0xff;
 
 				// invert src alpha
-			    a = (SA * a) >> 8;
+//			    a = (SA * a) >> 8;
 			    r = (SA * r) >> 8;
 			    g = (SA * g) >> 8;
 			    b = (SA * b) >> 8;
 
 			    // add src to dst
-			    a += A;
-			    r += sr;
-			    g += sg;
-			    b += sb;
-			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+//			    a += A;
+			    r += (A * sr) >> 8;
+			    g += (A * sg) >> 8;
+			    b += (A * sb) >> 8;
+			    d =   0xff000000
 					| ((r >> 8) ? 0xff0000   : (r << 16))
 					| ((g >> 8) ? 0xff00     : (g << 8))
 			    	| ((b >> 8) ? 0xff 		 :  b);

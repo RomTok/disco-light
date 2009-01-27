@@ -917,6 +917,14 @@ void mmsfb_blit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf
 											  unsigned char alpha);
 
 
+//! Blit with alpha blending with alpha from color ARGB to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+											   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+											   unsigned char alpha);
+
 
 //! Blit AiRGB to AiRGB.
 /*!
