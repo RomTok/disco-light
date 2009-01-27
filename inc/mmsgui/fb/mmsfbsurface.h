@@ -103,7 +103,7 @@ typedef struct {
     MMSFBSurfaceBuffer	*surface_buffer;
 
 #ifdef __HAVE_XLIB__
-    MMSFBSurface 	*scaler;
+    class MMSFBSurface 	*scaler;
 #endif
 } MMSFBSurfaceConfig;
 
