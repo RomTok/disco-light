@@ -206,6 +206,10 @@ const bool MMSSip::registerAccount(const string &user,
     pjsua_acc_id		accID;
     char 				tmpid[256], tmpreg[256];
 
+    DEBUGMSG("MMSSIP", "Registering account " + user + "@" + registrar +
+    		"(default: " + (defaultAcc ? "true" : "false") +
+    		 ", autoanswer: " + (autoanswer ? "true" : "false") + ")");
+
     snprintf(tmpid, sizeof(tmpid), "sip:%s@%s", user.c_str(), registrar.c_str());
     snprintf(tmpreg, sizeof(tmpreg), "sip:%s", realm.c_str());
 
@@ -213,6 +217,7 @@ const bool MMSSip::registerAccount(const string &user,
     accCfg.reg_timeout  = 60;
     accCfg.id         = pj_str(tmpid);
     accCfg.reg_uri    = pj_str(tmpreg);
+    if(defaultAcc) accCfg.priority += 1;
     accCfg.cred_count = 1;
     accCfg.cred_info[0].realm     = pj_str((char*)"*");
     accCfg.cred_info[0].scheme    = pj_str((char*)"Digest");
@@ -226,6 +231,8 @@ const bool MMSSip::registerAccount(const string &user,
 		DEBUGMSG("MMSSIP", "Error registering account sip:" + user + "@" + registrar + " (pjsua_acc_add)");
 		return false;
 	}
+
+    DEBUGMSG("MMSSIP", "Account " + user + "@" + registrar + " has ID " + iToStr(accID));
 
  	MMSSipAccount acc = {user, passwd, registrar, realm, autoanswer};
     this->accounts[accID] = acc;
@@ -479,6 +486,7 @@ static void onIncomingCall(pjsua_acc_id  accId,
     PJ_UNUSED_ARG(rdata);
 
     if(thiz->getAutoAnswer(accId)) {
+    	DEBUGMSG("MMSSIP", "Incoming call on account %d which has autoanswer feature turned on", accId);
     	thiz->answer(callId);
     } else {
 		pjsua_call_get_info(callId, &ci);
