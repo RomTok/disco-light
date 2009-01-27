@@ -142,6 +142,16 @@ typedef struct {
 	}
 
 
+#define MMSFB_CONV_YV12_TO_RGB32_PIXEL(src_y, src_u, src_v, dst) \
+	{ int y, u, v, r, g, b;										\
+	y = src_y; u = src_u; v = src_v;							\
+	MMSFB_CONV_PREPARE_YUV2RGB(y,u,v);							\
+	MMSFB_CONV_YUV2R(y, u, v, r);								\
+	MMSFB_CONV_YUV2G(y, u, v, g);								\
+	MMSFB_CONV_YUV2B(y, u, v, b);								\
+	dst = 0xff000000 | (r << 16) | (g << 8) | b; }
+
+
 
 #define MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR \
 	unsigned int  *saved_src   = src;   \
