@@ -465,7 +465,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 	if (mmsfb->getBackend() != MMSFB_BACKEND_DFB) {
 		if(window) {
 			this->userd.surf=window->getSurface();
-			this->userd.surf->setBlittingFlags(MMSFB_BLIT_NOFX);
+			this->userd.surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
 			this->userd.surf->getPixelFormat(&this->userd.surf_pixelformat);
 			int w,h;
 			this->userd.surf->getSize(&w,&h);
