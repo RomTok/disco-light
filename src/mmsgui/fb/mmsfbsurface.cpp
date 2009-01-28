@@ -3772,6 +3772,12 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					// scale only a region
 					MMSFBRegion myreg = *region;
 
+					// enlarge the region because of little calulation errors while stretching
+					myreg.x1--;
+					myreg.y1--;
+					myreg.x2++;
+					myreg.y2++;
+
 					// check region
 					if (myreg.x1 < 0) myreg.x1 = 0;
 					if (myreg.y1 < 0) myreg.y1 = 0;
