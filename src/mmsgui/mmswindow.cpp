@@ -898,6 +898,10 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         CHILDWINS *cw = &(this->childwins.at(i));
         MMSFBRegion *myregion = &(cw->region);
 
+        // window pointer set?
+        if (!cw->window)
+        	continue;
+
         /* if the window has no opacity then continue */
         if (!cw->opacity)
             continue;
