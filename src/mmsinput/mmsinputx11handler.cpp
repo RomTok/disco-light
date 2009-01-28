@@ -191,14 +191,16 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     Bool ret;
     while(1) {
     	//
-    	//XLockDisplay(mmsfb->x_display);
-    	//ret=XCheckWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask, &event);
-    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|ResizeRedirectMask, &event);
-		/*XUnlockDisplay(mmsfb->x_display);
+    	XLockDisplay(mmsfb->x_display);
+    	ret=XCheckWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|ResizeRedirectMask, &event);
+		XUnlockDisplay(mmsfb->x_display);
 		if(ret==False) {
-//			usleep(10000);
+			usleep(10000);
 			continue;
-		}*/
+		}
+
+//    	XWindowEvent(this->display,  this->window, KeyPressMask|KeyReleaseMask|ExposureMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask|EnterWindowMask|ResizeRedirectMask, &event);
+
     	//printf("have event\n");
     	//printf("\n%d",event.type);
     	//XNextEvent(this->display, &event);
