@@ -3734,10 +3734,27 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				// no scaler defined
 				mmsfb->xlock.lock();
 				XLockDisplay(mmsfb->x_display);
-				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-							  0, 0, 0, 0,
-							  this->config.w, this->config.h, False);
-				XFlush(mmsfb->x_display);
+				if (!region) {
+					// put whole image
+					XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+								  0, 0, 0, 0,
+								  this->config.w, this->config.h, False);
+					XFlush(mmsfb->x_display);
+				}
+				else {
+					// put only a region
+					MMSFBRegion myreg = *region;
+					if (myreg.x1 < 0) myreg.x1 = 0;
+					if (myreg.y1 < 0) myreg.y1 = 0;
+					if (myreg.x2 >= this->config.w) myreg.x2 = this->config.w - 1;
+					if (myreg.y2 >= this->config.h) myreg.y2 = this->config.h - 1;
+					if ((myreg.x2 >= myreg.x1)&&(myreg.y2 >= myreg.y1)) {
+						XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+									 myreg.x1, myreg.y1, myreg.x1, myreg.y1,
+									 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
+						XFlush(mmsfb->x_display);
+					}
+				}
 #ifndef __NO_XSYNC__
 //				XSync(mmsfb->x_display, True);
 #endif
@@ -3746,8 +3763,46 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 			else {
 				// scale to scaler
-				this->config.scaler->stretchBlit(this, NULL, NULL);
-				this->config.scaler->flip();
+				if (!region) {
+					// scale whole image
+					this->config.scaler->stretchBlit(this, NULL, NULL);
+					this->config.scaler->flip();
+				}
+				else {
+					// scale only a region
+					MMSFBRegion myreg = *region;
+
+					// check region
+					if (myreg.x1 < 0) myreg.x1 = 0;
+					if (myreg.y1 < 0) myreg.y1 = 0;
+					if (myreg.x2 >= this->config.w) myreg.x2 = this->config.w - 1;
+					if (myreg.y2 >= this->config.h) myreg.y2 = this->config.h - 1;
+					if ((myreg.x2 >= myreg.x1)&&(myreg.y2 >= myreg.y1)) {
+						// calc rects and regs for stretching
+//TODO: calulate the correct dst_rect for stretchblit???
+/*						MMSFBRectangle src_rect;
+						MMSFBRectangle dst_rect;
+						src_rect.x = myreg.x1;
+						src_rect.y = myreg.y1;
+						src_rect.w = myreg.x2 - myreg.x1 + 1;
+						src_rect.h = myreg.y2 - myreg.y1 + 1;
+*/
+						myreg.x1 = (myreg.x1 * this->config.scaler->config.w) / this->config.w;
+						myreg.y1 = (myreg.y1 * this->config.scaler->config.h) / this->config.h;
+						myreg.x2 = (myreg.x2 * this->config.scaler->config.w) / this->config.w;
+						myreg.y2 = (myreg.y2 * this->config.scaler->config.h) / this->config.h;
+
+/*						dst_rect.x = myreg.x1;
+						dst_rect.y = myreg.y1;
+						dst_rect.w = myreg.x2 - myreg.x1 + 1;
+						dst_rect.h = myreg.y2 - myreg.y1 + 1;*/
+
+						// stretch & flip to make it visible on the screen
+//						this->config.scaler->stretchBlit(this, &src_rect, &dst_rect);
+						this->config.scaler->stretchBlit(this, NULL, NULL);
+						this->config.scaler->flip(&myreg);
+					}
+				}
 			}
 		}
 		else
