@@ -101,10 +101,6 @@ typedef struct {
     MMSFBFont			*font;
     //! the surface buffer(s)
     MMSFBSurfaceBuffer	*surface_buffer;
-
-#ifdef __HAVE_XLIB__
-    class MMSFBSurface 	*scaler;
-#endif
 } MMSFBSurfaceConfig;
 
 
@@ -127,6 +123,10 @@ class MMSFBSurface {
         bool				surface_write_locked;
         int					surface_write_lock_cnt;
         bool				surface_invert_lock;
+
+#ifdef __HAVE_XLIB__
+        MMSFBSurface 		*scaler;
+#endif
 
         MMSFBSurfaceConfig  config;     /* surface configuration */
 

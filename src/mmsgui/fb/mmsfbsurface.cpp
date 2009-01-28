@@ -129,6 +129,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
+#ifdef __HAVE_XLIB__
+    this->scaler = NULL;
+#endif
     this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	this->config.surface_buffer->numbuffers = 0;
 	this->config.surface_buffer->external_buffer = false;
@@ -216,6 +219,9 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
 	        		       MMSFBSurface *parent,
 						   MMSFBRectangle *sub_surface_rect) {
     // init me
+#ifdef __HAVE_XLIB__
+    this->scaler = NULL;
+#endif
     if ((!parent)||(!this->use_own_alloc))
     	this->config.surface_buffer = new MMSFBSurfaceBuffer;
     else
@@ -251,6 +257,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
+#ifdef __HAVE_XLIB__
+    this->scaler = NULL;
+#endif
 	this->use_own_alloc = true;
 
     // setup surface attributes
@@ -286,6 +295,12 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 		sb->currbuffer_write = 1;
 	sb->pitch = extbuf->pitch;
 	sb->external_buffer = true;
+
+#ifdef __HAVE_XLIB__
+	this->config.surface_buffer->x_image[0] = NULL;
+	this->config.surface_buffer->xv_image[0] = NULL;
+#endif
+
 	init((void*)1, NULL, NULL);
 }
 
@@ -298,6 +313,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
+    this->scaler = NULL;
 	this->use_own_alloc = true;
 
     // setup surface attributes
@@ -321,6 +337,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->currbuffer_write = 1;
 	sb->pitch = *(sb->xv_image[0]->pitches);
 	sb->external_buffer = true;
+
+	this->config.surface_buffer->x_image[0] = NULL;
+
 	init((void*)1, NULL, NULL);
 }
 
@@ -332,6 +351,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
+	this->scaler = scaler;
 	this->use_own_alloc = true;
 
     // setup surface attributes
@@ -339,7 +359,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 	this->config.w = sb->sbw = w;
 	this->config.h = sb->sbh = h;
-	this->config.scaler = scaler;
 	sb->pixelformat = pixelformat;
 	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 	sb->premultiplied = true;
@@ -373,6 +392,8 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->pitch = sb->x_image[0]->bytes_per_line;
 		sb->external_buffer = true;
 	}
+
+	this->config.surface_buffer->xv_image[0] = NULL;
 
 	init((void*)1, NULL, NULL);
 }
@@ -3730,7 +3751,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #ifdef __HAVE_XLIB__
 		if (sb->x_image[0]) {
 			// XSHM, put the image to the x-server
-			if (!this->config.scaler) {
+			if (!this->scaler) {
 				// no scaler defined
 				mmsfb->xlock.lock();
 				XLockDisplay(mmsfb->x_display);
@@ -3765,8 +3786,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				// scale to scaler
 				if (!region) {
 					// scale whole image
-					this->config.scaler->stretchBlit(this, NULL, NULL);
-					this->config.scaler->flip();
+					this->scaler->stretchBlit(this, NULL, NULL);
+					this->scaler->flip();
 				}
 				else {
 					// scale only a region
@@ -3793,10 +3814,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						src_rect.w = myreg.x2 - myreg.x1 + 1;
 						src_rect.h = myreg.y2 - myreg.y1 + 1;
 */
-						myreg.x1 = (myreg.x1 * this->config.scaler->config.w) / this->config.w;
-						myreg.y1 = (myreg.y1 * this->config.scaler->config.h) / this->config.h;
-						myreg.x2 = (myreg.x2 * this->config.scaler->config.w) / this->config.w;
-						myreg.y2 = (myreg.y2 * this->config.scaler->config.h) / this->config.h;
+						myreg.x1 = (myreg.x1 * this->scaler->config.w) / this->config.w;
+						myreg.y1 = (myreg.y1 * this->scaler->config.h) / this->config.h;
+						myreg.x2 = (myreg.x2 * this->scaler->config.w) / this->config.w;
+						myreg.y2 = (myreg.y2 * this->scaler->config.h) / this->config.h;
 
 /*						dst_rect.x = myreg.x1;
 						dst_rect.y = myreg.y1;
@@ -3804,9 +3825,9 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						dst_rect.h = myreg.y2 - myreg.y1 + 1;*/
 
 						// stretch & flip to make it visible on the screen
-//						this->config.scaler->stretchBlit(this, &src_rect, &dst_rect);
-						this->config.scaler->stretchBlit(this, NULL, NULL);
-						this->config.scaler->flip(&myreg);
+//						this->scaler->stretchBlit(this, &src_rect, &dst_rect);
+						this->scaler->stretchBlit(this, NULL, NULL);
+						this->scaler->flip(&myreg);
 					}
 				}
 			}
@@ -3888,7 +3909,7 @@ bool MMSFBSurface::refresh() {
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		if (sb->x_image[0]) {
 			// XSHM, put the image to the x-server
-			if (!this->config.scaler) {
+			if (!this->scaler) {
 				// no scaler defined
 				mmsfb->xlock.lock();
 				XLockDisplay(mmsfb->x_display);
@@ -3904,8 +3925,8 @@ bool MMSFBSurface::refresh() {
 			}
 			else {
 				// scale to scaler
-				this->config.scaler->stretchBlit(this, NULL, NULL);
-				this->config.scaler->flip();
+				this->scaler->stretchBlit(this, NULL, NULL);
+				this->scaler->flip();
 			}
 		}
 		else
