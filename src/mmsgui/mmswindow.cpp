@@ -559,6 +559,7 @@ bool MMSWindow::resize(bool refresh) {
 //            this->window->lowerToBottom();
 
             /* add window to parents childwins list */
+printf("%x->resize(), this->%x->addChildwindow(%x)\n", this, this->parent, this);
             this->parent->addChildWindow(this);
         }
         else {
@@ -587,7 +588,8 @@ void MMSWindow::lock() {
 	if (this->parent)
 		tolock = this->parent;
 
-	tolock->surface->lock();
+	if (tolock->surface)
+		tolock->surface->lock();
 
 /*    if (tolock->Lock.trylock() == 0) {
         // I have got the lock the first time
@@ -638,7 +640,8 @@ void MMSWindow::unlock() {
 	if (this->parent)
 		tolock = this->parent;
 
-	tolock->surface->unlock();
+	if (tolock->surface)
+		tolock->surface->unlock();
 
 /*	if (tolock->TID != pthread_self())
         return;
@@ -704,7 +707,16 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     cw.opacity = 0;
     cw.oldopacity = 0;
     cw.focusedWidget = 0;
+
+printf("%x->childwins.push_back %x\n", this, cw.window);
+printf("  %s->childwins.push_back %s\n", this->name.c_str(), cw.window->name.c_str());
+
+lock();
     this->childwins.push_back(cw);
+unlock();
+
+printf("%x->childwins.push_back %x   <<\n", this, cw.window);
+printf("  %s->childwins.push_back %s   <<<\n", this->name.c_str(), cw.window->name.c_str());
 
     return true;
 }
@@ -1492,11 +1504,20 @@ void MMSWindow::showBufferedShown() {
         }*/
 	}
 
-	for (unsigned int i = 0; i < childwins.size(); i++) {
+    printf("showBufferedShown %x\n", this);
+    printf("showBufferedShown %x, name=%s\n", this, this->name.c_str());
+
+    for (unsigned int i = 0; i < childwins.size(); i++) {
 		MMSWindow *w = childwins.at(i).window;
+
+		printf("showBufferedShown2 %x\n", w);
+		if (w)
+			printf("showBufferedShown3 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
+
 		if (w->buffered_shown) {
 //PUP		    w->drawLock.lock();
 lock();
+			printf("showBufferedShown4 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
 
 		    w->draw();
 			w->draw();
@@ -1516,7 +1537,7 @@ lock();
 		        w->parent->flipWindow(w);
 
 //PUP		    w->drawLock.unlock();
-		        unlock();
+//HANNES		        unlock();
 
 //		    if (w->window)
 		        /* show window (normally the opacity is 0 here) */
@@ -1538,9 +1559,13 @@ lock();
 	            w->switchArrowWidgets();
 	        }*/
 
+			printf(">showBufferedShown5 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
 
 			w->buffered_shown = false;
 			w->showBufferedShown();
+
+			printf("<showBufferedShown5 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
+unlock();
 		}
 	}
 }
@@ -1551,6 +1576,8 @@ lock();
 
 bool MMSWindow::showAction(bool *stopaction) {
     bool    saction = *stopaction;
+
+    printf("showAction %x\n", this);
 
     if(shown==true) {
         /* call onAfterShow callback with already shown flag */
@@ -1564,6 +1591,8 @@ bool MMSWindow::showAction(bool *stopaction) {
 //    }
 ///////////////////
 
+	printf("showAction2 %x\n", this);
+
     // check if all of its parents are shown
     bool really_shown = true;
     if (this->parent)
@@ -1571,6 +1600,9 @@ bool MMSWindow::showAction(bool *stopaction) {
 
     /* set the first focused widget, if not set and if window can get the focus */
     this->setFirstFocus();
+
+    printf("showAction3 %x\n", this);
+
 
     /* lock drawing */
 //PUP    this->drawLock.lock();
@@ -1594,6 +1626,8 @@ bool MMSWindow::showAction(bool *stopaction) {
         }
     }
 
+    printf("showAction4 %x\n", this);
+
     /* draw complete window two times!!! *********************************/
     /* two times are needed because if window is not shown (shown=false) */
     /* refreshFromChild does not work!!! -> but the second call to draw  */
@@ -1601,6 +1635,8 @@ bool MMSWindow::showAction(bool *stopaction) {
 	draw();                                                            /**/
     draw();                                                            /**/
     /*********************************************************************/
+
+    printf("showAction5 %x\n", this);
 
     if (!this->initialized) {
         /* init window (e.g. pre-calc navigation ...) */
@@ -1993,7 +2029,9 @@ void MMSWindow::add(MMSWidget *child) {
     }
 
     /* add to the children vector */
+    lock();
     this->children.push_back(child);
+    unlock();
 }
 
 void MMSWindow::remove(MMSWidget *child) {

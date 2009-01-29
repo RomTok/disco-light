@@ -163,6 +163,7 @@ MMSChildWindow* MMSDialogManager::loadChildDialog(string filename, MMSTheme *the
     }
 
 	/* through the doc */
+printf("loadChildDialog(), root=%x, file=%s\n", this->rootWindow, filename.c_str());
     this->throughDoc(tafff, NULL, this->rootWindow, theme);
 
     /* free the document */

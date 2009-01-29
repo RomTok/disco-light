@@ -52,6 +52,7 @@ bool MMSChildWindow::create(string className, MMSWindow *parent,
     this->baseWindowClass = &(this->theme->childWindowClass.windowClass);
     if (this->childWindowClass) this->windowClass = &(this->childWindowClass->windowClass); else this->windowClass = NULL;
 
+printf("create child window %x with parent = %x\n", this, parent);
     this->parent = parent;
 
     return MMSWindow::create(dx, dy, w, h, alignment, flags, own_surface);
