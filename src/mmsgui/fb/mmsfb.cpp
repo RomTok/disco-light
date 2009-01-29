@@ -174,12 +174,16 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
         }
         this->x_screen = DefaultScreen(this->x_display);
 
-		XF86VidModeModeLine line;
-		int dot;
-		XF86VidModeGetModeLine(this->x_display, 0, &dot, &line);
-		this->display_w=line.hdisplay;
-		this->display_h=line.vdisplay;
-//        printf("w: %d, h: %d\n", this->display_w, this->display_h);
+        Window myroot=RootWindow(this->x_display, this->x_screen);
+        Window root_ret;
+        int myx,myy;
+        unsigned int borderw, depthret;
+        XGetGeometry(this->x_display, myroot, &root_ret, &myx, &myy, (unsigned int *)&(this->display_w), (unsigned int *)&(this->display_h), &borderw, &depthret);
+
+		//XF86VidModeGetModeLine(this->x_display, 0, &dot, &line);
+		/*this->display_w=line.hdisplay;
+		this->display_h=line.vdisplay;*/
+        printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
 		XSetWindowAttributes x_window_attr;
 		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |PointerMotionMask|EnterWindowMask|ResizeRedirectMask;
@@ -194,7 +198,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
 			x_window_attr.override_redirect = True;
 			int cnt;
-			XF86VidModeModeInfo **info;
+	/*		XF86VidModeModeInfo **info;
 			XF86VidModeGetAllModeLines(this->x_display, 0, &cnt, &info);
 			int best=-1;
 			for(int i=0;i<cnt;i++) {
@@ -204,7 +208,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 				}
 				//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
 			}
-
+*/
 			int x_depth = DefaultDepth(this->x_display, this->x_screen);
 			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
 										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
@@ -229,22 +233,24 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 		XRaiseWindow(this->x_display, this->x_window);
 
 		// hide X cursor
-		Pixmap bm_no;
-		Colormap cmap;
-		Cursor no_ptr;
-		XColor black, dummy;
-		static char bm_no_data[] = {0, 0, 0, 0, 0, 0, 0, 0};
+		if(this->outputtype != MMS_OT_XSHM) {
+			Pixmap bm_no;
+			Colormap cmap;
+			Cursor no_ptr;
+			XColor black, dummy;
+			static char bm_no_data[] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-		cmap = DefaultColormap(this->x_display, DefaultScreen(this->x_display));
-		XAllocNamedColor(this->x_display, cmap, "black", &black, &dummy);
-		bm_no = XCreateBitmapFromData(this->x_display, this->x_window, bm_no_data, 8, 8);
-		no_ptr = XCreatePixmapCursor(this->x_display, bm_no, bm_no, &black, &black, 0, 0);
+			cmap = DefaultColormap(this->x_display, DefaultScreen(this->x_display));
+			XAllocNamedColor(this->x_display, cmap, "black", &black, &dummy);
+			bm_no = XCreateBitmapFromData(this->x_display, this->x_window, bm_no_data, 8, 8);
+			no_ptr = XCreatePixmapCursor(this->x_display, bm_no, bm_no, &black, &black, 0, 0);
 
-		XDefineCursor(this->x_display, this->x_window, no_ptr);
-		XFreeCursor(this->x_display, no_ptr);
-		if (bm_no != None)
-				XFreePixmap(this->x_display, bm_no);
-		XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
+			XDefineCursor(this->x_display, this->x_window, no_ptr);
+			XFreeCursor(this->x_display, no_ptr);
+			if (bm_no != None)
+					XFreePixmap(this->x_display, bm_no);
+			XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
+		}
 
 		XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 
