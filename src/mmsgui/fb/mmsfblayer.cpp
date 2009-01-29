@@ -139,9 +139,11 @@ MMSFBLayer::MMSFBLayer(int id) {
 			}
 
 			// create x11 buffer #1
+			XLockDisplay(mmsfb->x_display);
 			this->x_image1 = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
 											 NULL, &this->x_shminfo1, this->config.w, this->config.h);
 			if (!this->x_image1) {
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmCreateImage() failed");
 				return;
 			}
@@ -155,6 +157,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			if (!XShmAttach(mmsfb->x_display, &this->x_shminfo1)) {
 				XFree(this->x_image1);
 				this->x_image1 = NULL;
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
@@ -163,6 +166,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			this->x_image2 = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
 											 NULL, &this->x_shminfo2, this->config.w, this->config.h);
 			if (!this->x_image2) {
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmCreateImage() failed");
 				return;
 			}
@@ -176,6 +180,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			if (!XShmAttach(mmsfb->x_display, &this->x_shminfo2)) {
 				XFree(this->x_image2);
 				this->x_image2 = NULL;
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
@@ -190,6 +195,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 				this->x_image_scaler = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
 													   NULL, &this->x_shminfo_scaler, mmsfb->display_w, mmsfb->display_w);
 				if (!this->x_image_scaler) {
+					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "XShmCreateImage() failed");
 					return;
 				}
@@ -203,6 +209,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 				if (!XShmAttach(mmsfb->x_display, &this->x_shminfo_scaler)) {
 					XFree(this->x_image_scaler);
 					this->x_image_scaler = NULL;
+					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "XShmAttach() failed");
 					return;
 				}
@@ -211,6 +218,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 				this->scaler = new MMSFBSurface(mmsfb->display_w, mmsfb->display_h, this->config.pixelformat,
 											this->x_image_scaler, NULL, NULL);
 				if (!this->scaler) {
+					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "cannot create scaler surface");
 					return;
 				}
@@ -218,6 +226,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 				// we must switch extended accel on
 				this->scaler->setExtendedAcceleration(true);
 			}
+			XUnlockDisplay(mmsfb->x_display);
 		}
 		else {
 			// XVSHM
@@ -230,8 +239,10 @@ MMSFBLayer::MMSFBLayer(int id) {
 				image_width += 0x80;
 
 			// create x11 buffer #1
+			XLockDisplay(mmsfb->x_display);
 			this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo1);
 			if (!this->xv_image1) {
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XvShmCreateImage() failed");
 				return;
 			}
@@ -245,6 +256,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo1)) {
 				XFree(this->xv_image1);
 				this->xv_image1 = NULL;
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
@@ -254,6 +266,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			if (!this->xv_image2) {
 				XFree(this->xv_image1);
 				this->xv_image1 = NULL;
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XvShmCreateImage() failed");
 				return;
 			}
@@ -269,9 +282,11 @@ MMSFBLayer::MMSFBLayer(int id) {
 				XFree(this->xv_image2);
 				this->xv_image1 = NULL;
 				this->xv_image2 = NULL;
+				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
+			XUnlockDisplay(mmsfb->x_display);
 		}
 
 		this->initialized = true;
