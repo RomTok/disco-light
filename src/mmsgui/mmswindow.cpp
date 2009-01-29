@@ -88,7 +88,7 @@ MMSWindow::MMSWindow() {
 }
 
 MMSWindow::~MMSWindow() {
-return;
+
 	// hide the window if shown
 	instantHide();
 
