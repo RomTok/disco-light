@@ -30,7 +30,7 @@
 #define MMSINFO_H_
 
 #ifndef DISKO_PREFIX
-#define DISKO_PREFIX "/opt/disko"
+#define DISKO_PREFIX "/home/sxs/disko"
 #endif
 
 const char *getPrefix();

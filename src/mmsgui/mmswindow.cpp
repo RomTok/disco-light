@@ -963,7 +963,8 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
             reg.y1 = src_rect.y;
             reg.x2 = src_rect.x + src_rect.w - 1;
             reg.y2 = src_rect.y + src_rect.h - 1;
-            cw->window->drawChildWindows(dst_surface, &reg, dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);
+            if(cw->window)
+            	cw->window->drawChildWindows(dst_surface, &reg, dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);
         }
     }
 }
