@@ -223,6 +223,10 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 
 		XStoreName(this->x_display, this->x_window, appl_name.c_str());
 		XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
+		XClassHint clhi;
+		clhi.res_name=basename(argv[0]);
+		clhi.res_class="disko";
+		XSetClassHint(this->x_display, this->x_window,&clhi);
 		this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
 		XMapWindow(this->x_display, this->x_window);
 		XEvent x_event;
