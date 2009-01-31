@@ -2395,7 +2395,8 @@ bool MMSFBSurface::extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, M
 
 bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 											  MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-											  MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
+											  MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+											  MMSFBRectangle *real_dest_rect, bool calc_dest_rect) {
 	MMSFBExternalSurfaceBuffer myextbuf;
 	if (source) {
 		// premultiplied surface?
@@ -2421,8 +2422,18 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	int dy = dest_rect->y;
 	int dw = dest_rect->w;
 	int dh = dest_rect->h;
-	int wf = (dw*1000) / sw;
-	int hf = (dh*1000) / sh;
+	int wf;
+	int hf;
+	if (!calc_dest_rect) {
+		// calc factor
+		wf = (dw<<16)/sw;
+		hf = (dh<<16)/sh;
+	}
+	else {
+		// have to calculate accurate factor based on surface dimensions
+		wf = (this->config.w<<16)/src_width;
+		hf = (this->config.h<<16)/src_height;
+	}
 
 //printf("sx=%d,sy=%d,sw=%d,sh=%d,dx=%d,dy=%d,dw=%d,dh=%d\n", sx,sy,sw,sh,dx,dy,dw,dh);
 
@@ -2460,14 +2471,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 	if (dx < clipreg.x1) {
 		// left outside
-		sx+= ((clipreg.x1 - dx)*1000) / wf;
+		sx+= ((clipreg.x1 - dx)<<16) / wf;
 /*		sw-= (clipreg.x1 - dx) / wf;
 		if (sw <= 0)
 			return true;*/
 		dw-= clipreg.x1 - dx;
 		if (dw <= 0)
 			return true;
-		sw = (dw*1000) / wf;
+		sw = (dw<<16) / wf;
 		dx = clipreg.x1;
 	}
 	else
@@ -2476,14 +2487,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		return true;
 	if (dy < clipreg.y1) {
 		// top outside
-		sy+= ((clipreg.y1 - dy)*1000) / hf;
+		sy+= ((clipreg.y1 - dy)<<16) / hf;
 /*		sh-= (clipreg.y1 - dy) / hf;
 		if (sh <= 0)
 			return true;*/
 		dh-= clipreg.y1 - dy;
 		if (dh <= 0)
 			return true;
-		sh = (dh*1000) / hf;
+		sh = (dh<<16) / hf;
 		dy = clipreg.y1;
 	}
 	else
@@ -2493,17 +2504,23 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 	if (dx + dw - 1 > clipreg.x2) {
 		// to width
 		dw = clipreg.x2 - dx + 1;
-		sw = (dw*1000) / wf;
+		sw = (dw<<16) / wf;
 	}
 	if (dy + dh - 1 > clipreg.y2) {
 		// to height
 		dh = clipreg.y2 - dy + 1;
-		sh = (dh*1000) / hf;
+		sh = (dh<<16) / hf;
 	}
 	if (sw<=0) sw = 1;
 	if (sh<=0) sh = 1;
 	if (dw<=0) dw = 1;
 	if (dh<=0) dh = 1;
+
+	if (calc_dest_rect) {
+		// signal the following routines, that stretch factors have to based on surface dimensions
+		dw=0;
+		dh=0;
+	}
 
 //printf(">sx=%d,sy=%d,sw=%d,sh=%d,dx=%d,dy=%d,dw=%d,dh=%d\n", sx,sy,sw,sh,dx,dy,dw,dh);
 
@@ -2606,6 +2623,21 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is AiRGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_stretchblit_airgb_to_airgb(&myextbuf, src_height,
+												     sx, sy, sw, sh,
+												     (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												     dx, dy, dw, dh,
+												     this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+			else
 			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
@@ -2648,6 +2680,21 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is AYUV
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
+			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_stretchblit_ayuv_to_ayuv(&myextbuf, src_height,
+												   sx, sy, sw, sh,
+												   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   dx, dy, dw, dh,
+												   this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+			else
 			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
@@ -2724,28 +2771,32 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 }
 
 
-bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
+bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+											MMSFBRectangle *real_dest_rect, bool calc_dest_rect) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
 	if (!extendedAccelStretchBlitEx(source,
 			                        NULL, MMSFB_PF_NONE, 0, 0,
-			                        src_rect, dest_rect))
+			                        src_rect, dest_rect,
+			                        real_dest_rect, calc_dest_rect))
 		return printMissingCombination("extendedAccelStretchBlit()", source);
 	else
 		return true;
 }
 
 bool MMSFBSurface::extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-												  MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
+												  MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+												  MMSFBRectangle *real_dest_rect, bool calc_dest_rect) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
 	if (!extendedAccelStretchBlitEx(NULL,
 							        extbuf, src_pixelformat, src_width, src_height,
-							        src_rect, dest_rect))
+							        src_rect, dest_rect,
+							        real_dest_rect, calc_dest_rect))
 		return printMissingCombination("extendedAccelStretchBlitBuffer()", NULL, extbuf, src_pixelformat, src_width, src_height);
 	else
 		return true;
@@ -3267,11 +3318,13 @@ bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFor
 	return blitBuffer(&extbuf, src_pixelformat, src_width, src_height, src_rect, x, y);
 }
 
-bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
+bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+							   MMSFBRectangle *real_dest_rect, bool calc_dest_rect) {
     MMSFBRectangle src;
     MMSFBRectangle dst;
     bool 		 ret = false;
 
+    // use whole source surface if src_rect is not given
     if (src_rect) {
          src = *src_rect;
     }
@@ -3282,15 +3335,33 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
          src.h = source->config.h;
     }
 
-    if (dest_rect) {
+    // use whole destination surface if dest_rect is not given and calc_dest_rect is not set
+    if ((dest_rect)&&(!calc_dest_rect)) {
          dst = *dest_rect;
     }
     else {
-         dst.x = 0;
-         dst.y = 0;
-         dst.w = this->config.w;
-         dst.h = this->config.h;
+    	if (!calc_dest_rect) {
+			dst.x = 0;
+			dst.y = 0;
+			dst.w = this->config.w;
+			dst.h = this->config.h;
+    	}
+    	else {
+    		// calc dest_rect from src_rect based on src/dst surface dimension
+    		dst.x = (src.x * this->config.w) / source->config.w;
+    		dst.y = (src.y * this->config.h) / source->config.h;
+    		dst.w = src.x + src.w - 1;
+    		dst.h = src.y + src.h - 1;
+    		dst.w = (dst.w * this->config.w) / source->config.w;
+    		dst.h = (dst.h * this->config.h) / source->config.h;
+    		dst.w = dst.w - dst.x + 1;
+    		dst.h = dst.h - dst.y + 1;
+    	}
     }
+
+    // return the used dest_rect
+    if (real_dest_rect)
+    	*real_dest_rect = dst;
 
     /* check if i can blit without stretching */
     if (src.w == dst.w && src.h == dst.h)
@@ -3319,7 +3390,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 			/* stretch blit with blitting flags */
 
 			if (!this->is_sub_surface) {
-				if (extendedAccelStretchBlit(source, &src, &dst)) {
+				if (extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect)) {
 					blit_done = true;
 					ret = true;
 				}
@@ -3335,7 +3406,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 				SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 
-				if (extendedAccelStretchBlit(source, &src, &dst)) {
+				if (extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect)) {
 					blit_done = true;
 					ret = true;
 				}
@@ -3414,7 +3485,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 			// normal stretch blit
 			if (!this->is_sub_surface) {
 				dfbres = DFB_OK;
-				if (!extendedAccelStretchBlit(source, &src, &dst))
+				if (!extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect))
 					dfbres=this->llsurface->StretchBlit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				if (dfbres != DFB_OK) {
 #ifndef USE_DFB_SUBSURFACE
@@ -3440,7 +3511,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 				SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 
-				if (!extendedAccelStretchBlit(source, &src, &dst))
+				if (!extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect))
 					this->llsurface->StretchBlit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				ret = true;
 
@@ -3475,7 +3546,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 
 		// normal stretch blit
 		if (!this->is_sub_surface) {
-			ret = extendedAccelStretchBlit(source, &src, &dst);
+			ret = extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -3483,7 +3554,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 			dst.x+=this->sub_surface_xoff;
 			dst.y+=this->sub_surface_yoff;
 
-			ret = extendedAccelStretchBlit(source, &src, &dst);
+			ret = extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect);
 
 			dst.x-=this->sub_surface_xoff;
 			dst.y-=this->sub_surface_yoff;
@@ -3502,11 +3573,13 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 }
 
 bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
+									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+									 MMSFBRectangle *real_dest_rect, bool calc_dest_rect) {
     MMSFBRectangle src;
     MMSFBRectangle dst;
     bool ret = false;
 
+    // use whole source surface if src_rect is not given
     if (src_rect) {
          src = *src_rect;
     }
@@ -3517,15 +3590,33 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
          src.h = src_height;
     }
 
-    if (dest_rect) {
+    // use whole destination surface if dest_rect is not given and calc_dest_rect is not set
+    if ((dest_rect)&&(!calc_dest_rect)) {
          dst = *dest_rect;
     }
     else {
-         dst.x = 0;
-         dst.y = 0;
-         dst.w = this->config.w;
-         dst.h = this->config.h;
+    	if (!calc_dest_rect) {
+			dst.x = 0;
+			dst.y = 0;
+			dst.w = this->config.w;
+			dst.h = this->config.h;
+    	}
+    	else {
+    		// calc dest_rect from src_rect based on src/dst surface dimension
+    		dst.x = (src.x * this->config.w) / src_width;
+    		dst.y = (src.y * this->config.h) / src_height;
+    		dst.w = src.x + src.w - 1;
+    		dst.h = src.y + src.h - 1;
+    		dst.w = (dst.w * this->config.w) / src_width;
+    		dst.h = (dst.h * this->config.h) / src_height;
+    		dst.w = dst.w - dst.x + 1;
+    		dst.h = dst.h - dst.y + 1;
+    	}
     }
+
+    // return the used dest_rect
+    if (real_dest_rect)
+    	*real_dest_rect = dst;
 
     // check if i can blit without stretching
     if (src.w == dst.w && src.h == dst.h)
@@ -3541,7 +3632,8 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
 	else {
 		/* normal stretch blit */
 		if (!this->is_sub_surface) {
-			ret = extendedAccelStretchBlitBuffer(extbuf, src_pixelformat, src_width, src_height, &src, &dst);
+			ret = extendedAccelStretchBlitBuffer(extbuf, src_pixelformat, src_width, src_height, &src, &dst,
+												 real_dest_rect, calc_dest_rect);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -3549,7 +3641,8 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
 			dst.x+=this->sub_surface_xoff;
 			dst.y+=this->sub_surface_yoff;
 
-			ret = extendedAccelStretchBlitBuffer(extbuf, src_pixelformat, src_width, src_height, &src, &dst);
+			ret = extendedAccelStretchBlitBuffer(extbuf, src_pixelformat, src_width, src_height, &src, &dst,
+												 real_dest_rect, calc_dest_rect);
 
 			dst.x-=this->sub_surface_xoff;
 			dst.y-=this->sub_surface_yoff;
@@ -3563,12 +3656,14 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
 }
 
 bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect) {
+									 MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+									 MMSFBRectangle *real_dest_rect, bool calc_dest_rect) {
 	MMSFBExternalSurfaceBuffer extbuf;
 	memset(&extbuf, 0, sizeof(extbuf));
 	extbuf.ptr = src_ptr;
 	extbuf.pitch = src_pitch;
-	return stretchBlitBuffer(&extbuf, src_pixelformat, src_width, src_height, src_rect, dest_rect);
+	return stretchBlitBuffer(&extbuf, src_pixelformat, src_width, src_height, src_rect, dest_rect,
+						     real_dest_rect, calc_dest_rect);
 }
 
 
@@ -3805,28 +3900,18 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					if (myreg.x2 >= this->config.w) myreg.x2 = this->config.w - 1;
 					if (myreg.y2 >= this->config.h) myreg.y2 = this->config.h - 1;
 					if ((myreg.x2 >= myreg.x1)&&(myreg.y2 >= myreg.y1)) {
-						// calc rects and regs for stretching
-//TODO: calulate the correct dst_rect for stretchblit???
-/*						MMSFBRectangle src_rect;
-						MMSFBRectangle dst_rect;
+						// stretch & flip to make it visible on the screen
+						MMSFBRectangle src_rect;
 						src_rect.x = myreg.x1;
 						src_rect.y = myreg.y1;
 						src_rect.w = myreg.x2 - myreg.x1 + 1;
 						src_rect.h = myreg.y2 - myreg.y1 + 1;
-*/
-						myreg.x1 = (myreg.x1 * this->scaler->config.w) / this->config.w;
-						myreg.y1 = (myreg.y1 * this->scaler->config.h) / this->config.h;
-						myreg.x2 = (myreg.x2 * this->scaler->config.w) / this->config.w;
-						myreg.y2 = (myreg.y2 * this->scaler->config.h) / this->config.h;
-
-/*						dst_rect.x = myreg.x1;
-						dst_rect.y = myreg.y1;
-						dst_rect.w = myreg.x2 - myreg.x1 + 1;
-						dst_rect.h = myreg.y2 - myreg.y1 + 1;*/
-
-						// stretch & flip to make it visible on the screen
-//						this->scaler->stretchBlit(this, &src_rect, &dst_rect);
-						this->scaler->stretchBlit(this, NULL, NULL);
+						MMSFBRectangle dst_rect;
+						this->scaler->stretchBlit(this, &src_rect, NULL, &dst_rect, true);
+						myreg.x1 = dst_rect.x;
+						myreg.y1 = dst_rect.y;
+						myreg.x2 = dst_rect.x + dst_rect.w - 1;
+						myreg.y2 = dst_rect.y + dst_rect.h - 1;
 						this->scaler->flip(&myreg);
 					}
 				}

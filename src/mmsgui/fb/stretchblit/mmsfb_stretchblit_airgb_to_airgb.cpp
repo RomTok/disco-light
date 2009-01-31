@@ -26,17 +26,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <cstring>
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_stretchblit_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 									  bool antialiasing) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated stretch RGB32 to RGB32.\n");
+		printf("DISKO: Using accelerated stretch AiRGB to AiRGB.\n");
 		firsttime = false;
 	}
 

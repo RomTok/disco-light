@@ -171,10 +171,13 @@ class MMSFBSurface {
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
 										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-										MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
-        bool extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
+										MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+										MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
+        bool extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+									  MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
         bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
+											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+											MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
 
         bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
         bool extendedAccelFillRectangle(int x, int y, int w, int h);
@@ -267,11 +270,14 @@ class MMSFBSurface {
 						MMSFBRectangle *src_rect, int x, int y);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect, int x, int y);
-        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
+        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+						 MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
+							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+							   MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
         bool stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect);
+							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+							   MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
 
 
         bool flip(MMSFBRegion *region = NULL);

@@ -29,13 +29,13 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
-									  bool antialiasing) {
+void mmsfb_stretchblit_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									bool antialiasing) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated stretch RGB32 to RGB32.\n");
+		printf("DISKO: Using accelerated stretch AYUV to AYUV.\n");
 		firsttime = false;
 	}
 

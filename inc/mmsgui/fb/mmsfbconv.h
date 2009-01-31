@@ -914,8 +914,10 @@ void compress_2x2_matrix(unsigned char *src, int src_pitch, int src_pitch_pix, i
 \author Jens Schneider
 */
 void stretch_uint_buffer(bool h_antialiasing, bool v_antialiasing,
-						 unsigned int *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
-					     unsigned int *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh);
+						 unsigned int *src, int src_pitch, int src_pitch_pix, int src_height,
+						 int sx, int sy, int sw, int sh,
+						 unsigned int *dst, int dst_pitch, int dst_pitch_pix, int dst_height,
+						 int dx, int dy, int dw, int dh);
 
 
 
@@ -1166,6 +1168,14 @@ void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer 
 													 unsigned char alpha);
 
 
+//! Stretch blit AiRGB to AiRGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									  bool antialiasing);
+
 //! Stretch blit with alpha blending AiRGB to AiRGB.
 /*!
 \author Jens Schneider
@@ -1192,6 +1202,13 @@ void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int sr
 									  bool antialiasing);
 
 
+//! Stretch blit AYUV to AYUV.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									bool antialiasing);
 
 
 //! Stretch blit with alpha blending AYUV to AYUV.

@@ -51,10 +51,6 @@ void mmsfb_stretchblit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
-	// pointer to the pixel components of the first pixel
-	src = src + sx + sy * src_pitch_pix;
-	dst = dst + dx + dy * dst_pitch_pix;
-
 	// antialiasing horizontal/vertical/both
 	bool h_antialiasing = false;
 	bool v_antialiasing = false;
@@ -66,7 +62,7 @@ void mmsfb_stretchblit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_
 
 	// stretch buffer
 	stretch_uint_buffer(h_antialiasing, v_antialiasing,
-						src, src_pitch, src_pitch_pix, src_height, sw, sh,
-					    dst, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
+						src, src_pitch, src_pitch_pix, src_height, sx, sy, sw, sh,
+					    dst, dst_pitch, dst_pitch_pix, dst_height, dx, dy, dw, dh);
 }
 
