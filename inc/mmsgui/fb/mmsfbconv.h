@@ -910,7 +910,6 @@ void compress_2x2_matrix(unsigned char *src, int src_pitch, int src_pitch_pix, i
 
 //! Stretching the source unsigned int buffer to a destination.
 /*!
-\note src and dst have to point to the first pixel which is to process
 \author Jens Schneider
 */
 void stretch_uint_buffer(bool h_antialiasing, bool v_antialiasing,
@@ -919,6 +918,15 @@ void stretch_uint_buffer(bool h_antialiasing, bool v_antialiasing,
 						 unsigned int *dst, int dst_pitch, int dst_pitch_pix, int dst_height,
 						 int dx, int dy, int dw, int dh);
 
+//! Stretching the source 3-byte-buffer to a unsigned int destination.
+/*!
+\author Jens Schneider
+*/
+void stretch_324byte_buffer(bool h_antialiasing, bool v_antialiasing,
+							unsigned char *src, int src_pitch, int src_pitch_pix,
+							int src_height, int sx, int sy, int sw, int sh,
+							unsigned int *dst, int dst_pitch, int dst_pitch_pix,
+							int dst_height, int dx, int dy, int dw, int dh);
 
 
 //! Blit ARGB to ARGB.
@@ -1076,6 +1084,19 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf
 											  unsigned char alpha);
 
 
+//! Blit RGB24 to ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+//! Blit RGB24 to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_rgb24_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 //! Blit YV12 to YV12.
 /*!
@@ -1083,6 +1104,8 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf
 */
 void mmsfb_blit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
 
 //! Blit RGB24 to YV12.
 /*!
@@ -1166,6 +1189,24 @@ void mmsfb_stretchblit_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, in
 void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 													 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
 													 unsigned char alpha);
+
+
+//! Stretch blit RGB24 to ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									 bool antialiasing);
+
+//! Stretch blit RGB24 to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_rgb24_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									  bool antialiasing);
+
 
 
 //! Stretch blit AiRGB to AiRGB.

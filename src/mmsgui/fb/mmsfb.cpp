@@ -237,7 +237,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 		XRaiseWindow(this->x_display, this->x_window);
 
 		// hide X cursor
-		if(this->outputtype != MMS_OT_XSHM) {
+//		if(this->outputtype != MMS_OT_XSHM) {
 			Pixmap bm_no;
 			Colormap cmap;
 			Cursor no_ptr;
@@ -254,7 +254,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 			if (bm_no != None)
 					XFreePixmap(this->x_display, bm_no);
 			XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
-		}
+//		}
 
 		XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 

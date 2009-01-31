@@ -1808,12 +1808,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	if ((sw <= 0)||(sh <= 0))
 		return true;
 
+	// extract antialiasing flag from blittingflags
+	bool antialiasing = (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+	MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
+
 	// checking pixelformats...
 	if (src_pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_argb_to_argb(&myextbuf, src_height,
@@ -1827,7 +1831,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_argb_to_argb(&myextbuf, src_height,
@@ -1841,8 +1845,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_coloralpha_argb_to_argb(&myextbuf, src_height,
@@ -1863,7 +1867,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_argb_to_airgb(&myextbuf, src_height,
@@ -1883,7 +1887,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_argb_to_rgb32(&myextbuf, src_height,
@@ -1897,8 +1901,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_coloralpha_argb_to_rgb32(&myextbuf, src_height,
@@ -1919,7 +1923,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_argb_to_rgb16(&myextbuf, src_height,
@@ -1932,7 +1936,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_argb_to_rgb16(&myextbuf, src_height,
@@ -1945,8 +1949,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 //				printf("fehlt noch-!!!\n");
 			}
 
@@ -1956,7 +1960,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_argb_to_yv12(
@@ -1971,7 +1975,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-				if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 					// blitting with alpha channel
 					if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 						mmsfb_blit_blend_argb_to_yv12(
@@ -1986,8 +1990,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 					return false;
 				}
 				else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_coloralpha_argb_to_yv12(&myextbuf, src_height,
@@ -2014,7 +2018,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is RGB32
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_rgb32_to_rgb32(&myextbuf, src_height,
@@ -2040,7 +2044,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is RGB16 (RGB565)
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_rgb16_to_rgb16(&myextbuf, src_height,
@@ -2066,7 +2070,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is AiRGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_airgb_to_airgb(&myextbuf, src_height,
@@ -2080,7 +2084,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_airgb_to_airgb(&myextbuf, src_height,
@@ -2094,8 +2098,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_coloralpha_airgb_to_airgb(&myextbuf, src_height,
@@ -2116,7 +2120,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_airgb_to_rgb16(&myextbuf, src_height,
@@ -2130,7 +2134,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_airgb_to_rgb16(&myextbuf, src_height,
@@ -2156,7 +2160,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is AYUV
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_ayuv_to_ayuv(&myextbuf, src_height,
@@ -2170,7 +2174,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_ayuv_to_ayuv(&myextbuf, src_height,
@@ -2184,8 +2188,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(&myextbuf, src_height,
@@ -2206,7 +2210,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_ayuv_to_rgb16(&myextbuf, src_height,
@@ -2220,7 +2224,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_ayuv_to_rgb16(&myextbuf, src_height,
@@ -2240,7 +2244,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_ayuv_to_yv12(&myextbuf, src_height,
@@ -2254,8 +2258,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_blend_coloralpha_ayuv_to_yv12(&myextbuf, src_height,
@@ -2282,10 +2286,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
-				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
-				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
-				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING)) {
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_yv12_to_yv12(&myextbuf, src_height,
@@ -2305,10 +2307,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
-			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
-				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
-				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
-				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING)) {
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// convert without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_yv12_to_rgb32(&myextbuf, src_height,
@@ -2333,9 +2333,49 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	else
 	if (src_pixelformat == MMSFB_PF_RGB24) {
 		// source is RGB24
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
+			// destination is ARGB
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// convert without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_rgb24_to_argb(&myextbuf, src_height,
+										    sx, sy, sw, sh,
+										    (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										    x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// convert without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_blit_rgb24_to_rgb32(&myextbuf, src_height,
+											  sx, sy, sw, sh,
+											  (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_blit_rgb24_to_yv12(
@@ -2534,19 +2574,24 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 //dy-=10;
 
 
+	// extract antialiasing flag from blittingflags
+	bool antialiasing = (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+	MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
+
+
 	// checking pixelformats...
 	if (src_pixelformat == MMSFB_PF_ARGB) {
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_argb_to_argb(&myextbuf, src_height,
 												   sx, sy, sw, sh,
 												   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 												   dx, dy, dw, dh,
-												   this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+												   antialiasing);
 					extendedUnlock(source, this);
 
 					return true;
@@ -2554,7 +2599,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_blend_argb_to_argb(&myextbuf, src_height,
@@ -2568,8 +2613,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_blend_coloralpha_argb_to_argb(&myextbuf, src_height,
@@ -2596,14 +2641,62 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is RGB32
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_rgb32_to_rgb32(&myextbuf, src_height,
 													 sx, sy, sw, sh,
 													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 													 dx, dy, dw, dh,
-													 this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+													 antialiasing);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
+	if (src_pixelformat == MMSFB_PF_RGB24) {
+		// source is RGB24
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
+			// destination is ARGB
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_stretchblit_rgb24_to_argb(&myextbuf, src_height,
+												    sx, sy, sw, sh,
+												    (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												    dx, dy, dw, dh,
+												    antialiasing);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting without alpha channel
+				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
+					mmsfb_stretchblit_rgb24_to_rgb32(&myextbuf, src_height,
+													 sx, sy, sw, sh,
+													 (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													 dx, dy, dw, dh,
+													 antialiasing);
 					extendedUnlock(source, this);
 
 					return true;
@@ -2623,14 +2716,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is AiRGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_airgb_to_airgb(&myextbuf, src_height,
 												     sx, sy, sw, sh,
 												     (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 												     dx, dy, dw, dh,
-												     this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+												     antialiasing);
 					extendedUnlock(source, this);
 
 					return true;
@@ -2638,7 +2731,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_blend_airgb_to_airgb(&myextbuf, src_height,
@@ -2652,8 +2745,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(&myextbuf, src_height,
@@ -2680,14 +2773,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// source is AYUV
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_ayuv_to_ayuv(&myextbuf, src_height,
 												   sx, sy, sw, sh,
 												   (unsigned int *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 												   dx, dy, dw, dh,
-												   this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+												   antialiasing);
 					extendedUnlock(source, this);
 
 					return true;
@@ -2695,7 +2788,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if (this->config.blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_blend_ayuv_to_ayuv(&myextbuf, src_height,
@@ -2709,8 +2802,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				return false;
 			}
 			else
-			if   ((this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
-				||(this->config.blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_blend_coloralpha_ayuv_to_ayuv(&myextbuf, src_height,
@@ -2732,17 +2825,13 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// does not match
 		return false;
 	}
-
-
 	else
 	if (src_pixelformat == MMSFB_PF_YV12) {
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if   ((this->config.blittingflags == MMSFB_BLIT_NOFX)
-				||(this->config.blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)
-				||(this->config.blittingflags == MMSFB_BLIT_ANTIALIASING)
-				||(this->config.blittingflags == (MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING))) {
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
 				if (extendedLock(source, &myextbuf.ptr, &myextbuf.pitch, this, &dst_ptr, &dst_pitch)) {
 					mmsfb_stretchblit_yv12_to_yv12(
@@ -2750,7 +2839,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 							sx, sy, sw, sh,
 							(unsigned char *)dst_ptr, dst_pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
-							this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+							antialiasing);
 					extendedUnlock(source, this);
 					return true;
 				}

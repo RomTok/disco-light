@@ -30,17 +30,17 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_blit_rgb24_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated copy RGB32 to RGB32.\n");
+		printf("DISKO: Using accelerated conversion RGB24 to RGB32.\n");
 		firsttime = false;
 	}
 
-	// no difference to argb, use argb to argb routine
-	mmsfb_blit_argb_to_argb(extbuf, src_height, sx, sy, sw, sh,
+	// no difference to argb, use rgb24 to argb routine
+	mmsfb_blit_rgb24_to_argb(extbuf, src_height, sx, sy, sw, sh,
 							dst, dst_pitch, dst_height, dx, dy);
 }
 

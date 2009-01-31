@@ -29,22 +29,22 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_stretchblit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
-									bool antialiasing) {
+void mmsfb_stretchblit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+									 bool antialiasing) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated stretch ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated stretch RGB24 to ARGB.\n");
 		firsttime = false;
 	}
 
 	// get the first source ptr/pitch
-	unsigned int *src = (unsigned int *)extbuf->ptr;
+	unsigned char *src = (unsigned char *)extbuf->ptr;
 	int src_pitch = extbuf->pitch;
 
 	// prepare...
-	int src_pitch_pix = src_pitch >> 2;
+	int src_pitch_pix = src_pitch / 3;
 	int dst_pitch_pix = dst_pitch >> 2;
 
 	// check the surface range
@@ -61,8 +61,8 @@ void mmsfb_stretchblit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	}
 
 	// stretch buffer
-	stretch_uint_buffer(h_antialiasing, v_antialiasing,
-						src, src_pitch, src_pitch_pix, src_height, sx, sy, sw, sh,
-					    dst, dst_pitch, dst_pitch_pix, dst_height, dx, dy, dw, dh);
+	stretch_324byte_buffer(h_antialiasing, v_antialiasing,
+						   src, src_pitch, src_pitch_pix, src_height, sx, sy, sw, sh,
+						   dst, dst_pitch, dst_pitch_pix, dst_height, dx, dy, dw, dh);
 }
 
