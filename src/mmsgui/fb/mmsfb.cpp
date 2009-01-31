@@ -65,7 +65,7 @@ MMSFB::~MMSFB() {
 }
 
 bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w, int h,
-				 bool extendedaccel, bool fullscreen, string appl_name, string appl_icon_name) {
+				 bool extendedaccel, bool fullscreen, string pointer, string appl_name, string appl_icon_name) {
 
     // check if already initialized
     if (this->initialized) {
@@ -238,6 +238,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 
 		// hide X cursor
 //		if(this->outputtype != MMS_OT_XSHM) {
+		if(pointer != "EXTERNAL") {
 			Pixmap bm_no;
 			Colormap cmap;
 			Cursor no_ptr;
@@ -254,7 +255,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 			if (bm_no != None)
 					XFreePixmap(this->x_display, bm_no);
 			XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
-//		}
+		}
 
 		XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 

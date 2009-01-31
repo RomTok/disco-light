@@ -80,7 +80,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	}
 #endif
     if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), config.getXres(), config.getYres(),
-					 ea, config.getFullscreen(), appl_name, appl_icon_name))
+					 ea, config.getFullscreen(), config.getPointer(), appl_name, appl_icon_name))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");
@@ -199,7 +199,10 @@ void MMSFBManager::applySettings() {
     }
 
     // init the mmsfbwindowmanager
-    mmsfbwindowmanager->init(this->graphicslayer, config.getPointer());
+    if(config.getPointer()=="TRUE" ||config.getPointer()=="INTERNAL")
+    	mmsfbwindowmanager->init(this->graphicslayer, true);
+    else
+    	mmsfbwindowmanager->init(this->graphicslayer, false);
 
     // create a global temporary surface
     MMSFBSurfacePixelFormat pixelformat = getMMSFBPixelFormatFromString(config.getGraphicsLayerPixelformat());

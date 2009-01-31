@@ -238,7 +238,7 @@ const CVRECT MMSConfigData::getTouchRect() {
     return this->graphics.touchrect;
 }
 
-const bool MMSConfigData::getPointer() {
+const string MMSConfigData::getPointer() {
     return this->graphics.pointer;
 }
 

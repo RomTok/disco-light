@@ -61,7 +61,7 @@ MMSRcParser::MMSRcParser() {
     this->graphics.touchrect.y                = 0;
     this->graphics.touchrect.w                = 0;
     this->graphics.touchrect.h                = 0;
-    this->graphics.pointer                    = false;	// show the mouse pointer, default no
+    this->graphics.pointer                    = "NONE";	// show the mouse pointer, default no
 	this->graphics.graphicswindowpixelformat  = "";		// supported values: ARGB or AYUV, empty string means autodetection
 	this->graphics.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
@@ -337,7 +337,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.h"))
 	    	this->graphics.touchrect.h = strToInt(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "pointer"))
-            this->graphics.pointer = strToBool(string((const char *)parvalue));
+            this->graphics.pointer = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat"))
 			this->graphics.graphicswindowpixelformat = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat"))
