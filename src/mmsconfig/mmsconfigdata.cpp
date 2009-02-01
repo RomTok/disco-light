@@ -242,6 +242,10 @@ const string MMSConfigData::getPointer() {
     return this->graphics.pointer;
 }
 
+const bool MMSConfigData::getShowPointer() {
+    return this->graphics.showpointer;
+}
+
 const string MMSConfigData::getGraphicsWindowPixelformat() {
     return this->graphics.graphicswindowpixelformat;
 }
