@@ -133,6 +133,10 @@ const string MMSConfigData::getShutdownCmd() {
 	return this->global.shutdowncmd;
 }
 
+const string MMSConfigData::getInputMode() {
+	return this->global.inputmode;
+}
+
 /* db section getters */
 const string MMSConfigData::getConfigDBDBMS() {
 	return this->configdb.dbms;

@@ -27,14 +27,19 @@
  ***************************************************************************/
 
 #include "mmsgui/mmswidget.h"
+#include "mmsgui/mmswidgetthread.h"
 #include "mmsgui/mmsborder.h"
 #include "mmsgui/mmsmenuwidget.h"
 #include "mmsgui/mmssliderwidget.h"
 #include <string.h>
 
+// static variables
+string MMSWidget_inputmode = "";
+
 MMSWidget::MMSWidget() {
     this->baseWidgetClass = NULL;
     this->widgetClass = NULL;
+    this->widgetthread = NULL;
     this->initialized = false;
     this->bgimage = NULL;
     this->selbgimage = NULL;
@@ -92,6 +97,10 @@ this->has_own_surface = false;
 }
 
 MMSWidget::~MMSWidget() {
+
+	// delete widget thread
+	if (this->widgetthread)
+		delete this->widgetthread;
 
 	// delete the callbacks
     if (onSelect) delete onSelect;
@@ -1394,6 +1403,14 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 
 }
 
+void MMSWidget::startWidgetThread(int delay) {
+	if (!this->widgetthread)
+		this->widgetthread = new MMSWidgetThread(this);
+	if (this->widgetthread)
+		this->widgetthread->start(delay);
+}
+
+
 void MMSWidget::add(MMSWidget *widget) {
     if (canHaveChildren())
         if(this->children.size() < 1) {
@@ -1664,13 +1681,16 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     if (!b)
     	return;
 
+    if (this->rootwindow)
+        this->rootwindow->setFocusedWidget(this, set);
+
     /* the focused flag MUST BE set before all other calls (because of dim and trans functions) */
     this->focused = set;
 
     setSelected(set, refresh);
 
-    if (this->rootwindow)
-        this->rootwindow->setFocusedWidget(this, set);
+//    if (this->rootwindow)
+//        this->rootwindow->setFocusedWidget(this, set);
 
     this->onFocus->emit(this, set);
 
@@ -1750,6 +1770,14 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed) {
     if (selectable)
         if (set)
             this->onSelect->emit(this);
+
+    if (set) {
+		// start thread which removes the focus after n seconds
+		string inputmode = "";
+		getInputModeEx(inputmode);
+		if (strToUpr(inputmode) == "CLICK")
+			startWidgetThread(2);
+    }
 
     return true;
 }
@@ -1846,6 +1874,7 @@ void MMSWidget::handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *request
 void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	bool b;
 
+
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
 
@@ -1921,12 +1950,18 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 					if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
 						&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
 						// yes, scroll to the position if possible
-						bool changed;
+						bool changed = false;
 						scrollTo(inputevent->posx, inputevent->posy, true, &changed);
 
 						// fire the onclick callback
 						this->onClick->emit(this, inputevent->posx - this->geom.x, inputevent->posy - this->geom.y,
 											this->geom.w, this->geom.h);
+
+						// start thread which removes the focus after n seconds
+/*						string inputmode = "";
+						getInputModeEx(inputmode);
+						if (strToUpr(inputmode) == "CLICK")
+							startWidgetThread(2);*/
 
 						if (changed) {
 							// check if have to emit onReturn
@@ -2321,6 +2356,19 @@ bool MMSWidget::getReturnOnScroll(bool &returnonscroll) {
     GETWIDGET(ReturnOnScroll, returnonscroll);
 }
 
+bool MMSWidget::getInputMode(string &inputmode) {
+    GETWIDGET(InputMode, inputmode);
+}
+
+bool MMSWidget::getInputModeEx(string &inputmode) {
+	inputmode = "";
+	getInputMode(inputmode);
+	if (inputmode == "")
+		inputmode = MMSWidget_inputmode;
+	return true;
+}
+
+
 #define GETBORDER(x,y) \
     if (this->myWidgetClass.border.is##x()) return myWidgetClass.border.get##x(y); \
     else if ((widgetClass)&&(widgetClass->border.is##x())) return widgetClass->border.get##x(y); \
@@ -2712,6 +2760,10 @@ void MMSWidget::setReturnOnScroll(bool returnonscroll) {
 	myWidgetClass.setClickable(returnonscroll);
 }
 
+void MMSWidget::setInputMode(string inputmode) {
+    myWidgetClass.setInputMode(inputmode);
+}
+
 void MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
     myWidgetClass.border.setColor(bordercolor);
     if (refresh)
@@ -2904,6 +2956,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setClickable(b);
     if (themeClass->getReturnOnScroll(b))
         setReturnOnScroll(b);
+    if (themeClass->getInputMode(s))
+        setInputMode(s);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))

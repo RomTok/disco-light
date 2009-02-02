@@ -2277,7 +2277,10 @@ bool MMSWindow::setFirstFocus(bool cw) {
                         if(w->children.at(i)->getFocusable(b))
                         	if (b) {
                         		DEBUGMSG("MMSGUI", "MMSWindow: set focus to child nr " + iToStr(i));
-	                            w->children.at(i)->setFocus(true);
+                        		string inputmode = "";
+                        		w->children.at(i)->getInputModeEx(inputmode);
+                        		if (strToUpr(inputmode) != "CLICK")
+                        			w->children.at(i)->setFocus(true);
 	                            w->firstfocusset = true;
 	                            this->childwins.at(j).focusedWidget = i;
 	                            return true;
@@ -2331,7 +2334,10 @@ bool MMSWindow::setFirstFocus(bool cw) {
         if(this->children.at(i)->getFocusable(b))
         	if (b) {
         		DEBUGMSG("MMSGUI", "MMSWindow: set focus to child nr " + iToStr(i));
-	            this->children.at(i)->setFocus(true);
+        		string inputmode = "";
+        		this->children.at(i)->getInputModeEx(inputmode);
+        		if (strToUpr(inputmode) != "CLICK")
+        			this->children.at(i)->setFocus(true);
 	            return true;
 	        }
     }
@@ -3320,6 +3326,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            			continue;
 	            		if (!w->isActivated())
 	            			continue;
+
 	            		MMSFBRectangle rect = this->children.at(j)->getGeometry();
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {

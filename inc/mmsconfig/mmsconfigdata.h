@@ -53,6 +53,7 @@ class MMSConfigDataGlobal {
     	string firstplugin;
         bool   shutdown;
         string shutdowncmd;
+	    string inputmode;
 };
 
 class MMSConfigDataDB {
@@ -121,6 +122,7 @@ class MMSConfigData {
         const string getFirstPlugin();
         const bool   getShutdown();
         const string getShutdownCmd();
+        const string getInputMode();
 
         /* db section getters */
         const string       getConfigDBDBMS();

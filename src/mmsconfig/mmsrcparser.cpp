@@ -37,6 +37,7 @@ MMSRcParser::MMSRcParser() {
     this->global.stdout        = false;
     this->global.inputinterval = 0;
 	this->global.shutdown      = false;
+	this->global.inputmode     = "";
 
     this->configdb.database = "/tmp/mmsconfigdb";
 	this->datadb.database   = "/tmp/mmsdatadb";
@@ -217,6 +218,8 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdown = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "shutdowncmd"))
             this->global.shutdowncmd = string((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "inputmode"))
+            this->global.inputmode = string((const char *)parvalue);
 		else
 			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
 

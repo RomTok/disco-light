@@ -162,6 +162,7 @@ typedef enum {
 //! define the window class
 class MMSWindow;
 
+extern string MMSWidget_inputmode;
 
 //! This class is the base class for all widgets.
 /*!
@@ -178,6 +179,8 @@ class MMSWidget {
         MMSWidgetClass      *baseWidgetClass;
         MMSWidgetClass      *widgetClass;
         MMSWidgetClass      myWidgetClass;
+
+        class MMSWidgetThread *widgetthread;
 
         bool                initialized;
         MMSFBSurface        *bgimage;
@@ -259,6 +262,8 @@ class MMSWidget {
         virtual bool draw(bool *backgroundFilled = NULL);
         void drawMyBorder();
         bool drawDebug();
+
+        void startWidgetThread(int delay);
 
     public:
         MMSWidget();
@@ -461,6 +466,8 @@ class MMSWidget {
         bool 	getScrollOnFocus(bool &scrollonfocus);
         bool 	getClickable(bool &clickable);
         bool 	getReturnOnScroll(bool &returnonscroll);
+        bool	getInputMode(string &inputmode);
+        bool 	getInputModeEx(string &inputmode);
 
         bool	getBorderColor(MMSFBColor &color);
         bool 	getBorderSelColor(MMSFBColor &selcolor);
@@ -510,6 +517,7 @@ class MMSWidget {
         void setScrollOnFocus(bool scrollonfocus);
         void setClickable(bool clickable);
         void setReturnOnScroll(bool returnonscroll);
+        void setInputMode(string inputmode);
 
         void setBorderColor(MMSFBColor bordercolor, bool refresh = true);
         void setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);

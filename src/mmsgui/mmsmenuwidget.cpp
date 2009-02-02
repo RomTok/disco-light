@@ -2637,7 +2637,12 @@ void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) 
     if (!this->firstSelection) {
         if (!children.empty()) {
             MMSWidget::setFocus(set, false, inputevent);
-            selectItem(children.at(0), true, refresh);
+			string inputmode = "";
+			getInputModeEx(inputmode);
+			if (strToUpr(inputmode) == "CLICK")
+				selectItem(children.at(0), false, refresh);
+			else
+				selectItem(children.at(0), true, refresh);
         }
         else
             MMSWidget::setFocus(set, refresh, inputevent);
@@ -2645,6 +2650,10 @@ void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) 
     }
     else {
         MMSWidget::setFocus(set, refresh, inputevent);
+		string inputmode = "";
+		getInputModeEx(inputmode);
+		if (strToUpr(inputmode) == "CLICK")
+			selectItem(getSelectedItem(), set, refresh);
     }
 }
 

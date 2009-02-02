@@ -131,6 +131,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         }
 
         DEBUGMSG_OUTSTR("Core", "Input Interval:               " + iToStr(config->getInputInterval()) + " ms");
+        DEBUGMSG_OUTSTR("Core", "Input Mode:                   " + config->getInputMode());
 
         if (config->getShutdown()) {
             DEBUGMSG_OUTSTR("Core", "Call shutdown command:        yes");
@@ -169,6 +170,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");
+
+            // set static MMSWidget inputmode
+        	MMSWidget_inputmode = config->getInputMode();
 
             mmsfbmanager.init(argc, argv, appl_name, appl_icon_name);
             mmsfbmanager.applySettings();

@@ -102,7 +102,8 @@ namespace MMSGUI_WIDGET_ATTR {
 	{ "blend_factor", TAFF_ATTRTYPE_STRING }, \
 	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }, \
 	{ "clickable", TAFF_ATTRTYPE_BOOL }, \
-	{ "return_onscroll", TAFF_ATTRTYPE_BOOL }
+	{ "return_onscroll", TAFF_ATTRTYPE_BOOL }, \
+	{ "inputmode", TAFF_ATTRTYPE_STRING }
 
 	#define MMSGUI_WIDGET_ATTR_IDS \
 		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
@@ -172,7 +173,8 @@ namespace MMSGUI_WIDGET_ATTR {
 		MMSGUI_WIDGET_ATTR_IDS_blend_factor, \
 		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus, \
 		MMSGUI_WIDGET_ATTR_IDS_clickable, \
-		MMSGUI_WIDGET_ATTR_IDS_return_onscroll
+		MMSGUI_WIDGET_ATTR_IDS_return_onscroll, \
+		MMSGUI_WIDGET_ATTR_IDS_inputmode
 
 	#define MMSGUI_WIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -360,6 +362,9 @@ class MMSWidgetClass {
 	        //! emit on return callback (true/false) if user changes the selection e.g. in a menu
 	        bool            returnonscroll;
 
+	        //! is inputmode set?
+	        bool            isinputmode;
+
     	} id;
 
     	struct {
@@ -431,6 +436,9 @@ class MMSWidgetClass {
 
             //! the name of the widget which represents the horizontal slider
             string          *hslider;
+
+    		//! input mode
+            string          *inputmode;
     	} ed;
 
     	/* init routines */
@@ -482,6 +490,8 @@ class MMSWidgetClass {
         void initClickable();
         void initReturnOnScroll();
 
+        void initInputMode();
+
 
         /* free routines */
         void freeBgColor();
@@ -531,6 +541,8 @@ class MMSWidgetClass {
         void freeScrollOnFocus();
         void freeClickable();
         void freeReturnOnScroll();
+
+        void freeInputMode();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -1286,6 +1298,27 @@ class MMSWidgetClass {
         \return true if set
         */
         bool getReturnOnScroll(bool &returnonscroll);
+
+
+        //! Check if the input mode is set.
+        bool isInputMode();
+
+        //! Mark the input mode as not set.
+        void unsetInputMode();
+
+        //! Set the input mode.
+        /*!
+        \param inputmode  input mode ("move" or "click")
+        */
+        void setInputMode(const string &inputmode);
+
+        //! Get the input mode.
+        /*!
+        \param inputmode  input mode
+        \return true if set
+        */
+        bool getInputMode(string &inputmode);
+
 
 
     /* friends */

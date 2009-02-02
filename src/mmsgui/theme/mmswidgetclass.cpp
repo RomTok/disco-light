@@ -86,6 +86,8 @@ MMSWidgetClass::MMSWidgetClass() {
     initScrollOnFocus();
     initClickable();
     initReturnOnScroll();
+
+    initInputMode();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -136,6 +138,8 @@ MMSWidgetClass::~MMSWidgetClass() {
     freeScrollOnFocus();
     freeClickable();
     freeReturnOnScroll();
+
+    freeInputMode();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
@@ -192,6 +196,8 @@ MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
 			this->ed.vslider = new string(*c.ed.vslider);
 		if (c.id.ishslider)
 			this->ed.hslider = new string(*c.ed.hslider);
+		if (c.id.isinputmode)
+			this->ed.inputmode = new string(*c.ed.inputmode);
 	}
 	return *this;
 }
@@ -244,6 +250,8 @@ void MMSWidgetClass::unsetAll() {
     unsetScrollOnFocus();
     unsetClickable();
     unsetReturnOnScroll();
+
+    unsetInputMode();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -592,6 +600,9 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_return_onscroll:
 	            setReturnOnScroll((attrval_int) ? true : false);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_inputmode:
+	            setInputMode(attrval_str);
 	            break;
 			}
 		}
@@ -1012,6 +1023,10 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             else
             if (ISATTRNAME(return_onscroll)) {
 	            setReturnOnScroll((attrval_int) ? true : false);
+            }
+            else
+            if (ISATTRNAME(inputmode)) {
+	            setInputMode(attrval_str);
             }
     	}
     	endTAFFScan_WITHOUT_ID
@@ -1962,4 +1977,29 @@ void MMSWidgetClass::setReturnOnScroll(bool returnonscroll) {
 bool MMSWidgetClass::getReturnOnScroll(bool &returnonscroll) {
 	MMSTHEMECLASS_GET_BASIC(returnonscroll);
 }
+
+void MMSWidgetClass::initInputMode() {
+	MMSTHEMECLASS_INIT_STRING(inputmode);
+}
+
+void MMSWidgetClass::freeInputMode() {
+	MMSTHEMECLASS_FREE_STRING(inputmode);
+}
+
+bool MMSWidgetClass::isInputMode() {
+	MMSTHEMECLASS_ISSET(inputmode);
+}
+
+void MMSWidgetClass::unsetInputMode() {
+	MMSTHEMECLASS_UNSET(inputmode);
+}
+
+void MMSWidgetClass::setInputMode(const string &inputmode) {
+	MMSTHEMECLASS_SET_STRING(inputmode);
+}
+
+bool MMSWidgetClass::getInputMode(string &inputmode) {
+	MMSTHEMECLASS_GET_STRING(inputmode);
+}
+
 
