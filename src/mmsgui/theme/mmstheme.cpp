@@ -77,7 +77,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 5, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 6, mmsgui_taff_tagtable };
 
 
 
@@ -424,6 +424,7 @@ MMSTheme::MMSTheme() {
         this->mainWindowClass.windowClass.setOwnSurface(true);
         this->mainWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->mainWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
+        this->mainWindowClass.windowClass.setModal(false);
 
         /* base window border settings */
         this->mainWindowClass.windowClass.border.setColor(color);
@@ -464,6 +465,7 @@ MMSTheme::MMSTheme() {
         this->popupWindowClass.windowClass.setOwnSurface(true);
         this->popupWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->popupWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
+        this->popupWindowClass.windowClass.setModal(false);
 
         /* base window border settings */
         this->popupWindowClass.windowClass.border.setColor(color);
@@ -507,6 +509,7 @@ MMSTheme::MMSTheme() {
         this->rootWindowClass.windowClass.setOwnSurface(true);
         this->rootWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->rootWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
+        this->rootWindowClass.windowClass.setModal(false);
 
         /* base window border settings */
         this->rootWindowClass.windowClass.border.setColor(color);
@@ -547,6 +550,7 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.setOwnSurface(true);
         this->childWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->childWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
+        this->childWindowClass.windowClass.setModal(false);
 
         /* base window border settings */
         this->childWindowClass.windowClass.border.setColor(color);
@@ -558,9 +562,6 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.border.setThickness(0);
         this->childWindowClass.windowClass.border.setMargin(0);
         this->childWindowClass.windowClass.border.setRCorners(false);
-
-        /* child window settings */
-        this->childWindowClass.setModal(false);
     }
 
     /* MMSLabelWidget */

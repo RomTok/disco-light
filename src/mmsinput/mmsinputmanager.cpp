@@ -84,20 +84,31 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			}
 		}
 
-		/* got through subscriptions */
-		for(unsigned int i = 0; i < subscriptions.size();i++) {
-			for(unsigned int y = 0; y < inputeventset.size(); y++) {
-				MMSKeySymbol key;
-				if (subscriptions.at(i)->getKey(key))
-					if (key == inputeventset.at(y).key) {
-						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
-						/* ok i found one execute */
-		                subscriptions.at(i)->callback.emit(subscriptions.at(i));
-						/* stop it only one key per subscription */
-		                DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
-						this->mutex.unlock();
-						return;
-					}
+		// have to call subscriptions?
+		bool call_subscriptions = true;
+		if (window) {
+			bool modal = false;
+			window->getModal(modal);
+			if (modal)
+				call_subscriptions = false;
+		}
+
+		if (call_subscriptions) {
+			// go through subscriptions
+			for(unsigned int i = 0; i < subscriptions.size();i++) {
+				for(unsigned int y = 0; y < inputeventset.size(); y++) {
+					MMSKeySymbol key;
+					if (subscriptions.at(i)->getKey(key))
+						if (key == inputeventset.at(y).key) {
+							DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
+							// ok i found one execute
+							subscriptions.at(i)->callback.emit(subscriptions.at(i));
+							// stop it only one key per subscription
+							DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
+							this->mutex.unlock();
+							return;
+						}
+				}
 			}
 		}
 
@@ -180,24 +191,34 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		this->buttonpress_window = NULL;
 
 
-		/* got through subscriptions */
-		for(unsigned int i = 0; i < subscriptions.size();i++) {
-			for(unsigned int y = 0; y < inputeventset.size(); y++) {
-				MMSFBRectangle pointer_area;
-				if (subscriptions.at(i)->getPointerArea(pointer_area))
-					if ((inputevent->posx >= pointer_area.x)&&(inputevent->posy >= pointer_area.y)
-				      &&(inputevent->posx < pointer_area.x + pointer_area.w)&&(inputevent->posy < pointer_area.y + pointer_area.h)) {
-						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
-						/* ok i found one execute */
-		                subscriptions.at(i)->callback.emit(subscriptions.at(i));
-						/* stop it only one key per subscription */
-		                DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
-						this->mutex.unlock();
-						return;
-					}
-			}
+		// have to call subscriptions?
+		bool call_subscriptions = true;
+		if (window) {
+			bool modal = false;
+			window->getModal(modal);
+			if (modal)
+				call_subscriptions = false;
 		}
 
+		if (call_subscriptions) {
+			// go through subscriptions
+			for(unsigned int i = 0; i < subscriptions.size();i++) {
+				for(unsigned int y = 0; y < inputeventset.size(); y++) {
+					MMSFBRectangle pointer_area;
+					if (subscriptions.at(i)->getPointerArea(pointer_area))
+						if ((inputevent->posx >= pointer_area.x)&&(inputevent->posy >= pointer_area.y)
+						  &&(inputevent->posx < pointer_area.x + pointer_area.w)&&(inputevent->posy < pointer_area.y + pointer_area.h)) {
+							DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
+							// ok i found one execute
+							subscriptions.at(i)->callback.emit(subscriptions.at(i));
+							// stop it only one key per subscription
+							DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
+							this->mutex.unlock();
+							return;
+						}
+				}
+			}
+		}
 
 	}
 	else

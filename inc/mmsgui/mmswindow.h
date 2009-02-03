@@ -971,6 +971,14 @@ class MMSWindow {
         */
         bool getMoveOut(MMSDIRECTION &moveout);
 
+    	//! Detect if the window has to be modal if it is focused.
+        /*!
+        \param modal	returns the modal status
+        \return true, if modal is successfully returned
+        */
+        bool getModal(bool &modal);
+
+
         //! Get the color of the window border.
         /*!
         \param color	returns the border color
@@ -1219,6 +1227,13 @@ class MMSWindow {
         \param moveout	the moveout direction
         */
         void setMoveOut(MMSDIRECTION moveout);
+
+        //! Set the modal status of the window.
+        /*!
+        \param modal	if true, the window is marked as modal
+        */
+        void setModal(bool modal);
+
 
         //! Set the color of the window border.
         /*!

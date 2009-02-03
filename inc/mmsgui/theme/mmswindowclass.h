@@ -63,7 +63,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		{ "navigate_right", TAFF_ATTRTYPE_STRING }, \
 		{ "own_surface", TAFF_ATTRTYPE_BOOL }, \
 		{ "movein", TAFF_ATTRTYPE_STRING }, \
-		{ "moveout", TAFF_ATTRTYPE_STRING }
+		{ "moveout", TAFF_ATTRTYPE_STRING }, \
+		{ "modal", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WINDOW_ATTR_IDS \
 		MMSGUI_WINDOW_ATTR_IDS_alignment, \
@@ -94,7 +95,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		MMSGUI_WINDOW_ATTR_IDS_navigate_right, \
 		MMSGUI_WINDOW_ATTR_IDS_own_surface, \
 		MMSGUI_WINDOW_ATTR_IDS_movein, \
-		MMSGUI_WINDOW_ATTR_IDS_moveout
+		MMSGUI_WINDOW_ATTR_IDS_moveout, \
+		MMSGUI_WINDOW_ATTR_IDS_modal
 
 	typedef enum {
 		MMSGUI_BASE_ATTR_IDS,
@@ -141,6 +143,12 @@ class MMSWindowClass {
 	        MMSDIRECTION movein;
 	        bool         ismoveout;
 	        MMSDIRECTION moveout;
+
+	        //! is modal flag set?
+	        bool		ismodal;
+
+	        //! if true, the focus cannot be changed to another window
+	        bool		modal;
     	} id;
 
         struct {
@@ -185,6 +193,7 @@ class MMSWindowClass {
         void initOwnSurface();
         void initMoveIn();
         void initMoveOut();
+        void initModal();
 
     	/* free routines */
         void freeAlignment();
@@ -211,6 +220,7 @@ class MMSWindowClass {
         void freeOwnSurface();
         void freeMoveIn();
         void freeMoveOut();
+        void freeModal();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -478,6 +488,11 @@ class MMSWindowClass {
         void unsetMoveOut();
         void setMoveOut(MMSDIRECTION moveout);
         bool getMoveOut(MMSDIRECTION &moveout);
+
+        bool isModal();
+        void unsetModal();
+        void setModal(bool modal);
+        bool getModal(bool &modal);
 
     /* friends */
     friend class MMSThemeManager;

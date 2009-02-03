@@ -3812,6 +3812,10 @@ bool MMSWindow::getMoveOut(MMSDIRECTION &moveout) {
     GETWINDOW(MoveOut, moveout);
 }
 
+bool MMSWindow::getModal(bool &modal) {
+    GETWINDOW(Modal, modal);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -4035,6 +4039,10 @@ void MMSWindow::setMoveOut(MMSDIRECTION moveout) {
     myWindowClass.setMoveOut(moveout);
 }
 
+void MMSWindow::setModal(bool modal) {
+    myWindowClass.setModal(modal);
+}
+
 
 
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
@@ -4155,6 +4163,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setMoveIn(d);
     if (themeClass->getMoveOut(d))
         setMoveOut(d);
+	if (themeClass->getModal(b))
+        setModal(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))

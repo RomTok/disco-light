@@ -54,6 +54,7 @@ MMSWindowClass::MMSWindowClass() {
     initOwnSurface();
     initMoveIn();
     initMoveOut();
+    initModal();
 }
 
 MMSWindowClass::~MMSWindowClass() {
@@ -81,6 +82,7 @@ MMSWindowClass::~MMSWindowClass() {
     freeOwnSurface();
     freeMoveIn();
     freeMoveOut();
+    freeModal();
 }
 
 MMSWindowClass &MMSWindowClass::operator=(const MMSWindowClass &c) {
@@ -148,6 +150,7 @@ void MMSWindowClass::unsetAll() {
     unsetOwnSurface();
     unsetMoveIn();
     unsetMoveOut();
+    unsetModal();
 }
 
 void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
@@ -268,6 +271,9 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_moveout:
             setMoveOut(getDirectionFromString(attrval_str));
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_modal:
+            setModal((attrval_int) ? true : false);
             break;
 		}
 	}
@@ -855,4 +861,29 @@ void MMSWindowClass::setMoveOut(MMSDIRECTION moveout) {
 bool MMSWindowClass::getMoveOut(MMSDIRECTION &moveout) {
 	MMSTHEMECLASS_GET_BASIC(moveout);
 }
+
+void MMSWindowClass::initModal() {
+	MMSTHEMECLASS_INIT_BASIC(modal);
+}
+
+void MMSWindowClass::freeModal() {
+	MMSTHEMECLASS_FREE_BASIC(modal);
+}
+
+bool MMSWindowClass::isModal() {
+	MMSTHEMECLASS_ISSET(modal);
+}
+
+void MMSWindowClass::unsetModal() {
+	MMSTHEMECLASS_UNSET(modal);
+}
+
+void MMSWindowClass::setModal(bool modal) {
+	MMSTHEMECLASS_SET_BASIC(modal);
+}
+
+bool MMSWindowClass::getModal(bool &modal) {
+	MMSTHEMECLASS_GET_BASIC(modal);
+}
+
 

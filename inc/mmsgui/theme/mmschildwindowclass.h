@@ -34,17 +34,10 @@
 //! describe attributes for MMSChildWindow which are additional to the MMSWindowClass
 namespace MMSGUI_CHILDWINDOW_ATTR {
 
-	#define MMSGUI_CHILDWINDOW_ATTR_ATTRDESC \
-		{ "modal", TAFF_ATTRTYPE_BOOL }
-
-	#define MMSGUI_CHILDWINDOW_ATTR_IDS \
-		MMSGUI_CHILDWINDOW_ATTR_IDS_modal
-
 	#define MMSGUI_CHILDWINDOW_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
 		MMSGUI_WINDOW_ATTR_ATTRDESC, \
-		MMSGUI_CHILDWINDOW_ATTR_ATTRDESC, \
 		{ NULL, TAFF_ATTRTYPE_NONE } \
 	}
 
@@ -52,7 +45,6 @@ namespace MMSGUI_CHILDWINDOW_ATTR {
 		MMSGUI_BASE_ATTR_IDS,
 		MMSGUI_BORDER_ATTR_IDS,
 		MMSGUI_WINDOW_ATTR_IDS,
-		MMSGUI_CHILDWINDOW_ATTR_IDS
 	} ids;
 }
 
@@ -62,12 +54,6 @@ class MMSChildWindowClass {
     private:
     	//! name of the theme class
         string		className;
-
-        //! is modal flag set?
-        bool		ismodal;
-
-        //! if true, the focus cannot be changed to an other child window
-        bool		modal;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -85,11 +71,6 @@ class MMSChildWindowClass {
 
         void setClassName(string className);
         string getClassName();
-
-        bool isModal();
-        void unsetModal();
-        void setModal(bool modal);
-        bool getModal(bool &modal);
 
     /* friends */
     friend class MMSThemeManager;
