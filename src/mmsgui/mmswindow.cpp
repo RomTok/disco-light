@@ -1577,6 +1577,84 @@ void MMSWindow::showBufferedShown() {
 //////////////////
 
 
+bool MMSWindow::raiseToTop() {
+    if (!this->parent) {
+        // normal parent window
+        // set the window to top
+        if (this->window)
+            return this->window->raiseToTop();
+    }
+    else {
+    	// child window
+    	// change the childwins vector
+    	lock();
+        for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
+        	if (this->parent->childwins.at(i).window == this) {
+        		// child window found, move it to the end of the vector
+        		if (i + 1 < this->parent->childwins.size()) {
+					CHILDWINS cw = this->parent->childwins.at(i);
+					this->parent->childwins.erase(this->parent->childwins.begin()+i);
+					this->parent->childwins.push_back(cw);
+					i = this->parent->childwins.size() - 1;
+        		}
+
+        		// change the focused child win pointer if window is shown
+      			if (this->parent->childwins.at(i).window->shown) {
+					this->parent->focusedChildWin = i;
+
+					// redraw the window stack if parent is shown
+					if (this->parent->shown)
+						this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
+      			}
+
+                unlock();
+        		return true;
+        	}
+        unlock();
+    }
+    return false;
+}
+
+bool MMSWindow::lowerToBottom() {
+    if (!this->parent) {
+        // normal parent window
+		// set the window to bottom
+		if (this->window)
+			return this->window->lowerToBottom();
+    }
+    else {
+    	// child window
+    	// change the childwins vector
+    	lock();
+        for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
+        	if (this->parent->childwins.at(i).window == this) {
+        		// child window found, move it to the begin of the vector
+        		if (i > 0) {
+					CHILDWINS cw = this->parent->childwins.at(i);
+					this->parent->childwins.erase(this->parent->childwins.begin()+i);
+					this->parent->childwins.insert(this->parent->childwins.begin(), cw);
+        		}
+
+        		// change the focused child win pointer
+                for (int j = (int)this->parent->childwins.size()-1; j >= 0 ; j--)
+                	if (this->parent->childwins.at(j).window->shown) {
+						this->parent->focusedChildWin = j;
+						break;
+                	}
+
+        		// redraw the window stack if parent is shown
+        		if (this->parent->shown)
+        			if (this->parent->childwins.at(0).window->shown)
+        				this->parent->flipWindow(this->parent->childwins.at(0).window, NULL, MMSFB_FLIP_NONE, false, true);
+
+        		unlock();
+        		return true;
+        	}
+        unlock();
+    }
+    return false;
+}
+
 
 bool MMSWindow::showAction(bool *stopaction) {
     bool    saction = *stopaction;
@@ -1613,22 +1691,29 @@ bool MMSWindow::showAction(bool *stopaction) {
     lock();
 
     if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
-        /* hide the current root window */
+        // hide the current root window
         if (this->windowmanager)
             this->windowmanager->hideAllRootWindows(true);
 
-        /* set the window to bottom */
-        if (this->window)
-            this->window->lowerToBottom();
+        // set the root window to bottom
+        lowerToBottom();
     }
     else {
+    	// bring all other windows in foreground
         if (!this->parent) {
-            /* normal parent window */
-            /* set the window to top */
-            if (this->window)
-                this->window->raiseToTop();
+            // normal parent window
+            // set the window to top
+        	raiseToTop();
+        }
+        else {
+        	// change the z-order of child windows?
+        	bool staticzorder = false;
+        	this->parent->getStaticZOrder(staticzorder);
+        	if (!staticzorder)
+        		raiseToTop();
         }
     }
+
 
 //    printf("showAction4 %x\n", this);
 
@@ -2876,6 +2961,12 @@ void MMSWindow::setFocus() {
 
     /* restore focused widget to candidate window */
     this->parent->restoreChildWinFocus();
+
+	// change the z-order of child windows?
+	bool staticzorder = false;
+	this->parent->getStaticZOrder(staticzorder);
+	if (!staticzorder)
+		raiseToTop();
 }
 
 bool MMSWindow::getFocus() {
@@ -3358,7 +3449,8 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	/* searching for the right childwin to get the focus */
 	            	int posx = inputeventset->at(i).posx;
 	            	int posy = inputeventset->at(i).posy;
-	            	for (unsigned int j = 0; j < this->childwins.size(); j++) {
+//	            	for (unsigned int j = 0; j < this->childwins.size(); j++) {
+					for (int j = (int)this->childwins.size()-1; j >= 0; j--) {
 	            		if (!this->childwins.at(j).window->isShown())
 	            			continue;
 /*	            		if (!this->childwins.at(j).window->getNumberOfFocusableWidgets())
@@ -3816,6 +3908,10 @@ bool MMSWindow::getModal(bool &modal) {
     GETWINDOW(Modal, modal);
 }
 
+bool MMSWindow::getStaticZOrder(bool &staticzorder) {
+    GETWINDOW(StaticZOrder, staticzorder);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -4043,6 +4139,9 @@ void MMSWindow::setModal(bool modal) {
     myWindowClass.setModal(modal);
 }
 
+void MMSWindow::setStaticZOrder(bool staticzorder) {
+    myWindowClass.setStaticZOrder(staticzorder);
+}
 
 
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
@@ -4165,6 +4264,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setMoveOut(d);
 	if (themeClass->getModal(b))
         setModal(b);
+	if (themeClass->getStaticZOrder(b))
+        setStaticZOrder(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))

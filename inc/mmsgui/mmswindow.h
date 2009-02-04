@@ -653,6 +653,12 @@ class MMSWindow {
         */
         void setNavigateRightWindow(MMSWindow *rightWindow);
 
+
+
+        bool raiseToTop();
+        bool lowerToBottom();
+
+
         //! Set one or more callbacks for the onBeforeShow event.
         /*!
         The connected callbacks will be called during show().
@@ -978,6 +984,13 @@ class MMSWindow {
         */
         bool getModal(bool &modal);
 
+    	//! Detect if the window automatically changes the zorder of child windows during show() or setFocus()
+        /*!
+        \param staticzorder	returns the static zorder flag
+        \return true, if value is successfully returned
+        */
+        bool getStaticZOrder(bool &staticzorder);
+
 
         //! Get the color of the window border.
         /*!
@@ -1234,6 +1247,11 @@ class MMSWindow {
         */
         void setModal(bool modal);
 
+        //! Set the zorder status of the window.
+        /*!
+        \param staticzorder	if true, the window automatically changes the zorder of child window during show() / setFocus()
+        */
+        void setStaticZOrder(bool staticzorder);
 
         //! Set the color of the window border.
         /*!

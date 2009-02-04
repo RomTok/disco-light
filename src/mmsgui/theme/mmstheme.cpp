@@ -77,7 +77,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 6, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 7, mmsgui_taff_tagtable };
 
 
 
@@ -425,6 +425,7 @@ MMSTheme::MMSTheme() {
         this->mainWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->mainWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
         this->mainWindowClass.windowClass.setModal(false);
+        this->mainWindowClass.windowClass.setStaticZOrder(false);
 
         /* base window border settings */
         this->mainWindowClass.windowClass.border.setColor(color);
@@ -466,6 +467,7 @@ MMSTheme::MMSTheme() {
         this->popupWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->popupWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
         this->popupWindowClass.windowClass.setModal(false);
+        this->popupWindowClass.windowClass.setStaticZOrder(false);
 
         /* base window border settings */
         this->popupWindowClass.windowClass.border.setColor(color);
@@ -510,6 +512,7 @@ MMSTheme::MMSTheme() {
         this->rootWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->rootWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
         this->rootWindowClass.windowClass.setModal(false);
+        this->rootWindowClass.windowClass.setStaticZOrder(false);
 
         /* base window border settings */
         this->rootWindowClass.windowClass.border.setColor(color);
@@ -551,6 +554,7 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->childWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
         this->childWindowClass.windowClass.setModal(false);
+        this->childWindowClass.windowClass.setStaticZOrder(false);
 
         /* base window border settings */
         this->childWindowClass.windowClass.border.setColor(color);

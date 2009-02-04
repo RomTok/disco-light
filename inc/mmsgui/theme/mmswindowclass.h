@@ -64,7 +64,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		{ "own_surface", TAFF_ATTRTYPE_BOOL }, \
 		{ "movein", TAFF_ATTRTYPE_STRING }, \
 		{ "moveout", TAFF_ATTRTYPE_STRING }, \
-		{ "modal", TAFF_ATTRTYPE_BOOL }
+		{ "modal", TAFF_ATTRTYPE_BOOL }, \
+		{ "static_zorder", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WINDOW_ATTR_IDS \
 		MMSGUI_WINDOW_ATTR_IDS_alignment, \
@@ -96,7 +97,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		MMSGUI_WINDOW_ATTR_IDS_own_surface, \
 		MMSGUI_WINDOW_ATTR_IDS_movein, \
 		MMSGUI_WINDOW_ATTR_IDS_moveout, \
-		MMSGUI_WINDOW_ATTR_IDS_modal
+		MMSGUI_WINDOW_ATTR_IDS_modal, \
+		MMSGUI_WINDOW_ATTR_IDS_static_zorder
 
 	typedef enum {
 		MMSGUI_BASE_ATTR_IDS,
@@ -149,6 +151,12 @@ class MMSWindowClass {
 
 	        //! if true, the focus cannot be changed to another window
 	        bool		modal;
+
+	        //! is static zorder flag set?
+	        bool		isstaticzorder;
+
+	        //! if true, the zorder of child windows will not automatically changed during show() or setFocus()
+	        bool		staticzorder;
     	} id;
 
         struct {
@@ -194,6 +202,7 @@ class MMSWindowClass {
         void initMoveIn();
         void initMoveOut();
         void initModal();
+        void initStaticZOrder();
 
     	/* free routines */
         void freeAlignment();
@@ -221,6 +230,7 @@ class MMSWindowClass {
         void freeMoveIn();
         void freeMoveOut();
         void freeModal();
+        void freeStaticZOrder();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -493,6 +503,11 @@ class MMSWindowClass {
         void unsetModal();
         void setModal(bool modal);
         bool getModal(bool &modal);
+
+        bool isStaticZOrder();
+        void unsetStaticZOrder();
+        void setStaticZOrder(bool staticzorder);
+        bool getStaticZOrder(bool &staticzorder);
 
     /* friends */
     friend class MMSThemeManager;

@@ -55,6 +55,7 @@ MMSWindowClass::MMSWindowClass() {
     initMoveIn();
     initMoveOut();
     initModal();
+    initStaticZOrder();
 }
 
 MMSWindowClass::~MMSWindowClass() {
@@ -83,6 +84,7 @@ MMSWindowClass::~MMSWindowClass() {
     freeMoveIn();
     freeMoveOut();
     freeModal();
+    freeStaticZOrder();
 }
 
 MMSWindowClass &MMSWindowClass::operator=(const MMSWindowClass &c) {
@@ -151,6 +153,7 @@ void MMSWindowClass::unsetAll() {
     unsetMoveIn();
     unsetMoveOut();
     unsetModal();
+    unsetStaticZOrder();
 }
 
 void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
@@ -274,6 +277,9 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_modal:
             setModal((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_static_zorder:
+            setStaticZOrder((attrval_int) ? true : false);
             break;
 		}
 	}
@@ -886,4 +892,28 @@ bool MMSWindowClass::getModal(bool &modal) {
 	MMSTHEMECLASS_GET_BASIC(modal);
 }
 
+
+void MMSWindowClass::initStaticZOrder() {
+	MMSTHEMECLASS_INIT_BASIC(staticzorder);
+}
+
+void MMSWindowClass::freeStaticZOrder() {
+	MMSTHEMECLASS_FREE_BASIC(staticzorder);
+}
+
+bool MMSWindowClass::isStaticZOrder() {
+	MMSTHEMECLASS_ISSET(staticzorder);
+}
+
+void MMSWindowClass::unsetStaticZOrder() {
+	MMSTHEMECLASS_UNSET(staticzorder);
+}
+
+void MMSWindowClass::setStaticZOrder(bool staticzorder) {
+	MMSTHEMECLASS_SET_BASIC(staticzorder);
+}
+
+bool MMSWindowClass::getStaticZOrder(bool &staticzorder) {
+	MMSTHEMECLASS_GET_BASIC(staticzorder);
+}
 
