@@ -1129,7 +1129,8 @@ void MMSWindow::removeFocusFromChildWindow() {
     if (this->parent->childwins.at(this->parent->focusedChildWin).window != this) return;
 
     /* searching for other childwin to get the focus */
-    for (unsigned int i = 0; i < this->parent->childwins.size(); i++) {
+//    for (unsigned int i = 0; i < this->parent->childwins.size(); i++) {
+	for (int i = (int)this->parent->childwins.size()-1; i >= 0; i--) {
         if (i == this->parent->focusedChildWin) continue;
         MMSWindow *w = this->parent->childwins.at(i).window;
         if (!w->isShown()) continue;
