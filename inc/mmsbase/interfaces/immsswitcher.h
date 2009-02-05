@@ -54,7 +54,21 @@ class IMMSSwitcher {
         virtual IMMSSwitcher *newSwitcher(MMSPluginData *plugindata) = 0;
 
         virtual bool switchToPlugin() = 0;
+
+        /* go back to the previous plugin */
+        virtual bool revertToLastPlugin() = 0;
+
         virtual bool leavePlugin(bool show_switcher) = 0;
+
+
+        /**
+         * load a generic childwindow to be shown by the plugin
+         *
+         * @param	application specific data
+         *
+         * @return	application specific data
+         */
+		virtual MMSChildWindow* loadChildWindow(string filename, MMSTheme *theme = NULL) = 0;
 
         /**
          * Generic callback for plugin->switcher communication.
