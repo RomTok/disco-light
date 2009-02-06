@@ -1035,6 +1035,7 @@ void MMSAV::pause() {
        this->status == this->STATUS_FFWD2) {
        this->setStatus(this->STATUS_PAUSED);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+        xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
     }
 }
 
