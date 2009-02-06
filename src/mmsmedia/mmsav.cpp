@@ -361,25 +361,26 @@ static void* playRoutine(void *data) {
 	if(!streamData) return NULL;
 
 	if(!xine_play(streamData->stream, streamData->pos, 0)) {
-        string msg;
         switch(xine_get_error(streamData->stream)) {
             case XINE_ERROR_NO_INPUT_PLUGIN :
-                msg = "No input plugin";
+                DEBUGMSG("MMSAV", "Error while trying to play stream: No input plugin");
                 break;
             case XINE_ERROR_NO_DEMUX_PLUGIN :
-                msg = "No demux plugin";
+                DEBUGMSG("MMSAV", "Error while trying to play stream: No demux plugin");
                 break;
             case XINE_ERROR_DEMUX_FAILED :
-                msg = "Error in demux plugin";
+                DEBUGMSG("MMSAV", "Error while trying to play stream: Error in demux plugin");
                 break;
             case XINE_ERROR_INPUT_FAILED :
-                msg = "Error in input plugin";
+                DEBUGMSG("MMSAV", "Error while trying to play stream: Error in input plugin");
+                break;
+            case XINE_ERROR_MALFORMED_MRL :
+                DEBUGMSG("MMSAV", "Error while trying to play stream: Malformed MRL");
                 break;
             default:
-                msg = "Cannot play stream";
+                DEBUGMSG("MMSAV", "Unknown error while trying to play stream");
                 break;
         }
-        throw new MMSAVError(0, "Error in xine_play(): " + msg);
     }
 
 	delete streamData;
