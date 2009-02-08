@@ -2886,7 +2886,11 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
             	b = false;
 
             if (b) {
-                fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true, true, inputevent);
+        		string inputmode = "";
+//        		fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->getInputModeEx(inputmode);
+        		if (strToUpr(inputmode) != "CLICK") {
+        			fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true, true, inputevent);
+        		}
             }
             else {
                 /* last focusable widget is not focusable anymore, search other widget to focus */
@@ -2894,7 +2898,12 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
                     if(fWin->children.at(i)->getFocusable(b))
                     	if (b) {
 		                    this->childwins.at(this->focusedChildWin).focusedWidget = i;
-		                    fWin->children.at(i)->setFocus(true, true, inputevent);
+
+		            		string inputmode = "";
+//		            		fWin->children.at(i)->getInputModeEx(inputmode);
+		            		if (strToUpr(inputmode) != "CLICK") {
+		            			fWin->children.at(i)->setFocus(true, true, inputevent);
+		            		}
 
 		                    break;
 		                }
