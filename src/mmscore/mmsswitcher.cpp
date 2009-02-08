@@ -574,3 +574,11 @@ bool MMSSwitcher::leavePlugin(bool show_switcher) {
 void* MMSSwitcher::callback(void *data) {
 	return NULL;
 }
+
+bool MMSSwitcher::revertToLastPlugin() {
+	return false;
+}
+
+MMSChildWindow* MMSSwitcher::loadChildWindow(string filename, MMSTheme *theme) {
+	return NULL;
+}

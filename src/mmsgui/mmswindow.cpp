@@ -1600,14 +1600,15 @@ bool MMSWindow::raiseToTop() {
         		}
 
         		// change the focused child win pointer if window is shown
-      			if (this->parent->childwins.at(i).window->shown) {
+      			/*
+        		if (this->parent->childwins.at(i).window->shown) {
 					this->parent->focusedChildWin = i;
 
 					// redraw the window stack if parent is shown
 					if (this->parent->shown)
 						this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
       			}
-
+*/
                 unlock();
         		return true;
         	}

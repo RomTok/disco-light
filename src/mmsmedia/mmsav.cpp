@@ -35,6 +35,11 @@
 
 MMS_CREATEERROR(MMSAVError);
 
+typedef struct {
+	xine_stream_t	*stream;
+	int				pos;
+} internalStreamData;
+
 #ifdef __HAVE_DIRECTFB__
 DFBResult dfbres;
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
@@ -349,6 +354,39 @@ static int dfb_frame_cb(void *cdata) {
 #endif
 }
 #endif
+
+static void* playRoutine(void *data) {
+	internalStreamData *streamData = (internalStreamData*)data;
+
+	if(!streamData) return NULL;
+
+	if(!xine_play(streamData->stream, streamData->pos, 0)) {
+        switch(xine_get_error(streamData->stream)) {
+            case XINE_ERROR_NO_INPUT_PLUGIN :
+                DEBUGMSG("MMSAV", "Error while trying to play stream: No input plugin");
+                break;
+            case XINE_ERROR_NO_DEMUX_PLUGIN :
+                DEBUGMSG("MMSAV", "Error while trying to play stream: No demux plugin");
+                break;
+            case XINE_ERROR_DEMUX_FAILED :
+                DEBUGMSG("MMSAV", "Error while trying to play stream: Error in demux plugin");
+                break;
+            case XINE_ERROR_INPUT_FAILED :
+                DEBUGMSG("MMSAV", "Error while trying to play stream: Error in input plugin");
+                break;
+            case XINE_ERROR_MALFORMED_MRL :
+                DEBUGMSG("MMSAV", "Error while trying to play stream: Malformed MRL");
+                break;
+            default:
+                DEBUGMSG("MMSAV", "Unknown error while trying to play stream");
+                break;
+        }
+    }
+
+	delete streamData;
+
+	return NULL;
+}
 
 static void* stopRoutine(void *data) {
 	if(!data) return NULL;
@@ -952,30 +990,19 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     else if(this->isPlaying())
         return;
 
-    /* playing... */
-    if(!cont)
-        this->pos = 0;
-    if (!xine_play(this->stream, this->pos, 0)) {
-        string msg;
-        switch(xine_get_error(this->stream)) {
-            case XINE_ERROR_NO_INPUT_PLUGIN :
-                msg = "No input plugin";
-                break;
-            case XINE_ERROR_NO_DEMUX_PLUGIN :
-                msg = "No demux plugin";
-                break;
-            case XINE_ERROR_DEMUX_FAILED :
-                msg = "Error in demux plugin";
-                break;
-            case XINE_ERROR_INPUT_FAILED :
-                msg = "Error in input plugin (" + mrl + ")";
-                break;
-            default:
-                msg = "Cannot play stream";
-                break;
-        }
-        throw new MMSAVError(0, "Error in xine_play(): " + msg);
-    }
+    if(!cont) this->pos = 0;
+
+	/* start playing in extra thread to avoid blocking the application */
+	pthread_t thread;
+	internalStreamData *streamData = new internalStreamData;
+	streamData->stream = this->stream;
+	streamData->pos    = this->pos;
+	if(pthread_create(&thread, NULL, playRoutine, streamData) == 0) {
+		pthread_detach(thread);
+	}
+	else
+		playRoutine(streamData);
+
     this->setStatus(this->STATUS_PLAYING);
 }
 
@@ -1035,6 +1062,7 @@ void MMSAV::pause() {
        this->status == this->STATUS_FFWD2) {
        this->setStatus(this->STATUS_PAUSED);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+        xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
     }
 }
 

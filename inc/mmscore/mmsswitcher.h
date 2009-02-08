@@ -101,8 +101,10 @@ class MMSSwitcher : public IMMSSwitcher {
         virtual void setVolume(unsigned int volume, bool init = false);
         virtual IMMSSwitcher *newSwitcher(MMSPluginData *plugindata);
         virtual bool switchToPlugin();
+        virtual bool revertToLastPlugin();
         virtual bool leavePlugin(bool show_switcher);
         virtual void* callback(void *data);
+		virtual MMSChildWindow* loadChildWindow(string filename, MMSTheme *theme = NULL);
 
     friend class MMSSwitcherThread;
 };

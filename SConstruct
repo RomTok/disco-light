@@ -217,6 +217,7 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 		
 def printSummary():
 	print '\n********************* Summary *********************\n'
+	print 'Prefix:           : %s' % conf.env['prefix']
 	print 'Graphic backends  : %s' % conf.env['graphics']
 	print 'Database backends : %s\n' % ', '.join(conf.env['database'])
 	if(conf.env['mmscrypt']):
