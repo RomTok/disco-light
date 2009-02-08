@@ -82,13 +82,13 @@
 #define XPWRCTRL_CFIFOPDN			0x10
 
 
-#define mga_out8(mmioaddr, val, reg) *((unsigned char*)(((unsigned char *)mmioaddr) + reg)) = val;
+#define mga_out8(mmioaddr, val, reg) *((volatile unsigned char*)(((volatile unsigned char *)mmioaddr) + reg)) = val;
 
-#define mga_out32(mmioaddr, val, reg) *((unsigned int*)(((unsigned char *)mmioaddr) + reg)) = val;
+#define mga_out32(mmioaddr, val, reg) *((volatile unsigned int*)(((volatile unsigned char *)mmioaddr) + reg)) = val;
 
-#define mga_in8(mmioaddr, reg) *((unsigned char*)(((unsigned char*)mmioaddr)+reg))
+#define mga_in8(mmioaddr, reg) *((volatile unsigned char*)(((volatile unsigned char*)mmioaddr)+reg))
 
-#define mga_in32(mmioaddr, reg) *((unsigned int*)(((unsigned char*)mmioaddr)+reg))
+#define mga_in32(mmioaddr, reg) *((volatile unsigned int*)(((volatile unsigned char*)mmioaddr)+reg))
 
 #define mga_out_dac(mmioaddr, val, reg) \
 	mga_out8(mmioaddr, reg, DAC_INDEX); \
