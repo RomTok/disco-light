@@ -2653,7 +2653,7 @@ void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) 
 		string inputmode = "";
 		getInputModeEx(inputmode);
 		if (strToUpr(inputmode) == "CLICK")
-			selectItem(getSelectedItem(), set, refresh);
+			selectItem(getSelectedItem(), false, refresh);
     }
 }
 

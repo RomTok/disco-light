@@ -45,7 +45,12 @@ void MMSWidgetThread::threadMain() {
 		this->delay -= 50;
 	}
 
-	this->widget->setFocus(false);
+	bool b = false;
+	this->widget->getFocusable(b);
+	if (b)
+		this->widget->setFocus(false);
+	else
+		this->widget->setSelected(false);
 }
 
 void MMSWidgetThread::start(int delay) {

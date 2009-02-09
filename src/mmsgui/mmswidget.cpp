@@ -2361,10 +2361,13 @@ bool MMSWidget::getInputMode(string &inputmode) {
 }
 
 bool MMSWidget::getInputModeEx(string &inputmode) {
-	inputmode = "";
 	getInputMode(inputmode);
-	if (inputmode == "")
-		inputmode = MMSWidget_inputmode;
+	if (inputmode == "") {
+		if (this->parent)
+			return this->parent->getInputModeEx(inputmode);
+		else
+			inputmode = MMSWidget_inputmode;
+	}
 	return true;
 }
 
