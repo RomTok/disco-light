@@ -15,8 +15,7 @@
 #   . scons doc           build documentation for the project (Doxygen)
 #
 
-import os, sys
-
+import os, sys, string, re, SCons
 
 #######################################################################
 # Scons configuration                                                 #
@@ -48,25 +47,60 @@ Help("Type: 'scons [options]' to build disko.\n" +
      "The following options are available:\n")
 
 #######################################################################
+# Get SCons version (copied from internal scons function)             #
+#######################################################################
+def GetSconsVersion():
+	"""Split a version string into major, minor and (optionally)
+	   revision parts.   
+	   This is complicated by the fact that a version string can be
+	   something like 3.2b1."""
+	   
+	version = string.split(string.split(SCons.__version__, ' ')[0], '.')
+	v_major = int(version[0])
+	v_minor = int(re.match('\d+', version[1]).group())
+	if len(version) >= 3:
+		v_revision = int(re.match('\d+', version[2]).group())
+	else:
+		v_revision = 0
+		
+	return v_major, v_minor, v_revision
+
+#######################################################################
 # Command line options                                                #
 #######################################################################
-opts = Options('disko.conf')
-opts.AddOptions(
-    PathOption('prefix',       'Installation directory', '/usr', PathOption.PathIsDirCreate),
-    BoolOption('debug',        'Build with debug symbols and without optimize', False),
-    BoolOption('messages',     'Build with logfile support', False),
-    BoolOption('profile',      'Build with profiling support (includes debug option)', False),
-    BoolOption('use_sse',      'Use SSE optimization', False),
-    ListOption('graphics',     'Set graphics backend', 'none', ['dfb', 'x11']),
-    ListOption('database',     'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-    BoolOption('enable_media', 'Build with mmsmedia support', True),
-    BoolOption('enable_flash', 'Build with mmsflash support', False),
-    BoolOption('enable_sip',   'Build with mmssip support', False),
-    BoolOption('enable_mail',  'Build with email support', False),
-    BoolOption('enable_tools', 'Build disko tools', False))
+sconsVersion = GetSconsVersion()
+if sconsVersion < (0,98,1):
+	opts = Options('disko.conf')
+	opts.AddOptions(
+    	PathOption('prefix',       'Installation directory', '/usr', PathOption.PathIsDirCreate),
+    	BoolOption('debug',        'Build with debug symbols and without optimize', False),
+    	BoolOption('messages',     'Build with logfile support', False),
+    	BoolOption('profile',      'Build with profiling support (includes debug option)', False),
+    	BoolOption('use_sse',      'Use SSE optimization', False),
+    	ListOption('graphics',     'Set graphics backend', 'none', ['dfb', 'x11']),
+    	ListOption('database',     'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	BoolOption('enable_media', 'Build with mmsmedia support', True),
+    	BoolOption('enable_flash', 'Build with mmsflash support', False),
+    	BoolOption('enable_sip',   'Build with mmssip support', False),
+    	BoolOption('enable_mail',  'Build with email support', False),
+    	BoolOption('enable_tools', 'Build disko tools', False))
+else:
+	opts = Variables('disko.conf')
+	opts.AddVariables(
+    	PathVariable('prefix',       'Installation directory', '/usr', PathVariable.PathIsDirCreate),
+    	BoolVariable('debug',        'Build with debug symbols and without optimize', False),
+    	BoolVariable('messages',     'Build with logfile support', False),
+    	BoolVariable('profile',      'Build with profiling support (includes debug option)', False),
+    	BoolVariable('use_sse',      'Use SSE optimization', False),
+    	ListVariable('graphics',     'Set graphics backend', 'none', ['dfb', 'x11']),
+    	ListVariable('database',     'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	BoolVariable('enable_media', 'Build with mmsmedia support', True),
+    	BoolVariable('enable_flash', 'Build with mmsflash support', False),
+    	BoolVariable('enable_sip',   'Build with mmssip support', False),
+    	BoolVariable('enable_mail',  'Build with email support', False),
+    	BoolVariable('enable_tools', 'Build disko tools', False))
 
 env = Environment(ENV = os.environ, CPPPATH = '../../../inc') 
-
 env['LIBPATH'] = ''
 
 opts.Update(env)
