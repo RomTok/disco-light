@@ -2658,8 +2658,9 @@ void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) 
 }
 
 bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed) {
+	bool c = false;
 	if (changed)
-		*changed = false;
+		*changed = c;
 
     if (!getConfig())
         return false;
@@ -2678,57 +2679,67 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed) 
     unsigned int mx = item % cols;
     unsigned int my = item / cols;
 
-    /* scroll left-down */
+    // scroll left-down
     if (((int)mx < this->x)&&((int)my > this->y)) {
         if (scrollLeft(this->x - mx, false))
        		scrollDown(my - this->y, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll right-down */
+    // scroll right-down
     if (((int)mx > this->x)&&((int)my > this->y)) {
         if (scrollRight(mx - this->x, false))
       		scrollDown(my - this->y, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll left-up */
+    // scroll left-up
     if (((int)mx < this->x)&&((int)my < this->y)) {
         if (scrollUp(this->y - my, false))
        		scrollLeft(this->x - mx, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll right-up */
+    // scroll right-up
     if (((int)mx > this->x)&&((int)my < this->y)) {
         if (scrollUp(this->y - my, false))
        		scrollRight(mx - this->x, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll down */
+    // scroll down
     if ((int)my > this->y) {
    		scrollDown(my - this->y, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll up */
+    // scroll up
     if ((int)my < this->y) {
    		scrollUp(this->y - my, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll left */
+    // scroll left
     if ((int)mx < this->x) {
    		scrollLeft(this->x - mx, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
     else
-    /* scroll right */
+    // scroll right
     if ((int)mx > this->x) {
    		scrollRight(mx - this->x, refresh);
-    	if (changed) *changed = true;
+    	c = true;
     }
+
+    if (!c) {
+    	// preventive set selected true to reset it
+    	MMSWidget *item = getSelectedItem();
+    	if (item)
+    		item->setSelected(true);
+    }
+
+	if (changed)
+		*changed = c;
 
     return true;
 }
