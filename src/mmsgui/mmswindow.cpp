@@ -1600,7 +1600,6 @@ bool MMSWindow::raiseToTop() {
         		}
 
         		// change the focused child win pointer if window is shown
-      			/*
         		if (this->parent->childwins.at(i).window->shown) {
 					this->parent->focusedChildWin = i;
 
@@ -1608,7 +1607,7 @@ bool MMSWindow::raiseToTop() {
 					if (this->parent->shown)
 						this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
       			}
-*/
+
                 unlock();
         		return true;
         	}
@@ -2887,7 +2886,11 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
             	b = false;
 
             if (b) {
-                fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true, true, inputevent);
+        		string inputmode = "";
+        		fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->getInputModeEx(inputmode);
+        		if (strToUpr(inputmode) != "CLICK") {
+        			fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true, true, inputevent);
+        		}
             }
             else {
                 /* last focusable widget is not focusable anymore, search other widget to focus */
@@ -2895,7 +2898,12 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
                     if(fWin->children.at(i)->getFocusable(b))
                     	if (b) {
 		                    this->childwins.at(this->focusedChildWin).focusedWidget = i;
-		                    fWin->children.at(i)->setFocus(true, true, inputevent);
+
+		            		string inputmode = "";
+		            		fWin->children.at(i)->getInputModeEx(inputmode);
+		            		if (strToUpr(inputmode) != "CLICK") {
+		            			fWin->children.at(i)->setFocus(true, true, inputevent);
+		            		}
 
 		                    break;
 		                }
@@ -3448,54 +3456,80 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            }
 	            else
 	            if (this->childwins.size() > this->focusedChildWin) {
-	            	/* searching for the right childwin to get the focus */
-	            	int posx = inputeventset->at(i).posx;
-	            	int posy = inputeventset->at(i).posy;
-//	            	for (unsigned int j = 0; j < this->childwins.size(); j++) {
-					for (int j = (int)this->childwins.size()-1; j >= 0; j--) {
-	            		if (!this->childwins.at(j).window->isShown())
-	            			continue;
-/*	            		if (!this->childwins.at(j).window->getNumberOfFocusableWidgets())
-	            			continue;*/
-	            		MMSFBRectangle rect = this->childwins.at(j).window->getGeometry();
-	            		if ((posx >= rect.x)&&(posy >= rect.y)
-	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
-	            			/* this is the childwin under the pointer */
-	            			if (!this->childwins.at(j).window->getFocus()) {
-								bool modal = false;
-		        				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
-	            				if (modal)
-	            					// currently focused child window is marked as modal, so do not change the focus
-									continue;
+					bool modal = false;
+					if (this->childwins.at(this->focusedChildWin).window->isShown())
+						this->childwins.at(this->focusedChildWin).window->getModal(modal);
+       				if (!modal) {
+						/* searching for the right childwin to get the focus */
+						int posx = inputeventset->at(i).posx;
+						int posy = inputeventset->at(i).posy;
+	//	            	for (unsigned int j = 0; j < this->childwins.size(); j++) {
+						for (int j = (int)this->childwins.size()-1; j >= 0; j--) {
+							if (!this->childwins.at(j).window->isShown())
+								continue;
+	/*	            		if (!this->childwins.at(j).window->getNumberOfFocusableWidgets())
+								continue;*/
+							MMSFBRectangle rect = this->childwins.at(j).window->getGeometry();
+							if ((posx >= rect.x)&&(posy >= rect.y)
+							  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
+								/* this is the childwin under the pointer */
+								if (!this->childwins.at(j).window->getFocus()) {
+	//								bool modal = false;
+	//		        				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
+	//	            				if (modal)
+										// currently focused child window is marked as modal, so do not change the focus
+	//									continue;
 
-	            				if (this->childwins.at(j).window->getNumberOfFocusableWidgets(true)>0)
-	            				{
-									/* set focus to this childwin */
-									DEBUGMSG("MMSGUI", "try to change focus");
-									this->childwins.at(j).window->setFocus();
-	            				}
-	            			}
+									if (this->childwins.at(j).window->getNumberOfFocusableWidgets(true)>0)
+									{
+										/* set focus to this childwin */
+										DEBUGMSG("MMSGUI", "try to change focus");
+										this->childwins.at(j).window->setFocus();
+									}
+								}
 
-	            			/* normalize the pointer position */
-	            			for (unsigned int k = 0; k < inputeventset->size(); k++) {
-	            				inputeventset->at(k).posx-=rect.x;
-	            				inputeventset->at(k).posy-=rect.y;
-	            			}
+								/* normalize the pointer position */
+								for (unsigned int k = 0; k < inputeventset->size(); k++) {
+									inputeventset->at(k).posx-=rect.x;
+									inputeventset->at(k).posy-=rect.y;
+								}
 
-	            			DEBUGMSG("MMSGUI", "try to execute input on childwin");
-	            	        this->buttonpress_childwin = this->childwins.at(j).window;
-	            			this->childwins.at(j).window->handleInput(inputeventset);
+								DEBUGMSG("MMSGUI", "try to execute input on childwin");
+								this->buttonpress_childwin = this->childwins.at(j).window;
+								this->childwins.at(j).window->handleInput(inputeventset);
 
-	                        /* set the arrow widgets */
-	                        switchArrowWidgets();
+								/* set the arrow widgets */
+								switchArrowWidgets();
 
-	    	                return true;
-	            		}
-	            	}
+								return true;
+							}
+						}
 
-	            	/* no childwin found */
-        	        this->buttonpress_childwin = NULL;
-        	        throw new MMSWidgetError(1,"no focusable childwin found");
+						/* no childwin found */
+						this->buttonpress_childwin = NULL;
+						throw new MMSWidgetError(1,"no focusable childwin found");
+       				}
+       				else {
+       					// modal window is active
+						int posx = inputeventset->at(i).posx;
+						int posy = inputeventset->at(i).posy;
+						MMSFBRectangle rect = this->childwins.at(this->focusedChildWin).window->getGeometry();
+
+						// normalize the pointer position
+						for (unsigned int k = 0; k < inputeventset->size(); k++) {
+							inputeventset->at(k).posx-=rect.x;
+							inputeventset->at(k).posy-=rect.y;
+						}
+
+						DEBUGMSG("MMSGUI", "try to execute input on childwin");
+						this->buttonpress_childwin = this->childwins.at(this->focusedChildWin).window;
+						this->childwins.at(this->focusedChildWin).window->handleInput(inputeventset);
+
+						/* set the arrow widgets */
+						switchArrowWidgets();
+
+						return true;
+       				}
 	            }
 	            else {
 	                throw new MMSWidgetError(1,"navigate, buttonpress");

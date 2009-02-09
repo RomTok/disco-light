@@ -194,7 +194,7 @@ void MMSFBDevMatrox::buildCRTC2Regs() {
 }
 
 void MMSFBDevMatrox::setCRTC2Regs() {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 
 	mga_out32(mmio, this->crtc2_regs.c2ctrl,		C2CTRL);
 	mga_out32(mmio, this->crtc2_regs.c2datactrl,	C2DATACTRL);
@@ -242,7 +242,7 @@ void MMSFBDevMatrox::buildCRTC2Buffer() {
 
 
 void MMSFBDevMatrox::setCRTC2Buffer() {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 
 	mga_out32(mmio, this->crtc2_regs.c2_plane1_start0, C2PLANE1START0);
 	mga_out32(mmio, this->crtc2_regs.c2_plane1_start1, C2PLANE1START1);
@@ -254,7 +254,7 @@ void MMSFBDevMatrox::setCRTC2Buffer() {
 
 
 void MMSFBDevMatrox::switchCRTC2(bool on) {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 
 	if (on)
 		this->crtc2_regs.c2ctrl |= C2CTRL_C2EN;
@@ -276,7 +276,7 @@ void MMSFBDevMatrox::switchCRTC2(bool on) {
 
 
 bool MMSFBDevMatrox::enableCRTC2() {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 	unsigned char val;
 
 	val = mga_in_dac(mmio, XGENIOCTRL);
@@ -325,7 +325,7 @@ bool MMSFBDevMatrox::enableCRTC2() {
 }
 
 bool MMSFBDevMatrox::disableCRTC2() {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 	unsigned char val;
 
 	disableMaven();
@@ -352,7 +352,7 @@ bool MMSFBDevMatrox::disableCRTC2() {
 
 
 void MMSFBDevMatrox::setMavenRegs() {
- 	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 
  	if (this->tv_std_pal) {
  		// pal
@@ -490,7 +490,7 @@ void MMSFBDevMatrox::setMavenRegs() {
 
 
 void MMSFBDevMatrox::enableMaven() {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 
 	if (this->scart_rgb_cable) {
 		// SCART RGB
@@ -506,7 +506,7 @@ void MMSFBDevMatrox::enableMaven() {
 
 
 void MMSFBDevMatrox::disableMaven() {
-	unsigned char *mmio = this->mmio_base;
+	volatile unsigned char *mmio = this->mmio_base;
 
 	maven_out8(mmio, 0x01, 0x3e);
 	maven_out8(mmio, 0x00, 0x80);
