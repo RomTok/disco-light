@@ -49,7 +49,7 @@ void MMSWidgetThread::threadMain() {
 }
 
 void MMSWidgetThread::start(int delay) {
-	this->delay = delay * 1000;
+	this->delay = delay;
 	MMSThread::start();
 }
 

@@ -1776,7 +1776,7 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed) {
 		string inputmode = "";
 		getInputModeEx(inputmode);
 		if (strToUpr(inputmode) == "CLICK")
-			startWidgetThread(2);
+			startWidgetThread(500);
     }
 
     return true;
@@ -1961,7 +1961,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 /*						string inputmode = "";
 						getInputModeEx(inputmode);
 						if (strToUpr(inputmode) == "CLICK")
-							startWidgetThread(2);*/
+							startWidgetThread(500);*/
 
 						if (changed) {
 							// check if have to emit onReturn
