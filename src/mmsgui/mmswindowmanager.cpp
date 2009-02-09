@@ -154,9 +154,6 @@ void MMSWindowManager::removeWindowFromToplevel(MMSWindow *window) {
         }
         this->toplevel = NULL;
     }
-
-    if (!this->toplevel)
-    	showBackgroundWindow();
 }
 
 void MMSWindowManager::setBackgroundWindow(MMSWindow *window) {
