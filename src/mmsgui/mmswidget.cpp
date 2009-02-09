@@ -1771,7 +1771,7 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed) {
         if (set)
             this->onSelect->emit(this);
 
-    if (set) {
+    if ((set)&&(refresh)) {
 		// start thread which removes the focus after n seconds
 		string inputmode = "";
 		getInputModeEx(inputmode);
