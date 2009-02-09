@@ -2887,7 +2887,7 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
 
             if (b) {
         		string inputmode = "";
-//        		fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->getInputModeEx(inputmode);
+        		fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->getInputModeEx(inputmode);
         		if (strToUpr(inputmode) != "CLICK") {
         			fWin->children.at(this->childwins.at(this->focusedChildWin).focusedWidget)->setFocus(true, true, inputevent);
         		}
@@ -2900,7 +2900,7 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
 		                    this->childwins.at(this->focusedChildWin).focusedWidget = i;
 
 		            		string inputmode = "";
-//		            		fWin->children.at(i)->getInputModeEx(inputmode);
+		            		fWin->children.at(i)->getInputModeEx(inputmode);
 		            		if (strToUpr(inputmode) != "CLICK") {
 		            			fWin->children.at(i)->setFocus(true, true, inputevent);
 		            		}
