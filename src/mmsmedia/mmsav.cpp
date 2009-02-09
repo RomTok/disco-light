@@ -35,11 +35,6 @@
 
 MMS_CREATEERROR(MMSAVError);
 
-typedef struct {
-	xine_stream_t	*stream;
-	int				pos;
-} internalStreamData;
-
 #ifdef __HAVE_DIRECTFB__
 DFBResult dfbres;
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
@@ -355,12 +350,27 @@ static int dfb_frame_cb(void *cdata) {
 }
 #endif
 
+typedef struct {
+	xine_stream_t	*stream;
+	int				pos;
+	short			*status;
+	const char 		*mrl;
+	pthread_mutex_t	*lock;
+} internalStreamData;
+
 static void* playRoutine(void *data) {
+	if(!data) return NULL;
+
 	internalStreamData *streamData = (internalStreamData*)data;
 
-	if(!streamData) return NULL;
+	pthread_mutex_lock(streamData->lock);
+	if(*(streamData->status) == MMSAV::STATUS_PLAYING)
+	    xine_stop(streamData->stream);
 
-	if(!xine_play(streamData->stream, streamData->pos, 0)) {
+	if(*(streamData->status) > MMSAV::STATUS_NONE)
+	    xine_close(streamData->stream);
+
+    if(!xine_open(streamData->stream, streamData->mrl) || !xine_play(streamData->stream, streamData->pos, 0)) {
         switch(xine_get_error(streamData->stream)) {
             case XINE_ERROR_NO_INPUT_PLUGIN :
                 DEBUGMSG("MMSAV", "Error while trying to play stream: No input plugin");
@@ -383,6 +393,8 @@ static void* playRoutine(void *data) {
         }
     }
 
+    *(streamData->status) = MMSAV::STATUS_PLAYING;
+	pthread_mutex_unlock(streamData->lock);
 	delete streamData;
 
 	return NULL;
@@ -390,8 +402,14 @@ static void* playRoutine(void *data) {
 
 static void* stopRoutine(void *data) {
 	if(!data) return NULL;
-	xine_stream_t *stream= (xine_stream_t*)data;
-    xine_stop(stream);
+
+	internalStreamData *streamData = (internalStreamData*)data;
+	pthread_mutex_lock(streamData->lock);
+    xine_stop(streamData->stream);
+    xine_set_param(streamData->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
+    *(streamData->status) = MMSAV::STATUS_STOPPED;
+	pthread_mutex_unlock(streamData->lock);
+	delete streamData;
 
     return NULL;
 }
@@ -584,7 +602,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
  * Initializes private variables
  */
 MMSAV::MMSAV() : window(NULL),
-				 didXineOpen(false),
                  verbose(false),
                  status(STATUS_NONE),
                  pos(0),
@@ -593,6 +610,7 @@ MMSAV::MMSAV() : window(NULL),
                  ao(NULL),
                  stream(NULL),
                  queue(NULL) {
+	pthread_mutex_init(&this->lock, NULL);
     this->onError          = new sigc::signal<void, string>;
     this->onStatusChange   = new sigc::signal<void, const unsigned short, const unsigned short>;
 }
@@ -604,7 +622,9 @@ MMSAV::MMSAV() : window(NULL),
  * stuff.
  */
 MMSAV::~MMSAV() {
-    if(this->onError) {
+	pthread_mutex_destroy(&this->lock);
+
+	if(this->onError) {
         this->onError->clear();
         delete this->onError;
     }
@@ -953,42 +973,10 @@ bool MMSAV::isStopped() {
 void MMSAV::startPlaying(const string mrl, const bool cont) {
     static string currentMRL = "";
 
-    if(!this->stream)
-        this->open();
+    DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
+    if((currentMRL == mrl) && (this->status == this->STATUS_PLAYING)) return;
 
-    if(currentMRL != mrl) {
-    	if(this->didXineOpen) {
-    	    xine_close(this->stream);
-    	    this->didXineOpen = false;
-        }
-
-        if(!xine_open(this->stream, mrl.c_str())) {
-            string msg;
-            switch(xine_get_error(this->stream)) {
-                case XINE_ERROR_NO_INPUT_PLUGIN :
-                    msg = "No input plugin";
-                    break;
-                case XINE_ERROR_NO_DEMUX_PLUGIN :
-                    msg = "No demux plugin";
-                    break;
-                case XINE_ERROR_DEMUX_FAILED :
-                    msg = "Error in demux plugin";
-                    break;
-                case XINE_ERROR_INPUT_FAILED :
-                    msg = "Error in input plugin (" + mrl + ")";
-                    break;
-                default:
-                    msg = "Cannot play stream";
-                    break;
-            }
-            throw new MMSAVError(0, "Error in xine_open(): " + msg);
-        }
-
-        this->didXineOpen = true;
-        currentMRL = mrl;
-    }
-    else if(this->isPlaying())
-        return;
+    if(!this->stream) this->open();
 
     if(!cont) this->pos = 0;
 
@@ -997,13 +985,15 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
 	internalStreamData *streamData = new internalStreamData;
 	streamData->stream = this->stream;
 	streamData->pos    = this->pos;
-	if(pthread_create(&thread, NULL, playRoutine, streamData) == 0) {
+	streamData->status = &(this->status);
+	streamData->mrl    = mrl.c_str();
+	streamData->lock   = &(this->lock);
+	if(pthread_create(&thread, NULL, playRoutine, streamData) == 0)
 		pthread_detach(thread);
-	}
 	else
 		playRoutine(streamData);
 
-    this->setStatus(this->STATUS_PLAYING);
+    currentMRL = mrl;
 }
 
 /**
@@ -1013,7 +1003,9 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
  * changed to other than normal.
  */
 void MMSAV::play() {
-    if(this->status == this->STATUS_PAUSED  ||
+	if(!this->stream) return;
+
+	if(this->status == this->STATUS_PAUSED  ||
        this->status == this->STATUS_SLOW    ||
        this->status == this->STATUS_SLOW2   ||
        this->status == this->STATUS_FFWD    ||
@@ -1033,19 +1025,22 @@ void MMSAV::play() {
  * at this position.
  */
 void MMSAV::stop(const bool savePosition) {
+	if(!this->stream) return;
+
     /* save position */
 	if(savePosition)
 		xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
 
-    this->setStatus(this->STATUS_STOPPED);
-
     /* stop xine in extra thread to avoid blocking the application */
     pthread_t thread;
-    if(pthread_create(&thread, NULL, stopRoutine, this->stream) == 0) {
+	internalStreamData *streamData = new internalStreamData;
+	streamData->stream = this->stream;
+	streamData->status = &(this->status);
+	streamData->lock   = &(this->lock);
+    if(pthread_create(&thread, NULL, stopRoutine, streamData) == 0)
     	pthread_detach(thread);
-    }
     else
-    	xine_stop(this->stream);
+    	stopRoutine(streamData);
 }
 
 /**

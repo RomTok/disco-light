@@ -67,6 +67,7 @@ static void queue_cb(void *userData, const xine_event_t *event) {
         	}
         	break;
         default:
+    		DEBUGMSG("MMSVideo", "Unhandled event: %d", event->type);
             break;
     }
 }

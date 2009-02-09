@@ -108,9 +108,11 @@ class MMSAV
 #ifdef __HAVE_DIRECTFB__
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
 #endif
-        bool							didXineOpen;							/**< true if xine_open() was called		*/
         raw_visual_t					rawvisual;
         MMSRAW_USERDATA					userd;
+
+        pthread_mutex_t					lock;
+
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
 
     protected:
