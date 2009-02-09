@@ -66,6 +66,8 @@ class MMSFB {
         string 			outputtype;
         int				w;
         int				h;
+        int				x;
+        int				y;
         MMSFB_BACKEND	backend;
 
 #ifdef __HAVE_XLIB__
@@ -91,7 +93,7 @@ class MMSFB {
         virtual ~MMSFB();
 
         bool init(int argc, char **argv, string backend, string outputtype, int w, int h, bool extendedaccel, bool fullscreen, string pointer,
-				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application");
+				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application",int x=50, int y=50);
         bool release();
         bool isInitialized();
 

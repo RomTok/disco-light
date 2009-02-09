@@ -44,6 +44,8 @@ MMSRcParser::MMSRcParser() {
 
     this->graphics.xres                       = 800;
     this->graphics.yres                       = 600;
+    this->graphics.xpos                       = 50;
+    this->graphics.ypos                       = 50;
     this->graphics.backend                    = "";
     this->graphics.outputtype                 = "VESAFB";
     this->graphics.videolayerid               = 0;
@@ -304,6 +306,10 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 			this->graphics.xres = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres"))
 	        this->graphics.yres = strToInt(string((const char *)parvalue));
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "xpos"))
+	        this->graphics.xpos = strToInt(string((const char *)parvalue));
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "ypos"))
+	        this->graphics.ypos = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "backend"))
 	        this->graphics.backend = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype"))
