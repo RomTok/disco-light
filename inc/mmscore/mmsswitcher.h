@@ -43,7 +43,7 @@ typedef struct {
 
 
 class MMSSwitcher : public IMMSSwitcher {
-	private:
+	protected:
         MMSConfigData                        config;
 
         static IMMSWindowManager             *windowmanager;
