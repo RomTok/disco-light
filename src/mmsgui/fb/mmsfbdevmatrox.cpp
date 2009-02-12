@@ -40,6 +40,7 @@ MMSFBDevMatrox::MMSFBDevMatrox() {
 }
 
 MMSFBDevMatrox::~MMSFBDevMatrox() {
+	closeDevice();
 }
 
 bool MMSFBDevMatrox::openDevice(char *device_file, int console) {
@@ -76,28 +77,31 @@ void MMSFBDevMatrox::closeDevice() {
 	MMSFBDev::closeDevice();
 }
 
-bool MMSFBDevMatrox::waitForVSync(int layer_id) {
-	switch (layer_id) {
+bool MMSFBDevMatrox::waitForVSync() {
+	// is initialized?
+	INITCHECK;
+
+	switch (this->active_screen) {
 	case 0:
-	case 1:
-		// default fbdev primary layer 0 on primary screen 0
-	    return MMSFBDev::waitForVSync(0);
-	case 2: {
-		// TVOut layer
+		// default fbdev primary screen 0
+	    return MMSFBDev::waitForVSync();
+	case 1: {
+		// TVOut screen
 		volatile unsigned char *mmio = this->mmio_base;
 		int vdisplay = ((!this->tv_std_pal) ? 480/2 : 576/2) + 1;
 
 #ifdef FBIO_WAITFORVSYNC
-		static const int o = 1;
-		if (ioctl(this->fd, FBIO_WAITFORVSYNC, &o))
+		static const int s = 1;
+		if (ioctl(this->fd, FBIO_WAITFORVSYNC, &s)) {
 			while ((int)(mga_in32(mmio, C2VCOUNT) & 0x00000fff) != vdisplay);
+		}
 #else
 		while ((int)(mga_in32(mmio, C2VCOUNT) & 0x00000fff) != vdisplay);
 #endif
 		}
 		return true;
 	default:
-    	printf("MMSFBDevMatrox: layer %d is not supported\n", layer_id);
+    	printf("MMSFBDevMatrox: screen %d is not supported\n", this->active_screen);
     	break;
 	}
 
@@ -167,6 +171,9 @@ bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurface
 
 		// layer is initialized
 		this->layers[layer_id].isinitialized = true;
+
+		// this layer is on screen 1
+		this->active_screen = 1;
 
 		printf("MMSFBDevMatrox: TVOut layer %d initialized with %dx%d (%s), pixelformat %s\n",
 				layer_id, width, height, (this->tv_std_pal)?"PAL":"NTSC", getMMSFBPixelFormatString(pixelformat).c_str());
