@@ -149,6 +149,8 @@ class MMSFBDevMatrox : public MMSFBDev {
         bool openDevice(char *device_file = NULL, int console = -1);
         void closeDevice();
 
+        bool waitForVSync(int layer_id);
+
         bool testLayer(int layer_id);
         bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
 

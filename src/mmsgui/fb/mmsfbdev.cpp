@@ -358,14 +358,80 @@ bool MMSFBDev::isInitialized() {
 	return this->isinitialized;
 }
 
-void MMSFBDev::waitForVSync() {
-	if (this->fd != -1) {
-		static const int z = 0;
-		if (ioctl(this->fd, FBIO_WAITFORVSYNC, &z)) {
-			// failed, ...
-		}
+bool MMSFBDev::waitForVSync(int layer_id) {
+	// is initialized?
+	INITCHECK;
+
+	// default fbdev does support only primary layer 0 on primary screen 0
+	if (layer_id != 0) {
+    	printf("MMSFBDev: layer %d is not supported\n", layer_id);
+		return false;
 	}
+
+	static const int z = 0;
+	if (ioctl(this->fd, FBIO_WAITFORVSYNC, &z)) {
+		// failed, ...
+	}
+
+	return true;
 }
+
+/*
+static inline
+void waitretrace (void)
+{
+#if defined(HAVE_INB_OUTB_IOPL)
+     if (iopl(3))
+          return;
+
+     if (!(inb (0x3cc) & 1)) {
+          while ((inb (0x3ba) & 0x8))
+               ;
+
+          while (!(inb (0x3ba) & 0x8))
+               ;
+     }
+     else {
+          while ((inb (0x3da) & 0x8))
+               ;
+
+          while (!(inb (0x3da) & 0x8))
+               ;
+     }
+#endif
+}
+
+static DFBResult
+primaryWaitVSync( CoreScreen *screen,
+                  void       *driver_data,
+                  void       *screen_data )
+{
+     static const int zero = 0;
+
+     if (dfb_config->pollvsync_none)
+          return DFB_OK;
+
+     if (ioctl( dfb_fbdev->fd, FBIO_WAITFORVSYNC, &zero ))
+          waitretrace();
+
+     return DFB_OK;
+}
+*/
+
+/*
+static void crtc2_wait_vsync( MatroxDriverData *mdrv )
+{
+     int vdisplay = ((dfb_config->matrox_tv_std != DSETV_PAL) ? 480/2 : 576/2) + 1;
+
+#ifdef FBIO_WAITFORVSYNC
+     static const int one = 1;
+     FBDev *dfb_fbdev = dfb_system_data();
+     if (ioctl( dfb_fbdev->fd, FBIO_WAITFORVSYNC, &one ))
+#endif
+          while ((int)(mga_in32( mdrv->mmio_base, C2VCOUNT ) & 0x00000FFF) != vdisplay)
+               ;
+}
+*/
 
 bool MMSFBDev::testLayer(int layer_id) {
 	// is initialized?

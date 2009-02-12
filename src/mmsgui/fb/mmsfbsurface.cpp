@@ -3927,6 +3927,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #ifdef __HAVE_FBDEV__
 		if (sb->mmsfbdev_surface) {
 			// put the image to the framebuffer
+			mmsfb->mmsfbdev->waitForVSync(2);
 			sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
 		}
 		else {

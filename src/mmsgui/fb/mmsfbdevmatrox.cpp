@@ -29,6 +29,7 @@
 #ifdef __HAVE_FBDEV__
 
 #include "mmsgui/fb/mmsfbdevmatrox.h"
+#include <sys/ioctl.h>
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevMatrox is not initialized");return false;}
 
@@ -75,6 +76,33 @@ void MMSFBDevMatrox::closeDevice() {
 	MMSFBDev::closeDevice();
 }
 
+bool MMSFBDevMatrox::waitForVSync(int layer_id) {
+	switch (layer_id) {
+	case 0:
+	case 1:
+		// default fbdev primary layer 0 on primary screen 0
+	    return MMSFBDev::waitForVSync(0);
+	case 2: {
+		// TVOut layer
+		volatile unsigned char *mmio = this->mmio_base;
+		int vdisplay = ((!this->tv_std_pal) ? 480/2 : 576/2) + 1;
+
+#ifdef FBIO_WAITFORVSYNC
+		static const int o = 1;
+		if (ioctl(this->fd, FBIO_WAITFORVSYNC, &o))
+			while ((int)(mga_in32(mmio, C2VCOUNT) & 0x00000fff) != vdisplay);
+#else
+		while ((int)(mga_in32(mmio, C2VCOUNT) & 0x00000fff) != vdisplay);
+#endif
+		}
+		return true;
+	default:
+    	printf("MMSFBDevMatrox: layer %d is not supported\n", layer_id);
+    	break;
+	}
+
+	return false;
+}
 
 bool MMSFBDevMatrox::testLayer(int layer_id) {
 	// is initialized?

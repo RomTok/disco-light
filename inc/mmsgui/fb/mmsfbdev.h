@@ -115,7 +115,8 @@ class MMSFBDev {
         virtual bool openDevice(char *device_file = NULL, int console = -1);
         virtual void closeDevice();
         bool isInitialized();
-        void waitForVSync();
+
+        virtual bool waitForVSync(int layer_id);
 
         virtual bool testLayer(int layer_id);
         virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
