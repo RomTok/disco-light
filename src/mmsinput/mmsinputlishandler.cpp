@@ -36,7 +36,7 @@
 #include <linux/vt.h>
 
 MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
 	// init event buffer
 	this->ie_read_pos = 0;
 	this->ie_write_pos = 0;
@@ -49,7 +49,7 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
 	if (mmsfb->mmsfbdev)
 		mmsfb->mmsfbdev->vtGetFd(&this->kb_fd);
 #else
-	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile MMSFBDEV support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
 #endif
 }
 
@@ -312,7 +312,7 @@ void MMSInputLISHandler::updateLED() {
 }
 
 void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
-#ifdef __HAVE_MMSFBDEV__
+#ifdef __HAVE_FBDEV__
 	while (1) {
 		// read new events from keyboard to buffer
 		readKeyboardEvents();
@@ -331,7 +331,7 @@ void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
 		return;
 	}
 #else
-	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile MMSFBDEV support!");
+	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
 #endif
 }
 

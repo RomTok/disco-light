@@ -40,6 +40,7 @@ MMSFBDevMatrox::MMSFBDevMatrox() {
 }
 
 MMSFBDevMatrox::~MMSFBDevMatrox() {
+	closeDevice();
 }
 
 bool MMSFBDevMatrox::openDevice(char *device_file, int console) {
