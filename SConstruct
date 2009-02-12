@@ -73,6 +73,7 @@ if sconsVersion < (0,98,1):
 	opts = Options('disko.conf')
 	opts.AddOptions(
     	PathOption('prefix',       'Installation directory', '/usr', PathOption.PathIsDirCreate),
+    	PathOption('destdir',      'Installation directory for cross-compile', 'none', PathOption.PathIsDirCreate),
     	BoolOption('debug',        'Build with debug symbols and without optimize', False),
     	BoolOption('messages',     'Build with logfile support', False),
     	BoolOption('profile',      'Build with profiling support (includes debug option)', False),
@@ -88,6 +89,7 @@ else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
     	PathVariable('prefix',       'Installation directory', '/usr', PathVariable.PathIsDirCreate),
+    	PathVariable('destdir',      'Installation directory for cross-compile', 'none', PathVariable.PathIsDirCreate),
     	BoolVariable('debug',        'Build with debug symbols and without optimize', False),
     	BoolVariable('messages',     'Build with logfile support', False),
     	BoolVariable('profile',      'Build with profiling support (includes debug option)', False),
@@ -108,11 +110,15 @@ opts.Save('disko.conf', env)
 Help(opts.GenerateHelpText(env))
 
 # Here are our installation paths:
-idir_prefix = env['prefix']
-idir_lib    = env['prefix'] + '/lib/disko'
-idir_bin    = env['prefix'] + '/bin'
-idir_inc    = env['prefix'] + '/include/disko'
-idir_data   = env['prefix'] + '/share/disko'
+if env['destdir'] != 'none':
+	idir_prefix = env['destdir']
+else:
+	idir_prefix = env['prefix']
+
+idir_lib    = idir_prefix + '/lib/disko'
+idir_bin    = idir_prefix + '/bin'
+idir_inc    = idir_prefix + '/include/disko'
+idir_data   = idir_prefix + '/share/disko'
 
 # link with -rpath
 env.Append(LDFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
@@ -332,6 +338,7 @@ if('x11' in env['graphics']):
 	
 # checks required if building mmsmedia
 if(env['enable_media']):
+	conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES'])
 	if('x11' in env['graphics']):
 		conf.checkSimpleLib(['libxine >= 1.1.15'],    'xine.h')
 	else:
@@ -487,7 +494,7 @@ env.Alias('doc', doxygenDocPath)
 #######################################################################
 # Building disko                                                      #
 #######################################################################
-Export('env idir_prefix idir_lib idir_bin idir_inc idir_data')
+Export('env idir_lib idir_bin idir_inc idir_data')
 
 libList = ""
 for libDir in diskoLibs:

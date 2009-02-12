@@ -194,6 +194,15 @@ const int MMSConfigData::getYres() {
     return this->graphics.yres;
 }
 
+/* graphics section getters */
+const int MMSConfigData::getXpos() {
+    return this->graphics.xpos;
+}
+
+const int MMSConfigData::getYpos() {
+    return this->graphics.ypos;
+}
+
 const string MMSConfigData::getBackend() {
     return this->graphics.backend;
 }

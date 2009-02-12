@@ -65,7 +65,7 @@ MMSFB::~MMSFB() {
 }
 
 bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w, int h,
-				 bool extendedaccel, bool fullscreen, string pointer, string appl_name, string appl_icon_name) {
+				 bool extendedaccel, bool fullscreen, string pointer, string appl_name, string appl_icon_name,int x, int y) {
 
     // check if already initialized
     if (this->initialized) {
@@ -84,6 +84,8 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
     this->outputtype = outputtype;
     this->w = w;
     this->h = h;
+    this->x = x;
+    this->y = y;
 
     // which backend should i use?
 	if (backend == MMS_BE_DFB) {
@@ -217,7 +219,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
 			x_window_attr.override_redirect = 0;
 			int x_depth = DefaultDepth(this->x_display, this->x_screen);
-			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->w, this->h, 0, x_depth,
+			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), x, y, this->w, this->h, 0, x_depth,
 										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
 		}
 
