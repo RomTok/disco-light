@@ -101,6 +101,8 @@ class MMSFBDev {
         //! number of layers
         int layers_cnt;
 
+        //! id of the active screen (this is for fbs != vesa)
+        int active_screen;
 
         void printFixScreenInfo();
         void printVarScreenInfo();
@@ -116,7 +118,7 @@ class MMSFBDev {
         virtual void closeDevice();
         bool isInitialized();
 
-        virtual bool waitForVSync(int layer_id);
+        virtual bool waitForVSync();
 
         virtual bool testLayer(int layer_id);
         virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);

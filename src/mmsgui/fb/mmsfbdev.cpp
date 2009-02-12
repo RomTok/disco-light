@@ -54,6 +54,7 @@ MMSFBDev::MMSFBDev() {
 	this->modes_cnt = 0;
 	memset(this->layers, 0, sizeof(this->layers));
 	this->layers_cnt = 0;
+	this->active_screen = 0;
 
 	// init terminal vals
 	this->vt.fd0 = -1;
@@ -352,86 +353,30 @@ void MMSFBDev::closeDevice() {
 	this->modes_cnt = 0;
 	memset(this->layers, 0, sizeof(this->layers));
 	this->layers_cnt = 0;
+	this->active_screen = 0;
 }
 
 bool MMSFBDev::isInitialized() {
 	return this->isinitialized;
 }
 
-bool MMSFBDev::waitForVSync(int layer_id) {
+bool MMSFBDev::waitForVSync() {
 	// is initialized?
 	INITCHECK;
 
-	// default fbdev does support only primary layer 0 on primary screen 0
-	if (layer_id != 0) {
-    	printf("MMSFBDev: layer %d is not supported\n", layer_id);
+	// default fbdev does support only primary screen 0
+	if (this->active_screen != 0) {
+    	printf("MMSFBDev: screen %d is not supported\n", this->active_screen);
 		return false;
 	}
 
-	static const int z = 0;
-	if (ioctl(this->fd, FBIO_WAITFORVSYNC, &z)) {
-		// failed, ...
+	static const int s = 0;
+	if (ioctl(this->fd, FBIO_WAITFORVSYNC, &s)) {
+		// failed, well then???
 	}
 
 	return true;
 }
-
-/*
-static inline
-void waitretrace (void)
-{
-#if defined(HAVE_INB_OUTB_IOPL)
-     if (iopl(3))
-          return;
-
-     if (!(inb (0x3cc) & 1)) {
-          while ((inb (0x3ba) & 0x8))
-               ;
-
-          while (!(inb (0x3ba) & 0x8))
-               ;
-     }
-     else {
-          while ((inb (0x3da) & 0x8))
-               ;
-
-          while (!(inb (0x3da) & 0x8))
-               ;
-     }
-#endif
-}
-
-static DFBResult
-primaryWaitVSync( CoreScreen *screen,
-                  void       *driver_data,
-                  void       *screen_data )
-{
-     static const int zero = 0;
-
-     if (dfb_config->pollvsync_none)
-          return DFB_OK;
-
-     if (ioctl( dfb_fbdev->fd, FBIO_WAITFORVSYNC, &zero ))
-          waitretrace();
-
-     return DFB_OK;
-}
-*/
-
-/*
-static void crtc2_wait_vsync( MatroxDriverData *mdrv )
-{
-     int vdisplay = ((dfb_config->matrox_tv_std != DSETV_PAL) ? 480/2 : 576/2) + 1;
-
-#ifdef FBIO_WAITFORVSYNC
-     static const int one = 1;
-     FBDev *dfb_fbdev = dfb_system_data();
-     if (ioctl( dfb_fbdev->fd, FBIO_WAITFORVSYNC, &one ))
-#endif
-          while ((int)(mga_in32( mdrv->mmio_base, C2VCOUNT ) & 0x00000FFF) != vdisplay)
-               ;
-}
-*/
 
 bool MMSFBDev::testLayer(int layer_id) {
 	// is initialized?
@@ -467,6 +412,9 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 
 	// layer is initialized
 	this->layers[layer_id].isinitialized = true;
+
+	// this layer is on screen 0 (default)
+	this->active_screen = 0;
 
 	return true;
 }
