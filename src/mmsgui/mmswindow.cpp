@@ -534,7 +534,7 @@ bool MMSWindow::resize(bool refresh) {
 	                                                                  + " (use alpha)");
 
 	            this->layer->createSurface(&(this->surface),
-	                                      wdesc_width, wdesc_height, MMSFB_PF_NONE, 1);
+	                                      wdesc_width, wdesc_height, MMSFB_PF_NONE, 0);
 	        }
 	        else {
 	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc_posx) + ","
