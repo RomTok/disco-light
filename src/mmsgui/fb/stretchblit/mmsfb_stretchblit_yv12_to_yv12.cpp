@@ -83,7 +83,8 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	bool h_antialiasing = false;
 	bool v_antialiasing = false;
 	if (antialiasing) {
-		h_antialiasing = true;
+		if (sw != dw)
+			h_antialiasing = true;
 		if (sh != dh)
 			v_antialiasing = true;
 	}
@@ -147,15 +148,21 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
 
+//printf("sw=%d,dw=%d,sh=%d,dh=%d\n", sw,dw, sh,dh);
+
 	// calc U plane (use Y plane as temp buffer)
-	stretch_byte_buffer(h_antialiasing, v_antialiasing,
+	// note: concerning performance we use vertical antialiasing only in combination with horizontal antialiasing
+	// note: the stretch and the subsequent 2x2 matrix conversion is needed to calculate the correct arithmetic mean
+	stretch_byte_buffer(h_antialiasing, h_antialiasing,
 						src_u, src_pitch >> 1, src_pitch_pix >> 1, src_height >> 1, sw >> 1, sh >> 1,
 						dst_y, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
 	compress_2x2_matrix(dst_y, dst_pitch, dst_pitch_pix, dst_height, dw, dh,
 						dst_u, dst_pitch >> 1, dst_pitch_pix >> 1, dst_height >> 1, dw >> 1, dh >> 1);
 
 	// calc V plane (use Y plane as temp buffer)
-	stretch_byte_buffer(h_antialiasing, v_antialiasing,
+	// note: concerning performance we use vertical antialiasing only in combination with horizontal antialiasing
+	// note: the stretch and the subsequent 2x2 matrix conversion is needed to calculate the correct arithmetic mean
+	stretch_byte_buffer(h_antialiasing, h_antialiasing,
 						src_v, src_pitch >> 1, src_pitch_pix >> 1, src_height >> 1, sw >> 1, sh >> 1,
 						dst_y, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
 	compress_2x2_matrix(dst_y, dst_pitch, dst_pitch_pix, dst_height, dw, dh,

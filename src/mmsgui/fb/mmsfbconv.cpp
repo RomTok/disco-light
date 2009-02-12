@@ -27,10 +27,10 @@
  ***************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+#include <string.h>
 
-void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
-						 unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
-					     unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
+void stretch_byte_buffer_no_antialiasing(unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+										 unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
 	// please note that the src and dst have to point to the first pixel which is to process
 	int horifact = (dw<<16)/sw;
 	int vertfact = (dh<<16)/sh;
@@ -40,9 +40,55 @@ void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
 		src_end = src + src_pitch_pix * src_height;
 	unsigned char *dst_end = dst + dst_pitch_pix * dst_height;
 
-	if (!h_antialiasing) {
-		// no antialiasing
-		// for all lines
+	// no antialiasing
+	if (horifact == 0x10000) {
+		// no horizontal stretch needed, so use optimized loop
+		vertcnt = 0x8000;
+		while ((src < src_end)&&(dst < dst_end)) {
+			// for all pixels in the line
+			vertcnt+=vertfact;
+			if (vertcnt & 0xffff0000) {
+				do {
+					memcpy(dst, src, sw);
+					vertcnt-=0x10000;
+					dst = dst + dst_pitch;
+				} while (vertcnt & 0xffff0000);
+			}
+			// next line
+			src+=src_pitch;
+		}
+	}
+	if (horifact == 0x20000) {
+		// duplicate each horizontal pixel
+		vertcnt = 0x8000;
+		while ((src < src_end)&&(dst < dst_end)) {
+			// for all pixels in the line
+			vertcnt+=vertfact;
+			if (vertcnt & 0xffff0000) {
+				unsigned char *line_end = src + sw;
+				unsigned char *old_dst = dst;
+
+				do {
+					int horicnt = 0x8000;
+					while (src < line_end) {
+						register unsigned short int SRC  = *src;
+						*((unsigned short int *)dst) = SRC | (SRC << 8);
+						dst+=2;
+						src++;
+					}
+					src-=sw;
+					vertcnt-=0x10000;
+					dst = old_dst +  dst_pitch;
+					old_dst = dst;
+				} while (vertcnt & 0xffff0000);
+			}
+
+			// next line
+			src+=src_pitch;
+		}
+	}
+	else {
+		// normal stretch in both directions
 		vertcnt = 0x8000;
 		while ((src < src_end)&&(dst < dst_end)) {
 			// for all pixels in the line
@@ -78,11 +124,83 @@ void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
 			src+=src_pitch;
 		}
 	}
-	else {
-		if (!v_antialiasing) {
-			// horizontal antialiasing
-			// for all lines
+}
+
+void stretch_byte_buffer_v_antialiasing(unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+									    unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
+	// please note that the src and dst have to point to the first pixel which is to process
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+	int vertcnt;
+	unsigned char *src_end = src + src_pitch_pix * sh;
+	if (src_end > src + src_pitch_pix * src_height)
+		src_end = src + src_pitch_pix * src_height;
+	unsigned char *dst_end = dst + dst_pitch_pix * dst_height;
+
+	// vertical antialiasing
+	if (vertfact >= 0x10000) {
+		// positive vertical stretch (scale up)
+		if (horifact == 0x10000) {
+			// no horizontal stretch needed, so use optimized loop
 			vertcnt = 0x8000;
+			register unsigned char vcnt = 0;
+			while ((src < src_end)&&(dst < dst_end)) {
+				// for all pixels in the line
+				vertcnt+=vertfact;
+				if (vertcnt & 0xffff0000) {
+					unsigned char *line_end = src + sw;
+
+					bool vaa = (vcnt > 1);
+					vcnt = 0;
+					if (!vaa) {
+						// line without vertical antialiasing
+						do {
+							memcpy(dst, src, sw);
+							vertcnt-=0x10000;
+							dst = dst + dst_pitch;
+							vcnt++;
+						} while (vertcnt & 0xffff0000);
+					}
+					else {
+						unsigned char *old_dst = dst;
+						do {
+							if (vaa) {
+								// first line with vertical antialiasing
+								register unsigned int SRC;
+								while (src < line_end) {
+									// load pixel
+									SRC = *src;
+
+									// put first pixel
+									*dst = SRC;
+									*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
+									dst++;
+
+									src++;
+								}
+								src-=sw;
+							}
+							else {
+								// next line without vertical antialiasing
+								memcpy(dst, src, sw);
+							}
+							vertcnt-=0x10000;
+							dst = old_dst + dst_pitch;
+							old_dst = dst;
+							vcnt++;
+							vaa = false;
+						} while (vertcnt & 0xffff0000);
+					}
+				}
+
+				// next line
+				src+=src_pitch;
+			}
+		}
+		else {
+			// normal stretch in both directions
+			vertcnt = 0x8000;
+			register unsigned char vcnt = 0;
 			while ((src < src_end)&&(dst < dst_end)) {
 				// for all pixels in the line
 				vertcnt+=vertfact;
@@ -90,9 +208,416 @@ void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
 					unsigned char *line_end = src + sw;
 					unsigned char *old_dst = dst;
 
-					do {
+					bool vaa = (vcnt > 1);
+					vcnt = 0;
+					if (!vaa) {
+						do {
+							int horicnt = 0x8000;
+							register unsigned int SRC;
+							while (src < line_end) {
+								horicnt+=horifact;
+								if (horicnt & 0xffff0000) {
+									// load pixel
+									SRC = *src;
+
+									// put first pixel
+									*dst = SRC;
+									dst++;
+									horicnt-=0x10000;
+
+									// have to put further?
+									if (horicnt & 0xffff0000) {
+										do {
+											*dst = SRC;
+											dst++;
+											horicnt-=0x10000;
+										} while (horicnt & 0xffff0000);
+									}
+								}
+
+								src++;
+							}
+							src-=sw;
+							vertcnt-=0x10000;
+							dst = old_dst + dst_pitch;
+							old_dst = dst;
+							vcnt++;
+						} while (vertcnt & 0xffff0000);
+					}
+					else {
+						do {
+							int horicnt = 0x8000;
+							register unsigned int SRC;
+							if (vaa) {
+								// first line with vertical antialiasing
+								while (src < line_end) {
+									horicnt+=horifact;
+									if (horicnt & 0xffff0000) {
+										// load pixel
+										SRC = *src;
+
+										// put first pixel
+										*dst = SRC;
+										*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
+										dst++;
+										horicnt-=0x10000;
+
+										// have to put further?
+										if (horicnt & 0xffff0000) {
+											do {
+												*dst = SRC;
+												*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
+												dst++;
+												horicnt-=0x10000;
+											} while (horicnt & 0xffff0000);
+										}
+									}
+
+									src++;
+								}
+							}
+							else {
+								// next line without vertical antialiasing
+								while (src < line_end) {
+									horicnt+=horifact;
+									if (horicnt & 0xffff0000) {
+										// load pixel
+										SRC = *src;
+
+										// put first pixel
+										*dst = SRC;
+										dst++;
+										horicnt-=0x10000;
+
+										// have to put further?
+										if (horicnt & 0xffff0000) {
+											do {
+												*dst = SRC;
+												dst++;
+												horicnt-=0x10000;
+											} while (horicnt & 0xffff0000);
+										}
+									}
+
+									src++;
+								}
+							}
+							src-=sw;
+							vertcnt-=0x10000;
+							dst = old_dst + dst_pitch;
+							old_dst = dst;
+							vcnt++;
+							vaa = false;
+						} while (vertcnt & 0xffff0000);
+					}
+				}
+
+				// next line
+				src+=src_pitch;
+			}
+		}
+	}
+	else {
+		// negative vertical stretch (scale down)
+		if (horifact == 0x10000) {
+			// no horizontal stretch needed, so use optimized loop
+			vertcnt = 0x8000;
+			bool vaa = false;
+			while ((src < src_end)&&(dst < dst_end)) {
+				// for all pixels in the line
+				vertcnt+=vertfact;
+				if (vertcnt & 0xffff0000) {
+					unsigned char *line_end = src + sw;
+
+					if (!vaa) {
+						// line without vertical antialiasing
+						memcpy(dst, src, sw);
+						vertcnt-=0x10000;
+						dst = dst + dst_pitch;
+					}
+					else {
+						// line with vertical antialiasing
+						unsigned char *old_dst = dst;
+						while (src < line_end) {
+							// put pixel with arithmetic mean
+							*dst = (*(src-src_pitch) + *src) >> 1;
+							dst++;
+							src++;
+						}
+						src-=sw;
+						vertcnt-=0x10000;
+						dst = old_dst + dst_pitch;
+						vaa = false;
+					}
+				}
+				else
+					vaa = true;
+
+				// next line
+				src+=src_pitch;
+			}
+		}
+		else {
+			// normal stretch in both directions
+			vertcnt = 0x8000;
+			bool vaa = false;
+			while ((src < src_end)&&(dst < dst_end)) {
+				// for all pixels in the line
+				vertcnt+=vertfact;
+				if (vertcnt & 0xffff0000) {
+					unsigned char *line_end = src + sw;
+					unsigned char *old_dst = dst;
+
+					if (!vaa) {
+						// line without vertical antialiasing
 						int horicnt = 0x8000;
 						register unsigned int SRC;
+						while (src < line_end) {
+							horicnt+=horifact;
+							if (horicnt & 0xffff0000) {
+								// load pixel
+								SRC = *src;
+
+								// put first pixel
+								*dst = SRC;
+								dst++;
+								horicnt-=0x10000;
+
+								// have to put further?
+								if (horicnt & 0xffff0000) {
+									do {
+										*dst = SRC;
+										dst++;
+										horicnt-=0x10000;
+									} while (horicnt & 0xffff0000);
+								}
+							}
+
+							src++;
+						}
+						src-=sw;
+						vertcnt-=0x10000;
+						dst = old_dst + dst_pitch;
+						old_dst = dst;
+					}
+					else {
+						// line with vertical antialiasing
+						int horicnt = 0x8000;
+						register unsigned int SRC;
+						while (src < line_end) {
+							horicnt+=horifact;
+							if (horicnt & 0xffff0000) {
+								// load pixel (arithmetic mean)
+								SRC = (*(src-src_pitch) + *src) >> 1;
+
+								// put first pixel
+								*dst = SRC;
+								dst++;
+								horicnt-=0x10000;
+
+								// have to put further?
+								if (horicnt & 0xffff0000) {
+									do {
+										*dst = SRC;
+										dst++;
+										horicnt-=0x10000;
+									} while (horicnt & 0xffff0000);
+								}
+							}
+
+							src++;
+						}
+						src-=sw;
+						vertcnt-=0x10000;
+						dst = old_dst + dst_pitch;
+						old_dst = dst;
+						vaa = false;
+					}
+				}
+				else
+					vaa = true;
+
+				// next line
+				src+=src_pitch;
+			}
+		}
+	}
+}
+
+void stretch_byte_buffer_h_antialiasing(unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+									    unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
+	// please note that the src and dst have to point to the first pixel which is to process
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+	int vertcnt;
+	unsigned char *src_end = src + src_pitch_pix * sh;
+	if (src_end > src + src_pitch_pix * src_height)
+		src_end = src + src_pitch_pix * src_height;
+	unsigned char *dst_end = dst + dst_pitch_pix * dst_height;
+
+	// horizontal antialiasing
+	// normal stretch in both directions
+	vertcnt = 0x8000;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned char *line_end = src + sw;
+			unsigned char *old_dst = dst;
+
+			do {
+				int horicnt = 0x8000;
+				register unsigned int SRC;
+				register bool haa = false;
+				while (src < line_end) {
+					horicnt+=horifact;
+					if (horicnt & 0xffff0000) {
+						// check for antialiasing
+						if (haa) {
+							*(dst-1) = (SRC + *src) >> 1;
+							haa = false;
+						}
+
+						// load pixel
+						SRC = *src;
+
+						// put first pixel
+						*dst = SRC;
+						dst++;
+						horicnt-=0x10000;
+
+						// have to put further?
+						if ((haa=(horicnt & 0xffff0000))) {
+							do {
+								*dst = SRC;
+								dst++;
+								horicnt-=0x10000;
+							} while (horicnt & 0xffff0000);
+						}
+					}
+
+					src++;
+				}
+				src-=sw;
+				vertcnt-=0x10000;
+				dst = old_dst + dst_pitch;
+				old_dst = dst;
+			} while (vertcnt & 0xffff0000);
+		}
+
+		// next line
+		src+=src_pitch;
+	}
+}
+
+void stretch_byte_buffer_hv_antialiasing(unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+										 unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
+	// please note that the src and dst have to point to the first pixel which is to process
+	int horifact = (dw<<16)/sw;
+	int vertfact = (dh<<16)/sh;
+	int vertcnt;
+	unsigned char *src_end = src + src_pitch_pix * sh;
+	if (src_end > src + src_pitch_pix * src_height)
+		src_end = src + src_pitch_pix * src_height;
+	unsigned char *dst_end = dst + dst_pitch_pix * dst_height;
+
+	// horizontal and vertical antialiasing
+	// normal stretch in both directions
+	vertcnt = 0x8000;
+	register unsigned char vcnt = 0;
+	while ((src < src_end)&&(dst < dst_end)) {
+		// for all pixels in the line
+		vertcnt+=vertfact;
+		if (vertcnt & 0xffff0000) {
+			unsigned char *line_end = src + sw;
+			unsigned char *old_dst = dst;
+
+			bool vaa = (vcnt > 1);
+			vcnt = 0;
+			if (!vaa) {
+				do {
+					int horicnt = 0x8000;
+					register unsigned int SRC;
+					register bool haa = false;
+					while (src < line_end) {
+						horicnt+=horifact;
+						if (horicnt & 0xffff0000) {
+							// check for antialiasing
+							if (haa) {
+								*(dst-1) = (SRC + *src) >> 1;
+								haa = false;
+							}
+
+							// load pixel
+							SRC = *src;
+
+							// put first pixel
+							*dst = SRC;
+							dst++;
+							horicnt-=0x10000;
+
+							// have to put further?
+							if ((haa=(horicnt & 0xffff0000))) {
+								do {
+									*dst = SRC;
+									dst++;
+									horicnt-=0x10000;
+								} while (horicnt & 0xffff0000);
+							}
+						}
+
+						src++;
+					}
+					src-=sw;
+					vertcnt-=0x10000;
+					dst = old_dst + dst_pitch;
+					old_dst = dst;
+					vcnt++;
+				} while (vertcnt & 0xffff0000);
+			}
+			else {
+				do {
+					int horicnt = 0x8000;
+					register unsigned int SRC;
+					if (vaa) {
+						// first line with vertical antialiasing
+						register bool haa = false;
+						while (src < line_end) {
+							horicnt+=horifact;
+							if (horicnt & 0xffff0000) {
+								// check for antialiasing
+								if (haa) {
+									*(dst-1) = (SRC + *src) >> 1;
+									haa = false;
+								}
+
+								// load pixel
+								SRC = *src;
+
+								// put first pixel
+								*dst = SRC;
+								*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
+								dst++;
+								horicnt-=0x10000;
+
+								// have to put further?
+								if ((haa=(horicnt & 0xffff0000))) {
+									do {
+										*dst = SRC;
+										*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
+										dst++;
+										horicnt-=0x10000;
+									} while (horicnt & 0xffff0000);
+								}
+							}
+
+							src++;
+						}
+
+						vaa = false;
+					}
+					else {
+						// line without vertical antialiasing
 						register bool haa = false;
 						while (src < line_end) {
 							horicnt+=horifact;
@@ -123,120 +648,48 @@ void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
 
 							src++;
 						}
-						src-=sw;
-						vertcnt-=0x10000;
-						dst = old_dst + dst_pitch;
-						old_dst = dst;
-					} while (vertcnt & 0xffff0000);
-				}
-
-				// next line
-				src+=src_pitch;
+					}
+					src-=sw;
+					vertcnt-=0x10000;
+					dst = old_dst + dst_pitch;
+					old_dst = dst;
+					vcnt++;
+				} while (vertcnt & 0xffff0000);
 			}
+		}
+
+		// next line
+		src+=src_pitch;
+	}
+}
+
+void stretch_byte_buffer(bool h_antialiasing, bool v_antialiasing,
+						 unsigned char *src, int src_pitch, int src_pitch_pix, int src_height, int sw, int sh,
+					     unsigned char *dst, int dst_pitch, int dst_pitch_pix, int dst_height, int dw, int dh) {
+	// please note that the src and dst have to point to the first pixel which is to process
+
+	if (!h_antialiasing) {
+		if (!v_antialiasing) {
+			// no antialiasing
+			stretch_byte_buffer_no_antialiasing(src, src_pitch, src_pitch_pix, src_height, sw, sh,
+												dst, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
+		}
+		else {
+			// vertical antialiasing
+			stretch_byte_buffer_v_antialiasing(src, src_pitch, src_pitch_pix, src_height, sw, sh,
+											   dst, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
+		}
+	}
+	else {
+		if (!v_antialiasing) {
+			// horizontal antialiasing
+			stretch_byte_buffer_h_antialiasing(src, src_pitch, src_pitch_pix, src_height, sw, sh,
+											   dst, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
 		}
 		else {
 			// horizontal and vertical antialiasing
-			// for all lines
-			vertcnt = 0x8000;
-			register unsigned char vcnt = 0;
-			while ((src < src_end)&&(dst < dst_end)) {
-				// for all pixels in the line
-				vertcnt+=vertfact;
-				if (vertcnt & 0xffff0000) {
-					unsigned char *line_end = src + sw;
-					unsigned char *old_dst = dst;
-
-					bool vaa = (vcnt > 1);
-					vcnt = 0;
-					if (!vaa) {
-						do {
-							int horicnt = 0x8000;
-							register unsigned int SRC;
-							register bool haa = false;
-							while (src < line_end) {
-								horicnt+=horifact;
-								if (horicnt & 0xffff0000) {
-									// check for antialiasing
-									if (haa) {
-										*(dst-1) = (SRC + *src) >> 1;
-										haa = false;
-									}
-
-									// load pixel
-									SRC = *src;
-
-									// put first pixel
-									*dst = SRC;
-									dst++;
-									horicnt-=0x10000;
-
-									// have to put further?
-									if ((haa=(horicnt & 0xffff0000))) {
-										do {
-											*dst = SRC;
-											dst++;
-											horicnt-=0x10000;
-										} while (horicnt & 0xffff0000);
-									}
-								}
-
-								src++;
-							}
-							src-=sw;
-							vertcnt-=0x10000;
-							dst = old_dst + dst_pitch;
-							old_dst = dst;
-							vcnt++;
-						} while (vertcnt & 0xffff0000);
-					}
-					else {
-						do {
-							int horicnt = 0x8000;
-							register unsigned int SRC;
-							register bool haa = false;
-							while (src < line_end) {
-								horicnt+=horifact;
-								if (horicnt & 0xffff0000) {
-									// check for antialiasing
-									if (haa) {
-										*(dst-1) = (SRC + *src) >> 1;
-										haa = false;
-									}
-
-									// load pixel
-									SRC = *src;
-
-									// put first pixel
-									*dst = SRC;
-									*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
-									dst++;
-									horicnt-=0x10000;
-
-									// have to put further?
-									if ((haa=(horicnt & 0xffff0000))) {
-										do {
-											*dst = SRC;
-											*(dst-dst_pitch) = (*(dst-dst_pitch) + SRC) >> 1;
-											dst++;
-											horicnt-=0x10000;
-										} while (horicnt & 0xffff0000);
-									}
-								}
-
-								src++;
-							}
-							src-=sw;
-							vertcnt-=0x10000;
-							dst = old_dst + dst_pitch;
-							old_dst = dst;
-							vcnt++;
-						} while (vertcnt & 0xffff0000);
-					}
-				}
-
-				// next line
-				src+=src_pitch;
-			}
+			stretch_byte_buffer_hv_antialiasing(src, src_pitch, src_pitch_pix, src_height, sw, sh,
+												dst, dst_pitch, dst_pitch_pix, dst_height, dw, dh);
 		}
 	}
 }
