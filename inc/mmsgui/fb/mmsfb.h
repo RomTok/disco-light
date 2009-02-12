@@ -31,7 +31,7 @@
 
 #include "mmstools/mmslogger.h"
 
-#include "mmsgui/fb/mmsfbdevvesa.h"
+#include "mmsgui/fb/mmsfbdev.h"
 #include "mmsgui/fb/mmsfbdevmatrox.h"
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"

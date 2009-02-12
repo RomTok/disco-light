@@ -150,14 +150,13 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
     else
     if (this->backend == MMSFB_BACKEND_FBDEV) {
 #ifdef __HAVE_FBDEV__
-    	if (this->outputtype == MMS_OT_VESAFB)
-    		this->mmsfbdev = new MMSFBDevVesa();
-    	else
-		if (this->outputtype == MMS_OT_MATROXFB)
+		if (this->outputtype == MMS_OT_MATROXFB) {
+			// matroxfb
     		this->mmsfbdev = new MMSFBDevMatrox();
+		}
 		else {
-			MMSFB_SetError(0, "MMSFBDEV device, wrong output type " + this->outputtype);
-			return false;
+			// default fbdev
+    		this->mmsfbdev = new MMSFBDev();
 		}
 
     	if (this->mmsfbdev)
