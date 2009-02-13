@@ -37,16 +37,6 @@ packageDescription = 'Disko application framework for embedded devices (http://w
 packageVersion     = '%d.%d.%d%s' % (packageVersionMajor, packageVersionMinor, packageVersionMicro, packageVersionRC)
 
 #######################################################################
-# Help text                                                           #
-#######################################################################
-Help("Type: 'scons [options]' to build disko.\n" +
-     "      'scons [options] check' to check the requirements for building disko.\n" +
-     "      'scons -c' to clean.\n" +
-     "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
-     "      'scons install' to install disko.\n\n" +
-     "The following options are available:\n")
-
-#######################################################################
 # Get SCons version (copied from internal scons function)             #
 #######################################################################
 def GetSconsVersion():
@@ -65,15 +55,38 @@ def GetSconsVersion():
 		
 	return v_major, v_minor, v_revision
 
+sconsVersion = GetSconsVersion()
+
+#######################################################################
+# Help text                                                           #
+#######################################################################
+Help("Type: 'scons [options]' to build disko.\n" +
+     "      'scons [options] check' to check the requirements for building disko.\n" +
+     "      'scons -c' to clean.\n" +
+     "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
+     "      'scons install' to install disko.\n\n" +
+     "The following options are available:\n")
+
+
+
+#######################################################################
+# Helper functions                                                    #
+#######################################################################
+def PathIsDirCreateNone(key, value, env):
+	if(value != 'none'):
+		if sconsVersion < (0,98,1):
+			PathOption.PathIsDirCreate(key, value, env)
+		else:
+			PathVariable.PathIsDirCreate(key, value, env)
+
 #######################################################################
 # Command line options                                                #
 #######################################################################
-sconsVersion = GetSconsVersion()
 if sconsVersion < (0,98,1):
 	opts = Options('disko.conf')
 	opts.AddOptions(
     	PathOption('prefix',       'Installation directory', '/usr', PathOption.PathIsDirCreate),
-    	PathOption('destdir',      'Installation directory for cross-compile', 'none', PathOption.PathIsDirCreate),
+    	PathOption('destdir',      'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
     	BoolOption('debug',        'Build with debug symbols and without optimize', False),
     	BoolOption('messages',     'Build with logfile support', False),
     	BoolOption('profile',      'Build with profiling support (includes debug option)', False),
@@ -89,7 +102,7 @@ else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
     	PathVariable('prefix',       'Installation directory', '/usr', PathVariable.PathIsDirCreate),
-    	PathVariable('destdir',      'Installation directory for cross-compile', 'none', PathVariable.PathIsDirCreate),
+    	PathVariable('destdir',      'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
     	BoolVariable('debug',        'Build with debug symbols and without optimize', False),
     	BoolVariable('messages',     'Build with logfile support', False),
     	BoolVariable('profile',      'Build with profiling support (includes debug option)', False),
