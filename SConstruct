@@ -255,7 +255,7 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 		# redirect stdout to suppress messages from built in checks
 		sys.stdout = open('/dev/null', 'a')
 		if len(header):
-			ret = conf.CheckLibWithHeader(lib, header, lang)
+			ret = conf.CheckLibWithHeader(liblist, header, lang)
 		else:
 			ret = conf.CheckLib(lib)
 		# restore stdout
@@ -370,7 +370,7 @@ else:
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
-	conf.checkSimpleLib(['sqlite3'],    'sqlite3.h')
+	conf.checkSimpleLib(['sqlite3', 'pthread'],    'sqlite3.h')
 	conf.env['CCFLAGS'].append('-D__ENABLE_SQLITE__')
 if 'mysql' in env['database']:
 	conf.checkSimpleLib(['mysql'],      'mysql.h')
