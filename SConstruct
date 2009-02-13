@@ -278,12 +278,17 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 def printSummary():
 	print '\n********************* Summary *********************\n'
 	print 'Prefix:           : %s' % conf.env['prefix']
+	print 'Destdir:          : %s' % conf.env['destdir']
 	print 'Graphic backends  : %s' % conf.env['graphics']
 	print 'Database backends : %s\n' % ', '.join(conf.env['database'])
 	if(conf.env['mmscrypt']):
 		print 'Building mmscrypt : yes'
 	else:
 		print 'Building mmscrypt : no'
+	if(conf.env['enable_media']):
+		print 'Building mmsmedia : yes'
+	else:
+		print 'Building mmsmedia : no'
 	if(conf.env['enable_flash']):
 		print 'Building mmsflash : yes'
 	else:
