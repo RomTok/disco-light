@@ -116,8 +116,13 @@ else:
     	BoolVariable('enable_tools', 'Build disko tools', False))
 
 env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
+
+# use environment variables to override defaults
 if os.environ.has_key('CXX'):
 	env['CXX'] = os.environ['CXX'] 
+if os.environ.has_key('LD'):
+	env['LD'] = os.environ['LD']
+	 
 env['LIBPATH'] = ''
 
 opts.Update(env)
