@@ -121,7 +121,7 @@ env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
 if os.environ.has_key('CXX'):
 	env['CXX'] = os.environ['CXX'] 
 if os.environ.has_key('LD'):
-	env['LD'] = os.environ['LD']
+	env['LINK'] = os.environ['LD']
 	 
 env['LIBPATH'] = ''
 
