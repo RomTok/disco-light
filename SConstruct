@@ -115,7 +115,9 @@ else:
     	BoolVariable('enable_mail',  'Build with email support', False),
     	BoolVariable('enable_tools', 'Build disko tools', False))
 
-env = Environment(ENV = os.environ, CPPPATH = '../../../inc') 
+env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
+if os.environ.has_key('CXX'):
+	env['CXX'] = os.environ['CXX'] 
 env['LIBPATH'] = ''
 
 opts.Update(env)
