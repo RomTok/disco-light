@@ -36,6 +36,7 @@
 #include <linux/vt.h>
 
 #include <linux/input.h>
+#include <errno.h>
 
 // keycode translation table e.g. for remote controls
 MMSKeySymbol MMSInputLISThread_extkeycodes [] = {
