@@ -483,5 +483,14 @@ bool MMSFBWindow::lowerToBottom() {
     return true;
 }
 
+bool MMSFBWindow::setVisibleRectangle(MMSFBRectangle *rect) {
+
+    // check if initialized
+    INITCHECK;
+
+    // inform the window manager
+    return mmsfbwindowmanager->setWindowVisibleRectangle(this, rect);
+}
+
 #endif
 

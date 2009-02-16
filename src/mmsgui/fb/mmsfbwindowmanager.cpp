@@ -37,7 +37,7 @@ MMSFBWindowManager *mmsfbwindowmanager = new MMSFBWindowManager();
 #define INITCHECK  if(!this->layer){MMSFB_SetError(0,"not initialized");return false;}
 
 MMSFBWindowManager::MMSFBWindowManager() {
-    /* init me */
+    // init me
     this->layer = NULL;
     this->layer_surface = NULL;
     this->high_freq_surface = NULL;
@@ -76,7 +76,7 @@ MMSFBWindowManager::~MMSFBWindowManager() {
 
 bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
 
-    /* check if already initialized */
+    // check if already initialized
     if (this->layer) {
         MMSFB_SetError(0, "already initialized");
         return false;
@@ -98,7 +98,7 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
 
     DEBUGMSG("MMSGUI", "MMSFBWindowManager: get layer surface");
 
-    /* get the surface of the layer */
+    // get the surface of the layer
     if (!this->layer->getSurface(&this->layer_surface))
         return false;
 
@@ -146,22 +146,22 @@ bool MMSFBWindowManager::reset() {
 
 bool MMSFBWindowManager::getLayer(MMSFBLayer **layer) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* return the layer */
+    // return the layer
     *layer = this->layer;
 
     return true;
 }
 
 void MMSFBWindowManager::lockWM() {
-    /* stop parallel processing */
+    // stop parallel processing
     lock.lock();
 }
 
 void MMSFBWindowManager::unlockWM() {
-    /* unlock */
+    // unlock
     lock.unlock();
 }
 
@@ -183,6 +183,10 @@ bool MMSFBWindowManager::addWindow(MMSFBWindow *window) {
     /* add window */
     AVAILABLE_WINDOWS awin;
     awin.window = window;
+    awin.vrect.x = 0;
+    awin.vrect.y = 0;
+    awin.vrect.w = 0;
+    awin.vrect.h = 0;
     awin.islayersurface = false;
     awin.saved_surface = NULL;
     MMSFBSurface *s;
@@ -334,10 +338,31 @@ bool MMSFBWindowManager::loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *
     vwin->window->getSurface(&vwin->surface);
     MMSFBWindowConfig winconf;
     vwin->window->getConfiguration(&winconf);
-    vwin->region.x1 = winconf.posx;
-    vwin->region.y1 = winconf.posy;
-    vwin->region.x2 = vwin->region.x1 + winconf.surface_config.w - 1;
-    vwin->region.y2 = vwin->region.y1 + winconf.surface_config.h - 1;
+    vwin->vrect.x = 0;
+    vwin->vrect.y = 0;
+    vwin->vrect.w = 0;
+    vwin->vrect.h = 0;
+    for (unsigned int i=0; i < this->windows.size(); i++)
+        if (this->windows.at(i).window == window) {
+            vwin->vrect = this->windows.at(i).vrect;
+            break;
+        }
+	vwin->region.x1 = winconf.posx;
+	vwin->region.y1 = winconf.posy;
+	vwin->region.x2 = vwin->region.x1 + winconf.surface_config.w - 1;
+	vwin->region.y2 = vwin->region.y1 + winconf.surface_config.h - 1;
+    if ((vwin->vrect.w > 0)&&(vwin->vrect.h > 0)) {
+    	// visible rectangle set, so have to adjust region
+    	MMSFBRegion sr = vwin->region;
+		sr.x1 += vwin->vrect.x;
+		sr.y1 += vwin->vrect.y;
+		sr.x2 = sr.x1 + vwin->vrect.w - 1;
+		sr.y2 = sr.y1 + vwin->vrect.h - 1;
+		if ((sr.x1 >= vwin->region.x1)&&(sr.y1 >= vwin->region.y1)&&(sr.x2 <= vwin->region.x2)&&(sr.y2 <= vwin->region.y2)) {
+			// adjusted region okay, set it
+			vwin->region = sr;
+		}
+    }
     vwin->alphachannel = winconf.surface_config.surface_buffer->alphachannel;
     vwin->opacity = winconf.opacity;
     vwin->lastflip = 0;
@@ -491,6 +516,29 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
 					}
 					else
 						ls_region.y2 = ls_region.y1 + region->y2;
+
+		            if ((vw->vrect.w > 0)&&(vw->vrect.h > 0)) {
+		            	// visible rectangle set, check calculated ls_region
+		            	ls_region.x1 -= vw->vrect.x;
+		            	ls_region.y1 -= vw->vrect.y;
+		            	ls_region.x2 -= vw->vrect.x;
+		            	ls_region.y2 -= vw->vrect.y;
+
+		            	if (ls_region.x1 < vw->region.x1)
+		            		ls_region.x1 = vw->region.x1;
+		            	if (ls_region.y1 < vw->region.y1)
+		            		ls_region.y1 = vw->region.y1;
+		            	if (ls_region.x2 > vw->region.x2)
+		            		ls_region.x2 = vw->region.x2;
+		            	if (ls_region.y2 > vw->region.y2)
+		            		ls_region.y2 = vw->region.y2;
+
+		            	if ((ls_region.x1 > ls_region.x2)||(ls_region.y1 > ls_region.y2)) {
+		            		// wrong region
+		            		vw = NULL;
+		            		break;
+		            	}
+		            }
 				}
 
 				// check region
@@ -522,15 +570,15 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
         }
     }
     else {
-        /* no surface given, have to redraw a region? */
+        // no surface given, have to redraw a layer region?
         if (region == NULL) {
-            /* no */
+            // no
             if (!locked)
                 lock.unlock();
             return false;
         }
 
-        /* take this region */
+        // take this region
         ls_region = *region;
     }
 
@@ -664,6 +712,12 @@ logger.writeLog("BBB>");
             src_rect.h = myregion->y2 - myregion->y1 + 1 - src_rect.y;
             if (myregion->y2 > ls_region.y2)
                 src_rect.h-= myregion->y2 - ls_region.y2;
+
+            if ((aw->vrect.w > 0)&&(aw->vrect.h > 0)) {
+            	// visible rectangle set, so have to adjust source offset
+            	src_rect.x += aw->vrect.x;
+            	src_rect.y += aw->vrect.y;
+            }
 
             // set the blitting flags and color
             if ((aw->alphachannel)&&((win_found)||(!this->layer_surface->config.surface_buffer->alphachannel))) {
@@ -886,6 +940,17 @@ bool MMSFBWindowManager::setWindowSize(MMSFBWindow *window, int w, int h) {
                 window->getSurface(&surface);
                 surface->resize(w, h);
 
+                /* search for item in the window list */
+                for (unsigned int j=0; j < this->windows.size(); j++)
+                    if (this->windows.at(j).window == window) {
+                        // reset the visible region
+                    	this->windows.at(j).vrect.x = 0;
+                    	this->windows.at(j).vrect.y = 0;
+                    	this->windows.at(j).vrect.w = 0;
+                    	this->windows.at(j).vrect.h = 0;
+                    	break;
+                    }
+
                 /* re-show it */
                 if ((old_w <= w)&&(old_h <= h))
                     /* larger or equal */
@@ -914,7 +979,13 @@ bool MMSFBWindowManager::setWindowSize(MMSFBWindow *window, int w, int h) {
             window->getSurface(&surface);
             surface->resize(w, h);
 
-            /* unlock */
+            // reset the visible region
+        	this->windows.at(i).vrect.x = 0;
+        	this->windows.at(i).vrect.y = 0;
+        	this->windows.at(i).vrect.w = 0;
+        	this->windows.at(i).vrect.h = 0;
+
+        	/* unlock */
             lock.unlock();
 
             return true;
@@ -923,6 +994,50 @@ bool MMSFBWindowManager::setWindowSize(MMSFBWindow *window, int w, int h) {
     /* not found */
     lock.unlock();
     return false;
+}
+
+bool MMSFBWindowManager::setWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect) {
+	bool ret = false;
+
+    // check if initialized
+    INITCHECK;
+
+    // stop parallel processing
+    lock.lock();
+
+    // search for item in available list
+    for (unsigned int i=0; i < this->windows.size(); i++)
+        if (this->windows.at(i).window == window) {
+			// set rect
+        	if (rect) {
+        		this->windows.at(i).vrect = *rect;
+        	}
+        	else {
+        		this->windows.at(i).vrect.x = 0;
+        		this->windows.at(i).vrect.y = 0;
+        		this->windows.at(i).vrect.w = 0;
+        		this->windows.at(i).vrect.h = 0;
+        	}
+
+            ret = true;
+            break;
+        }
+
+    // search for item in visible list
+    for (unsigned int i=0; i < this->vwins.size(); i++)
+        if (this->vwins.at(i).window == window) {
+            // reload windows config
+            loadWindowConfig(window, &(this->vwins.at(i)));
+
+        	// redraw the window
+            flipSurface(this->vwins.at(i).surface, NULL, true);
+
+            ret = true;
+            break;
+        }
+
+    lock.unlock();
+    return ret;
 }
 
 void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, bool pressed) {

@@ -84,6 +84,8 @@ class MMSFBWindow {
 
         bool raiseToTop();
         bool lowerToBottom();
+
+        bool setVisibleRectangle(MMSFBRectangle *rect = NULL);
 };
 
 #endif /*MMSFBWINDOW_H_*/
