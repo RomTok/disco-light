@@ -39,6 +39,11 @@
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
+MMSFBWindow *MMSWindow::fullscreen_root_window			= NULL;
+int			MMSWindow::fullscreen_root_window_use_count = 0;
+MMSFBWindow *MMSWindow::fullscreen_main_window			= NULL;
+int			MMSWindow::fullscreen_main_window_use_count	= 0;
+
 
 MMSWindow::MMSWindow() {
 
@@ -123,6 +128,55 @@ MMSWindow::~MMSWindow() {
     delete this->action;
     delete this->im;
     delete this->fm;
+
+    if (!((this->flags & MMSW_VIDEO)&&(!(this->flags & MMSW_USEGRAPHICSLAYER)))) {
+		// surface is NOT the video layer surface
+    	// so delete the window/surface memory
+		if (this->window) {
+			// delete the mmsfbwindow/surface
+			bool os;
+			getOwnSurface(os);
+			if (os) {
+printf("fbwin os=true\n");
+				// own surface, so delete complete window
+				delete this->window;
+			}
+			else {
+printf("fbwin os=false\n");
+				// delete sub-surface and decrease use counter
+				if (this->surface)
+					delete this->surface;
+				if (this->type == MMSWINDOWTYPE_ROOTWINDOW) {
+					if (this->fullscreen_root_window_use_count > 0)
+						this->fullscreen_root_window_use_count--;
+					if (this->fullscreen_root_window_use_count == 0)
+						if (this->fullscreen_root_window) {
+printf("delete fullscreen root\n");
+							// delete the fullscreen window for root window type because not used anymore
+							delete this->fullscreen_root_window;
+							this->fullscreen_root_window = NULL;
+						}
+				}
+				if (this->type == MMSWINDOWTYPE_MAINWINDOW) {
+					if (this->fullscreen_main_window_use_count > 0)
+						this->fullscreen_main_window_use_count--;
+					if (this->fullscreen_main_window_use_count == 0)
+						if (this->fullscreen_main_window) {
+printf("delete fullscreen main\n");
+							// delete the fullscreen window for main window type because not used anymore
+							delete this->fullscreen_main_window;
+							this->fullscreen_main_window = NULL;
+						}
+				}
+			}
+		}
+		else {
+printf("surface\n");
+			// delete surface (e.g. child window surface)
+			if (this->surface)
+				delete this->surface;
+		}
+    }
 }
 
 MMSWINDOWTYPE MMSWindow::getType() {
@@ -273,19 +327,19 @@ bool MMSWindow::resize(bool refresh) {
         }
 
         /* get the screen width and height */
-        this->layer->getResolution(&vrect.w, &vrect.h);
-        DEBUGMSG("MMSGUI", "got screen %dx%d", vrect.w, vrect.h);
+        this->layer->getResolution(&this->vrect.w, &this->vrect.h);
+        DEBUGMSG("MMSGUI", "got screen %dx%d", this->vrect.w, this->vrect.h);
 
         if (this->flags & MMSW_VIDEO) {
             /* for video windows use full screen */
-            vrect.x = 0;
-            vrect.y = 0;
+            this->vrect.x = 0;
+            this->vrect.y = 0;
         }
         else
             /* other windows uses visible rectangle settings from windowmanager */
-            vrect = this->windowmanager->getVRect();
+            this->vrect = this->windowmanager->getVRect();
 
-        DEBUGMSG("MMSGUI", "use screen area %d, %d, %d, %d", vrect.x, vrect.x, vrect.w, vrect.h);
+        DEBUGMSG("MMSGUI", "use screen area %d, %d, %d, %d", this->vrect.x, this->vrect.x, this->vrect.w, this->vrect.h);
     }
     else {
         /* child window */
@@ -448,28 +502,60 @@ bool MMSWindow::resize(bool refresh) {
     innerGeom.h = this->geom.h - 2*dz;
 
     if (!this->parent) {
-        /* normal parent window */
+        // normal parent window
         if (!this->window) {
-            /* create window */
-            /* get layers pixelformat */
+            // create window
+            // get layers pixelformat
         	MMSFBSurfacePixelFormat pixelformat;
             this->layer->getPixelFormat(&pixelformat);
 
             if (!(this->flags & MMSW_VIDEO)) {
-                /* no video window, use alpha */
-            	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
-                                                    + iToStr(wdesc_posy) + ","
-                                                    + iToStr(wdesc_width) + ","
-                                                    + iToStr(wdesc_height)
-                                                    + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
-                                                    + " (use alpha)");
-                this->layer->createWindow(&(this->window),
-                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                          pixelformat, true, false);
-                DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
+                // no video window, use alpha
+    			bool os;
+    			getOwnSurface(os);
+    			if ((os) || ((this->type == MMSWINDOWTYPE_ROOTWINDOW) && (!this->fullscreen_root_window))
+    					 || ((this->type == MMSWINDOWTYPE_MAINWINDOW) && (!this->fullscreen_main_window))) {
+
+    				if ((!os) && ((this->type == MMSWINDOWTYPE_ROOTWINDOW) || (this->type == MMSWINDOWTYPE_MAINWINDOW))) {
+    					// create full screen window
+    					wdesc_posx = 0;
+    					wdesc_posy = 0;
+    					wdesc_width = this->vrect.w;
+    					wdesc_height = this->vrect.h;
+    				}
+
+    				// window should have own surface
+                	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+                                                        + iToStr(wdesc_posy) + ","
+                                                        + iToStr(wdesc_width) + ","
+                                                        + iToStr(wdesc_height)
+                                                        + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
+                                                        + " (use alpha)");
+                    this->layer->createWindow(&(this->window),
+                                              wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+                                              pixelformat, true, false);
+                    DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
+    			}
+
+				if (!os) {
+					if (this->type == MMSWINDOWTYPE_ROOTWINDOW) {
+						if (!this->fullscreen_root_window)
+							this->fullscreen_root_window = this->window;
+						else
+							this->window = this->fullscreen_root_window;
+						this->fullscreen_root_window_use_count++;
+					}
+					if (this->type == MMSWINDOWTYPE_MAINWINDOW) {
+						if (!this->fullscreen_main_window)
+							this->fullscreen_main_window = this->window;
+						else
+							this->window = this->fullscreen_main_window;
+						this->fullscreen_main_window_use_count++;
+					}
+				}
             }
             else {
-                /* video window, do not use alpha */
+                // video window, do not use alpha
             	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
                                                           + iToStr(wdesc_posy) + ","
                                                           + iToStr(wdesc_width) + ","
@@ -480,39 +566,60 @@ bool MMSWindow::resize(bool refresh) {
                                           wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                           pixelformat, false, true);
                 DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
+
+                // video windows should have own surfaces
+                setOwnSurface(true);
             }
 
             this->window->setOpacity(0);
 
-            /* get window surface */
-            this->window->getSurface(&(this->surface));
+            // get window surface
+        	this->window->getSurface(&(this->surface));
+            if ((this->window == this->fullscreen_root_window) || (this->window == this->fullscreen_main_window)) {
+            	// get subsurface
+//flip prob?
+printf("get subsuf %d,%d,%d,%d\n", this->geom.x,this->geom.y,this->geom.w,this->geom.h);
+            	this->surface = this->surface->getSubSurface(&this->geom);
+            }
 
-            DEBUGMSG("MMSGUI", "setting blitting flags for window");
-            this->surface->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
+            // normal window
+			DEBUGMSG("MMSGUI", "setting blitting flags for window");
+			this->surface->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
-            /* set the window to bottom */
+			/* set the window to bottom */
 //            this->window->lowerToBottom();
 
-            /* add window to managers list */
-            if (this->windowmanager) {
-                DEBUGMSG("MMSGUI", "adding window to window manager");
-                this->windowmanager->addWindow(this);
-            }
+			// add window to managers list
+			if (this->windowmanager) {
+				DEBUGMSG("MMSGUI", "adding window to window manager");
+				this->windowmanager->addWindow(this);
+			}
         }
         else {
-            /* change the window (new size/pos) */
-            int px,py;
-            this->window->getPosition(&px, &py);
-            if ((this->geom.x != px)||(this->geom.y != py)) {
-            	DEBUGMSG("MMSGUI", "repositioning window (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ")");
-                this->window->moveTo(this->geom.x, this->geom.y);
-            }
-            int w,h;
-            this->window->getSize(&w, &h);
-            if ((this->geom.w != w)||(this->geom.h != h)) {
-            	DEBUGMSG("MMSGUI", "resizing window (" + iToStr(this->geom.w) + "x" + iToStr(this->geom.h) + ")");
-                this->window->resize(this->geom.w, this->geom.h);
-            }
+            // change the window (new size/pos)
+			bool os;
+			getOwnSurface(os);
+			if (os) {
+				// own surface
+				int px,py;
+				this->window->getPosition(&px, &py);
+				if ((this->geom.x != px)||(this->geom.y != py)) {
+					DEBUGMSG("MMSGUI", "repositioning window (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ")");
+					this->window->moveTo(this->geom.x, this->geom.y);
+				}
+				int w,h;
+				this->window->getSize(&w, &h);
+				if ((this->geom.w != w)||(this->geom.h != h)) {
+					DEBUGMSG("MMSGUI", "resizing window (" + iToStr(this->geom.w) + "x" + iToStr(this->geom.h) + ")");
+					this->window->resize(this->geom.w, this->geom.h);
+				}
+			}
+			else {
+				// working with subsurface
+            	DEBUGMSG("MMSGUI", "re-positioning/-sizing window subsurface (" + iToStr(this->geom.x) + "," + iToStr(this->geom.y) + ","
+                                                                        + iToStr(this->geom.w) + "," + iToStr(this->geom.h) + ")");
+				this->surface->setSubSurface(&this->geom);
+			}
         }
     }
     else {
@@ -1715,6 +1822,14 @@ bool MMSWindow::showAction(bool *stopaction) {
         }
     }
 
+    if ((getType() == MMSWINDOWTYPE_ROOTWINDOW) || (getType() == MMSWINDOWTYPE_MAINWINDOW)) {
+		bool os;
+		getOwnSurface(os);
+		if (!os) {
+			// we are working with a subsurface of a fullscreen window
+			this->window->setVisibleRectangle(&this->geom);
+		}
+    }
 
 //    printf("showAction4 %x\n", this);
 

@@ -187,13 +187,25 @@ class MMSWindow {
         MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
 
         //! border geometry
-        MMSFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
+        MMSFBRectangle    	bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
 
         //! border geometry set?
         bool                bordergeomset;
 
         //! access to the MMSFBLayer on which the window has to be displayed
         MMSFBLayer          *layer;
+
+        //! a full screen MMSFBWindow as buffer for all MMSRootWindow objects with own_surface=false
+        static MMSFBWindow 	*fullscreen_root_window;
+
+        //! use count for fullscreen_root_window
+        static int			fullscreen_root_window_use_count;
+
+        //! a full screen MMSFBWindow as buffer for all MMSMainWindow objects with own_surface=false
+        static MMSFBWindow 	*fullscreen_main_window;
+
+        //! use count for fullscreen_main_window
+        static int			fullscreen_main_window_use_count;
 
         //! access to the MMSFBWindow which is behind of this class
         MMSFBWindow         *window;
