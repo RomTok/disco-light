@@ -127,7 +127,7 @@ static int numOverlays = 0;
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
-	int newW,newH;
+	int newW, newH;
 /*	printf("-------\nframe format: ");
 	printFrameFormat(frame_format);
 	printf("frame_width: %d\n", frame_width);
@@ -253,18 +253,43 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		}
 	}
 
-    // TODO: what if interim == NULL?
-    if(interim) {
+
+	if(numOverlays > 0) {
+		double w = ((float)userd->dest.w) / ((float)frame_width);
+		double h = ((float)userd->dest.h) / ((float)frame_height);
+
+		int width;
+		int height;
+		int x;
+		int y;
+
+		userd->surf->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING);
+
     	for(int i = 0; i < numOverlays; ++i) {
     		raw_overlay_t ovl = overlays[i];
 
-    		interim->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL);
-    		interim->blitBuffer(ovl.ovl_rgba, ovl.ovl_w * 4, MMSFB_PF_ARGB, ovl.ovl_w, ovl.ovl_h, NULL, ovl.ovl_x, ovl.ovl_y);
-    		interim->setBlittingFlags(MMSFB_BLIT_NOFX);
+    		width = (int)((double)ovl.ovl_w * w);
+    		height = (int)((double)ovl.ovl_h * h);
 
-    		userd->surf->stretchBlit(interim, NULL, &userd->dest);
+    		MMSFBSurface overlayInterim(width, height, MMSFB_PF_ARGB);
+
+    		x = (int)((double)ovl.ovl_x * w);
+			if(userd->size.w > userd->dest.w) {
+				x += (int)((double)(userd->size.w - userd->dest.w) * 0.5);
+			}
+
+			y = (int)((double)ovl.ovl_y * h);
+			if(userd->size.h > userd->dest.h) {
+				y += (int)((double)(userd->size.h - userd->dest.h) * 0.5);
+			}
+
+    		overlayInterim.stretchBlitBuffer(ovl.ovl_rgba, ovl.ovl_w * 4, MMSFB_PF_ARGB, ovl.ovl_w, ovl.ovl_h, NULL, NULL);
+    		userd->surf->blit(&overlayInterim, NULL, x, y);
     	}
+
+		userd->surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
     }
+
 
     userd->surf->flip(NULL);
 }
