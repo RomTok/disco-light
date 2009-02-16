@@ -37,16 +37,6 @@ packageDescription = 'Disko application framework for embedded devices (http://w
 packageVersion     = '%d.%d.%d%s' % (packageVersionMajor, packageVersionMinor, packageVersionMicro, packageVersionRC)
 
 #######################################################################
-# Help text                                                           #
-#######################################################################
-Help("Type: 'scons [options]' to build disko.\n" +
-     "      'scons [options] check' to check the requirements for building disko.\n" +
-     "      'scons -c' to clean.\n" +
-     "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
-     "      'scons install' to install disko.\n\n" +
-     "The following options are available:\n")
-
-#######################################################################
 # Get SCons version (copied from internal scons function)             #
 #######################################################################
 def GetSconsVersion():
@@ -65,15 +55,38 @@ def GetSconsVersion():
 		
 	return v_major, v_minor, v_revision
 
+sconsVersion = GetSconsVersion()
+
+#######################################################################
+# Help text                                                           #
+#######################################################################
+Help("Type: 'scons [options]' to build disko.\n" +
+     "      'scons [options] check' to check the requirements for building disko.\n" +
+     "      'scons -c' to clean.\n" +
+     "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
+     "      'scons install' to install disko.\n\n" +
+     "The following options are available:\n")
+
+
+
+#######################################################################
+# Helper functions                                                    #
+#######################################################################
+def PathIsDirCreateNone(key, value, env):
+	if(value != 'none'):
+		if sconsVersion < (0,98,1):
+			PathOption.PathIsDirCreate(key, value, env)
+		else:
+			PathVariable.PathIsDirCreate(key, value, env)
+
 #######################################################################
 # Command line options                                                #
 #######################################################################
-sconsVersion = GetSconsVersion()
 if sconsVersion < (0,98,1):
 	opts = Options('disko.conf')
 	opts.AddOptions(
     	PathOption('prefix',       'Installation directory', '/usr', PathOption.PathIsDirCreate),
-    	PathOption('destdir',      'Installation directory for cross-compile', 'none', PathOption.PathIsDirCreate),
+    	PathOption('destdir',      'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
     	BoolOption('debug',        'Build with debug symbols and without optimize', False),
     	BoolOption('messages',     'Build with logfile support', False),
     	BoolOption('profile',      'Build with profiling support (includes debug option)', False),
@@ -89,7 +102,7 @@ else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
     	PathVariable('prefix',       'Installation directory', '/usr', PathVariable.PathIsDirCreate),
-    	PathVariable('destdir',      'Installation directory for cross-compile', 'none', PathVariable.PathIsDirCreate),
+    	PathVariable('destdir',      'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
     	BoolVariable('debug',        'Build with debug symbols and without optimize', False),
     	BoolVariable('messages',     'Build with logfile support', False),
     	BoolVariable('profile',      'Build with profiling support (includes debug option)', False),
@@ -102,7 +115,14 @@ else:
     	BoolVariable('enable_mail',  'Build with email support', False),
     	BoolVariable('enable_tools', 'Build disko tools', False))
 
-env = Environment(ENV = os.environ, CPPPATH = '../../../inc') 
+env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
+
+# use environment variables to override defaults
+if os.environ.has_key('CXX'):
+	env['CXX'] = os.environ['CXX'] 
+if os.environ.has_key('LD'):
+	env['LINK'] = os.environ['LD']
+	 
 env['LIBPATH'] = ''
 
 opts.Update(env)
@@ -235,7 +255,7 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 		# redirect stdout to suppress messages from built in checks
 		sys.stdout = open('/dev/null', 'a')
 		if len(header):
-			ret = conf.CheckLibWithHeader(lib, header, lang)
+			ret = conf.CheckLibWithHeader(liblist, header, lang)
 		else:
 			ret = conf.CheckLib(lib)
 		# restore stdout
@@ -258,12 +278,17 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 def printSummary():
 	print '\n********************* Summary *********************\n'
 	print 'Prefix:           : %s' % conf.env['prefix']
+	print 'Destdir:          : %s' % conf.env['destdir']
 	print 'Graphic backends  : %s' % conf.env['graphics']
 	print 'Database backends : %s\n' % ', '.join(conf.env['database'])
 	if(conf.env['mmscrypt']):
 		print 'Building mmscrypt : yes'
 	else:
 		print 'Building mmscrypt : no'
+	if(conf.env['enable_media']):
+		print 'Building mmsmedia : yes'
+	else:
+		print 'Building mmsmedia : no'
 	if(conf.env['enable_flash']):
 		print 'Building mmsflash : yes'
 	else:
@@ -350,7 +375,7 @@ else:
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
-	conf.checkSimpleLib(['sqlite3'],    'sqlite3.h')
+	conf.checkSimpleLib(['sqlite3', 'pthread'],    'sqlite3.h')
 	conf.env['CCFLAGS'].append('-D__ENABLE_SQLITE__')
 if 'mysql' in env['database']:
 	conf.checkSimpleLib(['mysql'],      'mysql.h')

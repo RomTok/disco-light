@@ -195,7 +195,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
     	        DEBUGMSG("Core", "creating background window");
     	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","","",
-    	        											MMSALIGNMENT_NOTSET,MMSW_VIDEO);
+    	        											MMSALIGNMENT_NOTSET,MMSW_NONE);
     	        if(!rootwin) {
     	        	DEBUGMSG("Core", "couldn't create background window.");
     	        	return false;
