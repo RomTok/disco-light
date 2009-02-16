@@ -56,8 +56,12 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			exit(1);
 
 		this->lastkey = inputevent->key;
+printf("key=%d\n", this->lastkey);
 
 		this->mapper->mapkey(inputevent, &inputeventset);
+
+for (int i = 0; i < inputeventset.size(); i++)
+	printf("inputeventset.at().key=%d\n", inputeventset.at(i).key);
 
 		if((inputeventset.at(0).key==MMSKEY_POWER)||(inputeventset.at(0).key==MMSKEY_POWER2)) {
 			if(config->getShutdown() == true) {
