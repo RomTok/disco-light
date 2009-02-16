@@ -421,7 +421,7 @@ MMSTheme::MMSTheme() {
         this->mainWindowClass.windowClass.setNavigateDown("");
         this->mainWindowClass.windowClass.setNavigateLeft("");
         this->mainWindowClass.windowClass.setNavigateRight("");
-        this->mainWindowClass.windowClass.setOwnSurface(true);
+        this->mainWindowClass.windowClass.setOwnSurface(false);
         this->mainWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->mainWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
         this->mainWindowClass.windowClass.setModal(false);
@@ -508,7 +508,7 @@ MMSTheme::MMSTheme() {
         this->rootWindowClass.windowClass.setNavigateDown("");
         this->rootWindowClass.windowClass.setNavigateLeft("");
         this->rootWindowClass.windowClass.setNavigateRight("");
-        this->rootWindowClass.windowClass.setOwnSurface(true);
+        this->rootWindowClass.windowClass.setOwnSurface(false);
         this->rootWindowClass.windowClass.setMoveIn(MMSDIRECTION_NOTSET);
         this->rootWindowClass.windowClass.setMoveOut(MMSDIRECTION_NOTSET);
         this->rootWindowClass.windowClass.setModal(false);

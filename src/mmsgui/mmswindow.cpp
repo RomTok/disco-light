@@ -2253,8 +2253,11 @@ void MMSWindow::remove(MMSWidget *child) {
 void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, bool check_shown) {
     MMSFBRegion  	region;
 
-	bool os;
-	getOwnSurface(os);
+    // use own surface?
+    // note: os=false must ONLY be set, if this window is a child window!!!
+	bool os = true;
+	if (this->type == MMSWINDOWTYPE_CHILDWINDOW)
+		getOwnSurface(os);
 
 	if (check_shown) {
 	    // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown

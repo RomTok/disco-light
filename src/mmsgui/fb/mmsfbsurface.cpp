@@ -1112,7 +1112,8 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 		else {
 			CLIPSUBSURFACE
 
-			ret = extendedAccelFillRectangle(0, 0, this->config.w, this->config.h);
+			ret = extendedAccelFillRectangle(this->sub_surface_xoff, this->sub_surface_yoff, this->config.w, this->config.h);
+
 			UNCLIPSUBSURFACE
 		}
 
@@ -2905,6 +2906,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	int sh = h;
 	MMSFBRegion clipreg;
 	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
+
 
 #ifndef USE_DFB_SUBSURFACE
 	if (!this->is_sub_surface) {

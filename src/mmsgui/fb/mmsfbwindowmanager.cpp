@@ -492,6 +492,14 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     if (!locked)
         lock.lock();
 
+printf("MMSFBWindowManager::flipSurface\n");
+
+if (region)
+{
+	printf("MMSFBWindowManager::flipSurface - input, region=%d,%d,%d,%d\n", region->x1, region->y1, region->x2, region->y2);
+}
+
+
     /* search for item */
     if (surface) {
         /* surface given */
@@ -503,6 +511,8 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
 
 				// calculate the affected region on the layer surface
 				if (region != NULL) {
+printf("vw->vrect = %d,%d,%d,%d\n", vw->vrect.x,vw->vrect.y,vw->vrect.w,vw->vrect.h);
+
 					// only a region
 					if (region->x1 > 0) {
 						ls_region.x2 = ls_region.x1 + region->x2;
@@ -568,6 +578,51 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
                 lock.unlock();
             return false;
         }
+
+printf("MMSFBWindowManager::flipSurface - ls_region, region=%d,%d,%d,%d\n", ls_region.x1, ls_region.y1, ls_region.x2, ls_region.y2);
+
+/*
+
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=52,162,351,465
+MMSFBWindowManager::flipSurface - ls_region, region=52,162,351,465
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=366,162,667,465
+MMSFBWindowManager::flipSurface - ls_region, region=366,162,667,465
+
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=52,162,351,465
+MMSFBWindowManager::flipSurface - ls_region, region=52,162,351,465
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=366,162,667,465
+MMSFBWindowManager::flipSurface - ls_region, region=366,162,667,465
+
+
+
+get subsuf 40,98,640,380
+
+
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=52,162,351,465
+vw->vrect = 40,98,640,380
+MMSFBWindowManager::flipSurface - ls_region, region=52,162,351,465
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=366,162,667,465
+vw->vrect = 40,98,640,380
+MMSFBWindowManager::flipSurface - ls_region, region=366,162,667,465
+
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=52,162,351,465
+vw->vrect = 40,98,640,380
+MMSFBWindowManager::flipSurface - ls_region, region=52,162,351,465
+MMSFBWindowManager::flipSurface
+MMSFBWindowManager::flipSurface - input, region=366,162,667,465
+vw->vrect = 40,98,640,380
+MMSFBWindowManager::flipSurface - ls_region, region=366,162,667,465
+s
+
+ */
+
     }
     else {
         // no surface given, have to redraw a layer region?
@@ -673,7 +728,9 @@ logger.writeLog("BBB>");
 	// searching for other affected windows and draw parts of it
     for (unsigned int i=0; i < this->vwins.size(); i++) {
         VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
-        MMSFBRegion *myregion = &(aw->region);
+//        MMSFBRegion *myregion = &(aw->region);
+        MMSFBRegion myreg = aw->region;
+        MMSFBRegion *myregion = &myreg;
 
         // if the window has no opacity then continue
         if (!aw->opacity)
@@ -770,6 +827,7 @@ logger.writeLog("BBB>");
                 }
             }
             else {
+printf(">>>>>>>>>src_rect %d,%d,%d,%d dest %d,%d\n", src_rect.x, src_rect.y, src_rect.w, src_rect.h,dst_x,dst_y);
 				this->layer_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
             }
         }
@@ -784,7 +842,11 @@ logger.writeLog("BBB>");
     // draw the pointer
     drawPointer(&ls_region);
 
-    // reset the clip
+/*if (ls_region.x1==52)
+	this->layer_surface->clear();
+if (ls_region.x1==366)
+	this->layer_surface->clear();*/
+	// reset the clip
     this->layer_surface->setClip(NULL);
 
     // make changes visible
