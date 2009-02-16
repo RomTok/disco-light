@@ -137,12 +137,10 @@ MMSWindow::~MMSWindow() {
 			bool os;
 			getOwnSurface(os);
 			if (os) {
-printf("fbwin os=true\n");
 				// own surface, so delete complete window
 				delete this->window;
 			}
 			else {
-printf("fbwin os=false\n");
 				// delete sub-surface and decrease use counter
 				if (this->surface)
 					delete this->surface;
@@ -151,7 +149,6 @@ printf("fbwin os=false\n");
 						this->fullscreen_root_window_use_count--;
 					if (this->fullscreen_root_window_use_count == 0)
 						if (this->fullscreen_root_window) {
-printf("delete fullscreen root\n");
 							// delete the fullscreen window for root window type because not used anymore
 							delete this->fullscreen_root_window;
 							this->fullscreen_root_window = NULL;
@@ -162,7 +159,6 @@ printf("delete fullscreen root\n");
 						this->fullscreen_main_window_use_count--;
 					if (this->fullscreen_main_window_use_count == 0)
 						if (this->fullscreen_main_window) {
-printf("delete fullscreen main\n");
 							// delete the fullscreen window for main window type because not used anymore
 							delete this->fullscreen_main_window;
 							this->fullscreen_main_window = NULL;
@@ -171,7 +167,6 @@ printf("delete fullscreen main\n");
 			}
 		}
 		else {
-printf("surface\n");
 			// delete surface (e.g. child window surface)
 			if (this->surface)
 				delete this->surface;
@@ -509,10 +504,12 @@ bool MMSWindow::resize(bool refresh) {
         	MMSFBSurfacePixelFormat pixelformat;
             this->layer->getPixelFormat(&pixelformat);
 
-            if (!(this->flags & MMSW_VIDEO)) {
+            // own surface?
+			bool os;
+			getOwnSurface(os);
+
+			if (!(this->flags & MMSW_VIDEO)) {
                 // no video window, use alpha
-    			bool os;
-    			getOwnSurface(os);
     			if ((os) || ((this->type == MMSWINDOWTYPE_ROOTWINDOW) && (!this->fullscreen_root_window))
     					 || ((this->type == MMSWINDOWTYPE_MAINWINDOW) && (!this->fullscreen_main_window))) {
 
@@ -575,12 +572,12 @@ bool MMSWindow::resize(bool refresh) {
 
             // get window surface
         	this->window->getSurface(&(this->surface));
-            if ((this->window == this->fullscreen_root_window) || (this->window == this->fullscreen_main_window)) {
-            	// get subsurface
-//flip prob?
-printf("get subsuf %d,%d,%d,%d\n", this->geom.x,this->geom.y,this->geom.w,this->geom.h);
-            	this->surface = this->surface->getSubSurface(&this->geom);
-            }
+			if ((this->window == this->fullscreen_root_window) || (this->window == this->fullscreen_main_window)) {
+				// get subsurface
+                DEBUGMSG("MMSGUI", "window has no own surface, get subsurface of shared full screen window");
+				this->surface = this->surface->getSubSurface(&this->geom);
+			}
+
 
             // normal window
 			DEBUGMSG("MMSGUI", "setting blitting flags for window");
