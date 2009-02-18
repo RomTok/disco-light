@@ -229,12 +229,13 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	}
     	if(event.type==ButtonPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-    		if(!mmsfb->fullscreen) {
-				inputevent->posx = event.xbutton.x;
-				inputevent->posy = event.xbutton.y;
-    		} else {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
 				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+    		}
+			else {
+				inputevent->posx = event.xbutton.x;
+				inputevent->posy = event.xbutton.y;
     		}
 			/*printf("press x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
 			printf("rect x: %d y: %d \n\n",inputevent->posx,inputevent->posy);*/
@@ -242,12 +243,13 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	}
     	if(event.type==ButtonRelease) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-    		if(!mmsfb->fullscreen) {
-				inputevent->posx = event.xbutton.x;
-				inputevent->posy = event.xbutton.y;
-    		} else {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
 				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+    		}
+			else {
+				inputevent->posx = event.xbutton.x;
+				inputevent->posy = event.xbutton.y;
     		}
 /*    		printf("release x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
 			printf("rect x: %d y: %d \n\n",inputevent->posx,inputevent->posy);*/
@@ -255,13 +257,14 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	}
     	if(event.type==MotionNotify) {
     		inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
-    		if(!mmsfb->fullscreen&& !mmsfb->resized) {
-				inputevent->posx = event.xbutton.x;
-				inputevent->posy = event.xbutton.y;
-    		} else {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO || mmsfb->resized) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
 				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
-    		}
+			}
+			else {
+				inputevent->posx = event.xbutton.x;
+				inputevent->posy = event.xbutton.y;
+			}
 /*    		printf("release x: %d y: %d \n",event.xbutton.x,event.xbutton.y);
 			printf("rect x: %d y: %d \n\n",inputevent->posx,inputevent->posy);*/
     		return;

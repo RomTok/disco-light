@@ -49,7 +49,7 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
 	this->glyphpool 	= NULL;
 	this->glyphpool_ptr = NULL;
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// create the dfb font
 		DFBResult   		dfbres;
@@ -146,7 +146,7 @@ void MMSFBFont::unlock() {
 }
 
 MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }

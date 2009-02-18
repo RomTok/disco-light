@@ -203,7 +203,7 @@ const int MMSConfigData::getYpos() {
     return this->graphics.ypos;
 }
 
-const string MMSConfigData::getBackend() {
+const MMSFBBackend MMSConfigData::getBackend() {
     return this->graphics.backend;
 }
 
@@ -275,7 +275,7 @@ const string MMSConfigData::getAllocMethod() {
     return this->graphics.allocmethod;
 }
 
-const bool   MMSConfigData::getFullscreen() {
+const MMSFBFullScreenMode MMSConfigData::getFullScreen() {
 	return this->graphics.fullscreen;
 }
 

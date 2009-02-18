@@ -509,7 +509,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     if(window) {
     }
 
-	if (mmsfb->getBackend() != MMSFB_BACKEND_DFB) {
+	if (mmsfb->getBackend() != MMSFB_BE_DFB) {
 		this->rawvisual.raw_output_cb = raw_frame_cb;
 		this->rawvisual.supported_formats = XINE_VORAW_YV12;
 		if(window) {
@@ -544,7 +544,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 	/* clear surface */
 
 	MMSConfigData config;
-	if (mmsfb->getBackend() != MMSFB_BACKEND_DFB) {
+	if (mmsfb->getBackend() != MMSFB_BE_DFB) {
 		if(window) {
 			this->userd.surf=window->getSurface();
 			this->userd.surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);

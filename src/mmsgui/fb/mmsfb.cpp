@@ -64,8 +64,8 @@ MMSFB::MMSFB() {
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w, int h,
-				 bool extendedaccel, bool fullscreen, string pointer, string appl_name, string appl_icon_name,int x, int y) {
+bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, string outputtype, int w, int h,
+				 bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer, string appl_name, string appl_icon_name,int x, int y) {
 
     // check if already initialized
     if (this->initialized) {
@@ -88,18 +88,17 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
     this->y = y;
 
     // which backend should i use?
-	if (backend == MMS_BE_DFB) {
+	this->backend = backend;
+	if (this->backend == MMSFB_BE_DFB) {
 #ifdef __HAVE_DIRECTFB__
-		this->backend = MMSFB_BACKEND_DFB;
 #else
 		MMSFB_SetError(0, "compile DFB support!");
 		return false;
 #endif
 	}
     else
-    if (backend == MMS_BE_X11) {
+    if (this->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
-		this->backend = MMSFB_BACKEND_X11;
 		XInitThreads();
 		this->resized=false;
 #else
@@ -108,32 +107,31 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 #endif
     }
     else
-	if (backend == MMS_BE_FBDEV) {
+	if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
-		this->backend = MMSFB_BACKEND_FBDEV;
 #else
 		MMSFB_SetError(0, "compile FBDEV support!");
 		return false;
 #endif
 	}
 	else
-	if (backend == "") {
+	if (this->backend == MMSFB_BE_NONE) {
 		// fall back, auto detection
-		this->backend = MMSFB_BACKEND_DFB;
+		this->backend = MMSFB_BE_DFB;
 #ifdef __HAVE_XLIB__
 		if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel)) {
-			this->backend = MMSFB_BACKEND_X11;
+			this->backend = MMSFB_BE_X11;
 			XInitThreads();
 			this->resized=false;
 		}
 #endif
 	}
 	else {
-		MMSFB_SetError(0, "wrong backend " + backend);
+		MMSFB_SetError(0, "wrong backend " + getMMSFBBackendString(backend));
 		return false;
 	}
 
-    if (this->backend == MMSFB_BACKEND_DFB) {
+    if (this->backend == MMSFB_BE_DFB) {
 #ifdef __HAVE_DIRECTFB__
         DFBResult dfbres;
 
@@ -148,7 +146,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 #endif
     }
     else
-    if (this->backend == MMSFB_BACKEND_FBDEV) {
+    if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
 		if (this->outputtype == MMS_OT_MATROXFB) {
 			// matroxfb
@@ -194,8 +192,8 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 
 		unsigned long x_window_mask;
 		//this->window_w
-		if(fullscreen) {
-			this->fullscreen = true;
+		this->fullscreen = fullscreen;
+		if (fullscreen == MMSFB_FSM_TRUE || fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
 			x_window_attr.override_redirect = True;
 			int cnt;
@@ -214,7 +212,7 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
 										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
 		} else {
-			this->fullscreen = false;
+			this->fullscreen = MMSFB_FSM_FALSE;
 			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
 			x_window_attr.override_redirect = 0;
 			int x_depth = DefaultDepth(this->x_display, this->x_screen);
@@ -304,14 +302,14 @@ bool MMSFB::init(int argc, char **argv, string backend, string outputtype, int w
 }
 
 bool MMSFB::release() {
-    if (this->backend == MMSFB_BACKEND_DFB) {
+    if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		if (this->dfb)
 			this->dfb->Release(this->dfb);
 #endif
     }
     else
-    if (this->backend == MMSFB_BACKEND_FBDEV) {
+    if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	if (this->mmsfbdev) {
     		delete this->mmsfbdev;
@@ -332,7 +330,7 @@ bool MMSFB::isInitialized() {
 	return this->initialized;
 }
 
-MMSFB_BACKEND MMSFB::getBackend() {
+MMSFBBackend MMSFB::getBackend() {
 	return this->backend;
 }
 
@@ -367,12 +365,12 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 }
 
 void *MMSFB::getX11Window() {
-    if (this->backend == MMSFB_BACKEND_DFB) {
+    if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_FBDEV) {
+	if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
@@ -384,12 +382,12 @@ void *MMSFB::getX11Window() {
     return NULL;
 }
 void *MMSFB::getX11Display() {
-    if (this->backend == MMSFB_BACKEND_DFB) {
+    if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_FBDEV) {
+	if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
@@ -405,12 +403,12 @@ bool MMSFB::refresh() {
     // check if initialized
     INITCHECK;
 
-    if (this->backend == MMSFB_BACKEND_DFB) {
+    if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
     else
-	if (this->backend == MMSFB_BACKEND_FBDEV) {
+	if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
@@ -441,7 +439,7 @@ bool MMSFB::createSurface(MMSFBSurface **surface, int w, int h, MMSFBSurfacePixe
 #ifdef  __HAVE_DIRECTFB__
 bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filename) {
 	*provider = NULL;
-    if (this->backend == MMSFB_BACKEND_DFB) {
+    if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -457,7 +455,7 @@ bool MMSFB::createImageProvider(IDirectFBImageProvider **provider, string filena
 		return true;
 #endif
     }
-    if (this->backend == MMSFB_BACKEND_FBDEV) {
+    if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
 #endif
     }

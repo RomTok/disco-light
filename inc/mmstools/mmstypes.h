@@ -31,7 +31,7 @@
 
 #include "mmstools/base.h"
 
-// backend types..............................................................
+// backend types.............................................................
 
 //! supported backends
 typedef enum {
@@ -62,7 +62,7 @@ string getMMSFBBackendString(MMSFBBackend be);
 MMSFBBackend getMMSFBBackendFromString(string be);
 
 
-// full screen modes..........................................................
+// full screen modes.........................................................
 
 //! supported full screen modes
 typedef enum {

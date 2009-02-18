@@ -80,7 +80,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	}
 #endif
     if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), config.getXres(), config.getYres(),
-					 ea, config.getFullscreen(), config.getPointer(), appl_name, appl_icon_name, config.getXpos(), config.getYpos()))
+					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getXpos(), config.getYpos()))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");
@@ -181,7 +181,7 @@ void MMSFBManager::applySettings() {
     		gls->setExtendedAcceleration(config.getExtendedAccel());
 
     		// set the global alloc method (default is malloc)
-    		if (mmsfb->getBackend() == MMSFB_BACKEND_DFB) {
+    		if (mmsfb->getBackend() == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 				string am = config.getAllocMethod();
 				if (am == "MALLOC") {

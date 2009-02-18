@@ -91,6 +91,9 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return NULL;
 
+
+DEBUGMSG("MMSGUI", "getImage(): im=%x path=%s, name=%s\n", this, path.c_str(), filename.c_str());
+
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
         if (this->images.at(i)->imagefile == imagefile) {
@@ -105,6 +108,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
                 }
                 else {
                     /* do not reload */
+DEBUGMSG("MMSGUI", " getImage(): no reload#1: im=%x path=%s, name=%s\n", this, path.c_str(), filename.c_str());
                     this->images.at(i)->usecount++;
                     if (surfdesc)
                         *surfdesc = this->images.at(i)->suf;
@@ -113,6 +117,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             }
             else {
                 /* do not reload */
+DEBUGMSG("MMSGUI", "  getImage(): no reload#2: im=%x path=%s, name=%s\n", this, path.c_str(), filename.c_str());
                 this->images.at(i)->usecount++;
                 if (surfdesc)
                     *surfdesc = this->images.at(i)->suf;
@@ -127,6 +132,9 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     im_desc->suf[0].delaytime = im_desc->suf[1].delaytime = MMSIM_DESC_SUF_END;
     im_desc->sufcount = 0;
     im_desc->loading = false;
+
+DEBUGMSG("MMSGUI", "   getImage(): loading image: im=%x path=%s, name=%s\n", this, path.c_str(), filename.c_str());
+
 
     /* first try to load GIF formated files */
     if (isGIF(imagefile)) {

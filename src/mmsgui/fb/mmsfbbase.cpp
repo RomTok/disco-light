@@ -583,4 +583,34 @@ DFBSurfaceLockFlags getDFBSurfaceLockFlagsFromMMSFBLockFlags(MMSFBLockFlags flag
 #endif
 
 
+void calcAspectRatio(int sw, int sh, int dw, int dh, MMSFBRectangle &dest, bool aspect_ratio, bool even_aligned) {
+	if (aspect_ratio) {
+		// calc aspect ratio
+		dest.h = dw * sh / sw;
+		if (dest.h <= dh) {
+			dest.w = dw;
+		}
+		else {
+			dest.w = dh * sw / sh;
+			dest.h = dh;
+		}
+	}
+	else {
+		// using full dest dimension
+		dest.w = dw;
+		dest.h = dh;
+	}
+
+	// calc pos
+	dest.x = (dw - dest.w) / 2;
+	dest.y = (dh - dest.h) / 2;
+
+	if (even_aligned) {
+		// even pos and dimension
+		dest.x &= ~0x01;
+		dest.y &= ~0x01;
+		dest.w &= ~0x01;
+		dest.h &= ~0x01;
+	}
+}
 

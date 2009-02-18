@@ -1058,6 +1058,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
     /* check if initialized */
     INITCHECK;
 
+
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
@@ -3944,8 +3945,14 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				XLockDisplay(mmsfb->x_display);
 				if (!region) {
 					// put whole image
+					int dx = 0;
+					int dy = 0;
+					if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+						dx = (mmsfb->display_w - this->config.w) >> 1;
+						dy = (mmsfb->display_h - this->config.h) >> 1;
+					}
 					XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-								  0, 0, 0, 0,
+								  0, 0, dx, dy,
 								  this->config.w, this->config.h, False);
 					XFlush(mmsfb->x_display);
 				}
@@ -3957,8 +3964,14 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					if (myreg.x2 >= this->config.w) myreg.x2 = this->config.w - 1;
 					if (myreg.y2 >= this->config.h) myreg.y2 = this->config.h - 1;
 					if ((myreg.x2 >= myreg.x1)&&(myreg.y2 >= myreg.y1)) {
+						int dx = 0;
+						int dy = 0;
+						if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+							dx = (mmsfb->display_w - this->config.w) >> 1;
+							dy = (mmsfb->display_h - this->config.h) >> 1;
+						}
 						XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-									 myreg.x1, myreg.y1, myreg.x1, myreg.y1,
+									 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
 									 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
 						XFlush(mmsfb->x_display);
 					}
@@ -4014,10 +4027,16 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			// XVSHM, put the image to the x-server
 			mmsfb->xlock.lock();
 			XLockDisplay(mmsfb->x_display);
-			if(mmsfb->fullscreen) {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+				// calc ratio
+				MMSFBRectangle dest;
+				calcAspectRatio(mmsfb->w, mmsfb->h, mmsfb->display_w, mmsfb->display_h, dest,
+								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
+
+				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
-							  0, 0, mmsfb->display_w, mmsfb->display_h, False);
+							  dest.x, dest.y, dest.w, dest.h, False);
 
 			} else if(mmsfb->resized) {
 				printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
@@ -4090,8 +4109,14 @@ bool MMSFBSurface::refresh() {
 				// no scaler defined
 				mmsfb->xlock.lock();
 				XLockDisplay(mmsfb->x_display);
+				int dx = 0;
+				int dy = 0;
+				if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+					dx = (mmsfb->display_w - this->config.w) >> 1;
+					dy = (mmsfb->display_h - this->config.h) >> 1;
+				}
 				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-							  0, 0, 0, 0,
+							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
 				XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
@@ -4112,10 +4137,16 @@ bool MMSFBSurface::refresh() {
 			this->lock();
 			mmsfb->xlock.lock();
 			XLockDisplay(mmsfb->x_display);
-			if(mmsfb->fullscreen) {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+				// calc ratio
+				MMSFBRectangle dest;
+				calcAspectRatio(mmsfb->w, mmsfb->h, mmsfb->display_w, mmsfb->display_h, dest,
+								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
+
+				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
-							  0, 0, mmsfb->display_w, mmsfb->display_h, False);
+							  dest.x, dest.y, dest.w, dest.h, False);
 			} else if(mmsfb->resized) {
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,

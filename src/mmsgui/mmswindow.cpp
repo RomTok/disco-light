@@ -39,6 +39,8 @@
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
+//MMSImageManager     *MMSWindow::im = NULL;
+
 MMSFBWindow *MMSWindow::fullscreen_root_window			= NULL;
 int			MMSWindow::fullscreen_root_window_use_count = 0;
 MMSFBWindow *MMSWindow::fullscreen_main_window			= NULL;
@@ -55,7 +57,7 @@ MMSWindow::MMSWindow() {
     this->initialized = false;
     this->parent = NULL;
     this->toplevel_parent = NULL;
-    this->im = NULL;
+this->im = NULL;
     this->fm = NULL;
     this->window = NULL;
     this->layer = NULL;
@@ -126,7 +128,7 @@ MMSWindow::~MMSWindow() {
 
     // delete the rest :)
     delete this->action;
-    delete this->im;
+delete this->im;
     delete this->fm;
 
     if (!((this->flags & MMSW_VIDEO)&&(!(this->flags & MMSW_USEGRAPHICSLAYER)))) {
@@ -245,7 +247,8 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     	DEBUGMSG("MMSGUI", " MMSW_NONE");
 
     /* create image and font manager */
-    this->im = new MMSImageManager(this->layer);
+//    if (!this->im)
+    	this->im = new MMSImageManager(this->layer);
     this->fm = new MMSFontManager();
 
     /* set some attributes */
@@ -496,6 +499,7 @@ bool MMSWindow::resize(bool refresh) {
     innerGeom.w = this->geom.w - 2*dz;
     innerGeom.h = this->geom.h - 2*dz;
 
+
     if (!this->parent) {
         // normal parent window
         if (!this->window) {
@@ -532,6 +536,9 @@ bool MMSWindow::resize(bool refresh) {
                                               wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                               pixelformat, true, false);
                     DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
+
+                    // window should not be visible at this time
+                    this->window->setOpacity(0);
     			}
 
 				if (!os) {
@@ -542,6 +549,7 @@ bool MMSWindow::resize(bool refresh) {
 							this->window = this->fullscreen_root_window;
 						this->fullscreen_root_window_use_count++;
 					}
+					else
 					if (this->type == MMSWINDOWTYPE_MAINWINDOW) {
 						if (!this->fullscreen_main_window)
 							this->fullscreen_main_window = this->window;
@@ -562,16 +570,18 @@ bool MMSWindow::resize(bool refresh) {
                 this->layer->createWindow(&(this->window),
                                           wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
                                           pixelformat, false, true);
-                DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
+                DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
+
+                // window should not be visible at this time
+                this->window->setOpacity(0);
 
                 // video windows should have own surfaces
                 setOwnSurface(true);
             }
 
-            this->window->setOpacity(0);
-
             // get window surface
         	this->window->getSurface(&(this->surface));
+
 			if ((this->window == this->fullscreen_root_window) || (this->window == this->fullscreen_main_window)) {
 				// get subsurface
                 DEBUGMSG("MMSGUI", "window has no own surface, get subsurface of shared full screen window");
