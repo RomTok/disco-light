@@ -61,6 +61,8 @@ class MMSImageManager {
 
         vector<MMSIM_DESC*> images;
 
+        MMSMutex  			lock;
+
         bool surface2TAFF(string &imagefile, MMSFBSurface *surface);
 
         bool loadGIF(string file, MMSIM_DESC *desc);

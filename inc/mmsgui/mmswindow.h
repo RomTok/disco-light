@@ -171,11 +171,23 @@ class MMSWindow {
         //! toplevel parent window (if window is a child window) or NULL
         MMSWindow			*toplevel_parent;
 
+        //! image manager for the window (layer 1)
+        static MMSImageManager 	*im1;
+
+        //! layer for im1
+        static MMSFBLayer		*im1_layer;
+
+        //! image manager for the window (layer 2)
+        static MMSImageManager	*im2;
+
+        //! layer for im2
+        static MMSFBLayer		*im2_layer;
+
         //! image manager for the window
         MMSImageManager     *im;
 
         //! font manager for the window
-        MMSFontManager      *fm;
+        static MMSFontManager	*fm;
 
         //! window action thread (used for animations)
         MMSWindowAction   	*action;

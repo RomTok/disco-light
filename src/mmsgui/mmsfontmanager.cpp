@@ -50,17 +50,23 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
     if (fontfile == "")
         return NULL;
 
+    // lock threads
+    this->lock.lock();
+
     /* search within fonts list */
     for (unsigned int i = 0; i < this->fonts.size(); i++) {
         if (this->fonts.at(i).fontfile == fontfile)
-            if (this->fonts.at(i).size == size)
+            if (this->fonts.at(i).size == size) {
+                this->lock.unlock();
                 return this->fonts.at(i).font;
+            }
     }
 
     /* load font */
     fm_desc.font = NULL;
     if (!loadFont(&(fm_desc.font), "", fontfile, 0, size)) {
         DEBUGMSG("MMSGUI", "cannot load font file '%s'", fontfile.c_str());
+        this->lock.unlock();
         return NULL;
     }
     fm_desc.fontfile = fontfile;
@@ -68,6 +74,7 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
 
     /* add to fonts list and return the font */
     this->fonts.push_back(fm_desc);
+    this->lock.unlock();
     return fm_desc.font;
 }
 

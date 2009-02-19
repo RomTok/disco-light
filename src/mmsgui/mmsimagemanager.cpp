@@ -91,6 +91,8 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return NULL;
 
+    // lock threads
+    this->lock.lock();
 
     DEBUGMSG("MMSGUI", "Load request for path=%s, name=%s", path.c_str(), filename.c_str());
 
@@ -112,6 +114,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
                     this->images.at(i)->usecount++;
                     if (surfdesc)
                         *surfdesc = this->images.at(i)->suf;
+                    this->lock.unlock();
                     return this->images.at(i)->suf[0].surface;
                 }
             }
@@ -121,6 +124,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
                 this->images.at(i)->usecount++;
                 if (surfdesc)
                     *surfdesc = this->images.at(i)->suf;
+                this->lock.unlock();
                 return this->images.at(i)->suf[0].surface;
             }
         }
@@ -163,12 +167,14 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
                 this->images.push_back(im_desc);
                 if (surfdesc)
                     *surfdesc = this->images.at(this->images.size()-1)->suf;
+                this->lock.unlock();
                 return im_desc->suf[0].surface;
             }
             else {
                 /* failed to load */
             	DEBUGMSG("MMSGUI", "cannot load image file '%s'",imagefile.c_str());
                 delete im_desc;
+                this->lock.unlock();
                 return NULL;
             }
         }
@@ -180,6 +186,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             delete im_desc;
             if (surfdesc)
                 *surfdesc = this->images.at(reload_image)->suf;
+            this->lock.unlock();
             return this->images.at(reload_image)->suf[0].surface;
         }
     }
@@ -334,6 +341,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height, this->pixelformat)) {
 				                    DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
 				                    delete im_desc;
+				                    this->lock.unlock();
 				                    return NULL;
 				                }
 				                im_desc->sufcount = 1;
@@ -374,6 +382,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                this->images.push_back(im_desc);
 				                if (surfdesc)
 				                    *surfdesc = this->images.at(this->images.size()-1)->suf;
+				                this->lock.unlock();
 				                return im_desc->suf[0].surface;
 				            }
 				            else {
@@ -414,6 +423,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                delete im_desc;
 				                if (surfdesc)
 				                    *surfdesc = this->images.at(reload_image)->suf;
+				                this->lock.unlock();
 				                return this->images.at(reload_image)->suf[0].surface;
 				            }
 				    	}
@@ -435,6 +445,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         	DEBUGMSG("MMSGUI", "cannot load image file '%s'", imagefile.c_str());
             if (reload_image < 0) {
                 delete im_desc;
+                this->lock.unlock();
                 return NULL;
             }
             else {
@@ -442,6 +453,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 delete im_desc;
                 if (surfdesc)
                     *surfdesc = this->images.at(reload_image)->suf;
+                this->lock.unlock();
                 return this->images.at(reload_image)->suf[0].surface;
             }
         }
@@ -464,6 +476,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
             DEBUGMSG("MMSGUI", "cannot read surface desciption from image file '%s'", imagefile.c_str());
             if (reload_image < 0) {
                 delete im_desc;
+                this->lock.unlock();
                 return NULL;
             }
             else {
@@ -471,6 +484,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 delete im_desc;
                 if (surfdesc)
                     *surfdesc = this->images.at(reload_image)->suf;
+                this->lock.unlock();
                 return this->images.at(reload_image)->suf[0].surface;
             }
         }
@@ -482,6 +496,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 imageprovider->Release(imageprovider);
                 DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
                 delete im_desc;
+                this->lock.unlock();
                 return NULL;
             }
             im_desc->sufcount = 1;
@@ -493,6 +508,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 delete im_desc->suf[0].surface;
                 DEBUGMSG("MMSGUI", "cannot render image file '%s' because it is not a DFB surface", imagefile.c_str());
                 delete im_desc;
+                this->lock.unlock();
                 return NULL;
             }
 
@@ -503,6 +519,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
                 delete im_desc->suf[0].surface;
                 DEBUGMSG("MMSGUI", "cannot render image file '%s'", imagefile.c_str());
                 delete im_desc;
+                this->lock.unlock();
                 return NULL;
             }
 
@@ -521,6 +538,7 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
             this->images.push_back(im_desc);
             if (surfdesc)
                 *surfdesc = this->images.at(this->images.size()-1)->suf;
+            this->lock.unlock();
             return im_desc->suf[0].surface;
         }
         else {
@@ -541,6 +559,7 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
                 delete im_desc;
                 if (surfdesc)
                     *surfdesc = this->images.at(reload_image)->suf;
+                this->lock.unlock();
                 return this->images.at(reload_image)->suf[0].surface;
             }
 
@@ -553,11 +572,13 @@ DEBUGOUT("end < %d\n", tv.tv_usec);
             delete im_desc;
             if (surfdesc)
                 *surfdesc = this->images.at(reload_image)->suf;
+            this->lock.unlock();
             return this->images.at(reload_image)->suf[0].surface;
         }
 #endif
     }
 
+    this->lock.unlock();
     return NULL;
 }
 
@@ -566,12 +587,16 @@ MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, 
     MMSIM_DESC              *im_desc = NULL;
 
 
+    // lock threads
+    this->lock.lock();
+
     if (name != "") {
         /* search name within images list */
         for (unsigned int i = 0; i < this->images.size(); i++) {
             if (this->images.at(i)->name == name) {
                 /* found, must not create a new image */
                 this->images.at(i)->usecount++;
+                this->lock.unlock();
                 return this->images.at(i)->suf[0].surface;
             }
         }
@@ -592,14 +617,17 @@ MMSFBSurface *MMSImageManager::newImage(const string &name, unsigned int width, 
     desc.pixelformat = pixelformat;
 */
 //    if (this->dfb->CreateSurface(this->dfb, &desc, &(im_desc.surface)) != DFB_OK)
-    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat==MMSFB_PF_NONE)?this->pixelformat:pixelformat))
+    if (!this->layer->createSurface(&(im_desc->suf[0].surface), width, height, (pixelformat==MMSFB_PF_NONE)?this->pixelformat:pixelformat)) {
+        this->lock.unlock();
         return NULL;
+    }
     im_desc->sufcount = 1;
     im_desc->imagefile = "";
 
     /* add to images list and return the surface */
     im_desc->usecount = 1;
     this->images.push_back(im_desc);
+    this->lock.unlock();
     return im_desc->suf[0].surface;
 }
 
@@ -614,6 +642,9 @@ void MMSImageManager::releaseImage(const string &path, const string &filename) {
         return;
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return;
+
+    // lock threads
+    this->lock.lock();
 
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
@@ -634,11 +665,16 @@ void MMSImageManager::releaseImage(const string &path, const string &filename) {
             }
         }
     }
+
+    this->lock.unlock();
 }
 
 void MMSImageManager::releaseImage(MMSFBSurface *surface) {
     /* NULL? */
     if (!surface) return;
+
+    // lock threads
+    this->lock.lock();
 
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
@@ -659,5 +695,7 @@ void MMSImageManager::releaseImage(MMSFBSurface *surface) {
             }
         }
     }
+
+    this->lock.unlock();
 }
 

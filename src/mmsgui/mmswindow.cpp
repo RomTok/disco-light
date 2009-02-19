@@ -39,7 +39,11 @@
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
-//MMSImageManager     *MMSWindow::im = NULL;
+MMSImageManager     *MMSWindow::im1 = NULL;
+MMSFBLayer     		*MMSWindow::im1_layer = NULL;
+MMSImageManager     *MMSWindow::im2 = NULL;
+MMSFBLayer     		*MMSWindow::im2_layer = NULL;
+MMSFontManager     	*MMSWindow::fm = NULL;
 
 MMSFBWindow *MMSWindow::fullscreen_root_window			= NULL;
 int			MMSWindow::fullscreen_root_window_use_count = 0;
@@ -57,8 +61,8 @@ MMSWindow::MMSWindow() {
     this->initialized = false;
     this->parent = NULL;
     this->toplevel_parent = NULL;
-this->im = NULL;
-    this->fm = NULL;
+//this->im = NULL;
+//    this->fm = NULL;
     this->window = NULL;
     this->layer = NULL;
     this->surface = NULL;
@@ -128,8 +132,8 @@ MMSWindow::~MMSWindow() {
 
     // delete the rest :)
     delete this->action;
-delete this->im;
-    delete this->fm;
+//delete this->im;
+//delete this->fm;
 
     if (!((this->flags & MMSW_VIDEO)&&(!(this->flags & MMSW_USEGRAPHICSLAYER)))) {
 		// surface is NOT the video layer surface
@@ -246,10 +250,31 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     else
     	DEBUGMSG("MMSGUI", " MMSW_NONE");
 
-    /* create image and font manager */
-//    if (!this->im)
-    	this->im = new MMSImageManager(this->layer);
-    this->fm = new MMSFontManager();
+    // create static image manager
+    if (!this->im1_layer) {
+    	this->im1 = new MMSImageManager(this->layer);
+    	this->im1_layer = this->layer;
+    	this->im = this->im1;
+    }
+    else {
+        if (this->im1_layer == this->layer) {
+        	this->im = this->im1;
+        }
+        else {
+            if (this->im2_layer == this->layer) {
+				this->im = this->im2;
+            }
+            else {
+				this->im2 = new MMSImageManager(this->layer);
+				this->im2_layer = this->layer;
+				this->im = this->im2;
+            }
+        }
+    }
+
+    // create static font manager
+    if (!this->fm)
+    	this->fm = new MMSFontManager();
 
     /* set some attributes */
     this->shown=false;

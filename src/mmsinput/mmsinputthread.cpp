@@ -116,13 +116,14 @@ void MMSInputThread::threadMain() {
 
 	            /* check if the last input is to old */
 	            skip=0;
-	            if (lkcnt > 0)
+	            if (lkcnt > 0) {
 	                if (currtime > lasttime + this->inputinterval*2)
 	                    /* to old */
 	                    lkcnt = 0;
 	                else
 	                    /* the next loop we want the input faster */
 	                    skip = 1;
+	            }
 
 	            /* save current time */
 	            lasttime = currtime;

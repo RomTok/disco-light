@@ -41,6 +41,8 @@ class MMSFontManager {
     private:
         vector<MMSFM_DESC>  fonts;
 
+        MMSMutex  			lock;
+
     public:
         MMSFontManager();
         ~MMSFontManager();
