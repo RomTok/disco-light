@@ -91,6 +91,9 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     if (imagefile.substr(imagefile.size()-1,1)=="/")
         return NULL;
 
+
+    DEBUGMSG("MMSGUI", "Load request for path=%s, name=%s", path.c_str(), filename.c_str());
+
     /* search within images list */
     for (unsigned int i = 0; i < this->images.size(); i++) {
         if (this->images.at(i)->imagefile == imagefile) {
@@ -105,6 +108,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
                 }
                 else {
                     /* do not reload */
+					DEBUGMSG("MMSGUI", "Reusing already loaded image path=%s, name=%s", path.c_str(), filename.c_str());
                     this->images.at(i)->usecount++;
                     if (surfdesc)
                         *surfdesc = this->images.at(i)->suf;
@@ -113,6 +117,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
             }
             else {
                 /* do not reload */
+				DEBUGMSG("MMSGUI", "Reusing already loaded image path=%s, name=%s", path.c_str(), filename.c_str());
                 this->images.at(i)->usecount++;
                 if (surfdesc)
                     *surfdesc = this->images.at(i)->suf;
@@ -127,6 +132,8 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
     im_desc->suf[0].delaytime = im_desc->suf[1].delaytime = MMSIM_DESC_SUF_END;
     im_desc->sufcount = 0;
     im_desc->loading = false;
+
+	DEBUGMSG("MMSGUI", "Loading image path=%s, name=%s", path.c_str(), filename.c_str());
 
     /* first try to load GIF formated files */
     if (isGIF(imagefile)) {
@@ -196,14 +203,14 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
     			MMSTaffFile *tafff;
     			if (retry) {
 	    			retry = false;
-	    			DEBUGOUT("ImageManager, retry\n");
+	    			DEBUGOUT("ImageManager, retry");
     				// have to convert taff with special destination pixelformat
     				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
 		    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
         			if (tafff) {
         				// set external file and requested pixelformat
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
-	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
+	    				DEBUGOUT("ImageManager, taffpf = %d", taffpf);
 	    				tafff->setDestinationPixelFormat(taffpf);
 	    				tafff->setMirrorEffect(mirror_size);
 	    				// convert it
@@ -281,11 +288,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 
 				    	if (img_pixelformat != taffpf) {
-				    		DEBUGOUT("ImageManager, taffpf = %d\n", (int)taffpf);
+				    		DEBUGOUT("ImageManager, taffpf = %d", (int)taffpf);
 				    		// the image from the file has not the same pixelformat as the surface
 				    		if (!retry) {
 				    			// retry with surface pixelformat
-				    			DEBUGOUT("ImageManager, request new pixf\n");
+				    			DEBUGOUT("ImageManager, request new pixf");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -295,11 +302,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 				    	else
 				    	if (img_mirror_size != mirror_size) {
-				    		DEBUGOUT("ImageManager, mirror_size = %d\n", (int)mirror_size);
+				    		DEBUGOUT("ImageManager, mirror_size = %d", (int)mirror_size);
 				    		// the image from the file has not the same mirror_size
 				    		if (!retry) {
 				    			// retry with given mirror_size
-				    			DEBUGOUT("ImageManager, request new mirrot_size\n");
+				    			DEBUGOUT("ImageManager, request new mirrot_size");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;

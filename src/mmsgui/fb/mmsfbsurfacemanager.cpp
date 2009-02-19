@@ -87,11 +87,18 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixel
 		return false;
 	}
 
-    /* add size of the surface to my global counter */
-    int size;
+    // get size of surface memory
+    int size, bnum;
     surface->getMemSize(&size);
+    surface->getNumberOfBuffers(&bnum);
+    DEBUGMSG("MMSGUI", "New surface memory allocated: "
+							+ iToStr(size) + " byte, "
+							+ iToStr(bnum) + " buffer(s), "
+							+ iToStr(size/(bnum)) + " byte for each buffer");
+
+    // add size of the surface to my global counter
     this->surface_mem_cnt+=size;
-    DEBUGMSG("MMSGUI", "Allocated surface memory: " + iToStr(this->surface_mem_cnt) + " Byte");
+    DEBUGMSG("MMSGUI", "Sum of allocated surface memory: " + iToStr(this->surface_mem_cnt) + " byte");
 
     /* add to used surfaces */
 /* TRACE

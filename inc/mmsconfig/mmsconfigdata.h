@@ -29,7 +29,7 @@
 #ifndef MMSCONFIGDATA_H_
 #define MMSCONFIGDATA_H_
 
-#include <string>
+#include "mmstools/mmstypes.h"
 
 using namespace std;
 
@@ -74,7 +74,7 @@ class MMSConfigDataGraphics {
 	    int    yres;
 	    int    xpos;
 	    int    ypos;
-	    string backend;
+	    MMSFBBackend backend;
 	    string outputtype;
 		int    videolayerid;
 	    string videolayerpixelformat;
@@ -92,7 +92,7 @@ class MMSConfigDataGraphics {
 		string graphicssurfacepixelformat;
 	    bool   extendedaccel;
 	    string allocmethod;
-        bool   fullscreen;
+	    MMSFBFullScreenMode	fullscreen;
 };
 
 class MMSConfigData {
@@ -145,7 +145,7 @@ class MMSConfigData {
         const int    getYres();
         const int    getXpos();
         const int    getYpos();
-        const string getBackend();
+        const MMSFBBackend getBackend();
         const string getOutputType();
         const int    getVideoLayerId();
         const string getVideoLayerPixelformat();
@@ -163,7 +163,7 @@ class MMSConfigData {
         const string getGraphicsSurfacePixelformat();
         const bool   getExtendedAccel();
         const string getAllocMethod();
-        const bool   getFullscreen();
+        const MMSFBFullScreenMode   getFullScreen();
 };
 
 #endif /*MMSCONFIGDATA_H_*/

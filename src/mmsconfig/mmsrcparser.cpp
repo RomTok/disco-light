@@ -29,6 +29,10 @@
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"
 
+#define WRONG_VALUE(parname, parvalue, validvals) throw new MMSRcParserError(1, "wrong value '" + parvalue + "' of parameter '" + string((const char *)parname) + "' valid values: " + validvals);
+
+
+
 MMSRcParser::MMSRcParser() {
 	this->global.logfile       = "/tmp/mmscore";
     this->global.firstplugin   = "<none>";
@@ -46,7 +50,8 @@ MMSRcParser::MMSRcParser() {
     this->graphics.yres                       = 600;
     this->graphics.xpos                       = 50;
     this->graphics.ypos                       = 50;
-    this->graphics.backend                    = "";
+    // set MMSFB_BE_NONE for compatibility reason
+    this->graphics.backend                    = MMSFB_BE_NONE;
     this->graphics.outputtype                 = "VESAFB";
     this->graphics.videolayerid               = 0;
     this->graphics.videolayerpixelformat      = "RGB16";
@@ -70,7 +75,7 @@ MMSRcParser::MMSRcParser() {
 	this->graphics.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
-	this->graphics.fullscreen    			  = false;	// x11 fullscreen?, default no
+	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -129,7 +134,7 @@ void MMSRcParser::parseFile(string filename) {
 	}
 	catch(MMSError *error)
 	{
-		std::cout << "Exception caught: " << error->getMessage() << std::endl;
+		std::cout << "RcParser exception: " << error->getMessage() << std::endl;
 		throw new MMSRcParserError(1,error->getMessage());
 	}
 
@@ -283,6 +288,7 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 	}
 }
 
+
 void MMSRcParser::throughGraphics(xmlNode* node) {
 
 	xmlNode *cur_node = NULL;
@@ -310,8 +316,11 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	        this->graphics.xpos = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "ypos"))
 	        this->graphics.ypos = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "backend"))
-	        this->graphics.backend = strToUpr(string((const char *)parvalue));
+        else if(!xmlStrcmp(parname, (const xmlChar *) "backend")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.backend = getMMSFBBackendFromString(strToUpr(val))) == MMSFB_BE_NONE)
+            	WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES);
+        }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype"))
 	        this->graphics.outputtype = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
@@ -358,9 +367,12 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
 			this->graphics.allocmethod = strToUpr(string((const char *)parvalue));
-        else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen"))
-            this->graphics.fullscreen = strToBool(string((const char *)parvalue));
-		else
+        else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.fullscreen = getMMSFBFullScreenModeFromString(strToUpr(val))) == MMSFB_FSM_NONE)
+            	WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES);
+        }
+        else
 			printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);
 
 	    xmlFree(parname);

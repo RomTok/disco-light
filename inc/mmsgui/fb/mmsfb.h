@@ -29,6 +29,7 @@
 #ifndef MMSFB_H_
 #define MMSFB_H_
 
+#include "mmstools/mmstypes.h"
 #include "mmstools/mmslogger.h"
 
 #include "mmsgui/fb/mmsfbdev.h"
@@ -39,7 +40,7 @@
 
 #define MMSFBLAYER_MAXNUM 32
 
-//! The lowest layer to the backends like DFB or X11(XV).
+//! The lowest layer to the backends like DFB, X11(XSHM/XVSHM) or FBDEV.
 /*!
 \author Jens Schneider
 */
@@ -68,7 +69,7 @@ class MMSFB {
         int				h;
         int				x;
         int				y;
-        MMSFB_BACKEND	backend;
+        MMSFBBackend	backend;
 
 #ifdef __HAVE_XLIB__
         Display 		*x_display;
@@ -83,7 +84,7 @@ class MMSFB {
         int				display_h;
         int				target_window_w;
         int				target_window_h;
-        bool            fullscreen;
+        MMSFBFullScreenMode fullscreen;
         bool            resized;
         bool 			resizeWindow();
 #endif
@@ -92,12 +93,12 @@ class MMSFB {
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv, string backend, string outputtype, int w, int h, bool extendedaccel, bool fullscreen, string pointer,
+        bool init(int argc, char **argv, MMSFBBackend backend, string outputtype, int w, int h, bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer,
 				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application",int x=50, int y=50);
         bool release();
         bool isInitialized();
 
-        MMSFB_BACKEND getBackend();
+        MMSFBBackend getBackend();
 
         bool getLayer(int id, MMSFBLayer **layer);
 

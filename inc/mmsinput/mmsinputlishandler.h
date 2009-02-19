@@ -33,10 +33,33 @@
 #include "mmsbase/mmsbase.h"
 #include "mmsinput/mmsinputhandler.h"
 
+//! maximum number of linux input devices
+#define MMSINPUTLISHANDLER_MAX_DEVICES 	16
+
 #define MMSINPUTLISHANDLER_EVENT_BUFFER_SIZE	100
+
+typedef int MMSINPUTLISHANDLER_DEVTYPE;
+
+#define MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN		"UNKNOWN"
+#define MMSINPUTLISHANDLER_DEVTYPE_KEYBOARD		"KEYBOARD"
+#define MMSINPUTLISHANDLER_DEVTYPE_REMOTE		"REMOTE"
+
+typedef struct {
+	string 	name;
+	string	desc;
+	string	type;
+} MMSINPUTLISHANDLER_DEV;
+
 
 class MMSInputLISHandler : public MMSInputHandler {
 	private:
+		//! available input devices
+		MMSINPUTLISHANDLER_DEV devices[MMSINPUTLISHANDLER_MAX_DEVICES];
+
+		//! number of available input devices
+		int	devcnt;
+
+
 		//! event ring buffer
 		MMSInputEvent 	ie_buffer[MMSINPUTLISHANDLER_EVENT_BUFFER_SIZE];
 
@@ -46,27 +69,30 @@ class MMSInputLISHandler : public MMSInputHandler {
 		//! event ring buffer, write pos
 		int ie_write_pos;
 
-		//! shift key pressed
-		bool shift_pressed;
-
-		//! altgr key pressed
-		bool altgr_pressed;
-
-		//! is caps lock?
-		bool is_caps_lock;
-
 		//! filedescriptor from which we read keyboard inputs (this should be the fd to the framebuffer console)
 		int	kb_fd;
 
-		MMSKeySymbol getSymbol(int code, unsigned short value);
-		unsigned short readValue(unsigned char table, unsigned char index);
-		MMSKeySymbol getKeyFromCode(bool pressed, unsigned char code);
-		void readKeyboardEvents();
-		void updateLED();
+
+		class MMSInputLISThread	*listhread;
+
+
+        //! lock
+        MMSMutex lock;
+
+
+
+        bool checkDevice();
+        void getDevices();
+
+		bool addEvent(MMSInputEvent *inputevent);
+
 	public:
 		MMSInputLISHandler(MMS_INPUT_DEVICE device);
 		~MMSInputLISHandler();
 		void grabEvents(MMSInputEvent *inputevent);
+
+	// friends
+	friend class MMSInputLISThread;
 };
 
 #endif /* MMSINPUTLISHANDLER_H_ */

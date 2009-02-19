@@ -75,7 +75,7 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->xv_image2 = NULL;
 #endif
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// get the layer
 		DFBResult	dfbres;
@@ -89,7 +89,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
 			// test layer initialization
@@ -190,10 +190,16 @@ MMSFBLayer::MMSFBLayer(int id) {
 				if (this->x_image1->bytes_per_line / this->config.w >= 4)
 					this->config.pixelformat = MMSFB_PF_RGB32;
 
-			if (mmsfb->fullscreen) {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+
+				// calc ratio
+				MMSFBRectangle dest;
+				calcAspectRatio(this->config.w, this->config.h, mmsfb->display_w, mmsfb->display_h, dest,
+								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), false);
+
 				// create scale buffer
 				this->x_image_scaler = XShmCreateImage(mmsfb->x_display, mmsfb->x_visual, mmsfb->x_depth, ZPixmap,
-													   NULL, &this->x_shminfo_scaler, mmsfb->display_w, mmsfb->display_w);
+													   NULL, &this->x_shminfo_scaler, dest.w, dest.h);
 				if (!this->x_image_scaler) {
 					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "XShmCreateImage() failed");
@@ -215,7 +221,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 				}
 
 				// create a scaler surface
-				this->scaler = new MMSFBSurface(mmsfb->display_w, mmsfb->display_h, this->config.pixelformat,
+				this->scaler = new MMSFBSurface(dest.w, dest.h, this->config.pixelformat,
 											this->x_image_scaler, NULL, NULL);
 				if (!this->scaler) {
 					XUnlockDisplay(mmsfb->x_display);
@@ -302,14 +308,14 @@ MMSFBLayer::MMSFBLayer(int id) {
 
 
 MMSFBLayer::~MMSFBLayer() {
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		if (this->dfblayer)
 			this->dfblayer->Release(this->dfblayer);
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (this->mmsfbdev_surface)
         	delete this->mmsfbdev_surface;
@@ -336,13 +342,13 @@ MMSFBLayer::~MMSFBLayer() {
 }
 
 bool MMSFBLayer::isInitialized() {
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
     	return (this->dfblayer != NULL);
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	return this->initialized;
 #endif
@@ -386,7 +392,7 @@ bool MMSFBLayer::setExclusiveAccess() {
 	/* check if initialized */
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -400,7 +406,7 @@ bool MMSFBLayer::setExclusiveAccess() {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	return true;
 #endif
@@ -419,7 +425,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 	/* check if initialized */
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult               dfbres;
 		DFBDisplayLayerConfig   dlc;
@@ -439,7 +445,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
 #endif
     }
@@ -447,7 +453,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     if (!config) {
     	DEBUGMSG("MMSGUI", "Layer properties:");
 
-        if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+/*        if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
             DEBUGMSG("MMSGUI", " backend:     DFB");
 #endif
@@ -472,6 +478,9 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
     		}
 #endif
         }
+*/
+
+    	DEBUGMSG("MMSGUI", " backend:     " + getMMSFBBackendString(mmsfb->backend));
 
         DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
@@ -534,7 +543,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
     /* check if initialized */
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult               dfbres;
 		DFBDisplayLayerConfig   dlc;
@@ -619,7 +628,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (!mmsfb->mmsfbdev)
         	return false;
@@ -680,7 +689,7 @@ bool MMSFBLayer::setOpacity(unsigned char opacity) {
 	/* check if initialized */
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -707,7 +716,7 @@ bool MMSFBLayer::setLevel(int level) {
 	/* check if initialized */
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -735,7 +744,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
         return true;
     }
 
-    if (mmsfb->backend == MMSFB_BACKEND_DFB) {
+    if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// get layers surface
 		DFBResult           dfbres;
@@ -758,7 +767,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BACKEND_FBDEV) {
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         // create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);

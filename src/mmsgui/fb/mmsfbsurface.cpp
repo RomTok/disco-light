@@ -208,8 +208,13 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			// using only a single buffer for read/write
 			sb->currbuffer_write = 0;
 		sb->pitch = calcPitch(w);
-		for (int i = 0; i < sb->numbuffers; i++)
-			sb->buffers[i] = malloc(calcSize(sb->pitch, sb->sbh));
+		DEBUGMSG("MMSGUI", "start allocating surface buffer");
+		for (int i = 0; i < sb->numbuffers; i++) {
+			int size = calcSize(sb->pitch, sb->sbh);
+			DEBUGMSG("MMSGUI", ">allocating surface buffer #%d, %d bytes (pitch=%d, h=%d)", i, size, sb->pitch, sb->sbh);
+			sb->buffers[i] = malloc(size);
+		}
+		DEBUGMSG("MMSGUI", "allocating surface buffer finished");
 
 		init((void*)1, NULL, NULL);
 	}
@@ -636,10 +641,10 @@ int MMSFBSurface::calcSize(int pitch, int height) {
 	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
     int    size = pitch * height;
 
-    if(pf == MMSFB_PF_I420)
+    if (pf == MMSFB_PF_I420)
     	size += pitch + (size / 2);
     else
-    if(pf == MMSFB_PF_YV12)
+    if (pf == MMSFB_PF_YV12)
     	size += pitch + (size / 2);
 
     return size;
@@ -852,6 +857,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			DEBUGMSG("MMSGUI", "Surface properties:");
 
 			DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->pitch));
 
 			if (this->config.surface_buffer->alphachannel)
 				DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
@@ -974,6 +980,13 @@ bool MMSFBSurface::getMemSize(int *size) {
     	return false;
     *size = 0;
 
+
+    //TODO: if working with DFB we should set surface_buffer->pitch!!!
+    *size = calcSize(this->config.surface_buffer->pitch, this->config.h);
+
+    return true;
+
+/*
     MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
     int    px = this->config.surface_buffer->pitch * this->config.h * (this->config.surface_buffer->backbuffer+1);
 
@@ -1041,6 +1054,7 @@ bool MMSFBSurface::getMemSize(int *size) {
     	*size = px * 4;
 
     return true;
+    */
 }
 
 
@@ -1057,6 +1071,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 
     /* check if initialized */
     INITCHECK;
+
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1112,7 +1127,8 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 		else {
 			CLIPSUBSURFACE
 
-			ret = extendedAccelFillRectangle(0, 0, this->config.w, this->config.h);
+			ret = extendedAccelFillRectangle(this->sub_surface_xoff, this->sub_surface_yoff, this->config.w, this->config.h);
+
 			UNCLIPSUBSURFACE
 		}
 
@@ -2906,6 +2922,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	MMSFBRegion clipreg;
 	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
 
+
 #ifndef USE_DFB_SUBSURFACE
 	if (!this->is_sub_surface) {
 #endif
@@ -3942,8 +3959,14 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				XLockDisplay(mmsfb->x_display);
 				if (!region) {
 					// put whole image
+					int dx = 0;
+					int dy = 0;
+					if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+						dx = (mmsfb->display_w - this->config.w) >> 1;
+						dy = (mmsfb->display_h - this->config.h) >> 1;
+					}
 					XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-								  0, 0, 0, 0,
+								  0, 0, dx, dy,
 								  this->config.w, this->config.h, False);
 					XFlush(mmsfb->x_display);
 				}
@@ -3955,8 +3978,14 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					if (myreg.x2 >= this->config.w) myreg.x2 = this->config.w - 1;
 					if (myreg.y2 >= this->config.h) myreg.y2 = this->config.h - 1;
 					if ((myreg.x2 >= myreg.x1)&&(myreg.y2 >= myreg.y1)) {
+						int dx = 0;
+						int dy = 0;
+						if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+							dx = (mmsfb->display_w - this->config.w) >> 1;
+							dy = (mmsfb->display_h - this->config.h) >> 1;
+						}
 						XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-									 myreg.x1, myreg.y1, myreg.x1, myreg.y1,
+									 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
 									 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
 						XFlush(mmsfb->x_display);
 					}
@@ -4012,10 +4041,16 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			// XVSHM, put the image to the x-server
 			mmsfb->xlock.lock();
 			XLockDisplay(mmsfb->x_display);
-			if(mmsfb->fullscreen) {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+				// calc ratio
+				MMSFBRectangle dest;
+				calcAspectRatio(mmsfb->w, mmsfb->h, mmsfb->display_w, mmsfb->display_h, dest,
+								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
+
+				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
-							  0, 0, mmsfb->display_w, mmsfb->display_h, False);
+							  dest.x, dest.y, dest.w, dest.h, False);
 
 			} else if(mmsfb->resized) {
 				printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
@@ -4088,8 +4123,14 @@ bool MMSFBSurface::refresh() {
 				// no scaler defined
 				mmsfb->xlock.lock();
 				XLockDisplay(mmsfb->x_display);
+				int dx = 0;
+				int dy = 0;
+				if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+					dx = (mmsfb->display_w - this->config.w) >> 1;
+					dy = (mmsfb->display_h - this->config.h) >> 1;
+				}
 				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-							  0, 0, 0, 0,
+							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
 				XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
@@ -4110,10 +4151,16 @@ bool MMSFBSurface::refresh() {
 			this->lock();
 			mmsfb->xlock.lock();
 			XLockDisplay(mmsfb->x_display);
-			if(mmsfb->fullscreen) {
+			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+				// calc ratio
+				MMSFBRectangle dest;
+				calcAspectRatio(mmsfb->w, mmsfb->h, mmsfb->display_w, mmsfb->display_h, dest,
+								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
+
+				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,
-							  0, 0, mmsfb->display_w, mmsfb->display_h, False);
+							  dest.x, dest.y, dest.w, dest.h, False);
 			} else if(mmsfb->resized) {
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->w, mmsfb->h,

@@ -35,20 +35,35 @@
 #include "mmsgui/fb/mmsfbwindowmanagerthread.h"
 
 typedef struct {
-    MMSFBWindow     *window;        /* window */
-    bool            islayersurface; /* the window works direct on the layer */
-    MMSFBSurface    *saved_surface; /* copy of surface if window works direct on the layer */
+	//! window pointer
+    MMSFBWindow     *window;
+    //! visible rectangle, can be set if only a part of the window should be displayed
+    MMSFBRectangle	vrect;
+    //! the window works direct on the layer (old staff, to be removed)
+    bool            islayersurface;
+    //! copy of surface if window works direct on the layer (old staff, to be removed)
+    MMSFBSurface    *saved_surface;
 } AVAILABLE_WINDOWS;
 
 typedef struct {
-    MMSFBWindow     *window;        /* window */
-    MMSFBSurface    *surface;       /* surface of the window */
-    MMSFBRegion     region;         /* region of the window within layer */
-    bool            alphachannel;   /* use of alpha value */
-    unsigned char   opacity;        /* opacity of the window */
-    int             lastflip;       /* last flip time in milliseconds */
-    bool            islayersurface; /* the window works direct on the layer */
-    MMSFBSurface    *saved_surface; /* copy of surface if window works direct on the layer */
+	//! window pointer
+    MMSFBWindow     *window;
+    //! surface of the window
+    MMSFBSurface    *surface;
+    //! visible rectangle, can be set if only a part of the window should be displayed
+    MMSFBRectangle	vrect;
+    //! region of the window within layer (if vrect is used, the region is the visible region)
+    MMSFBRegion     region;
+    //! use of alpha value
+    bool            alphachannel;
+    //! opacity of the window
+    unsigned char   opacity;
+    //! last flip time in milliseconds
+    int             lastflip;
+    //! the window works direct on the layer (old staff, to be removed)
+    bool            islayersurface;
+    //! copy of surface if window works direct on the layer (old staff, to be removed)
+    MMSFBSurface    *saved_surface;
 } VISIBLE_WINDOWS;
 
 //! Manager for MMSFBWindows will be instantiated once in an application.
@@ -106,6 +121,8 @@ class MMSFBWindowManager {
         bool setWindowOpacity(MMSFBWindow *window);
         bool setWindowPosition(MMSFBWindow *window);
         bool setWindowSize(MMSFBWindow *window, int w, int h);
+
+        bool setWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect = NULL);
 
         bool loadPointer();
         void drawPointer(MMSFBRegion *region);

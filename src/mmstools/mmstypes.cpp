@@ -26,13 +26,51 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSINFO_H_
-#define MMSINFO_H_
+#include "mmstools/mmstypes.h"
 
-#ifndef DISKO_PREFIX
-#define DISKO_PREFIX "/usr"
-#endif
+string getMMSFBBackendString(MMSFBBackend be) {
+    if(be == MMSFB_BE_DFB)
+        return MMSFB_BE_DFB_STR;
+    if(be == MMSFB_BE_X11)
+        return MMSFB_BE_X11_STR;
+    if(be == MMSFB_BE_FBDEV)
+        return MMSFB_BE_FBDEV_STR;
+    return MMSFB_BE_NONE_STR;
+}
 
-const char *getPrefix();
+MMSFBBackend getMMSFBBackendFromString(string be) {
+    if(be == MMSFB_BE_NONE_STR)
+        return MMSFB_BE_NONE;
+    if(be == MMSFB_BE_DFB_STR)
+        return MMSFB_BE_DFB;
+    if(be == MMSFB_BE_X11_STR)
+        return MMSFB_BE_X11;
+    if(be == MMSFB_BE_FBDEV_STR)
+        return MMSFB_BE_FBDEV;
+    return MMSFB_BE_NONE;
+}
 
-#endif /*MMSINFO_H_*/
+
+string getMMSFBFullScreenModeString(MMSFBFullScreenMode fsm) {
+    if(fsm == MMSFB_FSM_FALSE)
+        return MMSFB_FSM_FALSE_STR;
+    if(fsm == MMSFB_FSM_TRUE)
+        return MMSFB_FSM_TRUE_STR;
+    if(fsm == MMSFB_FSM_ASPECT_RATIO)
+        return MMSFB_FSM_ASPECT_RATIO_STR;
+    return MMSFB_FSM_NONE_STR;
+}
+
+MMSFBFullScreenMode getMMSFBFullScreenModeFromString(string fsm) {
+    if(fsm == MMSFB_FSM_NONE_STR)
+        return MMSFB_FSM_NONE;
+    if(fsm == MMSFB_FSM_FALSE_STR)
+        return MMSFB_FSM_FALSE;
+    if(fsm == MMSFB_FSM_TRUE_STR)
+        return MMSFB_FSM_TRUE;
+    if(fsm == MMSFB_FSM_ASPECT_RATIO_STR)
+        return MMSFB_FSM_ASPECT_RATIO;
+    return MMSFB_FSM_NONE;
+}
+
+

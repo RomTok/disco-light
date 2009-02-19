@@ -50,5 +50,6 @@
 #include "mmstools/mmsconverter.h"
 #include "mmstools/mmstafffile.h"
 #include "mmstools/mmsdatetime.h"
+#include "mmstools/mmstypes.h"
 
 #endif  /*MMSTOOLS_H_*/

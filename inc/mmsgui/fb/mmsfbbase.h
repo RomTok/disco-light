@@ -66,12 +66,6 @@ extern "C" {
 #define MMSFB_BREAK()    do {} while (0)
 #endif
 
-//! backend: DFB
-#define MMS_BE_DFB       	"DFB"
-//! backend: X11
-#define MMS_BE_X11       	"X11"
-//! backend: FBDEV
-#define MMS_BE_FBDEV       	"FBDEV"
 
 //! output type: VESAFB
 #define MMS_OT_VESAFB       "VESAFB"
@@ -86,15 +80,6 @@ extern "C" {
 //! output type: XSHM
 #define MMS_OT_XSHM			"XSHM"
 
-//! supported backends
-typedef enum {
-	//! directfb
-	MMSFB_BACKEND_DFB = 0,
-	//! X11 backend from disko framework
-	MMSFB_BACKEND_X11,
-	//! FBDEV backend from disko framework
-	MMSFB_BACKEND_FBDEV
-} MMSFB_BACKEND;
 
 
 /* switch between window managers */
@@ -387,5 +372,8 @@ DFBSurfaceDrawingFlags getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(MMSFBDrawi
 DFBSurfaceFlipFlags getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(MMSFBFlipFlags flags);
 DFBSurfaceLockFlags getDFBSurfaceLockFlagsFromMMSFBLockFlags(MMSFBLockFlags flags);
 #endif
+
+void calcAspectRatio(int sw, int sh, int dw, int dh, MMSFBRectangle &dest, bool aspect_ratio, bool even_aligned);
+
 
 #endif /*MMSFBBASE_H_*/
