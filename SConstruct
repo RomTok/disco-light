@@ -85,37 +85,39 @@ def PathIsDirCreateNone(key, value, env):
 if sconsVersion < (0,98,1):
 	opts = Options('disko.conf')
 	opts.AddOptions(
-    	PathOption('prefix',       'Installation directory', '/usr', PathOption.PathIsDirCreate),
-    	PathOption('destdir',      'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
-    	BoolOption('debug',        'Build with debug symbols and without optimize', False),
-    	BoolOption('messages',     'Build with logfile support', False),
-    	BoolOption('profile',      'Build with profiling support (includes debug option)', False),
-    	BoolOption('use_sse',      'Use SSE optimization', False),
-    	ListOption('graphics',     'Set graphics backend', 'none', ['dfb', 'x11']),
-    	ListOption('database',     'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-    	BoolOption('enable_media', 'Build with mmsmedia support', True),
-    	BoolOption('enable_flash', 'Build with mmsflash support', False),
-    	BoolOption('enable_sip',   'Build with mmssip support', False),
-    	BoolOption('enable_mail',  'Build with email support', False),
-    	BoolOption('enable_tools', 'Build disko tools', False))
+    	PathOption('prefix',        'Installation directory', '/usr', PathOption.PathIsDirCreate),
+    	PathOption('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
+    	BoolOption('debug',         'Build with debug symbols and without optimize', False),
+    	BoolOption('messages',      'Build with logfile support', False),
+    	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
+    	BoolOption('use_sse',       'Use SSE optimization', False),
+    	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'x11']),
+    	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	BoolOption('enable_media',  'Build with mmsmedia support', True),
+    	BoolOption('enable_flash',  'Build with mmsflash support', False),
+    	BoolOption('enable_sip',    'Build with mmssip support', False),
+    	BoolOption('enable_mail',   'Build with email support', False),
+    	BoolOption('enable_tools',  'Build disko tools', False),
+    	BoolOption('enable_static', 'Create statically linked library', False))
 else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
-    	PathVariable('prefix',       'Installation directory', '/usr', PathVariable.PathIsDirCreate),
-    	PathVariable('destdir',      'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
-    	BoolVariable('debug',        'Build with debug symbols and without optimize', False),
-    	BoolVariable('messages',     'Build with logfile support', False),
-    	BoolVariable('profile',      'Build with profiling support (includes debug option)', False),
-    	BoolVariable('use_sse',      'Use SSE optimization', False),
-    	ListVariable('graphics',     'Set graphics backend', 'none', ['dfb', 'x11']),
-    	ListVariable('database',     'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-    	BoolVariable('enable_media', 'Build with mmsmedia support', True),
-    	BoolVariable('enable_flash', 'Build with mmsflash support', False),
-    	BoolVariable('enable_sip',   'Build with mmssip support', False),
-    	BoolVariable('enable_mail',  'Build with email support', False),
-    	BoolVariable('enable_tools', 'Build disko tools', False))
+    	PathVariable('prefix',        'Installation directory', '/usr', PathVariable.PathIsDirCreate),
+    	PathVariable('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
+    	BoolVariable('debug',         'Build with debug symbols and without optimize', False),
+    	BoolVariable('messages',      'Build with logfile support', False),
+    	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
+    	BoolVariable('use_sse',       'Use SSE optimization', False),
+    	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'x11']),
+    	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	BoolVariable('enable_media',  'Build with mmsmedia support', True),
+    	BoolVariable('enable_flash',  'Build with mmsflash support', False),
+    	BoolVariable('enable_sip',    'Build with mmssip support', False),
+    	BoolVariable('enable_mail',   'Build with email support', False),
+    	BoolVariable('enable_tools',  'Build disko tools', False),
+    	BoolVariable('enable_static', 'Create statically linked library', False))
 
-env = Environment(ENV = os.environ, CPPPATH = '../../../inc')
+env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
 # use environment variables to override defaults
 if os.environ.has_key('CXX'):
@@ -124,6 +126,7 @@ if os.environ.has_key('LD'):
 	env['LINK'] = os.environ['LD']
 	 
 env['LIBPATH'] = ''
+env['diskoSources'] = []
 
 opts.Update(env)
 opts.Save('disko.conf', env)
@@ -502,7 +505,8 @@ else:
 	all = env.Alias('all', ['lib'])
 install = env.Alias('install', [idir_prefix])
 Depends(install, all)
-env.Default(all)
+env.Default(all)	
+
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
 env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
 Clean('lib', 'disko.pc')
@@ -534,3 +538,10 @@ SConscript(Split(libList), options = opts)
 
 BuildDir('build/tools', 'tools', duplicate = 0)
 SConscript(Split(toolList), options = opts)
+
+#######################################################################
+# Static Library                                                      #
+#######################################################################
+if env['enable_static']:
+	libdisko_static = env.StaticLibrary('lib/libdisko', env['diskoSources'])
+	env.Install(idir_lib, libdisko_static)

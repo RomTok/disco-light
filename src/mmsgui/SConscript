@@ -15,4 +15,6 @@ for header in headerFiles:
 
 share = Glob(env['TOP_DIR'] + '/share/mmsgui/*')
 env.Install(idir_data + '/mmsgui', share)
+
+env['diskoSources'].append(sourceFiles)
 Export('libmmsgui')
