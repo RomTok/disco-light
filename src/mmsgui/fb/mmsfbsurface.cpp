@@ -208,8 +208,13 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			// using only a single buffer for read/write
 			sb->currbuffer_write = 0;
 		sb->pitch = calcPitch(w);
-		for (int i = 0; i < sb->numbuffers; i++)
-			sb->buffers[i] = malloc(calcSize(sb->pitch, sb->sbh));
+		DEBUGMSG("MMSGUI", "start allocating surface buffer");
+		for (int i = 0; i < sb->numbuffers; i++) {
+			int size = calcSize(sb->pitch, sb->sbh);
+			DEBUGMSG("MMSGUI", ">allocating surface buffer #%d, %d bytes (pitch=%d, h=%d)", i, size, sb->pitch, sb->sbh);
+			sb->buffers[i] = malloc(size);
+		}
+		DEBUGMSG("MMSGUI", "allocating surface buffer finished");
 
 		init((void*)1, NULL, NULL);
 	}
@@ -636,10 +641,10 @@ int MMSFBSurface::calcSize(int pitch, int height) {
 	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
     int    size = pitch * height;
 
-    if(pf == MMSFB_PF_I420)
+    if (pf == MMSFB_PF_I420)
     	size += pitch + (size / 2);
     else
-    if(pf == MMSFB_PF_YV12)
+    if (pf == MMSFB_PF_YV12)
     	size += pitch + (size / 2);
 
     return size;
@@ -852,6 +857,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			DEBUGMSG("MMSGUI", "Surface properties:");
 
 			DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->pitch));
 
 			if (this->config.surface_buffer->alphachannel)
 				DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
@@ -974,6 +980,13 @@ bool MMSFBSurface::getMemSize(int *size) {
     	return false;
     *size = 0;
 
+
+    //TODO: if working with DFB we should set surface_buffer->pitch!!!
+    *size = calcSize(this->config.surface_buffer->pitch, this->config.h);
+
+    return true;
+
+/*
     MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
     int    px = this->config.surface_buffer->pitch * this->config.h * (this->config.surface_buffer->backbuffer+1);
 
@@ -1041,6 +1054,7 @@ bool MMSFBSurface::getMemSize(int *size) {
     	*size = px * 4;
 
     return true;
+    */
 }
 
 
