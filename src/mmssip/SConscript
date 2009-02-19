@@ -1,5 +1,8 @@
 Import('env idir_lib idir_inc')
 libmmssip = env.SharedLibrary('../../../lib/libmmssip', Glob('*.cpp'), LIBS = "")
 env.Install(idir_lib, libmmssip)
+
 env.Install(idir_inc + '/mmssip', Glob('../../../inc/mmssip/*.h'))
+
+env['diskoSources'].append(Glob('*.cpp'))
 Export('libmmssip')

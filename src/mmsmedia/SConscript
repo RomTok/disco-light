@@ -1,5 +1,8 @@
 Import('env idir_lib idir_inc')
 libmmsmedia = env.SharedLibrary('../../../lib/libmmsmedia', Glob('*.cpp'), LIBS = "")
 env.Install(idir_lib, libmmsmedia)
+
 env.Install(idir_inc + '/mmsmedia', Glob('../../../inc/mmsmedia/*.h'))
+
+env['diskoSources'].append(Glob('*.cpp'))
 Export('libmmsmedia')

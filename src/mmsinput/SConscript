@@ -1,5 +1,8 @@
 Import('env idir_lib idir_inc')
 libmmsinput = env.SharedLibrary('../../../lib/libmmsinput', Glob('*.cpp'), LIBS = "")
 env.Install(idir_lib, libmmsinput)
+
 env.Install(idir_inc + '/mmsinput', Glob('../../../inc/mmsinput/*.h'))
+
+env['diskoSources'].append(Glob('*.cpp'))
 Export('libmmsinput')
