@@ -58,6 +58,7 @@ MMSThread::MMSThread(string identity, int priority) {
 
     this->isrunning = false;
     this->isdetached = false;
+    this->stacksize = 1000000;
 }
 
 void MMSThread::run() {
@@ -85,6 +86,7 @@ void MMSThread::start() {
     pthread_attr_getschedparam(&tattr, &param);
     param.sched_priority = this->priority;
     pthread_attr_setschedparam(&tattr, &param);
+    pthread_attr_setstacksize(&tattr, this->stacksize);
 
     /* create the new thread */
     pthread_create(&this->id, &tattr, startmythread, static_cast<void *>(this));
@@ -113,3 +115,6 @@ void MMSThread::join() {
         pthread_join(this->id, NULL);
 }
 
+void MMSThread::setStacksize(size_t stacksize) {
+	this->stacksize = stacksize;
+}

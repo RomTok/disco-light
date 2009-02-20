@@ -42,6 +42,7 @@ class MMSThread {
 		pthread_t 		id;
 		bool 			isrunning;
 		bool            isdetached;
+		size_t			stacksize;
 
 	public:
         string    identity;
@@ -58,6 +59,7 @@ class MMSThread {
 		bool isRunning();
 		int cancel();
 		void join();
+		void setStacksize(size_t stacksize);
 };
 
 #endif /*MMSTHREAD_H_*/
