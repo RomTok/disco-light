@@ -1094,6 +1094,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 				MMSFB_SetError(dfbres, "IDirectFBSurface::Clear() failed");
 				return false;
 			}
+			ret = true;
 		}
 		else {
 
