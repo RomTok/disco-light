@@ -74,8 +74,8 @@ class MMSConfigDataGraphics {
 	    int    yres;
 	    int    xpos;
 	    int    ypos;
-	    MMSFBBackend backend;
-	    string outputtype;
+	    MMSFBBackend 		backend;
+	    MMSFBOutputType		outputtype;
 		int    videolayerid;
 	    string videolayerpixelformat;
 	    string videolayeroptions;
@@ -146,7 +146,7 @@ class MMSConfigData {
         const int    getXpos();
         const int    getYpos();
         const MMSFBBackend getBackend();
-        const string getOutputType();
+        const MMSFBOutputType getOutputType();
         const int    getVideoLayerId();
         const string getVideoLayerPixelformat();
         const string getVideoLayerOptions();

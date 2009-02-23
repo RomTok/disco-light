@@ -1662,7 +1662,7 @@ void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst) {
 }
 
 
-bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, MMSFBExternalSurfaceBuffer *extbuf,
+bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, MMSFBExternalSurfaceBuffer *extbuf,
 										   MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height) {
 #ifdef  __HAVE_DIRECTFB__
 	// failed, check if it must not
@@ -1673,7 +1673,7 @@ bool MMSFBSurface::printMissingCombination(char *method, MMSFBSurface *source, M
 	// fatal error!!!
 	// we use our own surface buffer handling, but we have not found a matching routine!!!
 	// so print the missing combination and return true
-	printf("DISKO: Missing following combination in method %s\n", method);
+	printf("DISKO: Missing following combination in method %s\n", method.c_str());
 	if (source) {
 		printf("  source type:             %s\n", (source->is_sub_surface)?"subsurface":"surface");
 		printf("  source memory:           %s\n", (source->use_own_alloc)?"managed by disko":"managed by dfb");

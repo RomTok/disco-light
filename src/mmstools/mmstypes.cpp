@@ -50,6 +50,39 @@ MMSFBBackend getMMSFBBackendFromString(string be) {
     return MMSFB_BE_NONE;
 }
 
+string getMMSFBOutputTypeString(MMSFBOutputType ot) {
+    if(ot == MMSFB_OT_VESAFB)
+        return MMSFB_OT_VESAFB_STR;
+    if(ot == MMSFB_OT_MATROXFB)
+        return MMSFB_OT_MATROXFB_STR;
+    if(ot == MMSFB_OT_VIAFB)
+        return MMSFB_OT_VIAFB_STR;
+    if(ot == MMSFB_OT_X11)
+        return MMSFB_OT_X11_STR;
+    if(ot == MMSFB_OT_XSHM)
+        return MMSFB_OT_XSHM_STR;
+    if(ot == MMSFB_OT_XVSHM)
+        return MMSFB_OT_XVSHM_STR;
+    return MMSFB_OT_NONE_STR;
+}
+
+MMSFBOutputType getMMSFBOutputTypeFromString(string ot) {
+	if(ot == MMSFB_OT_NONE_STR)
+        return MMSFB_OT_NONE;
+	if(ot == MMSFB_OT_VESAFB_STR)
+        return MMSFB_OT_VESAFB;
+	if(ot == MMSFB_OT_MATROXFB_STR)
+        return MMSFB_OT_MATROXFB;
+	if(ot == MMSFB_OT_VIAFB_STR)
+        return MMSFB_OT_VIAFB;
+	if(ot == MMSFB_OT_X11_STR)
+        return MMSFB_OT_X11;
+	if(ot == MMSFB_OT_XSHM_STR)
+        return MMSFB_OT_XSHM;
+	if(ot == MMSFB_OT_XVSHM_STR)
+        return MMSFB_OT_XVSHM;
+    return MMSFB_OT_NONE;
+}
 
 string getMMSFBFullScreenModeString(MMSFBFullScreenMode fsm) {
     if(fsm == MMSFB_FSM_FALSE)

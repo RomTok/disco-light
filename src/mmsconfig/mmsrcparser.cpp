@@ -29,7 +29,7 @@
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"
 
-#define WRONG_VALUE(parname, parvalue, validvals) throw new MMSRcParserError(1, "wrong value '" + parvalue + "' of parameter '" + string((const char *)parname) + "' valid values: " + validvals);
+#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + parvalue + "' for parameter '" + string((const char *)parname) + "' valid values: " + validvals + addmsg);
 
 
 
@@ -52,7 +52,7 @@ MMSRcParser::MMSRcParser() {
     this->graphics.ypos                       = 50;
     // set MMSFB_BE_NONE for compatibility reason
     this->graphics.backend                    = MMSFB_BE_NONE;
-    this->graphics.outputtype                 = "VESAFB";
+    this->graphics.outputtype                 = MMSFB_OT_NONE;
     this->graphics.videolayerid               = 0;
     this->graphics.videolayerpixelformat      = "RGB16";
     this->graphics.videolayeroptions          = "";
@@ -318,11 +318,118 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	        this->graphics.ypos = strToInt(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "backend")) {
         	string val = string((const char *)parvalue);
+        	// get/check value
             if ((this->graphics.backend = getMMSFBBackendFromString(strToUpr(val))) == MMSFB_BE_NONE)
-            	WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES);
+            	WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES, "");
+
+        	// check value against output type
+            if (this->graphics.outputtype == MMSFB_OT_VESAFB) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_DFB:
+            	case MMSFB_BE_FBDEV:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"VESAFB\"");
+            	}
+            }
+            else
+            if (this->graphics.outputtype == MMSFB_OT_MATROXFB) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_DFB:
+            	case MMSFB_BE_FBDEV:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"MATROXFB\"");
+            	}
+            }
+            else
+            if (this->graphics.outputtype == MMSFB_OT_VIAFB) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_DFB:
+            	case MMSFB_BE_FBDEV:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"VIAFB\"");
+            	}
+            }
+            else
+            if (this->graphics.outputtype == MMSFB_OT_X11) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_DFB:
+            	case MMSFB_BE_X11:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X11, " -> this depends on outputtype=\"X11\"");
+            	}
+            }
+            else
+            if (this->graphics.outputtype == MMSFB_OT_XSHM) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_X11:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, " -> this depends on outputtype=\"XSHM\"");
+            	}
+            }
+            else
+            if (this->graphics.outputtype == MMSFB_OT_XVSHM) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_X11:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, " -> this depends on outputtype=\"XVSHM\"");
+            	}
+            }
         }
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype"))
-	        this->graphics.outputtype = strToUpr(string((const char *)parvalue));
+        else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype")) {
+        	string val = string((const char *)parvalue);
+        	// get/check value
+            if ((this->graphics.outputtype = getMMSFBOutputTypeFromString(strToUpr(val))) == MMSFB_OT_NONE)
+            	WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES, "");
+
+        	// check value against backend type
+            if (this->graphics.backend == MMSFB_BE_DFB) {
+            	switch (this->graphics.outputtype) {
+            	case MMSFB_OT_VESAFB:
+            	case MMSFB_OT_MATROXFB:
+            	case MMSFB_OT_VIAFB:
+            	case MMSFB_OT_X11:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_DFB, " -> this depends on backend=\"DFB\"");
+            	}
+            }
+            else
+			if (this->graphics.backend == MMSFB_BE_X11) {
+				switch (this->graphics.outputtype) {
+				case MMSFB_OT_X11:
+				case MMSFB_OT_XSHM:
+				case MMSFB_OT_XVSHM:
+					// okay
+					break;
+				default:
+					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_X11, " -> this depends on backend=\"X11\"");
+				}
+			}
+            else
+			if (this->graphics.backend == MMSFB_BE_FBDEV) {
+				switch (this->graphics.outputtype) {
+            	case MMSFB_OT_VESAFB:
+            	case MMSFB_OT_MATROXFB:
+					// okay
+					break;
+				default:
+					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, " -> this depends on backend=\"FBDEV\"");
+				}
+			}
+        }
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
 			this->graphics.videolayerid = atoi((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat"))
@@ -370,7 +477,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
         else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen")) {
         	string val = string((const char *)parvalue);
             if ((this->graphics.fullscreen = getMMSFBFullScreenModeFromString(strToUpr(val))) == MMSFB_FSM_NONE)
-            	WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES);
+            	WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES, "");
         }
         else
 			printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);
@@ -378,6 +485,13 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	    xmlFree(parname);
 	    xmlFree(parvalue);
 
+	}
+
+
+	if ((this->graphics.backend == MMSFB_BE_X11)||(this->graphics.backend == MMSFB_BE_FBDEV)) {
+		// overwite values needed for this backends
+		this->graphics.extendedaccel = true;
+		this->graphics.allocmethod = "MALLOC";
 	}
 }
 

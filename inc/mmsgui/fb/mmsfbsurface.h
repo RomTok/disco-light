@@ -159,7 +159,7 @@ class MMSFBSurface {
         				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
 
-        bool printMissingCombination(char *method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
+        bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
 									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,

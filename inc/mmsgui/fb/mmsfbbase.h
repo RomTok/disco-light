@@ -67,19 +67,6 @@ extern "C" {
 #endif
 
 
-//! output type: VESAFB
-#define MMS_OT_VESAFB       "VESAFB"
-//! output type: MATROXFB
-#define MMS_OT_MATROXFB     "MATROXFB"
-//! output type: VIAFB
-#define MMS_OT_VIAFB        "VIAFB"
-//! output type: X11 (for dfb and disko x11 backend)
-#define MMS_OT_X11FB        "X11"
-//! output type: SDL
-#define MMS_OT_SDLFB        "SDL"
-//! output type: XSHM
-#define MMS_OT_XSHM			"XSHM"
-
 
 
 /* switch between window managers */

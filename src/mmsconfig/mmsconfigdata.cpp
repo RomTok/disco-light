@@ -207,7 +207,7 @@ const MMSFBBackend MMSConfigData::getBackend() {
     return this->graphics.backend;
 }
 
-const string MMSConfigData::getOutputType() {
+const MMSFBOutputType MMSConfigData::getOutputType() {
     return this->graphics.outputtype;
 }
 

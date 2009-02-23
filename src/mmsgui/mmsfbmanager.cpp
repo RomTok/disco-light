@@ -65,7 +65,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 		myargv[i]=strdup(argv[i]);
 
 #ifdef  __HAVE_DIRECTFB__
-	if(config.getOutputType() == MMS_OT_X11FB) {
+	if(config.getOutputType() == MMSFB_OT_X11) {
 		myargv[myargc]=strdup("--dfb:system=x11");
 		myargc++;
 	}
@@ -100,7 +100,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
     	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
     }
 
-	if (config.getOutputType() == MMS_OT_MATROXFB)
+	if (config.getOutputType() == MMSFB_OT_MATROXFB)
     	this->videolayer->setFlipFlags(MMSFB_FLIP_WAITFORSYNC);
     else
     	this->videolayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
@@ -141,7 +141,7 @@ void MMSFBManager::applySettings() {
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
-        if(config.getOutputType() == MMS_OT_X11FB)
+        if(config.getOutputType() == MMSFB_OT_X11)
         //give a little time to window routines
         usleep(300000);
 
@@ -164,7 +164,7 @@ void MMSFBManager::applySettings() {
         /* set the full opacity of the graphics layer */
         this->graphicslayer->setOpacity(0);
 
-        if (config.getOutputType() == MMS_OT_VIAFB) {
+        if (config.getOutputType() == MMSFB_OT_VIAFB) {
             /* set the video layer behind the graphics layer */
         	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
             this->videolayer->setLevel(-1);

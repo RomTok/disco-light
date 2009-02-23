@@ -53,7 +53,7 @@ MMSFB::MMSFB() {
 #ifdef  __HAVE_FBDEV__
     this->mmsfbdev = NULL;
 #endif
-    this->outputtype = "";
+    this->outputtype = MMSFB_OT_NONE;
     this->w = 0;
     this->h = 0;
 
@@ -64,7 +64,7 @@ MMSFB::MMSFB() {
 MMSFB::~MMSFB() {
 }
 
-bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, string outputtype, int w, int h,
+bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h,
 				 bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer, string appl_name, string appl_icon_name,int x, int y) {
 
     // check if already initialized
@@ -119,7 +119,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, string outputtype,
 		// fall back, auto detection
 		this->backend = MMSFB_BE_DFB;
 #ifdef __HAVE_XLIB__
-		if ((this->outputtype == MMS_OT_X11FB)&&(extendedaccel)) {
+		if ((this->outputtype == MMSFB_OT_X11)&&(extendedaccel)) {
 			this->backend = MMSFB_BE_X11;
 			XInitThreads();
 			this->resized=false;
@@ -148,7 +148,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, string outputtype,
     else
     if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
-		if (this->outputtype == MMS_OT_MATROXFB) {
+		if (this->outputtype == MMSFB_OT_MATROXFB) {
 			// matroxfb
     		this->mmsfbdev = new MMSFBDevMatrox();
 		}
@@ -224,7 +224,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, string outputtype,
 		XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
 		XClassHint clhi;
 		clhi.res_name=basename(argv[0]);
-		clhi.res_class="disko";
+		clhi.res_class=(char*)"disko";
 		XSetClassHint(this->x_display, this->x_window,&clhi);
 		this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
 		XMapWindow(this->x_display, this->x_window);
@@ -259,7 +259,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, string outputtype,
 		XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 
 
-		if (mmsfb->outputtype == MMS_OT_XSHM) {
+		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 	        if (!XShmQueryExtension(this->x_display)) {
 				MMSFB_SetError(0, "XShmQueryExtension() failed");

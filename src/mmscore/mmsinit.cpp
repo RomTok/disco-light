@@ -113,7 +113,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         DEBUGMSG_OUTSTR("Core", "Theme:                        " + config->getTheme());
         DEBUGMSG_OUTSTR("Core", "Resolution:                   " + iToStr(config->getXres()) + "x" + iToStr(config->getYres()));
         DEBUGMSG_OUTSTR("Core", "Backend:                      " + getMMSFBBackendString(config->getBackend()));
-        DEBUGMSG_OUTSTR("Core", "Output type:                  " + config->getOutputType());
+        DEBUGMSG_OUTSTR("Core", "Output type:                  " + getMMSFBOutputTypeString(config->getOutputType()));
         DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(config->getVideoLayerId()));
         DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + config->getVideoLayerPixelformat());
         DEBUGMSG_OUTSTR("Core", "Video layer options:          " + config->getVideoLayerOptions());

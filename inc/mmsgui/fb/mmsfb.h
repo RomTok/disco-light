@@ -64,12 +64,12 @@ class MMSFB {
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
 
-        string 			outputtype;
+        MMSFBBackend	backend;
+        MMSFBOutputType	outputtype;
         int				w;
         int				h;
         int				x;
         int				y;
-        MMSFBBackend	backend;
 
 #ifdef __HAVE_XLIB__
         Display 		*x_display;
@@ -93,7 +93,7 @@ class MMSFB {
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv, MMSFBBackend backend, string outputtype, int w, int h, bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer,
+        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h, bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer,
 				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application",int x=50, int y=50);
         bool release();
         bool isInitialized();

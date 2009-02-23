@@ -173,11 +173,12 @@ vector<MMSOSDPluginHandler *> MMSPluginManager::getOSDPluginHandlers(vector <MMS
 
 MMSOSDPluginHandler *MMSPluginManager::getOSDPluginHandler(int pluginid) {
     for(unsigned int i=0;i<osdPluginHandlers.size();i++) {
-        if(this->osdPluginHandlers.at(i)->getPluginData().getId() == pluginid)
+        if(this->osdPluginHandlers.at(i)->getPluginData().getId() == pluginid) {
             if (this->osdPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_OSD_PLUGIN)
                 return this->osdPluginHandlers.at(i);
             else
                 throw new MMSPluginManagerError(0,"handler for id " + iToStr(pluginid) + " is not a osd plugin");
+        }
     }
 
     throw new MMSPluginManagerError(0,"osd plugin handler for id " + iToStr(pluginid) + " was not found");
@@ -201,11 +202,12 @@ vector<MMSCentralPluginHandler *> MMSPluginManager::getCentralPluginHandlers(vec
 
 MMSCentralPluginHandler *MMSPluginManager::getCentralPluginHandler(int pluginid) {
     for(unsigned int i=0;i<centralPluginHandlers.size();i++) {
-        if(this->centralPluginHandlers.at(i)->getPluginData().getId() == pluginid)
+        if(this->centralPluginHandlers.at(i)->getPluginData().getId() == pluginid) {
             if (this->centralPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_CENTRAL_PLUGIN)
                 return this->centralPluginHandlers.at(i);
             else
                 throw new MMSPluginManagerError(0,"handler for id " + iToStr(pluginid) + " is not a central plugin");
+        }
     }
 
     throw new MMSPluginManagerError(0,"central plugin handler for id " + iToStr(pluginid) + " was not found");
@@ -229,11 +231,12 @@ vector<MMSImportPluginHandler *> MMSPluginManager::getImportPluginHandlers(vecto
 
 MMSImportPluginHandler *MMSPluginManager::getImportPluginHandler(int pluginid) {
     for(unsigned int i=0;i<this->importPluginHandlers.size();i++) {
-        if(this->importPluginHandlers.at(i)->getPluginData().getId() == pluginid)
+        if(this->importPluginHandlers.at(i)->getPluginData().getId() == pluginid) {
             if (this->importPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_IMPORT_PLUGIN)
                 return this->importPluginHandlers.at(i);
             else
                 throw new MMSPluginManagerError(0,"handler for id " + iToStr(pluginid) + " is not a import plugin");
+        }
     }
 
     throw new MMSPluginManagerError(0,"import plugin handler for id " + iToStr(pluginid) + " was not found");
@@ -257,11 +260,12 @@ vector<MMSBackendPluginHandler *> MMSPluginManager::getBackendPluginHandlers(vec
 
 MMSBackendPluginHandler *MMSPluginManager::getBackendPluginHandler(int pluginid) {
     for(unsigned int i=0;i<this->backendPluginHandlers.size();i++) {
-        if(this->backendPluginHandlers.at(i)->getPluginData().getId() == pluginid)
+        if(this->backendPluginHandlers.at(i)->getPluginData().getId() == pluginid) {
             if (this->backendPluginHandlers.at(i)->getPluginData().getType()->getName() == PT_BACKEND_PLUGIN)
                 return this->backendPluginHandlers.at(i);
             else
                 throw new MMSPluginManagerError(0,"handler for id " + iToStr(pluginid) + " is not a backend plugin");
+        }
     }
 
     throw new MMSPluginManagerError(0,"backend plugin handler for id " + iToStr(pluginid) + " was not found");

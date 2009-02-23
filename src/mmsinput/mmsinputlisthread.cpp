@@ -760,7 +760,7 @@ void MMSInputLISThread::updateLED() {
 MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 	if (code < 0)
 		return MMSKEY_UNKNOWN;
-	if (code >= sizeof(MMSInputLISThread_extkeycodes)/sizeof(MMSKeySymbol))
+	if (code >= (int)(sizeof(MMSInputLISThread_extkeycodes)/sizeof(MMSKeySymbol)))
 		return MMSKEY_UNKNOWN;
 	return MMSInputLISThread_extkeycodes[code];
 }

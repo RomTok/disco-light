@@ -120,23 +120,26 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 	if (this->filedialog_name)
 		if (this->filedialog_name->getType() != MMSWIDGETTYPE_INPUT)
 			this->filedialog_name = NULL;
-	if (this->filedialog_filelist)
+	if (this->filedialog_filelist) {
 		if (this->filedialog_filelist->getType() == MMSWIDGETTYPE_MENU) {
 			this->filedialog_filelist->onReturn->connect(sigc::mem_fun(this,&MMSFileDialog::onReturn));
 			this->filedialog_filelist->onSelectItem->connect(sigc::mem_fun(this,&MMSFileDialog::onSelectItem));
 		}
 		else
 			this->filedialog_filelist = NULL;
-	if (this->filedialog_up)
+	}
+	if (this->filedialog_up) {
 		if (this->filedialog_up->getType() == MMSWIDGETTYPE_BUTTON)
 			this->filedialog_up->onReturn->connect(sigc::mem_fun(this,&MMSFileDialog::onReturn));
 		else
 			this->filedialog_up = NULL;
-	if (this->filedialog_down)
+	}
+	if (this->filedialog_down) {
 		if (this->filedialog_down->getType() == MMSWIDGETTYPE_BUTTON)
 			this->filedialog_down->onReturn->connect(sigc::mem_fun(this,&MMSFileDialog::onReturn));
 		else
 			this->filedialog_down = NULL;
+	}
 
 	return true;
 }

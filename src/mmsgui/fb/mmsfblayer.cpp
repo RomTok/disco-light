@@ -124,7 +124,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
 
-		if (mmsfb->outputtype == MMS_OT_XSHM) {
+		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 			switch (mmsfb->x_depth) {
 			case 16:
@@ -323,7 +323,7 @@ MMSFBLayer::~MMSFBLayer() {
     }
     else {
 #ifdef __HAVE_XLIB__
-		if (mmsfb->outputtype == MMS_OT_XSHM) {
+		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 			if (this->x_image1)
 				XFree(this->x_image1);
@@ -355,7 +355,7 @@ bool MMSFBLayer::isInitialized() {
     }
     else {
 #ifdef __HAVE_XLIB__
-		if (mmsfb->outputtype == MMS_OT_XSHM) {
+		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 
 			return (this->x_image1 != NULL);
@@ -785,7 +785,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     }
     else {
 #ifdef __HAVE_XLIB__
-		if (mmsfb->outputtype == MMS_OT_XSHM) {
+		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 			if ((!this->x_image1)||(!this->x_image2)) {
 				MMSFB_SetError(0, "x_image not available, cannot get surface");

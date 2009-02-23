@@ -57,9 +57,70 @@ typedef enum {
 //! list of valid backend types
 #define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV"
 
+//! list of valid backend types for output types MMSFB_OT_xxxFB
+#define MMSFB_BE_VALID_VALUES_OT_FB		"DFB, FBDEV"
+
+//! list of valid backend types for output types MMSFB_OT_X11
+#define MMSFB_BE_VALID_VALUES_OT_X11	"DFB, X11"
+
+//! list of valid backend types for output types MMSFB_OT_X
+#define MMSFB_BE_VALID_VALUES_OT_X		"X11"
+
 // conversion routines for backend types
 string getMMSFBBackendString(MMSFBBackend be);
 MMSFBBackend getMMSFBBackendFromString(string be);
+
+
+// output types..............................................................
+
+//! supported output types
+typedef enum {
+	//! none
+	MMSFB_OT_NONE = 0,
+	//! VESAFB (backend: DFB and FBDEV)
+	MMSFB_OT_VESAFB,
+	//! MATROXFB (backend: DFB and FBDEV)
+	MMSFB_OT_MATROXFB,
+	//! VIAFB (backend: DFB)
+	MMSFB_OT_VIAFB,
+	//! X11 (backend: DFB)
+	MMSFB_OT_X11,
+	//! XSHM (backend: X11)
+	MMSFB_OT_XSHM,
+	//! XVSHM (backend: X11)
+	MMSFB_OT_XVSHM,
+} MMSFBOutputType;
+
+//! output type: none
+#define MMSFB_OT_NONE_STR		""
+//! output type: VESAFB (backend: DFB and FBDEV)
+#define MMSFB_OT_VESAFB_STR		"VESAFB"
+//! output type: MATROXFB (backend: DFB and FBDEV)
+#define MMSFB_OT_MATROXFB_STR	"MATROXFB"
+//! output type: VIAFB (backend: DFB)
+#define MMSFB_OT_VIAFB_STR		"VIAFB"
+//! output type: X11 (backend: DFB)
+#define MMSFB_OT_X11_STR		"X11"
+//! output type: XSHM (backend: X11)
+#define MMSFB_OT_XSHM_STR		"XSHM"
+//! output type: XVSHM (backend: X11)
+#define MMSFB_OT_XVSHM_STR		"XVSHM"
+
+//! list of valid output types
+#define MMSFB_OT_VALID_VALUES			"VESAFB, MATROXFB, VIAFB, X11, XSHM, XVSHM"
+
+//! list of valid output types for backend MMSFB_BE_DFB
+#define MMSFB_OT_VALID_VALUES_BE_DFB	"VESAFB, MATROXFB, VIAFB, X11"
+
+//! list of valid output types for backend MMSFB_BE_X11
+#define MMSFB_OT_VALID_VALUES_BE_X11	"X11, XSHM, XVSHM"
+
+//! list of valid output types for backend MMSFB_BE_FBDEV
+#define MMSFB_OT_VALID_VALUES_BE_FBDEV	"VESAFB, MATROXFB"
+
+// conversion routines for output types
+string getMMSFBOutputTypeString(MMSFBOutputType ot);
+MMSFBOutputType getMMSFBOutputTypeFromString(string ot);
 
 
 // full screen modes.........................................................
