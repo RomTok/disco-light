@@ -1,6 +1,6 @@
 include ../../dep.def
 
-all: mmsinfo.o
+all: prepare mmsinfo.o
 	@echo " [LD]        (libmmsinfo.so)"
 	@$(CXX) -shared $(LDFLAGS) -o $(LIBDIR)/libmmsinfo.so mmsinfo.o
 	
@@ -8,13 +8,13 @@ clean:
 	@echo "Cleaning mmsinfo"
 	@rm -f mmsinfo.o
 	@rm -f $(LIBDIR)/libmmsinfo.so
+	@rm -f ../../inc/mmsinfo.h
 
 update:
 	@echo "mmsinfo is up to date."
 		
 prepare:
-	@cp ../../inc/mmsinfo/mmsinfo.h ../../inc/mmsinfo/mmsinfo.h.bak
-	@sed s/__DISKO_PREFIX__/$(shell echo $(prefix) | tr -t  '/' '#' | sed s/#/\\\\\\\\\\\//g)/ ../../inc/mmsinfo/mmsinfo.h.tmpl > ../../inc/mmsinfo/mmsinfo.h
+	$(shell sed s/__DISKO_PREFIX__/$(shell echo $(prefix) | tr -t  '/' '#' | sed s/#/\\\\\\\\\\\//g)/ ../../inc/mmsinfo/mmsinfo.h.tmpl > ../../inc/mmsinfo/mmsinfo.h)
 	$(shell rm -f mmsinfo.o)
 
 install: prepare all
