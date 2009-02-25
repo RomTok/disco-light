@@ -399,6 +399,19 @@ string scanForString(string buf, string toFind, string *ret,
 	return "";
 }
 
+void split(string str, string delim, vector<string> &results, bool allowEmpty = false) {
+  int cutAt;
+  while((cutAt = str.find_first_of(delim)) != str.npos) {
+    if(cutAt > 0 || allowEmpty) {
+      results.push_back(str.substr(0,cutAt));
+    }
+    str = str.substr(cutAt+1);
+  }
+  if(str.length() > 0 || allowEmpty) {
+    results.push_back(str);
+  }
+}
+
 void msleep(unsigned long msec) {
 	if (msec > 0)
 		usleep(msec * 1000);
@@ -626,7 +639,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	if(fprintf(fp, "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf, tv.tv_usec/10000, 
+	if(fprintf(fp, "%s:%02ld %010u %s: %s [%s:%d]\n", timebuf, tv.tv_usec/10000,
 	           (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno) == 0)
 		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
@@ -669,7 +682,7 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	if(printf("%s:%02ld %010u %s: %s [%s:%d]\n", timebuf, tv.tv_usec/10000, 
+	if(printf("%s:%02ld %010u %s: %s [%s:%d]\n", timebuf, tv.tv_usec/10000,
 	           (unsigned int)pthread_self(), identity, msg.c_str(), filename, lineno) == 0)
 		fprintf(stderr, "DISKO: Error writing to logfile\n");
 
