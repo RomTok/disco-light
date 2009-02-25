@@ -399,7 +399,7 @@ string scanForString(string buf, string toFind, string *ret,
 	return "";
 }
 
-void split(string str, string delim, vector<string> &results, bool allowEmpty = false) {
+void split(string str, string delim, vector<string> &results, bool allowEmpty) {
   int cutAt;
   while((cutAt = str.find_first_of(delim)) != str.npos) {
     if(cutAt > 0 || allowEmpty) {

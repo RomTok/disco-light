@@ -98,7 +98,7 @@ char *scanForString(char *buf, char *toFind, string *ret=NULL,
 string scanForString(string buf, string toFind, string *ret=NULL,
 					int offset=0, unsigned int length=0);
 
-void split(string str, string delim, vector<string> &results, bool allowEmpty);
+void split(string str, string delim, vector<string> &results, bool allowEmpty=false);
 
 void msleep(unsigned long msec);
 
