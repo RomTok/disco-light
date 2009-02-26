@@ -265,6 +265,7 @@ class MMSFBSurface {
         bool drawCircle(int x, int y, int radius, int start_octant = 0, int end_octant = 7);
 
         bool setBlittingFlags(MMSFBBlittingFlags flags);
+        bool getBlittingFlags(MMSFBBlittingFlags *flags);
         bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
         bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect, int x, int y);

@@ -255,13 +255,15 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 
 
 	if(numOverlays > 0) {
+/*old staff, to be removed
 		double w = ((float)userd->dest.w) / ((float)frame_width);
 		double h = ((float)userd->dest.h) / ((float)frame_height);
 
-		int width;
+   		int width;
 		int height;
 		int x;
 		int y;
+
 
 		userd->surf->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING);
 
@@ -288,7 +290,52 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
     	}
 
 		userd->surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
-    }
+*/
+
+
+		int rw = (userd->dest.w << 10) / frame_width;
+		int rh = (userd->dest.h << 10) / frame_height;
+
+		// save and set blitting flags
+		MMSFBBlittingFlags saved_flags;
+		userd->surf->getBlittingFlags(&saved_flags);
+		userd->surf->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING);
+
+		if (!userd->overlayInterim) {
+			// create interim surface for stretching overlays
+			userd->overlayInterim = new MMSFBSurface(userd->size.w, userd->size.h, MMSFB_PF_ARGB);
+		}
+
+		// for all overlays
+		for (int i = 0; i < numOverlays; ++i) {
+			// get overlay infos
+    		raw_overlay_t *ovl = &overlays[i];
+
+    		// calc x/y offsets
+    		int x = (ovl->ovl_x * rw) >> 10;
+			if(userd->size.w > userd->dest.w) {
+				x += (userd->size.w - userd->dest.w) >> 1;
+			}
+			int y = (ovl->ovl_y * rh) >> 10;
+			if(userd->size.h > userd->dest.h) {
+				y += (userd->size.h - userd->dest.h) >> 1;
+			}
+
+			// stretch to interim
+			MMSFBRectangle dest_rect;
+			dest_rect.x = 0;
+			dest_rect.y = 0;
+			dest_rect.w = (ovl->ovl_w * rw) >> 10;
+			dest_rect.h = (ovl->ovl_h * rh) >> 10;
+			userd->overlayInterim->stretchBlitBuffer(ovl->ovl_rgba, ovl->ovl_w * 4, MMSFB_PF_ARGB, ovl->ovl_w, ovl->ovl_h, NULL, &dest_rect);
+
+			// blit to target surface
+			userd->surf->blit(userd->overlayInterim, &dest_rect, x, y);
+    	}
+
+		// restore blitting flags
+		userd->surf->setBlittingFlags(saved_flags);
+	}
 
 
     userd->surf->flip(NULL);
@@ -506,8 +553,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 
     DEBUGMSG("MMSMedia", "xineInit() done.");
 
-    if(window) {
-    }
+    memset(&this->userd, 0, sizeof(this->userd));
 
 	if (mmsfb->getBackend() != MMSFB_BE_DFB) {
 		this->rawvisual.raw_output_cb = raw_frame_cb;
@@ -557,6 +603,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 			this->userd.size.w=w;
 			this->userd.size.h=h;
 			this->userd.lastaspect=0.0;
+			this->userd.overlayInterim = NULL;
 		}
         DEBUGMSG("MMSMedia", "opening video driver...");
         /* open the video output driver */
@@ -681,6 +728,11 @@ MMSAV::~MMSAV() {
     // exit xine
     xine_exit(this->xine);
 
+
+	if (this->userd.overlayInterim) {
+		// delete overlay interim (used for xine raw callback)
+		delete this->userd.overlayInterim;
+	}
 }
 
 /**

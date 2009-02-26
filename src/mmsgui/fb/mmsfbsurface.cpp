@@ -1621,6 +1621,20 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
     return true;
 }
 
+bool MMSFBSurface::getBlittingFlags(MMSFBBlittingFlags *flags) {
+
+	// check if initialized
+    INITCHECK;
+
+    // parameter given?
+    if (!flags)
+    	return false;
+
+    // save the flags
+    *flags = this->config.blittingflags;
+
+    return true;
+}
 
 bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
 								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch) {
