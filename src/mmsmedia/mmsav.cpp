@@ -479,6 +479,7 @@ static void* stopRoutine(void *data) {
 	pthread_mutex_lock(streamData->lock);
     xine_stop(streamData->stream);
     xine_set_param(streamData->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
+    xine_close(streamData->stream);
     *(streamData->status) = MMSAV::STATUS_STOPPED;
 	pthread_mutex_unlock(streamData->lock);
 	delete streamData;
