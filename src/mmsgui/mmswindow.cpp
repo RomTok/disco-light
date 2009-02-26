@@ -368,10 +368,10 @@ bool MMSWindow::resize(bool refresh) {
         /* child window */
 
         /* get the parent width and height */
-        vrect.x = (this->parent->geom.w - this->parent->innerGeom.w) / 2;
-        vrect.y = (this->parent->geom.h - this->parent->innerGeom.h) / 2;
-        vrect.w = this->parent->innerGeom.w;
-        vrect.h = this->parent->innerGeom.h;
+        this->vrect.x = (this->parent->geom.w - this->parent->innerGeom.w) / 2;
+        this->vrect.y = (this->parent->geom.h - this->parent->innerGeom.h) / 2;
+        this->vrect.w = this->parent->innerGeom.w;
+        this->vrect.h = this->parent->innerGeom.h;
 //        logger.writeLog("got inner size from parent " + iToStr(vrect.w) + "x" + iToStr(vrect.h));
     }
 
@@ -546,8 +546,7 @@ bool MMSWindow::resize(bool refresh) {
     					// create full screen window
     					wdesc_posx = 0;
     					wdesc_posy = 0;
-    					wdesc_width = this->vrect.w;
-    					wdesc_height = this->vrect.h;
+    			        this->layer->getResolution(&wdesc_width, &wdesc_height);
     				}
 
     				// window should have own surface
