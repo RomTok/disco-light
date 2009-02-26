@@ -22,7 +22,6 @@ install: prepare all
 	@install -d $(DESTDIR)$(incdir)/mmsinfo
 	@cp ../../inc/mmsinfo/mmsinfo.h $(DESTDIR)$(incdir)/mmsinfo/
 	@chmod 644 $(DESTDIR)$(incdir)/mmsinfo/mmsinfo.h
-	@mv ../../inc/mmsinfo/mmsinfo.h.bak ../../inc/mmsinfo/mmsinfo.h
 	@install -d $(DESTDIR)$(libdir)
 	@install -m 755 $(LIBDIR)/libmmsinfo.so $(DESTDIR)$(libdir)/
 
