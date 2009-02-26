@@ -610,7 +610,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
         /* open the video output driver */
         if (!(this->vo = xine_open_video_driver(this->xine, "raw",
                                     XINE_VISUAL_TYPE_RAW, (void*) &this->rawvisual)))
-                    throw new MMSAVError(0, "Cannot open the DFB video driver");
+                    throw new MMSAVError(0, "Cannot open the XINE RAW video driver");
 	}
 	else {
 #ifdef __HAVE_DIRECTFB__
@@ -631,7 +631,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
             DEBUGMSG("MMSMedia", "opening video driver...");
             if (!(this->vo = xine_open_video_driver(this->xine, "DFB",
                                         XINE_VISUAL_TYPE_DFB, (void*) &this->visual)))
-                        throw new MMSAVError(0, "Cannot open the DFB video driver");
+                        throw new MMSAVError(0, "Cannot open the DFB video driver, please install directfb extras!");
 #endif
 	}
 	DEBUGMSG("MMSMedia", "opening video driver done.");
