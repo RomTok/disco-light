@@ -580,5 +580,16 @@ bool MMSSwitcher::revertToLastPlugin() {
 }
 
 MMSChildWindow* MMSSwitcher::loadChildWindow(string filename, MMSTheme *theme) {
-	return NULL;
+	MMSChildWindow *win=NULL;
+
+	 try {
+		 win = this->dm.loadChildDialog(filename, theme);
+	 }
+	 catch(MMSError *error) {
+		 string msg = error->getMessage();
+		 delete error;
+		 throw MMSError(0, msg);
+	}
+
+	return win;
 }
