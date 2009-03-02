@@ -26,81 +26,85 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSTEXTBOXWIDGET_H_
-#define MMSTEXTBOXWIDGET_H_
+#ifndef MMSCHECKBOXWIDGET_H_
+#define MMSCHECKBOXWIDGET_H_
 
 #include "mmsgui/mmswidget.h"
 
 
-//! With this class you can display text with more than one line.
+//! With this class you can display an on/off switch.
 /*!
-The textbox is focusable. So the user can scroll in it.
-Line breaks will be done with the normal linefeed (\n (0x0a)).
-If you want to display only one line of static text, you should use the MMSLabel widget.
+The checkbox is focusable.
 \author Jens Schneider
 */
-class MMSTextBoxWidget : public MMSWidget {
+class MMSCheckBoxWidget : public MMSWidget {
     private:
-        typedef struct {
-            MMSFBRectangle geom;
-            string       word;
-            unsigned int line;
-            unsigned int paragraph;
-        } TEXTBOX_WORDGEOM;
-
         string          		className;
-        MMSTextBoxWidgetClass 	*textBoxWidgetClass;
-        MMSTextBoxWidgetClass 	myTextBoxWidgetClass;
+        MMSCheckBoxWidgetClass 	*checkBoxWidgetClass;
+        MMSCheckBoxWidgetClass 	myCheckBoxWidgetClass;
 
-        MMSFBFont *font;
-
-        vector<TEXTBOX_WORDGEOM *> wordgeom;
-
-        string  lasttext;
-        bool    surfaceChanged;
+        MMSFBSurface	*checked_bgimage;
+        MMSFBSurface	*checked_selbgimage;
+        MMSFBSurface	*checked_bgimage_p;
+        MMSFBSurface	*checked_selbgimage_p;
+        MMSFBSurface	*checked_bgimage_i;
+        MMSFBSurface	*checked_selbgimage_i;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
-
-        void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
+        void handleInput(MMSInputEvent *inputevent);
 
     public:
-        MMSTextBoxWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
-        ~MMSTextBoxWidget();
+        MMSCheckBoxWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
+        ~MMSCheckBoxWidget();
 
         MMSWidget *copyWidget();
-
-        bool calcWordGeom(string text, unsigned int startWidth, unsigned int startHeight,
-                          unsigned int *realWidth, unsigned int *realHeight,
-                          unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
-                          bool wrap = true, bool splitwords = true, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER);
 
         bool init();
         bool draw(bool *backgroundFilled = NULL);
 
     public:
-        /* theme access methods */
-        string getFontPath();
-        string getFontName();
-        unsigned int getFontSize();
-        MMSALIGNMENT getAlignment();
-        bool getWrap();
-        bool getSplitWords();
-        MMSFBColor getColor();
-        MMSFBColor getSelColor();
-        string getText();
+        // theme access methods
+        bool 	getCheckedBgColor(MMSFBColor &checked_bgcolor);
+        bool 	getCheckedSelBgColor(MMSFBColor &checked_selbgcolor);
+        bool	getCheckedBgColor_p(MMSFBColor &checked_bgcolor_p);
+        bool	getCheckedSelBgColor_p(MMSFBColor &checked_selbgcolor_p);
+        bool	getCheckedBgColor_i(MMSFBColor &checked_bgcolor_i);
+        bool	getCheckedSelBgColor_i(MMSFBColor &checked_selbgcolor_i);
+        bool    getCheckedBgImagePath(string &checked_bgimagepath);
+        bool    getCheckedBgImageName(string &checked_bgimagename);
+        bool    getCheckedSelBgImagePath(string &checked_selbgimagepath);
+        bool    getCheckedSelBgImageName(string &checked_selbgimagename);
+        bool    getCheckedBgImagePath_p(string &checked_bgimagepath_p);
+        bool    getCheckedBgImageName_p(string &checked_bgimagename_p);
+        bool    getCheckedSelBgImagePath_p(string &checked_selbgimagepath_p);
+        bool    getCheckedSelBgImageName_p(string &checked_selbgimagename_p);
+        bool    getCheckedBgImagePath_i(string &checked_bgimagepath_i);
+        bool    getCheckedBgImageName_i(string &checked_bgimagename_i);
+        bool    getCheckedSelBgImagePath_i(string &checked_selbgimagepath_i);
+        bool    getCheckedSelBgImageName_i(string &checked_selbgimagename_i);
+        bool 	getChecked(bool &checked);
 
-        void setFontPath(string fontpath, bool load = true, bool refresh = true);
-        void setFontName(string fontname, bool load = true, bool refresh = true);
-        void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
-        void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
-        void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
-        void setWrap(bool wrap, bool refresh = true);
-        void setSplitWords(bool splitwords, bool refresh = true);
-        void setColor(MMSFBColor color, bool refresh = true);
-        void setSelColor(MMSFBColor selcolor, bool refresh = true);
-        void setText(string text, bool refresh = true);
+        void setCheckedBgColor(MMSFBColor checked_bgcolor, bool refresh = true);
+        void setCheckedSelBgColor(MMSFBColor checked_selbgcolor, bool refresh = true);
+        void setCheckedBgColor_p(MMSFBColor checked_bgcolor_p, bool refresh = true);
+        void setCheckedSelBgColor_p(MMSFBColor checked_selbgcolor_p, bool refresh = true);
+        void setCheckedBgColor_i(MMSFBColor checked_bgcolor_i, bool refresh = true);
+        void setCheckedSelBgColor_i(MMSFBColor checked_selbgcolor_i, bool refresh = true);
+        void setCheckedBgImagePath(string checked_bgimagepath, bool load = true, bool refresh = true);
+        void setCheckedBgImageName(string checked_bgimagename, bool load = true, bool refresh = true);
+        void setCheckedSelBgImagePath(string checked_selbgimagepath, bool load = true, bool refresh = true);
+        void setCheckedSelBgImageName(string checked_selbgimagename, bool load = true, bool refresh = true);
+        void setCheckedBgImagePath_p(string checked_bgimagepath_p, bool load = true, bool refresh = true);
+        void setCheckedBgImageName_p(string checked_bgimagename_p, bool load = true, bool refresh = true);
+        void setCheckedSelBgImagePath_p(string checked_selbgimagepath_p, bool load = true, bool refresh = true);
+        void setCheckedSelBgImageName_p(string checked_selbgimagename_p, bool load = true, bool refresh = true);
+        void setCheckedBgImagePath_i(string checked_bgimagepath_i, bool load = true, bool refresh = true);
+        void setCheckedBgImageName_i(string checked_bgimagename_i, bool load = true, bool refresh = true);
+        void setCheckedSelBgImagePath_i(string checked_selbgimagepath_i, bool load = true, bool refresh = true);
+        void setCheckedSelBgImageName_i(string checked_selbgimagename_i, bool load = true, bool refresh = true);
+        void setChecked(bool checked, bool refresh = true);
 
-        void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
+        void updateFromThemeClass(MMSCheckBoxWidgetClass *themeClass);
 };
 
-#endif /*MMSTEXTBOXWIDGET_H_*/
+#endif /*MMSCHECKBOXWIDGET_H_*/

@@ -155,7 +155,9 @@ typedef enum {
     //! A MMSSlider widget cannot get the focus but can be selected.
     MMSWIDGETTYPE_SLIDER,
     //! A MMSInput widget can get the focus and therefore can process inputs. You can display and edit one line of text.
-    MMSWIDGETTYPE_INPUT
+    MMSWIDGETTYPE_INPUT,
+    //! A MMSCheckBox widget can get the focus and therefore can process inputs. You can display an on/off switch.
+    MMSWIDGETTYPE_CHECKBOX
 } MMSWIDGETTYPE;
 
 
@@ -548,6 +550,7 @@ class MMSWidget {
     friend class MMSArrowWidget;
     friend class MMSSliderWidget;
     friend class MMSInputWidget;
+    friend class MMSCheckBoxWidget;
 };
 
 #include "mmswindow.h"

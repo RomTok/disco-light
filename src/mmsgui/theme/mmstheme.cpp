@@ -74,10 +74,12 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"separator",	NULL, 	NULL,			MMSGUI_NONE_ATTR_I				},
 	{	"input", 		NULL, 	NULL,			MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
+	{	"checkbox",		NULL, 	NULL,			MMSGUI_CHECKBOXWIDGET_ATTR_I	},
+	{	"class", 		"type",	"checkbox",		MMSGUI_CHECKBOXWIDGET_ATTR_I	},
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 7, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 8, mmsgui_taff_tagtable };
 
 
 
@@ -220,6 +222,17 @@ bool MMSTheme::addInputWidgetClass(MMSInputWidgetClass *themeClass) {
         if (inputWidgetClasses.at(i)->getClassName() == className)
             return false;
     inputWidgetClasses.push_back(themeClass);
+    return true;
+}
+
+
+bool MMSTheme::addCheckBoxWidgetClass(MMSCheckBoxWidgetClass *themeClass) {
+    string className = themeClass->getClassName();
+    if (className == "") return false;
+    for (unsigned int i = 0; i < checkBoxWidgetClasses.size(); i++)
+        if (checkBoxWidgetClasses.at(i)->getClassName() == className)
+            return false;
+    checkBoxWidgetClasses.push_back(themeClass);
     return true;
 }
 
@@ -386,6 +399,13 @@ MMSInputWidgetClass* MMSTheme::getInputWidgetClass(string className) {
 }
 
 
+MMSCheckBoxWidgetClass* MMSTheme::getCheckBoxWidgetClass(string className) {
+    if (className=="") return NULL;
+    for (unsigned int i = 0; i < checkBoxWidgetClasses.size(); i++)
+        if (checkBoxWidgetClasses.at(i)->getClassName() == className)
+            return checkBoxWidgetClasses.at(i);
+    return NULL;
+}
 
 
 MMSTheme::MMSTheme() {
@@ -1213,6 +1233,84 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.setSelColor(c);
         this->inputWidgetClass.setText("");
     }
+
+
+    /* MMSCheckBoxWidget */
+    {
+        /* base widget settings */
+        this->checkBoxWidgetClass.widgetClass.setBgColor(color);
+        this->checkBoxWidgetClass.widgetClass.setSelBgColor(color);
+        this->checkBoxWidgetClass.widgetClass.setBgColor_p(color);
+        this->checkBoxWidgetClass.widgetClass.setSelBgColor_p(color);
+        this->checkBoxWidgetClass.widgetClass.setBgColor_i(color);
+        this->checkBoxWidgetClass.widgetClass.setSelBgColor_i(color);
+        this->checkBoxWidgetClass.widgetClass.setBgImagePath("");
+        this->checkBoxWidgetClass.widgetClass.setBgImageName("");
+        this->checkBoxWidgetClass.widgetClass.setSelBgImagePath("");
+        this->checkBoxWidgetClass.widgetClass.setSelBgImageName("");
+        this->checkBoxWidgetClass.widgetClass.setBgImagePath_p("");
+        this->checkBoxWidgetClass.widgetClass.setBgImageName_p("");
+        this->checkBoxWidgetClass.widgetClass.setSelBgImagePath_p("");
+        this->checkBoxWidgetClass.widgetClass.setSelBgImageName_p("");
+        this->checkBoxWidgetClass.widgetClass.setBgImagePath_i("");
+        this->checkBoxWidgetClass.widgetClass.setBgImageName_i("");
+        this->checkBoxWidgetClass.widgetClass.setSelBgImagePath_i("");
+        this->checkBoxWidgetClass.widgetClass.setSelBgImageName_i("");
+        this->checkBoxWidgetClass.widgetClass.setMargin(0);
+        this->checkBoxWidgetClass.widgetClass.setFocusable(true);
+        this->checkBoxWidgetClass.widgetClass.setSelectable(true);
+        this->checkBoxWidgetClass.widgetClass.setUpArrow("");
+        this->checkBoxWidgetClass.widgetClass.setDownArrow("");
+        this->checkBoxWidgetClass.widgetClass.setLeftArrow("");
+        this->checkBoxWidgetClass.widgetClass.setRightArrow("");
+        this->checkBoxWidgetClass.widgetClass.setData("");
+        this->checkBoxWidgetClass.widgetClass.setNavigateUp("");
+        this->checkBoxWidgetClass.widgetClass.setNavigateDown("");
+        this->checkBoxWidgetClass.widgetClass.setNavigateLeft("");
+        this->checkBoxWidgetClass.widgetClass.setNavigateRight("");
+        this->checkBoxWidgetClass.widgetClass.setVSlider("");
+        this->checkBoxWidgetClass.widgetClass.setHSlider("");
+        this->checkBoxWidgetClass.widgetClass.setImagesOnDemand(false);
+        this->checkBoxWidgetClass.widgetClass.setBlend(0);
+        this->checkBoxWidgetClass.widgetClass.setBlendFactor(0);
+        this->checkBoxWidgetClass.widgetClass.setScrollOnFocus(false);
+        this->checkBoxWidgetClass.widgetClass.setClickable(true);
+        this->checkBoxWidgetClass.widgetClass.setReturnOnScroll(true);
+        this->checkBoxWidgetClass.widgetClass.setInputMode("");
+
+        /* base widget border settings */
+        this->checkBoxWidgetClass.widgetClass.border.setColor(color);
+        this->checkBoxWidgetClass.widgetClass.border.setSelColor(color);
+        this->checkBoxWidgetClass.widgetClass.border.setImagePath("");
+        this->checkBoxWidgetClass.widgetClass.border.setImageNames("", "", "", "", "", "", "", "");
+        this->checkBoxWidgetClass.widgetClass.border.setSelImagePath("");
+        this->checkBoxWidgetClass.widgetClass.border.setSelImageNames("", "", "", "", "", "", "", "");
+        this->checkBoxWidgetClass.widgetClass.border.setThickness(0);
+        this->checkBoxWidgetClass.widgetClass.border.setMargin(0);
+        this->checkBoxWidgetClass.widgetClass.border.setRCorners(false);
+
+        /* checkbox settings */
+        this->checkBoxWidgetClass.setCheckedBgColor(color);
+        this->checkBoxWidgetClass.setCheckedSelBgColor(color);
+        this->checkBoxWidgetClass.setCheckedBgColor_p(color);
+        this->checkBoxWidgetClass.setCheckedSelBgColor_p(color);
+        this->checkBoxWidgetClass.setCheckedBgColor_i(color);
+        this->checkBoxWidgetClass.setCheckedSelBgColor_i(color);
+        this->checkBoxWidgetClass.setCheckedBgImagePath("");
+        this->checkBoxWidgetClass.setCheckedBgImageName("");
+        this->checkBoxWidgetClass.setCheckedSelBgImagePath("");
+        this->checkBoxWidgetClass.setCheckedSelBgImageName("");
+        this->checkBoxWidgetClass.setCheckedBgImagePath_p("");
+        this->checkBoxWidgetClass.setCheckedBgImageName_p("");
+        this->checkBoxWidgetClass.setCheckedSelBgImagePath_p("");
+        this->checkBoxWidgetClass.setCheckedSelBgImageName_p("");
+        this->checkBoxWidgetClass.setCheckedBgImagePath_i("");
+        this->checkBoxWidgetClass.setCheckedBgImageName_i("");
+        this->checkBoxWidgetClass.setCheckedSelBgImagePath_i("");
+        this->checkBoxWidgetClass.setCheckedSelBgImageName_i("");
+        this->checkBoxWidgetClass.setChecked(false);
+    }
+
 
 }
 

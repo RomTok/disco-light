@@ -26,523 +26,312 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSWIDGETCLASS_H_
-#define MMSWIDGETCLASS_H_
+#ifndef MMSCHECKBOXWIDGETCLASS_H_
+#define MMSCHECKBOXWIDGETCLASS_H_
 
-#include "mmsgui/theme/mmsborderclass.h"
+#include "mmsgui/theme/mmswidgetclass.h"
 
-//! describe attributes for MMSWidget which are additional to the MMSBorderClass
-namespace MMSGUI_WIDGET_ATTR {
+//! describe attributes for MMSCheckBoxWidget which are additional to the MMSWidgetClass
+namespace MMSGUI_CHECKBOXWIDGET_ATTR {
 
-	#define MMSGUI_WIDGET_ATTR_ATTRDESC \
-	{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
-	{ "bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_p", TAFF_ATTRTYPE_STRING }, \
-	{ "bgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_p", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_i", TAFF_ATTRTYPE_STRING }, \
-	{ "bgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_i", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgimage", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage.path", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage.name", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage.path", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage.name", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage_p", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage_p.path", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage_p.name", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage_p", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage_p.path", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage_p.name", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage_i", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage_i.path", TAFF_ATTRTYPE_STRING }, \
-	{ "bgimage_i.name", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage_i", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage_i.path", TAFF_ATTRTYPE_STRING }, \
-	{ "selbgimage_i.name", TAFF_ATTRTYPE_STRING }, \
-	{ "margin", TAFF_ATTRTYPE_UCHAR }, \
-	{ "focusable", TAFF_ATTRTYPE_BOOL }, \
-	{ "selectable", TAFF_ATTRTYPE_BOOL }, \
-	{ "up_arrow", TAFF_ATTRTYPE_STRING }, \
-	{ "down_arrow", TAFF_ATTRTYPE_STRING }, \
-	{ "left_arrow", TAFF_ATTRTYPE_STRING }, \
-	{ "right_arrow", TAFF_ATTRTYPE_STRING }, \
-	{ "data", TAFF_ATTRTYPE_STRING }, \
-	{ "navigate_up", TAFF_ATTRTYPE_STRING }, \
-	{ "navigate_down", TAFF_ATTRTYPE_STRING }, \
-	{ "navigate_left", TAFF_ATTRTYPE_STRING }, \
-	{ "navigate_right", TAFF_ATTRTYPE_STRING }, \
-	{ "vslider", TAFF_ATTRTYPE_STRING }, \
-	{ "hslider", TAFF_ATTRTYPE_STRING }, \
-	{ "imagesondemand", TAFF_ATTRTYPE_BOOL }, \
-	{ "blend", TAFF_ATTRTYPE_UCHAR }, \
-	{ "blend_factor", TAFF_ATTRTYPE_STRING }, \
-	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }, \
-	{ "clickable", TAFF_ATTRTYPE_BOOL }, \
-	{ "return_onscroll", TAFF_ATTRTYPE_BOOL }, \
-	{ "inputmode", TAFF_ATTRTYPE_STRING }
+	#define MMSGUI_CHECKBOXWIDGET_ATTR_ATTRDESC \
+	{ "checked_bgcolor", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_p", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_p", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_i", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_i", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_selbgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
+	{ "checked_bgimage", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage.path", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage.name", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage.path", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage.name", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage_p", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage_p.path", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage_p.name", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage_p", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage_p.path", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage_p.name", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage_i", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage_i.path", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_bgimage_i.name", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage_i", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage_i.path", TAFF_ATTRTYPE_STRING }, \
+	{ "checked_selbgimage_i.name", TAFF_ATTRTYPE_STRING }, \
+	{ "checked", TAFF_ATTRTYPE_BOOL }
 
-	#define MMSGUI_WIDGET_ATTR_IDS \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_a, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_r, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_g, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_b, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_a, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_r, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_g, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_b, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_a, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_r, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_g, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_p_b, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_a, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_r, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_g, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_p_b, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_a, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_r, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_g, \
-		MMSGUI_WIDGET_ATTR_IDS_bgcolor_i_b, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_a, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_r, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_g, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgcolor_i_b, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_path, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_name, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_path, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_name, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_p, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_p_path, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_p_name, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_p, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_path, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_p_name, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_i, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_i_path, \
-		MMSGUI_WIDGET_ATTR_IDS_bgimage_i_name, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_i, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_path, \
-		MMSGUI_WIDGET_ATTR_IDS_selbgimage_i_name, \
-		MMSGUI_WIDGET_ATTR_IDS_margin, \
-		MMSGUI_WIDGET_ATTR_IDS_focusable, \
-		MMSGUI_WIDGET_ATTR_IDS_selectable, \
-		MMSGUI_WIDGET_ATTR_IDS_up_arrow, \
-		MMSGUI_WIDGET_ATTR_IDS_down_arrow, \
-		MMSGUI_WIDGET_ATTR_IDS_left_arrow, \
-		MMSGUI_WIDGET_ATTR_IDS_right_arrow, \
-		MMSGUI_WIDGET_ATTR_IDS_data, \
-		MMSGUI_WIDGET_ATTR_IDS_navigate_up, \
-		MMSGUI_WIDGET_ATTR_IDS_navigate_down, \
-		MMSGUI_WIDGET_ATTR_IDS_navigate_left, \
-		MMSGUI_WIDGET_ATTR_IDS_navigate_right, \
-		MMSGUI_WIDGET_ATTR_IDS_vslider, \
-		MMSGUI_WIDGET_ATTR_IDS_hslider, \
-		MMSGUI_WIDGET_ATTR_IDS_imagesondemand, \
-		MMSGUI_WIDGET_ATTR_IDS_blend, \
-		MMSGUI_WIDGET_ATTR_IDS_blend_factor, \
-		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus, \
-		MMSGUI_WIDGET_ATTR_IDS_clickable, \
-		MMSGUI_WIDGET_ATTR_IDS_return_onscroll, \
-		MMSGUI_WIDGET_ATTR_IDS_inputmode
+	#define MMSGUI_CHECKBOXWIDGET_ATTR_IDS \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_a, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_r, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_g, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_b, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_a, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_r, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_g, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_b, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_p, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_p_a, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_p_r, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_p_g, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_p_b, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_p, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_p_a, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_p_r, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_p_g, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_p_b, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_i, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_i_a, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_i_r, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_i_g, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor_i_b, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_i, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_i_a, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_i_r, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_i_g, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgcolor_i_b, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_path, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_name, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_path, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_name, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_p, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_p_path, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_p_name, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_p, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_p_path, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_p_name, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_i, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_i_path, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgimage_i_name, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_i, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_i_path, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_selbgimage_i_name, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked
 
-	#define MMSGUI_WIDGET_ATTR_INIT { \
+	#define MMSGUI_CHECKBOXWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
 		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_CHECKBOXWIDGET_ATTR_ATTRDESC, \
 		{ NULL, TAFF_ATTRTYPE_NONE } \
 	}
 
 	typedef enum {
 		MMSGUI_BASE_ATTR_IDS,
 		MMSGUI_BORDER_ATTR_IDS,
-		MMSGUI_WIDGET_ATTR_IDS
+		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_CHECKBOXWIDGET_ATTR_IDS
 	} ids;
 }
 
+extern TAFF_ATTRDESC MMSGUI_CHECKBOXWIDGET_ATTR_I[];
 
 
-//! A data access class as base for all widgets.
+//! A data access class for the checkbox widget.
 /*!
-This class is the base for all widget classes.
-With this data store you have access to all changeable widget attributes
-used for all widgets.
-\note This class will be internally used by class MMSWidget.
+This class is the base for the MMSCheckBoxWidget class.
+With this data store you have access to all changeable widget attributes.
+It is also one of the base classes for MMSThemeManager and MMSDialogManager
+which are main features of the MMSGUI.
+\note This class will be internally used by class MMSCheckBoxWidget.
 \author Jens Schneider
 */
-class MMSWidgetClass {
+class MMSCheckBoxWidgetClass {
     private:
+    	//! name of the theme class
+        string          className;
+
     	struct {
-    		//! is bgcolor set?
-	    	bool            isbgcolor;
+    		//! is checked_bgcolor set?
+	    	bool            ischecked_bgcolor;
 
-	    	//! background color if the widget is not selected
-	        MMSFBColor      bgcolor;
+	    	//! background color if the widget is checked and not selected
+	        MMSFBColor      checked_bgcolor;
 
-	        //! is selbgcolor set?
-	        bool            isselbgcolor;
+	        //! is checked_selbgcolor set?
+	        bool            ischecked_selbgcolor;
 
-	        //! background color if the widget is selected
-	        MMSFBColor      selbgcolor;
+	        //! background color if the widget is checked and selected
+	        MMSFBColor      checked_selbgcolor;
 
-	        //! is pressed bgcolor set?
-	    	bool            isbgcolor_p;
+	        //! is pressed checked_bgcolor set?
+	    	bool            ischecked_bgcolor_p;
 
-	    	//! pressed background color if the widget is not selected
-	        MMSFBColor      bgcolor_p;
+	    	//! pressed background color if the widget is checked and not selected
+	        MMSFBColor      checked_bgcolor_p;
 
 	        //! is pressed selbgcolor set?
-	        bool            isselbgcolor_p;
+	        bool            ischecked_selbgcolor_p;
 
-	        //! pressed background color if the widget is selected
-	        MMSFBColor      selbgcolor_p;
+	        //! pressed background color if the widget is checked and selected
+	        MMSFBColor      checked_selbgcolor_p;
 
-	        //! is inactive bgcolor set?
-	        bool            isbgcolor_i;
+	        //! is inactive checked_bgcolor set?
+	        bool            ischecked_bgcolor_i;
 
-	        //! inactive background color if the widget is not selected
-	        MMSFBColor      bgcolor_i;
+	        //! inactive background color if the widget is checked and not selected
+	        MMSFBColor      checked_bgcolor_i;
 
-	        //! is inactive selbgcolor set?
-	        bool            isselbgcolor_i;
+	        //! is inactive checked_selbgcolor set?
+	        bool            ischecked_selbgcolor_i;
 
-	        //! inactive background color if the widget is selected
-	        MMSFBColor      selbgcolor_i;
+	        //! inactive background color if the widget is checked and selected
+	        MMSFBColor      checked_selbgcolor_i;
 
-	        //! is bgimagepath set?
-	        bool            isbgimagepath;
+	        //! is checked_bgimagepath set?
+	        bool            ischecked_bgimagepath;
 
-	        //! is bgimagename set?
-	        bool            isbgimagename;
+	        //! is checked_bgimagename set?
+	        bool            ischecked_bgimagename;
 
-	        //! is selbgimagepath set?
-	        bool            isselbgimagepath;
+	        //! is checked_selbgimagepath set?
+	        bool            ischecked_selbgimagepath;
 
-	        //! is selbgimagename set?
-	        bool            isselbgimagename;
+	        //! is checked_selbgimagename set?
+	        bool            ischecked_selbgimagename;
 
-	        //! is pressed bgimagepath set?
-	        bool            isbgimagepath_p;
+	        //! is pressed checked_bgimagepath set?
+	        bool            ischecked_bgimagepath_p;
 
-	        //! is pressed bgimagename set?
-	        bool            isbgimagename_p;
+	        //! is pressed checked_bgimagename set?
+	        bool            ischecked_bgimagename_p;
 
-	        //! is pressed selbgimagepath set?
-	        bool            isselbgimagepath_p;
+	        //! is pressed checked_selbgimagepath set?
+	        bool            ischecked_selbgimagepath_p;
 
-	        //! is pressed selbgimagename set?
-	        bool            isselbgimagename_p;
+	        //! is pressed checked_selbgimagename set?
+	        bool            ischecked_selbgimagename_p;
 
-	        //! is inactive bgimagepath set?
-	        bool            isbgimagepath_i;
+	        //! is inactive checked_bgimagepath set?
+	        bool            ischecked_bgimagepath_i;
 
-	        //! is inactive bgimagename set?
-	        bool            isbgimagename_i;
+	        //! is inactive checked_bgimagename set?
+	        bool            ischecked_bgimagename_i;
 
-	        //! is inactive selbgimagepath set?
-	        bool            isselbgimagepath_i;
+	        //! is inactive checked_selbgimagepath set?
+	        bool            ischecked_selbgimagepath_i;
 
-	        //! is inactive selbgimagename set?
-	        bool            isselbgimagename_i;
+	        //! is inactive checked_selbgimagename set?
+	        bool            ischecked_selbgimagename_i;
 
-	        //! is margin set?
-	        bool            ismargin;
+	        //! is the checked flag set?
+	        bool            ischecked;
 
-	        //! margin in pixel
-	        unsigned int    margin;
-
-	        //! is the focusable flag set?
-	        bool            isfocusable;
-
-	        //! widget can get the focus true/false
-	        bool            focusable;
-
-	        //! is the selectable flag set?
-	        bool            isselectable;
-
-	        //! widget can be selected true/false
-	        bool            selectable;
-
-	        //! is the uparrow set?
-	        bool            isuparrow;
-
-	        //! is the downarrow set?
-	        bool            isdownarrow;
-
-	        //! is the leftarrow set?
-	        bool            isleftarrow;
-
-	        //! is the rightarrow set?
-	        bool            isrightarrow;
-
-	        //! is the data value set?
-	        bool            isdata;
-
-	        //! is the navigateup set?
-	        bool            isnavigateup;
-
-	        //! is the navigatedown set?
-	        bool            isnavigatedown;
-
-	        //! is the navigateleft set?
-	        bool            isnavigateleft;
-
-	        //! is the navigateright set?
-	        bool            isnavigateright;
-
-	        //! is the vslider set?
-	        bool            isvslider;
-
-	        //! is the hslider set?
-	        bool            ishslider;
-
-	        //! is images on demand flag set?
-	        bool            isimagesondemand;
-
-	        //! use images on demand (true/false)
-	        bool            imagesondemand;
-
-	        //! is blend set?
-	        bool            isblend;
-
-	        //! blend 0..255, default 0
-	        unsigned int    blend;
-
-	        //! is blend factor set?
-	        bool            isblendfactor;
-
-	        //! blend factor 0.0.., default 0.0
-	        double          blendfactor;
-
-	        //! is scroll on focus flag set?
-	        bool            isscrollonfocus;
-
-	        //! use scroll on focus (true/false)
-	        bool            scrollonfocus;
-
-	        //! is the clickable flag set?
-	        bool            isclickable;
-
-	        //! user can click onto widget true/false
-	        bool            clickable;
-
-	        //! is the returnonscroll flag set?
-	        bool            isreturnonscroll;
-
-	        //! emit on return callback (true/false) if user changes the selection e.g. in a menu
-	        bool            returnonscroll;
-
-	        //! is inputmode set?
-	        bool            isinputmode;
-
+	        //! widget's checked state true/false
+	        bool            checked;
     	} id;
 
     	struct {
-    		//! path to the background image if the widget is not selected
-            string          *bgimagepath;
+    		//! path to the background image if the widget is checked and not selected
+            string          *checked_bgimagepath;
 
-            //! background image filename if the widget is not selected
-            string          *bgimagename;
+            //! background image filename if the widget is checked and not selected
+            string          *checked_bgimagename;
 
-            //! path to the background image if the widget is selected
-            string          *selbgimagepath;
+            //! path to the background image if the widget is checked and selected
+            string          *checked_selbgimagepath;
 
-            //! background image filename if the widget is selected
-            string          *selbgimagename;
+            //! background image filename if the widget is checked and selected
+            string          *checked_selbgimagename;
 
-            //! path to the pressed background image if the widget is not selected
-            string          *bgimagepath_p;
+            //! path to the pressed background image if the widget is checked and not selected
+            string          *checked_bgimagepath_p;
 
-            //! pressed background image filename if the widget is not selected
-            string          *bgimagename_p;
+            //! pressed background image filename if the widget is checked and not selected
+            string          *checked_bgimagename_p;
 
-            //! path to the pressed background image if the widget is selected
-            string          *selbgimagepath_p;
+            //! path to the pressed background image if the widget is checked and selected
+            string          *checked_selbgimagepath_p;
 
-            //! pressed background image filename if the widget is selected
-            string          *selbgimagename_p;
+            //! pressed background image filename if the widget is checked and selected
+            string          *checked_selbgimagename_p;
 
-            //! path to the inactive background image if the widget is not selected
-            string          *bgimagepath_i;
+            //! path to the inactive background image if the widget is checked and not selected
+            string          *checked_bgimagepath_i;
 
-            //! inactive background image filename if the widget is not selected
-            string          *bgimagename_i;
+            //! inactive background image filename if the widget is checked and not selected
+            string          *checked_bgimagename_i;
 
-            //! path to the inactive background image if the widget is selected
-            string          *selbgimagepath_i;
+            //! path to the inactive background image if the widget is checked and selected
+            string          *checked_selbgimagepath_i;
 
-            //! inactive background image filename if the widget is selected
-            string          *selbgimagename_i;
-
-            //! the name of the widget which represents the scroll up arrow
-            string          *uparrow;
-
-            //! the name of the widget which represents the scroll down arrow
-            string          *downarrow;
-
-            //! the name of the widget which represents the scroll left arrow
-            string          *leftarrow;
-
-            //! the name of the widget which represents the scroll right arrow
-            string          *rightarrow;
-
-            //! any string which can store additional information (will not displayed)
-            string          *data;
-
-            //! the name of the widget to which should navigate up
-            string          *navigateup;
-
-            //! the name of the widget to which should navigate down
-            string          *navigatedown;
-
-            //! the name of the widget to which should navigate left
-            string          *navigateleft;
-
-            //! the name of the widget to which should navigate right
-            string          *navigateright;
-
-            //! the name of the widget which represents the vertical slider
-            string          *vslider;
-
-            //! the name of the widget which represents the horizontal slider
-            string          *hslider;
-
-    		//! input mode
-            string          *inputmode;
+            //! inactive background image filename if the widget is checked and selected
+            string          *checked_selbgimagename_i;
     	} ed;
 
     	/* init routines */
-        void initBgColor();
-        void initSelBgColor();
-        void initBgColor_p();
-        void initSelBgColor_p();
-        void initBgColor_i();
-        void initSelBgColor_i();
+        void initCheckedBgColor();
+        void initCheckedSelBgColor();
+        void initCheckedBgColor_p();
+        void initCheckedSelBgColor_p();
+        void initCheckedBgColor_i();
+        void initCheckedSelBgColor_i();
 
-        void initBgImagePath();
-        void initBgImageName();
-        void initSelBgImagePath();
-        void initSelBgImageName();
-        void initBgImagePath_p();
-        void initBgImageName_p();
-        void initSelBgImagePath_p();
-        void initSelBgImageName_p();
-        void initBgImagePath_i();
-        void initBgImageName_i();
-        void initSelBgImagePath_i();
-        void initSelBgImageName_i();
+        void initCheckedBgImagePath();
+        void initCheckedBgImageName();
+        void initCheckedSelBgImagePath();
+        void initCheckedSelBgImageName();
+        void initCheckedBgImagePath_p();
+        void initCheckedBgImageName_p();
+        void initCheckedSelBgImagePath_p();
+        void initCheckedSelBgImageName_p();
+        void initCheckedBgImagePath_i();
+        void initCheckedBgImageName_i();
+        void initCheckedSelBgImagePath_i();
+        void initCheckedSelBgImageName_i();
 
-        void initMargin();
-        void initFocusable();
-        void initSelectable();
-
-        void initUpArrow();
-        void initDownArrow();
-        void initLeftArrow();
-        void initRightArrow();
-
-        void initData();
-
-        void initNavigateUp();
-        void initNavigateDown();
-        void initNavigateLeft();
-        void initNavigateRight();
-
-        void initVSlider();
-        void initHSlider();
-
-        void initImagesOnDemand();
-
-        void initBlend();
-        void initBlendFactor();
-
-        void initScrollOnFocus();
-        void initClickable();
-        void initReturnOnScroll();
-
-        void initInputMode();
-
+        void initChecked();
 
         /* free routines */
-        void freeBgColor();
-        void freeSelBgColor();
-        void freeBgColor_p();
-        void freeSelBgColor_p();
-        void freeBgColor_i();
-        void freeSelBgColor_i();
+        void freeCheckedBgColor();
+        void freeCheckedSelBgColor();
+        void freeCheckedBgColor_p();
+        void freeCheckedSelBgColor_p();
+        void freeCheckedBgColor_i();
+        void freeCheckedSelBgColor_i();
 
-        void freeBgImagePath();
-        void freeBgImageName();
-        void freeSelBgImagePath();
-        void freeSelBgImageName();
-        void freeBgImagePath_p();
-        void freeBgImageName_p();
-        void freeSelBgImagePath_p();
-        void freeSelBgImageName_p();
-        void freeBgImagePath_i();
-        void freeBgImageName_i();
-        void freeSelBgImagePath_i();
-        void freeSelBgImageName_i();
+        void freeCheckedBgImagePath();
+        void freeCheckedBgImageName();
+        void freeCheckedSelBgImagePath();
+        void freeCheckedSelBgImageName();
+        void freeCheckedBgImagePath_p();
+        void freeCheckedBgImageName_p();
+        void freeCheckedSelBgImagePath_p();
+        void freeCheckedSelBgImageName_p();
+        void freeCheckedBgImagePath_i();
+        void freeCheckedBgImageName_i();
+        void freeCheckedSelBgImagePath_i();
+        void freeCheckedSelBgImageName_i();
 
-        void freeMargin();
-        void freeFocusable();
-        void freeSelectable();
-
-        void freeUpArrow();
-        void freeDownArrow();
-        void freeLeftArrow();
-        void freeRightArrow();
-
-        void freeData();
-
-        void freeNavigateUp();
-        void freeNavigateDown();
-        void freeNavigateLeft();
-        void freeNavigateRight();
-
-        void freeVSlider();
-        void freeHSlider();
-
-        void freeImagesOnDemand();
-
-        void freeBlend();
-        void freeBlendFactor();
-
-        void freeScrollOnFocus();
-        void freeClickable();
-        void freeReturnOnScroll();
-
-        void freeInputMode();
+        void freeChecked();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -553,771 +342,394 @@ class MMSWidgetClass {
         void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
 
     public:
-        MMSBorderClass border;           	//! stores base border attributes
+    	//! stores base widget attributes
+        MMSWidgetClass widgetClass;
 
-        //! Constructor of class MMSWidgetClass.
-        MMSWidgetClass();
+        //! Constructor of class MMSCheckBoxWidgetClass.
+        MMSCheckBoxWidgetClass();
 
-        //! Destructor of class MMSWidgetClass.
-        ~MMSWidgetClass();
+        //! Destructor of class MMSCheckBoxWidgetClass.
+        ~MMSCheckBoxWidgetClass();
 
         //! operator=
-        MMSWidgetClass &operator=(const MMSWidgetClass &c);
+        MMSCheckBoxWidgetClass &operator=(const MMSCheckBoxWidgetClass &c);
 
         //! Mark all attributes as not set.
         void unsetAll();
 
-        //! Check if the background color is set. This color will be used for the unselected widget.
-        bool isBgColor();
-
-        //! Mark the bgcolor as not set.
-        void unsetBgColor();
-
-        //! Set the background color which is used to draw the unselected widget.
+        //! Set the name of the theme class.
         /*!
-        \param bgcolor  color for unselected background
+        \param classname  name of the class
         */
-        void setBgColor(const MMSFBColor &bgcolor);
+        void setClassName(string className);
 
-        //! Get the background color which is used to draw the unselected widget.
+        //! Get the name of the theme class.
         /*!
-        \param bgcolor  background color
+        \return name of the class
+        */
+        string getClassName();
+
+        //! Check if the background color is set. This color will be used for the checked, unselected widget.
+        bool isCheckedBgColor();
+
+        //! Mark the checked_bgcolor as not set.
+        void unsetCheckedBgColor();
+
+        //! Set the background color which is used to draw the checked, unselected widget.
+        /*!
+        \param checked_bgcolor  color for checked, unselected background
+        */
+        void setCheckedBgColor(const MMSFBColor &checked_bgcolor);
+
+        //! Get the background color which is used to draw the checked, unselected widget.
+        /*!
+        \param checked_bgcolor  background color
         \return true if set
         */
-        bool getBgColor(MMSFBColor &bgcolor);
+        bool getCheckedBgColor(MMSFBColor &checked_bgcolor);
 
-        //! Check if the background color is set. This color will be used for the selected widget.
-        bool isSelBgColor();
+        //! Check if the background color is set. This color will be used for the checked, selected widget.
+        bool isCheckedSelBgColor();
 
-        //! Mark the selbgcolor as not set.
-        void unsetSelBgColor();
+        //! Mark the checked_selbgcolor as not set.
+        void unsetCheckedSelBgColor();
 
-        //! Set the background color which is used to draw the selected widget.
+        //! Set the background color which is used to draw the checked, selected widget.
         /*!
-        \param selbgcolor  color for selected background
+        \param checked_selbgcolor  color for selected background
         */
-        void setSelBgColor(const MMSFBColor &selbgcolor);
+        void setCheckedSelBgColor(const MMSFBColor &checked_selbgcolor);
 
-        //! Get the background color which is used to draw the selected widget.
+        //! Get the background color which is used to draw the checked, selected widget.
         /*!
-        \param selbgcolor  background color
+        \param checked_selbgcolor  background color
         \return true if set
         */
-        bool getSelBgColor(MMSFBColor &selbgcolor);
+        bool getCheckedSelBgColor(MMSFBColor &checked_selbgcolor);
 
-        //! Check if the pressed background color is set. This color will be used for the unselected widget.
-        bool isBgColor_p();
+        //! Check if the pressed background color is set. This color will be used for the checked, unselected widget.
+        bool isCheckedBgColor_p();
 
-        //! Mark the pressed bgcolor as not set.
-        void unsetBgColor_p();
+        //! Mark the pressed checked_bgcolor as not set.
+        void unsetCheckedBgColor_p();
 
-        //! Set the pressed background color which is used to draw the unselected widget.
+        //! Set the pressed background color which is used to draw the checked, unselected widget.
         /*!
-        \param bgcolor_p  pressed background color
+        \param checked_bgcolor_p  pressed background color
         */
-        void setBgColor_p(const MMSFBColor &bgcolor_p);
+        void setCheckedBgColor_p(const MMSFBColor &checked_bgcolor_p);
 
-        //! Get the pressed background color which is used to draw the unselected widget.
+        //! Get the pressed background color which is used to draw the checked, unselected widget.
         /*!
-        \param bgcolor_p  pressed background color
+        \param checked_bgcolor_p  pressed background color
         \return true if set
         */
-        bool getBgColor_p(MMSFBColor &bgcolor_p);
+        bool getCheckedBgColor_p(MMSFBColor &checked_bgcolor_p);
 
-        //! Check if the pressed background color is set. This color will be used for the selected widget.
-        bool isSelBgColor_p();
+        //! Check if the pressed background color is set. This color will be used for the checked, selected widget.
+        bool isCheckedSelBgColor_p();
 
-        //! Mark the pressed selbgcolor as not set.
-        void unsetSelBgColor_p();
+        //! Mark the pressed checked_selbgcolor as not set.
+        void unsetCheckedSelBgColor_p();
 
-        //! Set the pressed background color which is used to draw the selected widget.
+        //! Set the pressed background color which is used to draw the checked, selected widget.
         /*!
-        \param selbgcolor_p  pressed color for selected background
+        \param checked_selbgcolor_p  pressed color for selected background
         */
-        void setSelBgColor_p(const MMSFBColor &selbgcolor_p);
+        void setCheckedSelBgColor_p(const MMSFBColor &checked_selbgcolor_p);
 
-        //! Get the pressed background color which is used to draw the selected widget.
+        //! Get the pressed background color which is used to draw the checked, selected widget.
         /*!
-        \param selbgcolor_p  pressed background color
+        \param checked_selbgcolor_p  pressed background color
         \return true if set
         */
-        bool getSelBgColor_p(MMSFBColor &selbgcolor_p);
+        bool getCheckedSelBgColor_p(MMSFBColor &checked_selbgcolor_p);
 
-        //! Check if the inactive background color is set. This color will be used for the unselected widget.
-        bool isBgColor_i();
+        //! Check if the inactive background color is set. This color will be used for the checked, unselected widget.
+        bool isCheckedBgColor_i();
 
-        //! Mark the inactive bgcolor as not set.
-        void unsetBgColor_i();
+        //! Mark the inactive checked_bgcolor as not set.
+        void unsetCheckedBgColor_i();
 
-        //! Set the inactive background color which is used to draw the unselected widget.
+        //! Set the inactive background color which is used to draw the checked, unselected widget.
         /*!
-        \param bgcolor_i  color for inactive unselected background
+        \param checked_bgcolor_i  color for inactive unselected background
         */
-        void setBgColor_i(const MMSFBColor &bgcolor_i);
+        void setCheckedBgColor_i(const MMSFBColor &checked_bgcolor_i);
 
-        //! Get the inactive background color which is used to draw the unselected widget.
+        //! Get the inactive background color which is used to draw the checked, unselected widget.
         /*!
-        \param bgcolor_i  inactive background color
+        \param checked_bgcolor_i  inactive background color
         \return true if set
         */
-        bool getBgColor_i(MMSFBColor &bgcolor_i);
+        bool getCheckedBgColor_i(MMSFBColor &checked_bgcolor_i);
 
-        //! Check if the inactive background color is set. This color will be used for the selected widget.
-        bool isSelBgColor_i();
+        //! Check if the inactive background color is set. This color will be used for the checked, selected widget.
+        bool isCheckedSelBgColor_i();
 
-        //! Mark the inactive selbgcolor as not set.
-        void unsetSelBgColor_i();
+        //! Mark the inactive checked_selbgcolor as not set.
+        void unsetCheckedSelBgColor_i();
 
-        //! Set the inactive background color which is used to draw the selected widget.
+        //! Set the inactive background color which is used to draw the checked, selected widget.
         /*!
-        \param selbgcolor_i  color for inactive selected background
+        \param checked_selbgcolor_i  color for inactive selected background
         */
-        void setSelBgColor_i(const MMSFBColor &selbgcolor_i);
+        void setCheckedSelBgColor_i(const MMSFBColor &checked_selbgcolor_i);
 
-        //! Get the inactive background color which is used to draw the selected widget.
+        //! Get the inactive background color which is used to draw the checked, selected widget.
         /*!
-        \param selbgcolor_i  inactive background color
+        \param checked_selbgcolor_i  inactive background color
         \return true if set
         */
-        bool getSelBgColor_i(MMSFBColor &selbgcolor_i);
+        bool getCheckedSelBgColor_i(MMSFBColor &checked_selbgcolor_i);
 
-        //! Check if the imagepath for background is set. This path will be used for the unselected widget.
-        bool isBgImagePath();
+        //! Check if the imagepath for background is set. This path will be used for the checked, unselected widget.
+        bool isCheckedBgImagePath();
 
-        //! Mark the bgimagepath as not set.
-        void unsetBgImagePath();
+        //! Mark the checked_bgimagepath as not set.
+        void unsetCheckedBgImagePath();
 
-        //! Set the imagepath for background which is used to draw the unselected widget.
+        //! Set the imagepath for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagepath  path to unselected background image
+        \param checked_bgimagepath  path to unselected background image
         */
-        void setBgImagePath(const string &bgimagepath);
+        void setCheckedBgImagePath(const string &checked_bgimagepath);
 
-        //! Get the imagepath for background which is used to draw the unselected widget.
+        //! Get the imagepath for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagepath  path to unselected background image
+        \param checked_bgimagepath  path to unselected background image
         \return true if set
         */
-        bool getBgImagePath(string &bgimagepath);
+        bool getCheckedBgImagePath(string &checked_bgimagepath);
 
-        //! Check if the imagename for background is set. This name will be used for the unselected widget.
-        bool isBgImageName();
+        //! Check if the imagename for background is set. This name will be used for the checked, unselected widget.
+        bool isCheckedBgImageName();
 
-        //! Mark the bgimagename as not set.
-        void unsetBgImageName();
+        //! Mark the checked_bgimagename as not set.
+        void unsetCheckedBgImageName();
 
-        //! Set the imagename for background which is used to draw the unselected widget.
+        //! Set the imagename for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagename  name of the unselected background image
+        \param checked_bgimagename  name of the unselected background image
         */
-        void setBgImageName(const string &bgimagename);
+        void setCheckedBgImageName(const string &checked_bgimagename);
 
-        //! Get the imagename for background which is used to draw the unselected widget.
+        //! Get the imagename for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagename  name of the unselected background image
+        \param checked_bgimagename  name of the unselected background image
         \return true if set
         */
-        bool getBgImageName(string &bgimagename);
+        bool getCheckedBgImageName(string &checked_bgimagename);
 
-        //! Check if the selimagepath for background is set. This path will be used for the selected widget.
-        bool isSelBgImagePath();
+        //! Check if the selimagepath for background is set. This path will be used for the checked, selected widget.
+        bool isCheckedSelBgImagePath();
 
-        //! Mark the selbgimagepath as not set.
-        void unsetSelBgImagePath();
+        //! Mark the checked_selbgimagepath as not set.
+        void unsetCheckedSelBgImagePath();
 
-        //! Set the selimagepath for background which is used to draw the selected widget.
+        //! Set the selimagepath for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagepath  path to selected background image
+        \param checked_selbgimagepath  path to selected background image
         */
-        void setSelBgImagePath(const string &selbgimagepath);
+        void setCheckedSelBgImagePath(const string &checked_selbgimagepath);
 
-        //! Get the selimagepath for background which is used to draw the selected widget.
+        //! Get the selimagepath for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagepath  path to the selected background image
+        \param checked_selbgimagepath  path to the selected background image
         \return true if set
         */
-        bool getSelBgImagePath(string &selbgimagepath);
+        bool getCheckedSelBgImagePath(string &checked_selbgimagepath);
 
-        //! Check if the selimagename for background is set. This name will be used for the selected widget.
-        bool isSelBgImageName();
+        //! Check if the selimagename for background is set. This name will be used for the checked, selected widget.
+        bool isCheckedSelBgImageName();
 
-        //! Mark the selbgimagename as not set.
-        void unsetSelBgImageName();
+        //! Mark the checked_selbgimagename as not set.
+        void unsetCheckedSelBgImageName();
 
-        //! Set the selimagename for background which is used to draw the selected widget.
+        //! Set the selimagename for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagename  name of the selected background image
+        \param checked_selbgimagename  name of the selected background image
         */
-        void setSelBgImageName(const string &selbgimagename);
+        void setCheckedSelBgImageName(const string &checked_selbgimagename);
 
-        //! Get the selimagename for background which is used to draw the selected widget.
+        //! Get the selimagename for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagename  name of the selected background image
+        \param checked_selbgimagename  name of the selected background image
         \return true if set
         */
-        bool getSelBgImageName(string &selbgimagename);
+        bool getCheckedSelBgImageName(string &checked_selbgimagename);
 
 
-        //! Check if the pressed imagepath for background is set. This path will be used for the unselected widget.
-        bool isBgImagePath_p();
+        //! Check if the pressed imagepath for background is set. This path will be used for the checked, unselected widget.
+        bool isCheckedBgImagePath_p();
 
-        //! Mark the pressed bgimagepath as not set.
-        void unsetBgImagePath_p();
+        //! Mark the pressed checked_bgimagepath as not set.
+        void unsetCheckedBgImagePath_p();
 
-        //! Set the pressed imagepath for background which is used to draw the unselected widget.
+        //! Set the pressed imagepath for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagepath_p  path to pressed & unselected background image
+        \param checked_bgimagepath_p  path to pressed & unselected background image
         */
-        void setBgImagePath_p(const string &bgimagepath_p);
+        void setCheckedBgImagePath_p(const string &checked_bgimagepath_p);
 
-        //! Get the pressed imagepath for background which is used to draw the unselected widget.
+        //! Get the pressed imagepath for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagepath_p  path to pressed & unselected background image
+        \param checked_bgimagepath_p  path to pressed & unselected background image
         \return true if set
         */
-        bool getBgImagePath_p(string &bgimagepath_p);
+        bool getCheckedBgImagePath_p(string &checked_bgimagepath_p);
 
-        //! Check if the pressed imagename for background is set. This name will be used for the unselected widget.
-        bool isBgImageName_p();
+        //! Check if the pressed imagename for background is set. This name will be used for the checked, unselected widget.
+        bool isCheckedBgImageName_p();
 
-        //! Mark the pressed bgimagename as not set.
-        void unsetBgImageName_p();
+        //! Mark the pressed checked_bgimagename as not set.
+        void unsetCheckedBgImageName_p();
 
-        //! Set the pressed imagename for background which is used to draw the unselected widget.
+        //! Set the pressed imagename for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagename_p  name of the pressed & unselected background image
+        \param checked_bgimagename_p  name of the pressed & unselected background image
         */
-        void setBgImageName_p(const string &bgimagename_p);
+        void setCheckedBgImageName_p(const string &checked_bgimagename_p);
 
-        //! Get the pressed imagename for background which is used to draw the unselected widget.
+        //! Get the pressed imagename for background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagename_p  name of the pressed & unselected background image
+        \param checked_bgimagename_p  name of the pressed & unselected background image
         \return true if set
         */
-        bool getBgImageName_p(string &bgimagename_p);
+        bool getCheckedBgImageName_p(string &checked_bgimagename_p);
 
-        //! Check if the pressed selimagepath for background is set. This path will be used for the selected widget.
-        bool isSelBgImagePath_p();
+        //! Check if the pressed selimagepath for background is set. This path will be used for the checked, selected widget.
+        bool isCheckedSelBgImagePath_p();
 
-        //! Mark the pressed selbgimagepath as not set.
-        void unsetSelBgImagePath_p();
+        //! Mark the pressed checked_selbgimagepath as not set.
+        void unsetCheckedSelBgImagePath_p();
 
-        //! Set the pressed selimagepath for background which is used to draw the selected widget.
+        //! Set the pressed selimagepath for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagepath_p  path to pressed & selected background image
+        \param checked_selbgimagepath_p  path to pressed & selected background image
         */
-        void setSelBgImagePath_p(const string &selbgimagepath_p);
+        void setCheckedSelBgImagePath_p(const string &checked_selbgimagepath_p);
 
-        //! Get the pressed selimagepath for background which is used to draw the selected widget.
+        //! Get the pressed selimagepath for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagepath_p  path to the pressed & selected background image
+        \param checked_selbgimagepath_p  path to the pressed & selected background image
         \return true if set
         */
-        bool getSelBgImagePath_p(string &selbgimagepath_p);
+        bool getCheckedSelBgImagePath_p(string &checked_selbgimagepath_p);
 
-        //! Check if the pressed selimagename for background is set. This name will be used for the selected widget.
-        bool isSelBgImageName_p();
+        //! Check if the pressed selimagename for background is set. This name will be used for the checked, selected widget.
+        bool isCheckedSelBgImageName_p();
 
-        //! Mark the pressed selbgimagename as not set.
-        void unsetSelBgImageName_p();
+        //! Mark the pressed checked_selbgimagename as not set.
+        void unsetCheckedSelBgImageName_p();
 
-        //! Set the pressed selimagename for background which is used to draw the selected widget.
+        //! Set the pressed selimagename for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagename_p  name of the pressed & selected background image
+        \param checked_selbgimagename_p  name of the pressed & selected background image
         */
-        void setSelBgImageName_p(const string &selbgimagename_p);
+        void setCheckedSelBgImageName_p(const string &checked_selbgimagename_p);
 
-        //! Get the pressed selimagename for background which is used to draw the selected widget.
+        //! Get the pressed selimagename for background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagename_p  name of the pressed & selected background image
+        \param checked_selbgimagename_p  name of the pressed & selected background image
         \return true if set
         */
-        bool getSelBgImageName_p(string &selbgimagename_p);
+        bool getCheckedSelBgImageName_p(string &checked_selbgimagename_p);
 
-        //! Check if the inactive imagepath for background is set. This path will be used for the unselected widget.
-        bool isBgImagePath_i();
+        //! Check if the inactive imagepath for background is set. This path will be used for the checked, unselected widget.
+        bool isCheckedBgImagePath_i();
 
-        //! Mark the inactive bgimagepath as not set.
-        void unsetBgImagePath_i();
+        //! Mark the inactive checked_bgimagepath as not set.
+        void unsetCheckedBgImagePath_i();
 
-        //! Set the imagepath for inactive background which is used to draw the unselected widget.
+        //! Set the imagepath for inactive background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagepath_i  path to inactive unselected background image
+        \param checked_bgimagepath_i  path to inactive unselected background image
         */
-        void setBgImagePath_i(const string &bgimagepath_i);
+        void setCheckedBgImagePath_i(const string &checked_bgimagepath_i);
 
-        //! Get the imagepath for inactive background which is used to draw the unselected widget.
+        //! Get the imagepath for inactive background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagepath_i  path to the inactive unselected background image
+        \param checked_bgimagepath_i  path to the inactive unselected background image
         \return true if set
         */
-        bool getBgImagePath_i(string &bgimagepath_i);
+        bool getCheckedBgImagePath_i(string &checked_bgimagepath_i);
 
-        //! Check if the imagename for inactive background is set. This name will be used for the unselected widget.
-        bool isBgImageName_i();
+        //! Check if the imagename for inactive background is set. This name will be used for the checked, unselected widget.
+        bool isCheckedBgImageName_i();
 
-        //! Mark the inactive bgimagename as not set.
-        void unsetBgImageName_i();
+        //! Mark the inactive checked_bgimagename as not set.
+        void unsetCheckedBgImageName_i();
 
-        //! Set the imagename for inactive background which is used to draw the unselected widget.
+        //! Set the imagename for inactive background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagename_i  name of the inactive unselected background image
+        \param checked_bgimagename_i  name of the inactive unselected background image
         */
-        void setBgImageName_i(const string &bgimagename_i);
+        void setCheckedBgImageName_i(const string &checked_bgimagename_i);
 
-        //! Get the imagename for inactive background which is used to draw the unselected widget.
+        //! Get the imagename for inactive background which is used to draw the checked, unselected widget.
         /*!
-        \param bgimagename_i  name of the inactive unselected background image
+        \param checked_bgimagename_i  name of the inactive unselected background image
         \return true if set
         */
-        bool getBgImageName_i(string &bgimagename_i);
+        bool getCheckedBgImageName_i(string &checked_bgimagename_i);
 
-        //! Check if the selimagepath for inactive background is set. This path will be used for the selected widget.
-        bool isSelBgImagePath_i();
+        //! Check if the selimagepath for inactive background is set. This path will be used for the checked, selected widget.
+        bool isCheckedSelBgImagePath_i();
 
-        //! Mark the inactive selbgimagepath as not set.
-        void unsetSelBgImagePath_i();
+        //! Mark the inactive checked_selbgimagepath as not set.
+        void unsetCheckedSelBgImagePath_i();
 
-        //! Set the selimagepath for inactive background which is used to draw the selected widget.
+        //! Set the selimagepath for inactive background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagepath_i  path to inactive selected background image
+        \param checked_selbgimagepath_i  path to inactive selected background image
         */
-        void setSelBgImagePath_i(const string &selbgimagepath_i);
+        void setCheckedSelBgImagePath_i(const string &checked_selbgimagepath_i);
 
-        //! Get the selimagepath for inactive background which is used to draw the selected widget.
+        //! Get the selimagepath for inactive background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagepath_i  path to the inactive selected background image
+        \param checked_selbgimagepath_i  path to the inactive selected background image
         \return true if set
         */
-        bool getSelBgImagePath_i(string &selbgimagepath_i);
+        bool getCheckedSelBgImagePath_i(string &checked_selbgimagepath_i);
 
-        //! Check if the selimagename for inactive background is set. This name will be used for the selected widget.
-        bool isSelBgImageName_i();
+        //! Check if the selimagename for inactive background is set. This name will be used for the checked, selected widget.
+        bool isCheckedSelBgImageName_i();
 
-        //! Mark the inactive selbgimagename as not set.
-        void unsetSelBgImageName_i();
+        //! Mark the inactive checked_selbgimagename as not set.
+        void unsetCheckedSelBgImageName_i();
 
-        //! Set the selimagename for inactive background which is used to draw the selected widget.
+        //! Set the selimagename for inactive background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagename  name of the inactive selected background image
+        \param checked_selbgimagename  name of the inactive selected background image
         */
-        void setSelBgImageName_i(const string &selbgimagename_i);
+        void setCheckedSelBgImageName_i(const string &checked_selbgimagename_i);
 
-        //! Get the selimagename for inactive background which is used to draw the selected widget.
+        //! Get the selimagename for inactive background which is used to draw the checked, selected widget.
         /*!
-        \param selbgimagename_i  name of the inactive selected background image
+        \param checked_selbgimagename_i  name of the inactive selected background image
         \return true if set
         */
-        bool getSelBgImageName_i(string &selbgimagename_i);
+        bool getCheckedSelBgImageName_i(string &checked_selbgimagename_i);
 
-        //! Check if the margin is set.
-        bool isMargin();
+        //! Check if the checked flag is set.
+        bool isChecked();
 
-        //! Mark the margin as not set.
-        void unsetMargin();
+        //! Mark the checked flag as not set.
+        void unsetChecked();
 
-        //! Set the margin.
+        //! Set the checked flag.
         /*!
-        \param margin  margin in pixel
+        \param checked  the widget will be displayed as checked if set to true
         */
-        void setMargin(unsigned int margin);
+        void setChecked(bool checked);
 
-        //! Get the margin.
+        //! Get the checked flag.
         /*!
-        \param margin  margin
+        \param checked  checked true or false
         \return true if set
         */
-        bool getMargin(unsigned int &margin);
-
-        //! Check if the focusable flag is set.
-        bool isFocusable();
-
-        //! Mark the focusable flag as not set.
-        void unsetFocusable();
-
-        //! Set the focusable flag.
-        /*!
-        \param focusable  the widget can get the focus if set to true
-        \note There is a difference between focused and selected. Only one widget
-              can get the focus at the same time. The focused widget gets the keyboard input.
-              A focused widget is also selected.
-        */
-        void setFocusable(bool focusable);
-
-        //! Get the focusable flag.
-        /*!
-        \param focusable  focusable true or false
-        \return true if set
-        */
-        bool getFocusable(bool &focusable);
-
-        //! Check if the selectable flag is set.
-        bool isSelectable();
-
-        //! Mark the selectable flag as not set.
-        void unsetSelectable();
-
-        //! Set the selectable flag.
-        /*!
-        \param selectable  the widget can be selected if set to true
-        \note There is a difference between focused and selected. Only one widget
-              can get the focus at the same time. But all other widgets can be switched
-              between selected and unselected independently.
-        */
-        void setSelectable(bool selectable);
-
-        //! Get the selectable flag.
-        /*!
-        \param selectable  selectable true or false
-        \return true if set
-        */
-        bool getSelectable(bool &selectable);
-
-        //! Check if the uparrow is set.
-        bool isUpArrow();
-
-        //! Mark the uparrow as not set.
-        void unsetUpArrow();
-
-        //! Set the uparrow.
-        /*!
-        \param uparrow  the name of the widget which represents the scroll up arrow
-        */
-        void setUpArrow(const string &uparrow);
-
-        //! Get the uparrow.
-        /*!
-        \param uparrow  name of the up arrow widget
-        \return true if set
-        */
-        bool getUpArrow(string &uparrow);
-
-        //! Check if the downarrow is set.
-        bool isDownArrow();
-
-		//! Mark the downarrow as not set.
-		void unsetDownArrow();
-
-        //! Set the downarrow.
-        /*!
-        \param downarrow  the name of the widget which represents the scroll down arrow
-        */
-        void setDownArrow(const string &downarrow);
-
-        //! Get the downarrow.
-        /*!
-        \param downarrow  name of the down arrow widget
-        \return true if set
-        */
-        bool getDownArrow(string &downarrow);
-
-        //! Check if the leftarrow is set.
-        bool isLeftArrow();
-
-        //! Mark the leftarrow as not set.
-        void unsetLeftArrow();
-
-        //! Set the leftarrow.
-        /*!
-        \param leftarrow  the name of the widget which represents the scroll left arrow
-        */
-        void setLeftArrow(const string &leftarrow);
-
-        //! Get the leftarrow.
-        /*!
-        \param leftarrow  name of the left arrow widget
-        \return true if set
-        */
-        bool getLeftArrow(string &leftarrow);
-
-        //! Check if the rightarrow is set.
-        bool isRightArrow();
-
-        //! Mark the rightarrow as not set.
-        void unsetRightArrow();
-
-        //! Set the rightarrow.
-        /*!
-        \param rightarrow  the name of the widget which represents the scroll right arrow
-        */
-        void setRightArrow(const string &rightarrow);
-
-
-        //! Get the rightarrow.
-        /*!
-        \param rightarrow  name of the right arrow widget
-        \return true if set
-        */
-        bool getRightArrow(string &rightarrow);
-
-        //! Check if the data is set.
-        bool isData();
-
-        //! Mark the data as not set.
-        void unsetData();
-
-        //! Set the additional data value.
-        /*!
-        \param data  any string which can store additional information (will not displayed)
-        */
-        void setData(const string &data);
-
-        //! Get the data.
-        /*!
-        \param data  additional data string
-        \return true if set
-        */
-        bool getData(string &data);
-
-        //! Check if the navigateup is set.
-        bool isNavigateUp();
-
-        //! Mark the navigateup as not set.
-        void unsetNavigateUp();
-
-        //! Set the navigateup widget.
-        /*!
-        \param navigateup  the name of the widget to which should navigate up
-        */
-        void setNavigateUp(const string &navigateup);
-
-        //! Get the navigateup widget.
-        /*!
-        \param navigateup name of the navigate up widget
-        \return true if set
-        */
-        bool getNavigateUp(string &navigateup);
-
-        //! Check if the navigatedown is set.
-        bool isNavigateDown();
-
-        //! Mark the navigatedown as not set.
-        void unsetNavigateDown();
-
-        //! Set the navigatedown widget.
-        /*!
-        \param navigatedown  the name of the widget to which should navigate down
-        */
-        void setNavigateDown(const string &navigatedown);
-
-        //! Get the navigatedown widget.
-        /*!
-        \param navigatedown  name of the navigate down widget
-        \return true if set
-        */
-        bool getNavigateDown(string &navigatedown);
-
-        //! Check if the navigateleft is set.
-        bool isNavigateLeft();
-
-        //! Mark the navigateleft as not set.
-        void unsetNavigateLeft();
-
-        //! Set the navigateleft widget.
-        /*!
-        \param navigateleft  the name of the widget to which should navigate left
-        */
-        void setNavigateLeft(const string &navigateleft);
-
-        //! Get the navigateleft widget.
-        /*!
-        \param navigateleft  name of the navigate left widget
-        \return true if set
-        */
-        bool getNavigateLeft(string &navigateleft);
-
-        //! Check if the navigateright is set.
-        bool isNavigateRight();
-
-        //! Mark the navigateright as not set.
-        void unsetNavigateRight();
-
-        //! Set the navigateright.
-        /*!
-        \param navigateright  the name of the widget to which should navigate right
-        */
-        void setNavigateRight(const string &navigateright);
-
-        //! Get the navigateright widget.
-        /*!
-        \param navigateright  name of the navigate right widget
-        \return true if set
-        */
-        bool getNavigateRight(string &navigateright);
-
-        //! Check if the vslider is set.
-        bool isVSlider();
-
-        //! Mark the vslider as not set.
-        void unsetVSlider();
-
-        //! Set the vslider.
-        /*!
-        \param vslider  the name of the widget which represents the vertical slider
-        */
-        void setVSlider(const string &vslider);
-
-        //! Get the vslider.
-        /*!
-        \param vslider  name of the vslider widget
-        \return true if set
-        */
-        bool getVSlider(string &vslider);
-
-        //! Check if the hslider is set.
-        bool isHSlider();
-
-        //! Mark the hslider as not set.
-        void unsetHSlider();
-
-        //! Set the hslider.
-        /*!
-        \param hslider  the name of the widget which represents the horizontal slider
-        */
-        void setHSlider(const string &hslider);
-
-        //! Get the hslider.
-        /*!
-        \param hslider  name of the hslider widget
-        \return true if set
-        */
-        bool getHSlider(string &hslider);
-
-        //! Check if the images on demand is set.
-        bool isImagesOnDemand();
-
-        //! Mark the images on demand flag as not set.
-        void unsetImagesOnDemand();
-
-        //! Set the images on demand flag.
-        /*!
-        \param imagesondemand  use imagesondemand true/false
-        */
-        void setImagesOnDemand(bool imagesondemand);
-
-        //! Get the images on demand flag.
-        /*!
-        \return images on demand flag
-        \return true if set
-        */
-        bool getImagesOnDemand(bool &imagesondemand);
-
-        //! Check if the blend is set.
-        bool isBlend();
-
-        //! Mark the blend as not set.
-        void unsetBlend();
-
-        //! Set the blend.
-        /*!
-        \param blend  blend with values 0..255
-        */
-        void setBlend(unsigned int blend);
-
-        //! Get the blend.
-        /*!
-        \param blend  blend
-        \return true if set
-        */
-        bool getBlend(unsigned int &blend);
-
-        //! Check if the blend factor is set.
-        bool isBlendFactor();
-
-        //! Mark the blend factor as not set.
-        void unsetBlendFactor();
-
-        //! Set the blend factor.
-        /*!
-        \param blendfactor  blend factor with values 0.0..
-        */
-        void setBlendFactor(double blendfactor);
-
-        //! Get the blend factor.
-        /*!
-        \param blendfactor  blend factor
-        \return true if set
-        */
-        bool getBlendFactor(double &blendfactor);
-
-
-        //! Check if the scroll on focus is set.
-        bool isScrollOnFocus();
-
-        //! Mark the scroll on focus flag as not set.
-        void unsetScrollOnFocus();
-
-        //! Set the scroll on focus flag.
-        /*!
-        \param scrollonfocus  use scrollonfocus true/false
-        */
-        void setScrollOnFocus(bool scrollonfocus);
-
-        //! Get the scroll on focus flag.
-        /*!
-        \return scroll on focus flag
-        \return true if set
-        */
-        bool getScrollOnFocus(bool &scrollonfocus);
-
-        //! Check if the clickable flag is set.
-        bool isClickable();
-
-        //! Mark the clickable flag as not set.
-        void unsetClickable();
-
-        //! Set the clickable flag.
-        /*!
-        \param clickable  user can click onto the widget if set to true
-        \note Widgets which are not focusable can be clickable anyway. See for example the MMSArrowWidget.
-        */
-        void setClickable(bool clickable);
-
-        //! Get the clickable flag.
-        /*!
-        \param clickable  clickable true or false
-        \return true if set
-        */
-        bool getClickable(bool &clickable);
-
-        //! Check if the returnonscroll flag is set.
-        bool isReturnOnScroll();
-
-        //! Mark the returnonscroll flag as not set.
-        void unsetReturnOnScroll();
-
-        //! Set the returnonscroll flag.
-        /*!
-        \param returnonscroll  if true emit on return callback if user changes the selection e.g. in a menu
-        */
-        void setReturnOnScroll(bool returnonscroll);
-
-        //! Get the returnonscroll flag.
-        /*!
-        \param returnonscroll  returnonscroll true or false
-        \return true if set
-        */
-        bool getReturnOnScroll(bool &returnonscroll);
-
-
-        //! Check if the input mode is set.
-        bool isInputMode();
-
-        //! Mark the input mode as not set.
-        void unsetInputMode();
-
-        //! Set the input mode.
-        /*!
-        \param inputmode  input mode ("move" or "click")
-        */
-        void setInputMode(const string &inputmode);
-
-        //! Get the input mode.
-        /*!
-        \param inputmode  input mode
-        \return true if set
-        */
-        bool getInputMode(string &inputmode);
+        bool getChecked(bool &checked);
 
 
 
@@ -1326,4 +738,4 @@ class MMSWidgetClass {
     friend class MMSDialogManager;
 };
 
-#endif /*MMSWIDGETCLASS_H_*/
+#endif /*MMSCHECKBOXWIDGETCLASS_H_*/

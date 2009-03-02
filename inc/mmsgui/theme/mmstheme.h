@@ -45,6 +45,7 @@
 #include "mmsgui/theme/mmsarrowwidgetclass.h"
 #include "mmsgui/theme/mmssliderwidgetclass.h"
 #include "mmsgui/theme/mmsinputwidgetclass.h"
+#include "mmsgui/theme/mmscheckboxwidgetclass.h"
 
 
 MMS_CREATEERROR(MMSThemeError);
@@ -87,7 +88,9 @@ typedef enum {
 	MMSGUI_TAGTABLE_TAG_CLASS_TEXTBOXWIDGET,
 	MMSGUI_TAGTABLE_TAG_SEPARATOR,
 	MMSGUI_TAGTABLE_TAG_INPUTWIDGET,
-	MMSGUI_TAGTABLE_TAG_CLASS_INPUTWIDGET
+	MMSGUI_TAGTABLE_TAG_CLASS_INPUTWIDGET,
+	MMSGUI_TAGTABLE_TAG_CHECKBOXWIDGET,
+	MMSGUI_TAGTABLE_TAG_CLASS_CHECKBOXWIDGET
 } MMSGUI_TAGTABLE_TAG;
 
 
@@ -115,6 +118,7 @@ class MMSTheme {
         vector<MMSArrowWidgetClass*>        arrowWidgetClasses;
         vector<MMSSliderWidgetClass*>       sliderWidgetClasses;
         vector<MMSInputWidgetClass*>        inputWidgetClasses;
+        vector<MMSCheckBoxWidgetClass*>     checkBoxWidgetClasses;
 
         bool addTemplateClass(MMSTemplateClass *themeClass);
         bool addMainWindowClass(MMSMainWindowClass *themeClass);
@@ -130,6 +134,7 @@ class MMSTheme {
         bool addArrowWidgetClass(MMSArrowWidgetClass *themeClass);
         bool addSliderWidgetClass(MMSSliderWidgetClass *themeClass);
         bool addInputWidgetClass(MMSInputWidgetClass *themeClass);
+        bool addCheckBoxWidgetClass(MMSCheckBoxWidgetClass *themeClass);
 
     public:
 
@@ -146,6 +151,7 @@ class MMSTheme {
         MMSArrowWidgetClass       	arrowWidgetClass;
         MMSSliderWidgetClass      	sliderWidgetClass;
         MMSInputWidgetClass       	inputWidgetClass;
+        MMSCheckBoxWidgetClass      checkBoxWidgetClass;
 
         MMSTemplateClass*       	getTemplateClass(string className = "");
         MMSMainWindowClass*     	getMainWindowClass(string className = "");
@@ -161,6 +167,7 @@ class MMSTheme {
         MMSArrowWidgetClass*        getArrowWidgetClass(string className = "");
         MMSSliderWidgetClass*       getSliderWidgetClass(string className = "");
         MMSInputWidgetClass*        getInputWidgetClass(string className = "");
+        MMSCheckBoxWidgetClass*     getCheckBoxWidgetClass(string className = "");
 
         MMSTheme();
         ~MMSTheme();

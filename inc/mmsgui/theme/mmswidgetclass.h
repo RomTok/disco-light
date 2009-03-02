@@ -553,7 +553,8 @@ class MMSWidgetClass {
         void setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix = NULL, string *path = NULL);
 
     public:
-        MMSBorderClass border;           	//! stores base border attributes
+    	//! stores base border attributes
+        MMSBorderClass border;
 
         //! Constructor of class MMSWidgetClass.
         MMSWidgetClass();

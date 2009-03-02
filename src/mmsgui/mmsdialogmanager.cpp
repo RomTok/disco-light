@@ -252,6 +252,9 @@ void MMSDialogManager::throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, 
         		case MMSGUI_TAGTABLE_TAG_INPUTWIDGET:
         	        widgetName = getInputValues(tafff, currentWidget, rootWindow, theme);
                     break;
+        		case MMSGUI_TAGTABLE_TAG_CHECKBOXWIDGET:
+                    widgetName = getCheckBoxValues(tafff, currentWidget, rootWindow, theme);
+                    break;
         		}
 
                 if(widgetName != "") {
@@ -787,6 +790,17 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                         themeCls.setAttributesFromTAFF(tafff, &prefix);
                         /* apply settings from dialog */
                         ((MMSInputWidget*)mywidget)->updateFromThemeClass(&themeCls);
+                    }
+                    break;
+                case MMSWIDGETTYPE_CHECKBOX:
+                    {
+                        /* read attributes from dialog */
+                        MMSCheckBoxWidgetClass themeCls;
+                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+                        /* apply settings from dialog */
+                        ((MMSCheckBoxWidget*)mywidget)->updateFromThemeClass(&themeCls);
                     }
                     break;
             }
@@ -1359,6 +1373,17 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 		                                    break;
 		                                case MMSWIDGETTYPE_INPUT:
 		                                    break;
+		                                case MMSWIDGETTYPE_CHECKBOX:
+		                                    {
+		                                        /* read attributes from node */
+		                                        MMSCheckBoxWidgetClass themeCls;
+		                                        themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+		                                        themeCls.setAttributesFromTAFF(tafff, &prefix);
+		                                        /* apply settings from node */
+		                                        ((MMSCheckBoxWidget*)widget)->updateFromThemeClass(&themeCls);
+		                                    }
+		                                    break;
 		                            }
 		                        }
 		                    }
@@ -1665,6 +1690,66 @@ string MMSDialogManager::getInputValues(MMSTaffFile *tafff, MMSWidget *currentWi
     return name;
 }
 
+
+string MMSDialogManager::getCheckBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
+    MMSCheckBoxWidgetClass 	themeClass;
+    MMSCheckBoxWidget		*checkbox;
+    string          		name = "";
+    string          		size = "";
+
+    /* get themepath */
+    string themePath = "";
+    if (theme)
+        themePath = theme->getThemePath();
+    else
+        themePath = globalTheme->getThemePath();
+
+    /* read settings from dialog */
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+
+    /* create new checkbox from theme class */
+    checkbox = new MMSCheckBoxWidget(rootWindow, themeClass.getClassName(), theme);
+
+    /* apply settings from dialog */
+    checkbox->updateFromThemeClass(&themeClass);
+
+    /* search for attributes which are only supported within dialog */
+    startTAFFScan
+    {
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
+            name = attrval_str;
+			break;
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_size:
+	        size = attrval_str;
+			break;
+	    }
+    }
+    endTAFFScan
+
+    /* add to widget vector if named */
+    if(name != "") {
+        checkbox->setName(name);
+        insertNamedWidget(checkbox);
+    }
+
+    if(size != "") {
+        if (!checkbox->setSizeHint(size))
+            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+    }
+
+    if (currentWidget)
+        currentWidget->add(checkbox);
+    else
+        rootWindow->add(checkbox);
+
+    throughDoc(tafff, checkbox, rootWindow, theme);
+
+    /* return the name of the widget */
+    return name;
+}
 
 
 
