@@ -121,7 +121,6 @@ static void printFrameFormat(int frame_format) {
 	}
 }
 
-static MMSFBSurface *interim = NULL;
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
@@ -180,9 +179,9 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
         // printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
 
         // delete iterim surface
-		if (interim) {
-			delete interim;
-			interim = NULL;
+		if (userd->interim) {
+			delete userd->interim;
+			userd->interim = NULL;
 		}
     }
 
@@ -190,17 +189,17 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		// the destination has YV12 pixelformat
 		if (frame_format == XINE_VORAW_RGB) {
     		// we get RGB24 data
-			if (!interim) {
+			if (!userd->interim) {
 				// allocate interim buffer for RGB24 to YV12 convertion
-				interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+				userd->interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
 			}
     	}
 
-		if (interim) {
+		if (userd->interim) {
 			// source is RGB24
-			interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+			userd->interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
 							    frame_width, frame_height, NULL, 0, 0);
-			userd->surf->stretchBlit(interim, NULL, &userd->dest);
+			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);
 
 		} else {
 			// source is YV12
@@ -220,14 +219,14 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		// destination with any other pixelformat
 		if (frame_format == XINE_VORAW_YV12) {
     		// we get YV12 data
-			if (!interim) {
+			if (!userd->interim) {
 				// allocate interim buffer for YV12 stretch blit
-				interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
-				if (interim) interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
+				userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
+				if (userd->interim) userd->interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
 			}
     	}
 
-		if (interim) {
+		if (userd->interim) {
 			// source is YV12
 			MMSFBExternalSurfaceBuffer buf;
 			buf.ptr = data0;
@@ -240,9 +239,9 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 			mydest.x = 0;
 			mydest.y = 0;
 
-			interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+			userd->interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
 									   frame_width, frame_height, NULL, &mydest);
-			userd->surf->blit(interim, NULL, userd->dest.x, userd->dest.y);
+			userd->surf->blit(userd->interim, NULL, userd->dest.x, userd->dest.y);
 
 		} else {
 			// source is RGB24
@@ -565,7 +564,10 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 			this->userd.size.w=w;
 			this->userd.size.h=h;
 			this->userd.lastaspect=0.0;
+			this->userd.interim = NULL;
 			this->userd.overlayInterim = NULL;
+			this->userd.numOverlays = 0;
+			this->userd.overlays = NULL;
 		}
         DEBUGMSG("MMSMedia", "opening video driver...");
         /* open the video output driver */
@@ -690,6 +692,10 @@ MMSAV::~MMSAV() {
     // exit xine
     xine_exit(this->xine);
 
+	if (this->userd.interim) {
+		// delete interim (used for xine raw callback)
+		delete this->userd.interim;
+	}
 
 	if (this->userd.overlayInterim) {
 		// delete overlay interim (used for xine raw callback)

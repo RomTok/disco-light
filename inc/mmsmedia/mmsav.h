@@ -82,6 +82,7 @@ typedef struct {
 	MMSFBRectangle size;
 	MMSFBRectangle dest;
 	double lastaspect;
+	MMSFBSurface *interim;
 	//! interim overlay surface
 	MMSFBSurface *overlayInterim;
 	//! number of currently available overlays
