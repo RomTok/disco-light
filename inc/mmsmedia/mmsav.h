@@ -84,6 +84,10 @@ typedef struct {
 	double lastaspect;
 	//! interim overlay surface
 	MMSFBSurface *overlayInterim;
+	//! number of currently available overlays
+	int numOverlays;
+	//! array of numOverlays overlays
+	raw_overlay_t *overlays;
 } MMSRAW_USERDATA;
 
 
