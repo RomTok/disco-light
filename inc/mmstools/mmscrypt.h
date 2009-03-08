@@ -26,7 +26,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _NO_MMSCRYPT
+#ifdef __HAVE_MMSCRYPT__
 #ifndef MMSCRYPT_H_
 #define MMSCRYPT_H_
 
@@ -53,4 +53,4 @@ class MMSCrypt {
 };
 
 #endif /* MMSCRYPT_H_ */
-#endif /* _NO_MMSCRYPT */
+#endif /* __HAVE_MMSCRYPT__ */

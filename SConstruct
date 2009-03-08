@@ -372,8 +372,7 @@ if(env['enable_media']):
 	else:
 		conf.checkSimpleLib(['libxine'],    'xine.h')
 	conf.checkSimpleLib(['alsa'],       'alsa/version.h')
-else:
-	conf.env['CCFLAGS'].append(['-D_NO_MMSMEDIA', '-D_NO_MIXER'])
+	conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 	
 	
 # checks required for database backends
@@ -395,23 +394,23 @@ if 'odbc' in env['database']:
 
 # check for openssl
 if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
-	conf.env['CCFLAGS'].append('-D_NO_MMSCRYPT')
 	conf.env['mmscrypt'] = 0
 else:
+	conf.env['CCFLAGS'].append('-D__HAVE_MMSCRYPT__')
 	conf.env['mmscrypt'] = 1
 	
 # checks required if building mmsflash
 if(env['enable_flash']):
 	conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
-else:
-	conf.env['CCFLAGS'].append('-D_NO_MMSFLASH')
+	conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+
 
 # checks required if building mmssip
 if(env['enable_sip']):
 	if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
-		conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)	
-else:
-	conf.env['CCFLAGS'].append('-D_NO_MMSSIP')
+		conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)
+		conf.env['CCFLAGS'].append('-D__HAVE_MMSSIP__')
+
 	
 # checks required if building with email support
 if(env['enable_mail']):

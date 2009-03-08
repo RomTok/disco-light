@@ -26,7 +26,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _NO_MIXER
+#ifdef __HAVE_MIXER__
 #ifndef MMSAUDIOCTRL_H_
 #define MMSAUDIOCTRL_H_
 
@@ -83,4 +83,4 @@ class MMSAudioCtrl {
 };
 
 #endif /*MMSAUDIOCTRL_H_*/
-#endif /* _NO_MIXER */
+#endif /* __HAVE_MIXER__ */

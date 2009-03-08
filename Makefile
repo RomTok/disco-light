@@ -16,17 +16,18 @@ all clean update:
 	@+make -C  ./src/mmsgui    $@
 	@+make -C  ./src/mmsbase   $@
 	@+make -C  ./src/mmsinput  $@
-ifdef __WITH_MMSMEDIA__
+ifdef __HAVE_MMSMEDIA__
 	@+make -C  ./src/mmsmedia  $@
 endif
 	@+make -C  ./src/mmscore   $@
-ifdef __WITH_MMSSIP__
+ifdef __HAVE_MMSSIP__
 	@+make -C  ./src/mmssip    $@
 endif
 	@+make -C  ./tools/taff    $@
-ifdef __WITH_MMSFLASH__
+ifdef __HAVE_MMSFLASH__
 	@+make -C  ./src/mmsflash  $@
 endif
+	echo ${CFLAGS}
 
 install-disko:
 	@+make -C  ./src/mmstools  install
@@ -34,16 +35,16 @@ install-disko:
 	@+make -C  ./src/mmsgui    install
 	@+make -C  ./src/mmsbase   install
 	@+make -C  ./src/mmsinput  install
-ifdef __WITH_MMSMEDIA__
+ifdef __HAVE_MMSMEDIA__
 	@+make -C  ./src/mmsmedia  install
 endif
 	@+make -C  ./src/mmscore   install
-ifdef __WITH_MMSSIP__
+ifdef __HAVE_MMSSIP__
 	@+make -C  ./src/mmssip    install
 endif
 	@+make -C  ./src/mmsinfo   install
 	@+make -C  ./tools/taff    install
-ifdef __WITH_MMSFLASH__
+ifdef __HAVE_MMSFLASH__
 	@+make -C  ./src/mmsflash  install
 endif
 	@install -T -m 644 ./inc/mms.h $(DESTDIR)$(incdir)/mms.h

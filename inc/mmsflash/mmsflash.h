@@ -26,10 +26,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifdef __HAVE_MMSFLASH__
+
 #ifndef MMSFLASH_H_
 #define MMSFLASH_H_
-
-#ifndef _NO_MMSFLASH
 
 #include "mmsgui/mmsgui.h"
 
@@ -132,6 +132,5 @@ class MMSFlash {
     friend class MMSFlashThread;
 };
 
-#endif /* _NO_MMSFLASH */
-
 #endif /*MMSFLASH_H_*/
+#endif /* __HAVE_MMSFLASH__ */

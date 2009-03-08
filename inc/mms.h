@@ -42,14 +42,14 @@
 #include <mmsbase/mmsbase.h>
 #include <mmsconfig/mmsconfig.h>
 #include <mmsinput/mmsinput.h>
-#ifndef _NO_MMSMEDIA
+#ifdef __HAVE_MMSMEDIA__
 #include <mmscore/mmsmusicmanager.h>
 #include <mmsmedia/mmsmedia.h>
 #endif
-#ifndef _NO_MMSSIP
+#ifdef __HAVE_MMSSIP__
 #include <mmssip/mmssip.h>
 #endif
-#ifndef _NO_MMSFLASH
+#ifdef __HAVE_MMSFLASH__
 #include <mmsflash/mmsflash.h>
 #endif
 

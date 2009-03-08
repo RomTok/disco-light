@@ -26,10 +26,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifdef __HAVE_MMSSIP__
+
 #ifndef MMSSIP_H_
 #define MMSSIP_H_
-
-#ifndef _NO_MMSSIP
 
 #include <pjsua-lib/pjsua.h>
 #include <iostream>
@@ -146,6 +146,5 @@ class MMSSip {
         sigc::signal<void, MMSSipBuddy>            *onBuddyStatus;
 };
 
-#endif /* _NO_MMSSIP */
-
 #endif /* MMSSIP_H_ */
+#endif /* __HAVE_MMSSIP__ */
