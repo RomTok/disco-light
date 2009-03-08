@@ -27,7 +27,6 @@ endif
 ifdef __HAVE_MMSFLASH__
 	@+make -C  ./src/mmsflash  $@
 endif
-	echo ${CFLAGS}
 
 install-disko:
 	@+make -C  ./src/mmstools  install
