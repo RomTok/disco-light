@@ -26,6 +26,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef _NO_MMSFLASH
+
 #include "mmsflash/mmsflashthread.h"
 
 MMSFlashThread::MMSFlashThread(MMSFlash *flash, MMSFLASHTHREAD_MODE mode, string identity) : MMSThread(identity) {
@@ -61,4 +63,6 @@ void MMSFlashThread::invokeStop(void) {
 void MMSFlashThread::waitUntilStopped(void) {
 	while (isRunning()) msleep(50);
 }
+
+#endif /* _NO_MMSFLASH */
 

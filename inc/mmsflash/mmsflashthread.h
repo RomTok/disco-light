@@ -29,7 +29,10 @@
 #ifndef MMSFLASHTHREAD_H_
 #define MMSFLASHTHREAD_H_
 
+#ifndef _NO_MMSFLASH
+
 #include "mms.h"
+#include "mmsflash/mmsflash.h"
 
 typedef enum {
 	MMSFLASHTHREAD_MODE_LOADER = 0,
@@ -67,5 +70,7 @@ class MMSFlashThread : public MMSThread {
         //! waiting until end of the thread
         void waitUntilStopped(void);
 };
+
+#endif /* _NO_MMSFLASH */
 
 #endif /*MMSFLASHTHREAD_H_*/
