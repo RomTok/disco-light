@@ -26,6 +26,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <libxml/xmlversion.h>
+
 #ifdef LIBXML_READER_ENABLED
 
 #include "mmsbase/mmsxmlserverinterface.h"
@@ -109,16 +111,16 @@ bool MMSXMLServerInterface::throughFunc(xmlTextReaderPtr reader, string *answer)
 }
 
 bool MMSXMLServerInterface::funcSendEvent(xmlTextReaderPtr reader, string *answer) {
-    xmlChar  *heading, *pluginid, *name, *value;
+    xmlChar  *heading, /**pluginid,*/ *name, *value;
 	MMSEvent *event;
 
     if(!reader || !answer) return false;
 
     /* get attributes */
     heading  = xmlTextReaderGetAttribute(reader, (const xmlChar*)"heading");
-    pluginid = xmlTextReaderGetAttribute(reader, (const xmlChar*)"pluginid");
+    //pluginid = xmlTextReaderGetAttribute(reader, (const xmlChar*)"pluginid");
 
-    if(!heading || !pluginid) return false;
+    if(!heading /*|| !pluginid*/) return false;
 
 	/* construct event object */
 	event = new MMSEvent((const char*)heading);

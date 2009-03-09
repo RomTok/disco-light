@@ -66,6 +66,7 @@ void MMSTCPServer::threadMain() {
 	/* get host ip in numbers-and-dots */
 	ia.s_addr = *((unsigned long int*)*(he->h_addr_list));
 	this->hostip = inet_ntoa(ia);
+	printf("ip: %s", this->hostip.c_str());
 
 	/* get a socket */
 	if ((this->s = socket(AF_INET, SOCK_STREAM, 0))<=0) return;
@@ -73,15 +74,17 @@ void MMSTCPServer::threadMain() {
 	/* bind to hostip */
 	memset(&sa, 0, sizeof(sa));
 	sa.sin_family = AF_INET;
-	sa.sin_port = this->port / 0x100 + (this->port % 0x100) * 0x100;
-	sa.sin_addr = ia;
+	sa.sin_port = htons(this->port);
+	sa.sin_addr.s_addr = inet_addr(this->hostip.c_str());
+	printf("\n bind at %d\n",sa.sin_port);
+
 	if (bind(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
-		printf("\n bind failed\n");
 		return;
 	}
 
+	listen(this->s,SOMAXCONN);
 	/* listen/select/accept loop */
-	while (listen(this->s, SOMAXCONN) == 0) {
+	while (1) {
 		/* set filedescriptor */
 		FD_ZERO(&readfds);
 		FD_ZERO(&writefds);

@@ -121,9 +121,6 @@ static void printFrameFormat(int frame_format) {
 	}
 }
 
-static MMSFBSurface *interim = NULL;
-static raw_overlay_t *overlays = NULL;
-static int numOverlays = 0;
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
@@ -182,9 +179,9 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
         // printf("w,h,x,y: %d, %d, %d, %d\n", userd->dest.w,userd->dest.h,userd->dest.x,userd->dest.y);
 
         // delete iterim surface
-		if (interim) {
-			delete interim;
-			interim = NULL;
+		if (userd->interim) {
+			delete userd->interim;
+			userd->interim = NULL;
 		}
     }
 
@@ -192,17 +189,17 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		// the destination has YV12 pixelformat
 		if (frame_format == XINE_VORAW_RGB) {
     		// we get RGB24 data
-			if (!interim) {
+			if (!userd->interim) {
 				// allocate interim buffer for RGB24 to YV12 convertion
-				interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+				userd->interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
 			}
     	}
 
-		if (interim) {
+		if (userd->interim) {
 			// source is RGB24
-			interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+			userd->interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
 							    frame_width, frame_height, NULL, 0, 0);
-			userd->surf->stretchBlit(interim, NULL, &userd->dest);
+			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);
 
 		} else {
 			// source is YV12
@@ -222,14 +219,14 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		// destination with any other pixelformat
 		if (frame_format == XINE_VORAW_YV12) {
     		// we get YV12 data
-			if (!interim) {
+			if (!userd->interim) {
 				// allocate interim buffer for YV12 stretch blit
-				interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
-				if (interim) interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
+				userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
+				if (userd->interim) userd->interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
 			}
     	}
 
-		if (interim) {
+		if (userd->interim) {
 			// source is YV12
 			MMSFBExternalSurfaceBuffer buf;
 			buf.ptr = data0;
@@ -242,9 +239,9 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 			mydest.x = 0;
 			mydest.y = 0;
 
-			interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+			userd->interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
 									   frame_width, frame_height, NULL, &mydest);
-			userd->surf->blit(interim, NULL, userd->dest.x, userd->dest.y);
+			userd->surf->blit(userd->interim, NULL, userd->dest.x, userd->dest.y);
 
 		} else {
 			// source is RGB24
@@ -254,45 +251,7 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	}
 
 
-	if(numOverlays > 0) {
-/*old staff, to be removed
-		double w = ((float)userd->dest.w) / ((float)frame_width);
-		double h = ((float)userd->dest.h) / ((float)frame_height);
-
-   		int width;
-		int height;
-		int x;
-		int y;
-
-
-		userd->surf->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL | MMSFB_BLIT_ANTIALIASING);
-
-    	for(int i = 0; i < numOverlays; ++i) {
-    		raw_overlay_t ovl = overlays[i];
-
-    		width = (int)((double)ovl.ovl_w * w);
-    		height = (int)((double)ovl.ovl_h * h);
-
-    		MMSFBSurface overlayInterim(width, height, MMSFB_PF_ARGB);
-
-    		x = (int)((double)ovl.ovl_x * w);
-			if(userd->size.w > userd->dest.w) {
-				x += (int)((double)(userd->size.w - userd->dest.w) * 0.5);
-			}
-
-			y = (int)((double)ovl.ovl_y * h);
-			if(userd->size.h > userd->dest.h) {
-				y += (int)((double)(userd->size.h - userd->dest.h) * 0.5);
-			}
-
-    		overlayInterim.stretchBlitBuffer(ovl.ovl_rgba, ovl.ovl_w * 4, MMSFB_PF_ARGB, ovl.ovl_w, ovl.ovl_h, NULL, NULL);
-    		userd->surf->blit(&overlayInterim, NULL, x, y);
-    	}
-
-		userd->surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
-*/
-
-
+	if(userd->numOverlays > 0) {
 		int rw = (userd->dest.w << 10) / frame_width;
 		int rh = (userd->dest.h << 10) / frame_height;
 
@@ -307,12 +266,12 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		}
 
 		// for all overlays
-		for (int i = 0; i < numOverlays; ++i) {
+		for (int i = 0; i < userd->numOverlays; ++i) {
 			// get overlay infos
-    		raw_overlay_t *ovl = &overlays[i];
+			raw_overlay_t *ovl = &(userd->overlays[i]);
 
-    		// calc x/y offsets
-    		int x = (ovl->ovl_x * rw) >> 10;
+			// calc x/y offsets
+			int x = (ovl->ovl_x * rw) >> 10;
 			if(userd->size.w > userd->dest.w) {
 				x += (userd->size.w - userd->dest.w) >> 1;
 			}
@@ -331,22 +290,23 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 
 			// blit to target surface
 			userd->surf->blit(userd->overlayInterim, &dest_rect, x, y);
-    	}
+		}
 
 		// restore blitting flags
 		userd->surf->setBlittingFlags(saved_flags);
 	}
 
-
-    userd->surf->flip(NULL);
+	userd->surf->flip(NULL);
 }
 
 /**
  * Callback, that will be called each time an overlay state changes @see: xine.h
  */
 void raw_overlay_cb(void *user_data, int num_ovl, raw_overlay_t *overlays_array) {
-	numOverlays = num_ovl;
-	overlays = overlays_array;
+	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
+
+	userd->numOverlays = num_ovl;
+	userd->overlays = overlays_array;
 }
 
 
@@ -604,7 +564,10 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 			this->userd.size.w=w;
 			this->userd.size.h=h;
 			this->userd.lastaspect=0.0;
+			this->userd.interim = NULL;
 			this->userd.overlayInterim = NULL;
+			this->userd.numOverlays = 0;
+			this->userd.overlays = NULL;
 		}
         DEBUGMSG("MMSMedia", "opening video driver...");
         /* open the video output driver */
@@ -729,6 +692,10 @@ MMSAV::~MMSAV() {
     // exit xine
     xine_exit(this->xine);
 
+	if (this->userd.interim) {
+		// delete interim (used for xine raw callback)
+		delete this->userd.interim;
+	}
 
 	if (this->userd.overlayInterim) {
 		// delete overlay interim (used for xine raw callback)
