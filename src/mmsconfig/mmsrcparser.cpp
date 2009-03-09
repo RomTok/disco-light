@@ -29,8 +29,7 @@
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"
 
-#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + parvalue + "' for parameter '" + string((const char *)parname) + "' valid values: " + validvals + addmsg);
-
+#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + string(parvalue) + "' for parameter '" + string((const char *)parname) + "', valid value(s): " + validvals + addmsg);
 
 
 MMSRcParser::MMSRcParser() {
@@ -54,11 +53,11 @@ MMSRcParser::MMSRcParser() {
     this->graphics.backend                    = MMSFB_BE_NONE;
     this->graphics.outputtype                 = MMSFB_OT_NONE;
     this->graphics.videolayerid               = 0;
-    this->graphics.videolayerpixelformat      = "RGB16";
+    this->graphics.videolayerpixelformat      = MMSFB_PF_RGB16;
     this->graphics.videolayeroptions          = "";
     this->graphics.videolayerbuffermode       = "BACKSYSTEM";
 	this->graphics.graphicslayerid            = 0;
-	this->graphics.graphicslayerpixelformat   = "RGB16";
+	this->graphics.graphicslayerpixelformat   = MMSFB_PF_RGB16;
     this->graphics.graphicslayeroptions       = "";
     this->graphics.graphicslayerbuffermode    = "BACKSYSTEM";
     this->graphics.vrect.x                    = 0;
@@ -71,8 +70,8 @@ MMSRcParser::MMSRcParser() {
     this->graphics.touchrect.h                = 0;
     this->graphics.pointer                    = "NONE";	// use the mouse pointer, default no
     this->graphics.showpointer                = false;	// show the mouse pointer, default no
-	this->graphics.graphicswindowpixelformat  = "";		// supported values: ARGB or AYUV, empty string means autodetection
-	this->graphics.graphicssurfacepixelformat = "";		// supported values: ARGB or AYUV, empty string means autodetection
+	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
+	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
 	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
@@ -432,16 +431,22 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
         }
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
 			this->graphics.videolayerid = atoi((const char *)parvalue);
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat"))
-	        this->graphics.videolayerpixelformat = strToUpr(string((const char *)parvalue));
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.videolayerpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+            	WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_LAYER, "");
+	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayeroptions"))
 	        this->graphics.videolayeroptions = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerbuffermode"))
 	        this->graphics.videolayerbuffermode = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerid"))
 			this->graphics.graphicslayerid = atoi((const char *)parvalue);
-		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerpixelformat"))
-			this->graphics.graphicslayerpixelformat = strToUpr(string((const char *)parvalue));
+		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerpixelformat")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.graphicslayerpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+            	WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_LAYER, "");
+	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayeroptions"))
 	        this->graphics.graphicslayeroptions = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode"))
@@ -466,10 +471,19 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             this->graphics.pointer = strToUpr(string((const char *)parvalue));
             if(graphics.pointer == "EXTERNAL" || graphics.pointer == "INTERNAL" || graphics.pointer == "TRUE")
             	graphics.showpointer = true;
-        } else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat"))
-			this->graphics.graphicswindowpixelformat = strToUpr(string((const char *)parvalue));
-		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat"))
-			this->graphics.graphicssurfacepixelformat = strToUpr(string((const char *)parvalue));
+        } else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.graphicswindowpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
+            	string val2 = strToUpr(val);
+            	if ((val2 != "AUTODETECT") && (val2 != "AUTO"))
+            		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_WINDOWS, "");
+            }
+	    }
+		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+           		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
+	    }
         else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
             this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
@@ -487,6 +501,47 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 
 	}
 
+	// checking layer ids
+	if (this->graphics.backend == MMSFB_BE_X11) {
+		switch (this->graphics.outputtype) {
+		case MMSFB_OT_X11:
+		case MMSFB_OT_XVSHM:
+			if (this->graphics.videolayerid != 0)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.graphicslayerid != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			break;
+		case MMSFB_OT_XSHM:
+			if (this->graphics.videolayerid != 0)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.graphicslayerid != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			break;
+		default:
+			break;
+		}
+	}
+
+	// checking pixelformats
+	if (this->graphics.backend == MMSFB_BE_X11) {
+		switch (this->graphics.outputtype) {
+		case MMSFB_OT_X11:
+		case MMSFB_OT_XVSHM:
+			if (this->graphics.videolayerpixelformat != MMSFB_PF_YV12)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_YV12)
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			break;
+		case MMSFB_OT_XSHM:
+			if (this->graphics.videolayerpixelformat != MMSFB_PF_RGB32)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_RGB32)
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			break;
+		default:
+			break;
+		}
+	}
 
 	if ((this->graphics.backend == MMSFB_BE_X11)||(this->graphics.backend == MMSFB_BE_FBDEV)) {
 		// overwite values needed for this backends

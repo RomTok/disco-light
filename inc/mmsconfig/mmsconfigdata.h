@@ -70,29 +70,29 @@ class MMSConfigDataDB {
 
 class MMSConfigDataGraphics {
     public:
-	    int    xres;
-	    int    yres;
-	    int    xpos;
-	    int    ypos;
-	    MMSFBBackend 		backend;
-	    MMSFBOutputType		outputtype;
-		int    videolayerid;
-	    string videolayerpixelformat;
-	    string videolayeroptions;
-	    string videolayerbuffermode;
-		int    graphicslayerid;
-		string graphicslayerpixelformat;
-	    string graphicslayeroptions;
-	    string graphicslayerbuffermode;
-	    CVRECT vrect;
-	    CVRECT touchrect;
-	    string  pointer;
-	    bool    showpointer;
-		string graphicswindowpixelformat;
-		string graphicssurfacepixelformat;
-	    bool   extendedaccel;
-	    string allocmethod;
-	    MMSFBFullScreenMode	fullscreen;
+	    int    					xres;
+	    int    					yres;
+	    int    					xpos;
+	    int    					ypos;
+	    MMSFBBackend 			backend;
+	    MMSFBOutputType			outputtype;
+		int    					videolayerid;
+		MMSFBSurfacePixelFormat videolayerpixelformat;
+	    string 					videolayeroptions;
+	    string 					videolayerbuffermode;
+		int    					graphicslayerid;
+		MMSFBSurfacePixelFormat graphicslayerpixelformat;
+	    string 					graphicslayeroptions;
+	    string 					graphicslayerbuffermode;
+	    CVRECT 					vrect;
+	    CVRECT 					touchrect;
+	    string  				pointer;
+	    bool    				showpointer;
+	    MMSFBSurfacePixelFormat graphicswindowpixelformat;
+	    MMSFBSurfacePixelFormat graphicssurfacepixelformat;
+	    bool   					extendedaccel;
+	    string 					allocmethod;
+	    MMSFBFullScreenMode		fullscreen;
 };
 
 class MMSConfigData {
@@ -148,19 +148,19 @@ class MMSConfigData {
         const MMSFBBackend getBackend();
         const MMSFBOutputType getOutputType();
         const int    getVideoLayerId();
-        const string getVideoLayerPixelformat();
+        const MMSFBSurfacePixelFormat getVideoLayerPixelformat();
         const string getVideoLayerOptions();
         const string getVideoLayerBufferMode();
         const int    getGraphicsLayerId();
-        const string getGraphicsLayerPixelformat();
+        const MMSFBSurfacePixelFormat getGraphicsLayerPixelformat();
         const string getGraphicsLayerOptions();
         const string getGraphicsLayerBufferMode();
         const CVRECT getVRect();
         const CVRECT getTouchRect();
         const string getPointer();
         const bool   getShowPointer();
-        const string getGraphicsWindowPixelformat();
-        const string getGraphicsSurfacePixelformat();
+        const MMSFBSurfacePixelFormat getGraphicsWindowPixelformat();
+        const MMSFBSurfacePixelFormat getGraphicsSurfacePixelformat();
         const bool   getExtendedAccel();
         const string getAllocMethod();
         const MMSFBFullScreenMode   getFullScreen();

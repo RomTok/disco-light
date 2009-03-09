@@ -115,11 +115,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         DEBUGMSG_OUTSTR("Core", "Backend:                      " + getMMSFBBackendString(config->getBackend()));
         DEBUGMSG_OUTSTR("Core", "Output type:                  " + getMMSFBOutputTypeString(config->getOutputType()));
         DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(config->getVideoLayerId()));
-        DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + config->getVideoLayerPixelformat());
+        DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + getMMSFBPixelFormatString(config->getVideoLayerPixelformat()));
         DEBUGMSG_OUTSTR("Core", "Video layer options:          " + config->getVideoLayerOptions());
         DEBUGMSG_OUTSTR("Core", "Video layer buffermode:       " + config->getVideoLayerBufferMode());
         DEBUGMSG_OUTSTR("Core", "Graphics layer id:            " + iToStr(config->getGraphicsLayerId()));
-        DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + config->getGraphicsLayerPixelformat());
+        DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + getMMSFBPixelFormatString(config->getGraphicsLayerPixelformat()));
         DEBUGMSG_OUTSTR("Core", "Graphics layer options:       " + config->getGraphicsLayerOptions());
         DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + config->getGraphicsLayerBufferMode());
         DEBUGMSG_OUTSTR("Core", "Visible screen area:          " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
@@ -145,8 +145,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
 		DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           " + config->getPointer());
 
-        DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat:  " + config->getGraphicsWindowPixelformat());
-        DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat: " + config->getGraphicsSurfacePixelformat());
+        DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat:  " + getMMSFBPixelFormatString(config->getGraphicsWindowPixelformat()));
+        DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat: " + getMMSFBPixelFormatString(config->getGraphicsSurfacePixelformat()));
 
         if (config->getExtendedAccel()) {
             DEBUGMSG_OUTSTR("Core", "Extended acceleration:        yes");

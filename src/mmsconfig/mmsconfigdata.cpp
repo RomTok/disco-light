@@ -215,7 +215,7 @@ const int MMSConfigData::getVideoLayerId() {
 	return this->graphics.videolayerid;
 }
 
-const string MMSConfigData::getVideoLayerPixelformat() {
+const MMSFBSurfacePixelFormat MMSConfigData::getVideoLayerPixelformat() {
     return this->graphics.videolayerpixelformat;
 }
 
@@ -231,7 +231,7 @@ const int MMSConfigData::getGraphicsLayerId() {
 	return this->graphics.graphicslayerid;
 }
 
-const string MMSConfigData::getGraphicsLayerPixelformat() {
+const MMSFBSurfacePixelFormat MMSConfigData::getGraphicsLayerPixelformat() {
     return this->graphics.graphicslayerpixelformat;
 }
 
@@ -259,11 +259,11 @@ const bool MMSConfigData::getShowPointer() {
     return this->graphics.showpointer;
 }
 
-const string MMSConfigData::getGraphicsWindowPixelformat() {
+const MMSFBSurfacePixelFormat MMSConfigData::getGraphicsWindowPixelformat() {
     return this->graphics.graphicswindowpixelformat;
 }
 
-const string MMSConfigData::getGraphicsSurfacePixelformat() {
+const MMSFBSurfacePixelFormat MMSConfigData::getGraphicsSurfacePixelformat() {
     return this->graphics.graphicssurfacepixelformat;
 }
 
