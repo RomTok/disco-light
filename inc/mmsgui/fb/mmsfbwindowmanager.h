@@ -72,8 +72,9 @@ typedef struct {
 */
 class MMSFBWindowManager {
     private:
-        MMSFBLayer      *layer;         /* layer on which the windows will be drawn */
-        MMSFBSurface    *layer_surface; /* layer's surface */
+        MMSFBLayer      		*layer;         /* layer on which the windows will be drawn */
+        MMSFBSurface    		*layer_surface; /* layer's surface */
+        MMSFBSurfacePixelFormat layer_pixelformat;
 
         vector<AVAILABLE_WINDOWS> windows;  /* a list of created windows */
 

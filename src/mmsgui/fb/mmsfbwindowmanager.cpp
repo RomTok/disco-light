@@ -40,6 +40,7 @@ MMSFBWindowManager::MMSFBWindowManager() {
     // init me
     this->layer = NULL;
     this->layer_surface = NULL;
+    this->layer_pixelformat = MMSFB_PF_NONE;
     this->high_freq_surface = NULL;
     this->high_freq_saved_surface = NULL;
     this->high_freq_region.x1 = 0;
@@ -101,6 +102,10 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     // get the surface of the layer
     if (!this->layer->getSurface(&this->layer_surface))
         return false;
+
+    // get the pixelformat of the layer surface
+    if (!this->layer_surface->getPixelFormat(&this->layer_pixelformat))
+    	return false;
 
     // get the pixelformat, create a little temp surface
 	this->pixelformat = MMSFB_PF_NONE;
@@ -1052,8 +1057,20 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, 
 		if ((this->pointer_posx == pointer_posx)&&(this->pointer_posy == pointer_posy))
 			return;
 	this->button_pressed = pressed;
-	this->pointer_posx = pointer_posx;
-	this->pointer_posy = pointer_posy;
+
+	switch (this->layer_pixelformat) {
+	case MMSFB_PF_YV12:
+	case MMSFB_PF_I420:
+		// use even pointer position for this pixelformats
+		this->pointer_posx = pointer_posx & ~0x01;
+		this->pointer_posy = pointer_posy & ~0x01;
+		break;
+	default:
+		// use normal odd/even positions
+		this->pointer_posx = pointer_posx;
+		this->pointer_posy = pointer_posy;
+		break;
+	}
 
 	// do nothing more if pointer will not be shown
 	if (!this->show_pointer)
