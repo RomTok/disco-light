@@ -231,3 +231,26 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
 }
 
 
+string getMMSFBPointerModeString(MMSFBPointerMode pm) {
+    if(pm == MMSFB_PM_FALSE)
+        return MMSFB_PM_FALSE_STR;
+    if(pm == MMSFB_PM_TRUE)
+        return MMSFB_PM_TRUE_STR;
+    if(pm == MMSFB_PM_EXTERNAL)
+        return MMSFB_PM_EXTERNAL_STR;
+    return MMSFB_PM_NONE_STR;
+}
+
+MMSFBPointerMode getMMSFBPointerModeFromString(string pm) {
+    if(pm == MMSFB_PM_NONE_STR)
+        return MMSFB_PM_NONE;
+    if(pm == MMSFB_PM_FALSE_STR)
+        return MMSFB_PM_FALSE;
+    if(pm == MMSFB_PM_TRUE_STR)
+        return MMSFB_PM_TRUE;
+    if(pm == MMSFB_PM_EXTERNAL_STR)
+        return MMSFB_PM_EXTERNAL;
+    return MMSFB_PM_NONE;
+}
+
+

@@ -68,8 +68,7 @@ MMSRcParser::MMSRcParser() {
     this->graphics.touchrect.y                = 0;
     this->graphics.touchrect.w                = 0;
     this->graphics.touchrect.h                = 0;
-    this->graphics.pointer                    = "NONE";	// use the mouse pointer, default no
-    this->graphics.showpointer                = false;	// show the mouse pointer, default no
+    this->graphics.pointer                    = MMSFB_PM_FALSE;	// use the mouse pointer, default no
 	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
 	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
@@ -468,10 +467,11 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.h"))
 	    	this->graphics.touchrect.h = strToInt(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "pointer")) {
-            this->graphics.pointer = strToUpr(string((const char *)parvalue));
-            if(graphics.pointer == "EXTERNAL" || graphics.pointer == "INTERNAL" || graphics.pointer == "TRUE")
-            	graphics.showpointer = true;
-        } else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat")) {
+        	string val = string((const char *)parvalue);
+            if ((this->graphics.pointer = getMMSFBPointerModeFromString(strToUpr(val))) == MMSFB_PM_NONE)
+            	WRONG_VALUE(parname, val, MMSFB_PM_VALID_VALUES, "");
+        }
+        else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat")) {
         	string val = string((const char *)parvalue);
             if ((this->graphics.graphicswindowpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
             	string val2 = strToUpr(val);

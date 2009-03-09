@@ -65,7 +65,7 @@ MMSFB::~MMSFB() {
 }
 
 bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h,
-				 bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer, string appl_name, string appl_icon_name,int x, int y) {
+				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer, string appl_name, string appl_icon_name,int x, int y) {
 
     // check if already initialized
     if (this->initialized) {
@@ -237,7 +237,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 
 		// hide X cursor
 //		if(this->outputtype != MMS_OT_XSHM) {
-		if(pointer != "EXTERNAL") {
+		if (pointer != MMSFB_PM_EXTERNAL) {
 			Pixmap bm_no;
 			Colormap cmap;
 			Cursor no_ptr;

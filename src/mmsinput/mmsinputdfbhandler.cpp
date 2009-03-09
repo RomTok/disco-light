@@ -427,7 +427,7 @@ MMSInputDFBHandler::MMSInputDFBHandler(MMS_INPUT_DEVICE device) {
 	this->pointer_rect.w = config->getTouchRect().w;
 	this->pointer_rect.h = config->getTouchRect().h;
 	if ((this->pointer_rect.w<=0)||(this->pointer_rect.h<=0))
-		if (config->getShowPointer()) {
+		if (config->getPointer()!=MMSFB_PM_FALSE) {
 			// no touch rect given but pointer needed
 			this->pointer_rect.x = this->screen_rect.x;
 			this->pointer_rect.y = this->screen_rect.y;

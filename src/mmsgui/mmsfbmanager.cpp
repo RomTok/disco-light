@@ -199,10 +199,7 @@ void MMSFBManager::applySettings() {
     }
 
     // init the mmsfbwindowmanager
-    if(config.getPointer()=="TRUE" ||config.getPointer()=="INTERNAL")
-    	mmsfbwindowmanager->init(this->graphicslayer, true);
-    else
-    	mmsfbwindowmanager->init(this->graphicslayer, false);
+	mmsfbwindowmanager->init(this->graphicslayer, (config.getPointer()==MMSFB_PM_TRUE));
 
     // create a global temporary surface
     MMSFBSurfacePixelFormat pixelformat = config.getGraphicsLayerPixelformat();

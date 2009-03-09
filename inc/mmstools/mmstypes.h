@@ -301,4 +301,35 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf);
 
 
 
+// pointer mode..............................................................
+
+//! supported pointer modes
+typedef enum {
+	//! none
+	MMSFB_PM_NONE = 0,
+	//! disabled
+	MMSFB_PM_FALSE,
+	//! enabled, using internal mouse pointer
+	MMSFB_PM_TRUE,
+	//! enabled, using external mouse pointer e.g. from X11, if using the X11 backend
+	MMSFB_PM_EXTERNAL
+} MMSFBPointerMode;
+
+//! pointer mode: none
+#define MMSFB_PM_NONE_STR			""
+//! pointer mode: disabled
+#define MMSFB_PM_FALSE_STR			"FALSE"
+//! pointer mode: enabled, using internal mouse pointer
+#define MMSFB_PM_TRUE_STR			"TRUE"
+//! pointer mode: enabled, using external mouse pointer e.g. from X11, if using the X11 backend
+#define MMSFB_PM_EXTERNAL_STR		"EXTERNAL"
+
+//! list of valid pointer modes
+#define MMSFB_PM_VALID_VALUES		"FALSE, TRUE, EXTERNAL"
+
+// conversion routines for pointer modes
+string getMMSFBPointerModeString(MMSFBPointerMode pm);
+MMSFBPointerMode getMMSFBPointerModeFromString(string pm);
+
+
 #endif /* MMSTYPES_H_ */

@@ -86,8 +86,7 @@ class MMSConfigDataGraphics {
 	    string 					graphicslayerbuffermode;
 	    CVRECT 					vrect;
 	    CVRECT 					touchrect;
-	    string  				pointer;
-	    bool    				showpointer;
+	    MMSFBPointerMode		pointer;
 	    MMSFBSurfacePixelFormat graphicswindowpixelformat;
 	    MMSFBSurfacePixelFormat graphicssurfacepixelformat;
 	    bool   					extendedaccel;
@@ -157,8 +156,7 @@ class MMSConfigData {
         const string getGraphicsLayerBufferMode();
         const CVRECT getVRect();
         const CVRECT getTouchRect();
-        const string getPointer();
-        const bool   getShowPointer();
+        const MMSFBPointerMode getPointer();
         const MMSFBSurfacePixelFormat getGraphicsWindowPixelformat();
         const MMSFBSurfacePixelFormat getGraphicsSurfacePixelformat();
         const bool   getExtendedAccel();

@@ -93,7 +93,8 @@ class MMSFB {
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h, bool extendedaccel, MMSFBFullScreenMode fullscreen, string pointer,
+        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h, bool extendedaccel,
+				  MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
 				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application",int x=50, int y=50);
         bool release();
         bool isInitialized();

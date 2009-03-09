@@ -251,12 +251,8 @@ const CVRECT MMSConfigData::getTouchRect() {
     return this->graphics.touchrect;
 }
 
-const string MMSConfigData::getPointer() {
+const MMSFBPointerMode MMSConfigData::getPointer() {
     return this->graphics.pointer;
-}
-
-const bool MMSConfigData::getShowPointer() {
-    return this->graphics.showpointer;
 }
 
 const MMSFBSurfacePixelFormat MMSConfigData::getGraphicsWindowPixelformat() {

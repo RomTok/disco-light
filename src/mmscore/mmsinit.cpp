@@ -143,7 +143,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         DEBUGMSG_OUTSTR("Core", "Touch pad/screen area:        " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
 
-		DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           " + config->getPointer());
+		DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           " + getMMSFBPointerModeString(config->getPointer()));
 
         DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat:  " + getMMSFBPixelFormatString(config->getGraphicsWindowPixelformat()));
         DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat: " + getMMSFBPixelFormatString(config->getGraphicsSurfacePixelformat()));
