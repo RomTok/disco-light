@@ -775,6 +775,12 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 #endif
 		}
 
+		// get the surface pitch
+		void *ptr;
+		if (this->llsurface->Lock(this->llsurface, DSLF_READ, &ptr, &this->config.surface_buffer->pitch) == DFB_OK) {
+			this->llsurface->Unlock(this->llsurface);
+		}
+
 		/* get pixelformat */
 		if ((dfbres=this->llsurface->GetPixelFormat(this->llsurface, &mypf)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::GetPixelFormat() failed");
@@ -816,6 +822,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	    	DEBUGMSG("MMSGUI", "Surface properties:");
 
 	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->pitch));
 
 		    if (this->config.surface_buffer->alphachannel)
 		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
