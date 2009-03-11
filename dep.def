@@ -148,7 +148,7 @@ endif
 #x11
 ifndef X11_CHECKED
     export X11_CHECKED=1
-    
+
     ifeq ($(enable-x11), y)
         $(info check for X11 and Xv development libraries)
         ASK_X11=$(shell pkg-config --silence-errors --cflags x11)
@@ -182,7 +182,6 @@ ifndef XINE_CHECKED
     export XINE_LIBS=$(shell pkg-config --silence-errors --libs libxine)
     ifeq ($(XINE_LIBS),)
         $(info --- INFO ---: libxine was not found. Building without mmsmedia support.)
-        export CFLAGS+=-D_NO_MMSMEDIA
     else
         # have to do some extra checks because openSuse 10.3 installs libxine.pc even if no
         # development package is installed :-(
@@ -191,12 +190,13 @@ ifndef XINE_CHECKED
             ASK=$(shell ls /usr/include/xine.h 2>/dev/null)
             ifeq ($(ASK),)
                 $(info --- INFO ---: xine headers were not found. Building without mmsmedia support.)
-                export CFLAGS+=-D_NO_MMSMEDIA
             else
-                export __WITH_MMSMEDIA__=1
+                export __HAVE_MMSMEDIA__=1
+                export CFLAGS+=-D__HAVE_MMSMEDIA__
             endif
         else
-            export __WITH_MMSMEDIA__=1
+            export __HAVE_MMSMEDIA__=1
+            export CFLAGS+=-D__HAVE_MMSMEDIA__
         endif
     endif
     export XINE_CHECKED=1
@@ -231,14 +231,14 @@ endif
 
 #alsa
 ifndef ALSA_CHECKED
-    ifdef __WITH_MMSMEDIA__ 
+    ifdef __HAVE_MMSMEDIA__ 
         $(info check for alsa)
         export ALSA_LIBS=$(shell pkg-config --silence-errors --libs alsa)
         ifeq ($(ALSA_LIBS),)
             $(info --- INFO ---: alsa was not found. Building without mixer support.)
-	        export CFLAGS+=-D_NO_MIXER
         else
-	        export ALSA_INC=$(shell pkg-config --cflags alsa)
+            export ALSA_INC=$(shell pkg-config --cflags alsa)
+            export CFLAGS+=-D__HAVE_MIXER__
         endif
         export ALSA_CHECKED=1
     endif
@@ -250,9 +250,9 @@ ifndef OPENSSL_CHECKED
     export OPENSSL_LIBS=$(shell pkg-config --silence-errors --libs openssl)
     ifeq ($(OPENSSL_LIBS),)
         $(info --- INFO ---: openssl was not found. Building without mmscrypt support.)
-        export OPENSSL_INC=-D_NO_MMSCRYPT
     else
         export OPENSSL_INC=$(shell pkg-config --cflags openssl)
+        export CFLAGS+=-D__HAVE_MMSCRYPT__
     endif
     export OPENSSL_CHECKED=1
 endif
@@ -263,10 +263,10 @@ ifndef PJ_CHECKED
     export PJ_INC=$(shell pkg-config --silence-errors --cflags libpj)
     ifeq ($(PJ_INC),)
         $(info --- INFO ---: libpj was not found. Building without mmssip support.)
-        export CFLAGS+=-D_NO_MMSSIP
     else
         export PJ_LIBS=$(shell pkg-config --libs libpj)
-        export __WITH_MMSSIP__=1
+        export __HAVE_MMSSIP__=1
+        export CFLAGS+=-D__HAVE_MMSSIP__
     endif
     export PJ_CHECKED=1
 endif
@@ -277,10 +277,10 @@ ifndef SWFDEC_CHECKED
     export SWFDEC_INC=$(shell pkg-config --silence-errors --cflags swfdec-0.8)
     ifeq ($(SWFDEC_INC),)
         $(info --- INFO ---: swfdec-0.8 was not found. Building without mmsflash support.)
-        export CFLAGS+=-D_NO_MMSFLASH
     else
         export SWFDEC_LIBS=$(shell pkg-config --libs swfdec-0.8)
-        export __WITH_MMSFLASH__=1
+        export __HAVE_MMSFLASH__=1
+        export CFLAGS+=-D__HAVE_MMSFLASH__
     endif
     export SWFDEC_CHECKED=1
 endif
@@ -403,7 +403,7 @@ ifdef SWFDEC_LIBS
     libs_str += " -lmmsflash"
 endif
 ifdef SQLITE3_LIBS
-	req_str    += ", sqlite3"
+    req_str    += ", sqlite3"
     libs_str   += " $(SQLITE3_LIBS)"
     cflags_str += " $(SQLITE3_INC)"
 endif 
@@ -423,5 +423,3 @@ endif
  
 #export CFLAGS+='-D__HAVE_XLIB__'
 #export CFLAGS+='-D__NO_XSYNC__'
-
- 

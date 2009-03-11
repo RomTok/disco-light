@@ -26,7 +26,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _NO_MMSSIP
+#ifdef __HAVE_MMSSIP__
 
 #ifdef PJSIP_AUTH_AUTO_SEND_NEXT
 #undef PJSIP_AUTH_AUTO_SEND_NEXT
@@ -628,4 +628,4 @@ static void onBuddyState(pjsua_buddy_id id) {
     }
 }
 
-#endif /* _NO_MMSSIP */
+#endif /* __HAVE_MMSSIP__ */

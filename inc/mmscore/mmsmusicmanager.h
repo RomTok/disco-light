@@ -26,7 +26,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _NO_MMSMEDIA
+#ifdef __HAVE_MMSMEDIA__
 #ifndef MMSMUSICMANAGER_H_
 #define MMSMUSICMANAGER_H_
 
@@ -67,4 +67,4 @@ class MMSMusicManager : public IMMSMusicManager {
 };
 
 #endif /*MMSMUSICMANAGER_H_*/
-#endif /* _NO_MMSMEDIA */
+#endif /* __HAVE_MMSMEDIA__ */
