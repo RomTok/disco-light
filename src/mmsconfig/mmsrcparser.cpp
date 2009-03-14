@@ -29,7 +29,7 @@
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"
 
-#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + string(parvalue) + "' for parameter '" + string((const char *)parname) + "', valid value(s): " + validvals + addmsg);
+#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + string(parvalue) + "' for parameter '" + string((const char *)parname) + "'\n valid value(s): " + validvals + "\n " + addmsg);
 
 
 MMSRcParser::MMSRcParser() {
@@ -328,7 +328,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"VESAFB\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VESAFB\"");
             	}
             }
             else
@@ -339,7 +339,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"MATROXFB\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"MATROXFB\"");
             	}
             }
             else
@@ -350,7 +350,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"VIAFB\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VIAFB\"");
             	}
             }
             else
@@ -361,7 +361,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X11, " -> this depends on outputtype=\"X11\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X11, "-> this depends on outputtype=\"X11\"");
             	}
             }
             else
@@ -371,7 +371,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, " -> this depends on outputtype=\"XSHM\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, "-> this depends on outputtype=\"XSHM\"");
             	}
             }
             else
@@ -381,7 +381,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, " -> this depends on outputtype=\"XVSHM\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, "-> this depends on outputtype=\"XVSHM\"");
             	}
             }
             else
@@ -392,7 +392,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"DAVINCIFB\"");
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"DAVINCIFB\"");
             	}
             }
         }
@@ -413,7 +413,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		// okay
             		break;
             	default:
-            		WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_DFB, " -> this depends on backend=\"DFB\"");
+            		WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_DFB, "-> this depends on backend=\"DFB\"");
             	}
             }
             else
@@ -425,7 +425,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 					// okay
 					break;
 				default:
-					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_X11, " -> this depends on backend=\"X11\"");
+					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_X11, "-> this depends on backend=\"X11\"");
 				}
 			}
             else
@@ -437,7 +437,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 					// okay
 					break;
 				default:
-					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, " -> this depends on backend=\"FBDEV\"");
+					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, "-> this depends on backend=\"FBDEV\"");
 				}
 			}
         }
@@ -520,15 +520,15 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
 			if (this->graphics.videolayerid != 0)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			if (this->graphics.graphicslayerid != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			break;
 		case MMSFB_OT_XSHM:
 			if (this->graphics.videolayerid != 0)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			if (this->graphics.graphicslayerid != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
 		default:
 			break;
@@ -541,15 +541,15 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
 			if (this->graphics.videolayerpixelformat != MMSFB_PF_YV12)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_YV12)
-				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, " -> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			break;
 		case MMSFB_OT_XSHM:
 			if (this->graphics.videolayerpixelformat != MMSFB_PF_RGB32)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_RGB32)
-				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, " -> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
 		default:
 			break;

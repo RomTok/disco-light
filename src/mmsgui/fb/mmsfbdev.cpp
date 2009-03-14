@@ -627,6 +627,14 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 
 			this->var_screeninfo.xres = width;
 			this->var_screeninfo.yres = height;
+
+			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
+			this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+			this->var_screeninfo.xoffset = 0;
+			this->var_screeninfo.yoffset = 0;
+			this->var_screeninfo.grayscale = 0;
+
+			do_switch = true;
 		}
     }
 
