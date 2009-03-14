@@ -89,6 +89,8 @@ typedef enum {
 	MMSFB_OT_XSHM,
 	//! XVSHM (backend: X11)
 	MMSFB_OT_XVSHM,
+	//! DAVINCIFB (backend: DFB and FBDEV)
+	MMSFB_OT_DAVINCIFB
 } MMSFBOutputType;
 
 //! output type: none
@@ -105,18 +107,20 @@ typedef enum {
 #define MMSFB_OT_XSHM_STR		"XSHM"
 //! output type: XVSHM (backend: X11)
 #define MMSFB_OT_XVSHM_STR		"XVSHM"
+//! output type: DAVINCIFB (backend: DFB and FBDEV)
+#define MMSFB_OT_DAVINCIFB_STR	"DAVINCIFB"
 
 //! list of valid output types
-#define MMSFB_OT_VALID_VALUES			"VESAFB, MATROXFB, VIAFB, X11, XSHM, XVSHM"
+#define MMSFB_OT_VALID_VALUES			"VESAFB, MATROXFB, VIAFB, X11, XSHM, XVSHM, DAVINCIFB"
 
 //! list of valid output types for backend MMSFB_BE_DFB
-#define MMSFB_OT_VALID_VALUES_BE_DFB	"VESAFB, MATROXFB, VIAFB, X11"
+#define MMSFB_OT_VALID_VALUES_BE_DFB	"VESAFB, MATROXFB, VIAFB, X11, DAVINCIFB"
 
 //! list of valid output types for backend MMSFB_BE_X11
 #define MMSFB_OT_VALID_VALUES_BE_X11	"X11, XSHM, XVSHM"
 
 //! list of valid output types for backend MMSFB_BE_FBDEV
-#define MMSFB_OT_VALID_VALUES_BE_FBDEV	"VESAFB, MATROXFB"
+#define MMSFB_OT_VALID_VALUES_BE_FBDEV	"VESAFB, MATROXFB, DAVINCIFB"
 
 // conversion routines for output types
 string getMMSFBOutputTypeString(MMSFBOutputType ot);

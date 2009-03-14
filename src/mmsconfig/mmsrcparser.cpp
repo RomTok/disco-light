@@ -384,6 +384,17 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, " -> this depends on outputtype=\"XVSHM\"");
             	}
             }
+            else
+            if (this->graphics.outputtype == MMSFB_OT_DAVINCIFB) {
+            	switch (this->graphics.backend) {
+            	case MMSFB_BE_DFB:
+            	case MMSFB_BE_FBDEV:
+            		// okay
+            		break;
+            	default:
+            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, " -> this depends on outputtype=\"DAVINCIFB\"");
+            	}
+            }
         }
         else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype")) {
         	string val = string((const char *)parvalue);
@@ -398,6 +409,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
             	case MMSFB_OT_MATROXFB:
             	case MMSFB_OT_VIAFB:
             	case MMSFB_OT_X11:
+            	case MMSFB_OT_DAVINCIFB:
             		// okay
             		break;
             	default:
@@ -421,6 +433,7 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 				switch (this->graphics.outputtype) {
             	case MMSFB_OT_VESAFB:
             	case MMSFB_OT_MATROXFB:
+            	case MMSFB_OT_DAVINCIFB:
 					// okay
 					break;
 				default:

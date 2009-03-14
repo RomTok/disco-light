@@ -34,6 +34,7 @@
 
 #include "mmsgui/fb/mmsfbdev.h"
 #include "mmsgui/fb/mmsfbdevmatrox.h"
+#include "mmsgui/fb/mmsfbdevdavinci.h"
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"

@@ -152,6 +152,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			// matroxfb
     		this->mmsfbdev = new MMSFBDevMatrox();
 		}
+		else
+		if (this->outputtype == MMSFB_OT_DAVINCIFB) {
+			// davincifb
+    		this->mmsfbdev = new MMSFBDevDavinci();
+		}
 		else {
 			// default fbdev
     		this->mmsfbdev = new MMSFBDev();

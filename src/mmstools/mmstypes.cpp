@@ -63,6 +63,8 @@ string getMMSFBOutputTypeString(MMSFBOutputType ot) {
         return MMSFB_OT_XSHM_STR;
     if(ot == MMSFB_OT_XVSHM)
         return MMSFB_OT_XVSHM_STR;
+    if(ot == MMSFB_OT_DAVINCIFB)
+        return MMSFB_OT_DAVINCIFB_STR;
     return MMSFB_OT_NONE_STR;
 }
 
@@ -81,6 +83,8 @@ MMSFBOutputType getMMSFBOutputTypeFromString(string ot) {
         return MMSFB_OT_XSHM;
 	if(ot == MMSFB_OT_XVSHM_STR)
         return MMSFB_OT_XVSHM;
+	if(ot == MMSFB_OT_DAVINCIFB_STR)
+        return MMSFB_OT_DAVINCIFB;
     return MMSFB_OT_NONE;
 }
 

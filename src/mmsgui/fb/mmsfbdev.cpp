@@ -616,6 +616,18 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 
 			do_switch = true;
 		}
+    	else
+		if  (this->layers[0].pixelformat == pixelformat) {
+			// pixelformat has not changed, so try to change only the resolution
+			printf("MMSFBDev: pixelformat is the same, so try to change the resolution to %dx%d\n",
+					width, height);
+
+			this->var_screeninfo.activate = FB_ACTIVATE_NOW;
+			this->var_screeninfo.accel_flags = 0;
+
+			this->var_screeninfo.xres = width;
+			this->var_screeninfo.yres = height;
+		}
     }
 
 	if (do_switch) {

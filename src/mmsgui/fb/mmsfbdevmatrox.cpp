@@ -55,7 +55,7 @@ bool MMSFBDevMatrox::openDevice(char *device_file, int console) {
 			break;
 		default:
 			// not supported
-			printf("MMSFBDevMatrox: unsupported accelerator %d\n", this->fix_screeninfo.accel);
+			printf("MMSFBDevMatrox: unsupported accelerator %d (%.16s)\n", this->fix_screeninfo.accel, this->fix_screeninfo.id);
 			closeDevice();
 			return false;
     }
