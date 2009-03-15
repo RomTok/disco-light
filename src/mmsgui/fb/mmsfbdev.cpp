@@ -72,6 +72,7 @@ void MMSFBDev::printFixScreenInfo() {
 	char id[17];
 	id[16]=0;
     printf("MMSFBDev: fix screen info ------------\n");
+    printf("    device         = %s\n", this->device_file.c_str());
     memcpy(id, fix_screeninfo.id, 16);
     printf("    id             = %s\n", id);
     printf("    smem_start     = 0x%x\n", (unsigned int)fix_screeninfo.smem_start);
@@ -139,6 +140,14 @@ bool MMSFBDev::buildPixelFormat() {
     			this->layers[0].pixelformat = MMSFB_PF_RGB24;
     		else
     			this->layers[0].pixelformat = MMSFB_PF_RGB32;
+    	}
+    	else
+    	if    ((var_screeninfo.red.length == 0) && (var_screeninfo.green.length == 0) && (var_screeninfo.blue.length == 0)
+    		&& (var_screeninfo.red.offset == 0) && (var_screeninfo.green.offset == 0) && (var_screeninfo.blue.offset == 0)) {
+    		if (var_screeninfo.bits_per_pixel == 4)
+    			this->layers[0].pixelformat = MMSFB_PF_A4;
+    		else
+    			this->layers[0].pixelformat = MMSFB_PF_NONE;
     	}
     	break;
     case 8:

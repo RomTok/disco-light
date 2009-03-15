@@ -219,7 +219,9 @@ typedef enum {
     //! 16 bit ARGB (2 byte, alpha 2\@14, red 5\@9, green 5\@4, blue 4\@0)
     MMSFB_PF_ARGB2554,
     //! 16 bit ARGB (2 byte, alpha 4\@12, red 4\@8, green 4\@4, blue 4\@0)
-    MMSFB_PF_ARGB4444
+    MMSFB_PF_ARGB4444,
+    //! 20 bit ARGB (16 bit RGB565 plane followed by 4 bit alpha plane (highest bit unused))
+    MMSFB_PF_ARGB3565
 } MMSFBSurfacePixelFormat;
 
 //! pixel format: none
@@ -280,12 +282,14 @@ typedef enum {
 #define MMSFB_PF_ARGB2554_STR   "ARGB2554"
 //! pixel format: 16 bit ARGB (2 byte, alpha 4@12, red 4@8, green 4@4, blue 4@0)
 #define MMSFB_PF_ARGB4444_STR   "ARGB4444"
+//! pixel format: 20 bit ARGB (16 bit RGB565 plane followed by 4 bit alpha plane (highest bit unused))
+#define MMSFB_PF_ARGB3565_STR	"ARGB3565"
 
 //! list of valid pixelformats
-#define MMSFB_PF_VALID_VALUES	"RGB16, RGB24, RGB32, ARGB, A8, YUY2, UYVY, I420, YV12, AiRGB, A1, NV12, NV16, NV21, AYUV, A4, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, ALUT44, LUT8, ARGB2554, ARGB4444"
+#define MMSFB_PF_VALID_VALUES	"RGB16, RGB24, RGB32, ARGB, A8, YUY2, UYVY, I420, YV12, AiRGB, A1, NV12, NV16, NV21, AYUV, A4, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, ALUT44, LUT8, ARGB2554, ARGB4444, ARGB3565"
 
 //! list of valid pixelformats used for layer surfaces
-#define MMSFB_PF_VALID_VALUES_LAYER	"RGB16, RGB24, RGB32, ARGB, YUY2, UYVY, I420, YV12, AiRGB, NV12, NV16, NV21, AYUV, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, LUT8, ARGB2554, ARGB4444"
+#define MMSFB_PF_VALID_VALUES_LAYER	"RGB16, RGB24, RGB32, ARGB, YUY2, UYVY, I420, YV12, AiRGB, NV12, NV16, NV21, AYUV, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, LUT8, ARGB2554, ARGB4444, ARGB3565"
 
 //! list of valid pixelformats used for windows surfaces
 #define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV"
@@ -298,6 +302,9 @@ typedef enum {
 
 //! list of valid pixelformats for XSHM
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM	"RGB32"
+
+//! list of valid pixelformats for DAVINCIFB, OSD Layer
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0	"ARGB3565"
 
 // conversion routines for pixel formats
 string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf);

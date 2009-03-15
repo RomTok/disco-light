@@ -51,7 +51,7 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 		char      dev[100];
 		sprintf(dev, "/dev/fb%d", i);
 		fbdev = new MMSFBDev();
-		if (fbdev->openDevice(dev, (!i)?-1:-2)) {
+		if (!fbdev->openDevice(dev, (!i)?-1:-2)) {
 			delete fbdev;
 			closeDevice();
 			return false;
@@ -140,11 +140,17 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
+		if (pixelformat != MMSFB_PF_ARGB3565) {
+			printf("MMSFBDevDavinci: OSD Layer needs pixelformat ARGB3565, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			return false;
+		}
+
 		if (this->osd0->initLayer(0, width, height, pixelformat)) {
 			// init osd1 attribute plane
-
-
-			return true;
+			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
+memset(this->osd1->framebuffer_base, 0x04, 720*480/2);
+				return true;
+			}
 		}
 		return false;
 	case 1:

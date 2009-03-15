@@ -555,6 +555,17 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 			break;
 		}
 	}
+	else
+	if (this->graphics.backend == MMSFB_BE_FBDEV) {
+		switch (this->graphics.outputtype) {
+		case MMSFB_OT_DAVINCIFB:
+			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			break;
+		default:
+			break;
+		}
+	}
 
 	if ((this->graphics.backend == MMSFB_BE_X11)||(this->graphics.backend == MMSFB_BE_FBDEV)) {
 		// overwite values needed for this backends
