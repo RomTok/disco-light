@@ -534,6 +534,19 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 			break;
 		}
 	}
+	else
+	if (this->graphics.backend == MMSFB_BE_FBDEV) {
+		switch (this->graphics.outputtype) {
+		case MMSFB_OT_DAVINCIFB:
+			if (this->graphics.videolayerid != 1)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "1", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if (this->graphics.graphicslayerid != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			break;
+		default:
+			break;
+		}
+	}
 
 	// checking pixelformats
 	if (this->graphics.backend == MMSFB_BE_X11) {
@@ -559,6 +572,8 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	if (this->graphics.backend == MMSFB_BE_FBDEV) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_DAVINCIFB:
+			if (this->graphics.videolayerpixelformat != MMSFB_PF_YUY2)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;

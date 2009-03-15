@@ -145,7 +145,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			return false;
 		}
 
-		if (this->osd0->initLayer(0, width, height, pixelformat)) {
+		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
 			// init osd1 attribute plane
 			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
 memset(this->osd1->framebuffer_base, 0x04, 720*480/2);
@@ -155,7 +155,16 @@ memset(this->osd1->framebuffer_base, 0x04, 720*480/2);
 		return false;
 	case 1:
 		// Video layer
-		return true;
+		if (pixelformat != MMSFB_PF_YUY2) {
+			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			return false;
+		}
+
+		if (this->vid0->initLayer(0, width, height, MMSFB_PF_YUY2)) {
+memset(this->vid0->framebuffer_base, 0x04, 720*480/2);
+			return true;
+		}
+		return false;
 	default:
 		printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
 		break;
