@@ -123,10 +123,10 @@ class MMSFBDev {
         virtual bool testLayer(int layer_id);
         virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
 
-        bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
+        virtual bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
         bool getPhysicalMemory(unsigned long *mem);
         bool getFrameBufferBase(unsigned char **base);
-        bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
+        virtual bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
 
         bool mapMmio(unsigned char **mmio);
         bool unmapMmio(unsigned char *mmio);
@@ -155,7 +155,7 @@ class MMSFBDev {
 
         bool vtOpen(int console = -1);
         void vtClose();
-        bool vtGetFd(int *fd);
+        virtual bool vtGetFd(int *fd);
 
         friend class MMSFBDevVesa;
         friend class MMSFBDevMatrox;

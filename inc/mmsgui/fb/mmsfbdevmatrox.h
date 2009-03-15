@@ -153,8 +153,6 @@ class MMSFBDevMatrox : public MMSFBDev {
 
         bool testLayer(int layer_id);
         bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
-
-        bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
 };
 
 #endif

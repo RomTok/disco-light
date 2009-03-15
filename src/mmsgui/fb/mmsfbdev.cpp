@@ -279,10 +279,11 @@ bool MMSFBDev::openDevice(char *device_file, int console) {
 	printf("MMSFBDev: %d modes loaded from /etc/fb.modes\n", this->modes_cnt);
 
     // initialize virtual terminal
-    if (!vtOpen(console)) {
-    	closeDevice();
-        return false;
-    }
+	if (console >= -1)
+		if (!vtOpen(console)) {
+			closeDevice();
+			return false;
+		}
 
     // get fix screen infos
     if (ioctl(this->fd, FBIOGET_FSCREENINFO, &this->fix_screeninfo) < 0) {
@@ -501,6 +502,20 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 
 	// is initialized?
 	INITCHECK;
+
+    // reload fix screen infos before changing it
+    if (ioctl(this->fd, FBIOGET_FSCREENINFO, &this->fix_screeninfo) < 0) {
+    	printf("MMSFBDev: could not get fix screen infos\n");
+        return false;
+    }
+    printFixScreenInfo();
+
+    // reload variable screen infos before changing it
+    if (ioctl(this->fd, FBIOGET_VSCREENINFO, &this->var_screeninfo) < 0) {
+    	printf("MMSFBDev: could not get var screen infos\n");
+        return false;
+    }
+    printVarScreenInfo();
 
 	// get bits per pixel and its length/offset
 	int red_length, red_offset;

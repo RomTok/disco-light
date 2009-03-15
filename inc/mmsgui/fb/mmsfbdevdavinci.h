@@ -35,10 +35,10 @@
 
 class MMSFBDevDavinci : public MMSFBDev {
     private:
-//    	bool scart_rgb_cable;
-//    	bool tv_std_pal;
-
-    	unsigned char *mmio_base;
+    	MMSFBDev	*osd0;
+    	MMSFBDev	*osd1;
+    	MMSFBDev	*vid0;
+    	MMSFBDev	*vid1;
 
     public:
         MMSFBDevDavinci();
@@ -47,10 +47,17 @@ class MMSFBDevDavinci : public MMSFBDev {
         bool openDevice(char *device_file = NULL, int console = -1);
         void closeDevice();
 
+        bool waitForVSync();
+
         bool testLayer(int layer_id);
         bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
 
+        bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
         bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
+
+    private:
+
+        bool vtGetFd(int *fd);
 };
 
 #endif

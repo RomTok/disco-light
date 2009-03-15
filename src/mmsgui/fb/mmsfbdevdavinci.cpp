@@ -34,9 +34,10 @@
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevDavinci is not initialized");return false;}
 
 MMSFBDevDavinci::MMSFBDevDavinci() {
-//	this->scart_rgb_cable = false;
-//	this->tv_std_pal = true;
-	this->mmio_base = NULL;
+	this->osd0 = NULL;
+	this->osd1 = NULL;
+	this->vid0 = NULL;
+	this->vid1 = NULL;
 }
 
 MMSFBDevDavinci::~MMSFBDevDavinci() {
@@ -44,33 +45,72 @@ MMSFBDevDavinci::~MMSFBDevDavinci() {
 }
 
 bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
-	// open frame buffer
-	if (!MMSFBDev::openDevice(device_file, console))
-		return false;
+	// open davinci frame buffers
+	for (int i = 0; i < 4; i++) {
+		MMSFBDev *fbdev;
+		char      dev[100];
+		sprintf(dev, "/dev/fb%d", i);
+		fbdev = new MMSFBDev();
+		if (fbdev->openDevice(dev, (!i)?-1:-2)) {
+			delete fbdev;
+			closeDevice();
+			return false;
+		}
 
-	// check fb accel, but accel is 0, so have to check id
-	if (memcmp(this->fix_screeninfo.id, "dm_osd0_fb", 10)) {
-		// not supported
-		printf("MMSFBDevDavinci: unsupported accelerator %d (%.16s)\n", this->fix_screeninfo.accel, this->fix_screeninfo.id);
-		closeDevice();
-		return false;
+		if (memcmp(fbdev->fix_screeninfo.id, "dm_osd0_fb", 10) == 0)
+			this->osd0 = fbdev;
+		else
+		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid0_fb", 10) == 0)
+			this->vid0 = fbdev;
+		else
+		if (memcmp(fbdev->fix_screeninfo.id, "dm_osd1_fb", 10) == 0)
+			this->osd1 = fbdev;
+		else
+		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid1_fb", 10) == 0)
+			this->vid1 = fbdev;
+		else {
+			// not supported
+			printf("MMSFBDevDavinci: unsupported accelerator %d (%.16s)\n", fbdev->fix_screeninfo.accel, fbdev->fix_screeninfo.id);
+			delete fbdev;
+			closeDevice();
+			return false;
+		}
+
+		if (!i && !this->osd0) {
+			// osd0 must be at /dev/fb0
+			printf("MMSFBDevDavinci: /dev/fb0 is not osd0\n");
+			closeDevice();
+			return false;
+		}
 	}
 
-    // map mmio
-	if (!mapMmio(&this->mmio_base)) {
-		closeDevice();
-		return false;
-	}
+    // all initialized :)
+	this->isinitialized = true;
 
 	return true;
 }
 
 void MMSFBDevDavinci::closeDevice() {
-	if (this->mmio_base)
-		unmapMmio(this->mmio_base);
+	// close frame buffers
+	if (this->vid1) delete this->vid1;
+	if (this->vid0) delete this->vid0;
+	if (this->osd1) delete this->osd1;
+	if (this->osd0) delete this->osd0;
 
-	// close frame buffer
-	MMSFBDev::closeDevice();
+	// reset all other
+	this->isinitialized = false;
+}
+
+bool MMSFBDevDavinci::waitForVSync() {
+	// is initialized?
+	INITCHECK;
+
+	static const int s = 0;
+	if (ioctl(this->osd0->fd, FBIO_WAITFORVSYNC, &s)) {
+		// failed, well then???
+	}
+
+	return true;
 }
 
 bool MMSFBDevDavinci::testLayer(int layer_id) {
@@ -80,7 +120,7 @@ bool MMSFBDevDavinci::testLayer(int layer_id) {
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
-	    return MMSFBDev::testLayer(layer_id);
+	    return true;
 	case 1:
 		// Video layer
 		return true;
@@ -100,50 +140,16 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
-		return MMSFBDev::initLayer(layer_id, width, height, pixelformat);
-/*	case 2:
-		// TVOut layer
-		// check input
-		if (width != 720) {
-			printf("MMSFBDevMatrox: TVOut needs layer width 720, but %d given\n", width);
-			return false;
+		if (this->osd0->initLayer(0, width, height, pixelformat)) {
+			// init osd1 attribute plane
+
+
+			return true;
 		}
-		if ((height != 576)&&(height != 480)) {
-			printf("MMSFBDevMatrox: TVOut needs layer height 576 (PAL) or 480 (NTSC), but %d given\n", height);
-			return false;
-		}
-		if ((pixelformat != MMSFB_PF_I420)&&(pixelformat != MMSFB_PF_YV12)) {
-			printf("MMSFBDevMatrox: TVOut needs pixelformat I420 or YV12, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
-			return false;
-		}
-
-		// set values
-		if (width % 128)
-			this->layers[layer_id].pitch = ((width / 128) + 1) * 128;
-		else
-			this->layers[layer_id].pitch = width;
-		this->layers[layer_id].width = width;
-		this->layers[layer_id].height = height;
-		this->layers[layer_id].pixelformat = pixelformat;
-
-		// pal or ntsc?
-		this->tv_std_pal = (this->layers[layer_id].height == 576);
-
-		// switch to layer
-		buildCRTC2Regs();
-		buildCRTC2Buffer();
-		enableCRTC2();
-
-		// layer is initialized
-		this->layers[layer_id].isinitialized = true;
-
-		// this layer is on screen 1
-		this->active_screen = 1;
-
-		printf("MMSFBDevMatrox: TVOut layer %d initialized with %dx%d (%s), pixelformat %s\n",
-				layer_id, width, height, (this->tv_std_pal)?"PAL":"NTSC", getMMSFBPixelFormatString(pixelformat).c_str());
-
-		return true;*/
+		return false;
+	case 1:
+		// Video layer
+		return true;
 	default:
 		printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
 		break;
@@ -152,5 +158,66 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	return false;
 }
 
+
+bool MMSFBDevDavinci::getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf) {
+	// is initialized?
+	INITCHECK;
+
+	switch (layer_id) {
+	case 0:
+		// default fbdev primary layer 0 on primary screen 0
+
+		// is layer initialized?
+		if (!this->osd0->layers[0].isinitialized)
+			return false;
+
+		// return pixelformat
+		*pf = this->osd0->layers[0].pixelformat;
+		return true;
+	case 1:
+		// Video layer
+		return true;
+	default:
+		printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
+		break;
+	}
+
+	return false;
+}
+
+bool MMSFBDevDavinci::getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height) {
+	// is initialized?
+	INITCHECK;
+
+	switch (layer_id) {
+	case 0:
+		// default fbdev primary layer 0 on primary screen 0
+
+		// return buffer infos
+		*ptr = (unsigned char *)this->osd0->framebuffer_base;
+		*pitch = this->osd0->layers[0].pitch;
+		*width = this->osd0->layers[0].width;
+		*height = this->osd0->layers[0].height;
+
+		return true;
+	case 1:
+		// Video layer
+		return true;
+	default:
+		printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
+		break;
+	}
+
+	return false;
+}
+
+
+bool MMSFBDevDavinci::vtGetFd(int *fd) {
+	if (this->osd0->vt.fd != -1) {
+		*fd = this->osd0->vt.fd;
+		return true;
+	}
+	return false;
+}
 
 #endif
