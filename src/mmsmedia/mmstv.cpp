@@ -127,7 +127,8 @@ void MMSTV::startPlaying(const string channel) {
     	fp=fopen(channel.c_str(),"r");
     	if(fp!=NULL){
         	char line[1024];
-        	fgets(line,1024,fp);
+        	if(!fgets(line,1024,fp))
+                throw new MMSTVError(0, "Error reading from file " + channel);
         	this->channel = line;
         	fclose(fp);
         	printf("play %s\n", this->channel.c_str());
