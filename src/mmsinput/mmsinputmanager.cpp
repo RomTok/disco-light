@@ -61,10 +61,10 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 #if __ENABLE_LOG__ || __ENABLE_DEBUG__
 		string symbol = mmskeys[inputevent->key];
-		TRACEOUT("MMSINPUT", "KEY %d (%s)", this->lastkey, symbol.c_str());
+		TRACEOUT("MMSINPUT", "KEY PRESS %d (MMSKEY_%s)", this->lastkey, symbol.c_str());
 		for (int i = 0; i < (int)inputeventset.size(); i++) {
 			symbol = mmskeys[inputeventset.at(i).key];
-			TRACEOUT("MMSINPUT", " MAPPED TO %d (%s)", inputeventset.at(i).key, symbol.c_str());
+			TRACEOUT("MMSINPUT", " >MAPPED TO %d (MMSKEY_%s)", inputeventset.at(i).key, symbol.c_str());
 		}
 #endif
 
@@ -128,6 +128,15 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
 		/* keyboard inputs */
 		this->mapper->mapkey(inputevent, &inputeventset);
+
+#if __ENABLE_LOG__ || __ENABLE_DEBUG__
+		string symbol = mmskeys[inputevent->key];
+		TRACEOUT("MMSINPUT", "KEY RELEASE %d (MMSKEY_%s)", this->lastkey, symbol.c_str());
+		for (int i = 0; i < (int)inputeventset.size(); i++) {
+			symbol = mmskeys[inputeventset.at(i).key];
+			TRACEOUT("MMSINPUT", " >MAPPED TO %d (MMSKEY_%s)", inputeventset.at(i).key, symbol.c_str());
+		}
+#endif
 
 		window = this->windowmanager->getToplevelWindow();
 

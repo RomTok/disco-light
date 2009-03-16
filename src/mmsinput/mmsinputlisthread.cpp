@@ -526,9 +526,7 @@ MMSKeySymbol MMSInputLISThread::getSymbol(int code, unsigned short value) {
 	unsigned char type  = KTYP(value);
 	unsigned char index = KVAL(value);
 
-	//MMSKEY_MENU
-	printf("type=%d, index=%x, value=%d\n", type, index, value);
-
+	TRACEOUT("MMSINPUT", "KEYCODE: TYPE=%d(0x%x), INDEX=%d(0x%x), value=%d(0x%x)", type, type, index, index, value, value);
 
 	switch (type) {
 		case KT_FN:
@@ -643,48 +641,72 @@ MMSKeySymbol MMSInputLISThread::getSymbol(int code, unsigned short value) {
 			default:   return MMSKEY_UNKNOWN;
 			}
 			break;
+		case KT_PAD:
+			switch (value) {
+			case K_P0:      return MMSKEY_0;
+			case K_P1:      return MMSKEY_1;
+			case K_P2:      return MMSKEY_2;
+			case K_P3:      return MMSKEY_3;
+			case K_P4:      return MMSKEY_4;
+			case K_P5:      return MMSKEY_5;
+			case K_P6:      return MMSKEY_6;
+			case K_P7:      return MMSKEY_7;
+			case K_P8:      return MMSKEY_8;
+			case K_P9:      return MMSKEY_9;
+			case K_PPLUS:   return MMSKEY_PLUS_SIGN;
+			case K_PMINUS:  return MMSKEY_MINUS_SIGN;
+			case K_PSTAR:   return MMSKEY_ASTERISK;
+			case K_PSLASH:  return MMSKEY_SLASH;
+			case K_PENTER:  return MMSKEY_RETURN;
+			case K_PCOMMA:  return MMSKEY_COMMA;
+			case K_PDOT:    return MMSKEY_PERIOD;
+			case K_PPARENL: return MMSKEY_PARENTHESIS_LEFT;
+			case K_PPARENR: return MMSKEY_PARENTHESIS_RIGHT;
+			default:   return MMSKEY_UNKNOWN;
+			}
+			break;
 	}
 
 	switch (value) {
-         case K_LEFT:    return MMSKEY_CURSOR_LEFT;
-         case K_RIGHT:   return MMSKEY_CURSOR_RIGHT;
-         case K_UP:      return MMSKEY_CURSOR_UP;
-         case K_DOWN:    return MMSKEY_CURSOR_DOWN;
-         case K_ENTER:   return MMSKEY_RETURN;
-         case K_CTRL:    return MMSKEY_CONTROL;
-         case K_SHIFT:   return MMSKEY_SHIFT;
-         case K_ALT:     return MMSKEY_ALT;
-         case K_ALTGR:   return MMSKEY_ALTGR;
-         case K_INSERT:  return MMSKEY_INSERT;
-         case K_REMOVE:  return MMSKEY_DELETE;
-         case K_FIND:    return MMSKEY_HOME;
-         case K_SELECT:  return MMSKEY_END;
-         case K_PGUP:    return MMSKEY_PAGE_UP;
-         case K_PGDN:    return MMSKEY_PAGE_DOWN;
-         case K_NUM:     return MMSKEY_NUM_LOCK;
-         case K_HOLD:    return MMSKEY_SCROLL_LOCK;
-         case K_PAUSE:   return MMSKEY_PAUSE;
-         case K_BREAK:   return MMSKEY_BREAK;
-         case K_CAPS:    return MMSKEY_CAPS_LOCK;
-         case K_P0:      return MMSKEY_INSERT;
-         case K_P1:      return MMSKEY_END;
-         case K_P2:      return MMSKEY_CURSOR_DOWN;
-         case K_P3:      return MMSKEY_PAGE_DOWN;
-         case K_P4:      return MMSKEY_CURSOR_LEFT;
-         case K_P5:      return MMSKEY_BEGIN;
-         case K_P6:      return MMSKEY_CURSOR_RIGHT;
-         case K_P7:      return MMSKEY_HOME;
-         case K_P8:      return MMSKEY_CURSOR_UP;
-         case K_P9:      return MMSKEY_PAGE_UP;
-         case K_PPLUS:   return MMSKEY_PLUS_SIGN;
-         case K_PMINUS:  return MMSKEY_MINUS_SIGN;
-         case K_PSTAR:   return MMSKEY_ASTERISK;
-         case K_PSLASH:  return MMSKEY_SLASH;
-         case K_PENTER:  return MMSKEY_RETURN;
-         case K_PCOMMA:  return MMSKEY_COMMA;
-         case K_PDOT:    return MMSKEY_PERIOD;
-         case K_PPARENL: return MMSKEY_PARENTHESIS_LEFT;
-         case K_PPARENR: return MMSKEY_PARENTHESIS_RIGHT;
+		case K_LEFT:    return MMSKEY_CURSOR_LEFT;
+		case K_RIGHT:   return MMSKEY_CURSOR_RIGHT;
+		case K_UP:      return MMSKEY_CURSOR_UP;
+		case K_DOWN:    return MMSKEY_CURSOR_DOWN;
+		case K_ENTER:   return MMSKEY_RETURN;
+		case K_CTRL:    return MMSKEY_CONTROL;
+		case K_SHIFT:   return MMSKEY_SHIFT;
+		case K_ALT:     return MMSKEY_ALT;
+		case K_ALTGR:   return MMSKEY_ALTGR;
+		case K_INSERT:  return MMSKEY_INSERT;
+		case K_REMOVE:  return MMSKEY_DELETE;
+		case K_FIND:    return MMSKEY_HOME;
+		case K_SELECT:  return MMSKEY_END;
+		case K_PGUP:    return MMSKEY_PAGE_UP;
+		case K_PGDN:    return MMSKEY_PAGE_DOWN;
+		case K_NUM:     return MMSKEY_NUM_LOCK;
+		case K_HOLD:    return MMSKEY_SCROLL_LOCK;
+		case K_PAUSE:   return MMSKEY_PAUSE;
+		case K_BREAK:   return MMSKEY_BREAK;
+		case K_CAPS:    return MMSKEY_CAPS_LOCK;
+		case K_P0:      return MMSKEY_INSERT;
+		case K_P1:      return MMSKEY_END;
+		case K_P2:      return MMSKEY_CURSOR_DOWN;
+		case K_P3:      return MMSKEY_PAGE_DOWN;
+		case K_P4:      return MMSKEY_CURSOR_LEFT;
+		case K_P5:      return MMSKEY_BEGIN;
+		case K_P6:      return MMSKEY_CURSOR_RIGHT;
+		case K_P7:      return MMSKEY_HOME;
+		case K_P8:      return MMSKEY_CURSOR_UP;
+		case K_P9:      return MMSKEY_PAGE_UP;
+		case K_PPLUS:   return MMSKEY_PLUS_SIGN;
+		case K_PMINUS:  return MMSKEY_MINUS_SIGN;
+		case K_PSTAR:   return MMSKEY_ASTERISK;
+		case K_PSLASH:  return MMSKEY_SLASH;
+		case K_PENTER:  return MMSKEY_RETURN;
+		case K_PCOMMA:  return MMSKEY_COMMA;
+		case K_PDOT:    return MMSKEY_PERIOD;
+		case K_PPARENL: return MMSKEY_PARENTHESIS_LEFT;
+		case K_PPARENR: return MMSKEY_PARENTHESIS_RIGHT;
     }
 
 	return MMSKEY_UNKNOWN;
@@ -793,12 +815,16 @@ void MMSInputLISThread::threadMain() {
 			MMSInputEvent inputevent;
 			if (key & 0x80) {
 				inputevent.type = MMSINPUTEVENTTYPE_KEYRELEASE;
-		printf("release key\n");
+
+				TRACEOUT("MMSINPUT", "KEY RELEASE <<<");
+
 				inputevent.key = getKeyFromCode(false, key & 0x7f);
 			}
 			else {
 				inputevent.type = MMSINPUTEVENTTYPE_KEYPRESS;
-		printf("press key\n");
+
+				TRACEOUT("MMSINPUT", "KEY PRESS >>>");
+
 				inputevent.key = getKeyFromCode(true, key & 0x7f);
 			}
 
