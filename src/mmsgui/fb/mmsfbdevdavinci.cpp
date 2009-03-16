@@ -148,7 +148,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
 			// init osd1 attribute plane
 			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
-memset(this->osd1->framebuffer_base, 0x44, 640*480/2);
+memset(this->osd1->framebuffer_base, 0x44, 768*480/2);
 				return true;
 			}
 		}
@@ -161,7 +161,8 @@ memset(this->osd1->framebuffer_base, 0x44, 640*480/2);
 		}
 
 		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2)) {
-memset(this->vid1->framebuffer_base, 0x88, 640*480*2);
+memset(this->vid1->framebuffer_base, 0xaa, 720*240*2);
+memset(((char*)this->vid1->framebuffer_base)+720*240*2, 0x66, 720*240*2);
 			return true;
 		}
 		return false;
