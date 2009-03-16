@@ -52,6 +52,12 @@
 #define DEBUGERR(msg...)
 #endif
 
+#if __ENABLE_LOG__ || __ENABLE_DEBUG__
+#define TRACEOUT(ident, msg...) writeMessage2Stdout(ident, __FILE__, __LINE__, msg)
+#else
+#define TRACEOUT(ident, msg...)
+#endif
+
 #define MSG2OUT(ident, msg...) writeMessage2Stdout(ident, __FILE__, __LINE__, msg)
 
 

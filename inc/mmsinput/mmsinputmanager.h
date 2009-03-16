@@ -47,6 +47,7 @@ class MMSInputManager  {
 		MMSKeySymbol lastkey;
 		MMSInputMapper *mapper;
 		MMSConfigData *config;
+        MMSKeyMap mmskeys;
 
 		//! store the window on which the button was pressed
 		MMSWindow 	*buttonpress_window;

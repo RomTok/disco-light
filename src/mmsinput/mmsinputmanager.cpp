@@ -56,12 +56,17 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			exit(1);
 
 		this->lastkey = inputevent->key;
-//printf("key=%d\n", this->lastkey);
 
 		this->mapper->mapkey(inputevent, &inputeventset);
 
-//for (int i = 0; i < inputeventset.size(); i++)
-//	printf("inputeventset.at().key=%d\n", inputeventset.at(i).key);
+#if __ENABLE_LOG__ || __ENABLE_DEBUG__
+		string symbol = mmskeys[inputevent->key];
+		TRACEOUT("MMSINPUT", "KEY %d (%s)", this->lastkey, symbol.c_str());
+		for (int i = 0; i < (int)inputeventset.size(); i++) {
+			symbol = mmskeys[inputeventset.at(i).key];
+			TRACEOUT("MMSINPUT", " MAPPED TO %d (%s)", inputeventset.at(i).key, symbol.c_str());
+		}
+#endif
 
 		if((inputeventset.at(0).key==MMSKEY_POWER)||(inputeventset.at(0).key==MMSKEY_POWER2)) {
 			if(config->getShutdown() == true) {

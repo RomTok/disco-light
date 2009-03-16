@@ -147,6 +147,9 @@ bool MMSFBDev::buildPixelFormat() {
     		if (var_screeninfo.bits_per_pixel == 4)
     			this->layers[0].pixelformat = MMSFB_PF_A4;
     		else
+			if (var_screeninfo.bits_per_pixel == 16)
+				this->layers[0].pixelformat = MMSFB_PF_YUY2;
+			else
     			this->layers[0].pixelformat = MMSFB_PF_NONE;
     	}
     	break;

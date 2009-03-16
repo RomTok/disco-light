@@ -661,15 +661,16 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
 
-	num = fprintf(fp, "%s:%02ld %010u %s: ", timebuf, tv.tv_usec/10000, (unsigned int)pthread_self(), identity);
+	num = fprintf(stdout, "%s:%02ld %010u %s: ", timebuf, tv.tv_usec/10000, (unsigned int)pthread_self(), identity);
+
 	if(num) {
 		va_start(arglist, (char *)msg);
-		num = vfprintf(fp, msg, arglist);
+		num = vfprintf(stdout, msg, arglist);
 		va_end(arglist);
 	}
-	if(num) num = fprintf(fp, " [%s:%d]\n", filename, lineno);
+	if(num) num = fprintf(stdout, " [%s:%d]\n", filename, lineno);
 	if(!num)
-		fprintf(stderr, "DISKO: Error writing to logfile\n");
+		fprintf(stderr, "DISKO: Error writing to stdout\n");
 
 	return;
 }

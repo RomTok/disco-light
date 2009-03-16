@@ -254,6 +254,18 @@ int getBitsPerPixel(MMSFBSurfacePixelFormat pf,
     if(pf == MMSFB_PF_ARGB4444) {
         return 2*8;
     }
+	else
+    if(pf == MMSFB_PF_ARGB3565) {
+    	if (transp_length)	*transp_length	= 3;
+    	if (red_length)		*red_length		= 5;
+    	if (green_length)	*green_length	= 6;
+    	if (blue_length)	*blue_length	= 5;
+    	if (transp_offset)	*transp_offset	= 16;
+		if (red_offset)		*red_offset		= 11;
+		if (green_offset)	*green_offset	= 5;
+		if (blue_offset)	*blue_offset	= 0;
+        return 20;
+    }
     return 0;
 }
 
