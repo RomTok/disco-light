@@ -5,6 +5,8 @@
  *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
+ *   Copyright (C) 2009      Berlinux Solutions GmbH                       *
+ *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
  *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
@@ -115,6 +117,11 @@ MMSDVD::MMSDVD(MMSWindow *window, const string device, const bool verbose) :
 
     /* at first check for DVD device */
     checkDevice(device);
+
+    /* save window width/height */
+    MMSFBRectangle rect = window->getGeometry();
+    this->windowWidth  = rect.w;
+    this->windowHeight = rect.h;
 }
 
 /**
@@ -337,6 +344,58 @@ void MMSDVD::menuSelect() {
  */
 void MMSDVD::showMainMenu() {
     this->sendEvent(XINE_EVENT_INPUT_MENU1);
+}
+
+/**
+ * Send mouse-event.
+ *
+ * @note This is for internal use only.
+ *
+ * @param	event	[in]	which xine input event to send
+ * @param	x		[in]	x coordinate
+ * @param	y		[in]	y coordinate
+ *
+ * @see MMSDVD::mouseButton()
+ * @see MMSDVD::mouseMove()
+ */
+void MMSDVD::mouseEvent(const unsigned int event, const unsigned int x, const unsigned int y) const {
+	xine_event_t		e;
+	xine_input_data_t	eData;
+
+    int streamW = xine_get_stream_info(this->stream, XINE_STREAM_INFO_VIDEO_WIDTH);
+    int streamH = xine_get_stream_info(this->stream, XINE_STREAM_INFO_VIDEO_HEIGHT);
+
+	e.type 			= event;
+	e.data 			= &eData;
+	e.data_length 	= sizeof(xine_input_data_t);
+	eData.button 	= 1;
+	eData.x 		= (int)((float)x / this->windowWidth * streamW);
+	eData.y 		= (int)((float)y / this->windowHeight * streamH);
+	xine_event_send(this->stream, &e);
+}
+
+/**
+ * Send mouse-button-event.
+ *
+ * @param	x	[in]	x coordinate
+ * @param	y	[in]	y coordinate
+ *
+ * @see MMSDVD::mouseMove()
+ */
+void MMSDVD::mouseButton(const unsigned int x, const unsigned int y) const {
+	this->mouseEvent(XINE_EVENT_INPUT_MOUSE_BUTTON, x, y);
+}
+
+/**
+ * Send mouse-move-event.
+ *
+ * @param	x	[in]	x coordinate
+ * @param	y	[in]	y coordinate
+ *
+ * @see MMSDVD::mouseButton()
+ */
+void MMSDVD::mouseMove(const unsigned int x, const unsigned int y) const {
+	this->mouseEvent(XINE_EVENT_INPUT_MOUSE_MOVE, x, y);
 }
 
 /**

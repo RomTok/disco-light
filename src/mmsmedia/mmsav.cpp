@@ -550,7 +550,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 	//this->vodesc.winsurface
 	/* clear surface */
 
-	MMSConfigData config;
 	if (mmsfb->getBackend() != MMSFB_BE_DFB) {
 		if(window) {
 			this->userd.surf=window->getSurface();
@@ -558,7 +557,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 			this->userd.surf->getPixelFormat(&this->userd.surf_pixelformat);
 			int w,h;
 			this->userd.surf->getSize(&w,&h);
-			this->userd.surf=window->getSurface();
 			this->userd.size.x=0;
 			this->userd.size.y=0;
 			this->userd.size.w=w;

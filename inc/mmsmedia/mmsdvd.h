@@ -5,6 +5,8 @@
  *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
+ *   Copyright (C) 2009      Berlinux Solutions GmbH                       *
+ *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
  *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
@@ -37,22 +39,24 @@
  * @ingroup     mmsmedia
  *
  * @author      Matthias Hardt (MHardt@berlinux-solutions.de)
- * @version     1.5.0
- * @date        12/31/2008
  *
  * This class is derived from MMSAV and specialized in
  * handling DVD playback.
  */
 class MMSDVD : public MMSAV {
     private:
-        string  device;             /**< dvd device to use                      */
-        int     audioChannel,       /**< current audio channel                  */
-                spuChannel;         /**< current subtitle channel               */
-        int     maxAudioChannels,   /**< number of available audio channels     */
-                maxSpuChannels;     /**< number of available subtitle channels  */
+        string  		device;             /**< dvd device to use                      */
+        int     		audioChannel,       /**< current audio channel                  */
+						spuChannel;         /**< current subtitle channel               */
+        int     		maxAudioChannels,   /**< number of available audio channels     */
+						maxSpuChannels;     /**< number of available subtitle channels  */
+        unsigned int 	windowWidth,		/**< width of given video window			*/
+						windowHeight;		/**< height of given video window			*/
 
         void checkDevice(const string device);
         void initialize(MMSWindow *window, const string device, const bool verbose);
+
+        void mouseEvent(const unsigned int event, const unsigned int x, const unsigned int y) const;
 
     protected:
 
@@ -94,7 +98,10 @@ class MMSDVD : public MMSAV {
 		void showMainMenu();
 		bool inMenu();
 
-        /* get DVD information */
+		void mouseButton(const unsigned int x, const unsigned int y) const;
+		void mouseMove(const unsigned int x, const unsigned int y) const;
+
+		/* get DVD information */
         string getTitle();
         int    getChapterNumber();
         int    getChapterCount();
