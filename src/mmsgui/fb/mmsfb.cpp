@@ -228,7 +228,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		XStoreName(this->x_display, this->x_window, appl_name.c_str());
 		XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
 		XClassHint clhi;
-		clhi.res_name=basename(argv[0]);
+		clhi.res_name=(argc ? basename(argv[0]) : (char*)"disko");
 		clhi.res_class=(char*)"disko";
 		XSetClassHint(this->x_display, this->x_window,&clhi);
 		this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
