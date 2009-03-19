@@ -214,6 +214,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			int size = calcSize(sb->buffers[i].pitch, sb->sbh);
 			DEBUGMSG("MMSGUI", ">allocating surface buffer #%d, %d bytes (pitch=%d, h=%d)", i, size, sb->buffers[i].pitch, sb->sbh);
 			sb->buffers[i].ptr = malloc(size);
+
+			// few internally pixelformats supports planes and therefore we must init the pointers
+			initPlanePointers(&sb->buffers[i], sb->sbh);
 		}
 		DEBUGMSG("MMSGUI", "allocating surface buffer finished");
 
@@ -539,12 +542,17 @@ void MMSFBSurface::freeSurfaceBuffer() {
 		//free my surface buffers
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		if (!sb->external_buffer) {
+			// buffer which is internally allocated
 			if (!this->is_sub_surface) {
-				for (int i = 0; i < sb->numbuffers; i++)
+				// no subsurface
+				// free all buffers (front and back buffers)
+				for (int i = 0; i < sb->numbuffers; i++) {
+					// free only first plane of each buffer, because it points to memory for all used planes
 					if (sb->buffers[i].ptr) {
 						free(sb->buffers[i].ptr);
 						sb->buffers[i].ptr = NULL;
 					}
+				}
 				delete sb;
 			}
 		}
@@ -638,6 +646,9 @@ int MMSFBSurface::calcPitch(int width) {
     else
     if(pf == MMSFB_PF_AYUV)
     	pitch = width * 4;
+    else
+    if(pf == MMSFB_PF_ARGB3565)
+    	pitch = width * 2;
 
     if (pitch <= 0) pitch = 1;
     if (pitch % 4)
@@ -649,15 +660,44 @@ int MMSFBSurface::calcPitch(int width) {
 int MMSFBSurface::calcSize(int pitch, int height) {
 
 	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
-    int    size = pitch * height;
+    int size = pitch * height;
+    int diff;
 
-    if (pf == MMSFB_PF_I420)
-    	size += pitch + (size / 2);
+    if (pf == MMSFB_PF_I420) {
+    	// increase size for U/V planes
+    	size += size / 2;
+    	if ((diff = size % pitch))
+    		size += pitch - diff;
+    }
     else
-    if (pf == MMSFB_PF_YV12)
-    	size += pitch + (size / 2);
+    if (pf == MMSFB_PF_YV12) {
+    	// increase size for U/V planes
+    	size += size / 2;
+    	if ((diff = size % pitch))
+    		size += pitch - diff;
+    }
+    else
+    if (pf == MMSFB_PF_ARGB3565) {
+    	// increase size for alpha plane (4 bit for each pixel)
+    	size += size / 4;
+    	if ((diff = size % pitch))
+    		size += pitch - diff;
+    }
 
     return size;
+}
+
+void MMSFBSurface::initPlanePointers(MMSFBSurfacePlanes *planes, int height) {
+
+	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
+	int diff;
+
+    if (pf == MMSFB_PF_ARGB3565) {
+    	planes->ptr2 = ((unsigned char *)planes->ptr) + planes->pitch * height;
+    	planes->pitch2 = planes->pitch / 4;
+    	planes->ptr3 = NULL;
+    	planes->pitch3 = NULL;
+    }
 }
 
 void MMSFBSurface::getRealSubSurfacePos(MMSFBSurface *surface, bool refreshChilds) {
@@ -832,7 +872,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	    	DEBUGMSG("MMSGUI", "Surface properties:");
 
 	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
-			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->pitch));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
 
 		    if (this->config.surface_buffer->alphachannel)
 		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
@@ -874,7 +914,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			DEBUGMSG("MMSGUI", "Surface properties:");
 
 			DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
-			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->pitch));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
 
 			if (this->config.surface_buffer->alphachannel)
 				DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");

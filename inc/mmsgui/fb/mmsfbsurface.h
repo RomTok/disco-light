@@ -70,7 +70,7 @@ typedef struct {
     int 	currbuffer_read;
     //! index to the current write buffer (used as destination for all blitting/drawing routines)
     int 	currbuffer_write;
-//    int 	pitch;
+    //! surface buffer attached to this MMSFBSurface is externally allocated?
     bool	external_buffer;
 #ifdef __HAVE_FBDEV__
     class MMSFBSurface	*mmsfbdev_surface;
@@ -148,8 +148,9 @@ class MMSFBSurface {
 
         void deleteSubSurface(MMSFBSurface *surface);
 
-        int calcPitch(int width);
-        int calcSize(int pitch, int height);
+        int  calcPitch(int width);
+        int  calcSize(int pitch, int height);
+        void initPlanePointers(MMSFBSurfacePlanes *planes, int height);
 
         void getRealSubSurfacePos(MMSFBSurface *surface = NULL, bool refreshChilds = false);
 
