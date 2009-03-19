@@ -159,27 +159,27 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
 
-        bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
-        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
+        bool extendedLock(MMSFBSurface *src, MMSFBSurfacePlanes *src_planes,
+        				  MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
 
-        bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
+        bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBSurfacePlanes *src_planes = NULL,
 									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
-								 MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+								 MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
         						 MMSFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
-        bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+        bool extendedAccelBlitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 									 MMSFBRectangle *src_rect, int x, int y);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
-										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+										MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 										MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 										MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
         bool extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 									  MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
-        bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+        bool extendedAccelStretchBlitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 											MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
 
