@@ -101,8 +101,6 @@ typedef struct {
  * @author      Matthias Hardt (MHardt@berlinux-solutions.de)
  * @author      Jens Schneider (pupeider@gmx.de)
  * @author      Guido Madaus (GMadaus@berlinux-solutions.de)
- * @version     1.5.0
- * @date        12/31/2008
  *
  * It is the base class for all audio and video related
  * classes.
@@ -111,8 +109,8 @@ class MMSAV
 {
     private:
         MMSWindow                       *window;                                /**< window for classes that use video  */
-        VODESC                          vodesc;                                 /**< video output settings              */
 #ifdef __HAVE_DIRECTFB__
+        VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
 #endif
         raw_visual_t					rawvisual;
