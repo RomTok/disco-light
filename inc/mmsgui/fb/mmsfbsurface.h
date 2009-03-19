@@ -44,6 +44,7 @@ typedef enum {
 	MMSFBSurfaceAllocMethod_malloc
 } MMSFBSurfaceAllocMethod;
 
+//! this is the maximum number of buffers for a surface (backbuffers + 1)
 #define MMSFBSurfaceMaxBuffers		3
 
 typedef struct {
@@ -62,11 +63,14 @@ typedef struct {
     //! true, if surface is stored in system memory
     bool	systemonly;
     //! real storage
-    void	*buffers[MMSFBSurfaceMaxBuffers];
+    MMSFBSurfacePlanes buffers[MMSFBSurfaceMaxBuffers];
+    //! real number of buffers allocated for a surface
     int 	numbuffers;
+    //! index to the current read buffer (used if surface is the blit/stretchblit source)
     int 	currbuffer_read;
+    //! index to the current write buffer (used as destination for all blitting/drawing routines)
     int 	currbuffer_write;
-    int 	pitch;
+//    int 	pitch;
     bool	external_buffer;
 #ifdef __HAVE_FBDEV__
     class MMSFBSurface	*mmsfbdev_surface;
@@ -155,27 +159,27 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
 
-        bool extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
-        				  MMSFBSurface *dst, void **dst_ptr, int *dst_pitch);
+        bool extendedLock(MMSFBSurface *src, MMSFBSurfacePlanes *src_planes,
+        				  MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes);
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
 
-        bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBExternalSurfaceBuffer *extbuf = NULL,
+        bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBSurfacePlanes *src_planes = NULL,
 									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
-								 MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+								 MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
         						 MMSFBRectangle *src_rect, int x, int y);
         bool extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
-        bool extendedAccelBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+        bool extendedAccelBlitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 									 MMSFBRectangle *src_rect, int x, int y);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
-										MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+										MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 										MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 										MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
         bool extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 									  MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
-        bool extendedAccelStretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+        bool extendedAccelStretchBlitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 											MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
 
@@ -207,7 +211,7 @@ class MMSFBSurface {
 				  MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
 
-        void lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthread_lock);
+        void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock);
         void unlock(bool pthread_unlock);
 
     public:
@@ -301,6 +305,7 @@ class MMSFBSurface {
         bool drawString(string text, int len, int x, int y);
 
         void lock(MMSFBLockFlags flags = MMSFB_LOCK_NONE, void **ptr = NULL, int *pitch = NULL);
+        void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes);
         void unlock();
 
         MMSFBSurface *getSubSurface(MMSFBRectangle *rect);

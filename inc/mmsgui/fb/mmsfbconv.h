@@ -32,15 +32,24 @@
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
 
-//! Describes up to 3 planes of an external surface buffer.
+//! Describes up to 3 planes of an surface buffer.
 typedef struct {
+	//! first plane
 	void	*ptr;
+	//! pitch of first plane
 	int 	pitch;
+	//! second plane or NULL if surface has only one plane
 	void	*ptr2;
+	//! pitch of second plane
 	int 	pitch2;
+	//! third plane or NULL if surface has only one or two planes
 	void	*ptr3;
+	//! pitch of third plane
 	int 	pitch3;
-} MMSFBExternalSurfaceBuffer;
+} MMSFBSurfacePlanes;
+
+//! for compatibility reason
+#define MMSFBExternalSurfaceBuffer	MMSFBSurfacePlanes
 
 //#define MMSFB_CONV_RGB2Y(r,g,b) ((((66*r+129*g+25*b+128)>>8)+16) & 0xff)
 //#define MMSFB_CONV_RGB2U(r,g,b) ((((-38*r-74*g+112*b+128)>>8)+128) & 0xff)
