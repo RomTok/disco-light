@@ -207,12 +207,13 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		else
 			// using only a single buffer for read/write
 			sb->currbuffer_write = 0;
-		sb->pitch = calcPitch(w);
 		DEBUGMSG("MMSGUI", "start allocating surface buffer");
+		memset(sb->buffers, 0, sizeof(sb->buffers));
 		for (int i = 0; i < sb->numbuffers; i++) {
-			int size = calcSize(sb->pitch, sb->sbh);
-			DEBUGMSG("MMSGUI", ">allocating surface buffer #%d, %d bytes (pitch=%d, h=%d)", i, size, sb->pitch, sb->sbh);
-			sb->buffers[i] = malloc(size);
+			sb->buffers[i].pitch = calcPitch(w);
+			int size = calcSize(sb->buffers[i].pitch, sb->sbh);
+			DEBUGMSG("MMSGUI", ">allocating surface buffer #%d, %d bytes (pitch=%d, h=%d)", i, size, sb->buffers[i].pitch, sb->sbh);
+			sb->buffers[i].ptr = malloc(size);
 		}
 		DEBUGMSG("MMSGUI", "allocating surface buffer finished");
 
@@ -233,6 +234,7 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
     	this->config.surface_buffer = NULL;
 
    if (this->config.surface_buffer) {
+	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
 	   this->config.surface_buffer->numbuffers = 0;
 	   this->config.surface_buffer->external_buffer = false;
    }
@@ -279,15 +281,20 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 	sb->systemonly = true;
 
 	// set the surface buffer
+//TODO!!!
+	memset(sb->buffers, 0, sizeof(sb->buffers));
 	sb->numbuffers = 0;
 	if (extbuf->ptr) {
-		sb->buffers[0] = extbuf->ptr;
+		sb->buffers[0].ptr = extbuf->ptr;
+		sb->buffers[0].pitch = extbuf->pitch;
 		sb->numbuffers++;
 		if (extbuf->ptr2) {
-			sb->buffers[1] = extbuf->ptr2;
+			sb->buffers[1].ptr = extbuf->ptr2;
+			sb->buffers[1].pitch = extbuf->pitch2;
 			sb->numbuffers++;
 			if (extbuf->ptr3) {
-				sb->buffers[2] = extbuf->ptr3;
+				sb->buffers[2].ptr = extbuf->ptr3;
+				sb->buffers[2].pitch = extbuf->pitch3;
 				sb->numbuffers++;
 			}
 		}
@@ -298,7 +305,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 		sb->currbuffer_write = 0;
 	else
 		sb->currbuffer_write = 1;
-	sb->pitch = extbuf->pitch;
 	sb->external_buffer = true;
 
 #ifdef __HAVE_XLIB__
@@ -333,14 +339,16 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->systemonly = true;
 
 	// set the surface buffer
+	memset(sb->buffers, 0, sizeof(sb->buffers));
 	sb->numbuffers = 2;
 	sb->xv_image[0] = xv_image1;
-	sb->buffers[0] = sb->xv_image[0]->data;
+	sb->buffers[0].ptr = sb->xv_image[0]->data;
+	sb->buffers[0].pitch = *(sb->xv_image[0]->pitches);
 	sb->xv_image[1] = xv_image2;
-	sb->buffers[1] = sb->xv_image[1]->data;
+	sb->buffers[1].ptr = sb->xv_image[1]->data;
+	sb->buffers[1].pitch = *(sb->xv_image[1]->pitches);
 	sb->currbuffer_read = 0;
 	sb->currbuffer_write = 1;
-	sb->pitch = *(sb->xv_image[0]->pitches);
 	sb->external_buffer = true;
 
 	this->config.surface_buffer->x_image[0] = NULL;
@@ -371,17 +379,19 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 	sb->systemonly = true;
 
 	// set the surface buffer
+	memset(sb->buffers, 0, sizeof(sb->buffers));
 	if (x_image2) {
 		// two ximages
 		sb->backbuffer = 1;
 		sb->numbuffers = 2;
 		sb->x_image[0] = x_image1;
-		sb->buffers[0] = sb->x_image[0]->data;
+		sb->buffers[0].ptr = sb->x_image[0]->data;
+		sb->buffers[0].pitch = sb->x_image[0]->bytes_per_line;
 		sb->x_image[1] = x_image2;
-		sb->buffers[1] = sb->x_image[1]->data;
+		sb->buffers[1].ptr = sb->x_image[1]->data;
+		sb->buffers[1].pitch = sb->x_image[1]->bytes_per_line;
 		sb->currbuffer_read = 0;
 		sb->currbuffer_write = 1;
-		sb->pitch = sb->x_image[0]->bytes_per_line;
 		sb->external_buffer = true;
 	}
 	else {
@@ -389,12 +399,12 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->backbuffer = 0;
 		sb->numbuffers = 1;
 		sb->x_image[0] = x_image1;
-		sb->buffers[0] = sb->x_image[0]->data;
+		sb->buffers[0].ptr = sb->x_image[0]->data;
+		sb->buffers[0].pitch = sb->x_image[0]->bytes_per_line;
 		sb->x_image[1] = NULL;
-		sb->buffers[1] = NULL;
+		sb->buffers[1].ptr = NULL;
 		sb->currbuffer_read = 0;
 		sb->currbuffer_write = 0;
-		sb->pitch = sb->x_image[0]->bytes_per_line;
 		sb->external_buffer = true;
 	}
 
@@ -531,9 +541,9 @@ void MMSFBSurface::freeSurfaceBuffer() {
 		if (!sb->external_buffer) {
 			if (!this->is_sub_surface) {
 				for (int i = 0; i < sb->numbuffers; i++)
-					if (sb->buffers[i]) {
-						free(sb->buffers[i]);
-						sb->buffers[i] = NULL;
+					if (sb->buffers[i].ptr) {
+						free(sb->buffers[i].ptr);
+						sb->buffers[i].ptr = NULL;
 					}
 				delete sb;
 			}
@@ -777,7 +787,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 
 		// get the surface pitch
 		void *ptr;
-		if (this->llsurface->Lock(this->llsurface, DSLF_READ, &ptr, &this->config.surface_buffer->pitch) == DFB_OK) {
+		if (this->llsurface->Lock(this->llsurface, DSLF_READ, &ptr, &this->config.surface_buffer->buffers[0].pitch) == DFB_OK) {
 			this->llsurface->Unlock(this->llsurface);
 		}
 
@@ -987,81 +997,9 @@ bool MMSFBSurface::getMemSize(int *size) {
     	return false;
     *size = 0;
 
-
-    //TODO: if working with DFB we should set surface_buffer->pitch!!!
-    *size = calcSize(this->config.surface_buffer->pitch, this->config.h);
+    *size = calcSize(this->config.surface_buffer->buffers[0].pitch, this->config.h);
 
     return true;
-
-/*
-    MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
-    int    px = this->config.surface_buffer->pitch * this->config.h * (this->config.surface_buffer->backbuffer+1);
-
-    if(pf == MMSFB_PF_ARGB1555)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_RGB16)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_RGB24)
-    	*size = px * 3;
-    else
-    if(pf == MMSFB_PF_RGB32)
-    	*size = px * 4;
-    else
-    if(pf == MMSFB_PF_ARGB)
-    	*size = px * 4;
-    else
-    if(pf == MMSFB_PF_A8)
-    	*size = px;
-    else
-    if(pf == MMSFB_PF_YUY2)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_RGB332)
-    	*size = px;
-    else
-    if(pf == MMSFB_PF_UYVY)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_I420)
-    	*size = (px * 3) / 2;
-    else
-    if(pf == MMSFB_PF_YV12)
-    	*size = (px * 3) / 2;
-    else
-    if(pf == MMSFB_PF_LUT8)
-    	*size = px;
-    else
-    if(pf == MMSFB_PF_ALUT44)
-    	*size = px;
-    else
-    if(pf == MMSFB_PF_AiRGB)
-    	*size = px * 4;
-    else
-    if(pf == MMSFB_PF_A1)
-    	*size = px / 8;
-    else
-    if(pf == MMSFB_PF_NV12)
-    	*size = (px * 3) / 2;
-    else
-    if(pf == MMSFB_PF_NV16)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_ARGB2554)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_ARGB4444)
-    	*size = px * 2;
-    else
-    if(pf == MMSFB_PF_NV21)
-    	*size = (px * 3) / 2;
-    else
-    if(pf == MMSFB_PF_AYUV)
-    	*size = px * 4;
-
-    return true;
-    */
 }
 
 
@@ -1646,12 +1584,20 @@ bool MMSFBSurface::getBlittingFlags(MMSFBBlittingFlags *flags) {
 bool MMSFBSurface::extendedLock(MMSFBSurface *src, void **src_ptr, int *src_pitch,
 								MMSFBSurface *dst, void **dst_ptr, int *dst_pitch) {
 	if (src) {
-		src->lock(MMSFB_LOCK_READ, src_ptr, src_pitch, false);
+		MMSFBSurfacePlanes planes;
+		memset(&planes, 0, sizeof(MMSFBSurfacePlanes));
+		src->lock(MMSFB_LOCK_READ, &planes, false);
+		*src_ptr = planes.ptr;
+		*src_pitch = planes.pitch;
 		if (!*src_ptr)
 			return false;
 	}
 	if (dst) {
-		dst->lock(MMSFB_LOCK_WRITE, dst_ptr, dst_pitch, false);
+		MMSFBSurfacePlanes planes;
+		memset(&planes, 0, sizeof(MMSFBSurfacePlanes));
+		dst->lock(MMSFB_LOCK_WRITE, &planes, false);
+		*dst_ptr = planes.ptr;
+		*dst_pitch = planes.pitch;
 		if (!*dst_ptr) {
 			if (src)
 				src->unlock(false);
@@ -4618,45 +4564,41 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
     return true;
 }
 
-void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthread_lock) {
+void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock) {
 	if (!pthread_lock) {
 		// no pthread lock needed
 		if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-			if (flags && ptr && pitch) {
+			if (flags && planes) {
 				// get the access to the surface buffer
-				*ptr = NULL;
-				*pitch = 0;
+				memset(planes, 0, sizeof(MMSFBSurfacePlanes));
 				if (flags == MMSFB_LOCK_READ) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_READ, ptr, pitch) != DFB_OK) {
-						*ptr = NULL;
-						*pitch = 0;
+					if (this->llsurface->Lock(this->llsurface, DSLF_READ, &planes->ptr, &planes->pitch) != DFB_OK) {
+						planes->ptr = NULL;
+						planes->pitch = 0;
 					}
 				}
 				else
 				if (flags == MMSFB_LOCK_WRITE) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_WRITE, ptr, pitch) != DFB_OK) {
-						*ptr = NULL;
-						*pitch = 0;
+					if (this->llsurface->Lock(this->llsurface, DSLF_WRITE, &planes->ptr, &planes->pitch) != DFB_OK) {
+						planes->ptr = NULL;
+						planes->pitch = 0;
 					}
 				}
 			}
 #endif
 		}
 		else {
-			if (flags && ptr && pitch) {
+			if (flags && planes) {
 				// get the access to the surface buffer
-				*ptr = NULL;
-				*pitch = 0;
+				memset(planes, 0, sizeof(MMSFBSurfacePlanes));
 				MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 				if (flags == MMSFB_LOCK_READ) {
-					*ptr = sb->buffers[sb->currbuffer_read];
-					*pitch = sb->pitch;
+					*planes = sb->buffers[sb->currbuffer_read];
 				}
 				else
 				if (flags == MMSFB_LOCK_WRITE) {
-					*ptr = sb->buffers[sb->currbuffer_write];
-					*pitch = sb->pitch;
+					*planes = sb->buffers[sb->currbuffer_write];
 				}
 			}
 		}
@@ -4691,15 +4633,14 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthre
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
-		if (flags && ptr && pitch) {
+		if (flags && planes) {
 			// get the access to the surface buffer
-			*ptr = NULL;
-			*pitch = 0;
+			memset(planes, 0, sizeof(MMSFBSurfacePlanes));
 			if (flags == MMSFB_LOCK_READ) {
 				if (!tolock->surface_read_locked) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_READ, ptr, pitch) != DFB_OK) {
-						*ptr = NULL;
-						*pitch = 0;
+					if (this->llsurface->Lock(this->llsurface, DSLF_READ, &planes->ptr, &planes->pitch) != DFB_OK) {
+						planes->ptr = NULL;
+						planes->pitch = 0;
 					}
 					else {
 						tolock->surface_read_locked = true;
@@ -4710,9 +4651,9 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthre
 			else
 			if (flags == MMSFB_LOCK_WRITE) {
 				if (!tolock->surface_write_locked) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_WRITE, ptr, pitch) != DFB_OK) {
-						*ptr = NULL;
-						*pitch = 0;
+					if (this->llsurface->Lock(this->llsurface, DSLF_WRITE, &planes->ptr, &planes->pitch) != DFB_OK) {
+						planes->ptr = NULL;
+						planes->pitch = 0;
 					}
 					else {
 						tolock->surface_write_locked = true;
@@ -4724,15 +4665,13 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthre
 #endif
 	}
 	else {
-		if (flags && ptr && pitch) {
+		if (flags && planes) {
 			// get the access to the surface buffer
-			*ptr = NULL;
-			*pitch = 0;
+			memset(planes, 0, sizeof(MMSFBSurfacePlanes));
 			MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 			if (flags == MMSFB_LOCK_READ) {
 				if (!tolock->surface_read_locked) {
-					*ptr = sb->buffers[sb->currbuffer_read];
-					*pitch = sb->pitch;
+					*planes = sb->buffers[sb->currbuffer_read];
 					tolock->surface_read_locked = true;
 					tolock->surface_read_lock_cnt = tolock->Lock_cnt;
 				}
@@ -4740,8 +4679,7 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthre
 			else
 			if (flags == MMSFB_LOCK_WRITE) {
 				if (!tolock->surface_write_locked) {
-					*ptr = sb->buffers[sb->currbuffer_write];
-					*pitch = sb->pitch;
+					*planes = sb->buffers[sb->currbuffer_write];
 					tolock->surface_write_locked = true;
 					tolock->surface_write_lock_cnt = tolock->Lock_cnt;
 				}
@@ -4751,7 +4689,21 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthre
 }
 
 void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch) {
-	lock(flags, ptr, pitch, true);
+	if (!ptr || !pitch) {
+		// nothing to return
+		lock(flags, NULL, true);
+	}
+	else {
+		// get the planes an return the first one
+		MMSFBSurfacePlanes planes;
+		lock(flags, &planes, true);
+		*ptr = planes.ptr;
+		*pitch = planes.pitch;
+	}
+}
+
+void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes) {
+	lock(flags, planes, true);
 }
 
 void MMSFBSurface::unlock(bool pthread_unlock) {

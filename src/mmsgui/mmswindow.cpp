@@ -1301,42 +1301,46 @@ void MMSWindow::loadArrowWidgets() {
     if (!this->upArrowWidget)
     	if (getUpArrow(s))
     		if (s != "")
-		        if ((this->upArrowWidget = tmp->searchForWidget(s)))
+		        if ((this->upArrowWidget = tmp->searchForWidget(s))) {
 		            if (!this->upArrowWidget->getSelectable(b))
 		                this->upArrowWidget = NULL;
 	                else
 		                if (!b)
 		                    this->upArrowWidget = NULL;
+		        }
 
     if (!this->downArrowWidget)
     	if (getDownArrow(s))
     		if (s != "")
-		        if ((this->downArrowWidget = tmp->searchForWidget(s)))
+		        if ((this->downArrowWidget = tmp->searchForWidget(s))) {
 		            if (!this->downArrowWidget->getSelectable(b))
 		                this->downArrowWidget = NULL;
 	                else
 		                if (!b)
 		                    this->downArrowWidget = NULL;
+		        }
 
     if (!this->leftArrowWidget)
     	if (getLeftArrow(s))
     		if (s != "")
-		        if ((this->leftArrowWidget = tmp->searchForWidget(s)))
+		        if ((this->leftArrowWidget = tmp->searchForWidget(s))) {
 		            if (!this->leftArrowWidget->getSelectable(b))
 		                this->leftArrowWidget = NULL;
 	                else
 		                if (!b)
 		                    this->leftArrowWidget = NULL;
+		        }
 
     if (!this->rightArrowWidget)
     	if (getRightArrow(s))
     		if (s != "")
-		        if ((this->rightArrowWidget = tmp->searchForWidget(s)))
+		        if ((this->rightArrowWidget = tmp->searchForWidget(s))) {
 		            if (!this->rightArrowWidget->getSelectable(b))
 		                this->rightArrowWidget = NULL;
 	                else
 		                if (!b)
 		                    this->rightArrowWidget = NULL;
+		        }
 }
 
 
@@ -1394,29 +1398,33 @@ void MMSWindow::switchArrowWidgets() {
     getArrowWidgetStatus(&setarrows);
 
     /* switch arrow widgets */
-    if (this->upArrowWidget)
+    if (this->upArrowWidget) {
         if (setarrows.up)
             this->upArrowWidget->setSelected(true);
         else
             this->upArrowWidget->setSelected(false);
+    }
 
-    if (this->downArrowWidget)
+    if (this->downArrowWidget) {
         if (setarrows.down)
             this->downArrowWidget->setSelected(true);
         else
             this->downArrowWidget->setSelected(false);
+    }
 
-    if (this->leftArrowWidget)
+    if (this->leftArrowWidget) {
         if (setarrows.left)
             this->leftArrowWidget->setSelected(true);
         else
             this->leftArrowWidget->setSelected(false);
+    }
 
-    if (this->rightArrowWidget)
+    if (this->rightArrowWidget) {
         if (setarrows.right)
             this->rightArrowWidget->setSelected(true);
         else
             this->rightArrowWidget->setSelected(false);
+    }
 
     /* recursive to my parents */
     if (this->parent)
@@ -2012,11 +2020,12 @@ bool MMSWindow::showAction(bool *stopaction) {
 	    }
 
 	    /* set final position */
-	    if (movein!=MMSDIRECTION_NOTSET)
+	    if (movein!=MMSDIRECTION_NOTSET) {
     		if (!parent)
     			this->window->moveTo(rect.x, rect.y);
     		else
     			this->parent->moveChildWindow(this, rect.x, rect.y);
+	    }
 
 	    /* set final opacity */
 		if (!parent)
@@ -3130,11 +3139,12 @@ void MMSWindow::setFocus() {
 
 bool MMSWindow::getFocus() {
 	/* check if i am a child window */
-	if (!this->parent)
+	if (!this->parent) {
     	if (windowmanager->getToplevelWindow() == this)
     		return true;
     	else
     		return false;
+	}
 
     /* search me */
     int me = -1;
@@ -4221,13 +4231,14 @@ void MMSWindow::setBgImageName(string bgimagename, bool load, bool refresh) {
 
 void MMSWindow::setOpacity(unsigned int opacity, bool refresh) {
     myWindowClass.setOpacity(opacity);
-    if (refresh)
+    if (refresh) {
         if (!this->parent) {
             if (this->window)
                 this->window->setOpacity(opacity);
         }
         else
             this->parent->setChildWindowOpacity(this, opacity);
+    }
 }
 
 void MMSWindow::setFadeIn(bool fadein) {

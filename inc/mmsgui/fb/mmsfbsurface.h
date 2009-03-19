@@ -44,6 +44,7 @@ typedef enum {
 	MMSFBSurfaceAllocMethod_malloc
 } MMSFBSurfaceAllocMethod;
 
+//! this is the maximum number of buffers for a surface (backbuffers + 1)
 #define MMSFBSurfaceMaxBuffers		3
 
 typedef struct {
@@ -62,11 +63,14 @@ typedef struct {
     //! true, if surface is stored in system memory
     bool	systemonly;
     //! real storage
-    void	*buffers[MMSFBSurfaceMaxBuffers];
+    MMSFBSurfacePlanes buffers[MMSFBSurfaceMaxBuffers];
+    //! real number of buffers allocated for a surface
     int 	numbuffers;
+    //! index to the current read buffer (used if surface is the blit/stretchblit source)
     int 	currbuffer_read;
+    //! index to the current write buffer (used as destination for all blitting/drawing routines)
     int 	currbuffer_write;
-    int 	pitch;
+//    int 	pitch;
     bool	external_buffer;
 #ifdef __HAVE_FBDEV__
     class MMSFBSurface	*mmsfbdev_surface;
@@ -207,7 +211,7 @@ class MMSFBSurface {
 				  MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
 
-        void lock(MMSFBLockFlags flags, void **ptr, int *pitch, bool pthread_lock);
+        void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock);
         void unlock(bool pthread_unlock);
 
     public:
@@ -301,6 +305,7 @@ class MMSFBSurface {
         bool drawString(string text, int len, int x, int y);
 
         void lock(MMSFBLockFlags flags = MMSFB_LOCK_NONE, void **ptr = NULL, int *pitch = NULL);
+        void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes);
         void unlock();
 
         MMSFBSurface *getSubSurface(MMSFBRectangle *rect);
