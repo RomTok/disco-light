@@ -150,8 +150,6 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
 			// init osd1 attribute plane
 			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
-//memset(this->osd1->framebuffer_base, 0x44, 768*480/2);
-
 				// set values
 				this->layers[layer_id].planes.ptr = this->osd0->framebuffer_base;
 				this->layers[layer_id].planes.pitch = this->osd0->layers[0].planes.pitch;
@@ -161,7 +159,8 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 					this->layers[layer_id].planes.pitch2 = this->osd1->layers[0].planes.pitch;
 				}
 				else {
-					// alpha plane not requested
+					// alpha plane not requested, set it opaque
+					memset(this->osd1->framebuffer_base, 0x77, this->osd1->layers[0].planes.pitch * height);
 					this->layers[layer_id].planes.ptr2 = NULL;
 					this->layers[layer_id].planes.pitch2 = NULL;
 				}
