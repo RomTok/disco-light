@@ -420,6 +420,12 @@ ifdef X11_LIBS
     libs_str   += " $(X11_LIBS)"
     cflags_str += " $(X11_INC)"
 endif 
- 
+
+#always build FBDEV support
+#we can think about a flag to switch it off
+export CFLAGS+='-D__HAVE_FBDEV__'
+
+#for pupeider
 #export CFLAGS+='-D__HAVE_XLIB__'
 #export CFLAGS+='-D__NO_XSYNC__'
+
