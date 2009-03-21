@@ -574,7 +574,8 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		case MMSFB_OT_DAVINCIFB:
 			if (this->graphics.videolayerpixelformat != MMSFB_PF_YUY2)
 				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
-			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
+			if   ((this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
+				&&(this->graphics.graphicslayerpixelformat != MMSFB_PF_RGB16))
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
 		default:

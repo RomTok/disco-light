@@ -140,44 +140,32 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
-		if (pixelformat == MMSFB_PF_ARGB3565) {
-			// init the two davinci osd "windows" using the 3 bit alpha channel
-			if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
-				// init osd1 attribute plane
-				if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
-	memset(this->osd1->framebuffer_base, 0x44, 768*480/2);
-
-					// set values
-					this->layers[layer_id].planes.ptr = this->osd0->framebuffer_base;
-					this->layers[layer_id].planes.ptr2 = this->osd1->framebuffer_base;
-					this->layers[layer_id].planes.ptr3 = NULL;
-					this->layers[layer_id].planes.pitch = this->osd0->layers[0].planes.pitch;
-					this->layers[layer_id].planes.pitch2 = this->osd1->layers[0].planes.pitch;
-					this->layers[layer_id].planes.pitch3 = 0;
-					this->layers[layer_id].width = width;
-					this->layers[layer_id].height = height;
-					this->layers[layer_id].pixelformat = pixelformat;
-
-					// layer is initialized
-					this->layers[layer_id].isinitialized = true;
-
-					printf("MMSFBDevDavinci: OSD Layer %d initialized with %dx%d, pixelformat ARGB3565\n", layer_id, width, height);
-
-					return true;
-				}
-			}
+		if   ((pixelformat != MMSFB_PF_ARGB3565)
+			&&(pixelformat != MMSFB_PF_RGB16)) {
+			printf("MMSFBDevDavinci: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
-		else
-		if (pixelformat == MMSFB_PF_RGB16) {
-			// init only one davinci osd "window" without transparency
-			if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
+
+		// init the two davinci osd "windows"
+		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
+			// init osd1 attribute plane
+			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
+//memset(this->osd1->framebuffer_base, 0x44, 768*480/2);
+
 				// set values
 				this->layers[layer_id].planes.ptr = this->osd0->framebuffer_base;
-				this->layers[layer_id].planes.ptr2 = NULL;
-				this->layers[layer_id].planes.ptr3 = NULL;
 				this->layers[layer_id].planes.pitch = this->osd0->layers[0].planes.pitch;
-				this->layers[layer_id].planes.pitch2 = 0;
+				if (pixelformat == MMSFB_PF_ARGB3565) {
+					// set the alpha plane
+					this->layers[layer_id].planes.ptr2 = this->osd1->framebuffer_base;
+					this->layers[layer_id].planes.pitch2 = this->osd1->layers[0].planes.pitch;
+				}
+				else {
+					// alpha plane not requested
+					this->layers[layer_id].planes.ptr2 = NULL;
+					this->layers[layer_id].planes.pitch2 = NULL;
+				}
+				this->layers[layer_id].planes.ptr3 = NULL;
 				this->layers[layer_id].planes.pitch3 = 0;
 				this->layers[layer_id].width = width;
 				this->layers[layer_id].height = height;
@@ -186,16 +174,14 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				// layer is initialized
 				this->layers[layer_id].isinitialized = true;
 
-				printf("MMSFBDevDavinci: OSD Layer %d initialized with %dx%d, pixelformat RGB16, no transparency!\n", layer_id, width, height);
+				printf("MMSFBDevDavinci: OSD Layer %d initialized with %dx%d, pixelformat %s\n",
+							layer_id, width, height, getMMSFBPixelFormatString(pixelformat).c_str());
 
 				return true;
 			}
-			return false;
 		}
-		else {
-			printf("MMSFBDevDavinci: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
-			return false;
-		}
+		return false;
+
 	case 1:
 		// Video layer
 		if (pixelformat != MMSFB_PF_YUY2) {
@@ -221,6 +207,9 @@ memset(((char*)this->vid1->framebuffer_base)+720*240*2, 0x66, 720*240*2);
 
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
+
+			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%d, pixelformat %s\n",
+						layer_id, width, height, getMMSFBPixelFormatString(pixelformat).c_str());
 
 			return true;
 		}
