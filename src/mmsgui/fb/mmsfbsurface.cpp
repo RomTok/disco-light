@@ -259,7 +259,7 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
 	init(llsurface, parent, sub_surface_rect);
 }
 
-MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBExternalSurfaceBuffer *extbuf) {
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes) {
     // init me
     this->llsurface = NULL;
     this->surface_read_locked = false;
@@ -284,25 +284,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 	sb->systemonly = true;
 
 	// set the surface buffer
-//TODO!!!
 	memset(sb->buffers, 0, sizeof(sb->buffers));
-	sb->numbuffers = 0;
-	if (extbuf->ptr) {
-		sb->buffers[0].ptr = extbuf->ptr;
-		sb->buffers[0].pitch = extbuf->pitch;
-		sb->numbuffers++;
-		if (extbuf->ptr2) {
-			sb->buffers[1].ptr = extbuf->ptr2;
-			sb->buffers[1].pitch = extbuf->pitch2;
-			sb->numbuffers++;
-			if (extbuf->ptr3) {
-				sb->buffers[2].ptr = extbuf->ptr3;
-				sb->buffers[2].pitch = extbuf->pitch3;
-				sb->numbuffers++;
-			}
-		}
-		sb->backbuffer = sb->numbuffers - 1;
-	}
+	sb->numbuffers = 1;
+	sb->buffers[0] = *planes;
+	sb->backbuffer = sb->numbuffers - 1;
 	sb->currbuffer_read = 0;
 	if (sb->numbuffers <= 1)
 		sb->currbuffer_write = 0;

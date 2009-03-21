@@ -640,9 +640,9 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		}
 
 		// get fb memory ptr
-		MMSFBExternalSurfaceBuffer extbuf;
-		memset(&extbuf, 0, sizeof(extbuf));
-		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, &extbuf.ptr, &extbuf.pitch, &this->config.w, &this->config.h)) {
+		MMSFBSurfacePlanes planes;
+		memset(&planes, 0, sizeof(planes));
+		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, &planes, &this->config.w, &this->config.h)) {
 			MMSFB_SetError(0, "getFrameBufferPtr() failed");
 			return false;
 		}
@@ -651,7 +651,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		this->config.options = MMSFB_LO_NONE;
 
 		// create a new surface instance for the framebuffer memory
-		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &extbuf);
+		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &planes);
 		if (!this->mmsfbdev_surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;

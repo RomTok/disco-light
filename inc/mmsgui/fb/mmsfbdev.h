@@ -89,8 +89,8 @@ class MMSFBDev {
         	int width;
         	//! height of the layer
         	int height;
-        	//! pitch (bytes per line)
-        	int pitch;
+        	//! describes the plane buffers
+        	MMSFBSurfacePlanes planes;
 			//! pixelformat of the layer
 			MMSFBSurfacePixelFormat	pixelformat;
         } MMSFBDEV_LAYER;
@@ -123,10 +123,10 @@ class MMSFBDev {
         virtual bool testLayer(int layer_id);
         virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
 
-        virtual bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
+        bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
         bool getPhysicalMemory(unsigned long *mem);
         bool getFrameBufferBase(unsigned char **base);
-        virtual bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
+        bool getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *planes, int *width, int *height);
 
         bool mapMmio(unsigned char **mmio);
         bool unmapMmio(unsigned char *mmio);

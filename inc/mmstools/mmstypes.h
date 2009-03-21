@@ -31,6 +31,29 @@
 
 #include "mmstools/base.h"
 
+// plane description.........................................................
+
+//! Describes up to 3 planes of an surface buffer.
+typedef struct {
+	//! first plane
+	void	*ptr;
+	//! pitch of first plane
+	int 	pitch;
+	//! second plane or NULL if surface has only one plane
+	void	*ptr2;
+	//! pitch of second plane
+	int 	pitch2;
+	//! third plane or NULL if surface has only one or two planes
+	void	*ptr3;
+	//! pitch of third plane
+	int 	pitch3;
+} MMSFBSurfacePlanes;
+
+//! for compatibility reason
+#define MMSFBExternalSurfaceBuffer	MMSFBSurfacePlanes
+
+
+
 // backend types.............................................................
 
 //! supported backends
