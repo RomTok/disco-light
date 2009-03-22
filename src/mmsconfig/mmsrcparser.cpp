@@ -488,14 +488,17 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
         	string val = string((const char *)parvalue);
             if ((this->graphics.graphicswindowpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
             	string val2 = strToUpr(val);
-            	if ((val2 != "AUTODETECT") && (val2 != "AUTO"))
+            	if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
             		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_WINDOWS, "");
             }
 	    }
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat")) {
         	string val = string((const char *)parvalue);
-            if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
-           		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
+            if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
+            	string val2 = strToUpr(val);
+            	if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
+            		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
+            }
 	    }
         else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
             this->graphics.extendedaccel = strToBool(string((const char *)parvalue));

@@ -529,11 +529,8 @@ bool MMSWindow::resize(bool refresh) {
         // normal parent window
         if (!this->window) {
             // create window
-            // get layers pixelformat
-        	MMSFBSurfacePixelFormat pixelformat;
-            this->layer->getPixelFormat(&pixelformat);
 
-            // own surface?
+        	// own surface?
 			bool os;
 			getOwnSurface(os);
 
@@ -554,11 +551,10 @@ bool MMSWindow::resize(bool refresh) {
                                                         + iToStr(wdesc_posy) + ","
                                                         + iToStr(wdesc_width) + ","
                                                         + iToStr(wdesc_height)
-                                                        + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
-                                                        + " (use alpha)");
+                                                        + "), alphachannel requested");
                     this->layer->createWindow(&(this->window),
                                               wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                              pixelformat, true, false);
+                                              MMSFB_PF_NONE, true, false);
                     DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
 
                     // window should not be visible at this time
@@ -589,11 +585,10 @@ bool MMSWindow::resize(bool refresh) {
                                                           + iToStr(wdesc_posy) + ","
                                                           + iToStr(wdesc_width) + ","
                                                           + iToStr(wdesc_height)
-                                                          + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
-                                                          + " (do not use alpha)");
+                                                          + "), no alphachannel");
                 this->layer->createWindow(&(this->window),
                                           wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                          pixelformat, false, true);
+                                          MMSFB_PF_NONE, false, true);
                 DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
 
                 // window should not be visible at this time

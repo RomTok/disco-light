@@ -315,10 +315,10 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_LAYER	"RGB16, RGB24, RGB32, ARGB, YUY2, UYVY, I420, YV12, AiRGB, NV12, NV16, NV21, AYUV, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, LUT8, ARGB2554, ARGB4444, ARGB3565"
 
 //! list of valid pixelformats used for windows surfaces
-#define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV"
+#define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV, empty string for auto detection"
 
 //! list of valid pixelformats used for worker surfaces
-#define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV"
+#define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV, empty string for auto detection"
 
 //! list of valid pixelformats for XVSHM
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM	"YV12"

@@ -210,14 +210,14 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
     			MMSTaffFile *tafff;
     			if (retry) {
 	    			retry = false;
-	    			DEBUGOUT("ImageManager, retry");
+	    			DEBUGOUT("ImageManager, retry\n");
     				// have to convert taff with special destination pixelformat
     				tafff = new MMSTaffFile(imagefile + ".taff", NULL,
 		    								"", MMSTAFF_EXTERNAL_TYPE_IMAGE);
         			if (tafff) {
         				// set external file and requested pixelformat
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
-	    				DEBUGOUT("ImageManager, taffpf = %d", taffpf);
+	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
 	    				tafff->setDestinationPixelFormat(taffpf);
 	    				tafff->setMirrorEffect(mirror_size);
 	    				// convert it
@@ -295,11 +295,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 
 				    	if (img_pixelformat != taffpf) {
-				    		DEBUGOUT("ImageManager, taffpf = %d", (int)taffpf);
+				    		DEBUGOUT("ImageManager, taffpf = %d\n", (int)taffpf);
 				    		// the image from the file has not the same pixelformat as the surface
 				    		if (!retry) {
 				    			// retry with surface pixelformat
-				    			DEBUGOUT("ImageManager, request new pixf");
+				    			DEBUGOUT("ImageManager, request new pixf\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -309,11 +309,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 				    	else
 				    	if (img_mirror_size != mirror_size) {
-				    		DEBUGOUT("ImageManager, mirror_size = %d", (int)mirror_size);
+				    		DEBUGOUT("ImageManager, mirror_size = %d\n", (int)mirror_size);
 				    		// the image from the file has not the same mirror_size
 				    		if (!retry) {
 				    			// retry with given mirror_size
-				    			DEBUGOUT("ImageManager, request new mirrot_size");
+				    			DEBUGOUT("ImageManager, request new mirrot_size\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;

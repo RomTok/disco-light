@@ -127,17 +127,65 @@ void MMSFBManager::release() {
 void MMSFBManager::applySettings() {
 	DEBUGMSG("MMSGUI", "configure graphics layer");
 
+	// get the window pixelformat
+	MMSFBSurfacePixelFormat window_pixelformat = config.getGraphicsWindowPixelformat();
+	if    ((window_pixelformat == MMSFB_PF_NONE)
+		||((window_pixelformat != MMSFB_PF_ARGB)&&(window_pixelformat != MMSFB_PF_AiRGB)&&(window_pixelformat != MMSFB_PF_AYUV))) {
+		// surface pixelformat not set or unsupported, use the layer pixelformat
+		window_pixelformat = config.getGraphicsLayerPixelformat();
+		if (!isAlphaPixelFormat(window_pixelformat)) {
+			// the gui internally needs surfaces with alpha channel
+			// now we have to decide if we are working in RGB or YUV color space
+			if (!isRGBPixelFormat(window_pixelformat))
+				// so switch all non-alpha pixelformats to AYUV
+				window_pixelformat = MMSFB_PF_AYUV;
+			else
+				// so switch all non-alpha pixelformats to ARGB
+				window_pixelformat = MMSFB_PF_ARGB;
+		}
+		else
+		if (isIndexedPixelFormat(window_pixelformat))
+			// the gui internally needs non-indexed surfaces
+			// so switch all indexed pixelformats to ARGB
+			window_pixelformat = MMSFB_PF_ARGB;
+	}
+
+	// get the surface pixelformat
+	MMSFBSurfacePixelFormat surface_pixelformat = config.getGraphicsSurfacePixelformat();
+	if    ((surface_pixelformat == MMSFB_PF_NONE)
+		||((surface_pixelformat != MMSFB_PF_ARGB)&&(surface_pixelformat != MMSFB_PF_AiRGB)&&(surface_pixelformat != MMSFB_PF_AYUV))) {
+		// surface pixelformat not set or unsupported, use the layer pixelformat
+		surface_pixelformat = config.getGraphicsLayerPixelformat();
+		if (!isAlphaPixelFormat(surface_pixelformat)) {
+			// the gui internally needs surfaces with alpha channel
+			// now we have to decide if we are working in RGB or YUV color space
+			if (!isRGBPixelFormat(surface_pixelformat))
+				// so switch all non-alpha pixelformats to AYUV
+				surface_pixelformat = MMSFB_PF_AYUV;
+			else
+				// so switch all non-alpha pixelformats to ARGB
+				surface_pixelformat = MMSFB_PF_ARGB;
+		}
+		else
+		if (isIndexedPixelFormat(surface_pixelformat))
+			// the gui internally needs non-indexed surfaces
+			// so switch all indexed pixelformats to ARGB
+			surface_pixelformat = MMSFB_PF_ARGB;
+	}
+
+
+
+	// set exclusive access to the graphics layer
 	DEBUGMSG("MMSGUI", "set exclusive access");
-    /* set exclusive access to the graphics layer */
-    if (!this->graphicslayer->setExclusiveAccess())
+	if (!this->graphicslayer->setExclusiveAccess())
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (!this->graphicslayer->setConfiguration(config.getXres(), config.getYres(),
 											   config.getGraphicsLayerPixelformat(),
                                                config.getGraphicsLayerBufferMode(),
                                                config.getGraphicsLayerOptions(),
-                                               config.getGraphicsWindowPixelformat(),
-                                               config.getGraphicsSurfacePixelformat()))
+                                               window_pixelformat,
+                                               surface_pixelformat))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
@@ -201,6 +249,7 @@ void MMSFBManager::applySettings() {
     // init the mmsfbwindowmanager
 	mmsfbwindowmanager->init(this->graphicslayer, (config.getPointer()==MMSFB_PM_TRUE));
 
+/*
     // create a global temporary surface
     MMSFBSurfacePixelFormat pixelformat = config.getGraphicsLayerPixelformat();
     if (!isAlphaPixelFormat(pixelformat)) {
@@ -222,9 +271,10 @@ void MMSFBManager::applySettings() {
         // the gui internally needs non-indexed surfaces
         // so switch all indexed pixelformats to ARGB
         pixelformat = MMSFB_PF_ARGB;
+*/
 
-    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", config.getXres(), config.getYres(), getMMSFBPixelFormatString(pixelformat).c_str());
-    mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
+    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", config.getXres(), config.getYres(), getMMSFBPixelFormatString(surface_pixelformat).c_str());
+    mmsfbsurfacemanager->createTemporarySurface(config.getXres(), config.getYres(), surface_pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 

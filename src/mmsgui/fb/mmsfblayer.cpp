@@ -863,7 +863,9 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
     INITCHECK;
 
     if (pixelformat == MMSFB_PF_NONE) {
-        pixelformat = this->config.pixelformat;
+    	pixelformat = this->config.surface_pixelformat;
+
+/*toberemoved        pixelformat = this->config.pixelformat;
         if (!isAlphaPixelFormat(pixelformat)) {
         	// the gui internally needs surfaces with alpha channel
         	// now we have to decide if we are working in RGB or YUV color space
@@ -883,6 +885,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
             // the gui internally needs non-indexed surfaces
             // so switch all indexed pixelformats to ARGB
             pixelformat = MMSFB_PF_ARGB;
+*/
     }
 
     if (firsttime_createsurface) {
@@ -906,6 +909,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         return false;
     }
 
+#ifdef sfsdgd_toberemoved
     /* get pixelformat */
     if (pixelformat == MMSFB_PF_NONE)
         pixelformat = this->config.pixelformat;
@@ -943,6 +947,29 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
             /* switch all indexed pixelformats to ARGB */
             pixelformat = MMSFB_PF_ARGB;
     }
+#endif
+
+
+    if (pixelformat == MMSFB_PF_NONE) {
+    	if (usealpha) {
+    		// use preset window pixelformat
+    		pixelformat = this->config.window_pixelformat;
+    	}
+    	else {
+    		// use layer pixelformat
+    		pixelformat = this->config.pixelformat;
+    	    if (isAlphaPixelFormat(pixelformat)) {
+				// switch all alpha pixelformats to RGB32
+				pixelformat = MMSFB_PF_RGB32;
+    	    }
+    	    else
+    	    if (isIndexedPixelFormat(pixelformat)) {
+				// switch all indexed pixelformats to RGB32
+				pixelformat = MMSFB_PF_RGB32;
+    	    }
+    	}
+    }
+
 
     if (usealpha) {
 	    if (firsttime_createwindow_usealpha) {
