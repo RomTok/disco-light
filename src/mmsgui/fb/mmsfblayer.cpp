@@ -831,9 +831,10 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
     	this->surface->clear();
+		this->surface->flip();
     	while (bufnum > 1) {
-			this->surface->flip();
 			this->surface->clear();
+			this->surface->flip();
 			bufnum--;
 		}
 

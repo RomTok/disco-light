@@ -29,6 +29,26 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
+#define MMSFB_BLIT_ARGB_TO_ARGB3565(src, dst, alpha)	\
+			SRC  = src;									\
+			if (SRC==OLDSRC) {							\
+				dst = d;								\
+				alpha (SRC >> 29);						\
+			}											\
+			else {										\
+				OLDSRC = SRC;							\
+				unsigned int r = (SRC << 8) >> 27;		\
+				unsigned int g = (SRC << 16) >> 26;		\
+				unsigned int b = (SRC & 0xff) >> 3;		\
+				d =   (r << 11)							\
+					| (g << 5)							\
+					| b;								\
+				dst = d;								\
+				alpha (SRC >> 29);						\
+			}
+
+
+
 void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
 								 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
@@ -38,16 +58,30 @@ void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_heigh
 		firsttime = false;
 	}
 
+	// DST: point to the first plane (RGB16/RGB565 format)
+	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
-unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
-int dst_pitch = dst_planes->pitch;
-
+	// DST: point to the second plane (3 bit alpha (2 pixels per byte, 4 bit per pixel))
+	unsigned char *dst_a;
+	int dst_a_pitch;
+	if (dst_planes->ptr2) {
+		// plane pointer given
+		dst_a = (unsigned char *)dst_planes->ptr2;
+		dst_a_pitch = dst_planes->pitch2;
+	}
+	else {
+		// calc plane pointer (after the first plane)
+    	dst_a = ((unsigned char *)dst_planes->ptr) + dst_planes->pitch * dst_height;
+    	dst_a_pitch = dst_planes->pitch / 4;
+	}
 
 	// prepare...
 	int src_pitch_pix = src_pitch >> 2;
 	int dst_pitch_pix = dst_pitch >> 1;
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
+	dst_a+= (dx >> 1) + dy * dst_a_pitch;
 
 	// check the surface range
 	if (dst_pitch_pix - dx < sw - sx)
@@ -57,10 +91,37 @@ int dst_pitch = dst_planes->pitch;
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
+	// check odd/even
+	bool odd_left 	= (dx & 0x01);
+	bool odd_right 	= ((dx + sw) & 0x01);
+
+
+	//TODO: not even...
+
+
+
+	// calc even positions...
+	if (odd_left) {
+		// odd left
+		dx++;
+		sw--;
+		src++;
+		dst++;
+		dst_a++;
+	}
+
+	if (odd_right) {
+		// odd right
+		sw--;
+	}
+
+	// now we are even aligned and can go through a optimized loop
+	////////////////////////////////////////////////////////////////////////
 	unsigned int OLDSRC  = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch_pix - sw;
+	int dst_a_pitch_diff = dst_a_pitch - (sw >> 1);
 	register unsigned short int d;
 
 
@@ -69,35 +130,24 @@ int dst_pitch = dst_planes->pitch;
 		// for all pixels in the line
 		unsigned int *line_end = src + sw;
 		while (src < line_end) {
-			// load pixel from memory and check if the previous pixel is the same
-			register unsigned int SRC  = *src;
+			register unsigned int SRC;
+			unsigned char alpha;
 
-			// same?
-			if (SRC==OLDSRC) {
-				// same pixel, use the previous value
-				*dst = d;
-			    dst++;
-			    src++;
-				continue;
-			}
-			OLDSRC = SRC;
+			// process two pixels
+			MMSFB_BLIT_ARGB_TO_ARGB3565(*src, *dst, alpha=);
+			MMSFB_BLIT_ARGB_TO_ARGB3565(*(src+1), *(dst+1), alpha=(alpha<<4)|);
+			dst+=2;
+			src+=2;
 
-			// copy source directly to the destination
-			unsigned int r = (SRC << 8) >> 27;
-			unsigned int g = (SRC << 16) >> 26;
-			unsigned int b = (SRC & 0xff) >> 3;
-			d =   (r << 11)
-				| (g << 5)
-				| b;
-		    *dst = d;
-
-		    dst++;
-		    src++;
+			// set alpha value
+			*dst_a = alpha;
+			dst_a++;
 		}
 
 		// go to the next line
 		src+= src_pitch_diff;
 		dst+= dst_pitch_diff;
+		dst_a+= dst_a_pitch_diff;
 	}
 }
 

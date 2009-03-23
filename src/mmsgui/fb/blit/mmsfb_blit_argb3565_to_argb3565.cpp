@@ -30,7 +30,7 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_argb3565_to_argb3565(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_blit_argb3565_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 									 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
@@ -39,16 +39,44 @@ void mmsfb_blit_argb3565_to_argb3565(MMSFBExternalSurfaceBuffer *extbuf, int src
 		firsttime = false;
 	}
 
-	// get the first source ptr/pitch
-	unsigned short int *src = (unsigned short int *)extbuf->ptr;
-	int src_pitch = extbuf->pitch;
+	// SRC: point to the first plane (RGB16/RGB565 format)
+	unsigned short int *src = (unsigned short int *)src_planes->ptr;
+	int src_pitch = src_planes->pitch;
 
-	// working for first plane (RGB16/RGB565 format)
-	////////////////////////////////////////////////
+	// SRC: point to the second plane (3 bit alpha (2 pixels per byte, 4 bit per pixel))
+	unsigned char *src_a;
+	int src_a_pitch;
+	if (src_planes->ptr2) {
+		// plane pointer given
+		src_a = (unsigned char *)src_planes->ptr2;
+		src_a_pitch = src_planes->pitch2;
+	}
+	else {
+		// calc plane pointer (after the first plane)
+    	src_a = ((unsigned char *)src_planes->ptr) + src_planes->pitch * src_height;
+    	src_a_pitch = src_planes->pitch / 4;
+	}
+
+	// DST: point to the first plane (RGB16/RGB565 format)
 	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
 	int dst_pitch = dst_planes->pitch;
 
-	// prepare...
+	// DST: point to the second plane (3 bit alpha (2 pixels per byte, 4 bit per pixel))
+	unsigned char *dst_a;
+	int dst_a_pitch;
+	if (dst_planes->ptr2) {
+		// plane pointer given
+		dst_a = (unsigned char *)dst_planes->ptr2;
+		dst_a_pitch = dst_planes->pitch2;
+	}
+	else {
+		// calc plane pointer (after the first plane)
+    	dst_a = ((unsigned char *)dst_planes->ptr) + dst_planes->pitch * dst_height;
+    	dst_a_pitch = dst_planes->pitch / 4;
+	}
+
+	// working for first plane (RGB16/RGB565 format)
+	////////////////////////////////////////////////
 	int src_pitch_pix = src_pitch >> 1;
 	int dst_pitch_pix = dst_pitch >> 1;
 	src+= sx + sy * src_pitch_pix;
@@ -72,6 +100,48 @@ void mmsfb_blit_argb3565_to_argb3565(MMSFBExternalSurfaceBuffer *extbuf, int src
 		// go to the next line
 		src+= src_pitch_pix;
 		dst+= dst_pitch_pix;
+	}
+
+
+	// working for second plane (3 bit alpha (2 pixels per byte, 4 bit per pixel))
+	//////////////////////////////////////////////////////////////////////////////
+	src_a+= (sx >> 1) + sy * src_a_pitch;
+	dst_a+= (dx >> 1) + dy * dst_a_pitch;
+
+	// check odd/even
+	bool odd_left 	= (dx & 0x01);
+	bool odd_right 	= ((dx + sw) & 0x01);
+
+	//TODO: not even...
+
+
+
+	// calc even positions...
+	if (odd_left) {
+		// odd left
+		dx++;
+		sw--;
+		src_a++;
+		dst_a++;
+	}
+
+	if (odd_right) {
+		// odd right
+		sw--;
+	}
+
+	// now we are even aligned and can go through a optimized loop
+	////////////////////////////////////////////////////////////////////////
+	src_end = (unsigned short int *)(src_a + src_a_pitch * sh);
+
+	// for all lines
+	while (src_a < (unsigned char *)src_end) {
+		// copy the line
+		memcpy(dst_a, src_a, sw >> 1);
+
+		// go to the next line
+		src_a+= src_a_pitch;
+		dst_a+= dst_a_pitch;
 	}
 }
 

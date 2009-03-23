@@ -86,20 +86,57 @@ void mmsfb_fillrectangle_argb3565(MMSFBSurfacePlanes *dst_planes, int dst_height
 
 	// fill second plane (3 bit alpha (2 pixels per byte, 4 bit per pixel))
 	///////////////////////////////////////////////////////////////////////
+	unsigned char *dst_a;
+	int dst_a_pitch;
 	if (dst_planes->ptr2) {
 		// plane pointer given
-		dst = (unsigned short int *)dst_planes->ptr2;
-		dst_pitch = dst_planes->pitch2;
-printf("dddd\n");
+		dst_a = (unsigned char *)dst_planes->ptr2;
+		dst_a_pitch = dst_planes->pitch2;
 	}
 	else {
 		// calc plane pointer (after the first plane)
-    	dst = (unsigned short int *)(((unsigned char *)dst_planes->ptr) + dst_planes->pitch * dst_height);
-    	dst_pitch = dst_planes->pitch / 4;
-printf("ssss\n");
+    	dst_a = (unsigned char *)(((unsigned char *)dst_planes->ptr) + dst_planes->pitch * dst_height);
+    	dst_a_pitch = dst_planes->pitch / 4;
+	}
+	dst_a+= (dx >> 1) + dy * dst_a_pitch;
+
+	// check odd/even
+	bool odd_left 	= (dx & 0x01);
+	bool odd_right 	= ((dx + dw) & 0x01);
+
+	//TODO: not even...
+
+
+
+	// calc even positions...
+	if (odd_left) {
+		// odd left
+		dx++;
+		dw--;
+		dst_a++;
 	}
 
-	memset(dst, 0x44, dst_pitch*480);
+	if (odd_right) {
+		// odd right
+		dw--;
+	}
+
+	// now we are even aligned and can go through a optimized loop
+	////////////////////////////////////////////////////////////////////////
+	dst_end = (unsigned short int *)(dst_a + dst_a_pitch * dh);
+
+	// set two alpha values into one byte
+	SRC = color.a >> 29;
+	SRC|= SRC << 4;
+
+	// for all lines
+	while (dst_a < (unsigned char *)dst_end) {
+		// for all pixels in the line
+		memset(dst_a, SRC, dw >> 1);
+
+		// go to the next line
+		dst_a+= dst_a_pitch;
+	}
 }
 
 
