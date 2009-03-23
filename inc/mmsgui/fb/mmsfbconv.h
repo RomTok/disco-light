@@ -1331,6 +1331,16 @@ void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
+
+//! Fill rectangle ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_argb3565(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						          int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
+
 //! Draw line ARGB.
 /*!
 \author Jens Schneider
