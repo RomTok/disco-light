@@ -69,8 +69,8 @@ MMSRcParser::MMSRcParser() {
     this->graphics.touchrect.w                = 0;
     this->graphics.touchrect.h                = 0;
     this->graphics.pointer                    = MMSFB_PM_FALSE;	// use the mouse pointer, default no
-	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
-	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
+	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;	// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
+	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;	// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
 	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
