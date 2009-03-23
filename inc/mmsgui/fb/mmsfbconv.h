@@ -1157,6 +1157,15 @@ void mmsfb_blit_yv12_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 
 
 
+//! Blit ARGB3565 to ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_argb3565_to_argb3565(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+									 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+
+
 //! Stretch blit ARGB to ARGB.
 /*!
 \author Jens Schneider

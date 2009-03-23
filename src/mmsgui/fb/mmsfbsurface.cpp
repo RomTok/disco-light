@@ -1812,7 +1812,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
 
 	// checking pixelformats...
-	if (src_pixelformat == MMSFB_PF_ARGB) {
+	switch (src_pixelformat) {
+	case MMSFB_PF_ARGB:
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
@@ -2011,9 +2012,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
-	}
-	else
-	if (src_pixelformat == MMSFB_PF_RGB32) {
+
+	case MMSFB_PF_RGB32:
 		// source is RGB32
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
@@ -2037,9 +2037,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
-	}
-	else
-	if (src_pixelformat == MMSFB_PF_RGB16) {
+
+	case MMSFB_PF_RGB16:
 		// source is RGB16 (RGB565)
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
@@ -2063,9 +2062,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
-	}
-	else
-	if (src_pixelformat == MMSFB_PF_AiRGB) {
+
+	case MMSFB_PF_AiRGB:
 		// source is AiRGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
@@ -2153,9 +2151,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
-	}
-	else
-	if (src_pixelformat == MMSFB_PF_AYUV) {
+
+	case MMSFB_PF_AYUV:
 		// source is AYUV
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
@@ -2279,9 +2276,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
-	}
-	else
-	if (src_pixelformat == MMSFB_PF_YV12) {
+
+	case MMSFB_PF_YV12:
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
@@ -2327,10 +2323,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
-	}
 
-	else
-	if (src_pixelformat == MMSFB_PF_RGB24) {
+	case MMSFB_PF_RGB24:
 		// source is RGB24
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
@@ -2395,6 +2389,35 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+
+	case MMSFB_PF_ARGB3565:
+		// source is ARGB3565
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB3565) {
+			// destination is ARGB3565
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_argb3565_to_argb3565(src_planes, src_height,
+											        sx, sy, sw, sh,
+											        &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											        x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	default:
+		// does not match
+		break;
 	}
 
 
@@ -3127,6 +3150,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 		// does not match
 		return false;
+
+	default:
+		// does not match
+		break;
 	}
 
 	// does not match

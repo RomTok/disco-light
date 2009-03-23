@@ -86,10 +86,20 @@ void mmsfb_fillrectangle_argb3565(MMSFBSurfacePlanes *dst_planes, int dst_height
 
 	// fill second plane (3 bit alpha (2 pixels per byte, 4 bit per pixel))
 	///////////////////////////////////////////////////////////////////////
-	dst = (unsigned short int *)dst_planes->ptr2;
-	dst_pitch = dst_planes->pitch2;
+	if (dst_planes->ptr2) {
+		// plane pointer given
+		dst = (unsigned short int *)dst_planes->ptr2;
+		dst_pitch = dst_planes->pitch2;
+printf("dddd\n");
+	}
+	else {
+		// calc plane pointer (after the first plane)
+    	dst = (unsigned short int *)(((unsigned char *)dst_planes->ptr) + dst_planes->pitch * dst_height);
+    	dst_pitch = dst_planes->pitch / 4;
+printf("ssss\n");
+	}
 
-	memset(dst, 0x44, 384*480);
+	memset(dst, 0x44, dst_pitch*480);
 }
 
 
