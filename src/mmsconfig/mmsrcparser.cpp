@@ -74,6 +74,11 @@ MMSRcParser::MMSRcParser() {
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
 	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
+	
+	this->language.addtranslations = false;
+	this->language.defaulttargetlang = MMSLANG_UKN;
+	this->language.sourcelang = MMSLANG_UKN;
+
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -141,11 +146,13 @@ void MMSRcParser::parseFile(string filename) {
 void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		&global,
 		                   MMSConfigDataDB     		&configdb,
 		                   MMSConfigDataDB     		&datadb,
-		                   MMSConfigDataGraphics    &graphics) {
+		                   MMSConfigDataGraphics    &graphics,
+		                   MMSConfigDataLanguage    &language) {
 	global   = this->global;
 	configdb = this->configdb;
 	datadb   = this->datadb;
 	graphics = this->graphics;
+	language = this->language;
 }
 
 /**
@@ -225,6 +232,41 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdowncmd = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "inputmode"))
             this->global.inputmode = string((const char *)parvalue);
+		else
+			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
+
+	    xmlFree(parname);
+	    xmlFree(parvalue);
+	}
+}
+
+void MMSRcParser::throughLanguage(xmlNode* node) {
+	xmlNode *cur_node = NULL;
+	xmlChar *parname;
+	xmlChar *parvalue;
+
+	node = node->xmlChildrenNode;
+
+	for (cur_node = node; cur_node; cur_node = cur_node->next) {
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
+		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
+			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
+			continue;
+		}
+
+    	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
+    	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
+
+    	if(parname == NULL && parvalue == NULL)
+    		continue;
+
+	    if(!xmlStrcmp(parname, (const xmlChar *) "sourcelang"))
+	    	this->language.sourcelang = strToLang((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "defaultdestlang"))
+            this->language.defaulttargetlang = strToLang((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "addtranslations"))
+            this->language.addtranslations = strToBool(string((const char *)parvalue));
 		else
 			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
 
@@ -627,3 +669,16 @@ void MMSRcParser::throughFile(xmlNode* node) {
 	}
 }
 
+MMS_LANGUAGE_TYPE MMSRcParser::strToLang(const char *value) {
+	if(strncasecmp(value,"ger",3)==0) {
+		return MMSLANG_GER;
+	}
+	if(strncasecmp(value,"msgid",3)==0) {
+		return MMSLANG_MSG;
+	}
+	if(strncasecmp(value,"eng",3)==0) {
+		return MMSLANG_ENG;
+	}
+
+	return MMSLANG_UKN;
+}

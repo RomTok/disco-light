@@ -40,12 +40,17 @@ class MMSRcParser {
     	MMSConfigDataGlobal		global;
     	MMSConfigDataDB     	configdb, datadb;
     	MMSConfigDataGraphics	graphics;
+    	MMSConfigDataLanguage	language;
 
     	void checkVersion(xmlNode* node);
     	void throughGlobal(xmlNode* node);
     	void throughDBSettings(xmlNode* node);
     	void throughGraphics(xmlNode* node);
+    	void throughLanguage(xmlNode* node);
     	void throughFile(xmlNode* node);
+    	
+    	/* helper */ 
+    	MMS_LANGUAGE_TYPE strToLang(const char *value);
 
 	public:
 		MMSRcParser();
@@ -55,7 +60,8 @@ class MMSRcParser {
 		void getMMSRc(MMSConfigDataGlobal 	&global,
 			          MMSConfigDataDB     	&configdb,
 			          MMSConfigDataDB     	&datadb,
-			          MMSConfigDataGraphics	&graphics);
+			          MMSConfigDataGraphics	&graphics,
+			          MMSConfigDataLanguage &language);
 };
 
 MMS_CREATEERROR(MMSRcParserError);

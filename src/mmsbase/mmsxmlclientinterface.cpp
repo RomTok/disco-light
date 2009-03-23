@@ -43,6 +43,7 @@ bool MMSXMLClientInterface::parseAnswer(string *answer, int *rc, string *error) 
     xmlTextReaderPtr reader;
     bool             ret = false;
 
+    xmlInitParser();
     if(xmlReaderNewMemory(reader,              /* reader             */
                           answer->c_str(),     /* buffer             */
                           answer->length(),    /* size               */
