@@ -1958,6 +1958,25 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			return false;
 		}
 		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB3565) {
+			// destination is ARGB3565
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// convert without alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_argb_to_argb3565((unsigned int *)src_planes->ptr, src_planes->pitch, src_height,
+											    sx, sy, sw, sh,
+											    &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											    x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
