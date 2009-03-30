@@ -31,7 +31,10 @@
 
 #ifdef LIBXML_READER_ENABLED
 #include "mmsbase/mmsxmlclientinterface.h"
-#include <libxml/xmlreader.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+
+#include "mmstools/tools.h"
 
 MMSXMLClientInterface::MMSXMLClientInterface(string host, unsigned int port) {
     LIBXML_TEST_VERSION;
@@ -40,36 +43,31 @@ MMSXMLClientInterface::MMSXMLClientInterface(string host, unsigned int port) {
 }
 
 bool MMSXMLClientInterface::parseAnswer(string *answer, int *rc, string *error) {
-    xmlTextReaderPtr reader;
     bool             ret = false;
+    xmlDocPtr		 doc;
 
     xmlInitParser();
-    if(xmlReaderNewMemory(reader,              /* reader             */
-                          answer->c_str(),     /* buffer             */
-                          answer->length(),    /* size               */
-                          NULL,                /* base URL           */
-                          NULL,                /* encoding           */
-                          XML_PARSE_NOBLANKS)  /* remove blank nodes */
-     == -1) {
-        DEBUGMSG("MMSXMLClientInterface", "Error initializing xmlReader()");
+    doc = xmlReadMemory(answer->c_str(),answer->length(),"memory.xml",NULL,0);
+
+    if(!doc) {
+        DEBUGMSG("MMSXMLClientInterface", "Error initializing doc()");
         return false;
     }
+    if(checkRoot(doc, rc, error)) {
+        ret = true;
+	}
 
-    if(xmlTextReaderRead(reader)) {
-        if(checkRoot(reader, rc, error))
-            ret = true;
-    }
-
-    xmlFreeTextReader(reader);
+	xmlFreeDoc(doc);
 
     return ret;
 }
 
-bool MMSXMLClientInterface::checkRoot(xmlTextReaderPtr reader, int *rc, string *error) {
+bool MMSXMLClientInterface::checkRoot(xmlDocPtr doc, int *rc, string *error) {
     xmlChar *name, *attr;
 
-    if (!reader) return false;
-
+    if (!doc) 
+    	return false;
+#if 0
     /* check root element */
     name = (xmlChar*)xmlTextReaderConstName(reader);
     if(!name || !xmlStrEqual(name, (const xmlChar*)"ret")) {
@@ -88,7 +86,7 @@ bool MMSXMLClientInterface::checkRoot(xmlTextReaderPtr reader, int *rc, string *
     attr = xmlTextReaderGetAttribute(reader, (const xmlChar*)"error");
     if(attr) *error = strdup((const char*)attr);
     xmlFree(attr);
-
+#endif
     return true;
 }
 
@@ -104,6 +102,7 @@ bool MMSXMLClientInterface::funcSendEvent(string heading, int pluginid, int *rc,
 	tcl->connectToServer();
 	tcl->sendAndReceive(rbuf, &abuf);
 
+	DEBUGMSG("MMSBASE", "got response %s", abuf.c_str());
 	/* parse answer */
 	if(parseAnswer(&abuf, rc, error)) {
 		/* parse for more values here */
