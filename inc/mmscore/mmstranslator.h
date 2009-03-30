@@ -26,44 +26,32 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSMORPHINERCPARSER_H_
-#define MMSMORPHINERCPARSER_H_
+#ifndef MMSTRANSLATOR_H_
+#define MMSTRANSLATOR_H_
 
-#include "mmstools/mmstools.h"
+#include <map>
+#include <string>
+
 #include "mmsconfig/mmsconfigdata.h"
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 
+typedef std::map<MMS_LANGUAGE_TYPE,std::map<std::string, std::string> > MMSTRANSLATION_MAP;
 
-class MMSRcParser {
-	private:
-    	MMSConfigDataGlobal		global;
-    	MMSConfigDataDB     	configdb, datadb;
-    	MMSConfigDataGraphics	graphics;
-    	MMSConfigDataLanguage	language;
+#define TRANSLATION_FILE_NAME "translation"
 
-    	void checkVersion(xmlNode* node);
-    	void throughGlobal(xmlNode* node);
-    	void throughDBSettings(xmlNode* node);
-    	void throughGraphics(xmlNode* node);
-    	void throughLanguage(xmlNode* node);
-    	void throughFile(xmlNode* node);
-    	
-    	/* helper */ 
-    	MMS_LANGUAGE_TYPE strToLang(const char *value);
+class MMSTranslator {
+	static MMS_LANGUAGE_TYPE sourcelang;
+	static MMS_LANGUAGE_TYPE targetlang;
+	static MMSTRANSLATION_MAP transmap;
+	static bool addtranslations; 
+
+	void loadTransLations();
 
 	public:
-		MMSRcParser();
-		~MMSRcParser();
+		MMSTranslator();
+		~MMSTranslator();
 
-		void parseFile(string filename);
-		void getMMSRc(MMSConfigDataGlobal 	&global,
-			          MMSConfigDataDB     	&configdb,
-			          MMSConfigDataDB     	&datadb,
-			          MMSConfigDataGraphics	&graphics,
-			          MMSConfigDataLanguage &language);
+		void translate(std::string &source, std::string &dest);
+		void setTargetLang(MMS_LANGUAGE_TYPE lang);
 };
 
-MMS_CREATEERROR(MMSRcParserError);
-
-#endif /*MMSMORPHINERCPARSER_H_*/
+#endif /* MMSTRANSLATOR_H_ */

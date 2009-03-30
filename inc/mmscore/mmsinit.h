@@ -60,4 +60,6 @@ bool registerSwitcher(IMMSSwitcher *switcher);
 
 IMMSWindowManager *getWindowManager();
 
+MMSPluginManager *getPluginManager();
+
 #endif /*MMSINIT_H_*/

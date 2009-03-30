@@ -52,9 +52,6 @@ class MMSFBDevDavinci : public MMSFBDev {
         bool testLayer(int layer_id);
         bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
 
-        bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
-        bool getFrameBufferPtr(int layer_id, void **ptr, int *pitch, int *width, int *height);
-
     private:
 
         bool vtGetFd(int *fd);

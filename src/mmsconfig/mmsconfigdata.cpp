@@ -43,11 +43,13 @@ MMSConfigDataDB::MMSConfigDataDB (const string database) :
 MMSConfigData::MMSConfigData(MMSConfigDataGlobal 	global,
                              MMSConfigDataDB     	configdb,
                              MMSConfigDataDB     	datadb,
-                             MMSConfigDataGraphics  graphics) {
+                             MMSConfigDataGraphics  graphics,
+                             MMSConfigDataLanguage	language) {
     this->global   = global;
     this->configdb = configdb;
     this->datadb   = datadb;
     this->graphics = graphics;
+    this->language = language;
 #ifdef HARD_PREFIX
     this->global.prefix = HARD_PREFIX;
 #endif
@@ -275,8 +277,22 @@ const MMSFBFullScreenMode MMSConfigData::getFullScreen() {
 	return this->graphics.fullscreen;
 }
 
+const MMS_LANGUAGE_TYPE MMSConfigData::getSourceLang() {
+	return this->language.sourcelang;
+}
+
+const MMS_LANGUAGE_TYPE MMSConfigData::getDefaultTargetLang() {
+	return this->language.defaulttargetlang;
+}
+
+const bool			    MMSConfigData::getAddTranslations() {
+	return this->language.addtranslations;
+}
+
+
 /* static variables */
 MMSConfigDataGlobal 	MMSConfigData::global;
 MMSConfigDataDB     	MMSConfigData::configdb;
 MMSConfigDataDB     	MMSConfigData::datadb;
 MMSConfigDataGraphics   MMSConfigData::graphics;
+MMSConfigDataLanguage   MMSConfigData::language;

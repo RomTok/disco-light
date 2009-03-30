@@ -640,9 +640,9 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		}
 
 		// get fb memory ptr
-		MMSFBExternalSurfaceBuffer extbuf;
-		memset(&extbuf, 0, sizeof(extbuf));
-		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, &extbuf.ptr, &extbuf.pitch, &this->config.w, &this->config.h)) {
+		MMSFBSurfacePlanes planes;
+		memset(&planes, 0, sizeof(planes));
+		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, &planes, &this->config.w, &this->config.h)) {
 			MMSFB_SetError(0, "getFrameBufferPtr() failed");
 			return false;
 		}
@@ -651,7 +651,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		this->config.options = MMSFB_LO_NONE;
 
 		// create a new surface instance for the framebuffer memory
-		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &extbuf);
+		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &planes);
 		if (!this->mmsfbdev_surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
@@ -831,9 +831,10 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
     	this->surface->clear();
+		this->surface->flip();
     	while (bufnum > 1) {
-			this->surface->flip();
 			this->surface->clear();
+			this->surface->flip();
 			bufnum--;
 		}
 
@@ -863,7 +864,9 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
     INITCHECK;
 
     if (pixelformat == MMSFB_PF_NONE) {
-        pixelformat = this->config.pixelformat;
+    	pixelformat = this->config.surface_pixelformat;
+
+/*toberemoved        pixelformat = this->config.pixelformat;
         if (!isAlphaPixelFormat(pixelformat)) {
         	// the gui internally needs surfaces with alpha channel
         	// now we have to decide if we are working in RGB or YUV color space
@@ -883,6 +886,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
             // the gui internally needs non-indexed surfaces
             // so switch all indexed pixelformats to ARGB
             pixelformat = MMSFB_PF_ARGB;
+*/
     }
 
     if (firsttime_createsurface) {
@@ -906,6 +910,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         return false;
     }
 
+#ifdef sfsdgd_toberemoved
     /* get pixelformat */
     if (pixelformat == MMSFB_PF_NONE)
         pixelformat = this->config.pixelformat;
@@ -943,6 +948,29 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
             /* switch all indexed pixelformats to ARGB */
             pixelformat = MMSFB_PF_ARGB;
     }
+#endif
+
+
+    if (pixelformat == MMSFB_PF_NONE) {
+    	if (usealpha) {
+    		// use preset window pixelformat
+    		pixelformat = this->config.window_pixelformat;
+    	}
+    	else {
+    		// use layer pixelformat
+    		pixelformat = this->config.pixelformat;
+    	    if (isAlphaPixelFormat(pixelformat)) {
+				// switch all alpha pixelformats to RGB32
+				pixelformat = MMSFB_PF_RGB32;
+    	    }
+    	    else
+    	    if (isIndexedPixelFormat(pixelformat)) {
+				// switch all indexed pixelformats to RGB32
+				pixelformat = MMSFB_PF_RGB32;
+    	    }
+    	}
+    }
+
 
     if (usealpha) {
 	    if (firsttime_createwindow_usealpha) {

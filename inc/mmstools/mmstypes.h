@@ -31,6 +31,29 @@
 
 #include "mmstools/base.h"
 
+// plane description.........................................................
+
+//! Describes up to 3 planes of an surface buffer.
+typedef struct {
+	//! first plane
+	void	*ptr;
+	//! pitch of first plane
+	int 	pitch;
+	//! second plane or NULL if surface has only one plane
+	void	*ptr2;
+	//! pitch of second plane
+	int 	pitch2;
+	//! third plane or NULL if surface has only one or two planes
+	void	*ptr3;
+	//! pitch of third plane
+	int 	pitch3;
+} MMSFBSurfacePlanes;
+
+//! for compatibility reason
+#define MMSFBExternalSurfaceBuffer	MMSFBSurfacePlanes
+
+
+
 // backend types.............................................................
 
 //! supported backends
@@ -292,10 +315,10 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_LAYER	"RGB16, RGB24, RGB32, ARGB, YUY2, UYVY, I420, YV12, AiRGB, NV12, NV16, NV21, AYUV, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, LUT8, ARGB2554, ARGB4444, ARGB3565"
 
 //! list of valid pixelformats used for windows surfaces
-#define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV"
+#define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV, empty string for auto detection"
 
 //! list of valid pixelformats used for worker surfaces
-#define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV"
+#define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV, empty string for auto detection"
 
 //! list of valid pixelformats for XVSHM
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM	"YV12"
@@ -304,7 +327,7 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM	"RGB32"
 
 //! list of valid pixelformats for DAVINCIFB, OSD Layer
-#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0	"ARGB3565"
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0	"ARGB3565, RGB16"
 
 //! list of valid pixelformats for DAVINCIFB, Video Layer
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1	"YUY2"

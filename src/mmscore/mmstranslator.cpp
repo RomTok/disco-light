@@ -26,44 +26,69 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSMORPHINERCPARSER_H_
-#define MMSMORPHINERCPARSER_H_
-
-#include "mmstools/mmstools.h"
+#include "mmscore/mmstranslator.h"
 #include "mmsconfig/mmsconfigdata.h"
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include "mmsconfig/mmspluginservice.h"
 
+#include <string.h>
+MMS_LANGUAGE_TYPE MMSTranslator::sourcelang = MMSLANG_UKN;
+MMS_LANGUAGE_TYPE MMSTranslator::targetlang = MMSLANG_UKN;
+MMSTRANSLATION_MAP MMSTranslator::transmap;
 
-class MMSRcParser {
-	private:
-    	MMSConfigDataGlobal		global;
-    	MMSConfigDataDB     	configdb, datadb;
-    	MMSConfigDataGraphics	graphics;
-    	MMSConfigDataLanguage	language;
+MMSTranslator::MMSTranslator() {
+	if(this->sourcelang == MMSLANG_UKN) {
+		MMSConfigData config;
+		string lang;
+		lang = config.getSourceLang();
+		if(strncasecmp(lang.c_str(),"eng",3)==0) {
+			this->sourcelang = MMSLANG_ENG;
+		} else if(strncasecmp(lang.c_str(),"ger",3)==0) {
+			this->sourcelang = MMSLANG_GER;
+		} else if(strncasecmp(lang.c_str(),"msg",3)==0) {
+			this->sourcelang = MMSLANG_MSG;
+		}
+	}
+	if(this->targetlang == MMSLANG_UKN) {
+		MMSConfigData config;
+		string lang;
+		lang = config.getDefaultTargetLang();
+		if(strncasecmp(lang.c_str(),"eng",3)==0) {
+			this->targetlang = MMSLANG_ENG;
+		} else if(strncasecmp(lang.c_str(),"ger",3)==0) {
+			this->targetlang = MMSLANG_GER;
+		} else if(strncasecmp(lang.c_str(),"msg",3)==0) {
+			this->targetlang = MMSLANG_MSG;
+		}
+	}
+}
 
-    	void checkVersion(xmlNode* node);
-    	void throughGlobal(xmlNode* node);
-    	void throughDBSettings(xmlNode* node);
-    	void throughGraphics(xmlNode* node);
-    	void throughLanguage(xmlNode* node);
-    	void throughFile(xmlNode* node);
+MMSTranslator::~MMSTranslator() {
+
+}
+
+void MMSTranslator::loadTransLations() {
+	MMSConfigData config;
+    DataSource source(config.getConfigDBDBMS(),
+					  config.getConfigDBDatabase(),
+					  config.getConfigDBAddress(),
+					  config.getConfigDBPort(),
+					  config.getConfigDBUser(),
+					  config.getConfigDBPassword());
+
+    MMSPluginService service(&source);
+    vector<MMSPluginData *> data = service.getAllPlugins();
+
+    for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
     	
-    	/* helper */ 
-    	MMS_LANGUAGE_TYPE strToLang(const char *value);
+    }
+    
+        
+}
 
-	public:
-		MMSRcParser();
-		~MMSRcParser();
+void MMSTranslator::translate(string &source, string &dest) {
 
-		void parseFile(string filename);
-		void getMMSRc(MMSConfigDataGlobal 	&global,
-			          MMSConfigDataDB     	&configdb,
-			          MMSConfigDataDB     	&datadb,
-			          MMSConfigDataGraphics	&graphics,
-			          MMSConfigDataLanguage &language);
-};
+}
 
-MMS_CREATEERROR(MMSRcParserError);
-
-#endif /*MMSMORPHINERCPARSER_H_*/
+void MMSTranslator::setTargetLang(MMS_LANGUAGE_TYPE lang) {
+	this->targetlang = lang;
+}

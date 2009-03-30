@@ -69,11 +69,16 @@ MMSRcParser::MMSRcParser() {
     this->graphics.touchrect.w                = 0;
     this->graphics.touchrect.h                = 0;
     this->graphics.pointer                    = MMSFB_PM_FALSE;	// use the mouse pointer, default no
-	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
-	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;		// supported values: ARGB or AYUV, NONE means autodetection
+	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;	// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
+	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;	// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
 	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
+	
+	this->language.addtranslations = false;
+	this->language.defaulttargetlang = MMSLANG_UKN;
+	this->language.sourcelang = MMSLANG_UKN;
+
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -141,11 +146,13 @@ void MMSRcParser::parseFile(string filename) {
 void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		&global,
 		                   MMSConfigDataDB     		&configdb,
 		                   MMSConfigDataDB     		&datadb,
-		                   MMSConfigDataGraphics    &graphics) {
+		                   MMSConfigDataGraphics    &graphics,
+		                   MMSConfigDataLanguage    &language) {
 	global   = this->global;
 	configdb = this->configdb;
 	datadb   = this->datadb;
 	graphics = this->graphics;
+	language = this->language;
 }
 
 /**
@@ -225,6 +232,41 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdowncmd = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "inputmode"))
             this->global.inputmode = string((const char *)parvalue);
+		else
+			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
+
+	    xmlFree(parname);
+	    xmlFree(parvalue);
+	}
+}
+
+void MMSRcParser::throughLanguage(xmlNode* node) {
+	xmlNode *cur_node = NULL;
+	xmlChar *parname;
+	xmlChar *parvalue;
+
+	node = node->xmlChildrenNode;
+
+	for (cur_node = node; cur_node; cur_node = cur_node->next) {
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
+		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
+		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
+			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
+			continue;
+		}
+
+    	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
+    	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
+
+    	if(parname == NULL && parvalue == NULL)
+    		continue;
+
+	    if(!xmlStrcmp(parname, (const xmlChar *) "sourcelang"))
+	    	this->language.sourcelang = strToLang((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "defaultdestlang"))
+            this->language.defaulttargetlang = strToLang((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "addtranslations"))
+            this->language.addtranslations = strToBool(string((const char *)parvalue));
 		else
 			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
 
@@ -488,14 +530,17 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
         	string val = string((const char *)parvalue);
             if ((this->graphics.graphicswindowpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
             	string val2 = strToUpr(val);
-            	if ((val2 != "AUTODETECT") && (val2 != "AUTO"))
+            	if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
             		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_WINDOWS, "");
             }
 	    }
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat")) {
         	string val = string((const char *)parvalue);
-            if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
-           		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
+            if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
+            	string val2 = strToUpr(val);
+            	if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
+            		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
+            }
 	    }
         else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
             this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
@@ -574,7 +619,8 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		case MMSFB_OT_DAVINCIFB:
 			if (this->graphics.videolayerpixelformat != MMSFB_PF_YUY2)
 				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
-			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
+			if   ((this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
+				&&(this->graphics.graphicslayerpixelformat != MMSFB_PF_RGB16))
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
 		default:
@@ -623,3 +669,16 @@ void MMSRcParser::throughFile(xmlNode* node) {
 	}
 }
 
+MMS_LANGUAGE_TYPE MMSRcParser::strToLang(const char *value) {
+	if(strncasecmp(value,"ger",3)==0) {
+		return MMSLANG_GER;
+	}
+	if(strncasecmp(value,"msgid",3)==0) {
+		return MMSLANG_MSG;
+	}
+	if(strncasecmp(value,"eng",3)==0) {
+		return MMSLANG_ENG;
+	}
+
+	return MMSLANG_UKN;
+}

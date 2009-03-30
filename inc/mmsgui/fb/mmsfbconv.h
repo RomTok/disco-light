@@ -32,25 +32,6 @@
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
 
-//! Describes up to 3 planes of an surface buffer.
-typedef struct {
-	//! first plane
-	void	*ptr;
-	//! pitch of first plane
-	int 	pitch;
-	//! second plane or NULL if surface has only one plane
-	void	*ptr2;
-	//! pitch of second plane
-	int 	pitch2;
-	//! third plane or NULL if surface has only one or two planes
-	void	*ptr3;
-	//! pitch of third plane
-	int 	pitch3;
-} MMSFBSurfacePlanes;
-
-//! for compatibility reason
-#define MMSFBExternalSurfaceBuffer	MMSFBSurfacePlanes
-
 //#define MMSFB_CONV_RGB2Y(r,g,b) ((((66*r+129*g+25*b+128)>>8)+16) & 0xff)
 //#define MMSFB_CONV_RGB2U(r,g,b) ((((-38*r-74*g+112*b+128)>>8)+128) & 0xff)
 //#define MMSFB_CONV_RGB2V(r,g,b) ((((112*r-94*g-18*b+128)>>8)+128) & 0xff)
@@ -1176,6 +1157,23 @@ void mmsfb_blit_yv12_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 
 
 
+//! Blit ARGB3565 to ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_argb3565_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+//! Blit ARGB to ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+								 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+
+
+
 //! Stretch blit ARGB to ARGB.
 /*!
 \author Jens Schneider
@@ -1348,6 +1346,16 @@ void mmsfb_fillrectangle_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_he
 */
 void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
+
+//! Fill rectangle ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_argb3565(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						          int dx, int dy, int dw, int dh, MMSFBColor color);
+
 
 
 //! Draw line ARGB.

@@ -33,6 +33,14 @@
 
 using namespace std;
 
+typedef enum {
+	MMSLANG_UKN,
+	MMSLANG_GER,
+	MMSLANG_ENG,
+	MMSLANG_MSG
+} MMS_LANGUAGE_TYPE;
+
+
 typedef struct {
     int x;
     int y;
@@ -94,18 +102,27 @@ class MMSConfigDataGraphics {
 	    MMSFBFullScreenMode		fullscreen;
 };
 
+class MMSConfigDataLanguage {
+	public:
+		MMS_LANGUAGE_TYPE sourcelang;
+		MMS_LANGUAGE_TYPE defaulttargetlang;
+		bool			  addtranslations;
+};
+
 class MMSConfigData {
     private:
     	static MMSConfigDataGlobal 		global;
     	static MMSConfigDataDB     		configdb, datadb;
     	static MMSConfigDataGraphics    graphics;
+    	static MMSConfigDataLanguage	language;
 
     public:
         /* call this to set the values */
         MMSConfigData(MMSConfigDataGlobal 	global,
                       MMSConfigDataDB     	configdb,
                       MMSConfigDataDB     	datadb,
-                      MMSConfigDataGraphics graphics);
+                      MMSConfigDataGraphics graphics,
+                      MMSConfigDataLanguage	language);
 
         /* call if you want to read the values */
         MMSConfigData();
@@ -162,6 +179,12 @@ class MMSConfigData {
         const bool   getExtendedAccel();
         const string getAllocMethod();
         const MMSFBFullScreenMode   getFullScreen();
+        
+        /* language section getters */
+    	const MMS_LANGUAGE_TYPE getSourceLang();
+    	const MMS_LANGUAGE_TYPE getDefaultTargetLang();
+    	const bool			    getAddTranslations();
+
 };
 
 #endif /*MMSCONFIGDATA_H_*/

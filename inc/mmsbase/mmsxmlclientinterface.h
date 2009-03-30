@@ -42,7 +42,7 @@ class MMSXMLClientInterface {
 		MMSXMLClientInterface(string host, unsigned int port);
 
         bool parseAnswer(string *answer, int *rc, string *error);
-		bool checkRoot(xmlTextReaderPtr reader, int *rc, string *error);
+		bool checkRoot(xmlDocPtr doc, int *rc, string *error);
 		bool funcSendEvent(string heading, int pluginid, int *rc, string *error);
 };
 
