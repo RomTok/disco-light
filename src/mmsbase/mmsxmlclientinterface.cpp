@@ -99,7 +99,10 @@ bool MMSXMLClientInterface::funcSendEvent(string heading, int pluginid, int *rc,
 	rbuf+= "/>";
 
 	/* call server */
-	tcl->connectToServer();
+	if(!tcl->connectToServer()) {
+		DEBUGMSG("MMSBASE", "connection to server failed");
+	}
+	
 	tcl->sendAndReceive(rbuf, &abuf);
 
 	DEBUGMSG("MMSBASE", "got response %s", abuf.c_str());

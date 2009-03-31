@@ -277,6 +277,11 @@ const MMSFBFullScreenMode MMSConfigData::getFullScreen() {
 	return this->graphics.fullscreen;
 }
 
+const bool   MMSConfigData::getHideApplication() {
+	return this->graphics.hideapplication;
+}
+
+
 const MMS_LANGUAGE_TYPE MMSConfigData::getSourceLang() {
 	return this->language.sourcelang;
 }

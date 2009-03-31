@@ -58,7 +58,7 @@ void MMSTCPServer::threadMain() {
 	fd_set				errorfds;
 	struct timeval		timeout;
 	int					new_s;
-	socklen_t			saclen;
+	socklen_t			saclen = sizeof(struct sockaddr_in);
 
 	/* get host ip in network byte order */
 	he = gethostbyname(this->host.c_str());
@@ -76,6 +76,7 @@ void MMSTCPServer::threadMain() {
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(this->port);
 	sa.sin_addr.s_addr = inet_addr(this->hostip.c_str());
+	printf("\n bind at %d\n",this->port);
 	printf("\n bind at %d\n",sa.sin_port);
 
 	if (bind(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
@@ -98,16 +99,24 @@ void MMSTCPServer::threadMain() {
 		timeout.tv_usec = 0;
 
 		/* check socket */
-		if (select(this->s+1, &readfds, &writefds, &errorfds, &timeout)<0) return;
+		if (select(this->s+1, &readfds, &writefds, &errorfds, &timeout)<0) { 
+			DEBUGMSG("MMSTCPServer", "select failed");
+			return;
+		}
 		if (FD_ISSET(this->s, &readfds)) {
 			/* going to accept the new connection */
-			if ((new_s = accept(this->s, (struct sockaddr *)&sac, &saclen))<0) continue;
+			if ((new_s = accept(this->s, (struct sockaddr *)&sac, &saclen))<0) {
+				DEBUGMSG("MMSTCPServer", "accept failed");
+				continue;
+			}
 
+			DEBUGMSG("MMSTCPServer", "check st_size");
 			/* call next server thread */
 			if (this->st_size<=0) {
 				close(new_s);
 				continue;
 			}
+			DEBUGMSG("MMSTCPServer", "set and start thread");
 			if (this->st_cnt >= this->st_size) this->st_cnt=0;
 			this->sthreads.at(this->st_cnt)->setSocket(new_s);
 			this->sthreads.at(this->st_cnt)->start();
@@ -124,7 +133,7 @@ void MMSTCPServer::threadMain() {
 			return;
 		}
 		else {
-			/* timeout */
+			//DEBUGMSG("MMSTCPServer", "select timeout");
 		}
 	}
 }

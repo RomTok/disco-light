@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <mmstools/tools.h>
 
 MMSTCPServerThread::MMSTCPServerThread(MMSServerInterface *interface, int s, string identity) : MMSThread(identity) {
 	this->interface = interface;
@@ -47,6 +48,8 @@ void MMSTCPServerThread::threadMain() {
 	char 	mybuf[4096+1];
 	int		len, from;
 
+	DEBUGMSG("MMSTCPServerThread", "process TCP Request");
+	
 	/* check somthing */
 	if (!this->s) return;
 	if (!this->interface) {
