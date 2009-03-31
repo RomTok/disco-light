@@ -349,7 +349,9 @@ conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
 conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
-conf.checkSimpleLib(['freetype2'], 'freetype/freetype.h')
+conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
+if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
+	conf.env['libiconv'] = True
 
 # checks required if building DirectFB backend
 if('dfb' in env['graphics']):
@@ -442,6 +444,8 @@ if 'install' in BUILD_TARGETS:
 	else:
 		disko_pc_libs = ''
 	disko_pc_libs    += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
+	if env.has_key('libiconv'):
+		disko_pc_libs += ' -liconv'
 	
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
