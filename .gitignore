@@ -16,6 +16,3 @@ doc/html
 *.pyc
 # ignore mmsinfo.h
 inc/mmsinfo/mmsinfo.h
-# ignore my own project files
-.cproject
-.project
