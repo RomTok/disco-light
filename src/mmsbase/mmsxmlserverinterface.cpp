@@ -44,54 +44,60 @@ MMSXMLServerInterface::~MMSXMLServerInterface() {
 bool MMSXMLServerInterface::processRequest(string *request, string *answer) {
 	*answer = "";
 
-    xmlTextReaderPtr reader;
+	xmlInitParser();
+    xmlDocPtr doc =NULL;
 
-    if(!request || !answer) return false;
+    DEBUGMSG("MMSXMLServerInterface","got request %s", request->c_str());
+    if(!request || !answer) { 
+        DEBUGMSG("MMSXMLServerInterface","processRequest() error in cmdline");
+    	return false;
+    }
 
-    if(xmlReaderNewMemory(reader,              /* reader             */
-                          request->c_str(),    /* buffer             */
-                          request->length(),   /* size               */
-                          NULL,                /* base URL           */
-                          NULL,                /* encoding           */
-                          XML_PARSE_NOBLANKS)  /* remove blank nodes */
-     == -1) {
+    DEBUGMSG("MMSXMLServerInterface","new reader");
+    doc = xmlReadMemory(request->c_str(),request->length(),"memory.xml",NULL,0);
+    
+    if(!doc) {
         *answer = "<ret error=\"Problems with xml request.\"/>";
         DEBUGMSG("MMSXMLServerInterface", "Error initializing xmlReader()");
         return false;
     }
 
-    if(xmlTextReaderRead(reader)) {
-        throughDoc(reader, answer);
-        if(*answer == "") *answer = "<ret error=\"Unknown error.\"/>";
-    }
+    DEBUGMSG("MMSXMLServerInterface","throughdoc");
+    throughDoc(doc, answer);
+    if(*answer == "") 
+    		*answer = "<ret error=\"Unknown error.\"/>";
 
-    xmlFreeTextReader(reader);
+    xmlFreeDoc(doc);
 
     return true;
 }
 
-bool MMSXMLServerInterface::throughDoc(xmlTextReaderPtr reader, string *answer) {
-    xmlChar *name;
+bool MMSXMLServerInterface::throughDoc(xmlDocPtr doc, string *answer) {
 
-    if(!reader || !answer) return false;
-
-    /* check root element */
-    name = (xmlChar*)xmlTextReaderConstName(reader);
-    if(!name || !xmlStrEqual(name, (const xmlChar*)"func")) {
-        DEBUGMSG("MMSXMLServerInterface", "The root element must be <func> and not <%s>.", name);
+    if(!doc|| !answer)  {
+        DEBUGMSG("MMSXMLServerInterface","throughdoc, error in cmdline");
         return false;
     }
 
-    return throughFunc(reader, answer);
+    xmlNodePtr root =  xmlDocGetRootElement(doc);
+    if(!root) 
+    	return false;
+    
+    if(xmlStrEqual(root->name, (const xmlChar*)"func")==0) {
+        DEBUGMSG("MMSXMLServerInterface", "The root element must be <func> and not <%s>.", root->name);
+        return false;
+    }
+
+    return throughFunc(root, answer);
 }
 
-bool MMSXMLServerInterface::throughFunc(xmlTextReaderPtr reader, string *answer) {
+bool MMSXMLServerInterface::throughFunc(xmlNodePtr node, string *answer) {
     xmlChar *name;
 
-    if(!reader || !answer) return false;
+    if(!node|| !answer) return false;
 
     /* get name of function to be called */
-    name = xmlTextReaderGetAttribute(reader, (const xmlChar*)"name");
+    name = xmlGetProp(node, (const xmlChar*)"name");
     if(!name) {
 		/* function not specified */
         *answer = "<ret error=\"Function not specified.\"/>";
@@ -107,24 +113,26 @@ bool MMSXMLServerInterface::throughFunc(xmlTextReaderPtr reader, string *answer)
 		return false;
 	}
 
-    return funcSendEvent(reader, answer);
+    return funcSendEvent(node, answer);
 }
 
-bool MMSXMLServerInterface::funcSendEvent(xmlTextReaderPtr reader, string *answer) {
-    xmlChar  *heading, /**pluginid,*/ *name, *value;
+bool MMSXMLServerInterface::funcSendEvent(xmlNodePtr node, string *answer) {
+    xmlChar  *heading; /**pluginid,*/ //*name, *value;
 	MMSEvent *event;
 
-    if(!reader || !answer) return false;
+    if(!node || !answer) return false;
 
     /* get attributes */
-    heading  = xmlTextReaderGetAttribute(reader, (const xmlChar*)"heading");
+    heading  = xmlGetProp(node, (const xmlChar*)"heading");
     //pluginid = xmlTextReaderGetAttribute(reader, (const xmlChar*)"pluginid");
 
     if(!heading /*|| !pluginid*/) return false;
 
 	/* construct event object */
 	event = new MMSEvent((const char*)heading);
-
+	event->send();
+	
+#if 0
     /* through <func/> childs */
     while(xmlTextReaderRead(reader)) {
         name = (xmlChar*)xmlTextReaderConstName(reader);
@@ -138,7 +146,7 @@ bool MMSXMLServerInterface::funcSendEvent(xmlTextReaderPtr reader, string *answe
             }
         }
     }
-
+#endif
 	/* build answer */
 	*answer = "<ret/>";
 

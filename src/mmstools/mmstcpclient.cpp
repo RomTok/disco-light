@@ -27,6 +27,7 @@
  ***************************************************************************/
 
 #include "mmstools/mmstcpclient.h"
+#include "mmstools/tools.h"
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <string.h>
@@ -46,7 +47,12 @@ bool MMSTCPClient::connectToServer() {
 	struct in_addr  	ia;
 	struct sockaddr_in	sa;
 
-	if (this->s>=0) return true;
+	DEBUGMSG("MMSTCPClient", "connect to %s:%u",this->host.c_str(), this->port);
+
+	if (this->s>=0) {
+		DEBUGMSG("MMSTCPClient", "already connected");
+		return true;
+	}
 
 	/* get host ip in network byte order */
 	he = gethostbyname(this->host.c_str());
@@ -56,14 +62,18 @@ bool MMSTCPClient::connectToServer() {
 	this->hostip = inet_ntoa(ia);
 
 	/* get a socket */
-	if ((this->s = socket(AF_INET, SOCK_STREAM, 0))<=0) return false;
+	if ((this->s = socket(AF_INET, SOCK_STREAM, 0))<=0) {
+		DEBUGMSG("MMSTCPClient", "socket() failed");
+		return false;
+	}
 
 	/* connect to hostip */
 	memset(&sa, 0, sizeof(sa));
 	sa.sin_family = AF_INET;
-	sa.sin_port = this->port / 0x100 + (this->port % 0x100) * 0x100;
-	sa.sin_addr = ia;
+	sa.sin_port = htons(this->port); //this->port / 0x100 + (this->port % 0x100) * 0x100;
+	sa.sin_addr.s_addr = inet_addr(this->host.c_str());
 	if (connect(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
+		DEBUGMSG("MMSTCPClient", "connect failed",this->host.c_str(), this->port);
 		disconnectFromServer();
 		return false;
 	}
@@ -83,7 +93,10 @@ bool MMSTCPClient::sendString(string rbuf) {
 	char 	mybuf[128000+1];
 	int		len, from;
 
-	if (!isConnected()) return false;
+	if (!isConnected()) {
+		DEBUGMSG("MMSTCPClient", "in send not connected");
+		return false;
+	}
 
 	/* send request */
 	from = 0;
@@ -94,7 +107,7 @@ bool MMSTCPClient::sendString(string rbuf) {
 		from+=len;
 	} while (len>0);
 	send(this->s, "\0", 1, 0);
-
+	DEBUGMSG("MMSTCPClient", "sent %d bytes", from + 1);
 	return true;
 }
 
@@ -169,10 +182,19 @@ bool MMSTCPClient::peekString(string *abuf, int buflen) {
 bool MMSTCPClient::sendAndReceive(string rbuf, string *abuf) {
 	bool	retcode = false;
 
-	if (!connectToServer()) return false;
-	if (sendString(rbuf))
-		if (receiveString(abuf))
+	if (!connectToServer()) {
+		DEBUGMSG("MMSTCPClient", "cannot connect");
+		return false;
+	}
+	
+	DEBUGMSG("MMSTCPClient", "send string");
+	if (sendString(rbuf)) {
+		DEBUGMSG("MMSTCPClient", "receive string");
+		if (receiveString(abuf)) {
+			DEBUGMSG("MMSTCPClient", "receive string");
 			retcode = true;
+		}
+	}
 	disconnectFromServer();
 
 	return retcode;

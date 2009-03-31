@@ -33,17 +33,18 @@
 
 #include "mmstools/mmstools.h"
 #include <libxml/xmlreader.h>
+#include <libxml/parser.h>
 
 class MMSXMLServerInterface : public MMSServerInterface {
     private:
-		bool throughDoc(xmlTextReaderPtr reader, string *answer);
-		bool throughFunc(xmlTextReaderPtr reader, string *answer);
+		bool throughDoc(xmlDocPtr doc, string *answer);
+		bool throughFunc(xmlNodePtr node, string *answer);
 
 	public:
 		MMSXMLServerInterface();
 		~MMSXMLServerInterface();
 		virtual bool processRequest(string *request, string *answer);
-		bool funcSendEvent(xmlTextReaderPtr reader, string *answer);
+		bool funcSendEvent(xmlNodePtr node, string *answer);
 };
 
 #endif /*MMSXMLSERVERINTERFACE_H_*/

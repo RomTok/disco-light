@@ -100,6 +100,7 @@ class MMSConfigDataGraphics {
 	    bool   					extendedaccel;
 	    string 					allocmethod;
 	    MMSFBFullScreenMode		fullscreen;
+	    bool					hideapplication;
 };
 
 class MMSConfigDataLanguage {
@@ -179,6 +180,7 @@ class MMSConfigData {
         const bool   getExtendedAccel();
         const string getAllocMethod();
         const MMSFBFullScreenMode   getFullScreen();
+        const bool   getHideApplication();
         
         /* language section getters */
     	const MMS_LANGUAGE_TYPE getSourceLang();

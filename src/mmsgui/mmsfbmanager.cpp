@@ -80,7 +80,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	}
 #endif
     if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), config.getXres(), config.getYres(),
-					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getXpos(), config.getYpos()))
+					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getXpos(), config.getYpos(), config.getHideApplication()))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");

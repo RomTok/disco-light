@@ -75,6 +75,7 @@ MMSRcParser::MMSRcParser() {
     this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
     this->graphics.allocmethod                = "";		// the current alloc method
 	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
+	this->graphics.hideapplication            = false;
 	
 	this->language.addtranslations = false;
 	this->language.defaulttargetlang = MMSLANG_UKN;
@@ -551,6 +552,8 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
         	string val = string((const char *)parvalue);
             if ((this->graphics.fullscreen = getMMSFBFullScreenModeFromString(strToUpr(val))) == MMSFB_FSM_NONE)
             	WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES, "");
+        } else if(!xmlStrcmp(parname, (const xmlChar *) "hideapplication")) {
+        	this->graphics.hideapplication = strToBool(string((const char *)parvalue));
         }
         else
 			printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);

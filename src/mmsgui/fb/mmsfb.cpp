@@ -65,7 +65,7 @@ MMSFB::~MMSFB() {
 }
 
 bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h,
-				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer, string appl_name, string appl_icon_name,int x, int y) {
+				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer, string appl_name, string appl_icon_name,int x, int y, bool hidden) {
 
     // check if already initialized
     if (this->initialized) {
@@ -232,14 +232,16 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		clhi.res_class=(char*)"disko";
 		XSetClassHint(this->x_display, this->x_window,&clhi);
 		this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
-		XMapWindow(this->x_display, this->x_window);
-		XEvent x_event;
-		do {
-			XNextEvent(this->x_display, &x_event);
+		if(!hidden) {
+			XMapWindow(this->x_display, this->x_window);
+			XEvent x_event;
+			do {
+				XNextEvent(this->x_display, &x_event);
+			}
+			while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
+	
+			XRaiseWindow(this->x_display, this->x_window);
 		}
-		while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
-		XRaiseWindow(this->x_display, this->x_window);
-
 		// hide X cursor
 //		if(this->outputtype != MMS_OT_XSHM) {
 		if (pointer != MMSFB_PM_EXTERNAL) {
@@ -260,8 +262,8 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 					XFreePixmap(this->x_display, bm_no);
 			XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
 		}
-
-		XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
+		if(!hidden)
+			XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 
 
 		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
