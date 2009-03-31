@@ -91,7 +91,7 @@ if sconsVersion < (0,98,1):
     	BoolOption('messages',      'Build with logfile support', False),
     	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
     	BoolOption('use_sse',       'Use SSE optimization', False),
-    	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'x11']),
+    	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
     	BoolOption('enable_media',  'Build with mmsmedia support', True),
     	BoolOption('enable_flash',  'Build with mmsflash support', False),
@@ -108,7 +108,7 @@ else:
     	BoolVariable('messages',      'Build with logfile support', False),
     	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
     	BoolVariable('use_sse',       'Use SSE optimization', False),
-    	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'x11']),
+    	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
     	BoolVariable('enable_media',  'Build with mmsmedia support', True),
     	BoolVariable('enable_flash',  'Build with mmsflash support', False),
@@ -198,8 +198,9 @@ def checkOptions(context):
 	# check if graphics backend was chosen
 	if not env['graphics']:
 		print '\nPlease choose a graphics backend by using:'
-		print '  \'scons graphics=dfb\' or'
-		print '  \'scons graphics=x11\' or'
+		print '  \'scons graphics=dfb\'   or'
+		print '  \'scons graphics=fbdev\' or'
+		print '  \'scons graphics=x11\'   or'
 		print '  \'scons graphics=all\'\n'
 		Exit(1)
 
@@ -355,6 +356,10 @@ if('dfb' in env['graphics']):
 	conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
 	conf.env['CCFLAGS'].append('-D__HAVE_DIRECTFB__')
 	
+# checks required if building fbdev backend
+if('fbdev' in env['graphics']):
+	conf.env['CCFLAGS'].append('-D__HAVE_FBDEV__')
+
 # checks required if building X11 backend
 if('x11' in env['graphics']):
 	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
