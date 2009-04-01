@@ -30,6 +30,7 @@
 
 #include "mmsgui/fb/mmsfbdevdavinci.h"
 #include <sys/ioctl.h>
+#include <cstring>
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevDavinci is not initialized");return false;}
 
