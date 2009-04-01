@@ -222,7 +222,7 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 			if (!userd->interim) {
 				// allocate interim buffer for YV12 stretch blit
 #if __HAVE_FBDEV__
-				if(userd->surf_pixelformat == MMSFB_PFRGB16) {
+				if(userd->surf_pixelformat == MMSFB_PF_RGB16) {
 					userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_ARGB);
 				}
 #else
