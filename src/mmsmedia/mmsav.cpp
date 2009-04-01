@@ -221,7 +221,13 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
     		// we get YV12 data
 			if (!userd->interim) {
 				// allocate interim buffer for YV12 stretch blit
+#if __HAVE_FBDEV__
+				if(userd->surf_pixelformat == MMSFB_PFRGB16) {
+					userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_ARGB);
+				}
+#else
 				userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
+#endif
 				if (userd->interim) userd->interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
 			}
     	}
