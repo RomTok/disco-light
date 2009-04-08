@@ -31,6 +31,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <cerrno>
 
 MMSTCPClient::MMSTCPClient(string host, unsigned int port) {
     this->host = host;
@@ -56,6 +57,7 @@ bool MMSTCPClient::connectToServer() {
 
 	/* get host ip in network byte order */
 	he = gethostbyname(this->host.c_str());
+	DEBUGMSG("MMSTCPClient", "hostname: %s", he->h_name);
 
 	/* get host ip in numbers-and-dots */
 	ia.s_addr = *((unsigned long int*)*(he->h_addr_list));
@@ -73,7 +75,7 @@ bool MMSTCPClient::connectToServer() {
 	sa.sin_port = htons(this->port); //this->port / 0x100 + (this->port % 0x100) * 0x100;
 	sa.sin_addr.s_addr = inet_addr(this->host.c_str());
 	if (connect(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
-		DEBUGMSG("MMSTCPClient", "connect failed",this->host.c_str(), this->port);
+		DEBUGMSG("MMSTCPClient", "connect failed (%s)",this->host.c_str(), this->port, strerror(errno));
 		disconnectFromServer();
 		return false;
 	}
@@ -186,7 +188,7 @@ bool MMSTCPClient::sendAndReceive(string rbuf, string *abuf) {
 		DEBUGMSG("MMSTCPClient", "cannot connect");
 		return false;
 	}
-	
+
 	DEBUGMSG("MMSTCPClient", "send string");
 	if (sendString(rbuf)) {
 		DEBUGMSG("MMSTCPClient", "receive string");
