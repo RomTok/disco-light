@@ -1,8 +1,10 @@
 Import('env idir_lib idir_inc')
-libmmsflash = env.SharedLibrary('../../../lib/libmmsflash', Glob('*.cpp'), LIBS = "")
-env.Install(idir_lib, libmmsflash)
 
+if not env['big_lib']:
+	libmmsflash = env.SharedLibrary('../../../lib/libmmsflash', Glob('*.cpp'), LIBS = "")
+	env.Install(idir_lib, libmmsflash)
+	Export('libmmsflash')
+	
 env.Install(idir_inc + '/mmsflash', Glob('../../../inc/mmsflash/*.h'))
 
 env['diskoSources'].append(Glob('*.cpp'))
-Export('libmmsflash')

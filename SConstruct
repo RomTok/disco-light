@@ -98,7 +98,8 @@ if sconsVersion < (0,98,1):
     	BoolOption('enable_sip',    'Build with mmssip support', False),
     	BoolOption('enable_mail',   'Build with email support', False),
     	BoolOption('enable_tools',  'Build disko tools', False),
-    	BoolOption('enable_static', 'Create statically linked library', False))
+    	BoolOption('enable_static', 'Create statically linked library', False),
+    	BoolOption('big_lib',       'Create one big shared library', False))
 else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
@@ -115,7 +116,8 @@ else:
     	BoolVariable('enable_sip',    'Build with mmssip support', False),
     	BoolVariable('enable_mail',   'Build with email support', False),
     	BoolVariable('enable_tools',  'Build disko tools', False),
-    	BoolVariable('enable_static', 'Create statically linked library', False))
+    	BoolVariable('enable_static', 'Create statically linked library', False),
+    	BoolVariable('big_lib',       'Create one big shared library', False))
 
 env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
@@ -439,41 +441,49 @@ if 'check' in BUILD_TARGETS:
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2, freetype2'
-	if(env['LIBPATH']):
+	if env['LIBPATH']:
 		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
 		disko_pc_libs = ''
-	disko_pc_libs    += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
+		
+	if env['big_lib']:
+		disko_pc_libs += ' -ldisko'
+	else:
+		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
+		
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
 	  
-	if('x11' in env['graphics']):
+	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm'
 		
-	if(env['enable_media']):
-		disko_pc_libs += ' -lmmsmedia'
+	if env['enable_media']:
+		if not env['big_lib']:
+			disko_pc_libs += ' -lmmsmedia'
 		if('x11' in env['graphics']):
-			disko_pc_requires += ', alsa , libxine >= 1.1.15'
+			disko_pc_requires += ', alsa, libxine >= 1.1.15'
 		else:
 			disko_pc_requires += ', alsa, libxine'
 
-	if(env['enable_flash']):
+	if env['enable_flash']:
 		disko_pc_requires += ', swfdec-0.8'
-		disko_pc_libs += ' -lmmsflash'
+		if not env['big_lib']:
+			disko_pc_libs += ' -lmmsflash'
 
-	if(env['enable_sip']):
+	if env['enable_sip']:
 		disko_pc_requires += ', libpj'
-		disko_pc_libs += ' -lmmssip'
+		if not env['big_lib']:
+			disko_pc_libs += ' -lmmssip'
 		if('uuid' in env['LIBS']):
 			disko_pc_requires += ', uuid'
 		
-	if(env['enable_mail']):
+	if env['enable_mail']:
 		disko_pc_requires += ', vmime'
 		
-	if(env['mmscrypt']):
+	if env['mmscrypt']:
 		disko_pc_requires += ', openssl'
 
 	if 'sqlite3' in env['database']:
@@ -546,6 +556,13 @@ SConscript(Split(libList), options = opts)
 
 BuildDir('build/tools', 'tools', duplicate = 0)
 SConscript(Split(toolList), options = opts)
+
+#######################################################################
+# Big Shared Library                                                  #
+#######################################################################
+if env['big_lib']:
+	libdisko_shared = env.SharedLibrary('lib/libdisko', env['diskoSources'])
+	env.Install(idir_lib, libdisko_shared)
 
 #######################################################################
 # Static Library                                                      #

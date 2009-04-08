@@ -8,10 +8,12 @@ def prefixAdd():
 	o.close()
 
 prefixAdd()
-libmmsinfo = env.SharedLibrary('../../../lib/libmmsinfo', Glob('*.cpp'), LIBS = "")
-env.Install(idir_lib, libmmsinfo)
 
+if not env['big_lib']:
+	libmmsinfo = env.SharedLibrary('../../../lib/libmmsinfo', Glob('*.cpp'), LIBS = "")
+	env.Install(idir_lib, libmmsinfo)
+	Export('libmmsinfo')
+	
 env.Install(idir_inc + '/mmsinfo', Glob('../../../inc/mmsinfo/*.h'))
 
 env['diskoSources'].append(Glob('*.cpp'))
-Export('libmmsinfo')
