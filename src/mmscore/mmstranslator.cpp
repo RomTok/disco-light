@@ -86,7 +86,7 @@ void MMSTranslator::loadTransLations() {
 }
 
 void MMSTranslator::translate(string &source, string &dest) {
-
+	dest = source; 
 }
 
 void MMSTranslator::setTargetLang(MMS_LANGUAGE_TYPE lang) {
