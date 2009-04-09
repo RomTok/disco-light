@@ -29,6 +29,7 @@
 #include "mmscore/mmstranslator.h"
 #include "mmsconfig/mmsconfigdata.h"
 #include "mmsconfig/mmspluginservice.h"
+#include "mmstools/mmsfile.h"
 
 #include <string.h>
 MMS_LANGUAGE_TYPE MMSTranslator::sourcelang = MMSLANG_UKN;
@@ -79,16 +80,30 @@ void MMSTranslator::loadTransLations() {
     vector<MMSPluginData *> data = service.getAllPlugins();
 
     for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
-    	
+    	MMSFileSearch search((*it)->getPath(),"translation.*",false);
+    	MMSFILEENTRY_LIST ret =  search.execute();
+    	for(MMSFILEENTRY_LIST::iterator it = ret.begin(); it != ret.end();it++) {
+    		processFile((*it)->name);
+    	}
     }
-    
-        
+
+
 }
 
 void MMSTranslator::translate(string &source, string &dest) {
-	dest = source; 
+	dest = source;
 }
 
 void MMSTranslator::setTargetLang(MMS_LANGUAGE_TYPE lang) {
 	this->targetlang = lang;
+}
+
+void MMSTranslator::processFile(string &file) {
+	MMSFile transfile(file,MMSFM_READ,false);
+	string line;
+	MMS_LANGUAGE_TYPE lang =  strToLang(file.substr(10).c_str());
+
+	while(transfile.getLine(line)) {
+
+	}
 }

@@ -76,7 +76,7 @@ MMSRcParser::MMSRcParser() {
     this->graphics.allocmethod                = "";		// the current alloc method
 	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
 	this->graphics.hideapplication            = false;
-	
+
 	this->language.addtranslations = false;
 	this->language.defaulttargetlang = MMSLANG_UKN;
 	this->language.sourcelang = MMSLANG_UKN;
@@ -673,16 +673,3 @@ void MMSRcParser::throughFile(xmlNode* node) {
 	}
 }
 
-MMS_LANGUAGE_TYPE MMSRcParser::strToLang(const char *value) {
-	if(strncasecmp(value,"ger",3)==0) {
-		return MMSLANG_GER;
-	}
-	if(strncasecmp(value,"msgid",3)==0) {
-		return MMSLANG_MSG;
-	}
-	if(strncasecmp(value,"eng",3)==0) {
-		return MMSLANG_ENG;
-	}
-
-	return MMSLANG_UKN;
-}

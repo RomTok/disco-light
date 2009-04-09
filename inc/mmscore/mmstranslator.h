@@ -42,9 +42,10 @@ class MMSTranslator {
 	static MMS_LANGUAGE_TYPE sourcelang;
 	static MMS_LANGUAGE_TYPE targetlang;
 	static MMSTRANSLATION_MAP transmap;
-	static bool addtranslations; 
+	static bool addtranslations;
 
 	void loadTransLations();
+	void processFile(string &file);
 
 	public:
 		MMSTranslator();

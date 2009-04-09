@@ -33,12 +33,6 @@
 
 using namespace std;
 
-typedef enum {
-	MMSLANG_UKN,
-	MMSLANG_GER,
-	MMSLANG_ENG,
-	MMSLANG_MSG
-} MMS_LANGUAGE_TYPE;
 
 
 typedef struct {
@@ -181,7 +175,7 @@ class MMSConfigData {
         const string getAllocMethod();
         const MMSFBFullScreenMode   getFullScreen();
         const bool   getHideApplication();
-        
+
         /* language section getters */
     	const MMS_LANGUAGE_TYPE getSourceLang();
     	const MMS_LANGUAGE_TYPE getDefaultTargetLang();

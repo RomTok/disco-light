@@ -256,6 +256,16 @@ class MMSFile {
         */
         bool getLine(char **ptr);
 
+        //! Gets a line from the file.
+        /*!
+        This method reads up to the next \n in the current line. The \n will be
+        stripped from the returned storage.
+        \param ptr  address of a pointer for returning the allocated memory
+        \return true if successful
+        \note This method allocates memory for the data and returns the pointer to it.
+        */
+        bool getLine(string &line);
+
         //! Read a character from the file.
         /*!
         \param ptr  address of a character for returning the byte which is to read

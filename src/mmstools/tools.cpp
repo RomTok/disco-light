@@ -714,3 +714,16 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts) {
 	return diff;
 }
 
+MMS_LANGUAGE_TYPE strToLang(const char *value) {
+	if(strncasecmp(value,"ger",3)==0) {
+		return MMSLANG_GER;
+	}
+	if(strncasecmp(value,"msgid",3)==0) {
+		return MMSLANG_MSG;
+	}
+	if(strncasecmp(value,"eng",3)==0) {
+		return MMSLANG_ENG;
+	}
+
+	return MMSLANG_UKN;
+}

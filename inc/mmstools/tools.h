@@ -31,6 +31,7 @@
 
 #include "mmstools/base.h"
 #include "mmstools/mmserror.h"
+#include "mmstools/mmstypes.h"
 #include <stdarg.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -127,5 +128,7 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 
 unsigned int getMTimeStamp();
 unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts);
+
+MMS_LANGUAGE_TYPE strToLang(const char *value);
 
 #endif /*TOOLS_H_*/

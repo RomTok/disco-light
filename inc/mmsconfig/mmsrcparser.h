@@ -48,9 +48,8 @@ class MMSRcParser {
     	void throughGraphics(xmlNode* node);
     	void throughLanguage(xmlNode* node);
     	void throughFile(xmlNode* node);
-    	
-    	/* helper */ 
-    	MMS_LANGUAGE_TYPE strToLang(const char *value);
+
+    	/* helper */
 
 	public:
 		MMSRcParser();
