@@ -37,22 +37,10 @@
 string MMSWidget_inputmode = "";
 
 MMSWidget::MMSWidget() {
-    this->baseWidgetClass = NULL;
-    this->widgetClass = NULL;
-    this->widgetthread = NULL;
+	// per default no attributes for drawable widgets are allocated
+	this->da = NULL;
+
     this->initialized = false;
-    this->bgimage = NULL;
-    this->selbgimage = NULL;
-    this->bgimage_p = NULL;
-    this->selbgimage_p = NULL;
-    this->bgimage_i = NULL;
-    this->selbgimage_i = NULL;
-    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-        this->borderimages[i] = NULL;
-    bordergeomset = false;
-    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-        this->borderselimages[i] = NULL;
-    borderselgeomset = false;
     this->rootwindow = NULL;
     this->parent_rootwindow = NULL;
 //    this->dfb = NULL;
@@ -81,16 +69,7 @@ MMSWidget::MMSWidget() {
     memset(&(this->innerGeom), 0, sizeof(this->innerGeom));
     memset(&(this->surfaceGeom), 0, sizeof(this->surfaceGeom));
 
-    this->scrollPosX = 0;
-    this->scrollPosY = 0;
-    this->scrollDX = 8;
-    this->scrollDY = 8;
 
-    /* initialize the callbacks */
-    onSelect = new sigc::signal<void, MMSWidget*>;
-    onFocus  = new sigc::signal<void, MMSWidget*, bool>;
-    onReturn = new sigc::signal<void, MMSWidget*>;
-    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 
 //TODO: textbox widget should have its one surface
 this->has_own_surface = false;
@@ -98,9 +77,11 @@ this->has_own_surface = false;
 
 MMSWidget::~MMSWidget() {
 
-	// delete widget thread
-	if (this->widgetthread)
-		delete this->widgetthread;
+	if (this->da) {
+		// delete widget thread
+		if (this->da->widgetthread)
+			delete this->da->widgetthread;
+	}
 
 	// delete the callbacks
     if (onSelect) delete onSelect;
@@ -110,16 +91,18 @@ MMSWidget::~MMSWidget() {
 
     // delete images
     if (this->rootwindow) {
-        this->rootwindow->im->releaseImage(this->bgimage);
-        this->rootwindow->im->releaseImage(this->selbgimage);
-        this->rootwindow->im->releaseImage(this->bgimage_p);
-        this->rootwindow->im->releaseImage(this->selbgimage_p);
-        this->rootwindow->im->releaseImage(this->bgimage_i);
-        this->rootwindow->im->releaseImage(this->selbgimage_i);
-        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-            this->rootwindow->im->releaseImage(this->borderimages[i]);
-        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-            this->rootwindow->im->releaseImage(this->borderselimages[i]);
+    	if (this->da) {
+			this->rootwindow->im->releaseImage(this->da->bgimage);
+			this->rootwindow->im->releaseImage(this->da->selbgimage);
+			this->rootwindow->im->releaseImage(this->da->bgimage_p);
+			this->rootwindow->im->releaseImage(this->da->selbgimage_p);
+			this->rootwindow->im->releaseImage(this->da->bgimage_i);
+			this->rootwindow->im->releaseImage(this->da->selbgimage_i);
+			for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
+				this->rootwindow->im->releaseImage(this->da->borderimages[i]);
+			for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
+				this->rootwindow->im->releaseImage(this->da->borderselimages[i]);
+    	}
     }
 
     // delete children
@@ -132,6 +115,10 @@ MMSWidget::~MMSWidget() {
 
     if(this->surface)
         delete this->surface;
+
+    // delete attributes which are set for drawable widgets
+    if (this->da)
+    	delete this->da;
 }
 
 MMSWIDGETTYPE MMSWidget::getType() {
@@ -143,6 +130,60 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
     bool		b;
 
 //    logger.writeLog("Create MMSWidget");
+
+	if (drawable) {
+		printf("drawable widget %d, sizeof widget %d\n", this->type, sizeof(MMSWidget));
+
+		// init attributes for drawable widgets
+		// we assume, that this->da will be allocated by the caller!!!
+		this->da->widgetthread = NULL;
+	    this->da->bgimage = NULL;
+	    this->da->selbgimage = NULL;
+	    this->da->bgimage_p = NULL;
+	    this->da->selbgimage_p = NULL;
+	    this->da->bgimage_i = NULL;
+	    this->da->selbgimage_i = NULL;
+	    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
+	        this->da->borderimages[i] = NULL;
+	    da->bordergeomset = false;
+	    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
+	        this->da->borderselimages[i] = NULL;
+	    da->borderselgeomset = false;
+
+	    this->da->upArrowWidget		= NULL;
+	    this->da->downArrowWidget	= NULL;
+	    this->da->leftArrowWidget	= NULL;
+	    this->da->rightArrowWidget	= NULL;
+	    this->da->initialArrowsDrawn= false;
+
+	    this->da->navigateUpWidget		= NULL;
+	    this->da->navigateDownWidget	= NULL;
+	    this->da->navigateLeftWidget	= NULL;
+	    this->da->navigateRightWidget	= NULL;
+
+	    this->da->vSliderWidget = NULL;
+	    this->da->hSliderWidget = NULL;
+
+	    this->da->scrollPosX = 0;
+	    this->da->scrollPosY = 0;
+	    this->da->scrollDX = 8;
+	    this->da->scrollDY = 8;
+
+	    // initialize the callbacks
+	    onSelect = new sigc::signal<void, MMSWidget*>;
+	    onFocus  = new sigc::signal<void, MMSWidget*, bool>;
+	    onReturn = new sigc::signal<void, MMSWidget*>;
+	    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
+	}
+	else {
+		printf("non-drawable widget %d, sizeof widget %d\n", this->type, sizeof(MMSWidget));
+
+	    // initialize the callbacks
+	    onSelect = NULL;
+	    onFocus  = NULL;
+	    onReturn = NULL;
+	    onClick  = NULL;
+	}
 
     this->drawable = drawable;
     this->needsparentdraw = needsparentdraw;
@@ -166,26 +207,13 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 
     setRootWindow(root);
     if (this->rootwindow) {
-//        this->dfb = this->rootwindow->getDFB();
         this->windowSurface = this->rootwindow->getSurface();
     }
     this->sizehint.clear();
     this->geomset=false;
 
-    this->upArrowWidget    = NULL;
-    this->downArrowWidget  = NULL;
-    this->leftArrowWidget  = NULL;
-    this->rightArrowWidget = NULL;
 
-    this->initialArrowsDrawn = false;
 
-    this->navigateUpWidget    = NULL;
-    this->navigateDownWidget  = NULL;
-    this->navigateLeftWidget  = NULL;
-    this->navigateRightWidget = NULL;
-
-    this->vSliderWidget = NULL;
-    this->hSliderWidget = NULL;
 
 //    logger.writeLog("MMSWidget created");
 
@@ -201,62 +229,68 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     for (unsigned int i = 0; i < children.size(); i++)
         newWidget->children.at(i) = children.at(i)->copyWidget();
 
+    if (drawable) {
+    	// copy attributes for drawable widgets
+    	newWidget->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    	*(newWidget->da) = *(this->da);
+    }
+
     /* initialize the callbacks */
     onSelect = new sigc::signal<void, MMSWidget*>;
     onFocus  = new sigc::signal<void, MMSWidget*, bool>;
     onReturn = new sigc::signal<void, MMSWidget*>;
     onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 
-    /* reload my images */
-    newWidget->bgimage = NULL;
-    newWidget->selbgimage = NULL;
-    newWidget->bgimage_p = NULL;
-    newWidget->selbgimage_p = NULL;
-    newWidget->bgimage_i = NULL;
-    newWidget->selbgimage_i = NULL;
-    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-        newWidget->borderimages[i] = NULL;
-    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-        newWidget->borderselimages[i] = NULL;
-
     if (drawable) {
+		// reload my images
+		newWidget->da->bgimage = NULL;
+		newWidget->da->selbgimage = NULL;
+		newWidget->da->bgimage_p = NULL;
+		newWidget->da->selbgimage_p = NULL;
+		newWidget->da->bgimage_i = NULL;
+		newWidget->da->selbgimage_i = NULL;
+		for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
+			newWidget->da->borderimages[i] = NULL;
+		for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
+			newWidget->da->borderselimages[i] = NULL;
+
         if (this->rootwindow) {
             string path, name;
 
             if (!newWidget->getBgImagePath(path)) path = "";
             if (!newWidget->getBgImageName(name)) name = "";
-            newWidget->bgimage = this->rootwindow->im->getImage(path, name);
+            newWidget->da->bgimage = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getSelBgImagePath(path)) path = "";
             if (!newWidget->getSelBgImageName(name)) name = "";
-            newWidget->selbgimage = this->rootwindow->im->getImage(path, name);
+            newWidget->da->selbgimage = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getBgImagePath_p(path)) path = "";
             if (!newWidget->getBgImageName_p(name)) name = "";
-            newWidget->bgimage_p = this->rootwindow->im->getImage(path, name);
+            newWidget->da->bgimage_p = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getSelBgImagePath_p(path)) path = "";
             if (!newWidget->getSelBgImageName_p(name)) name = "";
-            newWidget->selbgimage_p = this->rootwindow->im->getImage(path, name);
+            newWidget->da->selbgimage_p = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getBgImagePath_i(path)) path = "";
             if (!newWidget->getBgImageName_i(name)) name = "";
-            newWidget->bgimage_i = this->rootwindow->im->getImage(path, name);
+            newWidget->da->bgimage_i = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getSelBgImagePath_i(path)) path = "";
             if (!newWidget->getSelBgImageName_i(name)) name = "";
-            newWidget->selbgimage_i = this->rootwindow->im->getImage(path, name);
+            newWidget->da->selbgimage_i = this->rootwindow->im->getImage(path, name);
 
             if (!newWidget->getBorderImagePath(path)) path = "";
             for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
 	            if (!newWidget->getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-	            newWidget->borderimages[i] = this->rootwindow->im->getImage(path, name);
+	            newWidget->da->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
 
             if (!newWidget->getBorderSelImagePath(path)) path = "";
             for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
 	            if (!newWidget->getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-	            newWidget->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+	            newWidget->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
     }
@@ -443,29 +477,35 @@ void MMSWidget::setGeometry(MMSFBRectangle geom) {
         /* recalculate widgets border */
         if (dimChanged) {
             /* the dimension has changed */
-            bordergeomset=false;
-            borderselgeomset=false;
+        	if (drawable) {
+				this->da->bordergeomset=false;
+				this->da->borderselgeomset=false;
+        	}
         }
         else {
             if (this->geom.x!=geom.x) {
                 /* x pos has changed */
-                if ((bordergeomset)||(borderselgeomset)) {
-                    int diff = this->geom.x - geom.x;
-                    for (int i=0;i<8;i++) {
-                        bordergeom[i].x -= diff;
-                        borderselgeom[i].x -= diff;
-                    }
-                }
+            	if (drawable) {
+					if ((this->da->bordergeomset)||(this->da->borderselgeomset)) {
+						int diff = this->geom.x - geom.x;
+						for (int i=0;i<8;i++) {
+							this->da->bordergeom[i].x -= diff;
+							this->da->borderselgeom[i].x -= diff;
+						}
+					}
+            	}
             }
             if (this->geom.y!=geom.y) {
                 /* y pos has changed */
-                if ((bordergeomset)||(borderselgeomset)) {
-                    int diff = this->geom.y - geom.y;
-                    for (int i=0;i<8;i++) {
-                        bordergeom[i].y -= diff;
-                        borderselgeom[i].y -= diff;
-                    }
-                }
+            	if (drawable) {
+					if ((this->da->bordergeomset)||(this->da->borderselgeomset)) {
+						int diff = this->geom.y - geom.y;
+						for (int i=0;i<8;i++) {
+							this->da->bordergeom[i].y -= diff;
+							this->da->borderselgeom[i].y -= diff;
+						}
+					}
+            	}
             }
         }
     }
@@ -532,91 +572,107 @@ MMSFBRectangle MMSWidget::getRealGeometry() {
 
 
 
-void MMSWidget::loadArrowWidgets() {
+bool MMSWidget::loadArrowWidgets() {
 	bool  	b;
 	string 	s;
 
-	/* connect arrow widgets */
-    if (!this->upArrowWidget)
+	if (!this->drawable)
+		return false;
+
+	// connect arrow widgets
+    if (!this->da->upArrowWidget)
     	if (getUpArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->upArrowWidget = this->rootwindow->searchForWidget(s)))
-		                if (!this->upArrowWidget->getSelectable(b))
-		                    this->upArrowWidget = NULL;
+		            if ((this->da->upArrowWidget = this->rootwindow->searchForWidget(s))) {
+		                if (!this->da->upArrowWidget->getSelectable(b))
+		                    this->da->upArrowWidget = NULL;
 		                else
 			                if (!b)
-			                    this->upArrowWidget = NULL;
+			                    this->da->upArrowWidget = NULL;
+		            }
 
-    if (!this->downArrowWidget)
+    if (!this->da->downArrowWidget)
     	if (getDownArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->downArrowWidget = this->rootwindow->searchForWidget(s)))
-		                if (!this->downArrowWidget->getSelectable(b))
-		                    this->downArrowWidget = NULL;
+		            if ((this->da->downArrowWidget = this->rootwindow->searchForWidget(s))) {
+		                if (!this->da->downArrowWidget->getSelectable(b))
+		                    this->da->downArrowWidget = NULL;
 		                else
 			                if (!b)
-			                    this->downArrowWidget = NULL;
+			                    this->da->downArrowWidget = NULL;
+		            }
 
-    if (!this->leftArrowWidget)
+    if (!this->da->leftArrowWidget)
     	if (getLeftArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->leftArrowWidget = this->rootwindow->searchForWidget(s)))
-		                if (!this->leftArrowWidget->getSelectable(b))
-		                    this->leftArrowWidget = NULL;
+		            if ((this->da->leftArrowWidget = this->rootwindow->searchForWidget(s))) {
+		                if (!this->da->leftArrowWidget->getSelectable(b))
+		                    this->da->leftArrowWidget = NULL;
 		                else
 			                if (!b)
-			                    this->leftArrowWidget = NULL;
+			                    this->da->leftArrowWidget = NULL;
+		            }
 
-    if (!this->rightArrowWidget)
+    if (!this->da->rightArrowWidget)
     	if (getRightArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->rightArrowWidget = this->rootwindow->searchForWidget(s)))
-		                if (!this->rightArrowWidget->getSelectable(b))
-		                    this->rightArrowWidget = NULL;
+		            if ((this->da->rightArrowWidget = this->rootwindow->searchForWidget(s))) {
+		                if (!this->da->rightArrowWidget->getSelectable(b))
+		                    this->da->rightArrowWidget = NULL;
 		                else
 			                if (!b)
-			                    this->rightArrowWidget = NULL;
+			                    this->da->rightArrowWidget = NULL;
+		            }
+
+    return true;
 }
 
 void MMSWidget::switchArrowWidgets() {
-    /* connect arrow widgets */
-    loadArrowWidgets();
+    // connect arrow widgets
+    if (!loadArrowWidgets())
+    	return;
 
-    /* switch arrow widgets */
-    if (this->upArrowWidget)
-        if (this->scrollPosY == 0)
-            this->upArrowWidget->setSelected(false);
+    // switch arrow widgets
+    if (this->da->upArrowWidget) {
+        if (this->da->scrollPosY == 0)
+            this->da->upArrowWidget->setSelected(false);
         else
-            this->upArrowWidget->setSelected(true);
+            this->da->upArrowWidget->setSelected(true);
+    }
 
-    if (this->downArrowWidget)
-        if (this->surfaceGeom.h - this->surfaceGeom.y - (int)this->scrollPosY > this->innerGeom.h)
-            this->downArrowWidget->setSelected(true);
+    if (this->da->downArrowWidget) {
+        if (this->surfaceGeom.h - this->surfaceGeom.y - (int)this->da->scrollPosY > this->innerGeom.h)
+            this->da->downArrowWidget->setSelected(true);
         else
-            this->downArrowWidget->setSelected(false);
+            this->da->downArrowWidget->setSelected(false);
+    }
 
-    if (this->leftArrowWidget)
-        if (this->scrollPosX == 0)
-            this->leftArrowWidget->setSelected(false);
+    if (this->da->leftArrowWidget) {
+        if (this->da->scrollPosX == 0)
+            this->da->leftArrowWidget->setSelected(false);
         else
-            this->leftArrowWidget->setSelected(true);
+            this->da->leftArrowWidget->setSelected(true);
+    }
 
-    if (this->rightArrowWidget)
-        if (this->surfaceGeom.w - this->surfaceGeom.x - (int)this->scrollPosX > this->innerGeom.w)
-            this->rightArrowWidget->setSelected(true);
+    if (this->da->rightArrowWidget) {
+        if (this->surfaceGeom.w - this->surfaceGeom.x - (int)this->da->scrollPosX > this->innerGeom.w)
+            this->da->rightArrowWidget->setSelected(true);
         else
-            this->rightArrowWidget->setSelected(false);
+            this->da->rightArrowWidget->setSelected(false);
+    }
 }
 
 bool MMSWidget::setScrollSize(unsigned int dX, unsigned int dY) {
-    this->scrollDX = dX;
-    this->scrollDY = dY;
-
-    return true;
+	if (this->da) {
+		this->da->scrollDX = dX;
+		this->da->scrollDY = dY;
+		return true;
+	}
+	return false;
 }
 
 bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
@@ -632,33 +688,37 @@ bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
 
     if (!this->surface) return false;
 
-    if (posX < 0)
-        if (this->scrollPosX > 0)
+    if (posX < 0) {
+        if (this->da->scrollPosX > 0)
             posX = 0;
         else
             return false;
+    }
 
-    if (posX + innerGeom.w > surfaceGeom.w)
-        if ((int)this->scrollPosX + innerGeom.w < surfaceGeom.w)
+    if (posX + innerGeom.w > surfaceGeom.w) {
+        if ((int)this->da->scrollPosX + innerGeom.w < surfaceGeom.w)
             posX = surfaceGeom.w - innerGeom.w;
         else
             return false;
+    }
 
-    if (posY < 0)
-        if (this->scrollPosY > 0)
+    if (posY < 0) {
+        if (this->da->scrollPosY > 0)
             posY = 0;
         else
             return false;
+    }
 
-    if (posY + innerGeom.h > surfaceGeom.h)
-        if ((int)this->scrollPosY + innerGeom.h < surfaceGeom.h)
+    if (posY + innerGeom.h > surfaceGeom.h) {
+        if ((int)this->da->scrollPosY + innerGeom.h < surfaceGeom.h)
             posY = surfaceGeom.h - innerGeom.h;
         else
             return false;
+    }
 
     if (!test) {
-        this->scrollPosX = posX;
-        this->scrollPosY = posY;
+        this->da->scrollPosX = posX;
+        this->da->scrollPosY = posY;
 
         if (refresh)
             this->refresh();
@@ -669,7 +729,8 @@ bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
 
 
 bool MMSWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
-    if (setScrollPos((int)this->scrollPosX, (int)this->scrollPosY + count*(int)this->scrollDY, refresh, test)) {
+	if (!this->da) return false;
+    if (setScrollPos((int)this->da->scrollPosX, (int)this->da->scrollPosY + count*(int)this->da->scrollDY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
         return true;
@@ -678,7 +739,8 @@ bool MMSWidget::scrollDown(unsigned int count, bool refresh, bool test, bool lea
 }
 
 bool MMSWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
-    if (setScrollPos((int)this->scrollPosX, (int)this->scrollPosY - count*(int)this->scrollDY, refresh, test)) {
+	if (!this->da) return false;
+    if (setScrollPos((int)this->da->scrollPosX, (int)this->da->scrollPosY - count*(int)this->da->scrollDY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
         return true;
@@ -687,7 +749,8 @@ bool MMSWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave
 }
 
 bool MMSWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
-    if (setScrollPos((int)this->scrollPosX + count*(int)this->scrollDX, (int)this->scrollPosY, refresh, test)) {
+	if (!this->da) return false;
+    if (setScrollPos((int)this->da->scrollPosX + count*(int)this->da->scrollDX, (int)this->da->scrollPosY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
         return true;
@@ -696,7 +759,8 @@ bool MMSWidget::scrollRight(unsigned int count, bool refresh, bool test, bool le
 }
 
 bool MMSWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
-    if (setScrollPos((int)this->scrollPosX - count*(int)this->scrollDX, (int)this->scrollPosY, refresh, test)) {
+	if (!this->da) return false;
+    if (setScrollPos((int)this->da->scrollPosX - count*(int)this->da->scrollDX, (int)this->da->scrollPosY, refresh, test)) {
         if (!test)
             switchArrowWidgets();
         return true;
@@ -713,8 +777,8 @@ bool MMSWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
 MMSFBRectangle MMSWidget::getVisibleSurfaceArea() {
     MMSFBRectangle area;
 
-    area.x = surfaceGeom.x + scrollPosX;
-    area.y = surfaceGeom.y + scrollPosY;
+    area.x = surfaceGeom.x + (this->da)?this->da->scrollPosX:0;
+    area.y = surfaceGeom.y + (this->da)?this->da->scrollPosY:0;
     area.w = innerGeom.w;
     area.h = innerGeom.h;
 
@@ -747,59 +811,59 @@ bool MMSWidget::init() {
 
         if (!getBgImagePath(path)) path = "";
         if (!getBgImageName(name)) name = "";
-        this->bgimage = this->rootwindow->im->getImage(path, name);
+        this->da->bgimage = this->rootwindow->im->getImage(path, name);
 
         if (!getSelBgImagePath(path)) path = "";
         if (!getSelBgImageName(name)) name = "";
-        this->selbgimage = this->rootwindow->im->getImage(path, name);
+        this->da->selbgimage = this->rootwindow->im->getImage(path, name);
 
         if (!getBgImagePath_p(path)) path = "";
         if (!getBgImageName_p(name)) name = "";
-        this->bgimage_p = this->rootwindow->im->getImage(path, name);
+        this->da->bgimage_p = this->rootwindow->im->getImage(path, name);
 
         if (!getSelBgImagePath_p(path)) path = "";
         if (!getSelBgImageName_p(name)) name = "";
-        this->selbgimage_p = this->rootwindow->im->getImage(path, name);
+        this->da->selbgimage_p = this->rootwindow->im->getImage(path, name);
 
         if (!getBgImagePath_i(path)) path = "";
         if (!getBgImageName_i(name)) name = "";
-        this->bgimage_i = this->rootwindow->im->getImage(path, name);
+        this->da->bgimage_i = this->rootwindow->im->getImage(path, name);
 
         if (!getSelBgImagePath_i(path)) path = "";
         if (!getSelBgImageName_i(name)) name = "";
-        this->selbgimage_i = this->rootwindow->im->getImage(path, name);
+        this->da->selbgimage_i = this->rootwindow->im->getImage(path, name);
 
         if (!getBorderImagePath(path)) path = "";
         for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
             if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-            this->borderimages[i] = this->rootwindow->im->getImage(path, name);
+            this->da->borderimages[i] = this->rootwindow->im->getImage(path, name);
         }
 
         if (!getBorderSelImagePath(path)) path = "";
         for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
             if (!getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-            this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+            this->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
         }
 
         /* get my four widgets to which I have to navigate */
         if (!getNavigateUp(name)) name = "";
-        this->navigateUpWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateUpWidget = this->rootwindow->searchForWidget(name);
 
         if (!getNavigateDown(name)) name = "";
-        this->navigateDownWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateDownWidget = this->rootwindow->searchForWidget(name);
 
         if (!getNavigateLeft(name)) name = "";
-        this->navigateLeftWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateLeftWidget = this->rootwindow->searchForWidget(name);
 
         if (!getNavigateRight(name)) name = "";
-        this->navigateRightWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateRightWidget = this->rootwindow->searchForWidget(name);
 
         /* get my two widgets which represents the sliders */
         if (!getVSlider(name)) name = "";
-        this->vSliderWidget = this->rootwindow->searchForWidget(name);
+        this->da->vSliderWidget = this->rootwindow->searchForWidget(name);
 
         if (!getHSlider(name)) name = "";
-        this->hSliderWidget = this->rootwindow->searchForWidget(name);
+        this->da->hSliderWidget = this->rootwindow->searchForWidget(name);
     }
     return true;
 }
@@ -1090,36 +1154,36 @@ bool MMSWidget::draw(bool *backgroundFilled) {
             if (isActivated()) {
                 if (isSelected()) {
                     getSelBgColor(col);
-                    suf = this->selbgimage;
+                    suf = this->da->selbgimage;
                 }
                 else {
                     getBgColor(col);
-                    suf = this->bgimage;
+                    suf = this->da->bgimage;
                 }
             	if (isPressed()) {
                     MMSFBColor mycol;
                     if (isSelected()) {
                         getSelBgColor_p(mycol);
                         if (mycol.a>0) col=mycol;
-                        if (this->selbgimage_p)
-                        	suf = this->selbgimage_p;
+                        if (this->da->selbgimage_p)
+                        	suf = this->da->selbgimage_p;
                     }
                     else {
                         getBgColor_p(mycol);
                         if (mycol.a>0) col=mycol;
-                        if (this->bgimage_p)
-                        	suf = this->bgimage_p;
+                        if (this->da->bgimage_p)
+                        	suf = this->da->bgimage_p;
                     }
             	}
             }
             else {
                 if (isSelected()) {
                     getSelBgColor_i(col);
-                    suf = this->selbgimage_i;
+                    suf = this->da->selbgimage_i;
                 }
                 else {
                     getBgColor_i(col);
-                    suf = this->bgimage_i;
+                    suf = this->da->bgimage_i;
                 }
             }
         }
@@ -1335,16 +1399,16 @@ void MMSWidget::drawMyBorder() {
     if (isSelected()) {
         MMSFBColor c;
         getBorderSelColor(c);
-        drawBorder(borderthickness, borderrcorners, this->borderselimages,
-                   this->borderselgeom, &(this->borderselgeomset), this->windowSurface,
+        drawBorder(borderthickness, borderrcorners, this->da->borderselimages,
+                   this->da->borderselgeom, &(this->da->borderselgeomset), this->windowSurface,
                    mygeom.x, mygeom.y, mygeom.w, mygeom.h, c, this->rootwindow->im,
                    getBrightness(), getOpacity());
     }
     else {
         MMSFBColor c;
         getBorderColor(c);
-        drawBorder(borderthickness, borderrcorners, this->borderimages,
-                   this->bordergeom, &(this->bordergeomset), this->windowSurface,
+        drawBorder(borderthickness, borderrcorners, this->da->borderimages,
+                   this->da->bordergeom, &(this->da->bordergeomset), this->windowSurface,
                    mygeom.x, mygeom.y, mygeom.w, mygeom.h, c, this->rootwindow->im,
                    getBrightness(), getOpacity());
     }
@@ -1369,9 +1433,11 @@ bool MMSWidget::drawDebug() {
         }
     }
 
-    if (this->initialArrowsDrawn == false) {
-        switchArrowWidgets();
-        this->initialArrowsDrawn = true;
+    if (this->drawable) {
+		if (this->da->initialArrowsDrawn == false) {
+			switchArrowWidgets();
+			this->da->initialArrowsDrawn = true;
+		}
     }
 
     return true;
@@ -1404,10 +1470,12 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 }
 
 void MMSWidget::startWidgetThread(int delay) {
-	if (!this->widgetthread)
-		this->widgetthread = new MMSWidgetThread(this);
-	if (this->widgetthread)
-		this->widgetthread->start(delay);
+	if (this->da) {
+		if (!this->da->widgetthread)
+			this->da->widgetthread = new MMSWidgetThread(this);
+		if (this->da->widgetthread)
+			this->da->widgetthread->start(delay);
+	}
 }
 
 
@@ -1632,11 +1700,12 @@ void MMSWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
 
     if (this->rootwindow) {
     	// searching the right toplevel parent
-        if (!this->parent_rootwindow)
+        if (!this->parent_rootwindow) {
         	if (!this->rootwindow->parent)
         		this->parent_rootwindow = this->rootwindow;
         	else
         		this->parent_rootwindow = this->rootwindow->getParent(true);
+        }
 
         this->windowSurface = this->rootwindow->getSurface();
         rootwindow->add(this);
@@ -1879,7 +1948,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 		/* keyboard inputs */
 
 		/* save last inputevent */
-		last_inputevent = *inputevent;
+		this->da->last_inputevent = *inputevent;
 
 		switch (inputevent->key) {
 			case MMSKEY_CURSOR_DOWN:
@@ -1926,7 +1995,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 		if (getClickable(b))
 			if (b) {
 				/* save last inputevent */
-				last_inputevent = *inputevent;
+				this->da->last_inputevent = *inputevent;
 
 				/* set the pressed status */
 				if (!isPressed())
@@ -1940,7 +2009,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 		/* button released */
         if (getClickable(b))
         	if (b) {
-	    		if (last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
+	    		if (this->da->last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 
 	    			/* reset the pressed status */
     				if (isPressed())
@@ -1980,7 +2049,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	    		}
 
 	    		/* save last inputevent */
-	    		last_inputevent = *inputevent;
+	    		this->da->last_inputevent = *inputevent;
 	    		return;
 			}
 	}
@@ -1989,7 +2058,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 		/* axis motion */
         if (getClickable(b))
         	if (b) {
-	    		if (last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
+	    		if (this->da->last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 					/* check if the pointer is within widget */
 	    			if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
 	    				&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
@@ -2119,60 +2188,60 @@ void MMSWidget::setOpacity(unsigned char opacity, bool refresh) {
 
 
 MMSWidget *MMSWidget::getNavigateUpWidget() {
-    return navigateUpWidget;
+    return this->da->navigateUpWidget;
 }
 
 MMSWidget *MMSWidget::getNavigateDownWidget() {
-    return navigateDownWidget;
+    return this->da->navigateDownWidget;
 }
 
 MMSWidget *MMSWidget::getNavigateLeftWidget() {
-    return navigateLeftWidget;
+    return this->da->navigateLeftWidget;
 }
 
 MMSWidget *MMSWidget::getNavigateRightWidget() {
-    return navigateRightWidget;
+    return this->da->navigateRightWidget;
 }
 
 void MMSWidget::setNavigateUpWidget(MMSWidget *upwidget) {
-    navigateUpWidget = upwidget;
+	this->da->navigateUpWidget = upwidget;
 }
 
 void MMSWidget::setNavigateDownWidget(MMSWidget *downwidget) {
-    navigateDownWidget = downwidget;
+	this->da->navigateDownWidget = downwidget;
 }
 
 void MMSWidget::setNavigateRightWidget(MMSWidget *rightwidget) {
-    navigateRightWidget = rightwidget;
+	this->da->navigateRightWidget = rightwidget;
 }
 
 void MMSWidget::setNavigateLeftWidget(MMSWidget *leftwidget) {
-    navigateLeftWidget = leftwidget;
+	this->da->navigateLeftWidget = leftwidget;
 }
 
 bool MMSWidget::canNavigateUp() {
-    if (navigateUpWidget)
+    if (this->da->navigateUpWidget)
         return true;
     else
         return scrollUp(1, false, true);
 }
 
 bool MMSWidget::canNavigateDown() {
-    if (navigateDownWidget)
+    if (this->da->navigateDownWidget)
         return true;
     else
         return scrollDown(1, false, true);
 }
 
 bool MMSWidget::canNavigateLeft() {
-	if (navigateLeftWidget)
+	if (this->da->navigateLeftWidget)
         return true;
     else
         return scrollLeft(1, false, true);
 }
 
 bool MMSWidget::canNavigateRight() {
-    if (navigateRightWidget)
+    if (this->da->navigateRightWidget)
         return true;
     else
         return scrollRight(1, false, true);
@@ -2183,10 +2252,11 @@ bool MMSWidget::canNavigateRight() {
 /***********************************************/
 
 #define GETWIDGET(x,y) \
-    if (this->myWidgetClass.is##x()) return myWidgetClass.get##x(y); \
-    else if ((widgetClass)&&(widgetClass->is##x())) return widgetClass->get##x(y); \
-    else if (baseWidgetClass) return baseWidgetClass->get##x(y); \
-    else return myWidgetClass.get##x(y);
+	if (!this->da) return false; \
+	else if (this->da->myWidgetClass.is##x()) return this->da->myWidgetClass.get##x(y); \
+    else if ((this->da->widgetClass)&&(this->da->widgetClass->is##x())) return this->da->widgetClass->get##x(y); \
+    else if (this->da->baseWidgetClass) return this->da->baseWidgetClass->get##x(y); \
+    else return this->da->myWidgetClass.get##x(y);
 
 
 bool MMSWidget::getBgColor(MMSFBColor &bgcolor) {
@@ -2373,14 +2443,16 @@ bool MMSWidget::getInputModeEx(string &inputmode) {
 
 
 #define GETBORDER(x,y) \
-    if (this->myWidgetClass.border.is##x()) return myWidgetClass.border.get##x(y); \
-    else if ((widgetClass)&&(widgetClass->border.is##x())) return widgetClass->border.get##x(y); \
-    else return baseWidgetClass->border.get##x(y);
+	if (!this->da) return false; \
+	else if (this->da->myWidgetClass.border.is##x()) return this->da->myWidgetClass.border.get##x(y); \
+    else if ((this->da->widgetClass)&&(this->da->widgetClass->border.is##x())) return this->da->widgetClass->border.get##x(y); \
+    else return this->da->baseWidgetClass->border.get##x(y);
 
 #define GETBORDER_IMAGES(x,p,y) \
-    if (this->myWidgetClass.border.is##x()) return myWidgetClass.border.get##x(p,y); \
-    else if ((widgetClass)&&(widgetClass->border.is##x())) return widgetClass->border.get##x(p,y); \
-    else return baseWidgetClass->border.get##x(p,y);
+	if (!this->da) return false; \
+	else if (this->da->myWidgetClass.border.is##x()) return this->da->myWidgetClass.border.get##x(p,y); \
+    else if ((this->da->widgetClass)&&(this->da->widgetClass->border.is##x())) return this->da->widgetClass->border.get##x(p,y); \
+    else return this->da->baseWidgetClass->border.get##x(p,y);
 
 
 
@@ -2424,416 +2496,503 @@ bool MMSWidget::getBorderRCorners(bool &rcorners) {
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
-void MMSWidget::setBgColor(MMSFBColor bgcolor, bool refresh) {
-    myWidgetClass.setBgColor(bgcolor);
+bool MMSWidget::setBgColor(MMSFBColor bgcolor, bool refresh) {
+	if (!this->da) return false;
+	this->da->myWidgetClass.setBgColor(bgcolor);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgColor(MMSFBColor selbgcolor, bool refresh) {
-    myWidgetClass.setSelBgColor(selbgcolor);
+bool MMSWidget::setSelBgColor(MMSFBColor selbgcolor, bool refresh) {
+	if (!this->da) return false;
+	this->da->myWidgetClass.setSelBgColor(selbgcolor);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgColor_p(MMSFBColor bgcolor_p, bool refresh) {
-    myWidgetClass.setBgColor_p(bgcolor_p);
+bool MMSWidget::setBgColor_p(MMSFBColor bgcolor_p, bool refresh) {
+	if (!this->da) return false;
+	this->da->myWidgetClass.setBgColor_p(bgcolor_p);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh) {
-    myWidgetClass.setSelBgColor(selbgcolor_p);
+bool MMSWidget::setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgColor(selbgcolor_p);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgColor_i(MMSFBColor bgcolor_i, bool refresh) {
-    myWidgetClass.setBgColor_i(bgcolor_i);
+bool MMSWidget::setBgColor_i(MMSFBColor bgcolor_i, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgColor_i(bgcolor_i);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh) {
-    myWidgetClass.setSelBgColor(selbgcolor_i);
+bool MMSWidget::setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgColor(selbgcolor_i);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgImagePath(string bgimagepath, bool load, bool refresh) {
-    myWidgetClass.setBgImagePath(bgimagepath);
+bool MMSWidget::setBgImagePath(string bgimagepath, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgImagePath(bgimagepath);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->bgimage);
+            this->rootwindow->im->releaseImage(this->da->bgimage);
             string path, name;
             if (!getBgImagePath(path)) path = "";
             if (!getBgImageName(name)) name = "";
-            this->bgimage = this->rootwindow->im->getImage(path, name);
+            this->da->bgimage = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgImageName(string bgimagename, bool load, bool refresh) {
-    myWidgetClass.setBgImageName(bgimagename);
+bool MMSWidget::setBgImageName(string bgimagename, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgImageName(bgimagename);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->bgimage);
+            this->rootwindow->im->releaseImage(this->da->bgimage);
             string path, name;
             if (!getBgImagePath(path)) path = "";
             if (!getBgImageName(name)) name = "";
-            this->bgimage = this->rootwindow->im->getImage(path, name);
+            this->da->bgimage = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgImagePath(string selbgimagepath, bool load, bool refresh) {
-    myWidgetClass.setSelBgImagePath(selbgimagepath);
+bool MMSWidget::setSelBgImagePath(string selbgimagepath, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgImagePath(selbgimagepath);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selbgimage);
+            this->rootwindow->im->releaseImage(this->da->selbgimage);
             string path, name;
             if (!getSelBgImagePath(path)) path = "";
             if (!getSelBgImageName(name)) name = "";
-            this->selbgimage = this->rootwindow->im->getImage(path, name);
+            this->da->selbgimage = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgImageName(string selbgimagename, bool load, bool refresh) {
-    myWidgetClass.setSelBgImageName(selbgimagename);
+bool MMSWidget::setSelBgImageName(string selbgimagename, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgImageName(selbgimagename);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selbgimage);
+            this->rootwindow->im->releaseImage(this->da->selbgimage);
             string path, name;
             if (!getSelBgImagePath(path)) path = "";
             if (!getSelBgImageName(name)) name = "";
-            this->selbgimage = this->rootwindow->im->getImage(path, name);
+            this->da->selbgimage = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgImagePath_p(string bgimagepath_p, bool load, bool refresh) {
-    myWidgetClass.setBgImagePath_p(bgimagepath_p);
+bool MMSWidget::setBgImagePath_p(string bgimagepath_p, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgImagePath_p(bgimagepath_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->bgimage_p);
+            this->rootwindow->im->releaseImage(this->da->bgimage_p);
             string path, name;
             if (!getBgImagePath_p(path)) path = "";
             if (!getBgImageName_p(name)) name = "";
-            this->bgimage_p = this->rootwindow->im->getImage(path, name);
+            this->da->bgimage_p = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgImageName_p(string bgimagename_p, bool load, bool refresh) {
-    myWidgetClass.setBgImageName_p(bgimagename_p);
+bool MMSWidget::setBgImageName_p(string bgimagename_p, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgImageName_p(bgimagename_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->bgimage_p);
+            this->rootwindow->im->releaseImage(this->da->bgimage_p);
             string path, name;
             if (!getBgImagePath_p(path)) path = "";
             if (!getBgImageName_p(name)) name = "";
-            this->bgimage_p = this->rootwindow->im->getImage(path, name);
+            this->da->bgimage_p = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgImagePath_p(string selbgimagepath_p, bool load, bool refresh) {
-    myWidgetClass.setSelBgImagePath_p(selbgimagepath_p);
+bool MMSWidget::setSelBgImagePath_p(string selbgimagepath_p, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgImagePath_p(selbgimagepath_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selbgimage_p);
+            this->rootwindow->im->releaseImage(this->da->selbgimage_p);
             string path, name;
             if (!getSelBgImagePath_p(path)) path = "";
             if (!getSelBgImageName_p(name)) name = "";
-            this->selbgimage_p = this->rootwindow->im->getImage(path, name);
+            this->da->selbgimage_p = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgImageName_p(string selbgimagename_p, bool load, bool refresh) {
-    myWidgetClass.setSelBgImageName_p(selbgimagename_p);
+bool MMSWidget::setSelBgImageName_p(string selbgimagename_p, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgImageName_p(selbgimagename_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selbgimage_p);
+            this->rootwindow->im->releaseImage(this->da->selbgimage_p);
             string path, name;
             if (!getSelBgImagePath_p(path)) path = "";
             if (!getSelBgImageName_p(name)) name = "";
-            this->selbgimage_p = this->rootwindow->im->getImage(path, name);
+            this->da->selbgimage_p = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgImagePath_i(string bgimagepath_i, bool load, bool refresh) {
-    myWidgetClass.setBgImagePath_i(bgimagepath_i);
+bool MMSWidget::setBgImagePath_i(string bgimagepath_i, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgImagePath_i(bgimagepath_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->bgimage_i);
+            this->rootwindow->im->releaseImage(this->da->bgimage_i);
             string path, name;
             if (!getBgImagePath_i(path)) path = "";
             if (!getBgImageName_i(name)) name = "";
-            this->bgimage_i = this->rootwindow->im->getImage(path, name);
+            this->da->bgimage_i = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBgImageName_i(string bgimagename_i, bool load, bool refresh) {
-    myWidgetClass.setBgImageName_i(bgimagename_i);
+bool MMSWidget::setBgImageName_i(string bgimagename_i, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBgImageName_i(bgimagename_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->bgimage_i);
+            this->rootwindow->im->releaseImage(this->da->bgimage_i);
             string path, name;
             if (!getBgImagePath_i(path)) path = "";
             if (!getBgImageName_i(name)) name = "";
-            this->bgimage_i = this->rootwindow->im->getImage(path, name);
+            this->da->bgimage_i = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgImagePath_i(string selbgimagepath_i, bool load, bool refresh) {
-    myWidgetClass.setSelBgImagePath_i(selbgimagepath_i);
+bool MMSWidget::setSelBgImagePath_i(string selbgimagepath_i, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgImagePath_i(selbgimagepath_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selbgimage_i);
+            this->rootwindow->im->releaseImage(this->da->selbgimage_i);
             string path, name;
             if (!getSelBgImagePath_i(path)) path = "";
             if (!getSelBgImageName_i(name)) name = "";
-            this->selbgimage_i = this->rootwindow->im->getImage(path, name);
+            this->da->selbgimage_i = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setSelBgImageName_i(string selbgimagename_i, bool load, bool refresh) {
-    myWidgetClass.setSelBgImageName_i(selbgimagename_i);
+bool MMSWidget::setSelBgImageName_i(string selbgimagename_i, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setSelBgImageName_i(selbgimagename_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selbgimage_i);
+            this->rootwindow->im->releaseImage(this->da->selbgimage_i);
             string path, name;
             if (!getSelBgImagePath_i(path)) path = "";
             if (!getSelBgImageName_i(name)) name = "";
-            this->selbgimage_i = this->rootwindow->im->getImage(path, name);
+            this->da->selbgimage_i = this->rootwindow->im->getImage(path, name);
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setMargin(unsigned int margin, bool refresh) {
-    myWidgetClass.setMargin(margin);
+bool MMSWidget::setMargin(unsigned int margin, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setMargin(margin);
 
     setInnerGeometry();
 
     if (refresh)
         this->refresh();
+    return true;
 }
 
 bool MMSWidget::setFocusable(bool focusable, bool refresh) {
+	if (!this->da) return false;
     if (this->focusable_initial) {
         if ((!focusable)&&(isFocused()))
             setFocus(false, refresh);
-        myWidgetClass.setFocusable(focusable);
+        this->da->myWidgetClass.setFocusable(focusable);
         return true;
     }
     return false;
 }
 
 bool MMSWidget::setSelectable(bool selectable, bool refresh) {
+	if (!this->da) return false;
     if (this->selectable_initial) {
         if ((!selectable)&&(isSelected()))
             setSelected(false, refresh);
-        myWidgetClass.setSelectable(selectable);
+        this->da->myWidgetClass.setSelectable(selectable);
         return true;
     }
     return false;
 }
 
-void MMSWidget::setUpArrow(string uparrow, bool refresh) {
-    myWidgetClass.setUpArrow(uparrow);
-    upArrowWidget = NULL;
+bool MMSWidget::setUpArrow(string uparrow, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setUpArrow(uparrow);
+    this->da->upArrowWidget = NULL;
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setDownArrow(string downarrow, bool refresh) {
-    myWidgetClass.setDownArrow(downarrow);
-    downArrowWidget = NULL;
+bool MMSWidget::setDownArrow(string downarrow, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setDownArrow(downarrow);
+    this->da->downArrowWidget = NULL;
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setLeftArrow(string leftarrow, bool refresh) {
-    myWidgetClass.setLeftArrow(leftarrow);
-    leftArrowWidget = NULL;
+bool MMSWidget::setLeftArrow(string leftarrow, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setLeftArrow(leftarrow);
+    this->da->leftArrowWidget = NULL;
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setRightArrow(string rightarrow, bool refresh) {
-    myWidgetClass.setRightArrow(rightarrow);
-    rightArrowWidget = NULL;
+bool MMSWidget::setRightArrow(string rightarrow, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setRightArrow(rightarrow);
+    this->da->rightArrowWidget = NULL;
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setData(string data) {
-    myWidgetClass.setData(data);
+bool MMSWidget::setData(string data) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setData(data);
+    return true;
 }
 
-void MMSWidget::setNavigateUp(string navigateup) {
-    myWidgetClass.setNavigateUp(navigateup);
-    this->navigateUpWidget = NULL;
+bool MMSWidget::setNavigateUp(string navigateup) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setNavigateUp(navigateup);
+    this->da->navigateUpWidget = NULL;
     if ((this->rootwindow)&&(navigateup!=""))
-        this->navigateUpWidget = this->rootwindow->searchForWidget(navigateup);
+        this->da->navigateUpWidget = this->rootwindow->searchForWidget(navigateup);
+    return true;
 }
 
-void MMSWidget::setNavigateDown(string navigatedown) {
-    myWidgetClass.setNavigateDown(navigatedown);
-    this->navigateDownWidget = NULL;
+bool MMSWidget::setNavigateDown(string navigatedown) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setNavigateDown(navigatedown);
+    this->da->navigateDownWidget = NULL;
     if ((this->rootwindow)&&(navigatedown!=""))
-        this->navigateDownWidget = this->rootwindow->searchForWidget(navigatedown);
+        this->da->navigateDownWidget = this->rootwindow->searchForWidget(navigatedown);
+    return true;
 }
 
-void MMSWidget::setNavigateLeft(string navigateleft) {
-    myWidgetClass.setNavigateLeft(navigateleft);
-    this->navigateLeftWidget = NULL;
+bool MMSWidget::setNavigateLeft(string navigateleft) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setNavigateLeft(navigateleft);
+    this->da->navigateLeftWidget = NULL;
     if ((this->rootwindow)&&(navigateleft!=""))
-        this->navigateLeftWidget = this->rootwindow->searchForWidget(navigateleft);
+        this->da->navigateLeftWidget = this->rootwindow->searchForWidget(navigateleft);
+    return true;
 }
 
-void MMSWidget::setNavigateRight(string navigateright) {
-    myWidgetClass.setNavigateRight(navigateright);
-    this->navigateRightWidget = NULL;
+bool MMSWidget::setNavigateRight(string navigateright) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setNavigateRight(navigateright);
+    this->da->navigateRightWidget = NULL;
     if ((this->rootwindow)&&(navigateright!=""))
-        this->navigateRightWidget = this->rootwindow->searchForWidget(navigateright);
+        this->da->navigateRightWidget = this->rootwindow->searchForWidget(navigateright);
+    return true;
 }
 
-void MMSWidget::setVSlider(string vslider) {
-    myWidgetClass.setVSlider(vslider);
-    this->vSliderWidget = NULL;
+bool MMSWidget::setVSlider(string vslider) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setVSlider(vslider);
+    this->da->vSliderWidget = NULL;
     if ((this->rootwindow)&&(vslider!=""))
-        this->vSliderWidget = this->rootwindow->searchForWidget(vslider);
+        this->da->vSliderWidget = this->rootwindow->searchForWidget(vslider);
+    return true;
 }
 
-void MMSWidget::setHSlider(string hslider) {
-    myWidgetClass.setHSlider(hslider);
-    this->hSliderWidget = NULL;
+bool MMSWidget::setHSlider(string hslider) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setHSlider(hslider);
+    this->da->hSliderWidget = NULL;
     if ((this->rootwindow)&&(hslider!=""))
-        this->hSliderWidget = this->rootwindow->searchForWidget(hslider);
+        this->da->hSliderWidget = this->rootwindow->searchForWidget(hslider);
+    return true;
 }
 
-void MMSWidget::setImagesOnDemand(bool imagesondemand) {
-    myWidgetClass.setImagesOnDemand(imagesondemand);
+bool MMSWidget::setImagesOnDemand(bool imagesondemand) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setImagesOnDemand(imagesondemand);
+    return true;
 }
 
-void MMSWidget::setBlend(unsigned int blend, bool refresh) {
-    myWidgetClass.setBlend(blend);
+bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBlend(blend);
     for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setBlend(blend, false);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
-    myWidgetClass.setBlendFactor(blendfactor);
+bool MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setBlendFactor(blendfactor);
     for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setBlendFactor(blendfactor, false);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setScrollOnFocus(bool scrollonfocus) {
-    myWidgetClass.setScrollOnFocus(scrollonfocus);
+bool MMSWidget::setScrollOnFocus(bool scrollonfocus) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setScrollOnFocus(scrollonfocus);
+    return true;
 }
 
-void MMSWidget::setClickable(bool clickable) {
-	myWidgetClass.setClickable(clickable);
+bool MMSWidget::setClickable(bool clickable) {
+	if (!this->da) return false;
+	this->da->myWidgetClass.setClickable(clickable);
+    return true;
 }
 
-void MMSWidget::setReturnOnScroll(bool returnonscroll) {
-	myWidgetClass.setClickable(returnonscroll);
+bool MMSWidget::setReturnOnScroll(bool returnonscroll) {
+	if (!this->da) return false;
+	this->da->myWidgetClass.setClickable(returnonscroll);
+    return true;
 }
 
-void MMSWidget::setInputMode(string inputmode) {
-    myWidgetClass.setInputMode(inputmode);
+bool MMSWidget::setInputMode(string inputmode) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setInputMode(inputmode);
+    return true;
 }
 
-void MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
-    myWidgetClass.border.setColor(bordercolor);
+bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setColor(bordercolor);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderSelColor(MMSFBColor borderselcolor, bool refresh) {
-    myWidgetClass.border.setSelColor(borderselcolor);
+bool MMSWidget::setBorderSelColor(MMSFBColor borderselcolor, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setSelColor(borderselcolor);
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderImagePath(string borderimagepath, bool load, bool refresh) {
-    myWidgetClass.border.setImagePath(borderimagepath);
+bool MMSWidget::setBorderImagePath(string borderimagepath, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setImagePath(borderimagepath);
     if (load)
         if (this->rootwindow) {
             string path, name;
             if (!getBorderImagePath(path)) path = "";
             for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-	            this->rootwindow->im->releaseImage(this->borderimages[i]);
+	            this->rootwindow->im->releaseImage(this->da->borderimages[i]);
 	            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-	            this->borderimages[i] = this->rootwindow->im->getImage(path, name);
+	            this->da->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
+bool MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
                                     string imagename_5, string imagename_6, string imagename_7, string imagename_8,
                                     bool load, bool refresh) {
-    myWidgetClass.border.setImageNames(imagename_1, imagename_2, imagename_3, imagename_4,
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setImageNames(imagename_1, imagename_2, imagename_3, imagename_4,
                                        imagename_5, imagename_6, imagename_7, imagename_8);
     if (load)
         if (this->rootwindow) {
             string path, name;
             if (!getBorderImagePath(path)) path = "";
             for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-	            this->rootwindow->im->releaseImage(this->borderimages[i]);
+	            this->rootwindow->im->releaseImage(this->da->borderimages[i]);
 	            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-	            this->borderimages[i] = this->rootwindow->im->getImage(path, name);
+	            this->da->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderSelImagePath(string borderselimagepath, bool load, bool refresh) {
-    myWidgetClass.border.setSelImagePath(borderselimagepath);
+bool MMSWidget::setBorderSelImagePath(string borderselimagepath, bool load, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setSelImagePath(borderselimagepath);
     if (load)
         if (this->rootwindow) {
             string path, name;
             if (!getBorderSelImagePath(path)) path = "";
             for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-	            this->rootwindow->im->releaseImage(this->borderselimages[i]);
+	            this->rootwindow->im->releaseImage(this->da->borderselimages[i]);
 	            if (!getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-	            this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+	            this->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagename_2, string selimagename_3, string selimagename_4,
+bool MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagename_2, string selimagename_3, string selimagename_4,
                                        string selimagename_5, string selimagename_6, string selimagename_7, string selimagename_8,
                                        bool load, bool refresh) {
-    myWidgetClass.border.setSelImageNames(selimagename_1, selimagename_2, selimagename_3, selimagename_4,
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setSelImageNames(selimagename_1, selimagename_2, selimagename_3, selimagename_4,
                                           selimagename_5, selimagename_6, selimagename_7, selimagename_8);
     if (load)
         if (this->rootwindow) {
@@ -2841,38 +3000,45 @@ void MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagenam
             if (!getBorderSelImagePath(path)) path = "";
 
             for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-	            this->rootwindow->im->releaseImage(this->borderselimages[i]);
+	            this->rootwindow->im->releaseImage(this->da->borderselimages[i]);
 	            if (!getBorderSelImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-	            this->borderselimages[i] = this->rootwindow->im->getImage(path, name);
+	            this->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderThickness(unsigned int borderthickness, bool refresh) {
-    myWidgetClass.border.setThickness(borderthickness);
+bool MMSWidget::setBorderThickness(unsigned int borderthickness, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setThickness(borderthickness);
 
     setInnerGeometry();
 
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderMargin(unsigned int bordermargin, bool refresh) {
-    myWidgetClass.border.setMargin(bordermargin);
+bool MMSWidget::setBorderMargin(unsigned int bordermargin, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setMargin(bordermargin);
 
     setInnerGeometry();
 
     if (refresh)
         this->refresh();
+    return true;
 }
 
-void MMSWidget::setBorderRCorners(bool borderrcorners, bool refresh) {
-    myWidgetClass.border.setRCorners(borderrcorners);
+bool MMSWidget::setBorderRCorners(bool borderrcorners, bool refresh) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.border.setRCorners(borderrcorners);
 
     if (refresh)
         this->refresh();
+    return true;
 }
 
 void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {

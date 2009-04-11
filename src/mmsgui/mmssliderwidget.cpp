@@ -50,10 +50,13 @@ MMSSliderWidget::~MMSSliderWidget() {
 bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_SLIDER;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->sliderWidgetClass = this->theme->getSliderWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->sliderWidgetClass.widgetClass);
-    if (this->sliderWidgetClass) this->widgetClass = &(this->sliderWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->sliderWidgetClass = this->da->theme->getSliderWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->sliderWidgetClass.widgetClass);
+    if (this->sliderWidgetClass) this->da->widgetClass = &(this->sliderWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     /* clear */
     this->image = NULL;
@@ -285,7 +288,7 @@ bool MMSSliderWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) 
 #define GETSLIDER(x) \
     if (this->mySliderWidgetClass.is##x()) return mySliderWidgetClass.get##x(); \
     else if ((sliderWidgetClass)&&(sliderWidgetClass->is##x())) return sliderWidgetClass->get##x(); \
-    else return this->theme->sliderWidgetClass.get##x();
+    else return this->da->theme->sliderWidgetClass.get##x();
 
 string MMSSliderWidget::getImagePath() {
     GETSLIDER(ImagePath);

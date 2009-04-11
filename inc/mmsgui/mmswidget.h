@@ -177,84 +177,156 @@ class MMSWidget {
         //! type of the widget
         MMSWIDGETTYPE 		type;
 
-        MMSTheme            *theme;             /* access to the theme which is used */
-        MMSWidgetClass      *baseWidgetClass;
-        MMSWidgetClass      *widgetClass;
-        MMSWidgetClass      myWidgetClass;
+        //! describes attributes for drawable widgets
+        typedef struct {
+        	//! access to the theme which is used
+            MMSTheme            *theme;
+            //! defaults from code
+            MMSWidgetClass      *baseWidgetClass;
+            //! settings from theme which overides defaults from code
+            MMSWidgetClass      *widgetClass;
+            //! settings from widget which overides settings from theme and defaults from code
+            MMSWidgetClass      myWidgetClass;
 
-        class MMSWidgetThread *widgetthread;
+            //! pointer to a widget thread if needed
+            class MMSWidgetThread *widgetthread;
 
-        bool                initialized;
-        MMSFBSurface        *bgimage;
-        MMSFBSurface        *selbgimage;
-        MMSFBSurface        *bgimage_p;
-        MMSFBSurface        *selbgimage_p;
-        MMSFBSurface        *bgimage_i;
-        MMSFBSurface        *selbgimage_i;
+            //! background image used for unselected state
+            MMSFBSurface        *bgimage;
+            //! background image used for selected state
+            MMSFBSurface        *selbgimage;
+            //! background image used for unselected-pressed state
+            MMSFBSurface        *bgimage_p;
+            //! background image used for selected-pressed state
+            MMSFBSurface        *selbgimage_p;
+            //! background image used for unselected-inactive state
+            MMSFBSurface        *bgimage_i;
+            //! background image used for selected-inactive state
+            MMSFBSurface        *selbgimage_i;
 
-        MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
-        MMSFBRectangle        bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
-        bool                bordergeomset;
-        MMSFBSurface        *borderselimages[MMSBORDER_IMAGE_NUM_SIZE];
-        MMSFBRectangle        borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
-        bool                borderselgeomset;
+            //! border images used for unselected state
+            MMSFBSurface		*borderimages[MMSBORDER_IMAGE_NUM_SIZE];
+            //! geometry for border images (unselected state)
+            MMSFBRectangle		bordergeom[MMSBORDER_IMAGE_NUM_SIZE];
+            //! geometry for border images already set (unselected state)
+            bool				bordergeomset;
 
-        //! window on which the widget is connected
-        MMSWindow			*rootwindow;
+            //! border images used for selected state
+            MMSFBSurface		*borderselimages[MMSBORDER_IMAGE_NUM_SIZE];
+            //! geometry for border images (selected state)
+            MMSFBRectangle		borderselgeom[MMSBORDER_IMAGE_NUM_SIZE];
+            //! geometry for border images already set (selected state)
+            bool				borderselgeomset;
+
+            //! widget which represents e.g. an arrow which selected state will be switched to true if content of widget can be scrolled up
+            MMSWidget	*upArrowWidget;
+            //! widget which represents e.g. an arrow which selected state will be switched to true if content of widget can be scrolled down
+            MMSWidget	*downArrowWidget;
+            //! widget which represents e.g. an arrow which selected state will be switched to true if content of widget can be scrolled left
+            MMSWidget	*leftArrowWidget;
+            //! widget which represents e.g. an arrow which selected state will be switched to true if content of widget can be scrolled right
+            MMSWidget	*rightArrowWidget;
+            //! the arrow widgets are initial drawn?
+            bool		initialArrowsDrawn;
+
+            //! widget to which is to navigate if user press cursor up
+            MMSWidget	*navigateUpWidget;
+            //! widget to which is to navigate if user press cursor down
+            MMSWidget	*navigateDownWidget;
+            //! widget to which is to navigate if user press cursor left
+            MMSWidget	*navigateLeftWidget;
+            //! widget to which is to navigate if user press cursor right
+            MMSWidget	*navigateRightWidget;
+
+            //! vertical slider widget
+            MMSWidget	*vSliderWidget;
+            //! horizontal slider widget
+            MMSWidget	*hSliderWidget;
+
+            //! store last input event here
+            MMSInputEvent	last_inputevent;
+
+            //! current scroll posx
+            unsigned int scrollPosX;
+            //! current scroll posy
+            unsigned int scrollPosY;
+            //! horizontal scroll distance
+            unsigned int scrollDX;
+            //! vertical scroll distance
+            unsigned int scrollDY;
+        } MMSWIDGET_DRAWABLE_ATTRIBUTES;
+
+        //! save attributes for drawable widgets
+        MMSWIDGET_DRAWABLE_ATTRIBUTES	*da;
+
+        //! is widget initialized?
+        bool	initialized;
+
+        //! id of the widget
+        int		id;
+
+        //! name of the widget
+        string	name;
+
+        //! size of the widget
+    	string	sizehint;
+
+    	//! optional & application specific pointer to any data
+    	void *bindata;
+
+    	//! window to which the widget is connected
+        MMSWindow	*rootwindow;
 
         //! the toplevel parent window
-        MMSWindow 			*parent_rootwindow;
+        MMSWindow	*parent_rootwindow;
 
-        int    id;
-        string name;
-
+        //! is widget drawable?
         bool drawable;
+
+        //! should parent widget be drawn before drawing this widget?
         bool needsparentdraw;
+
+        //! initial setting: focusable flag
         bool focusable_initial;
+
+        //! initial setting: selectable flag
         bool selectable_initial;
-        bool canhavechildren;
-        bool canselectchildren;
+
+        //! initial setting: clickable flag
         bool clickable_initial;
 
-        bool focused;
-        bool selected;
-        bool activated;
-        bool pressed;
+        //! children allowed?
+        bool canhavechildren;
 
-        unsigned char brightness;
-        unsigned char opacity;
+        //! children's selected state can be changed?
+        bool canselectchildren;
 
-//        vector<INPUT_CB *> inputs;
-
-    /* fixme: must be sth more apreciable */
-	void *bindata;
-	string sizehint;
-
+        //! visible?
         bool visible;
 
-        MMSWidget       *upArrowWidget;
-        MMSWidget       *downArrowWidget;
-        MMSWidget       *leftArrowWidget;
-        MMSWidget       *rightArrowWidget;
+        //! focused?
+        bool focused;
 
-        bool            initialArrowsDrawn;
+        //! selected?
+        bool selected;
 
-        MMSWidget       *navigateUpWidget;
-        MMSWidget       *navigateDownWidget;
-        MMSWidget       *navigateLeftWidget;
-        MMSWidget       *navigateRightWidget;
+        //! activated?
+        bool activated;
 
-        MMSWidget       *vSliderWidget;
-        MMSWidget       *hSliderWidget;
+        //! button pressed?
+        bool pressed;
 
-        MMSInputEvent 	last_inputevent;
+        //! brightness of the widget 0..255, default 255
+        unsigned char brightness;
 
+        //! opacity of the widget 0..255, default 255
+        unsigned char opacity;
 
-
+        //! widget is using a subsurface or has an own surface?
         bool has_own_surface;
 
 
-        void loadArrowWidgets();
+        bool loadArrowWidgets();
         virtual void switchArrowWidgets();
 
         bool create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
@@ -318,7 +390,6 @@ class MMSWidget {
         bool canHaveChildren();
         bool canSelectChildren();
 
-//        virtual void handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *requestingchild);
         void setBinData(void *data);
         void *getBinData();
         bool setSizeHint(string &hint);
@@ -389,7 +460,6 @@ class MMSWidget {
         virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
         virtual void setRootWindow(MMSWindow *root, MMSWindow *parentroot = NULL);
         virtual void recalculateChildren();
-//        void registerInput(DFBInputDeviceKeySymbol key, GUIINPUTCALLBACK cb);
         virtual void handleInput(MMSInputEvent *inputevent);
 
         virtual bool callOnReturn() { return true; }
@@ -404,7 +474,6 @@ class MMSWidget {
                                              bool checkborder = true, vector<MMSWidget*> *wlist = NULL, bool followpath = false);
         void refresh();
 
-//        IDirectFB *dfb;
         MMSFBSurface *windowSurface;
 
         MMSFBSurface *surface;
@@ -413,10 +482,6 @@ class MMSWidget {
         virtual void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
         virtual void setInnerGeometry();
 
-        unsigned int scrollPosX;
-        unsigned int scrollPosY;
-        unsigned int scrollDX;
-        unsigned int scrollDY;
         bool setScrollSize(unsigned int dX = 8, unsigned int dY = 8);
         bool setScrollPos(int posX = 0, int posY = 0, bool refresh = true, bool test = false);
         MMSFBRectangle getVisibleSurfaceArea();
@@ -481,59 +546,59 @@ class MMSWidget {
         bool	getBorderMargin(unsigned int &margin);
         bool 	getBorderRCorners(bool &rcorners);
 
-        void setBgColor(MMSFBColor bgcolor, bool refresh = true);
-        void setSelBgColor(MMSFBColor selbgcolor, bool refresh = true);
-        void setBgColor_p(MMSFBColor bgcolor_p, bool refresh = true);
-        void setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh = true);
-        void setBgColor_i(MMSFBColor bgcolor_i, bool refresh = true);
-        void setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh = true);
-        void setBgImagePath(string bgimagepath, bool load = true, bool refresh = true);
-        void setBgImageName(string bgimagename, bool load = true, bool refresh = true);
-        void setSelBgImagePath(string selbgimagepath, bool load = true, bool refresh = true);
-        void setSelBgImageName(string selbgimagename, bool load = true, bool refresh = true);
-        void setBgImagePath_p(string bgimagepath_p, bool load = true, bool refresh = true);
-        void setBgImageName_p(string bgimagename_p, bool load = true, bool refresh = true);
-        void setSelBgImagePath_p(string selbgimagepath_p, bool load = true, bool refresh = true);
-        void setSelBgImageName_p(string selbgimagename_p, bool load = true, bool refresh = true);
-        void setBgImagePath_i(string bgimagepath_i, bool load = true, bool refresh = true);
-        void setBgImageName_i(string bgimagename_i, bool load = true, bool refresh = true);
-        void setSelBgImagePath_i(string selbgimagepath_i, bool load = true, bool refresh = true);
-        void setSelBgImageName_i(string selbgimagename_i, bool load = true, bool refresh = true);
-        void setMargin(unsigned int margin, bool refresh = true);
+        bool setBgColor(MMSFBColor bgcolor, bool refresh = true);
+        bool setSelBgColor(MMSFBColor selbgcolor, bool refresh = true);
+        bool setBgColor_p(MMSFBColor bgcolor_p, bool refresh = true);
+        bool setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh = true);
+        bool setBgColor_i(MMSFBColor bgcolor_i, bool refresh = true);
+        bool setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh = true);
+        bool setBgImagePath(string bgimagepath, bool load = true, bool refresh = true);
+        bool setBgImageName(string bgimagename, bool load = true, bool refresh = true);
+        bool setSelBgImagePath(string selbgimagepath, bool load = true, bool refresh = true);
+        bool setSelBgImageName(string selbgimagename, bool load = true, bool refresh = true);
+        bool setBgImagePath_p(string bgimagepath_p, bool load = true, bool refresh = true);
+        bool setBgImageName_p(string bgimagename_p, bool load = true, bool refresh = true);
+        bool setSelBgImagePath_p(string selbgimagepath_p, bool load = true, bool refresh = true);
+        bool setSelBgImageName_p(string selbgimagename_p, bool load = true, bool refresh = true);
+        bool setBgImagePath_i(string bgimagepath_i, bool load = true, bool refresh = true);
+        bool setBgImageName_i(string bgimagename_i, bool load = true, bool refresh = true);
+        bool setSelBgImagePath_i(string selbgimagepath_i, bool load = true, bool refresh = true);
+        bool setSelBgImageName_i(string selbgimagename_i, bool load = true, bool refresh = true);
+        bool setMargin(unsigned int margin, bool refresh = true);
         bool setFocusable(bool focusable, bool refresh = true);
         bool setSelectable(bool selectable, bool refresh = true);
-        void setUpArrow(string uparrow, bool refresh = true);
-        void setDownArrow(string downarrow, bool refresh = true);
-        void setLeftArrow(string leftarrow, bool refresh = true);
-        void setRightArrow(string rightarrow, bool refresh = true);
-        void setData(string data);
-        void setNavigateUp(string navigateup);
-        void setNavigateDown(string navigatedown);
-        void setNavigateLeft(string navigateleft);
-        void setNavigateRight(string navigateright);
-        void setVSlider(string vslider);
-        void setHSlider(string hslider);
-        void setImagesOnDemand(bool imagesondemand);
-        void setBlend(unsigned int blend, bool refresh = true);
-        void setBlendFactor(double blendfactor, bool refresh = true);
-        void setScrollOnFocus(bool scrollonfocus);
-        void setClickable(bool clickable);
-        void setReturnOnScroll(bool returnonscroll);
-        void setInputMode(string inputmode);
+        bool setUpArrow(string uparrow, bool refresh = true);
+        bool setDownArrow(string downarrow, bool refresh = true);
+        bool setLeftArrow(string leftarrow, bool refresh = true);
+        bool setRightArrow(string rightarrow, bool refresh = true);
+        bool setData(string data);
+        bool setNavigateUp(string navigateup);
+        bool setNavigateDown(string navigatedown);
+        bool setNavigateLeft(string navigateleft);
+        bool setNavigateRight(string navigateright);
+        bool setVSlider(string vslider);
+        bool setHSlider(string hslider);
+        bool setImagesOnDemand(bool imagesondemand);
+        bool setBlend(unsigned int blend, bool refresh = true);
+        bool setBlendFactor(double blendfactor, bool refresh = true);
+        bool setScrollOnFocus(bool scrollonfocus);
+        bool setClickable(bool clickable);
+        bool setReturnOnScroll(bool returnonscroll);
+        bool setInputMode(string inputmode);
 
-        void setBorderColor(MMSFBColor bordercolor, bool refresh = true);
-        void setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);
-        void setBorderImagePath(string borderimagepath, bool load = true, bool refresh = true);
-        void setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
+        bool setBorderColor(MMSFBColor bordercolor, bool refresh = true);
+        bool setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);
+        bool setBorderImagePath(string borderimagepath, bool load = true, bool refresh = true);
+        bool setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
                                  string imagename_5, string imagename_6, string imagename_7, string imagename_8,
                                  bool load = true, bool refresh = true);
-        void setBorderSelImagePath(string borderselimagepath, bool load = true, bool refresh = true);
-        void setBorderSelImageNames(string selimagename_1, string selimagename_2, string selimagename_3, string selimagename_4,
+        bool setBorderSelImagePath(string borderselimagepath, bool load = true, bool refresh = true);
+        bool setBorderSelImageNames(string selimagename_1, string selimagename_2, string selimagename_3, string selimagename_4,
                                     string selimagename_5, string selimagename_6, string selimagename_7, string selimagename_8,
                                     bool load = true, bool refresh = true);
-        void setBorderThickness(unsigned int borderthickness, bool refresh = true);
-        void setBorderMargin(unsigned int bordermargin, bool refresh = true);
-        void setBorderRCorners(bool borderrcorners, bool refresh = true);
+        bool setBorderThickness(unsigned int borderthickness, bool refresh = true);
+        bool setBorderMargin(unsigned int bordermargin, bool refresh = true);
+        bool setBorderRCorners(bool borderrcorners, bool refresh = true);
 
         void updateFromThemeClass(MMSWidgetClass *themeClass);
 

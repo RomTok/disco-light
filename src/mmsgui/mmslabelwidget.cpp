@@ -47,10 +47,13 @@ MMSLabelWidget::~MMSLabelWidget() {
 bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_LABEL;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->labelWidgetClass = this->theme->getLabelWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->labelWidgetClass.widgetClass);
-    if (this->labelWidgetClass) this->widgetClass = &(this->labelWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->labelWidgetClass = this->da->theme->getLabelWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->labelWidgetClass.widgetClass);
+    if (this->labelWidgetClass) this->da->widgetClass = &(this->labelWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     /* clear */
     this->font = NULL;
@@ -213,7 +216,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 #define GETLABEL(x) \
     if (this->myLabelWidgetClass.is##x()) return myLabelWidgetClass.get##x(); \
     else if ((labelWidgetClass)&&(labelWidgetClass->is##x())) return labelWidgetClass->get##x(); \
-    else return this->theme->labelWidgetClass.get##x();
+    else return this->da->theme->labelWidgetClass.get##x();
 
 string MMSLabelWidget::getFontPath() {
     GETLABEL(FontPath);

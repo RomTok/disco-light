@@ -38,10 +38,13 @@ MMSProgressBarWidget::~MMSProgressBarWidget() {
 bool MMSProgressBarWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_PROGRESSBAR;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->progressBarWidgetClass = this->theme->getProgressBarWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->progressBarWidgetClass.widgetClass);
-    if (this->progressBarWidgetClass) this->widgetClass = &(this->progressBarWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->progressBarWidgetClass = this->da->theme->getProgressBarWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->progressBarWidgetClass.widgetClass);
+    if (this->progressBarWidgetClass) this->da->widgetClass = &(this->progressBarWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     return MMSWidget::create(root, true, false, false, true, true, true, false);
 }
@@ -121,7 +124,7 @@ bool MMSProgressBarWidget::draw(bool *backgroundFilled) {
 #define GETPBAR(x) \
     if (this->myProgressBarWidgetClass.is##x()) return myProgressBarWidgetClass.get##x(); \
     else if ((progressBarWidgetClass)&&(progressBarWidgetClass->is##x())) return progressBarWidgetClass->get##x(); \
-    else return this->theme->progressBarWidgetClass.get##x();
+    else return this->da->theme->progressBarWidgetClass.get##x();
 
 MMSFBColor MMSProgressBarWidget::getColor() {
     GETPBAR(Color);

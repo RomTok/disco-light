@@ -43,10 +43,13 @@ MMSTextBoxWidget::~MMSTextBoxWidget() {
 bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_TEXTBOX;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->textBoxWidgetClass = this->theme->getTextBoxWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->textBoxWidgetClass.widgetClass);
-    if (this->textBoxWidgetClass) this->widgetClass = &(this->textBoxWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->textBoxWidgetClass = this->da->theme->getTextBoxWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->textBoxWidgetClass.widgetClass);
+    if (this->textBoxWidgetClass) this->da->widgetClass = &(this->textBoxWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     /* clear */
     this->font = NULL;
@@ -184,13 +187,14 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         }
 
         if ((x==0)||(endpos <= *realWidth)||(wrap==false)) {
-            if (endpos > *realWidth)
+            if (endpos > *realWidth) {
                 if (wrap==false)
                     *realWidth = endpos;
                 else {
                     mywordgeom->geom.w-= endpos - *realWidth;
                     endpos = *realWidth;
                 }
+            }
 
             mywordgeom->geom.x = x;
             mywordgeom->geom.y = y;
@@ -376,8 +380,8 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y);
 					else
 						this->surface->drawString(this->wordgeom.at(i)->word, -1,
-						                          surfaceGeom.x + this->wordgeom.at(i)->geom.x - scrollPosX,
-						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y - scrollPosY);
+						                          surfaceGeom.x + this->wordgeom.at(i)->geom.x - this->da->scrollPosX,
+						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y - this->da->scrollPosY);
                 }
             }
         }
@@ -402,7 +406,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 #define GETTEXTBOX(x) \
     if (this->myTextBoxWidgetClass.is##x()) return myTextBoxWidgetClass.get##x(); \
     else if ((textBoxWidgetClass)&&(textBoxWidgetClass->is##x())) return textBoxWidgetClass->get##x(); \
-    else return this->theme->textBoxWidgetClass.get##x();
+    else return this->da->theme->textBoxWidgetClass.get##x();
 
 string MMSTextBoxWidget::getFontPath() {
     GETTEXTBOX(FontPath);
@@ -522,8 +526,8 @@ void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 void MMSTextBoxWidget::setText(string text, bool refresh) {
     myTextBoxWidgetClass.setText(text);
-    this->scrollPosX=0;
-    this->scrollPosY=0;
+    this->da->scrollPosX=0;
+    this->da->scrollPosY=0;
     if (refresh)
         this->refresh();
 }

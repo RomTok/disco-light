@@ -47,10 +47,13 @@ MMSCheckBoxWidget::~MMSCheckBoxWidget() {
 bool MMSCheckBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_CHECKBOX;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->checkBoxWidgetClass = this->theme->getCheckBoxWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->checkBoxWidgetClass.widgetClass);
-    if (this->checkBoxWidgetClass) this->widgetClass = &(this->checkBoxWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->checkBoxWidgetClass = this->da->theme->getCheckBoxWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->checkBoxWidgetClass.widgetClass);
+    if (this->checkBoxWidgetClass) this->da->widgetClass = &(this->checkBoxWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     /* clear */
     this->checked_bgimage = NULL;
@@ -401,7 +404,7 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
 #define GETCHECKBOX(x,y) \
     if (this->myCheckBoxWidgetClass.is##x()) return myCheckBoxWidgetClass.get##x(y); \
     else if ((checkBoxWidgetClass)&&(checkBoxWidgetClass->is##x())) return checkBoxWidgetClass->get##x(y); \
-    else return this->theme->checkBoxWidgetClass.get##x(y);
+    else return this->da->theme->checkBoxWidgetClass.get##x(y);
 
 
 bool MMSCheckBoxWidget::getCheckedBgColor(MMSFBColor &checked_bgcolor) {
