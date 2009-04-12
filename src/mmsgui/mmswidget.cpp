@@ -132,8 +132,6 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 //    logger.writeLog("Create MMSWidget");
 
 	if (drawable) {
-		printf("drawable widget %d, sizeof widget %d\n", this->type, sizeof(MMSWidget));
-
 		// init attributes for drawable widgets
 		// we assume, that this->da will be allocated by the caller!!!
 		this->da->widgetthread = NULL;
@@ -169,16 +167,13 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 	    this->da->scrollDX = 8;
 	    this->da->scrollDY = 8;
 
-	    // initialize the callbacks
 	    onSelect = new sigc::signal<void, MMSWidget*>;
 	    onFocus  = new sigc::signal<void, MMSWidget*, bool>;
 	    onReturn = new sigc::signal<void, MMSWidget*>;
 	    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 	}
 	else {
-		printf("non-drawable widget %d, sizeof widget %d\n", this->type, sizeof(MMSWidget));
-
-	    // initialize the callbacks
+		// init attributes for non-drawable widgets
 	    onSelect = NULL;
 	    onFocus  = NULL;
 	    onReturn = NULL;
