@@ -84,7 +84,7 @@ void MMSTextBoxWidget::setSurfaceGeometry(unsigned int width, unsigned int heigh
    	MMSWidget::setSurfaceGeometry(width, height);
 }
 
-bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsigned int startHeight,
+bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
                               unsigned int *realWidth, unsigned int *realHeight,
                               unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
                               bool wrap, bool splitwords, MMSALIGNMENT alignment) {
@@ -339,7 +339,22 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     if (this->font) {
         unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
 
-        if (calcWordGeom(getText(), getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
+        if (!this->translated) {
+        	if (this->rootwindow) {
+				// translate the text
+        		string source = getText();
+        		this->rootwindow->translator.translate(source, this->translated_text);
+        	}
+        	else {
+        		// fallback
+				this->translated_text = getText();
+        	}
+
+        	// mark as translated
+        	this->translated = true;
+        }
+
+        if (calcWordGeom(this->translated_text, getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
                          &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
             /* text has changed, reset something */
         	setScrollSize(scrollDX, scrollDY);

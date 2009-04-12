@@ -55,6 +55,12 @@ class MMSLabelWidget : public MMSWidget {
 
         class MMSLabelWidgetThread  *labelThread;
 
+        //! the translated text will be stored here, this is used in the draw() method
+        string translated_text;
+
+        //! if true the translated_text is valid
+        bool translated;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
     public:

@@ -62,6 +62,7 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->frame_delay = 100;
     this->frame_delay_set = false;
     this->labelThread = NULL;
+    this->translated = false;
 
     return MMSWidget::create(root, true, false, false, true, false, false, false);
 }
@@ -130,10 +131,23 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 
             this->surface->setFont(this->font);
 
-            string text = getText();
+            if (!this->translated) {
+            	if (this->rootwindow) {
+					// translate the text
+            		string source = getText();
+            		this->rootwindow->translator.translate(source, this->translated_text);
+            	}
+            	else {
+            		// fallback
+					this->translated_text = getText();
+            	}
+
+            	// mark as translated
+            	this->translated = true;
+            }
 
             /* get width and height of the string to be drawn */
-            this->font->getStringWidth(text, -1, &width);
+            this->font->getStringWidth(this->translated_text, -1, &width);
             this->font->getHeight(&height);
 
             // save the width of the text
@@ -194,7 +208,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
                 /* draw the text */
-                this->surface->drawString(text, -1, x - this->slid_offset, y);
+                this->surface->drawString(this->translated_text, -1, x - this->slid_offset, y);
             }
         }
 
@@ -324,6 +338,7 @@ void MMSLabelWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 void MMSLabelWidget::setText(string text, bool refresh) {
     myLabelWidgetClass.setText(text);
+    this->translated = false;
     if (refresh)
         this->refresh();
 }

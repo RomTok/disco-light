@@ -59,6 +59,13 @@ class MMSTextBoxWidget : public MMSWidget {
         string  lasttext;
         bool    surfaceChanged;
 
+        //! the translated text will be stored here, this is used in the draw() method
+        string translated_text;
+
+        //! if true the translated_text is valid
+        bool translated;
+
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
@@ -69,7 +76,7 @@ class MMSTextBoxWidget : public MMSWidget {
 
         MMSWidget *copyWidget();
 
-        bool calcWordGeom(string text, unsigned int startWidth, unsigned int startHeight,
+        bool calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
                           unsigned int *realWidth, unsigned int *realHeight,
                           unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
                           bool wrap = true, bool splitwords = true, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER);
