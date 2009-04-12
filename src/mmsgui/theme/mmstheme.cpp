@@ -76,6 +76,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"checkbox",		NULL, 	NULL,			MMSGUI_CHECKBOXWIDGET_ATTR_I	},
 	{	"class", 		"type",	"checkbox",		MMSGUI_CHECKBOXWIDGET_ATTR_I	},
+	{	"gap",			NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 

@@ -255,6 +255,9 @@ void MMSDialogManager::throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, 
         		case MMSGUI_TAGTABLE_TAG_CHECKBOXWIDGET:
                     widgetName = getCheckBoxValues(tafff, currentWidget, rootWindow, theme);
                     break;
+        		case MMSGUI_TAGTABLE_TAG_GAPWIDGET:
+                    widgetName = getGapValues(tafff, currentWidget, rootWindow, theme);
+                    break;
         		}
 
                 if(widgetName != "") {
@@ -802,6 +805,8 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
                         /* apply settings from dialog */
                         ((MMSCheckBoxWidget*)mywidget)->updateFromThemeClass(&themeCls);
                     }
+                    break;
+                case MMSWIDGETTYPE_GAP:
                     break;
             }
         }
@@ -1384,6 +1389,8 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 		                                        ((MMSCheckBoxWidget*)widget)->updateFromThemeClass(&themeCls);
 		                                    }
 		                                    break;
+		                                case MMSWIDGETTYPE_GAP:
+		                                    break;
 		                            }
 		                        }
 		                    }
@@ -1750,6 +1757,45 @@ string MMSDialogManager::getCheckBoxValues(MMSTaffFile *tafff, MMSWidget *curren
     /* return the name of the widget */
     return name;
 }
+
+string MMSDialogManager::getGapValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
+    MMSGapWidget *gap;
+    string  name = "";
+    string  size = "";
+
+    startTAFFScan
+    {
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
+            name = attrval_str;
+			break;
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_size:
+	        size = attrval_str;
+			break;
+	    }
+    }
+    endTAFFScan
+
+	gap = new MMSGapWidget(rootWindow);
+
+    /* add to widget vector if named */
+    if(name != "") {
+        gap->setName(name);
+        insertNamedWidget(gap);
+    }
+
+	if(size != "")
+	    gap->setSizeHint(size);
+
+	if (currentWidget)
+        currentWidget->add(gap);
+    else
+        rootWindow->add(gap);
+
+    /* return the name of the widget */
+    return name;
+}
+
 
 
 

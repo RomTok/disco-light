@@ -32,11 +32,6 @@
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
 
-/* string constants for xml identifiers */
-#define XML_ID_DIALOG       "mmsdialog"
-#define XML_ID_VBOX         "vbox"
-#define XML_ID_HBOX         "hbox"
-
 class MMSDialogManager {
 	private:
         MMSWindow               *rootWindow;
@@ -73,6 +68,7 @@ class MMSDialogManager {
         string getSliderValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getInputValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getCheckBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getGapValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
 
     public:
         MMSDialogManager();

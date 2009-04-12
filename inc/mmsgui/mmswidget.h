@@ -134,30 +134,32 @@ MMS_CREATEERROR(MMSWidgetError);
 
 //! The available types of widgets.
 typedef enum {
-	//! A MMSHBox can contain 0 to n widgets. The widgets will be arranged in one horizontal row (0..n columns).
+	//! A MMSHBoxWidget can contain 0 to n widgets. The widgets will be arranged in one horizontal row (0..n columns).
     MMSWIDGETTYPE_HBOX = 0,
-	//! A MMSVBox can contain 0 to n widgets. The widgets will be arranged in one vertical column (0..n rows).
+	//! A MMSVBoxWidget can contain 0 to n widgets. The widgets will be arranged in one vertical column (0..n rows).
     MMSWIDGETTYPE_VBOX,
-    //! A MMSButton widget can get the focus and therefore can process inputs.
+    //! A MMSButtonWidget can get the focus and therefore can process inputs.
     MMSWIDGETTYPE_BUTTON,
-    //! A MMSImage widget cannot get the focus but can be selected.
+    //! A MMSImageWidget cannot get the focus but can be selected.
     MMSWIDGETTYPE_IMAGE,
-    //! A MMSLabel widget cannot get the focus but can be selected. It displays one line of text.
+    //! A MMSLabelWidget cannot get the focus but can be selected. It displays one line of text.
     MMSWIDGETTYPE_LABEL,
-    //! A MMSMenu widget can get the focus and therefore can process inputs. It displays one- or two-dimensional menus.
+    //! A MMSMenuWidget can get the focus and therefore can process inputs. It displays one- or two-dimensional menus.
     MMSWIDGETTYPE_MENU,
-    //! A MMSProgressBar widget cannot get the focus but can be selected.
+    //! A MMSProgressBarWidget cannot get the focus but can be selected.
     MMSWIDGETTYPE_PROGRESSBAR,
-    //! A MMSTextBox widget can get the focus and therefore can process inputs. It displays a formated multiline text.
+    //! A MMSTextBoxWidget can get the focus and therefore can process inputs. It displays a formated multiline text.
     MMSWIDGETTYPE_TEXTBOX,
-    //! A MMSArrow widget cannot get the focus but can be selected.
+    //! A MMSArrowWidget cannot get the focus but can be selected.
     MMSWIDGETTYPE_ARROW,
-    //! A MMSSlider widget cannot get the focus but can be selected.
+    //! A MMSSliderWidget cannot get the focus but can be selected.
     MMSWIDGETTYPE_SLIDER,
-    //! A MMSInput widget can get the focus and therefore can process inputs. You can display and edit one line of text.
+    //! A MMSInputWidget can get the focus and therefore can process inputs. You can display and edit one line of text.
     MMSWIDGETTYPE_INPUT,
-    //! A MMSCheckBox widget can get the focus and therefore can process inputs. You can display an on/off switch.
-    MMSWIDGETTYPE_CHECKBOX
+    //! A MMSCheckBoxWidget can get the focus and therefore can process inputs. You can display an on/off switch.
+    MMSWIDGETTYPE_CHECKBOX,
+	//! A MMSGapWidget is a spacer. It cannot have any children.
+    MMSWIDGETTYPE_GAP
 } MMSWIDGETTYPE;
 
 
@@ -616,6 +618,7 @@ class MMSWidget {
     friend class MMSSliderWidget;
     friend class MMSInputWidget;
     friend class MMSCheckBoxWidget;
+    friend class MMSGapWidget;
 };
 
 #include "mmswindow.h"

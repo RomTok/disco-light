@@ -41,6 +41,7 @@
 #include "mmsgui/mmssliderwidget.h"
 #include "mmsgui/mmsinputwidget.h"
 #include "mmsgui/mmscheckboxwidget.h"
+#include "mmsgui/mmsgapwidget.h"
 
 // for compatibility reasons map old widget class names to the new names
 #define MMSHBox 		MMSHBoxWidget
