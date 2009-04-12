@@ -1792,6 +1792,8 @@ string MMSDialogManager::getGapValues(MMSTaffFile *tafff, MMSWidget *currentWidg
     else
         rootWindow->add(gap);
 
+    throughDoc(tafff, gap, rootWindow, theme);
+
     /* return the name of the widget */
     return name;
 }
