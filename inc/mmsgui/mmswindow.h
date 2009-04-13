@@ -709,7 +709,18 @@ class MMSWindow {
 
         To connect your callback to onBeforeShow do this:
 
-        	mywindow->onBeforeShow->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            sigc::connection connection;
+            connection = mywindow->onBeforeShow->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onBeforeShow BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
         sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator> *onBeforeShow;
 
@@ -729,7 +740,18 @@ class MMSWindow {
 
         To connect your callback to onAfterShow do this:
 
-        	mywindow->onAfterShow->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            sigc::connection connection;
+            connection = mywindow->onAfterShow->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onAfterShow BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
         sigc::signal<void, MMSWindow*, bool> *onAfterShow;
 
@@ -755,7 +777,18 @@ class MMSWindow {
 
         To connect your callback to onBeforeHide do this:
 
-        	mywindow->onBeforeHide->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            sigc::connection connection;
+            connection = mywindow->onBeforeHide->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onBeforeHide BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
         sigc::signal<bool, MMSWindow*, bool>::accumulated<bool_accumulator> *onBeforeHide;
 
@@ -775,7 +808,18 @@ class MMSWindow {
 
         To connect your callback to onHide do this:
 
-        	mywindow->onHide->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            sigc::connection connection;
+            connection = mywindow->onHide->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onHide BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
         sigc::signal<void, MMSWindow*, bool> *onHide;
 
@@ -799,7 +843,18 @@ class MMSWindow {
 
         To connect your callback to onHandleInput do this:
 
-        	mywindow->onHandleInput->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            sigc::connection connection;
+            connection = mywindow->onHandleInput->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onHandleInput BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
         sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator> *onHandleInput;
 
