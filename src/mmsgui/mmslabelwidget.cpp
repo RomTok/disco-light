@@ -132,14 +132,15 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
             this->surface->setFont(this->font);
 
             if (!this->translated) {
-            	if (this->rootwindow) {
+            	if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
 					// translate the text
-            		string source = getText();
+            		string source;
+            		getText(source);
             		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
             	}
             	else {
-            		// fallback
-					this->translated_text = getText();
+            		// text can not or should not translated
+					getText(this->translated_text);
             	}
 
             	// mark as translated
@@ -236,6 +237,11 @@ void MMSLabelWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
     else if ((labelWidgetClass)&&(labelWidgetClass->is##x())) return labelWidgetClass->get##x(); \
     else return this->da->theme->labelWidgetClass.get##x();
 
+#define GETLABEL2(x,y) \
+    if (this->myLabelWidgetClass.is##x()) y=myLabelWidgetClass.get##x(); \
+    else if ((labelWidgetClass)&&(labelWidgetClass->is##x())) y=labelWidgetClass->get##x(); \
+    else y=this->da->theme->labelWidgetClass.get##x();
+
 string MMSLabelWidget::getFontPath() {
     GETLABEL(FontPath);
 }
@@ -264,12 +270,20 @@ string MMSLabelWidget::getText() {
     GETLABEL(Text);
 }
 
+void MMSLabelWidget::getText(string &text) {
+    GETLABEL2(Text, text);
+}
+
 bool MMSLabelWidget::getSlidable() {
     GETLABEL(Slidable);
 }
 
 unsigned int MMSLabelWidget::getSlideDelay() {
     GETLABEL(SlideDelay);
+}
+
+bool MMSLabelWidget::getTranslate() {
+    GETLABEL(Translate);
 }
 
 /***********************************************/
@@ -378,6 +392,13 @@ void MMSLabelWidget::setSlideDelay(unsigned int slidedelay) {
     this->frame_delay_set = false;
 }
 
+void MMSLabelWidget::setTranslate(bool translate, bool refresh) {
+    myLabelWidgetClass.setTranslate(translate);
+    this->translated = false;
+    if (refresh)
+        this->refresh();
+}
+
 void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
     if (themeClass->isFontPath())
         setFontPath(themeClass->getFontPath());
@@ -397,6 +418,8 @@ void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
         setSlidable(themeClass->getSlidable());
     if (themeClass->isSlideDelay())
         setSlideDelay(themeClass->getSlideDelay());
+    if (themeClass->isTranslate())
+        setTranslate(themeClass->getTranslate());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

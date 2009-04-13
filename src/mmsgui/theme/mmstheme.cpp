@@ -662,6 +662,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setText("");
         this->labelWidgetClass.setSlidable(false);
         this->labelWidgetClass.setSlideDelay(500);
+        this->labelWidgetClass.setTranslate(true);
     }
 
     /* MMSImageWidget */
@@ -1020,6 +1021,7 @@ MMSTheme::MMSTheme() {
         c.b = 255;
         this->textBoxWidgetClass.setSelColor(c);
         this->textBoxWidgetClass.setText("");
+        this->textBoxWidgetClass.setTranslate(true);
     }
 
     /* MMSArrowWidget */

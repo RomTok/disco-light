@@ -76,7 +76,7 @@ class MMSTextBoxWidget : public MMSWidget {
 
         MMSWidget *copyWidget();
 
-        bool calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
+        bool calcWordGeom(string text, unsigned int startWidth, unsigned int startHeight,
                           unsigned int *realWidth, unsigned int *realHeight,
                           unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
                           bool wrap = true, bool splitwords = true, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER);
@@ -85,6 +85,9 @@ class MMSTextBoxWidget : public MMSWidget {
         bool draw(bool *backgroundFilled = NULL);
 
     public:
+		//! inform the widget, that language has changed
+		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
+
         /* theme access methods */
         string getFontPath();
         string getFontName();
@@ -95,9 +98,8 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSFBColor getColor();
         MMSFBColor getSelColor();
         string getText();
-
-		//! inform the widget, that language has changed
-		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
+        void getText(string &text);
+        bool getTranslate();
 
 		void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
@@ -109,6 +111,7 @@ class MMSTextBoxWidget : public MMSWidget {
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true);
+        void setTranslate(bool translate, bool refresh = true);
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
 };

@@ -51,7 +51,8 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
 		{ "text", TAFF_ATTRTYPE_STRING }, \
 		{ "slidable", TAFF_ATTRTYPE_BOOL }, \
-		{ "slide_delay", TAFF_ATTRTYPE_INT }
+		{ "slide_delay", TAFF_ATTRTYPE_INT }, \
+		{ "translate", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_LABELWIDGET_ATTR_IDS \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_path, \
@@ -70,7 +71,8 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_b, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_text, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_slidable, \
-		MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay
+		MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay, \
+		MMSGUI_LABELWIDGET_ATTR_IDS_translate
 
 	#define MMSGUI_LABELWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -158,6 +160,12 @@ class MMSLabelWidgetClass {
 
         //! slide delay used if slidable set to true
         unsigned int   	slidedelay;
+
+        //! is translate set?
+        bool            istranslate;
+
+        //! if true the text will be translated before displayed
+        bool          	translate;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -351,6 +359,26 @@ class MMSLabelWidgetClass {
         \return slide delay
         */
         unsigned int getSlideDelay();
+
+
+        //! Check if the translate flag is set.
+        bool isTranslate();
+
+        //! Set the translate flag.
+        /*!
+        \param translate  true/false
+        */
+        void setTranslate(bool translate);
+
+        //! Mark the translate flag as not set.
+        void unsetTranslate();
+
+        //! Get the translate flag.
+        /*!
+        \return true/false
+        */
+        bool getTranslate();
+
 
     /* friends */
     friend class MMSThemeManager;
