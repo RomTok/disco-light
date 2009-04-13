@@ -33,13 +33,28 @@
 
 class MMSWindowManager : public IMMSWindowManager {
 	private:
-        MMSFBRectangle        vrect;  // visible screen area
+		//! visible screen area
+        MMSFBRectangle		vrect;
 
-        vector<MMSWindow*>  windows;
+        //! windows known by the window manager
+        vector<MMSWindow*>	windows;
+
+        //! the toplevel window
         MMSWindow           *toplevel;
+
+        //! the background window
         MMSWindow           *backgroundwindow;
 
+        //! translator instance which can be used to translate text
+        MMSTranslator		translator;
+
+        //! connection object for onTargetLangChanged callback
+        sigc::connection 	onTargetLangChanged_connection;
+
+
         void showBackgroundWindow();
+
+        void onTargetLangChanged(MMS_LANGUAGE_TYPE lang);
 
 	public:
 		MMSWindowManager(MMSFBRectangle vrect);
@@ -63,6 +78,8 @@ class MMSWindowManager : public IMMSWindowManager {
         MMSWindow *getBackgroundWindow();
 
         void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = true);
+
+        MMSTranslator *getTranslator();
 };
 
 /* access to global mmswindowmanager */

@@ -33,9 +33,13 @@
 MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
     this->vrect = vrect;
     this->toplevel = NULL;
+
+    // add language changed callback
+    onTargetLangChanged_connection = this->translator.onTargetLangChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onTargetLangChanged));
 }
 
 MMSWindowManager::~MMSWindowManager() {
+	onTargetLangChanged_connection.disconnect();
 }
 
 void MMSWindowManager::reset() {
@@ -178,4 +182,16 @@ void MMSWindowManager::showBackgroundWindow() {
 void MMSWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, bool pressed) {
 	mmsfbwindowmanager->setPointerPosition(pointer_posx, pointer_posy, pressed);
 }
+
+MMSTranslator *MMSWindowManager::getTranslator() {
+	return &this->translator;
+}
+
+
+void MMSWindowManager::onTargetLangChanged(MMS_LANGUAGE_TYPE lang) {
+	// the language has changed, inform all windows
+    for (unsigned int i = 0; i < this->windows.size(); i++)
+        this->windows.at(i)->targetLangChanged(lang);
+}
+
 

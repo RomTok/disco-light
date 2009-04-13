@@ -31,6 +31,7 @@
 
 #include <map>
 #include <string>
+#include <sigc++/sigc++.h>
 
 #include "mmsconfig/mmsconfigdata.h"
 
@@ -53,6 +54,8 @@ class MMSTranslator {
 
 		void translate(std::string &source, std::string &dest);
 		void setTargetLang(MMS_LANGUAGE_TYPE lang);
+
+        sigc::signal<void, MMS_LANGUAGE_TYPE> onTargetLangChanged;
 };
 
 #endif /* MMSTRANSLATOR_H_ */

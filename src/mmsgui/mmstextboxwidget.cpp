@@ -343,7 +343,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         	if (this->rootwindow) {
 				// translate the text
         		string source = getText();
-        		this->rootwindow->translator.translate(source, this->translated_text);
+        		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
         	}
         	else {
         		// fallback
@@ -413,6 +413,9 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 }
 
 
+void MMSTextBoxWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
+    this->translated = false;
+}
 
 /***********************************************/
 /* begin of theme access methods (get methods) */

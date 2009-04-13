@@ -30,6 +30,7 @@
 #define IMMSWINDOWMANAGER_H_
 
 #include "mmsgui/mmswindow.h"
+#include "mmscore/mmstranslator.h"
 
 
 class IMMSWindowManager {
@@ -55,6 +56,8 @@ class IMMSWindowManager {
         virtual MMSWindow *getBackgroundWindow() = 0;
 
         virtual void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = false) = 0;
+
+        virtual MMSTranslator *getTranslator() = 0;
 };
 
 #endif /*IMMSWINDOWMANAGER_H_*/

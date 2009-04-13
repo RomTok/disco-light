@@ -28,7 +28,7 @@
 
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
-#include "mmstools/tools.h"
+#include "mmsgui/mmswidgets.h"
 #include "mmsgui/mmsborder.h"
 #include <math.h>
 #include <stdlib.h>
@@ -3979,6 +3979,31 @@ void MMSWindow::setNavigateRightWindow(MMSWindow *rightWindow) {
 void MMSWindow::setNavigateLeftWindow(MMSWindow *leftWindow) {
     navigateLeftWindow = leftWindow;
 }
+
+
+void MMSWindow::targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh) {
+    // for all child windows
+    for (unsigned int i = 0; i < childwins.size(); i++)
+        childwins.at(i).window->targetLangChanged(lang, false);
+
+    // for my own children (widgets)
+    for (unsigned int i = 0; i < children.size(); i++)
+        switch (children.at(i)->getType()) {
+        case MMSWIDGETTYPE_LABEL:
+        	((MMSLabelWidget *)children.at(i))->targetLangChanged(lang);
+        	break;
+        case MMSWIDGETTYPE_TEXTBOX:
+        	((MMSTextBoxWidget *)children.at(i))->targetLangChanged(lang);
+        	break;
+        default:
+        	break;
+        }
+
+    // refresh it
+    if (refresh)
+    	this->refresh();
+}
+
 
 /***********************************************/
 /* begin of theme access methods (get methods) */

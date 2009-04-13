@@ -36,7 +36,6 @@
 #include "mmsgui/mmsfbmanager.h"
 #include "mmsgui/interfaces/immswindowmanager.h"
 #include "mmstools/mmsmutex.h"
-#include "mmscore/mmstranslator.h"
 
 
 //! The available types of windows.
@@ -301,9 +300,6 @@ class MMSWindow {
         //! child window on which the user has pressed the (mouse) button
         MMSWindow			*buttonpress_childwin;
 
-
-        //! translator instance which can be used by the widgets to translate text before output
-        MMSTranslator		translator;
 
 
         //! Internal method: Creates the window.
@@ -686,6 +682,11 @@ class MMSWindow {
 
         bool raiseToTop();
         bool lowerToBottom();
+
+
+		//! inform the window, that language has changed
+		void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
+
 
 
         //! Set one or more callbacks for the onBeforeShow event.

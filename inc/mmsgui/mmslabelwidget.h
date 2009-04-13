@@ -84,6 +84,9 @@ class MMSLabelWidget : public MMSWidget {
         bool getSlidable();
         unsigned int getSlideDelay();
 
+		//! inform the widget, that language has changed
+		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
+
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);

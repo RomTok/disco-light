@@ -135,7 +135,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
             	if (this->rootwindow) {
 					// translate the text
             		string source = getText();
-            		this->rootwindow->translator.translate(source, this->translated_text);
+            		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
             	}
             	else {
             		// fallback
@@ -221,6 +221,10 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 
     /* draw widgets debug frame */
     return MMSWidget::drawDebug();
+}
+
+void MMSLabelWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
+    this->translated = false;
 }
 
 /***********************************************/
