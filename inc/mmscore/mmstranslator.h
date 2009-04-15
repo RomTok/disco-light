@@ -35,7 +35,7 @@
 
 #include "mmsconfig/mmsconfigdata.h"
 
-typedef std::map<MMS_LANGUAGE_TYPE,std::map<std::string, std::string> > MMSTRANSLATION_MAP;
+typedef std::map<std::string, std::map<MMS_LANGUAGE_TYPE, std::string> > MMSTRANSLATION_MAP;
 
 #define TRANSLATION_FILE_NAME "translation"
 

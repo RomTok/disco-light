@@ -159,6 +159,10 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         DEBUGMSG_OUTSTR("Core", "Fullscreen:                   " + getMMSFBFullScreenModeString(config->getFullScreen()));
 
+        DEBUGMSG_OUTSTR("Core", "Sourcelanguage:               " + langToStr(config->getSourceLang()));
+        DEBUGMSG_OUTSTR("Core", "Targetlanguage:               " + langToStr(config->getDefaultTargetLang()));
+        DEBUGMSG_OUTSTR("Core", "Add missing translations:     " + (config->getAddTranslations() ? string("yes") : string("no")));
+
         printf("----------------------------------------------------------------------\n");
 
         if (appl_name!="")

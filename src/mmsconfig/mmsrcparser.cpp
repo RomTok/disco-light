@@ -668,6 +668,8 @@ void MMSRcParser::throughFile(xmlNode* node) {
 		else if((!xmlStrcmp(cur_node->name, (const xmlChar *) "dfbsettings"))
 			  ||(!xmlStrcmp(cur_node->name, (const xmlChar *) "graphics")))
 			throughGraphics(cur_node);
+		else if(!xmlStrcmp(cur_node->name, (const xmlChar *) "language"))
+			throughLanguage(cur_node);
 		else
 			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
 	}

@@ -400,7 +400,7 @@ string scanForString(string buf, string toFind, string *ret,
 }
 
 void split(string str, string delim, vector<string> &results, bool allowEmpty) {
-  int cutAt;
+  size_t cutAt;
   while((cutAt = str.find_first_of(delim)) != str.npos) {
     if(cutAt > 0 || allowEmpty) {
       results.push_back(str.substr(0,cutAt));
@@ -726,4 +726,13 @@ MMS_LANGUAGE_TYPE strToLang(const char *value) {
 	}
 
 	return MMSLANG_UKN;
+}
+
+string langToStr(MMS_LANGUAGE_TYPE lang) {
+	switch(lang) {
+		case MMSLANG_GER: return "ger";
+		case MMSLANG_ENG: return "eng";
+		case MMSLANG_MSG: return "msg";
+		default: return "ukn";
+	}
 }

@@ -131,4 +131,6 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts);
 
 MMS_LANGUAGE_TYPE strToLang(const char *value);
 
+string langToStr(MMS_LANGUAGE_TYPE lang);
+
 #endif /*TOOLS_H_*/

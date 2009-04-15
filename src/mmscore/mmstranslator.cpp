@@ -37,29 +37,12 @@ MMS_LANGUAGE_TYPE MMSTranslator::targetlang = MMSLANG_UKN;
 MMSTRANSLATION_MAP MMSTranslator::transmap;
 
 MMSTranslator::MMSTranslator() {
+
 	if(this->sourcelang == MMSLANG_UKN) {
 		MMSConfigData config;
-		string lang;
-		lang = config.getSourceLang();
-		if(strncasecmp(lang.c_str(),"eng",3)==0) {
-			this->sourcelang = MMSLANG_ENG;
-		} else if(strncasecmp(lang.c_str(),"ger",3)==0) {
-			this->sourcelang = MMSLANG_GER;
-		} else if(strncasecmp(lang.c_str(),"msg",3)==0) {
-			this->sourcelang = MMSLANG_MSG;
-		}
-	}
-	if(this->targetlang == MMSLANG_UKN) {
-		MMSConfigData config;
-		string lang;
-		lang = config.getDefaultTargetLang();
-		if(strncasecmp(lang.c_str(),"eng",3)==0) {
-			this->targetlang = MMSLANG_ENG;
-		} else if(strncasecmp(lang.c_str(),"ger",3)==0) {
-			this->targetlang = MMSLANG_GER;
-		} else if(strncasecmp(lang.c_str(),"msg",3)==0) {
-			this->targetlang = MMSLANG_MSG;
-		}
+		this->sourcelang = config.getSourceLang();
+		this->targetlang = config.getDefaultTargetLang();
+		loadTransLations();
 	}
 }
 
@@ -82,28 +65,68 @@ void MMSTranslator::loadTransLations() {
     for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
     	MMSFileSearch search((*it)->getPath(),"translation.*",false);
     	MMSFILEENTRY_LIST ret =  search.execute();
-    	for(MMSFILEENTRY_LIST::iterator it = ret.begin(); it != ret.end();it++) {
-    		processFile((*it)->name);
+    	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
+    		processFile((*it2)->name);
     	}
     }
+    MMSFileSearch search(config.getData(),"translation.*",false);
+    MMSFILEENTRY_LIST ret =  search.execute();
+	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
+		processFile((*it2)->name);
+	}
+
 
 
 }
 
 void MMSTranslator::translate(string &source, string &dest) {
-	dest = source;
+	if(targetlang != MMSLANG_UKN) {
+		MMSTRANSLATION_MAP::iterator it = transmap.find(source);
+		map<MMS_LANGUAGE_TYPE, string>::iterator it2;
+
+		if(it!=transmap.end()) {
+			it2 = it->second.find(targetlang);
+			if(it2 != it->second.end()) {
+				dest = it2->second;
+			}
+		}
+	} else {
+		dest = source;
+	}
 }
 
 void MMSTranslator::setTargetLang(MMS_LANGUAGE_TYPE lang) {
 	this->targetlang = lang;
+	this->onTargetLangChanged.emit(lang);
 }
 
 void MMSTranslator::processFile(string &file) {
 	MMSFile transfile(file,MMSFM_READ,false);
 	string line;
-	MMS_LANGUAGE_TYPE lang =  strToLang(file.substr(10).c_str());
+	string from, to;
+	MMS_LANGUAGE_TYPE lang =  strToLang(file.substr(file.find("translation")+12).c_str());
 
+	//transfile.
 	while(transfile.getLine(line)) {
+		size_t pos = line.find("===");
+		if(pos != string::npos) {
+			from = line.substr(0, pos);
+			to = line.substr(pos+3, string::npos);
 
+			MMSTRANSLATION_MAP::iterator f = transmap.find(from);
+			if(f != transmap.end()) {
+				//already have the source
+				DEBUGMSG("MMSTranslator", "insert: '%s'", from.c_str());
+				pair<map<MMS_LANGUAGE_TYPE, string>::iterator, bool > ret = f->second.insert(make_pair(lang,to));
+				if(ret.second == false) {
+					DEBUGMSG("MMSTranslator", "double tranlation for: '%s'", from.c_str());
+				}
+			} else {
+				DEBUGMSG("MMSTranslator", "fresh insert: '%s'", from.c_str());
+				map<MMS_LANGUAGE_TYPE, string> mymap;
+				mymap.insert(make_pair(lang,to));
+				transmap.insert(make_pair(from, mymap));
+			}
+		}
 	}
 }

@@ -1030,14 +1030,14 @@ bool MMSFile::getLine(char **ptr) {
 
 bool MMSFile::getLine(string &line) {
     int slen;
-    char **ptr = NULL;
-    if (getStringEx(ptr))
+    char *ptr = NULL;
+    if (getStringEx(&ptr))
         if (*ptr)
-            if (**ptr) {
-                slen=strlen(*ptr);
-                if ((*ptr)[slen-1]=='\n')
-                    (*ptr)[slen-1]=0;
-                line = *ptr;
+            if (ptr) {
+                slen=strlen(ptr);
+                if ((ptr)[slen-1]=='\n')
+                    (ptr)[slen-1]=0;
+                line = ptr;
 				free(ptr);
                 return true;
             }
