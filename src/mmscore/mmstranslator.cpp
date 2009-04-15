@@ -130,3 +130,4 @@ void MMSTranslator::processFile(string &file) {
 		}
 	}
 }
+sigc::signal<void, MMS_LANGUAGE_TYPE>  MMSTranslator::onTargetLangChanged;
