@@ -59,18 +59,22 @@ void MMSTranslator::loadTransLations() {
 					  config.getConfigDBUser(),
 					  config.getConfigDBPassword());
 
-/*    MMSPluginService service(&source);
-    vector<MMSPluginData *> data = service.getAllPlugins();
+    try {
+		MMSPluginService service(&source);
+		vector<MMSPluginData *> data = service.getAllPlugins();
 
-    for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
-    	MMSFileSearch search((*it)->getPath(),"translation.*",false);
-    	MMSFILEENTRY_LIST ret =  search.execute();
-    	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
-    		string filename = config.getData() + "/" + basename((*it2)->name.c_str());
-    		processFile(filename);
-    	}
+		for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
+			MMSFileSearch search((*it)->getPath(),"translation.*",false);
+			MMSFILEENTRY_LIST ret =  search.execute();
+			for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
+				string filename = config.getData() + "/" + basename((*it2)->name.c_str());
+				processFile(filename);
+			}
+		}
+    } catch (MMSError *err) {
+		DEBUGMSG("MMSTranslator", "No plugins database found for translation.");
     }
-*/
+
     MMSFileSearch search(config.getData(),"translation.*",false);
     MMSFILEENTRY_LIST ret =  search.execute();
 	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
@@ -98,11 +102,11 @@ void MMSTranslator::translate(string &source, string &dest) {
 			if(it2 != it->second.end()) {
 				dest = it2->second;
 			} else {
-				addMissingToLang(source);
+				addMissing(source);
 			}
 		} else {
 			// no translation file contains the source
-			addMissingToLang(source,true);
+			addMissing(source,true);
 		}
 	} else {
 		dest = source;
