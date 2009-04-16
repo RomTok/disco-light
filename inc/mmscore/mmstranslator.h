@@ -47,6 +47,7 @@ class MMSTranslator {
 
 	void loadTransLations();
 	void processFile(string &file);
+	void addMissingToLang(string &phrase, bool completemiss=false);
 
 	public:
 		MMSTranslator();

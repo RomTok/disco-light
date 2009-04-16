@@ -59,25 +59,34 @@ void MMSTranslator::loadTransLations() {
 					  config.getConfigDBUser(),
 					  config.getConfigDBPassword());
 
-    MMSPluginService service(&source);
+/*    MMSPluginService service(&source);
     vector<MMSPluginData *> data = service.getAllPlugins();
 
     for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
     	MMSFileSearch search((*it)->getPath(),"translation.*",false);
     	MMSFILEENTRY_LIST ret =  search.execute();
     	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
-    		processFile((*it2)->name);
+    		string filename = config.getData() + "/" + basename((*it2)->name.c_str());
+    		processFile(filename);
     	}
     }
+*/
     MMSFileSearch search(config.getData(),"translation.*",false);
     MMSFILEENTRY_LIST ret =  search.execute();
 	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
-		processFile((*it2)->name);
+		string filename = config.getData() + "/" + basename((*it2)->name.c_str());
+		processFile(filename);
 	}
 
 
 
 }
+void MMSTranslator::addMissing(string &phrase, bool completemiss) {
+/*	if(completemiss) {
+
+	}*/
+}
+
 
 void MMSTranslator::translate(string &source, string &dest) {
 	if(targetlang != MMSLANG_UKN) {
@@ -88,7 +97,12 @@ void MMSTranslator::translate(string &source, string &dest) {
 			it2 = it->second.find(targetlang);
 			if(it2 != it->second.end()) {
 				dest = it2->second;
+			} else {
+				addMissingToLang(source);
 			}
+		} else {
+			// no translation file contains the source
+			addMissingToLang(source,true);
 		}
 	} else {
 		dest = source;
