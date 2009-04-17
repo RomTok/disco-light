@@ -63,15 +63,6 @@ class MMSFB {
         MMSFBDev		*mmsfbdev;
 #endif
 
-        MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
-
-        MMSFBBackend	backend;
-        MMSFBOutputType	outputtype;
-        int				w;
-        int				h;
-        int				x;
-        int				y;
-
 #ifdef __HAVE_XLIB__
         Display 		*x_display;
         int				x_screen;
@@ -89,6 +80,15 @@ class MMSFB {
         bool            resized;
         bool 			resizeWindow();
 #endif
+
+        MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
+
+        MMSFBBackend	backend;
+        MMSFBOutputType	outputtype;
+        int				w;
+        int				h;
+        int				x;
+        int				y;
 
     public:
         MMSFB();

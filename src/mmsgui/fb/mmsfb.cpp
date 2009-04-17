@@ -42,26 +42,33 @@ void MMSFB_AtExit() {
 		mmsfb->release();
 }
 
-MMSFB::MMSFB() {
-    /* init me */
-    this->argc = 0;
-    this->argv = NULL;
-    this->initialized = false;
+MMSFB::MMSFB() :
+	argc(0),
+	argv(NULL),
+	initialized(false),
 #ifdef  __HAVE_DIRECTFB__
-    this->dfb = NULL;
+    dfb(NULL),
 #endif
 #ifdef  __HAVE_FBDEV__
-    this->mmsfbdev = NULL;
+    mmsfbdev(NULL),
 #endif
-    this->outputtype = MMSFB_OT_NONE;
-    this->w = 0;
-    this->h = 0;
-
+#ifdef __HAVE_XLIB__
+    x_display(NULL),
+	xv_port(0),
+#endif
+	outputtype(MMSFB_OT_NONE),
+	w(0),
+	h(0) {
 	// set the atexit routine
 	atexit(MMSFB_AtExit);
 }
 
 MMSFB::~MMSFB() {
+#ifdef __HAVE_XLIB__
+	if(this->x_display && this->xv_port) {
+		XvUngrabPort(this->x_display, this->xv_port, CurrentTime);
+	}
+#endif
 }
 
 bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h,
@@ -239,7 +246,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 				XNextEvent(this->x_display, &x_event);
 			}
 			while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
-	
+
 			XRaiseWindow(this->x_display, this->x_window);
 		}
 		// hide X cursor
@@ -281,8 +288,13 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		}
 		else {
 			// XVSHM
-	        if (!XShmQueryExtension(this->x_display)) {
-				MMSFB_SetError(0, "XShmQueryExtension() failed");
+			unsigned int 	p_version,
+							p_release,
+							p_request_base,
+							p_event_base,
+							p_error_base;
+	        if (XvQueryExtension(this->x_display, &p_version, &p_release, &p_request_base, &p_event_base, &p_error_base) != Success) {
+				MMSFB_SetError(0, "XvQueryExtension() failed");
 	        	return false;
 	        }
 
@@ -294,12 +306,17 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			}
 			printf("DISKO: Available xv adaptors:\n");
 			for(unsigned int cnt=0;cnt<num_adaptors;cnt++) {
-				printf("  %s\n", ai[cnt].name);
+				/* grab the first port with XvImageMask bit */
+				if((this->xv_port == 0) &&
+				   (ai[cnt].type & XvImageMask) &&
+				   (XvGrabPort(this->x_display, ai[cnt].base_id, 0) == Success)) {
+					this->xv_port = ai[cnt].base_id;
+					printf("  %s (used)\n", ai[cnt].name);
+				}
+				else
+					printf("  %s\n", ai[cnt].name);
 			}
-
-			/* get the last xv blitter -> needs detection */
-			printf("DISKO: Using xv adaptor '%s'\n", ai[num_adaptors-1].name);
-			this->xv_port = ai[num_adaptors-1].base_id;
+			XvFreeAdaptorInfo(ai);
 		}
 #endif
     }

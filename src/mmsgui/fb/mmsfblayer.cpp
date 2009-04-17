@@ -29,6 +29,7 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfb.h"
 #include <string.h>
+#include <cerrno>
 
 #ifdef __HAVE_XLIB__
 #include <sys/shm.h>
@@ -40,7 +41,7 @@ D_DEBUG_DOMAIN( MMS_Layer, "MMS/Layer", "MMS Layer" );
 #endif
 
 #ifdef __HAVE_XLIB__
-#define GUID_YUV12_PLANAR 0x32315659
+#define GUID_YUV12_PLANAR ('2'<<24)|('1'<<16)|('V'<<8)|'Y')
 #endif
 
 
@@ -244,54 +245,126 @@ MMSFBLayer::MMSFBLayer(int id) {
 			if (this->config.w & 0x7f)
 				image_width += 0x80;
 
-			// create x11 buffer #1
+			// get id for yv12 pixelformat
 			XLockDisplay(mmsfb->x_display);
-			this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo1);
-			if (!this->xv_image1) {
+			int nFormats, xvPixFormat = (('2'<<24)|('1'<<16)|('V'<<8)|'Y');
+			XvImageFormatValues *formats = XvListImageFormats(mmsfb->x_display, mmsfb->xv_port, &nFormats);
+			if(formats) {
+				for(int i = 0; i < nFormats; i++) {
+					if(formats[i].type == XvYUV && formats[i].format == XvPlanar) {
+						xvPixFormat = formats[i].id;
+						break;
+					}
+				}
+				XFree(formats);
+			}
+
+			// create x11 buffer #1
+			this->xv_image1 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, xvPixFormat, 0, image_width, this->config.h, &this->xv_shminfo1);
+			if(!this->xv_image1) {
 				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XvShmCreateImage() failed");
 				return;
 			}
+			if(this->xv_image1->data_size == 0) {
+				XFree(this->xv_image1);
+				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
+				MMSFB_SetError(0, "XvShmCreateImage() returned zero size");
+				return;
+			}
 
 			// map shared memory for x-server communication
-			this->xv_shminfo1.shmid    = shmget(IPC_PRIVATE, this->xv_image1->data_size, IPC_CREAT | 0777);
+			this->xv_shminfo1.shmid = shmget(IPC_PRIVATE, this->xv_image1->data_size, IPC_CREAT | 0777);
+			if(this->xv_shminfo1.shmid < 0) {
+				MMSFB_SetError(0, string("Error in shmget: ") + strerror(errno));
+				XFree(this->xv_image1);
+				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
+				return;
+			}
+
 			this->xv_shminfo1.shmaddr  = this->xv_image1->data = (char *)shmat(this->xv_shminfo1.shmid, 0, 0);
+			if(!this->xv_shminfo1.shmaddr || (this->xv_shminfo1.shmaddr == (char*)-1)) {
+				MMSFB_SetError(0, string("Error in shmat: ") + strerror(errno));
+				XFree(this->xv_image1);
+				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
+				return;
+			}
+
 			this->xv_shminfo1.readOnly = False;
 
 			// attach the x-server to that segment
 			if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo1)) {
 				XFree(this->xv_image1);
-				this->xv_image1 = NULL;
 				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
 
+			XFlush(mmsfb->x_display);
+		    shmctl(this->xv_shminfo1.shmid, IPC_RMID, 0);
+
 			// create x11 buffer #2
-			this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, GUID_YUV12_PLANAR, 0, image_width, this->config.h, &this->xv_shminfo2);
+			this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, xvPixFormat, 0, image_width, this->config.h, &this->xv_shminfo2);
 			if (!this->xv_image2) {
 				XFree(this->xv_image1);
-				this->xv_image1 = NULL;
 				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
 				MMSFB_SetError(0, "XvShmCreateImage() failed");
+				return;
+			}
+			if(this->xv_image2->data_size == 0) {
+				XFree(this->xv_image1);
+				XFree(this->xv_image2);
+				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
+				this->xv_image2 = NULL;
+				MMSFB_SetError(0, "XvShmCreateImage() returned zero size");
 				return;
 			}
 
 			// map shared memory for x-server communication
 			this->xv_shminfo2.shmid    = shmget(IPC_PRIVATE, this->xv_image2->data_size, IPC_CREAT | 0777);
+			if(this->xv_shminfo2.shmid < 0) {
+				MMSFB_SetError(0, string("Error in shmget: ") + strerror(errno));
+				XFree(this->xv_image1);
+				XFree(this->xv_image2);
+				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
+				this->xv_image2 = NULL;
+				return;
+			}
+
 			this->xv_shminfo2.shmaddr  = this->xv_image2->data = (char *)shmat(this->xv_shminfo2.shmid, 0, 0);
+			if(!this->xv_shminfo2.shmaddr || (this->xv_shminfo2.shmaddr == (char*)-1)) {
+				MMSFB_SetError(0, string("Error in shmat: ") + strerror(errno));
+				XFree(this->xv_image1);
+				XFree(this->xv_image2);
+				XUnlockDisplay(mmsfb->x_display);
+				this->xv_image1 = NULL;
+				this->xv_image2 = NULL;
+				return;
+			}
+
 			this->xv_shminfo2.readOnly = False;
 
 			// attach the x-server to that segment
 			if (!XShmAttach(mmsfb->x_display, &this->xv_shminfo2)) {
 				XFree(this->xv_image1);
 				XFree(this->xv_image2);
+				XUnlockDisplay(mmsfb->x_display);
 				this->xv_image1 = NULL;
 				this->xv_image2 = NULL;
-				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return;
 			}
+
+			XFlush(mmsfb->x_display);
+		    shmctl(this->xv_shminfo2.shmid, IPC_RMID, 0);
+
 			XUnlockDisplay(mmsfb->x_display);
 		}
 
