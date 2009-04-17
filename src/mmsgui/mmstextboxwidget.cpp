@@ -43,10 +43,13 @@ MMSTextBoxWidget::~MMSTextBoxWidget() {
 bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_TEXTBOX;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->textBoxWidgetClass = this->theme->getTextBoxWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->textBoxWidgetClass.widgetClass);
-    if (this->textBoxWidgetClass) this->widgetClass = &(this->textBoxWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->textBoxWidgetClass = this->da->theme->getTextBoxWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->textBoxWidgetClass.widgetClass);
+    if (this->textBoxWidgetClass) this->da->widgetClass = &(this->textBoxWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     /* clear */
     this->font = NULL;
@@ -184,13 +187,14 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         }
 
         if ((x==0)||(endpos <= *realWidth)||(wrap==false)) {
-            if (endpos > *realWidth)
+            if (endpos > *realWidth) {
                 if (wrap==false)
                     *realWidth = endpos;
                 else {
                     mywordgeom->geom.w-= endpos - *realWidth;
                     endpos = *realWidth;
                 }
+            }
 
             mywordgeom->geom.x = x;
             mywordgeom->geom.y = y;
@@ -335,7 +339,24 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     if (this->font) {
         unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
 
-        if (calcWordGeom(getText(), getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
+        if (!this->translated) {
+        	if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
+				// translate the text
+        		string source;
+        		getText(source);
+        		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
+        	}
+        	else {
+        		// text can not or should not translated
+				getText(this->translated_text);
+        	}
+
+        	// mark as translated
+        	this->translated = true;
+        }
+printf("c %s\n", translated_text.c_str());
+
+        if (calcWordGeom(this->translated_text, getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
                          &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
             /* text has changed, reset something */
         	setScrollSize(scrollDX, scrollDY);
@@ -376,8 +397,8 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y);
 					else
 						this->surface->drawString(this->wordgeom.at(i)->word, -1,
-						                          surfaceGeom.x + this->wordgeom.at(i)->geom.x - scrollPosX,
-						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y - scrollPosY);
+						                          surfaceGeom.x + this->wordgeom.at(i)->geom.x - this->da->scrollPosX,
+						                          surfaceGeom.y + this->wordgeom.at(i)->geom.y - this->da->scrollPosY);
                 }
             }
         }
@@ -394,6 +415,9 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 }
 
 
+void MMSTextBoxWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
+    this->translated = false;
+}
 
 /***********************************************/
 /* begin of theme access methods (get methods) */
@@ -402,7 +426,12 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 #define GETTEXTBOX(x) \
     if (this->myTextBoxWidgetClass.is##x()) return myTextBoxWidgetClass.get##x(); \
     else if ((textBoxWidgetClass)&&(textBoxWidgetClass->is##x())) return textBoxWidgetClass->get##x(); \
-    else return this->theme->textBoxWidgetClass.get##x();
+    else return this->da->theme->textBoxWidgetClass.get##x();
+
+#define GETTEXTBOX2(x, y) \
+    if (this->myTextBoxWidgetClass.is##x()) y=myTextBoxWidgetClass.get##x(); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->is##x())) y=textBoxWidgetClass->get##x(); \
+    else y=this->da->theme->textBoxWidgetClass.get##x();
 
 string MMSTextBoxWidget::getFontPath() {
     GETTEXTBOX(FontPath);
@@ -438,6 +467,14 @@ MMSFBColor MMSTextBoxWidget::getSelColor() {
 
 string MMSTextBoxWidget::getText() {
     GETTEXTBOX(Text);
+}
+
+void MMSTextBoxWidget::getText(string &text) {
+    GETTEXTBOX2(Text, text);
+}
+
+bool MMSTextBoxWidget::getTranslate() {
+    GETTEXTBOX(Translate);
 }
 
 /***********************************************/
@@ -522,8 +559,15 @@ void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 void MMSTextBoxWidget::setText(string text, bool refresh) {
     myTextBoxWidgetClass.setText(text);
-    this->scrollPosX=0;
-    this->scrollPosY=0;
+    this->da->scrollPosX=0;
+    this->da->scrollPosY=0;
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setTranslate(bool translate, bool refresh) {
+    myTextBoxWidgetClass.setTranslate(translate);
+    this->translated = false;
     if (refresh)
         this->refresh();
 }
@@ -547,6 +591,8 @@ void MMSTextBoxWidget::updateFromThemeClass(MMSTextBoxWidgetClass *themeClass) {
         setSelColor(themeClass->getSelColor());
     if (themeClass->isText())
         setText(themeClass->getText());
+    if (themeClass->isTranslate())
+        setTranslate(themeClass->getTranslate());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

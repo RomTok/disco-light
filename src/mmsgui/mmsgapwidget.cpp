@@ -26,43 +26,27 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSMORPHINERCPARSER_H_
-#define MMSMORPHINERCPARSER_H_
+#include "mmsgui/mmsgapwidget.h"
 
-#include "mmstools/mmstools.h"
-#include "mmsconfig/mmsconfigdata.h"
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+MMSGapWidget::MMSGapWidget(MMSWindow *root) : MMSWidget::MMSWidget() {
+    create(root);
+}
 
+bool MMSGapWidget::create(MMSWindow *root) {
+	this->type = MMSWIDGETTYPE_GAP;
+    return MMSWidget::create(root, false, true, false, false, false, false, false);
+}
 
-class MMSRcParser {
-	private:
-    	MMSConfigDataGlobal		global;
-    	MMSConfigDataDB     	configdb, datadb;
-    	MMSConfigDataGraphics	graphics;
-    	MMSConfigDataLanguage	language;
+MMSWidget *MMSGapWidget::copyWidget() {
+    // create widget
+    MMSGapWidget *newWidget = new MMSGapWidget(this->rootwindow);
 
-    	void checkVersion(xmlNode* node);
-    	void throughGlobal(xmlNode* node);
-    	void throughDBSettings(xmlNode* node);
-    	void throughGraphics(xmlNode* node);
-    	void throughLanguage(xmlNode* node);
-    	void throughFile(xmlNode* node);
+    // copy widget
+    *newWidget = *this;
 
-    	/* helper */
+    // copy base widget
+    MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-	public:
-		MMSRcParser();
-		~MMSRcParser();
+    return newWidget;
+}
 
-		void parseFile(string filename);
-		void getMMSRc(MMSConfigDataGlobal 	&global,
-			          MMSConfigDataDB     	&configdb,
-			          MMSConfigDataDB     	&datadb,
-			          MMSConfigDataGraphics	&graphics,
-			          MMSConfigDataLanguage &language);
-};
-
-MMS_CREATEERROR(MMSRcParserError);
-
-#endif /*MMSMORPHINERCPARSER_H_*/

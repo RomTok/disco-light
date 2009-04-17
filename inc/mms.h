@@ -36,6 +36,7 @@
 #include <mmscore/mmseventsignupmanager.h>
 #include <mmscore/mmsimportscheduler.h>
 #include <mmscore/mmsinit.h>
+#include <mmscore/mmstranslator.h>
 #include <mmsgui/mmsgui.h>
 #include <mmscore/mmsswitcher.h>
 #include <mmstools/mmstools.h>

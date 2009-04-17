@@ -38,10 +38,13 @@ MMSArrowWidget::~MMSArrowWidget() {
 bool MMSArrowWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_ARROW;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->arrowWidgetClass = this->theme->getArrowWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->arrowWidgetClass.widgetClass);
-    if (this->arrowWidgetClass) this->widgetClass = &(this->arrowWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->arrowWidgetClass = this->da->theme->getArrowWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->arrowWidgetClass.widgetClass);
+    if (this->arrowWidgetClass) this->da->widgetClass = &(this->arrowWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
 	this->last_pressed = false;
 
@@ -223,7 +226,7 @@ void MMSArrowWidget::handleInput(MMSInputEvent *inputevent) {
 #define GETARROW(x) \
     if (this->myArrowWidgetClass.is##x()) return myArrowWidgetClass.get##x(); \
     else if ((arrowWidgetClass)&&(arrowWidgetClass->is##x())) return arrowWidgetClass->get##x(); \
-    else return this->theme->arrowWidgetClass.get##x();
+    else return this->da->theme->arrowWidgetClass.get##x();
 
 MMSFBColor MMSArrowWidget::getColor() {
     GETARROW(Color);

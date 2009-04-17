@@ -52,6 +52,7 @@ void MMSTextBoxWidgetClass::unsetAll() {
     unsetColor();
     unsetSelColor();
     unsetText();
+    unsetTranslate();
 }
 
 void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -149,6 +150,9 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 	            break;
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_text:
 	            setText(attrval_str);
+	            break;
+			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_translate:
+	            setTranslate((attrval_int)?true:false);
 	            break;
 			}
 		}
@@ -266,6 +270,10 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             else
             if (ISATTRNAME(text)) {
 	            setText(attrval_str);
+			}
+            else
+            if (ISATTRNAME(translate)) {
+	            setTranslate((attrval_int)?true:false);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -437,4 +445,22 @@ void MMSTextBoxWidgetClass::unsetText() {
 string MMSTextBoxWidgetClass::getText() {
     return this->text;
 }
+
+bool MMSTextBoxWidgetClass::isTranslate() {
+    return this->istranslate;
+}
+
+void MMSTextBoxWidgetClass::setTranslate(bool translate) {
+    this->translate = translate;
+    this->istranslate = true;
+}
+
+void MMSTextBoxWidgetClass::unsetTranslate() {
+    this->istranslate = false;
+}
+
+bool MMSTextBoxWidgetClass::getTranslate() {
+    return this->translate;
+}
+
 

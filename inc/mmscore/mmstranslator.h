@@ -31,10 +31,12 @@
 
 #include <map>
 #include <string>
+#include <sigc++/sigc++.h>
 
 #include "mmsconfig/mmsconfigdata.h"
 
-typedef std::map<MMS_LANGUAGE_TYPE,std::map<std::string, std::string> > MMSTRANSLATION_MAP;
+typedef std::map<std::string, std::map<MMS_LANGUAGE_TYPE, std::string> > MMSTRANSLATION_MAP;
+typedef std::map<MMS_LANGUAGE_TYPE, std::string> MMSTRANSLATION_FILES;
 
 #define TRANSLATION_FILE_NAME "translation"
 
@@ -42,16 +44,20 @@ class MMSTranslator {
 	static MMS_LANGUAGE_TYPE sourcelang;
 	static MMS_LANGUAGE_TYPE targetlang;
 	static MMSTRANSLATION_MAP transmap;
-	static bool addtranslations; 
+	static bool addtranslations;
+	static MMSTRANSLATION_FILES files;
 
 	void loadTransLations();
-
+	void processFile(string &file);
+	void addMissing(string &phrase, bool completemiss = false);
 	public:
 		MMSTranslator();
 		~MMSTranslator();
 
 		void translate(std::string &source, std::string &dest);
 		void setTargetLang(MMS_LANGUAGE_TYPE lang);
+
+        static sigc::signal<void, MMS_LANGUAGE_TYPE> onTargetLangChanged;
 };
 
 #endif /* MMSTRANSLATOR_H_ */

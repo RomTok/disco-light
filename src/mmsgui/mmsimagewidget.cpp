@@ -56,10 +56,13 @@ MMSImageWidget::~MMSImageWidget() {
 bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_IMAGE;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->imageWidgetClass = this->theme->getImageWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->imageWidgetClass.widgetClass);
-    if (this->imageWidgetClass) this->widgetClass = &(this->imageWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->imageWidgetClass = this->da->theme->getImageWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->imageWidgetClass.widgetClass);
+    if (this->imageWidgetClass) this->da->widgetClass = &(this->imageWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     /* clear */
     this->image = NULL;
@@ -546,7 +549,7 @@ void MMSImageWidget::setVisible(bool visible, bool refresh) {
 #define GETIMAGE(x) \
     if (this->myImageWidgetClass.is##x()) return myImageWidgetClass.get##x(); \
     else if ((imageWidgetClass)&&(imageWidgetClass->is##x())) return imageWidgetClass->get##x(); \
-    else return this->theme->imageWidgetClass.get##x();
+    else return this->da->theme->imageWidgetClass.get##x();
 
 string MMSImageWidget::getImagePath() {
     GETIMAGE(ImagePath);

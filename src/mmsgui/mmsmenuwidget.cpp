@@ -56,10 +56,13 @@ MMSMenuWidget::~MMSMenuWidget() {
 bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_MENU;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->menuWidgetClass = this->theme->getMenuWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->menuWidgetClass.widgetClass);
-    if (this->menuWidgetClass) this->widgetClass = &(this->menuWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->menuWidgetClass = this->da->theme->getMenuWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->menuWidgetClass.widgetClass);
+    if (this->menuWidgetClass) this->da->widgetClass = &(this->menuWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     this->selimage = NULL;
     this->itemTemplate = NULL;
@@ -399,7 +402,7 @@ void MMSMenuWidget::recalculateChildren() {
 
             if (!visibleAfter) {
             	// checking for smooth scrolling
-                if (smooth_scrolling)
+                if (smooth_scrolling) {
                     if (cols==1) {
                     	// draw parts of items before and after
                         visibleAfter = (!((rect.x < item_xx) || (rect.y <= item_yy - item_hh) || (rect.x > menu_xx) || (rect.y >= menu_yy + item_hh)));
@@ -408,6 +411,7 @@ void MMSMenuWidget::recalculateChildren() {
                     	// draw parts of items before and after
                         visibleAfter = (!((rect.x <= item_xx - item_ww) || (rect.y < item_yy) || (rect.x >= menu_xx + item_ww) || (rect.y > menu_yy)));
                     }
+                }
             }
 
             if (visibleBefore || visibleAfter) {
@@ -1011,70 +1015,70 @@ void MMSMenuWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
 
 
 void MMSMenuWidget::switchArrowWidgets() {
-    /* connect arrow widgets */
+    // connect arrow widgets
     loadArrowWidgets();
 
-    /* get columns */
+    // get columns
     unsigned int cols = getCols();
 
-    /* arrow support is not needed for menus with fixed selection position */
+    // arrow support is not needed for menus with fixed selection position
     if (getFixedPos() >= 0) {
-        /* select the correct arrows */
+        // select the correct arrows
         if (cols > 1) {
-            /* horizontal menu */
-            if (this->leftArrowWidget)
-                this->leftArrowWidget->setSelected(true);
-            if (this->rightArrowWidget)
-                this->rightArrowWidget->setSelected(true);
-            if (this->upArrowWidget)
-                this->upArrowWidget->setSelected(false);
-            if (this->downArrowWidget)
-                this->downArrowWidget->setSelected(false);
+            // horizontal menu
+            if (this->da->leftArrowWidget)
+                this->da->leftArrowWidget->setSelected(true);
+            if (this->da->rightArrowWidget)
+                this->da->rightArrowWidget->setSelected(true);
+            if (this->da->upArrowWidget)
+                this->da->upArrowWidget->setSelected(false);
+            if (this->da->downArrowWidget)
+                this->da->downArrowWidget->setSelected(false);
         }
         else {
-            /* vertical menu */
-            if (this->leftArrowWidget)
-                this->leftArrowWidget->setSelected(false);
-            if (this->rightArrowWidget)
-                this->rightArrowWidget->setSelected(false);
-            if (this->upArrowWidget)
-                this->upArrowWidget->setSelected(true);
-            if (this->downArrowWidget)
-                this->downArrowWidget->setSelected(true);
+            // vertical menu
+            if (this->da->leftArrowWidget)
+                this->da->leftArrowWidget->setSelected(false);
+            if (this->da->rightArrowWidget)
+                this->da->rightArrowWidget->setSelected(false);
+            if (this->da->upArrowWidget)
+                this->da->upArrowWidget->setSelected(true);
+            if (this->da->downArrowWidget)
+                this->da->downArrowWidget->setSelected(true);
         }
         return;
     }
 
-    /* switch arrow widgets */
-    if (this->leftArrowWidget) {
+    // switch arrow widgets
+    if (this->da->leftArrowWidget) {
         if (this->px == 0)
-            this->leftArrowWidget->setSelected(false);
+            this->da->leftArrowWidget->setSelected(false);
         else
-            this->leftArrowWidget->setSelected(true);
+            this->da->leftArrowWidget->setSelected(true);
     }
 
-    if (this->upArrowWidget) {
+    if (this->da->upArrowWidget) {
         if (this->py == 0)
-            this->upArrowWidget->setSelected(false);
+            this->da->upArrowWidget->setSelected(false);
         else
-            this->upArrowWidget->setSelected(true);
+            this->da->upArrowWidget->setSelected(true);
     }
 
-    if (this->rightArrowWidget) {
+    if (this->da->rightArrowWidget) {
         unsigned int columns = cols;
         if (columns > children.size())
             columns = children.size();
         if ((int)(columns - this->px) > this->h_items)
-            this->rightArrowWidget->setSelected(true);
+            this->da->rightArrowWidget->setSelected(true);
         else
-            this->rightArrowWidget->setSelected(false);
+            this->da->rightArrowWidget->setSelected(false);
     }
 
-    if (this->downArrowWidget) {
+    if (this->da->downArrowWidget) {
         if ((int)(children.size() / cols + ((children.size() % cols)?1:0) - this->py) > this->v_items)
-            this->downArrowWidget->setSelected(true);
+            this->da->downArrowWidget->setSelected(true);
         else
-            this->downArrowWidget->setSelected(false);
+            this->da->downArrowWidget->setSelected(false);
     }
 }
 
@@ -1184,7 +1188,7 @@ void MMSMenuWidget::setSliders() {
     /* get columns */
     unsigned int cols = getCols();
 
-    if(this->vSliderWidget && (s = dynamic_cast<MMSSliderWidget*>(this->vSliderWidget))) {
+    if(this->da->vSliderWidget && (s = dynamic_cast<MMSSliderWidget*>(this->da->vSliderWidget))) {
         unsigned int pos = 0;
         int size = (int)children.size() - 1;
         if (size > 0)
@@ -1192,7 +1196,7 @@ void MMSMenuWidget::setSliders() {
     	s->setPosition(pos);
     }
 
-    if ((this->hSliderWidget)&&(cols>1) && (s = dynamic_cast<MMSSliderWidget*>(this->vSliderWidget))) {
+    if ((this->da->hSliderWidget)&&(cols>1) && (s = dynamic_cast<MMSSliderWidget*>(this->da->hSliderWidget))) {
         unsigned int pos = 0;
         int size = (int)children.size() - 1;
         if (size >= (int)cols) size = cols - 1;
@@ -2846,12 +2850,12 @@ bool MMSMenuWidget::setSeparator(unsigned int item, MMSWidget *widget, bool refr
 #define GETMENU(x) \
     if (this->myMenuWidgetClass.is##x()) return myMenuWidgetClass.get##x(); \
     else if ((menuWidgetClass)&&(menuWidgetClass->is##x())) return menuWidgetClass->get##x(); \
-    else return this->theme->menuWidgetClass.get##x();
+    else return this->da->theme->menuWidgetClass.get##x();
 
 #define GETMENU_X(x,y) \
     if (this->myMenuWidgetClass.is##x()) { y = myMenuWidgetClass.get##x(); return true; } \
     else if ((menuWidgetClass)&&(menuWidgetClass->is##x())) { y = menuWidgetClass->get##x(); return true; } \
-    else { y = this->theme->menuWidgetClass.get##x(); return true; }
+    else { y = this->da->theme->menuWidgetClass.get##x(); return true; }
 
 MMSTaffFile *MMSMenuWidget::getTAFF() {
     MMSTaffFile *node;
@@ -2859,7 +2863,7 @@ MMSTaffFile *MMSMenuWidget::getTAFF() {
         return node;
     if ((menuWidgetClass)&&((node=menuWidgetClass->getTAFF())))
         return node;
-    return this->theme->menuWidgetClass.getTAFF();
+    return this->da->theme->menuWidgetClass.getTAFF();
 }
 
 string MMSMenuWidget::getItemWidth() {

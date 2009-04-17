@@ -26,43 +26,25 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSMORPHINERCPARSER_H_
-#define MMSMORPHINERCPARSER_H_
+#ifndef MMSGAPWIDGET_H_
+#define MMSGAPWIDGET_H_
 
-#include "mmstools/mmstools.h"
-#include "mmsconfig/mmsconfigdata.h"
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include "mmsgui/mmswidget.h"
 
+//! With this class you can get a spacer.
+/*!
+The gap widget is a spacer needed to arrange other widgets within MMSHBoxWidget/MMSVBoxWidget.
+This widget cannot have any children. It cannot be focused and displays nothing.
+\author Jens Schneider
+*/
+class MMSGapWidget : public MMSWidget {
+    private:
+        bool create(MMSWindow *root);
 
-class MMSRcParser {
-	private:
-    	MMSConfigDataGlobal		global;
-    	MMSConfigDataDB     	configdb, datadb;
-    	MMSConfigDataGraphics	graphics;
-    	MMSConfigDataLanguage	language;
+    public:
+        MMSGapWidget(MMSWindow *root);
 
-    	void checkVersion(xmlNode* node);
-    	void throughGlobal(xmlNode* node);
-    	void throughDBSettings(xmlNode* node);
-    	void throughGraphics(xmlNode* node);
-    	void throughLanguage(xmlNode* node);
-    	void throughFile(xmlNode* node);
-
-    	/* helper */
-
-	public:
-		MMSRcParser();
-		~MMSRcParser();
-
-		void parseFile(string filename);
-		void getMMSRc(MMSConfigDataGlobal 	&global,
-			          MMSConfigDataDB     	&configdb,
-			          MMSConfigDataDB     	&datadb,
-			          MMSConfigDataGraphics	&graphics,
-			          MMSConfigDataLanguage &language);
+        MMSWidget *copyWidget();
 };
 
-MMS_CREATEERROR(MMSRcParserError);
-
-#endif /*MMSMORPHINERCPARSER_H_*/
+#endif /*MMSGAPWIDGET_H_*/

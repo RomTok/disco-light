@@ -76,6 +76,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"checkbox",		NULL, 	NULL,			MMSGUI_CHECKBOXWIDGET_ATTR_I	},
 	{	"class", 		"type",	"checkbox",		MMSGUI_CHECKBOXWIDGET_ATTR_I	},
+	{	"gap",			NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
@@ -661,6 +662,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setText("");
         this->labelWidgetClass.setSlidable(false);
         this->labelWidgetClass.setSlideDelay(500);
+        this->labelWidgetClass.setTranslate(true);
     }
 
     /* MMSImageWidget */
@@ -1019,6 +1021,7 @@ MMSTheme::MMSTheme() {
         c.b = 255;
         this->textBoxWidgetClass.setSelColor(c);
         this->textBoxWidgetClass.setText("");
+        this->textBoxWidgetClass.setTranslate(true);
     }
 
     /* MMSArrowWidget */

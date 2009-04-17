@@ -45,10 +45,13 @@ MMSInputWidget::~MMSInputWidget() {
 bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_INPUT;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->inputWidgetClass = this->theme->getInputWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->inputWidgetClass.widgetClass);
-    if (this->inputWidgetClass) this->widgetClass = &(this->inputWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->inputWidgetClass = this->da->theme->getInputWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->inputWidgetClass.widgetClass);
+    if (this->inputWidgetClass) this->da->widgetClass = &(this->inputWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     // clear
     this->font = NULL;
@@ -315,7 +318,7 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
 		// keyboard inputs
 
 		// save last inputevent
-		last_inputevent = *inputevent;
+		this->da->last_inputevent = *inputevent;
 
 		processed = true;
 		switch (inputevent->key) {
@@ -557,7 +560,7 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
 #define GETINPUT(x) \
     if (this->myInputWidgetClass.is##x()) return myInputWidgetClass.get##x(); \
     else if ((inputWidgetClass)&&(inputWidgetClass->is##x())) return inputWidgetClass->get##x(); \
-    else return this->theme->inputWidgetClass.get##x();
+    else return this->da->theme->inputWidgetClass.get##x();
 
 string MMSInputWidget::getFontPath() {
     GETINPUT(FontPath);

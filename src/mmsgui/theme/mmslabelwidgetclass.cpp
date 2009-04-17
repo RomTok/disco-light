@@ -52,6 +52,7 @@ void MMSLabelWidgetClass::unsetAll() {
     unsetText();
     unsetSlidable();
     unsetSlideDelay();
+    unsetTranslate();
 }
 
 void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -149,6 +150,9 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay:
 	            setSlideDelay(attrval_int);
+	            break;
+			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_translate:
+	            setTranslate((attrval_int)?true:false);
 	            break;
 			}
 		}
@@ -266,6 +270,10 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             else
             if (ISATTRNAME(slide_delay)) {
 	            setSlideDelay(attrval_int);
+			}
+            else
+            if (ISATTRNAME(translate)) {
+	            setTranslate((attrval_int)?true:false);
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -438,4 +446,21 @@ unsigned int MMSLabelWidgetClass::getSlideDelay() {
     return this->slidedelay;
 }
 
+
+bool MMSLabelWidgetClass::isTranslate() {
+    return this->istranslate;
+}
+
+void MMSLabelWidgetClass::setTranslate(bool translate) {
+    this->translate = translate;
+    this->istranslate = true;
+}
+
+void MMSLabelWidgetClass::unsetTranslate() {
+    this->istranslate = false;
+}
+
+bool MMSLabelWidgetClass::getTranslate() {
+    return this->translate;
+}
 

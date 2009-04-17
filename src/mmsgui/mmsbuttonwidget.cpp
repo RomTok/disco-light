@@ -38,10 +38,13 @@ MMSButtonWidget::~MMSButtonWidget() {
 bool MMSButtonWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
 	this->type = MMSWIDGETTYPE_BUTTON;
     this->className = className;
-    if (theme) this->theme = theme; else this->theme = globalTheme;
-    this->buttonWidgetClass = this->theme->getButtonWidgetClass(className);
-    this->baseWidgetClass = &(this->theme->buttonWidgetClass.widgetClass);
-    if (this->buttonWidgetClass) this->widgetClass = &(this->buttonWidgetClass->widgetClass); else this->widgetClass = NULL;
+
+    // init attributes for drawable widgets
+	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->buttonWidgetClass = this->da->theme->getButtonWidgetClass(className);
+    this->da->baseWidgetClass = &(this->da->theme->buttonWidgetClass.widgetClass);
+    if (this->buttonWidgetClass) this->da->widgetClass = &(this->buttonWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     return MMSWidget::create(root, true, false, true, true, true, true, true);
 }

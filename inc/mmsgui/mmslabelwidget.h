@@ -55,6 +55,12 @@ class MMSLabelWidget : public MMSWidget {
 
         class MMSLabelWidgetThread  *labelThread;
 
+        //! the translated text will be stored here, this is used in the draw() method
+        string translated_text;
+
+        //! if true the translated_text is valid
+        bool translated;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
     public:
@@ -67,6 +73,9 @@ class MMSLabelWidget : public MMSWidget {
         bool draw(bool *backgroundFilled = NULL);
 
     public:
+		//! inform the widget, that language has changed
+		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
+
         /* theme access methods */
         string getFontPath();
         string getFontName();
@@ -75,8 +84,10 @@ class MMSLabelWidget : public MMSWidget {
         MMSFBColor getColor();
         MMSFBColor getSelColor();
         string getText();
+        void getText(string &text);
         bool getSlidable();
         unsigned int getSlideDelay();
+        bool getTranslate();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
@@ -88,6 +99,7 @@ class MMSLabelWidget : public MMSWidget {
         void setText(string text, bool refresh = true);
         void setSlidable(bool slidable);
         void setSlideDelay(unsigned int slidedelay);
+        void setTranslate(bool translate, bool refresh = true);
 
         void updateFromThemeClass(MMSLabelWidgetClass *themeClass);
 

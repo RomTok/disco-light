@@ -59,6 +59,13 @@ class MMSTextBoxWidget : public MMSWidget {
         string  lasttext;
         bool    surfaceChanged;
 
+        //! the translated text will be stored here, this is used in the draw() method
+        string translated_text;
+
+        //! if true the translated_text is valid
+        bool translated;
+
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
@@ -78,6 +85,9 @@ class MMSTextBoxWidget : public MMSWidget {
         bool draw(bool *backgroundFilled = NULL);
 
     public:
+		//! inform the widget, that language has changed
+		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
+
         /* theme access methods */
         string getFontPath();
         string getFontName();
@@ -88,8 +98,10 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSFBColor getColor();
         MMSFBColor getSelColor();
         string getText();
+        void getText(string &text);
+        bool getTranslate();
 
-        void setFontPath(string fontpath, bool load = true, bool refresh = true);
+		void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
         void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
@@ -99,6 +111,7 @@ class MMSTextBoxWidget : public MMSWidget {
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true);
+        void setTranslate(bool translate, bool refresh = true);
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
 };

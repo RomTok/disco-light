@@ -364,9 +364,17 @@ typedef enum {
 //! list of valid pointer modes
 #define MMSFB_PM_VALID_VALUES		"FALSE, TRUE, EXTERNAL"
 
+
 // conversion routines for pointer modes
 string getMMSFBPointerModeString(MMSFBPointerMode pm);
 MMSFBPointerMode getMMSFBPointerModeFromString(string pm);
 
+//! supported languages
+typedef enum {
+	MMSLANG_UKN,
+	MMSLANG_GER,
+	MMSLANG_ENG,
+	MMSLANG_MSG
+} MMS_LANGUAGE_TYPE;
 
 #endif /* MMSTYPES_H_ */

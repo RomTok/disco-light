@@ -51,7 +51,8 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "text", TAFF_ATTRTYPE_STRING }
+		{ "text", TAFF_ATTRTYPE_STRING }, \
+		{ "translate", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_IDS \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_path, \
@@ -70,7 +71,8 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_r, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_g, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_b, \
-		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_text
+		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_text, \
+		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_translate
 
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -158,6 +160,12 @@ class MMSTextBoxWidgetClass {
 
         //! text to draw
         string          text;
+
+        //! is translate set?
+        bool            istranslate;
+
+        //! if true the text will be translated before displayed
+        bool          	translate;
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -351,6 +359,24 @@ class MMSTextBoxWidgetClass {
         \return text string
         */
         string getText();
+
+        //! Check if the translate flag is set.
+        bool isTranslate();
+
+        //! Set the translate flag.
+        /*!
+        \param translate  true/false
+        */
+        void setTranslate(bool translate);
+
+        //! Mark the translate flag as not set.
+        void unsetTranslate();
+
+        //! Get the translate flag.
+        /*!
+        \return true/false
+        */
+        bool getTranslate();
 
     /* friends */
     friend class MMSThemeManager;
