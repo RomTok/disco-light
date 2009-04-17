@@ -32,16 +32,21 @@
 #include "mmstools/mmsfile.h"
 
 #include <string.h>
+
 MMS_LANGUAGE_TYPE MMSTranslator::sourcelang = MMSLANG_UKN;
 MMS_LANGUAGE_TYPE MMSTranslator::targetlang = MMSLANG_UKN;
 MMSTRANSLATION_MAP MMSTranslator::transmap;
+MMSTRANSLATION_FILES MMSTranslator::files;
+
+sigc::signal<void, MMS_LANGUAGE_TYPE>  MMSTranslator::onTargetLangChanged;
+bool MMSTranslator::addtranslations;
 
 MMSTranslator::MMSTranslator() {
-
 	if(this->sourcelang == MMSLANG_UKN) {
 		MMSConfigData config;
 		this->sourcelang = config.getSourceLang();
 		this->targetlang = config.getDefaultTargetLang();
+		this->addtranslations = config.getAddTranslations();
 		loadTransLations();
 	}
 }
@@ -79,16 +84,50 @@ void MMSTranslator::loadTransLations() {
     MMSFILEENTRY_LIST ret =  search.execute();
 	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
 		string filename = config.getData() + "/" + basename((*it2)->name.c_str());
+		this->files.insert(make_pair(strToLang(filename.substr(filename.find("translation")+12).c_str()),filename));
 		processFile(filename);
 	}
-
-
-
 }
-void MMSTranslator::addMissing(string &phrase, bool completemiss) {
-/*	if(completemiss) {
 
-	}*/
+void MMSTranslator::addMissing(string &phrase, bool completemiss) {
+	if(completemiss) {
+		//add to all language files;
+		for(MMSTRANSLATION_FILES::iterator it = this->files.begin(); it != this->files.end();it++) {
+			MMSFile file(it->second,MMSFM_APPEND,false);
+			char line[1024];
+			sprintf(line,"%s===\n", phrase.c_str());
+
+			file.writeBuffer(line,NULL,strlen(line),1);
+
+			MMSTRANSLATION_MAP::iterator transit =  this->transmap.find(phrase);
+			if(transit != this->transmap.end()) {
+				transit->second.insert(make_pair(it->first,""));
+			} else{
+				map<MMS_LANGUAGE_TYPE, string> mymap;
+				mymap.insert(make_pair(it->first,""));
+				transmap.insert(make_pair(phrase, mymap));
+
+			}
+		}
+
+	} else {
+		//check the single languages...
+		MMSTRANSLATION_MAP::iterator transit =  this->transmap.find(phrase);
+		if(transit == transmap.end()) {
+			//big big problem here
+		} else {
+			for(MMSTRANSLATION_FILES::iterator it = this->files.begin(); it != this->files.end();it++) {
+				if(transit->second.find(it->first) == transit->second.end()) {
+					MMSFile file(it->second,MMSFM_APPEND,false);
+					char line[1024];
+					sprintf(line,"%s===\n", phrase.c_str());
+					file.writeBuffer(line,NULL,strlen(line),1);
+					transit->second.insert(make_pair(it->first,""));
+				}
+			}
+
+		}
+	}
 }
 
 
@@ -102,11 +141,13 @@ void MMSTranslator::translate(string &source, string &dest) {
 			if(it2 != it->second.end()) {
 				dest = it2->second;
 			} else {
-				addMissing(source);
+				if(addtranslations)
+					addMissing(source);
 			}
 		} else {
 			// no translation file contains the source
-			addMissing(source,true);
+			if(addtranslations)
+				addMissing(source,true);
 		}
 	} else {
 		dest = source;
@@ -124,7 +165,6 @@ void MMSTranslator::processFile(string &file) {
 	string from, to;
 	MMS_LANGUAGE_TYPE lang =  strToLang(file.substr(file.find("translation")+12).c_str());
 
-	//transfile.
 	while(transfile.getLine(line)) {
 		size_t pos = line.find("===");
 		if(pos != string::npos) {
@@ -148,4 +188,3 @@ void MMSTranslator::processFile(string &file) {
 		}
 	}
 }
-sigc::signal<void, MMS_LANGUAGE_TYPE>  MMSTranslator::onTargetLangChanged;

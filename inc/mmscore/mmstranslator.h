@@ -36,6 +36,7 @@
 #include "mmsconfig/mmsconfigdata.h"
 
 typedef std::map<std::string, std::map<MMS_LANGUAGE_TYPE, std::string> > MMSTRANSLATION_MAP;
+typedef std::map<MMS_LANGUAGE_TYPE, std::string> MMSTRANSLATION_FILES;
 
 #define TRANSLATION_FILE_NAME "translation"
 
@@ -44,6 +45,7 @@ class MMSTranslator {
 	static MMS_LANGUAGE_TYPE targetlang;
 	static MMSTRANSLATION_MAP transmap;
 	static bool addtranslations;
+	static MMSTRANSLATION_FILES files;
 
 	void loadTransLations();
 	void processFile(string &file);
