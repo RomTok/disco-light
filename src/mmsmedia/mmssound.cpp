@@ -30,6 +30,8 @@
 
 MMS_CREATEERROR(MMSSoundError);
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -46,6 +48,7 @@ static void queue_cb(void *userData, const xine_event_t *event) {
     if(event->type == XINE_EVENT_UI_PLAYBACK_FINISHED)
         mmssound->onPlaybackFinished.emit();
 }
+#endif
 
 /**
  * Constructor of MMSSound class.
@@ -66,12 +69,15 @@ MMSSound::~MMSSound() {
     this->onPlaybackFinished.clear();
 }
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
 void MMSSound::xineOpen() {
     MMSAV::xineOpen(queue_cb);
 }
+#endif
 
 /**
  * Starts playing.
@@ -95,8 +101,11 @@ void MMSSound::startPlaying(string mrl, bool cont) {
  * Twice as fast and four times as fast.
  */
 void MMSSound::ffwd() {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->status != this->STATUS_NONE) {
         this->setStatus(this->STATUS_FFWD);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
     }
+#endif
 }

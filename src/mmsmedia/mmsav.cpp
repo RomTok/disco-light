@@ -35,6 +35,116 @@
 
 MMS_CREATEERROR(MMSAVError);
 
+
+#ifdef __HAVE_GSTREAMER__
+
+static void
+cb_handoff (GstElement *fakesrc,
+	    GstBuffer  *buffer,
+	    GstPad     *pad,
+	    gpointer    user_data)
+{
+  static gboolean white = FALSE;
+
+  /* this makes the image black/white */
+/*  memset (GST_BUFFER_DATA (buffer), white ? 0xff : 0x0,
+	  GST_BUFFER_SIZE (buffer));
+  white = !white;
+  */
+
+
+  GstCaps      *caps;
+  caps = (GstCaps*) gst_pad_get_negotiated_caps (pad);
+
+  if (caps) {
+//	    g_print ("CAPS: %s\n", gst_caps_to_string (caps));
+	  GstStructure *st;
+	  st = gst_caps_get_structure (caps, 0);
+
+	  char        format[5]={0};
+	  gint        width;
+	  gint        height;
+	  gint 		  framerate_numerator;
+	  gint 		  framerate_denominator;
+	  gint 		  aspectratio_numerator;
+	  gint 		  aspectratio_denominator;
+
+
+		if (gst_structure_get_int (st, "width", &width)
+		 && gst_structure_get_int (st, "height", &height)
+		 && gst_structure_get_fourcc (st, "format", (guint32*)&format)
+		 && gst_structure_get_fraction(st, "framerate", &framerate_numerator, &framerate_denominator)
+		 && gst_structure_get_fraction(st, "pixel-aspect-ratio", &aspectratio_numerator, &aspectratio_denominator)) {
+
+			printf("w=%d,h=%d,f=%s,fr=%d/%d,ar=%d/%d\n",
+				width, height, format, framerate_numerator, framerate_denominator, aspectratio_numerator, aspectratio_denominator);
+
+
+
+			char *buf = (char *)GST_BUFFER_DATA (buffer);
+
+			printf("%.60s\n", buf);
+
+		}
+
+  }
+}
+
+
+void MMSAV::gstInit() {
+return;
+
+	int argc = 1;
+	char *argv[1];
+	argv[0] = "hugo";
+	char **sss = argv;
+
+//	gst_init(&argc, &sss);
+	gst_init(NULL, NULL);
+	loop = g_main_loop_new (NULL, FALSE);
+
+
+
+	playx = gst_element_factory_make ("playbin", "play");
+	g_object_set (G_OBJECT (playx), "uri", "dvd://", NULL);
+
+	fakesink = gst_element_factory_make("fakesink", "fakesink");
+
+	g_object_set (G_OBJECT (fakesink), "signal-handoffs", TRUE, NULL);
+	g_signal_connect (fakesink, "handoff", G_CALLBACK (cb_handoff), NULL);
+
+	g_object_set (G_OBJECT (playx), "video-sink", fakesink, NULL);
+
+	/*
+	bus = gst_pipeline_get_bus (GST_PIPELINE (play));
+	gst_bus_add_watch (bus, bus_call, loop);
+	gst_object_unref (bus);
+	*/
+
+//	gst_element_set_state (play, GST_STATE_PLAYING);
+
+	/* now run */
+//	g_main_loop_run (loop);
+
+	/* also clean up */
+//	gst_element_set_state (play, GST_STATE_NULL);
+//	gst_object_unref (GST_OBJECT (play));
+
+
+}
+
+
+static void* playRoutine(MMSAV *data) {
+
+	gst_element_set_state (data->playx, GST_STATE_PLAYING);
+
+	/* now run */
+	g_main_loop_run (data->loop);
+}
+
+
+#else
+
 #ifdef __HAVE_DIRECTFB__
 DFBResult dfbres;
 #define THROW_DFB_ERROR(dfbres,msg) {if (dfbres) { string s1 = msg; string s2 = DirectFBErrorString((DFBResult)dfbres); throw new MMSAVError(dfbres,s1 + " [" + s2 + "]"); }else{ throw new MMSAVError(0,msg); }}
@@ -458,13 +568,6 @@ static void* stopRoutine(void *data) {
  * @exception   MMSAVError  cannot get a new xine object
  */
 void MMSAV::xineInit() {
-#ifdef __HAVE_GSTREAMER__
-	int argc;
-	char **argv = NULL;
-
-	gst_init(&argc, &argv);
-
-#else
 	/* get a new xine object */
     if (!(this->xine = xine_new()))
         throw new MMSAVError(0, "Cannot get a new xine object");
@@ -491,8 +594,11 @@ void MMSAV::xineInit() {
         xine_engine_set_param(this->xine, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_DEBUG);
     else
         xine_engine_set_param(this->xine, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_NONE);
-#endif
 }
+
+
+#endif
+
 
 
 /**
@@ -513,6 +619,16 @@ void MMSAV::xineInit() {
  * @exception   MMSAVError  Cannot open the DFB video driver
  */
 void MMSAV::initialize(const bool verbose, MMSWindow *window) {
+    this->verbose          = verbose;
+
+#ifdef __HAVE_GSTREAMER__
+
+
+    gstInit();
+
+
+
+#else
 
     this->verbose          = verbose;
 
@@ -638,25 +754,33 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     while(!(this->ao = xine_open_audio_driver(this->xine, ao_list[i++], NULL)));
 
     DEBUGMSG("MMSMedia", "Using audio driver '%s'", ao_list[i-1]);
+
+#endif
 }
+
+
 
 /**
  * Constructor
  *
  * Initializes private variables
  */
-MMSAV::MMSAV() : window(NULL),
-                 verbose(false),
-                 status(STATUS_NONE),
-                 pos(0),
-                 xine(NULL),
-                 vo(NULL),
-                 ao(NULL),
-                 stream(NULL),
-                 queue(NULL) {
+MMSAV::MMSAV() {
+#ifdef __HAVE_GSTREAMER__
+#else
+	this->window=NULL;
+	this->verbose=false;
+	this->status=STATUS_NONE;
+	this->pos=0;
+	this->xine=NULL;
+	this->vo=NULL;
+	this->ao=NULL;
+	this->stream=NULL;
+	this->queue=NULL;
 	pthread_mutex_init(&this->lock, NULL);
     this->onError          = new sigc::signal<void, string>;
     this->onStatusChange   = new sigc::signal<void, const unsigned short, const unsigned short>;
+#endif
 }
 
 /**
@@ -666,6 +790,8 @@ MMSAV::MMSAV() : window(NULL),
  * stuff.
  */
 MMSAV::~MMSAV() {
+#ifdef __HAVE_GSTREAMER__
+#else
 	pthread_mutex_destroy(&this->lock);
 
 	if(this->onError) {
@@ -709,7 +835,18 @@ MMSAV::~MMSAV() {
 		// delete overlay interim (used for xine raw callback)
 		delete this->userd.overlayInterim;
 	}
+#endif
 }
+
+
+#ifdef __HAVE_GSTREAMER__
+
+
+
+
+#else
+
+
 
 /**
  * Opens an audio/video object.
@@ -764,6 +901,8 @@ void MMSAV::xineOpen(xine_event_listener_cb_t queue_cb, void *userData) {
     }
 }
 
+#endif
+
 /**
  * Registers a xine audio post plugin.
  *
@@ -774,6 +913,9 @@ void MMSAV::xineOpen(xine_event_listener_cb_t queue_cb, void *userData) {
  * @return  true if plugin could be initialized correctly
  */
 bool MMSAV::registerAudioPostPlugin(string name) {
+#ifdef __HAVE_GSTREAMER__
+	return true;
+#else
     xine_post_t *p;
 
     if(!(p = xine_post_init(this->xine, name.c_str(), 1, &this->ao, NULL)))
@@ -784,6 +926,7 @@ bool MMSAV::registerAudioPostPlugin(string name) {
     }
 
     return false;
+#endif
 }
 
 /**
@@ -796,6 +939,9 @@ bool MMSAV::registerAudioPostPlugin(string name) {
  * @return  true if plugin could be initialized correctly
  */
 bool MMSAV::registerVideoPostPlugin(string name) {
+#ifdef __HAVE_GSTREAMER__
+	return true;
+#else
     xine_post_t *p;
 
     if(!(p = xine_post_init(this->xine, name.c_str(), 1, NULL, &this->vo)))
@@ -806,8 +952,11 @@ bool MMSAV::registerVideoPostPlugin(string name) {
     }
 
     return false;
+#endif
 }
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Sets post plugin parameter.
  *
@@ -905,6 +1054,7 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
 
     return true;
 }
+#endif
 
 /**
  * Sets audio post plugin parameter.
@@ -919,7 +1069,11 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
  * @see     MMSAV::setVideoPostPluginParameter
  */
 bool MMSAV::setAudioPostPluginParameter(string name, string parameter, string value) {
+#ifdef __HAVE_GSTREAMER__
+	return true;
+#else
     return setPostPluginParameter(this->audioPostPlugins, name, parameter, value);
+#endif
 }
 
 /**
@@ -935,8 +1089,14 @@ bool MMSAV::setAudioPostPluginParameter(string name, string parameter, string va
  * @see     MMSAV::setAudioPostPluginParameter
  */
 bool MMSAV::setVideoPostPluginParameter(string name, string parameter, string value) {
+#ifdef __HAVE_GSTREAMER__
+	return true;
+#else
     return setPostPluginParameter(this->videoPostPlugins, name, parameter, value);
+#endif
 }
+
+
 
 /**
  * Sets internal status of sound/video playback.
@@ -977,6 +1137,12 @@ void MMSAV::setStatus(int status) {
  * @return true if stream is being played
  */
 bool MMSAV::isPlaying() {
+#ifdef __HAVE_GSTREAMER__
+	if(this->status == STATUS_PLAYING) {
+		return true;
+	}
+	return false;
+#else
 	if(this->status == STATUS_PLAYING) {
 		if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
 	    	this->setStatus(STATUS_STOPPED);
@@ -985,6 +1151,7 @@ bool MMSAV::isPlaying() {
 		else return true;
 	}
 	return false;
+#endif
 }
 
 /**
@@ -993,6 +1160,9 @@ bool MMSAV::isPlaying() {
  * @return true if stream is being paused
  */
 bool MMSAV::isPaused() {
+#ifdef __HAVE_GSTREAMER__
+	return false;
+#else
 	if(this->status == STATUS_PAUSED) {
 		if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
 	    	this->setStatus(STATUS_STOPPED);
@@ -1001,6 +1171,7 @@ bool MMSAV::isPaused() {
 		else return true;
 	}
 	return false;
+#endif
 }
 
 /**
@@ -1024,6 +1195,14 @@ bool MMSAV::isStopped() {
  * @exception   MMSAVError stream could not be opened
  */
 void MMSAV::startPlaying(const string mrl, const bool cont) {
+#ifdef __HAVE_GSTREAMER__
+return;
+	pthread_t thread;
+	if(pthread_create(&thread, NULL, (void* (*)(void*))playRoutine, this) == 0)
+		pthread_detach(thread);
+
+
+#else
     static string currentMRL = "";
 
     DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
@@ -1047,6 +1226,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
 		playRoutine(streamData);
 
     currentMRL = mrl;
+#endif
 }
 
 /**
@@ -1056,6 +1236,8 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
  * changed to other than normal.
  */
 void MMSAV::play() {
+#ifdef __HAVE_GSTREAMER__
+#else
 	if(!this->stream) return;
 
 	if(this->status == this->STATUS_PAUSED  ||
@@ -1066,6 +1248,7 @@ void MMSAV::play() {
        this->setStatus(this->STATUS_PLAYING);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
     }
+#endif
 }
 
 /**
@@ -1078,6 +1261,8 @@ void MMSAV::play() {
  * at this position.
  */
 void MMSAV::stop(const bool savePosition) {
+#ifdef __HAVE_GSTREAMER__
+#else
 	if(!this->stream) return;
 
     /* save position */
@@ -1094,6 +1279,7 @@ void MMSAV::stop(const bool savePosition) {
     	pthread_detach(thread);
     else
     	stopRoutine(streamData);
+#endif
 }
 
 /**
@@ -1103,6 +1289,8 @@ void MMSAV::stop(const bool savePosition) {
  * ffwd etc.).
  */
 void MMSAV::pause() {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->status == this->STATUS_PLAYING ||
        this->status == this->STATUS_SLOW    ||
        this->status == this->STATUS_SLOW2   ||
@@ -1112,6 +1300,7 @@ void MMSAV::pause() {
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
         xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
     }
+#endif
 }
 
 /**
@@ -1124,6 +1313,8 @@ void MMSAV::pause() {
  * @see MMSAV::rewind()
  */
 void MMSAV::slow() {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
         this->setStatus(this->STATUS_SLOW);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
@@ -1140,6 +1331,7 @@ void MMSAV::slow() {
         this->setStatus(this->STATUS_FFWD);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
     }
+#endif
 }
 
 /**
@@ -1152,6 +1344,8 @@ void MMSAV::slow() {
  * @see MMSAV::rewind()
  */
 void MMSAV::ffwd() {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
         this->setStatus(this->STATUS_FFWD);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
@@ -1168,6 +1362,7 @@ void MMSAV::ffwd() {
         this->setStatus(this->STATUS_SLOW);
         xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
     }
+#endif
 }
 
 /**
@@ -1178,6 +1373,8 @@ void MMSAV::ffwd() {
  * @param   length  [out]   time in seconds of title length
  */
 bool MMSAV::getTimes(int *pos, int *length) {
+#ifdef __HAVE_GSTREAMER__
+#else
 	if(!this->stream) return false;
 
 	if(xine_get_pos_length(this->stream, NULL, pos, length)) {
@@ -1187,6 +1384,7 @@ bool MMSAV::getTimes(int *pos, int *length) {
     }
     else
        return false;
+#endif
 }
 
 /**
@@ -1198,8 +1396,11 @@ bool MMSAV::getTimes(int *pos, int *length) {
  * @see     MMSAV::brightnessDown()
  */
 void MMSAV::setBrightness(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo)
         xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, count);
+#endif
 }
 
 /**
@@ -1211,10 +1412,13 @@ void MMSAV::setBrightness(int count) {
  * @see     MMSAV::brightnessDown()
  */
 void MMSAV::brightnessUp(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
         xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value + count*500);
     }
+#endif
 }
 
 /**
@@ -1226,10 +1430,13 @@ void MMSAV::brightnessUp(int count) {
  * @see     MMSAV::brightnessUp()
  */
 void MMSAV::brightnessDown(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
         xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value - count*500);
     }
+#endif
 }
 
 /**
@@ -1241,8 +1448,11 @@ void MMSAV::brightnessDown(int count) {
  * @see     MMSAV::contrastDown()
  */
 void MMSAV::setContrast(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo)
         xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, count);
+#endif
 }
 
 /**
@@ -1254,10 +1464,13 @@ void MMSAV::setContrast(int count) {
  * @see     MMSAV::contrastDown()
  */
 void MMSAV::contrastUp(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
         xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value + count*500);
     }
+#endif
 }
 
 /**
@@ -1269,10 +1482,13 @@ void MMSAV::contrastUp(int count) {
  * @see     MMSAV::contrastUp()
  */
 void MMSAV::contrastDown(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
         xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value - count*500);
     }
+#endif
 }
 
 /**
@@ -1284,8 +1500,11 @@ void MMSAV::contrastDown(int count) {
  * @see     MMSAV::saturationDown()
  */
 void MMSAV::setSaturation(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo)
         xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, count);
+#endif
 }
 
 /**
@@ -1297,10 +1516,13 @@ void MMSAV::setSaturation(int count) {
  * @see     MMSAV::saturationDown()
  */
 void MMSAV::saturationUp(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
         xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value + count*500);
     }
+#endif
 }
 
 /**
@@ -1312,10 +1534,13 @@ void MMSAV::saturationUp(int count) {
  * @see     MMSAV::saturationUp()
  */
 void MMSAV::saturationDown(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
         xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value - count*500);
     }
+#endif
 }
 
 /**
@@ -1327,8 +1552,11 @@ void MMSAV::saturationDown(int count) {
  * @see     MMSAV::hueDown()
  */
 void MMSAV::setHue(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo)
         xine_set_param(this->stream, XINE_PARAM_VO_HUE, count);
+#endif
 }
 
 /**
@@ -1340,10 +1568,13 @@ void MMSAV::setHue(int count) {
  * @see     MMSAV::hueDown()
  */
 void MMSAV::hueUp(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
         xine_set_param(this->stream, XINE_PARAM_VO_HUE, value + count*500);
     }
+#endif
 }
 
 /**
@@ -1355,10 +1586,13 @@ void MMSAV::hueUp(int count) {
  * @see     MMSAV::hueUp()
  */
 void MMSAV::hueDown(int count) {
+#ifdef __HAVE_GSTREAMER__
+#else
     if(this->vo) {
         int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
         xine_set_param(this->stream, XINE_PARAM_VO_HUE, value - count*500);
     }
+#endif
 }
 
 /**
@@ -1367,8 +1601,11 @@ void MMSAV::hueDown(int count) {
  * @param   percent	[in]    volume in percent
  */
 void MMSAV::setVolume(int percent) {
+#ifdef __HAVE_GSTREAMER__
+#else
 	if(this->ao)
 		xine_set_param(this->stream, XINE_PARAM_AUDIO_VOLUME, percent);
+#endif
 }
 
 /**
@@ -1379,6 +1616,8 @@ void MMSAV::setVolume(int percent) {
  * @param   datalen [in]    length of data
  */
 void MMSAV::sendEvent(int type, void *data, int datalen) {
+#ifdef __HAVE_GSTREAMER__
+#else
     xine_event_t evt;
 
 	std::cerr << "6: " << this->stream << " | ";
@@ -1397,6 +1636,7 @@ void MMSAV::sendEvent(int type, void *data, int datalen) {
     xine_event_send(this->stream, &evt);
 
 	std::cerr << "1:" << std::endl;
+#endif
 }
 
 /**
@@ -1405,7 +1645,11 @@ void MMSAV::sendEvent(int type, void *data, int datalen) {
  * @return true if video stream
  */
 bool MMSAV::hasVideo() {
+#ifdef __HAVE_GSTREAMER__
+	return false;
+#else
 	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_VIDEO) == 1);
+#endif
 }
 
 /**
@@ -1414,5 +1658,10 @@ bool MMSAV::hasVideo() {
  * @return true if audio stream
  */
 bool MMSAV::hasAudio() {
+#ifdef __HAVE_GSTREAMER__
+	return false;
+#else
 	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_AUDIO) == 1);
+#endif
 }
+

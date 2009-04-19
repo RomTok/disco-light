@@ -46,6 +46,8 @@
 
 MMS_CREATEERROR(MMSTVError);
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -72,6 +74,7 @@ static void queue_cb(void *userData, const xine_event_t *event) {
     } else
     	DEBUGMSG("MMSTV", "event: %u", event->type);
 }
+#endif
 
 /**
  * Initializes everything that is needed by MMSTV.
@@ -104,12 +107,15 @@ MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose) :
 MMSTV::~MMSTV() {
 }
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
 void MMSTV::xineOpen() {
     MMSAV::xineOpen(queue_cb, this);
 }
+#endif
 
 /**
  * Starts playing.
@@ -259,6 +265,8 @@ string MMSTV::getCurrentChannelName(void) {
  * @see MMSTV::getTuningTimeout()
  */
 void MMSTV::setTuningTimeout(const unsigned int timeout) {
+#ifdef __HAVE_GSTREAMER__
+#else
     xine_cfg_entry_t  conf;
 
     if(!this->xine) return;
@@ -274,6 +282,7 @@ void MMSTV::setTuningTimeout(const unsigned int timeout) {
     	                         "Leave at 0 means try forever. "
     	                         "Greater than 0 means wait that many seconds to get a lock. Minimum is 5 seconds.",
     	                         XINE_CONFIG_SECURITY, NULL, NULL);
+#endif
 }
 
 /**
@@ -296,6 +305,8 @@ const unsigned int MMSTV::getTuningTimeout() {
  * @param   dir [in]    directory to save recordings into
  */
 void MMSTV::setRecordDir(const string dir) {
+#ifdef __HAVE_GSTREAMER__
+#else
     xine_cfg_entry_t  conf;
 
     if(!this->xine) return;
@@ -320,6 +331,7 @@ void MMSTV::setRecordDir(const string dir) {
                 XINE_CONFIG_SECURITY,
                 NULL ,
                 NULL);
+#endif
 }
 
 /**
@@ -328,12 +340,15 @@ void MMSTV::setRecordDir(const string dir) {
  * @return  current recordings dir
  */
 const string MMSTV::getRecordDir() {
+#ifdef __HAVE_GSTREAMER__
+#else
     xine_cfg_entry_t  conf;
 
     if(this->xine && xine_config_lookup_entry(this->xine, "media.capture.save_dir", &conf))
         return string(conf.str_value);
 
     return xine_get_homedir();
+#endif
 }
 
 /**

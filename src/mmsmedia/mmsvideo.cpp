@@ -30,6 +30,8 @@
 
 MMS_CREATEERROR(MMSVideoError);
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -71,6 +73,7 @@ static void queue_cb(void *userData, const xine_event_t *event) {
             break;
     }
 }
+#endif
 
 /**
  * Initializes everything that is needed by MMSVideo.
@@ -91,12 +94,15 @@ MMSVideo::MMSVideo(MMSWindow *window, const bool verbose) {
 MMSVideo::~MMSVideo() {
 }
 
+#ifdef __HAVE_GSTREAMER__
+#else
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
 void MMSVideo::xineOpen() {
     MMSAV::xineOpen(queue_cb, (void*)this);
 }
+#endif
 
 /**
  * Starts playing.

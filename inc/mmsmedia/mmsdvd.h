@@ -58,7 +58,10 @@ class MMSDVD : public MMSAV {
 
         void mouseEvent(const unsigned int event, const unsigned int x, const unsigned int y) const;
 
+#ifdef __HAVE_GSTREAMER__
+#else
         void xineOpen();
+#endif
 
     protected:
 

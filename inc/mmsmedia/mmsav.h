@@ -142,14 +142,23 @@ class MMSAV
 #endif
 
     protected:
-#ifdef __HAVE_GSTREAMER__
-
-
-#else
 
     	bool                            verbose;                                /**< should logging be verbose?         */
         short                           status;                                 /**< current playback status            */
         int                             pos;                                    /**< remember position where the stream stopped last time */
+
+#ifdef __HAVE_GSTREAMER__
+
+    public:
+        GMainLoop *loop;
+        GstElement *playx, *fakesink;
+
+
+        void gstInit();
+
+
+#else
+
 
         // xine related attributes
         xine_t                          *xine;                                  /**< global xine structure                  */
@@ -164,6 +173,7 @@ class MMSAV
 
         void xineInit();
         void xineOpen(xine_event_listener_cb_t queue_cb = NULL, void *userData = NULL);
+
 #endif
 
         // internal methods
