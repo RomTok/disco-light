@@ -133,8 +133,8 @@ MMSDVD::~MMSDVD() {
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
-void MMSDVD::open() {
-    MMSAV::open(queue_cb, (void*)this);
+void MMSDVD::xineOpen() {
+    MMSAV::xineOpen(queue_cb, (void*)this);
 }
 
 /**

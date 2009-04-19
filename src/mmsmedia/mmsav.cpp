@@ -458,7 +458,14 @@ static void* stopRoutine(void *data) {
  * @exception   MMSAVError  cannot get a new xine object
  */
 void MMSAV::xineInit() {
-    /* get a new xine object */
+#ifdef __HAVE_GSTREAMER__
+	int argc;
+	char **argv = NULL;
+
+	gst_init(&argc, &argv);
+
+#else
+	/* get a new xine object */
     if (!(this->xine = xine_new()))
         throw new MMSAVError(0, "Cannot get a new xine object");
 
@@ -484,7 +491,9 @@ void MMSAV::xineInit() {
         xine_engine_set_param(this->xine, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_DEBUG);
     else
         xine_engine_set_param(this->xine, XINE_PARAM_VERBOSITY, XINE_VERBOSITY_NONE);
+#endif
 }
+
 
 /**
  * Initializes everything that is needed my MMSAV.
@@ -511,6 +520,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 
     /* initialize xine */
     xineInit();
+
 
     DEBUGMSG("MMSMedia", "xineInit() done.");
 
@@ -719,7 +729,7 @@ MMSAV::~MMSAV() {
  *
  * @exception   MMSAVError  Cannot get a new stream
  */
-void MMSAV::open(xine_event_listener_cb_t queue_cb, void *userData) {
+void MMSAV::xineOpen(xine_event_listener_cb_t queue_cb, void *userData) {
     /* open stream */
     if (!(this->stream = xine_stream_new(this->xine, this->ao, this->vo)))
         throw new MMSAVError(0, "Cannot get a new stream");
@@ -1019,7 +1029,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
     if((currentMRL == mrl) && (this->status == this->STATUS_PLAYING)) return;
 
-    if(!this->stream) this->open();
+    if(!this->stream) this->xineOpen();
 
     if(!cont) this->pos = 0;
 

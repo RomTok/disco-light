@@ -46,6 +46,7 @@
 class MMSSound : public MMSAV {
     private:
         void initialize(const bool verbose);
+        void xineOpen();
 
     protected:
 
@@ -57,7 +58,6 @@ class MMSSound : public MMSAV {
         /* destructor */
         ~MMSSound();
 
-        void open();
         void startPlaying(string mrl, bool cont);
         void ffwd();
 

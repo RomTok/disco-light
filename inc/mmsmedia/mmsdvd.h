@@ -58,6 +58,8 @@ class MMSDVD : public MMSAV {
 
         void mouseEvent(const unsigned int event, const unsigned int x, const unsigned int y) const;
 
+        void xineOpen();
+
     protected:
 
     public:
@@ -76,7 +78,6 @@ class MMSDVD : public MMSAV {
         MMSDVD(MMSWindow *window, const string device = "/dev/dvd", const bool verbose = false);
         ~MMSDVD();
 
-        void open();
         void startPlaying(const bool cont = true);
         void rewind();
         void previous();

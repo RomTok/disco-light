@@ -107,8 +107,8 @@ MMSTV::~MMSTV() {
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
-void MMSTV::open() {
-    MMSAV::open(queue_cb, this);
+void MMSTV::xineOpen() {
+    MMSAV::xineOpen(queue_cb, this);
 }
 
 /**
@@ -120,7 +120,7 @@ void MMSTV::open() {
  * @param   channel [in]    channel name to be played
  */
 void MMSTV::startPlaying(const string channel) {
-    if(!this->stream) this->open();
+//    if(!this->stream) this->open();
 
     if(strncasecmp(channel.c_str(), "OTH:",4)==0) {
     	FILE *fp;

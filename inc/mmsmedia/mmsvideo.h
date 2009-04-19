@@ -46,11 +46,12 @@ class MMSVideo : public MMSAV {
 	private:
 		std::queue<string>	playlist;	/**< internal playlist */
 
+        void xineOpen();
+
     public:
         MMSVideo(MMSWindow *window, const bool verbose = false);
         ~MMSVideo();
 
-        void open();
         void startPlaying(const string file, const bool cont = true);
         void add2Playlist(const string file);
         void playNext();

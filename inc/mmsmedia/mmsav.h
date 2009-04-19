@@ -31,11 +31,23 @@
 
 #include <sys/stat.h>
 #include <sigc++/sigc++.h>
+#ifdef __HAVE_GSTREAMER__
+#include <gst/gst.h>
+#else
 #include <xine.h>
+#endif
 #include <map>
 
 #include "mmsgui/mmsgui.h"
 #include "mmstools/mmstools.h"
+
+
+#ifdef __HAVE_GSTREAMER__
+
+
+
+
+#else
 
 /**
  * @brief   Video output description structure.
@@ -91,6 +103,9 @@ typedef struct {
 	raw_overlay_t *overlays;
 } MMSRAW_USERDATA;
 
+#endif
+
+
 
 /**
  * @brief   MMS Audio/Video handling class.
@@ -108,6 +123,11 @@ typedef struct {
 class MMSAV
 {
     private:
+#ifdef __HAVE_GSTREAMER__
+
+
+
+#else
         MMSWindow                       *window;                                /**< window for classes that use video  */
 #ifdef __HAVE_DIRECTFB__
         VODESC                          vodesc;                                 /**< video output settings              */
@@ -119,9 +139,15 @@ class MMSAV
         pthread_mutex_t					lock;
 
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
+#endif
 
     protected:
-        bool                            verbose;                                /**< should logging be verbose?         */
+#ifdef __HAVE_GSTREAMER__
+
+
+#else
+
+    	bool                            verbose;                                /**< should logging be verbose?         */
         short                           status;                                 /**< current playback status            */
         int                             pos;                                    /**< remember position where the stream stopped last time */
 
@@ -134,10 +160,14 @@ class MMSAV
         map<string, xine_post_t*>       audioPostPlugins,                       /**< map of registered audio post plugins   */
                                         videoPostPlugins;                       /**< map of registered video post plugins   */
 
-        // internal methods
+
+
         void xineInit();
+        void xineOpen(xine_event_listener_cb_t queue_cb = NULL, void *userData = NULL);
+#endif
+
+        // internal methods
         void initialize(const bool verbose = false, MMSWindow *window = NULL);
-        void open(xine_event_listener_cb_t queue_cb = NULL, void *userData = NULL);
         void setStatus(int status);
         void sendEvent(int type, void *data = NULL, int datalen = 0);
 

@@ -94,8 +94,8 @@ MMSVideo::~MMSVideo() {
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
-void MMSVideo::open() {
-    MMSAV::open(queue_cb, (void*)this);
+void MMSVideo::xineOpen() {
+    MMSAV::xineOpen(queue_cb, (void*)this);
 }
 
 /**
@@ -110,7 +110,7 @@ void MMSVideo::open() {
  * @exception   MMSAVError stream could not be opened
  */
 void MMSVideo::startPlaying(const string file, const bool cont) {
-   this->open();
+//   this->open();
 
    string::size_type loc = file.find( "://", 0 );
    if( loc != string::npos ) {

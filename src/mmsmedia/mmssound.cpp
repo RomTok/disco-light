@@ -69,8 +69,8 @@ MMSSound::~MMSSound() {
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
-void MMSSound::open() {
-    MMSAV::open(queue_cb);
+void MMSSound::xineOpen() {
+    MMSAV::xineOpen(queue_cb);
 }
 
 /**
@@ -83,8 +83,8 @@ void MMSSound::open() {
  * @param   cont    if true it tries to continue at a position stopped before
  */
 void MMSSound::startPlaying(string mrl, bool cont) {
-    if(!this->stream)
-        this->open();
+/*    if(!this->stream)
+        this->open();*/
     MMSAV::startPlaying(mrl, cont);
 }
 
