@@ -54,9 +54,9 @@ typedef struct {
 
 
 
-// backend types.............................................................
+// display backend types.....................................................
 
-//! supported backends
+//! supported display backends
 typedef enum {
 	//! none
 	MMSFB_BE_NONE = 0,
@@ -369,6 +369,9 @@ typedef enum {
 string getMMSFBPointerModeString(MMSFBPointerMode pm);
 MMSFBPointerMode getMMSFBPointerModeFromString(string pm);
 
+
+// national language support.................................................
+
 //! supported languages
 typedef enum {
 	MMSLANG_UKN,
@@ -376,5 +379,22 @@ typedef enum {
 	MMSLANG_ENG,
 	MMSLANG_MSG
 } MMS_LANGUAGE_TYPE;
+
+
+
+
+// media backend types.......................................................
+
+//! supported media backends
+typedef enum {
+	//! none
+	MMSMEDIA_BE_NONE = 0,
+	//! xine
+	MMSMEDIA_BE_XINE,
+	//! gstreamer
+	MMSMEDIA_BE_GST
+} MMSMEDIABackend;
+
+
 
 #endif /* MMSTYPES_H_ */

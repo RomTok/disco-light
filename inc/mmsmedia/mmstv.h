@@ -52,7 +52,8 @@ class MMSTV : public MMSAV {
                      usingInputDVBMorphine; /**< if true our own xine input plugin is used  */
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
         void xineOpen();
 #endif
 

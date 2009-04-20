@@ -47,7 +47,8 @@ class MMSSound : public MMSAV {
     private:
         void initialize(const bool verbose);
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
         void xineOpen();
 #endif
 

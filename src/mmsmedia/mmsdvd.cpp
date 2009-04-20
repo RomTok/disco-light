@@ -35,7 +35,8 @@
 MMS_CREATEERROR(MMSDVDError);
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -77,30 +78,35 @@ static void queue_cb(void *userData, const xine_event_t *event) {
  * @exception   MMSDVDError no usable dvd device found
  */
 void MMSDVD::checkDevice(const string device) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    string                  d = device;
-    xine_health_check_t hc, *result;
-
-    if(d.length() == 0)
-        d = "/dev/dvd";
-
-    hc.dvd_dev = xine_config_register_string(xine, "input.dvd_device", d.c_str(), "device used as dvd drive", NULL, 0, NULL, NULL);
-    result = xine_health_check(&hc, CHECK_DVDROM);
-    if(result->status != XINE_HEALTH_CHECK_OK) {
-        if(d != "dev/dvd") {
-            hc.dvd_dev = xine_config_register_string(xine, "input.dvd_device", "/dev/dvd", "device used as dvd drive", NULL, 0, NULL, NULL);
-            result = xine_health_check(&hc, CHECK_DVDROM);
-            if(result->status != XINE_HEALTH_CHECK_OK)
-                throw new MMSDVDError(0, "No DVD Device found at " + device + " and /dev/dvd");
-        }
-        else
-            throw new MMSDVDError(0, "No DVD Device found at /dev/dvd");
-    }
-
-    this->device = d;
-    DEBUGMSG("MMSMedia", "Using " + this->device + " as DVD device");
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		string                  d = device;
+		xine_health_check_t hc, *result;
+
+		if(d.length() == 0)
+			d = "/dev/dvd";
+
+		hc.dvd_dev = xine_config_register_string(xine, "input.dvd_device", d.c_str(), "device used as dvd drive", NULL, 0, NULL, NULL);
+		result = xine_health_check(&hc, CHECK_DVDROM);
+		if(result->status != XINE_HEALTH_CHECK_OK) {
+			if(d != "dev/dvd") {
+				hc.dvd_dev = xine_config_register_string(xine, "input.dvd_device", "/dev/dvd", "device used as dvd drive", NULL, 0, NULL, NULL);
+				result = xine_health_check(&hc, CHECK_DVDROM);
+				if(result->status != XINE_HEALTH_CHECK_OK)
+					throw new MMSDVDError(0, "No DVD Device found at " + device + " and /dev/dvd");
+			}
+			else
+				throw new MMSDVDError(0, "No DVD Device found at /dev/dvd");
+		}
+
+		this->device = d;
+		DEBUGMSG("MMSMedia", "Using " + this->device + " as DVD device");
+#endif
+    }
 }
 
 /**
@@ -185,10 +191,15 @@ void MMSDVD::rewind() {
  * @see MMSDVD::next()
  */
 void MMSDVD::previous() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_PREVIOUS);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_PREVIOUS);
+#endif
+    }
     this->setStatus(this->STATUS_PREVIOUS);
 }
 
@@ -198,10 +209,15 @@ void MMSDVD::previous() {
  * @see MMSDVD::previous()
  */
 void MMSDVD::next() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_NEXT);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_NEXT);
+#endif
+    }
     this->setStatus(this->STATUS_NEXT);
 }
 
@@ -211,10 +227,15 @@ void MMSDVD::next() {
  * @see MMSDVD::angleNext()
  */
 void MMSDVD::anglePrevious() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_ANGLE_PREVIOUS);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_ANGLE_PREVIOUS);
+#endif
+    }
     this->setStatus(this->STATUS_ANGLE_PREVIOUS);
 }
 
@@ -224,10 +245,15 @@ void MMSDVD::anglePrevious() {
  * @see MMSDVD::anglePrevious()
  */
 void MMSDVD::angleNext() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_ANGLE_NEXT);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_ANGLE_NEXT);
+#endif
+    }
     this->setStatus(this->STATUS_ANGLE_NEXT);
 }
 
@@ -237,12 +263,17 @@ void MMSDVD::angleNext() {
  * @see MMSDVD::audioChannelNext()
  */
 void MMSDVD::audioChannelPrevious() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(--audioChannel < 0)
-        audioChannel = maxAudioChannels;
-    xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, audioChannel);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(--audioChannel < 0)
+			audioChannel = maxAudioChannels;
+		xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, audioChannel);
+#endif
+    }
     this->setStatus(this->STATUS_AUDIO_PREVIOUS);
 }
 
@@ -252,12 +283,17 @@ void MMSDVD::audioChannelPrevious() {
  * @see MMSDVD::audioChannelPrevious()
  */
 void MMSDVD::audioChannelNext() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(++audioChannel >= maxAudioChannels)
-        audioChannel = 0;
-    xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, audioChannel);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(++audioChannel >= maxAudioChannels)
+			audioChannel = 0;
+		xine_set_param(this->stream, XINE_PARAM_AUDIO_CHANNEL_LOGICAL, audioChannel);
+#endif
+    }
     this->setStatus(this->STATUS_AUDIO_NEXT);
 }
 
@@ -267,12 +303,17 @@ void MMSDVD::audioChannelNext() {
  * @see MMSDVD::spuChannelNext()
  */
 void MMSDVD::spuChannelPrevious() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(--spuChannel < -1)
-        spuChannel = maxSpuChannels;
-    xine_set_param(this->stream, XINE_PARAM_SPU_CHANNEL, spuChannel);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(--spuChannel < -1)
+			spuChannel = maxSpuChannels;
+		xine_set_param(this->stream, XINE_PARAM_SPU_CHANNEL, spuChannel);
+#endif
+    }
     this->setStatus(this->STATUS_SPU_PREVIOUS);
 }
 
@@ -282,12 +323,17 @@ void MMSDVD::spuChannelPrevious() {
  * @see MMSDVD::spuChannelNext()
  */
 void MMSDVD::spuChannelNext() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(++spuChannel >= maxSpuChannels)
-        spuChannel = -1;
-    xine_set_param(this->stream, XINE_PARAM_SPU_CHANNEL, spuChannel);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(++spuChannel >= maxSpuChannels)
+			spuChannel = -1;
+		xine_set_param(this->stream, XINE_PARAM_SPU_CHANNEL, spuChannel);
+#endif
+    }
     this->setStatus(this->STATUS_SPU_NEXT);
 }
 
@@ -300,16 +346,21 @@ void MMSDVD::spuChannelNext() {
  * @todo    use libhal for ejecting
  */
 void MMSDVD::eject() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->setStatus(this->STATUS_EJECT);
-    xine_dispose(this->stream);
-
-    // call eject on commandline, because xine_eject() didn't work
-    char cmd[64];
-    sprintf(cmd, "eject %s", this->device.c_str());
-    system(cmd);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		this->setStatus(this->STATUS_EJECT);
+		xine_dispose(this->stream);
+
+		// call eject on commandline, because xine_eject() didn't work
+		char cmd[64];
+		sprintf(cmd, "eject %s", this->device.c_str());
+		system(cmd);
+#endif
+    }
 }
 
 /**
@@ -321,10 +372,15 @@ void MMSDVD::eject() {
  * @see MMSDVD::menuSelect()
  */
 void MMSDVD::menuUp() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_UP);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_UP);
+#endif
+    }
 }
 
 /**
@@ -336,10 +392,15 @@ void MMSDVD::menuUp() {
  * @see MMSDVD::menuSelect()
  */
 void MMSDVD::menuDown() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_DOWN);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_DOWN);
+#endif
+    }
 }
 
 /**
@@ -351,10 +412,15 @@ void MMSDVD::menuDown() {
  * @see MMSDVD::menuSelect()
  */
 void MMSDVD::menuLeft() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_LEFT);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_LEFT);
+#endif
+    }
 }
 
 /**
@@ -366,10 +432,15 @@ void MMSDVD::menuLeft() {
  * @see MMSDVD::menuSelect()
  */
 void MMSDVD::menuRight() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_RIGHT);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_RIGHT);
+#endif
+    }
 }
 
 /**
@@ -381,10 +452,15 @@ void MMSDVD::menuRight() {
  * @see MMSDVD::menuRight()
  */
 void MMSDVD::menuSelect() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_SELECT);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_SELECT);
+#endif
+    }
 }
 
 /**
@@ -394,10 +470,15 @@ void MMSDVD::menuSelect() {
  * started playing and the menu wasn't shown before.
  */
 void MMSDVD::showMainMenu() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->sendEvent(XINE_EVENT_INPUT_MENU1);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->sendEvent(XINE_EVENT_INPUT_MENU1);
+#endif
+    }
 }
 
 /**
@@ -413,22 +494,27 @@ void MMSDVD::showMainMenu() {
  * @see MMSDVD::mouseMove()
  */
 void MMSDVD::mouseEvent(const unsigned int event, const unsigned int x, const unsigned int y) const {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	xine_event_t		e;
-	xine_input_data_t	eData;
-
-    int streamW = xine_get_stream_info(this->stream, XINE_STREAM_INFO_VIDEO_WIDTH);
-    int streamH = xine_get_stream_info(this->stream, XINE_STREAM_INFO_VIDEO_HEIGHT);
-
-	e.type 			= event;
-	e.data 			= &eData;
-	e.data_length 	= sizeof(xine_input_data_t);
-	eData.button 	= 1;
-	eData.x 		= (int)((float)x / this->windowWidth * streamW);
-	eData.y 		= (int)((float)y / this->windowHeight * streamH);
-	xine_event_send(this->stream, &e);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		xine_event_t		e;
+		xine_input_data_t	eData;
+
+		int streamW = xine_get_stream_info(this->stream, XINE_STREAM_INFO_VIDEO_WIDTH);
+		int streamH = xine_get_stream_info(this->stream, XINE_STREAM_INFO_VIDEO_HEIGHT);
+
+		e.type 			= event;
+		e.data 			= &eData;
+		e.data_length 	= sizeof(xine_input_data_t);
+		eData.button 	= 1;
+		eData.x 		= (int)((float)x / this->windowWidth * streamW);
+		eData.y 		= (int)((float)y / this->windowHeight * streamH);
+		xine_event_send(this->stream, &e);
+#endif
+    }
 }
 
 /**
@@ -440,10 +526,15 @@ void MMSDVD::mouseEvent(const unsigned int event, const unsigned int x, const un
  * @see MMSDVD::mouseMove()
  */
 void MMSDVD::mouseButton(const unsigned int x, const unsigned int y) const {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	this->mouseEvent(XINE_EVENT_INPUT_MOUSE_BUTTON, x, y);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->mouseEvent(XINE_EVENT_INPUT_MOUSE_BUTTON, x, y);
+#endif
+    }
 }
 
 /**
@@ -455,10 +546,15 @@ void MMSDVD::mouseButton(const unsigned int x, const unsigned int y) const {
  * @see MMSDVD::mouseButton()
  */
 void MMSDVD::mouseMove(const unsigned int x, const unsigned int y) const {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	this->mouseEvent(XINE_EVENT_INPUT_MOUSE_MOVE, x, y);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	this->mouseEvent(XINE_EVENT_INPUT_MOUSE_MOVE, x, y);
+#endif
+    }
 }
 
 /**
@@ -481,9 +577,13 @@ bool MMSDVD::inMenu() {
  * @return  title name
  */
 string MMSDVD::getTitle() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-
+    	return "";
+#endif
+    }
+    else {
+#ifdef __HAVE_XINE__
     if(this->status > STATUS_NONE) {
         char *title;
         title = (char*)xine_get_meta_info(this->stream, XINE_META_INFO_TITLE);
@@ -503,6 +603,7 @@ string MMSDVD::getTitle() {
 
     return "";
 #endif
+    }
 }
 
 /**
@@ -511,10 +612,16 @@ string MMSDVD::getTitle() {
  * @return  chapter number
  */
 int MMSDVD::getChapterNumber() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_CHAPTER_NUMBER);
+    	return 0;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_CHAPTER_NUMBER);
+#endif
+    }
 }
 
 /**
@@ -523,10 +630,16 @@ int MMSDVD::getChapterNumber() {
  * @return  chapter count
  */
 int MMSDVD::getChapterCount() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_CHAPTER_COUNT);
+    	return 0;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_CHAPTER_COUNT);
+#endif
+    }
 }
 
 /**
@@ -535,10 +648,16 @@ int MMSDVD::getChapterCount() {
  * @return  title number
  */
 int MMSDVD::getTitleNumber() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_TITLE_NUMBER);
+    	return 0;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_TITLE_NUMBER);
+#endif
+    }
 }
 
 /**
@@ -547,11 +666,16 @@ int MMSDVD::getTitleNumber() {
  * @return  title count
  */
 int MMSDVD::getTitleCount() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return 0;
-#else
-    return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_TITLE_COUNT);
+    	return 0;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_TITLE_COUNT);
+#endif
+    }
 }
 
 /**
@@ -559,9 +683,14 @@ int MMSDVD::getTitleCount() {
  * audio channels and subtitle channels.
  */
 void MMSDVD::updateChannelInfo() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    this->maxAudioChannels = xine_get_stream_info(this->stream, XINE_STREAM_INFO_MAX_AUDIO_CHANNEL);
-    this->maxSpuChannels   = xine_get_stream_info(this->stream, XINE_STREAM_INFO_MAX_SPU_CHANNEL);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		this->maxAudioChannels = xine_get_stream_info(this->stream, XINE_STREAM_INFO_MAX_AUDIO_CHANNEL);
+		this->maxSpuChannels   = xine_get_stream_info(this->stream, XINE_STREAM_INFO_MAX_SPU_CHANNEL);
+#endif
+    }
 }

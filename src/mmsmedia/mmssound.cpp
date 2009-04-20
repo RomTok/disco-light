@@ -31,7 +31,8 @@
 MMS_CREATEERROR(MMSSoundError);
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -70,7 +71,8 @@ MMSSound::~MMSSound() {
 }
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
@@ -101,11 +103,16 @@ void MMSSound::startPlaying(string mrl, bool cont) {
  * Twice as fast and four times as fast.
  */
 void MMSSound::ffwd() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->status != this->STATUS_NONE) {
-        this->setStatus(this->STATUS_FFWD);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->status != this->STATUS_NONE) {
+			this->setStatus(this->STATUS_FFWD);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
+		}
+#endif
+    }
 }

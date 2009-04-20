@@ -44,13 +44,16 @@ cb_handoff (GstElement *fakesrc,
 	    GstPad     *pad,
 	    gpointer    user_data)
 {
-  static gboolean white = FALSE;
+//  static gboolean white = FALSE;
 
   /* this makes the image black/white */
 /*  memset (GST_BUFFER_DATA (buffer), white ? 0xff : 0x0,
 	  GST_BUFFER_SIZE (buffer));
   white = !white;
   */
+
+	MMSRAW_USERDATA *userd = (MMSRAW_USERDATA*)user_data;
+
 
 
   GstCaps      *caps;
@@ -85,6 +88,10 @@ cb_handoff (GstElement *fakesrc,
 
 			printf("%.60s\n", buf);
 
+
+			userd->surf->clear(0xff,0x00,0x00,0xff);
+			userd->surf->flip();
+
 		}
 
   }
@@ -92,7 +99,6 @@ cb_handoff (GstElement *fakesrc,
 
 
 void MMSAV::gstInit() {
-return;
 
 	int argc = 1;
 	char *argv[1];
@@ -111,7 +117,7 @@ return;
 	fakesink = gst_element_factory_make("fakesink", "fakesink");
 
 	g_object_set (G_OBJECT (fakesink), "signal-handoffs", TRUE, NULL);
-	g_signal_connect (fakesink, "handoff", G_CALLBACK (cb_handoff), NULL);
+	g_signal_connect (fakesink, "handoff", G_CALLBACK (cb_handoff), &(this->userd));
 
 	g_object_set (G_OBJECT (playx), "video-sink", fakesink, NULL);
 
@@ -134,16 +140,19 @@ return;
 }
 
 
-static void* playRoutine(MMSAV *data) {
+static void* gstPlayRoutine(MMSAV *data) {
 
 	gst_element_set_state (data->playx, GST_STATE_PLAYING);
 
 	/* now run */
 	g_main_loop_run (data->loop);
+
+	return NULL;
 }
 
 
-#else
+#endif
+#ifdef __HAVE_XINE__
 
 #ifdef __HAVE_DIRECTFB__
 DFBResult dfbres;
@@ -620,17 +629,34 @@ void MMSAV::xineInit() {
  */
 void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     this->verbose          = verbose;
+	this->window           = window;
 
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 
+    	gstInit();
 
-    gstInit();
+		if(window) {
+			this->userd.surf=window->getSurface();
+			this->userd.surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
+			this->userd.surf->getPixelFormat(&this->userd.surf_pixelformat);
+			int w,h;
+			this->userd.surf->getSize(&w,&h);
+			this->userd.size.x=0;
+			this->userd.size.y=0;
+			this->userd.size.w=w;
+			this->userd.size.h=h;
+			this->userd.lastaspect=0.0;
+			this->userd.interim = NULL;
+			this->userd.overlayInterim = NULL;
+			this->userd.numOverlays = 0;
+			this->userd.overlays = NULL;
+		}
 
-
-
-#else
-
-    this->verbose          = verbose;
+#endif
+    }
+    else {
+#ifdef __HAVE_XINE__
 
     DEBUGMSG("MMSMedia", "xineInit()...");
 
@@ -652,7 +678,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 	}
 	else {
 #ifdef __HAVE_DIRECTFB__
-		this->window           = window;
 		this->vodesc.format    = DSPF_UNKNOWN;
 		this->vodesc.ratio     = 1.25;
 		this->vodesc.width     = 720;
@@ -756,6 +781,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     DEBUGMSG("MMSMedia", "Using audio driver '%s'", ao_list[i-1]);
 
 #endif
+    }
 }
 
 
@@ -765,22 +791,36 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
  *
  * Initializes private variables
  */
-MMSAV::MMSAV() {
-#ifdef __HAVE_GSTREAMER__
-#else
+MMSAV::MMSAV(MMSMEDIABackend backend) {
+
+
+//	this->backend = backend;
+this->backend = MMSMEDIA_BE_XINE;
+
 	this->window=NULL;
+	this->surface = NULL;
 	this->verbose=false;
 	this->status=STATUS_NONE;
 	this->pos=0;
+
+    this->onError          = new sigc::signal<void, string>;
+    this->onStatusChange   = new sigc::signal<void, const unsigned short, const unsigned short>;
+
+
+    if (this->backend == MMSMEDIA_BE_GST) {
+#ifdef __HAVE_GSTREAMER__
+#endif
+    }
+    else {
+#ifdef __HAVE_XINE__
 	this->xine=NULL;
 	this->vo=NULL;
 	this->ao=NULL;
 	this->stream=NULL;
 	this->queue=NULL;
 	pthread_mutex_init(&this->lock, NULL);
-    this->onError          = new sigc::signal<void, string>;
-    this->onStatusChange   = new sigc::signal<void, const unsigned short, const unsigned short>;
 #endif
+    }
 }
 
 /**
@@ -790,52 +830,58 @@ MMSAV::MMSAV() {
  * stuff.
  */
 MMSAV::~MMSAV() {
-#ifdef __HAVE_GSTREAMER__
-#else
-	pthread_mutex_destroy(&this->lock);
-
 	if(this->onError) {
-        this->onError->clear();
-        delete this->onError;
-    }
-
-    if(this->onStatusChange) {
-        this->onStatusChange->clear();
-        delete this->onStatusChange;
-    }
-
-    if(this->queue)
-        xine_event_dispose_queue(this->queue);
-    if(this->stream)
-        xine_dispose(this->stream);
-    if(this->ao)
-        xine_close_audio_driver(this->xine, this->ao);
-    if(this->vo)
-        xine_close_video_driver(this->xine, this->vo);
-
-    // dispose all registered post plugins
-    map<string, xine_post_t*>::const_iterator i;
-    for(i = audioPostPlugins.begin(); i != audioPostPlugins.end(); ++i)
-        xine_post_dispose(this->xine, i->second);
-    audioPostPlugins.erase(audioPostPlugins.begin(), audioPostPlugins.end());
-
-    for(i = videoPostPlugins.begin(); i != videoPostPlugins.end(); ++i)
-        xine_post_dispose(this->xine, i->second);
-    videoPostPlugins.erase(videoPostPlugins.begin(), videoPostPlugins.end());
-
-    // exit xine
-    xine_exit(this->xine);
-
-	if (this->userd.interim) {
-		// delete interim (used for xine raw callback)
-		delete this->userd.interim;
+		this->onError->clear();
+		delete this->onError;
 	}
 
-	if (this->userd.overlayInterim) {
-		// delete overlay interim (used for xine raw callback)
-		delete this->userd.overlayInterim;
+	if(this->onStatusChange) {
+		this->onStatusChange->clear();
+		delete this->onStatusChange;
 	}
+
+	if (this->backend == MMSMEDIA_BE_GST) {
+#ifdef __HAVE_GSTREAMER__
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		pthread_mutex_destroy(&this->lock);
+
+
+		if(this->queue)
+			xine_event_dispose_queue(this->queue);
+		if(this->stream)
+			xine_dispose(this->stream);
+		if(this->ao)
+			xine_close_audio_driver(this->xine, this->ao);
+		if(this->vo)
+			xine_close_video_driver(this->xine, this->vo);
+
+		// dispose all registered post plugins
+		map<string, xine_post_t*>::const_iterator i;
+		for(i = audioPostPlugins.begin(); i != audioPostPlugins.end(); ++i)
+			xine_post_dispose(this->xine, i->second);
+		audioPostPlugins.erase(audioPostPlugins.begin(), audioPostPlugins.end());
+
+		for(i = videoPostPlugins.begin(); i != videoPostPlugins.end(); ++i)
+			xine_post_dispose(this->xine, i->second);
+		videoPostPlugins.erase(videoPostPlugins.begin(), videoPostPlugins.end());
+
+		// exit xine
+		xine_exit(this->xine);
+
+		if (this->userd.interim) {
+			// delete interim (used for xine raw callback)
+			delete this->userd.interim;
+		}
+
+		if (this->userd.overlayInterim) {
+			// delete overlay interim (used for xine raw callback)
+			delete this->userd.overlayInterim;
+		}
+#endif
+    }
 }
 
 
@@ -844,7 +890,8 @@ MMSAV::~MMSAV() {
 
 
 
-#else
+#endif
+#ifdef __HAVE_XINE__
 
 
 
@@ -913,20 +960,25 @@ void MMSAV::xineOpen(xine_event_listener_cb_t queue_cb, void *userData) {
  * @return  true if plugin could be initialized correctly
  */
 bool MMSAV::registerAudioPostPlugin(string name) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return true;
-#else
-    xine_post_t *p;
-
-    if(!(p = xine_post_init(this->xine, name.c_str(), 1, &this->ao, NULL)))
-        DEBUGMSG("MMSMedia", "Could not initialize audio post plugin %s", name.c_str());
-    else {
-        audioPostPlugins[name] = p;
-        return true;
-    }
-
-    return false;
+    	return true;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		xine_post_t *p;
+
+		if(!(p = xine_post_init(this->xine, name.c_str(), 1, &this->ao, NULL)))
+			DEBUGMSG("MMSMedia", "Could not initialize audio post plugin %s", name.c_str());
+		else {
+			audioPostPlugins[name] = p;
+			return true;
+		}
+
+		return false;
+#endif
+    }
 }
 
 /**
@@ -939,24 +991,33 @@ bool MMSAV::registerAudioPostPlugin(string name) {
  * @return  true if plugin could be initialized correctly
  */
 bool MMSAV::registerVideoPostPlugin(string name) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return true;
-#else
-    xine_post_t *p;
-
-    if(!(p = xine_post_init(this->xine, name.c_str(), 1, NULL, &this->vo)))
-        DEBUGMSG("MMSMedia", "Could not initialize video post plugin %s", name.c_str());
-    else {
-        videoPostPlugins[name] = p;
-        return true;
-    }
-
-    return false;
+    	return true;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		xine_post_t *p;
+
+		if(!(p = xine_post_init(this->xine, name.c_str(), 1, NULL, &this->vo)))
+			DEBUGMSG("MMSMedia", "Could not initialize video post plugin %s", name.c_str());
+		else {
+			videoPostPlugins[name] = p;
+			return true;
+		}
+
+		return false;
+#endif
+    }
 }
 
 #ifdef __HAVE_GSTREAMER__
-#else
+
+
+#endif
+
+#ifdef __HAVE_XINE__
 /**
  * Sets post plugin parameter.
  *
@@ -1069,11 +1130,16 @@ bool MMSAV::setPostPluginParameter(map<string, xine_post_t*> plugins, string nam
  * @see     MMSAV::setVideoPostPluginParameter
  */
 bool MMSAV::setAudioPostPluginParameter(string name, string parameter, string value) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return true;
-#else
-    return setPostPluginParameter(this->audioPostPlugins, name, parameter, value);
+    	return true;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return setPostPluginParameter(this->audioPostPlugins, name, parameter, value);
+#endif
+    }
 }
 
 /**
@@ -1089,11 +1155,16 @@ bool MMSAV::setAudioPostPluginParameter(string name, string parameter, string va
  * @see     MMSAV::setAudioPostPluginParameter
  */
 bool MMSAV::setVideoPostPluginParameter(string name, string parameter, string value) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return true;
-#else
-    return setPostPluginParameter(this->videoPostPlugins, name, parameter, value);
+    	return true;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return setPostPluginParameter(this->videoPostPlugins, name, parameter, value);
+#endif
+    }
 }
 
 
@@ -1137,21 +1208,27 @@ void MMSAV::setStatus(int status) {
  * @return true if stream is being played
  */
 bool MMSAV::isPlaying() {
+
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	if(this->status == STATUS_PLAYING) {
-		return true;
-	}
-	return false;
-#else
-	if(this->status == STATUS_PLAYING) {
-		if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
-	    	this->setStatus(STATUS_STOPPED);
-	    	return false;
-		}
-		else return true;
-	}
-	return false;
+    	if(this->status == STATUS_PLAYING) {
+    		return true;
+    	}
+    	return false;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->status == STATUS_PLAYING) {
+			if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
+				this->setStatus(STATUS_STOPPED);
+				return false;
+			}
+			else return true;
+		}
+		return false;
+#endif
+    }
 }
 
 /**
@@ -1160,18 +1237,23 @@ bool MMSAV::isPlaying() {
  * @return true if stream is being paused
  */
 bool MMSAV::isPaused() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return false;
-#else
-	if(this->status == STATUS_PAUSED) {
-		if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
-	    	this->setStatus(STATUS_STOPPED);
-	    	return false;
-		}
-		else return true;
-	}
-	return false;
+    	return false;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->status == STATUS_PAUSED) {
+			if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
+				this->setStatus(STATUS_STOPPED);
+				return false;
+			}
+			else return true;
+		}
+		return false;
+#endif
+    }
 }
 
 /**
@@ -1195,38 +1277,41 @@ bool MMSAV::isStopped() {
  * @exception   MMSAVError stream could not be opened
  */
 void MMSAV::startPlaying(const string mrl, const bool cont) {
+
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-return;
-	pthread_t thread;
-	if(pthread_create(&thread, NULL, (void* (*)(void*))playRoutine, this) == 0)
-		pthread_detach(thread);
-
-
-#else
-    static string currentMRL = "";
-
-    DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
-    if((currentMRL == mrl) && (this->status == this->STATUS_PLAYING)) return;
-
-    if(!this->stream) this->xineOpen();
-
-    if(!cont) this->pos = 0;
-
-	/* start playing in extra thread to avoid blocking the application */
-	pthread_t thread;
-	internalStreamData *streamData = new internalStreamData;
-	streamData->stream = this->stream;
-	streamData->pos    = this->pos;
-	streamData->status = &(this->status);
-	streamData->mrl    = mrl.c_str();
-	streamData->lock   = &(this->lock);
-	if(pthread_create(&thread, NULL, playRoutine, streamData) == 0)
-		pthread_detach(thread);
-	else
-		playRoutine(streamData);
-
-    currentMRL = mrl;
+		pthread_t thread;
+		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, this) == 0)
+			pthread_detach(thread);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		static string currentMRL = "";
+
+		DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
+		if((currentMRL == mrl) && (this->status == this->STATUS_PLAYING)) return;
+
+		if(!this->stream) this->xineOpen();
+
+		if(!cont) this->pos = 0;
+
+		/* start playing in extra thread to avoid blocking the application */
+		pthread_t thread;
+		internalStreamData *streamData = new internalStreamData;
+		streamData->stream = this->stream;
+		streamData->pos    = this->pos;
+		streamData->status = &(this->status);
+		streamData->mrl    = mrl.c_str();
+		streamData->lock   = &(this->lock);
+		if(pthread_create(&thread, NULL, playRoutine, streamData) == 0)
+			pthread_detach(thread);
+		else
+			playRoutine(streamData);
+
+		currentMRL = mrl;
+#endif
+    }
 }
 
 /**
@@ -1236,19 +1321,24 @@ return;
  * changed to other than normal.
  */
 void MMSAV::play() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	if(!this->stream) return;
-
-	if(this->status == this->STATUS_PAUSED  ||
-       this->status == this->STATUS_SLOW    ||
-       this->status == this->STATUS_SLOW2   ||
-       this->status == this->STATUS_FFWD    ||
-       this->status == this->STATUS_FFWD2) {
-       this->setStatus(this->STATUS_PLAYING);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(!this->stream) return;
+
+		if(this->status == this->STATUS_PAUSED  ||
+		   this->status == this->STATUS_SLOW    ||
+		   this->status == this->STATUS_SLOW2   ||
+		   this->status == this->STATUS_FFWD    ||
+		   this->status == this->STATUS_FFWD2) {
+		   this->setStatus(this->STATUS_PLAYING);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+		}
+#endif
+    }
 }
 
 /**
@@ -1261,25 +1351,30 @@ void MMSAV::play() {
  * at this position.
  */
 void MMSAV::stop(const bool savePosition) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	if(!this->stream) return;
-
-    /* save position */
-	if(savePosition)
-		xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
-
-    /* stop xine in extra thread to avoid blocking the application */
-    pthread_t thread;
-	internalStreamData *streamData = new internalStreamData;
-	streamData->stream = this->stream;
-	streamData->status = &(this->status);
-	streamData->lock   = &(this->lock);
-    if(pthread_create(&thread, NULL, stopRoutine, streamData) == 0)
-    	pthread_detach(thread);
-    else
-    	stopRoutine(streamData);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(!this->stream) return;
+
+		/* save position */
+		if(savePosition)
+			xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
+
+		/* stop xine in extra thread to avoid blocking the application */
+		pthread_t thread;
+		internalStreamData *streamData = new internalStreamData;
+		streamData->stream = this->stream;
+		streamData->status = &(this->status);
+		streamData->lock   = &(this->lock);
+		if(pthread_create(&thread, NULL, stopRoutine, streamData) == 0)
+			pthread_detach(thread);
+		else
+			stopRoutine(streamData);
+#endif
+    }
 }
 
 /**
@@ -1289,18 +1384,23 @@ void MMSAV::stop(const bool savePosition) {
  * ffwd etc.).
  */
 void MMSAV::pause() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->status == this->STATUS_PLAYING ||
-       this->status == this->STATUS_SLOW    ||
-       this->status == this->STATUS_SLOW2   ||
-       this->status == this->STATUS_FFWD    ||
-       this->status == this->STATUS_FFWD2) {
-       this->setStatus(this->STATUS_PAUSED);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
-        xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->status == this->STATUS_PLAYING ||
+		   this->status == this->STATUS_SLOW    ||
+		   this->status == this->STATUS_SLOW2   ||
+		   this->status == this->STATUS_FFWD    ||
+		   this->status == this->STATUS_FFWD2) {
+		   this->setStatus(this->STATUS_PAUSED);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+			xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
+		}
+#endif
+    }
 }
 
 /**
@@ -1313,25 +1413,30 @@ void MMSAV::pause() {
  * @see MMSAV::rewind()
  */
 void MMSAV::slow() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
-        this->setStatus(this->STATUS_SLOW);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
-    }
-    else if(this->status == this->STATUS_SLOW) {
-        this->setStatus(this->STATUS_SLOW2);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_4);
-    }
-    else if(this->status == this->STATUS_FFWD) {
-        this->setStatus(this->STATUS_PLAYING);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-    }
-    else if(this->status == this->STATUS_FFWD2) {
-        this->setStatus(this->STATUS_FFWD);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
+			this->setStatus(this->STATUS_SLOW);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
+		}
+		else if(this->status == this->STATUS_SLOW) {
+			this->setStatus(this->STATUS_SLOW2);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_4);
+		}
+		else if(this->status == this->STATUS_FFWD) {
+			this->setStatus(this->STATUS_PLAYING);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+		}
+		else if(this->status == this->STATUS_FFWD2) {
+			this->setStatus(this->STATUS_FFWD);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
+		}
+#endif
+    }
 }
 
 /**
@@ -1344,25 +1449,30 @@ void MMSAV::slow() {
  * @see MMSAV::rewind()
  */
 void MMSAV::ffwd() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
-        this->setStatus(this->STATUS_FFWD);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
-    }
-    else if(this->status == this->STATUS_FFWD) {
-        this->setStatus(this->STATUS_FFWD2);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
-    }
-    else if(this->status == this->STATUS_SLOW) {
-        this->setStatus(this->STATUS_PLAYING);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-    }
-    else if(this->status == this->STATUS_SLOW2) {
-        this->setStatus(this->STATUS_SLOW);
-        xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
+			this->setStatus(this->STATUS_FFWD);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
+		}
+		else if(this->status == this->STATUS_FFWD) {
+			this->setStatus(this->STATUS_FFWD2);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
+		}
+		else if(this->status == this->STATUS_SLOW) {
+			this->setStatus(this->STATUS_PLAYING);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+		}
+		else if(this->status == this->STATUS_SLOW2) {
+			this->setStatus(this->STATUS_SLOW);
+			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
+		}
+#endif
+    }
 }
 
 /**
@@ -1373,18 +1483,24 @@ void MMSAV::ffwd() {
  * @param   length  [out]   time in seconds of title length
  */
 bool MMSAV::getTimes(int *pos, int *length) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	if(!this->stream) return false;
-
-	if(xine_get_pos_length(this->stream, NULL, pos, length)) {
-        if(pos)    (*pos)    /= 1000;
-        if(length) (*length) /= 1000;
-        return true;
-    }
-    else
-       return false;
+    	return 0;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(!this->stream) return false;
+
+		if(xine_get_pos_length(this->stream, NULL, pos, length)) {
+			if(pos)    (*pos)    /= 1000;
+			if(length) (*length) /= 1000;
+			return true;
+		}
+		else
+		   return false;
+#endif
+    }
 }
 
 /**
@@ -1396,11 +1512,16 @@ bool MMSAV::getTimes(int *pos, int *length) {
  * @see     MMSAV::brightnessDown()
  */
 void MMSAV::setBrightness(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo)
-        xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, count);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo)
+			xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, count);
+#endif
+    }
 }
 
 /**
@@ -1412,13 +1533,18 @@ void MMSAV::setBrightness(int count) {
  * @see     MMSAV::brightnessDown()
  */
 void MMSAV::brightnessUp(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
-        xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value + count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
+			xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value + count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1430,13 +1556,18 @@ void MMSAV::brightnessUp(int count) {
  * @see     MMSAV::brightnessUp()
  */
 void MMSAV::brightnessDown(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
-        xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value - count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
+			xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value - count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1448,11 +1579,16 @@ void MMSAV::brightnessDown(int count) {
  * @see     MMSAV::contrastDown()
  */
 void MMSAV::setContrast(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo)
-        xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, count);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo)
+			xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, count);
+#endif
+    }
 }
 
 /**
@@ -1464,13 +1600,18 @@ void MMSAV::setContrast(int count) {
  * @see     MMSAV::contrastDown()
  */
 void MMSAV::contrastUp(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
-        xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value + count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
+			xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value + count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1482,13 +1623,18 @@ void MMSAV::contrastUp(int count) {
  * @see     MMSAV::contrastUp()
  */
 void MMSAV::contrastDown(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
-        xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value - count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
+			xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value - count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1500,11 +1646,16 @@ void MMSAV::contrastDown(int count) {
  * @see     MMSAV::saturationDown()
  */
 void MMSAV::setSaturation(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo)
-        xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, count);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo)
+			xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, count);
+#endif
+    }
 }
 
 /**
@@ -1516,13 +1667,18 @@ void MMSAV::setSaturation(int count) {
  * @see     MMSAV::saturationDown()
  */
 void MMSAV::saturationUp(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
-        xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value + count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
+			xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value + count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1534,13 +1690,18 @@ void MMSAV::saturationUp(int count) {
  * @see     MMSAV::saturationUp()
  */
 void MMSAV::saturationDown(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
-        xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value - count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
+			xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value - count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1552,11 +1713,16 @@ void MMSAV::saturationDown(int count) {
  * @see     MMSAV::hueDown()
  */
 void MMSAV::setHue(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo)
-        xine_set_param(this->stream, XINE_PARAM_VO_HUE, count);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo)
+			xine_set_param(this->stream, XINE_PARAM_VO_HUE, count);
+#endif
+    }
 }
 
 /**
@@ -1568,13 +1734,18 @@ void MMSAV::setHue(int count) {
  * @see     MMSAV::hueDown()
  */
 void MMSAV::hueUp(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
-        xine_set_param(this->stream, XINE_PARAM_VO_HUE, value + count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
+			xine_set_param(this->stream, XINE_PARAM_VO_HUE, value + count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1586,13 +1757,18 @@ void MMSAV::hueUp(int count) {
  * @see     MMSAV::hueUp()
  */
 void MMSAV::hueDown(int count) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    if(this->vo) {
-        int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
-        xine_set_param(this->stream, XINE_PARAM_VO_HUE, value - count*500);
-    }
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->vo) {
+			int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
+			xine_set_param(this->stream, XINE_PARAM_VO_HUE, value - count*500);
+		}
+#endif
+    }
 }
 
 /**
@@ -1601,11 +1777,16 @@ void MMSAV::hueDown(int count) {
  * @param   percent	[in]    volume in percent
  */
 void MMSAV::setVolume(int percent) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-	if(this->ao)
-		xine_set_param(this->stream, XINE_PARAM_AUDIO_VOLUME, percent);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		if(this->ao)
+			xine_set_param(this->stream, XINE_PARAM_AUDIO_VOLUME, percent);
+#endif
+    }
 }
 
 /**
@@ -1616,27 +1797,32 @@ void MMSAV::setVolume(int percent) {
  * @param   datalen [in]    length of data
  */
 void MMSAV::sendEvent(int type, void *data, int datalen) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    xine_event_t evt;
-
-	std::cerr << "6: " << this->stream << " | ";
-    evt.stream      = this->stream;
-
-	std::cerr << "5: " << data << " | ";
-    evt.data        = data;
-
-	std::cerr << "4: " << datalen << " | ";
-    evt.data_length = datalen;
-
-	std::cerr << "3: " << type << " | ";
-    evt.type        = type;
-
-	std::cerr << "2: xine_event_send | ";
-    xine_event_send(this->stream, &evt);
-
-	std::cerr << "1:" << std::endl;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		xine_event_t evt;
+
+		std::cerr << "6: " << this->stream << " | ";
+		evt.stream      = this->stream;
+
+		std::cerr << "5: " << data << " | ";
+		evt.data        = data;
+
+		std::cerr << "4: " << datalen << " | ";
+		evt.data_length = datalen;
+
+		std::cerr << "3: " << type << " | ";
+		evt.type        = type;
+
+		std::cerr << "2: xine_event_send | ";
+		xine_event_send(this->stream, &evt);
+
+		std::cerr << "1:" << std::endl;
+#endif
+    }
 }
 
 /**
@@ -1645,11 +1831,16 @@ void MMSAV::sendEvent(int type, void *data, int datalen) {
  * @return true if video stream
  */
 bool MMSAV::hasVideo() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return false;
-#else
-	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_VIDEO) == 1);
+    	return true;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_VIDEO) == 1);
+#endif
+    }
 }
 
 /**
@@ -1658,10 +1849,15 @@ bool MMSAV::hasVideo() {
  * @return true if audio stream
  */
 bool MMSAV::hasAudio() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-	return false;
-#else
-	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_AUDIO) == 1);
+    	return false;
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+    	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_AUDIO) == 1);
+#endif
+    }
 }
 

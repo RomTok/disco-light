@@ -33,7 +33,8 @@
 #include <sigc++/sigc++.h>
 #ifdef __HAVE_GSTREAMER__
 #include <gst/gst.h>
-#else
+#endif
+#ifdef __HAVE_XINE__
 #include <xine.h>
 #endif
 #include <map>
@@ -47,7 +48,9 @@
 
 
 
-#else
+#endif
+
+#ifdef __HAVE_XINE__
 
 /**
  * @brief   Video output description structure.
@@ -88,6 +91,9 @@ typedef struct {
 } dfb_visual_t;
 #endif
 
+
+#endif
+
 typedef struct {
 	MMSFBSurface *surf;
 	MMSFBSurfacePixelFormat surf_pixelformat;
@@ -102,9 +108,6 @@ typedef struct {
 	//! array of numOverlays overlays
 	raw_overlay_t *overlays;
 } MMSRAW_USERDATA;
-
-#endif
-
 
 
 /**
@@ -123,25 +126,38 @@ typedef struct {
 class MMSAV
 {
     private:
+
+
 #ifdef __HAVE_GSTREAMER__
 
 
 
-#else
-        MMSWindow                       *window;                                /**< window for classes that use video  */
+#endif
+#ifdef __HAVE_XINE__
+
 #ifdef __HAVE_DIRECTFB__
         VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
 #endif
         raw_visual_t					rawvisual;
-        MMSRAW_USERDATA					userd;
 
         pthread_mutex_t					lock;
 
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
 #endif
 
+        MMSRAW_USERDATA					userd;
+
     protected:
+
+    	//! backend which is used to stream any sources
+    	MMSMEDIABackend		backend;
+
+    	//! window which displays the stream
+        MMSWindow			*window;
+
+        //! surface of the window
+        MMSFBSurface		*surface;
 
     	bool                            verbose;                                /**< should logging be verbose?         */
         short                           status;                                 /**< current playback status            */
@@ -156,8 +172,8 @@ class MMSAV
 
         void gstInit();
 
-
-#else
+#endif
+#ifdef __HAVE_XINE__
 
 
         // xine related attributes
@@ -193,7 +209,11 @@ class MMSAV
         static const unsigned short STATUS_SLOW                     =  7;       /**< stream is being played slowly (2x)     */
         static const unsigned short STATUS_SLOW2                    =  8;       /**< stream is being played slowly (4x)     */
 
-        MMSAV();
+#ifdef __HAVE_GSTREAMER__
+        MMSAV(MMSMEDIABackend backend = MMSMEDIA_BE_GST);
+#else
+        MMSAV(MMSMEDIABackend backend = MMSMEDIA_BE_XINE);
+#endif
         virtual ~MMSAV();
 
         bool registerAudioPostPlugin(string name);

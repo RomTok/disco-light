@@ -31,7 +31,8 @@
 MMS_CREATEERROR(MMSVideoError);
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -95,7 +96,8 @@ MMSVideo::~MMSVideo() {
 }
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */

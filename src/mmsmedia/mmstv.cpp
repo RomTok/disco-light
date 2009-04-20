@@ -47,7 +47,8 @@
 MMS_CREATEERROR(MMSTVError);
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Callback, that will be called if xine sends event messages.
  *
@@ -108,7 +109,8 @@ MMSTV::~MMSTV() {
 }
 
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+#ifdef __HAVE_XINE__
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */
@@ -265,24 +267,29 @@ string MMSTV::getCurrentChannelName(void) {
  * @see MMSTV::getTuningTimeout()
  */
 void MMSTV::setTuningTimeout(const unsigned int timeout) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    xine_cfg_entry_t  conf;
-
-    if(!this->xine) return;
-    this->timeout = timeout;
-
-    if(xine_config_lookup_entry(this->xine, "media.dvb.tuning_timeout", &conf)) {
-        conf.num_value = timeout;
-        xine_config_update_entry(this->xine, &conf);
-    }
-    else
-    	xine_config_register_num(this->xine, "media.dvb.tuning_timeout", timeout,
-    	                         "Number of seconds until tuning times out.",
-    	                         "Leave at 0 means try forever. "
-    	                         "Greater than 0 means wait that many seconds to get a lock. Minimum is 5 seconds.",
-    	                         XINE_CONFIG_SECURITY, NULL, NULL);
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		xine_cfg_entry_t  conf;
+
+		if(!this->xine) return;
+		this->timeout = timeout;
+
+		if(xine_config_lookup_entry(this->xine, "media.dvb.tuning_timeout", &conf)) {
+			conf.num_value = timeout;
+			xine_config_update_entry(this->xine, &conf);
+		}
+		else
+			xine_config_register_num(this->xine, "media.dvb.tuning_timeout", timeout,
+									 "Number of seconds until tuning times out.",
+									 "Leave at 0 means try forever. "
+									 "Greater than 0 means wait that many seconds to get a lock. Minimum is 5 seconds.",
+									 XINE_CONFIG_SECURITY, NULL, NULL);
+#endif
+    }
 }
 
 /**
@@ -305,8 +312,12 @@ const unsigned int MMSTV::getTuningTimeout() {
  * @param   dir [in]    directory to save recordings into
  */
 void MMSTV::setRecordDir(const string dir) {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
+#endif
+    }
+    else {
+#ifdef __HAVE_XINE__
     xine_cfg_entry_t  conf;
 
     if(!this->xine) return;
@@ -332,6 +343,7 @@ void MMSTV::setRecordDir(const string dir) {
                 NULL ,
                 NULL);
 #endif
+    }
 }
 
 /**
@@ -340,15 +352,20 @@ void MMSTV::setRecordDir(const string dir) {
  * @return  current recordings dir
  */
 const string MMSTV::getRecordDir() {
+    if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-#else
-    xine_cfg_entry_t  conf;
-
-    if(this->xine && xine_config_lookup_entry(this->xine, "media.capture.save_dir", &conf))
-        return string(conf.str_value);
-
-    return xine_get_homedir();
 #endif
+    }
+    else {
+#ifdef __HAVE_XINE__
+		xine_cfg_entry_t  conf;
+
+		if(this->xine && xine_config_lookup_entry(this->xine, "media.capture.save_dir", &conf))
+			return string(conf.str_value);
+
+		return xine_get_homedir();
+#endif
+    }
 }
 
 /**
