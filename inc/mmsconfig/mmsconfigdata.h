@@ -102,6 +102,7 @@ class MMSConfigDataLanguage {
 		MMS_LANGUAGE_TYPE sourcelang;
 		MMS_LANGUAGE_TYPE defaulttargetlang;
 		bool			  addtranslations;
+		string			  languagefiledir;
 };
 
 class MMSConfigData {
@@ -180,6 +181,7 @@ class MMSConfigData {
     	const MMS_LANGUAGE_TYPE getSourceLang();
     	const MMS_LANGUAGE_TYPE getDefaultTargetLang();
     	const bool			    getAddTranslations();
+    	const string 			getLanguagefileDir();
 
 };
 
