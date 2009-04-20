@@ -294,6 +294,9 @@ const bool			    MMSConfigData::getAddTranslations() {
 	return this->language.addtranslations;
 }
 
+const string 			MMSConfigData::getLanguagefileDir() {
+	return this->language.languagefiledir;
+}
 
 /* static variables */
 MMSConfigDataGlobal 	MMSConfigData::global;

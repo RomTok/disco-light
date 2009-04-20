@@ -47,7 +47,8 @@ MMSTranslator::MMSTranslator() {
 		this->sourcelang = config.getSourceLang();
 		this->targetlang = config.getDefaultTargetLang();
 		this->addtranslations = config.getAddTranslations();
-		loadTransLations();
+		if(sourcelang != MMSLANG_UKN && targetlang != MMSLANG_UKN)
+			loadTransLations();
 	}
 }
 
@@ -72,7 +73,7 @@ void MMSTranslator::loadTransLations() {
 			MMSFileSearch search((*it)->getPath(),"translation.*",false);
 			MMSFILEENTRY_LIST ret =  search.execute();
 			for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
-				string filename = config.getData() + "/" + basename((*it2)->name.c_str());
+				string filename = config.getLanguagefileDir() + "/" + basename((*it2)->name.c_str());
 				processFile(filename);
 			}
 		}
@@ -80,10 +81,10 @@ void MMSTranslator::loadTransLations() {
 		DEBUGMSG("MMSTranslator", "No plugins database found for translation.");
     }
 
-    MMSFileSearch search(config.getData(),"translation.*",false);
+    MMSFileSearch search(config.getLanguagefileDir(),"translation.*",false);
     MMSFILEENTRY_LIST ret =  search.execute();
 	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
-		string filename = config.getData() + "/" + basename((*it2)->name.c_str());
+		string filename = config.getLanguagefileDir() + "/" + basename((*it2)->name.c_str());
 		this->files.insert(make_pair(strToLang(filename.substr(filename.find("translation")+12).c_str()),filename));
 		processFile(filename);
 	}

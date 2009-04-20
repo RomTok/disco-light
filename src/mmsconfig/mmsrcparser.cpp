@@ -80,7 +80,7 @@ MMSRcParser::MMSRcParser() {
 	this->language.addtranslations = false;
 	this->language.defaulttargetlang = MMSLANG_UKN;
 	this->language.sourcelang = MMSLANG_UKN;
-
+	this->language.languagefiledir = "";
 }
 
 MMSRcParser::~MMSRcParser() {
@@ -269,6 +269,8 @@ void MMSRcParser::throughLanguage(xmlNode* node) {
             this->language.defaulttargetlang = strToLang((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "addtranslations"))
             this->language.addtranslations = strToBool(string((const char *)parvalue));
+        else if(!xmlStrcmp(parname, (const xmlChar *) "languagefiledir"))
+        	this->language.languagefiledir = string((const char *)parvalue);
 		else
 			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
 
