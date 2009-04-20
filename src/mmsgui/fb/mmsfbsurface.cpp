@@ -47,14 +47,6 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 bool MMSFBSurface::extendedaccel								= false;
 MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_malloc;
 
-#ifdef __HAVE_XLIB__
-static int (*MMSXErrorHandler)(Display *, XErrorEvent *) = NULL;
-static int _MMSXErrorHandler(Display *d, XErrorEvent *e) {
-	DEBUGMSG("MMSFBSurface", "XError: %d", e->error_code);
-	return(MMSXErrorHandler(d,e));
-}
-#endif
-
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->llsurface)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
 
 #define CLIPSUBSURFACE \
@@ -503,11 +495,6 @@ void MMSFBSurface::init(void *llsurface,
         this->config.blittingflags = MMSFB_BLIT_NOFX;
         this->config.font = NULL;
     }
-
-#ifdef __HAVE_XLIB__
-    MMSXErrorHandler = XSetErrorHandler(_MMSXErrorHandler);
-    XSetErrorHandler(MMSXErrorHandler);
-#endif
 }
 
 
