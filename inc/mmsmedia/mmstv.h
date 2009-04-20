@@ -51,11 +51,15 @@ class MMSTV : public MMSAV {
         bool         recording,             /**< if true recording is on                    */
                      usingInputDVBMorphine; /**< if true our own xine input plugin is used  */
 
+#ifdef __HAVE_GSTREAMER__
+#else
+        void xineOpen();
+#endif
+
     public:
         MMSTV(MMSWindow *window, const string channel = "", const bool verbose = false);
         ~MMSTV();
 
-        void open();
         void startPlaying(const string channel = "");
         void play();
         void pause();

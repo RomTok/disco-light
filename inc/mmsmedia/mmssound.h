@@ -46,6 +46,10 @@
 class MMSSound : public MMSAV {
     private:
         void initialize(const bool verbose);
+#ifdef __HAVE_GSTREAMER__
+#else
+        void xineOpen();
+#endif
 
     protected:
 
@@ -57,7 +61,6 @@ class MMSSound : public MMSAV {
         /* destructor */
         ~MMSSound();
 
-        void open();
         void startPlaying(string mrl, bool cont);
         void ffwd();
 
