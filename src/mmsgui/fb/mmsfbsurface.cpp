@@ -293,6 +293,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 		sb->currbuffer_write = 1;
 	sb->external_buffer = true;
 
+#ifdef __HAVE_FBDEV__
+    this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
 #ifdef __HAVE_XLIB__
 	this->config.surface_buffer->x_image[0] = NULL;
 	this->config.surface_buffer->xv_image[0] = NULL;
@@ -338,6 +341,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->external_buffer = true;
 
 	this->config.surface_buffer->x_image[0] = NULL;
+
+#ifdef __HAVE_FBDEV__
+    this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
 
 	init((void*)1, NULL, NULL);
 }
@@ -395,6 +402,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 	}
 
 	this->config.surface_buffer->xv_image[0] = NULL;
+
+#ifdef __HAVE_FBDEV__
+    this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
 
 	init((void*)1, NULL, NULL);
 }
