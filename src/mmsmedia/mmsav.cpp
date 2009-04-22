@@ -38,63 +38,157 @@ MMS_CREATEERROR(MMSAVError);
 
 #ifdef __HAVE_GSTREAMER__
 
-static void
-cb_handoff (GstElement *fakesrc,
-	    GstBuffer  *buffer,
-	    GstPad     *pad,
-	    gpointer    user_data)
-{
-//  static gboolean white = FALSE;
+static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpointer user_data) {
+	MMSRAW_USERDATA *userd = (MMSRAW_USERDATA *)user_data;
+	GstCaps      	*caps = gst_pad_get_negotiated_caps(pad);
+	guint32			frame_format;
+	gint			frame_width, frame_height;
+	gint			frame_rate_numerator, frame_rate_denominator;
+	gint			frame_aspectratio_numerator, frame_aspectratio_denominator;
+	int				frame_aspect;
 
-  /* this makes the image black/white */
-/*  memset (GST_BUFFER_DATA (buffer), white ? 0xff : 0x0,
-	  GST_BUFFER_SIZE (buffer));
-  white = !white;
-  */
+	// caps set?
+	if (!caps) return;
 
-	MMSRAW_USERDATA *userd = (MMSRAW_USERDATA*)user_data;
+//g_print ("CAPS: %s\n", gst_caps_to_string (caps));
 
+	// get caps structure
+	GstStructure *caps_st;
+	caps_st = gst_caps_get_structure(caps, 0);
 
+	// get frame infos
+	if    (!gst_structure_get_int(caps_st, "width", &frame_width)
+		|| !gst_structure_get_int(caps_st, "height", &frame_height)
+		|| !gst_structure_get_fourcc(caps_st, "format", &frame_format)
+		|| !gst_structure_get_fraction(caps_st, "framerate", &frame_rate_numerator, &frame_rate_denominator)
+		|| !gst_structure_get_fraction(caps_st, "pixel-aspect-ratio", &frame_aspectratio_numerator, &frame_aspectratio_denominator))
+		return;
 
-  GstCaps      *caps;
-  caps = (GstCaps*) gst_pad_get_negotiated_caps (pad);
+	// calc frame aspect
+	frame_aspect = (frame_aspectratio_numerator << 10) / frame_aspectratio_denominator;
 
-  if (caps) {
-//	    g_print ("CAPS: %s\n", gst_caps_to_string (caps));
-	  GstStructure *st;
-	  st = gst_caps_get_structure (caps, 0);
+	// get access to the buffer
+	unsigned char *frame_buffer = (unsigned char *)GST_BUFFER_DATA(buffer);
 
-	  char        format[5]={0};
-	  gint        width;
-	  gint        height;
-	  gint 		  framerate_numerator;
-	  gint 		  framerate_denominator;
-	  gint 		  aspectratio_numerator;
-	  gint 		  aspectratio_denominator;
+	// all infos available, checking format
+	if (userd->lastaspect != frame_aspect) {
+		// format changed
+		printf("format change %f\n", ((double)frame_aspect) / 0x0400);
+		int newW = (userd->size.h * frame_aspect) >> 10;
+		int newH = (userd->size.w * frame_aspect) >> 10;
 
-
-		if (gst_structure_get_int (st, "width", &width)
-		 && gst_structure_get_int (st, "height", &height)
-		 && gst_structure_get_fourcc (st, "format", (guint32*)&format)
-		 && gst_structure_get_fraction(st, "framerate", &framerate_numerator, &framerate_denominator)
-		 && gst_structure_get_fraction(st, "pixel-aspect-ratio", &aspectratio_numerator, &aspectratio_denominator)) {
-
-			printf("w=%d,h=%d,f=%s,fr=%d/%d,ar=%d/%d\n",
-				width, height, format, framerate_numerator, framerate_denominator, aspectratio_numerator, aspectratio_denominator);
-
-
-
-			char *buf = (char *)GST_BUFFER_DATA (buffer);
-
-			printf("%.60s\n", buf);
-
-
-			userd->surf->clear(0xff,0x00,0x00,0xff);
-			userd->surf->flip();
-
+		// ratio has changed
+		if (frame_aspect < 0x0400) {
+			if(newW > userd->size.w) {
+				userd->dest.w = userd->size.w;
+				userd->dest.h = newH;
+			}
+			else {
+				userd->dest.w = newW;
+				userd->dest.h = userd->size.w;
+			}
+			userd->dest.x = (userd->size.w - userd->dest.w) / 2;
+			userd->dest.y = 0;
+		} else {
+			if(newH > userd->size.h) {
+				userd->dest.h = userd->size.h;
+				userd->dest.w = newW;
+			}
+			else {
+				userd->dest.w = userd->size.w;
+				userd->dest.h = newH;
+			}
+			userd->dest.x = (userd->size.w - userd->dest.w) / 2;;
+			userd->dest.y = (userd->size.h - userd->dest.h) / 2;
 		}
 
-  }
+		userd->lastaspect  = frame_aspect;
+
+		// clear surface
+		userd->surf->clear();
+		userd->surf->flip(NULL);
+		userd->surf->clear();
+
+		userd->dest.w&=~0x01;
+		userd->dest.h&=~0x01;
+		userd->dest.x&=~0x01;
+		userd->dest.y&=~0x01;
+
+		// delete iterim surface
+		if (userd->interim) {
+			delete userd->interim;
+			userd->interim = NULL;
+		}
+	}
+
+	if (userd->surf_pixelformat == MMSFB_PF_YV12) {
+		// the destination has YV12 pixelformat
+/*		if (frame_format == XINE_VORAW_RGB) {
+			// we get RGB24 data
+			if (!userd->interim) {
+				// allocate interim buffer for RGB24 to YV12 convertion
+				userd->interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+			}
+		}*/
+
+		if (userd->interim) {
+			// source is RGB24
+/*			userd->interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+							    frame_width, frame_height, NULL, 0, 0);
+			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);*/
+
+		} else {
+			// source is YV12
+			MMSFBExternalSurfaceBuffer buf;
+			buf.ptr = frame_buffer;
+			buf.pitch = frame_width;
+			buf.ptr2 = NULL;
+			buf.pitch2 = 0;
+			buf.ptr3 = NULL;
+			buf.pitch3 = 0;
+
+			userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+										   frame_width, frame_height, NULL, &userd->dest);
+		}
+	}
+	else {
+/*
+		// destination with any other pixelformat
+		if (frame_format == XINE_VORAW_YV12) {
+			// we get YV12 data
+			if (!userd->interim) {
+				// allocate interim buffer for YV12 stretch blit
+				userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
+				if (userd->interim) userd->interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
+			}
+		}
+
+		if (userd->interim) {
+			// source is YV12
+			MMSFBExternalSurfaceBuffer buf;
+			buf.ptr = data0;
+			buf.pitch = frame_width;
+			buf.ptr2 = data1;
+			buf.pitch2 = frame_width / 2;
+			buf.ptr3 = data2;
+			buf.pitch3 = frame_width / 2;
+			MMSFBRectangle mydest = userd->dest;
+			mydest.x = 0;
+			mydest.y = 0;
+
+			userd->interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+									   frame_width, frame_height, NULL, &mydest);
+			userd->surf->blit(userd->interim, NULL, userd->dest.x, userd->dest.y);
+
+		} else {
+			// source is RGB24
+			userd->surf->stretchBlitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+										   frame_width, frame_height, NULL, &userd->dest);
+		}*/
+	}
+
+
+	userd->surf->flip(NULL);
 }
 
 
@@ -243,7 +337,6 @@ static void printFrameFormat(int frame_format) {
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {
 	MMSRAW_USERDATA *userd =(MMSRAW_USERDATA *)user_data;
-	int newW, newH;
 /*	printf("-------\nframe format: ");
 	printFrameFormat(frame_format);
 	printf("frame_width: %d\n", frame_width);
@@ -256,9 +349,9 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 
     if (userd->lastaspect != frame_aspect) {
     	// format changed
-    	printf("format change %f\n", frame_aspect);
-    	newW = (int)((double)(userd->size.h) * frame_aspect + 0.5);
-    	newH = (int)((double)(userd->size.w) / frame_aspect + 0.5);
+		printf("format change %f\n", frame_aspect);
+    	int newW = (int)((double)(userd->size.h) * frame_aspect + 0.5);
+    	int newH = (int)((double)(userd->size.w) / frame_aspect + 0.5);
 
     	/* ratio has changed */
         if (frame_aspect<1.0) {
