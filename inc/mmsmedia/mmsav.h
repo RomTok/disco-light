@@ -89,10 +89,7 @@ typedef struct {
     DVFrameCallback     frame_cb;               /**< frame callback for DirectFB's xine video driver    */
     void                *frame_cdata;           /**< data given as an argument to frame_cb              */
 } dfb_visual_t;
-#endif
-
-
-#endif
+#endif /* __HAVE_DIRECTFB__ */
 
 typedef struct {
 	MMSFBSurface *surf;
@@ -108,6 +105,8 @@ typedef struct {
 	//! array of numOverlays overlays
 	raw_overlay_t *overlays;
 } MMSRAW_USERDATA;
+
+#endif /* __HAVE_XINE__ */
 
 
 /**
@@ -138,15 +137,15 @@ class MMSAV
 #ifdef __HAVE_DIRECTFB__
         VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
-#endif
+#endif /* __HAVE_XINE__ */
         raw_visual_t					rawvisual;
 
         pthread_mutex_t					lock;
 
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
-#endif
 
         MMSRAW_USERDATA					userd;
+#endif /* __HAVE_XINE__ */
 
     protected:
 
