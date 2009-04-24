@@ -26,6 +26,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <libxml/xmlversion.h>
+
 #ifdef LIBXML_READER_ENABLED
 
 #ifndef MMSXMLCLIENTINTERFACE_H_

@@ -142,8 +142,8 @@ MMSDVD::MMSDVD(MMSWindow *window, const string device, const bool verbose) :
 MMSDVD::~MMSDVD() {
 }
 
-#ifdef __HAVE_GSTREAMER__
-#else
+#if defined __HAVE_GSTREAMER__
+#elif defined __HAVE_XINE__
 /**
  * Calls MMSAV::open() with the queue_cb callback.
  */

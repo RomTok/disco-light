@@ -381,7 +381,7 @@ if(env['enable_media']):
 	else:
 		conf.checkSimpleLib(['libxine'],    'xine.h')
 	conf.checkSimpleLib(['alsa'],       'alsa/version.h')
-	conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+	conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__', '-D__HAVE_XINE__'])
 	
 	
 # checks required for database backends
