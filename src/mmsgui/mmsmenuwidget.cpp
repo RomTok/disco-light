@@ -348,7 +348,6 @@ void MMSMenuWidget::recalculateChildren() {
     /* normal menu or fixed selection? */
     if (fixedpos < 0) {
         /* normal menu */
-
         /* item pos with margin */
         int item_xx = this->virtualGeom.x + item_hmargin;
         int item_yy = this->virtualGeom.y + item_vmargin;
@@ -2615,7 +2614,6 @@ void MMSMenuWidget::clear() {
 }
 
 void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
-
 	/* switch the brightness of the menu items */
     if (set) {
         /* get the focus -> dim up and/or decrease transparency */
@@ -2790,6 +2788,7 @@ bool MMSMenuWidget::init() {
 }
 
 bool MMSMenuWidget::draw(bool *backgroundFilled) {
+
     bool myBackgroundFilled = false;
 
     if (backgroundFilled) {
