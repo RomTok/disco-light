@@ -138,7 +138,7 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);*/
 
 		} else {
-			// source is YV12
+			// prepare source buffer
 			MMSFBExternalSurfaceBuffer buf;
 			buf.ptr = frame_buffer;
 			buf.pitch = frame_width;
@@ -147,8 +147,16 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 			buf.ptr3 = NULL;
 			buf.pitch3 = 0;
 
-			userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
-										   frame_width, frame_height, NULL, &userd->dest);
+			if (frame_format == GST_MAKE_FOURCC ('I', '4', '2', '0')) {
+				// source is I420
+				userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_I420,
+											   frame_width, frame_height, NULL, &userd->dest);
+			}
+			else {
+				// source is YV12
+				userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+											   frame_width, frame_height, NULL, &userd->dest);
+			}
 		}
 	}
 	else {
@@ -887,8 +895,8 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 MMSAV::MMSAV(MMSMEDIABackend backend) {
 
 
-//	this->backend = backend;
-this->backend = MMSMEDIA_BE_XINE;
+	this->backend = backend;
+//this->backend = MMSMEDIA_BE_XINE;
 
 	this->window=NULL;
 	this->surface = NULL;
