@@ -29,8 +29,8 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									bool antialiasing) {
 	// first time?
 	static bool firsttime = true;
@@ -40,8 +40,12 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	}
 
 	// get the first source ptr/pitch
-	unsigned char *src = (unsigned char *)extbuf->ptr;
-	int src_pitch = extbuf->pitch;
+	unsigned char *src = (unsigned char *)src_planes->ptr;
+	int src_pitch = src_planes->pitch;
+
+	// get the first destination ptr/pitch
+	unsigned char *dst = (unsigned char *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
 	// prepare...
 	int src_pitch_pix 		= src_pitch;
@@ -63,21 +67,31 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_
 	bool dst_odd_right 	= ((dx + dw) & 0x01);
 	bool dst_odd_bottom = ((dy + dh) & 0x01);
 
-	// pointer to the pixel components of the first pixel
+	// pointer to the pixel components of the first source pixel
 	unsigned char *src_y = src + sx + sy * src_pitch_pix;
 	unsigned char *src_u;
 	unsigned char *src_v;
-	if ((extbuf->ptr2)&&(extbuf->ptr3)) {
-		src_u = (unsigned char *)extbuf->ptr2 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
-		src_v = (unsigned char *)extbuf->ptr3 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+	if ((src_planes->ptr2)&&(src_planes->ptr3)) {
+		src_u = (unsigned char *)src_planes->ptr2 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
+		src_v = (unsigned char *)src_planes->ptr3 + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
 	}
 	else {
 		src_u = src + src_pitch_pix * src_height + src_pitch_pix_half * (src_height >> 1) + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
 		src_v = src + src_pitch_pix * src_height                                          + (sx >> 1) + (sy >> 1) * src_pitch_pix_half;
 	}
+
+	// pointer to the pixel components of the first destination pixel
 	unsigned char *dst_y = dst + dx + dy * dst_pitch_pix;
-	unsigned char *dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
-	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                                         + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_u;
+	unsigned char *dst_v;
+	if ((dst_planes->ptr2)&&(dst_planes->ptr3)) {
+		dst_u = (unsigned char *)src_planes->ptr2 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+		dst_v = (unsigned char *)src_planes->ptr3 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	}
+	else {
+		dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+		dst_v = dst + dst_pitch_pix * dst_height                                          + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	}
 
 	// antialiasing horizontal/vertical/both
 	bool h_antialiasing = false;

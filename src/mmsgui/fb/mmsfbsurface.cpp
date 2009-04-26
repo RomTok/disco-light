@@ -2886,7 +2886,36 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 					mmsfb_stretchblit_yv12_to_yv12(
 							src_planes, src_height,
 							sx, sy, sw, sh,
-							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							dx, dy, dw, dh,
+							antialiasing);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+	}
+	else
+	if (src_pixelformat == MMSFB_PF_I420) {
+		// source is I420
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
+			// destination is YV12
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+				// stretch without alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_stretchblit_i420_to_yv12(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
 							antialiasing);
 					extendedUnlock(source, this);
