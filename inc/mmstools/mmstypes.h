@@ -375,8 +375,8 @@ MMSFBPointerMode getMMSFBPointerModeFromString(string pm);
 //! supported languages
 typedef enum {
 	MMSLANG_UKN,
-	MMSLANG_GER,
-	MMSLANG_ENG,
+	MMSLANG_DE,
+	MMSLANG_EN,
 	MMSLANG_MSG
 } MMS_LANGUAGE_TYPE;
 

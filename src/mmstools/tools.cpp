@@ -715,13 +715,13 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts) {
 }
 
 MMS_LANGUAGE_TYPE strToLang(const char *value) {
-	if(strncasecmp(value,"ger",3)==0) {
+	if(strncasecmp(value,"de",3)==0) {
 		return MMSLANG_GER;
 	}
 	if(strncasecmp(value,"msgid",3)==0) {
 		return MMSLANG_MSG;
 	}
-	if(strncasecmp(value,"eng",3)==0) {
+	if(strncasecmp(value,"en",3)==0) {
 		return MMSLANG_ENG;
 	}
 
@@ -730,8 +730,8 @@ MMS_LANGUAGE_TYPE strToLang(const char *value) {
 
 string langToStr(MMS_LANGUAGE_TYPE lang) {
 	switch(lang) {
-		case MMSLANG_GER: return "ger";
-		case MMSLANG_ENG: return "eng";
+		case MMSLANG_GER: return "de";
+		case MMSLANG_ENG: return "en";
 		case MMSLANG_MSG: return "msg";
 		default: return "ukn";
 	}
