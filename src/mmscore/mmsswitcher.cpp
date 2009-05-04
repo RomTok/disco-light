@@ -168,8 +168,6 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         	this->menuBar_static->show();
         	this->menuBar_static->waitUntilShown();
         }
-        //this->menu->setFocus(true);
-        this->menu->setSelected(false);
         this->menuBar->show();
 
         /* connect onBeforeScroll callback of the menu widget */

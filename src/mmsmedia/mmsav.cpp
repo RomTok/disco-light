@@ -65,7 +65,7 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 		return;
 
 	// calc frame aspect
-	frame_aspect = (frame_aspectratio_numerator << 10) / frame_aspectratio_denominator;
+	frame_aspect = (frame_width * (frame_aspectratio_numerator << 16)) / (frame_aspectratio_denominator * frame_height);
 
 	// get access to the buffer
 	unsigned char *frame_buffer = (unsigned char *)GST_BUFFER_DATA(buffer);
@@ -73,12 +73,12 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 	// all infos available, checking format
 	if (userd->lastaspect != frame_aspect) {
 		// format changed
-		printf("format change %f\n", ((double)frame_aspect) / 0x0400);
-		int newW = (userd->size.h * frame_aspect) >> 10;
-		int newH = (userd->size.w * frame_aspect) >> 10;
+		printf("format change %f\n", ((double)frame_aspect) / 0x10000);
+		int newW = (userd->size.h * frame_aspect) >> 16;
+		int newH = (userd->size.w * frame_aspect) >> 16;
 
 		// ratio has changed
-		if (frame_aspect < 0x0400) {
+		if (frame_aspect < 0x10000) {
 			if(newW > userd->size.w) {
 				userd->dest.w = userd->size.w;
 				userd->dest.h = newH;
@@ -109,10 +109,10 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 		userd->surf->flip(NULL);
 		userd->surf->clear();
 
-		userd->dest.w&=~0x01;
-		userd->dest.h&=~0x01;
-		userd->dest.x&=~0x01;
-		userd->dest.y&=~0x01;
+		userd->dest.w &= ~0x01;
+		userd->dest.h &= ~0x01;
+		userd->dest.x &= ~0x01;
+		userd->dest.y &= ~0x01;
 
 		// delete iterim surface
 		if (userd->interim) {
@@ -138,7 +138,7 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);*/
 
 		} else {
-			// source is YV12
+			// prepare source buffer
 			MMSFBExternalSurfaceBuffer buf;
 			buf.ptr = frame_buffer;
 			buf.pitch = frame_width;
@@ -147,8 +147,16 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 			buf.ptr3 = NULL;
 			buf.pitch3 = 0;
 
-			userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
-										   frame_width, frame_height, NULL, &userd->dest);
+			if (frame_format == GST_MAKE_FOURCC ('I', '4', '2', '0')) {
+				// source is I420
+				userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_I420,
+											   frame_width, frame_height, NULL, &userd->dest);
+			}
+			else {
+				// source is YV12
+				userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
+											   frame_width, frame_height, NULL, &userd->dest);
+			}
 		}
 	}
 	else {
@@ -887,8 +895,8 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 MMSAV::MMSAV(MMSMEDIABackend backend) {
 
 
-//	this->backend = backend;
-this->backend = MMSMEDIA_BE_XINE;
+	this->backend = backend;
+//this->backend = MMSMEDIA_BE_XINE;
 
 	this->window=NULL;
 	this->surface = NULL;

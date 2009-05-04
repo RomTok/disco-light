@@ -26,36 +26,36 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "mmsgui/mmswidgetthread.h"
+#include "mmsgui/fb/mmsfbconv.h"
+#include "mmstools/mmstools.h"
 
-MMSWidgetThread::MMSWidgetThread(MMSWidget *widget) {
-	this->widget = widget;
-	this->delay = 0;
-}
-
-void MMSWidgetThread::threadMain() {
-	if (!this->widget)
-		return;
-
-	if (this->delay <= 0)
-		return;
-
-	while (this->delay > 0) {
-		usleep(50000);
-		if (this->widget->isPressed()) continue;
-		this->delay -= 50;
+void mmsfb_stretchblit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+	// first time?
+	static bool firsttime = true;
+	if (firsttime) {
+		printf("DISKO: Using accelerated stretch I420 to YV12.\n");
+		firsttime = false;
 	}
 
-	bool b = false;
-	this->widget->getFocusable(b);
-	if (b)
-		this->widget->setFocus(false);
-	else
-		this->widget->setSelected(false);
-}
+	// prepare source planes
+	MMSFBSurfacePlanes source_planes;
+	if ((src_planes->ptr2)&&(src_planes->ptr3)) {
+		source_planes = *src_planes;
+	}
+	else {
+		source_planes.ptr = src_planes->ptr;
+		source_planes.pitch = src_planes->pitch;
+		source_planes.ptr2 = (unsigned char *)source_planes.ptr + source_planes.pitch * src_height;
+		source_planes.pitch2 = src_planes->pitch;
+		source_planes.ptr3 = (unsigned char *)source_planes.ptr + source_planes.pitch * src_height + (source_planes.pitch >> 1) * (src_height >> 1);
+		source_planes.pitch3 = src_planes->pitch;
+	}
 
-void MMSWidgetThread::start(int delay) {
-	this->delay = delay;
-	MMSThread::start();
+	// now we can use the YV12 to YV12 stretch blit
+	mmsfb_stretchblit_yv12_to_yv12(&source_planes, src_height, sx, sy, sw, sh,
+								   dst_planes, dst_height, dx, dy, dw, dh,
+								   antialiasing);
 }
 
