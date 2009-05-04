@@ -718,7 +718,7 @@ MMS_LANGUAGE_TYPE strToLang(const char *value) {
 	if(strncasecmp(value,"de",3)==0) {
 		return MMSLANG_DE;
 	}
-	if(strncasecmp(value,"msgid",3)==0) {
+	if(strncasecmp(value,"msg",3)==0) {
 		return MMSLANG_MSG;
 	}
 	if(strncasecmp(value,"en",3)==0) {
