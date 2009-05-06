@@ -93,6 +93,7 @@ if sconsVersion < (0,98,1):
     	BoolOption('use_sse',       'Use SSE optimization', False),
     	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
     	BoolOption('enable_media',  'Build with mmsmedia support', True),
     	BoolOption('enable_flash',  'Build with mmsflash support', False),
     	BoolOption('enable_sip',    'Build with mmssip support', False),
@@ -111,6 +112,7 @@ else:
     	BoolVariable('use_sse',       'Use SSE optimization', False),
     	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
     	BoolVariable('enable_media',  'Build with mmsmedia support', True),
     	BoolVariable('enable_flash',  'Build with mmsflash support', False),
     	BoolVariable('enable_sip',    'Build with mmssip support', False),
@@ -402,12 +404,14 @@ if 'odbc' in env['database']:
 		Exit(1)
 
 # check for openssl
-if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
-	conf.env['mmscrypt'] = 0
+if env['enable_crypt']:
+	if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
+		conf.env['mmscrypt'] = 0
+	else:
+		conf.env['CCFLAGS'].append('-D__HAVE_MMSCRYPT__')
+		conf.env['mmscrypt'] = 1
 else:
-	conf.env['CCFLAGS'].append('-D__HAVE_MMSCRYPT__')
-	conf.env['mmscrypt'] = 1
-	
+	conf.env['mmscrypt'] = 0
 # checks required if building mmsflash
 if(env['enable_flash']):
 	conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
