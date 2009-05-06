@@ -1025,7 +1025,6 @@ bool MMSWindow::moveChildWindow(MMSWindow *childwin, int x, int y, bool refresh)
 void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region, int offsX, int offsY) {
     MMSFBRegion       pw_region;
 
-
     if (region == NULL) {
         /* complete surface */
         pw_region.x1 = 0;
@@ -1098,12 +1097,14 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         	else {
         		/* no own surface -> direct draw */
 				MMSFBRectangle r = cw->window->geom;
-				if ((src_rect.w == r.w)||(src_rect.h == r.h))
+				if ((src_rect.w == r.w)||(src_rect.h == r.h)) {
 					/* draw all (e.g. border) */
 					cw->window->draw(false, &src_rect, false);
-				else
+				}
+				else {
 					/* minimal draw */
 					cw->window->draw(true, &src_rect, false);
+				}
         	}
 
             /* draw the children of this child */
@@ -1573,7 +1574,6 @@ void MMSWindow::drawMyBorder() {
 
 bool MMSWindow::show() {
 
-
     /* the window will be hidden in a few seconds (hideAction thread is running), wait for it */
     while (this->willhide)
         msleep(100);
@@ -1647,69 +1647,52 @@ void MMSWindow::showBufferedShown() {
         }*/
 	}
 
-//    printf("showBufferedShown %x\n", this);
-//    printf("showBufferedShown %x, name=%s\n", this, this->name.c_str());
-
     for (unsigned int i = 0; i < childwins.size(); i++) {
 		MMSWindow *w = childwins.at(i).window;
 
-//		printf("showBufferedShown2 %x\n", w);
-//		if (w)
-//			printf("showBufferedShown3 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
-
-		if (w->buffered_shown) {
-//PUP		    w->drawLock.lock();
-
+		if (w->shown) {
 			lock();
 
-//			printf("showBufferedShown4 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
-
-		    w->draw();
-			w->draw();
-		    if (!w->initialized) {
-		        /* init window (e.g. pre-calc navigation ...) */
-		        w->init();
-		        w->initialized = true;
+		    if (!w->buffered_shown) {
+		    	// it is not the first time, so one draw is enough
+		    	// do it only for child windows with own surfaces
+				bool os;
+				w->getOwnSurface(os);
+				if (os) {
+					w->draw();
+					w->parent->flipWindow(w);
+				}
 		    }
+		    else {
+		    	// buffered shown, first time called
+				w->draw();
+				w->draw();
+				if (!w->initialized) {
+					/* init window (e.g. pre-calc navigation ...) */
+					w->init();
+					w->initialized = true;
+				}
 
-		    if (!w->initialArrowsDrawn) {
-		        /* set the arrow widgets */
-		        w->initialArrowsDrawn = true;
-		        w->switchArrowWidgets();
+				if (!w->initialArrowsDrawn) {
+					/* set the arrow widgets */
+					w->initialArrowsDrawn = true;
+					w->switchArrowWidgets();
+				}
+
+				w->parent->flipWindow(w);
+
+				if ((w->parent)||((!w->parent)&&(w->window))) {
+					unsigned int opacity;
+					if (!w->getOpacity(opacity)) opacity = 255;
+					MMSFBRectangle rect = w->getGeometry();
+
+					/* set final opacity */
+					w->parent->setChildWindowOpacity(w, opacity);
+				}
+
+				w->buffered_shown = false;
+				w->showBufferedShown();
 		    }
-
-//		    if (w->parent)
-		        w->parent->flipWindow(w);
-
-//PUP		    w->drawLock.unlock();
-//HAN		        unlock();
-
-//		    if (w->window)
-		        /* show window (normally the opacity is 0 here) */
-//		        w->window->show();
-
-
-
-		    if ((w->parent)||((!w->parent)&&(w->window))) {
-			    unsigned int opacity;
-			    if (!w->getOpacity(opacity)) opacity = 255;
-		        MMSFBRectangle rect = w->getGeometry();
-
-			    /* set final opacity */
-				w->parent->setChildWindowOpacity(w, opacity);
-		    }
-
-/*	        if (w->parent) {
-	            w->parent->preCalcNavigation();
-	            w->switchArrowWidgets();
-	        }*/
-
-//			printf(">showBufferedShown5 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
-
-			w->buffered_shown = false;
-			w->showBufferedShown();
-
-//			printf("<showBufferedShown5 %x, name=%s, x=%d, y=%d, w=%d, h=%d\n", w, w->name.c_str(), geom.x, geom.y, geom.w, geom.h);
 
 			unlock();
 		}
@@ -1809,6 +1792,10 @@ bool MMSWindow::showAction(bool *stopaction) {
         return !saction;
     }
 
+
+    // set the first focused widget, if not set and if window can get the focus
+    this->setFirstFocus();
+
 /////////
 //    if (getType() != MMSWINDOWTYPE_CHILDWINDOW) {
     	showBufferedShown();
@@ -1823,7 +1810,7 @@ bool MMSWindow::showAction(bool *stopaction) {
 		really_shown = this->parent->isShown(true);
 
     /* set the first focused widget, if not set and if window can get the focus */
-    this->setFirstFocus();
+//    this->setFirstFocus();
 
 //    printf("showAction3 %x\n", this);
 
@@ -2518,8 +2505,12 @@ bool MMSWindow::setFirstFocus(bool cw) {
                         		DEBUGMSG("MMSGUI", "MMSWindow: set focus to child nr " + iToStr(i));
                         		string inputmode = "";
                         		w->children.at(i)->getInputModeEx(inputmode);
-                        		if (strToUpr(inputmode) != "CLICK")
-                        			w->children.at(i)->setFocus(true);
+                        		if (strToUpr(inputmode) != "CLICK") {
+                        			w->children.at(i)->setFocus(true, false);
+                        		}
+								else {
+									w->children.at(i)->setFocus(false, false);
+								}
 	                            w->firstfocusset = true;
 	                            this->childwins.at(j).focusedWidget = i;
 	                            return true;

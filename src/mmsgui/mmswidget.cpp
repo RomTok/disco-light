@@ -1118,6 +1118,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
     bool         myBackgroundFilled = false;
     bool         retry = false;
 
+
     if (!this->initialized) {
         /* init widget (e.g. load images, fonts, ...) */
         init();
@@ -2015,7 +2016,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 						&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
 						// yes, scroll to the position if possible
 						bool changed = false;
-						scrollTo(inputevent->posx, inputevent->posy, true, &changed);
+						bool st_ok = scrollTo(inputevent->posx, inputevent->posy, true, &changed);
 
 						// fire the onclick callback
 						this->onClick->emit(this, inputevent->posx - this->geom.x, inputevent->posy - this->geom.y,
@@ -2033,7 +2034,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 							if (!getReturnOnScroll(r)) r = true;
 							if (r) changed = false;
 						}
-						if (!changed) {
+						if (!changed && st_ok) {
 		    		        if (getFocusable(b, false))
 		    		        	if (b) {
 									// emit the onReturn

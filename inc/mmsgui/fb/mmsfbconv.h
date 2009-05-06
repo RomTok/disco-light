@@ -1280,10 +1280,19 @@ void mmsfb_stretchblit_blend_coloralpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer 
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_yv12_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									bool antialiasing);
 
+
+
+//! Stretch blit I420 to YV12 with antialiasing.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
+									bool antialiasing);
 
 
 //! Fill rectangle ARGB.
