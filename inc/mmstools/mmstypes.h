@@ -337,6 +337,69 @@ string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf);
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf);
 
 
+// colors, rectangles, regions...............................................
+
+//! describes a color with alpha
+class MMSFBColor {
+	public:
+		//! red
+		unsigned char r;
+		//! green
+		unsigned char g;
+		//! blue
+		unsigned char b;
+		//! alphachannel
+		unsigned char a;
+
+		MMSFBColor(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 0) {
+			this->r = r;
+			this->g = g;
+			this->b = b;
+			this->a = a;
+		}
+};
+
+//! describes a rectangle
+class MMSFBRectangle {
+	public:
+		//! x
+		int	x;
+		//! y
+		int	y;
+		//! width
+		int	w;
+		//! height
+		int	h;
+
+		MMSFBRectangle(unsigned char x = 0, unsigned char y = 0, unsigned char w = 0, unsigned char h = 0) {
+			this->x = x;
+			this->y = y;
+			this->w = w;
+			this->h = h;
+		}
+};
+
+//! describes a region
+class MMSFBRegion {
+	public:
+		//! x1
+		int	x1;
+		//! y1
+		int	y1;
+		//! x2
+		int	x2;
+		//! y2
+		int	y2;
+
+		MMSFBRegion(unsigned char x1 = 0, unsigned char y1 = 0, unsigned char x2 = 0, unsigned char y2 = 0) {
+			this->x1 = x1;
+			this->y1 = y1;
+			this->x2 = x2;
+			this->y2 = x2;
+		}
+};
+
+
 
 // pointer mode..............................................................
 

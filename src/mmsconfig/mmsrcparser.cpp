@@ -34,53 +34,8 @@
 
 
 MMSRcParser::MMSRcParser() {
-	this->global.logfile       = "/tmp/mmscore";
-    this->global.firstplugin   = "<none>";
-    this->global.inputmap      = "default";
-    this->global.theme         = "default";
-    this->global.stdout        = false;
-    this->global.inputinterval = 0;
-	this->global.shutdown      = false;
-	this->global.inputmode     = "";
-
     this->configdb.database = "/tmp/mmsconfigdb";
 	this->datadb.database   = "/tmp/mmsdatadb";
-
-    this->graphics.xres                       = 800;
-    this->graphics.yres                       = 600;
-    this->graphics.xpos                       = 50;
-    this->graphics.ypos                       = 50;
-    // set MMSFB_BE_NONE for compatibility reason
-    this->graphics.backend                    = MMSFB_BE_NONE;
-    this->graphics.outputtype                 = MMSFB_OT_NONE;
-    this->graphics.videolayerid               = 0;
-    this->graphics.videolayerpixelformat      = MMSFB_PF_RGB16;
-    this->graphics.videolayeroptions          = "";
-    this->graphics.videolayerbuffermode       = "BACKSYSTEM";
-	this->graphics.graphicslayerid            = 0;
-	this->graphics.graphicslayerpixelformat   = MMSFB_PF_RGB16;
-    this->graphics.graphicslayeroptions       = "";
-    this->graphics.graphicslayerbuffermode    = "BACKSYSTEM";
-    this->graphics.vrect.x                    = 0;
-    this->graphics.vrect.y                    = 0;
-    this->graphics.vrect.w                    = 0;
-    this->graphics.vrect.h                    = 0;
-    this->graphics.touchrect.x                = 0;
-    this->graphics.touchrect.y                = 0;
-    this->graphics.touchrect.w                = 0;
-    this->graphics.touchrect.h                = 0;
-    this->graphics.pointer                    = MMSFB_PM_FALSE;	// use the mouse pointer, default no
-	this->graphics.graphicswindowpixelformat  = MMSFB_PF_NONE;	// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
-	this->graphics.graphicssurfacepixelformat = MMSFB_PF_NONE;	// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
-    this->graphics.extendedaccel              = true;	// use lowlevel disko routines for faster pixel manipulation
-    this->graphics.allocmethod                = "";		// the current alloc method
-	this->graphics.fullscreen    			  = MMSFB_FSM_FALSE;	// x11 fullscreen?, default no
-	this->graphics.hideapplication            = false;
-
-	this->language.addtranslations = false;
-	this->language.defaulttargetlang = MMSLANG_UKN;
-	this->language.sourcelang = MMSLANG_UKN;
-	this->language.languagefiledir = "";
 }
 
 MMSRcParser::~MMSRcParser() {

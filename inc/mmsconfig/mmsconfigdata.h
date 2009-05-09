@@ -30,17 +30,10 @@
 #define MMSCONFIGDATA_H_
 
 #include "mmstools/mmstypes.h"
+#include "mmstools/mmstools.h"
 
 using namespace std;
 
-
-
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-} CVRECT;
 
 class MMSConfigDataGlobal {
     public:
@@ -56,6 +49,20 @@ class MMSConfigDataGlobal {
         bool   shutdown;
         string shutdowncmd;
 	    string inputmode;
+
+	    MMSConfigDataGlobal() :
+	    	logfile("/tmp/mmscore"),
+	    	inputmap("default"),
+	    	prefix(""),
+	        theme("default"),
+	        sysconfig(""),
+	        data(""),
+	        stdout(false),
+	        inputinterval(0),
+	    	firstplugin("<none>"),
+	        shutdown(false),
+	        shutdowncmd(""),
+		    inputmode("") {}
 };
 
 class MMSConfigDataDB {
@@ -67,7 +74,13 @@ class MMSConfigDataDB {
     	string       password;
    	    string       database;
 
-   	    MMSConfigDataDB(const string database = "");
+   	    MMSConfigDataDB(const string database = "") :
+			dbms(DBMS_SQLITE3),
+			address(""),
+			port(0),
+			user(""),
+			password(""),
+			database("") {}
 };
 
 class MMSConfigDataGraphics {
@@ -86,8 +99,8 @@ class MMSConfigDataGraphics {
 		MMSFBSurfacePixelFormat graphicslayerpixelformat;
 	    string 					graphicslayeroptions;
 	    string 					graphicslayerbuffermode;
-	    CVRECT 					vrect;
-	    CVRECT 					touchrect;
+	    MMSFBRectangle			vrect;
+	    MMSFBRectangle			touchrect;
 	    MMSFBPointerMode		pointer;
 	    MMSFBSurfacePixelFormat graphicswindowpixelformat;
 	    MMSFBSurfacePixelFormat graphicssurfacepixelformat;
@@ -95,6 +108,31 @@ class MMSConfigDataGraphics {
 	    string 					allocmethod;
 	    MMSFBFullScreenMode		fullscreen;
 	    bool					hideapplication;
+
+   	    MMSConfigDataGraphics() :
+   		    xres(800),
+   		    yres(600),
+   		    xpos(50),
+   		    ypos(50),
+   		    backend(MMSFB_BE_NONE),							// set MMSFB_BE_NONE for compatibility reason
+   		    outputtype(MMSFB_OT_NONE),
+   			videolayerid(0),
+   			videolayerpixelformat(MMSFB_PF_RGB16),
+   		    videolayeroptions(""),
+   		    videolayerbuffermode("BACKSYSTEM"),
+   			graphicslayerid(0),
+   			graphicslayerpixelformat(MMSFB_PF_RGB16),
+   		    graphicslayeroptions(""),
+   		    graphicslayerbuffermode("BACKSYSTEM"),
+   		    vrect(MMSFBRectangle(0,0,0,0)),
+   		    touchrect(MMSFBRectangle(0,0,0,0)),
+   		    pointer(MMSFB_PM_FALSE),						// use the mouse pointer, default no
+   		    graphicswindowpixelformat(MMSFB_PF_NONE),		// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
+   		    graphicssurfacepixelformat(MMSFB_PF_NONE),		// supported values: ARGB, AiRGB or AYUV, NONE means auto detection
+   		    extendedaccel(true),							// use lowlevel disko routines for faster pixel manipulation
+   		    allocmethod(""),								// the current alloc method
+   		    fullscreen(MMSFB_FSM_FALSE),					// x11 fullscreen?, default no
+   		    hideapplication(false) {}
 };
 
 class MMSConfigDataLanguage {
@@ -103,6 +141,12 @@ class MMSConfigDataLanguage {
 		MMS_LANGUAGE_TYPE defaulttargetlang;
 		bool			  addtranslations;
 		string			  languagefiledir;
+
+		MMSConfigDataLanguage() :
+			sourcelang(MMSLANG_UKN),
+			defaulttargetlang(MMSLANG_UKN),
+			addtranslations(false),
+			languagefiledir("") {}
 };
 
 class MMSConfigData {
@@ -167,8 +211,8 @@ class MMSConfigData {
         const MMSFBSurfacePixelFormat getGraphicsLayerPixelformat();
         const string getGraphicsLayerOptions();
         const string getGraphicsLayerBufferMode();
-        const CVRECT getVRect();
-        const CVRECT getTouchRect();
+        const MMSFBRectangle getVRect();
+        const MMSFBRectangle getTouchRect();
         const MMSFBPointerMode getPointer();
         const MMSFBSurfacePixelFormat getGraphicsWindowPixelformat();
         const MMSFBSurfacePixelFormat getGraphicsSurfacePixelformat();

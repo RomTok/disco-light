@@ -77,41 +77,6 @@ extern "C" {
 /* access to the last error text */
 extern string MMSFB_LastErrorString;
 
-//! describes a color with alpha
-typedef struct {
-	//! red
-    unsigned char r;
-    //! green
-    unsigned char g;
-    //! blue
-    unsigned char b;
-    //! alphachannel
-    unsigned char a;
-} MMSFBColor;
-
-//! describes a rectangle
-typedef struct {
-	//! x
-	int	x;
-	//! y
-	int	y;
-	//! width
-	int	w;
-	//! height
-	int	h;
-} MMSFBRectangle;
-
-//! describes a region
-typedef struct {
-	//! x1
-	int	x1;
-	//! y1
-	int	y1;
-	//! x2
-	int	x2;
-	//! y2
-	int	y2;
-} MMSFBRegion;
 
 
 //! surface blitting flags

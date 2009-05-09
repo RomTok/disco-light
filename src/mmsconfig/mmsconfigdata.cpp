@@ -30,15 +30,12 @@
 #include "mmsconfig/mmsconfigdata.h"
 #include <string.h>
 
-MMSConfigDataDB::MMSConfigDataDB (const string database) :
-    dbms(DBMS_SQLITE3),
-    address(""),
-    port(0),
-    user(""),
-    password(""),
-   	database("") {
-}
-
+// static variables
+MMSConfigDataGlobal 	MMSConfigData::global;
+MMSConfigDataDB     	MMSConfigData::configdb;
+MMSConfigDataDB     	MMSConfigData::datadb;
+MMSConfigDataGraphics   MMSConfigData::graphics;
+MMSConfigDataLanguage   MMSConfigData::language;
 
 MMSConfigData::MMSConfigData(MMSConfigDataGlobal 	global,
                              MMSConfigDataDB     	configdb,
@@ -245,11 +242,11 @@ const string MMSConfigData::getGraphicsLayerBufferMode() {
     return this->graphics.graphicslayerbuffermode;
 }
 
-const CVRECT MMSConfigData::getVRect() {
+const MMSFBRectangle MMSConfigData::getVRect() {
     return this->graphics.vrect;
 }
 
-const CVRECT MMSConfigData::getTouchRect() {
+const MMSFBRectangle MMSConfigData::getTouchRect() {
     return this->graphics.touchrect;
 }
 
@@ -298,9 +295,3 @@ const string 			MMSConfigData::getLanguagefileDir() {
 	return this->language.languagefiledir;
 }
 
-/* static variables */
-MMSConfigDataGlobal 	MMSConfigData::global;
-MMSConfigDataDB     	MMSConfigData::configdb;
-MMSConfigDataDB     	MMSConfigData::datadb;
-MMSConfigDataGraphics   MMSConfigData::graphics;
-MMSConfigDataLanguage   MMSConfigData::language;
