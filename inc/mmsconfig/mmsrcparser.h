@@ -56,11 +56,11 @@ class MMSRcParser {
 		~MMSRcParser();
 
 		void parseFile(string filename);
-		void getMMSRc(MMSConfigDataGlobal 	&global,
-			          MMSConfigDataDB     	&configdb,
-			          MMSConfigDataDB     	&datadb,
-			          MMSConfigDataGraphics	&graphics,
-			          MMSConfigDataLanguage &language);
+		void getMMSRc(MMSConfigDataGlobal 	**global,
+			          MMSConfigDataDB     	**configdb,
+			          MMSConfigDataDB     	**datadb,
+			          MMSConfigDataGraphics	**graphics,
+			          MMSConfigDataLanguage **language);
 };
 
 MMS_CREATEERROR(MMSRcParserError);

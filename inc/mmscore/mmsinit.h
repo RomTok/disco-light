@@ -48,13 +48,17 @@ typedef int MMSINIT_FLAGS;
 #define MMSINIT_GRAPHICS 		0x00000008
 //! initializing the input manager
 #define MMSINIT_INPUTS 			0x00000010
-//! initializing the graphic backends including the window and the input manager
-#define MMSINIT_WINDOWS			0x00000019
+//! initializing the theme manager
+#define MMSINIT_THEMEMANAGER	0x00000020
+//! initializing the graphic backends including the window, the input and the theme manager
+#define MMSINIT_WINDOWS			0x00000039
 //! initializing all components
-#define MMSINIT_FULL 			0x0000001f
+#define MMSINIT_FULL 			0x0000003f
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
-			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application");
+			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application",
+		     MMSConfigDataGlobal *global = NULL, MMSConfigDataDB *configdb = NULL, MMSConfigDataDB *datadb = NULL,
+		     MMSConfigDataGraphics *graphics = NULL, MMSConfigDataLanguage *language = NULL);
 
 bool registerSwitcher(IMMSSwitcher *switcher);
 

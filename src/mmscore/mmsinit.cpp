@@ -38,10 +38,6 @@ static MMSEvent                     *masterevent        = NULL;
 static MMSEventSignup               *mastereventsignup  = NULL;
 /* static MMSImportScheduler           *importscheduler    = NULL; */
 static MMSInputManager              *inputs             = NULL;
-static MMSConfigDataGlobal          rcGlobal;
-static MMSConfigDataDB              rcConfigDB, rcDataDB;
-static MMSConfigDataGraphics        rcGraphics;
-static MMSConfigDataLanguage        rcLanguage;
 static MMSWindowManager             *windowmanager = NULL;
 
 static void on_exit() {
@@ -50,11 +46,11 @@ static void on_exit() {
 
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
-			 string appl_name, string appl_icon_name) {
+			 string appl_name, string appl_icon_name,
+			 MMSConfigDataGlobal *global, MMSConfigDataDB *configdb, MMSConfigDataDB *datadb,
+			 MMSConfigDataGraphics *graphics, MMSConfigDataLanguage *language) {
 
 	try {
-        MMSRcParser rcparser;
-
         //check if config file is given per commandline
         for (int i = 1; i < argc; i++) {
         	if (memcmp(argv[i], "--disko:config=", 15)==0)
@@ -62,33 +58,50 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         		configfile = &(argv[i][15]);
         }
 
-        if(configfile != "") {
-        	DEBUGOUT("set configfile: %s\n", configfile.c_str());
-	        rcparser.parseFile(configfile);
-	        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcGraphics,rcLanguage);
-        } else {
+        MMSRcParser 			rcparser;
+        MMSConfigDataGlobal     *rcGlobal 	= NULL;
+        MMSConfigDataDB         *rcConfigDB = NULL;
+        MMSConfigDataDB			*rcDataDB 	= NULL;
+        MMSConfigDataGraphics   *rcGraphics = NULL;
+        MMSConfigDataLanguage	*rcLanguage = NULL;
 
+        if(configfile != "") {
+        	// config file given
+        	DEBUGOUT("set configfile: %s\n", configfile.c_str());
+		    try {
+				rcparser.parseFile(configfile);
+				rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
+		    } catch (MMSRcParserError *ex) {
+	        	// config file not found
+		    }
+        } else {
+        	// searching for diskorc.xml
 		    try {
 		    	string filename = getenv("HOME") + string("/.disko/diskorc.xml");
 		        rcparser.parseFile("./etc/diskorc.xml");
-		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcGraphics,rcLanguage);
-
+		        rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		    } catch (MMSRcParserError *ex) {
+		    	// next try
 		        try {
-		        rcparser.parseFile("/etc/diskorc.xml");
-		        rcparser.getMMSRc(rcGlobal, rcConfigDB, rcDataDB, rcGraphics,rcLanguage);
-
-
+					rcparser.parseFile("/etc/diskorc.xml");
+					rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		        } catch (MMSRcParserError *ex) {
-					rcConfigDB.database  = "/tmp/mmsconfigdb";
-					rcDataDB.database    = "/tmp/mmsdatadb";
-					rcGlobal.logfile     = "/tmp/mmscore";
-		            rcGlobal.theme       = "default";
-		            rcGlobal.firstplugin = "<none>";
+		        	// config file not found
 		        }
 		    }
         }
-        config = new MMSConfigData(rcGlobal, rcConfigDB, rcDataDB, rcGraphics,rcLanguage);
+
+        if (rcGlobal) {
+        	// config file read
+        	config = new MMSConfigData(*rcGlobal, *rcConfigDB, *rcDataDB, *rcGraphics, *rcLanguage);
+        }
+        else {
+        	// config file not set, using defaults
+            MMSRcParser rcparser;
+			rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
+        	config = new MMSConfigData((global)?*global:*rcGlobal, (configdb)?*configdb:*rcConfigDB, (datadb)?*datadb:*rcDataDB,
+									   (graphics)?*graphics:*rcGraphics, (language)?*language:*rcLanguage);
+        }
 
         printf("\n");
         printf("****   *   ***   *  *   ***\n");
@@ -113,6 +126,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         DEBUGMSG_OUTSTR("Core", "Prefix:                       " + config->getPrefix());
         DEBUGMSG_OUTSTR("Core", "Theme:                        " + config->getTheme());
         DEBUGMSG_OUTSTR("Core", "Resolution:                   " + iToStr(config->getXres()) + "x" + iToStr(config->getYres()));
+        DEBUGMSG_OUTSTR("Core", "Position:                     " + iToStr(config->getXpos()) + "," + iToStr(config->getYpos()));
         DEBUGMSG_OUTSTR("Core", "Backend:                      " + getMMSFBBackendString(config->getBackend()));
         DEBUGMSG_OUTSTR("Core", "Output type:                  " + getMMSFBOutputTypeString(config->getOutputType()));
         DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(config->getVideoLayerId()));
@@ -178,8 +192,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
             mmsfbmanager.init(argc, argv, appl_name, appl_icon_name);
             mmsfbmanager.applySettings();
 
-            DEBUGMSG("Core", "starting theme manager");
-            themeManager = new MMSThemeManager(config->getData(),config->getTheme());
+            if (flags & MMSINIT_THEMEMANAGER) {
+				DEBUGMSG("Core", "starting theme manager");
+				themeManager = new MMSThemeManager(config->getData(),config->getTheme());
+            }
+
             if(flags & MMSINIT_WINDOWMANAGER) {
                 DEBUGMSG("Core", "starting window manager");
                 MMSFBRectangle vrect;

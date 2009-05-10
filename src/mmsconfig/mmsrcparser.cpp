@@ -100,16 +100,16 @@ void MMSRcParser::parseFile(string filename) {
 
 }
 
-void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		&global,
-		                   MMSConfigDataDB     		&configdb,
-		                   MMSConfigDataDB     		&datadb,
-		                   MMSConfigDataGraphics    &graphics,
-		                   MMSConfigDataLanguage    &language) {
-	global   = this->global;
-	configdb = this->configdb;
-	datadb   = this->datadb;
-	graphics = this->graphics;
-	language = this->language;
+void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		**global,
+		                   MMSConfigDataDB     		**configdb,
+		                   MMSConfigDataDB     		**datadb,
+		                   MMSConfigDataGraphics    **graphics,
+		                   MMSConfigDataLanguage    **language) {
+	*global   = &this->global;
+	*configdb = &this->configdb;
+	*datadb   = &this->datadb;
+	*graphics = &this->graphics;
+	*language = &this->language;
 }
 
 /**
