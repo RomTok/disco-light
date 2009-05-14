@@ -60,10 +60,26 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string conf
 		     MMSConfigDataGlobal *global = NULL, MMSConfigDataDB *configdb = NULL, MMSConfigDataDB *datadb = NULL,
 		     MMSConfigDataGraphics *graphics = NULL, MMSConfigDataLanguage *language = NULL);
 
+bool mmsRelease();
+
 bool registerSwitcher(IMMSSwitcher *switcher);
 
 IMMSWindowManager *getWindowManager();
 
 MMSPluginManager *getPluginManager();
+
+//! get access to the video layer
+/*!
+\return pointer to the MMSFBLayer video layer object
+\note If using only one layer, the graphics and video layer are the same.
+*/
+MMSFBLayer *getVideoLayer();
+
+//! get access to the graphics layer
+/*!
+\return pointer to the MMSFBLayer graphics layer object
+\note If using only one layer, the graphics and video layer are the same.
+*/
+MMSFBLayer *getGraphicsLayer();
 
 #endif /*MMSINIT_H_*/

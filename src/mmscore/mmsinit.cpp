@@ -77,7 +77,6 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         } else {
         	// searching for diskorc.xml
 		    try {
-		    	string filename = getenv("HOME") + string("/.disko/diskorc.xml");
 		        rcparser.parseFile("./etc/diskorc.xml");
 		        rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		    } catch (MMSRcParserError *ex) {
@@ -301,6 +300,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 	return true;
 }
 
+bool mmsRelease() {
+	//TODO
+	return true;
+}
+
 bool registerSwitcher(IMMSSwitcher *switcher) {
     DEBUGMSG("Core", "registering switcher");
     switcher->setInputManager(inputs);
@@ -329,3 +333,12 @@ IMMSWindowManager *getWindowManager() {
 MMSPluginManager *getPluginManager() {
 	return pluginmanager;
 }
+
+MMSFBLayer *getVideoLayer() {
+	return mmsfbmanager.getVideoLayer();
+}
+
+MMSFBLayer *getGraphicsLayer() {
+	return mmsfbmanager.getGraphicsLayer();
+}
+
