@@ -1,7 +1,19 @@
-Import('env idir_bin libmmsinfo libmmsconfig libmmstools libmmsgui')
-env.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui'])
+Import('env idir_bin')
+
+if env['big_lib']:
+	Import('libdisko_shared')
+	env.Append(LIBS = ['disko'])
+else:
+	Import('libmmsinfo libmmsconfig libmmstools libmmsgui')
+	env.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui'])
+
 env.Append(LIBPATH = '../../../lib') 
 taff = env.Program('../../../bin/taff', Glob('src/*.cpp'))
-Depends(taff, [libmmsinfo, libmmsconfig, libmmstools, libmmsgui])
+
+if env['big_lib']:
+	Depends(taff, [libdisko_shared])
+else:
+	Depends(taff, [libmmsinfo, libmmsconfig, libmmstools, libmmsgui])
+
 env.Install(idir_bin, taff)
 Export('taff')
