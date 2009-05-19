@@ -1,14 +1,16 @@
 Import('env idir_bin')
 
+taffEnv = env.Clone()
+
 if env['big_lib']:
 	Import('libdisko_shared')
-	env.Append(LIBS = ['disko'])
+	taffEnv.Append(LIBS = ['disko'])
 else:
 	Import('libmmsinfo libmmsconfig libmmstools libmmsgui')
-	env.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui'])
+	taffEnv.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui'])
 
-env.Append(LIBPATH = '../../../lib') 
-taff = env.Program('../../../bin/taff', Glob('src/*.cpp'))
+taffEnv.Append(LIBPATH = '../../../lib') 
+taff = taffEnv.Program('../../../bin/taff', Glob('src/*.cpp'))
 
 if env['big_lib']:
 	Depends(taff, [libdisko_shared])
