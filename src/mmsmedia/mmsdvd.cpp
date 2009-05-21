@@ -528,6 +528,12 @@ void MMSDVD::mouseEvent(const unsigned int event, const unsigned int x, const un
 void MMSDVD::mouseButton(const unsigned int x, const unsigned int y) const {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+    	printf("button pressed\n");
+/*
+        gst_navigation_send_mouse_event (GST_NAVIGATION (this->fakesink),
+            "mouse-button-press", 0, x, y);
+*/
+
 #endif
     }
     else {

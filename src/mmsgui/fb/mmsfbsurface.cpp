@@ -4285,7 +4285,7 @@ bool MMSFBSurface::refresh() {
 }
 
 bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
-                              bool copycontent, bool withbackbuffer) {
+                              bool copycontent, bool withbackbuffer, MMSFBSurfacePixelFormat pixelformat) {
 
     /* check if initialized */
     INITCHECK;
@@ -4299,7 +4299,7 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
     if (!h) h = config.h;
 
     /* create new surface */
-    if (!mmsfb->createSurface(dstsurface, w, h, this->config.surface_buffer->pixelformat,
+    if (!mmsfb->createSurface(dstsurface, w, h, (pixelformat==MMSFB_PF_NONE)?this->config.surface_buffer->pixelformat:pixelformat,
                              (withbackbuffer)?this->config.surface_buffer->backbuffer:0,this->config.surface_buffer->systemonly)) {
         if (*dstsurface)
             delete *dstsurface;

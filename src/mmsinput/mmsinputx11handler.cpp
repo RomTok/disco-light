@@ -214,7 +214,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     		inputevent->type = MMSINPUTEVENTTYPE_KEYPRESS;
         	XLockDisplay(mmsfb->x_display);
     		KeySym xSymbol = XKeycodeToKeysym(this->display , event.xkey.keycode,0 );
-    		XUnlockDisplay(mmsfb->x_display);
+			XUnlockDisplay(mmsfb->x_display);
     		inputevent->key = getKeyFromX11(xSymbol);
     		return;
     	}

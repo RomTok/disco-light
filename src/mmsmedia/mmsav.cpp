@@ -38,6 +38,9 @@ MMS_CREATEERROR(MMSAVError);
 
 #ifdef __HAVE_GSTREAMER__
 
+//#ifdef _old_code_
+// old code which uses fakesink element
+// this code is only for testing purpose
 static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpointer user_data) {
 	MMSRAW_USERDATA *userd = (MMSRAW_USERDATA *)user_data;
 	GstCaps      	*caps = gst_pad_get_negotiated_caps(pad);
@@ -199,55 +202,63 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 	userd->surf->flip(NULL);
 }
 
+//#endif /* _old_code_ */
+
 
 void MMSAV::gstInit() {
 
-	int argc = 1;
-	char *argv[1];
-	argv[0] = "hugo";
-	char **sss = argv;
-
-//	gst_init(&argc, &sss);
+	// initialize gstreamer
 	gst_init(NULL, NULL);
-	loop = g_main_loop_new (NULL, FALSE);
+	this->gst_diskovideosink_data.loop = g_main_loop_new(NULL, FALSE);
+
+	// create top-level pipe element
+	this->gst_diskovideosink_data.player = gst_element_factory_make("playbin", "player");
+
+	if (1) {
+		// get the diskovideosink element
+		this->gst_diskovideosink_data.videosink = gst_element_factory_make("diskovideosink", "diskovideosink");
+
+		// code which sets the surface to the diskovideosink element
+//		g_object_set(fakesink, "surface", this->window->getSurface(), NULL);
+
+		// set the window to the diskovideosink element
+		// note: using the window is better than using the surface
+		//       because diskovideosink can handle keyboard, mouse, touchscreen inputs
+		//       which are delivered to the MMSWindow
+		g_object_set(this->gst_diskovideosink_data.videosink, "window", this->window, NULL);
+	}
+//#ifdef _old_code_
+	else {
+		// old code which uses fakesink element
+		// this code is only for testing purpose
+		this->gst_diskovideosink_data.videosink = gst_element_factory_make("fakesink", "fakesink");
+		g_object_set(G_OBJECT(this->gst_diskovideosink_data.videosink), "signal-handoffs", TRUE, NULL);
+		g_signal_connect(this->gst_diskovideosink_data.videosink, "handoff", G_CALLBACK (cb_handoff), &(this->userd));
+	}
+//#endif
 
 
-
-	playx = gst_element_factory_make ("playbin", "play");
-	g_object_set (G_OBJECT (playx), "uri", "dvd://", NULL);
-
-	fakesink = gst_element_factory_make("fakesink", "fakesink");
-
-	g_object_set (G_OBJECT (fakesink), "signal-handoffs", TRUE, NULL);
-	g_signal_connect (fakesink, "handoff", G_CALLBACK (cb_handoff), &(this->userd));
-
-	g_object_set (G_OBJECT (playx), "video-sink", fakesink, NULL);
-
-	/*
-	bus = gst_pipeline_get_bus (GST_PIPELINE (play));
-	gst_bus_add_watch (bus, bus_call, loop);
-	gst_object_unref (bus);
-	*/
-
-//	gst_element_set_state (play, GST_STATE_PLAYING);
-
-	/* now run */
-//	g_main_loop_run (loop);
-
-	/* also clean up */
-//	gst_element_set_state (play, GST_STATE_NULL);
-//	gst_object_unref (GST_OBJECT (play));
-
-
+	// set videosink to the player
+	g_object_set(G_OBJECT(this->gst_diskovideosink_data.player), "video-sink", this->gst_diskovideosink_data.videosink, NULL);
 }
 
 
-static void* gstPlayRoutine(MMSAV *data) {
+static void* gstPlayRoutine(GST_DISKOVIDEOSINK_DATA	*gst_diskovideosink_data) {
 
-	gst_element_set_state (data->playx, GST_STATE_PLAYING);
+	printf("uri %s\n", gst_diskovideosink_data->uri.c_str());
 
-	/* now run */
-	g_main_loop_run (data->loop);
+	// set the uri to the player
+	g_object_set(G_OBJECT(gst_diskovideosink_data->player), "uri", gst_diskovideosink_data->uri.c_str(), NULL);
+
+	// switch to playing state
+	gst_element_set_state(gst_diskovideosink_data->player, GST_STATE_PLAYING);
+
+	// go in main loop
+	g_main_loop_run(gst_diskovideosink_data->loop);
+
+
+	//	gst_element_set_state (player, GST_STATE_NULL);
+	//	gst_object_unref (GST_OBJECT (player));
 
 	return NULL;
 }
@@ -1378,20 +1389,20 @@ bool MMSAV::isStopped() {
  * @exception   MMSAVError stream could not be opened
  */
 void MMSAV::startPlaying(const string mrl, const bool cont) {
+	DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
+	if((currentMRL == mrl) && (this->status == this->STATUS_PLAYING)) return;
+	this->currentMRL = mrl;
 
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 		pthread_t thread;
-		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, this) == 0)
+		this->gst_diskovideosink_data.uri = currentMRL;
+		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, &this->gst_diskovideosink_data) == 0)
 			pthread_detach(thread);
 #endif
     }
     else {
 #ifdef __HAVE_XINE__
-		static string currentMRL = "";
-
-		DEBUGMSG("MMSAV", "currentMRL: %s mrl: %s status: %d", currentMRL.c_str(), mrl.c_str(), status);
-		if((currentMRL == mrl) && (this->status == this->STATUS_PLAYING)) return;
 
 		if(!this->stream) this->xineOpen();
 
@@ -1410,7 +1421,6 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
 		else
 			playRoutine(streamData);
 
-		currentMRL = mrl;
 #endif
     }
 }

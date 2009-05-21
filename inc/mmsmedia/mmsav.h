@@ -33,6 +33,7 @@
 #include <sigc++/sigc++.h>
 #ifdef __HAVE_GSTREAMER__
 #include <gst/gst.h>
+//#include <gst/interfaces/navigation.h>
 #endif
 #ifdef __HAVE_XINE__
 #include <xine.h>
@@ -45,6 +46,19 @@
 
 #ifdef __HAVE_GSTREAMER__
 
+typedef struct {
+	//! uri which is to play
+	string		uri;
+
+	//! gst main loop
+    GMainLoop	*loop;
+
+    //! top-level gst element
+    GstElement	*player;
+
+    //! gst video sink element
+    GstElement	*videosink;
+} GST_DISKOVIDEOSINK_DATA;
 
 
 
@@ -71,6 +85,7 @@ typedef struct {
 } VODESC;
 
 #ifdef __HAVE_DIRECTFB__
+
 typedef void (*DVOutputCallback) (void *cdata, int width, int height,
                                   double ratio, DFBSurfacePixelFormat format,
                                   DFBRectangle *dest_rect);
@@ -89,6 +104,7 @@ typedef struct {
     DVFrameCallback     frame_cb;               /**< frame callback for DirectFB's xine video driver    */
     void                *frame_cdata;           /**< data given as an argument to frame_cb              */
 } dfb_visual_t;
+
 #endif /* __HAVE_DIRECTFB__ */
 
 typedef struct {
@@ -129,6 +145,8 @@ class MMSAV
 
 #ifdef __HAVE_GSTREAMER__
 
+        GST_DISKOVIDEOSINK_DATA	gst_diskovideosink_data;
+
 
 
 #endif
@@ -147,6 +165,8 @@ class MMSAV
         MMSRAW_USERDATA					userd;
 #endif /* __HAVE_XINE__ */
 
+
+
     protected:
 
     	//! backend which is used to stream any sources
@@ -164,12 +184,11 @@ class MMSAV
 
 #ifdef __HAVE_GSTREAMER__
 
-    public:
-        GMainLoop *loop;
-        GstElement *playx, *fakesink;
-
-
+        //! init gstreamer
         void gstInit();
+
+        //! current mrl
+        string currentMRL;
 
 #endif
 #ifdef __HAVE_XINE__

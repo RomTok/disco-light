@@ -290,7 +290,8 @@ class MMSFBSurface {
         bool refresh();
 
         bool createCopy(MMSFBSurface **dstsurface, int w = 0, int h = 0,
-                        bool copycontent = false, bool withbackbuffer = false);
+                        bool copycontent = false, bool withbackbuffer = false,
+                        MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE);
         bool resize(int w = 0, int h = 0);
 
         void modulateBrightness(MMSFBColor *color, unsigned char brightness);
