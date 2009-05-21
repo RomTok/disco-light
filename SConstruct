@@ -236,6 +236,18 @@ def checkPKGConfig(context):
 	context.Result(ret)
 	return ret
 
+def checkXineBlDvb(context):
+	context.Message('Checking for xine bldvb input plugin... ')
+	xinePluginPath = context.TryAction('pkg-config --variable=plugindir libxine')[1]
+	if xinePluginPath != "" and os.access(xinePluginPath + '/xine_input_bldvb.so', os.R_OK):
+		conf.env.append('-D__HAVE_XINE_BLDVB__')
+		ret = True
+	else:
+		ret = False
+		
+	context.Result(ret)
+	return ret
+
 def checkPKG(context, name):
 	return tryConfigCommand(context, 'pkg-config --libs --cflags \'%s\'' % name)
 
@@ -266,12 +278,9 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 			ret = conf.CheckLibWithHeader(liblist, header, lang)
 		else:
 			ret = conf.CheckLib(lib)
-		# restore stdout
 		sys.stdout.close()
 		sys.stdout = sys.__stdout__
 		if ret:
-			#if not lib in conf.env['LIBS']:
-			#	conf.env.Append(LIBS = [lib])
 			context.Result(True)
 			return True
 
@@ -337,6 +346,7 @@ def printSummary():
 conf = Configure(env,
                  custom_tests = {'checkOptions' : checkOptions,
                  				 'checkPKGConfig' : checkPKGConfig,
+                 				 'checkXineBlDvb' : checkXineBlDvb,
                  				 'checkConf' : checkConf,
                  				 'checkPKG' : checkPKG,
                  				 'checkSimpleLib' : checkSimpleLib},
@@ -377,13 +387,13 @@ if('x11' in env['graphics']):
 	
 # checks required if building mmsmedia
 if(env['enable_media']):
-	conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES'])
 	if('x11' in env['graphics']):
 		conf.checkSimpleLib(['libxine >= 1.1.15'],    'xine.h')
 	else:
 		conf.checkSimpleLib(['libxine'],    'xine.h')
+	conf.checkXineBlDvb()
 	conf.checkSimpleLib(['alsa'],       'alsa/version.h')
-	conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__', '-D__HAVE_XINE__'])
+	conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__', '-D__HAVE_XINE__'])
 	
 	
 # checks required for database backends
@@ -558,15 +568,13 @@ for toolDir in diskoTools:
 BuildDir('build/libs', 'src', duplicate = 0)
 SConscript(Split(libList), options = opts)
 
-BuildDir('build/tools', 'tools', duplicate = 0)
-SConscript(Split(toolList), options = opts)
-
 #######################################################################
 # Big Shared Library                                                  #
 #######################################################################
 if env['big_lib']:
 	libdisko_shared = env.SharedLibrary('lib/libdisko', env['diskoSources'])
 	env.Install(idir_lib, libdisko_shared)
+	Export('libdisko_shared')
 
 #######################################################################
 # Static Library                                                      #
@@ -574,3 +582,11 @@ if env['big_lib']:
 if env['enable_static']:
 	libdisko_static = env.StaticLibrary('lib/libdisko', env['diskoSources'])
 	env.Install(idir_lib, libdisko_static)
+	Export('libdisko_static')
+
+#######################################################################
+# Tools                                                               #
+#######################################################################
+BuildDir('build/tools', 'tools', duplicate = 0)
+SConscript(Split(toolList), options = opts)
+

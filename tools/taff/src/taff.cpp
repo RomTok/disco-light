@@ -33,6 +33,7 @@
  *      Author: Jens Schneider
  */
 
+#include <cstring>
 #include "mms.h"
 
 

@@ -385,6 +385,7 @@ MMSKeyMap::MMSKeyMap() {
 		keymap.insert(std::make_pair(MMSKEY_CUSTOM97,"CUSTOM97"));
 		keymap.insert(std::make_pair(MMSKEY_CUSTOM98,"CUSTOM98"));
 		keymap.insert(std::make_pair(MMSKEY_CUSTOM99,"CUSTOM99"));
+
 		keymap.insert(std::make_pair(MMSKEY_NULL,"NULL"));
 	}
 	if(namemap.empty()) {
