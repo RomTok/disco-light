@@ -585,6 +585,7 @@ bool MMSDVD::inMenu() {
 string MMSDVD::getTitle() {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+    	// TODO: implement getTitle() for gstreamer
     	return "";
 #endif
     }
@@ -610,6 +611,8 @@ string MMSDVD::getTitle() {
     return "";
 #endif
     }
+
+    throw MMSDVDError(0, "MMSDVD::getTitle() called but media backend does not match supported backends");
 }
 
 /**
@@ -620,6 +623,7 @@ string MMSDVD::getTitle() {
 int MMSDVD::getChapterNumber() {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+    	// TODO: implement getChapterNumber() for gstreamer
     	return 0;
 #endif
     }
@@ -628,6 +632,8 @@ int MMSDVD::getChapterNumber() {
     	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_CHAPTER_NUMBER);
 #endif
     }
+
+    throw MMSDVDError(0, "MMSDVD::getChapterNumber() called but media backend does not match supported backends");
 }
 
 /**
@@ -638,6 +644,7 @@ int MMSDVD::getChapterNumber() {
 int MMSDVD::getChapterCount() {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+    	// TODO: implement getChapterCount() for gstreamer
     	return 0;
 #endif
     }
@@ -646,6 +653,8 @@ int MMSDVD::getChapterCount() {
     	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_CHAPTER_COUNT);
 #endif
     }
+
+    throw MMSDVDError(0, "MMSDVD::getChapterCount() called but media backend does not match supported backends");
 }
 
 /**
@@ -656,6 +665,7 @@ int MMSDVD::getChapterCount() {
 int MMSDVD::getTitleNumber() {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+    	// TODO: implement getTitleNumber() for gstreamer
     	return 0;
 #endif
     }
@@ -664,6 +674,8 @@ int MMSDVD::getTitleNumber() {
     	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_TITLE_NUMBER);
 #endif
     }
+
+    throw MMSDVDError(0, "MMSDVD::getTitleNumber() called but media backend does not match supported backends");
 }
 
 /**
@@ -674,6 +686,7 @@ int MMSDVD::getTitleNumber() {
 int MMSDVD::getTitleCount() {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+    	// TODO: implement getTitleCount() for gstreamer
     	return 0;
 #endif
     }
@@ -682,6 +695,8 @@ int MMSDVD::getTitleCount() {
     	return xine_get_stream_info(this->stream, XINE_STREAM_INFO_DVD_TITLE_COUNT);
 #endif
     }
+
+    throw MMSDVDError(0, "MMSDVD::getTitleCount() called but media backend does not match supported backends");
 }
 
 /**

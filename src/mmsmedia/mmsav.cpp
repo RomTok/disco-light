@@ -762,7 +762,6 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 			this->userd.interim = NULL;
 			this->userd.overlayInterim = NULL;
 			this->userd.numOverlays = 0;
-			this->userd.overlays = NULL;
 		}
 
 #endif
@@ -902,36 +901,50 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
  * Constructor
  *
  * Initializes private variables
+ *
+ * @note	It checks the chosen backend against the
+ * 			supported ones. It simply switches the
+ * 			support, because one of the backends has
+ * 			to be implemented, otherwise mmsmedia
+ * 			isn't build.
  */
-MMSAV::MMSAV(MMSMEDIABackend backend) {
+MMSAV::MMSAV(MMSMEDIABackend _backend) :
+	backend(_backend),
+	window(NULL),
+	surface(NULL),
+	verbose(false),
+	status(STATUS_NONE),
+	pos(0)
+#ifdef __HAVE_XINE__
+	, xine(NULL)
+	, vo(NULL)
+	, ao(NULL)
+	, stream(NULL)
+	, queue(NULL)
+#endif
+{
 
-
-	this->backend = backend;
-//this->backend = MMSMEDIA_BE_XINE;
-
-	this->window=NULL;
-	this->surface = NULL;
-	this->verbose=false;
-	this->status=STATUS_NONE;
-	this->pos=0;
-
-    this->onError          = new sigc::signal<void, string>;
+	this->onError          = new sigc::signal<void, string>;
     this->onStatusChange   = new sigc::signal<void, const unsigned short, const unsigned short>;
 
-
-    if (this->backend == MMSMEDIA_BE_GST) {
+    switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			break;
+#else
+			cerr << "MMSAV: Disko was build without gstreamer support. Switching to xine." << endl;
+			this->backend = MMSMEDIA_BE_XINE;
 #endif
-    }
-    else {
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-	this->xine=NULL;
-	this->vo=NULL;
-	this->ao=NULL;
-	this->stream=NULL;
-	this->queue=NULL;
-	pthread_mutex_init(&this->lock, NULL);
+			pthread_mutex_init(&this->lock, NULL);
+#else
+			cerr << "MMSAV: Disko was build without xine support. Switching to gstreamer." << endl;
+			this->backend = MMSMEDIA_BE_GST;
 #endif
+		default:
+			// shouldn't be reached
+			break;
     }
 }
 
@@ -996,13 +1009,6 @@ MMSAV::~MMSAV() {
     }
 }
 
-
-#ifdef __HAVE_GSTREAMER__
-
-
-
-
-#endif
 #ifdef __HAVE_XINE__
 
 
@@ -1091,6 +1097,8 @@ bool MMSAV::registerAudioPostPlugin(string name) {
 		return false;
 #endif
     }
+
+    throw MMSAVError(0, "MMSAV::registerAudioPostPlugin() called but media backend does not match supported backends");
 }
 
 /**
@@ -1122,12 +1130,9 @@ bool MMSAV::registerVideoPostPlugin(string name) {
 		return false;
 #endif
     }
+
+    throw MMSAVError(0, "MMSAV::registerVideoPostPlugin() called but media backend does not match supported backends");
 }
-
-#ifdef __HAVE_GSTREAMER__
-
-
-#endif
 
 #ifdef __HAVE_XINE__
 /**
@@ -1252,6 +1257,8 @@ bool MMSAV::setAudioPostPluginParameter(string name, string parameter, string va
     	return setPostPluginParameter(this->audioPostPlugins, name, parameter, value);
 #endif
     }
+
+    throw MMSAVError(0, "MMSAV::setAudioPostPluginParameter() called but media backend does not match supported backends");
 }
 
 /**
@@ -1277,6 +1284,8 @@ bool MMSAV::setVideoPostPluginParameter(string name, string parameter, string va
     	return setPostPluginParameter(this->videoPostPlugins, name, parameter, value);
 #endif
     }
+
+    throw MMSAVError(0, "MMSAV::setVideoPostPluginParameter() called but media backend does not match supported backends");
 }
 
 
@@ -1320,27 +1329,30 @@ void MMSAV::setStatus(int status) {
  * @return true if stream is being played
  */
 bool MMSAV::isPlaying() {
-
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
-    	if(this->status == STATUS_PLAYING) {
-    		return true;
-    	}
-    	return false;
+	    	return (this->status == STATUS_PLAYING);
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->status == STATUS_PLAYING) {
-			if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
-				this->setStatus(STATUS_STOPPED);
-				return false;
+			if(this->status == STATUS_PLAYING) {
+				if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
+					this->setStatus(STATUS_STOPPED);
+					return false;
+				}
+				else return true;
 			}
-			else return true;
-		}
-		return false;
+			return false;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::isPlaying() called but media backend does not match supported backends");
 }
 
 /**
@@ -1349,23 +1361,30 @@ bool MMSAV::isPlaying() {
  * @return true if stream is being paused
  */
 bool MMSAV::isPaused() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
-    	return false;
+			return false;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->status == STATUS_PAUSED) {
-			if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
-				this->setStatus(STATUS_STOPPED);
-				return false;
+			if(this->status == STATUS_PAUSED) {
+				if(xine_get_status(this->stream)!=XINE_STATUS_PLAY) {
+					this->setStatus(STATUS_STOPPED);
+					return false;
+				}
+				else return true;
 			}
-			else return true;
-		}
-		return false;
+			return false;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::isPaused() called but media backend does not match supported backends");
 }
 
 /**
@@ -1432,24 +1451,32 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
  * changed to other than normal.
  */
 void MMSAV::play() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(!this->stream) return;
+			if(!this->stream) return;
 
-		if(this->status == this->STATUS_PAUSED  ||
-		   this->status == this->STATUS_SLOW    ||
-		   this->status == this->STATUS_SLOW2   ||
-		   this->status == this->STATUS_FFWD    ||
-		   this->status == this->STATUS_FFWD2) {
-		   this->setStatus(this->STATUS_PLAYING);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-		}
+			if(this->status == this->STATUS_PAUSED  ||
+			   this->status == this->STATUS_SLOW    ||
+			   this->status == this->STATUS_SLOW2   ||
+			   this->status == this->STATUS_FFWD    ||
+			   this->status == this->STATUS_FFWD2) {
+			   this->setStatus(this->STATUS_PLAYING);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+			}
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::play() called but media backend does not match supported backends");
 }
 
 /**
@@ -1462,30 +1489,39 @@ void MMSAV::play() {
  * at this position.
  */
 void MMSAV::stop(const bool savePosition) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE: {
 #ifdef __HAVE_XINE__
-		if(!this->stream) return;
+			if(!this->stream) return;
 
-		/* save position */
-		if(savePosition)
-			xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
+			/* save position */
+			if(savePosition)
+				xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
 
-		/* stop xine in extra thread to avoid blocking the application */
-		pthread_t thread;
-		internalStreamData *streamData = new internalStreamData;
-		streamData->stream = this->stream;
-		streamData->status = &(this->status);
-		streamData->lock   = &(this->lock);
-		if(pthread_create(&thread, NULL, stopRoutine, streamData) == 0)
-			pthread_detach(thread);
-		else
-			stopRoutine(streamData);
+			/* stop xine in extra thread to avoid blocking the application */
+			pthread_t thread;
+			internalStreamData *streamData = new internalStreamData;
+			streamData->stream = this->stream;
+			streamData->status = &(this->status);
+			streamData->lock   = &(this->lock);
+			if(pthread_create(&thread, NULL, stopRoutine, streamData) == 0)
+				pthread_detach(thread);
+			else
+				stopRoutine(streamData);
 #endif
-    }
+			break;
+		}
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::stop() called but media backend does not match supported backends");
 }
 
 /**
@@ -1495,23 +1531,31 @@ void MMSAV::stop(const bool savePosition) {
  * ffwd etc.).
  */
 void MMSAV::pause() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->status == this->STATUS_PLAYING ||
-		   this->status == this->STATUS_SLOW    ||
-		   this->status == this->STATUS_SLOW2   ||
-		   this->status == this->STATUS_FFWD    ||
-		   this->status == this->STATUS_FFWD2) {
-		   this->setStatus(this->STATUS_PAUSED);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
-			xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
-		}
+			if(this->status == this->STATUS_PLAYING ||
+			   this->status == this->STATUS_SLOW    ||
+			   this->status == this->STATUS_SLOW2   ||
+			   this->status == this->STATUS_FFWD    ||
+			   this->status == this->STATUS_FFWD2) {
+			   this->setStatus(this->STATUS_PAUSED);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+				xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
+			}
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::pause() called but media backend does not match supported backends");
 }
 
 /**
@@ -1524,30 +1568,38 @@ void MMSAV::pause() {
  * @see MMSAV::rewind()
  */
 void MMSAV::slow() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
-			this->setStatus(this->STATUS_SLOW);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
-		}
-		else if(this->status == this->STATUS_SLOW) {
-			this->setStatus(this->STATUS_SLOW2);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_4);
-		}
-		else if(this->status == this->STATUS_FFWD) {
-			this->setStatus(this->STATUS_PLAYING);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-		}
-		else if(this->status == this->STATUS_FFWD2) {
-			this->setStatus(this->STATUS_FFWD);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
-		}
+			if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
+				this->setStatus(this->STATUS_SLOW);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
+			}
+			else if(this->status == this->STATUS_SLOW) {
+				this->setStatus(this->STATUS_SLOW2);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_4);
+			}
+			else if(this->status == this->STATUS_FFWD) {
+				this->setStatus(this->STATUS_PLAYING);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+			}
+			else if(this->status == this->STATUS_FFWD2) {
+				this->setStatus(this->STATUS_FFWD);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
+			}
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::slow() called but media backend does not match supported backends");
 }
 
 /**
@@ -1560,30 +1612,38 @@ void MMSAV::slow() {
  * @see MMSAV::rewind()
  */
 void MMSAV::ffwd() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
-			this->setStatus(this->STATUS_FFWD);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
-		}
-		else if(this->status == this->STATUS_FFWD) {
-			this->setStatus(this->STATUS_FFWD2);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
-		}
-		else if(this->status == this->STATUS_SLOW) {
-			this->setStatus(this->STATUS_PLAYING);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-		}
-		else if(this->status == this->STATUS_SLOW2) {
-			this->setStatus(this->STATUS_SLOW);
-			xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
-		}
+			if(this->status == this->STATUS_PLAYING || this->status == this->STATUS_PAUSED) {
+				this->setStatus(this->STATUS_FFWD);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
+			}
+			else if(this->status == this->STATUS_FFWD) {
+				this->setStatus(this->STATUS_FFWD2);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_4);
+			}
+			else if(this->status == this->STATUS_SLOW) {
+				this->setStatus(this->STATUS_PLAYING);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+			}
+			else if(this->status == this->STATUS_SLOW2) {
+				this->setStatus(this->STATUS_SLOW);
+				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
+			}
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::ffwd() called but media backend does not match supported backends");
 }
 
 /**
@@ -1594,24 +1654,27 @@ void MMSAV::ffwd() {
  * @param   length  [out]   time in seconds of title length
  */
 bool MMSAV::getTimes(int *pos, int *length) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
-    	return 0;
+			return 0;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(!this->stream) return false;
+			if(!this->stream || !xine_get_pos_length(this->stream, NULL, pos, length)) return false;
 
-		if(xine_get_pos_length(this->stream, NULL, pos, length)) {
 			if(pos)    (*pos)    /= 1000;
 			if(length) (*length) /= 1000;
 			return true;
-		}
-		else
-		   return false;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::getTimes() called but media backend does not match supported backends");
 }
 
 /**
@@ -1623,16 +1686,25 @@ bool MMSAV::getTimes(int *pos, int *length) {
  * @see     MMSAV::brightnessDown()
  */
 void MMSAV::setBrightness(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo)
-			xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, count);
+			if(this->vo)
+				xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, count);
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::setBrightness() called but media backend does not match supported backends");
 }
 
 /**
@@ -1644,18 +1716,27 @@ void MMSAV::setBrightness(int count) {
  * @see     MMSAV::brightnessDown()
  */
 void MMSAV::brightnessUp(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
-			xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value + count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
+				xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value + count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::brightnessUp() called but media backend does not match supported backends");
 }
 
 /**
@@ -1667,18 +1748,27 @@ void MMSAV::brightnessUp(int count) {
  * @see     MMSAV::brightnessUp()
  */
 void MMSAV::brightnessDown(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
-			xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value - count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_BRIGHTNESS);
+				xine_set_param(this->stream, XINE_PARAM_VO_BRIGHTNESS, value - count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::brightnessDown() called but media backend does not match supported backends");
 }
 
 /**
@@ -1690,16 +1780,25 @@ void MMSAV::brightnessDown(int count) {
  * @see     MMSAV::contrastDown()
  */
 void MMSAV::setContrast(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo)
-			xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, count);
+			if(this->vo)
+				xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, count);
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::setContrast() called but media backend does not match supported backends");
 }
 
 /**
@@ -1711,18 +1810,27 @@ void MMSAV::setContrast(int count) {
  * @see     MMSAV::contrastDown()
  */
 void MMSAV::contrastUp(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
-			xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value + count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
+				xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value + count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::contrastUp() called but media backend does not match supported backends");
 }
 
 /**
@@ -1734,18 +1842,27 @@ void MMSAV::contrastUp(int count) {
  * @see     MMSAV::contrastUp()
  */
 void MMSAV::contrastDown(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
-			xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value - count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_CONTRAST);
+				xine_set_param(this->stream, XINE_PARAM_VO_CONTRAST, value - count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::contrastDown() called but media backend does not match supported backends");
 }
 
 /**
@@ -1757,16 +1874,25 @@ void MMSAV::contrastDown(int count) {
  * @see     MMSAV::saturationDown()
  */
 void MMSAV::setSaturation(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo)
-			xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, count);
+			if(this->vo)
+				xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, count);
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::setSaturation() called but media backend does not match supported backends");
 }
 
 /**
@@ -1778,18 +1904,27 @@ void MMSAV::setSaturation(int count) {
  * @see     MMSAV::saturationDown()
  */
 void MMSAV::saturationUp(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
-			xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value + count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
+				xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value + count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::saturationUp() called but media backend does not match supported backends");
 }
 
 /**
@@ -1801,18 +1936,27 @@ void MMSAV::saturationUp(int count) {
  * @see     MMSAV::saturationUp()
  */
 void MMSAV::saturationDown(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
-			xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value - count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_SATURATION);
+				xine_set_param(this->stream, XINE_PARAM_VO_SATURATION, value - count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::saturationDown() called but media backend does not match supported backends");
 }
 
 /**
@@ -1824,16 +1968,25 @@ void MMSAV::saturationDown(int count) {
  * @see     MMSAV::hueDown()
  */
 void MMSAV::setHue(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo)
-			xine_set_param(this->stream, XINE_PARAM_VO_HUE, count);
+			if(this->vo)
+				xine_set_param(this->stream, XINE_PARAM_VO_HUE, count);
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::setHue() called but media backend does not match supported backends");
 }
 
 /**
@@ -1845,18 +1998,27 @@ void MMSAV::setHue(int count) {
  * @see     MMSAV::hueDown()
  */
 void MMSAV::hueUp(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
-			xine_set_param(this->stream, XINE_PARAM_VO_HUE, value + count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
+				xine_set_param(this->stream, XINE_PARAM_VO_HUE, value + count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0,"MMSAV::hueUp() called but media backend does not match supported backends");
 }
 
 /**
@@ -1868,18 +2030,27 @@ void MMSAV::hueUp(int count) {
  * @see     MMSAV::hueUp()
  */
 void MMSAV::hueDown(int count) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->vo) {
-			int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
-			xine_set_param(this->stream, XINE_PARAM_VO_HUE, value - count*500);
-		}
+			if(this->vo) {
+				int value = xine_get_param(this->stream, XINE_PARAM_VO_HUE);
+				xine_set_param(this->stream, XINE_PARAM_VO_HUE, value - count*500);
+			}
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::hueDown() called but media backend does not match supported backends");
 }
 
 /**
@@ -1888,16 +2059,25 @@ void MMSAV::hueDown(int count) {
  * @param   percent	[in]    volume in percent
  */
 void MMSAV::setVolume(int percent) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		if(this->ao)
-			xine_set_param(this->stream, XINE_PARAM_AUDIO_VOLUME, percent);
+			if(this->ao)
+				xine_set_param(this->stream, XINE_PARAM_AUDIO_VOLUME, percent);
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::setVolume() called but media backend does not match supported backends");
 }
 
 /**
@@ -1908,32 +2088,30 @@ void MMSAV::setVolume(int percent) {
  * @param   datalen [in]    length of data
  */
 void MMSAV::sendEvent(int type, void *data, int datalen) {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			return;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-		xine_event_t evt;
+			xine_event_t evt;
 
-		std::cerr << "6: " << this->stream << " | ";
-		evt.stream      = this->stream;
-
-		std::cerr << "5: " << data << " | ";
-		evt.data        = data;
-
-		std::cerr << "4: " << datalen << " | ";
-		evt.data_length = datalen;
-
-		std::cerr << "3: " << type << " | ";
-		evt.type        = type;
-
-		std::cerr << "2: xine_event_send | ";
-		xine_event_send(this->stream, &evt);
-
-		std::cerr << "1:" << std::endl;
+			evt.stream      = this->stream;
+			evt.data        = data;
+			evt.data_length = datalen;
+			evt.type        = type;
+			xine_event_send(this->stream, &evt);
+			return;
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::sendEvent() called but media backend does not match supported backends");
 }
 
 /**
@@ -1942,16 +2120,23 @@ void MMSAV::sendEvent(int type, void *data, int datalen) {
  * @return true if video stream
  */
 bool MMSAV::hasVideo() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
-    	return true;
+			return true;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-    	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_VIDEO) == 1);
+	    	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_VIDEO) == 1);
 #endif
-    }
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
+
+	throw MMSAVError(0, "MMSAV::hasVideo() called but media backend does not match supported backends");
 }
 
 /**
@@ -1960,15 +2145,21 @@ bool MMSAV::hasVideo() {
  * @return true if audio stream
  */
 bool MMSAV::hasAudio() {
-    if (this->backend == MMSMEDIA_BE_GST) {
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
-    	return false;
+			return false;
 #endif
-    }
-    else {
+			break;
+		case MMSMEDIA_BE_XINE:
 #ifdef __HAVE_XINE__
-    	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_AUDIO) == 1);
+	    	return (xine_get_stream_info(this->stream, XINE_STREAM_INFO_HAS_AUDIO) == 1);
 #endif
-    }
-}
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 
+	throw MMSAVError(0, "MMSAV::hasAudio() called but media backend does not match supported backends");
+}

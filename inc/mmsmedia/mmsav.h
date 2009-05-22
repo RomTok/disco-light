@@ -106,6 +106,7 @@ typedef struct {
 } dfb_visual_t;
 
 #endif /* __HAVE_DIRECTFB__ */
+#endif /* __HAVE_XINE__ */
 
 typedef struct {
 	MMSFBSurface *surf;
@@ -118,11 +119,11 @@ typedef struct {
 	MMSFBSurface *overlayInterim;
 	//! number of currently available overlays
 	int numOverlays;
+#ifdef __HAVE_XINE__
 	//! array of numOverlays overlays
 	raw_overlay_t *overlays;
+#endif
 } MMSRAW_USERDATA;
-
-#endif /* __HAVE_XINE__ */
 
 
 /**
@@ -141,31 +142,23 @@ typedef struct {
 class MMSAV
 {
     private:
-
+        MMSRAW_USERDATA					userd;
 
 #ifdef __HAVE_GSTREAMER__
-
-        GST_DISKOVIDEOSINK_DATA	gst_diskovideosink_data;
-
-
-
+        GST_DISKOVIDEOSINK_DATA			gst_diskovideosink_data;
 #endif
-#ifdef __HAVE_XINE__
 
+#ifdef __HAVE_XINE__
 #ifdef __HAVE_DIRECTFB__
         VODESC                          vodesc;                                 /**< video output settings              */
         dfb_visual_t                    visual;                                 /**< visual structure for video output  */
-#endif /* __HAVE_XINE__ */
+#endif /* __HAVE_DIRECTFB__ */
         raw_visual_t					rawvisual;
 
         pthread_mutex_t					lock;
 
         bool setPostPluginParameter(map<string, xine_post_t*> plugins, string name, string parameter, string value);
-
-        MMSRAW_USERDATA					userd;
 #endif /* __HAVE_XINE__ */
-
-
 
     protected:
 
