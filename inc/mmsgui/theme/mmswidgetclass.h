@@ -103,7 +103,8 @@ namespace MMSGUI_WIDGET_ATTR {
 	{ "scroll_onfocus", TAFF_ATTRTYPE_BOOL }, \
 	{ "clickable", TAFF_ATTRTYPE_BOOL }, \
 	{ "return_onscroll", TAFF_ATTRTYPE_BOOL }, \
-	{ "inputmode", TAFF_ATTRTYPE_STRING }
+	{ "inputmode", TAFF_ATTRTYPE_STRING }, \
+	{ "joined_widget", TAFF_ATTRTYPE_STRING }
 
 	#define MMSGUI_WIDGET_ATTR_IDS \
 		MMSGUI_WIDGET_ATTR_IDS_bgcolor, \
@@ -174,7 +175,8 @@ namespace MMSGUI_WIDGET_ATTR {
 		MMSGUI_WIDGET_ATTR_IDS_scroll_onfocus, \
 		MMSGUI_WIDGET_ATTR_IDS_clickable, \
 		MMSGUI_WIDGET_ATTR_IDS_return_onscroll, \
-		MMSGUI_WIDGET_ATTR_IDS_inputmode
+		MMSGUI_WIDGET_ATTR_IDS_inputmode, \
+		MMSGUI_WIDGET_ATTR_IDS_joined_widget
 
 	#define MMSGUI_WIDGET_ATTR_INIT { \
 		MMSGUI_BASE_ATTR_ATTRDESC, \
@@ -365,6 +367,9 @@ class MMSWidgetClass {
 	        //! is inputmode set?
 	        bool            isinputmode;
 
+	        //! is joined_widget set?
+	        bool            isjoinedwidget;
+
     	} id;
 
     	struct {
@@ -439,6 +444,9 @@ class MMSWidgetClass {
 
     		//! input mode
             string          *inputmode;
+
+            //! name of widget which is joined to this widget
+            string          *joinedwidget;
     	} ed;
 
     	/* init routines */
@@ -491,6 +499,7 @@ class MMSWidgetClass {
         void initReturnOnScroll();
 
         void initInputMode();
+        void initJoinedWidget();
 
 
         /* free routines */
@@ -543,6 +552,7 @@ class MMSWidgetClass {
         void freeReturnOnScroll();
 
         void freeInputMode();
+        void freeJoinedWidget();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -1320,6 +1330,25 @@ class MMSWidgetClass {
         */
         bool getInputMode(string &inputmode);
 
+
+        //! Check if the joined widget is set.
+        bool isJoinedWidget();
+
+        //! Mark the joined widget as not set.
+        void unsetJoinedWidget();
+
+        //! Set the joined widget.
+        /*!
+        \param joinedwidget  name of widget which is to join
+        */
+        void setJoinedWidget(const string &joinedwidget);
+
+        //! Get the joined widget.
+        /*!
+        \param joinedwidget  name of widget
+        \return true if set
+        */
+        bool getJoinedWidget(string &joinedwidget);
 
 
     /* friends */

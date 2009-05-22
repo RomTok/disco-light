@@ -80,7 +80,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 8, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 9, mmsgui_taff_tagtable };
 
 
 
@@ -631,6 +631,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.widgetClass.setClickable(false);
         this->labelWidgetClass.widgetClass.setReturnOnScroll(true);
         this->labelWidgetClass.widgetClass.setInputMode("");
+        this->labelWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->labelWidgetClass.widgetClass.border.setColor(color);
@@ -707,6 +708,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.widgetClass.setClickable(false);
         this->imageWidgetClass.widgetClass.setReturnOnScroll(true);
         this->imageWidgetClass.widgetClass.setInputMode("");
+        this->imageWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->imageWidgetClass.widgetClass.border.setColor(color);
@@ -781,6 +783,7 @@ MMSTheme::MMSTheme() {
         this->buttonWidgetClass.widgetClass.setClickable(true);
         this->buttonWidgetClass.widgetClass.setReturnOnScroll(true);
         this->buttonWidgetClass.widgetClass.setInputMode("");
+        this->buttonWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->buttonWidgetClass.widgetClass.border.setColor(color);
@@ -836,6 +839,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.setClickable(false);
         this->progressBarWidgetClass.widgetClass.setReturnOnScroll(true);
         this->progressBarWidgetClass.widgetClass.setInputMode("");
+        this->progressBarWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->progressBarWidgetClass.widgetClass.border.setColor(color);
@@ -905,6 +909,7 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.widgetClass.setClickable(true);
         this->menuWidgetClass.widgetClass.setReturnOnScroll(true);
         this->menuWidgetClass.widgetClass.setInputMode("");
+        this->menuWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->menuWidgetClass.widgetClass.border.setColor(color);
@@ -990,6 +995,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.widgetClass.setClickable(true);
         this->textBoxWidgetClass.widgetClass.setReturnOnScroll(true);
         this->textBoxWidgetClass.widgetClass.setInputMode("");
+        this->textBoxWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->textBoxWidgetClass.widgetClass.border.setColor(color);
@@ -1066,6 +1072,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.setClickable(true);
         this->arrowWidgetClass.widgetClass.setReturnOnScroll(true);
         this->arrowWidgetClass.widgetClass.setInputMode("");
+        this->arrowWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->arrowWidgetClass.widgetClass.border.setColor(color);
@@ -1136,6 +1143,7 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setClickable(true);
         this->sliderWidgetClass.widgetClass.setReturnOnScroll(true);
         this->sliderWidgetClass.widgetClass.setInputMode("");
+        this->sliderWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->sliderWidgetClass.widgetClass.border.setColor(color);
@@ -1206,6 +1214,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setClickable(true);
         this->inputWidgetClass.widgetClass.setReturnOnScroll(true);
         this->inputWidgetClass.widgetClass.setInputMode("");
+        this->inputWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->inputWidgetClass.widgetClass.border.setColor(color);
@@ -1280,6 +1289,7 @@ MMSTheme::MMSTheme() {
         this->checkBoxWidgetClass.widgetClass.setClickable(true);
         this->checkBoxWidgetClass.widgetClass.setReturnOnScroll(true);
         this->checkBoxWidgetClass.widgetClass.setInputMode("");
+        this->checkBoxWidgetClass.widgetClass.setJoinedWidget("");
 
         /* base widget border settings */
         this->checkBoxWidgetClass.widgetClass.border.setColor(color);

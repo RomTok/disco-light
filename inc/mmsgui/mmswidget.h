@@ -256,6 +256,10 @@ class MMSWidget {
             unsigned int scrollDX;
             //! vertical scroll distance
             unsigned int scrollDY;
+
+            //! widget which status should changed just like this widget
+            MMSWidget	*joinedWidget;
+
         } MMSWIDGET_DRAWABLE_ATTRIBUTES;
 
         //! save attributes for drawable widgets
@@ -371,9 +375,11 @@ class MMSWidget {
         void setParent(MMSWidget *parent);
         MMSWidget *getParent();
 
+        void getJoinedWigdets(MMSWidget **caller_stack);
+
         virtual void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
         bool isFocused();
-        virtual bool setSelected(bool set, bool refresh = true, bool *changed = NULL);
+        virtual bool setSelected(bool set, bool refresh = true, bool *changed = NULL, bool joined = false);
         bool isSelected();
         void unsetFocusableForAllChildren(bool refresh);
 
@@ -537,6 +543,7 @@ class MMSWidget {
         bool 	getReturnOnScroll(bool &returnonscroll);
         bool	getInputMode(string &inputmode);
         bool 	getInputModeEx(string &inputmode);
+        bool	getJoinedWidget(string &joinedwidget);
 
         bool	getBorderColor(MMSFBColor &color);
         bool 	getBorderSelColor(MMSFBColor &selcolor);
@@ -587,6 +594,7 @@ class MMSWidget {
         bool setClickable(bool clickable);
         bool setReturnOnScroll(bool returnonscroll);
         bool setInputMode(string inputmode);
+        bool setJoinedWidget(string joinedwidget);
 
         bool setBorderColor(MMSFBColor bordercolor, bool refresh = true);
         bool setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);

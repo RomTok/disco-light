@@ -2659,7 +2659,7 @@ void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) 
     }
 }
 
-bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed) {
+bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed, bool joined) {
 	bool c = false;
 	if (changed)
 		*changed = c;

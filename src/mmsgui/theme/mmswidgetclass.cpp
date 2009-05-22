@@ -88,6 +88,7 @@ MMSWidgetClass::MMSWidgetClass() {
     initReturnOnScroll();
 
     initInputMode();
+    initJoinedWidget();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -140,6 +141,7 @@ MMSWidgetClass::~MMSWidgetClass() {
     freeReturnOnScroll();
 
     freeInputMode();
+    freeJoinedWidget();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
@@ -198,6 +200,8 @@ MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
 			this->ed.hslider = new string(*c.ed.hslider);
 		if (c.id.isinputmode)
 			this->ed.inputmode = new string(*c.ed.inputmode);
+		if (c.id.isjoinedwidget)
+			this->ed.joinedwidget = new string(*c.ed.joinedwidget);
 	}
 	return *this;
 }
@@ -252,6 +256,7 @@ void MMSWidgetClass::unsetAll() {
     unsetReturnOnScroll();
 
     unsetInputMode();
+    unsetJoinedWidget();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -603,6 +608,9 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            break;
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_inputmode:
 	            setInputMode(attrval_str);
+	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_joined_widget:
+	            setJoinedWidget(attrval_str);
 	            break;
 			}
 		}
@@ -1027,6 +1035,10 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             else
             if (ISATTRNAME(inputmode)) {
 	            setInputMode(attrval_str);
+            }
+            else
+            if (ISATTRNAME(joined_widget)) {
+	            setJoinedWidget(attrval_str);
             }
     	}
     	endTAFFScan_WITHOUT_ID
@@ -2002,4 +2014,29 @@ bool MMSWidgetClass::getInputMode(string &inputmode) {
 	MMSTHEMECLASS_GET_STRING(inputmode);
 }
 
+
+
+void MMSWidgetClass::initJoinedWidget() {
+	MMSTHEMECLASS_INIT_STRING(joinedwidget);
+}
+
+void MMSWidgetClass::freeJoinedWidget() {
+	MMSTHEMECLASS_FREE_STRING(joinedwidget);
+}
+
+bool MMSWidgetClass::isJoinedWidget() {
+	MMSTHEMECLASS_ISSET(joinedwidget);
+}
+
+void MMSWidgetClass::unsetJoinedWidget() {
+	MMSTHEMECLASS_UNSET(joinedwidget);
+}
+
+void MMSWidgetClass::setJoinedWidget(const string &joinedwidget) {
+	MMSTHEMECLASS_SET_STRING(joinedwidget);
+}
+
+bool MMSWidgetClass::getJoinedWidget(string &joinedwidget) {
+	MMSTHEMECLASS_GET_STRING(joinedwidget);
+}
 

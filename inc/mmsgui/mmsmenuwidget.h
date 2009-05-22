@@ -154,7 +154,7 @@ class MMSMenuWidget : public MMSWidget {
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
 
-        bool setSelected(unsigned int item, bool refresh = true, bool *changed = NULL);
+        bool setSelected(unsigned int item, bool refresh = true, bool *changed = NULL, bool joined = false);
         unsigned int getSelected();
 
         MMSWidget *getItem(unsigned int item);

@@ -167,6 +167,8 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 	    this->da->scrollDX = 8;
 	    this->da->scrollDY = 8;
 
+	    this->da->joinedWidget = NULL;
+
 	    onSelect = new sigc::signal<void, MMSWidget*>;
 	    onFocus  = new sigc::signal<void, MMSWidget*, bool>;
 	    onReturn = new sigc::signal<void, MMSWidget*>;
@@ -859,6 +861,10 @@ bool MMSWidget::init() {
 
         if (!getHSlider(name)) name = "";
         this->da->hSliderWidget = this->rootwindow->searchForWidget(name);
+
+        // get widget which is joined to me
+        if (!getJoinedWidget(name)) name = "";
+        this->da->joinedWidget = this->rootwindow->searchForWidget(name);
     }
     return true;
 }
@@ -1754,6 +1760,7 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
 
     setSelected(set, refresh);
 
+
 //    if (this->rootwindow)
 //        this->rootwindow->setFocusedWidget(this, set);
 
@@ -1791,9 +1798,33 @@ bool MMSWidget::isFocused() {
     return this->focused;
 }
 
-bool MMSWidget::setSelected(bool set, bool refresh, bool *changed) {
+void MMSWidget::getJoinedWigdets(MMSWidget **caller_stack) {
+	if ((this->da)&&(this->da->joinedWidget)) {
+		int i=0;
+		while ((caller_stack[i]) && (caller_stack[i] != this) && (i < 16)) i++;
+		if (!caller_stack[i]) {
+			caller_stack[i] = this;
+			this->da->joinedWidget->getJoinedWigdets(caller_stack);
+		}
+	}
+}
+
+bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) {
 	if (changed)
 		*changed = false;
+
+	if (!joined) {
+		if ((this->da)&&(this->da->joinedWidget)) {
+			MMSWidget *caller_stack[16] = {0};
+			caller_stack[0] = this;
+			this->da->joinedWidget->getJoinedWigdets(caller_stack);
+			int i = 16;
+			while (i-- > 1) {
+				if (caller_stack[i])
+					caller_stack[i]->setSelected(set, refresh, NULL, true);
+			}
+		}
+	}
 
     /* check if selected status already set */
     if (this->selected == set) {
@@ -2437,6 +2468,11 @@ bool MMSWidget::getInputModeEx(string &inputmode) {
 	return true;
 }
 
+bool MMSWidget::getJoinedWidget(string &joinedwidget) {
+    GETWIDGET(JoinedWidget, joinedwidget);
+}
+
+
 
 #define GETBORDER(x,y) \
 	if (!this->da) return false; \
@@ -2911,6 +2947,15 @@ bool MMSWidget::setInputMode(string inputmode) {
     return true;
 }
 
+bool MMSWidget::setJoinedWidget(string joinedwidget) {
+	if (!this->da) return false;
+    this->da->myWidgetClass.setJoinedWidget(joinedwidget);
+    this->da->joinedWidget = NULL;
+    if ((this->rootwindow)&&(joinedwidget!=""))
+        this->da->joinedWidget = this->rootwindow->searchForWidget(joinedwidget);
+    return true;
+}
+
 bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setColor(bordercolor);
@@ -3123,6 +3168,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setReturnOnScroll(b);
     if (themeClass->getInputMode(s))
         setInputMode(s);
+    if (themeClass->getJoinedWidget(s))
+        setJoinedWidget(s);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))
