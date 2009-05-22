@@ -63,7 +63,7 @@ bool MMSCheckBoxWidget::create(MMSWindow *root, string className, MMSTheme *them
     this->checked_bgimage_i = NULL;
     this->checked_selbgimage_i = NULL;
 
-    return MMSWidget::create(root, true, false, true, true, false, false, true);
+    return MMSWidget::create(root, true, false, true, true, true, true, true);
 }
 
 void MMSCheckBoxWidget::handleInput(MMSInputEvent *inputevent) {
