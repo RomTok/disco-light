@@ -175,15 +175,15 @@ class MMSAV
         short                           status;                                 /**< current playback status            */
         int                             pos;                                    /**< remember position where the stream stopped last time */
 
-#ifdef __HAVE_GSTREAMER__
 
+#ifdef __HAVE_GSTREAMER__
         //! init gstreamer
         void gstInit();
 
         //! current mrl
+#endif
         string currentMRL;
 
-#endif
 #ifdef __HAVE_XINE__
 
 
