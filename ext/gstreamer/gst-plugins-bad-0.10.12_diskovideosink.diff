@@ -1,0 +1,3272 @@
+diff -Nupr gst-plugins-bad-0.10.12-original/configure.ac gst-plugins-bad-0.10.12-modified/configure.ac
+--- gst-plugins-bad-0.10.12-original/configure.ac	2009-05-20 20:43:05.000000000 +0200
++++ gst-plugins-bad-0.10.12-modified/configure.ac	2009-05-22 16:59:57.000000000 +0200
+@@ -662,6 +662,22 @@ AG_GST_CHECK_FEATURE(DIRAC, [dirac], dir
+   ])
+ ])
+ 
++dnl **** Disko ****
++translit(dnm, m, l) AM_CONDITIONAL(USE_DISKO, true)
++AG_GST_CHECK_FEATURE(DISKO, disko, diskovideosink, [
++  if test "x$HAVE_CXX" != "xyes"; then
++    AC_MSG_WARN([Not compiling diskovideosink plugin as it requires a C++ compiler])
++    HAVE_DISKO="no"
++  else
++    PKG_CHECK_MODULES(DISKO, disko >= 1.6.0, HAVE_DISKO="yes", [ 
++      HAVE_DISKO="no"
++      AC_MSG_RESULT(no)
++    ])
++  fi
++  AC_SUBST(DISKO_CFLAGS)
++  AC_SUBST(DISKO_LIBS)
++])
++
+ dnl *** DTS ***
+ translit(dnm, m, l) AM_CONDITIONAL(USE_DTS, true)
+ AG_GST_CHECK_FEATURE(DTS, [dts library], dtsdec, [
+@@ -1454,6 +1470,7 @@ AM_CONDITIONAL(USE_CELT, false)
+ AM_CONDITIONAL(USE_DC1394, false)
+ AM_CONDITIONAL(USE_DIRECTFB, false)
+ AM_CONDITIONAL(USE_DIRECTDRAW, false)
++AM_CONDITIONAL(USE_DISKO, false)
+ AM_CONDITIONAL(USE_DTS, false)
+ AM_CONDITIONAL(USE_DIRAC, false)
+ AM_CONDITIONAL(USE_DIVX, false)
+@@ -1638,6 +1655,7 @@ ext/celt/Makefile
+ ext/dc1394/Makefile
+ ext/dirac/Makefile
+ ext/directfb/Makefile
++ext/disko/Makefile
+ ext/divx/Makefile
+ ext/dts/Makefile
+ ext/metadata/Makefile
+diff -Nupr gst-plugins-bad-0.10.12-original/ext/disko/diskovideosink.cpp gst-plugins-bad-0.10.12-modified/ext/disko/diskovideosink.cpp
+--- gst-plugins-bad-0.10.12-original/ext/disko/diskovideosink.cpp	1970-01-01 01:00:00.000000000 +0100
++++ gst-plugins-bad-0.10.12-modified/ext/disko/diskovideosink.cpp	2009-05-22 17:00:25.000000000 +0200
+@@ -0,0 +1,2193 @@
++/***************************************************************************
++ *   Disko video sink plugin for GStreamer                                 *
++ *                                                                         *
++ *   Copyright (C) 2009 Berlinux Solutions GmbH                            *
++ *                                                                         *
++ *   Authors:                                                              *
++ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
++ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
++ *      Jens Schneider   <pupeider@gmx.de>                                 *
++ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or modify  *
++ *   it under the terms of the GNU General Public License as published by  *
++ *   the Free Software Foundation; either version 2 of the License.        *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program; if not, write to the                         *
++ *   Free Software Foundation, Inc.,                                       *
++ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
++ ***************************************************************************/
++
++/**
++ * SECTION:element-diskovideosink
++ *
++ * DiskoVideoSink renders video frames using the
++ * <ulink url="http://www.diskohq.org/">Disko</ulink> framework.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++// interfaces
++#include <gst/interfaces/navigation.h>
++#include <gst/interfaces/colorbalance.h>
++
++// object header
++#include "diskovideosink.h"
++
++#include <string.h>
++#include <stdlib.h>
++
++// Debugging category
++GST_DEBUG_CATEGORY_STATIC (diskovideosink_debug);
++#define GST_CAT_DEFAULT diskovideosink_debug
++
++// ElementFactory information
++static const GstElementDetails gst_diskovideosink_details =
++GST_ELEMENT_DETAILS ((gchar*)"Disko video sink",
++		(gchar*)"Sink/Video",
++		(gchar*)"A Disko based videosink",
++		(gchar*)"Jens Schneider <pupeider@gmx.de>");
++
++// Default template
++static GstStaticPadTemplate gst_diskovideosink_sink_template_factory =
++    GST_STATIC_PAD_TEMPLATE ("sink",
++    GST_PAD_SINK,
++    GST_PAD_ALWAYS,
++    GST_STATIC_CAPS(
++    	"video/x-raw-rgb, "
++        "framerate = (fraction) [ 0, MAX ], "
++        "width = (int) [ 1, MAX ], "
++        "height = (int) [ 1, MAX ]; "
++        "video/x-raw-yuv, "
++        "framerate = (fraction) [ 0, MAX ], "
++        "width = (int) [ 1, MAX ], "
++    	"height = (int) [ 1, MAX ]")
++    );
++
++// signals and args
++enum {
++	ARG_0,
++	ARG_SURFACE,
++	ARG_WINDOW,
++	ARG_CONTRAST,
++	ARG_BRIGHTNESS,
++	ARG_HUE,
++	ARG_SATURATION,
++	ARG_PIXEL_ASPECT_RATIO
++};
++
++static void gst_diskovideosink_bufferpool_clear (GstDiskoVideoSink * diskovideosink);
++static MMSFBSurfacePixelFormat gst_diskovideosink_get_format_from_caps (GstCaps *caps);
++static void gst_diskovideosink_update_colorbalance (GstDiskoVideoSink *
++    diskovideosink);
++static void gst_diskovideosink_surface_destroy (GstDiskoVideoSink * diskovideosink,
++    GstDiskoSurface * surface);
++
++static GstVideoSinkClass *parent_class = NULL;
++static GstBufferClass *surface_parent_class = NULL;
++
++static GstDiskoVideoSink *static_diskovideosink = NULL;
++
++static const char *gst_diskovideosink_get_format_name (MMSFBSurfacePixelFormat format) {
++	switch (format) {
++	case MMSFB_PF_ARGB1555:	return "ARGB1555";
++	case MMSFB_PF_RGB16:	return "RGB16";
++	case MMSFB_PF_RGB24:	return "RGB24";
++	case MMSFB_PF_RGB32:	return "RGB32";
++	case MMSFB_PF_ARGB:		return "ARGB";
++	case MMSFB_PF_A8:		return "A8";
++	case MMSFB_PF_YUY2:		return "YUY2";
++	case MMSFB_PF_RGB332:	return "RGB33";
++	case MMSFB_PF_UYVY:		return "UYVY";
++	case MMSFB_PF_I420:		return "I420";
++	case MMSFB_PF_YV12:		return "YV12";
++	case MMSFB_PF_LUT8:		return "LUT8";
++	case MMSFB_PF_ALUT44:	return "ALUT44";
++	case MMSFB_PF_AiRGB:	return "AiRGB";
++	case MMSFB_PF_A1:		return "A1";
++	case MMSFB_PF_NV12:		return "NV12";
++	case MMSFB_PF_NV16:		return "NV16";
++	case MMSFB_PF_ARGB2554:	return "ARGB2554";
++	case MMSFB_PF_ARGB4444:	return "ARGB4444";
++	case MMSFB_PF_NV21:		return "NV21";
++	default:				return "UNKNOWN";
++	}
++}
++
++/* Creates miniobject and our internal surface */
++static GstDiskoSurface *gst_diskovideosink_surface_create (GstDiskoVideoSink * diskovideosink, GstCaps * caps, size_t size) {
++	GstDiskoSurface *surface = NULL;
++	GstStructure *structure = NULL;
++	gpointer data;
++	gint pitch;
++	gboolean succeeded = FALSE;
++
++	g_return_val_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink), NULL);
++
++	surface = (GstDiskoSurface *) gst_mini_object_new (GST_TYPE_DISKOSURFACE);
++
++	// keep a ref to our sink
++	surface->diskovideosink = (GstDiskoVideoSink*)gst_object_ref (diskovideosink);
++
++	// surface is not locked yet
++	surface->locked = FALSE;
++
++	// get access to the caps
++	structure = gst_caps_get_structure(caps, 0);
++
++	// get geometry
++	if (!gst_structure_get_int (structure, "width", &surface->width) ||
++	    !gst_structure_get_int (structure, "height", &surface->height)) {
++		// failed
++		GST_WARNING_OBJECT(diskovideosink, "failed getting geometry from caps %" GST_PTR_FORMAT, caps);
++		goto fallback;
++	}
++
++	// get pixel format from caps
++	surface->pixel_format = gst_diskovideosink_get_format_from_caps(caps);
++	if (surface->pixel_format == MMSFB_PF_NONE) {
++		// unknown pixel format
++		goto fallback;
++	}
++
++	// create a disko surface
++	if (!diskovideosink->surface->createCopy(&surface->surface, surface->width, surface->height,
++											 false, false, surface->pixel_format)) {
++		GST_WARNING_OBJECT (diskovideosink, "failed creating a Disko surface");
++		surface->surface = NULL;
++		goto fallback;
++	}
++
++	// clearing surface
++	surface->surface->clear(0x00, 0x00, 0x00, 0xff);
++
++	// locking the surface to acquire the memory pointer and the size
++	surface->surface->lock(MMSFB_LOCK_WRITE, &data, &pitch);
++	surface->locked = TRUE;
++	GST_BUFFER_DATA(surface) = (guint8*)data;
++	int memsize;
++	surface->surface->getMemSize(&memsize);
++	GST_BUFFER_SIZE(surface) = memsize;
++
++	// be careful here. If size is different from the surface size, we can't use that surface through buffer
++	// alloc system or we are going to run into serious stride issues
++	if (GST_BUFFER_SIZE (surface) != size) {
++		GST_WARNING_OBJECT (diskovideosink, "Disko surface size %d differs from GStreamer requested size %d",
++							GST_BUFFER_SIZE(surface), size);
++		goto fallback;
++	}
++
++	GST_DEBUG_OBJECT(diskovideosink, "creating a %dx%d surface (%p) with %s pixel format, line pitch %d",
++					 surface->width, surface->height, surface,
++					 gst_diskovideosink_get_format_name(surface->pixel_format), pitch);
++
++
++	// all right
++	succeeded = TRUE;
++	goto beach;
++
++fallback:
++
++	// we allocate a standard buffer ourselves to store it in our buffer pool
++	GST_BUFFER(surface)->malloc_data = (guint8*)g_malloc(size);
++	GST_BUFFER_DATA(surface) = GST_BUFFER(surface)->malloc_data;
++	GST_BUFFER_SIZE(surface) = size;
++	if (surface->surface) {
++		// delete disko surface if existend
++		if (surface->locked) {
++			surface->surface->unlock();
++			surface->locked = FALSE;
++		}
++		delete surface->surface;
++		surface->surface = NULL;
++	}
++
++	GST_DEBUG_OBJECT (diskovideosink, "allocating a buffer (%p) of %d bytes", surface, size);
++
++	// all right
++	succeeded = TRUE;
++
++beach:
++
++	if (!succeeded) {
++		// destroy buffer if not succeeded
++		gst_diskovideosink_surface_destroy (diskovideosink, surface);
++		surface = NULL;
++	}
++
++	return surface;
++}
++
++/* We are called from the finalize method of miniobject, the object will be
++ * destroyed so we just have to clean our internal stuff */
++static void gst_diskovideosink_surface_destroy (GstDiskoVideoSink *diskovideosink, GstDiskoSurface *surface) {
++
++	g_return_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink));
++
++	if (surface->surface) {
++		// delete disko surface if existend
++		if (surface->locked) {
++			surface->surface->unlock();
++			surface->locked = FALSE;
++		}
++		delete surface->surface;
++		surface->surface = NULL;
++	}
++
++	if (surface->diskovideosink) {
++		// release the ref to our sink
++		surface->diskovideosink = NULL;
++		gst_object_unref(diskovideosink);
++	}
++
++	GST_MINI_OBJECT_CLASS(surface_parent_class)->finalize(GST_MINI_OBJECT(surface));
++}
++
++
++
++// returned strings must be equal to XKeysymToString()
++// we use GStreamer function gst_navigation_send_key_event() which uses "application/x-gst-navigation"
++static const char *MMSKEY2String(MMSKeySymbol key) {
++	switch (key) {
++	case MMSKEY_CURSOR_LEFT:	return "Left";
++	case MMSKEY_CURSOR_RIGHT:	return "Right";
++	case MMSKEY_CURSOR_UP:		return "Up";
++	case MMSKEY_CURSOR_DOWN:	return "Down";
++	case MMSKEY_0:				return "0";
++	case MMSKEY_1:				return "1";
++	case MMSKEY_2:				return "2";
++	case MMSKEY_3:				return "3";
++	case MMSKEY_4:				return "4";
++	case MMSKEY_5:				return "5";
++	case MMSKEY_6:				return "6";
++	case MMSKEY_7:				return "7";
++	case MMSKEY_8:				return "8";
++	case MMSKEY_9:				return "9";
++	case MMSKEY_CAPITAL_A:		return "A";
++	case MMSKEY_CAPITAL_B:		return "B";
++	case MMSKEY_CAPITAL_C:		return "C";
++	case MMSKEY_CAPITAL_D:		return "D";
++	case MMSKEY_CAPITAL_E:		return "E";
++	case MMSKEY_CAPITAL_F:		return "F";
++	case MMSKEY_CAPITAL_G:		return "G";
++	case MMSKEY_CAPITAL_H:		return "H";
++	case MMSKEY_CAPITAL_I:		return "I";
++	case MMSKEY_CAPITAL_J:		return "J";
++	case MMSKEY_CAPITAL_K:		return "K";
++	case MMSKEY_CAPITAL_L:		return "L";
++	case MMSKEY_CAPITAL_M:		return "M";
++	case MMSKEY_CAPITAL_N:		return "N";
++	case MMSKEY_CAPITAL_O:		return "O";
++	case MMSKEY_CAPITAL_P:		return "P";
++	case MMSKEY_CAPITAL_Q:		return "Q";
++	case MMSKEY_CAPITAL_R:		return "R";
++	case MMSKEY_CAPITAL_S:		return "S";
++	case MMSKEY_CAPITAL_T:		return "T";
++	case MMSKEY_CAPITAL_U:		return "U";
++	case MMSKEY_CAPITAL_V:		return "V";
++	case MMSKEY_CAPITAL_W:		return "W";
++	case MMSKEY_CAPITAL_X:		return "X";
++	case MMSKEY_CAPITAL_Y:		return "Y";
++	case MMSKEY_CAPITAL_Z:		return "Z";
++	case MMSKEY_SMALL_A:		return "a";
++	case MMSKEY_SMALL_B:		return "b";
++	case MMSKEY_SMALL_C:		return "c";
++	case MMSKEY_SMALL_D:		return "d";
++	case MMSKEY_SMALL_E:		return "e";
++	case MMSKEY_SMALL_F:		return "f";
++	case MMSKEY_SMALL_G:		return "g";
++	case MMSKEY_SMALL_H:		return "h";
++	case MMSKEY_SMALL_I:		return "i";
++	case MMSKEY_SMALL_J:		return "j";
++	case MMSKEY_SMALL_K:		return "k";
++	case MMSKEY_SMALL_L:		return "l";
++	case MMSKEY_SMALL_M:		return "m";
++	case MMSKEY_SMALL_N:		return "n";
++	case MMSKEY_SMALL_O:		return "o";
++	case MMSKEY_SMALL_P:		return "p";
++	case MMSKEY_SMALL_Q:		return "q";
++	case MMSKEY_SMALL_R:		return "r";
++	case MMSKEY_SMALL_S:		return "s";
++	case MMSKEY_SMALL_T:		return "t";
++	case MMSKEY_SMALL_U:		return "u";
++	case MMSKEY_SMALL_V:		return "v";
++	case MMSKEY_SMALL_W:		return "w";
++	case MMSKEY_SMALL_X:		return "x";
++	case MMSKEY_SMALL_Y:		return "y";
++	case MMSKEY_SMALL_Z:		return "z";
++	case MMSKEY_F1:				return "F1";
++	case MMSKEY_F2:				return "F2";
++	case MMSKEY_F3:				return "F3";
++	case MMSKEY_F4:				return "F4";
++	case MMSKEY_F5:				return "F5";
++	case MMSKEY_F6:				return "F6";
++	case MMSKEY_F7:				return "F7";
++	case MMSKEY_F8:				return "F8";
++	case MMSKEY_F9:				return "F9";
++	case MMSKEY_F10:			return "F10";
++	case MMSKEY_F11:			return "F11";
++	case MMSKEY_F12:			return "F12";
++	case MMSKEY_CAPS_LOCK:		return "Caps_Lock";
++	case MMSKEY_NUM_LOCK:		return "Num_Lock";
++	case MMSKEY_SCROLL_LOCK:	return "Scroll_Lock";
++	case MMSKEY_ESCAPE:			return "Escape";
++	case MMSKEY_TAB:			return "Tab";
++	case MMSKEY_RETURN:			return "Return";
++	case MMSKEY_SPACE:			return "space";
++	case MMSKEY_BACKSPACE:		return "BackSpace";
++	case MMSKEY_INSERT:			return "Insert";
++	case MMSKEY_DELETE:			return "Delete";
++	case MMSKEY_HOME:			return "Home";
++	case MMSKEY_END:			return "End";
++	case MMSKEY_PAGE_UP:		return "Prior";
++	case MMSKEY_PAGE_DOWN:		return "Next";
++	case MMSKEY_PRINT:			return "Print";
++	case MMSKEY_PAUSE:			return "Pause";
++	case MMSKEY_MINUS_SIGN:		return "minus";
++	case MMSKEY_EQUALS_SIGN:	return "equal";
++	case MMSKEY_BACKSLASH:		return "backslash";
++	case MMSKEY_SEMICOLON:		return "semicolon";
++	case MMSKEY_COMMA:			return "comma";
++	case MMSKEY_PERIOD:			return "period";
++	case MMSKEY_SLASH:			return "slash";
++	case MMSKEY_SHIFT:			return "Shift";
++	case MMSKEY_CONTROL:		return "Control";
++	case MMSKEY_ALT:			return "Alt";
++	case MMSKEY_META:			return "Meta";
++	case MMSKEY_SUPER:			return "Super";
++	case MMSKEY_HYPER:			return "Hyper";
++	case MMSKEY_ALTGR:			return "Mode_switch";
++	case MMSKEY_ASTERISK:		return "Multiply";
++	case MMSKEY_PLUS_SIGN:		return "Add";
++	case MMSKEY_COLON:			return "colon";
++	default:					return "unknown";
++	}
++}
++
++
++static bool gst_diskovideosink_input(MMSWindow *window, MMSInputEvent *input) {
++	// send event to the pipe
++	switch (input->type) {
++	case MMSINPUTEVENTTYPE_KEYPRESS:
++        gst_navigation_send_key_event(GST_NAVIGATION(static_diskovideosink),
++									  "key-press", MMSKEY2String(input->key));
++		break;
++	case MMSINPUTEVENTTYPE_KEYRELEASE:
++        gst_navigation_send_key_event(GST_NAVIGATION(static_diskovideosink),
++									  "key-release", MMSKEY2String(input->key));
++		break;
++	case MMSINPUTEVENTTYPE_BUTTONPRESS:
++        gst_navigation_send_mouse_event(GST_NAVIGATION(static_diskovideosink),
++										"mouse-button-press", 0, input->posx, input->posy);
++		break;
++	case MMSINPUTEVENTTYPE_BUTTONRELEASE:
++        gst_navigation_send_mouse_event(GST_NAVIGATION(static_diskovideosink),
++										"mouse-button-release", 0, input->posx, input->posy);
++		break;
++	case MMSINPUTEVENTTYPE_AXISMOTION:
++		gst_navigation_send_mouse_event(GST_NAVIGATION(static_diskovideosink),
++										"mouse-move", 0, input->posx, input->posy);
++		break;
++	default:
++		break;
++	}
++	return true;
++}
++
++
++static gboolean gst_diskovideosink_setup (GstDiskoVideoSink * diskovideosink) {
++
++	g_return_val_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink), FALSE);
++
++	printf("--- gst_diskovideosink_setup()\n");
++
++	if ((!diskovideosink->ext_surface)&&(!diskovideosink->ext_window)) {
++		// surface and window not given, initializing disko framework
++		GST_DEBUG_OBJECT(diskovideosink, "initializing Disko framework");
++
++		// set the default graphics settings, we assume that we running under X11
++		// there is the possibility to overwrite these settings with an diskorc.xml
++		// located under ./etc/diskorc.xml or /etc/diskorc.xml
++		MMSConfigDataGraphics graphics;
++		graphics.backend	= MMSFB_BE_X11;
++		graphics.outputtype = MMSFB_OT_XVSHM;
++		graphics.xres		= 800;
++		graphics.yres		= 600;
++		graphics.pointer 	= MMSFB_PM_TRUE;
++
++		// init framework
++		if (!mmsInit(MMSINIT_WINDOWS & ~MMSINIT_THEMEMANAGER, 0, NULL, "",
++					 "Disko video sink based on GStreamer", "Disko video sink",
++					 NULL, NULL, NULL, &graphics, NULL)) {
++			// init failed
++	        GST_WARNING_OBJECT(diskovideosink, "Disko initialization failed");
++	        return false;
++		}
++
++		// create a full screen video window
++		// if disko is initialized with 2 layers (different video and graphics layer)
++		// the window will get the video layer surface
++		diskovideosink->window = new MMSRootWindow("", "100%", "100%", MMSALIGNMENT_CENTER, MMSW_VIDEO);
++
++		// get access to window surface
++		if (!(diskovideosink->surface = diskovideosink->window->getSurface())) {
++			// cannot get access to the surface
++			GST_WARNING_OBJECT(diskovideosink, "failed getting window surface");
++			delete diskovideosink->window;
++			mmsRelease();
++			return false;
++		}
++
++		// disko framework initialized
++		diskovideosink->disko_initialized = true;
++
++		// connect to the input callback of the window
++		diskovideosink->onHandleInput = diskovideosink->window->onHandleInput->connect(sigc::ptr_fun(gst_diskovideosink_input));
++
++		// clear the window surface
++		diskovideosink->surface->clear(0x00, 0x00, 0x00, 0xff);
++		diskovideosink->surface->flip();
++		diskovideosink->surface->clear(0x00, 0x00, 0x00, 0xff);
++
++		// show the window
++		diskovideosink->window->show();
++	}
++	else {
++		// initializing disko framework is not needed
++		diskovideosink->disko_initialized = false;
++
++		if (!diskovideosink->ext_surface) {
++			// use given window
++			diskovideosink->window = diskovideosink->ext_window;
++
++			// get access to window surface
++			if (!(diskovideosink->surface = diskovideosink->window->getSurface())) {
++				// cannot get access to the surface
++				GST_WARNING_OBJECT(diskovideosink, "failed getting window surface");
++				return false;
++			}
++
++			// connect to the input callback of the window
++			diskovideosink->onHandleInput = diskovideosink->window->onHandleInput->connect(sigc::ptr_fun(gst_diskovideosink_input));
++		}
++		else {
++			// use given surface
++			// in that case we have no control over the keyboard, mouse, touchscreen inputs
++			diskovideosink->surface = diskovideosink->ext_surface;
++		}
++	}
++
++	// set antialiasing flag
++	diskovideosink->surface->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
++
++	// get the size of the surface
++    diskovideosink->surface->getSize(&diskovideosink->out_width, &diskovideosink->out_height);
++
++    // get the pixelformat of the surface
++    diskovideosink->surface->getPixelFormat(&diskovideosink->pixel_format);
++
++	diskovideosink->setup = true;
++	return true;
++}
++
++
++
++static void gst_diskovideosink_cleanup(GstDiskoVideoSink *diskovideosink) {
++	g_return_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink));
++
++	GST_DEBUG_OBJECT (diskovideosink, "cleaning up Disko environment");
++
++printf("--- gst_diskovideosink_cleanup()\n");
++
++
++
++
++if (diskovideosink->cb_channels) {
++GList *walk = diskovideosink->cb_channels;
++
++while (walk) {
++  GstColorBalanceChannel *channel = (GstColorBalanceChannel*)walk->data;
++
++  g_object_unref (channel);
++  walk = g_list_next (walk);
++}
++g_list_free (diskovideosink->cb_channels);
++diskovideosink->cb_channels = NULL;
++}
++
++	if (diskovideosink->buffer_pool) {
++		gst_diskovideosink_bufferpool_clear (diskovideosink);
++	}
++
++	if (diskovideosink->window) {
++		// disconnect onHandleInput callback
++		diskovideosink->onHandleInput.disconnect();
++	}
++
++	if (diskovideosink->disko_initialized) {
++		// we have to delete our window
++		delete diskovideosink->window;
++
++		// release all ressources allocated by Disko
++		mmsRelease();
++	}
++
++	// reset vars
++	diskovideosink->disko_initialized = false;
++	diskovideosink->window = NULL;
++	diskovideosink->surface = NULL;
++
++	diskovideosink->setup = FALSE;
++}
++
++static MMSFBSurfacePixelFormat gst_diskovideosink_get_format_from_caps(GstCaps * caps) {
++	GstStructure *structure;
++	gboolean ret;
++	MMSFBSurfacePixelFormat pixel_format = MMSFB_PF_NONE;
++
++	g_return_val_if_fail (GST_IS_CAPS (caps), MMSFB_PF_NONE);
++
++	structure = gst_caps_get_structure (caps, 0);
++
++	if (gst_structure_has_name (structure, "video/x-raw-rgb")) {
++		gint bpp, depth;
++
++		ret = gst_structure_get_int (structure, "bpp", &bpp);
++		ret &= gst_structure_get_int (structure, "depth", &depth);
++
++		if (!ret) {
++			goto beach;
++		}
++
++		switch (bpp) {
++		case 16:
++			pixel_format = MMSFB_PF_RGB16;
++			break;
++		case 24:
++			pixel_format = MMSFB_PF_RGB24;
++			break;
++		case 32:
++			switch (depth) {
++			case 24:
++				pixel_format = MMSFB_PF_RGB32;
++				break;
++			case 32:
++				pixel_format = MMSFB_PF_ARGB;
++				break;
++			default:
++				goto beach;
++			}
++			break;
++		default:
++			GST_WARNING ("unhandled RGB format, bpp %d, depth %d", bpp, depth);
++			goto beach;
++		}
++	}
++	else
++	if (gst_structure_has_name (structure, "video/x-raw-yuv")) {
++		guint32 fourcc;
++
++		ret = gst_structure_get_fourcc (structure, "format", &fourcc);
++
++		if (!ret) {
++			GST_WARNING ("failed grabbing fourcc from caps %" GST_PTR_FORMAT, caps);
++			goto beach;
++		}
++
++		switch (fourcc) {
++		case GST_MAKE_FOURCC ('I', '4', '2', '0'):
++			pixel_format = MMSFB_PF_I420;
++			break;
++		case GST_MAKE_FOURCC ('Y', 'V', '1', '2'):
++			pixel_format = MMSFB_PF_YV12;
++			break;
++		case GST_MAKE_FOURCC ('Y', 'U', 'Y', '2'):
++			pixel_format = MMSFB_PF_YUY2;
++			break;
++		case GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'):
++			pixel_format = MMSFB_PF_UYVY;
++			break;
++		default:
++			GST_WARNING ("unhandled YUV format %" GST_FOURCC_FORMAT,
++			GST_FOURCC_ARGS (fourcc));
++			goto beach;
++		}
++	}
++	else {
++		GST_WARNING ("unknown caps name received %" GST_PTR_FORMAT, caps);
++		goto beach;
++	}
++
++beach:
++	return pixel_format;
++}
++
++static GstCaps *gst_diskovideosink_get_caps_from_format(MMSFBSurfacePixelFormat format) {
++	GstCaps *caps = NULL;
++	gboolean is_rgb = FALSE, is_yuv = FALSE;
++	gint bpp, depth;
++	guint32 fourcc;
++
++	g_return_val_if_fail (format != MMSFB_PF_NONE, NULL);
++
++	switch (format) {
++	case MMSFB_PF_RGB16:
++		is_rgb = TRUE;
++		bpp = 16;
++		depth = 16;
++		break;
++	case MMSFB_PF_RGB24:
++		is_rgb = TRUE;
++		bpp = 24;
++		depth = 24;
++		break;
++	case MMSFB_PF_RGB32:
++		is_rgb = TRUE;
++		bpp = 32;
++		depth = 24;
++		break;
++	case MMSFB_PF_ARGB:
++		is_rgb = TRUE;
++		bpp = 32;
++		depth = 32;
++		break;
++	case MMSFB_PF_YUY2:
++		is_yuv = TRUE;
++		fourcc = GST_MAKE_FOURCC('Y', 'U', 'Y', '2');
++		break;
++	case MMSFB_PF_UYVY:
++		is_yuv = TRUE;
++		fourcc = GST_MAKE_FOURCC('U', 'Y', 'V', 'Y');
++		break;
++	case MMSFB_PF_I420:
++		is_yuv = TRUE;
++		fourcc = GST_MAKE_FOURCC('I', '4', '2', '0');
++		break;
++	case MMSFB_PF_YV12:
++		is_yuv = TRUE;
++		fourcc = GST_MAKE_FOURCC('Y', 'V', '1', '2');
++		break;
++	default:
++		GST_WARNING ("unknown pixel format %s", gst_diskovideosink_get_format_name (format));
++		goto beach;
++	}
++
++	if (is_rgb) {
++		caps = gst_caps_new_simple("video/x-raw-rgb", "bpp", G_TYPE_INT, bpp, "depth", G_TYPE_INT, depth, NULL);
++	}
++	else
++	if (is_yuv) {
++		caps = gst_caps_new_simple("video/x-raw-yuv", "format", GST_TYPE_FOURCC, fourcc, NULL);
++	}
++	else {
++		GST_WARNING ("neither rgb nor yuv, something strange here");
++	}
++
++beach:
++	return caps;
++}
++
++
++#ifdef sfsfssgf
++static gboolean
++gst_diskovideosink_get_best_vmode (GstDiskoVideoSink * diskovideosink, gint v_width,
++    gint v_height, GstDiskoVMode * best_vmode)
++{
++  GSList *walk = NULL;
++  gboolean ret = FALSE;
++  gint width, height, bpp;
++  GstDiskoVMode *vmode = NULL;
++
++printf("--- gst_diskovideosink_get_best_vmode()\n");
++
++
++  g_return_val_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink), FALSE);
++
++  if (!diskovideosink->vmodes) {
++    goto beach;
++  }
++
++  walk = diskovideosink->vmodes;
++
++  vmode = (GstDiskoVMode *) walk->data;
++
++  /* First mode */
++  width = vmode->width;
++  height = vmode->height;
++  bpp = vmode->bpp;
++
++  while (walk) {
++    gint wgap, hgap, best_wgap, best_hgap;
++
++    vmode = (GstDiskoVMode *) walk->data;
++
++    /* What are the gaps */
++    wgap = abs (vmode->width - v_width);
++    hgap = abs (vmode->height - v_height);
++    best_wgap = abs (width - v_width);
++    best_hgap = abs (height - v_height);
++
++    /* If this mode is better we ll use that */
++    if (wgap + hgap < best_wgap + best_hgap) {
++      width = vmode->width;
++      height = vmode->height;
++      bpp = vmode->bpp;
++    }
++
++    walk = g_slist_next (walk);
++  }
++
++  GST_DEBUG_OBJECT (diskovideosink, "found video mode %dx%d for input at %dx%d",
++      width, height, v_width, v_height);
++
++  best_vmode->width = width;
++  best_vmode->height = height;
++  best_vmode->bpp = bpp;
++
++  ret = TRUE;
++
++beach:
++  return ret;
++}
++#endif
++
++
++static GstCaps *gst_diskovideosink_getcaps (GstBaseSink * bsink) {
++	GstDiskoVideoSink *diskovideosink;
++	GstCaps *caps = NULL;
++	gint i;
++
++	diskovideosink = GST_DISKOVIDEOSINK (bsink);
++
++	if (!diskovideosink->setup) {
++		caps = gst_caps_copy (gst_pad_get_pad_template_caps (GST_VIDEO_SINK_PAD(diskovideosink)));
++		GST_DEBUG_OBJECT (diskovideosink, "getcaps called and we are not setup yet, returning template %" GST_PTR_FORMAT, caps);
++		goto beach;
++	} else {
++		GST_DEBUG_OBJECT (diskovideosink, "getcaps called, checking our internal format");
++
++		// disko video sink supports these formats
++		caps = gst_caps_new_empty ();
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_YUY2));
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_UYVY));
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_I420));
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_YV12));
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_RGB16));
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_RGB24));
++		gst_caps_append (caps, gst_diskovideosink_get_caps_from_format (MMSFB_PF_ARGB));
++	}
++
++	for (i = 0; i < (int)gst_caps_get_size (caps); i++) {
++		GstStructure *structure = gst_caps_get_structure (caps, i);
++
++		gst_structure_set(structure,
++						  "width", GST_TYPE_INT_RANGE, 1, G_MAXINT,
++						  "height", GST_TYPE_INT_RANGE, 1, G_MAXINT,
++						  "framerate", GST_TYPE_FRACTION_RANGE, 0, 1, G_MAXINT, 1, NULL);
++
++		if (diskovideosink->par) {
++			int nom, den;
++			nom = gst_value_get_fraction_numerator (diskovideosink->par);
++			den = gst_value_get_fraction_denominator (diskovideosink->par);
++			gst_structure_set (structure, "pixel-aspect-ratio",
++			GST_TYPE_FRACTION, nom, den, NULL);
++		}
++	}
++
++	GST_DEBUG_OBJECT (diskovideosink, "returning our caps %" GST_PTR_FORMAT, caps);
++
++beach:
++	return caps;
++}
++
++static gboolean gst_diskovideosink_setcaps (GstBaseSink * bsink, GstCaps * caps) {
++  GstDiskoVideoSink *diskovideosink;
++  GstStructure *structure;
++  gboolean res, result = FALSE;
++  gint video_width, video_height;
++  const GValue *framerate;
++  MMSFBSurfacePixelFormat pixel_format = MMSFB_PF_NONE;
++
++  printf("--- gst_diskovideosink_setcaps()\n");
++
++
++  diskovideosink = GST_DISKOVIDEOSINK (bsink);
++
++  structure = gst_caps_get_structure (caps, 0);
++  res = gst_structure_get_int (structure, "width", &video_width);
++  res &= gst_structure_get_int (structure, "height", &video_height);
++
++printf("------------> gst_diskovideosink_setcaps() called res=%dx%d\n", video_width, video_height);
++
++
++  framerate = gst_structure_get_value (structure, "framerate");
++  res &= (framerate != NULL);
++  if (!res) {
++    goto beach;
++  }
++
++  diskovideosink->fps_n = gst_value_get_fraction_numerator (framerate);
++  diskovideosink->fps_d = gst_value_get_fraction_denominator (framerate);
++
++  pixel_format = gst_diskovideosink_get_format_from_caps (caps);
++
++	GST_DEBUG_OBJECT(diskovideosink, "setcaps called with %" GST_PTR_FORMAT, caps);
++	GST_DEBUG_OBJECT(diskovideosink, "our format is: %dx%d %s video at %d/%d fps",
++						video_width, video_height,
++						gst_diskovideosink_get_format_name (pixel_format), diskovideosink->fps_n,
++						diskovideosink->fps_d);
++
++	if (diskovideosink->par) {
++		const GValue *par;
++
++		par = gst_structure_get_value (structure, "pixel-aspect-ratio");
++		if (par) {
++			if (gst_value_compare (par, diskovideosink->par) != GST_VALUE_EQUAL) {
++				goto wrong_aspect;
++			}
++		}
++	}
++	GST_VIDEO_SINK_WIDTH (diskovideosink) = video_width;
++	GST_VIDEO_SINK_HEIGHT (diskovideosink) = video_height;
++
++#ifdef sfsfsf
++  /* Try to adapt the video mode to the video geometry */
++  if (diskovideosink->dfb) {
++    DFBResult ret;
++    GstDiskoVMode vmode;
++
++    GST_DEBUG_OBJECT (diskovideosink, "trying to adapt the video mode to video "
++        "geometry");
++
++    /* Set video mode and layer configuration appropriately */
++    if (gst_diskovideosink_get_best_vmode (diskovideosink,
++            GST_VIDEO_SINK_WIDTH (diskovideosink),
++            GST_VIDEO_SINK_HEIGHT (diskovideosink), &vmode)) {
++      DFBDisplayLayerConfig lc;
++      gint width, height, bpp;
++
++      width = vmode.width;
++      height = vmode.height;
++      bpp = vmode.bpp;
++
++      GST_DEBUG_OBJECT (diskovideosink, "setting video mode to %dx%d at %d bpp",
++          width, height, bpp);
++
++      ret = diskovideosink->dfb->SetVideoMode (diskovideosink->dfb, width,
++          height, bpp);
++      if (ret != DFB_OK) {
++        GST_WARNING_OBJECT (diskovideosink, "failed setting video mode %dx%d "
++            "at %d bpp", width, height, bpp);
++      }
++
++      lc.flags = DLCONF_PIXELFORMAT;
++      lc.pixelformat = (DFBSurfacePixelFormat)pixel_format;
++
++      ret = diskovideosink->layer->SetConfiguration (diskovideosink->layer, &lc);
++      if (ret != DFB_OK) {
++        GST_WARNING_OBJECT (diskovideosink, "failed setting layer pixelformat "
++            "to %s", gst_diskovideosink_get_format_name (pixel_format));
++      } else {
++        diskovideosink->layer->GetConfiguration (diskovideosink->layer, &lc);
++        diskovideosink->out_width = lc.width;
++        diskovideosink->out_height = lc.height;
++        diskovideosink->pixel_format = (MMSFBSurfacePixelFormat)lc.pixelformat;
++        GST_DEBUG_OBJECT (diskovideosink, "layer %d now configured to %dx%d %s",
++            diskovideosink->layer_id, lc.width, lc.height,
++            gst_diskovideosink_get_format_name ((MMSFBSurfacePixelFormat)lc.pixelformat));
++      }
++    }
++  }
++#endif
++
++
++/*
++  if (pixel_format != diskovideosink->pixel_format) {
++printf("ffffffffffffffffffffffffffffff\n");
++sleep(1);
++    GST_WARNING_OBJECT (diskovideosink, "setcaps sent us a different pixel "
++        "format %s", gst_diskovideosink_get_format_name (pixel_format));
++    goto beach;
++  }
++*/
++  diskovideosink->video_width = video_width;
++  diskovideosink->video_height = video_height;
++
++  result = TRUE;
++
++beach:
++  return result;
++
++/* ERRORS */
++wrong_aspect:
++  {
++    GST_INFO_OBJECT (diskovideosink, "pixel aspect ratio does not match");
++    return FALSE;
++  }
++}
++
++static GstStateChangeReturn gst_diskovideosink_change_state (GstElement * element, GstStateChange transition) {
++	GstDiskoVideoSink *diskovideosink;
++	GstStateChangeReturn ret = GST_STATE_CHANGE_SUCCESS;
++
++printf("--- gst_diskovideosink_change_state()\n");
++
++	diskovideosink = GST_DISKOVIDEOSINK (element);
++
++printf("--- gst_diskovideosink_change_state() #2\n");
++
++	switch (transition) {
++	case GST_STATE_CHANGE_NULL_TO_READY:
++printf("--- gst_diskovideosink_change_state() - GST_STATE_CHANGE_NULL_TO_READY\n");
++		diskovideosink->running = TRUE;
++		if (!diskovideosink->setup) {
++			if (!gst_diskovideosink_setup(diskovideosink)) {
++				GST_DEBUG_OBJECT(diskovideosink, "setup failed when changing state from NULL to READY");
++				GST_ELEMENT_ERROR(diskovideosink, RESOURCE, OPEN_WRITE, (NULL), ("Failed initializing Disko Framework"));
++				return GST_STATE_CHANGE_FAILURE;
++			}
++		}
++		break;
++	case GST_STATE_CHANGE_READY_TO_PAUSED:
++printf("--- gst_diskovideosink_change_state() - GST_STATE_CHANGE_READY_TO_PAUSED\n");
++		// blank surfaces
++		if (diskovideosink->surface) {
++			diskovideosink->surface->clear(0x00, 0x00, 0x00, 0xff);
++		}
++		break;
++	case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
++printf("--- gst_diskovideosink_change_state() - GST_STATE_CHANGE_PAUSED_TO_PLAYING\n");
++		break;
++    default:
++printf("--- gst_diskovideosink_change_state() - default\n");
++		break;
++	}
++
++	ret = GST_ELEMENT_CLASS (parent_class)->change_state (element, transition);
++	if (ret == GST_STATE_CHANGE_FAILURE)
++		return ret;
++
++	switch (transition) {
++	case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
++    	break;
++	case GST_STATE_CHANGE_PAUSED_TO_READY:
++		diskovideosink->fps_d = 0;
++		diskovideosink->fps_n = 0;
++		diskovideosink->video_width = 0;
++		diskovideosink->video_height = 0;
++
++		if (diskovideosink->buffer_pool) {
++			gst_diskovideosink_bufferpool_clear (diskovideosink);
++		}
++		break;
++	case GST_STATE_CHANGE_READY_TO_NULL:
++printf("--- gst_diskovideosink_change_state() - GST_STATE_CHANGE_READY_TO_NULL\n");
++		diskovideosink->running = FALSE;
++		if (diskovideosink->setup) {
++			gst_diskovideosink_cleanup (diskovideosink);
++		}
++		break;
++	default:
++		break;
++	}
++
++	return ret;
++}
++
++static void gst_diskovideosink_get_times(GstBaseSink * bsink, GstBuffer * buf,
++										 GstClockTime * start, GstClockTime * end) {
++	GstDiskoVideoSink *diskovideosink;
++
++	diskovideosink = GST_DISKOVIDEOSINK (bsink);
++
++	if (GST_BUFFER_TIMESTAMP_IS_VALID (buf)) {
++		*start = GST_BUFFER_TIMESTAMP (buf);
++		if (GST_BUFFER_DURATION_IS_VALID (buf)) {
++			*end = *start + GST_BUFFER_DURATION (buf);
++		}
++		else {
++			if (diskovideosink->fps_n > 0) {
++				*end =
++				*start + (GST_SECOND * diskovideosink->fps_d) / diskovideosink->fps_n;
++			}
++		}
++	}
++}
++
++static GstFlowReturn gst_diskovideosink_show_frame (GstBaseSink * bsink, GstBuffer * buf) {
++  GstDiskoVideoSink *diskovideosink = NULL;
++  GstVideoRectangle dst, src, result;
++  GstFlowReturn ret = GST_FLOW_OK;
++
++  GstStructure *structure;
++
++  GstDiskoSurface *surface = NULL;
++
++	diskovideosink = GST_DISKOVIDEOSINK (bsink);
++
++	if (!diskovideosink->setup) {
++		ret = GST_FLOW_UNEXPECTED;
++		goto beach;
++	}
++
++
++	// get the video frame geometry from the buffer caps
++	structure = gst_caps_get_structure (GST_BUFFER_CAPS (buf), 0);
++	if (structure) {
++		gst_structure_get_int (structure, "width", &src.w);
++		gst_structure_get_int (structure, "height", &src.h);
++	}
++	else {
++		src.w = diskovideosink->video_width;
++		src.h = diskovideosink->video_height;
++	}
++	diskovideosink->surface->getSize(&dst.w, &dst.h);
++
++
++
++  /* Center / Clip */
++//TODO
++  gst_video_sink_center_rect (src, dst, &result, FALSE);
++
++
++
++	// get access to the disko surface
++	if (GST_IS_DISKOSURFACE(buf)) {
++		surface = GST_DISKOSURFACE(buf);
++	}
++
++	if ((surface)&&(surface->surface)) {
++		// stretch blit from disko surface
++int w1,h1;
++int w2,h2;
++surface->surface->getSize(&w1,&h1);
++diskovideosink->surface->getSize(&w2,&h2);
++printf("stretch surface from %dx%d to %dx%d\n", w1,h1,w2,h2);
++		diskovideosink->surface->stretchBlit(surface->surface,
++											 NULL, NULL);
++	}
++	else {
++		// stretch blit from buffer
++int w2,h2;
++diskovideosink->surface->getSize(&w2,&h2);
++printf("stretch buffer from %dx%d to %dx%d\n", src.w, src.h,w2,h2);
++		MMSFBSurfacePixelFormat pixelformat = gst_diskovideosink_get_format_from_caps(GST_BUFFER_CAPS(buf));
++		diskovideosink->surface->stretchBlitBuffer(GST_BUFFER_DATA(buf), src.w, pixelformat, src.w, src.h,
++												   NULL, NULL);
++	}
++
++	// make it visible
++	diskovideosink->surface->flip();
++
++
++
++#ifdef safasfasgfas
++
++  if (mem_cpy) {
++printf("--- gst_diskovideosink_show_frame()#3\n");
++    MMSFBSurface *dest = NULL, *surface = NULL;
++    guint8 *data;
++    gint dest_pitch, src_pitch, line;
++    GstStructure *structure;
++
++    /* As we are not blitting no acceleration is possible. If the surface is
++     * too small we do clipping, if it's too big we center. Theoretically as
++     * we are using buffer_alloc, there's a chance that we have been able to
++     * do reverse caps negotiation */
++
++    if (diskovideosink->ext_surface) {
++//TODO      surface = diskovideosink->ext_surface;
++      GST_DEBUG_OBJECT (diskovideosink, "memcpy to an external surface "
++          "subsurface (vsync %d)", diskovideosink->vsync);
++    }
++    else {
++printf("--- gst_diskovideosink_show_frame()#4\n");
++      surface = diskovideosink->surface;
++      GST_DEBUG_OBJECT (diskovideosink, "memcpy to a primary subsurface "
++          "(vsync %d)", diskovideosink->vsync);
++    }
++
++printf("--- gst_diskovideosink_show_frame()#5\n");
++
++    /* Get the video frame geometry from the buffer caps */
++    structure = gst_caps_get_structure (GST_BUFFER_CAPS (buf), 0);
++    if (structure) {
++      gst_structure_get_int (structure, "width", &src.w);
++      gst_structure_get_int (structure, "height", &src.h);
++    } else {
++      src.w = diskovideosink->video_width;
++      src.h = diskovideosink->video_height;
++    }
++    res = surface->GetSize (surface, &dst.w, &dst.h);
++
++    /* Center / Clip */
++    gst_video_sink_center_rect (src, dst, &result, FALSE);
++
++    res =
++        surface->GetSubSurface (surface, (DFBRectangle *) (void *) &result,
++        &dest);
++    if (res != DFB_OK) {
++      GST_WARNING_OBJECT (diskovideosink, "failed when getting a sub surface");
++      ret = GST_FLOW_UNEXPECTED;
++      goto beach;
++    }
++
++    /* If we are not using Flip we wait for VSYNC before blit */
++    if (!diskovideosink->backbuffer && diskovideosink->vsync) {
++      diskovideosink->layer->WaitForSync (diskovideosink->layer);
++    }
++
++    res = dest->Lock (dest, DSLF_WRITE, (void **) &data, &dest_pitch);
++    if (res != DFB_OK) {
++      GST_WARNING_OBJECT (diskovideosink, "failed locking the external "
++          "subsurface for writing");
++      ret = GST_FLOW_ERROR;
++      goto beach;
++    }
++
++    /* Source video rowbytes */
++    src_pitch = GST_BUFFER_SIZE (buf) / src.h;
++
++    /* Write each line respecting subsurface pitch */
++    for (line = 0; line < result.h; line++) {
++      /* We do clipping */
++      memcpy (data, GST_BUFFER_DATA (buf) + (line * src_pitch),
++          MIN (src_pitch, dest_pitch));
++      data += dest_pitch;
++    }
++
++    res = dest->Unlock (dest);
++
++    res = (DFBResult)dest->Release (dest);
++
++    if (diskovideosink->backbuffer) {
++      if (diskovideosink->vsync) {
++        res = surface->Flip (surface, NULL, DSFLIP_ONSYNC);
++      } else {
++        res = surface->Flip (surface, NULL, DSFLIP_NONE);
++      }
++    }
++  } else {
++    /* Else we will [Stretch]Blit to our primary */
++    GstDiskoSurface *surface = GST_DISKOSURFACE (buf);
++
++    GST_DEBUG_OBJECT (diskovideosink, "blitting to a primary surface (vsync %d)",
++        diskovideosink->vsync);
++
++    src.w = GST_VIDEO_SINK_WIDTH (diskovideosink);
++    src.h = GST_VIDEO_SINK_HEIGHT (diskovideosink);
++
++    diskovideosink->primary->GetSize (diskovideosink->primary, &dst.w, &dst.h);
++
++    /* Unlocking surface before blit */
++    if (surface->locked) {
++      surface->surface->unlock();
++      surface->locked = FALSE;
++    }
++
++    gst_video_sink_center_rect (src, dst, &result, diskovideosink->hw_scaling);
++
++    /* If we are not using Flip we wait for VSYNC before blit */
++    if (!diskovideosink->backbuffer && diskovideosink->vsync) {
++      diskovideosink->layer->WaitForSync (diskovideosink->layer);
++    }
++
++    if (diskovideosink->hw_scaling) {
++    	MMSFBRectangle dst;
++    	dst.x=result.x;
++    	dst.y=result.y;
++    	dst.w=result.w;
++    	dst.h=result.h;
++      diskovideosink->surface->stretchBlit(surface->surface, NULL, &dst);
++    } else {
++      MMSFBRectangle clip;
++
++      clip.x = clip.y = 0;
++      clip.w = result.w;
++      clip.h = result.h;
++      diskovideosink->surface->blit(surface->surface, &clip, result.x, result.y);
++    }
++
++    if (diskovideosink->backbuffer) {
++      if (diskovideosink->vsync) {
++        diskovideosink->primary->Flip (diskovideosink->primary, NULL,
++            DSFLIP_ONSYNC);
++      } else {
++        diskovideosink->primary->Flip (diskovideosink->primary, NULL, DSFLIP_NONE);
++      }
++    }
++  }
++#endif
++
++
++beach:
++  return ret;
++}
++
++static void
++gst_diskovideosink_bufferpool_clear (GstDiskoVideoSink * diskovideosink)
++{
++
++printf("--- gst_diskovideosink_bufferpool_clear()\n");
++
++  g_mutex_lock (diskovideosink->pool_lock);
++  while (diskovideosink->buffer_pool) {
++    GstDiskoSurface *surface = (GstDiskoSurface*)diskovideosink->buffer_pool->data;
++
++    diskovideosink->buffer_pool = g_slist_delete_link (diskovideosink->buffer_pool,
++        diskovideosink->buffer_pool);
++    gst_diskovideosink_surface_destroy (diskovideosink, surface);
++  }
++  g_mutex_unlock (diskovideosink->pool_lock);
++}
++
++
++
++
++
++/* For every buffer request we create a custom buffer containing and
++ * IDirectFBSurface or allocate a previously created one that's not used
++ * anymore. */
++static GstFlowReturn gst_diskovideosink_buffer_alloc(GstBaseSink * bsink, guint64 offset, guint size,
++													 GstCaps * caps, GstBuffer ** buf) {
++	GstDiskoVideoSink *diskovideosink;
++	GstDiskoSurface *surface = NULL;
++	GstFlowReturn ret = GST_FLOW_OK;
++
++	gboolean rev_nego = FALSE;
++	gint width, height;
++
++	GstCaps *desired_caps = NULL;
++	GstStructure *structure = NULL;
++
++printf("--- gst_diskovideosink_buffer_alloc()\n");
++
++	diskovideosink = GST_DISKOVIDEOSINK (bsink);
++
++	GST_DEBUG_OBJECT (diskovideosink, "a buffer of %d bytes was requested with caps %" GST_PTR_FORMAT " and offset %llu", size, caps, offset);
++
++	if (G_UNLIKELY (!diskovideosink->setup)) {
++		GST_DEBUG_OBJECT (diskovideosink, "we are not setup yet, can't allocate!");
++		*buf = NULL;
++		return ret;
++	}
++
++	desired_caps = gst_caps_copy (caps);
++
++	structure = gst_caps_get_structure (desired_caps, 0);
++
++  if (gst_structure_get_int (structure, "width", &width) &&
++      gst_structure_get_int (structure, "height", &height)) {
++
++printf("--- gst_diskovideosink_buffer_alloc()  >>>>>>>>>>>>>>>>>>>>%dx%d<<<<\n", width, height);
++
++    GstVideoRectangle dst, src, result;
++
++
++    /* Our desired geometry respects aspect ratio */
++    src.w = width;
++    src.h = height;
++    /* We should adapt the destination to the most suitable video mode */
++/*    if (gst_diskovideosink_get_best_vmode (diskovideosink, width, height, &vmode)) {
++      dst.w = vmode.width;
++      dst.h = vmode.height;
++    }
++    else*/ {
++/*      if (diskovideosink->ext_surface) {
++        diskovideosink->ext_surface->getSize(&dst.w, &dst.h);
++      }
++      else*/ {
++        diskovideosink->surface->getSize(&dst.w, &dst.h);
++      }
++      diskovideosink->out_width = dst.w;
++      diskovideosink->out_height = dst.h;
++    }
++
++    printf("--- gst_diskovideosink_buffer_alloc()  >>>>>>>>>>>>>>>>>>>>%dx%d<<<<\n", diskovideosink->out_width, diskovideosink->out_height);
++
++    gst_video_sink_center_rect (src, dst, &result, TRUE);
++
++    printf("--- gst_diskovideosink_buffer_alloc()  >>>>>>>>>>>>>>>>>>>>%dx%d<<<<\n", result.w, result.h);
++
++    if (width != result.w || height != result.h) {
++      GstPad *peer = gst_pad_get_peer (GST_VIDEO_SINK_PAD (diskovideosink));
++
++      if (!GST_IS_PAD (peer)) {
++        /* Is this situation possible ? */
++        goto alloc;
++      }
++
++  printf("--- gst_diskovideosink_buffer_alloc()  >>>>>>>>welovetoreceive>>>>>>>>>>>>%dx%d<<<<\n", result.w, result.h);
++
++      GST_DEBUG_OBJECT (diskovideosink, "we would love to receive a %dx%d video",
++          result.w, result.h);
++      gst_structure_set (structure, "width", G_TYPE_INT, result.w, NULL);
++      gst_structure_set (structure, "height", G_TYPE_INT, result.h, NULL);
++
++      /* PAR property overrides the X calculated one */
++      if (diskovideosink->par) {
++        gint nom, den;
++
++        nom = gst_value_get_fraction_numerator (diskovideosink->par);
++        den = gst_value_get_fraction_denominator (diskovideosink->par);
++        gst_structure_set (structure, "pixel-aspect-ratio",
++            GST_TYPE_FRACTION, nom, den, NULL);
++printf("--- gst_diskovideosink_buffer_alloc()  >>>>>>>>pixelaspect>>>>>>>>>>>>nom=%d,den=%d<<<<\n", nom,den);
++      }
++
++      if (gst_pad_accept_caps (peer, desired_caps)) {
++        gint bpp;
++printf("--- gst_diskovideosink_buffer_alloc()  >>>> peer pad accept out caps\n");
++
++        bpp = size / height / width;
++        rev_nego = TRUE;
++        width = result.w;
++        height = result.h;
++        size = bpp * width * height;
++        GST_DEBUG_OBJECT (diskovideosink, "peed pad accepts our desired caps %"
++            GST_PTR_FORMAT " buffer size is now %d bytes", desired_caps, size);
++      }
++      else {
++printf("--- gst_diskovideosink_buffer_alloc()  >>>> peer pad does NOT accept out caps\n");
++
++        GST_DEBUG_OBJECT (diskovideosink, "peer pad does not accept our "
++            "desired caps %" GST_PTR_FORMAT, desired_caps);
++        rev_nego = FALSE;
++        width = diskovideosink->video_width;
++        height = diskovideosink->video_height;
++      }
++      gst_object_unref (peer);
++    }
++  }
++
++alloc:
++
++printf("--- gst_diskovideosink_buffer_alloc()  >>>>>alloc surface with>>>>>>%dx%d<<<<\n", width, height);
++
++
++  /* Inspect our buffer pool */
++  g_mutex_lock (diskovideosink->pool_lock);
++  while (diskovideosink->buffer_pool) {
++    surface = (GstDiskoSurface *) diskovideosink->buffer_pool->data;
++
++    if (surface) {
++      /* Removing from the pool */
++      diskovideosink->buffer_pool =
++          g_slist_delete_link (diskovideosink->buffer_pool,
++          diskovideosink->buffer_pool);
++
++      /* If the surface is invalid for our need, destroy */
++      if ((surface->width != width) ||
++          (surface->height != height) ||
++          (surface->pixel_format != diskovideosink->pixel_format)) {
++        gst_diskovideosink_surface_destroy (diskovideosink, surface);
++        surface = NULL;
++      } else {
++        /* We found a suitable surface */
++        break;
++      }
++    }
++  }
++  g_mutex_unlock (diskovideosink->pool_lock);
++
++  /* We haven't found anything, creating a new one */
++  if (!surface) {
++    if (rev_nego) {
++      surface = gst_diskovideosink_surface_create (diskovideosink, desired_caps, size);
++    }
++    else {
++      surface = gst_diskovideosink_surface_create (diskovideosink, caps, size);
++    }
++  }
++  /* Now we should have a surface, set appropriate caps on it */
++  if (surface) {
++    if (rev_nego) {
++      gst_buffer_set_caps (GST_BUFFER (surface), desired_caps);
++    }
++    else {
++      gst_buffer_set_caps (GST_BUFFER (surface), caps);
++    }
++  }
++
++  *buf = GST_BUFFER (surface);
++
++  gst_caps_unref (desired_caps);
++
++  return ret;
++}
++
++
++
++#ifdef sfsfgsgs /* DFB Zeugs */
++/* For every buffer request we create a custom buffer containing and
++ * IDirectFBSurface or allocate a previously created one that's not used
++ * anymore. */
++static GstFlowReturn
++gst_diskovideosink_buffer_alloc (GstBaseSink * bsink, guint64 offset, guint size,
++    GstCaps * caps, GstBuffer ** buf)
++{
++  GstDiskoVideoSink *diskovideosink;
++  GstDiskoSurface *surface = NULL;
++  GstFlowReturn ret = GST_FLOW_OK;
++
++  gboolean rev_nego = FALSE;
++  gint width, height;
++
++  GstCaps *desired_caps = NULL;
++  GstStructure *structure = NULL;
++
++printf("--- gst_diskovideosink_buffer_alloc()\n");
++
++  diskovideosink = GST_DISKOVIDEOSINK (bsink);
++
++  GST_DEBUG_OBJECT (diskovideosink, "a buffer of %d bytes was requested "
++      "with caps %" GST_PTR_FORMAT " and offset %llu", size, caps, offset);
++
++printf("--- gst_diskovideosink_buffer_alloc()#1\n");
++
++  if (G_UNLIKELY (!diskovideosink->setup)) {
++    GST_DEBUG_OBJECT (diskovideosink, "we are not setup yet, can't allocate!");
++    *buf = NULL;
++    return ret;
++  }
++
++printf("--- gst_diskovideosink_buffer_alloc()#2\n");
++
++  desired_caps = gst_caps_copy (caps);
++
++  structure = gst_caps_get_structure (desired_caps, 0);
++
++  if (gst_structure_get_int (structure, "width", &width) &&
++      gst_structure_get_int (structure, "height", &height)) {
++
++printf(">>>>>>>>>>>>>>>>>>>>%dx%d<<<<\n", width, height);
++
++    GstVideoRectangle dst, src, result;
++    GstDiskoVMode vmode;
++
++    /* If we can do hardware scaling we don't do reverse negotiation */
++    if (diskovideosink->hw_scaling) {
++      goto alloc;
++    }
++
++    /* Our desired geometry respects aspect ratio */
++    src.w = width;
++    src.h = height;
++    /* We should adapt the destination to the most suitable video mode */
++    if (gst_diskovideosink_get_best_vmode (diskovideosink, width, height, &vmode)) {
++      dst.w = vmode.width;
++      dst.h = vmode.height;
++    } else {
++      if (diskovideosink->ext_surface) {
++        diskovideosink->ext_surface->getSize(&dst.w, &dst.h);
++      } else {
++        diskovideosink->primary->GetSize (diskovideosink->primary, &dst.w, &dst.h);
++      }
++      diskovideosink->out_width = dst.w;
++      diskovideosink->out_height = dst.h;
++    }
++
++    gst_video_sink_center_rect (src, dst, &result, TRUE);
++
++    if (width != result.w || height != result.h) {
++      GstPad *peer = gst_pad_get_peer (GST_VIDEO_SINK_PAD (diskovideosink));
++
++      if (!GST_IS_PAD (peer)) {
++        /* Is this situation possible ? */
++        goto alloc;
++      }
++
++      GST_DEBUG_OBJECT (diskovideosink, "we would love to receive a %dx%d video",
++          result.w, result.h);
++      gst_structure_set (structure, "width", G_TYPE_INT, result.w, NULL);
++      gst_structure_set (structure, "height", G_TYPE_INT, result.h, NULL);
++
++      /* PAR property overrides the X calculated one */
++      if (diskovideosink->par) {
++        gint nom, den;
++
++        nom = gst_value_get_fraction_numerator (diskovideosink->par);
++        den = gst_value_get_fraction_denominator (diskovideosink->par);
++        gst_structure_set (structure, "pixel-aspect-ratio",
++            GST_TYPE_FRACTION, nom, den, NULL);
++      }
++
++      if (gst_pad_accept_caps (peer, desired_caps)) {
++        gint bpp;
++
++        bpp = size / height / width;
++        rev_nego = TRUE;
++        width = result.w;
++        height = result.h;
++        size = bpp * width * height;
++        GST_DEBUG_OBJECT (diskovideosink, "peed pad accepts our desired caps %"
++            GST_PTR_FORMAT " buffer size is now %d bytes", desired_caps, size);
++      } else {
++        GST_DEBUG_OBJECT (diskovideosink, "peer pad does not accept our "
++            "desired caps %" GST_PTR_FORMAT, desired_caps);
++        rev_nego = FALSE;
++        width = diskovideosink->video_width;
++        height = diskovideosink->video_height;
++      }
++      gst_object_unref (peer);
++    }
++  }
++
++alloc:
++  /* Inspect our buffer pool */
++  g_mutex_lock (diskovideosink->pool_lock);
++  while (diskovideosink->buffer_pool) {
++    surface = (GstDiskoSurface *) diskovideosink->buffer_pool->data;
++
++    if (surface) {
++      /* Removing from the pool */
++      diskovideosink->buffer_pool =
++          g_slist_delete_link (diskovideosink->buffer_pool,
++          diskovideosink->buffer_pool);
++
++      /* If the surface is invalid for our need, destroy */
++      if ((surface->width != width) ||
++          (surface->height != height) ||
++          (surface->pixel_format != diskovideosink->pixel_format)) {
++        gst_diskovideosink_surface_destroy (diskovideosink, surface);
++        surface = NULL;
++      } else {
++        /* We found a suitable surface */
++        break;
++      }
++    }
++  }
++  g_mutex_unlock (diskovideosink->pool_lock);
++
++  /* We haven't found anything, creating a new one */
++  if (!surface) {
++    if (rev_nego) {
++      surface = gst_diskovideosink_surface_create (diskovideosink, desired_caps,
++          size);
++    } else {
++      surface = gst_diskovideosink_surface_create (diskovideosink, caps, size);
++    }
++  }
++  /* Now we should have a surface, set appropriate caps on it */
++  if (surface) {
++    if (rev_nego) {
++      gst_buffer_set_caps (GST_BUFFER (surface), desired_caps);
++    } else {
++      gst_buffer_set_caps (GST_BUFFER (surface), caps);
++    }
++  }
++
++  *buf = GST_BUFFER (surface);
++
++  gst_caps_unref (desired_caps);
++
++  return ret;
++}
++#endif
++
++/* Our subclass of GstBuffer */
++
++static void gst_diskosurface_finalize (GstDiskoSurface * surface) {
++	GstDiskoVideoSink *diskovideosink = NULL;
++
++  printf("--- gst_diskosurface_finalize()\n");
++
++	g_return_if_fail (surface != NULL);
++
++	diskovideosink = surface->diskovideosink;
++	if (!diskovideosink) {
++		GST_WARNING_OBJECT (surface, "no sink found");
++		goto beach;
++	}
++
++	/* If our geometry changed we can't reuse that image. */
++	if ((surface->width != diskovideosink->video_width) ||
++		(surface->height != diskovideosink->video_height) ||
++	    (surface->pixel_format != diskovideosink->pixel_format)) {
++
++		GST_DEBUG_OBJECT (diskovideosink, "destroy surface %p as its size changed "
++		"%dx%d vs current %dx%d", surface, surface->width, surface->height,
++		diskovideosink->video_width, diskovideosink->video_height);
++		gst_diskovideosink_surface_destroy (diskovideosink, surface);
++	} else {
++		/* In that case we can reuse the image and add it to our image pool. */
++		GST_DEBUG_OBJECT (diskovideosink, "recycling surface %p in pool", surface);
++		/* need to increment the refcount again to recycle */
++		gst_buffer_ref (GST_BUFFER (surface));
++		g_mutex_lock (diskovideosink->pool_lock);
++		diskovideosink->buffer_pool = g_slist_prepend (diskovideosink->buffer_pool,
++		surface);
++		g_mutex_unlock (diskovideosink->pool_lock);
++	}
++
++beach:
++	return;
++}
++
++static void gst_diskosurface_init (GstDiskoSurface * surface, gpointer g_class) {
++printf("--- gst_diskosurface_init()\n");
++
++	surface->surface = NULL;
++	surface->width = 0;
++	surface->height = 0;
++	surface->pixel_format = MMSFB_PF_NONE;
++	surface->diskovideosink = NULL;
++}
++
++static void gst_diskosurface_class_init (gpointer g_class, gpointer class_data) {
++	GstMiniObjectClass *mini_object_class = GST_MINI_OBJECT_CLASS (g_class);
++
++printf("--- gst_diskosurface_class_init()\n");
++
++	surface_parent_class = (GstBufferClass*)g_type_class_peek_parent (g_class);
++
++	mini_object_class->finalize = (GstMiniObjectFinalizeFunction)gst_diskosurface_finalize;
++}
++
++GType gst_diskosurface_get_type(void) {
++	static GType _gst_diskosurface_type;
++
++	if (G_UNLIKELY (_gst_diskosurface_type == 0)) {
++		static const GTypeInfo diskosurface_info = {
++			sizeof (GstBufferClass),
++			NULL,
++			NULL,
++			gst_diskosurface_class_init,
++			NULL,
++			NULL,
++			sizeof (GstDiskoSurface),
++			0,
++			(GInstanceInitFunc) gst_diskosurface_init,
++			NULL
++		};
++		_gst_diskosurface_type = g_type_register_static(GST_TYPE_BUFFER,
++														"GstDiskoSurface",
++														&diskosurface_info,
++														(GTypeFlags)0);
++	}
++	return _gst_diskosurface_type;
++}
++
++/* Interfaces stuff */
++
++static gboolean
++gst_diskovideosink_interface_supported (GstImplementsInterface * iface,
++    GType type)
++{
++printf("--- gst_diskovideosink_interface_supported()\n");
++  g_assert (type == GST_TYPE_NAVIGATION || type == GST_TYPE_COLOR_BALANCE);
++  return TRUE;
++}
++
++static void
++gst_diskovideosink_interface_init (GstImplementsInterfaceClass * klass)
++{
++printf("--- gst_diskovideosink_interface_init()\n");
++  klass->supported = gst_diskovideosink_interface_supported;
++}
++
++static void
++gst_diskovideosink_navigation_send_event (GstNavigation * navigation,
++    GstStructure * structure)
++{
++  GstDiskoVideoSink *diskovideosink = GST_DISKOVIDEOSINK (navigation);
++  GstEvent *event;
++  GstVideoRectangle src, dst, result;
++  double x, y;
++  GstPad *pad = NULL;
++
++  src.w = GST_VIDEO_SINK_WIDTH (diskovideosink);
++  src.h = GST_VIDEO_SINK_HEIGHT (diskovideosink);
++  dst.w = diskovideosink->out_width;
++  dst.h = diskovideosink->out_height;
++  gst_video_sink_center_rect (src, dst, &result, FALSE);
++
++  event = gst_event_new_navigation (structure);
++
++  /* Our coordinates can be wrong here if we centered the video */
++
++  /* Converting pointer coordinates to the non scaled geometry */
++  if (gst_structure_get_double (structure, "pointer_x", &x)) {
++    double old_x = x;
++
++    if (x >= result.x && x <= (result.x + result.w)) {
++      x -= result.x;
++      x *= diskovideosink->video_width;
++      x /= result.w;
++    } else {
++      x = 0;
++    }
++    GST_DEBUG_OBJECT (diskovideosink, "translated navigation event x "
++        "coordinate from %f to %f", old_x, x);
++    gst_structure_set (structure, "pointer_x", G_TYPE_DOUBLE, x, NULL);
++  }
++  if (gst_structure_get_double (structure, "pointer_y", &y)) {
++    double old_y = y;
++
++    if (y >= result.y && y <= (result.y + result.h)) {
++      y -= result.y;
++      y *= diskovideosink->video_height;
++      y /= result.h;
++    } else {
++      y = 0;
++    }
++    GST_DEBUG_OBJECT (diskovideosink, "translated navigation event y "
++        "coordinate from %fd to %fd", old_y, y);
++    gst_structure_set (structure, "pointer_y", G_TYPE_DOUBLE, y, NULL);
++  }
++
++  pad = gst_pad_get_peer (GST_VIDEO_SINK_PAD (diskovideosink));
++
++  if (GST_IS_PAD (pad) && GST_IS_EVENT (event)) {
++    gst_pad_send_event (pad, event);
++
++    gst_object_unref (pad);
++  }
++}
++
++static void
++gst_diskovideosink_navigation_init (GstNavigationInterface * iface)
++{
++printf("--- gst_diskovideosink_navigation_init()\n");
++
++  iface->send_event = gst_diskovideosink_navigation_send_event;
++
++}
++
++static void
++gst_diskovideosink_update_colorbalance (GstDiskoVideoSink * diskovideosink)
++{
++  g_return_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink));
++
++#ifdef fsfsfs
++  if (diskovideosink->layer) {
++    DFBColorAdjustment cb_adjust;
++
++    cb_adjust.flags = DCAF_NONE;
++
++    if (diskovideosink->brightness >= 0) {
++      cb_adjust.flags = (DFBColorAdjustmentFlags)(cb_adjust.flags|DCAF_BRIGHTNESS);
++    }
++    if (diskovideosink->contrast >= 0) {
++      cb_adjust.flags = (DFBColorAdjustmentFlags)(cb_adjust.flags|DCAF_CONTRAST);
++    }
++    if (diskovideosink->hue >= 0) {
++      cb_adjust.flags = (DFBColorAdjustmentFlags)(cb_adjust.flags|DCAF_HUE);
++    }
++    if (diskovideosink->saturation >= 0) {
++      cb_adjust.flags = (DFBColorAdjustmentFlags)(cb_adjust.flags|DCAF_SATURATION);
++    }
++
++    cb_adjust.brightness = diskovideosink->brightness;
++    cb_adjust.contrast = diskovideosink->contrast;
++    cb_adjust.hue = diskovideosink->hue;
++    cb_adjust.saturation = diskovideosink->saturation;
++
++    GST_DEBUG_OBJECT (diskovideosink, "updating colorbalance: flags %d "
++        "brightness %d contrast %d hue %d saturation %d", cb_adjust.flags,
++        cb_adjust.brightness, cb_adjust.contrast, cb_adjust.hue,
++        cb_adjust.saturation);
++    diskovideosink->layer->SetColorAdjustment (diskovideosink->layer, &cb_adjust);
++  }
++#endif
++}
++
++#ifdef sfsfs
++static const GList *
++gst_diskovideosink_colorbalance_list_channels (GstColorBalance * balance)
++{
++  GstDiskoVideoSink *diskovideosink = GST_DISKOVIDEOSINK (balance);
++
++  g_return_val_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink), NULL);
++
++  return diskovideosink->cb_channels;
++}
++#endif
++
++#ifdef sfsfs
++static void
++gst_diskovideosink_colorbalance_set_value (GstColorBalance * balance,
++    GstColorBalanceChannel * channel, gint value)
++{
++  GstDiskoVideoSink *diskovideosink = GST_DISKOVIDEOSINK (balance);
++
++  g_return_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink));
++  g_return_if_fail (channel->label != NULL);
++
++  diskovideosink->cb_changed = TRUE;
++
++  if (g_ascii_strcasecmp (channel->label, "HUE") == 0) {
++    diskovideosink->hue = value;
++  } else if (g_ascii_strcasecmp (channel->label, "SATURATION") == 0) {
++    diskovideosink->saturation = value;
++  } else if (g_ascii_strcasecmp (channel->label, "CONTRAST") == 0) {
++    diskovideosink->contrast = value;
++  } else if (g_ascii_strcasecmp (channel->label, "BRIGHTNESS") == 0) {
++    diskovideosink->brightness = value;
++  } else {
++    GST_WARNING_OBJECT (diskovideosink, "got an unknown channel %s",
++        channel->label);
++    return;
++  }
++
++  gst_diskovideosink_update_colorbalance (diskovideosink);
++}
++
++static gint
++gst_diskovideosink_colorbalance_get_value (GstColorBalance * balance,
++    GstColorBalanceChannel * channel)
++{
++  GstDiskoVideoSink *diskovideosink = GST_DISKOVIDEOSINK (balance);
++  gint value = 0;
++
++  g_return_val_if_fail (GST_IS_DISKOVIDEOSINK (diskovideosink), 0);
++  g_return_val_if_fail (channel->label != NULL, 0);
++
++  if (g_ascii_strcasecmp (channel->label, "HUE") == 0) {
++    value = diskovideosink->hue;
++  } else if (g_ascii_strcasecmp (channel->label, "SATURATION") == 0) {
++    value = diskovideosink->saturation;
++  } else if (g_ascii_strcasecmp (channel->label, "CONTRAST") == 0) {
++    value = diskovideosink->contrast;
++  } else if (g_ascii_strcasecmp (channel->label, "BRIGHTNESS") == 0) {
++    value = diskovideosink->brightness;
++  } else {
++    GST_WARNING_OBJECT (diskovideosink, "got an unknown channel %s",
++        channel->label);
++  }
++
++  return value;
++}
++
++static void gst_diskovideosink_colorbalance_init (GstColorBalanceClass * iface)
++{
++  GST_COLOR_BALANCE_TYPE (iface) = GST_COLOR_BALANCE_HARDWARE;
++  iface->list_channels = gst_diskovideosink_colorbalance_list_channels;
++  iface->set_value = gst_diskovideosink_colorbalance_set_value;
++  iface->get_value = gst_diskovideosink_colorbalance_get_value;
++}
++#endif
++
++/* Properties */
++
++static void
++gst_diskovideosink_set_property (GObject * object, guint prop_id,
++    const GValue * value, GParamSpec * pspec)
++{
++  GstDiskoVideoSink *diskovideosink;
++
++  g_return_if_fail (GST_IS_DISKOVIDEOSINK (object));
++  diskovideosink = GST_DISKOVIDEOSINK (object);
++
++printf("--- gst_diskovideosink_set_property()\n");
++
++
++	switch (prop_id) {
++	case ARG_SURFACE:
++    	diskovideosink->ext_surface = (MMSFBSurface*)g_value_get_pointer(value);
++    	break;
++	case ARG_WINDOW:
++    	diskovideosink->ext_window = (MMSWindow*)g_value_get_pointer(value);
++    	break;
++
++    case ARG_HUE:
++      diskovideosink->hue = g_value_get_int (value);
++      diskovideosink->cb_changed = TRUE;
++      gst_diskovideosink_update_colorbalance (diskovideosink);
++      break;
++    case ARG_CONTRAST:
++      diskovideosink->contrast = g_value_get_int (value);
++      diskovideosink->cb_changed = TRUE;
++      gst_diskovideosink_update_colorbalance (diskovideosink);
++      break;
++    case ARG_BRIGHTNESS:
++      diskovideosink->brightness = g_value_get_int (value);
++      diskovideosink->cb_changed = TRUE;
++      gst_diskovideosink_update_colorbalance (diskovideosink);
++      break;
++    case ARG_SATURATION:
++      diskovideosink->saturation = g_value_get_int (value);
++      diskovideosink->cb_changed = TRUE;
++      gst_diskovideosink_update_colorbalance (diskovideosink);
++      break;
++    case ARG_PIXEL_ASPECT_RATIO:
++      g_free (diskovideosink->par);
++      diskovideosink->par = g_new0 (GValue, 1);
++      g_value_init (diskovideosink->par, GST_TYPE_FRACTION);
++      if (!g_value_transform (value, diskovideosink->par)) {
++        GST_WARNING_OBJECT (diskovideosink, "Could not transform string to "
++            "aspect ratio");
++        gst_value_set_fraction (diskovideosink->par, 1, 1);
++      }
++      GST_DEBUG_OBJECT (diskovideosink, "set PAR to %d/%d",
++          gst_value_get_fraction_numerator (diskovideosink->par),
++          gst_value_get_fraction_denominator (diskovideosink->par));
++      break;
++    default:
++      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
++      break;
++  }
++}
++
++static void
++gst_diskovideosink_get_property (GObject * object, guint prop_id,
++    GValue * value, GParamSpec * pspec)
++{
++  GstDiskoVideoSink *diskovideosink;
++
++  g_return_if_fail (GST_IS_DISKOVIDEOSINK (object));
++  diskovideosink = GST_DISKOVIDEOSINK (object);
++
++  printf("--- gst_diskovideosink_get_property()\n");
++
++
++	switch (prop_id) {
++	case ARG_SURFACE:
++		g_value_set_pointer (value, diskovideosink->ext_surface);
++    	break;
++	case ARG_WINDOW:
++		g_value_set_pointer (value, diskovideosink->ext_window);
++    	break;
++
++
++	case ARG_HUE:
++      g_value_set_int (value, diskovideosink->hue);
++      break;
++    case ARG_CONTRAST:
++      g_value_set_int (value, diskovideosink->contrast);
++      break;
++    case ARG_BRIGHTNESS:
++      g_value_set_int (value, diskovideosink->brightness);
++      break;
++    case ARG_SATURATION:
++      g_value_set_int (value, diskovideosink->saturation);
++      break;
++    case ARG_PIXEL_ASPECT_RATIO:
++      if (diskovideosink->par)
++        g_value_transform (diskovideosink->par, value);
++      break;
++    default:
++      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
++      break;
++  }
++}
++
++/* =========================================== */
++/*                                             */
++/*              Init & Class init              */
++/*                                             */
++/* =========================================== */
++static void
++gst_diskovideosink_finalize (GObject * object)
++{
++  GstDiskoVideoSink *diskovideosink;
++
++printf("--- gst_diskovideosink_finalize()          --> beim beenden des plugins\n");
++
++  diskovideosink = GST_DISKOVIDEOSINK (object);
++
++  if (diskovideosink->par) {
++    g_free (diskovideosink->par);
++    diskovideosink->par = NULL;
++  }
++  if (diskovideosink->pool_lock) {
++    g_mutex_free (diskovideosink->pool_lock);
++    diskovideosink->pool_lock = NULL;
++  }
++  if (diskovideosink->setup) {
++    gst_diskovideosink_cleanup (diskovideosink);
++  }
++
++  G_OBJECT_CLASS (parent_class)->finalize (object);
++}
++
++static void gst_diskovideosink_init (GstDiskoVideoSink * diskovideosink) {
++
++	// init my vars
++	static_diskovideosink = diskovideosink;
++
++
++	diskovideosink->pool_lock = g_mutex_new ();
++	diskovideosink->buffer_pool = NULL;
++	diskovideosink->video_height = diskovideosink->out_width = 0;
++	diskovideosink->video_width = diskovideosink->out_height = 0;
++	diskovideosink->fps_d = 0;
++	diskovideosink->fps_n = 0;
++
++	diskovideosink->disko_initialized = false;
++
++	diskovideosink->window = NULL;
++	diskovideosink->surface = NULL;
++
++	diskovideosink->ext_surface = NULL;
++	diskovideosink->ext_window = NULL;
++
++	diskovideosink->pixel_format = MMSFB_PF_NONE;
++
++	diskovideosink->setup = FALSE;
++	diskovideosink->running = FALSE;
++
++	diskovideosink->cb_channels = NULL;
++	diskovideosink->brightness = -1;
++	diskovideosink->contrast = -1;
++	diskovideosink->hue = -1;
++	diskovideosink->saturation = -1;
++
++	diskovideosink->par = NULL;
++}
++
++static void
++gst_diskovideosink_base_init (gpointer g_class)
++{
++  GstElementClass *element_class = GST_ELEMENT_CLASS (g_class);
++
++printf("--- gst_diskovideosink_base_init()\n");
++
++  gst_element_class_set_details (element_class, &gst_diskovideosink_details);
++
++  gst_element_class_add_pad_template (element_class,
++      gst_static_pad_template_get (&gst_diskovideosink_sink_template_factory));
++}
++
++static void
++gst_diskovideosink_class_init (GstDiskoVideoSinkClass * klass) {
++	GObjectClass *gobject_class;
++	GstElementClass *gstelement_class;
++	GstBaseSinkClass *gstbasesink_class;
++
++
++printf("--- gst_diskovideosink_class_init()\n");
++
++	gobject_class = (GObjectClass *) klass;
++	gstelement_class = (GstElementClass *) klass;
++	gstbasesink_class = (GstBaseSinkClass *) klass;
++
++	parent_class = (GstVideoSinkClass*)g_type_class_peek_parent (klass);
++
++	gobject_class->finalize = gst_diskovideosink_finalize;
++	gobject_class->set_property = gst_diskovideosink_set_property;
++	gobject_class->get_property = gst_diskovideosink_get_property;
++
++	g_object_class_install_property(gobject_class, ARG_SURFACE,
++			g_param_spec_pointer("surface", "Surface", "The target surface (MMSFBSurface) for video", G_PARAM_WRITABLE));
++
++	g_object_class_install_property(gobject_class, ARG_WINDOW,
++			g_param_spec_pointer("window", "Window", "The target window (MMSWindow) for video", G_PARAM_WRITABLE));
++
++	g_object_class_install_property (gobject_class, ARG_CONTRAST,
++	g_param_spec_int ("contrast", "Contrast", "The contrast of the video",
++	  0x0000, 0xFFFF, 0x8000, (GParamFlags)G_PARAM_READWRITE));
++	g_object_class_install_property (gobject_class, ARG_BRIGHTNESS,
++	g_param_spec_int ("brightness", "Brightness",
++	  "The brightness of the video", 0x0000, 0xFFFF, 0x8000,
++	  (GParamFlags)G_PARAM_READWRITE));
++	g_object_class_install_property (gobject_class, ARG_HUE,
++	g_param_spec_int ("hue", "Hue", "The hue of the video", 0x0000, 0xFFFF,
++	  0x8000, (GParamFlags)G_PARAM_READWRITE));
++	g_object_class_install_property (gobject_class, ARG_SATURATION,
++	g_param_spec_int ("saturation", "Saturation",
++	  "The saturation of the video", 0x0000, 0xFFFF, 0x8000,
++	  (GParamFlags)G_PARAM_READWRITE));
++	g_object_class_install_property (gobject_class, ARG_PIXEL_ASPECT_RATIO,
++	g_param_spec_string ("pixel-aspect-ratio", "Pixel Aspect Ratio",
++	  "The pixel aspect ratio of the device", "1/1", (GParamFlags)G_PARAM_READWRITE));
++
++	gstelement_class->change_state = gst_diskovideosink_change_state;
++
++	gstbasesink_class->get_caps = gst_diskovideosink_getcaps;
++	gstbasesink_class->set_caps = gst_diskovideosink_setcaps;
++	gstbasesink_class->buffer_alloc = gst_diskovideosink_buffer_alloc;
++	gstbasesink_class->get_times = gst_diskovideosink_get_times;
++	gstbasesink_class->preroll = gst_diskovideosink_show_frame;
++	gstbasesink_class->render = gst_diskovideosink_show_frame;
++}
++
++/* ============================================================= */
++/*                                                               */
++/*                       Public Methods                          */
++/*                                                               */
++/* ============================================================= */
++
++/* =========================================== */
++/*                                             */
++/*          Object typing & Creation           */
++/*                                             */
++/* =========================================== */
++
++GType gst_diskovideosink_get_type (void) {
++  static GType diskovideosink_type = 0;
++
++	if (!diskovideosink_type) {
++		static const GTypeInfo diskovideosink_info = {
++			sizeof (GstDiskoVideoSinkClass),
++			gst_diskovideosink_base_init,
++			NULL,
++			(GClassInitFunc) gst_diskovideosink_class_init,
++			NULL,
++			NULL,
++			sizeof (GstDiskoVideoSink),
++			0,
++			(GInstanceInitFunc) gst_diskovideosink_init,
++		};
++		static const GInterfaceInfo iface_info = {
++			(GInterfaceInitFunc) gst_diskovideosink_interface_init,
++			NULL,
++			NULL,
++		};
++		static const GInterfaceInfo navigation_info = {
++			(GInterfaceInitFunc) gst_diskovideosink_navigation_init,
++			NULL,
++			NULL,
++		};
++/*		static const GInterfaceInfo colorbalance_info = {
++			(GInterfaceInitFunc) gst_diskovideosink_colorbalance_init,
++			NULL,
++			NULL,
++		};*/
++
++		diskovideosink_type = g_type_register_static(GST_TYPE_VIDEO_SINK,
++													 "GstDiskoVideoSink", &diskovideosink_info, (GTypeFlags)0);
++
++		g_type_add_interface_static(diskovideosink_type,
++									GST_TYPE_IMPLEMENTS_INTERFACE, &iface_info);
++		g_type_add_interface_static(diskovideosink_type, GST_TYPE_NAVIGATION,
++									&navigation_info);
++/*		g_type_add_interface_static (diskovideosink_type, GST_TYPE_COLOR_BALANCE,
++		&colorbalance_info);*/
++	}
++
++	return diskovideosink_type;
++}
++
++static gboolean plugin_init (GstPlugin * plugin) {
++/*
++printf("GST_VERSION_MAJOR=%d\nGST_VERSION_MINOR=%d\nVERSION=%s\nGST_LICENSE=%s\nGST_PACKAGE_NAME=%s\nGST_PACKAGE_ORIGIN=%s\n",
++		GST_VERSION_MAJOR, GST_VERSION_MINOR, VERSION, GST_LICENSE, GST_PACKAGE_NAME, GST_PACKAGE_ORIGIN);
++exit(0);
++*/
++
++printf("--- plugin_init()\n");
++
++  if (!gst_element_register (plugin, "diskovideosink", GST_RANK_MARGINAL,
++          GST_TYPE_DISKOVIDEOSINK))
++    return FALSE;
++
++  GST_DEBUG_CATEGORY_INIT (diskovideosink_debug, "diskovideosink", 0,
++      "Disko video sink element");
++
++  return TRUE;
++}
++
++GST_PLUGIN_DEFINE(  GST_VERSION_MAJOR,
++					GST_VERSION_MINOR,
++					"diskovideosink",
++					"Disko video output plugin",
++					plugin_init, VERSION, GST_LICENSE, GST_PACKAGE_NAME, GST_PACKAGE_ORIGIN)
+diff -Nupr gst-plugins-bad-0.10.12-original/ext/disko/diskovideosink.h gst-plugins-bad-0.10.12-modified/ext/disko/diskovideosink.h
+--- gst-plugins-bad-0.10.12-original/ext/disko/diskovideosink.h	1970-01-01 01:00:00.000000000 +0100
++++ gst-plugins-bad-0.10.12-modified/ext/disko/diskovideosink.h	2009-05-22 17:00:25.000000000 +0200
+@@ -0,0 +1,147 @@
++/***************************************************************************
++ *   Disko video sink plugin for GStreamer                                 *
++ *                                                                         *
++ *   Copyright (C) 2009 Berlinux Solutions GmbH                            *
++ *                                                                         *
++ *   Authors:                                                              *
++ *      Stefan Schwarzer <SSchwarzer@berlinux-solutions.de>,               *
++ *      Matthias Hardt   <MHardt@berlinux-solutions.de>,                   *
++ *      Jens Schneider   <pupeider@gmx.de>                                 *
++ *      Guido Madaus     <GMadaus@berlinux-solutions.de>                   *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or modify  *
++ *   it under the terms of the GNU General Public License as published by  *
++ *   the Free Software Foundation; either version 2 of the License.        *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program; if not, write to the                         *
++ *   Free Software Foundation, Inc.,                                       *
++ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
++ ***************************************************************************/
++
++#ifndef __GST_DISKOVIDEOSINK_H__
++#define __GST_DISKOVIDEOSINK_H__
++
++#include <gst/video/gstvideosink.h>
++
++#include <mms.h>
++
++G_BEGIN_DECLS
++
++#define GST_TYPE_DISKOVIDEOSINK              (gst_diskovideosink_get_type())
++#define GST_DISKOVIDEOSINK(obj)              (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_TYPE_DISKOVIDEOSINK, GstDiskoVideoSink))
++#define GST_DISKOVIDEOSINK_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), GST_TYPE_DISKOVIDEOSINK, GstDiskoVideoSinkClass))
++#define GST_IS_DISKOVIDEOSINK(obj)           (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GST_TYPE_DISKOVIDEOSINK))
++#define GST_IS_DISKOVIDEOSINK_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), GST_TYPE_DISKOVIDEOSINK))
++
++typedef struct _GstDiskoVideoSink GstDiskoVideoSink;
++typedef struct _GstDiskoVideoSinkClass GstDiskoVideoSinkClass;
++
++#define GST_TYPE_DISKOSURFACE (gst_diskosurface_get_type())
++
++#define GST_IS_DISKOSURFACE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GST_TYPE_DISKOSURFACE))
++#define GST_DISKOSURFACE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_TYPE_DISKOSURFACE, GstDiskoSurface))
++
++typedef struct _GstDiskoSurface GstDiskoSurface;
++
++struct _GstDiskoSurface {
++  GstBuffer buffer; /* We extend GstBuffer */
++
++  MMSFBSurface *surface;
++
++  gint width;
++  gint height;
++
++  gboolean locked;
++
++  MMSFBSurfacePixelFormat pixel_format;
++
++  GstDiskoVideoSink *diskovideosink;
++};
++
++typedef struct _GstDiskoVMode GstDiskoVMode;
++
++struct _GstDiskoVMode {
++  gint width;
++  gint height;
++  gint bpp;
++};
++
++/**
++ * GstDiskoVideoSink:
++ *
++ * The opaque #GstDiskoVideoSink structure.
++ */
++struct _GstDiskoVideoSink {
++	GstVideoSink videosink;
++
++	/* < private > */
++	GMutex *pool_lock;
++	GSList *buffer_pool;
++
++	/* Framerate numerator and denominator */
++	gint fps_n;
++	gint fps_d;
++
++	// size of the incoming video stream
++	gint video_width, video_height;
++
++	// size of the destination
++	gint out_width, out_height;
++
++	// disko framework initialized by this sink?
++	bool	disko_initialized;
++
++
++	// external surface, so plugin can run in embedded mode
++	MMSFBSurface *ext_surface;
++
++	// external window, so plugin can run in embedded mode
++	// advantage against ext_surface: keyboard, mouse, touchscreen inputs can be handled within this videosink
++	MMSWindow *ext_window;
++
++	// window which is used as destination
++	// can be NULL if using the ext_surface
++	MMSWindow *window;
++
++	// surface which is used as destination
++	// can be equal to the ext_surface or can be the surface of the window
++	MMSFBSurface *surface;
++
++	// pixelformat of the surface
++	MMSFBSurfacePixelFormat pixel_format;
++
++	// save connection to onHandleInput callback (used if window is set)
++	sigc::connection onHandleInput;
++
++
++	gboolean setup;
++	gboolean running;
++
++	/* Color balance */
++	GList *cb_channels;
++	gint brightness;
++	gint contrast;
++	gint hue;
++	gint saturation;
++	gboolean cb_changed;
++
++	/* object-set pixel aspect ratio */
++	GValue *par;
++};
++
++struct _GstDiskoVideoSinkClass {
++  GstVideoSinkClass parent_class;
++};
++
++GType gst_diskovideosink_get_type (void);
++GType gst_diskosurface_get_type (void);
++
++G_END_DECLS
++
++#endif /* __GST_DISKOVIDEOSINK_H__ */
+diff -Nupr gst-plugins-bad-0.10.12-original/ext/disko/Makefile.am gst-plugins-bad-0.10.12-modified/ext/disko/Makefile.am
+--- gst-plugins-bad-0.10.12-original/ext/disko/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ gst-plugins-bad-0.10.12-modified/ext/disko/Makefile.am	2009-05-22 17:00:25.000000000 +0200
+@@ -0,0 +1,15 @@
++plugindir = $(libdir)/gstreamer-@GST_MAJORMINOR@
++
++plugin_LTLIBRARIES = libgstdiskovideosink.la
++
++libgstdiskovideosink_la_SOURCES =  diskovideosink.cpp
++libgstdiskovideosink_la_CXXFLAGS = $(GST_CXXFLAGS) $(GST_PLUGINS_BASE_CFLAGS) \
++			       $(DISKO_CFLAGS)
++libgstdiskovideosink_la_LIBADD = $(GST_PLUGINS_BASE_LIBS) \
++			       -lgstvideo-$(GST_MAJORMINOR) \
++			       -lgstinterfaces-$(GST_MAJORMINOR) \
++			       $(DISKO_LIBS)
++libgstdiskovideosink_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
++libgstdiskovideosink_la_LIBTOOLFLAGS = --tag=disable-static
++
++noinst_HEADERS = diskovideosink.h
+diff -Nupr gst-plugins-bad-0.10.12-original/ext/disko/Makefile.in gst-plugins-bad-0.10.12-modified/ext/disko/Makefile.in
+--- gst-plugins-bad-0.10.12-original/ext/disko/Makefile.in	1970-01-01 01:00:00.000000000 +0100
++++ gst-plugins-bad-0.10.12-modified/ext/disko/Makefile.in	2009-05-22 17:00:25.000000000 +0200
+@@ -0,0 +1,756 @@
++# Makefile.in generated by automake 1.10.1 from Makefile.am.
++# @configure_input@
++
++# Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
++# 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
++# This Makefile.in is free software; the Free Software Foundation
++# gives unlimited permission to copy and/or distribute it,
++# with or without modifications, as long as this notice is preserved.
++
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
++# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
++# PARTICULAR PURPOSE.
++
++@SET_MAKE@
++
++
++VPATH = @srcdir@
++pkgdatadir = $(datadir)/@PACKAGE@
++pkglibdir = $(libdir)/@PACKAGE@
++pkgincludedir = $(includedir)/@PACKAGE@
++am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
++install_sh_DATA = $(install_sh) -c -m 644
++install_sh_PROGRAM = $(install_sh) -c
++install_sh_SCRIPT = $(install_sh) -c
++INSTALL_HEADER = $(INSTALL_DATA)
++transform = $(program_transform_name)
++NORMAL_INSTALL = :
++PRE_INSTALL = :
++POST_INSTALL = :
++NORMAL_UNINSTALL = :
++PRE_UNINSTALL = :
++POST_UNINSTALL = :
++build_triplet = @build@
++host_triplet = @host@
++subdir = ext/disko
++DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
++	$(srcdir)/Makefile.in
++ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
++am__aclocal_m4_deps = $(top_srcdir)/common/m4/as-ac-expand.m4 \
++	$(top_srcdir)/common/m4/as-auto-alt.m4 \
++	$(top_srcdir)/common/m4/as-compiler-flag.m4 \
++	$(top_srcdir)/common/m4/as-objc.m4 \
++	$(top_srcdir)/common/m4/as-python.m4 \
++	$(top_srcdir)/common/m4/as-scrub-include.m4 \
++	$(top_srcdir)/common/m4/as-version.m4 \
++	$(top_srcdir)/common/m4/ax_create_stdint_h.m4 \
++	$(top_srcdir)/common/m4/gst-arch.m4 \
++	$(top_srcdir)/common/m4/gst-args.m4 \
++	$(top_srcdir)/common/m4/gst-check.m4 \
++	$(top_srcdir)/common/m4/gst-dowhile.m4 \
++	$(top_srcdir)/common/m4/gst-error.m4 \
++	$(top_srcdir)/common/m4/gst-feature.m4 \
++	$(top_srcdir)/common/m4/gst-gettext.m4 \
++	$(top_srcdir)/common/m4/gst-glib2.m4 \
++	$(top_srcdir)/common/m4/gst-plugin-docs.m4 \
++	$(top_srcdir)/common/m4/gst-plugindir.m4 \
++	$(top_srcdir)/common/m4/gst-x11.m4 \
++	$(top_srcdir)/common/m4/gst.m4 \
++	$(top_srcdir)/common/m4/gtk-doc.m4 \
++	$(top_srcdir)/common/m4/pkg.m4 \
++	$(top_srcdir)/common/m4/shave.m4 $(top_srcdir)/m4/gettext.m4 \
++	$(top_srcdir)/m4/gst-alsa.m4 $(top_srcdir)/m4/gst-fionread.m4 \
++	$(top_srcdir)/m4/gst-sdl.m4 $(top_srcdir)/m4/iconv.m4 \
++	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
++	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
++	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
++	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
++	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
++	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
++	$(top_srcdir)/configure.ac
++am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
++	$(ACLOCAL_M4)
++mkinstalldirs = $(install_sh) -d
++CONFIG_HEADER = $(top_builddir)/config.h
++CONFIG_CLEAN_FILES =
++am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
++am__vpath_adj = case $$p in \
++    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
++    *) f=$$p;; \
++  esac;
++am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
++am__installdirs = "$(DESTDIR)$(plugindir)"
++pluginLTLIBRARIES_INSTALL = $(INSTALL)
++LTLIBRARIES = $(plugin_LTLIBRARIES)
++am__DEPENDENCIES_1 =
++libgstdiskovideosink_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
++	$(am__DEPENDENCIES_1)
++am_libgstdiskovideosink_la_OBJECTS =  \
++	libgstdiskovideosink_la-diskovideosink.lo
++libgstdiskovideosink_la_OBJECTS =  \
++	$(am_libgstdiskovideosink_la_OBJECTS)
++libgstdiskovideosink_la_LINK = $(LIBTOOL) --tag=CXX \
++	$(libgstdiskovideosink_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
++	--mode=link $(CXXLD) $(libgstdiskovideosink_la_CXXFLAGS) \
++	$(CXXFLAGS) $(libgstdiskovideosink_la_LDFLAGS) $(LDFLAGS) -o \
++	$@
++DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
++depcomp = $(SHELL) $(top_srcdir)/depcomp
++am__depfiles_maybe = depfiles
++CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
++LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
++	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
++CXXLD = $(CXX)
++CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
++	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
++	$(LDFLAGS) -o $@
++SOURCES = $(libgstdiskovideosink_la_SOURCES)
++DIST_SOURCES = $(libgstdiskovideosink_la_SOURCES)
++HEADERS = $(noinst_HEADERS)
++ETAGS = etags
++CTAGS = ctags
++DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
++ACLOCAL = @ACLOCAL@
++ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
++ACMENC_CFLAGS = @ACMENC_CFLAGS@
++ACMMP3DEC_CFLAGS = @ACMMP3DEC_CFLAGS@
++ALSA_CFLAGS = @ALSA_CFLAGS@
++ALSA_LIBS = @ALSA_LIBS@
++AMRWB_LIBS = @AMRWB_LIBS@
++AMTAR = @AMTAR@
++AM_MAKEFLAGS = @AM_MAKEFLAGS@
++APEXSINK_CFLAGS = @APEXSINK_CFLAGS@
++APEXSINK_LIBS = @APEXSINK_LIBS@
++AR = @AR@
++AS = @AS@
++ASSRENDER_CFLAGS = @ASSRENDER_CFLAGS@
++ASSRENDER_LIBS = @ASSRENDER_LIBS@
++AUTOCONF = @AUTOCONF@
++AUTOHEADER = @AUTOHEADER@
++AUTOMAKE = @AUTOMAKE@
++AWK = @AWK@
++BZ2_LIBS = @BZ2_LIBS@
++CC = @CC@
++CCASFLAGS = @CCASFLAGS@
++CCDEPMODE = @CCDEPMODE@
++CDAUDIO_CFLAGS = @CDAUDIO_CFLAGS@
++CDAUDIO_CONFIG = @CDAUDIO_CONFIG@
++CDAUDIO_LIBS = @CDAUDIO_LIBS@
++CELT_CFLAGS = @CELT_CFLAGS@
++CELT_LIBS = @CELT_LIBS@
++CFLAGS = @CFLAGS@
++CPP = @CPP@
++CPPFLAGS = @CPPFLAGS@
++CXX = @CXX@
++CXXCPP = @CXXCPP@
++CXXDEPMODE = @CXXDEPMODE@
++CXXFLAGS = @CXXFLAGS@
++CYGPATH_W = @CYGPATH_W@
++DCCP_LIBS = @DCCP_LIBS@
++DEFS = @DEFS@
++DEPDIR = @DEPDIR@
++DEPRECATED_CFLAGS = @DEPRECATED_CFLAGS@
++DIRAC_CFLAGS = @DIRAC_CFLAGS@
++DIRAC_LIBS = @DIRAC_LIBS@
++DIRECTDRAW_CFLAGS = @DIRECTDRAW_CFLAGS@
++DIRECTDRAW_LDFLAGS = @DIRECTDRAW_LDFLAGS@
++DIRECTDRAW_LIBS = @DIRECTDRAW_LIBS@
++DIRECTFB_CFLAGS = @DIRECTFB_CFLAGS@
++DIRECTFB_LIBS = @DIRECTFB_LIBS@
++DISKO_CFLAGS = @DISKO_CFLAGS@
++DISKO_LIBS = @DISKO_LIBS@
++DIVXDEC_LIBS = @DIVXDEC_LIBS@
++DIVXENC_LIBS = @DIVXENC_LIBS@
++DLLTOOL = @DLLTOOL@
++DSYMUTIL = @DSYMUTIL@
++DTS_LIBS = @DTS_LIBS@
++DUMPBIN = @DUMPBIN@
++DVDNAV_CFLAGS = @DVDNAV_CFLAGS@
++DVDNAV_CONFIG = @DVDNAV_CONFIG@
++DVDNAV_LIBS = @DVDNAV_LIBS@
++ECHO_C = @ECHO_C@
++ECHO_N = @ECHO_N@
++ECHO_T = @ECHO_T@
++EGREP = @EGREP@
++ERROR_CFLAGS = @ERROR_CFLAGS@
++ERROR_CXXFLAGS = @ERROR_CXXFLAGS@
++EXEEXT = @EXEEXT@
++EXIF_CFLAGS = @EXIF_CFLAGS@
++EXIF_LIBS = @EXIF_LIBS@
++F77 = @F77@
++FAAC_LIBS = @FAAC_LIBS@
++FAAD_IS_NEAAC = @FAAD_IS_NEAAC@
++FAAD_LIBS = @FAAD_LIBS@
++FC = @FC@
++FFLAGS = @FFLAGS@
++FGREP = @FGREP@
++GCOV = @GCOV@
++GCOV_CFLAGS = @GCOV_CFLAGS@
++GCOV_LIBS = @GCOV_LIBS@
++GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
++GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
++GIO_CFLAGS = @GIO_CFLAGS@
++GIO_LIBS = @GIO_LIBS@
++GLADE_CFLAGS = @GLADE_CFLAGS@
++GLADE_LIBS = @GLADE_LIBS@
++GLIB_CFLAGS = @GLIB_CFLAGS@
++GLIB_LIBS = @GLIB_LIBS@
++GLIB_PREFIX = @GLIB_PREFIX@
++GLIB_REQ = @GLIB_REQ@
++GMSGFMT = @GMSGFMT@
++GMSGFMT_015 = @GMSGFMT_015@
++GMYTH_CFLAGS = @GMYTH_CFLAGS@
++GMYTH_LIBS = @GMYTH_LIBS@
++GREP = @GREP@
++GSM_LIBS = @GSM_LIBS@
++GSTPB_PLUGINS_DIR = @GSTPB_PLUGINS_DIR@
++GSTPB_PREFIX = @GSTPB_PREFIX@
++GST_ALL_LDFLAGS = @GST_ALL_LDFLAGS@
++GST_BASE_CFLAGS = @GST_BASE_CFLAGS@
++GST_BASE_LIBS = @GST_BASE_LIBS@
++GST_CFLAGS = @GST_CFLAGS@
++GST_CHECK_CFLAGS = @GST_CHECK_CFLAGS@
++GST_CHECK_LIBS = @GST_CHECK_LIBS@
++GST_CONTROLLER_CFLAGS = @GST_CONTROLLER_CFLAGS@
++GST_CONTROLLER_LIBS = @GST_CONTROLLER_LIBS@
++GST_CXXFLAGS = @GST_CXXFLAGS@
++GST_GDP_CFLAGS = @GST_GDP_CFLAGS@
++GST_GDP_LIBS = @GST_GDP_LIBS@
++GST_LEVEL_DEFAULT = @GST_LEVEL_DEFAULT@
++GST_LIBS = @GST_LIBS@
++GST_LICENSE = @GST_LICENSE@
++GST_MAJORMINOR = @GST_MAJORMINOR@
++GST_OPTION_CFLAGS = @GST_OPTION_CFLAGS@
++GST_OPTION_CXXFLAGS = @GST_OPTION_CXXFLAGS@
++GST_PACKAGE_NAME = @GST_PACKAGE_NAME@
++GST_PACKAGE_ORIGIN = @GST_PACKAGE_ORIGIN@
++GST_PLUGINS_ALL = @GST_PLUGINS_ALL@
++GST_PLUGINS_BASE_CFLAGS = @GST_PLUGINS_BASE_CFLAGS@
++GST_PLUGINS_BASE_LIBS = @GST_PLUGINS_BASE_LIBS@
++GST_PLUGINS_DIR = @GST_PLUGINS_DIR@
++GST_PLUGINS_SELECTED = @GST_PLUGINS_SELECTED@
++GST_PLUGIN_LDFLAGS = @GST_PLUGIN_LDFLAGS@
++GST_PREFIX = @GST_PREFIX@
++GST_TOOLS_DIR = @GST_TOOLS_DIR@
++GTKDOC_CHECK = @GTKDOC_CHECK@
++GTK_CFLAGS = @GTK_CFLAGS@
++GTK_LIBS = @GTK_LIBS@
++HAVE_AMRWB = @HAVE_AMRWB@
++HAVE_BZ2 = @HAVE_BZ2@
++HAVE_CXX = @HAVE_CXX@
++HAVE_DIRECTDRAW = @HAVE_DIRECTDRAW@
++HAVE_DTS = @HAVE_DTS@
++HAVE_FAAC = @HAVE_FAAC@
++HAVE_FAAD = @HAVE_FAAD@
++HAVE_GLADE = @HAVE_GLADE@
++HAVE_GSM = @HAVE_GSM@
++HAVE_JP2K = @HAVE_JP2K@
++HAVE_NAS = @HAVE_NAS@
++HAVE_X = @HAVE_X@
++HAVE_X11 = @HAVE_X11@
++HAVE_X264 = @HAVE_X264@
++HTML_DIR = @HTML_DIR@
++INSTALL = @INSTALL@
++INSTALL_DATA = @INSTALL_DATA@
++INSTALL_PROGRAM = @INSTALL_PROGRAM@
++INSTALL_SCRIPT = @INSTALL_SCRIPT@
++INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
++INTLLIBS = @INTLLIBS@
++INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
++IPTC_CFLAGS = @IPTC_CFLAGS@
++IPTC_LIBS = @IPTC_LIBS@
++IVORBIS_CFLAGS = @IVORBIS_CFLAGS@
++IVORBIS_LIBS = @IVORBIS_LIBS@
++JACK_CFLAGS = @JACK_CFLAGS@
++JACK_LIBS = @JACK_LIBS@
++JP2K_LIBS = @JP2K_LIBS@
++LD = @LD@
++LDFLAGS = @LDFLAGS@
++LIBDC1394_CFLAGS = @LIBDC1394_CFLAGS@
++LIBDC1394_LIBS = @LIBDC1394_LIBS@
++LIBDIR = @LIBDIR@
++LIBICONV = @LIBICONV@
++LIBINTL = @LIBINTL@
++LIBM = @LIBM@
++LIBMMS_CFLAGS = @LIBMMS_CFLAGS@
++LIBMMS_LIBS = @LIBMMS_LIBS@
++LIBOBJS = @LIBOBJS@
++LIBOIL_CFLAGS = @LIBOIL_CFLAGS@
++LIBOIL_LIBS = @LIBOIL_LIBS@
++LIBS = @LIBS@
++LIBTOOL = @LIBTOOL@
++LIPO = @LIPO@
++LN_S = @LN_S@
++LOCALEDIR = @LOCALEDIR@
++LRDF_CFLAGS = @LRDF_CFLAGS@
++LRDF_LIBS = @LRDF_LIBS@
++LTLIBICONV = @LTLIBICONV@
++LTLIBINTL = @LTLIBINTL@
++LTLIBOBJS = @LTLIBOBJS@
++MAINT = @MAINT@
++MAKEFLAGS = @MAKEFLAGS@
++MAKEINFO = @MAKEINFO@
++METADATA_CFLAGS = @METADATA_CFLAGS@
++METADATA_LIBS = @METADATA_LIBS@
++MIMIC_CFLAGS = @MIMIC_CFLAGS@
++MIMIC_LIBS = @MIMIC_LIBS@
++MJPEG_CFLAGS = @MJPEG_CFLAGS@
++MJPEG_LIBS = @MJPEG_LIBS@
++MKDIR_P = @MKDIR_P@
++MODPLUG_CFLAGS = @MODPLUG_CFLAGS@
++MODPLUG_LIBS = @MODPLUG_LIBS@
++MPEG2ENC_CFLAGS = @MPEG2ENC_CFLAGS@
++MPEG2ENC_LIBS = @MPEG2ENC_LIBS@
++MPLEX_CFLAGS = @MPLEX_CFLAGS@
++MPLEX_LIBS = @MPLEX_LIBS@
++MSGFMT = @MSGFMT@
++MSGFMT_015 = @MSGFMT_015@
++MSGMERGE = @MSGMERGE@
++MUSEPACK_LIBS = @MUSEPACK_LIBS@
++MUSICBRAINZ_CFLAGS = @MUSICBRAINZ_CFLAGS@
++MUSICBRAINZ_LIBS = @MUSICBRAINZ_LIBS@
++NAS_CFLAGS = @NAS_CFLAGS@
++NAS_LIBS = @NAS_LIBS@
++NEON_CFLAGS = @NEON_CFLAGS@
++NEON_LIBS = @NEON_LIBS@
++NM = @NM@
++NMEDIT = @NMEDIT@
++OBJC = @OBJC@
++OBJCDEPMODE = @OBJCDEPMODE@
++OBJC_LDFLAGS = @OBJC_LDFLAGS@
++OBJDUMP = @OBJDUMP@
++OBJEXT = @OBJEXT@
++OFA_CFLAGS = @OFA_CFLAGS@
++OFA_LIBS = @OFA_LIBS@
++OTOOL = @OTOOL@
++OTOOL64 = @OTOOL64@
++PACKAGE = @PACKAGE@
++PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
++PACKAGE_NAME = @PACKAGE_NAME@
++PACKAGE_STRING = @PACKAGE_STRING@
++PACKAGE_TARNAME = @PACKAGE_TARNAME@
++PACKAGE_VERSION = @PACKAGE_VERSION@
++PACKAGE_VERSION_MAJOR = @PACKAGE_VERSION_MAJOR@
++PACKAGE_VERSION_MICRO = @PACKAGE_VERSION_MICRO@
++PACKAGE_VERSION_MINOR = @PACKAGE_VERSION_MINOR@
++PACKAGE_VERSION_NANO = @PACKAGE_VERSION_NANO@
++PACKAGE_VERSION_RELEASE = @PACKAGE_VERSION_RELEASE@
++PATH_SEPARATOR = @PATH_SEPARATOR@
++PKG_CONFIG = @PKG_CONFIG@
++PLUGINDIR = @PLUGINDIR@
++POSUB = @POSUB@
++PROFILE_CFLAGS = @PROFILE_CFLAGS@
++PYTHON = @PYTHON@
++PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
++PYTHON_PLATFORM = @PYTHON_PLATFORM@
++PYTHON_PREFIX = @PYTHON_PREFIX@
++PYTHON_VERSION = @PYTHON_VERSION@
++Q = @Q@
++RANLIB = @RANLIB@
++SDL_CFLAGS = @SDL_CFLAGS@
++SDL_CONFIG = @SDL_CONFIG@
++SDL_LIBS = @SDL_LIBS@
++SED = @SED@
++SET_MAKE = @SET_MAKE@
++SHELL = @SHELL@
++SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
++SNDFILE_LIBS = @SNDFILE_LIBS@
++SOUNDTOUCH_CFLAGS = @SOUNDTOUCH_CFLAGS@
++SOUNDTOUCH_LIBS = @SOUNDTOUCH_LIBS@
++SPC_LIBS = @SPC_LIBS@
++STRIP = @STRIP@
++SWFDEC_CFLAGS = @SWFDEC_CFLAGS@
++SWFDEC_LIBS = @SWFDEC_LIBS@
++THEORADEC_CFLAGS = @THEORADEC_CFLAGS@
++THEORADEC_LIBS = @THEORADEC_LIBS@
++TIMIDITY_CFLAGS = @TIMIDITY_CFLAGS@
++TIMIDITY_LIBS = @TIMIDITY_LIBS@
++USE_NLS = @USE_NLS@
++V = @V@
++VALGRIND_CFLAGS = @VALGRIND_CFLAGS@
++VALGRIND_LIBS = @VALGRIND_LIBS@
++VALGRIND_PATH = @VALGRIND_PATH@
++VERSION = @VERSION@
++WILDMIDI_CFLAGS = @WILDMIDI_CFLAGS@
++WILDMIDI_LIBS = @WILDMIDI_LIBS@
++WIN32_LIBS = @WIN32_LIBS@
++X11_CFLAGS = @X11_CFLAGS@
++X11_LIBS = @X11_LIBS@
++X264_CFLAGS = @X264_CFLAGS@
++X264_LIBS = @X264_LIBS@
++XDG_LIBS = @XDG_LIBS@
++XGETTEXT = @XGETTEXT@
++XGETTEXT_015 = @XGETTEXT_015@
++XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
++XMKMF = @XMKMF@
++XMP_1_99_5_CFLAGS = @XMP_1_99_5_CFLAGS@
++XMP_1_99_5_LIBS = @XMP_1_99_5_LIBS@
++XMP_CFLAGS = @XMP_CFLAGS@
++XMP_LIBS = @XMP_LIBS@
++XVID_LIBS = @XVID_LIBS@
++X_CFLAGS = @X_CFLAGS@
++X_EXTRA_LIBS = @X_EXTRA_LIBS@
++X_LIBS = @X_LIBS@
++X_PRE_LIBS = @X_PRE_LIBS@
++abs_builddir = @abs_builddir@
++abs_srcdir = @abs_srcdir@
++abs_top_builddir = @abs_top_builddir@
++abs_top_srcdir = @abs_top_srcdir@
++ac_ct_CC = @ac_ct_CC@
++ac_ct_CXX = @ac_ct_CXX@
++ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
++ac_ct_OBJC = @ac_ct_OBJC@
++am__include = @am__include@
++am__leading_dot = @am__leading_dot@
++am__quote = @am__quote@
++am__tar = @am__tar@
++am__untar = @am__untar@
++bindir = @bindir@
++build = @build@
++build_alias = @build_alias@
++build_cpu = @build_cpu@
++build_os = @build_os@
++build_vendor = @build_vendor@
++builddir = @builddir@
++datadir = @datadir@
++datarootdir = @datarootdir@
++docdir = @docdir@
++dvidir = @dvidir@
++exec_prefix = @exec_prefix@
++host = @host@
++host_alias = @host_alias@
++host_cpu = @host_cpu@
++host_os = @host_os@
++host_vendor = @host_vendor@
++htmldir = @htmldir@
++includedir = @includedir@
++infodir = @infodir@
++install_sh = @install_sh@
++libdir = @libdir@
++libexecdir = @libexecdir@
++localedir = @localedir@
++localstatedir = @localstatedir@
++lt_ECHO = @lt_ECHO@
++mandir = @mandir@
++mkdir_p = @mkdir_p@
++oldincludedir = @oldincludedir@
++pdfdir = @pdfdir@
++pkgpyexecdir = @pkgpyexecdir@
++pkgpythondir = @pkgpythondir@
++plugindir = $(libdir)/gstreamer-@GST_MAJORMINOR@
++prefix = @prefix@
++program_transform_name = @program_transform_name@
++psdir = @psdir@
++pyexecdir = @pyexecdir@
++pythondir = @pythondir@
++sbindir = @sbindir@
++sharedstatedir = @sharedstatedir@
++shavedir = @shavedir@
++srcdir = @srcdir@
++sysconfdir = @sysconfdir@
++target_alias = @target_alias@
++top_builddir = @top_builddir@
++top_srcdir = @top_srcdir@
++plugin_LTLIBRARIES = libgstdiskovideosink.la
++libgstdiskovideosink_la_SOURCES = diskovideosink.cpp
++libgstdiskovideosink_la_CXXFLAGS = $(GST_CXXFLAGS) $(GST_PLUGINS_BASE_CFLAGS) \
++			       $(DISKO_CFLAGS)
++
++libgstdiskovideosink_la_LIBADD = $(GST_PLUGINS_BASE_LIBS) \
++			       -lgstvideo-$(GST_MAJORMINOR) \
++			       -lgstinterfaces-$(GST_MAJORMINOR) \
++			       $(DISKO_LIBS)
++
++libgstdiskovideosink_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
++libgstdiskovideosink_la_LIBTOOLFLAGS = --tag=disable-static
++noinst_HEADERS = diskovideosink.h
++all: all-am
++
++.SUFFIXES:
++.SUFFIXES: .cpp .lo .o .obj
++$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
++	@for dep in $?; do \
++	  case '$(am__configure_deps)' in \
++	    *$$dep*) \
++	      cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh \
++		&& exit 0; \
++	      exit 1;; \
++	  esac; \
++	done; \
++	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  ext/disko/Makefile'; \
++	cd $(top_srcdir) && \
++	  $(AUTOMAKE) --gnu  ext/disko/Makefile
++.PRECIOUS: Makefile
++Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
++	@case '$?' in \
++	  *config.status*) \
++	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
++	  *) \
++	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
++	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
++	esac;
++
++$(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
++	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
++
++$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
++	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
++$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
++	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
++install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
++	@$(NORMAL_INSTALL)
++	test -z "$(plugindir)" || $(MKDIR_P) "$(DESTDIR)$(plugindir)"
++	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
++	  if test -f $$p; then \
++	    f=$(am__strip_dir) \
++	    echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(pluginLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(plugindir)/$$f'"; \
++	    $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(pluginLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(plugindir)/$$f"; \
++	  else :; fi; \
++	done
++
++uninstall-pluginLTLIBRARIES:
++	@$(NORMAL_UNINSTALL)
++	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
++	  p=$(am__strip_dir) \
++	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(plugindir)/$$p'"; \
++	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(plugindir)/$$p"; \
++	done
++
++clean-pluginLTLIBRARIES:
++	-test -z "$(plugin_LTLIBRARIES)" || rm -f $(plugin_LTLIBRARIES)
++	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
++	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
++	  test "$$dir" != "$$p" || dir=.; \
++	  echo "rm -f \"$${dir}/so_locations\""; \
++	  rm -f "$${dir}/so_locations"; \
++	done
++libgstdiskovideosink.la: $(libgstdiskovideosink_la_OBJECTS) $(libgstdiskovideosink_la_DEPENDENCIES) 
++	$(libgstdiskovideosink_la_LINK) -rpath $(plugindir) $(libgstdiskovideosink_la_OBJECTS) $(libgstdiskovideosink_la_LIBADD) $(LIBS)
++
++mostlyclean-compile:
++	-rm -f *.$(OBJEXT)
++
++distclean-compile:
++	-rm -f *.tab.c
++
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstdiskovideosink_la-diskovideosink.Plo@am__quote@
++
++.cpp.o:
++@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
++@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
++
++.cpp.obj:
++@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
++@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
++
++.cpp.lo:
++@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
++@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
++
++libgstdiskovideosink_la-diskovideosink.lo: diskovideosink.cpp
++@am__fastdepCXX_TRUE@	$(LIBTOOL) --tag=CXX $(libgstdiskovideosink_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstdiskovideosink_la_CXXFLAGS) $(CXXFLAGS) -MT libgstdiskovideosink_la-diskovideosink.lo -MD -MP -MF $(DEPDIR)/libgstdiskovideosink_la-diskovideosink.Tpo -c -o libgstdiskovideosink_la-diskovideosink.lo `test -f 'diskovideosink.cpp' || echo '$(srcdir)/'`diskovideosink.cpp
++@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libgstdiskovideosink_la-diskovideosink.Tpo $(DEPDIR)/libgstdiskovideosink_la-diskovideosink.Plo
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='diskovideosink.cpp' object='libgstdiskovideosink_la-diskovideosink.lo' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX $(libgstdiskovideosink_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstdiskovideosink_la_CXXFLAGS) $(CXXFLAGS) -c -o libgstdiskovideosink_la-diskovideosink.lo `test -f 'diskovideosink.cpp' || echo '$(srcdir)/'`diskovideosink.cpp
++
++mostlyclean-libtool:
++	-rm -f *.lo
++
++clean-libtool:
++	-rm -rf .libs _libs
++
++ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
++	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
++	unique=`for i in $$list; do \
++	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
++	  done | \
++	  $(AWK) '{ files[$$0] = 1; nonemtpy = 1; } \
++	      END { if (nonempty) { for (i in files) print i; }; }'`; \
++	mkid -fID $$unique
++tags: TAGS
++
++TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
++		$(TAGS_FILES) $(LISP)
++	tags=; \
++	here=`pwd`; \
++	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
++	unique=`for i in $$list; do \
++	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
++	  done | \
++	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
++	      END { if (nonempty) { for (i in files) print i; }; }'`; \
++	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
++	  test -n "$$unique" || unique=$$empty_fix; \
++	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
++	    $$tags $$unique; \
++	fi
++ctags: CTAGS
++CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
++		$(TAGS_FILES) $(LISP)
++	tags=; \
++	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
++	unique=`for i in $$list; do \
++	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
++	  done | \
++	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
++	      END { if (nonempty) { for (i in files) print i; }; }'`; \
++	test -z "$(CTAGS_ARGS)$$tags$$unique" \
++	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
++	     $$tags $$unique
++
++GTAGS:
++	here=`$(am__cd) $(top_builddir) && pwd` \
++	  && cd $(top_srcdir) \
++	  && gtags -i $(GTAGS_ARGS) $$here
++
++distclean-tags:
++	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
++
++distdir: $(DISTFILES)
++	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
++	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
++	list='$(DISTFILES)'; \
++	  dist_files=`for file in $$list; do echo $$file; done | \
++	  sed -e "s|^$$srcdirstrip/||;t" \
++	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
++	case $$dist_files in \
++	  */*) $(MKDIR_P) `echo "$$dist_files" | \
++			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
++			   sort -u` ;; \
++	esac; \
++	for file in $$dist_files; do \
++	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
++	  if test -d $$d/$$file; then \
++	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
++	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
++	      cp -pR $(srcdir)/$$file $(distdir)$$dir || exit 1; \
++	    fi; \
++	    cp -pR $$d/$$file $(distdir)$$dir || exit 1; \
++	  else \
++	    test -f $(distdir)/$$file \
++	    || cp -p $$d/$$file $(distdir)/$$file \
++	    || exit 1; \
++	  fi; \
++	done
++check-am: all-am
++check: check-am
++all-am: Makefile $(LTLIBRARIES) $(HEADERS)
++installdirs:
++	for dir in "$(DESTDIR)$(plugindir)"; do \
++	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
++	done
++install: install-am
++install-exec: install-exec-am
++install-data: install-data-am
++uninstall: uninstall-am
++
++install-am: all-am
++	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
++
++installcheck: installcheck-am
++install-strip:
++	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
++	  install_sh_PROGRAM="$(INSTALL_STRIP_PROGRAM)" INSTALL_STRIP_FLAG=-s \
++	  `test -z '$(STRIP)' || \
++	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
++mostlyclean-generic:
++
++clean-generic:
++
++distclean-generic:
++	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
++
++maintainer-clean-generic:
++	@echo "This command is intended for maintainers to use"
++	@echo "it deletes files that may require special tools to rebuild."
++clean: clean-am
++
++clean-am: clean-generic clean-libtool clean-pluginLTLIBRARIES \
++	mostlyclean-am
++
++distclean: distclean-am
++	-rm -rf ./$(DEPDIR)
++	-rm -f Makefile
++distclean-am: clean-am distclean-compile distclean-generic \
++	distclean-tags
++
++dvi: dvi-am
++
++dvi-am:
++
++html: html-am
++
++info: info-am
++
++info-am:
++
++install-data-am: install-pluginLTLIBRARIES
++
++install-dvi: install-dvi-am
++
++install-exec-am:
++
++install-html: install-html-am
++
++install-info: install-info-am
++
++install-man:
++
++install-pdf: install-pdf-am
++
++install-ps: install-ps-am
++
++installcheck-am:
++
++maintainer-clean: maintainer-clean-am
++	-rm -rf ./$(DEPDIR)
++	-rm -f Makefile
++maintainer-clean-am: distclean-am maintainer-clean-generic
++
++mostlyclean: mostlyclean-am
++
++mostlyclean-am: mostlyclean-compile mostlyclean-generic \
++	mostlyclean-libtool
++
++pdf: pdf-am
++
++pdf-am:
++
++ps: ps-am
++
++ps-am:
++
++uninstall-am: uninstall-pluginLTLIBRARIES
++
++.MAKE: install-am install-strip
++
++.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
++	clean-libtool clean-pluginLTLIBRARIES ctags distclean \
++	distclean-compile distclean-generic distclean-libtool \
++	distclean-tags distdir dvi dvi-am html html-am info info-am \
++	install install-am install-data install-data-am install-dvi \
++	install-dvi-am install-exec install-exec-am install-html \
++	install-html-am install-info install-info-am install-man \
++	install-pdf install-pdf-am install-pluginLTLIBRARIES \
++	install-ps install-ps-am install-strip installcheck \
++	installcheck-am installdirs maintainer-clean \
++	maintainer-clean-generic mostlyclean mostlyclean-compile \
++	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
++	tags uninstall uninstall-am uninstall-pluginLTLIBRARIES
++
++# Tell versions [3.59,3.63) of GNU make to not export all variables.
++# Otherwise a system limit (for SysV at least) may be exceeded.
++.NOEXPORT:
+diff -Nupr gst-plugins-bad-0.10.12-original/ext/Makefile.am gst-plugins-bad-0.10.12-modified/ext/Makefile.am
+--- gst-plugins-bad-0.10.12-original/ext/Makefile.am	2009-03-10 02:03:41.000000000 +0100
++++ gst-plugins-bad-0.10.12-modified/ext/Makefile.am	2009-05-22 17:00:56.000000000 +0200
+@@ -82,6 +82,12 @@ else
+ DIRECTFB_DIR=
+ endif
+ 
++if USE_DISKO
++DISKO_DIR=disko
++else
++DISKO_DIR=
++endif
++
+ if USE_DIVX
+ DIVX_DIR=divx
+ else
+@@ -345,6 +351,7 @@ SUBDIRS=\
+ 	$(DC1394_DIR) \
+ 	$(DIRAC_DIR) \
+ 	$(DIRECTFB_DIR) \
++	$(DISKO_DIR) \
+ 	$(DIVX_DIR) \
+ 	$(DTS_DIR) \
+ 	$(DVDNAV_DIR) \
+@@ -397,6 +404,7 @@ DIST_SUBDIRS = \
+ 	dc1394 \
+ 	dirac \
+ 	directfb \
++	disko \
+ 	faac \
+ 	faad \
+ 	gsm \
+diff -Nupr gst-plugins-bad-0.10.12-original/ext/Makefile.in gst-plugins-bad-0.10.12-modified/ext/Makefile.in
+--- gst-plugins-bad-0.10.12-original/ext/Makefile.in	2009-05-20 20:43:41.000000000 +0200
++++ gst-plugins-bad-0.10.12-modified/ext/Makefile.in	2009-05-22 17:00:56.000000000 +0200
+@@ -1,4 +1,4 @@
+-# Makefile.in generated by automake 1.10.2 from Makefile.am.
++# Makefile.in generated by automake 1.10.1 from Makefile.am.
+ # @configure_input@
+ 
+ # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+@@ -132,6 +132,8 @@ DIRECTDRAW_LDFLAGS = @DIRECTDRAW_LDFLAGS
+ DIRECTDRAW_LIBS = @DIRECTDRAW_LIBS@
+ DIRECTFB_CFLAGS = @DIRECTFB_CFLAGS@
+ DIRECTFB_LIBS = @DIRECTFB_LIBS@
++DISKO_CFLAGS = @DISKO_CFLAGS@
++DISKO_LIBS = @DISKO_LIBS@
+ DIVXDEC_LIBS = @DIVXDEC_LIBS@
+ DIVXENC_LIBS = @DIVXENC_LIBS@
+ DLLTOOL = @DLLTOOL@
+@@ -422,7 +424,6 @@ shavedir = @shavedir@
+ srcdir = @srcdir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+-top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ @USE_ALSA_FALSE@ALSASPDIF_DIR = 
+@@ -469,6 +470,8 @@ AUDIORESAMPLE_DIR = 
+ @USE_DIRAC_TRUE@DIRAC_DIR = dirac
+ @USE_DIRECTFB_FALSE@DIRECTFB_DIR = 
+ @USE_DIRECTFB_TRUE@DIRECTFB_DIR = directfb
++@USE_DISKO_FALSE@DISKO_DIR = 
++@USE_DISKO_TRUE@DISKO_DIR = disko
+ @USE_DIVX_FALSE@DIVX_DIR = 
+ @USE_DIVX_TRUE@DIVX_DIR = divx
+ @USE_DTS_FALSE@DTS_DIR = 
+@@ -603,6 +606,7 @@ SUBDIRS = \
+ 	$(DC1394_DIR) \
+ 	$(DIRAC_DIR) \
+ 	$(DIRECTFB_DIR) \
++	$(DISKO_DIR) \
+ 	$(DIVX_DIR) \
+ 	$(DTS_DIR) \
+ 	$(DVDNAV_DIR) \
+@@ -655,6 +659,7 @@ DIST_SUBDIRS = \
+ 	dc1394 \
+ 	dirac \
+ 	directfb \
++	disko \
+ 	faac \
+ 	faad \
+ 	gsm \
+@@ -694,8 +699,8 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_
+ 	@for dep in $?; do \
+ 	  case '$(am__configure_deps)' in \
+ 	    *$$dep*) \
+-	      ( cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh ) \
+-	        && { if test -f $@; then exit 0; else break; fi; }; \
++	      cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh \
++		&& exit 0; \
+ 	      exit 1;; \
+ 	  esac; \
+ 	done; \
+@@ -801,7 +806,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS
+ 	unique=`for i in $$list; do \
+ 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+ 	  done | \
+-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
++	  $(AWK) '{ files[$$0] = 1; nonemtpy = 1; } \
+ 	      END { if (nonempty) { for (i in files) print i; }; }'`; \
+ 	mkid -fID $$unique
+ tags: TAGS

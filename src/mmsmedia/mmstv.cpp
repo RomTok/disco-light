@@ -27,27 +27,18 @@
  ***************************************************************************/
 
 #include "mmsmedia/mmstv.h"
+#include <strings.h>
+
+#ifdef __HAVE_XINE__
 #include <xine/xineutils.h>
-
-#ifdef __HAVE_INPUT_DVB_MORPHINE__
-#include "input_dvb_morphine.h"
-
-#define MMSTV_RECORD_START  (this->usingInputDVBMorphine ? XINE_EVENT_MORPHINE_RECORD_START : XINE_EVENT_INPUT_MENU2)
-#define MMSTV_RECORD_STOP   (this->usingInputDVBMorphine ? XINE_EVENT_MORPHINE_RECORD_STOP  : XINE_EVENT_INPUT_MENU2)
-#define MMSTV_RECORD_PAUSE  (this->usingInputDVBMorphine ? XINE_EVENT_MORPHINE_RECORD_PAUSE : XINE_EVENT_INPUT_MENU4)
-
-#else
 
 #define MMSTV_RECORD_START  XINE_EVENT_INPUT_MENU2
 #define MMSTV_RECORD_STOP   XINE_EVENT_INPUT_MENU2
 #define MMSTV_RECORD_PAUSE  XINE_EVENT_INPUT_MENU4
-
 #endif
 
 MMS_CREATEERROR(MMSTVError);
 
-#ifdef __HAVE_GSTREAMER__
-#endif
 #ifdef __HAVE_XINE__
 /**
  * Callback, that will be called if xine sends event messages.
@@ -89,15 +80,18 @@ static void queue_cb(void *userData, const xine_event_t *event) {
  * @see MMSAV::MMSAV()
  * @see MMSAV::initialize()
  */
+#ifdef __HAVE_XINE_BLDVB__
+MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose, const bool _useBlDvb) :
+#else
 MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose) :
+#endif
             channel(_channel),
             captureFilename(""),
-            recording(false),
-#ifdef __HAVE_INPUT_DVB_MORPHINE__
-            usingInputDVBMorphine(true) {
-#else
-            usingInputDVBMorphine(false) {
+            recording(false)
+#ifdef __HAVE_XINE_BLDVB__
+            , useBlDvb(_useBlDvb)
 #endif
+{
     MMSAV::initialize(verbose, window);
     setTuningTimeout(10);
 }
@@ -108,8 +102,6 @@ MMSTV::MMSTV(MMSWindow *window, const string _channel, const bool verbose) :
 MMSTV::~MMSTV() {
 }
 
-#ifdef __HAVE_GSTREAMER__
-#endif
 #ifdef __HAVE_XINE__
 /**
  * Calls MMSAV::open() with the queue_cb callback.
@@ -128,8 +120,6 @@ void MMSTV::xineOpen() {
  * @param   channel [in]    channel name to be played
  */
 void MMSTV::startPlaying(const string channel) {
-//    if(!this->stream) this->open();
-
     if(strncasecmp(channel.c_str(), "OTH:",4)==0) {
     	FILE *fp;
     	fp=fopen(channel.c_str(),"r");
@@ -139,28 +129,18 @@ void MMSTV::startPlaying(const string channel) {
                 throw new MMSTVError(0, "Error reading from file " + channel);
         	this->channel = line;
         	fclose(fp);
-        	printf("play %s\n", this->channel.c_str());
+        	DEBUGMSG("MMSTV", "trying to play " + this->channel);
             MMSAV::startPlaying(this->channel, false);
-
     	}
 
     } else {
-		/* first try using our own input plugin */
-		if(this->usingInputDVBMorphine) {
-			try {
-				MMSAV::startPlaying("mmsdvb://" + channel, false);
-			}
-			catch(MMSError *e) {
-				/* now use the xine input plugin */
-				this->usingInputDVBMorphine = false;
-				DEBUGMSG("MMSMedia", "Error while using Morphine's DVB input plugin [" + e->getMessage() + "]");
-				DEBUGMSG("MMSMedia", "Using xine's plugin. Not all features will be available.");
-				delete e;
-				MMSAV::startPlaying("dvb://" + channel, false);
-			}
-		}
-		else
-			MMSAV::startPlaying("dvb://" + channel, false);
+    	DEBUGMSG("MMSTV", "trying to play " + this->channel);
+#ifdef __HAVE_XINE_BLDVB__
+    	if(this->useBlDvb)
+        	MMSAV::startPlaying("bldvb://" + channel, false);
+    	else
+#endif
+    	MMSAV::startPlaying("dvb://" + channel, false);
 		this->channel = channel;
 	}
 }
@@ -176,6 +156,20 @@ void MMSTV::play() {
     MMSAV::play();
 }
 
+#ifdef __HAVE_XINE_BLDVB__
+void MMSTV::play(const string &channel) {
+	if(this->useBlDvb) {
+		if(this->isPlaying()) {
+			char *ch = strdup(channel.c_str());
+			this->sendEvent(XINE_EVENT_INPUT_SELECT, ch, sizeof(char) * (strlen(ch) + 1));
+			free(ch);
+		} else
+			this->startPlaying(channel);
+	} else
+		this->next();
+}
+#endif
+
 /**
  * Pauses the stream.
  *
@@ -189,62 +183,124 @@ void MMSTV::pause() {
 /**
  * Switch to previous channel.
  *
- * @note Using ~/.xine/channels.conf and not the Morphine database.
- *
  * @see MMSTV::next()
  */
 void MMSTV::previous() {
-    this->sendEvent(XINE_EVENT_INPUT_PREVIOUS);
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
+			break;
+		case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		    this->sendEvent(XINE_EVENT_INPUT_PREVIOUS);
+#endif
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 }
 
 /**
  * Switch to next channel.
  *
- * @note Using ~/.xine/channels.conf and not the Morphine database.
- *
  * @see MMSTV::previous()
  */
 void MMSTV::next() {
-    this->sendEvent(XINE_EVENT_INPUT_NEXT);
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
+			break;
+		case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		    this->sendEvent(XINE_EVENT_INPUT_NEXT);
+#endif
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 }
 
 /**
  * Start/Stop recording.
  */
 void MMSTV::record() {
-    if(this->recording)
-        this->sendEvent(MMSTV_RECORD_STOP);
-    else
-        this->sendEvent(MMSTV_RECORD_START);
-    this->recording = !this->recording;
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
+			break;
+		case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+			if(this->recording)
+		        this->sendEvent(MMSTV_RECORD_STOP);
+		    else
+		        this->sendEvent(MMSTV_RECORD_START);
+		    this->recording = !this->recording;
+#endif
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 }
 
 /**
  * Start recording.
  */
 void MMSTV::recordStart() {
-    if(!this->recording) {
-        this->sendEvent(MMSTV_RECORD_START);
-        this->recording = true;
-    }
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
+			break;
+		case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		    if(!this->recording) {
+		        this->sendEvent(MMSTV_RECORD_START);
+		        this->recording = true;
+		    }
+#endif
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 }
 
 /**
  * Stop recording.
  */
 void MMSTV::recordStop() {
-    if(this->recording) {
-        this->sendEvent(MMSTV_RECORD_STOP);
-        this->recording = false;
-    }
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
+			break;
+		case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		    if(this->recording) {
+		        this->sendEvent(MMSTV_RECORD_STOP);
+		        this->recording = false;
+		    }
+#endif
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 }
 
 /**
  * Pause recording.
  */
 void MMSTV::recordPause() {
-    if(this->recording)
-        this->sendEvent(MMSTV_RECORD_PAUSE);
+	switch(this->backend) {
+		case MMSMEDIA_BE_GST:
+			break;
+		case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		    if(this->recording)
+		        this->sendEvent(MMSTV_RECORD_PAUSE);
+#endif
+			break;
+		default:
+			// shouldn't be reached
+			break;
+	}
 }
 
 /**

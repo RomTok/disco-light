@@ -48,21 +48,29 @@ class MMSTV : public MMSAV {
         string	     channel;               /**< currently played channel name              */
         string       captureFilename;       /**< filename for saved stream                  */
         unsigned int timeout;               /**< tuning timeout in seconds                  */
-        bool         recording,             /**< if true recording is on                    */
-                     usingInputDVBMorphine; /**< if true our own xine input plugin is used  */
+        bool         recording;             /**< if true recording is on                    */
 
-#ifdef __HAVE_GSTREAMER__
+#ifdef __HAVE_XINE_BLDVB__
+        bool		 useBlDvb;				/**< if true use our own dvb input plugin		*/
 #endif
+
 #ifdef __HAVE_XINE__
         void xineOpen();
 #endif
 
     public:
-        MMSTV(MMSWindow *window, const string channel = "", const bool verbose = false);
+#ifdef __HAVE_XINE_BLDVB__
+    	MMSTV(MMSWindow *window, const string channel = "", const bool verbose = false, const bool useBlDvb = true);
+#else
+    	MMSTV(MMSWindow *window, const string channel = "", const bool verbose = false);
+#endif
         ~MMSTV();
 
         void startPlaying(const string channel = "");
         void play();
+#ifdef __HAVE_XINE_BLDVB__
+        void play(const string &channel);
+#endif
         void pause();
         void previous();
         void next();

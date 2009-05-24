@@ -26,7 +26,7 @@ SetOption('implicit_cache', 1)
 # Version                                                             #
 #######################################################################
 packageVersionMajor = 1
-packageVersionMinor = 5
+packageVersionMinor = 6
 packageVersionMicro = 0
 packageVersionRC    = ''
 
@@ -93,8 +93,8 @@ if sconsVersion < (0,98,1):
     	BoolOption('use_sse',       'Use SSE optimization', False),
     	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
     	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
-    	BoolOption('enable_media',  'Build with mmsmedia support', True),
     	BoolOption('enable_flash',  'Build with mmsflash support', False),
     	BoolOption('enable_sip',    'Build with mmssip support', False),
     	BoolOption('enable_mail',   'Build with email support', False),
@@ -112,8 +112,8 @@ else:
     	BoolVariable('use_sse',       'Use SSE optimization', False),
     	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+    	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
     	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
-    	BoolVariable('enable_media',  'Build with mmsmedia support', True),
     	BoolVariable('enable_flash',  'Build with mmsflash support', False),
     	BoolVariable('enable_sip',    'Build with mmssip support', False),
     	BoolVariable('enable_mail',   'Build with email support', False),
@@ -182,7 +182,7 @@ diskoLibs  = ["mmsinfo",
               "mmsbase",
               "mmsinput",
               "mmscore"]
-if env['enable_media']:
+if env['media']:
 	diskoLibs.append("mmsmedia")
 if env['enable_flash']:
 	diskoLibs.append("mmsflash")
@@ -222,7 +222,6 @@ def checkOptions(context):
 
 def tryConfigCommand(context, cmd):
 	ret = context.TryAction(cmd)[0]
-	
 	if ret:
 		try:
 			context.env.ParseConfig(cmd)
@@ -238,9 +237,23 @@ def checkPKGConfig(context):
 
 def checkXineBlDvb(context):
 	context.Message('Checking for xine bldvb input plugin... ')
-	xinePluginPath = context.TryAction('pkg-config --variable=plugindir libxine')[1]
-	if xinePluginPath != "" and os.access(xinePluginPath + '/xine_input_bldvb.so', os.R_OK):
-		conf.env.append('-D__HAVE_XINE_BLDVB__')
+	pipe = os.popen('pkg-config --variable=plugindir libxine')
+ 	xinePluginPath = pipe.read()
+ 	pipe.close()
+	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xine_input_bldvb.so', os.R_OK):
+		ret = True
+	else:
+		ret = False
+		
+	context.Result(ret)
+	return ret
+
+def checkGstDiskoVideosink(context):
+	context.Message('Checking for gstreamer plugin diskovideosink... ')
+	pipe = os.popen('pkg-config --variable=pluginsdir gstreamer-0.10')
+ 	gstPluginPath = pipe.read()
+ 	pipe.close()
+	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
 		ret = True
 	else:
 		ret = False
@@ -252,6 +265,9 @@ def checkPKG(context, name):
 	return tryConfigCommand(context, 'pkg-config --libs --cflags \'%s\'' % name)
 
 def checkConf(context, name):
+	if name.find(' '):
+		return False
+		
 	seperators = ['-', '_']
 	for sep in seperators:
 		configcall = '%s%sconfig --libs --cflags' % (name.lower(), sep)
@@ -297,15 +313,15 @@ def printSummary():
 	print 'Prefix:           : %s' % conf.env['prefix']
 	print 'Destdir:          : %s' % conf.env['destdir']
 	print 'Graphic backends  : %s' % conf.env['graphics']
-	print 'Database backends : %s\n' % ', '.join(conf.env['database'])
+	print 'Database backends : %s' % ', '.join(conf.env['database'])
+	if(conf.env['media']):
+		print 'Media backends    : %s\n' % ', '.join(conf.env['media'])
+	else:
+		print 'Media backends    : none\n'
 	if(conf.env['mmscrypt']):
 		print 'Building mmscrypt : yes'
 	else:
 		print 'Building mmscrypt : no'
-	if(conf.env['enable_media']):
-		print 'Building mmsmedia : yes'
-	else:
-		print 'Building mmsmedia : no'
 	if(conf.env['enable_flash']):
 		print 'Building mmsflash : yes'
 	else:
@@ -347,6 +363,7 @@ conf = Configure(env,
                  custom_tests = {'checkOptions' : checkOptions,
                  				 'checkPKGConfig' : checkPKGConfig,
                  				 'checkXineBlDvb' : checkXineBlDvb,
+                 				 'checkGstDiskoVideosink' : checkGstDiskoVideosink,
                  				 'checkConf' : checkConf,
                  				 'checkPKG' : checkPKG,
                  				 'checkSimpleLib' : checkSimpleLib},
@@ -386,15 +403,48 @@ if('x11' in env['graphics']):
 				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
 	
 # checks required if building mmsmedia
-if(env['enable_media']):
+conf.checkSimpleLib(['alsa'], 'alsa/version.h')
+conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+
+if('xine' in env['media']):
 	if('x11' in env['graphics']):
-		conf.checkSimpleLib(['libxine >= 1.1.15'],    'xine.h')
+		if not conf.checkSimpleLib(['libxine >= 1.1.15'], 'xine.h', required = 0):
+			print '***************************************************\n'
+			print 'Xine not found!'
+			print 'Disabling xine media backend'
+			print '\n***************************************************'
+			env['media'].remove('xine')
+		else:
+			conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			if conf.checkXineBlDvb():
+				conf.env['CCFLAGS'].append('-D__HAVE_XINE_BLDVB__')
 	else:
-		conf.checkSimpleLib(['libxine'],    'xine.h')
-	conf.checkXineBlDvb()
-	conf.checkSimpleLib(['alsa'],       'alsa/version.h')
-	conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__', '-D__HAVE_XINE__'])
-	
+		if not conf.checkSimpleLib(['libxine'], 'xine.h', required = 0):
+			print '**************************************************\n'
+			print 'Xine not found!'
+			print 'Disabling xine media backend'
+			print '\n**************************************************'
+			env['media'].remove('xine')
+		else:
+			conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			if conf.checkXineBlDvb():
+				conf.env['CCFLAGS'].append('-D__HAVE_XINE_BLDVB__')
+
+if('gstreamer' in env['media']):
+	if not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
+		print '***************************************************\n'
+		print 'GStreamer not found!'
+		print 'Disabling gstreamer media backend'
+		print '\n***************************************************'
+		env['media'].remove('gstreamer')
+	elif not conf.checkGstDiskoVideosink():
+		print '***************************************************\n'
+		print 'GStreamer plugin diskovideosink not found!'
+		print 'Disabling gstreamer media backend'
+		print '\n***************************************************'
+		env['media'].remove('gstreamer')
+	else:
+		conf.env['CCFLAGS'].append('-D__HAVE_GSTREAMER__')
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
@@ -474,13 +524,19 @@ if 'install' in BUILD_TARGETS:
 	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm'
 		
-	if env['enable_media']:
+	if env['media'] != 'none':
+	 	disko_pc_requires += ', alsa'
 		if not env['big_lib']:
 			disko_pc_libs += ' -lmmsmedia'
+		
+	if 'xine' in env['media']:
 		if('x11' in env['graphics']):
-			disko_pc_requires += ', alsa, libxine >= 1.1.15'
+			disko_pc_requires += ', libxine >= 1.1.15'
 		else:
-			disko_pc_requires += ', alsa, libxine'
+			disko_pc_requires += ', libxine'
+
+	if 'gstreamer' in env['media']:
+		disko_pc_requires += ', gstreamer-0.10'
 
 	if env['enable_flash']:
 		disko_pc_requires += ', swfdec-0.8'
