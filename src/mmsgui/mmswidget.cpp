@@ -768,7 +768,7 @@ bool MMSWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool lea
 bool MMSWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
 	if (changed)
 		*changed = false;
-	return false;
+	return true;
 }
 
 MMSFBRectangle MMSWidget::getVisibleSurfaceArea() {
@@ -1969,7 +1969,6 @@ void MMSWidget::handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *request
 
 void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	bool b;
-
 
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */

@@ -828,6 +828,8 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
         return false;
 
+//printf("add child window %s, %x, %d\n", childwin->name.c_str(), childwin, this->childwins.size());
+
     /* per default childwins are not focused */
 //    childwin->focused = false;
 
@@ -1703,6 +1705,7 @@ void MMSWindow::showBufferedShown() {
 
 
 bool MMSWindow::raiseToTop() {
+//printf("ZZZ: raisetotop %s\n", name.c_str());
     if (!this->parent) {
         // normal parent window
         // set the window to top
@@ -1717,21 +1720,46 @@ bool MMSWindow::raiseToTop() {
         	if (this->parent->childwins.at(i).window == this) {
         		// child window found, move it to the end of the vector
         		if (i + 1 < this->parent->childwins.size()) {
-					CHILDWINS cw = this->parent->childwins.at(i);
+        			// not at the end, moving it
+        			CHILDWINS cw = this->parent->childwins.at(i);
 					this->parent->childwins.erase(this->parent->childwins.begin()+i);
 					this->parent->childwins.push_back(cw);
+//printf("ZZZ: raisetotop2 0=%s 1=%s\n", this->parent->childwins.at(0).window->name.c_str(), this->parent->childwins.at(1).window->name.c_str());
+
+//printf("QQQQQQQ1>>>>>>>>>>>>>>>>>>>>>>>>>>> %d, %d\n", this->parent->focusedChildWin, i);
+					if (this->parent->focusedChildWin > i) {
+						// the focused window will not be changed here!!!
+						this->parent->focusedChildWin--;
+//printf("QQQQQQQ2>>>>>>>>>>>>>>>>>>>>>>>>>>> %d\n", this->parent->focusedChildWin);
+					}
+
+					// the toplevel child window
 					i = this->parent->childwins.size() - 1;
+
+					// redraw the window stack if child window and parent is shown
+					if ((this->parent->childwins.at(i).window->shown)&&(this->parent->shown)) {
+						this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
+	      			}
+
         		}
 
-        		// change the focused child win pointer if window is shown
-        		if (this->parent->childwins.at(i).window->shown) {
+/*
+        		// change the focused child win if window is shown or will be shown
+        		if (this->parent->childwins.at(i).window->shown) {// || this->parent->childwins.at(i).window->willshow) {
+printf("ZZZ: raisetotop3 0=%s 1=%s\n", this->parent->childwins.at(0).window->name.c_str(), this->parent->childwins.at(1).window->name.c_str());
+
+//this->parent->focusedChildWin = 1;
+//this->parent->childwins.at(i).window->setFocus();
+//this->setFocus();
+
 					this->parent->focusedChildWin = i;
+        		}
 
-					// redraw the window stack if parent is shown
-					if (this->parent->shown)
-						this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
+				// redraw the window stack if child window and parent is shown
+				if ((this->parent->childwins.at(i).window->shown)&&(this->parent->shown)) {
+					this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
       			}
-
+*/
                 unlock();
         		return true;
         	}
@@ -1795,6 +1823,22 @@ bool MMSWindow::showAction(bool *stopaction) {
 
     // set the first focused widget, if not set and if window can get the focus
     this->setFirstFocus();
+
+//printf("showaction %s\n", name.c_str());
+
+    if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
+    	if ((int)this->parent->focusedChildWin >= 0) {
+    		if (!this->parent->childwins.at(this->parent->focusedChildWin).window->isShown()) {
+//printf("showaction2 %s\n", name.c_str());
+    			// focused child window is not shown!
+    			// so set focus to this window
+    			setFocus();
+    		}
+    	}
+    }
+
+
+//printf("showaction3 %s\n", name.c_str());
 
 /////////
 //    if (getType() != MMSWINDOWTYPE_CHILDWINDOW) {
@@ -2442,7 +2486,8 @@ void MMSWindow::refresh() {
 
 
 void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus) {
-    if (set) {
+//printf("XXX: setFocusedWidget for window %s %x set = %d, switchfocus = %d\n", name.c_str(), this, set, switchfocus);
+	if (set) {
     	if (switchfocus) {
     		if (this->focusedwidget)
     			this->focusedwidget->setFocus(false);
@@ -2466,6 +2511,8 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus) {
 }
 
 bool MMSWindow::setFirstFocus(bool cw) {
+//printf("XXX: setFirstFocus1 to %s %x\n", name.c_str(), this);
+
 
 	/* only main, root and child windows can get inputs */
     /* other windows do not need focused widgets */
@@ -2475,30 +2522,41 @@ bool MMSWindow::setFirstFocus(bool cw) {
             break;
         case MMSWINDOWTYPE_CHILDWINDOW:
             if (!cw) return false;
+//printf ("parent->focusedChildWin %d\n", parent->focusedChildWin);
+//printf ("parent->focusedwidget %d\n", this->focusedwidget);
             break;
         default:
             return false;
     }
 
+//printf("XXX: setFirstFocus2 to %s\n", name.c_str());
     DEBUGMSG("MMSGUI", "MMSWindow: setFirstFocus to " + getName());
 
     if (this->firstfocusset) {
+//printf("XXX: setFirstFocus2.2 to %s\n", name.c_str());
     	DEBUGMSG("MMSGUI", "MMSWindow: focus already set");
         return true;
     }
     this->firstfocusset = true;
     bool b;
 
+//printf("XXX: setFirstFocus3 to %s\n", name.c_str());
+
     if(this->children.empty()) {
         bool found = false;
 
         for (unsigned int j = 0; j < this->childwins.size(); j++) {
             MMSWindow *w = this->childwins.at(j).window;
-            if (w->getNumberOfFocusableWidgets()) {
+
+//printf("XXX: setFirstFocus4 to %s -> childwin %s\n", name.c_str(), w->name.c_str());
+
+			if (w->getNumberOfFocusableWidgets()) {
+//printf("XXX: setFirstFocus5 to %s -> childwin %s %d\n", name.c_str(), w->name.c_str(), j);
                 /* widgets found which can be focused */
                 this->focusedChildWin = j;
                 found = true;
                 if (!w->firstfocusset) {
+//printf("XXX: setFirstFocus6 to %s -> childwin %s\n", name.c_str(), w->name.c_str());
                     for(unsigned int i=0;i<w->children.size();i++) {
                         if(w->children.at(i)->getFocusable(b))
                         	if (b) {
@@ -2506,6 +2564,7 @@ bool MMSWindow::setFirstFocus(bool cw) {
                         		string inputmode = "";
                         		w->children.at(i)->getInputModeEx(inputmode);
                         		if (strToUpr(inputmode) != "CLICK") {
+//printf("XXX: setFirstFocus7 to %s -> childwin %s\n", name.c_str(), w->name.c_str());
                         			w->children.at(i)->setFocus(true, false);
                         		}
 								else {
@@ -3090,6 +3149,9 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
 
 
 void MMSWindow::setFocus() {
+
+//printf("setFocus %s\n", name.c_str());
+
     /* i do only work for child windows */
     if (!this->parent) return;
 
@@ -3101,11 +3163,17 @@ void MMSWindow::setFocus() {
             break;
         }
 
+//printf("setFocus2 %s\n", name.c_str());
+
     /* i have found me within my parents list */
     if (me < 0) return;
 
+//printf("setFocus3 %s, %d, %d, parent = %s\n", name.c_str(), this->parent->focusedChildWin, me, this->parent->name.c_str());
+
     /* i am the currently focused child window */
     if ((int)this->parent->focusedChildWin == me) return;
+
+//printf("setFocus4 %s\n", name.c_str());
 
     /* save focused widget from current window and remove the focus */
     this->parent->removeChildWinFocus();
@@ -3473,8 +3541,11 @@ void MMSWindow::preCalcNavigation() {
 bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     bool ret = true;
 
+//printf("YYY: input to window %s\n", name.c_str());
+
     if (this->shown == false)
         return false;
+
 
     for(unsigned int i=0; i < inputeventset->size();i++) {
 
@@ -3482,6 +3553,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     		/* keyboard inputs */
 	        try {
 	            if(this->focusedwidget != NULL) {
+//printf("YYY: input3 to window %s\n", name.c_str());
 	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
 
 	                switch(inputeventset->at(i).key) {
@@ -3500,6 +3572,8 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            }
 	            else
 	            if (this->childwins.size() > this->focusedChildWin) {
+//printf("YYY: input2 to window %s, this->focusedChildWin = %d, %s\n", name.c_str(), this->focusedChildWin, this->childwins.at(this->focusedChildWin).window->name.c_str());
+//printf("YYY: input3 to window %s, this->focusedChildWin = %d, %s %s\n", name.c_str(), this->focusedChildWin, this->childwins.at(this->focusedChildWin).window->name.c_str(), this->childwins.at(1).window->name.c_str());
 	                /* get the focus to my focused child window */
 //	                logger.writeLog("try to execute input on childwindow");
 	                if (!this->childwins.at(this->focusedChildWin).window->handleInput(inputeventset)) {
