@@ -93,7 +93,7 @@ if sconsVersion < (0,98,1):
     	BoolOption('use_sse',       'Use SSE optimization', False),
     	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-    	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
+    	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
     	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
     	BoolOption('enable_flash',  'Build with mmsflash support', False),
     	BoolOption('enable_sip',    'Build with mmssip support', False),
@@ -240,7 +240,7 @@ def checkXineBlDvb(context):
 	pipe = os.popen('pkg-config --variable=plugindir libxine')
  	xinePluginPath = pipe.read()
  	pipe.close()
-	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xine_input_bldvb.so', os.R_OK):
+	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xineplug_inp_bldvb.so', os.R_OK):
 		ret = True
 	else:
 		ret = False
@@ -381,6 +381,10 @@ conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
 conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
 conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
+
+if conf.CheckLib('rt', 'clock_gettime'):
+	conf.env['rt'] = True
+
 if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
 
@@ -514,7 +518,10 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_libs += ' -ldisko'
 	else:
 		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
-		
+	
+	if env.has_key('rt'):
+		disko_pc_libs += ' -lrt'
+
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
