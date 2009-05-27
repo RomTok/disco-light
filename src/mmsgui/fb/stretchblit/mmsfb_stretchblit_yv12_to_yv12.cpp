@@ -85,8 +85,8 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 	unsigned char *dst_u;
 	unsigned char *dst_v;
 	if ((dst_planes->ptr2)&&(dst_planes->ptr3)) {
-		dst_u = (unsigned char *)src_planes->ptr2 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
-		dst_v = (unsigned char *)src_planes->ptr3 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+		dst_u = (unsigned char *)dst_planes->ptr2 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+		dst_v = (unsigned char *)dst_planes->ptr3 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
 	}
 	else {
 		dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
