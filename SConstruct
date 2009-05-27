@@ -381,6 +381,10 @@ conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
 conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
 conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
+
+if conf.CheckLib('rt', 'clock_gettime'):
+	conf.env['rt'] = True
+
 if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
 
@@ -514,7 +518,10 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_libs += ' -ldisko'
 	else:
 		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
-		
+	
+	if env.has_key('rt'):
+		disko_pc_libs += ' -lrt'
+
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
