@@ -51,7 +51,7 @@ void MMSLabelWidgetClass::unsetAll() {
     unsetSelColor();
     unsetText();
     unsetSlidable();
-    unsetSlideDelay();
+    unsetSlideSpeed();
     unsetTranslate();
 }
 
@@ -148,8 +148,8 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slidable:
 	            setSlidable((attrval_int)?true:false);
 	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slide_delay:
-	            setSlideDelay(attrval_int);
+			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slide_speed:
+	            setSlideSpeed(attrval_int);
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_translate:
 	            setTranslate((attrval_int)?true:false);
@@ -268,8 +268,8 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            setSlidable((attrval_int)?true:false);
 			}
             else
-            if (ISATTRNAME(slide_delay)) {
-	            setSlideDelay(attrval_int);
+            if (ISATTRNAME(slide_speed)) {
+	            setSlideSpeed(attrval_int);
 			}
             else
             if (ISATTRNAME(translate)) {
@@ -429,21 +429,21 @@ bool MMSLabelWidgetClass::getSlidable() {
     return this->slidable;
 }
 
-bool MMSLabelWidgetClass::isSlideDelay() {
-    return this->isslidedelay;
+bool MMSLabelWidgetClass::isSlideSpeed() {
+    return this->isslidespeed;
 }
 
-void MMSLabelWidgetClass::setSlideDelay(unsigned int slidedelay) {
-    this->slidedelay = slidedelay;
-    this->isslidedelay = true;
+void MMSLabelWidgetClass::setSlideSpeed(unsigned char slidespeed) {
+    this->slidespeed = slidespeed;
+    this->isslidespeed = true;
 }
 
-void MMSLabelWidgetClass::unsetSlideDelay() {
-    this->isslidedelay = false;
+void MMSLabelWidgetClass::unsetSlideSpeed() {
+    this->isslidespeed = false;
 }
 
-unsigned int MMSLabelWidgetClass::getSlideDelay() {
-    return this->slidedelay;
+unsigned char MMSLabelWidgetClass::getSlideSpeed() {
+    return this->slidespeed;
 }
 
 

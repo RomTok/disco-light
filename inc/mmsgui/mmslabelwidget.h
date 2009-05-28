@@ -47,8 +47,8 @@ class MMSLabelWidget : public MMSWidget {
 
         MMSFBFont *font;
 
-        int slid_width;
-        int slid_offset;
+        int slide_width;
+        int slide_offset;
 
         unsigned int frame_delay;
         unsigned int frame_delay_set;
@@ -86,7 +86,7 @@ class MMSLabelWidget : public MMSWidget {
         string getText();
         void getText(string &text);
         bool getSlidable();
-        unsigned int getSlideDelay();
+        unsigned char getSlideSpeed();
         bool getTranslate();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
@@ -98,7 +98,7 @@ class MMSLabelWidget : public MMSWidget {
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true);
         void setSlidable(bool slidable);
-        void setSlideDelay(unsigned int slidedelay);
+        void setSlideSpeed(unsigned char slidespeed);
         void setTranslate(bool translate, bool refresh = true);
 
         void updateFromThemeClass(MMSLabelWidgetClass *themeClass);

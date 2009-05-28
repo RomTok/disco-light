@@ -218,8 +218,8 @@ unsigned int getFrameNum(unsigned int delay_time) {
 
 unsigned int getFrameDelay(unsigned int start_ts, unsigned int end_ts) {
 	unsigned int diff = getMDiff(start_ts, end_ts);
-	if (50 > diff)
-		return 50-diff;
+	if (25 > diff)
+		return 25-diff;
 	else
 		return 0;
 }

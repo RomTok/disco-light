@@ -57,8 +57,8 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
 
     /* clear */
     this->font = NULL;
-    this->slid_width = 0;
-    this->slid_offset = 0;
+    this->slide_width = 0;
+    this->slide_offset = 0;
     this->frame_delay = 100;
     this->frame_delay_set = false;
     this->labelThread = NULL;
@@ -152,7 +152,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
             this->font->getHeight(&height);
 
             // save the width of the text
-            this->slid_width = width;
+            this->slide_width = width;
 
             switch (getAlignment()) {
                 case MMSALIGNMENT_LEFT:
@@ -209,7 +209,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
                 /* draw the text */
-                this->surface->drawString(this->translated_text, -1, x - this->slid_offset, y);
+                this->surface->drawString(this->translated_text, -1, x - this->slide_offset, y);
             }
         }
 
@@ -278,8 +278,8 @@ bool MMSLabelWidget::getSlidable() {
     GETLABEL(Slidable);
 }
 
-unsigned int MMSLabelWidget::getSlideDelay() {
-    GETLABEL(SlideDelay);
+unsigned char MMSLabelWidget::getSlideSpeed() {
+    GETLABEL(SlideSpeed);
 }
 
 bool MMSLabelWidget::getTranslate() {
@@ -365,7 +365,7 @@ void MMSLabelWidget::setSlidable(bool slidable) {
     myLabelWidgetClass.setSlidable(slidable);
     if (slidable) {
     	// text should slide
-    	this->slid_offset = 0;
+    	this->slide_offset = 0;
 
         if (this->labelThread) {
             // toggle pause off
@@ -381,13 +381,13 @@ void MMSLabelWidget::setSlidable(bool slidable) {
     	// static text
         if (labelThread)
             labelThread->stop();
-    	this->slid_offset = 0;
+    	this->slide_offset = 0;
     	this->refresh();
     }
 }
 
-void MMSLabelWidget::setSlideDelay(unsigned int slidedelay) {
-    myLabelWidgetClass.setSlideDelay(slidedelay);
+void MMSLabelWidget::setSlideSpeed(unsigned char slidespeed) {
+    myLabelWidgetClass.setSlideSpeed(slidespeed);
     this->frame_delay = 100;
     this->frame_delay_set = false;
 }
@@ -416,8 +416,8 @@ void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
         setText(themeClass->getText());
     if (themeClass->isSlidable())
         setSlidable(themeClass->getSlidable());
-    if (themeClass->isSlideDelay())
-        setSlideDelay(themeClass->getSlideDelay());
+    if (themeClass->isSlideSpeed())
+        setSlideSpeed(themeClass->getSlideSpeed());
     if (themeClass->isTranslate())
         setTranslate(themeClass->getTranslate());
 

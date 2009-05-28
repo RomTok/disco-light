@@ -64,10 +64,16 @@ void MMSLabelWidgetThread::pause(bool pauseThread) {
 
 void MMSLabelWidgetThread::doIt() {
 
-    /* init */
+    // init
     this->inWait = false;
     this->stopThread = false;
     this->pauseThread = false;
+    int refresh_frame_delay = 0;
+	int pixel_shift = 1;
+	int refresh_time = 0;
+
+    // maximum cpy usage in percent
+	int max_cpu_usage = 33;
 
     while (1) {
         /* first check if the window is shown */
@@ -89,16 +95,16 @@ void MMSLabelWidgetThread::doIt() {
 
         bool changed = false;
         if (label->getSlidable()) {
-            if (label->slid_width > 0) {
+            if (label->slide_width > 0) {
             	MMSFBRectangle surfaceGeom = label->getSurfaceGeometry();
-                if (label->slid_width > surfaceGeom.w) {
+                if (label->slide_width > surfaceGeom.w) {
                 	// we should slide the label text
-                	if (label->slid_offset >= label->slid_width)
+                	if (label->slide_offset >= label->slide_width)
                 		// from the beginning
-                		label->slid_offset = -surfaceGeom.w;
+                		label->slide_offset = -surfaceGeom.w;
                 	else
                 		// increase offset
-                		label->slid_offset+=8;
+                		label->slide_offset+=pixel_shift;
                 	changed = true;
                 }
             }
@@ -116,16 +122,41 @@ void MMSLabelWidgetThread::doIt() {
             // update screen
             this->label->refresh();
 
-	        // get end timestamp if needed
+	        // recalc speed parameters?
 	        if (!this->label->frame_delay_set) {
+	        	// get refresh duration
 	        	end_ts = getMTimeStamp();
-	        	this->label->frame_delay = getFrameDelay(start_ts, end_ts) * getFrameNum(label->getSlideDelay());
-	            if (this->label->frame_delay < 100) this->label->frame_delay = 100;
+				if (!refresh_time)
+					refresh_time = getMDiff(start_ts, end_ts);
+				else
+					refresh_time = (refresh_time * 2 + getMDiff(start_ts, end_ts)) / 3;
+
+				// calc shift and frame delay
+				int slide_speed = label->getSlideSpeed();
+				if (slide_speed <= 0) slide_speed = 1;
+				if (slide_speed > 255) slide_speed = 255;
+				int max_sleep_time = 1000 / slide_speed;
+	        	int total_time = (refresh_time * 100) / max_cpu_usage;
+	        	pixel_shift = total_time / max_sleep_time;
+	        	if (total_time % max_sleep_time) pixel_shift++;
+	        	this->label->frame_delay = max_sleep_time * pixel_shift - refresh_time - pixel_shift;
+	        	if (this->label->frame_delay <= 0) this->label->frame_delay = 1;
+
+	        	// mark as calculated
 	            this->label->frame_delay_set = true;
+	        }
+	        else {
+	        	// recalc not needed
+	        	refresh_frame_delay++;
+	        	if (refresh_frame_delay >= 50) {
+	        		// after 50 times, recalc requested
+	        		refresh_frame_delay = 0;
+	        		this->label->frame_delay_set = false;
+	        	}
 	        }
         }
 
-        /* sleep */
+        // sleep
         if (this->label->frame_delay > 0)
             wait(this->label->frame_delay*1000);
         else
