@@ -3204,7 +3204,25 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_yv12((unsigned char *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_yv12(&dst_planes, dst_height,
+										 sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_I420:
+		// destination is I420
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_fillrectangle_i420(&dst_planes, dst_height,
 										 sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;

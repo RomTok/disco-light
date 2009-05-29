@@ -30,7 +30,7 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_yv12(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color) {
 	// first time?
 	static bool firsttime = true;
@@ -38,6 +38,10 @@ void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 		printf("DISKO: Using accelerated fill rectangle to YV12.\n");
 		firsttime = false;
 	}
+
+	// get the first destination ptr/pitch
+	unsigned char *dst = (unsigned char *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
 	// prepare...
 //	int  src_pitch_pix 		= src_pitch >> 2;
@@ -59,10 +63,19 @@ void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
 	bool odd_right 	= ((dx + dw) & 0x01);
 	bool odd_bottom = ((dy + dh) & 0x01);
 
-	// pointer to the pixel components of the first pixel
+	// pointer to the pixel components of the first destination pixel
 	unsigned char *dst_y = dst + dx + dy * dst_pitch_pix;
-	unsigned char *dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
-	unsigned char *dst_v = dst + dst_pitch_pix *  dst_height                                         + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	unsigned char *dst_u;
+	unsigned char *dst_v;
+	if ((dst_planes->ptr2)&&(dst_planes->ptr3)) {
+		dst_u = (unsigned char *)dst_planes->ptr2 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+		dst_v = (unsigned char *)dst_planes->ptr3 + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	}
+	else {
+		dst_u = dst + dst_pitch_pix * dst_height + dst_pitch_pix_half * (dst_height >> 1) + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+		dst_v = dst + dst_pitch_pix * dst_height                                          + (dx >> 1) + (dy >> 1) * dst_pitch_pix_half;
+	}
+
 
 	// offsets to the other three pixels
 	unsigned int dst_y2_offs = 1;

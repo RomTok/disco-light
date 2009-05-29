@@ -1360,9 +1360,16 @@ void mmsfb_fillrectangle_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_he
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_yv12(unsigned char *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_yv12(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
+
+//! Fill rectangle I420.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_i420(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
 //! Fill rectangle ARGB3565.
