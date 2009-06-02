@@ -410,7 +410,7 @@ if('x11' in env['graphics']):
 conf.checkSimpleLib(['alsa'], 'alsa/version.h')
 conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 
-if('xine' in env['media']):
+if('xine' in env['media'] and not '-c' in sys.argv):
 	if('x11' in env['graphics']):
 		if not conf.checkSimpleLib(['libxine >= 1.1.15'], 'xine.h', required = 0):
 			print '***************************************************\n'
@@ -434,7 +434,7 @@ if('xine' in env['media']):
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].append('-D__HAVE_XINE_BLDVB__')
 
-if('gstreamer' in env['media']):
+if('gstreamer' in env['media'] and not '-c' in sys.argv):
 	if not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
 		print '***************************************************\n'
 		print 'GStreamer not found!'
