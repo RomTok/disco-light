@@ -1513,6 +1513,7 @@ void MMSAV::stop(const bool savePosition) {
 				pthread_detach(thread);
 			else
 				stopRoutine(streamData);
+			return;
 #endif
 			break;
 		}
