@@ -115,7 +115,7 @@ MMSPluginData *MMSPluginDAO::moveRecordToData(MMSRecordSet &rs) {
     data->setIcon(rs["Icon"]);
     data->setSelectedIcon(rs["SelectedIcon"]);
     data->setSmallIcon(rs["SmallIcon"]);
-    data->setSmallSelectedIcon(rs["SmallSelectedIcon"]);
+    data->setOrderpos(atoi(rs["Orderpos"].c_str()));
 
     return data;
 }

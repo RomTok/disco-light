@@ -94,13 +94,13 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
         /* load switcher dialog */
         this->window = (MMSMainWindow*)dm.loadDialog(config.getData() + "/themes/" + config.getTheme() + "/switcher.xml");
-        if(!this->window) throw MMSError(0, "Error loading switchers root window");
+        if(!this->window) throw new MMSError(0, "Error loading switchers root window");
 
         /* get access to the menu bar */
         this->menuBar = (MMSChildWindow *)this->window->searchForWindow(SWITCHER_MENUBAR);
-        if(!this->menuBar) throw MMSError(0, "Error loading switchers menuBar childwindow");
+        if(!this->menuBar) throw new MMSError(0, "Error loading switchers menuBar childwindow");
         this->menu    = dynamic_cast<MMSMenuWidget*>(this->menuBar->searchForWidget(SWITCHER_MENU));
-        if(!this->menu) throw MMSError(0, "Error loading switchers menu");
+        if(!this->menu) throw new MMSError(0, "Error loading switchers menu");
 
         /* get access to the static menu bar */
         this->menuBar_static = (MMSChildWindow *)this->window->searchForWindow(SWITCHER_MENUBAR_STATIC);
@@ -191,7 +191,7 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
         string msg = error->getMessage();
         delete error;
-        throw MMSError(0, msg);
+        throw new MMSError(0, msg);
     }
 }
 

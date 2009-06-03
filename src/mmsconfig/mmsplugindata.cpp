@@ -213,3 +213,11 @@ MMSPropertyData*  MMSPluginData::getProperty(string name) {
     }
     return NULL;
 }
+
+int MMSPluginData::getOrderpos() {
+	return this->orderpos;
+}
+
+void MMSPluginData::setOrderpos(int orderpos) {
+	this->orderpos = orderpos;
+}
