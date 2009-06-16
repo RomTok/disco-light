@@ -48,14 +48,14 @@ bool MMSXMLServerInterface::processRequest(string *request, string *answer) {
     xmlDocPtr doc =NULL;
 
     DEBUGMSG("MMSXMLServerInterface","got request %s", request->c_str());
-    if(!request || !answer) { 
+    if(!request || !answer) {
         DEBUGMSG("MMSXMLServerInterface","processRequest() error in cmdline");
     	return false;
     }
 
     DEBUGMSG("MMSXMLServerInterface","new reader");
     doc = xmlReadMemory(request->c_str(),request->length(),"memory.xml",NULL,0);
-    
+
     if(!doc) {
         *answer = "<ret error=\"Problems with xml request.\"/>";
         DEBUGMSG("MMSXMLServerInterface", "Error initializing xmlReader()");
@@ -64,7 +64,7 @@ bool MMSXMLServerInterface::processRequest(string *request, string *answer) {
 
     DEBUGMSG("MMSXMLServerInterface","throughdoc");
     throughDoc(doc, answer);
-    if(*answer == "") 
+    if(*answer == "")
     		*answer = "<ret error=\"Unknown error.\"/>";
 
     xmlFreeDoc(doc);
@@ -80,9 +80,9 @@ bool MMSXMLServerInterface::throughDoc(xmlDocPtr doc, string *answer) {
     }
 
     xmlNodePtr root =  xmlDocGetRootElement(doc);
-    if(!root) 
+    if(!root)
     	return false;
-    
+
     if(xmlStrEqual(root->name, (const xmlChar*)"func")==0) {
         DEBUGMSG("MMSXMLServerInterface", "The root element must be <func> and not <%s>.", root->name);
         return false;
@@ -117,22 +117,21 @@ bool MMSXMLServerInterface::throughFunc(xmlNodePtr node, string *answer) {
 }
 
 bool MMSXMLServerInterface::funcSendEvent(xmlNodePtr node, string *answer) {
-    xmlChar  *heading; /**pluginid,*/ //*name, *value;
+    xmlChar  *heading, *name, *value;/**pluginid*/
+    xmlTextReader *reader;
 	MMSEvent *event;
 
     if(!node || !answer) return false;
 
     /* get attributes */
     heading  = xmlGetProp(node, (const xmlChar*)"heading");
+    reader = xmlReaderWalker(node->doc);
     //pluginid = xmlTextReaderGetAttribute(reader, (const xmlChar*)"pluginid");
 
     if(!heading /*|| !pluginid*/) return false;
 
-	/* construct event object */
-	event = new MMSEvent((const char*)heading);
-	event->send();
-	
-#if 0
+    event = new MMSEvent((const char*)heading);
+
     /* through <func/> childs */
     while(xmlTextReaderRead(reader)) {
         name = (xmlChar*)xmlTextReaderConstName(reader);
@@ -146,9 +145,11 @@ bool MMSXMLServerInterface::funcSendEvent(xmlNodePtr node, string *answer) {
             }
         }
     }
-#endif
 	/* build answer */
 	*answer = "<ret/>";
+
+    event->send();
+
 
     return true;
 }

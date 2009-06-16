@@ -65,7 +65,7 @@ bool MMSXMLClientInterface::parseAnswer(string *answer, int *rc, string *error) 
 bool MMSXMLClientInterface::checkRoot(xmlDocPtr doc, int *rc, string *error) {
     xmlChar *name, *attr;
 
-    if (!doc) 
+    if (!doc)
     	return false;
 #if 0
     /* check root element */
@@ -91,18 +91,31 @@ bool MMSXMLClientInterface::checkRoot(xmlDocPtr doc, int *rc, string *error) {
 }
 
 bool MMSXMLClientInterface::funcSendEvent(string heading, int pluginid, int *rc, string *error) {
+  return funcSendEvent(heading, NULL, pluginid, rc, error);
+}
+
+bool MMSXMLClientInterface::funcSendEvent(string heading, map<string, string> *params, int pluginid, int *rc, string *error) {
 	string rbuf, abuf;
 
 	/* build request */
 	rbuf = "<func name=\"SendEvent\" heading=\"" + heading + "\"";
 	if (pluginid>=0) rbuf+= " pluginid=\"" + iToStr(pluginid) + "\"";
-	rbuf+= "/>";
+	if (NULL == params || 0 == params->size()) {
+	  rbuf+= "/>";
+	}
+	else {
+	  rbuf +=">";
+	  for (map<string, string>::iterator iter = params->begin(); iter != params->end(); iter++) {
+	    rbuf += "<param "+iter->first+"=\""+iter->second+"\" />";
+	  }
+	  rbuf += "</func>";
+	}
 
 	/* call server */
 	if(!tcl->connectToServer()) {
 		DEBUGMSG("MMSBASE", "connection to server failed");
 	}
-	
+
 	tcl->sendAndReceive(rbuf, &abuf);
 
 	DEBUGMSG("MMSBASE", "got response %s", abuf.c_str());
