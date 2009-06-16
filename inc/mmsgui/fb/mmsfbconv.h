@@ -210,6 +210,39 @@
 		d_v     v >> 8;									\
 	}
 
+
+
+
+
+
+
+
+#define MMSFB_CONV_YUY2_TO_YV12_PUSHPTR  \
+	unsigned short int *saved_src = src; \
+	unsigned char *saved_dst_y = dst_y;  \
+	unsigned char *saved_dst_u = dst_u;  \
+	unsigned char *saved_dst_v = dst_v;
+
+#define MMSFB_CONV_YUY2_TO_YV12_POPPTR \
+	src   = saved_src;   \
+	dst_y = saved_dst_y; \
+	dst_u = saved_dst_u; \
+	dst_v = saved_dst_v;
+
+
+#define MMSFB_CONV_YUY2_TO_YV12_PIXEL(src, dst_y, d_uv) \
+	SRC = src;											\
+	dst_y = SRC & 0xff;									\
+	d_uv    SRC >> 8;
+
+#define MMSFB_CONV_YUY2_TO_YV12_PIXEL_2(src, dst_y, d_uv) \
+	SRC = src;											  \
+	dst_y = SRC & 0xff;									  \
+	d_uv    (SRC >> 8) << 1;
+
+
+
+
 /*
 typedef int v4si __attribute__ ((vector_size (8)));
 typedef long long unsigned int v4sia __attribute__ ((vector_size (8)));
@@ -1101,6 +1134,13 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *extbuf, int src_height, int sx,
 */
 void mmsfb_blit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 							 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+//! Blit YUY2 to YV12.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *extbuf, int src_height, int sx, int sy, int sw, int sh,
+							 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
 
 
 

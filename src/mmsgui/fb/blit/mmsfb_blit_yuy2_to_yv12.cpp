@@ -29,6 +29,9 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
+
+
+
 void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy) {
 	// first time?
@@ -37,9 +40,28 @@ void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *extbuf, int src_height, int sx,
 		printf("DISKO: Using accelerated conversion YUY2 to YV12.\n");
 		firsttime = false;
 	}
-return;
+
+
+
+
+	// source/dest x and w must be multiple of two
+	// reason: YUY2 codes U/V values separated in two horizontal pixels
+	if (sx & 0x01) {
+		sx++;
+		sw--;
+		dx++;
+	}
+	sw &= ~0x01;
+	if (dx & 0x01) {
+		dx++;
+	}
+
+
+
+
+
 	// get the first source ptr/pitch
-	unsigned int *src = (unsigned int *)extbuf->ptr;
+	unsigned short int *src = (unsigned short int *)extbuf->ptr;
 	int src_pitch = extbuf->pitch;
 
 	// prepare...
@@ -57,17 +79,10 @@ return;
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
-	unsigned int OLDSRC  = (*src) + 1;
-	unsigned int old_y;
-	unsigned int old_u;
-	unsigned int old_v;
-
 	int  src_pixels = src_pitch_pix * sh;
 
 	// check odd/even
-	bool odd_left 	= (dx & 0x01);
 	bool odd_top 	= (dy & 0x01);
-	bool odd_right 	= ((dx + sw) & 0x01);
 	bool odd_bottom = ((dy + sh) & 0x01);
 
 	// pointer to the pixel components of the first pixel
@@ -87,166 +102,24 @@ return;
 	register unsigned int d_u;
 	register unsigned int d_v;
 
-	// draw odd pixels around the even rectangle
-	if (odd_top && odd_left) {
-		// odd top-left pixel
-		register unsigned int SRC;
-		register unsigned int A;
-
-		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
-		d_u = (*dst_u) * 3;
-		d_v = (*dst_v) * 3;
-
-	    // calculate my pixel...
-		MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-
-		// calulate the arithmetic mean
-		*dst_u = d_u >> 2;
-		*dst_v = d_v >> 2;
-	}
-
-	if (odd_top && odd_right) {
-		// odd top-right pixel
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
-
-		// go to the pixel in the current line
-		src   += sw - 1;
-		dst_y += sw - 1;
-		if (odd_left) {
-			dst_u += sw >> 1;
-			dst_v += sw >> 1;
-		}
-		else {
-			dst_u += (sw - 1) >> 1;
-			dst_v += (sw - 1) >> 1;
-		}
-
-		register unsigned int SRC;
-		register unsigned int A;
-
-		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
-		d_u = (*dst_u) * 3;
-		d_v = (*dst_v) * 3;
-
-	    // calculate my pixel...
-		MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-
-		// calulate the arithmetic mean
-		*dst_u = d_u >> 2;
-		*dst_v = d_v >> 2;
-
-		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
-	}
-
-	if (odd_bottom && odd_left) {
-		// odd bottom-left pixel
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
-
-		// go to the line
-		src   += src_pitch_pix * (sh-1);
-		dst_y += dst_pitch_pix * (sh-1);
-		if (odd_top) {
-			dst_u += dst_pitch_pix_half * (sh >> 1);
-			dst_v += dst_pitch_pix_half * (sh >> 1);
-		}
-		else {
-			dst_u += dst_pitch_pix_half * ((sh-1) >> 1);
-			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
-		}
-
-		register unsigned int SRC;
-		register unsigned int A;
-
-		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
-		d_u = (*dst_u) * 3;
-		d_v = (*dst_v) * 3;
-
-	    // calculate my pixel...
-		MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-
-		// calulate the arithmetic mean
-		*dst_u = d_u >> 2;
-		*dst_v = d_v >> 2;
-
-		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
-	}
-
-	if (odd_bottom && odd_right) {
-		// odd bottom-right pixel
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
-
-		// go to the line
-		src   += src_pitch_pix * (sh-1);
-		dst_y += dst_pitch_pix * (sh-1);
-		if (odd_top) {
-			dst_u += dst_pitch_pix_half * (sh >> 1);
-			dst_v += dst_pitch_pix_half * (sh >> 1);
-		}
-		else {
-			dst_u += dst_pitch_pix_half * ((sh-1) >> 1);
-			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
-		}
-
-		// go to the pixel in the current line
-		src   += sw - 1;
-		dst_y += sw - 1;
-		if (odd_left) {
-			dst_u += sw >> 1;
-			dst_v += sw >> 1;
-		}
-		else {
-			dst_u += (sw - 1) >> 1;
-			dst_v += (sw - 1) >> 1;
-		}
-
-		register unsigned int SRC;
-		register unsigned int A;
-
-		// for arithmetic mean we have to set U and V from pixels outside the current rectangle
-		d_u = (*dst_u) * 3;
-		d_v = (*dst_v) * 3;
-
-	    // calculate my pixel...
-		MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-
-		// calulate the arithmetic mean
-		*dst_u = d_u >> 2;
-		*dst_v = d_v >> 2;
-
-		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
-	}
-
 	if (odd_top) {
 		// odd top line
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_YUY2_TO_YV12_PUSHPTR;
 
 		// calculate start and end
-		unsigned int *line_end = src + sw;
-		if (odd_left) {
-			src++;
-			dst_y++;
-			dst_u++;
-			dst_v++;
-			line_end--;
-		}
-		if (odd_right)
-			line_end--;
+		unsigned short int *line_end = src + sw;
 
 		// through the line
 		while (src < line_end) {
-			register unsigned int SRC;
-			register unsigned int A;
+			register unsigned short int SRC;
 
 			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 			d_u = (*dst_u) << 1;
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL_2(*src, *dst_y, d_u+=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL_2(src[src2_offs], dst_y[dst_y2_offs], d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -260,12 +133,12 @@ return;
 		}
 
 		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_YUY2_TO_YV12_POPPTR;
 	}
 
 	if (odd_bottom) {
 		// odd bottom line
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
+		MMSFB_CONV_YUY2_TO_YV12_PUSHPTR;
 
 		// calculate start and end
 		src   += src_pitch_pix * (sh-1);
@@ -279,29 +152,19 @@ return;
 			dst_v += dst_pitch_pix_half * ((sh-1) >> 1);
 		}
 
-		unsigned int *line_end = src + sw;
-		if (odd_left) {
-			src++;
-			dst_y++;
-			dst_u++;
-			dst_v++;
-			line_end--;
-		}
-		if (odd_right)
-			line_end--;
+		unsigned short int *line_end = src + sw;
 
 		// through the line
 		while (src < line_end) {
-			register unsigned int SRC;
-			register unsigned int A;
+			register unsigned short int SRC;
 
 			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
 			d_u = (*dst_u) << 1;
 			d_v = (*dst_v) << 1;
 
 		    // calculate my two pixels...
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL_2(*src, *dst_y, d_u+=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL_2(src[src2_offs], dst_y[dst_y2_offs], d_v+=);
 
 			// calulate the arithmetic mean
 			*dst_u = d_u >> 2;
@@ -315,113 +178,7 @@ return;
 		}
 
 		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
-	}
-
-	if (odd_left) {
-		// odd left line
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
-
-		// calculate start and end
-		unsigned int *src_end = src + src_pixels;
-		int src_pitch_diff    = src_pitch_pix << 1;
-		int dst_pitch_diff    = dst_pitch_pix << 1;
-		int dst_pitch_uvdiff  = dst_pitch_pix_half;
-		if (odd_top) {
-			src     += src_pitch_pix;
-			src_end -= src_pitch_pix;
-			dst_y   += dst_pitch_pix;
-			dst_u   += dst_pitch_pix_half;
-			dst_v   += dst_pitch_pix_half;
-		}
-		if (odd_bottom)
-			src_end -= src_pitch_pix;
-
-		// through all lines
-		while (src < src_end) {
-			// for the first pixel in the line
-			register unsigned int SRC;
-			register unsigned int A;
-
-			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
-			d_u = (*dst_u) << 1;
-			d_v = (*dst_v) << 1;
-
-		    // calculate my two pixels...
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-
-			// calulate the arithmetic mean
-			*dst_u = d_u >> 2;
-			*dst_v = d_v >> 2;
-
-			// go to the next two lines
-			src   += src_pitch_diff;
-			dst_y += dst_pitch_diff;
-			dst_u += dst_pitch_uvdiff;
-			dst_v += dst_pitch_uvdiff;
-		}
-
-		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
-	}
-
-	if (odd_right) {
-		// odd right line
-		MMSFB_CONV_ARGB_TO_YV12_PUSHPTR;
-
-		// calculate start and end
-		unsigned int *src_end = src + src_pixels;
-		int src_pitch_diff    = src_pitch_pix << 1;
-		int dst_pitch_diff    = dst_pitch_pix << 1;
-		int dst_pitch_uvdiff  = dst_pitch_pix_half;
-		src   += sw - 1;
-		dst_y += sw - 1;
-		if (odd_left) {
-			dst_u += sw >> 1;
-			dst_v += sw >> 1;
-		}
-		else {
-			dst_u += (sw - 1) >> 1;
-			dst_v += (sw - 1) >> 1;
-		}
-		if (odd_top) {
-			src     += src_pitch_pix;
-			src_end -= src_pitch_pix;
-			dst_y   += dst_pitch_pix;
-			dst_u   += dst_pitch_pix_half;
-			dst_v   += dst_pitch_pix_half;
-		}
-		if (odd_bottom)
-			src_end -= src_pitch_pix;
-
-		// through all lines
-		while (src < src_end) {
-			// for the first pixel in the line
-			register unsigned int SRC;
-			register unsigned int A;
-
-			// for arithmetic mean we have to set U and V from pixels outside the current rectangle
-			d_u = (*dst_u) << 1;
-			d_v = (*dst_v) << 1;
-
-		    // calculate my two pixels...
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-
-			// calulate the arithmetic mean
-			*dst_u = d_u >> 2;
-			*dst_v = d_v >> 2;
-
-			// go to the next two lines
-			src   += src_pitch_diff;
-			dst_y += dst_pitch_diff;
-			dst_u += dst_pitch_uvdiff;
-			dst_v += dst_pitch_uvdiff;
-		}
-
-		// restore the pointers
-		MMSFB_CONV_ARGB_TO_YV12_POPPTR;
+		MMSFB_CONV_YUY2_TO_YV12_POPPTR;
 	}
 
 	// calc even positions...
@@ -442,24 +199,9 @@ return;
 		src_pixels-=src_pitch_pix;
 	}
 
-	if (odd_left) {
-		// odd left
-		dx++;
-		sw--;
-		src++;
-		dst_y++;
-		dst_u++;
-		dst_v++;
-	}
-
-	if (odd_right) {
-		// odd right
-		sw--;
-	}
-
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
-	unsigned int *src_end = src + src_pixels;
+	unsigned short int *src_end = src + src_pixels;
 	int src_pitch_diff = (src_pitch_pix << 1) - sw;
 	int dst_pitch_diff = (dst_pitch_pix << 1) - sw;
 	int dst_pitch_uvdiff = (dst_pitch_pix - sw) >> 1;
@@ -467,22 +209,21 @@ return;
 	// for all lines
 	while (src < src_end) {
 		// for all pixels in the line
-		unsigned int *line_end = src + sw;
+		unsigned short int *line_end = src + sw;
 
 		// go through two lines in parallel (square 2x2 pixel)
 		while (src < line_end) {
-			register unsigned int SRC;
-			register unsigned int A;
+			register unsigned short int SRC;
 
 		    // calculate the four pixels...
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(*src, *dst_y, *dst_u, *dst_v, d_u=, d_v=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], *dst_u, *dst_v, d_u+=, d_v+=);
-			MMSFB_CONV_ARGB_TO_YV12_PIXEL(src[src4_offs], dst_y[dst_y4_offs], *dst_u, *dst_v, d_u+=, d_v+=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL(*src, *dst_y, d_u=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL(src[src2_offs], dst_y[dst_y2_offs], d_v=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL(src[src3_offs], dst_y[dst_y3_offs], d_u+=);
+			MMSFB_CONV_YUY2_TO_YV12_PIXEL(src[src4_offs], dst_y[dst_y4_offs], d_v+=);
 
 			// calulate the arithmetic mean
-			*dst_u = d_u >> 2;
-			*dst_v = d_v >> 2;
+			*dst_u = d_u >> 1;
+			*dst_v = d_v >> 1;
 
 			// go to the next two pixels
 		    src  +=2;
