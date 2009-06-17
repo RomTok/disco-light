@@ -416,22 +416,53 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 		}
     }
 
+
+/*
+////// TEST //////////////////////////////////////
+static unsigned char rrrrr_buf[2048*768];
+static int rrrrr=0;
+if(!rrrrr) {
+	rrrrr=1;
+	for (int i = 0; i < sizeof(rrrrr_buf)/4; i++) {
+		rrrrr_buf[i*4] = 0xff;
+		rrrrr_buf[i*4+1] = 0x00;
+		rrrrr_buf[i*4+2] = 0x00;
+		rrrrr_buf[i*4+3] = 0x00;
+	}
+}
+data0 = rrrrr_buf;
+frame_format = XINE_VORAW_YUY2;
+//////////////////////////////////////////////////
+*/
+
 	if (userd->surf_pixelformat == MMSFB_PF_YV12) {
 		// the destination has YV12 pixelformat
-		if (frame_format == XINE_VORAW_RGB) {
-    		// we get RGB24 data
-			if (!userd->interim) {
-				// allocate interim buffer for RGB24 to YV12 convertion
+		if ((frame_format != XINE_VORAW_YV12) && (!userd->interim)) {
+			// have to allocate iterim buffer
+			switch (frame_format) {
+			case XINE_VORAW_YUY2:
+			case XINE_VORAW_RGB:
+				// we get YUY2 or RGB24 data, allocate interim buffer for YV12 convertion
 				userd->interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
+				break;
 			}
-    	}
+		}
 
 		if (userd->interim) {
-			// source is RGB24
-			userd->interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
-							    frame_width, frame_height, NULL, 0, 0);
+			// blit to interim and then stretch it
+			switch (frame_format) {
+			case XINE_VORAW_YUY2:
+				// source is YUY2
+				userd->interim->blitBuffer(data0, frame_width*2, MMSFB_PF_YUY2,
+										   frame_width, frame_height, NULL, 0, 0);
+				break;
+			case XINE_VORAW_RGB:
+				// source is RGB24
+				userd->interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
+										   frame_width, frame_height, NULL, 0, 0);
+				break;
+			}
 			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);
-
 		} else {
 			// source is YV12
 			MMSFBExternalSurfaceBuffer buf;
@@ -1469,6 +1500,7 @@ void MMSAV::play() {
 			   this->setStatus(this->STATUS_PLAYING);
 				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
 			}
+			return;
 #endif
 			break;
 		default:
@@ -1549,6 +1581,7 @@ void MMSAV::pause() {
 				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
 				xine_set_param(this->stream, XINE_PARAM_AUDIO_CLOSE_DEVICE, 1);
 			}
+			return;
 #endif
 			break;
 		default:
@@ -1593,6 +1626,7 @@ void MMSAV::slow() {
 				this->setStatus(this->STATUS_FFWD);
 				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_FAST_2);
 			}
+			return;
 #endif
 			break;
 		default:
@@ -1616,6 +1650,42 @@ void MMSAV::ffwd() {
 	switch(this->backend) {
 		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+
+
+	    	printf("ffwd-------------------------------------\n");
+
+
+/*
+static void
+seek_to_time (GstElement *pipeline,
+	      gint64      time_nanoseconds)
+{
+  if (!gst_element_seek (pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+                         GST_SEEK_TYPE_SET, time_nanoseconds,
+                         GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE)) {
+    g_print ("Seek failed!\n");
+  }
+}
+
+ */
+/*
+	    	gst_element_seek(this->gst_diskovideosink_data.player,
+	    			1.0,
+	    			GST_FORMAT_TIME,
+	    			GST_SEEK_FLAG_FLUSH,
+	    			GST_SEEK_TYPE_SET,
+	    			1000*1000*1000,
+	    			GST_SEEK_TYPE_NONE,
+	    			GST_CLOCK_TIME_NONE);*/
+	    			         /*
+	    	                                                         gdouble rate,
+	    	                                                         GstFormat format,
+	    	                                                         GstSeekFlags flags,
+	    	                                                         GstSeekType cur_type,
+	    	                                                         gint64 cur,
+	    	                                                         GstSeekType stop_type,
+	    	                                                         gint64 stop);*/
+
 			return;
 #endif
 			break;
@@ -1637,6 +1707,7 @@ void MMSAV::ffwd() {
 				this->setStatus(this->STATUS_SLOW);
 				xine_set_param(this->stream, XINE_PARAM_SPEED, XINE_SPEED_SLOW_2);
 			}
+			return;
 #endif
 			break;
 		default:
