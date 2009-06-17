@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 ########################################################################
 # Script to install gstreamer including the disko videosink plugin.
 #
@@ -43,7 +43,7 @@ cd gst-plugins-base-0.10.23;
 ./configure "$installprefix" && make && make install;
 cd -
 
-[ ! -f gst-plugins-bad-0.10.12 ] && \
+[ ! -f gst-plugins-bad-0.10.12.tar.bz2 ] && \
     wget http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-0.10.12.tar.bz2;
 
 [ ! -d gst-plugins-bad-0.10.12 ] && \
