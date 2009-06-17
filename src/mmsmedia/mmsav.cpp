@@ -654,9 +654,11 @@ static void* playRoutine(void *data) {
                 DEBUGMSG("MMSAV", "Unknown error while trying to play stream");
                 break;
         }
+        *(streamData->status) = MMSAV::STATUS_NONE;
     }
+    else
+    	*(streamData->status) = MMSAV::STATUS_PLAYING;
 
-    *(streamData->status) = MMSAV::STATUS_PLAYING;
 	pthread_mutex_unlock(streamData->lock);
 	delete streamData;
 
