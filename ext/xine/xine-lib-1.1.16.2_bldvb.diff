@@ -788,7 +788,7 @@ diff -Nupr xine-lib-1.1.16.2-original/Makefile.in xine-lib-1.1.16.2-modified/Mak
 diff -Nupr xine-lib-1.1.16.2-original/src/input/input_bldvb.c xine-lib-1.1.16.2-modified/src/input/input_bldvb.c
 --- xine-lib-1.1.16.2-original/src/input/input_bldvb.c	1970-01-01 01:00:00.000000000 +0100
 +++ xine-lib-1.1.16.2-modified/src/input/input_bldvb.c	2009-05-25 11:44:03.000000000 +0200
-@@ -0,0 +1,1292 @@
+@@ -0,0 +1,1295 @@
 +#ifdef HAVE_CONFIG_H
 +#include "config.h"
 +#endif
@@ -821,6 +821,9 @@ diff -Nupr xine-lib-1.1.16.2-original/src/input/input_bldvb.c xine-lib-1.1.16.2-
 +#include <ctype.h>
 +
 +#include <linux/dvb/dmx.h>
++#ifndef HAVE_LIBMEDIACLIENT
++#include <linux/dvb/frontend.h>
++#endif
 +
 +#define LOG_MODULE "input_bldvb"
 +#define LOG_VERBOSE
