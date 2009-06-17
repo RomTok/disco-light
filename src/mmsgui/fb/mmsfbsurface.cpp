@@ -2389,7 +2389,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 					mmsfb_blit_yuy2_to_yv12(
 							src_planes, src_height,
 							sx, sy, sw, sh,
-							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							x, y);
 					extendedUnlock(source, this);
 					return true;

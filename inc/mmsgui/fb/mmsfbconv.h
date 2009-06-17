@@ -1139,8 +1139,8 @@ void mmsfb_blit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							 unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy);
+void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 
