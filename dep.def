@@ -193,14 +193,36 @@ ifndef XINE_CHECKED
             else
                 export __HAVE_MMSMEDIA__=1
                 export CFLAGS+=-D__HAVE_MMSMEDIA__
+		        export CFLAGS+=-D__HAVE_XINE__
             endif
         else
             export __HAVE_MMSMEDIA__=1
             export CFLAGS+=-D__HAVE_MMSMEDIA__
+	        export CFLAGS+=-D__HAVE_XINE__
         endif
     endif
     export XINE_CHECKED=1
 endif
+
+
+
+#gstreamer
+#ifndef GSTREAMER_CHECKED
+#    $(info check for libgstreamer)
+#    export GSTREAMER_LIBS=$(shell pkg-config --silence-errors --libs gstreamer-0.10)
+#    ifeq ($(GSTREAMER_LIBS),)
+#        $(info --- INFO ---: gstreamer was not found. xxx.)
+#    else
+#        export GSTREAMER_INC=$(shell pkg-config --cflags gstreamer-0.10)
+#        export __HAVE_MMSMEDIA__=1
+#        export CFLAGS+=-D__HAVE_MMSMEDIA__
+#        export CFLAGS+=-D__HAVE_GSTREAMER__
+#    endif
+#    export GSTREAMER_CHECKED=1
+#endif
+
+
+
 
 #sigc++
 ifndef SIGC_CHECKED
@@ -388,6 +410,10 @@ ifneq ($(XINE_LIBS),)
     req_str += ", libxine"
     libs_str += " -lmmsmedia"
 endif
+ifneq ($(GSTREAMER_LIBS),)
+    req_str += ", gstreamer-0.10"
+#    libs_str += " -lmmsmedia"
+endif
 ifneq ($(ALSA_LIBS),)
     req_str += ", alsa"
 endif
@@ -426,6 +452,6 @@ endif
 export CFLAGS+='-D__HAVE_FBDEV__'
 
 #for pupeider
-#export CFLAGS+='-D__HAVE_XLIB__'
-#export CFLAGS+='-D__NO_XSYNC__'
+export CFLAGS+='-D__HAVE_XLIB__'
+export CFLAGS+='-D__NO_XSYNC__'
 
