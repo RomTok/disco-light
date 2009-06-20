@@ -1422,6 +1422,15 @@ void mmsfb_fillrectangle_i420(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
+//! Fill rectangle YUY2.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						      int dx, int dy, int dw, int dh, MMSFBColor color);
+
+
+
 //! Fill rectangle ARGB3565.
 /*!
 \author Jens Schneider
