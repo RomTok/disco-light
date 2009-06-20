@@ -1194,6 +1194,16 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf
 
 
 
+//! Blit YUY2 to YUY2.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_yuy2_to_yuy2(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+
+
+
 //! Blit YV12 to RGB32.
 /*!
 \author Jens Schneider

@@ -2380,6 +2380,28 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 	case MMSFB_PF_YUY2:
 		// source is YUY2
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YUY2) {
+			// destination is YV12
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+				// convert without alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_yuy2_to_yuy2(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
