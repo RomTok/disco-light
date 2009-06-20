@@ -456,6 +456,6 @@ endif
 export CFLAGS+='-D__HAVE_FBDEV__'
 
 #for pupeider
-export CFLAGS+='-D__HAVE_XLIB__'
-export CFLAGS+='-D__NO_XSYNC__'
+#export CFLAGS+='-D__HAVE_XLIB__'
+#export CFLAGS+='-D__NO_XSYNC__'
 
