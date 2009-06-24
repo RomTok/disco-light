@@ -64,10 +64,19 @@ void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
 	unsigned int SRC_U = MMSFB_CONV_RGB2U(color.r, color.g, color.b);
 	unsigned int SRC_V = MMSFB_CONV_RGB2V(color.r, color.g, color.b);
 	register unsigned int SRC;
-	SRC =     (SRC_V << 24)
-			| (SRC_Y << 16)
-			| (SRC_U << 8)
-			|  SRC_Y;
+#ifdef BIG_ENDIAN
+	// e.g. ARM
+	SRC = 	(SRC_Y << 24)
+		  | (SRC_V << 16)
+		  | (SRC_Y << 8)
+		  |  SRC_U;
+#else
+	// e.g. Intel
+	SRC = 	(SRC_U << 24)
+		  | (SRC_Y << 16)
+		  | (SRC_V << 8)
+		  |  SRC_Y;
+#endif
 
 	// copy pixel directly to the destination
 	// for all lines
