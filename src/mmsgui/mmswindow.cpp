@@ -1891,8 +1891,10 @@ bool MMSWindow::showAction(bool *stopaction) {
 		bool os;
 		getOwnSurface(os);
 		if (!os) {
-			// we are working with a subsurface of a fullscreen window
-			this->window->setVisibleRectangle(&this->geom);
+			if (this->window) {
+				// we are working with a subsurface of a fullscreen window
+				this->window->setVisibleRectangle(&this->geom);
+			}
 		}
     }
 
