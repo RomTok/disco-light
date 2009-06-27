@@ -51,7 +51,10 @@
 				}											\
 			}												\
 			else											\
-			if (A) {										\
+			if (!A) {										\
+				alpha dst_a;								\
+			}												\
+			else {											\
 				register unsigned short int DST = dst;		\
 				if ((DST==OLDDST)&&(dst_a==OLDDSTA)&&(SRC==OLDSRC)) {			\
 					dst = d;								\
@@ -82,61 +85,6 @@
 					alpha da;								\
 				}											\
 			}
-
-
-/*
-			// load pixel from memory and check if the previous pixel is the same
-			register unsigned int SRC = *src;
-
-			// is the source alpha channel 0x00 or 0xff?
-			register unsigned int A = SRC >> 24;
-			if (A == 0xff) {
-				// source pixel is not transparent, copy it directly to the destination
-				*dst = SRC;
-			}
-			else
-			if (A) {
-				// source alpha is > 0x00 and < 0xff
-				register unsigned int DST = *dst;
-
-				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
-					// same pixel, use the previous value
-					*dst = d;
-				    dst++;
-				    src++;
-					continue;
-				}
-				OLDDST = DST;
-				OLDSRC = SRC;
-
-				register unsigned int SA= 0x100 - A;
-				unsigned int a = DST >> 24;
-				unsigned int r = (DST << 8) >> 24;
-				unsigned int g = (DST << 16) >> 24;
-				unsigned int b = DST & 0xff;
-
-				// invert src alpha
-			    a = (SA * a) >> 8;
-			    r = (SA * r) >> 8;
-			    g = (SA * g) >> 8;
-			    b = (SA * b) >> 8;
-
-			    // add src to dst
-			    a += A;
-			    r += (SRC << 8) >> 24;
-			    g += (SRC << 16) >> 24;
-			    b += SRC & 0xff;
-			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
-					| ((r >> 8) ? 0xff0000   : (r << 16))
-					| ((g >> 8) ? 0xff00     : (g << 8))
-			    	| ((b >> 8) ? 0xff 		 :  b);
-				*dst = d;
-			}
-
-		    dst++;
-		    src++;
-*/
-
 
 
 void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -233,7 +181,7 @@ void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_h
 
 			// process two pixels
 			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*src, *dst, ((*dst_a) >> 4), alpha=);
-			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*(src+1), *(dst+1), (*dst_a)&0x0f, alpha=(alpha<<4)|);
+			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*(src+1), *(dst+1), ((*dst_a)&0x0f), alpha=(alpha<<4)|);
 			dst+=2;
 			src+=2;
 
