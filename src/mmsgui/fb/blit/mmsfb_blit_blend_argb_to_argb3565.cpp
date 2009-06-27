@@ -34,12 +34,10 @@
 			A    = SRC >> 24;								\
 			if (A == 0xff) {								\
 				if (SRC==OLDSRC) {							\
-printf("blend#0\n"); \
 					dst = d;								\
 					alpha da;								\
 				}											\
 				else {										\
-printf("blend#1\n"); \
 					OLDSRC = SRC;							\
 					unsigned int r = (SRC << 8) >> 27;		\
 					unsigned int g = (SRC << 16) >> 26;		\
@@ -56,20 +54,18 @@ printf("blend#1\n"); \
 			if (A) {										\
 				register unsigned short int DST = dst;		\
 				if ((DST==OLDDST)&&(dst_a==OLDDSTA)&&(SRC==OLDSRC)) {			\
-					printf("blend#2\n"); \
 					dst = d;								\
 					alpha da;								\
 				}											\
 				else  {										\
-printf("blend#3\n"); \
 					OLDDST  = DST;							\
 					OLDDSTA = dst_a;						\
 					OLDSRC = SRC;							\
 					register unsigned int SA= 0x100 - A;	\
-					unsigned int a = dst_a;					\
-					unsigned int r = DST >> 11;				\
-					unsigned int g = (DST << 5) >> 10;		\
-					unsigned int b = DST & 0x1f;			\
+					unsigned int a = dst_a << 5;			\
+					unsigned int r = (DST >> 11) << 3;				\
+					unsigned int g = ((DST << 5) >> 10) << 2;		\
+					unsigned int b = (DST & 0x1f) << 3;			\
 					a = (SA * a) >> 8;						\
 					r = (SA * r) >> 8;						\
 					g = (SA * g) >> 8;						\
@@ -81,7 +77,7 @@ printf("blend#3\n"); \
 					d =   ((r >> 8) ? 0xf800   	: ((r >> 3) << 11))	\
 						| ((g >> 8) ? 0x07e0	: ((g >> 2) << 5))	\
 						| ((b >> 8) ? 0x1f 		: (b >> 3));	\
-					da = a >> 29;							\
+					da = (a >> 8) ? 0x07 : a >> 5;			\
 					dst = d;								\
 					alpha da;								\
 				}											\
@@ -236,7 +232,7 @@ void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_h
 			unsigned char alpha;
 
 			// process two pixels
-			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*src, *dst, (*dst_a)&0xf0, alpha=);
+			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*src, *dst, ((*dst_a) >> 4), alpha=);
 			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*(src+1), *(dst+1), (*dst_a)&0x0f, alpha=(alpha<<4)|);
 			dst+=2;
 			src+=2;
