@@ -49,7 +49,7 @@
 
 
 
-void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_blit_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 								 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
@@ -57,6 +57,10 @@ void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_heigh
 		printf("DISKO: Using accelerated conversion ARGB to ARGB3565.\n");
 		firsttime = false;
 	}
+
+	// get the first source ptr/pitch
+	unsigned int *src = (unsigned int *)src_planes->ptr;
+	int src_pitch = src_planes->pitch;
 
 	// DST: point to the first plane (RGB16/RGB565 format)
 	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;

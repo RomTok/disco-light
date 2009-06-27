@@ -1238,9 +1238,16 @@ void mmsfb_blit_argb3565_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_hei
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_blit_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 								 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
+
+//! Blit with alpha blending ARGB to ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 
