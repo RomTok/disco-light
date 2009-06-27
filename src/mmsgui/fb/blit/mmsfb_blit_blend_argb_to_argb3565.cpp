@@ -29,23 +29,117 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-#define MMSFB_BLIT_ARGB_TO_ARGB3565(src, dst, alpha)	\
-			SRC  = src;									\
-			if (SRC==OLDSRC) {							\
-				dst = d;								\
-				alpha (SRC >> 29);						\
-			}											\
-			else {										\
-				OLDSRC = SRC;							\
-				unsigned int r = (SRC << 8) >> 27;		\
-				unsigned int g = (SRC << 16) >> 26;		\
-				unsigned int b = (SRC & 0xff) >> 3;		\
-				d =   (r << 11)							\
-					| (g << 5)							\
-					| b;								\
-				dst = d;								\
-				alpha (SRC >> 29);						\
+#define MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(src, dst, dst_a, alpha)	\
+			SRC  = src;												\
+			A    = SRC >> 24;								\
+			if (A == 0xff) {								\
+				if (SRC==OLDSRC) {							\
+printf("blend#0\n"); \
+					dst = d;								\
+					alpha da;								\
+				}											\
+				else {										\
+printf("blend#1\n"); \
+					OLDSRC = SRC;							\
+					unsigned int r = (SRC << 8) >> 27;		\
+					unsigned int g = (SRC << 16) >> 26;		\
+					unsigned int b = (SRC & 0xff) >> 3;		\
+					d =   (r << 11)							\
+						| (g << 5)							\
+						| b;								\
+					da = SRC >> 29;							\
+					dst = d;								\
+					alpha da;								\
+				}											\
+			}												\
+			else											\
+			if (A) {										\
+				register unsigned short int DST = dst;		\
+				if ((DST==OLDDST)&&(dst_a==OLDDSTA)&&(SRC==OLDSRC)) {			\
+					printf("blend#2\n"); \
+					dst = d;								\
+					alpha da;								\
+				}											\
+				else  {										\
+printf("blend#3\n"); \
+					OLDDST  = DST;							\
+					OLDDSTA = dst_a;						\
+					OLDSRC = SRC;							\
+					register unsigned int SA= 0x100 - A;	\
+					unsigned int a = dst_a;					\
+					unsigned int r = DST >> 11;				\
+					unsigned int g = (DST << 5) >> 10;		\
+					unsigned int b = DST & 0x1f;			\
+					a = (SA * a) >> 8;						\
+					r = (SA * r) >> 8;						\
+					g = (SA * g) >> 8;						\
+					b = (SA * b) >> 8;						\
+					a += A;									\
+					r += (SRC << 8) >> 24;					\
+					g += (SRC << 16) >> 24;					\
+					b += SRC & 0xff;						\
+					d =   ((r >> 8) ? 0xf800   	: ((r >> 3) << 11))	\
+						| ((g >> 8) ? 0x07e0	: ((g >> 2) << 5))	\
+						| ((b >> 8) ? 0x1f 		: (b >> 3));	\
+					da = a >> 29;							\
+					dst = d;								\
+					alpha da;								\
+				}											\
 			}
+
+
+/*
+			// load pixel from memory and check if the previous pixel is the same
+			register unsigned int SRC = *src;
+
+			// is the source alpha channel 0x00 or 0xff?
+			register unsigned int A = SRC >> 24;
+			if (A == 0xff) {
+				// source pixel is not transparent, copy it directly to the destination
+				*dst = SRC;
+			}
+			else
+			if (A) {
+				// source alpha is > 0x00 and < 0xff
+				register unsigned int DST = *dst;
+
+				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
+					// same pixel, use the previous value
+					*dst = d;
+				    dst++;
+				    src++;
+					continue;
+				}
+				OLDDST = DST;
+				OLDSRC = SRC;
+
+				register unsigned int SA= 0x100 - A;
+				unsigned int a = DST >> 24;
+				unsigned int r = (DST << 8) >> 24;
+				unsigned int g = (DST << 16) >> 24;
+				unsigned int b = DST & 0xff;
+
+				// invert src alpha
+			    a = (SA * a) >> 8;
+			    r = (SA * r) >> 8;
+			    g = (SA * g) >> 8;
+			    b = (SA * b) >> 8;
+
+			    // add src to dst
+			    a += A;
+			    r += (SRC << 8) >> 24;
+			    g += (SRC << 16) >> 24;
+			    b += SRC & 0xff;
+			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
+					| ((r >> 8) ? 0xff0000   : (r << 16))
+					| ((g >> 8) ? 0xff00     : (g << 8))
+			    	| ((b >> 8) ? 0xff 		 :  b);
+				*dst = d;
+			}
+
+		    dst++;
+		    src++;
+*/
 
 
 
@@ -121,12 +215,15 @@ void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_h
 
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
-	unsigned int OLDSRC  = (*src) + 1;
+	unsigned short int OLDDST  = (*dst) + 1;
+	unsigned char 	   OLDDSTA = (*dst_a) + 1;
+	unsigned int OLDSRC = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch_pix - sw;
 	int dst_a_pitch_diff = dst_a_pitch - (sw >> 1);
 	register unsigned short int d;
+	register unsigned char da;
 
 
 	// for all lines
@@ -135,11 +232,12 @@ void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_h
 		unsigned int *line_end = src + sw;
 		while (src < line_end) {
 			register unsigned int SRC;
+			register unsigned int A;
 			unsigned char alpha;
 
 			// process two pixels
-			MMSFB_BLIT_ARGB_TO_ARGB3565(*src, *dst, alpha=);
-			MMSFB_BLIT_ARGB_TO_ARGB3565(*(src+1), *(dst+1), alpha=(alpha<<4)|);
+			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*src, *dst, (*dst_a)&0xf0, alpha=);
+			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*(src+1), *(dst+1), (*dst_a)&0x0f, alpha=(alpha<<4)|);
 			dst+=2;
 			src+=2;
 
