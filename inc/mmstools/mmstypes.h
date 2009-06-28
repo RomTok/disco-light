@@ -34,20 +34,30 @@
 // plane description.........................................................
 
 //! Describes up to 3 planes of an surface buffer.
-typedef struct {
-	//! first plane
-	void	*ptr;
-	//! pitch of first plane
-	int 	pitch;
-	//! second plane or NULL if surface has only one plane
-	void	*ptr2;
-	//! pitch of second plane
-	int 	pitch2;
-	//! third plane or NULL if surface has only one or two planes
-	void	*ptr3;
-	//! pitch of third plane
-	int 	pitch3;
-} MMSFBSurfacePlanes;
+class MMSFBSurfacePlanes {
+	public:
+		//! first plane
+		void	*ptr;
+		//! pitch of first plane
+		int 	pitch;
+		//! second plane or NULL if surface has only one plane
+		void	*ptr2;
+		//! pitch of second plane
+		int 	pitch2;
+		//! third plane or NULL if surface has only one or two planes
+		void	*ptr3;
+		//! pitch of third plane
+		int 	pitch3;
+
+		MMSFBSurfacePlanes(void *ptr = NULL, int pitch = 0, void *ptr2 = NULL, int pitch2 = 0, void *ptr3 = NULL, int pitch3 = 0) {
+			this->ptr	= ptr;
+			this->pitch = pitch;
+			this->ptr2	= ptr2;
+			this->pitch2= pitch2;
+			this->ptr3	= ptr3;
+			this->pitch3= pitch3;
+		}
+};
 
 //! for compatibility reason
 #define MMSFBExternalSurfaceBuffer	MMSFBSurfacePlanes
