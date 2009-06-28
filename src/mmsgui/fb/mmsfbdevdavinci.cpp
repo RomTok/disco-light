@@ -171,6 +171,18 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				this->layers[layer_id].height = height;
 				this->layers[layer_id].pixelformat = pixelformat;
 
+				// clear layer
+				if (pixelformat == MMSFB_PF_ARGB3565) {
+					MMSFBColor color(0x00, 0x00, 0x00, 0x00);
+					mmsfb_fillrectangle_argb3565(&(this->layers[layer_id].planes), this->layers[layer_id].height,
+												 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				}
+				else {
+					MMSFBColor color(0x00, 0x00, 0x00, 0xff);
+					mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].planes), this->layers[layer_id].height,
+											  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				}
+
 				// layer is initialized
 				this->layers[layer_id].isinitialized = true;
 
