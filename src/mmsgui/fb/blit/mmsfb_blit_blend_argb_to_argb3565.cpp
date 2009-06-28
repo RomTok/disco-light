@@ -29,61 +29,61 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-#define MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(src, dst, dst_a, alpha)	\
-			SRC  = src;												\
-			A    = SRC >> 24;								\
-			if (A == 0xff) {								\
-				if (SRC==OLDSRC) {							\
-					dst = d;								\
-					alpha da;								\
-				}											\
-				else {										\
-					OLDSRC = SRC;							\
-					unsigned int r = (SRC << 8) >> 27;		\
-					unsigned int g = (SRC << 16) >> 26;		\
-					unsigned int b = (SRC & 0xff) >> 3;		\
-					d =   (r << 11)							\
-						| (g << 5)							\
-						| b;								\
-					da = SRC >> 29;							\
-					dst = d;								\
-					alpha da;								\
-				}											\
-			}												\
-			else											\
-			if (!A) {										\
-				alpha dst_a;								\
-			}												\
-			else {											\
-				register unsigned short int DST = dst;		\
-				if ((DST==OLDDST)&&(dst_a==OLDDSTA)&&(SRC==OLDSRC)) {			\
-					dst = d;								\
-					alpha da;								\
-				}											\
-				else  {										\
-					OLDDST  = DST;							\
-					OLDDSTA = dst_a;						\
-					OLDSRC = SRC;							\
-					register unsigned int SA= 0x100 - A;	\
-					unsigned int a = dst_a << 5;			\
-					unsigned int r = (DST >> 11) << 3;				\
-					unsigned int g = ((DST << 5) >> 10) << 2;		\
-					unsigned int b = (DST & 0x1f) << 3;			\
-					a = (SA * a) >> 8;						\
-					r = (SA * r) >> 8;						\
-					g = (SA * g) >> 8;						\
-					b = (SA * b) >> 8;						\
-					a += A;									\
-					r += (SRC << 8) >> 24;					\
-					g += (SRC << 16) >> 24;					\
-					b += SRC & 0xff;						\
-					d =   ((r >> 8) ? 0xf800   	: ((r >> 3) << 11))	\
-						| ((g >> 8) ? 0x07e0	: ((g >> 2) << 5))	\
-						| ((b >> 8) ? 0x1f 		: (b >> 3));	\
-					da = (a >> 8) ? 0x07 : a >> 5;			\
-					dst = d;								\
-					alpha da;								\
-				}											\
+#define MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(src, dst, dst_a, alpha)		\
+			SRC  = src;													\
+			A    = SRC >> 24;											\
+			if (A == 0xff) {											\
+				if (SRC==OLDSRC) {										\
+					dst = d;											\
+					alpha da;											\
+				}														\
+				else {													\
+					OLDSRC = SRC;										\
+					unsigned int r = (SRC << 8) >> 27;					\
+					unsigned int g = (SRC << 16) >> 26;					\
+					unsigned int b = (SRC & 0xff) >> 3;					\
+					d =   (r << 11)										\
+						| (g << 5)										\
+						| b;											\
+					da = A >> 5;										\
+					dst = d;											\
+					alpha da;											\
+				}														\
+			}															\
+			else														\
+			if (!A) {													\
+				alpha dst_a;											\
+			}															\
+			else {														\
+				register unsigned short int DST = dst;					\
+				if ((DST==OLDDST)&&(dst_a==OLDDSTA)&&(SRC==OLDSRC)) {	\
+					dst = d;											\
+					alpha da;											\
+				}														\
+				else  {													\
+					OLDDST  = DST;										\
+					OLDDSTA = dst_a;									\
+					OLDSRC = SRC;										\
+					register unsigned int SA= 0x100 - A;				\
+					unsigned int a = dst_a;								\
+					unsigned int r = DST >> 11;							\
+					unsigned int g = (DST << 5) >> 10;					\
+					unsigned int b = DST & 0x1f;						\
+					a = (SA * a) >> 3;									\
+					r = (SA * r) >> 5;									\
+					g = (SA * g) >> 6;									\
+					b = (SA * b) >> 5;									\
+					a += A >> 5;										\
+					r += (SRC << 8) >> 27;								\
+					g += (SRC << 16) >> 26;								\
+					b += (SRC << 24) >> 27;								\
+					d =   ((r >> 5) ? 0xf800   	: (r << 11))			\
+						| ((g >> 6) ? 0x07e0	: (g << 5))				\
+						| ((b >> 5) ? 0x1f 		: b);					\
+					da = (a >> 8) ? 0x07 : a;							\
+					dst = d;											\
+					alpha da;											\
+				}														\
 			}
 
 
