@@ -3250,7 +3250,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb16((unsigned short *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_rgb16(&dst_planes, dst_height,
 										  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
