@@ -1407,7 +1407,7 @@ void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_rgb16(unsigned short int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_rgb16(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						       int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
