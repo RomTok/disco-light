@@ -1968,13 +1968,28 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB3565) {
 			// destination is ARGB3565
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+			switch (blittingflags) {
+			case MMSFB_BLIT_NOFX:
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb_to_argb3565((unsigned int *)src_planes->ptr, src_planes->pitch, src_height,
-											    sx, sy, sw, sh,
-											    &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											    x, y);
+					mmsfb_blit_argb_to_argb3565(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+				return false;
+
+			case MMSFB_BLIT_BLEND_ALPHACHANNEL:
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_blend_argb_to_argb3565(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3235,7 +3250,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb16((unsigned short *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_rgb16(&dst_planes, dst_height,
 										  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;

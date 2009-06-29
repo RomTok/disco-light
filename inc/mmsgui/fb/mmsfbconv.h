@@ -230,6 +230,19 @@
 	dst_v = saved_dst_v;
 
 
+#ifdef BIG_ENDIAN
+	// e.g. ARM
+#define MMSFB_CONV_YUY2_TO_YV12_PIXEL(src, dst_y, d_uv) \
+	SRC = src;											\
+	dst_y = SRC >> 8;									\
+	d_uv    SRC & 0xff;
+
+#define MMSFB_CONV_YUY2_TO_YV12_PIXEL_2(src, dst_y, d_uv) \
+	SRC = src;											  \
+	dst_y = SRC >> 8;									  \
+	d_uv    (SRC & 0xff) << 1;
+#else
+	// e.g. Intel
 #define MMSFB_CONV_YUY2_TO_YV12_PIXEL(src, dst_y, d_uv) \
 	SRC = src;											\
 	dst_y = SRC & 0xff;									\
@@ -239,7 +252,7 @@
 	SRC = src;											  \
 	dst_y = SRC & 0xff;									  \
 	d_uv    (SRC >> 8) << 1;
-
+#endif
 
 
 
@@ -1225,9 +1238,16 @@ void mmsfb_blit_argb3565_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_hei
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_argb_to_argb3565(unsigned int *src, int src_pitch, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_blit_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 								 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
+
+//! Blit with alpha blending ARGB to ARGB3565.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 
@@ -1387,7 +1407,7 @@ void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_rgb16(unsigned short int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_rgb16(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						       int dx, int dy, int dw, int dh, MMSFBColor color);
 
 

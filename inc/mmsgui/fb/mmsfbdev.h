@@ -31,7 +31,7 @@
 
 #ifdef __HAVE_FBDEV__
 
-#include "mmsgui/fb/mmsfbbase.h"
+#include "mmsgui/fb/mmsfbconv.h"
 #include "mmsgui/fb/fb.h"
 #include <termios.h>
 
