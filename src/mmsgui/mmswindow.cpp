@@ -336,6 +336,7 @@ bool MMSWindow::resize(bool refresh) {
                 this->geom.x = 0;
                 this->geom.y = 0;
                 this->layer->getResolution(&this->geom.w, &this->geom.h);
+                this->innerGeom = this->geom;
                 DEBUGMSG("MMSGUI", "resolution: %d x %d", this->geom.w, this->geom.h);
             }
             else
@@ -1891,8 +1892,10 @@ bool MMSWindow::showAction(bool *stopaction) {
 		bool os;
 		getOwnSurface(os);
 		if (!os) {
-			// we are working with a subsurface of a fullscreen window
-			this->window->setVisibleRectangle(&this->geom);
+			if (this->window) {
+				// we are working with a subsurface of a fullscreen window
+				this->window->setVisibleRectangle(&this->geom);
+			}
 		}
     }
 

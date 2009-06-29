@@ -29,32 +29,70 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-#define MMSFB_BLIT_ARGB_TO_ARGB3565(src, dst, alpha)	\
-			SRC  = src;									\
-			if (SRC==OLDSRC) {							\
-				dst = d;								\
-				alpha (SRC >> 29);						\
-			}											\
-			else {										\
-				OLDSRC = SRC;							\
-				unsigned int r = (SRC << 8) >> 27;		\
-				unsigned int g = (SRC << 16) >> 26;		\
-				unsigned int b = (SRC & 0xff) >> 3;		\
-				d =   (r << 11)							\
-					| (g << 5)							\
-					| b;								\
-				dst = d;								\
-				alpha (SRC >> 29);						\
+#define MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(src, dst, dst_a, alpha)		\
+			SRC  = src;													\
+			A    = SRC >> 24;											\
+			if (A == 0xff) {											\
+				if (SRC==OLDSRC) {										\
+					dst = d;											\
+					alpha da;											\
+				}														\
+				else {													\
+					OLDSRC = SRC;										\
+					unsigned int r = (SRC << 8) >> 27;					\
+					unsigned int g = (SRC << 16) >> 26;					\
+					unsigned int b = (SRC & 0xff) >> 3;					\
+					d =   (r << 11)										\
+						| (g << 5)										\
+						| b;											\
+					da = A >> 5;										\
+					dst = d;											\
+					alpha da;											\
+				}														\
+			}															\
+			else														\
+			if (!A) {													\
+				alpha dst_a;											\
+			}															\
+			else {														\
+				register unsigned short int DST = dst;					\
+				if ((DST==OLDDST)&&(dst_a==OLDDSTA)&&(SRC==OLDSRC)) {	\
+					dst = d;											\
+					alpha da;											\
+				}														\
+				else  {													\
+					OLDDST  = DST;										\
+					OLDDSTA = dst_a;									\
+					OLDSRC = SRC;										\
+					register unsigned int SA= 0x100 - A;				\
+					unsigned int a = dst_a;								\
+					unsigned int r = DST >> 11;							\
+					unsigned int g = (DST << 5) >> 10;					\
+					unsigned int b = DST & 0x1f;						\
+					a = (SA * a) >> 3;									\
+					r = (SA * r) >> 5;									\
+					g = (SA * g) >> 6;									\
+					b = (SA * b) >> 5;									\
+					a += A >> 5;										\
+					r += (SRC << 8) >> 27;								\
+					g += (SRC << 16) >> 26;								\
+					b += (SRC << 24) >> 27;								\
+					d =   ((r >> 5) ? 0xf800   	: (r << 11))			\
+						| ((g >> 6) ? 0x07e0	: (g << 5))				\
+						| ((b >> 5) ? 0x1f 		: b);					\
+					da = (a >> 8) ? 0x07 : a;							\
+					dst = d;											\
+					alpha da;											\
+				}														\
 			}
 
 
-
-void mmsfb_blit_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
-								 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
+void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated conversion ARGB to ARGB3565.\n");
+		printf("DISKO: Using accelerated blend ARGB to ARGB3565.\n");
 		firsttime = false;
 	}
 
@@ -121,12 +159,15 @@ void mmsfb_blit_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height,
 
 	// now we are even aligned and can go through a optimized loop
 	////////////////////////////////////////////////////////////////////////
-	unsigned int OLDSRC  = (*src) + 1;
+	unsigned short int OLDDST  = (*dst) + 1;
+	unsigned char 	   OLDDSTA = (*dst_a) + 1;
+	unsigned int OLDSRC = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch_pix - sw;
 	int dst_a_pitch_diff = dst_a_pitch - (sw >> 1);
 	register unsigned short int d;
+	register unsigned char da;
 
 
 	// for all lines
@@ -135,11 +176,12 @@ void mmsfb_blit_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_height,
 		unsigned int *line_end = src + sw;
 		while (src < line_end) {
 			register unsigned int SRC;
+			register unsigned int A;
 			unsigned char alpha;
 
 			// process two pixels
-			MMSFB_BLIT_ARGB_TO_ARGB3565(*src, *dst, alpha=);
-			MMSFB_BLIT_ARGB_TO_ARGB3565(*(src+1), *(dst+1), alpha=(alpha<<4)|);
+			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*src, *dst, ((*dst_a) >> 4), alpha=);
+			MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(*(src+1), *(dst+1), ((*dst_a)&0x0f), alpha=(alpha<<4)|);
 			dst+=2;
 			src+=2;
 
