@@ -52,6 +52,6 @@ cd -
 cd gst-plugins-bad-0.10.12;
 
 [ ! -d ext/disko ] && \
-    patch -p1 < gst-plugins-bad-0.10.12_diskovideosink.diff;
+    patch -p1 < ../gst-plugins-bad-0.10.12_diskovideosink.diff;
     
 ./configure "$installprefix" && make && make install;
