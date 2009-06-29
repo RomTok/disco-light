@@ -128,6 +128,9 @@ if os.environ.has_key('CXX'):
 	env['CXX'] = os.environ['CXX'] 
 if os.environ.has_key('LD'):
 	env['LINK'] = os.environ['LD']
+if os.environ.has_key('LDFLAGS'):
+	env['LINKFLAGS'] = os.environ['LDFLAGS']
+	 
 	 
 env['LIBPATH'] = ''
 env['diskoSources'] = []
