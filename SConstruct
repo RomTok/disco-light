@@ -131,7 +131,6 @@ if os.environ.has_key('LD'):
 if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'] = os.environ['LDFLAGS']
 	 
-	 
 env['LIBPATH'] = ''
 env['diskoSources'] = []
 
@@ -140,6 +139,8 @@ opts.Save('disko.conf', env)
 Help(opts.GenerateHelpText(env))
 
 # Here are our installation paths:
+if os.environ.has_key('DESTDIR'):
+	env['destdir'] = os.environ['DESTDIR']
 if env['destdir'] != 'none':
 	idir_prefix = env['destdir']
 else:
@@ -243,6 +244,8 @@ def checkXineBlDvb(context):
 	pipe = os.popen('pkg-config --variable=plugindir libxine')
  	xinePluginPath = pipe.read()
  	pipe.close()
+	if env['destdir'] != 'none':
+		xinePluginPath = env['destdir'] + xinePluginPath
 	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xineplug_inp_bldvb.so', os.R_OK):
 		ret = True
 	else:
@@ -256,6 +259,8 @@ def checkGstDiskoVideosink(context):
 	pipe = os.popen('pkg-config --variable=pluginsdir gstreamer-0.10')
  	gstPluginPath = pipe.read()
  	pipe.close()
+	if env['destdir'] != 'none':
+		gstPluginPath = env['destdir'] + gstPluginPath
 	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
 		ret = True
 	else:
