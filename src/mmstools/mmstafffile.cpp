@@ -406,11 +406,12 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							int_val = atoi((char*)attrVal);
 							sprintf(iv, "%d", int_val);
 							badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
-							if (!badval)
+							if (!badval) {
 								if (attr[attrid].type == TAFF_ATTRTYPE_UCHAR100)
 									badval = (int_val<0||int_val>100);
 								else
 									badval = (int_val<0||int_val>255);
+							}
 							int_val_set = !badval;
 						}
 						if (badval) {
