@@ -1206,6 +1206,10 @@ void MMSMenuWidget::setSliders() {
 }
 
 void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool refreshall) {
+
+    if(!item)
+      return;
+
     item->setSelected(set, refresh);
     if (refreshall) this->refresh();
     if (set)

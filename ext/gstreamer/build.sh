@@ -43,15 +43,15 @@ cd gst-plugins-base-0.10.23;
 ./configure "$installprefix" && make && make install;
 cd -
 
-[ ! -f gst-plugins-bad-0.10.12.tar.bz2 ] && \
-    wget http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-0.10.12.tar.bz2;
+[ ! -f gst-plugins-bad-0.10.13.tar.bz2 ] && \
+    wget http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-0.10.13.tar.bz2;
 
-[ ! -d gst-plugins-bad-0.10.12 ] && \
-    tar jxf gst-plugins-bad-0.10.12.tar.bz2;
+[ ! -d gst-plugins-bad-0.10.13 ] && \
+    tar jxf gst-plugins-bad-0.10.13.tar.bz2;
 
-cd gst-plugins-bad-0.10.12;
+cd gst-plugins-bad-0.10.13;
 
 [ ! -d ext/disko ] && \
-    patch -p1 < gst-plugins-bad-0.10.12_diskovideosink.diff;
+    patch -p1 < ../gst-plugins-bad-0.10.13_diskovideosink.diff;
     
 ./configure "$installprefix" && make && make install;
