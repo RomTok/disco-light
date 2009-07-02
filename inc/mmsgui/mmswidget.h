@@ -168,6 +168,14 @@ class MMSWindow;
 
 extern string MMSWidget_inputmode;
 
+
+typedef int MMSWIDGET_SCROLL_MODE;
+
+#define MMSWIDGET_SCROLL_MODE_SETSELECTED	0x01
+#define MMSWIDGET_SCROLL_MODE_SETPRESSED	0x02
+#define MMSWIDGET_SCROLL_MODE_RMPRESSED		0x04
+
+
 //! This class is the base class for all widgets.
 /*!
 This class includes the base functionality available for all widgets within MMSGUI.
@@ -247,6 +255,9 @@ class MMSWidget {
 
             //! store last input event here
             MMSInputEvent	last_inputevent;
+
+            //! store input rectangle, this is the rectangle on which the button was pressed
+            MMSFBRectangle	pressed_inputrect;
 
             //! current scroll posx
             unsigned int scrollPosX;
@@ -432,7 +443,8 @@ class MMSWidget {
         virtual bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         virtual bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
-        virtual bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
+        virtual bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL,
+							  MMSWIDGET_SCROLL_MODE mode = MMSWIDGET_SCROLL_MODE_SETSELECTED, MMSFBRectangle *inputrect = NULL);
 
         sigc::signal<void, MMSWidget*> *onSelect;
         sigc::signal<void, MMSWidget*, bool> *onFocus;

@@ -172,7 +172,8 @@ class MMSMenuWidget : public MMSWidget {
         bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
-        bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
+        bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL,
+					  MMSWIDGET_SCROLL_MODE mode = MMSWIDGET_SCROLL_MODE_SETSELECTED, MMSFBRectangle *inputrect = NULL);
 
         bool setSubMenuName(unsigned int item, const char *name);
         bool setSubMenuName(unsigned int item, string &name);

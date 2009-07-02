@@ -1111,7 +1111,7 @@ bool MMSMenuWidget::switchToSubMenu() {
 
 	// get access to the submenu struct
 	unsigned int sel = getSelected();
-	if (this->back_item == sel) {
+	if (this->back_item == (int)sel) {
 		// the user has chosen the go-back-item
 		switchBackToParentMenu();
 		return true;
@@ -1241,8 +1241,8 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
 
 bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pyChanged = false;
-    unsigned int oldx=0;
-    unsigned int oldy;
+    int oldx=0;
+    int oldy;
     unsigned int cols;
     int fixedpos;
 	unsigned int start_ts;
@@ -1497,7 +1497,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pyChanged = false;
-    unsigned int oldy;
+    int oldy;
     unsigned int cols;
     int fixedpos;
 	unsigned int start_ts;
@@ -1726,8 +1726,8 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
 bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pxChanged = false;
-    unsigned int oldx;
-    unsigned int oldy=0;
+    int oldx;
+    int oldy=0;
     unsigned int cols;
     int fixedpos;
 	unsigned int start_ts;
@@ -2031,7 +2031,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
 bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pxChanged = false;
-    unsigned int oldx;
+    int oldx;
     unsigned int cols;
     int fixedpos;
 	unsigned int start_ts;
@@ -2512,16 +2512,37 @@ bool MMSMenuWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool
 	return ret;
 }
 
-bool MMSMenuWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
+bool MMSMenuWidget::scrollTo(int posx, int posy, bool refresh, bool *changed, MMSWIDGET_SCROLL_MODE mode, MMSFBRectangle *inputrect) {
 
+	// searching the affected menu item
 	for (unsigned int i = 0; i < this->children.size(); i++) {
 		if (!this->children.at(i)->isVisible())
 			continue;
 		MMSFBRectangle mygeom = this->children.at(i)->getGeometry();
 		if   ((posx >= mygeom.x)&&(posy >= mygeom.y)
 			&&(posx < mygeom.x + mygeom.w)&&(posy < mygeom.y + mygeom.h)) {
-			/* that's the right menu item, scroll smooth to the position */
-			setSelected(i, refresh, changed);
+			switch (mode) {
+			case MMSWIDGET_SCROLL_MODE_SETSELECTED:
+				// that's the right menu item, scroll smooth to the position
+				setSelected(i, refresh, changed);
+				break;
+			case MMSWIDGET_SCROLL_MODE_SETSELECTED | MMSWIDGET_SCROLL_MODE_RMPRESSED:
+				// that's the right menu item, scroll smooth to the position
+				this->children.at(i)->setPressed(false, false);
+				setSelected(i, refresh, changed);
+				break;
+			case MMSWIDGET_SCROLL_MODE_SETPRESSED:
+				// that's the right menu item, set pressed status
+				if (changed) *changed = true;
+				if (inputrect) *inputrect = mygeom;
+				this->children.at(i)->setPressed(true, refresh);
+				break;
+			case MMSWIDGET_SCROLL_MODE_RMPRESSED:
+				// that's the right menu item, remove pressed status
+				if (changed) *changed = true;
+				this->children.at(i)->setPressed(false, refresh);
+				break;
+			}
 			return true;
 		}
 	}

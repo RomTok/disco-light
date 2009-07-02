@@ -765,7 +765,7 @@ bool MMSWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool lea
     return false;
 }
 
-bool MMSWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
+bool MMSWidget::scrollTo(int posx, int posy, bool refresh, bool *changed, MMSWIDGET_SCROLL_MODE mode, MMSFBRectangle *inputrect) {
 	if (changed)
 		*changed = false;
 	return true;
@@ -1854,9 +1854,10 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
     }
 
     /* refresh my children */
-    if (canselchildren)
+    if (canselchildren) {
         for (unsigned int i=0; i < children.size(); i++)
             children.at(i)->setSelected(set, false);
+    }
 
     /* refresh widget */
     if (((selectable)||(canselchildren))&&(refresh))
@@ -1922,19 +1923,23 @@ void MMSWidget::setPressed(bool set, bool refresh) {
     /* check if pressed status already set */
     if (this->pressed == set) {
         /* refresh my children */
-        for (unsigned int i=0; i < children.size(); i++)
-            children.at(i)->setPressed(set, false);
-        if (refresh)
-            this->refresh();
-        return;
+    	if (canSelectChildren()) {
+			for (unsigned int i=0; i < children.size(); i++)
+				children.at(i)->setPressed(set, false);
+			if (refresh)
+				this->refresh();
+    	}
+		return;
     }
 
     /* switch pressed on/off */
     this->pressed = set;
 
     /* refresh my children */
-    for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setPressed(set, false);
+	if (canSelectChildren()) {
+		for (unsigned int i=0; i < children.size(); i++)
+			children.at(i)->setPressed(set, false);
+	}
 
     /* refresh widget */
     if (refresh)
@@ -2020,33 +2025,40 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 		/* button pressed */
 		if (getClickable(b))
 			if (b) {
-				/* save last inputevent */
+				// save last inputevent and rectangle
 				this->da->last_inputevent = *inputevent;
+				this->da->pressed_inputrect = this->geom;
 
 				/* set the pressed status */
 				if (!isPressed())
 					setPressed(true);
+
+				// scroll to the position if possible and set the pressed status
+				// the widget can return a specific input rectangle (e.g. item rectangle in a menu widget)
+				scrollTo(inputevent->posx, inputevent->posy, true, NULL,
+						 MMSWIDGET_SCROLL_MODE_SETPRESSED, &this->da->pressed_inputrect);
 
 				return;
 	        }
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
-		/* button released */
+		// button released
         if (getClickable(b))
         	if (b) {
 	    		if (this->da->last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 
-	    			/* reset the pressed status */
+	    			// reset the pressed status
     				if (isPressed())
     					setPressed(false);
 
-					/* check if the pointer is within widget */
-					if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
-						&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
+					// check if the pointer is within widget
+					if   ((inputevent->posx >= this->da->pressed_inputrect.x)&&(inputevent->posy >= this->da->pressed_inputrect.y)
+						&&(inputevent->posx < this->da->pressed_inputrect.x + this->da->pressed_inputrect.w)&&(inputevent->posy < this->da->pressed_inputrect.y + this->da->pressed_inputrect.h)) {
 						// yes, scroll to the position if possible
 						bool changed = false;
-						bool st_ok = scrollTo(inputevent->posx, inputevent->posy, true, &changed);
+						bool st_ok = scrollTo(this->da->last_inputevent.posx, this->da->last_inputevent.posy, true, &changed,
+											  MMSWIDGET_SCROLL_MODE_SETSELECTED | MMSWIDGET_SCROLL_MODE_RMPRESSED);
 
 						// fire the onclick callback
 						this->onClick->emit(this, inputevent->posx - this->geom.x, inputevent->posy - this->geom.y,
@@ -2074,7 +2086,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 					}
 	    		}
 
-	    		/* save last inputevent */
+	    		// save last inputevent
 	    		this->da->last_inputevent = *inputevent;
 	    		return;
 			}
@@ -2085,17 +2097,25 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
         if (getClickable(b))
         	if (b) {
 	    		if (this->da->last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
-					/* check if the pointer is within widget */
-	    			if   ((inputevent->posx >= this->geom.x)&&(inputevent->posy >= this->geom.y)
-	    				&&(inputevent->posx < this->geom.x + this->geom.w)&&(inputevent->posy < this->geom.y + this->geom.h)) {
-	    				/* yes, set the pressed status */
+					// check if the pointer is within widget
+	    			if   ((inputevent->posx >= this->da->pressed_inputrect.x)&&(inputevent->posy >= this->da->pressed_inputrect.y)
+	    				&&(inputevent->posx < this->da->pressed_inputrect.x + this->da->pressed_inputrect.w)&&(inputevent->posy < this->da->pressed_inputrect.y + this->da->pressed_inputrect.h)) {
+	    				// yes, set the pressed status
 	    				if (!isPressed())
 	    					setPressed(true);
+
+						// yes, scroll to the position if possible and set the pressed status
+						scrollTo(this->da->last_inputevent.posx, this->da->last_inputevent.posy, true, NULL,
+								 MMSWIDGET_SCROLL_MODE_SETPRESSED);
 	    			}
 	    			else {
-		    			/* no, reset the pressed status */
+		    			// no, reset the pressed status
 	    				if (isPressed())
 	    					setPressed(false);
+
+						// no, scroll to the position if possible and remove the pressed status
+						scrollTo(this->da->last_inputevent.posx, this->da->last_inputevent.posy, true, NULL,
+								 MMSWIDGET_SCROLL_MODE_RMPRESSED);
 	    			}
 	    		}
 
