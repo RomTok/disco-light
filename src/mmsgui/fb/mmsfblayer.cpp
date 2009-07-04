@@ -720,7 +720,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			return false;
 		}
 		mmsfb->mmsfbdev->getPixelFormat(this->config.id, &this->config.pixelformat);
-		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+		this->config.buffermode = buffermode;
 		this->config.options = MMSFB_LO_NONE;
 
 		// create a new surface instance for the framebuffer memory
@@ -842,18 +842,27 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     else
     if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
-        // create a new surface instance
-		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
-		if (!*surface) {
-			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
-			return false;
-		}
+    	if (this->config.buffermode == MMSFB_BM_FRONTONLY) {
+    		*surface = this->mmsfbdev_surface;
+			if (!*surface) {
+				MMSFB_SetError(0, "layer surface is not initialized");
+				return false;
+			}
+    	}
+    	else {
+			// create a new backbuffer surface instance
+			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
+			if (!*surface) {
+				MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+				return false;
+			}
 
-		// the surface has to know the fbdev surface, so this->flip() can update the fbdev memory
-		(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
+			// the surface has to know the fbdev surface, so this->flip() can update the fbdev memory
+			(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
 
-		// we must switch extended accel on
-		(*surface)->setExtendedAcceleration(true);
+			// we must switch extended accel on
+			(*surface)->setExtendedAcceleration(true);
+    	}
 #endif
     }
     else {
