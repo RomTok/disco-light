@@ -404,7 +404,7 @@ bool MMSFBDev::testLayer(int layer_id) {
 	return true;
 }
 
-bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat) {
+bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
 	// is initialized?
 	INITCHECK;
 
@@ -413,16 +413,23 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
     	printf("MMSFBDev: layer %d is not supported\n", layer_id);
 		return false;
 	}
+	if (backbuffer) {
+    	printf("MMSFBDev: layer %d does not support a backbuffer\n", layer_id);
+		return false;
+	}
 
 	//switch video mode
-	if (!setMode(width, height, pixelformat))
+	if (!setMode(width, height, pixelformat, backbuffer))
 		return false;
 
 	// save dimension of the layer
-	this->layers[layer_id].planes.ptr = this->framebuffer_base;
-	this->layers[layer_id].planes.pitch = this->fix_screeninfo.line_length;
-	this->layers[layer_id].planes.ptr2 = NULL;
-	this->layers[layer_id].planes.ptr3 = NULL;
+	this->layers[layer_id].fb_planes.ptr  = this->framebuffer_base;
+	this->layers[layer_id].fb_planes.pitch= this->fix_screeninfo.line_length;
+	this->layers[layer_id].fb_planes.ptr2 = NULL;
+	this->layers[layer_id].fb_planes.ptr3 = NULL;
+	this->layers[layer_id].sb_planes.ptr  = NULL;
+	this->layers[layer_id].sb_planes.ptr2 = NULL;
+	this->layers[layer_id].sb_planes.ptr3 = NULL;
 	this->layers[layer_id].width = this->var_screeninfo.xres;
 	this->layers[layer_id].height = this->var_screeninfo.yres;
 
@@ -463,7 +470,8 @@ bool MMSFBDev::getFrameBufferBase(unsigned char **base) {
 	return true;
 }
 
-bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *planes, int *width, int *height) {
+bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *fb_planes, MMSFBSurfacePlanes *sb_planes,
+								 int *width, int *height) {
 	// is initialized?
 	INITCHECK;
 
@@ -472,7 +480,10 @@ bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *planes, int *
 		return false;
 
 	// return buffer infos
-	*planes = this->layers[layer_id].planes;
+	if (fb_planes)
+		*fb_planes = this->layers[layer_id].fb_planes;
+	if (sb_planes)
+		*sb_planes = this->layers[layer_id].sb_planes;
 	*width = this->layers[layer_id].width;
 	*height = this->layers[layer_id].height;
 
@@ -511,7 +522,7 @@ bool MMSFBDev::unmapMmio(unsigned char *mmio) {
 	return true;
 }
 
-bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat) {
+bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
 	bool do_switch = false;
 
 	// is initialized?

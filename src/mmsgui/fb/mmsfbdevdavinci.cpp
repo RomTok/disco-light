@@ -134,7 +134,7 @@ bool MMSFBDevDavinci::testLayer(int layer_id) {
 }
 
 
-bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat) {
+bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
 	// is initialized?
 	INITCHECK;
 
@@ -152,21 +152,21 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			// init osd1 attribute plane
 			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
 				// set values
-				this->layers[layer_id].planes.ptr = this->osd0->framebuffer_base;
-				this->layers[layer_id].planes.pitch = this->osd0->layers[0].planes.pitch;
+				this->layers[layer_id].fb_planes.ptr = this->osd0->framebuffer_base;
+				this->layers[layer_id].fb_planes.pitch = this->osd0->layers[0].fb_planes.pitch;
 				if (pixelformat == MMSFB_PF_ARGB3565) {
 					// set the alpha plane
-					this->layers[layer_id].planes.ptr2 = this->osd1->framebuffer_base;
-					this->layers[layer_id].planes.pitch2 = this->osd1->layers[0].planes.pitch;
+					this->layers[layer_id].fb_planes.ptr2 = this->osd1->framebuffer_base;
+					this->layers[layer_id].fb_planes.pitch2 = this->osd1->layers[0].fb_planes.pitch;
 				}
 				else {
 					// alpha plane not requested, set it opaque
-					memset(this->osd1->framebuffer_base, 0x77, this->osd1->layers[0].planes.pitch * height);
-					this->layers[layer_id].planes.ptr2 = NULL;
-					this->layers[layer_id].planes.pitch2 = 0;
+					memset(this->osd1->framebuffer_base, 0x77, this->osd1->layers[0].fb_planes.pitch * height);
+					this->layers[layer_id].fb_planes.ptr2 = NULL;
+					this->layers[layer_id].fb_planes.pitch2 = 0;
 				}
-				this->layers[layer_id].planes.ptr3 = NULL;
-				this->layers[layer_id].planes.pitch3 = 0;
+				this->layers[layer_id].fb_planes.ptr3 = NULL;
+				this->layers[layer_id].fb_planes.pitch3 = 0;
 				this->layers[layer_id].width = width;
 				this->layers[layer_id].height = height;
 				this->layers[layer_id].pixelformat = pixelformat;
@@ -174,12 +174,12 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				// clear layer
 				if (pixelformat == MMSFB_PF_ARGB3565) {
 					MMSFBColor color(0x00, 0x00, 0x00, 0x00);
-					mmsfb_fillrectangle_argb3565(&(this->layers[layer_id].planes), this->layers[layer_id].height,
+					mmsfb_fillrectangle_argb3565(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
 												 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				}
 				else {
 					MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-					mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].planes), this->layers[layer_id].height,
+					mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
 											  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				}
 
@@ -203,19 +203,19 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 
 		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2)) {
 			// set values
-			this->layers[layer_id].planes.ptr = this->vid1->framebuffer_base;
-			this->layers[layer_id].planes.ptr2 = NULL;
-			this->layers[layer_id].planes.ptr3 = NULL;
-			this->layers[layer_id].planes.pitch = this->vid1->layers[0].planes.pitch;
-			this->layers[layer_id].planes.pitch2 = 0;
-			this->layers[layer_id].planes.pitch3 = 0;
+			this->layers[layer_id].fb_planes.ptr = this->vid1->framebuffer_base;
+			this->layers[layer_id].fb_planes.ptr2 = NULL;
+			this->layers[layer_id].fb_planes.ptr3 = NULL;
+			this->layers[layer_id].fb_planes.pitch = this->vid1->layers[0].fb_planes.pitch;
+			this->layers[layer_id].fb_planes.pitch2 = 0;
+			this->layers[layer_id].fb_planes.pitch3 = 0;
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].planes), this->layers[layer_id].height,
+			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
 			                         0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 
 			// layer is initialized

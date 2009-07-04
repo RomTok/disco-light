@@ -152,7 +152,7 @@ class MMSFBDevMatrox : public MMSFBDev {
         bool waitForVSync();
 
         bool testLayer(int layer_id);
-        bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat);
+        bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer = false);
 };
 
 #endif

@@ -208,8 +208,8 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		if (fullscreen == MMSFB_FSM_TRUE || fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
 			x_window_attr.override_redirect = True;
-			int cnt;
-	/*		XF86VidModeModeInfo **info;
+	/*		int cnt;
+			XF86VidModeModeInfo **info;
 			XF86VidModeGetAllModeLines(this->x_display, 0, &cnt, &info);
 			int best=-1;
 			for(int i=0;i<cnt;i++) {
