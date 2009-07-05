@@ -413,10 +413,6 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
     	printf("MMSFBDev: layer %d is not supported\n", layer_id);
 		return false;
 	}
-	if (backbuffer) {
-    	printf("MMSFBDev: layer %d does not support a backbuffer\n", layer_id);
-		return false;
-	}
 
 	//switch video mode
 	if (!setMode(width, height, pixelformat, backbuffer))

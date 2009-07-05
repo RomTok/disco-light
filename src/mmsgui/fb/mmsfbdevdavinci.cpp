@@ -148,9 +148,9 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 		}
 
 		// init the two davinci osd "windows"
-		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16)) {
+		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
 			// init osd1 attribute plane
-			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4)) {
+			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4, backbuffer)) {
 				// set values
 				this->layers[layer_id].fb_planes.ptr = this->osd0->framebuffer_base;
 				this->layers[layer_id].fb_planes.pitch = this->osd0->layers[0].fb_planes.pitch;
@@ -201,7 +201,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			return false;
 		}
 
-		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2)) {
+		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
 			// set values
 			this->layers[layer_id].fb_planes.ptr = this->vid1->framebuffer_base;
 			this->layers[layer_id].fb_planes.ptr2 = NULL;
