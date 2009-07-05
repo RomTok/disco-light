@@ -198,7 +198,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 		return false;
 
 	case 1:
-		// Video layer
+		// Video layer (VID0)
 		if (pixelformat != MMSFB_PF_YUY2) {
 			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
@@ -232,7 +232,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 		return false;
 
 	case 2:
-		// Video layer
+		// Video layer (VID1)
 		if (pixelformat != MMSFB_PF_YUY2) {
 			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
