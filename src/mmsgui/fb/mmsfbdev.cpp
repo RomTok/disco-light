@@ -557,13 +557,16 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 										 &transp_length, &transp_offset);
 
 	// check if mode is already set
-	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
-		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel) && (this->layers[0].pixelformat == pixelformat)) {
-		// mode already set, no switch required
-		printf("MMSFBDev: using preset mode %dx%d, pixelformat %s (%d bits)\n",
-				width, height, getMMSFBPixelFormatString(pixelformat).c_str(), bits_per_pixel);
-		return true;
-	}
+    if (!backbuffer) {
+    	// do it only if no back buffer requested
+		if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
+			&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel) && (this->layers[0].pixelformat == pixelformat)) {
+			// mode already set, no switch required
+			printf("MMSFBDev: using preset mode %dx%d, pixelformat %s (%d bits)\n",
+					width, height, getMMSFBPixelFormatString(pixelformat).c_str(), bits_per_pixel);
+			return true;
+		}
+    }
 
 	// searching for mode
     for (int cnt = 0; cnt < this->modes_cnt; cnt++) {
