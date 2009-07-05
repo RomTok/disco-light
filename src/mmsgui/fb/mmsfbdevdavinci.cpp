@@ -201,6 +201,40 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			return false;
 		}
 
+		if (this->vid0->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
+			// set values
+			this->layers[layer_id].fb_planes.ptr = this->vid0->framebuffer_base;
+			this->layers[layer_id].fb_planes.ptr2 = NULL;
+			this->layers[layer_id].fb_planes.ptr3 = NULL;
+			this->layers[layer_id].fb_planes.pitch = this->vid0->layers[0].fb_planes.pitch;
+			this->layers[layer_id].fb_planes.pitch2 = 0;
+			this->layers[layer_id].fb_planes.pitch3 = 0;
+			this->layers[layer_id].width = width;
+			this->layers[layer_id].height = height;
+			this->layers[layer_id].pixelformat = pixelformat;
+
+			// clear layer
+			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
+			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
+			                         0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+
+			// layer is initialized
+			this->layers[layer_id].isinitialized = true;
+
+			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%d, pixelformat %s\n",
+						layer_id, width, height, getMMSFBPixelFormatString(pixelformat).c_str());
+
+			return true;
+		}
+		return false;
+
+	case 2:
+		// Video layer
+		if (pixelformat != MMSFB_PF_YUY2) {
+			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			return false;
+		}
+
 		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
 			// set values
 			this->layers[layer_id].fb_planes.ptr = this->vid1->framebuffer_base;

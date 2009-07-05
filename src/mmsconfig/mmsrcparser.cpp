@@ -544,8 +544,8 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	if (this->graphics.backend == MMSFB_BE_FBDEV) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_DAVINCIFB:
-			if (this->graphics.videolayerid != 1)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "1", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if ((this->graphics.videolayerid != 1)&&(this->graphics.videolayerid != 2))
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			if (this->graphics.graphicslayerid != 0)
 				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
