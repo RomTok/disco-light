@@ -727,7 +727,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 
     		if (backbuffer) {
 				if (this->var_screeninfo.yres_virtual < this->var_screeninfo.yres * 2) {
-					printf("MMSFBDev: backbuffer size %dx%d is to small (%dx%d requested)\n",
+					printf("MMSFBDev: buffer size %dx%d is to small (%dx%d requested)\n",
 							this->var_screeninfo.xres_virtual, this->var_screeninfo.yres_virtual,
 							this->var_screeninfo.xres, this->var_screeninfo.yres * 2);
 					return false;
