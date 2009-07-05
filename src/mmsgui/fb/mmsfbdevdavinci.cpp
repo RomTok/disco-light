@@ -123,7 +123,10 @@ bool MMSFBDevDavinci::testLayer(int layer_id) {
 		// default fbdev primary layer 0 on primary screen 0
 	    return true;
 	case 1:
-		// Video layer
+		// Video layer (VID0)
+		return true;
+	case 2:
+		// Video layer (VID1)
 		return true;
 	default:
     	printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
