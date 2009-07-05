@@ -542,6 +542,13 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
     }
     printVarScreenInfo();
 
+    if (backbuffer) {
+    	if (!this->fix_screeninfo.ypanstep) {
+        	printf("MMSFBDev: backbuffer requested, but hardware does not support it\n");
+            return false;
+    	}
+    }
+
 	// get bits per pixel and its length/offset
 	int red_length, red_offset;
 	int green_length, green_offset;
@@ -582,7 +589,10 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 			this->var_screeninfo.transp.offset = transp_offset;
 
 			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-			this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+			if (!backbuffer)
+				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+			else
+				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * 2;
 			this->var_screeninfo.xoffset = 0;
 			this->var_screeninfo.yoffset = 0;
 			this->var_screeninfo.grayscale = 0;
@@ -620,7 +630,10 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
     			this->var_screeninfo.transp.offset = transp_offset;
 
     			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-    			this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+    			if (!backbuffer)
+    				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+    			else
+    				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * 2;
     			this->var_screeninfo.xoffset = 0;
     			this->var_screeninfo.yoffset = 0;
     			this->var_screeninfo.grayscale = 0;
@@ -654,6 +667,13 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 			this->var_screeninfo.transp.length = transp_length;
 			this->var_screeninfo.transp.offset = transp_offset;
 
+			if (backbuffer) {
+    			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
+				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * 2;
+    			this->var_screeninfo.xoffset = 0;
+    			this->var_screeninfo.yoffset = 0;
+			}
+
 			do_switch = true;
 		}
     	else
@@ -669,7 +689,10 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 			this->var_screeninfo.yres = height;
 
 			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-			this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+			if (!backbuffer)
+				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres;
+			else
+				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * 2;
 			this->var_screeninfo.xoffset = 0;
 			this->var_screeninfo.yoffset = 0;
 			this->var_screeninfo.grayscale = 0;
@@ -700,9 +723,20 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	    }
 	    printVarScreenInfo();
 
-    	if ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres) && (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
+    	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
+    		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
+
 			printf("MMSFBDev: mode successfully switched to %dx%d, pixelformat %s (%d bits)\n",
 					width, height, getMMSFBPixelFormatString(pixelformat).c_str(), bits_per_pixel);
+
+    		if (backbuffer) {
+				if (this->var_screeninfo.yres_virtual < this->var_screeninfo.yres * 2) {
+					printf("MMSFBDev: backbuffer size %dx%d is to small (%dx%d requested)\n",
+							this->var_screeninfo.xres_virtual, this->var_screeninfo.yres_virtual,
+							this->var_screeninfo.xres, this->var_screeninfo.yres * 2);
+					return false;
+				}
+    		}
     	}
     	else {
 			printf("MMSFBDev: mode switch to %dx%d, pixelformat %s (%d bits) failed\n",
