@@ -418,6 +418,12 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 	if (!setMode(width, height, pixelformat, backbuffer))
 		return false;
 
+	if (width <= 0 || height <= 0) {
+		// the layer is disabled now
+		this->layers[layer_id].isinitialized = false;
+		return true;
+	}
+
 	// save dimension of the layer
 	this->layers[layer_id].fb_planes.ptr  = this->framebuffer_base;
 	this->layers[layer_id].fb_planes.pitch= this->fix_screeninfo.line_length;
@@ -523,6 +529,12 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 
 	// is initialized?
 	INITCHECK;
+
+	if (width <= 0 || height <= 0) {
+		// have to disable the framebuffer
+	    ioctl(this->fd, FBIOBLANK, 0);
+		return true;
+	}
 
     // reload fix screen infos before changing it
     if (ioctl(this->fd, FBIOGET_FSCREENINFO, &this->fix_screeninfo) < 0) {

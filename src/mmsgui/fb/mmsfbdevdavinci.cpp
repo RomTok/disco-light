@@ -204,6 +204,10 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			return false;
 		}
 
+		// disable VID1
+		this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+
+		// enable VID0
 		if (this->vid0->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
 			// set values
 			this->layers[layer_id].fb_planes.ptr = this->vid0->framebuffer_base;
@@ -238,6 +242,10 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			return false;
 		}
 
+		// disable VID0
+		this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+
+		// enable VID1
 		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
 			// set values
 			this->layers[layer_id].fb_planes.ptr = this->vid1->framebuffer_base;
