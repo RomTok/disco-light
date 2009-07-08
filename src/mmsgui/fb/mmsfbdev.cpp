@@ -532,7 +532,20 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 
 	if (width <= 0 || height <= 0) {
 		// have to disable the framebuffer
-	    ioctl(this->fd, FBIOBLANK, 0);
+		// use FBIOPUT_VSCREENINFO and FBIOBLANK together
+		struct fb_var_screeninfo var_screeninfo;
+	    ioctl(this->fd, FBIOGET_VSCREENINFO, &var_screeninfo);
+		var_screeninfo.activate = FB_ACTIVATE_NOW;
+		var_screeninfo.accel_flags = 0;
+		var_screeninfo.xres = 0;
+		var_screeninfo.yres = 0;
+		var_screeninfo.xres_virtual = 0;
+		var_screeninfo.yres_virtual = 0;
+		var_screeninfo.xoffset = 0;
+		var_screeninfo.yoffset = 0;
+		var_screeninfo.grayscale = 0;
+	    ioctl(this->fd, FBIOPUT_VSCREENINFO, &var_screeninfo);
+		ioctl(this->fd, FBIOBLANK, 1);
 		return true;
 	}
 
