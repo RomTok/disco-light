@@ -425,15 +425,28 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 	}
 
 	// save dimension of the layer
+	this->layers[layer_id].width = this->var_screeninfo.xres;
+	this->layers[layer_id].height = this->var_screeninfo.yres;
+
+	// save the first buffer
 	this->layers[layer_id].fb_planes.ptr  = this->framebuffer_base;
 	this->layers[layer_id].fb_planes.pitch= this->fix_screeninfo.line_length;
 	this->layers[layer_id].fb_planes.ptr2 = NULL;
 	this->layers[layer_id].fb_planes.ptr3 = NULL;
-	this->layers[layer_id].sb_planes.ptr  = NULL;
-	this->layers[layer_id].sb_planes.ptr2 = NULL;
-	this->layers[layer_id].sb_planes.ptr3 = NULL;
-	this->layers[layer_id].width = this->var_screeninfo.xres;
-	this->layers[layer_id].height = this->var_screeninfo.yres;
+
+	// save the backbuffer
+	if (!backbuffer) {
+		this->layers[layer_id].sb_planes.ptr  = NULL;
+		this->layers[layer_id].sb_planes.ptr2 = NULL;
+		this->layers[layer_id].sb_planes.ptr3 = NULL;
+	}
+	else {
+		this->layers[layer_id].sb_planes.ptr  = ((char *)this->layers[layer_id].fb_planes.ptr)
+												+ this->layers[layer_id].fb_planes.pitch * this->var_screeninfo.yres;
+		this->layers[layer_id].sb_planes.pitch= this->layers[layer_id].fb_planes.pitch;
+		this->layers[layer_id].sb_planes.ptr2 = NULL;
+		this->layers[layer_id].sb_planes.ptr3 = NULL;
+	}
 
 	// layer is initialized
 	this->layers[layer_id].isinitialized = true;

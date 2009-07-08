@@ -157,6 +157,11 @@ bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurface
 		}
 
 		// set values
+		this->layers[layer_id].width = width;
+		this->layers[layer_id].height = height;
+		this->layers[layer_id].pixelformat = pixelformat;
+
+		// save the first buffer
 		this->layers[layer_id].fb_planes.ptr = this->framebuffer_base;
 		this->layers[layer_id].fb_planes.ptr2 = (char*)this->layers[layer_id].fb_planes.ptr + this->layers[layer_id].height * this->layers[layer_id].fb_planes.pitch;
 		this->layers[layer_id].fb_planes.ptr3 = (char*)this->layers[layer_id].fb_planes.ptr2 + (this->layers[layer_id].height * this->layers[layer_id].fb_planes.pitch) / 2;
@@ -166,9 +171,14 @@ bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurface
 			this->layers[layer_id].fb_planes.pitch = width;
 		this->layers[layer_id].fb_planes.pitch2 = this->layers[layer_id].fb_planes.pitch / 2;
 		this->layers[layer_id].fb_planes.pitch3 = this->layers[layer_id].fb_planes.pitch2;
-		this->layers[layer_id].width = width;
-		this->layers[layer_id].height = height;
-		this->layers[layer_id].pixelformat = pixelformat;
+
+		// save the backbuffer
+		this->layers[layer_id].sb_planes.ptr  = NULL;
+		this->layers[layer_id].sb_planes.pitch = 0;
+		this->layers[layer_id].sb_planes.ptr2 = NULL;
+		this->layers[layer_id].sb_planes.pitch2 = 0;
+		this->layers[layer_id].sb_planes.ptr3 = NULL;
+		this->layers[layer_id].sb_planes.pitch3 = 0;
 
 		// pal or ntsc?
 		this->tv_std_pal = (this->layers[layer_id].height == 576);
