@@ -230,7 +230,7 @@
 	dst_v = saved_dst_v;
 
 
-#ifdef BIG_ENDIAN
+#if __BYTE_ORDER ==  __BIG_ENDIAN
 	// e.g. ARM
 #define MMSFB_CONV_YUY2_TO_YV12_PIXEL(src, dst_y, d_uv) \
 	SRC = src;											\
@@ -241,6 +241,7 @@
 	SRC = src;											  \
 	dst_y = SRC >> 8;									  \
 	d_uv    (SRC & 0xff) << 1;
+
 #else
 	// e.g. Intel
 #define MMSFB_CONV_YUY2_TO_YV12_PIXEL(src, dst_y, d_uv) \
@@ -253,6 +254,7 @@
 	dst_y = SRC & 0xff;									  \
 	d_uv    (SRC >> 8) << 1;
 #endif
+
 
 
 

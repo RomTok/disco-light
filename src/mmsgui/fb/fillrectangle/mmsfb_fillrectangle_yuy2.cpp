@@ -64,7 +64,7 @@ void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
 	unsigned int SRC_U = MMSFB_CONV_RGB2U(color.r, color.g, color.b);
 	unsigned int SRC_V = MMSFB_CONV_RGB2V(color.r, color.g, color.b);
 	register unsigned int SRC;
-#ifdef BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN
 	// e.g. ARM
 	SRC = 	(SRC_Y << 24)
 		  | (SRC_V << 16)
