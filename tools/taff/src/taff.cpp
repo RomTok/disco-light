@@ -53,7 +53,7 @@ void help() {
 	printf("--ignore_blanks yes|no    ignore blank values?, default no\n");
 	printf("--trace yes|no            print trace messages?, default no\n");
 	printf("--warnings yes|no         print warnings?, default yes\n");
-	printf("--silent                  ignore errors if extfile is not supported\n");
+	printf("--silent yes|no           ignore errors if extfile is not supported? default no\n");
 	printf("\nexamples:\n\n");
 	printf("taff --mode c2t --tafffile theme.taff --extfile theme.xml\n\n");
 	printf("taff --mode c2t --exttype image --tafffile myimage.taff --extfile myimage.png\n\n");
@@ -173,7 +173,16 @@ bool getparams(int argc, char *argv[],
 		else
 		if (strcmp(argv[i], "--silent")==0)
 		{
-			silent = true;
+			i++;
+			if (strcmp(argv[i], "yes")==0)
+				silent = true;
+			else
+			if (strcmp(argv[i], "no")==0)
+				silent = false;
+			else {
+				printf("Error: --warnings is invalid\n");
+				return false;
+			}
 		}
 		else {
 			printf("Error: unknown parameter %s\n", argv[i]);
