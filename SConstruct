@@ -127,13 +127,13 @@ env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
 # use environment variables to override defaults
 if os.environ.has_key('CXX'):
-	env['CXX'] = [os.environ['CXX']] 
+	env['CXX'] = [os.environ['CXX'].split()] 
 if os.environ.has_key('CXXFLAGS'):
-	env['CCFLAGS'] = [os.environ['CXXFLAGS']]
+	env['CCFLAGS'] = [os.environ['CXXFLAGS'].split()]
 if os.environ.has_key('LD'):
-	env['LINK'] = [os.environ['LD']]
+	env['LINK'] = [os.environ['LD'].split()]
 if os.environ.has_key('LDFLAGS'):
-	env['LINKFLAGS'] = [os.environ['LDFLAGS']]
+	env['LINKFLAGS'] = [os.environ['LDFLAGS'].split()]
 
 env['LIBPATH'] = ''
 env['diskoSources'] = []
