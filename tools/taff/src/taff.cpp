@@ -53,6 +53,7 @@ void help() {
 	printf("--ignore_blanks yes|no    ignore blank values?, default no\n");
 	printf("--trace yes|no            print trace messages?, default no\n");
 	printf("--warnings yes|no         print warnings?, default yes\n");
+	printf("--silent yes|no           ignore errors if extfile is not supported? default no\n");
 	printf("\nexamples:\n\n");
 	printf("taff --mode c2t --tafffile theme.taff --extfile theme.xml\n\n");
 	printf("taff --mode c2t --exttype image --tafffile myimage.taff --extfile myimage.png\n\n");
@@ -60,7 +61,7 @@ void help() {
 
 bool getparams(int argc, char *argv[],
 			   string &mode, string &tafffile, TAFF_DESCRIPTION **tafftype,
-			   string &extfile, MMSTAFF_EXTERNAL_TYPE *exttype, bool &ignore_blanks, bool &trace, bool &print_warnings) {
+			   string &extfile, MMSTAFF_EXTERNAL_TYPE *exttype, bool &ignore_blanks, bool &trace, bool &print_warnings, bool &silent) {
 
 	if ((argc<3)||((argc-1)%2)) {
 		printf("Error: wrong parameter list\n");
@@ -72,6 +73,7 @@ bool getparams(int argc, char *argv[],
 	ignore_blanks = false;
 	trace = false;
 	print_warnings = true;
+	silent = false;
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--mode")==0)
@@ -168,6 +170,20 @@ bool getparams(int argc, char *argv[],
 				return false;
 			}
 		}
+		else
+		if (strcmp(argv[i], "--silent")==0)
+		{
+			i++;
+			if (strcmp(argv[i], "yes")==0)
+				silent = true;
+			else
+			if (strcmp(argv[i], "no")==0)
+				silent = false;
+			else {
+				printf("Error: --warnings is invalid\n");
+				return false;
+			}
+		}
 		else {
 			printf("Error: unknown parameter %s\n", argv[i]);
 			return false;
@@ -186,11 +202,11 @@ bool getparams(int argc, char *argv[],
 int main(int argc, char *argv[]) {
 
 	string mode, tafffile, extfile;
-	bool ignore_blanks, trace, print_warnings;
+	bool ignore_blanks, trace, print_warnings, silent;
 	TAFF_DESCRIPTION *tafftype;
 	MMSTAFF_EXTERNAL_TYPE exttype;
 
-	if (!getparams(argc, argv, mode, tafffile, &tafftype, extfile, &exttype, ignore_blanks, trace, print_warnings)) {
+	if (!getparams(argc, argv, mode, tafffile, &tafftype, extfile, &exttype, ignore_blanks, trace, print_warnings, silent)) {
 		help();
 		return 1;
 	}
@@ -198,7 +214,6 @@ int main(int argc, char *argv[]) {
 	if (mode=="c2t") {
 		/* convert to taff */
 
-		printf("\nCreating TAFF...\n");
 		if (tafffile=="") {
 			printf("Error: taff file not specified\n");
 			return 1;
@@ -207,6 +222,7 @@ int main(int argc, char *argv[]) {
 			printf("Error: external file not specified\n");
 			return 1;
 		}
+		printf("\nCreating TAFF from %s...\n", extfile.c_str());
 
 		MMSTaffFile *tafff = new MMSTaffFile(tafffile, tafftype, extfile, exttype, ignore_blanks, trace, print_warnings, true);
 		if (!tafff) {
@@ -215,8 +231,11 @@ int main(int argc, char *argv[]) {
 			return 2;
 		}
 		if (!tafff->isLoaded()) {
-			printf("Error: creating MMSTaffFile()\n");
-			help();
+			if(!silent) {
+				unlink(tafffile.c_str());
+				printf("Error: creating MMSTaffFile2()\n");
+				help();
+			}
 			return 2;
 		}
 

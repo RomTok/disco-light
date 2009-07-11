@@ -90,7 +90,8 @@ if sconsVersion < (0,98,1):
     	BoolOption('debug',         'Build with debug symbols and without optimize', False),
     	BoolOption('messages',      'Build with logfile support', False),
     	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
-    	BoolOption('use_sse',       'Use SSE optimization', False),
+    	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
+	BoolOption('use_sse',       'Use SSE optimization', False),
     	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
     	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
@@ -109,7 +110,8 @@ else:
     	BoolVariable('debug',         'Build with debug symbols and without optimize', False),
     	BoolVariable('messages',      'Build with logfile support', False),
     	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
-    	BoolVariable('use_sse',       'Use SSE optimization', False),
+    	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
+	BoolVariable('use_sse',       'Use SSE optimization', False),
     	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
     	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
     	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
@@ -125,12 +127,14 @@ env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
 # use environment variables to override defaults
 if os.environ.has_key('CXX'):
-	env['CXX'] = os.environ['CXX'] 
+	env['CXX'] = [os.environ['CXX'].split()] 
+if os.environ.has_key('CXXFLAGS'):
+	env['CCFLAGS'] = [os.environ['CXXFLAGS'].split()]
 if os.environ.has_key('LD'):
-	env['LINK'] = os.environ['LD']
+	env['LINK'] = [os.environ['LD'].split()]
 if os.environ.has_key('LDFLAGS'):
-	env['LINKFLAGS'] = os.environ['LDFLAGS']
-	 
+	env['LINKFLAGS'] = [os.environ['LDFLAGS'].split()]
+
 env['LIBPATH'] = ''
 env['diskoSources'] = []
 
@@ -152,7 +156,7 @@ idir_inc    = idir_prefix + '/include/disko'
 idir_data   = idir_prefix + '/share/disko'
 
 # link with -rpath
-env.Append(LDFLAGS = '-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+env['LINKFLAGS'].append('-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 
 # extra flags
 if env['messages']:
@@ -167,8 +171,31 @@ if env['debug']:
 else:
 	env['CCFLAGS'].append('-O3')
 
+# check which sse version to use
 if env['use_sse']:
-	env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+	if not env['cross'] and os.access('/proc/cpuinfo', os.R_OK):
+		for l in open('/proc/cpuinfo'):
+			if l.startswith('flags\t'): break;
+		if l.find('sse5') != -1: 
+			env['CCFLAGS'].append(['-msse5', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse4.2') != -1: 
+			env['CCFLAGS'].append(['-msse4.2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse4.1') != -1: 
+			env['CCFLAGS'].append(['-msse4.1', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse4a') != -1: 
+			env['CCFLAGS'].append(['-msse4a', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse4') != -1: 
+			env['CCFLAGS'].append(['-msse4', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse3') != -1:
+			env['CCFLAGS'].append(['-msse3', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse2') != -1:
+			env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		elif l.find('sse') != -1:
+			env['CCFLAGS'].append(['-msse', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		else:
+			env['use_sse'] = False
+	else:
+		env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # format output
 env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
