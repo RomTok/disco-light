@@ -391,6 +391,33 @@ bool MMSFBDev::waitForVSync() {
 	return true;
 }
 
+bool MMSFBDev::panDisplay(int buffer_id) {
+	// is initialized?
+	INITCHECK;
+return false;
+	// calc new y offset
+	int yoffset = buffer_id * this->var_screeninfo.yres;
+	if ((yoffset < 0) || (yoffset + this->var_screeninfo.yres > this->var_screeninfo.yres_virtual)) {
+		return false;
+	}
+	int xoffset_save = this->var_screeninfo.xoffset;
+	int yoffset_save = this->var_screeninfo.yoffset;
+
+	// set new x/y offsets
+	this->var_screeninfo.xoffset = 0;
+	this->var_screeninfo.yoffset = yoffset;
+
+	// switch display
+	if (ioctl(this->fd, FBIOPAN_DISPLAY, &this->var_screeninfo) < 0) {
+    	printf("MMSFBDev: display panning not supported\n");
+		this->var_screeninfo.xoffset = xoffset_save;
+		this->var_screeninfo.yoffset = yoffset_save;
+		return false;
+	}
+
+	return true;
+}
+
 bool MMSFBDev::testLayer(int layer_id) {
 	// is initialized?
 	INITCHECK;

@@ -713,11 +713,9 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		}
 
 		// get fb memory ptr
-		MMSFBSurfacePlanes fb_planes;
-		MMSFBSurfacePlanes sb_planes;
-		memset(&fb_planes, 0, sizeof(fb_planes));
-		memset(&sb_planes, 0, sizeof(sb_planes));
-		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, &fb_planes, &sb_planes, &this->config.w, &this->config.h)) {
+		MMSFBSurfacePlanes planes[3];
+		memset(&planes, 0, sizeof(planes));
+		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, planes, &planes[1], &this->config.w, &this->config.h)) {
 			MMSFB_SetError(0, "getFrameBufferPtr() failed");
 			return false;
 		}
@@ -726,7 +724,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		this->config.options = MMSFB_LO_NONE;
 
 		// create a new surface instance for the framebuffer memory
-		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, &fb_planes);
+		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
+												  2, planes);
 		if (!this->mmsfbdev_surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
@@ -845,13 +844,15 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
     	if (this->config.buffermode == MMSFB_BM_FRONTONLY) {
+    		// we have only the front buffer, no backbuffer to be allocated
     		*surface = this->mmsfbdev_surface;
 			if (!*surface) {
 				MMSFB_SetError(0, "layer surface is not initialized");
 				return false;
 			}
     	}
-    	else {
+    	else
+		if (this->config.buffermode == MMSFB_BM_BACKSYSTEM) {
 			// create a new backbuffer surface instance
 			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
 			if (!*surface) {
@@ -859,11 +860,24 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 				return false;
 			}
 
-			// the surface has to know the fbdev surface, so this->flip() can update the fbdev memory
+			// the surface has to know the fbdev surface, so surface->flip() can update the fbdev memory
 			(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
 
 			// we must switch extended accel on
 			(*surface)->setExtendedAcceleration(true);
+		}
+		else {
+    		// we assume that we have at least one backbuffer in video memory
+    		*surface = this->mmsfbdev_surface;
+			if (!*surface) {
+				MMSFB_SetError(0, "layer surface is not initialized");
+				return false;
+			}
+
+			// the surface has to know the fbdev surface, so surface->flip() can update the fbdev memory
+			// here we point to the same surface, in this case the flip can save the memcpy() and
+			// can use the hardware panning instead
+			(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
     	}
 #endif
     }

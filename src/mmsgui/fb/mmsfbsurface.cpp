@@ -196,7 +196,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 
 		// allocate my surface buffers
 		sb->numbuffers = backbuffer + 1;
-		if (sb->numbuffers > MMSFBSurfaceMaxBuffers) sb->numbuffers = MMSFBSurfaceMaxBuffers;
+		if (sb->numbuffers > MMSFBSurfaceMaxBuffers) {
+			sb->numbuffers = MMSFBSurfaceMaxBuffers;
+			sb->backbuffer = sb->numbuffers - 1;
+		}
 		sb->currbuffer_read = 0;
 		if (sb->numbuffers > 1)
 			// using backbuffer(s)
@@ -257,7 +260,7 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
 	init(llsurface, parent, sub_surface_rect);
 }
 
-MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes) {
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, MMSFBSurfacePlanes *planes) {
     // init me
     this->llsurface = NULL;
     this->surface_read_locked = false;
@@ -278,13 +281,26 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 	sb->pixelformat = pixelformat;
 	sb->alphachannel = isAlphaPixelFormat(sb->pixelformat);
 	sb->premultiplied = true;
-	sb->backbuffer = 0;
+	sb->backbuffer = backbuffer;
 	sb->systemonly = true;
 
 	// set the surface buffer
 	memset(sb->buffers, 0, sizeof(sb->buffers));
-	sb->numbuffers = 1;
+	sb->numbuffers = backbuffer+1;
+	if (sb->numbuffers > MMSFBSurfaceMaxBuffers) sb->numbuffers = MMSFBSurfaceMaxBuffers;
 	sb->buffers[0] = *planes;
+	if (sb->numbuffers >= 2) {
+		if (planes[1].ptr)
+			sb->buffers[1] = planes[1];
+		else
+			sb->numbuffers = 1;
+	}
+	if (sb->numbuffers >= 3) {
+		if (planes[2].ptr)
+			sb->buffers[2] = planes[2];
+		else
+			sb->numbuffers = 2;
+	}
 	sb->backbuffer = sb->numbuffers - 1;
 	sb->currbuffer_read = 0;
 	if (sb->numbuffers <= 1)
@@ -303,6 +319,11 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 
 	init((void*)1, NULL, NULL);
 }
+
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes) {
+	MMSFBSurface(w, h, pixelformat, 0, planes);
+}
+
 
 #ifdef __HAVE_XLIB__
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2) {
@@ -4087,7 +4108,12 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 	else {
 		// flip my own surfaces
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+#ifdef __HAVE_FBDEV__
+		if ((sb->numbuffers > 1) && ((!sb->mmsfbdev_surface) || (sb->mmsfbdev_surface != this))) {
+			// backbuffer in video memory, so we do not have to flip here
+#else
 		if (sb->numbuffers > 1) {
+#endif
 			// flip is only needed, if we have at least one backbuffer
 			if (!this->config.islayersurface) {
 				// flip
@@ -4170,9 +4196,27 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 #ifdef __HAVE_FBDEV__
 		if (sb->mmsfbdev_surface) {
-			// put the image to the framebuffer
+			// sync
 			mmsfb->mmsfbdev->waitForVSync();
-			sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
+
+			if (sb->mmsfbdev_surface == this) {
+				// this surface is the backbuffer in video memory of the layer
+				// flip my buffers without blitting
+				sb->currbuffer_read++;
+				if (sb->currbuffer_read >= sb->numbuffers)
+					sb->currbuffer_read = 0;
+				sb->currbuffer_write++;
+				if (sb->currbuffer_write >= sb->numbuffers)
+					sb->currbuffer_write = 0;
+
+				// do hardware panning
+				mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
+			}
+			else {
+				// this surface is the backbuffer in system memory of the layer
+				// put the image to the framebuffer
+				sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
+			}
 		}
 		else {
 #endif
