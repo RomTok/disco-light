@@ -114,6 +114,33 @@ bool MMSFBDevDavinci::waitForVSync() {
 	return true;
 }
 
+bool MMSFBDevDavinci::panDisplay(int buffer_id, void *framebuffer_base) {
+	// is initialized?
+	INITCHECK;
+
+	if   ((framebuffer_base == this->osd0->framebuffer_base)
+		||(framebuffer_base == this->osd1->framebuffer_base)) {
+		// Graphic layer (OSD0 and OSD1)
+		this->osd0->panDisplay(buffer_id);
+		this->osd1->panDisplay(buffer_id);
+		return true;
+	}
+	else
+	if (framebuffer_base == this->vid0->framebuffer_base) {
+		// Video layer (VID0)
+		return this->vid0->panDisplay(buffer_id);
+	}
+	else
+	if (framebuffer_base == this->vid1->framebuffer_base) {
+		// Video layer (VID1)
+		return this->vid1->panDisplay(buffer_id);
+	}
+
+	// check framebuffer_base pointer
+	printf("MMSFBDevDavinci: framebuffer base pointer not correct\n");
+	return false;
+}
+
 bool MMSFBDevDavinci::testLayer(int layer_id) {
 	// is initialized?
 	INITCHECK;
@@ -243,15 +270,17 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// save the first buffer
-			this->layers[layer_id].fb_planes.ptr = this->vid0->framebuffer_base;
+			this->layers[layer_id].fb_planes = this->vid0->layers[0].fb_planes;
+/*			this->layers[layer_id].fb_planes.ptr = this->vid0->framebuffer_base;
 			this->layers[layer_id].fb_planes.ptr2 = NULL;
 			this->layers[layer_id].fb_planes.ptr3 = NULL;
 			this->layers[layer_id].fb_planes.pitch = this->vid0->layers[0].fb_planes.pitch;
 			this->layers[layer_id].fb_planes.pitch2 = 0;
 			this->layers[layer_id].fb_planes.pitch3 = 0;
-
+*/
 			// save the backbuffer
-			if (!backbuffer) {
+			this->layers[layer_id].sb_planes = this->vid0->layers[0].sb_planes;
+/*			if (!backbuffer) {
 				this->layers[layer_id].sb_planes.ptr  = NULL;
 				this->layers[layer_id].sb_planes.pitch = 0;
 				this->layers[layer_id].sb_planes.ptr2 = NULL;
@@ -268,6 +297,8 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				this->layers[layer_id].sb_planes.ptr3 = NULL;
 				this->layers[layer_id].sb_planes.pitch3 = 0;
 			}
+
+this->layers[layer_id].sb_planes = this->vid0->layers[0].sb_planes;*/
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);

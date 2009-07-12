@@ -48,6 +48,7 @@ class MMSFBDevDavinci : public MMSFBDev {
         void closeDevice();
 
         bool waitForVSync();
+        bool panDisplay(int buffer_id, void *framebuffer_base);
 
         bool testLayer(int layer_id);
         bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer = false);

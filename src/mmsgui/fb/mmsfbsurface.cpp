@@ -4210,7 +4210,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					sb->currbuffer_write = 0;
 
 				// do hardware panning
-				mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
+				mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read, sb->buffers[0].ptr);
 			}
 			else {
 				// this surface is the backbuffer in system memory of the layer

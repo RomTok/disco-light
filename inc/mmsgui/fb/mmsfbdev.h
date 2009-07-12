@@ -121,7 +121,7 @@ class MMSFBDev {
         bool isInitialized();
 
         virtual bool waitForVSync();
-        virtual bool panDisplay(int buffer_id);
+        virtual bool panDisplay(int buffer_id, void *framebuffer_base = NULL);
 
         virtual bool testLayer(int layer_id);
         virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer = false);

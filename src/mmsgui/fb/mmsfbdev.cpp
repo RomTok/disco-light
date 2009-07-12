@@ -391,10 +391,18 @@ bool MMSFBDev::waitForVSync() {
 	return true;
 }
 
-bool MMSFBDev::panDisplay(int buffer_id) {
+bool MMSFBDev::panDisplay(int buffer_id, void *framebuffer_base) {
 	// is initialized?
 	INITCHECK;
-return false;
+
+	// check framebuffer_base pointer
+	if (framebuffer_base) {
+		if (framebuffer_base != this->framebuffer_base) {
+			printf("MMSFBDev: framebuffer base pointer not correct\n");
+			return false;
+		}
+	}
+
 	// calc new y offset
 	int yoffset = buffer_id * this->var_screeninfo.yres;
 	if ((yoffset < 0) || (yoffset + this->var_screeninfo.yres > this->var_screeninfo.yres_virtual)) {
@@ -456,23 +464,16 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 	this->layers[layer_id].height = this->var_screeninfo.yres;
 
 	// save the first buffer
+	memset(&this->layers[layer_id].fb_planes, 0, sizeof(this->layers[layer_id].fb_planes));
 	this->layers[layer_id].fb_planes.ptr  = this->framebuffer_base;
 	this->layers[layer_id].fb_planes.pitch= this->fix_screeninfo.line_length;
-	this->layers[layer_id].fb_planes.ptr2 = NULL;
-	this->layers[layer_id].fb_planes.ptr3 = NULL;
 
 	// save the backbuffer
-	if (!backbuffer) {
-		this->layers[layer_id].sb_planes.ptr  = NULL;
-		this->layers[layer_id].sb_planes.ptr2 = NULL;
-		this->layers[layer_id].sb_planes.ptr3 = NULL;
-	}
-	else {
+	memset(&this->layers[layer_id].sb_planes, 0, sizeof(this->layers[layer_id].sb_planes));
+	if (backbuffer) {
 		this->layers[layer_id].sb_planes.ptr  = ((char *)this->layers[layer_id].fb_planes.ptr)
 												+ this->layers[layer_id].fb_planes.pitch * this->var_screeninfo.yres;
 		this->layers[layer_id].sb_planes.pitch= this->layers[layer_id].fb_planes.pitch;
-		this->layers[layer_id].sb_planes.ptr2 = NULL;
-		this->layers[layer_id].sb_planes.ptr3 = NULL;
 	}
 
 	// layer is initialized
