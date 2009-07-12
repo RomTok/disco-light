@@ -416,6 +416,7 @@ bool MMSFBDev::panDisplay(int buffer_id, void *framebuffer_base) {
 	this->var_screeninfo.yoffset = yoffset;
 
 	// switch display
+	this->var_screeninfo.activate = FB_ACTIVATE_VBL;
 	if (ioctl(this->fd, FBIOPAN_DISPLAY, &this->var_screeninfo) < 0) {
     	printf("MMSFBDev: display panning not supported\n");
 		this->var_screeninfo.xoffset = xoffset_save;

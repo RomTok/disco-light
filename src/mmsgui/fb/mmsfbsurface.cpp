@@ -4196,11 +4196,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 #ifdef __HAVE_FBDEV__
 		if (sb->mmsfbdev_surface) {
-			// sync
-			mmsfb->mmsfbdev->waitForVSync();
-
 			if (sb->mmsfbdev_surface == this) {
-				// this surface is the backbuffer in video memory of the layer
+				// this surface is the front and backbuffer in video memory of the layer
 				// flip my buffers without blitting
 				sb->currbuffer_read++;
 				if (sb->currbuffer_read >= sb->numbuffers)
@@ -4214,6 +4211,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 			else {
 				// this surface is the backbuffer in system memory of the layer
+
+				// sync
+				mmsfb->mmsfbdev->waitForVSync();
+
 				// put the image to the framebuffer
 				sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
 			}
