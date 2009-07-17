@@ -69,17 +69,17 @@ void MMSRcParser::parseFile(string filename) {
 	      	this->throughFile(pNode);
 
             if (this->graphics.vrect.w <= 0)
-                this->graphics.vrect.w = this->graphics.xres;
+                this->graphics.vrect.w = this->graphics.graphicslayer.xres;
             if (this->graphics.vrect.h <= 0)
-                this->graphics.vrect.h = this->graphics.yres;
-            if ((this->graphics.vrect.x < 0)||(this->graphics.vrect.x > this->graphics.xres))
+                this->graphics.vrect.h = this->graphics.graphicslayer.yres;
+            if ((this->graphics.vrect.x < 0)||(this->graphics.vrect.x > this->graphics.graphicslayer.xres))
                 this->graphics.vrect.x = 0;
-            if ((this->graphics.vrect.y < 0)||(this->graphics.vrect.y > this->graphics.yres))
+            if ((this->graphics.vrect.y < 0)||(this->graphics.vrect.y > this->graphics.graphicslayer.yres))
                 this->graphics.vrect.y = 0;
-            if (this->graphics.vrect.w - this->graphics.vrect.x > this->graphics.xres)
-                this->graphics.vrect.w = this->graphics.xres - this->graphics.vrect.x;
-            if (this->graphics.vrect.h - this->graphics.vrect.y > this->graphics.yres)
-                this->graphics.vrect.h = this->graphics.yres - this->graphics.vrect.y;
+            if (this->graphics.vrect.w - this->graphics.vrect.x > this->graphics.graphicslayer.xres)
+                this->graphics.vrect.w = this->graphics.graphicslayer.xres - this->graphics.vrect.x;
+            if (this->graphics.vrect.h - this->graphics.vrect.y > this->graphics.graphicslayer.yres)
+                this->graphics.vrect.h = this->graphics.graphicslayer.yres - this->graphics.vrect.y;
 
 
     	    /*free the document */
@@ -288,11 +288,19 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 }
 
 
-void MMSRcParser::throughGraphics(xmlNode* node) {
+void MMSRcParser::throughGraphics(xmlNode* node, int mode) {
+// mode == 0 - normal
+// mode == 1 - new separate <videolayer/> section
+// mode == 2 - new separate <graphicslayer/> section
 
 	xmlNode *cur_node = NULL;
 	xmlChar *parname;
 	xmlChar *parvalue;
+
+
+//TODO
+if (mode) return;
+
 
 	node = node->xmlChildrenNode;
 
@@ -300,6 +308,17 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
+			if (!mode) {
+				if(!xmlStrcmp(cur_node->name, (const xmlChar *) "videolayer")) {
+					throughGraphics(cur_node, 1);
+					continue;
+				}
+				else
+				if(!xmlStrcmp(cur_node->name, (const xmlChar *) "graphicslayer")) {
+					throughGraphics(cur_node, 2);
+					continue;
+				}
+			}
 			printf("RcParser: ignoring tag <%s/>\n", cur_node->name);
 			continue;
 		}
@@ -307,14 +326,18 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
     	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
     	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
 
-		if(!xmlStrcmp(parname, (const xmlChar *) "xres"))
-			this->graphics.xres = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres"))
-	        this->graphics.yres = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "xpos"))
-	        this->graphics.xpos = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "ypos"))
-	        this->graphics.ypos = strToInt(string((const char *)parvalue));
+		if(!xmlStrcmp(parname, (const xmlChar *) "xres")) {
+			this->graphics.videolayer.xres = this->graphics.graphicslayer.xres = strToInt(string((const char *)parvalue));
+		}
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres")) {
+	    	this->graphics.videolayer.yres = this->graphics.graphicslayer.yres = strToInt(string((const char *)parvalue));
+	    }
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "xpos")) {
+	    	this->graphics.videolayer.xpos = this->graphics.graphicslayer.xpos = strToInt(string((const char *)parvalue));
+	    }
+	    else if(!xmlStrcmp(parname, (const xmlChar *) "ypos")) {
+	    	this->graphics.videolayer.ypos = this->graphics.graphicslayer.ypos = strToInt(string((const char *)parvalue));
+	    }
         else if(!xmlStrcmp(parname, (const xmlChar *) "backend")) {
         	string val = string((const char *)parvalue);
         	// get/check value
@@ -443,27 +466,27 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 			}
         }
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
-			this->graphics.videolayerid = atoi((const char *)parvalue);
+			this->graphics.videolayer.id = atoi((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat")) {
         	string val = string((const char *)parvalue);
-            if ((this->graphics.videolayerpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+            if ((this->graphics.videolayer.pixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
             	WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_LAYER, "");
 	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayeroptions"))
-	        this->graphics.videolayeroptions = strToUpr(string((const char *)parvalue));
+	        this->graphics.videolayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerbuffermode"))
-	        this->graphics.videolayerbuffermode = strToUpr(string((const char *)parvalue));
+	        this->graphics.videolayer.buffermode = strToUpr(string((const char *)parvalue));
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerid"))
-			this->graphics.graphicslayerid = atoi((const char *)parvalue);
+			this->graphics.graphicslayer.id = atoi((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerpixelformat")) {
         	string val = string((const char *)parvalue);
-            if ((this->graphics.graphicslayerpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+            if ((this->graphics.graphicslayer.pixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
             	WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_LAYER, "");
 	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayeroptions"))
-	        this->graphics.graphicslayeroptions = strToUpr(string((const char *)parvalue));
+	        this->graphics.graphicslayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode"))
-	        this->graphics.graphicslayerbuffermode = strToUpr(string((const char *)parvalue));
+	        this->graphics.graphicslayer.buffermode = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.x"))
 	        this->graphics.vrect.x = strToInt(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.y"))
@@ -525,16 +548,16 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
-			if (this->graphics.videolayerid != 0)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
-			if (this->graphics.graphicslayerid != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.videolayer.id != 0)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.graphicslayer.id != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			break;
 		case MMSFB_OT_XSHM:
-			if (this->graphics.videolayerid != 0)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
-			if (this->graphics.graphicslayerid != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.videolayer.id != 0)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.graphicslayer.id != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
 		default:
 			break;
@@ -544,10 +567,10 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	if (this->graphics.backend == MMSFB_BE_FBDEV) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_DAVINCIFB:
-			if ((this->graphics.videolayerid != 1)&&(this->graphics.videolayerid != 2))
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayerid), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
-			if (this->graphics.graphicslayerid != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayerid), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if ((this->graphics.videolayer.id != 1)&&(this->graphics.videolayer.id != 2))
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if (this->graphics.graphicslayer.id != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
 		default:
 			break;
@@ -559,16 +582,16 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
-			if (this->graphics.videolayerpixelformat != MMSFB_PF_YV12)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
-			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_YV12)
-				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YV12)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_YV12)
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			break;
 		case MMSFB_OT_XSHM:
-			if (this->graphics.videolayerpixelformat != MMSFB_PF_RGB32)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
-			if (this->graphics.graphicslayerpixelformat != MMSFB_PF_RGB32)
-				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.videolayer.pixelformat != MMSFB_PF_RGB32)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32)
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
 		default:
 			break;
@@ -578,11 +601,11 @@ void MMSRcParser::throughGraphics(xmlNode* node) {
 	if (this->graphics.backend == MMSFB_BE_FBDEV) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_DAVINCIFB:
-			if (this->graphics.videolayerpixelformat != MMSFB_PF_YUY2)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
-			if   ((this->graphics.graphicslayerpixelformat != MMSFB_PF_ARGB3565)
-				&&(this->graphics.graphicslayerpixelformat != MMSFB_PF_RGB16))
-				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayerpixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YUY2)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if   ((this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB3565)
+				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB16))
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
 		default:
 			break;

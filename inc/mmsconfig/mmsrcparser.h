@@ -45,7 +45,7 @@ class MMSRcParser {
     	void checkVersion(xmlNode* node);
     	void throughGlobal(xmlNode* node);
     	void throughDBSettings(xmlNode* node);
-    	void throughGraphics(xmlNode* node);
+    	void throughGraphics(xmlNode* node, int mode = 0);
     	void throughLanguage(xmlNode* node);
     	void throughFile(xmlNode* node);
 

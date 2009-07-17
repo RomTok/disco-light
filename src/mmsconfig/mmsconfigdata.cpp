@@ -185,6 +185,15 @@ const string MMSConfigData::getDataDBDatabase() {
 };
 
 /* graphics section getters */
+const MMSConfigDataLayer MMSConfigData::getVideoLayer() {
+    return this->graphics.videolayer;
+}
+
+const MMSConfigDataLayer MMSConfigData::getGraphicsLayer() {
+    return this->graphics.graphicslayer;
+}
+
+/*
 const int MMSConfigData::getXres() {
     return this->graphics.xres;
 }
@@ -193,14 +202,13 @@ const int MMSConfigData::getYres() {
     return this->graphics.yres;
 }
 
-/* graphics section getters */
 const int MMSConfigData::getXpos() {
     return this->graphics.xpos;
 }
 
 const int MMSConfigData::getYpos() {
     return this->graphics.ypos;
-}
+}*/
 
 const MMSFBBackend MMSConfigData::getBackend() {
     return this->graphics.backend;
@@ -210,7 +218,7 @@ const MMSFBOutputType MMSConfigData::getOutputType() {
     return this->graphics.outputtype;
 }
 
-const int MMSConfigData::getVideoLayerId() {
+/*const int MMSConfigData::getVideoLayerId() {
 	return this->graphics.videolayerid;
 }
 
@@ -241,6 +249,7 @@ const string MMSConfigData::getGraphicsLayerOptions() {
 const string MMSConfigData::getGraphicsLayerBufferMode() {
     return this->graphics.graphicslayerbuffermode;
 }
+*/
 
 const MMSFBRectangle MMSConfigData::getVRect() {
     return this->graphics.vrect;

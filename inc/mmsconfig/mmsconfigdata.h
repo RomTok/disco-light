@@ -83,22 +83,34 @@ class MMSConfigDataDB {
 			database("") {}
 };
 
-class MMSConfigDataGraphics {
+class MMSConfigDataLayer {
     public:
 	    int    					xres;
 	    int    					yres;
 	    int    					xpos;
 	    int    					ypos;
+		int    					id;
+		MMSFBSurfacePixelFormat pixelformat;
+	    string 					options;
+	    string 					buffermode;
+
+   	    MMSConfigDataLayer() :
+   		    xres(800),
+   		    yres(600),
+   		    xpos(50),
+   		    ypos(50),
+   			id(0),
+   			pixelformat(MMSFB_PF_RGB16),
+   		    options(""),
+   		    buffermode("BACKSYSTEM") {}
+};
+
+class MMSConfigDataGraphics {
+    public:
 	    MMSFBBackend 			backend;
 	    MMSFBOutputType			outputtype;
-		int    					videolayerid;
-		MMSFBSurfacePixelFormat videolayerpixelformat;
-	    string 					videolayeroptions;
-	    string 					videolayerbuffermode;
-		int    					graphicslayerid;
-		MMSFBSurfacePixelFormat graphicslayerpixelformat;
-	    string 					graphicslayeroptions;
-	    string 					graphicslayerbuffermode;
+	    MMSConfigDataLayer		videolayer;
+	    MMSConfigDataLayer		graphicslayer;
 	    MMSFBRectangle			vrect;
 	    MMSFBRectangle			touchrect;
 	    MMSFBPointerMode		pointer;
@@ -110,20 +122,8 @@ class MMSConfigDataGraphics {
 	    bool					hideapplication;
 
    	    MMSConfigDataGraphics() :
-   		    xres(800),
-   		    yres(600),
-   		    xpos(50),
-   		    ypos(50),
    		    backend(MMSFB_BE_NONE),							// set MMSFB_BE_NONE for compatibility reason
    		    outputtype(MMSFB_OT_NONE),
-   			videolayerid(0),
-   			videolayerpixelformat(MMSFB_PF_RGB16),
-   		    videolayeroptions(""),
-   		    videolayerbuffermode("BACKSYSTEM"),
-   			graphicslayerid(0),
-   			graphicslayerpixelformat(MMSFB_PF_RGB16),
-   		    graphicslayeroptions(""),
-   		    graphicslayerbuffermode("BACKSYSTEM"),
    		    vrect(MMSFBRectangle(0,0,0,0)),
    		    touchrect(MMSFBRectangle(0,0,0,0)),
    		    pointer(MMSFB_PM_FALSE),						// use the mouse pointer, default no
@@ -197,20 +197,22 @@ class MMSConfigData {
         const string       getDataDBDatabase();
 
         /* graphics section getters */
-        const int    getXres();
+        const MMSConfigDataLayer getVideoLayer();
+        const MMSConfigDataLayer getGraphicsLayer();
+/*        const int    getXres();
         const int    getYres();
         const int    getXpos();
-        const int    getYpos();
+        const int    getYpos();*/
         const MMSFBBackend getBackend();
         const MMSFBOutputType getOutputType();
-        const int    getVideoLayerId();
+/*        const int    getVideoLayerId();
         const MMSFBSurfacePixelFormat getVideoLayerPixelformat();
         const string getVideoLayerOptions();
         const string getVideoLayerBufferMode();
         const int    getGraphicsLayerId();
         const MMSFBSurfacePixelFormat getGraphicsLayerPixelformat();
         const string getGraphicsLayerOptions();
-        const string getGraphicsLayerBufferMode();
+        const string getGraphicsLayerBufferMode();*/
         const MMSFBRectangle getVRect();
         const MMSFBRectangle getTouchRect();
         const MMSFBPointerMode getPointer();

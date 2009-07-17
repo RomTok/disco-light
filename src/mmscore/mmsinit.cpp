@@ -117,6 +117,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         printf("                           Stefan Schwarzer & Guido Madaus\n");
         printf("----------------------------------------------------------------------\n");
 
+        MMSConfigDataLayer videolayer = config->getVideoLayer();
+        MMSConfigDataLayer graphicslayer = config->getGraphicsLayer();
+
         DEBUGMSG_OUTSTR("Core", "ConfigDB:                     " + config->getConfigDBDatabase() + " (" + config->getConfigDBAddress() + ")");
         DEBUGMSG_OUTSTR("Core", "DataDB:                       " + config->getDataDBDatabase() + " (" + config->getDataDBAddress() + ")");
         DEBUGMSG_OUTSTR("Core", "Logfile:                      " + config->getLogfile());
@@ -124,18 +127,28 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         DEBUGMSG_OUTSTR("Core", "Input map:                    " + config->getInputMap());
         DEBUGMSG_OUTSTR("Core", "Prefix:                       " + config->getPrefix());
         DEBUGMSG_OUTSTR("Core", "Theme:                        " + config->getTheme());
-        DEBUGMSG_OUTSTR("Core", "Resolution:                   " + iToStr(config->getXres()) + "x" + iToStr(config->getYres()));
-        DEBUGMSG_OUTSTR("Core", "Position:                     " + iToStr(config->getXpos()) + "," + iToStr(config->getYpos()));
         DEBUGMSG_OUTSTR("Core", "Backend:                      " + getMMSFBBackendString(config->getBackend()));
         DEBUGMSG_OUTSTR("Core", "Output type:                  " + getMMSFBOutputTypeString(config->getOutputType()));
-        DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(config->getVideoLayerId()));
-        DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + getMMSFBPixelFormatString(config->getVideoLayerPixelformat()));
-        DEBUGMSG_OUTSTR("Core", "Video layer options:          " + config->getVideoLayerOptions());
-        DEBUGMSG_OUTSTR("Core", "Video layer buffermode:       " + config->getVideoLayerBufferMode());
-        DEBUGMSG_OUTSTR("Core", "Graphics layer id:            " + iToStr(config->getGraphicsLayerId()));
-        DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + getMMSFBPixelFormatString(config->getGraphicsLayerPixelformat()));
-        DEBUGMSG_OUTSTR("Core", "Graphics layer options:       " + config->getGraphicsLayerOptions());
-        DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + config->getGraphicsLayerBufferMode());
+        if (videolayer.id == graphicslayer.id) {
+			DEBUGMSG_OUTSTR("Core", "Resolution:                   " + iToStr(graphicslayer.xres) + "x" + iToStr(graphicslayer.yres));
+			DEBUGMSG_OUTSTR("Core", "Position:                     " + iToStr(graphicslayer.xpos) + "," + iToStr(graphicslayer.ypos));
+        }
+        else {
+			DEBUGMSG_OUTSTR("Core", "Video Layer Resolution:       " + iToStr(videolayer.xres) + "x" + iToStr(videolayer.yres));
+			DEBUGMSG_OUTSTR("Core", "Video Layer Position:         " + iToStr(videolayer.xpos) + "," + iToStr(videolayer.ypos));
+        }
+		DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(videolayer.id));
+		DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + getMMSFBPixelFormatString(videolayer.pixelformat));
+		DEBUGMSG_OUTSTR("Core", "Video layer options:          " + videolayer.options);
+		DEBUGMSG_OUTSTR("Core", "Video layer buffermode:       " + videolayer.buffermode);
+        if (videolayer.id != graphicslayer.id) {
+			DEBUGMSG_OUTSTR("Core", "Graphics Layer Resolution:    " + iToStr(graphicslayer.xres) + "x" + iToStr(graphicslayer.yres));
+			DEBUGMSG_OUTSTR("Core", "Graphics Layer Position:      " + iToStr(graphicslayer.xpos) + "," + iToStr(graphicslayer.ypos));
+        }
+		DEBUGMSG_OUTSTR("Core", "Graphics layer id:            " + iToStr(graphicslayer.id));
+		DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + getMMSFBPixelFormatString(graphicslayer.pixelformat));
+		DEBUGMSG_OUTSTR("Core", "Graphics layer options:       " + graphicslayer.options);
+		DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + graphicslayer.buffermode);
         DEBUGMSG_OUTSTR("Core", "Visible screen area:          " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
 
         if (config->getStdout()) {
