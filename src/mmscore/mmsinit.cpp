@@ -107,13 +107,13 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         printf(" *  *  *  *      * *   *   *\n");
         printf(" *  *  *   ***   **    *   *\n");
         printf(" *  *  *      *  * *   *   *\n");
-        printf("****   *   ***   *  *   ***  V1.5\n");
+        printf("****   *   ***   *  *   ***  V1.6-dev\n");
         printf("----------------------------------------------------------------------\n");
         printf("The Linux application framework for embedded devices.\n");
         printf("\n");
         printf("   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,\n");
         printf("                           Matthias Hardt, Guido Madaus\n");
-        printf("   Copyright (C) 2007-2008 Berlinux Solutions GbR\n");
+        printf("   Copyright (C) 2007-2008 BerLinux Solutions GbR\n");
         printf("                           Stefan Schwarzer & Guido Madaus\n");
         printf("----------------------------------------------------------------------\n");
 

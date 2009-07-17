@@ -116,6 +116,10 @@ list<MMSFILE_ENTRY *> MMSFileSearch::execute() {
 
 void MMSFileSearch::scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string cwd) {
 
+
+	if(!dirhandle)
+		return;
+
 	struct dirent *entry = readdir(dirhandle);
 	bool filefound = false;
 	bool dirfound = false;

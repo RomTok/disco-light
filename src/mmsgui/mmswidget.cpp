@@ -1873,7 +1873,7 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
 		string inputmode = "";
 		getInputModeEx(inputmode);
 		if (strToUpr(inputmode) == "CLICK")
-			startWidgetThread(500);
+			startWidgetThread(150);
     }
 
     return true;
