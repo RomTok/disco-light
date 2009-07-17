@@ -192,7 +192,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				this->layers[layer_id].pixelformat = pixelformat;
 
 				// save the buffers
-				*this->layers[layer_id].buffers = *this->osd0->layers[0].buffers;
+				memcpy(this->layers[layer_id].buffers, this->osd0->layers[0].buffers, sizeof(this->osd0->layers[0].buffers));
 
 				// merge OSD0 with OSD1
 				if (pixelformat == MMSFB_PF_ARGB3565) {
@@ -228,8 +228,8 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				// layer is initialized
 				this->layers[layer_id].isinitialized = true;
 
-				printf("MMSFBDevDavinci: OSD Layer %d initialized with %dx%d, pixelformat %s\n",
-							layer_id, width, height, getMMSFBPixelFormatString(pixelformat).c_str());
+				printf("MMSFBDevDavinci: OSD Layer %d initialized with %dx%dx%d, pixelformat %s\n",
+							layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
 
 				return true;
 			}
@@ -254,7 +254,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// save the buffers
-			*this->layers[layer_id].buffers = *this->vid0->layers[0].buffers;
+			memcpy(this->layers[layer_id].buffers, this->vid0->layers[0].buffers, sizeof(this->vid0->layers[0].buffers));
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
@@ -264,8 +264,8 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
 
-			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%d, pixelformat %s\n",
-						layer_id, width, height, getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%dx%d, pixelformat %s\n",
+						layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
 
 			return true;
 		}
@@ -289,7 +289,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// save the buffers
-			*this->layers[layer_id].buffers = *this->vid1->layers[0].buffers;
+			memcpy(this->layers[layer_id].buffers, this->vid1->layers[0].buffers, sizeof(this->vid1->layers[0].buffers));
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
@@ -299,8 +299,8 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
 
-			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%d, pixelformat %s\n",
-						layer_id, width, height, getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%dx%d, pixelformat %s\n",
+						layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
 
 			return true;
 		}

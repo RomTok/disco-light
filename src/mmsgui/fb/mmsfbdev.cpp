@@ -534,7 +534,7 @@ bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanesBuffer buffers,
 
 	// return buffer infos
 	if (buffers)
-		*buffers = *this->layers[layer_id].buffers;
+		memcpy(buffers, this->layers[layer_id].buffers, sizeof(this->layers[layer_id].buffers));
 	*width = this->layers[layer_id].width;
 	*height = this->layers[layer_id].height;
 
