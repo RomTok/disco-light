@@ -707,15 +707,16 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
         	return false;
 
         // initializing layer
-		if (!mmsfb->mmsfbdev->initLayer(this->config.id, w, h, pixelformat, (buffermode == MMSFB_BM_BACKVIDEO))) {
+		if (!mmsfb->mmsfbdev->initLayer(this->config.id, w, h, pixelformat,
+			(buffermode == MMSFB_BM_BACKVIDEO)?1:(buffermode == MMSFB_BM_TRIPLE)?2:0)) {
 			MMSFB_SetError(0, "init layer " + iToStr(this->config.id) + " failed!");
 			return false;
 		}
 
 		// get fb memory ptr
-		MMSFBSurfacePlanes planes[3];
-		memset(&planes, 0, sizeof(planes));
-		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, planes, &planes[1], &this->config.w, &this->config.h)) {
+		MMSFBSurfacePlanesBuffer buffers;
+		memset(&buffers, 0, sizeof(buffers));
+		if (!mmsfb->mmsfbdev->getFrameBufferPtr(this->config.id, buffers, &this->config.w, &this->config.h)) {
 			MMSFB_SetError(0, "getFrameBufferPtr() failed");
 			return false;
 		}
@@ -725,7 +726,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
 		// create a new surface instance for the framebuffer memory
 		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
-												  2, planes);
+												  MMSFB_MAX_SURFACE_PLANES_BUFFERS - 1, buffers);
 		if (!this->mmsfbdev_surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;

@@ -440,7 +440,7 @@ bool MMSFBDev::testLayer(int layer_id) {
 	return true;
 }
 
-bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
+bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 	// is initialized?
 	INITCHECK;
 
@@ -464,17 +464,23 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 	this->layers[layer_id].width = this->var_screeninfo.xres;
 	this->layers[layer_id].height = this->var_screeninfo.yres;
 
-	// save the first buffer
-	memset(&this->layers[layer_id].fb_planes, 0, sizeof(this->layers[layer_id].fb_planes));
-	this->layers[layer_id].fb_planes.ptr  = this->framebuffer_base;
-	this->layers[layer_id].fb_planes.pitch= this->fix_screeninfo.line_length;
-
-	// save the backbuffer
-	memset(&this->layers[layer_id].sb_planes, 0, sizeof(this->layers[layer_id].sb_planes));
-	if (backbuffer) {
-		this->layers[layer_id].sb_planes.ptr  = ((char *)this->layers[layer_id].fb_planes.ptr)
-												+ this->layers[layer_id].fb_planes.pitch * this->var_screeninfo.yres;
-		this->layers[layer_id].sb_planes.pitch= this->layers[layer_id].fb_planes.pitch;
+	// save the buffers
+	memset(&this->layers[layer_id].buffers, 0, sizeof(this->layers[layer_id].buffers));
+	switch (backbuffer) {
+	case 2:
+		this->layers[layer_id].buffers[2].ptr  = ((char *)this->framebuffer_base)
+												+ 2 * this->fix_screeninfo.line_length * this->var_screeninfo.yres;
+		this->layers[layer_id].buffers[2].pitch= this->fix_screeninfo.line_length;
+	case 1:
+		this->layers[layer_id].buffers[1].ptr  = ((char *)this->framebuffer_base)
+												 + this->fix_screeninfo.line_length * this->var_screeninfo.yres;
+		this->layers[layer_id].buffers[1].pitch= this->fix_screeninfo.line_length;
+	case 0:
+		this->layers[layer_id].buffers[0].ptr  = this->framebuffer_base;
+		this->layers[layer_id].buffers[0].pitch= this->fix_screeninfo.line_length;
+		break;
+	default:
+		return false;
 	}
 
 	// layer is initialized
@@ -514,8 +520,7 @@ bool MMSFBDev::getFrameBufferBase(unsigned char **base) {
 	return true;
 }
 
-bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *fb_planes, MMSFBSurfacePlanes *sb_planes,
-								 int *width, int *height) {
+bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanesBuffer buffers, int *width, int *height) {
 	// is initialized?
 	INITCHECK;
 
@@ -524,10 +529,8 @@ bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *fb_planes, MM
 		return false;
 
 	// return buffer infos
-	if (fb_planes)
-		*fb_planes = this->layers[layer_id].fb_planes;
-	if (sb_planes)
-		*sb_planes = this->layers[layer_id].sb_planes;
+	if (buffers)
+		*buffers = *this->layers[layer_id].buffers;
 	*width = this->layers[layer_id].width;
 	*height = this->layers[layer_id].height;
 
@@ -566,7 +569,7 @@ bool MMSFBDev::unmapMmio(unsigned char *mmio) {
 	return true;
 }
 
-bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
+bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 	bool do_switch = false;
 
 	// is initialized?

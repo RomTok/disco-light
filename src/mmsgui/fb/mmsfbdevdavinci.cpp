@@ -164,7 +164,7 @@ bool MMSFBDevDavinci::testLayer(int layer_id) {
 }
 
 
-bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
+bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 	// is initialized?
 	INITCHECK;
 
@@ -177,6 +177,11 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			return false;
 		}
 
+		if (backbuffer) {
+			printf("MMSFBDevDavinci: OSD Layer does not support backbuffer handling\n");
+			return false;
+		}
+
 		// init the two davinci osd "windows"
 		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
 			// init osd1 attribute plane
@@ -186,58 +191,37 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 				this->layers[layer_id].height = height;
 				this->layers[layer_id].pixelformat = pixelformat;
 
-				// save the first buffer
-				this->layers[layer_id].fb_planes.ptr = this->osd0->framebuffer_base;
-				this->layers[layer_id].fb_planes.pitch = this->osd0->layers[0].fb_planes.pitch;
+				// save the buffers
+				*this->layers[layer_id].buffers = *this->osd0->layers[0].buffers;
+
+				// merge OSD0 with OSD1
 				if (pixelformat == MMSFB_PF_ARGB3565) {
 					// set the alpha plane
-					this->layers[layer_id].fb_planes.ptr2 = this->osd1->framebuffer_base;
-					this->layers[layer_id].fb_planes.pitch2 = this->osd1->layers[0].fb_planes.pitch;
-				}
-				else {
-					// alpha plane not requested, set it opaque
-					memset(this->osd1->framebuffer_base, 0x77, this->osd1->layers[0].fb_planes.pitch * height);
-					this->layers[layer_id].fb_planes.ptr2 = NULL;
-					this->layers[layer_id].fb_planes.pitch2 = 0;
-				}
-				this->layers[layer_id].fb_planes.ptr3 = NULL;
-				this->layers[layer_id].fb_planes.pitch3 = 0;
-
-				// save the backbuffer
-				if (!backbuffer) {
-					this->layers[layer_id].sb_planes.ptr  = NULL;
-					this->layers[layer_id].sb_planes.pitch = 0;
-					this->layers[layer_id].sb_planes.ptr2 = NULL;
-					this->layers[layer_id].sb_planes.pitch2 = 0;
-					this->layers[layer_id].sb_planes.ptr3 = NULL;
-					this->layers[layer_id].sb_planes.pitch3 = 0;
-				}
-				else {
-					this->layers[layer_id].sb_planes.ptr  = ((char *)this->layers[layer_id].fb_planes.ptr)
-															+ this->layers[layer_id].fb_planes.pitch * height;
-					this->layers[layer_id].sb_planes.pitch= this->layers[layer_id].fb_planes.pitch;
-					if (pixelformat == MMSFB_PF_ARGB3565) {
-						this->layers[layer_id].sb_planes.ptr2  = ((char *)this->layers[layer_id].fb_planes.ptr2)
-																 + this->layers[layer_id].fb_planes.pitch2 * height;
-						this->layers[layer_id].sb_planes.pitch2= this->layers[layer_id].fb_planes.pitch2;
+					switch (backbuffer) {
+					case 2:
+						this->layers[layer_id].buffers[2].ptr2 = this->osd1->layers[0].buffers[2].ptr;
+						this->layers[layer_id].buffers[2].pitch2 = this->osd1->layers[0].buffers[2].pitch;
+					case 1:
+						this->layers[layer_id].buffers[1].ptr2 = this->osd1->layers[0].buffers[1].ptr;
+						this->layers[layer_id].buffers[1].pitch2 = this->osd1->layers[0].buffers[1].pitch;
+					case 0:
+						this->layers[layer_id].buffers[0].ptr2 = this->osd1->layers[0].buffers[0].ptr;
+						this->layers[layer_id].buffers[0].pitch2 = this->osd1->layers[0].buffers[0].pitch;
+						break;
+					default:
+						return false;
 					}
-					else {
-						this->layers[layer_id].sb_planes.ptr2 = NULL;
-						this->layers[layer_id].sb_planes.pitch2 = 0;
-					}
-					this->layers[layer_id].sb_planes.ptr3 = NULL;
-					this->layers[layer_id].sb_planes.pitch3 = 0;
 				}
 
 				// clear layer
 				if (pixelformat == MMSFB_PF_ARGB3565) {
 					MMSFBColor color(0x00, 0x00, 0x00, 0x00);
-					mmsfb_fillrectangle_argb3565(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
+					mmsfb_fillrectangle_argb3565(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 												 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				}
 				else {
 					MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-					mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
+					mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 											  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				}
 
@@ -269,40 +253,12 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			this->layers[layer_id].height = height;
 			this->layers[layer_id].pixelformat = pixelformat;
 
-			// save the first buffer
-			this->layers[layer_id].fb_planes = this->vid0->layers[0].fb_planes;
-/*			this->layers[layer_id].fb_planes.ptr = this->vid0->framebuffer_base;
-			this->layers[layer_id].fb_planes.ptr2 = NULL;
-			this->layers[layer_id].fb_planes.ptr3 = NULL;
-			this->layers[layer_id].fb_planes.pitch = this->vid0->layers[0].fb_planes.pitch;
-			this->layers[layer_id].fb_planes.pitch2 = 0;
-			this->layers[layer_id].fb_planes.pitch3 = 0;
-*/
-			// save the backbuffer
-			this->layers[layer_id].sb_planes = this->vid0->layers[0].sb_planes;
-/*			if (!backbuffer) {
-				this->layers[layer_id].sb_planes.ptr  = NULL;
-				this->layers[layer_id].sb_planes.pitch = 0;
-				this->layers[layer_id].sb_planes.ptr2 = NULL;
-				this->layers[layer_id].sb_planes.pitch2 = 0;
-				this->layers[layer_id].sb_planes.ptr3 = NULL;
-				this->layers[layer_id].sb_planes.pitch3 = 0;
-			}
-			else {
-				this->layers[layer_id].sb_planes.ptr  = ((char *)this->layers[layer_id].fb_planes.ptr)
-														+ this->layers[layer_id].fb_planes.pitch * this->var_screeninfo.yres;
-				this->layers[layer_id].sb_planes.pitch= this->layers[layer_id].fb_planes.pitch;
-				this->layers[layer_id].sb_planes.ptr2 = NULL;
-				this->layers[layer_id].sb_planes.pitch2 = 0;
-				this->layers[layer_id].sb_planes.ptr3 = NULL;
-				this->layers[layer_id].sb_planes.pitch3 = 0;
-			}
-
-this->layers[layer_id].sb_planes = this->vid0->layers[0].sb_planes;*/
+			// save the buffers
+			*this->layers[layer_id].buffers = *this->vid0->layers[0].buffers;
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
+			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 			                         0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 
 			// layer is initialized
@@ -332,17 +288,12 @@ this->layers[layer_id].sb_planes = this->vid0->layers[0].sb_planes;*/
 			this->layers[layer_id].height = height;
 			this->layers[layer_id].pixelformat = pixelformat;
 
-			// save the first buffer
-			this->layers[layer_id].fb_planes.ptr = this->vid1->framebuffer_base;
-			this->layers[layer_id].fb_planes.ptr2 = NULL;
-			this->layers[layer_id].fb_planes.ptr3 = NULL;
-			this->layers[layer_id].fb_planes.pitch = this->vid1->layers[0].fb_planes.pitch;
-			this->layers[layer_id].fb_planes.pitch2 = 0;
-			this->layers[layer_id].fb_planes.pitch3 = 0;
+			// save the buffers
+			*this->layers[layer_id].buffers = *this->vid1->layers[0].buffers;
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].fb_planes), this->layers[layer_id].height,
+			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 			                         0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 
 			// layer is initialized

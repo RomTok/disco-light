@@ -89,10 +89,8 @@ class MMSFBDev {
         	int width;
         	//! height of the layer
         	int height;
-        	//! describes the first buffer planes
-        	MMSFBSurfacePlanes fb_planes;
-        	//! describes the second buffer planes
-        	MMSFBSurfacePlanes sb_planes;
+        	//! describes the surface buffers
+        	MMSFBSurfacePlanesBuffer buffers;
 			//! pixelformat of the layer
 			MMSFBSurfacePixelFormat	pixelformat;
         } MMSFBDEV_LAYER;
@@ -124,18 +122,17 @@ class MMSFBDev {
         virtual bool panDisplay(int buffer_id, void *framebuffer_base = NULL);
 
         virtual bool testLayer(int layer_id);
-        virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer = false);
+        virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0);
 
         bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
         bool getPhysicalMemory(unsigned long *mem);
         bool getFrameBufferBase(unsigned char **base);
-        bool getFrameBufferPtr(int layer_id, MMSFBSurfacePlanes *fb_planes, MMSFBSurfacePlanes *sb_planes,
-							   int *width, int *height);
+        bool getFrameBufferPtr(int layer_id, MMSFBSurfacePlanesBuffer buffers, int *width, int *height);
 
         bool mapMmio(unsigned char **mmio);
         bool unmapMmio(unsigned char *mmio);
 
-        bool setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer = false);
+        bool setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0);
 
     private:
         typedef struct {

@@ -62,6 +62,11 @@ class MMSFBSurfacePlanes {
 //! for compatibility reason
 #define MMSFBExternalSurfaceBuffer	MMSFBSurfacePlanes
 
+//! max. number of buffers (3=TRIPLE buffering)
+#define MMSFB_MAX_SURFACE_PLANES_BUFFERS	3
+
+//! describes multiple buffers for backbuffer/triple buffer handling
+typedef class MMSFBSurfacePlanes MMSFBSurfacePlanesBuffer[MMSFB_MAX_SURFACE_PLANES_BUFFERS];
 
 
 // display backend types.....................................................

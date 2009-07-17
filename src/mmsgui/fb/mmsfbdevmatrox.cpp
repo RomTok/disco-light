@@ -128,7 +128,7 @@ bool MMSFBDevMatrox::testLayer(int layer_id) {
 }
 
 
-bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer) {
+bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 	// is initialized?
 	INITCHECK;
 
@@ -161,24 +161,17 @@ bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurface
 		this->layers[layer_id].height = height;
 		this->layers[layer_id].pixelformat = pixelformat;
 
-		// save the first buffer
-		this->layers[layer_id].fb_planes.ptr = this->framebuffer_base;
-		this->layers[layer_id].fb_planes.ptr2 = (char*)this->layers[layer_id].fb_planes.ptr + this->layers[layer_id].height * this->layers[layer_id].fb_planes.pitch;
-		this->layers[layer_id].fb_planes.ptr3 = (char*)this->layers[layer_id].fb_planes.ptr2 + (this->layers[layer_id].height * this->layers[layer_id].fb_planes.pitch) / 2;
+		// save buffers
+		memset(&this->layers[layer_id].buffers, 0, sizeof(this->layers[layer_id].buffers));
+		this->layers[layer_id].buffers[0].ptr = this->framebuffer_base;
 		if (width % 128)
-			this->layers[layer_id].fb_planes.pitch = ((width / 128) + 1) * 128;
+			this->layers[layer_id].buffers[0].pitch = ((width / 128) + 1) * 128;
 		else
-			this->layers[layer_id].fb_planes.pitch = width;
-		this->layers[layer_id].fb_planes.pitch2 = this->layers[layer_id].fb_planes.pitch / 2;
-		this->layers[layer_id].fb_planes.pitch3 = this->layers[layer_id].fb_planes.pitch2;
-
-		// save the backbuffer
-		this->layers[layer_id].sb_planes.ptr  = NULL;
-		this->layers[layer_id].sb_planes.pitch = 0;
-		this->layers[layer_id].sb_planes.ptr2 = NULL;
-		this->layers[layer_id].sb_planes.pitch2 = 0;
-		this->layers[layer_id].sb_planes.ptr3 = NULL;
-		this->layers[layer_id].sb_planes.pitch3 = 0;
+			this->layers[layer_id].buffers[0].pitch = width;
+		this->layers[layer_id].buffers[0].ptr2 = (char*)this->layers[layer_id].buffers[0].ptr + this->layers[layer_id].height * this->layers[layer_id].buffers[0].pitch;
+		this->layers[layer_id].buffers[0].ptr3 = (char*)this->layers[layer_id].buffers[0].ptr2 + (this->layers[layer_id].height * this->layers[layer_id].buffers[0].pitch) / 2;
+		this->layers[layer_id].buffers[0].pitch2 = this->layers[layer_id].buffers[0].pitch / 2;
+		this->layers[layer_id].buffers[0].pitch3 = this->layers[layer_id].buffers[0].pitch2;
 
 		// pal or ntsc?
 		this->tv_std_pal = (this->layers[layer_id].height == 576);
@@ -224,7 +217,7 @@ void MMSFBDevMatrox::buildCRTC2Regs() {
 	this->crtc2_regs.c2ctrl |= C2CTRL_C2DEPTH_YCBCR420;
 
 	// set offset for interlaced but not separated mode
-	this->crtc2_regs.c2offset = this->layers[2].fb_planes.pitch * 2;
+	this->crtc2_regs.c2offset = this->layers[2].buffers[0].pitch * 2;
 
 	// set sync values dependent on tv standard pal/ntsc
 	int hdisplay, htotal, vdisplay, vtotal;
@@ -263,7 +256,7 @@ void MMSFBDevMatrox::setCRTC2Regs() {
 
 void MMSFBDevMatrox::buildCRTC2Buffer() {
 	// working in interlaced mode, so have to work with an field offset
-	unsigned int field_offset = this->layers[2].fb_planes.pitch;
+	unsigned int field_offset = this->layers[2].buffers[0].pitch;
 
 	// Y plane
 	this->crtc2_regs.c2_plane1_start1 = this->fix_screeninfo.smem_start;
@@ -275,18 +268,18 @@ void MMSFBDevMatrox::buildCRTC2Buffer() {
 	switch (this->layers[2].pixelformat) {
 	case MMSFB_PF_I420:
 		// U plane
-		this->crtc2_regs.c2_plane2_start1 = this->crtc2_regs.c2_plane1_start1 + this->layers[2].height * this->layers[2].fb_planes.pitch;
+		this->crtc2_regs.c2_plane2_start1 = this->crtc2_regs.c2_plane1_start1 + this->layers[2].height * this->layers[2].buffers[0].pitch;
 		this->crtc2_regs.c2_plane2_start0 = this->crtc2_regs.c2_plane2_start1 + field_offset;
 		// V plane
-		this->crtc2_regs.c2_plane3_start1 = this->crtc2_regs.c2_plane2_start1 + (this->layers[2].height * this->layers[2].fb_planes.pitch) / 2;
+		this->crtc2_regs.c2_plane3_start1 = this->crtc2_regs.c2_plane2_start1 + (this->layers[2].height * this->layers[2].buffers[0].pitch) / 2;
 		this->crtc2_regs.c2_plane3_start0 = this->crtc2_regs.c2_plane3_start1 + field_offset;
 		break;
 	case MMSFB_PF_YV12:
 		// V plane
-		this->crtc2_regs.c2_plane3_start1 = this->crtc2_regs.c2_plane1_start1 + this->layers[2].height * this->layers[2].fb_planes.pitch;
+		this->crtc2_regs.c2_plane3_start1 = this->crtc2_regs.c2_plane1_start1 + this->layers[2].height * this->layers[2].buffers[0].pitch;
 		this->crtc2_regs.c2_plane3_start0 = this->crtc2_regs.c2_plane3_start1 + field_offset;
 		// U plane
-		this->crtc2_regs.c2_plane2_start1 = this->crtc2_regs.c2_plane3_start1 + (this->layers[2].height * this->layers[2].fb_planes.pitch) / 2;
+		this->crtc2_regs.c2_plane2_start1 = this->crtc2_regs.c2_plane3_start1 + (this->layers[2].height * this->layers[2].buffers[0].pitch) / 2;
 		this->crtc2_regs.c2_plane2_start0 = this->crtc2_regs.c2_plane2_start1 + field_offset;
 		break;
 	default:

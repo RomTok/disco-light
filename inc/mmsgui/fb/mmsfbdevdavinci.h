@@ -51,7 +51,7 @@ class MMSFBDevDavinci : public MMSFBDev {
         bool panDisplay(int buffer_id, void *framebuffer_base);
 
         bool testLayer(int layer_id);
-        bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, bool backbuffer = false);
+        bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0);
 
     private:
 
