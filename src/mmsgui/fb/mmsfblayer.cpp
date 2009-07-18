@@ -99,13 +99,6 @@ MMSFBLayer::MMSFBLayer(int id) {
 				return;
 			}
 
-			// fill my config partly from mmsfb
-			this->config.w = mmsfb->w;
-			this->config.h = mmsfb->h;
-			this->config.pixelformat = MMSFB_PF_NONE;
-			this->config.buffermode = MMSFB_BM_BACKSYSTEM;
-			this->config.options = MMSFB_LO_NONE;
-
 			this->initialized = true;
         }
 #endif
@@ -119,8 +112,8 @@ MMSFBLayer::MMSFBLayer(int id) {
         }
 
 		// fill my config partly from mmsfb
-		this->config.w = mmsfb->w;
-		this->config.h = mmsfb->h;
+		this->config.w = mmsfb->x11_win_rect.w;
+		this->config.h = mmsfb->x11_win_rect.h;
 		this->config.pixelformat = MMSFB_PF_NONE;
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;

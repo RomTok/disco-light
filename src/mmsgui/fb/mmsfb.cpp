@@ -56,9 +56,7 @@ MMSFB::MMSFB() :
     x_display(NULL),
 	xv_port(0),
 #endif
-	outputtype(MMSFB_OT_NONE),
-	w(0),
-	h(0) {
+	outputtype(MMSFB_OT_NONE) {
 	// set the atexit routine
 	atexit(MMSFB_AtExit);
 }
@@ -71,8 +69,9 @@ MMSFB::~MMSFB() {
 #endif
 }
 
-bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h,
-				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer, string appl_name, string appl_icon_name,int x, int y, bool hidden) {
+bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, MMSFBRectangle x11_win_rect,
+				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
+				 string appl_name, string appl_icon_name, bool hidden) {
 
     // check if already initialized
     if (this->initialized) {
@@ -89,10 +88,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 
     // basic information mainly needed by X11 initialization
     this->outputtype = outputtype;
-    this->w = w;
-    this->h = h;
-    this->x = x;
-    this->y = y;
+    this->x11_win_rect = x11_win_rect;
 
     // which backend should i use?
 	this->backend = backend;
@@ -228,8 +224,9 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
 			x_window_attr.override_redirect = 0;
 			int x_depth = DefaultDepth(this->x_display, this->x_screen);
-			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), x, y, this->w, this->h, 0, x_depth,
-										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
+			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display),
+										   this->x11_win_rect.x, this->x11_win_rect.y, this->x11_win_rect.w, this->x11_win_rect.h,
+										   0, x_depth, InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
 		}
 
 		XStoreName(this->x_display, this->x_window, appl_name.c_str());

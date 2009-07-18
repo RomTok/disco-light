@@ -230,8 +230,8 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	if(event.type==ButtonPress) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
-				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
-				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
+				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->x11_win_rect.h);
     		}
 			else {
 				inputevent->posx = event.xbutton.x;
@@ -244,8 +244,8 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	if(event.type==ButtonRelease) {
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
-				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
-				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
+				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->x11_win_rect.h);
     		}
 			else {
 				inputevent->posx = event.xbutton.x;
@@ -258,8 +258,8 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	if(event.type==MotionNotify) {
     		inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO || mmsfb->resized) {
-				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->w);
-				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->h);
+				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
+				inputevent->posy =  (int)((double)((double)event.xbutton.y / (double)mmsfb->display_h ) * mmsfb->x11_win_rect.h);
 			}
 			else {
 				inputevent->posx = event.xbutton.x;

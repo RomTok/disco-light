@@ -85,21 +85,15 @@ class MMSConfigDataDB {
 
 class MMSConfigDataLayer {
     public:
-	    int    					xres;
-	    int    					yres;
-	    int    					xpos;
-	    int    					ypos;
 		int    					id;
+    	MMSFBRectangle			rect;
 		MMSFBSurfacePixelFormat pixelformat;
 	    string 					options;
 	    string 					buffermode;
 
    	    MMSConfigDataLayer() :
-   		    xres(800),
-   		    yres(600),
-   		    xpos(50),
-   		    ypos(50),
    			id(0),
+   			rect(MMSFBRectangle(50,50,800,600)),
    			pixelformat(MMSFB_PF_RGB16),
    		    options(""),
    		    buffermode("BACKSYSTEM") {}

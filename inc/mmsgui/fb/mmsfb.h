@@ -85,18 +85,15 @@ class MMSFB {
 
         MMSFBBackend	backend;
         MMSFBOutputType	outputtype;
-        int				w;
-        int				h;
-        int				x;
-        int				y;
+        MMSFBRectangle  x11_win_rect;
 
     public:
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, int w, int h, bool extendedaccel,
-				  MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
-				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application",int x=50, int y=50, bool hidden=false);
+        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, MMSFBRectangle x11_win_rect,
+        		  bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
+				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application", bool hidden=false);
         bool release();
         bool isInitialized();
 

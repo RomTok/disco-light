@@ -4316,23 +4316,23 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				// calc ratio
 				MMSFBRectangle dest;
-				calcAspectRatio(mmsfb->w, mmsfb->h, mmsfb->display_w, mmsfb->display_h, dest,
+				calcAspectRatio(mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, mmsfb->display_w, mmsfb->display_h, dest,
 								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
 
 				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  dest.x, dest.y, dest.w, dest.h, False);
 
 			} else if(mmsfb->resized) {
 				printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, False);
 			}else{
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-							  0, 0, mmsfb->w, mmsfb->h,
-							  0, 0, mmsfb->w, mmsfb->h, False);
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}
 			XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__
@@ -4426,21 +4426,21 @@ bool MMSFBSurface::refresh() {
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				// calc ratio
 				MMSFBRectangle dest;
-				calcAspectRatio(mmsfb->w, mmsfb->h, mmsfb->display_w, mmsfb->display_h, dest,
+				calcAspectRatio(mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, mmsfb->display_w, mmsfb->display_h, dest,
 								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
 
 				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  dest.x, dest.y, dest.w, dest.h, False);
 			} else if(mmsfb->resized) {
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-							  0, 0, mmsfb->w, mmsfb->h,
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, False);
 			}else{
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
-							  0, 0, mmsfb->w, mmsfb->h,
-							  0, 0, mmsfb->w, mmsfb->h, False);
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
+							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}
 			XFlush(mmsfb->x_display);
 #ifndef __NO_XSYNC__

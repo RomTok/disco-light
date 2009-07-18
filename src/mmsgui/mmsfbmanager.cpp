@@ -81,14 +81,13 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 #endif
 
 
-//TODO
-MMSConfigDataLayer videolayer = this->config.getVideoLayer();
-MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
+	// get layer settings from config
+	MMSConfigDataLayer videolayer = this->config.getVideoLayer();
+	MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
 
-
-
-    if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), graphicslayer.xres, graphicslayer.yres,
-					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, graphicslayer.xpos, graphicslayer.ypos, config.getHideApplication()))
+	// init the MMSFB class
+    if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), graphicslayer.rect,
+					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getHideApplication()))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     DEBUGMSG("MMSGUI", "get video layer");
@@ -135,9 +134,9 @@ void MMSFBManager::release() {
 void MMSFBManager::applySettings() {
 	DEBUGMSG("MMSGUI", "configure graphics layer");
 
-//TODO
-MMSConfigDataLayer videolayer = this->config.getVideoLayer();
-MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
+	// get layer settings from config
+	MMSConfigDataLayer videolayer = this->config.getVideoLayer();
+	MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
 
 	// get the window pixelformat
 	MMSFBSurfacePixelFormat window_pixelformat = config.getGraphicsWindowPixelformat();
@@ -192,7 +191,7 @@ MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
 	if (!this->graphicslayer->setExclusiveAccess())
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
-    if (!this->graphicslayer->setConfiguration(graphicslayer.xres, graphicslayer.yres,
+    if (!this->graphicslayer->setConfiguration(graphicslayer.rect.w, graphicslayer.rect.h,
 											   graphicslayer.pixelformat,
 											   graphicslayer.buffermode,
 											   graphicslayer.options,
@@ -214,7 +213,7 @@ MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
         /* set video layer's config */
-        if (!this->videolayer->setConfiguration(videolayer.xres, videolayer.yres,
+        if (!this->videolayer->setConfiguration(videolayer.rect.w, videolayer.rect.h,
 												videolayer.pixelformat,
 												videolayer.buffermode,
 												videolayer.options))
@@ -285,8 +284,8 @@ MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
         pixelformat = MMSFB_PF_ARGB;
 */
 
-    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", config.getXres(), config.getYres(), getMMSFBPixelFormatString(surface_pixelformat).c_str());
-    mmsfbsurfacemanager->createTemporarySurface(graphicslayer.xres, graphicslayer.yres, surface_pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
+    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", graphicslayer.rect.w, graphicslayer.rect.h, getMMSFBPixelFormatString(surface_pixelformat).c_str());
+    mmsfbsurfacemanager->createTemporarySurface(graphicslayer.rect.w, graphicslayer.rect.h, surface_pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 

@@ -69,17 +69,17 @@ void MMSRcParser::parseFile(string filename) {
 	      	this->throughFile(pNode);
 
             if (this->graphics.vrect.w <= 0)
-                this->graphics.vrect.w = this->graphics.graphicslayer.xres;
+                this->graphics.vrect.w = this->graphics.graphicslayer.rect.w;
             if (this->graphics.vrect.h <= 0)
-                this->graphics.vrect.h = this->graphics.graphicslayer.yres;
-            if ((this->graphics.vrect.x < 0)||(this->graphics.vrect.x > this->graphics.graphicslayer.xres))
+                this->graphics.vrect.h = this->graphics.graphicslayer.rect.h;
+            if ((this->graphics.vrect.x < 0)||(this->graphics.vrect.x > this->graphics.graphicslayer.rect.w))
                 this->graphics.vrect.x = 0;
-            if ((this->graphics.vrect.y < 0)||(this->graphics.vrect.y > this->graphics.graphicslayer.yres))
+            if ((this->graphics.vrect.y < 0)||(this->graphics.vrect.y > this->graphics.graphicslayer.rect.h))
                 this->graphics.vrect.y = 0;
-            if (this->graphics.vrect.w - this->graphics.vrect.x > this->graphics.graphicslayer.xres)
-                this->graphics.vrect.w = this->graphics.graphicslayer.xres - this->graphics.vrect.x;
-            if (this->graphics.vrect.h - this->graphics.vrect.y > this->graphics.graphicslayer.yres)
-                this->graphics.vrect.h = this->graphics.graphicslayer.yres - this->graphics.vrect.y;
+            if (this->graphics.vrect.w - this->graphics.vrect.x > this->graphics.graphicslayer.rect.w)
+                this->graphics.vrect.w = this->graphics.graphicslayer.rect.w - this->graphics.vrect.x;
+            if (this->graphics.vrect.h - this->graphics.vrect.y > this->graphics.graphicslayer.rect.h)
+                this->graphics.vrect.h = this->graphics.graphicslayer.rect.h - this->graphics.vrect.y;
 
 
     	    /*free the document */
@@ -328,52 +328,52 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
     	if(!xmlStrcmp(parname, (const xmlChar *) "xres")) {
 			switch (mode) {
 			case THROUGH_GRAPHICS_MODE_NORMAL:
-				this->graphics.videolayer.xres = this->graphics.graphicslayer.xres = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.w = this->graphics.graphicslayer.rect.w = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
-				this->graphics.videolayer.xres = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.w = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
-				this->graphics.graphicslayer.xres = strToInt(string((const char *)parvalue));
+				this->graphics.graphicslayer.rect.w = strToInt(string((const char *)parvalue));
 				break;
 			}
 		}
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres")) {
 			switch (mode) {
 			case THROUGH_GRAPHICS_MODE_NORMAL:
-				this->graphics.videolayer.yres = this->graphics.graphicslayer.yres = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.h = this->graphics.graphicslayer.rect.h = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
-				this->graphics.videolayer.yres = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.h = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
-				this->graphics.graphicslayer.yres = strToInt(string((const char *)parvalue));
+				this->graphics.graphicslayer.rect.h = strToInt(string((const char *)parvalue));
 				break;
 			}
 	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "xpos")) {
 			switch (mode) {
 			case THROUGH_GRAPHICS_MODE_NORMAL:
-				this->graphics.videolayer.xpos = this->graphics.graphicslayer.xpos = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.x = this->graphics.graphicslayer.rect.x = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
-				this->graphics.videolayer.xpos = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.x = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
-				this->graphics.graphicslayer.xpos = strToInt(string((const char *)parvalue));
+				this->graphics.graphicslayer.rect.x = strToInt(string((const char *)parvalue));
 				break;
 			}
 	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "ypos")) {
 			switch (mode) {
 			case THROUGH_GRAPHICS_MODE_NORMAL:
-				this->graphics.videolayer.ypos = this->graphics.graphicslayer.ypos = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.y = this->graphics.graphicslayer.rect.y = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
-				this->graphics.videolayer.ypos = strToInt(string((const char *)parvalue));
+				this->graphics.videolayer.rect.y = strToInt(string((const char *)parvalue));
 				break;
 			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
-				this->graphics.graphicslayer.ypos = strToInt(string((const char *)parvalue));
+				this->graphics.graphicslayer.rect.y = strToInt(string((const char *)parvalue));
 				break;
 			}
 	    }
@@ -610,7 +610,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	    	    	printf("RcParser: ignoring parameter '%s' in tag <graphicslayer/>\n", parname);
 	    	}
 			else
-				printf("RcParser: ignoring parameter '%s' in tag <???/>\n", parname);
+				printf("RcParser: ignoring parameter '%s' in tag <.../>\n", parname);
 	    }
 
 	    xmlFree(parname);
@@ -646,10 +646,10 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 		}
 		else {
 			if (this->graphics.videolayer.id == this->graphics.graphicslayer.id) {
-				if   (this->graphics.videolayer.xres != this->graphics.graphicslayer.xres
-					||this->graphics.videolayer.yres != this->graphics.graphicslayer.yres
-					||this->graphics.videolayer.xpos != this->graphics.graphicslayer.xpos
-					||this->graphics.videolayer.ypos != this->graphics.graphicslayer.ypos
+				if   (this->graphics.videolayer.rect.w != this->graphics.graphicslayer.rect.w
+					||this->graphics.videolayer.rect.h != this->graphics.graphicslayer.rect.h
+					||this->graphics.videolayer.rect.x != this->graphics.graphicslayer.rect.x
+					||this->graphics.videolayer.rect.y != this->graphics.graphicslayer.rect.y
 					||this->graphics.videolayer.pixelformat != this->graphics.graphicslayer.pixelformat
 					||this->graphics.videolayer.options != this->graphics.graphicslayer.options
 					||this->graphics.videolayer.buffermode != this->graphics.graphicslayer.buffermode) {

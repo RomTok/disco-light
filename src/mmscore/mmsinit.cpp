@@ -129,23 +129,15 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         DEBUGMSG_OUTSTR("Core", "Theme:                        " + config->getTheme());
         DEBUGMSG_OUTSTR("Core", "Backend:                      " + getMMSFBBackendString(config->getBackend()));
         DEBUGMSG_OUTSTR("Core", "Output type:                  " + getMMSFBOutputTypeString(config->getOutputType()));
-        if (videolayer.id == graphicslayer.id) {
-			DEBUGMSG_OUTSTR("Core", "Resolution:                   " + iToStr(graphicslayer.xres) + "x" + iToStr(graphicslayer.yres));
-			DEBUGMSG_OUTSTR("Core", "Position:                     " + iToStr(graphicslayer.xpos) + "," + iToStr(graphicslayer.ypos));
-        }
-        else {
-			DEBUGMSG_OUTSTR("Core", "Video Layer Resolution:       " + iToStr(videolayer.xres) + "x" + iToStr(videolayer.yres));
-			DEBUGMSG_OUTSTR("Core", "Video Layer Position:         " + iToStr(videolayer.xpos) + "," + iToStr(videolayer.ypos));
-        }
 		DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(videolayer.id));
+		DEBUGMSG_OUTSTR("Core", "Video layer resolution:       " + iToStr(videolayer.rect.w) + "x" + iToStr(videolayer.rect.h));
+		DEBUGMSG_OUTSTR("Core", "Video layer position:         " + iToStr(videolayer.rect.x) + "," + iToStr(videolayer.rect.y));
 		DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + getMMSFBPixelFormatString(videolayer.pixelformat));
 		DEBUGMSG_OUTSTR("Core", "Video layer options:          " + videolayer.options);
 		DEBUGMSG_OUTSTR("Core", "Video layer buffermode:       " + videolayer.buffermode);
-        if (videolayer.id != graphicslayer.id) {
-			DEBUGMSG_OUTSTR("Core", "Graphics Layer Resolution:    " + iToStr(graphicslayer.xres) + "x" + iToStr(graphicslayer.yres));
-			DEBUGMSG_OUTSTR("Core", "Graphics Layer Position:      " + iToStr(graphicslayer.xpos) + "," + iToStr(graphicslayer.ypos));
-        }
 		DEBUGMSG_OUTSTR("Core", "Graphics layer id:            " + iToStr(graphicslayer.id));
+		DEBUGMSG_OUTSTR("Core", "Graphics layer resolution:    " + iToStr(graphicslayer.rect.w) + "x" + iToStr(graphicslayer.rect.h));
+		DEBUGMSG_OUTSTR("Core", "Graphics layer position:      " + iToStr(graphicslayer.rect.x) + "," + iToStr(graphicslayer.rect.y));
 		DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + getMMSFBPixelFormatString(graphicslayer.pixelformat));
 		DEBUGMSG_OUTSTR("Core", "Graphics layer options:       " + graphicslayer.options);
 		DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + graphicslayer.buffermode);
