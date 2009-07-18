@@ -193,23 +193,6 @@ const MMSConfigDataLayer MMSConfigData::getGraphicsLayer() {
     return this->graphics.graphicslayer;
 }
 
-/*
-const int MMSConfigData::getXres() {
-    return this->graphics.xres;
-}
-
-const int MMSConfigData::getYres() {
-    return this->graphics.yres;
-}
-
-const int MMSConfigData::getXpos() {
-    return this->graphics.xpos;
-}
-
-const int MMSConfigData::getYpos() {
-    return this->graphics.ypos;
-}*/
-
 const MMSFBBackend MMSConfigData::getBackend() {
     return this->graphics.backend;
 }
@@ -217,39 +200,6 @@ const MMSFBBackend MMSConfigData::getBackend() {
 const MMSFBOutputType MMSConfigData::getOutputType() {
     return this->graphics.outputtype;
 }
-
-/*const int MMSConfigData::getVideoLayerId() {
-	return this->graphics.videolayerid;
-}
-
-const MMSFBSurfacePixelFormat MMSConfigData::getVideoLayerPixelformat() {
-    return this->graphics.videolayerpixelformat;
-}
-
-const string MMSConfigData::getVideoLayerOptions() {
-    return this->graphics.videolayeroptions;
-}
-
-const string MMSConfigData::getVideoLayerBufferMode() {
-    return this->graphics.videolayerbuffermode;
-}
-
-const int MMSConfigData::getGraphicsLayerId() {
-	return this->graphics.graphicslayerid;
-}
-
-const MMSFBSurfacePixelFormat MMSConfigData::getGraphicsLayerPixelformat() {
-    return this->graphics.graphicslayerpixelformat;
-}
-
-const string MMSConfigData::getGraphicsLayerOptions() {
-    return this->graphics.graphicslayeroptions;
-}
-
-const string MMSConfigData::getGraphicsLayerBufferMode() {
-    return this->graphics.graphicslayerbuffermode;
-}
-*/
 
 const MMSFBRectangle MMSConfigData::getVRect() {
     return this->graphics.vrect;

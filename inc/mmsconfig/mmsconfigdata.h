@@ -199,20 +199,8 @@ class MMSConfigData {
         /* graphics section getters */
         const MMSConfigDataLayer getVideoLayer();
         const MMSConfigDataLayer getGraphicsLayer();
-/*        const int    getXres();
-        const int    getYres();
-        const int    getXpos();
-        const int    getYpos();*/
         const MMSFBBackend getBackend();
         const MMSFBOutputType getOutputType();
-/*        const int    getVideoLayerId();
-        const MMSFBSurfacePixelFormat getVideoLayerPixelformat();
-        const string getVideoLayerOptions();
-        const string getVideoLayerBufferMode();
-        const int    getGraphicsLayerId();
-        const MMSFBSurfacePixelFormat getGraphicsLayerPixelformat();
-        const string getGraphicsLayerOptions();
-        const string getGraphicsLayerBufferMode();*/
         const MMSFBRectangle getVRect();
         const MMSFBRectangle getTouchRect();
         const MMSFBPointerMode getPointer();
