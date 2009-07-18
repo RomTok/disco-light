@@ -287,20 +287,19 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 	}
 }
 
-
-void MMSRcParser::throughGraphics(xmlNode* node, int mode) {
-// mode == 0 - normal
-// mode == 1 - new separate <videolayer/> section
-// mode == 2 - new separate <graphicslayer/> section
-
+void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	xmlNode *cur_node = NULL;
 	xmlChar *parname;
 	xmlChar *parvalue;
+	MMSConfigDataLayer vl, gl;
 
-
-//TODO
-if (mode) return;
-
+	if (mode == THROUGH_GRAPHICS_MODE_NORMAL) {
+		// save the old settings and set id to -1
+		vl = this->graphics.videolayer;
+		gl = this->graphics.graphicslayer;
+		this->graphics.videolayer.id = -1;
+		this->graphics.graphicslayer.id = -1;
+	}
 
 	node = node->xmlChildrenNode;
 
@@ -308,14 +307,14 @@ if (mode) return;
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "text")) continue;
 		if(!xmlStrcmp(cur_node->name, (const xmlChar *) "comment"))	continue;
 		if(xmlStrcmp(cur_node->name, (const xmlChar *) "parameter")) {
-			if (!mode) {
+			if (mode == THROUGH_GRAPHICS_MODE_NORMAL) {
 				if(!xmlStrcmp(cur_node->name, (const xmlChar *) "videolayer")) {
-					throughGraphics(cur_node, 1);
+					throughGraphics(cur_node, THROUGH_GRAPHICS_MODE_VIDEOLAYER);
 					continue;
 				}
 				else
 				if(!xmlStrcmp(cur_node->name, (const xmlChar *) "graphicslayer")) {
-					throughGraphics(cur_node, 2);
+					throughGraphics(cur_node, THROUGH_GRAPHICS_MODE_GRAPHICSLAYER);
 					continue;
 				}
 			}
@@ -326,145 +325,58 @@ if (mode) return;
     	parname  = xmlGetProp(cur_node, (const xmlChar*)"name");
     	parvalue = xmlGetProp(cur_node, (const xmlChar*)"value");
 
-		if(!xmlStrcmp(parname, (const xmlChar *) "xres")) {
-			this->graphics.videolayer.xres = this->graphics.graphicslayer.xres = strToInt(string((const char *)parvalue));
+    	if(!xmlStrcmp(parname, (const xmlChar *) "xres")) {
+			switch (mode) {
+			case THROUGH_GRAPHICS_MODE_NORMAL:
+				this->graphics.videolayer.xres = this->graphics.graphicslayer.xres = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
+				this->graphics.videolayer.xres = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
+				this->graphics.graphicslayer.xres = strToInt(string((const char *)parvalue));
+				break;
+			}
 		}
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "yres")) {
-	    	this->graphics.videolayer.yres = this->graphics.graphicslayer.yres = strToInt(string((const char *)parvalue));
+			switch (mode) {
+			case THROUGH_GRAPHICS_MODE_NORMAL:
+				this->graphics.videolayer.yres = this->graphics.graphicslayer.yres = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
+				this->graphics.videolayer.yres = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
+				this->graphics.graphicslayer.yres = strToInt(string((const char *)parvalue));
+				break;
+			}
 	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "xpos")) {
-	    	this->graphics.videolayer.xpos = this->graphics.graphicslayer.xpos = strToInt(string((const char *)parvalue));
+			switch (mode) {
+			case THROUGH_GRAPHICS_MODE_NORMAL:
+				this->graphics.videolayer.xpos = this->graphics.graphicslayer.xpos = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
+				this->graphics.videolayer.xpos = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
+				this->graphics.graphicslayer.xpos = strToInt(string((const char *)parvalue));
+				break;
+			}
 	    }
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "ypos")) {
-	    	this->graphics.videolayer.ypos = this->graphics.graphicslayer.ypos = strToInt(string((const char *)parvalue));
+			switch (mode) {
+			case THROUGH_GRAPHICS_MODE_NORMAL:
+				this->graphics.videolayer.ypos = this->graphics.graphicslayer.ypos = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_VIDEOLAYER:
+				this->graphics.videolayer.ypos = strToInt(string((const char *)parvalue));
+				break;
+			case THROUGH_GRAPHICS_MODE_GRAPHICSLAYER:
+				this->graphics.graphicslayer.ypos = strToInt(string((const char *)parvalue));
+				break;
+			}
 	    }
-        else if(!xmlStrcmp(parname, (const xmlChar *) "backend")) {
-        	string val = string((const char *)parvalue);
-        	// get/check value
-            if ((this->graphics.backend = getMMSFBBackendFromString(strToUpr(val))) == MMSFB_BE_NONE)
-            	WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES, "");
-
-        	// check value against output type
-            if (this->graphics.outputtype == MMSFB_OT_VESAFB) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_DFB:
-            	case MMSFB_BE_FBDEV:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VESAFB\"");
-            	}
-            }
-            else
-            if (this->graphics.outputtype == MMSFB_OT_MATROXFB) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_DFB:
-            	case MMSFB_BE_FBDEV:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"MATROXFB\"");
-            	}
-            }
-            else
-            if (this->graphics.outputtype == MMSFB_OT_VIAFB) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_DFB:
-            	case MMSFB_BE_FBDEV:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VIAFB\"");
-            	}
-            }
-            else
-            if (this->graphics.outputtype == MMSFB_OT_X11) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_DFB:
-            	case MMSFB_BE_X11:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X11, "-> this depends on outputtype=\"X11\"");
-            	}
-            }
-            else
-            if (this->graphics.outputtype == MMSFB_OT_XSHM) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_X11:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, "-> this depends on outputtype=\"XSHM\"");
-            	}
-            }
-            else
-            if (this->graphics.outputtype == MMSFB_OT_XVSHM) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_X11:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, "-> this depends on outputtype=\"XVSHM\"");
-            	}
-            }
-            else
-            if (this->graphics.outputtype == MMSFB_OT_DAVINCIFB) {
-            	switch (this->graphics.backend) {
-            	case MMSFB_BE_DFB:
-            	case MMSFB_BE_FBDEV:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"DAVINCIFB\"");
-            	}
-            }
-        }
-        else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype")) {
-        	string val = string((const char *)parvalue);
-        	// get/check value
-            if ((this->graphics.outputtype = getMMSFBOutputTypeFromString(strToUpr(val))) == MMSFB_OT_NONE)
-            	WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES, "");
-
-        	// check value against backend type
-            if (this->graphics.backend == MMSFB_BE_DFB) {
-            	switch (this->graphics.outputtype) {
-            	case MMSFB_OT_VESAFB:
-            	case MMSFB_OT_MATROXFB:
-            	case MMSFB_OT_VIAFB:
-            	case MMSFB_OT_X11:
-            	case MMSFB_OT_DAVINCIFB:
-            		// okay
-            		break;
-            	default:
-            		WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_DFB, "-> this depends on backend=\"DFB\"");
-            	}
-            }
-            else
-			if (this->graphics.backend == MMSFB_BE_X11) {
-				switch (this->graphics.outputtype) {
-				case MMSFB_OT_X11:
-				case MMSFB_OT_XSHM:
-				case MMSFB_OT_XVSHM:
-					// okay
-					break;
-				default:
-					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_X11, "-> this depends on backend=\"X11\"");
-				}
-			}
-            else
-			if (this->graphics.backend == MMSFB_BE_FBDEV) {
-				switch (this->graphics.outputtype) {
-            	case MMSFB_OT_VESAFB:
-            	case MMSFB_OT_MATROXFB:
-            	case MMSFB_OT_DAVINCIFB:
-					// okay
-					break;
-				default:
-					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, "-> this depends on backend=\"FBDEV\"");
-				}
-			}
-        }
 		else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerid"))
 			this->graphics.videolayer.id = atoi((const char *)parvalue);
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerpixelformat")) {
@@ -487,60 +399,266 @@ if (mode) return;
 	        this->graphics.graphicslayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode"))
 	        this->graphics.graphicslayer.buffermode = strToUpr(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.x"))
-	        this->graphics.vrect.x = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.y"))
-	        this->graphics.vrect.y = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.w"))
-	        this->graphics.vrect.w = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.h"))
-	        this->graphics.vrect.h = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.x"))
-	        this->graphics.touchrect.x = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.y"))
-	        this->graphics.touchrect.y = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.w"))
-	        this->graphics.touchrect.w = strToInt(string((const char *)parvalue));
-	    else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.h"))
-	    	this->graphics.touchrect.h = strToInt(string((const char *)parvalue));
-        else if(!xmlStrcmp(parname, (const xmlChar *) "pointer")) {
-        	string val = string((const char *)parvalue);
-            if ((this->graphics.pointer = getMMSFBPointerModeFromString(strToUpr(val))) == MMSFB_PM_NONE)
-            	WRONG_VALUE(parname, val, MMSFB_PM_VALID_VALUES, "");
-        }
-        else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat")) {
-        	string val = string((const char *)parvalue);
-            if ((this->graphics.graphicswindowpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
-            	string val2 = strToUpr(val);
-            	if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
-            		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_WINDOWS, "");
-            }
+	    else if (mode == THROUGH_GRAPHICS_MODE_NORMAL) {
+			if(!xmlStrcmp(parname, (const xmlChar *) "backend")) {
+				string val = string((const char *)parvalue);
+				// get/check value
+				if ((this->graphics.backend = getMMSFBBackendFromString(strToUpr(val))) == MMSFB_BE_NONE)
+					WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES, "");
+
+				// check value against output type
+				if (this->graphics.outputtype == MMSFB_OT_VESAFB) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_DFB:
+					case MMSFB_BE_FBDEV:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VESAFB\"");
+					}
+				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_MATROXFB) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_DFB:
+					case MMSFB_BE_FBDEV:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"MATROXFB\"");
+					}
+				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_VIAFB) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_DFB:
+					case MMSFB_BE_FBDEV:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VIAFB\"");
+					}
+				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_X11) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_DFB:
+					case MMSFB_BE_X11:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X11, "-> this depends on outputtype=\"X11\"");
+					}
+				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_XSHM) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_X11:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, "-> this depends on outputtype=\"XSHM\"");
+					}
+				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_XVSHM) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_X11:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_X, "-> this depends on outputtype=\"XVSHM\"");
+					}
+				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_DAVINCIFB) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_DFB:
+					case MMSFB_BE_FBDEV:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"DAVINCIFB\"");
+					}
+				}
+			}
+			else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype")) {
+				string val = string((const char *)parvalue);
+				// get/check value
+				if ((this->graphics.outputtype = getMMSFBOutputTypeFromString(strToUpr(val))) == MMSFB_OT_NONE)
+					WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES, "");
+
+				// check value against backend type
+				if (this->graphics.backend == MMSFB_BE_DFB) {
+					switch (this->graphics.outputtype) {
+					case MMSFB_OT_VESAFB:
+					case MMSFB_OT_MATROXFB:
+					case MMSFB_OT_VIAFB:
+					case MMSFB_OT_X11:
+					case MMSFB_OT_DAVINCIFB:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_DFB, "-> this depends on backend=\"DFB\"");
+					}
+				}
+				else
+				if (this->graphics.backend == MMSFB_BE_X11) {
+					switch (this->graphics.outputtype) {
+					case MMSFB_OT_X11:
+					case MMSFB_OT_XSHM:
+					case MMSFB_OT_XVSHM:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_X11, "-> this depends on backend=\"X11\"");
+					}
+				}
+				else
+				if (this->graphics.backend == MMSFB_BE_FBDEV) {
+					switch (this->graphics.outputtype) {
+					case MMSFB_OT_VESAFB:
+					case MMSFB_OT_MATROXFB:
+					case MMSFB_OT_DAVINCIFB:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, "-> this depends on backend=\"FBDEV\"");
+					}
+				}
+			}
+			else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.x"))
+				this->graphics.vrect.x = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.y"))
+				this->graphics.vrect.y = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.w"))
+				this->graphics.vrect.w = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "vrect.h"))
+				this->graphics.vrect.h = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.x"))
+				this->graphics.touchrect.x = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.y"))
+				this->graphics.touchrect.y = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.w"))
+				this->graphics.touchrect.w = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "touchrect.h"))
+				this->graphics.touchrect.h = strToInt(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "pointer")) {
+				string val = string((const char *)parvalue);
+				if ((this->graphics.pointer = getMMSFBPointerModeFromString(strToUpr(val))) == MMSFB_PM_NONE)
+					WRONG_VALUE(parname, val, MMSFB_PM_VALID_VALUES, "");
+			}
+			else if(!xmlStrcmp(parname, (const xmlChar *) "graphicswindowpixelformat")) {
+				string val = string((const char *)parvalue);
+				if ((this->graphics.graphicswindowpixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
+					string val2 = strToUpr(val);
+					if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
+						WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_WINDOWS, "");
+				}
+			}
+			else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat")) {
+				string val = string((const char *)parvalue);
+				if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
+					string val2 = strToUpr(val);
+					if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
+						WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
+				}
+			}
+			else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
+				this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
+				this->graphics.allocmethod = strToUpr(string((const char *)parvalue));
+			else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen")) {
+				string val = string((const char *)parvalue);
+				if ((this->graphics.fullscreen = getMMSFBFullScreenModeFromString(strToUpr(val))) == MMSFB_FSM_NONE)
+					WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES, "");
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "hideapplication")) {
+				this->graphics.hideapplication = strToBool(string((const char *)parvalue));
+			}
+			else
+				printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);
 	    }
-		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicssurfacepixelformat")) {
-        	string val = string((const char *)parvalue);
-            if ((this->graphics.graphicssurfacepixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE) {
-            	string val2 = strToUpr(val);
-            	if ((val2 != "") && (val2 != "AUTODETECT") && (val2 != "AUTO"))
-            		WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_SURFACES, "");
-            }
+	    else {
+	    	if (mode == THROUGH_GRAPHICS_MODE_VIDEOLAYER) {
+	    		if(!xmlStrcmp(parname, (const xmlChar *) "id"))
+	    			this->graphics.videolayer.id = atoi((const char *)parvalue);
+	    	    else if(!xmlStrcmp(parname, (const xmlChar *) "pixelformat")) {
+	            	string val = string((const char *)parvalue);
+	                if ((this->graphics.videolayer.pixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+	                	WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_LAYER, "");
+	    	    }
+	    	    else if(!xmlStrcmp(parname, (const xmlChar *) "options"))
+	    	        this->graphics.videolayer.options = strToUpr(string((const char *)parvalue));
+	    	    else if(!xmlStrcmp(parname, (const xmlChar *) "buffermode"))
+	    	        this->graphics.videolayer.buffermode = strToUpr(string((const char *)parvalue));
+	    	    else
+	    	    	printf("RcParser: ignoring parameter '%s' in tag <videolayer/>\n", parname);
+	    	}
+	    	else if (mode == THROUGH_GRAPHICS_MODE_GRAPHICSLAYER) {
+	    		if(!xmlStrcmp(parname, (const xmlChar *) "id"))
+	    			this->graphics.graphicslayer.id = atoi((const char *)parvalue);
+	    		else if(!xmlStrcmp(parname, (const xmlChar *) "pixelformat")) {
+	            	string val = string((const char *)parvalue);
+	                if ((this->graphics.graphicslayer.pixelformat = getMMSFBPixelFormatFromString(strToUpr(val))) == MMSFB_PF_NONE)
+	                	WRONG_VALUE(parname, val, MMSFB_PF_VALID_VALUES_LAYER, "");
+	    	    }
+	    	    else if(!xmlStrcmp(parname, (const xmlChar *) "options"))
+	    	        this->graphics.graphicslayer.options = strToUpr(string((const char *)parvalue));
+	    	    else if(!xmlStrcmp(parname, (const xmlChar *) "buffermode"))
+	    	        this->graphics.graphicslayer.buffermode = strToUpr(string((const char *)parvalue));
+	    	    else
+	    	    	printf("RcParser: ignoring parameter '%s' in tag <graphicslayer/>\n", parname);
+	    	}
+			else
+				printf("RcParser: ignoring parameter '%s' in tag <???/>\n", parname);
 	    }
-        else if(!xmlStrcmp(parname, (const xmlChar *) "extendedaccel"))
-            this->graphics.extendedaccel = strToBool(string((const char *)parvalue));
-		else if(!xmlStrcmp(parname, (const xmlChar *) "allocmethod"))
-			this->graphics.allocmethod = strToUpr(string((const char *)parvalue));
-        else if(!xmlStrcmp(parname, (const xmlChar *) "fullscreen")) {
-        	string val = string((const char *)parvalue);
-            if ((this->graphics.fullscreen = getMMSFBFullScreenModeFromString(strToUpr(val))) == MMSFB_FSM_NONE)
-            	WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES, "");
-        } else if(!xmlStrcmp(parname, (const xmlChar *) "hideapplication")) {
-        	this->graphics.hideapplication = strToBool(string((const char *)parvalue));
-        }
-        else
-			printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);
 
 	    xmlFree(parname);
 	    xmlFree(parvalue);
 
+	}
+
+	// special modes?
+	if (mode != THROUGH_GRAPHICS_MODE_NORMAL)
+		return;
+
+	// doing final checks...................
+	// layer ids set?
+	if (this->graphics.videolayer.id < 0) {
+		// video layer id not set!
+		if (this->graphics.graphicslayer.id < 0) {
+			// graphics layer id not set, using defaults
+			this->graphics.videolayer = vl;
+			this->graphics.graphicslayer = gl;
+			printf("RcParser: video and graphics layer not correctly set, using defaults\n");
+		}
+		else {
+			// using graphics layer settings also for video layer
+			this->graphics.videolayer = this->graphics.graphicslayer;
+			printf("RcParser: video layer not correctly set, using graphics layer settings for both\n");
+		}
+	}
+	else {
+		if (this->graphics.graphicslayer.id < 0) {
+			// using video layer settings also for graphics layer
+			this->graphics.graphicslayer = this->graphics.videolayer;
+			printf("RcParser: graphics layer not correctly set, using video layer settings for both\n");
+		}
+		else {
+			if (this->graphics.videolayer.id == this->graphics.graphicslayer.id) {
+				if   (this->graphics.videolayer.xres != this->graphics.graphicslayer.xres
+					||this->graphics.videolayer.yres != this->graphics.graphicslayer.yres
+					||this->graphics.videolayer.xpos != this->graphics.graphicslayer.xpos
+					||this->graphics.videolayer.ypos != this->graphics.graphicslayer.ypos
+					||this->graphics.videolayer.pixelformat != this->graphics.graphicslayer.pixelformat
+					||this->graphics.videolayer.options != this->graphics.graphicslayer.options
+					||this->graphics.videolayer.buffermode != this->graphics.graphicslayer.buffermode) {
+					// same layers, but different definitions!
+					this->graphics.videolayer = this->graphics.graphicslayer;
+					printf("RcParser: video and graphics layer are the same, but definitions are not consistent, using graphics layer settings for both\n");
+				}
+			}
+		}
 	}
 
 	// checking layer ids

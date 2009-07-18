@@ -37,7 +37,13 @@
 
 class MMSRcParser {
 	private:
-    	MMSConfigDataGlobal		global;
+		typedef enum {
+			THROUGH_GRAPHICS_MODE_NORMAL = 0,
+			THROUGH_GRAPHICS_MODE_VIDEOLAYER,
+			THROUGH_GRAPHICS_MODE_GRAPHICSLAYER
+		} THROUGH_GRAPHICS_MODE;
+
+		MMSConfigDataGlobal		global;
     	MMSConfigDataDB     	configdb, datadb;
     	MMSConfigDataGraphics	graphics;
     	MMSConfigDataLanguage	language;
@@ -45,7 +51,7 @@ class MMSRcParser {
     	void checkVersion(xmlNode* node);
     	void throughGlobal(xmlNode* node);
     	void throughDBSettings(xmlNode* node);
-    	void throughGraphics(xmlNode* node, int mode = 0);
+    	void throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode = THROUGH_GRAPHICS_MODE_NORMAL);
     	void throughLanguage(xmlNode* node);
     	void throughFile(xmlNode* node);
 
