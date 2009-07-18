@@ -386,7 +386,7 @@ class MMSFBRectangle {
 		//! height
 		int	h;
 
-		MMSFBRectangle(unsigned char x = 0, unsigned char y = 0, unsigned char w = 0, unsigned char h = 0) {
+		MMSFBRectangle(unsigned int x = 0, unsigned int y = 0, unsigned int w = 0, unsigned int h = 0) {
 			this->x = x;
 			this->y = y;
 			this->w = w;
@@ -406,7 +406,7 @@ class MMSFBRegion {
 		//! y2
 		int	y2;
 
-		MMSFBRegion(unsigned char x1 = 0, unsigned char y1 = 0, unsigned char x2 = 0, unsigned char y2 = 0) {
+		MMSFBRegion(unsigned int x1 = 0, unsigned int y1 = 0, unsigned int x2 = 0, unsigned int y2 = 0) {
 			this->x1 = x1;
 			this->y1 = y1;
 			this->x2 = x2;
