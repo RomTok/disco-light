@@ -1687,27 +1687,28 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 	// so print the missing combination and return true
 	printf("DISKO: Missing following combination in method %s\n", method.c_str());
 	if (source) {
-		printf("  source type:             %s\n", (source->is_sub_surface)?"subsurface":"surface");
-		printf("  source memory:           %s\n", (source->use_own_alloc)?"managed by disko":"managed by dfb");
-		printf("  source pixelformat:      %s\n", getMMSFBPixelFormatString(source->config.surface_buffer->pixelformat).c_str());
-		printf("  source premultiplied:    %s\n", (source->config.surface_buffer->premultiplied)?"yes":"no");
+		printf("  source type:               %s\n", (source->is_sub_surface)?"subsurface":"surface");
+		printf("  source memory:             %s\n", (source->use_own_alloc)?"managed by disko":"managed by dfb");
+		printf("  source pixelformat:        %s\n", getMMSFBPixelFormatString(source->config.surface_buffer->pixelformat).c_str());
+		printf("  source premultiplied:      %s\n", (source->config.surface_buffer->premultiplied)?"yes":"no");
 	}
 	if (src_planes) {
-		printf("  source type:             surface\n");
-		printf("  source memory:           extern (0x%08x, pitch=%d)\n", (unsigned long)src_planes->ptr, src_planes->pitch);
+		printf("  source type:               surface\n");
+		printf("  source memory:             extern (0x%08x, pitch=%d)\n", (unsigned long)src_planes->ptr, src_planes->pitch);
 		if (src_planes->ptr2) {
-			printf("                                  (0x%08x, pitch=%d)\n",  (unsigned long)src_planes->ptr2, src_planes->pitch2);
+			printf("                                    (0x%08x, pitch=%d)\n",  (unsigned long)src_planes->ptr2, src_planes->pitch2);
 			if (src_planes->ptr3)
-				printf("                                  (0x%08x, pitch=%d)\n",  (unsigned long)src_planes->ptr3, src_planes->pitch3);
+				printf("                                    (0x%08x, pitch=%d)\n",  (unsigned long)src_planes->ptr3, src_planes->pitch3);
 		}
-		printf("  source pixelformat:      %s\n", getMMSFBPixelFormatString(src_pixelformat).c_str());
+		printf("  source pixelformat:        %s\n", getMMSFBPixelFormatString(src_pixelformat).c_str());
 	}
-	printf("  destination type:        %s\n", (this->is_sub_surface)?"subsurface":"surface");
-	printf("  destination memory:      %s\n", (this->use_own_alloc)?"managed by disko":"managed by dfb");
-	printf("  destination pixelformat: %s\n", getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str());
-	printf("  destination color:       r=%d, g=%d, b=%d, a=%d\n", this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+	printf("  destination type:          %s\n", (this->is_sub_surface)?"subsurface":"surface");
+	printf("  destination memory:        %s\n", (this->use_own_alloc)?"managed by disko":"managed by dfb");
+	printf("  destination pixelformat:   %s\n", getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str());
+	printf("  destination premultiplied: %s\n", (this->config.surface_buffer->premultiplied)?"yes":"no");
+	printf("  destination color:         r=%d, g=%d, b=%d, a=%d\n", this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
 	if ((source)||(src_planes)) {
-		printf("  blitting flags (%06x):", this->config.blittingflags);
+		printf("  blitting flags (%06x):  ", this->config.blittingflags);
 		if (this->config.blittingflags == MMSFB_BLIT_NOFX)
 			printf(" NOFX");
 		if (this->config.blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)
@@ -1723,7 +1724,7 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 		printf("\n");
 	}
 	else {
-		printf("  drawing flags (%06x): ", this->config.drawingflags);
+		printf("  drawing flags (%06x):   ", this->config.drawingflags);
 		if (this->config.drawingflags == MMSFB_DRAW_NOFX)
 			printf(" NOFX");
 		if (this->config.drawingflags & MMSFB_DRAW_BLEND)
