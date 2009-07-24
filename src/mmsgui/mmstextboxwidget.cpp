@@ -354,7 +354,6 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         	// mark as translated
         	this->translated = true;
         }
-printf("c %s\n", translated_text.c_str());
 
         if (calcWordGeom(this->translated_text, getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
                          &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
@@ -559,6 +558,7 @@ void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 void MMSTextBoxWidget::setText(string text, bool refresh) {
     myTextBoxWidgetClass.setText(text);
+    this->translated = false;
     this->da->scrollPosX=0;
     this->da->scrollPosY=0;
     if (refresh)
