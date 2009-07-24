@@ -36,6 +36,8 @@
 
 //! describes the config of a layer
 typedef struct {
+	//! config available?
+	bool	avail;
 	//! layer's id
 	int 	id;
 	//! width

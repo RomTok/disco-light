@@ -59,6 +59,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 	this->initialized = false;
     this->surface = NULL;
     this->flipflags = MMSFB_FLIP_NONE;
+    this->config.avail = false;
     this->config.id = id;
     this->config.window_pixelformat = MMSFB_PF_ARGB;
     this->config.surface_pixelformat = MMSFB_PF_ARGB;
@@ -491,6 +492,13 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 	/* check if initialized */
     INITCHECK;
 
+    if (this->config.avail) {
+        // fill return config
+        if (config)
+            *config = this->config;
+        return true;
+    }
+
     if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult               dfbres;
@@ -502,18 +510,24 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 			return false;
 		}
 
-		/* fill my config */
+		// fill my config
+		this->config.avail = true;
 		this->config.w = dlc.width;
 		this->config.h = dlc.height;
 		this->config.pixelformat = getMMSFBPixelFormatFromDFBPixelFormat(dlc.pixelformat);
 		this->config.buffermode = getDFBLayerBufferModeString(dlc.buffermode);
 		this->config.options = getDFBLayerOptionsString(dlc.options);
+
 #endif
     }
     else
     if (mmsfb->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
+		this->config.avail = true;
 #endif
+    }
+    else {
+		this->config.avail = true;
     }
 
     if (!config) {
@@ -563,7 +577,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 	    	DEBUGMSG("MMSGUI", " options:     NONE");
     }
 
-    /* fill return config */
+    // fill return config
     if (config)
         *config = this->config;
 
@@ -611,78 +625,80 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-		DFBResult               dfbres;
-		DFBDisplayLayerConfig   dlc;
-
-		/* get configuration */
+		// get configuration
 		MMSFBLayerConfig config;
 		if (!getConfiguration(&config))
 			return false;
 
+		// change the config of the layer only, if the attributes are changed
+		if (config.w != w || config.h != h || config.pixelformat != pixelformat || config.buffermode != buffermode) {
+			// change config data
+			DFBResult dfbres;
+			DFBDisplayLayerConfig dlc;
+			dlc.flags = DLCONF_NONE;
+			dlc.width = w;
+			dlc.height = h;
+			dlc.pixelformat = getDFBPixelFormatFromMMSFBPixelFormat(pixelformat);
+			dlc.buffermode = getDFBLayerBufferModeFromString(buffermode);
+			dlc.options = getDFBLayerOptionsFromString(options);
 
-		/* change config data */
-		dlc.flags = DLCONF_NONE;
-		dlc.width = w;
-		dlc.height = h;
-		dlc.pixelformat = getDFBPixelFormatFromMMSFBPixelFormat(pixelformat);
-		dlc.buffermode = getDFBLayerBufferModeFromString(buffermode);
-		dlc.options = getDFBLayerOptionsFromString(options);
+			if (dlc.width > 0)
+				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_WIDTH);
+			if (dlc.height > 0)
+				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_HEIGHT);
+			if (dlc.pixelformat != DSPF_UNKNOWN)
+				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_PIXELFORMAT);
+			if (dlc.buffermode != DLBM_UNKNOWN)
+				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_BUFFERMODE);
+		  //  if (dlc.options != DLOP_NONE) {
+				DEBUGOUT("\nSET OPTIONS 0x%08x!!!!\n", dlc.options);
+				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_OPTIONS);
+		  //  }
 
-		if (dlc.width > 0)
-			dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_WIDTH);
-		if (dlc.height > 0)
-			dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_HEIGHT);
-		if (dlc.pixelformat != DSPF_UNKNOWN)
-			dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_PIXELFORMAT);
-		if (dlc.buffermode != DLBM_UNKNOWN)
-			dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_BUFFERMODE);
-	  //  if (dlc.options != DLOP_NONE) {
-			DEBUGOUT("\nSET OPTIONS 0x%08x!!!!\n", dlc.options);
-			dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags | DLCONF_OPTIONS);
-	  //  }
-
-		/* test configuration */
-		DFBDisplayLayerConfigFlags failedFlags;
-		if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
-			if(failedFlags & DLCONF_PIXELFORMAT) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
-				DEBUGMSG("MMSGUI", "Your configuration contains a pixelformat that is not supported.");
-				return false;
-			}
-			if(failedFlags & DLCONF_BUFFERMODE) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
-				DEBUGMSG("MMSGUI", "Your configuration contains a buffermode that is not supported.");
-				return false;
-			}
-			if(failedFlags & DLCONF_OPTIONS) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
-				DEBUGMSG("MMSGUI", "Your configuration contains options that are not supported.");
-				return false;
-			}
-
-			/* check if desired resolution is unsupported */
-			if(failedFlags & DLCONF_WIDTH)
-				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_WIDTH);
-			if(failedFlags & DLCONF_HEIGHT)
-				dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_HEIGHT);
+			// test configuration
+			DFBDisplayLayerConfigFlags failedFlags;
 			if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
-				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
+				if(failedFlags & DLCONF_PIXELFORMAT) {
+					MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
+					DEBUGMSG("MMSGUI", "Your configuration contains a pixelformat that is not supported.");
+					return false;
+				}
+				if(failedFlags & DLCONF_BUFFERMODE) {
+					MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
+					DEBUGMSG("MMSGUI", "Your configuration contains a buffermode that is not supported.");
+					return false;
+				}
+				if(failedFlags & DLCONF_OPTIONS) {
+					MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
+					DEBUGMSG("MMSGUI", "Your configuration contains options that are not supported.");
+					return false;
+				}
+
+				/* check if desired resolution is unsupported */
+				if(failedFlags & DLCONF_WIDTH)
+					dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_WIDTH);
+				if(failedFlags & DLCONF_HEIGHT)
+					dlc.flags = (DFBDisplayLayerConfigFlags)(dlc.flags & ~DLCONF_HEIGHT);
+				if ((dfbres=this->dfblayer->TestConfiguration(this->dfblayer, &dlc, &failedFlags)) != DFB_OK) {
+					MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::TestConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
+					return false;
+				}
+				DEBUGMSG("MMSGUI", "Your configuration contains a resolution that is not supported.");
+			}
+
+			// set configuration
+			if((dfbres = this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
+				MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
 				return false;
 			}
-			DEBUGMSG("MMSGUI", "Your configuration contains a resolution that is not supported.");
 		}
 
-		/* set configuration */
-		if((dfbres = this->dfblayer->SetConfiguration(this->dfblayer, &dlc)) != DFB_OK) {
-			MMSFB_SetError(dfbres, "IDirectFBDisplayLayer::SetConfiguration(" + iToStr(w) + "x" + iToStr(h) + "," + getMMSFBPixelFormatString(pixelformat) + "," + buffermode + "," + options + ") failed");
-			return false;
-		}
-
-		/* get configuration */
+		// get configuration
+		this->config.avail = false;
 		if (!getConfiguration())
 			return false;
 
-		/* set background */
+		// set background
 		this->dfblayer->SetBackgroundMode(this->dfblayer, DLBM_COLOR);
 		this->dfblayer->SetBackgroundColor(this->dfblayer, 0, 0, 0, 0);
 
@@ -729,6 +745,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		this->mmsfbdev_surface->setExtendedAcceleration(true);
 
 		// get configuration
+		this->config.avail = false;
 		if (!getConfiguration())
 			return false;
 
@@ -741,6 +758,11 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
     }
     else {
 #ifdef __HAVE_XLIB__
+		// get configuration
+		this->config.avail = false;
+		if (!getConfiguration())
+			return false;
+
 		// if we use XLIB, currently we cannot change the layer attributes
 		this->config.window_pixelformat = window_pixelformat;
 		this->config.surface_pixelformat = surface_pixelformat;
