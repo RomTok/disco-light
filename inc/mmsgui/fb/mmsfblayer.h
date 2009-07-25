@@ -128,7 +128,7 @@ class MMSFBLayer {
 						   MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE, int backbuffer = 0);
         bool createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 						   MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE,
-                           bool usealpha = true, bool uselayersurface = false);
+                           bool usealpha = true);
 
 		friend class MMSFBManager;
 		friend class MMSFBSurface;

@@ -4039,44 +4039,42 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 #ifdef USE_MMSFB_WINMAN
 
-		if (!this->config.islayersurface) {
-			/* flip */
-			if (!this->is_sub_surface) {
-				if ((dfbres=this->llsurface->Flip(this->llsurface, (DFBRegion*)region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags))) != DFB_OK) {
-					MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
+		/* flip */
+		if (!this->is_sub_surface) {
+			if ((dfbres=this->llsurface->Flip(this->llsurface, (DFBRegion*)region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags))) != DFB_OK) {
+				MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
-					return false;
-				}
+				return false;
 			}
-			else {
+		}
+		else {
 #ifndef USE_DFB_SUBSURFACE
-				CLIPSUBSURFACE
+			CLIPSUBSURFACE
 
-				MMSFBRegion myregion;
-				if (!region) {
-					myregion.x1 = 0;
-					myregion.y1 = 0;
-					myregion.x2 = this->config.w - 1;
-					myregion.y2 = this->config.h - 1;
-				}
-				else
-					myregion = *region;
+			MMSFBRegion myregion;
+			if (!region) {
+				myregion.x1 = 0;
+				myregion.y1 = 0;
+				myregion.x2 = this->config.w - 1;
+				myregion.y2 = this->config.h - 1;
+			}
+			else
+				myregion = *region;
 
-				myregion.x1+=this->sub_surface_xoff;
-				myregion.y1+=this->sub_surface_yoff;
-				myregion.x2+=this->sub_surface_xoff;
-				myregion.y2+=this->sub_surface_yoff;
+			myregion.x1+=this->sub_surface_xoff;
+			myregion.y1+=this->sub_surface_yoff;
+			myregion.x2+=this->sub_surface_xoff;
+			myregion.y2+=this->sub_surface_yoff;
 
-				this->llsurface->Flip(this->llsurface, (DFBRegion*)&myregion, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
+			this->llsurface->Flip(this->llsurface, (DFBRegion*)&myregion, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
 
 #else
-				this->llsurface->Flip(this->llsurface, region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
+			this->llsurface->Flip(this->llsurface, region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
 #endif
 
 #ifndef USE_DFB_SUBSURFACE
-				UNCLIPSUBSURFACE
+			UNCLIPSUBSURFACE
 #endif
-			}
 		}
 
 		if (this->config.iswinsurface) {
@@ -4123,12 +4121,28 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 		if (sb->numbuffers > 1) {
 #endif
 			// flip is only needed, if we have at least one backbuffer
-			if (!this->config.islayersurface) {
-				// flip
-				if (!this->is_sub_surface) {
-					// not a subsurface
-					if (!region) {
-						// flip my buffers without blitting
+			if (!this->is_sub_surface) {
+				// not a subsurface
+				if (!region) {
+					// flip my buffers without blitting
+					sb->currbuffer_read++;
+					if (sb->currbuffer_read >= sb->numbuffers)
+						sb->currbuffer_read = 0;
+					sb->currbuffer_write++;
+					if (sb->currbuffer_write >= sb->numbuffers)
+						sb->currbuffer_write = 0;
+				}
+				else {
+					MMSFBRectangle src_rect;
+					src_rect.x = region->x1;
+					src_rect.y = region->y1;
+					src_rect.w = region->x2 - region->x1 + 1;
+					src_rect.h = region->y2 - region->y1 + 1;
+
+					// check if region is equal to the whole surface
+					if   ((src_rect.x == 0) && (src_rect.y == 0)
+						&&(src_rect.w == this->config.w) && (src_rect.h == this->config.h)) {
+						// yes, flip my buffers without blitting
 						sb->currbuffer_read++;
 						if (sb->currbuffer_read >= sb->numbuffers)
 							sb->currbuffer_read = 0;
@@ -4137,68 +4151,49 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							sb->currbuffer_write = 0;
 					}
 					else {
-						MMSFBRectangle src_rect;
-						src_rect.x = region->x1;
-						src_rect.y = region->y1;
-						src_rect.w = region->x2 - region->x1 + 1;
-						src_rect.h = region->y2 - region->y1 + 1;
+						// blit region from write to read buffer of the same MMSFBSurface
+						MMSFBBlittingFlags savedbf = this->config.blittingflags;
+						this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
 
-						// check if region is equal to the whole surface
-						if   ((src_rect.x == 0) && (src_rect.y == 0)
-							&&(src_rect.w == this->config.w) && (src_rect.h == this->config.h)) {
-							// yes, flip my buffers without blitting
-							sb->currbuffer_read++;
-							if (sb->currbuffer_read >= sb->numbuffers)
-								sb->currbuffer_read = 0;
-							sb->currbuffer_write++;
-							if (sb->currbuffer_write >= sb->numbuffers)
-								sb->currbuffer_write = 0;
-						}
-						else {
-							// blit region from write to read buffer of the same MMSFBSurface
-							MMSFBBlittingFlags savedbf = this->config.blittingflags;
-							this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
+						this->surface_invert_lock = true;
+						this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
+						this->surface_invert_lock = false;
 
-							this->surface_invert_lock = true;
-							this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
-							this->surface_invert_lock = false;
-
-							this->config.blittingflags = savedbf;
-						}
+						this->config.blittingflags = savedbf;
 					}
+				}
+			}
+			else {
+				CLIPSUBSURFACE
+
+				MMSFBRectangle src_rect;
+				if (!region) {
+					src_rect.x = 0;
+					src_rect.y = 0;
+					src_rect.w = this->config.w;
+					src_rect.h = this->config.h;
 				}
 				else {
-					CLIPSUBSURFACE
-
-					MMSFBRectangle src_rect;
-					if (!region) {
-						src_rect.x = 0;
-						src_rect.y = 0;
-						src_rect.w = this->config.w;
-						src_rect.h = this->config.h;
-					}
-					else {
-						src_rect.x = region->x1;
-						src_rect.y = region->y1;
-						src_rect.w = region->x2 - region->x1 + 1;
-						src_rect.h = region->y2 - region->y1 + 1;
-					}
-
-					src_rect.x+=this->sub_surface_xoff;
-					src_rect.y+=this->sub_surface_yoff;
-
-					// blit region from write to read buffer of the same MMSFBSurface
-					MMSFBBlittingFlags savedbf = this->config.blittingflags;
-					this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
-
-					this->surface_invert_lock = true;
-					this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
-					this->surface_invert_lock = false;
-
-					this->config.blittingflags = savedbf;
-
-					UNCLIPSUBSURFACE
+					src_rect.x = region->x1;
+					src_rect.y = region->y1;
+					src_rect.w = region->x2 - region->x1 + 1;
+					src_rect.h = region->y2 - region->y1 + 1;
 				}
+
+				src_rect.x+=this->sub_surface_xoff;
+				src_rect.y+=this->sub_surface_yoff;
+
+				// blit region from write to read buffer of the same MMSFBSurface
+				MMSFBBlittingFlags savedbf = this->config.blittingflags;
+				this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
+
+				this->surface_invert_lock = true;
+				this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
+				this->surface_invert_lock = false;
+
+				this->config.blittingflags = savedbf;
+
+				UNCLIPSUBSURFACE
 			}
 		}
 

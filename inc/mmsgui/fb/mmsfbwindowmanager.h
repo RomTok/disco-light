@@ -39,10 +39,6 @@ typedef struct {
     MMSFBWindow     *window;
     //! visible rectangle, can be set if only a part of the window should be displayed
     MMSFBRectangle	vrect;
-    //! the window works direct on the layer (old staff, to be removed)
-    bool            islayersurface;
-    //! copy of surface if window works direct on the layer (old staff, to be removed)
-    MMSFBSurface    *saved_surface;
 } AVAILABLE_WINDOWS;
 
 typedef struct {

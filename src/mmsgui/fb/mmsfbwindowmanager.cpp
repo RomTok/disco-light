@@ -70,8 +70,6 @@ MMSFBWindowManager::MMSFBWindowManager() {
 MMSFBWindowManager::~MMSFBWindowManager() {
     for (unsigned int i=0; i < this->windows.size(); i++) {
         delete this->windows.at(i).window;
-        if(this->windows.at(i).islayersurface)
-            delete this->windows.at(i).saved_surface;
     }
 }
 
@@ -192,23 +190,6 @@ bool MMSFBWindowManager::addWindow(MMSFBWindow *window) {
     awin.vrect.y = 0;
     awin.vrect.w = 0;
     awin.vrect.h = 0;
-    awin.islayersurface = false;
-    awin.saved_surface = NULL;
-    MMSFBSurface *s;
-    window->getSurface(&s);
-    if (s->isLayerSurface()) {
-        /* the window uses the layer surface, allocate a save buffer for it */
-        awin.islayersurface = true;
-        int w, h;
-        s->getSize(&w, &h);
-        MMSFBSurfacePixelFormat pf;
-        s->getPixelFormat(&pf);
-        this->layer->createSurface(&(awin.saved_surface), w, h, pf, 0);
-        if (awin.saved_surface) {
-            awin.saved_surface->clear();
-            awin.saved_surface->setBlittingFlags(MMSFB_BLIT_NOFX);
-        }
-    }
     this->windows.push_back(awin);
 
     /* unlock */
@@ -231,10 +212,6 @@ bool MMSFBWindowManager::removeWindow(MMSFBWindow *window) {
 
             /* hide the window before removing */
             hideWindow(window);
-
-            /* delete the saved_surface if existent */
-            if (this->windows.at(i).saved_surface)
-                delete this->windows.at(i).saved_surface;
 
             /* remove it from list */
             this->windows.erase(this->windows.begin()+i);
@@ -373,14 +350,6 @@ bool MMSFBWindowManager::loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *
     vwin->lastflip = 0;
     vwin->islayersurface = false;
     vwin->saved_surface = NULL;
-    if (vwin->surface->isLayerSurface()) {
-        vwin->islayersurface = true;
-        for (unsigned int i=0; i < this->windows.size(); i++)
-            if (this->windows.at(i).window == window) {
-                vwin->saved_surface = this->windows.at(i).saved_surface;
-                break;
-            }
-    }
     return true;
 }
 

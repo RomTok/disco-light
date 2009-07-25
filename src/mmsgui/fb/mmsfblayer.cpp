@@ -744,6 +744,9 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		// we must switch extended accel on
 		this->mmsfbdev_surface->setExtendedAcceleration(true);
 
+    	// mark this surface as a layer surface
+		this->mmsfbdev_surface->setLayerSurface();
+
 		// get configuration
 		this->config.avail = false;
 		if (!getConfiguration())
@@ -925,7 +928,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 			}
 
 			// create a new surface instance
-			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat, this->xv_image1, this->xv_image2);
+			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
+										this->xv_image1, this->xv_image2);
 			if (!*surface) {
 				MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 				return false;
@@ -941,6 +945,9 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     this->surface = *surface;
 
     if (this->surface) {
+    	// mark this surface as a layer surface
+    	this->surface->setLayerSurface();
+
 		// clear all surface buffers
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
@@ -1011,7 +1018,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
 }
 
 bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
-							  MMSFBSurfacePixelFormat pixelformat, bool usealpha, bool uselayersurface) {
+							  MMSFBSurfacePixelFormat pixelformat, bool usealpha) {
 
     /* check if initialized */
     INITCHECK;
@@ -1137,41 +1144,12 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 
 #ifdef USE_MMSFB_WINMAN
 
+    // create a window surface with one backbuffer (double buffered)
     MMSFBSurface *surface;
-    bool usels = false;
+	if (!mmsfb->createSurface(&surface, w, h, pixelformat, 1, (this->config.buffermode == MMSFB_BM_BACKSYSTEM)))
+		return false;
 
-    if (uselayersurface) {
-        /* check: i can only accept this flag */
-        /* if the window uses the complete layer surface */
-//
-//temporary disabled, because of some timing problems
-//biggest problem: the DVD freeze-frame sends NO frames to the GUI - therefore the autodetection cannot run correctly
-//                 -> so saved_surface in mmsfb_windowmanager can be removed in the next release!!!
-//
-//        usels = ((x == 0)&&(y == 0)&&(w == this->config.w)&&(h == this->config.h));
-//
-    }
-
-    if (!usels) {
-        /* create a window surface with one backbuffer (double buffered) */
-        if (!mmsfb->createSurface(&surface, w, h, pixelformat, 1, (this->config.buffermode == MMSFB_BM_BACKSYSTEM)))
-            return false;
-    }
-    else {
-        /* use the layer surface */
-
-        /* create a new surface instance */
-        surface = new MMSFBSurface(this->surface->getDFBSurface());
-        if (!surface) {
-            MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
-            return false;
-        }
-
-        /* that is the layer surface */
-        surface->setLayerSurface();
-    }
-
-    /* create a new window instance */
+    // create a new window instance
     *window = new MMSFBWindow(surface, x, y);
     if (!*window) {
         delete surface;
@@ -1179,10 +1157,10 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         return false;
     }
 
-    /* that is a window surface */
+    // that is a window surface
     surface->setWinSurface();
 
-    /* inform the window manager */
+    // inform the window manager
     mmsfbwindowmanager->addWindow(*window);
 
 #endif
