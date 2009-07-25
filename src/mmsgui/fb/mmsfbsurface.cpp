@@ -214,6 +214,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			int size = calcSize(sb->buffers[i].pitch, sb->sbh);
 			DEBUGMSG("MMSGUI", ">allocating surface buffer #%d, %d bytes (pitch=%d, h=%d)", i, size, sb->buffers[i].pitch, sb->sbh);
 			sb->buffers[i].ptr = malloc(size);
+			sb->buffers[i].hwbuffer = false;
 
 			// few internally pixelformats supports planes and therefore we must init the pointers
 			initPlanePointers(&sb->buffers[i], sb->sbh);
@@ -354,9 +355,11 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->xv_image[0] = xv_image1;
 	sb->buffers[0].ptr = sb->xv_image[0]->data;
 	sb->buffers[0].pitch = *(sb->xv_image[0]->pitches);
+	sb->buffers[0].hwbuffer = false;
 	sb->xv_image[1] = xv_image2;
 	sb->buffers[1].ptr = sb->xv_image[1]->data;
 	sb->buffers[1].pitch = *(sb->xv_image[1]->pitches);
+	sb->buffers[1].hwbuffer = false;
 	sb->currbuffer_read = 0;
 	sb->currbuffer_write = 1;
 	sb->external_buffer = true;
@@ -401,9 +404,11 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->x_image[0] = x_image1;
 		sb->buffers[0].ptr = sb->x_image[0]->data;
 		sb->buffers[0].pitch = sb->x_image[0]->bytes_per_line;
+		sb->buffers[0].hwbuffer = false;
 		sb->x_image[1] = x_image2;
 		sb->buffers[1].ptr = sb->x_image[1]->data;
 		sb->buffers[1].pitch = sb->x_image[1]->bytes_per_line;
+		sb->buffers[1].hwbuffer = false;
 		sb->currbuffer_read = 0;
 		sb->currbuffer_write = 1;
 		sb->external_buffer = true;
@@ -415,8 +420,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->x_image[0] = x_image1;
 		sb->buffers[0].ptr = sb->x_image[0]->data;
 		sb->buffers[0].pitch = sb->x_image[0]->bytes_per_line;
+		sb->buffers[0].hwbuffer = false;
 		sb->x_image[1] = NULL;
 		sb->buffers[1].ptr = NULL;
+		sb->buffers[1].hwbuffer = false;
 		sb->currbuffer_read = 0;
 		sb->currbuffer_write = 0;
 		sb->external_buffer = true;

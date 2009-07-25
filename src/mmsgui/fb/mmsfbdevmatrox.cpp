@@ -172,6 +172,7 @@ bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurface
 		this->layers[layer_id].buffers[0].ptr3 = (char*)this->layers[layer_id].buffers[0].ptr2 + (this->layers[layer_id].height * this->layers[layer_id].buffers[0].pitch) / 2;
 		this->layers[layer_id].buffers[0].pitch2 = this->layers[layer_id].buffers[0].pitch / 2;
 		this->layers[layer_id].buffers[0].pitch3 = this->layers[layer_id].buffers[0].pitch2;
+		this->layers[layer_id].buffers[0].hwbuffer = true;
 
 		// pal or ntsc?
 		this->tv_std_pal = (this->layers[layer_id].height == 576);

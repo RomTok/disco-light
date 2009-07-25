@@ -143,7 +143,6 @@ class MMSFBSurface {
         // how surface memory will be allocated?
         static MMSFBSurfaceAllocMethod	allocmethod;
 
-
         void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);

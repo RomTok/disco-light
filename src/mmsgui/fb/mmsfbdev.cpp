@@ -475,13 +475,16 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 		this->layers[layer_id].buffers[2].ptr  = ((char *)this->framebuffer_base)
 												+ 2 * this->fix_screeninfo.line_length * this->var_screeninfo.yres;
 		this->layers[layer_id].buffers[2].pitch= this->fix_screeninfo.line_length;
+		this->layers[layer_id].buffers[2].hwbuffer = true;
 	case 1:
 		this->layers[layer_id].buffers[1].ptr  = ((char *)this->framebuffer_base)
 												 + this->fix_screeninfo.line_length * this->var_screeninfo.yres;
 		this->layers[layer_id].buffers[1].pitch= this->fix_screeninfo.line_length;
+		this->layers[layer_id].buffers[1].hwbuffer = true;
 	case 0:
 		this->layers[layer_id].buffers[0].ptr  = this->framebuffer_base;
 		this->layers[layer_id].buffers[0].pitch= this->fix_screeninfo.line_length;
+		this->layers[layer_id].buffers[0].hwbuffer = true;
 		break;
 	default:
 		return false;
