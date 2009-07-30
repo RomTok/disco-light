@@ -163,11 +163,14 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
+//TODO
+		/*
 		if   ((pixelformat != MMSFB_PF_ARGB3565)
 			&&(pixelformat != MMSFB_PF_RGB16)) {
 			printf("MMSFBDevOmap: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
+		*/
 
 		if (backbuffer) {
 			printf("MMSFBDevOmap: OSD Layer does not support backbuffer handling\n");
@@ -175,7 +178,8 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 		}
 
 		// enable OSD
-		if (this->osd->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
+//		if (this->osd->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
+		if (this->osd->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
