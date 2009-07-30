@@ -156,7 +156,7 @@ idir_inc    = idir_prefix + '/include/disko'
 idir_data   = idir_prefix + '/share/disko'
 
 # link with -rpath
-env['LINKFLAGS'].append('-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+# env['LINKFLAGS'].append('-Wl,-rpath=' + env['prefix'] + '/lib/disko')
 
 # extra flags
 if env['messages']:
