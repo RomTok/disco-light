@@ -29,6 +29,7 @@
 #ifndef MMSFBBASE_H_
 #define MMSFBBASE_H_
 
+#include <string.h>
 #include "mmstools/base.h"
 #include "mmstools/mmstypes.h"
 #include "mmstools/mmsmutex.h"
