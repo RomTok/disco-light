@@ -160,6 +160,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			// davincifb
     		this->mmsfbdev = new MMSFBDevDavinci();
 		}
+		else
+		if (this->outputtype == MMSFB_OT_OMAPFB) {
+			// omapfb
+    		this->mmsfbdev = new MMSFBDevOmap();
+		}
 		else {
 			// default fbdev
     		this->mmsfbdev = new MMSFBDev();

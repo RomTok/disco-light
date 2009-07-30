@@ -481,6 +481,17 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"DAVINCIFB\"");
 					}
 				}
+				else
+				if (this->graphics.outputtype == MMSFB_OT_OMAPFB) {
+					switch (this->graphics.backend) {
+					case MMSFB_BE_DFB:
+					case MMSFB_BE_FBDEV:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"OMAPFB\"");
+					}
+				}
 			}
 			else if(!xmlStrcmp(parname, (const xmlChar *) "outputtype")) {
 				string val = string((const char *)parvalue);
@@ -496,6 +507,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 					case MMSFB_OT_VIAFB:
 					case MMSFB_OT_X11:
 					case MMSFB_OT_DAVINCIFB:
+					case MMSFB_OT_OMAPFB:
 						// okay
 						break;
 					default:
@@ -520,6 +532,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 					case MMSFB_OT_VESAFB:
 					case MMSFB_OT_MATROXFB:
 					case MMSFB_OT_DAVINCIFB:
+					case MMSFB_OT_OMAPFB:
 						// okay
 						break;
 					default:
@@ -690,6 +703,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 			if (this->graphics.graphicslayer.id != 0)
 				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
+//TODO: OMAP
 		default:
 			break;
 		}
@@ -725,6 +739,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB16))
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
+//TODO:OMAP
 		default:
 			break;
 		}

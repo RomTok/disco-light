@@ -26,23 +26,22 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSFBDEVDAVINCI_H_
-#define MMSFBDEVDAVINCI_H_
+#ifndef MMSFBDEVOMAP_H_
+#define MMSFBDEVOMAP_H_
 
 #ifdef __HAVE_FBDEV__
 
 #include "mmsgui/fb/mmsfbdev.h"
 
-class MMSFBDevDavinci : public MMSFBDev {
+class MMSFBDevOmap : public MMSFBDev {
     private:
-    	MMSFBDev	*osd0;
-    	MMSFBDev	*osd1;
+    	MMSFBDev	*osd;
     	MMSFBDev	*vid0;
     	MMSFBDev	*vid1;
 
     public:
-        MMSFBDevDavinci();
-        virtual ~MMSFBDevDavinci();
+        MMSFBDevOmap();
+        virtual ~MMSFBDevOmap();
 
         bool openDevice(char *device_file = NULL, int console = -1);
         void closeDevice();
@@ -60,4 +59,4 @@ class MMSFBDevDavinci : public MMSFBDev {
 
 #endif
 
-#endif /* MMSFBDEVDAVINCI_H_ */
+#endif /* MMSFBDEVOMAP_H_ */

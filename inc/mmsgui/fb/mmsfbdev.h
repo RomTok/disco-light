@@ -161,6 +161,7 @@ class MMSFBDev {
         friend class MMSFBDevVesa;
         friend class MMSFBDevMatrox;
         friend class MMSFBDevDavinci;
+        friend class MMSFBDevOmap;
         friend class MMSInputLISHandler;
 
 };

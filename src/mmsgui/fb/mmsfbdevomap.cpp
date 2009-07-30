@@ -28,26 +28,25 @@
 
 #ifdef __HAVE_FBDEV__
 
-#include "mmsgui/fb/mmsfbdevdavinci.h"
+#include "mmsgui/fb/mmsfbdevomap.h"
 #include <sys/ioctl.h>
 #include <cstring>
 
-#define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevDavinci is not initialized");return false;}
+#define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevOmap is not initialized");return false;}
 
-MMSFBDevDavinci::MMSFBDevDavinci() {
-	this->osd0 = NULL;
-	this->osd1 = NULL;
+MMSFBDevOmap::MMSFBDevOmap() {
+	this->osd  = NULL;
 	this->vid0 = NULL;
 	this->vid1 = NULL;
 }
 
-MMSFBDevDavinci::~MMSFBDevDavinci() {
+MMSFBDevOmap::~MMSFBDevOmap() {
 	closeDevice();
 }
 
-bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
+bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 	// open davinci frame buffers
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 3; i++) {
 		MMSFBDev *fbdev;
 		char      dev[100];
 		sprintf(dev, "/dev/fb%d", i);
@@ -58,28 +57,25 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 			return false;
 		}
 
-		if (memcmp(fbdev->fix_screeninfo.id, "dm_osd0_fb", 10) == 0)
-			this->osd0 = fbdev;
+		if (memcmp(fbdev->fix_screeninfo.id, "omapfb", 6) == 0)
+			this->osd = fbdev;
 		else
-		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid0_fb", 10) == 0)
+		if (memcmp(fbdev->fix_screeninfo.id, "omapfbv0", 8) == 0)
 			this->vid0 = fbdev;
 		else
-		if (memcmp(fbdev->fix_screeninfo.id, "dm_osd1_fb", 10) == 0)
-			this->osd1 = fbdev;
-		else
-		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid1_fb", 10) == 0)
+		if (memcmp(fbdev->fix_screeninfo.id, "omapfbv1", 8) == 0)
 			this->vid1 = fbdev;
 		else {
 			// not supported
-			printf("MMSFBDevDavinci: unsupported accelerator %d (%.16s)\n", fbdev->fix_screeninfo.accel, fbdev->fix_screeninfo.id);
+			printf("MMSFBDevOmap: unsupported accelerator %d (%.16s)\n", fbdev->fix_screeninfo.accel, fbdev->fix_screeninfo.id);
 			delete fbdev;
 			closeDevice();
 			return false;
 		}
 
-		if (!i && !this->osd0) {
-			// osd0 must be at /dev/fb0
-			printf("MMSFBDevDavinci: /dev/fb0 is not osd0\n");
+		if (!i && !this->osd) {
+			// osd must be at /dev/fb0
+			printf("MMSFBDevOmap: /dev/fb0 is not osd\n");
 			closeDevice();
 			return false;
 		}
@@ -91,39 +87,35 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 	return true;
 }
 
-void MMSFBDevDavinci::closeDevice() {
+void MMSFBDevOmap::closeDevice() {
 	// close frame buffers
 	if (this->vid1) delete this->vid1;
 	if (this->vid0) delete this->vid0;
-	if (this->osd1) delete this->osd1;
-	if (this->osd0) delete this->osd0;
+	if (this->osd)  delete this->osd;
 
 	// reset all other
 	this->isinitialized = false;
 }
 
-bool MMSFBDevDavinci::waitForVSync() {
+bool MMSFBDevOmap::waitForVSync() {
 	// is initialized?
 	INITCHECK;
 
 	static const int s = 0;
-	if (ioctl(this->osd0->fd, FBIO_WAITFORVSYNC, &s)) {
+	if (ioctl(this->osd->fd, FBIO_WAITFORVSYNC, &s)) {
 		// failed, well then???
 	}
 
 	return true;
 }
 
-bool MMSFBDevDavinci::panDisplay(int buffer_id, void *framebuffer_base) {
+bool MMSFBDevOmap::panDisplay(int buffer_id, void *framebuffer_base) {
 	// is initialized?
 	INITCHECK;
 
-	if   ((framebuffer_base == this->osd0->framebuffer_base)
-		||(framebuffer_base == this->osd1->framebuffer_base)) {
-		// Graphic layer (OSD0 and OSD1)
-		this->osd0->panDisplay(buffer_id);
-		this->osd1->panDisplay(buffer_id);
-		return true;
+	if (framebuffer_base == this->osd->framebuffer_base) {
+		// Graphic layer (OSD)
+		return this->osd->panDisplay(buffer_id);
 	}
 	else
 	if (framebuffer_base == this->vid0->framebuffer_base) {
@@ -137,11 +129,11 @@ bool MMSFBDevDavinci::panDisplay(int buffer_id, void *framebuffer_base) {
 	}
 
 	// check framebuffer_base pointer
-	printf("MMSFBDevDavinci: framebuffer base pointer not correct\n");
+	printf("MMSFBDevOmap: framebuffer base pointer not correct\n");
 	return false;
 }
 
-bool MMSFBDevDavinci::testLayer(int layer_id) {
+bool MMSFBDevOmap::testLayer(int layer_id) {
 	// is initialized?
 	INITCHECK;
 
@@ -156,7 +148,7 @@ bool MMSFBDevDavinci::testLayer(int layer_id) {
 		// Video layer (VID1)
 		return true;
 	default:
-    	printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
+    	printf("MMSFBDevOmap: layer %d is not supported\n", layer_id);
     	break;
 	}
 
@@ -164,7 +156,7 @@ bool MMSFBDevDavinci::testLayer(int layer_id) {
 }
 
 
-bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
+bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 	// is initialized?
 	INITCHECK;
 
@@ -173,73 +165,44 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 		// default fbdev primary layer 0 on primary screen 0
 		if   ((pixelformat != MMSFB_PF_ARGB3565)
 			&&(pixelformat != MMSFB_PF_RGB16)) {
-			printf("MMSFBDevDavinci: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevOmap: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
 		if (backbuffer) {
-			printf("MMSFBDevDavinci: OSD Layer does not support backbuffer handling\n");
+			printf("MMSFBDevOmap: OSD Layer does not support backbuffer handling\n");
 			return false;
 		}
 
-		// init the two davinci osd "windows"
-		if (this->osd0->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
-			// init osd1 attribute plane
-			if (this->osd1->initLayer(0, width, height, MMSFB_PF_A4, backbuffer)) {
-				// set values
-				this->layers[layer_id].width = width;
-				this->layers[layer_id].height = height;
-				this->layers[layer_id].pixelformat = pixelformat;
+		// enable OSD
+		if (this->osd->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
+			// set values
+			this->layers[layer_id].width = width;
+			this->layers[layer_id].height = height;
+			this->layers[layer_id].pixelformat = pixelformat;
 
-				// save the buffers
-				memcpy(this->layers[layer_id].buffers, this->osd0->layers[0].buffers, sizeof(this->osd0->layers[0].buffers));
+			// save the buffers
+			memcpy(this->layers[layer_id].buffers, this->osd->layers[0].buffers, sizeof(this->osd->layers[0].buffers));
 
-				// merge OSD0 with OSD1
-				if (pixelformat == MMSFB_PF_ARGB3565) {
-					// set the alpha plane
-					switch (backbuffer) {
-					case 2:
-						this->layers[layer_id].buffers[2].ptr2 = this->osd1->layers[0].buffers[2].ptr;
-						this->layers[layer_id].buffers[2].pitch2 = this->osd1->layers[0].buffers[2].pitch;
-					case 1:
-						this->layers[layer_id].buffers[1].ptr2 = this->osd1->layers[0].buffers[1].ptr;
-						this->layers[layer_id].buffers[1].pitch2 = this->osd1->layers[0].buffers[1].pitch;
-					case 0:
-						this->layers[layer_id].buffers[0].ptr2 = this->osd1->layers[0].buffers[0].ptr;
-						this->layers[layer_id].buffers[0].pitch2 = this->osd1->layers[0].buffers[0].pitch;
-						break;
-					default:
-						return false;
-					}
-				}
+			// clear layer
+			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
+			mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+									  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 
-				// clear layer
-				if (pixelformat == MMSFB_PF_ARGB3565) {
-					MMSFBColor color(0x00, 0x00, 0x00, 0x00);
-					mmsfb_fillrectangle_argb3565(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-												 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				}
-				else {
-					MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-					mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-											  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				}
+			// layer is initialized
+			this->layers[layer_id].isinitialized = true;
 
-				// layer is initialized
-				this->layers[layer_id].isinitialized = true;
+			printf("MMSFBDevOmap: OSD Layer %d initialized with %dx%dx%d, pixelformat %s\n",
+						layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
 
-				printf("MMSFBDevDavinci: OSD Layer %d initialized with %dx%dx%d, pixelformat %s\n",
-							layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
-
-				return true;
-			}
+			return true;
 		}
 		return false;
 
 	case 1:
 		// Video layer (VID0)
 		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevOmap: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
@@ -264,7 +227,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
 
-			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%dx%d, pixelformat %s\n",
+			printf("MMSFBDevOmap: Video Layer %d initialized with %dx%dx%d, pixelformat %s\n",
 						layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
 
 			return true;
@@ -274,7 +237,7 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	case 2:
 		// Video layer (VID1)
 		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevOmap: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
@@ -299,23 +262,23 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
 
-			printf("MMSFBDevDavinci: Video Layer %d initialized with %dx%dx%d, pixelformat %s\n",
+			printf("MMSFBDevOmap: Video Layer %d initialized with %dx%dx%d, pixelformat %s\n",
 						layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
 
 			return true;
 		}
 		return false;
 	default:
-		printf("MMSFBDevDavinci: layer %d is not supported\n", layer_id);
+		printf("MMSFBDevOmap: layer %d is not supported\n", layer_id);
 		break;
 	}
 
 	return false;
 }
 
-bool MMSFBDevDavinci::vtGetFd(int *fd) {
-	if (this->osd0->vt.fd != -1) {
-		*fd = this->osd0->vt.fd;
+bool MMSFBDevOmap::vtGetFd(int *fd) {
+	if (this->osd->vt.fd != -1) {
+		*fd = this->osd->vt.fd;
 		return true;
 	}
 	return false;
