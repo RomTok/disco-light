@@ -445,24 +445,22 @@ MMSFBSurface::~MMSFBSurface() {
 
     // release memory - only if not the layer surface
     if (this->llsurface) {
-        if (!this->config.islayersurface) {
-        	if (!this->is_sub_surface) {
+		if (!this->is_sub_surface) {
 #ifndef USE_DFB_SUBSURFACE
-        		// delete all sub surfaces
-    			deleteSubSurface(NULL);
+			// delete all sub surfaces
+			deleteSubSurface(NULL);
 #endif
-        		mmsfbsurfacemanager->releaseSurface(this);
-        	}
-        	else {
+			mmsfbsurfacemanager->releaseSurface(this);
+		}
+		else {
 #ifdef USE_DFB_SUBSURFACE
-        		this->llsurface->Release(this->llsurface);
+			this->llsurface->Release(this->llsurface);
 #endif
 
-        		if (this->parent)
-        			this->parent->deleteSubSurface(this);
-        	}
-        }
-    }
+			if (this->parent)
+				this->parent->deleteSubSurface(this);
+		}
+	}
 }
 
 
@@ -529,7 +527,7 @@ void MMSFBSurface::init(void *llsurface,
         this->config.color.a = 0;
         this->config.clipped = false;
         this->config.iswinsurface = false;
-        this->config.islayersurface = false;
+        this->config.islayersurface = (this->parent && this->parent->isLayerSurface());
         this->config.drawingflags = MMSFB_DRAW_NOFX;
         this->config.blittingflags = MMSFB_BLIT_NOFX;
         this->config.font = NULL;
@@ -990,6 +988,18 @@ bool MMSFBSurface::isWinSurface() {
 
 bool MMSFBSurface::isLayerSurface() {
     return this->config.islayersurface;
+}
+
+bool MMSFBSurface::isSubSurface() {
+    return this->is_sub_surface;
+}
+
+MMSFBSurface *MMSFBSurface::getParent() {
+    return this->parent;
+}
+
+MMSFBSurface *MMSFBSurface::getRootParent() {
+    return this->root_parent;
 }
 
 bool MMSFBSurface::setWinSurface(bool iswinsurface) {

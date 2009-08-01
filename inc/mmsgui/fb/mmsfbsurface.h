@@ -242,6 +242,9 @@ class MMSFBSurface {
 
         bool isWinSurface();
         bool isLayerSurface();
+        bool isSubSurface();
+        MMSFBSurface *getParent();
+        MMSFBSurface *getRootParent();
 
         bool getPixelFormat(MMSFBSurfacePixelFormat *pf);
         bool getSize(int *w, int *h);
