@@ -703,7 +703,12 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 			if (this->graphics.graphicslayer.id != 0)
 				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
-//TODO: OMAP
+		case MMSFB_OT_OMAPFB:
+			if ((this->graphics.videolayer.id != 1)&&(this->graphics.videolayer.id != 2))
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+			if (this->graphics.graphicslayer.id != 0)
+				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+			break;
 		default:
 			break;
 		}
@@ -739,7 +744,14 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB16))
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
-//TODO:OMAP
+		case MMSFB_OT_OMAPFB:
+			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YUY2)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+			if   ((this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB)
+				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32)
+				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB16))
+				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+			break;
 		default:
 			break;
 		}
