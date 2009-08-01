@@ -64,14 +64,20 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 		if (memcmp(fbdev->fix_screeninfo.id, "dm_osd0_fb", 10) == 0)
 			this->osd0 = fbdev;
 		else
-		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid0_fb", 10) == 0)
+		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid0_fb", 10) == 0) {
 			this->vid0 = fbdev;
+			// disable device
+			this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		}
 		else
 		if (memcmp(fbdev->fix_screeninfo.id, "dm_osd1_fb", 10) == 0)
 			this->osd1 = fbdev;
 		else
-		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid1_fb", 10) == 0)
+		if (memcmp(fbdev->fix_screeninfo.id, "dm_vid1_fb", 10) == 0) {
 			this->vid1 = fbdev;
+			// disable device
+			this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		}
 		else {
 			// not supported
 			printf("MMSFBDevDavinci: unsupported accelerator %d (%.16s)\n", fbdev->fix_screeninfo.accel, fbdev->fix_screeninfo.id);
@@ -86,9 +92,6 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 			closeDevice();
 			return false;
 		}
-
-		// disable device
-		fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 	}
 
     // all initialized :)
