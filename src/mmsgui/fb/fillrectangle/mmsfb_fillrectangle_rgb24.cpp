@@ -30,7 +30,7 @@
 #include "mmstools/mmstools.h"
 #include <string.h>
 
-void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_rgb24(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						       int dx, int dy, int dw, int dh, MMSFBColor color) {
 	// first time?
 	static bool firsttime = true;
@@ -38,6 +38,10 @@ void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height
 		printf("DISKO: Using accelerated fill rectangle to RGB24.\n");
 		firsttime = false;
 	}
+
+	// get the first destination ptr/pitch
+	unsigned char *dst = (unsigned char *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
 	// prepare a rgb line
 	int size = dw * 3;
