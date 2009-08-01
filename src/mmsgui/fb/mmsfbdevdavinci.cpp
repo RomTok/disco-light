@@ -46,6 +46,9 @@ MMSFBDevDavinci::~MMSFBDevDavinci() {
 }
 
 bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
+	// close the device if opened
+	closeDevice();
+
 	// open davinci frame buffers
 	for (int i = 0; i < 4; i++) {
 		MMSFBDev *fbdev;
@@ -83,6 +86,9 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 			closeDevice();
 			return false;
 		}
+
+		// disable device
+		fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 	}
 
     // all initialized :)
@@ -93,10 +99,22 @@ bool MMSFBDevDavinci::openDevice(char *device_file, int console) {
 
 void MMSFBDevDavinci::closeDevice() {
 	// close frame buffers
-	if (this->vid1) delete this->vid1;
-	if (this->vid0) delete this->vid0;
-	if (this->osd1) delete this->osd1;
-	if (this->osd0) delete this->osd0;
+	if (this->vid1) {
+		delete this->vid1;
+		this->vid1 = NULL;
+	}
+	if (this->vid0) {
+		delete this->vid0;
+		this->vid0 = NULL;
+	}
+	if (this->osd1) {
+		delete this->osd1;
+		this->osd1 = NULL;
+	}
+	if (this->osd0) {
+		delete this->osd0;
+		this->osd0 = NULL;
+	}
 
 	// reset all other
 	this->isinitialized = false;
@@ -105,6 +123,9 @@ void MMSFBDevDavinci::closeDevice() {
 bool MMSFBDevDavinci::waitForVSync() {
 	// is initialized?
 	INITCHECK;
+
+	if (!this->osd0)
+		return false;
 
 	static const int s = 0;
 	if (ioctl(this->osd0->fd, FBIO_WAITFORVSYNC, &s)) {
@@ -121,19 +142,25 @@ bool MMSFBDevDavinci::panDisplay(int buffer_id, void *framebuffer_base) {
 	if   ((framebuffer_base == this->osd0->framebuffer_base)
 		||(framebuffer_base == this->osd1->framebuffer_base)) {
 		// Graphic layer (OSD0 and OSD1)
-		this->osd0->panDisplay(buffer_id);
-		this->osd1->panDisplay(buffer_id);
+		if (this->osd0)
+			this->osd0->panDisplay(buffer_id);
+		if (this->osd1)
+			this->osd1->panDisplay(buffer_id);
 		return true;
 	}
 	else
 	if (framebuffer_base == this->vid0->framebuffer_base) {
 		// Video layer (VID0)
-		return this->vid0->panDisplay(buffer_id);
+		if (this->vid0)
+			return this->vid0->panDisplay(buffer_id);
+		return false;
 	}
 	else
 	if (framebuffer_base == this->vid1->framebuffer_base) {
 		// Video layer (VID1)
-		return this->vid1->panDisplay(buffer_id);
+		if (this->vid1)
+			return this->vid1->panDisplay(buffer_id);
+		return false;
 	}
 
 	// check framebuffer_base pointer
@@ -171,6 +198,11 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
+		if ((!this->osd0) || (!this->osd1)) {
+			printf("MMSFBDevDavinci: OSD Layer not initialized\n");
+			return false;
+		}
+
 		if   ((pixelformat != MMSFB_PF_ARGB3565)
 			&&(pixelformat != MMSFB_PF_RGB16)) {
 			printf("MMSFBDevDavinci: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
@@ -238,13 +270,20 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 
 	case 1:
 		// Video layer (VID0)
+		if (!this->vid0) {
+			printf("MMSFBDevDavinci: Video Layer %d not initialized\n", layer_id);
+			return false;
+		}
+
 		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevDavinci: Video Layer %d needs pixelformat YUY2, but %s given\n",
+						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
 		// disable VID1
-		this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		if (this->vid1)
+			this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 
 		// enable VID0
 		if (this->vid0->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
@@ -273,13 +312,20 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 
 	case 2:
 		// Video layer (VID1)
+		if (!this->vid1) {
+			printf("MMSFBDevDavinci: Video Layer %d not initialized\n", layer_id);
+			return false;
+		}
+
 		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevDavinci: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevDavinci: Video Layer %d needs pixelformat YUY2, but %s given\n",
+						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
 		// disable VID0
-		this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		if (this->vid0)
+			this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 
 		// enable VID1
 		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
@@ -314,9 +360,11 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 }
 
 bool MMSFBDevDavinci::vtGetFd(int *fd) {
-	if (this->osd0->vt.fd != -1) {
-		*fd = this->osd0->vt.fd;
-		return true;
+	if (this->osd0) {
+		if (this->osd0->vt.fd != -1) {
+			*fd = this->osd0->vt.fd;
+			return true;
+		}
 	}
 	return false;
 }
