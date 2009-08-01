@@ -202,18 +202,19 @@ bool MMSFBDevDavinci::initLayer(int layer_id, int width, int height, MMSFBSurfac
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
 		if ((!this->osd0) || (!this->osd1)) {
-			printf("MMSFBDevDavinci: OSD Layer not initialized\n");
+			printf("MMSFBDevDavinci: OSD Layer %d not initialized\n", layer_id);
 			return false;
 		}
 
 		if   ((pixelformat != MMSFB_PF_ARGB3565)
 			&&(pixelformat != MMSFB_PF_RGB16)) {
-			printf("MMSFBDevDavinci: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevDavinci: OSD Layer %d needs pixelformat ARGB3565 or RGB16, but %s given\n",
+						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
 		if (backbuffer) {
-			printf("MMSFBDevDavinci: OSD Layer does not support backbuffer handling\n");
+			printf("MMSFBDevDavinci: OSD Layer %d does not support backbuffer handling\n", layer_id);
 			return false;
 		}
 
