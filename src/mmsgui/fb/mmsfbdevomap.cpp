@@ -225,12 +225,12 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
 			switch (pixelformat) {
 			case MMSFB_PF_ARGB:
-//				mmsfb_fillrectangle_argb(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-//										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				mmsfb_fillrectangle_argb(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				break;
 			case MMSFB_PF_RGB32:
-	//			mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-		//								  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				break;
 			case MMSFB_PF_RGB16:
 				mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
