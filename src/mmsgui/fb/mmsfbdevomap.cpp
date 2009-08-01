@@ -45,7 +45,10 @@ MMSFBDevOmap::~MMSFBDevOmap() {
 }
 
 bool MMSFBDevOmap::openDevice(char *device_file, int console) {
-	// open davinci frame buffers
+	// close the device if opened
+	closeDevice();
+
+	// open omap frame buffers
 	for (int i = 0; i < 3; i++) {
 		MMSFBDev *fbdev;
 		char      dev[100];
@@ -57,14 +60,23 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 			return false;
 		}
 
-		if (memcmp(fbdev->fix_screeninfo.id, "omapfb", 6) == 0)
-			this->osd = fbdev;
-		else
-		if (memcmp(fbdev->fix_screeninfo.id, "omapfbv0", 8) == 0)
-			this->vid0 = fbdev;
-		else
-		if (memcmp(fbdev->fix_screeninfo.id, "omapfbv1", 8) == 0)
-			this->vid1 = fbdev;
+		if (memcmp(fbdev->fix_screeninfo.id, "omapfb", 6) == 0) {
+			switch (i) {
+			case 0:
+				this->osd = fbdev;
+				break;
+			case 1:
+				this->vid0 = fbdev;
+				// disable device
+				this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+				break;
+			case 2:
+				this->vid1 = fbdev;
+				// disable device
+				this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+				break;
+			}
+		}
 		else {
 			// not supported
 			printf("MMSFBDevOmap: unsupported accelerator %d (%.16s)\n", fbdev->fix_screeninfo.accel, fbdev->fix_screeninfo.id);
@@ -89,9 +101,18 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 
 void MMSFBDevOmap::closeDevice() {
 	// close frame buffers
-	if (this->vid1) delete this->vid1;
-	if (this->vid0) delete this->vid0;
-	if (this->osd)  delete this->osd;
+	if (this->vid1) {
+		delete this->vid1;
+		this->vid1 = NULL;
+	}
+	if (this->vid0) {
+		delete this->vid0;
+		this->vid0 = NULL;
+	}
+	if (this->osd) {
+		delete this->osd;
+		this->osd = NULL;
+	}
 
 	// reset all other
 	this->isinitialized = false;
@@ -100,6 +121,9 @@ void MMSFBDevOmap::closeDevice() {
 bool MMSFBDevOmap::waitForVSync() {
 	// is initialized?
 	INITCHECK;
+
+	if (!this->osd)
+		return false;
 
 	static const int s = 0;
 	if (ioctl(this->osd->fd, FBIO_WAITFORVSYNC, &s)) {
@@ -115,17 +139,23 @@ bool MMSFBDevOmap::panDisplay(int buffer_id, void *framebuffer_base) {
 
 	if (framebuffer_base == this->osd->framebuffer_base) {
 		// Graphic layer (OSD)
-		return this->osd->panDisplay(buffer_id);
+		if (this->osd)
+			return this->osd->panDisplay(buffer_id);
+		return false;
 	}
 	else
 	if (framebuffer_base == this->vid0->framebuffer_base) {
 		// Video layer (VID0)
-		return this->vid0->panDisplay(buffer_id);
+		if (this->vid0)
+			return this->vid0->panDisplay(buffer_id);
+		return false;
 	}
 	else
 	if (framebuffer_base == this->vid1->framebuffer_base) {
 		// Video layer (VID1)
-		return this->vid1->panDisplay(buffer_id);
+		if (this->vid1)
+			return this->vid1->panDisplay(buffer_id);
+		return false;
 	}
 
 	// check framebuffer_base pointer
@@ -163,22 +193,25 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
-//TODO
-		/*
-		if   ((pixelformat != MMSFB_PF_ARGB3565)
-			&&(pixelformat != MMSFB_PF_RGB16)) {
-			printf("MMSFBDevOmap: OSD Layer needs pixelformat ARGB3565 or RGB16, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+		if (!this->osd) {
+			printf("MMSFBDevOmap: OSD Layer %d not initialized\n", layer_id);
 			return false;
 		}
-		*/
+
+		if   ((pixelformat != MMSFB_PF_ARGB)
+			&&(pixelformat != MMSFB_PF_RGB32)
+			&&(pixelformat != MMSFB_PF_RGB16)) {
+			printf("MMSFBDevOmap: OSD Layer %d needs pixelformat ARGB, RGB32 or RGB16, but %s given\n",
+						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
+			return false;
+		}
 
 		if (backbuffer) {
-			printf("MMSFBDevOmap: OSD Layer does not support backbuffer handling\n");
+			printf("MMSFBDevOmap: OSD Layer %d does not support backbuffer handling\n", layer_id);
 			return false;
 		}
 
 		// enable OSD
-//		if (this->osd->initLayer(0, width, height, MMSFB_PF_RGB16, backbuffer)) {
 		if (this->osd->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
@@ -190,8 +223,20 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-									  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+			switch (pixelformat) {
+			case MMSFB_PF_ARGB:
+//				mmsfb_fillrectangle_argb(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+//										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			case MMSFB_PF_RGB32:
+	//			mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+		//								  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			case MMSFB_PF_RGB16:
+				mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			}
 
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
@@ -205,16 +250,23 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 	case 1:
 		// Video layer (VID0)
+		if (!this->vid0) {
+			printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
+			return false;
+		}
+
 		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevOmap: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2, but %s given\n",
+						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
 		// disable VID1
-		this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		if (this->vid1)
+			this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 
 		// enable VID0
-		if (this->vid0->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
+		if (this->vid0->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
@@ -225,8 +277,12 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-			                         0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+			switch (pixelformat) {
+			case MMSFB_PF_YUY2:
+				mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			}
 
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
@@ -240,16 +296,23 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 	case 2:
 		// Video layer (VID1)
+		if (!this->vid1) {
+			printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
+			return false;
+		}
+
 		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevOmap: Video Layer needs pixelformat YUY2, but %s given\n", getMMSFBPixelFormatString(pixelformat).c_str());
+			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2, but %s given\n",
+						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
 		// disable VID0
-		this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		if (this->vid0)
+			this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 
 		// enable VID1
-		if (this->vid1->initLayer(0, width, height, MMSFB_PF_YUY2, backbuffer)) {
+		if (this->vid1->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
@@ -260,8 +323,11 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-			                         0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+			switch (pixelformat) {
+			case MMSFB_PF_YUY2:
+				mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+			}
 
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
@@ -281,9 +347,11 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 }
 
 bool MMSFBDevOmap::vtGetFd(int *fd) {
-	if (this->osd->vt.fd != -1) {
-		*fd = this->osd->vt.fd;
-		return true;
+	if (this->osd) {
+		if (this->osd->vt.fd != -1) {
+			*fd = this->osd->vt.fd;
+			return true;
+		}
 	}
 	return false;
 }
