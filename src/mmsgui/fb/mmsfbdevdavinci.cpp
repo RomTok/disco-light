@@ -403,6 +403,9 @@ bool MMSFBDevDavinci::releaseLayer(int layer_id) {
 	case 1:
 		// Video layer (VID0)
 		if (this->vid0.fbdev) {
+			// disable
+			this->vid0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
+			// close
 			this->vid0.fbdev->closeDevice();
 			return true;
 		}
@@ -411,6 +414,9 @@ bool MMSFBDevDavinci::releaseLayer(int layer_id) {
 	case 2:
 		// Video layer (VID1)
 		if (this->vid1.fbdev) {
+			// disable
+			this->vid1.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
+			// close
 			this->vid1.fbdev->closeDevice();
 			return true;
 		}
@@ -441,7 +447,7 @@ bool MMSFBDevDavinci::restoreLayer(int layer_id) {
 					return this->vid0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
 				else
 				if (this->vid0.width > 0)
-					return this->vid0.fbdev->initLayer(layer_id, this->vid0.width, this->vid0.height,
+					return this->vid0.fbdev->initLayer(0, this->vid0.width, this->vid0.height,
 													   this->vid0.pixelformat, this->vid0.backbuffer);
 				return true;
 			}
@@ -457,7 +463,7 @@ bool MMSFBDevDavinci::restoreLayer(int layer_id) {
 					return this->vid1.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
 				else
 				if (this->vid1.width > 0)
-					return this->vid1.fbdev->initLayer(layer_id, this->vid1.width, this->vid1.height,
+					return this->vid1.fbdev->initLayer(0, this->vid1.width, this->vid1.height,
 													   this->vid1.pixelformat, this->vid1.backbuffer);
 				return true;
 			}
