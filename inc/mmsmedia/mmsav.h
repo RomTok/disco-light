@@ -142,6 +142,8 @@ typedef struct {
 class MMSAV
 {
     private:
+    	sigc::connection onHandleInputConnection;
+
         MMSRAW_USERDATA					userd;
 
 #ifdef __HAVE_GSTREAMER__
@@ -207,6 +209,11 @@ class MMSAV
         void initialize(const bool verbose = false, MMSWindow *window = NULL);
         void setStatus(int status);
         void sendEvent(int type, void *data = NULL, int datalen = 0);
+
+        bool sendKeyPress(MMSKeySymbol key);
+        bool sendKeyRelease(MMSKeySymbol key);
+
+        bool onHandleInput(MMSWindow *window, MMSInputEvent *input);
 
     public:
         /* status constants */
