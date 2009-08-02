@@ -35,9 +35,9 @@
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevOmap is not initialized");return false;}
 
 MMSFBDevOmap::MMSFBDevOmap() {
-	this->osd  = NULL;
-	this->vid0 = NULL;
-	this->vid1 = NULL;
+	this->osd.fbdev  = NULL;
+	this->vid0.fbdev = NULL;
+	this->vid1.fbdev = NULL;
 }
 
 MMSFBDevOmap::~MMSFBDevOmap() {
@@ -63,17 +63,23 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 		if (memcmp(fbdev->fix_screeninfo.id, "omapfb", 6) == 0) {
 			switch (i) {
 			case 0:
-				this->osd = fbdev;
+				this->osd.fbdev = fbdev;
+				strcpy(this->osd.device, dev);
+				this->osd.width = -1;
 				break;
 			case 1:
-				this->vid0 = fbdev;
+				this->vid0.fbdev = fbdev;
+				strcpy(this->vid0.device, dev);
+				this->vid0.width = 0;
 				// disable device
-				this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+				this->vid0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 				break;
 			case 2:
-				this->vid1 = fbdev;
+				this->vid1.fbdev = fbdev;
+				strcpy(this->vid1.device, dev);
+				this->vid1.width = 0;
 				// disable device
-				this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+				this->vid1.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 				break;
 			}
 		}
@@ -85,7 +91,7 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 			return false;
 		}
 
-		if (!i && !this->osd) {
+		if (!i && !this->osd.fbdev) {
 			// osd must be at /dev/fb0
 			printf("MMSFBDevOmap: /dev/fb0 is not osd\n");
 			closeDevice();
@@ -101,17 +107,17 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 
 void MMSFBDevOmap::closeDevice() {
 	// close frame buffers
-	if (this->vid1) {
-		delete this->vid1;
-		this->vid1 = NULL;
+	if (this->vid1.fbdev) {
+		delete this->vid1.fbdev;
+		this->vid1.fbdev = NULL;
 	}
-	if (this->vid0) {
-		delete this->vid0;
-		this->vid0 = NULL;
+	if (this->vid0.fbdev) {
+		delete this->vid0.fbdev;
+		this->vid0.fbdev = NULL;
 	}
-	if (this->osd) {
-		delete this->osd;
-		this->osd = NULL;
+	if (this->osd.fbdev) {
+		delete this->osd.fbdev;
+		this->osd.fbdev = NULL;
 	}
 
 	// reset all other
@@ -122,11 +128,11 @@ bool MMSFBDevOmap::waitForVSync() {
 	// is initialized?
 	INITCHECK;
 
-	if (!this->osd)
+	if (!this->osd.fbdev)
 		return false;
 
 	static const int s = 0;
-	if (ioctl(this->osd->fd, FBIO_WAITFORVSYNC, &s)) {
+	if (ioctl(this->osd.fbdev->fd, FBIO_WAITFORVSYNC, &s)) {
 		// failed, well then???
 	}
 
@@ -137,24 +143,24 @@ bool MMSFBDevOmap::panDisplay(int buffer_id, void *framebuffer_base) {
 	// is initialized?
 	INITCHECK;
 
-	if (framebuffer_base == this->osd->framebuffer_base) {
+	if (framebuffer_base == this->osd.fbdev->framebuffer_base) {
 		// Graphic layer (OSD)
-		if (this->osd)
-			return this->osd->panDisplay(buffer_id);
+		if (this->osd.fbdev)
+			return this->osd.fbdev->panDisplay(buffer_id);
 		return false;
 	}
 	else
-	if (framebuffer_base == this->vid0->framebuffer_base) {
+	if (framebuffer_base == this->vid0.fbdev->framebuffer_base) {
 		// Video layer (VID0)
-		if (this->vid0)
-			return this->vid0->panDisplay(buffer_id);
+		if (this->vid0.fbdev)
+			return this->vid0.fbdev->panDisplay(buffer_id);
 		return false;
 	}
 	else
-	if (framebuffer_base == this->vid1->framebuffer_base) {
+	if (framebuffer_base == this->vid1.fbdev->framebuffer_base) {
 		// Video layer (VID1)
-		if (this->vid1)
-			return this->vid1->panDisplay(buffer_id);
+		if (this->vid1.fbdev)
+			return this->vid1.fbdev->panDisplay(buffer_id);
 		return false;
 	}
 
@@ -193,7 +199,7 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 	switch (layer_id) {
 	case 0:
 		// default fbdev primary layer 0 on primary screen 0
-		if (!this->osd) {
+		if (!this->osd.fbdev) {
 			printf("MMSFBDevOmap: OSD Layer %d not initialized\n", layer_id);
 			return false;
 		}
@@ -212,14 +218,14 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 		}
 
 		// enable OSD
-		if (this->osd->initLayer(0, width, height, pixelformat, backbuffer)) {
+		if (this->osd.fbdev->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// save the buffers
-			memcpy(this->layers[layer_id].buffers, this->osd->layers[0].buffers, sizeof(this->osd->layers[0].buffers));
+			memcpy(this->layers[layer_id].buffers, this->osd.fbdev->layers[0].buffers, sizeof(this->osd.fbdev->layers[0].buffers));
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
@@ -236,6 +242,8 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 				mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				break;
+			default:
+				break;
 			}
 
 			// layer is initialized
@@ -250,7 +258,7 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 	case 1:
 		// Video layer (VID0)
-		if (!this->vid0) {
+		if (!this->vid0.fbdev) {
 			printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
 			return false;
 		}
@@ -262,18 +270,18 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 		}
 
 		// disable VID1
-		if (this->vid1)
-			this->vid1->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		if (this->vid1.fbdev)
+			this->vid1.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 
 		// enable VID0
-		if (this->vid0->initLayer(0, width, height, pixelformat, backbuffer)) {
+		if (this->vid0.fbdev->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// save the buffers
-			memcpy(this->layers[layer_id].buffers, this->vid0->layers[0].buffers, sizeof(this->vid0->layers[0].buffers));
+			memcpy(this->layers[layer_id].buffers, this->vid0.fbdev->layers[0].buffers, sizeof(this->vid0.fbdev->layers[0].buffers));
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
@@ -281,6 +289,8 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			case MMSFB_PF_YUY2:
 				mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			default:
 				break;
 			}
 
@@ -296,7 +306,7 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 	case 2:
 		// Video layer (VID1)
-		if (!this->vid1) {
+		if (!this->vid1.fbdev) {
 			printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
 			return false;
 		}
@@ -308,18 +318,18 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 		}
 
 		// disable VID0
-		if (this->vid0)
-			this->vid0->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+		if (this->vid0.fbdev)
+			this->vid0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 
 		// enable VID1
-		if (this->vid1->initLayer(0, width, height, pixelformat, backbuffer)) {
+		if (this->vid1.fbdev->initLayer(0, width, height, pixelformat, backbuffer)) {
 			// set values
 			this->layers[layer_id].width = width;
 			this->layers[layer_id].height = height;
 			this->layers[layer_id].pixelformat = pixelformat;
 
 			// save the buffers
-			memcpy(this->layers[layer_id].buffers, this->vid1->layers[0].buffers, sizeof(this->vid1->layers[0].buffers));
+			memcpy(this->layers[layer_id].buffers, this->vid1.fbdev->layers[0].buffers, sizeof(this->vid1.fbdev->layers[0].buffers));
 
 			// clear layer
 			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
@@ -327,6 +337,9 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			case MMSFB_PF_YUY2:
 				mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			default:
+				break;
 			}
 
 			// layer is initialized
@@ -346,10 +359,92 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 	return false;
 }
 
+bool MMSFBDevOmap::releaseLayer(int layer_id) {
+	// is initialized?
+	INITCHECK;
+
+	switch (layer_id) {
+	case 0:
+		// default fbdev primary layer 0 on primary screen 0
+		printf("MMSFBDevOmap: layer %d cannot be released\n", layer_id);
+		return false;
+	case 1:
+		// Video layer (VID0)
+		if (this->vid0.fbdev) {
+			this->vid0.fbdev->closeDevice();
+			return true;
+		}
+		printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
+		return false;
+	case 2:
+		// Video layer (VID1)
+		if (this->vid1.fbdev) {
+			this->vid1.fbdev->closeDevice();
+			return true;
+		}
+		printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
+		return false;
+	default:
+    	printf("MMSFBDevOmap: layer %d is not supported\n", layer_id);
+    	break;
+	}
+
+	return false;
+}
+
+bool MMSFBDevOmap::restoreLayer(int layer_id) {
+	// is initialized?
+	INITCHECK;
+
+	switch (layer_id) {
+	case 0:
+		// default fbdev primary layer 0 on primary screen 0
+		printf("MMSFBDevOmap: layer %d cannot be restored\n", layer_id);
+	    return false;
+	case 1:
+		// Video layer (VID0)
+		if (this->vid0.fbdev) {
+			if (this->vid0.fbdev->openDevice(this->vid0.device, -2)) {
+				if (!this->vid0.width)
+					return this->vid0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
+				else
+				if (this->vid0.width > 0)
+					return this->vid0.fbdev->initLayer(layer_id, this->vid0.width, this->vid0.height,
+													   this->vid0.pixelformat, this->vid0.backbuffer);
+				return true;
+			}
+			return false;
+		}
+		printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
+		return false;
+	case 2:
+		// Video layer (VID1)
+		if (this->vid1.fbdev) {
+			if (this->vid1.fbdev->openDevice(this->vid1.device, -2)) {
+				if (!this->vid1.width)
+					return this->vid1.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
+				else
+				if (this->vid1.width > 0)
+					return this->vid1.fbdev->initLayer(layer_id, this->vid1.width, this->vid1.height,
+													   this->vid1.pixelformat, this->vid1.backbuffer);
+				return true;
+			}
+			return false;
+		}
+		printf("MMSFBDevOmap: Video Layer %d not initialized\n", layer_id);
+		return false;
+	default:
+    	printf("MMSFBDevOmap: layer %d is not supported\n", layer_id);
+    	break;
+	}
+
+	return false;
+}
+
 bool MMSFBDevOmap::vtGetFd(int *fd) {
-	if (this->osd) {
-		if (this->osd->vt.fd != -1) {
-			*fd = this->osd->vt.fd;
+	if (this->osd.fbdev) {
+		if (this->osd.fbdev->vt.fd != -1) {
+			*fd = this->osd.fbdev->vt.fd;
 			return true;
 		}
 	}
