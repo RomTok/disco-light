@@ -456,7 +456,7 @@ bool MMSFBLayer::getID(int *id) {
 
 bool MMSFBLayer::setExclusiveAccess() {
 
-	/* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
@@ -489,7 +489,7 @@ bool MMSFBLayer::setExclusiveAccess() {
 
 bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 
-	/* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (this->config.avail) {
@@ -586,7 +586,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 
 bool MMSFBLayer::getResolution(int *w, int *h) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
     /* get configuration */
@@ -603,7 +603,7 @@ bool MMSFBLayer::getResolution(int *w, int *h) {
 
 bool MMSFBLayer::getPixelFormat(MMSFBSurfacePixelFormat *pixelformat) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
     /* get configuration */
@@ -620,7 +620,7 @@ bool MMSFBLayer::getPixelFormat(MMSFBSurfacePixelFormat *pixelformat) {
 bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelformat, string buffermode, string options,
 								  MMSFBSurfacePixelFormat window_pixelformat, MMSFBSurfacePixelFormat surface_pixelformat) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
@@ -779,7 +779,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
 bool MMSFBLayer::setOpacity(unsigned char opacity) {
 
-	/* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
@@ -806,7 +806,7 @@ bool MMSFBLayer::setOpacity(unsigned char opacity) {
 
 bool MMSFBLayer::setLevel(int level) {
 
-	/* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
@@ -978,10 +978,42 @@ bool MMSFBLayer::setFlipFlags(MMSFBFlipFlags flags) {
 	return true;
 }
 
+bool MMSFBLayer::releaseLayer() {
+
+	// check if initialized
+    INITCHECK;
+
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+#ifdef __HAVE_FBDEV__
+        if (mmsfb->mmsfbdev) {
+        	return mmsfb->mmsfbdev->releaseLayer(this->config.id);
+        }
+#endif
+    }
+
+    return false;
+}
+
+bool MMSFBLayer::restoreLayer() {
+
+    // check if initialized
+    INITCHECK;
+
+    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+#ifdef __HAVE_FBDEV__
+        if (mmsfb->mmsfbdev) {
+        	return mmsfb->mmsfbdev->restoreLayer(this->config.id);
+        }
+#endif
+    }
+
+    return false;
+}
+
 bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
 							   MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (pixelformat == MMSFB_PF_NONE) {
@@ -1020,7 +1052,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
 bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 							  MMSFBSurfacePixelFormat pixelformat, bool usealpha) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
     /* check if i am the right layer */
