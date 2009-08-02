@@ -263,8 +263,9 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			return false;
 		}
 
-		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2, but %s given\n",
+		if   ((pixelformat != MMSFB_PF_YUY2)
+			&&(pixelformat != MMSFB_PF_RGB32)) {
+			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2 or RGB32, but %s given\n",
 						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
@@ -290,6 +291,10 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 				mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				break;
+			case MMSFB_PF_RGB32:
+				mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
 			default:
 				break;
 			}
@@ -311,8 +316,9 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			return false;
 		}
 
-		if (pixelformat != MMSFB_PF_YUY2) {
-			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2, but %s given\n",
+		if   ((pixelformat != MMSFB_PF_YUY2)
+			&&(pixelformat != MMSFB_PF_RGB32)) {
+			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2 or RGB32, but %s given\n",
 						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
@@ -337,6 +343,10 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			case MMSFB_PF_YUY2:
 				mmsfb_fillrectangle_yuy2(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			case MMSFB_PF_RGB32:
+				mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				break;
 			default:
 				break;

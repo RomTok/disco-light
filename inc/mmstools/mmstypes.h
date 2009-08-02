@@ -354,6 +354,12 @@ typedef enum {
 //! list of valid pixelformats for DAVINCIFB, Video Layer
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_1	"YUY2"
 
+//! list of valid pixelformats for OMAPFB, OSD Layer
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_0	"ARGB, RGB32, RGB16"
+
+//! list of valid pixelformats for OMAPFB, Video Layer
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_1	"YUY2, RGB32"
+
 // conversion routines for pixel formats
 string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf);
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf);
