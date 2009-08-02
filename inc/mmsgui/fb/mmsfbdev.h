@@ -124,6 +124,9 @@ class MMSFBDev {
         virtual bool testLayer(int layer_id);
         virtual bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0);
 
+        virtual bool releaseLayer(int layer_id);
+        virtual bool restoreLayer(int layer_id);
+
         bool getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf);
         bool getPhysicalMemory(unsigned long *mem);
         bool getFrameBufferBase(unsigned char **base);
