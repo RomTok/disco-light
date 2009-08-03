@@ -33,14 +33,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-#include <gst/interfaces/navigation.h>
-
-
 MMS_CREATEERROR(MMSAVError);
 
 
 #ifdef __HAVE_GSTREAMER__
+
+#include <gst/interfaces/navigation.h>
 
 //#ifdef _old_code_
 // old code which uses fakesink element
