@@ -35,10 +35,18 @@
 
 class MMSFBDevDavinci : public MMSFBDev {
     private:
-    	MMSFBDev	*osd0;
-    	MMSFBDev	*osd1;
-    	MMSFBDev	*vid0;
-    	MMSFBDev	*vid1;
+    	typedef struct {
+        	MMSFBDev				*fbdev;
+        	char					device[100];
+        	int						width;
+        	int						height;
+        	MMSFBSurfacePixelFormat	pixelformat;
+        	int						backbuffer;
+    	} MMSFBDevDavinciLayer;
+    	MMSFBDevDavinciLayer	osd0;
+    	MMSFBDevDavinciLayer	osd1;
+    	MMSFBDevDavinciLayer	vid0;
+    	MMSFBDevDavinciLayer	vid1;
 
     public:
         MMSFBDevDavinci();
@@ -52,6 +60,9 @@ class MMSFBDevDavinci : public MMSFBDev {
 
         bool testLayer(int layer_id);
         bool initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0);
+
+        bool releaseLayer(int layer_id);
+        bool restoreLayer(int layer_id);
 
     private:
 

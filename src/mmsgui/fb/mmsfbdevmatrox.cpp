@@ -201,6 +201,49 @@ bool MMSFBDevMatrox::initLayer(int layer_id, int width, int height, MMSFBSurface
 }
 
 
+bool MMSFBDevMatrox::releaseLayer(int layer_id) {
+	// is initialized?
+	INITCHECK;
+
+	switch (layer_id) {
+	case 0:
+		// default fbdev primary layer 0 on primary screen 0
+		printf("MMSFBDevMatrox: layer %d cannot be released\n", layer_id);
+		return false;
+	case 2:
+		// TVOut layer
+		printf("MMSFBDevMatrox: layer %d cannot be released\n", layer_id);
+		return false;
+	default:
+    	printf("MMSFBDevMatrox: layer %d is not supported\n", layer_id);
+    	break;
+	}
+
+	return false;
+}
+
+bool MMSFBDevMatrox::restoreLayer(int layer_id) {
+	// is initialized?
+	INITCHECK;
+
+	switch (layer_id) {
+	case 0:
+		// default fbdev primary layer 0 on primary screen 0
+		printf("MMSFBDevMatrox: layer %d cannot be restored\n", layer_id);
+	    return false;
+	case 2:
+		// TVOut layer
+		printf("MMSFBDevMatrox: layer %d cannot be restored\n", layer_id);
+	    return false;
+	default:
+    	printf("MMSFBDevMatrox: layer %d is not supported\n", layer_id);
+    	break;
+	}
+
+	return false;
+}
+
+
 void MMSFBDevMatrox::buildCRTC2Regs() {
 
 	// init g450/g550, but we do not support g400!

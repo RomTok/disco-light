@@ -29,7 +29,7 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_blend_argb(MMSFBSurfacePlanes *dst_planes, int dst_height,
 									int dx, int dy, int dw, int dh, MMSFBColor color) {
 	// first time?
 	static bool firsttime = true;
@@ -41,6 +41,10 @@ void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_he
 	// return immediately if alpha channel of the color is 0x00
 	if (!color.a)
 		return;
+
+	// get the first destination ptr/pitch
+	unsigned int *dst = (unsigned int *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
 	// prepare...
 	int dst_pitch_pix = dst_pitch >> 2;

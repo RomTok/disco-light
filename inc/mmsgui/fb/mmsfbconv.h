@@ -1378,14 +1378,14 @@ void mmsfb_stretchblit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_argb(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_argb(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
 //! Fill rectangle with alpha blending ARGB.
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_blend_argb(MMSFBSurfacePlanes *dst_planes, int dst_height,
 									int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
@@ -1393,7 +1393,7 @@ void mmsfb_fillrectangle_blend_argb(unsigned int *dst, int dst_pitch, int dst_he
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_rgb32(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_rgb32(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						       int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
@@ -1401,7 +1401,7 @@ void mmsfb_fillrectangle_rgb32(unsigned int *dst, int dst_pitch, int dst_height,
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_rgb24(unsigned char *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_rgb24(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						       int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
@@ -1417,14 +1417,14 @@ void mmsfb_fillrectangle_rgb16(MMSFBSurfacePlanes *dst_planes, int dst_height,
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_ayuv(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						      int dx, int dy, int dw, int dh, MMSFBColor color);
 
 //! Fill rectangle with alpha blending AYUV.
 /*!
 \author Jens Schneider
 */
-void mmsfb_fillrectangle_blend_ayuv(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_fillrectangle_blend_ayuv(MMSFBSurfacePlanes *dst_planes, int dst_height,
 									int dx, int dy, int dw, int dh, MMSFBColor color);
 
 

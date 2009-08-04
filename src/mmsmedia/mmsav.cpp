@@ -38,6 +38,8 @@ MMS_CREATEERROR(MMSAVError);
 
 #ifdef __HAVE_GSTREAMER__
 
+#include <gst/interfaces/navigation.h>
+
 //#ifdef _old_code_
 // old code which uses fakesink element
 // this code is only for testing purpose
@@ -252,6 +254,72 @@ static void* gstPlayRoutine(GST_DISKOVIDEOSINK_DATA	*gst_diskovideosink_data) {
 
 	// switch to playing state
 	gst_element_set_state(gst_diskovideosink_data->player, GST_STATE_PLAYING);
+
+#ifdef ssgsgssgsgsg
+/*gst_navigation_send_key_event(GST_NAVIGATION(gst_diskovideosink_data->videosink),
+							  "key-press", "Return");*/
+
+GstStructure * structure = gst_structure_new ("application/x-gst-navigation",
+		"event", G_TYPE_STRING, "key-press",
+		"key", G_TYPE_STRING, "Return", NULL);
+
+GstEvent *event = gst_event_new_navigation (structure);
+gst_structure_free(structure);
+
+#ifdef sfsgfsgs
+GstPad *pad = NULL;// = gst_pad_get_peer (GST_VIDEO_SINK_PAD (diskovideosink));
+
+/*pad = gst_element_get_static_pad          (gst_diskovideosink_data->player,
+                                                         const gchar *name);*/
+
+//pad = gst_element_get_request_pad(gst_diskovideosink_data->player, NULL);
+/*if (!pad) {
+	printf("KAESE\n");
+	exit(0);
+}*/
+GList *glist = GST_ELEMENT_PADS(gst_diskovideosink_data->videosink);
+if (!glist) {
+	printf("KAESE2\n");
+	exit(0);
+}
+pad = (GstPad*)glist->data;
+if (!pad) {
+	printf("KAESE3\n");
+	exit(0);
+}
+printf("KAESE4\n");
+
+printf("KAESE5 %s\n", gst_pad_get_name(pad));
+
+pad = gst_pad_get_peer(pad);
+
+printf("KAESE6 %s\n", gst_pad_get_name(pad));
+#endif
+
+gst_element_send_event              (gst_diskovideosink_data->player,
+                                                         event);
+//gst_pad_send_event (pad, event);
+
+/////////////
+
+structure = gst_structure_new ("application/x-gst-navigation",
+		"event", G_TYPE_STRING, "key-release",
+		"key", G_TYPE_STRING, "Return", NULL);
+
+event = gst_event_new_navigation (structure);
+gst_structure_free(structure);
+
+gst_element_send_event              (gst_diskovideosink_data->player,
+                                                         event);
+
+//gst_pad_send_event (pad, event);
+
+/*sleep(2);
+exit(0);
+*/
+
+#endif
+
 
 	// go in main loop
 	g_main_loop_run(gst_diskovideosink_data->loop);
@@ -754,6 +822,11 @@ void MMSAV::xineInit() {
 #endif
 
 
+bool MMSAV::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
+/*	sendKeyPress(MMSKeySymbol key) printf("PAUL\n");
+exit(0);*/
+	return false;
+}
 
 /**
  * Initializes everything that is needed my MMSAV.
@@ -775,6 +848,11 @@ void MMSAV::xineInit() {
 void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     this->verbose          = verbose;
 	this->window           = window;
+
+	onHandleInputConnection.disconnect();
+	if (window)
+		onHandleInputConnection = window->onHandleInput->connect(sigc::mem_fun(this,&MMSAV::onHandleInput));
+
 
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
@@ -988,6 +1066,8 @@ MMSAV::MMSAV(MMSMEDIABackend _backend) :
  * stuff.
  */
 MMSAV::~MMSAV() {
+	onHandleInputConnection.disconnect();
+
 	if(this->onError) {
 		this->onError->clear();
 		delete this->onError;
@@ -1451,6 +1531,14 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
 		this->gst_diskovideosink_data.uri = currentMRL;
 		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, &this->gst_diskovideosink_data) == 0)
 			pthread_detach(thread);
+
+
+/*sleep(30);
+
+sendKeyPress(MMSKEY_RETURN);
+sendKeyRelease(MMSKEY_RETURN);*/
+
+
 #endif
     }
     else {
@@ -2187,6 +2275,76 @@ void MMSAV::sendEvent(int type, void *data, int datalen) {
 
 	throw MMSAVError(0, "MMSAV::sendEvent() called but media backend does not match supported backends");
 }
+
+
+bool MMSAV::sendKeyPress(MMSKeySymbol key) {
+	switch(this->backend) {
+	case MMSMEDIA_BE_GST: {
+#ifdef __HAVE_GSTREAMER__
+		GstStructure *structure =
+			gst_structure_new(	"application/x-gst-navigation",
+								"event",	G_TYPE_STRING,	"key-press",
+								"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
+								NULL);
+		if (!structure)
+			return false;
+		GstEvent *event = gst_event_new_navigation(structure);
+		gst_structure_free(structure);
+		if (!event)
+			return false;
+		return gst_element_send_event(gst_diskovideosink_data.player, event);
+#endif
+		break;
+	}
+	case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		return false;
+#endif
+		break;
+	default:
+		// shouldn't be reached
+		break;
+	}
+
+	throw MMSAVError(0, "MMSAV::sendKeyPress() called but media backend does not match supported backends");
+
+	return false;
+}
+
+bool MMSAV::sendKeyRelease(MMSKeySymbol key) {
+	switch(this->backend) {
+	case MMSMEDIA_BE_GST: {
+#ifdef __HAVE_GSTREAMER__
+		GstStructure *structure =
+			gst_structure_new(	"application/x-gst-navigation",
+								"event",	G_TYPE_STRING,	"key-release",
+								"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
+								NULL);
+		if (!structure)
+			return false;
+		GstEvent *event = gst_event_new_navigation(structure);
+		gst_structure_free(structure);
+		if (!event)
+			return false;
+		return gst_element_send_event(gst_diskovideosink_data.player, event);
+#endif
+		break;
+	}
+	case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		return false;
+#endif
+		break;
+	default:
+		// shouldn't be reached
+		break;
+	}
+
+	throw MMSAVError(0, "MMSAV::sendKeyPress() called but media backend does not match supported backends");
+
+	return false;
+}
+
 
 /**
  * Returns true if stream contains a video stream.

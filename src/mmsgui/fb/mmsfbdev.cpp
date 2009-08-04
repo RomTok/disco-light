@@ -499,6 +499,15 @@ bool MMSFBDev::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelF
 	return true;
 }
 
+bool MMSFBDev::releaseLayer(int layer_id) {
+	printf("MMSFBDev: layer %d cannot be released\n", layer_id);
+	return false;
+}
+
+bool MMSFBDev::restoreLayer(int layer_id) {
+	printf("MMSFBDev: layer %d cannot be restored\n", layer_id);
+	return false;
+}
 
 bool MMSFBDev::getPixelFormat(int layer_id, MMSFBSurfacePixelFormat *pf) {
 	// is initialized?

@@ -445,24 +445,22 @@ MMSFBSurface::~MMSFBSurface() {
 
     // release memory - only if not the layer surface
     if (this->llsurface) {
-        if (!this->config.islayersurface) {
-        	if (!this->is_sub_surface) {
+		if (!this->is_sub_surface) {
 #ifndef USE_DFB_SUBSURFACE
-        		// delete all sub surfaces
-    			deleteSubSurface(NULL);
+			// delete all sub surfaces
+			deleteSubSurface(NULL);
 #endif
-        		mmsfbsurfacemanager->releaseSurface(this);
-        	}
-        	else {
+			mmsfbsurfacemanager->releaseSurface(this);
+		}
+		else {
 #ifdef USE_DFB_SUBSURFACE
-        		this->llsurface->Release(this->llsurface);
+			this->llsurface->Release(this->llsurface);
 #endif
 
-        		if (this->parent)
-        			this->parent->deleteSubSurface(this);
-        	}
-        }
-    }
+			if (this->parent)
+				this->parent->deleteSubSurface(this);
+		}
+	}
 }
 
 
@@ -529,7 +527,7 @@ void MMSFBSurface::init(void *llsurface,
         this->config.color.a = 0;
         this->config.clipped = false;
         this->config.iswinsurface = false;
-        this->config.islayersurface = false;
+        this->config.islayersurface = (this->parent && this->parent->isLayerSurface());
         this->config.drawingflags = MMSFB_DRAW_NOFX;
         this->config.blittingflags = MMSFB_BLIT_NOFX;
         this->config.font = NULL;
@@ -990,6 +988,18 @@ bool MMSFBSurface::isWinSurface() {
 
 bool MMSFBSurface::isLayerSurface() {
     return this->config.islayersurface;
+}
+
+bool MMSFBSurface::isSubSurface() {
+    return this->is_sub_surface;
+}
+
+MMSFBSurface *MMSFBSurface::getParent() {
+    return this->parent;
+}
+
+MMSFBSurface *MMSFBSurface::getRootParent() {
+    return this->root_parent;
 }
 
 bool MMSFBSurface::setWinSurface(bool iswinsurface) {
@@ -3181,7 +3191,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_argb((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_argb(&dst_planes, dst_height,
 										 sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
@@ -3194,7 +3204,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_blend_argb((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_blend_argb(&dst_planes, dst_height,
 											   sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
@@ -3212,7 +3222,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_ayuv((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_ayuv(&dst_planes, dst_height,
 										 sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
@@ -3225,7 +3235,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_blend_ayuv((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_blend_ayuv(&dst_planes, dst_height,
 											   sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
@@ -3243,7 +3253,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb32((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_rgb32(&dst_planes, dst_height,
 										  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
@@ -3261,7 +3271,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb24((unsigned char *)dst_planes.ptr, dst_planes.pitch, dst_height,
+				mmsfb_fillrectangle_rgb24(&dst_planes, dst_height,
 										  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
