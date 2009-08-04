@@ -513,18 +513,11 @@ exit:
   }
 }
 
-int mmsGstPlay(const char *pipeline_description) {
-  /* options */
-  gboolean verbose = FALSE;
-  gboolean no_fault = FALSE;
-  gchar *savefile = NULL;
-  gchar *exclude_args = NULL;
-  GOptionContext *ctx;
-  GError *err = NULL;
+GstElement *mmsGstInit(const char *pipeline_description) {
   GError *error = NULL;
   gint res = 0;
 
-  free (malloc (8));            /* -lefence */
+//  free (malloc (8));            /* -lefence */
 
 #ifdef ENABLE_NLS
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
@@ -538,8 +531,7 @@ int mmsGstPlay(const char *pipeline_description) {
   gst_alloc_trace_set_flags_all (GST_ALLOC_TRACE_LIVE);
 
 #ifndef DISABLE_FAULT_HANDLER
-  if (!no_fault)
-    fault_setup ();
+  fault_setup ();
 
   sigint_setup ();
   play_signal_setup ();
@@ -556,22 +548,15 @@ int mmsGstPlay(const char *pipeline_description) {
     } else {
       fprintf (stderr, "ERROR: pipeline could not be constructed.\n");
     }
-    return 1;
+    return NULL;
   } else if (error) {
     fprintf (stderr, "WARNING: erroneous pipeline: %s\n",
         GST_STR_NULL (error->message));
     g_error_free (error);
-    return 1;
+    return NULL;
   }
 
-  if (verbose) {
-    gchar **exclude_list =
-        exclude_args ? g_strsplit (exclude_args, ",", 0) : NULL;
-    g_signal_connect (pipeline, "deep_notify",
-        G_CALLBACK (gst_object_default_deep_notify), exclude_list);
-  }
 
-  if (!savefile) {
     GstState state, pending;
     GstStateChangeReturn ret;
 
@@ -581,7 +566,7 @@ int mmsGstPlay(const char *pipeline_description) {
 
       if (real_pipeline == NULL) {
         fprintf (stderr, "ERROR: the 'pipeline' element wasn't found.\n");
-        return 1;
+        return NULL;
       }
       gst_bin_add (GST_BIN (real_pipeline), pipeline);
       pipeline = real_pipeline;
@@ -612,6 +597,86 @@ int mmsGstPlay(const char *pipeline_description) {
         fprintf (stderr, "Pipeline is PREROLLED ...\n");
         break;
     }
+
+
+    return pipeline;
+
+#ifdef ssfs
+    caught_error = event_loop (pipeline, FALSE, GST_STATE_PLAYING);
+
+    if (caught_error) {
+      fprintf (stderr, "ERROR: pipeline doesn't want to preroll.\n");
+    } else {
+      GstClockTime tfthen, tfnow;
+      GstClockTimeDiff diff;
+
+      fprintf (stderr, "Setting pipeline to PLAYING ...\n");
+      if (gst_element_set_state (pipeline,
+              GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE) {
+        GstMessage *err_msg;
+        GstBus *bus;
+
+        fprintf (stderr, "ERROR: pipeline doesn't want to play.\n");
+        bus = gst_element_get_bus (pipeline);
+        if ((err_msg = gst_bus_poll (bus, GST_MESSAGE_ERROR, 0))) {
+          GError *gerror;
+          gchar *debug;
+
+          gst_message_parse_error (err_msg, &gerror, &debug);
+          gst_object_default_error (GST_MESSAGE_SRC (err_msg), gerror, debug);
+          gst_message_unref (err_msg);
+          g_error_free (gerror);
+          g_free (debug);
+        }
+        gst_object_unref (bus);
+        res = -1;
+        goto end;
+      }
+
+      tfthen = gst_util_get_timestamp ();
+      caught_error = event_loop (pipeline, TRUE, GST_STATE_PLAYING);
+      tfnow = gst_util_get_timestamp ();
+
+      diff = GST_CLOCK_DIFF (tfthen, tfnow);
+
+      g_print ("Execution ended after %" G_GUINT64_FORMAT " ns.\n", diff);
+    }
+
+    /* iterate mainloop to process pending stuff */
+    while (g_main_context_iteration (NULL, FALSE));
+
+    fprintf (stderr, "Setting pipeline to PAUSED ...\n");
+    gst_element_set_state (pipeline, GST_STATE_PAUSED);
+    if (!caught_error)
+      gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
+    fprintf (stderr, "Setting pipeline to READY ...\n");
+    gst_element_set_state (pipeline, GST_STATE_READY);
+    gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
+#endif
+
+
+end:
+    fprintf (stderr, "Setting pipeline to NULL ...\n");
+    gst_element_set_state (pipeline, GST_STATE_NULL);
+    gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
+
+	fprintf (stderr, "FREEING pipeline ...\n");
+	gst_object_unref (pipeline);
+
+	gst_deinit ();
+
+	return NULL;
+}
+
+int mmsGstPlay(GstElement *pipelineX) {
+	  gint res = 0;
+
+
+	  pipeline = pipelineX;
+
+
+	    GstState state, pending;
+
 
     caught_error = event_loop (pipeline, FALSE, GST_STATE_PLAYING);
 
@@ -664,16 +729,16 @@ int mmsGstPlay(const char *pipeline_description) {
     gst_element_set_state (pipeline, GST_STATE_READY);
     gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
 
-  end:
-    fprintf (stderr, "Setting pipeline to NULL ...\n");
-    gst_element_set_state (pipeline, GST_STATE_NULL);
-    gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
-  }
+end:
+	fprintf (stderr, "Setting pipeline to NULL ...\n");
+	gst_element_set_state (pipeline, GST_STATE_NULL);
+	gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
 
-  fprintf (stderr, "FREEING pipeline ...\n");
-  gst_object_unref (pipeline);
+	fprintf (stderr, "FREEING pipeline ...\n");
+	gst_object_unref (pipeline);
 
-  gst_deinit ();
+	gst_deinit ();
 
-  return res;
+	return res;
 }
+

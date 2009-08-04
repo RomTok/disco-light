@@ -34,7 +34,9 @@
 #include <stdlib.h>
 
 
-#include <gst/interfaces/navigation.h>
+//#include <gst/interfaces/navigation.h>
+
+#include "mmsmedia/mmsgst.h"
 
 
 MMS_CREATEERROR(MMSAVError);
@@ -209,14 +211,40 @@ static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpoi
 //#endif /* _old_code_ */
 
 
-void MMSAV::gstInit() {
+
+
+
+void MMSAV::gstInit(const string uri) {
 
 	// initialize gstreamer
 	gst_init(NULL, NULL);
 	this->gst_diskovideosink_data.loop = g_main_loop_new(NULL, FALSE);
 
+	this->gst_diskovideosink_data.player = NULL;
+	this->gst_diskovideosink_data.pipeline = NULL;
+
+	if (strToUpr(uri.substr(0,6)) == "GST://") {
+		// the uri is an gstreamer pipeline
+		// so we use the pipeline and do NOT use playbin with our video sink
+		this->gst_diskovideosink_data.pipeline = mmsGstInit(uri.substr(6).c_str());
+	}
+	else {
+
+//TODO checking for     GST://
+/*GstElement *pipeline = mmsGstInit("dvdnavsrc ! dvddemux name=demux .current_video ! queue !  mpeg2dec ! xvimagesink  demux.current_audio ! queue ! a52dec ! audioconvert ! alsasink");
+if (pipeline)
+	mmsGstPlay(pipeline);
+sleep(10);
+exit(0);
+
+//this->gst_diskovideosink_data.player = pipeline;
+return;
+*/
+
+
 	// create top-level pipe element
 	this->gst_diskovideosink_data.player = gst_element_factory_make("playbin", "player");
+
 
 	if (1) {
 		// get the diskovideosink element
@@ -230,6 +258,7 @@ void MMSAV::gstInit() {
 		//       because diskovideosink can handle keyboard, mouse, touchscreen inputs
 		//       which are delivered to the MMSWindow
 		g_object_set(this->gst_diskovideosink_data.videosink, "window", this->window, NULL);
+		this->gst_diskovideosink_data.uri = uri;
 	}
 //#ifdef _old_code_
 	else {
@@ -244,6 +273,10 @@ void MMSAV::gstInit() {
 
 	// set videosink to the player
 	g_object_set(G_OBJECT(this->gst_diskovideosink_data.player), "video-sink", this->gst_diskovideosink_data.videosink, NULL);
+
+	// set the uri to the player
+	g_object_set(G_OBJECT(this->gst_diskovideosink_data.player), "uri", uri.c_str(), NULL);
+	}
 }
 
 
@@ -251,77 +284,18 @@ static void* gstPlayRoutine(GST_DISKOVIDEOSINK_DATA	*gst_diskovideosink_data) {
 
 	printf("uri %s\n", gst_diskovideosink_data->uri.c_str());
 
+
+	if (gst_diskovideosink_data->pipeline) {
+		// using a raw gstreamer pipe
+		mmsGstPlay(gst_diskovideosink_data->pipeline);
+	}
+	else {
+
 	// set the uri to the player
-	g_object_set(G_OBJECT(gst_diskovideosink_data->player), "uri", gst_diskovideosink_data->uri.c_str(), NULL);
+//	g_object_set(G_OBJECT(gst_diskovideosink_data->player), "uri", gst_diskovideosink_data->uri.c_str(), NULL);
 
 	// switch to playing state
 	gst_element_set_state(gst_diskovideosink_data->player, GST_STATE_PLAYING);
-
-#ifdef ssgsgssgsgsg
-/*gst_navigation_send_key_event(GST_NAVIGATION(gst_diskovideosink_data->videosink),
-							  "key-press", "Return");*/
-
-GstStructure * structure = gst_structure_new ("application/x-gst-navigation",
-		"event", G_TYPE_STRING, "key-press",
-		"key", G_TYPE_STRING, "Return", NULL);
-
-GstEvent *event = gst_event_new_navigation (structure);
-gst_structure_free(structure);
-
-#ifdef sfsgfsgs
-GstPad *pad = NULL;// = gst_pad_get_peer (GST_VIDEO_SINK_PAD (diskovideosink));
-
-/*pad = gst_element_get_static_pad          (gst_diskovideosink_data->player,
-                                                         const gchar *name);*/
-
-//pad = gst_element_get_request_pad(gst_diskovideosink_data->player, NULL);
-/*if (!pad) {
-	printf("KAESE\n");
-	exit(0);
-}*/
-GList *glist = GST_ELEMENT_PADS(gst_diskovideosink_data->videosink);
-if (!glist) {
-	printf("KAESE2\n");
-	exit(0);
-}
-pad = (GstPad*)glist->data;
-if (!pad) {
-	printf("KAESE3\n");
-	exit(0);
-}
-printf("KAESE4\n");
-
-printf("KAESE5 %s\n", gst_pad_get_name(pad));
-
-pad = gst_pad_get_peer(pad);
-
-printf("KAESE6 %s\n", gst_pad_get_name(pad));
-#endif
-
-gst_element_send_event              (gst_diskovideosink_data->player,
-                                                         event);
-//gst_pad_send_event (pad, event);
-
-/////////////
-
-structure = gst_structure_new ("application/x-gst-navigation",
-		"event", G_TYPE_STRING, "key-release",
-		"key", G_TYPE_STRING, "Return", NULL);
-
-event = gst_event_new_navigation (structure);
-gst_structure_free(structure);
-
-gst_element_send_event              (gst_diskovideosink_data->player,
-                                                         event);
-
-//gst_pad_send_event (pad, event);
-
-/*sleep(2);
-exit(0);
-*/
-
-#endif
-
 
 	// go in main loop
 	g_main_loop_run(gst_diskovideosink_data->loop);
@@ -329,12 +303,17 @@ exit(0);
 
 	//	gst_element_set_state (player, GST_STATE_NULL);
 	//	gst_object_unref (GST_OBJECT (player));
+	}
 
 	return NULL;
 }
 
 
 #endif
+
+
+
+
 #ifdef __HAVE_XINE__
 
 #ifdef __HAVE_DIRECTFB__
@@ -859,7 +838,7 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 
-    	gstInit();
+//    	gstInit();
 
 		if(window) {
 			this->userd.surf=window->getSurface();
@@ -1529,8 +1508,12 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
 
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-		pthread_t thread;
-		this->gst_diskovideosink_data.uri = currentMRL;
+
+    	gstInit(currentMRL);
+
+    	pthread_t thread;
+//		this->gst_diskovideosink_data.uri = currentMRL;
+
 		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, &this->gst_diskovideosink_data) == 0)
 			pthread_detach(thread);
 

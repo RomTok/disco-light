@@ -33,7 +33,8 @@
 #include <gst/gst.h>
 #include <unistd.h>
 
-int mmsGstPlay(const char *pipeline_description);
+GstElement *mmsGstInit(const char *pipeline_description);
+int mmsGstPlay(GstElement *pipelineX);
 
 
 #endif /* __MMSGST_H__ */

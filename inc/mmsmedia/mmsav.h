@@ -53,11 +53,15 @@ typedef struct {
 	//! gst main loop
     GMainLoop	*loop;
 
-    //! top-level gst element
+    //! top-level gst element, if using playbin
     GstElement	*player;
 
-    //! gst video sink element
+    //! gst video sink element, used together with playbin
     GstElement	*videosink;
+
+    //! top-level gst element, used instead of player and videosink
+    //! if uri has the prefix GST:// followed bei a complete gstreamer pipeline
+    GstElement	*pipeline;
 } GST_DISKOVIDEOSINK_DATA;
 
 
@@ -180,7 +184,7 @@ class MMSAV
 
 #ifdef __HAVE_GSTREAMER__
         //! init gstreamer
-        void gstInit();
+        void gstInit(const string uri);
 
         //! current mrl
 #endif
