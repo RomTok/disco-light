@@ -85,43 +85,43 @@ def PathIsDirCreateNone(key, value, env):
 if sconsVersion < (0,98,1):
 	opts = Options('disko.conf')
 	opts.AddOptions(
-    	PathOption('prefix',        'Installation directory', '/usr', PathOption.PathIsDirCreate),
-    	PathOption('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
-    	BoolOption('debug',         'Build with debug symbols and without optimize', False),
-    	BoolOption('messages',      'Build with logfile support', False),
-    	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
-    	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
+	PathOption('prefix',        'Installation directory', '/usr', PathOption.PathIsDirCreate),
+	PathOption('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
+	BoolOption('debug',         'Build with debug symbols and without optimize', False),
+	BoolOption('messages',      'Build with logfile support', False),
+	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
+	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
 	BoolOption('use_sse',       'Use SSE optimization', False),
-    	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
-    	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-    	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
-    	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
-    	BoolOption('enable_flash',  'Build with mmsflash support', False),
-    	BoolOption('enable_sip',    'Build with mmssip support', False),
-    	BoolOption('enable_mail',   'Build with email support', False),
-    	BoolOption('enable_tools',  'Build disko tools', False),
-    	BoolOption('enable_static', 'Create statically linked library', False),
-    	BoolOption('big_lib',       'Create one big shared library', False))
+	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
+	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
+	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
+	BoolOption('enable_flash',  'Build with mmsflash support', False),
+	BoolOption('enable_sip',    'Build with mmssip support', False),
+	BoolOption('enable_mail',   'Build with email support', False),
+	BoolOption('enable_tools',  'Build disko tools', False),
+	BoolOption('enable_static', 'Create statically linked library', False),
+	BoolOption('big_lib',       'Create one big shared library', False))
 else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
-    	PathVariable('prefix',        'Installation directory', '/usr', PathVariable.PathIsDirCreate),
-    	PathVariable('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
-    	BoolVariable('debug',         'Build with debug symbols and without optimize', False),
-    	BoolVariable('messages',      'Build with logfile support', False),
-    	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
-    	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
+	PathVariable('prefix',        'Installation directory', '/usr', PathVariable.PathIsDirCreate),
+	PathVariable('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
+	BoolVariable('debug',         'Build with debug symbols and without optimize', False),
+	BoolVariable('messages',      'Build with logfile support', False),
+	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
+	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
 	BoolVariable('use_sse',       'Use SSE optimization', False),
-    	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
-    	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-    	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
-    	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
-    	BoolVariable('enable_flash',  'Build with mmsflash support', False),
-    	BoolVariable('enable_sip',    'Build with mmssip support', False),
-    	BoolVariable('enable_mail',   'Build with email support', False),
-    	BoolVariable('enable_tools',  'Build disko tools', False),
-    	BoolVariable('enable_static', 'Create statically linked library', False),
-    	BoolVariable('big_lib',       'Create one big shared library', False))
+	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
+	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
+	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
+	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
+	BoolVariable('enable_flash',  'Build with mmsflash support', False),
+	BoolVariable('enable_sip',    'Build with mmssip support', False),
+	BoolVariable('enable_mail',   'Build with email support', False),
+	BoolVariable('enable_tools',  'Build disko tools', False),
+	BoolVariable('enable_static', 'Create statically linked library', False),
+	BoolVariable('big_lib',       'Create one big shared library', False))
 
 env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
@@ -442,9 +442,6 @@ if('x11' in env['graphics']):
 				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
 	
 # checks required if building mmsmedia
-conf.checkSimpleLib(['alsa'], 'alsa/version.h')
-conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
-
 if('xine' in env['media'] and not '-c' in sys.argv):
 	if('x11' in env['graphics']):
 		if not conf.checkSimpleLib(['libxine >= 1.1.15'], 'xine.h', required = 0):
@@ -484,10 +481,15 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 		env['media'].remove('gstreamer')
 	else:
 		conf.env['CCFLAGS'].append('-D__HAVE_GSTREAMER__')
+
+if(env['media']):
+	conf.checkSimpleLib(['alsa'], 'alsa/version.h')
+	conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
-	conf.checkSimpleLib(['sqlite3', 'pthread'],    'sqlite3.h')
+	conf.checkSimpleLib(['sqlite3'], 'sqlite3.h')
 	conf.env['CCFLAGS'].append('-D__ENABLE_SQLITE__')
 if 'mysql' in env['database']:
 	conf.checkSimpleLib(['mysql'],      'mysql.h')
@@ -513,8 +515,13 @@ else:
 	conf.env['mmscrypt'] = 0
 # checks required if building mmsflash
 if(env['enable_flash']):
-	conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
-	conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+	if conf.checkSimpleLib(['swfdec-0.9'], 'swfdec-0.9/swfdec/swfdec.h', required = 0):
+		conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+		swfdecversion='0.9'
+	else: 
+		if conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h'):
+			conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+			swfdecversion='0.8'
 
 
 # checks required if building mmssip
@@ -581,7 +588,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', gstreamer-0.10'
 
 	if env['enable_flash']:
-		disko_pc_requires += ', swfdec-0.8'
+		disko_pc_requires += ', swfdec-' + swfdecversion
 		if not env['big_lib']:
 			disko_pc_libs += ' -lmmsflash'
 
