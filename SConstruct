@@ -513,8 +513,13 @@ else:
 	conf.env['mmscrypt'] = 0
 # checks required if building mmsflash
 if(env['enable_flash']):
-	conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h')
-	conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+	if conf.checkSimpleLib(['swfdec-0.9'], 'swfdec-0.9/swfdec/swfdec.h', required = 0):
+		conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+		swfdecversion='0.9'
+	else: 
+		if conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h'):
+			conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+			swfdecversion='0.8'
 
 
 # checks required if building mmssip
@@ -581,7 +586,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', gstreamer-0.10'
 
 	if env['enable_flash']:
-		disko_pc_requires += ', swfdec-0.8'
+		disko_pc_requires += ', swfdec-' + swfdecversion
 		if not env['big_lib']:
 			disko_pc_libs += ' -lmmsflash'
 
