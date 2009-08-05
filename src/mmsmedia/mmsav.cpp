@@ -1239,6 +1239,13 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 
+    	// disable VIDEO LAYER - only for test
+    	MMSFBLayer *vl = mmsfbmanager.getVideoLayer();
+    	if (vl != mmsfbmanager.getGraphicsLayer())
+    		vl->releaseLayer();
+
+
+
     	// init gst pipe
     	this->gst_diskovideosink_data.pipeline = mmsGstInit(currentMRL, this->window->getSurface());
     	if (!this->gst_diskovideosink_data.pipeline)
