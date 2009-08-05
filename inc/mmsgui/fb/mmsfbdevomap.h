@@ -42,10 +42,11 @@ class MMSFBDevOmap : public MMSFBDev {
         	int						height;
         	MMSFBSurfacePixelFormat	pixelformat;
         	int						backbuffer;
-    	} MMSFBDevDavinciLayer;
-    	MMSFBDevDavinciLayer	osd;
-    	MMSFBDevDavinciLayer	vid0;
-    	MMSFBDevDavinciLayer	vid1;
+    	} MMSFBDevOmapLayer;
+    	MMSFBDevOmapLayer	osd0;
+    	MMSFBDevOmapLayer	vid;
+    	MMSFBDevOmapLayer	osd1;
+    	MMSFBDevOmapLayer	*primary;
 
     public:
         MMSFBDevOmap();

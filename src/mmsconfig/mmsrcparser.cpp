@@ -698,16 +698,20 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	if (this->graphics.backend == MMSFB_BE_FBDEV) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_DAVINCIFB:
-			if ((this->graphics.videolayer.id != 1)&&(this->graphics.videolayer.id != 2))
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
-			if (this->graphics.graphicslayer.id != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			if (this->graphics.videolayer.id != this->graphics.graphicslayer.id) {
+				if ((this->graphics.videolayer.id != 1)&&(this->graphics.videolayer.id != 2))
+					WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+				if (this->graphics.graphicslayer.id != 0)
+					WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
+			}
 			break;
 		case MMSFB_OT_OMAPFB:
-			if ((this->graphics.videolayer.id != 1)&&(this->graphics.videolayer.id != 2))
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
-			if (this->graphics.graphicslayer.id != 0)
-				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+			if (this->graphics.videolayer.id != this->graphics.graphicslayer.id) {
+				if (this->graphics.videolayer.id != 1)
+					WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+				if ((this->graphics.graphicslayer.id != 0)&&(this->graphics.graphicslayer.id != 2))
+					WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
+			}
 			break;
 		default:
 			break;
