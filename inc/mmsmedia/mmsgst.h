@@ -29,12 +29,35 @@
 #ifndef __MMSGST_H__
 #define __MMSGST_H__
 
+#ifdef __HAVE_GSTREAMER__
+
 #include <stdlib.h>
 #include <gst/gst.h>
 #include <unistd.h>
 
-GstElement *mmsGstInit(const char *pipeline_description);
-int mmsGstPlay(GstElement *pipelineX);
+#include "mmsgui/mmsgui.h"
 
+//! freeing any allocated gstreamer memory
+void mmsGstFree();
+
+//! create a pipeline
+GstElement *mmsGstLaunch(const char *pipeline_description);
+
+//! init a gstreamer pipeline with an uri and connect it to an surface
+GstElement *mmsGstInit(const string uri, MMSFBSurface *surface);
+
+//! init a gstreamer pipeline with an uri and connect it to an window
+GstElement *mmsGstInit(const string uri, MMSWindow *window);
+
+//! start playback of a pipeline
+bool mmsGstPlay(GstElement *pipelineX);
+
+//! send key press event to a pipeline
+bool mmsGstSendKeyPress(GstElement *pipeline, MMSKeySymbol key);
+
+//! send key release event to a pipeline
+bool mmsGstSendKeyRelease(GstElement *pipeline, MMSKeySymbol key);
+
+#endif
 
 #endif /* __MMSGST_H__ */

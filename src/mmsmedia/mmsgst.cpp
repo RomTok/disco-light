@@ -26,6 +26,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifdef __HAVE_GSTREAMER__
+
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -61,7 +63,6 @@ static gboolean caught_intr = FALSE;
 static GstElement *pipeline;
 static gboolean caught_error = FALSE;
 static gboolean tags = FALSE;
-static gboolean messages = FALSE;
 static gboolean is_live = FALSE;
 
 #ifndef DISABLE_FAULT_HANDLER
@@ -312,30 +313,6 @@ event_loop (GstElement * pipeline, gboolean blocking, GstState target_state)
     if (message == NULL)
       goto exit;
 
-    /* check if we need to dump messages to the console */
-    if (messages) {
-      const GstStructure *s;
-      guint32 seqnum;
-
-      seqnum = gst_message_get_seqnum (message);
-
-      s = gst_message_get_structure (message);
-
-      g_print ("Got Message #%" G_GUINT32_FORMAT
-              " from element \"%s\" (%s): ", seqnum,
-          GST_STR_NULL (GST_ELEMENT_NAME (GST_MESSAGE_SRC (message))),
-          gst_message_type_get_name (GST_MESSAGE_TYPE (message)));
-      if (s) {
-        gchar *sstr;
-
-        sstr = gst_structure_to_string (s);
-        g_print ("%s\n", sstr);
-        g_free (sstr);
-      } else {
-        g_print ("no message details\n");
-      }
-    }
-
     switch (GST_MESSAGE_TYPE (message)) {
       case GST_MESSAGE_NEW_CLOCK:
       {
@@ -513,51 +490,67 @@ exit:
   }
 }
 
-GstElement *mmsGstInit(const char *pipeline_description) {
-  GError *error = NULL;
-  gint res = 0;
 
-//  free (malloc (8));            /* -lefence */
+void mmsGstFree() {
+
+	if (pipeline) {
+	    GstState state, pending;
+
+	    fprintf (stderr, "Setting pipeline to NULL ...\n");
+		gst_element_set_state (pipeline, GST_STATE_NULL);
+		gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
+
+		fprintf (stderr, "FREEING pipeline ...\n");
+		gst_object_unref (pipeline);
+	}
+
+	gst_deinit ();
+}
+
+
+GstElement *mmsGstLaunch(const char *pipeline_description) {
+	GError *error = NULL;
+	gint res = 0;
 
 #ifdef ENABLE_NLS
-  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-  textdomain (GETTEXT_PACKAGE);
+	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	textdomain (GETTEXT_PACKAGE);
 #endif
 
-  if (!g_thread_supported ())
-    g_thread_init (NULL);
+	if (!g_thread_supported ())
+		g_thread_init (NULL);
 
-  gst_alloc_trace_set_flags_all (GST_ALLOC_TRACE_LIVE);
+	gst_alloc_trace_set_flags_all (GST_ALLOC_TRACE_LIVE);
 
 #ifndef DISABLE_FAULT_HANDLER
-  fault_setup ();
+	fault_setup ();
 
-  sigint_setup ();
-  play_signal_setup ();
+	sigint_setup ();
+	play_signal_setup ();
 #endif
 
-  // parse the pipeline description
-  pipeline = gst_parse_launch(pipeline_description, &error);
+	// parse the pipeline description
+	pipeline = gst_parse_launch(pipeline_description, &error);
 
-  if (!pipeline) {
-    if (error) {
-      fprintf (stderr, "ERROR: pipeline could not be constructed: %s.\n",
-          GST_STR_NULL (error->message));
-      g_error_free (error);
-    } else {
-      fprintf (stderr, "ERROR: pipeline could not be constructed.\n");
-    }
-    return NULL;
-  } else if (error) {
-    fprintf (stderr, "WARNING: erroneous pipeline: %s\n",
-        GST_STR_NULL (error->message));
-    g_error_free (error);
-    return NULL;
-  }
+	if (!pipeline) {
+		if (error) {
+			fprintf (stderr, "ERROR: pipeline could not be constructed: %s.\n",
+			GST_STR_NULL (error->message));
+			g_error_free (error);
+		} else {
+			fprintf (stderr, "ERROR: pipeline could not be constructed.\n");
+		}
+		return NULL;
+	} else if (error) {
+		fprintf (stderr, "WARNING: erroneous pipeline: %s\n",
+		GST_STR_NULL (error->message));
+		g_error_free (error);
+		return NULL;
+	}
 
 
-    GstState state, pending;
+    GstState state;
     GstStateChangeReturn ret;
 
     /* If the top-level object is not a pipeline, place it in a pipeline. */
@@ -575,107 +568,114 @@ GstElement *mmsGstInit(const char *pipeline_description) {
     ret = gst_element_set_state (pipeline, GST_STATE_PAUSED);
 
     switch (ret) {
-      case GST_STATE_CHANGE_FAILURE:
-        fprintf (stderr, "ERROR: Pipeline doesn't want to pause.\n");
-        res = -1;
-        event_loop (pipeline, FALSE, GST_STATE_VOID_PENDING);
-        goto end;
-      case GST_STATE_CHANGE_NO_PREROLL:
-        fprintf (stderr, "Pipeline is live and does not need PREROLL ...\n");
-        is_live = TRUE;
-        break;
-      case GST_STATE_CHANGE_ASYNC:
-        fprintf (stderr, "Pipeline is PREROLLING ...\n");
-        caught_error = event_loop (pipeline, TRUE, GST_STATE_PAUSED);
-        if (caught_error) {
-          fprintf (stderr, "ERROR: pipeline doesn't want to preroll.\n");
-          goto end;
-        }
-        state = GST_STATE_PAUSED;
-        /* fallthrough */
-      case GST_STATE_CHANGE_SUCCESS:
-        fprintf (stderr, "Pipeline is PREROLLED ...\n");
-        break;
+    case GST_STATE_CHANGE_FAILURE:
+		fprintf (stderr, "ERROR: Pipeline doesn't want to pause.\n");
+		res = -1;
+		event_loop (pipeline, FALSE, GST_STATE_VOID_PENDING);
+		goto end;
+    case GST_STATE_CHANGE_NO_PREROLL:
+		fprintf (stderr, "Pipeline is live and does not need PREROLL ...\n");
+		is_live = TRUE;
+		break;
+    case GST_STATE_CHANGE_ASYNC:
+		fprintf (stderr, "Pipeline is PREROLLING ...\n");
+		caught_error = event_loop (pipeline, TRUE, GST_STATE_PAUSED);
+		if (caught_error) {
+		  fprintf (stderr, "ERROR: pipeline doesn't want to preroll.\n");
+		  goto end;
+		}
+		state = GST_STATE_PAUSED;
+		// fallthrough
+	case GST_STATE_CHANGE_SUCCESS:
+		fprintf (stderr, "Pipeline is PREROLLED ...\n");
+		break;
     }
 
-
+    // pipe successfully created
     return pipeline;
 
-#ifdef ssfs
-    caught_error = event_loop (pipeline, FALSE, GST_STATE_PLAYING);
-
-    if (caught_error) {
-      fprintf (stderr, "ERROR: pipeline doesn't want to preroll.\n");
-    } else {
-      GstClockTime tfthen, tfnow;
-      GstClockTimeDiff diff;
-
-      fprintf (stderr, "Setting pipeline to PLAYING ...\n");
-      if (gst_element_set_state (pipeline,
-              GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE) {
-        GstMessage *err_msg;
-        GstBus *bus;
-
-        fprintf (stderr, "ERROR: pipeline doesn't want to play.\n");
-        bus = gst_element_get_bus (pipeline);
-        if ((err_msg = gst_bus_poll (bus, GST_MESSAGE_ERROR, 0))) {
-          GError *gerror;
-          gchar *debug;
-
-          gst_message_parse_error (err_msg, &gerror, &debug);
-          gst_object_default_error (GST_MESSAGE_SRC (err_msg), gerror, debug);
-          gst_message_unref (err_msg);
-          g_error_free (gerror);
-          g_free (debug);
-        }
-        gst_object_unref (bus);
-        res = -1;
-        goto end;
-      }
-
-      tfthen = gst_util_get_timestamp ();
-      caught_error = event_loop (pipeline, TRUE, GST_STATE_PLAYING);
-      tfnow = gst_util_get_timestamp ();
-
-      diff = GST_CLOCK_DIFF (tfthen, tfnow);
-
-      g_print ("Execution ended after %" G_GUINT64_FORMAT " ns.\n", diff);
-    }
-
-    /* iterate mainloop to process pending stuff */
-    while (g_main_context_iteration (NULL, FALSE));
-
-    fprintf (stderr, "Setting pipeline to PAUSED ...\n");
-    gst_element_set_state (pipeline, GST_STATE_PAUSED);
-    if (!caught_error)
-      gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
-    fprintf (stderr, "Setting pipeline to READY ...\n");
-    gst_element_set_state (pipeline, GST_STATE_READY);
-    gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
-#endif
-
-
 end:
-    fprintf (stderr, "Setting pipeline to NULL ...\n");
-    gst_element_set_state (pipeline, GST_STATE_NULL);
-    gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
-
-	fprintf (stderr, "FREEING pipeline ...\n");
-	gst_object_unref (pipeline);
-
-	gst_deinit ();
+	mmsGstFree();
 
 	return NULL;
 }
 
-int mmsGstPlay(GstElement *pipelineX) {
-	  gint res = 0;
 
 
-	  pipeline = pipelineX;
+
+GstElement *mmsGstInit(const string uri, MMSFBSurface *surface) {
+
+	// initialize gstreamer
+	gst_init(NULL, NULL);
+	if (uri == "")
+		return NULL;
+
+	if (strToUpr(uri.substr(0,6)) == "GST://") {
+		// the uri is an gstreamer pipeline
+		// so we use the pipeline and do NOT use playbin with disko video sink
+		return mmsGstLaunch(uri.substr(6).c_str());
+	}
+	else {
+		// create top-level pipe element
+		pipeline = gst_element_factory_make("playbin", "player");
+
+		// get the diskovideosink element
+		GstElement *videosink = gst_element_factory_make("diskovideosink", "diskovideosink");
+
+		// set the surface to the diskovideosink element
+		g_object_set(videosink, "surface", surface, NULL);
+
+		// set videosink to the player
+		g_object_set(G_OBJECT(pipeline), "video-sink", videosink, NULL);
+
+		// set the uri to the player
+		g_object_set(G_OBJECT(pipeline), "uri", uri.c_str(), NULL);
+
+		return pipeline;
+	}
+}
+
+GstElement *mmsGstInit(const string uri, MMSWindow *window) {
+
+	// initialize gstreamer
+	gst_init(NULL, NULL);
+	if (uri == "")
+		return NULL;
+
+	if (strToUpr(uri.substr(0,6)) == "GST://") {
+		// the uri is an gstreamer pipeline
+		// so we use the pipeline and do NOT use playbin with disko video sink
+		return mmsGstLaunch(uri.substr(6).c_str());
+	}
+	else {
+		// create top-level pipe element
+		pipeline = gst_element_factory_make("playbin", "player");
+
+		// get the diskovideosink element
+		GstElement *videosink = gst_element_factory_make("diskovideosink", "diskovideosink");
+
+		// set the surface to the diskovideosink element
+		// note: if using a window, the diskovideosink can handle keyboard,
+		//       mouse, touchscreen inputs which are delivered to the MMSWindow
+		g_object_set(videosink, "window", window, NULL);
+
+		// set videosink to the player
+		g_object_set(G_OBJECT(pipeline), "video-sink", videosink, NULL);
+
+		// set the uri to the player
+		g_object_set(G_OBJECT(pipeline), "uri", uri.c_str(), NULL);
+
+		return pipeline;
+	}
+}
 
 
-	    GstState state, pending;
+bool mmsGstPlay(GstElement *pipelineX) {
+
+	pipeline = pipelineX;
+
+
+	GstState state, pending;
 
 
     caught_error = event_loop (pipeline, FALSE, GST_STATE_PLAYING);
@@ -705,8 +705,10 @@ int mmsGstPlay(GstElement *pipelineX) {
           g_free (debug);
         }
         gst_object_unref (bus);
-        res = -1;
-        goto end;
+
+        mmsGstFree();
+
+        return false;
       }
 
       tfthen = gst_util_get_timestamp ();
@@ -729,16 +731,53 @@ int mmsGstPlay(GstElement *pipelineX) {
     gst_element_set_state (pipeline, GST_STATE_READY);
     gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
 
-end:
-	fprintf (stderr, "Setting pipeline to NULL ...\n");
-	gst_element_set_state (pipeline, GST_STATE_NULL);
-	gst_element_get_state (pipeline, &state, &pending, GST_CLOCK_TIME_NONE);
-
-	fprintf (stderr, "FREEING pipeline ...\n");
-	gst_object_unref (pipeline);
-
-	gst_deinit ();
-
-	return res;
+    // playback is finished
+    return true;
 }
+
+
+bool mmsGstSendKeyPress(GstElement *pipeline, MMSKeySymbol key) {
+	if (!pipeline)
+		return false;
+
+	// construct event
+	GstStructure *structure =
+		gst_structure_new(	"application/x-gst-navigation",
+							"event",	G_TYPE_STRING,	"key-press",
+							"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
+							NULL);
+	if (!structure)
+		return false;
+	GstEvent *event = gst_event_new_navigation(structure);
+	gst_structure_free(structure);
+	if (!event)
+		return false;
+
+	// send event
+	return gst_element_send_event(pipeline, event);
+}
+
+bool mmsGstSendKeyRelease(GstElement *pipeline, MMSKeySymbol key) {
+	if (!pipeline)
+		return false;
+
+	// construct event
+	GstStructure *structure =
+		gst_structure_new(	"application/x-gst-navigation",
+							"event",	G_TYPE_STRING,	"key-release",
+							"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
+							NULL);
+	if (!structure)
+		return false;
+	GstEvent *event = gst_event_new_navigation(structure);
+	gst_structure_free(structure);
+	if (!event)
+		return false;
+
+	// send event
+	return gst_element_send_event(pipeline, event);
+}
+
+
+#endif
 

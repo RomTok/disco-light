@@ -50,17 +50,7 @@ typedef struct {
 	//! uri which is to play
 	string		uri;
 
-	//! gst main loop
-    GMainLoop	*loop;
-
-    //! top-level gst element, if using playbin
-    GstElement	*player;
-
-    //! gst video sink element, used together with playbin
-    GstElement	*videosink;
-
-    //! top-level gst element, used instead of player and videosink
-    //! if uri has the prefix GST:// followed bei a complete gstreamer pipeline
+    //! top-level gst element
     GstElement	*pipeline;
 } GST_DISKOVIDEOSINK_DATA;
 

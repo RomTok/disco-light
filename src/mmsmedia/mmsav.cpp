@@ -33,9 +33,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-//#include <gst/interfaces/navigation.h>
-
 #include "mmsmedia/mmsgst.h"
 
 
@@ -44,270 +41,17 @@ MMS_CREATEERROR(MMSAVError);
 
 #ifdef __HAVE_GSTREAMER__
 
-//#ifdef _old_code_
-// old code which uses fakesink element
-// this code is only for testing purpose
-static void cb_handoff(GstElement *fakesrc, GstBuffer *buffer, GstPad *pad, gpointer user_data) {
-	MMSRAW_USERDATA *userd = (MMSRAW_USERDATA *)user_data;
-	GstCaps      	*caps = gst_pad_get_negotiated_caps(pad);
-	guint32			frame_format;
-	gint			frame_width, frame_height;
-	gint			frame_rate_numerator, frame_rate_denominator;
-	gint			frame_aspectratio_numerator, frame_aspectratio_denominator;
-	int				frame_aspect;
-
-	// caps set?
-	if (!caps) return;
-
-//g_print ("CAPS: %s\n", gst_caps_to_string (caps));
-
-	// get caps structure
-	GstStructure *caps_st;
-	caps_st = gst_caps_get_structure(caps, 0);
-
-	// get frame infos
-	if    (!gst_structure_get_int(caps_st, "width", &frame_width)
-		|| !gst_structure_get_int(caps_st, "height", &frame_height)
-		|| !gst_structure_get_fourcc(caps_st, "format", &frame_format)
-		|| !gst_structure_get_fraction(caps_st, "framerate", &frame_rate_numerator, &frame_rate_denominator)
-		|| !gst_structure_get_fraction(caps_st, "pixel-aspect-ratio", &frame_aspectratio_numerator, &frame_aspectratio_denominator))
-		return;
-
-	// calc frame aspect
-	frame_aspect = (frame_width * (frame_aspectratio_numerator << 16)) / (frame_aspectratio_denominator * frame_height);
-
-	// get access to the buffer
-	unsigned char *frame_buffer = (unsigned char *)GST_BUFFER_DATA(buffer);
-
-	// all infos available, checking format
-	if (userd->lastaspect != frame_aspect) {
-		// format changed
-		printf("format change %f\n", ((double)frame_aspect) / 0x10000);
-		int newW = (userd->size.h * frame_aspect) >> 16;
-		int newH = (userd->size.w * frame_aspect) >> 16;
-
-		// ratio has changed
-		if (frame_aspect < 0x10000) {
-			if(newW > userd->size.w) {
-				userd->dest.w = userd->size.w;
-				userd->dest.h = newH;
-			}
-			else {
-				userd->dest.w = newW;
-				userd->dest.h = userd->size.w;
-			}
-			userd->dest.x = (userd->size.w - userd->dest.w) / 2;
-			userd->dest.y = 0;
-		} else {
-			if(newH > userd->size.h) {
-				userd->dest.h = userd->size.h;
-				userd->dest.w = newW;
-			}
-			else {
-				userd->dest.w = userd->size.w;
-				userd->dest.h = newH;
-			}
-			userd->dest.x = (userd->size.w - userd->dest.w) / 2;;
-			userd->dest.y = (userd->size.h - userd->dest.h) / 2;
-		}
-
-		userd->lastaspect  = frame_aspect;
-
-		// clear surface
-		userd->surf->clear();
-		userd->surf->flip(NULL);
-		userd->surf->clear();
-
-		userd->dest.w &= ~0x01;
-		userd->dest.h &= ~0x01;
-		userd->dest.x &= ~0x01;
-		userd->dest.y &= ~0x01;
-
-		// delete iterim surface
-		if (userd->interim) {
-			delete userd->interim;
-			userd->interim = NULL;
-		}
-	}
-
-	if (userd->surf_pixelformat == MMSFB_PF_YV12) {
-		// the destination has YV12 pixelformat
-/*		if (frame_format == XINE_VORAW_RGB) {
-			// we get RGB24 data
-			if (!userd->interim) {
-				// allocate interim buffer for RGB24 to YV12 convertion
-				userd->interim = new MMSFBSurface(frame_width, frame_height, MMSFB_PF_YV12);
-			}
-		}*/
-
-		if (userd->interim) {
-			// source is RGB24
-/*			userd->interim->blitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
-							    frame_width, frame_height, NULL, 0, 0);
-			userd->surf->stretchBlit(userd->interim, NULL, &userd->dest);*/
-
-		} else {
-			// prepare source buffer
-			MMSFBExternalSurfaceBuffer buf;
-			buf.ptr = frame_buffer;
-			buf.pitch = frame_width;
-			buf.ptr2 = NULL;
-			buf.pitch2 = 0;
-			buf.ptr3 = NULL;
-			buf.pitch3 = 0;
-
-			if (frame_format == GST_MAKE_FOURCC ('I', '4', '2', '0')) {
-				// source is I420
-				userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_I420,
-											   frame_width, frame_height, NULL, &userd->dest);
-			}
-			else {
-				// source is YV12
-				userd->surf->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
-											   frame_width, frame_height, NULL, &userd->dest);
-			}
-		}
-	}
-	else {
-/*
-		// destination with any other pixelformat
-		if (frame_format == XINE_VORAW_YV12) {
-			// we get YV12 data
-			if (!userd->interim) {
-				// allocate interim buffer for YV12 stretch blit
-				userd->interim = new MMSFBSurface(userd->dest.w, userd->dest.h, MMSFB_PF_YV12);
-				if (userd->interim) userd->interim->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
-			}
-		}
-
-		if (userd->interim) {
-			// source is YV12
-			MMSFBExternalSurfaceBuffer buf;
-			buf.ptr = data0;
-			buf.pitch = frame_width;
-			buf.ptr2 = data1;
-			buf.pitch2 = frame_width / 2;
-			buf.ptr3 = data2;
-			buf.pitch3 = frame_width / 2;
-			MMSFBRectangle mydest = userd->dest;
-			mydest.x = 0;
-			mydest.y = 0;
-
-			userd->interim->stretchBlitBuffer(&buf, MMSFB_PF_YV12,
-									   frame_width, frame_height, NULL, &mydest);
-			userd->surf->blit(userd->interim, NULL, userd->dest.x, userd->dest.y);
-
-		} else {
-			// source is RGB24
-			userd->surf->stretchBlitBuffer(data0, frame_width*3, MMSFB_PF_RGB24,
-										   frame_width, frame_height, NULL, &userd->dest);
-		}*/
-	}
-
-
-	userd->surf->flip(NULL);
-}
-
-//#endif /* _old_code_ */
-
-
-
-
-
-void MMSAV::gstInit(const string uri) {
-
-	// initialize gstreamer
-	gst_init(NULL, NULL);
-	this->gst_diskovideosink_data.loop = g_main_loop_new(NULL, FALSE);
-
-	this->gst_diskovideosink_data.player = NULL;
-	this->gst_diskovideosink_data.pipeline = NULL;
-
-	if (strToUpr(uri.substr(0,6)) == "GST://") {
-		// the uri is an gstreamer pipeline
-		// so we use the pipeline and do NOT use playbin with our video sink
-		this->gst_diskovideosink_data.pipeline = mmsGstInit(uri.substr(6).c_str());
-	}
-	else {
-
-//TODO checking for     GST://
-/*GstElement *pipeline = mmsGstInit("dvdnavsrc ! dvddemux name=demux .current_video ! queue !  mpeg2dec ! xvimagesink  demux.current_audio ! queue ! a52dec ! audioconvert ! alsasink");
-if (pipeline)
-	mmsGstPlay(pipeline);
-sleep(10);
-exit(0);
-
-//this->gst_diskovideosink_data.player = pipeline;
-return;
-*/
-
-
-	// create top-level pipe element
-	this->gst_diskovideosink_data.player = gst_element_factory_make("playbin", "player");
-
-
-	if (1) {
-		// get the diskovideosink element
-		this->gst_diskovideosink_data.videosink = gst_element_factory_make("diskovideosink", "diskovideosink");
-
-		// code which sets the surface to the diskovideosink element
-//		g_object_set(fakesink, "surface", this->window->getSurface(), NULL);
-
-		// set the window to the diskovideosink element
-		// note: using the window is better than using the surface
-		//       because diskovideosink can handle keyboard, mouse, touchscreen inputs
-		//       which are delivered to the MMSWindow
-		g_object_set(this->gst_diskovideosink_data.videosink, "window", this->window, NULL);
-		this->gst_diskovideosink_data.uri = uri;
-	}
-//#ifdef _old_code_
-	else {
-		// old code which uses fakesink element
-		// this code is only for testing purpose
-		this->gst_diskovideosink_data.videosink = gst_element_factory_make("fakesink", "fakesink");
-		g_object_set(G_OBJECT(this->gst_diskovideosink_data.videosink), "signal-handoffs", TRUE, NULL);
-		g_signal_connect(this->gst_diskovideosink_data.videosink, "handoff", G_CALLBACK (cb_handoff), &(this->userd));
-	}
-//#endif
-
-
-	// set videosink to the player
-	g_object_set(G_OBJECT(this->gst_diskovideosink_data.player), "video-sink", this->gst_diskovideosink_data.videosink, NULL);
-
-	// set the uri to the player
-	g_object_set(G_OBJECT(this->gst_diskovideosink_data.player), "uri", uri.c_str(), NULL);
-	}
-}
-
-
 static void* gstPlayRoutine(GST_DISKOVIDEOSINK_DATA	*gst_diskovideosink_data) {
 
 	printf("uri %s\n", gst_diskovideosink_data->uri.c_str());
 
-
 	if (gst_diskovideosink_data->pipeline) {
-		// using a raw gstreamer pipe
+		// playing gstreamer pipe
 		mmsGstPlay(gst_diskovideosink_data->pipeline);
-	}
-	else {
-
-	// set the uri to the player
-//	g_object_set(G_OBJECT(gst_diskovideosink_data->player), "uri", gst_diskovideosink_data->uri.c_str(), NULL);
-
-	// switch to playing state
-	gst_element_set_state(gst_diskovideosink_data->player, GST_STATE_PLAYING);
-
-	// go in main loop
-	g_main_loop_run(gst_diskovideosink_data->loop);
-
-
-	//	gst_element_set_state (player, GST_STATE_NULL);
-	//	gst_object_unref (GST_OBJECT (player));
 	}
 
 	return NULL;
 }
-
 
 #endif
 
@@ -701,7 +445,7 @@ typedef struct {
 	pthread_mutex_t	*lock;
 } internalStreamData;
 
-static void* playRoutine(void *data) {
+static void* xinePlayRoutine(void *data) {
 	if(!data) return NULL;
 
 	internalStreamData *streamData = (internalStreamData*)data;
@@ -837,25 +581,8 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
-
-//    	gstInit();
-
-		if(window) {
-			this->userd.surf=window->getSurface();
-			this->userd.surf->setBlittingFlags(MMSFB_BLIT_ANTIALIASING);
-			this->userd.surf->getPixelFormat(&this->userd.surf_pixelformat);
-			int w,h;
-			this->userd.surf->getSize(&w,&h);
-			this->userd.size.x=0;
-			this->userd.size.y=0;
-			this->userd.size.w=w;
-			this->userd.size.h=h;
-			this->userd.lastaspect=0.0;
-			this->userd.interim = NULL;
-			this->userd.overlayInterim = NULL;
-			this->userd.numOverlays = 0;
-		}
-
+    	// nothing to do, because the pipe will be created when starting playback
+    	// and then we have only to put keyboard, mouse, touchscreen events to the pipe
 #endif
     }
     else {
@@ -1022,6 +749,8 @@ MMSAV::MMSAV(MMSMEDIABackend _backend) :
     switch(this->backend) {
 		case MMSMEDIA_BE_GST:
 #ifdef __HAVE_GSTREAMER__
+			gst_diskovideosink_data.uri = "";
+			gst_diskovideosink_data.pipeline = NULL;
 			break;
 #else
 			cerr << "MMSAV: Disko was build without gstreamer support. Switching to xine." << endl;
@@ -1061,6 +790,7 @@ MMSAV::~MMSAV() {
 
 	if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
+		mmsGstFree();
 #endif
     }
     else {
@@ -1509,20 +1239,23 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 
-    	gstInit(currentMRL);
+    	// init gst pipe
+    	this->gst_diskovideosink_data.pipeline = mmsGstInit(currentMRL, this->window->getSurface());
+    	if (!this->gst_diskovideosink_data.pipeline)
+    		return;
+    	this->gst_diskovideosink_data.uri = currentMRL;
 
+    	// play the pipe
     	pthread_t thread;
-//		this->gst_diskovideosink_data.uri = currentMRL;
-
 		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, &this->gst_diskovideosink_data) == 0)
 			pthread_detach(thread);
 
-
-/*sleep(30);
+/*
+sleep(30);
 
 sendKeyPress(MMSKEY_RETURN);
-sendKeyRelease(MMSKEY_RETURN);*/
-
+sendKeyRelease(MMSKEY_RETURN);
+*/
 
 #endif
     }
@@ -1541,10 +1274,10 @@ sendKeyRelease(MMSKEY_RETURN);*/
 		streamData->status = &(this->status);
 		streamData->mrl    = mrl.c_str();
 		streamData->lock   = &(this->lock);
-		if(pthread_create(&thread, NULL, playRoutine, streamData) == 0)
+		if(pthread_create(&thread, NULL, xinePlayRoutine, streamData) == 0)
 			pthread_detach(thread);
 		else
-			playRoutine(streamData);
+			xinePlayRoutine(streamData);
 
 #endif
     }
@@ -2266,18 +1999,7 @@ bool MMSAV::sendKeyPress(MMSKeySymbol key) {
 	switch(this->backend) {
 	case MMSMEDIA_BE_GST: {
 #ifdef __HAVE_GSTREAMER__
-		GstStructure *structure =
-			gst_structure_new(	"application/x-gst-navigation",
-								"event",	G_TYPE_STRING,	"key-press",
-								"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
-								NULL);
-		if (!structure)
-			return false;
-		GstEvent *event = gst_event_new_navigation(structure);
-		gst_structure_free(structure);
-		if (!event)
-			return false;
-		return gst_element_send_event(gst_diskovideosink_data.player, event);
+		return mmsGstSendKeyPress(gst_diskovideosink_data.pipeline, key);
 #endif
 		break;
 	}
@@ -2300,18 +2022,7 @@ bool MMSAV::sendKeyRelease(MMSKeySymbol key) {
 	switch(this->backend) {
 	case MMSMEDIA_BE_GST: {
 #ifdef __HAVE_GSTREAMER__
-		GstStructure *structure =
-			gst_structure_new(	"application/x-gst-navigation",
-								"event",	G_TYPE_STRING,	"key-release",
-								"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
-								NULL);
-		if (!structure)
-			return false;
-		GstEvent *event = gst_event_new_navigation(structure);
-		gst_structure_free(structure);
-		if (!event)
-			return false;
-		return gst_element_send_event(gst_diskovideosink_data.player, event);
+		return mmsGstSendKeyRelease(gst_diskovideosink_data.pipeline, key);
 #endif
 		break;
 	}
