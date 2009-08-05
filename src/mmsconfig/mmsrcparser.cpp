@@ -705,14 +705,14 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 					WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			}
 			break;
-		case MMSFB_OT_OMAPFB:
+/*		case MMSFB_OT_OMAPFB:
 			if (this->graphics.videolayer.id != this->graphics.graphicslayer.id) {
 				if (this->graphics.videolayer.id != 1)
 					WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "1", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
 				if ((this->graphics.graphicslayer.id != 0)&&(this->graphics.graphicslayer.id != 2))
 					WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0, 2", "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
 			}
-			break;
+			break;*/
 		default:
 			break;
 		}
@@ -748,7 +748,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB16))
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"DAVINCIFB\"");
 			break;
-		case MMSFB_OT_OMAPFB:
+/*		case MMSFB_OT_OMAPFB:
 			if   ((this->graphics.videolayer.pixelformat != MMSFB_PF_YUY2)
 				&&(this->graphics.videolayer.pixelformat != MMSFB_PF_RGB32))
 				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_1, "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
@@ -756,7 +756,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32)
 				&&(this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB16))
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_0, "-> this depends on backend=\"FBDEV\", outputtype=\"OMAPFB\"");
-			break;
+			break;*/
 		default:
 			break;
 		}
