@@ -548,9 +548,8 @@ void MMSAV::xineInit() {
 
 
 bool MMSAV::onHandleInput(MMSWindow *window, MMSInputEvent *input) {
-/*	sendKeyPress(MMSKeySymbol key) printf("PAUL\n");
-exit(0);*/
-	return false;
+	// send the input event to the media backend
+	return sendEvent(input);
 }
 
 /**
@@ -1256,13 +1255,6 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     	pthread_t thread;
 		if(pthread_create(&thread, NULL, (void* (*)(void*))gstPlayRoutine, &this->gst_diskovideosink_data) == 0)
 			pthread_detach(thread);
-
-/*
-sleep(30);
-
-sendKeyPress(MMSKEY_RETURN);
-sendKeyRelease(MMSKEY_RETURN);
-*/
 
 #endif
     }
@@ -2043,11 +2035,98 @@ bool MMSAV::sendKeyRelease(MMSKeySymbol key) {
 		break;
 	}
 
-	throw MMSAVError(0, "MMSAV::sendKeyPress() called but media backend does not match supported backends");
+	throw MMSAVError(0, "MMSAV::sendKeyRelease() called but media backend does not match supported backends");
 
 	return false;
 }
 
+bool MMSAV::sendButtonPress(int posx, int posy) {
+	switch(this->backend) {
+	case MMSMEDIA_BE_GST: {
+#ifdef __HAVE_GSTREAMER__
+		return mmsGstSendButtonPress(gst_diskovideosink_data.pipeline, posx, posy);
+#endif
+		break;
+	}
+	case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		return false;
+#endif
+		break;
+	default:
+		// shouldn't be reached
+		break;
+	}
+
+	throw MMSAVError(0, "MMSAV::sendButtonPress() called but media backend does not match supported backends");
+
+	return false;
+}
+
+bool MMSAV::sendButtonRelease(int posx, int posy) {
+	switch(this->backend) {
+	case MMSMEDIA_BE_GST: {
+#ifdef __HAVE_GSTREAMER__
+		return mmsGstSendButtonRelease(gst_diskovideosink_data.pipeline, posx, posy);
+#endif
+		break;
+	}
+	case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		return false;
+#endif
+		break;
+	default:
+		// shouldn't be reached
+		break;
+	}
+
+	throw MMSAVError(0, "MMSAV::sendButtonRelease() called but media backend does not match supported backends");
+
+	return false;
+}
+
+bool MMSAV::sendAxisMotion(int posx, int posy) {
+	switch(this->backend) {
+	case MMSMEDIA_BE_GST: {
+#ifdef __HAVE_GSTREAMER__
+		return mmsGstSendAxisMotion(gst_diskovideosink_data.pipeline, posx, posy);
+#endif
+		break;
+	}
+	case MMSMEDIA_BE_XINE:
+#ifdef __HAVE_XINE__
+		return false;
+#endif
+		break;
+	default:
+		// shouldn't be reached
+		break;
+	}
+
+	throw MMSAVError(0, "MMSAV::sendAxisMotion() called but media backend does not match supported backends");
+
+	return false;
+}
+
+bool MMSAV::sendEvent(MMSInputEvent *input) {
+	// fire input events to the media backend
+	switch (input->type) {
+	case MMSINPUTEVENTTYPE_KEYPRESS:
+		return sendKeyPress(input->key);
+	case MMSINPUTEVENTTYPE_KEYRELEASE:
+		return sendKeyRelease(input->key);
+	case MMSINPUTEVENTTYPE_BUTTONPRESS:
+		return sendButtonPress(input->posx, input->posy);
+	case MMSINPUTEVENTTYPE_BUTTONRELEASE:
+		return sendButtonRelease(input->posx, input->posy);
+	case MMSINPUTEVENTTYPE_AXISMOTION:
+		return sendAxisMotion(input->posx, input->posy);
+	default:
+		return false;
+		break;
+	}
+}
 
 /**
  * Returns true if stream contains a video stream.

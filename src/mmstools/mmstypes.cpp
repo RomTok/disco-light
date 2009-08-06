@@ -379,7 +379,7 @@ const char *convertMMSKeySymbolToXKeysymString(MMSKeySymbol key) {
 	case MMSKEY_ASTERISK:		return "Multiply";
 	case MMSKEY_PLUS_SIGN:		return "Add";
 	case MMSKEY_COLON:			return "colon";
-	default:					return "unknown";
+	default:					return "";
 	}
 }
 

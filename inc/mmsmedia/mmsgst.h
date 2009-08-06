@@ -58,6 +58,15 @@ bool mmsGstSendKeyPress(GstElement *pipeline, MMSKeySymbol key);
 //! send key release event to a pipeline
 bool mmsGstSendKeyRelease(GstElement *pipeline, MMSKeySymbol key);
 
+//! send button press event to a pipeline
+bool mmsGstSendButtonPress(GstElement *pipeline, int posx, int posy);
+
+//! send button release event to a pipeline
+bool mmsGstSendButtonRelease(GstElement *pipeline, int posx, int posy);
+
+//! send axis motion event to a pipeline
+bool mmsGstSendAxisMotion(GstElement *pipeline, int posx, int posy);
+
 #endif
 
 #endif /* __MMSGST_H__ */

@@ -740,16 +740,20 @@ bool mmsGstSendKeyPress(GstElement *pipeline, MMSKeySymbol key) {
 	if (!pipeline)
 		return false;
 
+	// if keysym string is empty, do nothing but return success
+	const char *ks = convertMMSKeySymbolToXKeysymString(key);
+	if (!*ks)
+		return true;
+
 	// construct event
 	GstStructure *structure =
 		gst_structure_new(	"application/x-gst-navigation",
 							"event",	G_TYPE_STRING,	"key-press",
-							"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
+							"key",		G_TYPE_STRING,	ks,
 							NULL);
 	if (!structure)
 		return false;
 	GstEvent *event = gst_event_new_navigation(structure);
-	gst_structure_free(structure);
 	if (!event)
 		return false;
 
@@ -761,16 +765,86 @@ bool mmsGstSendKeyRelease(GstElement *pipeline, MMSKeySymbol key) {
 	if (!pipeline)
 		return false;
 
+	// if keysym string is empty, do nothing but return success
+	const char *ks = convertMMSKeySymbolToXKeysymString(key);
+	if (!*ks)
+		return true;
+
 	// construct event
 	GstStructure *structure =
 		gst_structure_new(	"application/x-gst-navigation",
 							"event",	G_TYPE_STRING,	"key-release",
-							"key",		G_TYPE_STRING,	convertMMSKeySymbolToXKeysymString(key),
+							"key",		G_TYPE_STRING,	ks,
 							NULL);
 	if (!structure)
 		return false;
 	GstEvent *event = gst_event_new_navigation(structure);
-	gst_structure_free(structure);
+	if (!event)
+		return false;
+
+	// send event
+	return gst_element_send_event(pipeline, event);
+}
+
+bool mmsGstSendButtonPress(GstElement *pipeline, int posx, int posy) {
+	if (!pipeline)
+		return false;
+
+	// construct event
+	GstStructure *structure =
+		gst_structure_new(	"application/x-gst-navigation",
+							"event",	G_TYPE_STRING,	"mouse-button-press",
+							"button",	G_TYPE_INT,		0,
+							"pointer_x",G_TYPE_DOUBLE,	(double)posx,
+							"pointer_y",G_TYPE_DOUBLE,	(double)posy,
+							NULL);
+	if (!structure)
+		return false;
+	GstEvent *event = gst_event_new_navigation(structure);
+	if (!event)
+		return false;
+
+	// send event
+	return gst_element_send_event(pipeline, event);
+}
+
+bool mmsGstSendButtonRelease(GstElement *pipeline, int posx, int posy) {
+	if (!pipeline)
+		return false;
+
+	// construct event
+	GstStructure *structure =
+		gst_structure_new(	"application/x-gst-navigation",
+							"event",	G_TYPE_STRING,	"mouse-button-release",
+							"button",	G_TYPE_INT,		0,
+							"pointer_x",G_TYPE_DOUBLE,	(double)posx,
+							"pointer_y",G_TYPE_DOUBLE,	(double)posy,
+							NULL);
+	if (!structure)
+		return false;
+	GstEvent *event = gst_event_new_navigation(structure);
+	if (!event)
+		return false;
+
+	// send event
+	return gst_element_send_event(pipeline, event);
+}
+
+bool mmsGstSendAxisMotion(GstElement *pipeline, int posx, int posy) {
+	if (!pipeline)
+		return false;
+
+	// construct event
+	GstStructure *structure =
+		gst_structure_new(	"application/x-gst-navigation",
+							"event",	G_TYPE_STRING,	"mouse-move",
+							"button",	G_TYPE_INT,		0,
+							"pointer_x",G_TYPE_DOUBLE,	(double)posx,
+							"pointer_y",G_TYPE_DOUBLE,	(double)posy,
+							NULL);
+	if (!structure)
+		return false;
+	GstEvent *event = gst_event_new_navigation(structure);
 	if (!event)
 		return false;
 

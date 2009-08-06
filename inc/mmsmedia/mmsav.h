@@ -204,8 +204,14 @@ class MMSAV
         void setStatus(int status);
         void sendEvent(int type, void *data = NULL, int datalen = 0);
 
+
         bool sendKeyPress(MMSKeySymbol key);
         bool sendKeyRelease(MMSKeySymbol key);
+        bool sendButtonPress(int posx, int posy);
+        bool sendButtonRelease(int posx, int posy);
+        bool sendAxisMotion(int posx, int posy);
+
+        bool sendEvent(MMSInputEvent *input);
 
         bool onHandleInput(MMSWindow *window, MMSInputEvent *input);
 
