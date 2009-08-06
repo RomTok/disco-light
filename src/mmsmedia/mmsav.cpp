@@ -1238,6 +1238,10 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 
+
+//TODO:new version of MMSAV
+//TODO:version with playbin without disko video sink and without GST://
+
     	// disable VIDEO LAYER - only for test
     	MMSFBLayer *vl = mmsfbmanager.getVideoLayer();
     	if (vl != mmsfbmanager.getGraphicsLayer())
