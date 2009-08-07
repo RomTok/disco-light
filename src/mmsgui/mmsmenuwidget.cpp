@@ -2907,7 +2907,15 @@ unsigned int MMSMenuWidget::getItemVMargin() {
 }
 
 unsigned int MMSMenuWidget::getCols() {
-    GETMENU(Cols);
+    if (this->myMenuWidgetClass.isCols())
+    	return myMenuWidgetClass.getCols();
+    else if ((menuWidgetClass)&&(menuWidgetClass->isCols()))
+    	return menuWidgetClass->getCols();
+    else
+    	return this->da->theme->menuWidgetClass.getCols();
+
+
+    //GETMENU(Cols);
 }
 
 unsigned int MMSMenuWidget::getDimItems() {

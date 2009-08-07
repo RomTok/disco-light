@@ -263,7 +263,7 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 		}
 
 		if   ((pixelformat != MMSFB_PF_YUY2)
-			&&(pixelformat != MMSFB_PF_RGB32)) {
+			&&(pixelformat != MMSFB_PF_RGB32)&&(pixelformat != MMSFB_PF_RGB16)) {
 			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2 or RGB32, but %s given\n",
 						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
@@ -288,6 +288,10 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 				break;
 			case MMSFB_PF_RGB32:
 				mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
+										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
+				break;
+			case MMSFB_PF_RGB16:
+				mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
 										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
 				break;
 			default:
