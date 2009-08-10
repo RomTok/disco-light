@@ -442,6 +442,7 @@ if('x11' in env['graphics']):
 				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
 	
 # checks required if building mmsmedia
+
 if('xine' in env['media'] and not '-c' in sys.argv):
 	if('x11' in env['graphics']):
 		if not conf.checkSimpleLib(['libxine >= 1.1.15'], 'xine.h', required = 0):
@@ -484,7 +485,9 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 
 if(env['media']):
 	conf.checkSimpleLib(['alsa'], 'alsa/version.h')
-	conf.env['CCFLAGS'].append(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+	conf.env['CCFLAGS'].append('-D__HAVE_MMSMEDIA__')
+	conf.env['CCFLAGS'].append('-D__HAVE_MIXER__')
+
 
 	
 # checks required for database backends
