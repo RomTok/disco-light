@@ -284,7 +284,7 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 		if   ((pixelformat != MMSFB_PF_YUY2)
 			&&(pixelformat != MMSFB_PF_RGB32)&&(pixelformat != MMSFB_PF_RGB16)&&(pixelformat != MMSFB_PF_ARGB)) {
-			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2 or RGB32, but %s given\n",
+			printf("MMSFBDevOmap: Video Layer %d needs pixelformat YUY2,RGB32, RGB16 or ARGB but %s given\n",
 						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
