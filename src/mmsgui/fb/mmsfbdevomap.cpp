@@ -668,7 +668,7 @@ bool MMSFBDevOmap::setMode(int width, int height, MMSFBSurfacePixelFormat pixelf
 
 	if (do_switch) {
 		// switch now
-		this->var_screeninfo.nonstd = OMAPFB_COLOR_ARGB32;
+		//this->var_screeninfo.nonstd = OMAPFB_COLOR_ARGB32;
 
 	    if (ioctl(this->fd, FBIOPUT_VSCREENINFO, &this->var_screeninfo) < 0) {
 	    	printf("MMSFBDev: could not switch to mode %dx%d, pixelformat %s (%d bits)\n",
