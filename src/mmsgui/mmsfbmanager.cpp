@@ -191,6 +191,7 @@ void MMSFBManager::applySettings() {
 	if (!this->graphicslayer->setExclusiveAccess())
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
+	DEBUGMSG("MMSGUI", "set configuration");
     if (!this->graphicslayer->setConfiguration(graphicslayer.rect.w, graphicslayer.rect.h,
 											   graphicslayer.pixelformat,
 											   graphicslayer.buffermode,
@@ -212,6 +213,7 @@ void MMSFBManager::applySettings() {
         if (!this->videolayer->setExclusiveAccess())
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
+    	DEBUGMSG("MMSGUI", "set configuration");
         /* set video layer's config */
         if (!this->videolayer->setConfiguration(videolayer.rect.w, videolayer.rect.h,
 												videolayer.pixelformat,
