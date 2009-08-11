@@ -36,7 +36,7 @@
 class MMSFBDevOmap : public MMSFBDev {
     private:
     	typedef struct {
-        	MMSFBDev				*fbdev;
+        	MMSFBDevOmap			*fbdev;
         	char					device[100];
         	int						width;
         	int						height;
@@ -63,6 +63,8 @@ class MMSFBDevOmap : public MMSFBDev {
 
         bool releaseLayer(int layer_id);
         bool restoreLayer(int layer_id);
+
+        bool setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer = 0);
 
     private:
 
