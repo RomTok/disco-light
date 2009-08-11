@@ -41,10 +41,10 @@ packageVersion     = '%d.%d.%d%s' % (packageVersionMajor, packageVersionMinor, p
 #######################################################################
 def GetSconsVersion():
 	"""Split a version string into major, minor and (optionally)
-	   revision parts.   
+	   revision parts.
 	   This is complicated by the fact that a version string can be
 	   something like 3.2b1."""
-	   
+	
 	version = string.split(string.split(SCons.__version__, ' ')[0], '.')
 	v_major = int(version[0])
 	v_minor = int(re.match('\d+', version[1]).group())
@@ -156,20 +156,20 @@ idir_inc    = idir_prefix + '/include/disko'
 idir_data   = idir_prefix + '/share/disko'
 
 # link with -rpath
-# env['LINKFLAGS'].append('-Wl,-rpath=' + env['prefix'] + '/lib/disko')
+# env['LINKFLAGS'].extend(['-Wl,-rpath=' + env['prefix'] + '/lib/disko'])
 
 # extra flags
 if env['messages']:
-	env['CCFLAGS'].append('-D__ENABLE_LOG__')
+	env['CCFLAGS'].extend(['-D__ENABLE_LOG__'])
 
 if env['profile']:
-	env['CCFLAGS'].append('-pg')
+	env['CCFLAGS'].extend(['-pg'])
 	env.Replace(debug = 1)
 
 if env['debug']:
-	env['CCFLAGS'].append(['-O0', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
+	env['CCFLAGS'].extend(['-O0', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
 else:
-	env['CCFLAGS'].append('-O3')
+	env['CCFLAGS'].extend(['-O3'])
 
 # check which sse version to use
 if env['use_sse']:
@@ -177,25 +177,25 @@ if env['use_sse']:
 		for l in open('/proc/cpuinfo'):
 			if l.startswith('flags\t'): break;
 		if l.find('sse5') != -1: 
-			env['CCFLAGS'].append(['-msse5', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse5', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse4.2') != -1: 
-			env['CCFLAGS'].append(['-msse4.2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse4.2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse4.1') != -1: 
-			env['CCFLAGS'].append(['-msse4.1', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse4.1', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse4a') != -1: 
-			env['CCFLAGS'].append(['-msse4a', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse4a', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse4') != -1: 
-			env['CCFLAGS'].append(['-msse4', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse4', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse3') != -1:
-			env['CCFLAGS'].append(['-msse3', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse3', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse2') != -1:
-			env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		elif l.find('sse') != -1:
-			env['CCFLAGS'].append(['-msse', '-mfpmath=sse', '-D__HAVE_SSE__'])
+			env['CCFLAGS'].extend(['-msse', '-mfpmath=sse', '-D__HAVE_SSE__'])
 		else:
 			env['use_sse'] = False
 	else:
-		env['CCFLAGS'].append(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+		env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # format output
 env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
@@ -214,11 +214,11 @@ diskoLibs  = ["mmsinfo",
               "mmsinput",
               "mmscore"]
 if env['media']:
-	diskoLibs.append("mmsmedia")
+	diskoLibs.extend(["mmsmedia"])
 if env['enable_flash']:
-	diskoLibs.append("mmsflash")
+	diskoLibs.extend(["mmsflash"])
 if env['enable_sip']:
-	diskoLibs.append("mmssip")
+	diskoLibs.extend(["mmssip"])
 	
 if env['enable_tools']:	
 	diskoTools = ["taff"]
@@ -426,18 +426,18 @@ if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 # checks required if building DirectFB backend
 if('dfb' in env['graphics']):
 	conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
-	conf.env['CCFLAGS'].append('-D__HAVE_DIRECTFB__')
+	conf.env['CCFLAGS'].extend(['-D__HAVE_DIRECTFB__'])
 	
 # checks required if building fbdev backend
 if('fbdev' in env['graphics']):
-	conf.env['CCFLAGS'].append('-D__HAVE_FBDEV__')
+	conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
 # checks required if building X11 backend
 if('x11' in env['graphics']):
 	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
 	conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
 	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
-	conf.env['CCFLAGS'].append(['-D__HAVE_XLIB__',
+	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__',
 				'-D__ENABLE_MMSFB_X11_CORE__',
 				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
 	
@@ -452,9 +452,9 @@ if('xine' in env['media'] and not '-c' in sys.argv):
 			print '\n***************************************************'
 			env['media'].remove('xine')
 		else:
-			conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			conf.env['CCFLAGS'].extend(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
 			if conf.checkXineBlDvb():
-				conf.env['CCFLAGS'].append('-D__HAVE_XINE_BLDVB__')
+				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 	else:
 		if not conf.checkSimpleLib(['libxine'], 'xine.h', required = 0):
 			print '**************************************************\n'
@@ -463,9 +463,9 @@ if('xine' in env['media'] and not '-c' in sys.argv):
 			print '\n**************************************************'
 			env['media'].remove('xine')
 		else:
-			conf.env['CCFLAGS'].append(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			conf.env['CCFLAGS'].extend(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
 			if conf.checkXineBlDvb():
-				conf.env['CCFLAGS'].append('-D__HAVE_XINE_BLDVB__')
+				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 
 if('gstreamer' in env['media'] and not '-c' in sys.argv):
 	if not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
@@ -481,29 +481,28 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 		print '\n***************************************************'
 		env['media'].remove('gstreamer')
 	else:
-		conf.env['CCFLAGS'].append('-D__HAVE_GSTREAMER__')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_GSTREAMER__'])
 
 if(env['media']):
 	conf.checkSimpleLib(['alsa'], 'alsa/version.h')
-	conf.env['CCFLAGS'].append('-D__HAVE_MMSMEDIA__')
-	conf.env['CCFLAGS'].append('-D__HAVE_MIXER__')
+	conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 
 
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
 	conf.checkSimpleLib(['sqlite3'], 'sqlite3.h')
-	conf.env['CCFLAGS'].append('-D__ENABLE_SQLITE__')
+	conf.env['CCFLAGS'].extend(['-D__ENABLE_SQLITE__'])
 if 'mysql' in env['database']:
 	conf.checkSimpleLib(['mysql'],      'mysql.h')
-	conf.env['CCFLAGS'].append('-D__ENABLE_MYSQL__')
+	conf.env['CCFLAGS'].extend(['-D__ENABLE_MYSQL__'])
 if 'odbc' in env['database']:
 	if conf.CheckCXXHeader('/usr/include/sql.h'):
 		conf.env.Append(LIBS = 'odbc')
-		conf.env['CCFLAGS'].append('-D__ENABLE_FREETDS__')
+		conf.env['CCFLAGS'].extend(['-D__ENABLE_FREETDS__'])
 	elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
 		conf.env.Append(LIBPATH = '/usr/local/lib', LIBS = 'odbc')
-		conf.env['CCFLAGS'].append(['-D__ENABLE_FREETDS__', '-I/usr/local/include'])
+		conf.env['CCFLAGS'].extend(['-D__ENABLE_FREETDS__', '-I/usr/local/include'])
 	else:
 		Exit(1)
 
@@ -512,18 +511,18 @@ if env['enable_crypt']:
 	if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
 		conf.env['mmscrypt'] = 0
 	else:
-		conf.env['CCFLAGS'].append('-D__HAVE_MMSCRYPT__')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSCRYPT__'])
 		conf.env['mmscrypt'] = 1
 else:
 	conf.env['mmscrypt'] = 0
 # checks required if building mmsflash
 if(env['enable_flash']):
 	if conf.checkSimpleLib(['swfdec-0.9'], 'swfdec-0.9/swfdec/swfdec.h', required = 0):
-		conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSFLASH__'])
 		swfdecversion='0.9'
 	else: 
 		if conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h'):
-			conf.env['CCFLAGS'].append('-D__HAVE_MMSFLASH__')
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSFLASH__'])
 			swfdecversion='0.8'
 
 
@@ -531,13 +530,13 @@ if(env['enable_flash']):
 if(env['enable_sip']):
 	if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
 		conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)
-		conf.env['CCFLAGS'].append('-D__HAVE_MMSSIP__')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSSIP__'])
 
 	
 # checks required if building with email support
 if(env['enable_mail']):
 	conf.checkSimpleLib(['vmime'], 'vmime.h')
-	conf.env['CCFLAGS'].append('-D__HAVE_VMIME__')
+	conf.env['CCFLAGS'].extend(['-D__HAVE_VMIME__'])
 
 env2 = conf.Finish()
 if env2:
