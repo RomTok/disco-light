@@ -1545,9 +1545,9 @@ void MMSWidget::refresh() {
     	return;
     }
 
-    if (!this->visible) {
+    /*if (!this->visible) {
     	return;
-    }
+    }*/
 
     if (!myroot)
    		return;
