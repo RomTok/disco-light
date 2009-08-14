@@ -167,6 +167,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		}
 		else {
 			// default fbdev
+		    DEBUGMSG("MMSGUI", "create generic fbdev");
     		this->mmsfbdev = new MMSFBDev();
 		}
 
