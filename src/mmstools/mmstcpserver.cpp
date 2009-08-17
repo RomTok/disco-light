@@ -32,6 +32,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <string.h>
+#include <cerrno>
 
 MMSTCPServer::MMSTCPServer(vector<MMSServerInterface *> interfaces,
 					 	   string host, unsigned int port) : MMSThread("MMSTCPServer") {
@@ -66,7 +67,7 @@ void MMSTCPServer::threadMain() {
 	/* get host ip in numbers-and-dots */
 	ia.s_addr = *((unsigned long int*)*(he->h_addr_list));
 	this->hostip = inet_ntoa(ia);
-	printf("ip: %s", this->hostip.c_str());
+	DEBUGMSG("MMSTCPServer", "ip: %s", this->hostip.c_str());
 
 	/* get a socket */
 	if ((this->s = socket(AF_INET, SOCK_STREAM, 0))<=0) return;
@@ -76,10 +77,10 @@ void MMSTCPServer::threadMain() {
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(this->port);
 	sa.sin_addr.s_addr = inet_addr(this->hostip.c_str());
-	printf("\n bind at %d\n",this->port);
-	printf("\n bind at %d\n",sa.sin_port);
+	DEBUGMSG("MMSTCPServer", "bind at %d:%d",this->port, sa.sin_port);
 
-	if (bind(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
+	if(bind(this->s, (struct sockaddr *)&sa, sizeof(struct sockaddr_in))!=0) {
+		DEBUGMSG("MMSTCPServer", "Error while binding: %s", strerror(errno));
 		return;
 	}
 
