@@ -99,6 +99,9 @@ MMSWindow::MMSWindow() {
 }
 
 MMSWindow::~MMSWindow() {
+	/* wait until show/hide actions are finished */
+	while(this->action->getAction() != MMSWACTION_NONE)
+		msleep(100);
 
 	// hide the window if shown
 	instantHide();
