@@ -358,7 +358,8 @@ void MMSDVD::eject() {
 		// call eject on commandline, because xine_eject() didn't work
 		char cmd[64];
 		sprintf(cmd, "eject %s", this->device.c_str());
-		system(cmd);
+		if(system(cmd) != 0)
+			DEBUGMSG("MMSDVD", "calling eject failed");
 #endif
     }
 }
