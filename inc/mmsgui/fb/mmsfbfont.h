@@ -127,13 +127,18 @@ class MMSFBFont {
 		unsigned char c = text[cnt]; \
 		unsigned int character; \
 		if(c >= 0xf0) /* 11110000 -> 4 bytes */ { \
-			if(len < cnt + 3) { DEBUGMSG("MMSFBFONT", "invalid unicode string"); break; } \
-			character = (unsigned int)(((c & 0x07 /* 00000111 */) << 18) | ((text[++cnt] & 0x3f /* 00111111 */) << 12) | ((text[++cnt] & 0x3f) << 6) | (text[++cnt] & 0x3f)); \
+			if(len < (cnt + 3)) { DEBUGMSG("MMSFBFONT", "invalid unicode string"); break; } \
+			character = (unsigned int)((c & 0x07 /* 00000111 */) << 18); \
+			character |= ((text[++cnt] & 0x3f /* 00111111 */) << 12); \
+			character |= ((text[++cnt] & 0x3f) << 6); \
+			character |= (text[++cnt] & 0x3f); \
 		} else if(c >= 0xe0)  /* 11100000 -> 3 bytes */ { \
-			if(len < cnt + 2) { DEBUGMSG("MMSFBFONT", "invalid unicode string"); break; } \
-			character = (unsigned int)(((c & 0x0f /* 00001111 */) << 12) | ((text[++cnt] & 0x3f) << 6) | (text[++cnt] & 0x3f)); \
+			if(len < (cnt + 2)) { DEBUGMSG("MMSFBFONT", "invalid unicode string"); break; } \
+			character = (unsigned int)((c & 0x0f /* 00001111 */) << 12); \
+			character |= ((text[++cnt] & 0x3f) << 6); \
+			character |= (text[++cnt] & 0x3f); \
 		} else if(c >= 0xc0)  /* 11000000 -> 2 bytes */ { \
-			if(len < cnt + 1) { DEBUGMSG("MMSFBFONT", "invalid unicode string"); break; } \
+			if(len < (cnt + 1)) { DEBUGMSG("MMSFBFONT", "invalid unicode string"); break; } \
 			character = (unsigned int)(((c & 0x1f /* 00011111 */) << 6) | (text[++cnt] & 0x3f)); \
 		} else  /* 1 byte */ { \
 			character = (unsigned int)c; \

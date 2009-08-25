@@ -1271,7 +1271,7 @@ void MMSWindow::removeFocusFromChildWindow() {
     /* searching for other childwin to get the focus */
 //    for (unsigned int i = 0; i < this->parent->childwins.size(); i++) {
 	for (int i = (int)this->parent->childwins.size()-1; i >= 0; i--) {
-        if (i == this->parent->focusedChildWin) continue;
+        if (i == (int)this->parent->focusedChildWin) continue;
         MMSWindow *w = this->parent->childwins.at(i).window;
         if (!w->isShown()) continue;
         if (!w->getNumberOfFocusableWidgets())
@@ -3736,8 +3736,8 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
        				}
        				else {
        					// modal window is active
-						int posx = inputeventset->at(i).posx;
-						int posy = inputeventset->at(i).posy;
+						//int posx = inputeventset->at(i).posx;
+						//int posy = inputeventset->at(i).posy;
 						MMSFBRectangle rect = this->childwins.at(this->focusedChildWin).window->getGeometry();
 
 						// normalize the pointer position

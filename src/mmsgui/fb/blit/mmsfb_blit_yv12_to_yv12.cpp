@@ -104,20 +104,20 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 
 
 	// offsets to the other three pixels
-	unsigned int src_y2_offs = 1;
+//	unsigned int src_y2_offs = 1;
 	unsigned int src_y3_offs = src_pitch_pix;
-	unsigned int src_y4_offs = src_y3_offs + 1;
-	unsigned int dst_y2_offs = 1;
+//	unsigned int src_y4_offs = src_y3_offs + 1;
+//	unsigned int dst_y2_offs = 1;
 	unsigned int dst_y3_offs = dst_pitch_pix;
-	unsigned int dst_y4_offs = dst_y3_offs + 1;
+//	unsigned int dst_y4_offs = dst_y3_offs + 1;
 
 	// arithmetic mean
-	register unsigned int d_u;
-	register unsigned int d_v;
+//	register unsigned int d_u;
+//	register unsigned int d_v;
 
 	// draw odd pixels around the even rectangle
-	if (odd_top && odd_left) {
-/*		// odd top-left pixel
+	/*if (odd_top && odd_left) {
+		// odd top-left pixel
 		register unsigned int SRC;
 		register unsigned int A;
 
@@ -130,11 +130,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 
 		// calulate the arithmetic mean
 		*dst_u = d_u >> 2;
-		*dst_v = d_v >> 2;*/
-	}
+		*dst_v = d_v >> 2;
+	}*/
 
-	if (odd_top && odd_right) {
-/*		// odd top-right pixel
+	/*if (odd_top && odd_right) {
+		// odd top-right pixel
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// go to the pixel in the current line
@@ -164,11 +164,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		*dst_v = d_v >> 2;
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
-	if (odd_bottom && odd_left) {
-/*		// odd bottom-left pixel
+	/*if (odd_bottom && odd_left) {
+		// odd bottom-left pixel
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// go to the line
@@ -198,11 +198,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		*dst_v = d_v >> 2;
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
-	if (odd_bottom && odd_right) {
-/*		// odd bottom-right pixel
+	/*if (odd_bottom && odd_right) {
+		// odd bottom-right pixel
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// go to the line
@@ -244,11 +244,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		*dst_v = d_v >> 2;
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
-	if (odd_top) {
-/*		// odd top line
+	/*if (odd_top) {
+		// odd top line
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
@@ -288,11 +288,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		}
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
-	if (odd_bottom) {
-/*		// odd bottom line
+	/*if (odd_bottom) {
+		// odd bottom line
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
@@ -343,11 +343,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		}
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
-	if (odd_left) {
-/*		// odd left line
+	/*if (odd_left) {
+		// odd left line
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
@@ -391,11 +391,11 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		}
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
-	if (odd_right) {
-/*		// odd right line
+	/*if (odd_right) {
+		// odd right line
 		MMSFB_CONV_BLEND_ARGB_TO_YV12_PUSHPTR;
 
 		// calculate start and end
@@ -449,8 +449,8 @@ void mmsfb_blit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 		}
 
 		// restore the pointers
-		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;*/
-	}
+		MMSFB_CONV_BLEND_ARGB_TO_YV12_POPPTR;
+	}*/
 
 	// calc even positions...
 	if (odd_top) {

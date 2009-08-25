@@ -69,7 +69,7 @@ void stretch_byte_buffer_no_antialiasing(unsigned char *src, int src_pitch, int 
 				unsigned char *old_dst = dst;
 
 				do {
-					int horicnt = 0x8000;
+					//int horicnt = 0x8000;
 					while (src < line_end) {
 						register unsigned short int SRC  = *src;
 						*((unsigned short int *)dst) = SRC | (SRC << 8);

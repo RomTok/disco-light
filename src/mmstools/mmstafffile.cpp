@@ -277,6 +277,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 		    }
     	}
     	break;
+	default: break;
     }
 
     // all right

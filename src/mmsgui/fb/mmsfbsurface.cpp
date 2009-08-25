@@ -710,7 +710,6 @@ int MMSFBSurface::calcSize(int pitch, int height) {
 void MMSFBSurface::initPlanePointers(MMSFBSurfacePlanes *planes, int height) {
 
 	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
-	int diff;
 
     if (pf == MMSFB_PF_ARGB3565) {
     	planes->ptr2 = ((unsigned char *)planes->ptr) + planes->pitch * height;
@@ -1711,11 +1710,11 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 	}
 	if (src_planes) {
 		printf("  source type:               surface\n");
-		printf("  source memory:             extern (0x%08x, pitch=%d)\n", (unsigned long)src_planes->ptr, src_planes->pitch);
+		printf("  source memory:             extern (0x%08lx, pitch=%d)\n", (unsigned long)src_planes->ptr, src_planes->pitch);
 		if (src_planes->ptr2) {
-			printf("                                    (0x%08x, pitch=%d)\n",  (unsigned long)src_planes->ptr2, src_planes->pitch2);
+			printf("                                    (0x%08lx, pitch=%d)\n",  (unsigned long)src_planes->ptr2, src_planes->pitch2);
 			if (src_planes->ptr3)
-				printf("                                    (0x%08x, pitch=%d)\n",  (unsigned long)src_planes->ptr3, src_planes->pitch3);
+				printf("                                    (0x%08lx, pitch=%d)\n",  (unsigned long)src_planes->ptr3, src_planes->pitch3);
 		}
 		printf("  source pixelformat:        %s\n", getMMSFBPixelFormatString(src_pixelformat).c_str());
 	}
@@ -1855,7 +1854,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		return true;
 
 	// extract antialiasing flag from blittingflags
-	bool antialiasing = (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
+//	bool antialiasing = (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
 	MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
 
 	// checking pixelformats...
