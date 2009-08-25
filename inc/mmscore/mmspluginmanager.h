@@ -45,9 +45,62 @@ class MMSPluginManager {
         MMSPluginData						*activecentralplugin;
         IMMSSwitcher 					    *switcher;
 
+        map<string, IMMSOSDPlugin*>			staticOSDPlugins;
+        map<string, IMMSCentralPlugin*>		staticCentralPlugins;
+        map<string, IMMSImportPlugin*>		staticImportPlugins;
+        map<string, IMMSBackendPlugin*>		staticBackendPlugins;
+
     public:
         MMSPluginManager();
         ~MMSPluginManager();
+
+        /**
+         * Register an already instantiated OSD plugin object.
+         *
+         * This is necessary for statically linked plugins. You have to call
+         * this method before loadOSDPlugins() otherwise your static OSD plugins
+         * won't be loaded.
+         *
+         * @param	name	plugin name as used in plugindata
+         * @param	plugin	instantiated plugin object
+         */
+        void registerStaticOSDPlugin(string, IMMSOSDPlugin*);
+
+        /**
+         * Register an already instantiated central plugin object.
+         *
+         * This is necessary for statically linked plugins. You have to call
+         * this method before loadCentralPlugins() otherwise your static central plugins
+         * won't be loaded.
+         *
+         * @param	name	plugin name as used in plugindata
+         * @param	plugin	instantiated plugin object
+         */
+        void registerStaticCentralPlugin(string, IMMSCentralPlugin*);
+
+        /**
+         * Register an already instantiated import plugin object.
+         *
+         * This is necessary for statically linked plugins. You have to call
+         * this method before loadImportPlugins() otherwise your static import plugins
+         * won't be loaded.
+         *
+         * @param	name	plugin name as used in plugindata
+         * @param	plugin	instantiated plugin object
+         */
+        void registerStaticImportPlugin(string, IMMSImportPlugin*);
+
+        /**
+         * Register an already instantiated backend plugin object.
+         *
+         * This is necessary for statically linked plugins. You have to call
+         * this method before loadBackendPlugins() otherwise your static backend plugins
+         * won't be loaded.
+         *
+         * @param	name	plugin name as used in plugindata
+         * @param	plugin	instantiated plugin object
+         */
+        void registerStaticBackendPlugin(string, IMMSBackendPlugin*);
 
         void loadOSDPlugins();
         void loadCentralPlugins();

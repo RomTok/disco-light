@@ -48,7 +48,14 @@ class MMSOSDPluginHandler {
         IMMSSwitcher 	*switcher;
 
     public:
-        MMSOSDPluginHandler(MMSPluginData plugindata, bool autoload = false);
+        /**
+         * Constructor for the plugin handler of an OSD plugin.
+         *
+         * @param	plugindata	The plugindata object as usually read from the database.
+         * @param	autoload	If true, the plugin will be loaded (no effect if _plugin is set)
+         * @param	_plugin		Pointer to already instantiated plugin object. Usually used for static plugins.
+         */
+        MMSOSDPluginHandler(MMSPluginData plugindata, bool autoload = false, IMMSOSDPlugin *_plugin = NULL);
         ~MMSOSDPluginHandler();
 
         bool isLoaded();

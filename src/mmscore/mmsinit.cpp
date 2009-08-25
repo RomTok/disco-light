@@ -40,6 +40,8 @@ static MMSEventSignup               *mastereventsignup  = NULL;
 static MMSInputManager              *inputs             = NULL;
 static MMSWindowManager             *windowmanager = NULL;
 
+void (*pluginRegisterCallback)(MMSPluginManager*) = NULL;
+
 static void on_exit() {
 	if(pluginmanager) delete pluginmanager;
 }
@@ -243,8 +245,13 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         }
 
         if(flags & MMSINIT_PLUGINMANAGER) {
-	        DEBUGMSG("Core", "creating PluginManager");
-	        pluginmanager = new MMSPluginManager();
+        	if(!pluginmanager) {
+				DEBUGMSG("Core", "creating PluginManager");
+				pluginmanager = new MMSPluginManager();
+        	}
+
+			if(pluginRegisterCallback)
+				pluginRegisterCallback(pluginmanager);
 
 	        DEBUGMSG("Core", "loading Backend Plugins...");
 	        pluginmanager->loadBackendPlugins();
@@ -331,8 +338,20 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
     return true;
 }
 
+void setPluginRegisterCallback(void(*cb)(MMSPluginManager*)) {
+	pluginRegisterCallback = cb;
+}
+
 IMMSWindowManager *getWindowManager() {
 	return windowmanager;
+}
+
+void setPluginManager(MMSPluginManager *pm) {
+	if(pluginmanager) {
+		DEBUGMSG("CORE", "Error: You cannot set a pluginmanager after calling mmsinit()");
+		return;
+	}
+	pluginmanager = pm;
 }
 
 MMSPluginManager *getPluginManager() {

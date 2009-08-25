@@ -64,8 +64,11 @@ bool mmsRelease();
 
 bool registerSwitcher(IMMSSwitcher *switcher);
 
+void setPluginRegisterCallback(void(*cb)(MMSPluginManager*));
+
 IMMSWindowManager *getWindowManager();
 
+void setPluginManager(MMSPluginManager *pm);
 MMSPluginManager *getPluginManager();
 
 //! get access to the video layer
