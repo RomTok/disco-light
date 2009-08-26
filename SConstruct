@@ -624,12 +624,12 @@ if 'install' in BUILD_TARGETS:
 
 	if env['enable_flash']:
 		disko_pc_requires += ', swfdec-' + swfdecversion
-		if not env['big_lib']:
+		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmsflash'
 
 	if env['enable_sip']:
 		disko_pc_requires += ', libpj'
-		if not env['big_lib']:
+		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmssip'
 		if('uuid' in env['LIBS']):
 			disko_pc_requires += ', uuid'
