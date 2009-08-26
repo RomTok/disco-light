@@ -31,25 +31,7 @@
 #include "mmsgui/fb/mmsfbdevomap.h"
 #include <sys/ioctl.h>
 #include <cstring>
-
-enum omapfb_color_format {
-        OMAPFB_COLOR_RGB565 = 0,
-        OMAPFB_COLOR_YUV422,
-        OMAPFB_COLOR_YUV420,
-        OMAPFB_COLOR_CLUT_8BPP,
-        OMAPFB_COLOR_CLUT_4BPP,
-        OMAPFB_COLOR_CLUT_2BPP,
-        OMAPFB_COLOR_CLUT_1BPP,
-        OMAPFB_COLOR_RGB444,
-        OMAPFB_COLOR_YUY422,
-
-        OMAPFB_COLOR_ARGB16,
-        OMAPFB_COLOR_RGB24U,    /* RGB24, 32-bit container */
-        OMAPFB_COLOR_RGB24P,    /* RGB24, 24-bit container */
-        OMAPFB_COLOR_ARGB32,
-        OMAPFB_COLOR_RGBA32,
-        OMAPFB_COLOR_RGBX32,
-};
+#include "mmsgui/fb/omapfb.h"
 
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevOmap is not initialized");return false;}

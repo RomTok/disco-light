@@ -39,7 +39,7 @@
 #include <sys/mman.h>
 #include <sys/kd.h>
 #include <linux/vt.h>
-
+#include "mmsgui/fb/omapfb.h"
 #include "mmsgui/fb/mmsfbdev.h"
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDev is not initialized");return false;}
@@ -800,6 +800,21 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	        return false;
 	    }
 	    printVarScreenInfo();
+
+	    struct omapfb_plane_info plane_info;
+
+	    plane_info.enabled = 1;
+	    plane_info.pos_x = 0;
+	    plane_info.pos_y = 0;
+	    plane_info.out_width = this->var_screeninfo.xres;
+	    plane_info.out_height = this->var_screeninfo.yres;
+
+	    if (ioctl (this->fd, OMAPFB_SETUP_PLANE, &plane_info)) {
+	    	printf("MMSFBDev: could not setup plane\n");
+	        return false;
+
+	    }
+
 return true;
     	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
     		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
