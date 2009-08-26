@@ -28,24 +28,40 @@
 
 #include "mmstools/mmsshlhandler.h"
 #include "mmstools/mmsfile.h"
+#ifdef __HAVE_DL__
 #include <dlfcn.h>
+#endif
 
 MMSShlHandler::~MMSShlHandler() {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
+
     if(this->isloaded) {
         dlclose(this->handle);
     }
+#endif
 }
 
 void MMSShlHandler::close() {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
+
     if(this->isloaded) {
         dlclose(this->handle);
         this->isloaded = false;
     } else {
         throw new MMSShlError(0,"shared library " + this->name + " is not loaded");
     }
+#endif
 }
 
 void MMSShlHandler::open() {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
+
     if(this->isloaded) {
         throw new MMSShlError(0,"shared library " + this->name + " is alread loaded");
     }
@@ -57,17 +73,32 @@ void MMSShlHandler::open() {
 
         this->isloaded = true;
     }
+#endif
 }
 
 void MMSShlHandler::setName(string name) {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
+
     this->name = name;
+#endif
 }
 
 string MMSShlHandler::getName() {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
+
     return this->name;
+#endif
 }
 
 void *MMSShlHandler::getFunction(string name) {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
+
     void *ret = NULL;
 
     if(this->isloaded) {
@@ -79,8 +110,14 @@ void *MMSShlHandler::getFunction(string name) {
     }
 
     return ret;
+#endif
 }
 
 bool MMSShlHandler::isLoaded() {
+#ifndef __HAVE_DL__
+    throw MMSShlError(0, "Compile with use_dl (libdl support)");
+#else
     return this->isloaded;
+#endif
+
 }

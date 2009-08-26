@@ -92,6 +92,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
 	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
 	BoolOption('use_sse',       'Use SSE optimization', False),
+	BoolOption('use_dl',        'Use dynamic linking support', True),
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
@@ -101,7 +102,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('enable_curl',    'Build with curl support', True),
 	BoolOption('enable_mail',   'Build with email support', False),
 	BoolOption('enable_tools',  'Build disko tools', False),
-	BoolOption('enable_static', 'Create statically linked library', False),
+	BoolOption('static_lib',    'Create statically linked library', False),
 	BoolOption('big_lib',       'Create one big shared library', False))
 else:
 	opts = Variables('disko.conf')
@@ -113,6 +114,7 @@ else:
 	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
 	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
 	BoolVariable('use_sse',       'Use SSE optimization', False),
+	BoolVariable('use_dl',        'Use dynamic linking support', True),
 	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
@@ -122,7 +124,7 @@ else:
 	BoolVariable('enable_curl',   'Build with curl support', True),
 	BoolVariable('enable_mail',   'Build with email support', False),
 	BoolVariable('enable_tools',  'Build disko tools', False),
-	BoolVariable('enable_static', 'Create statically linked library', False),
+	BoolVariable('static_lib', 	  'Create statically linked library', False),
 	BoolVariable('big_lib',       'Create one big shared library', False))
 
 env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
@@ -392,10 +394,14 @@ def printSummary():
 	else:
 		print 'profiling info    : no'
 	if(conf.env['use_sse']):
-		print 'SSE optimization  : yes\n'
+		print 'SSE optimization  : yes'
 	else:
-		print 'SSE optimization  : no\n'
-	if(conf.env['enable_static']):
+		print 'SSE optimization  : no'
+	if(conf.env['use_dl']):
+		print 'use libdl         : yes\n'
+	else:
+		print 'use libdl         : no\n'
+	if(conf.env['static_lib']):
 		print 'link type         : static'
 	else:
 		print 'link type         : shared'
@@ -434,6 +440,12 @@ if conf.CheckLib('rt', 'clock_gettime'):
 
 if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
+
+# checks required if using dynamic linking support
+if(env['use_dl']):
+	if conf.CheckLibWithHeader(['libdl'], ['dlfcn.h'], 'c++'):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_DL__'])
+		conf.env['libdl'] = True
 
 # checks required if building DirectFB backend
 if('dfb' in env['graphics']):
@@ -581,6 +593,9 @@ if 'install' in BUILD_TARGETS:
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
+	if env.has_key('libdl'):
+		disko_pc_libs += ' -ldl'
+
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
 	  
@@ -699,7 +714,7 @@ if env['big_lib']:
 #######################################################################
 # Static Library                                                      #
 #######################################################################
-if env['enable_static']:
+if env['static_lib']:
 	libdisko_static = env.StaticLibrary('lib/libdisko', env['diskoSources'])
 	env.Install(idir_lib, libdisko_static)
 	Export('libdisko_static')
