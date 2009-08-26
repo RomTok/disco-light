@@ -9,7 +9,7 @@ def prefixAdd():
 
 prefixAdd()
 
-if not env['big_lib']:
+if not env['big_lib'] and not env['static_lib']:
 	libmmsinfo = env.SharedLibrary('../../../lib/libmmsinfo', Glob('*.cpp'), LIBS = "")
 	env.Install(idir_lib, libmmsinfo)
 	Export('libmmsinfo')

@@ -6,7 +6,7 @@ Import('env idir_lib idir_inc idir_data')
 
 sourceFiles = scons.helpers.findFiles(env['TOP_DIR'] + '/src/mmsgui', '*.cpp')
 
-if not env['big_lib']:
+if not env['big_lib'] and not env['static_lib']:
 	Import('libmmsinfo')
 	libmmsgui = env.SharedLibrary(env['TOP_DIR'] + '/lib/libmmsgui', sourceFiles, LIBS = "")
 	env.Requires(libmmsgui, libmmsinfo)
