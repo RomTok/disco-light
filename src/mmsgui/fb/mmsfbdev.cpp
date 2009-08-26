@@ -800,6 +800,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	        return false;
 	    }
 	    printVarScreenInfo();
+    	printf("MMSFBDev: query plane\n");
 
 	    struct omapfb_plane_info plane_info;
 	    ioctl (this->fd, OMAPFB_QUERY_PLANE, &plane_info);
@@ -809,11 +810,13 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	    plane_info.out_width = this->var_screeninfo.xres;
 	    plane_info.out_height = this->var_screeninfo.yres;
 
+	    printf("MMSFBDev: setup plane\n");
 	    if (ioctl (this->fd, OMAPFB_SETUP_PLANE, &plane_info)) {
 	    	printf("MMSFBDev: could not setup plane\n");
 	        return false;
 
 	    }
+    	printf("MMSFBDev: done setup plane\n");
 
 return true;
     	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
