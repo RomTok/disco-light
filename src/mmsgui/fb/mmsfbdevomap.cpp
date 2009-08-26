@@ -52,7 +52,7 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 	closeDevice();
 
 	// open omap frame buffers
-	for (int i = 0; i < 3; i++) {
+	for (int i = 1; i < 2; i++) {
 		MMSFBDev *fbdev;
 		char      dev[100];
 		sprintf(dev, "/dev/fb%d", i);
@@ -80,7 +80,7 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 				if (!this->primary)
 					this->primary = &this->vid;
 				// disable device
-				this->vid.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
+	//			this->vid.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, false);
 				break;
 			case 2:
 				this->osd1.fbdev = fbdev;
