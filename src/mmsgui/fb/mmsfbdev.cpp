@@ -756,8 +756,8 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 			do_switch = true;
 		}
     	else
-    		if  (1) {
-    	//		if  (this->layers[0].pixelformat == pixelformat) {
+    		//if  (1) {
+		if  (this->layers[0].pixelformat == pixelformat) {
 			// pixelformat has not changed, so try to change only the resolution
 			printf("MMSFBDev: pixelformat is the same, so try to change the resolution to %dx%d\n",
 					width, height);
@@ -779,7 +779,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
     }
 
 	if (do_switch) {
-		this->var_screeninfo.nonstd = 12;
+		//this->var_screeninfo.nonstd = 12;
 		// switch now
 	    if (ioctl(this->fd, FBIOPUT_VSCREENINFO, &this->var_screeninfo) < 0) {
 	    	printf("MMSFBDev: could not switch to mode %dx%d, pixelformat %s (%d bits)\n",
@@ -818,7 +818,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	    }
     	printf("MMSFBDev: done setup plane\n");
 */
-return true;
+//return true;
     	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
     		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
 
