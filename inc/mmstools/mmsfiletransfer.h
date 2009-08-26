@@ -189,5 +189,5 @@ public:
 	int getLastError(string *errormsg);
 };
 
-#endif __HAVE_CURL__
+#endif /*__HAVE_CURL__*/
 #endif /*MMSFILETRANSFER_H_*/

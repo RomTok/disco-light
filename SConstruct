@@ -98,6 +98,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
 	BoolOption('enable_sip',    'Build with mmssip support', False),
+	BoolOption('enable_curl',    'Build with curl support', True),
 	BoolOption('enable_mail',   'Build with email support', False),
 	BoolOption('enable_tools',  'Build disko tools', False),
 	BoolOption('enable_static', 'Create statically linked library', False),
@@ -118,6 +119,7 @@ else:
 	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
 	BoolVariable('enable_flash',  'Build with mmsflash support', False),
 	BoolVariable('enable_sip',    'Build with mmssip support', False),
+	BoolVariable('enable_curl',   'Build with curl support', True),
 	BoolVariable('enable_mail',   'Build with email support', False),
 	BoolVariable('enable_tools',  'Build disko tools', False),
 	BoolVariable('enable_static', 'Create statically linked library', False),
@@ -365,6 +367,10 @@ def printSummary():
 		print 'Building mmssip   : yes'
 	else:
 		print 'Building mmssip   : no'
+	if(conf.env['enable_curl']):
+		print 'curl support      : yes'
+	else:
+		print 'curl support      : no'
 	if(conf.env['enable_mail']):
 		print 'E-Mail support    : yes'
 	else:
@@ -414,7 +420,9 @@ conf.checkPKGConfig()
 conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
-conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
+if (env['enable_curl']):
+	conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
+	conf.env['CCFLAGS'].extend(['-D__HAVE_CURL__'])	
 conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
 
 if conf.CheckLib('rt', 'clock_gettime'):

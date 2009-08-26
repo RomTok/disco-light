@@ -593,14 +593,13 @@ bool MMSFile::setFilePos(long offset, MMSFilePosOrigin origin) {
             }
             this->lasterror = EBADF;
             return false;
-
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
         default:
             /* unknown type */
             this->lasterror = EBADF;
             return false;
-#else
-    		throw MMSFileError(-1, "compile curl support!");
-#endif
     }
 }
 

@@ -35,8 +35,9 @@
 #include <curl/curl.h>
 #endif
 #include <sys/stat.h>
+#include "mmstools/mmserror.h"
 
-MMS_CREATEERROR(MMSFileSearchError);
+MMS_CREATEERROR(MMSFileError);
 
 
 //! Specifies supported types of files.
@@ -139,13 +140,11 @@ class MMSFile {
         //! Internal function which resets the most private variables.
         void resetAll();
 
-#ifdef __HAVE_CURL__
         //! Internal function which work with the own curl buffer.
         bool fillCurlBuffer(size_t want, unsigned waittime=20);
 
         //! Internal function which work with the own curl buffer.
         void freeCurlBuffer(size_t want);
-#endif
 
         //! Internal function which opens a file.
         bool openFile();

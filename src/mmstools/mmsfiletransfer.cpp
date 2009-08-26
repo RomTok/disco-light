@@ -320,7 +320,7 @@ const long MMSFiletransfer::getTimeout() {
 
 
 void MMSFiletransfer::setFtpPort(const unsigned int ftpPort) {
-	if((this->port != (long)ftpPort) && (0 != ftpPort)) {
+	if((this->port != ftpPort) && (0 != ftpPort)) {
 		this->port = ftpPort;
 		curl_easy_setopt(this->ehandle, CURLOPT_PORT, this->port);
 	}
