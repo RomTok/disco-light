@@ -43,6 +43,7 @@ class MMSFBDevOmap : public MMSFBDev {
         	MMSFBSurfacePixelFormat	pixelformat;
         	int						backbuffer;
     	} MMSFBDevOmapLayer;
+
     	MMSFBDevOmapLayer	osd0;
     	MMSFBDevOmapLayer	vid;
     	MMSFBDevOmapLayer	osd1;

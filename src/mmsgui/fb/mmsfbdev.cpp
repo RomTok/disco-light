@@ -778,6 +778,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
     }
 
 	if (do_switch) {
+		this->var_screeninfo.nonstd = 12;
 		// switch now
 	    if (ioctl(this->fd, FBIOPUT_VSCREENINFO, &this->var_screeninfo) < 0) {
 	    	printf("MMSFBDev: could not switch to mode %dx%d, pixelformat %s (%d bits)\n",
