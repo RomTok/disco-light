@@ -62,6 +62,14 @@
 #define MSG2OUT(ident, msg...) writeMessage2Stdout(ident, __FILE__, __LINE__, msg)
 
 
+/**
+ * substitutes environment variables in a string
+ *
+ * @param input string containing the variable components
+ * @return the string with the replaced components
+ *
+ * @note this will only work if the libc supports _XOPEN_SOURCE
+ */
 string substituteEnvVars(string input);
 
 string maskChars(string str);

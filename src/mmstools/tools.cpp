@@ -29,7 +29,9 @@
 #include "mmstools/tools.h"
 #include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsconfigdata.h"
+#ifdef _XOPEN_SOURCE
 #include <wordexp.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -46,8 +48,10 @@ static MMSConfigData  config;
 static FILE			  *fp=NULL;
 static MMSMutex       debugMsgMutex;
 
+
 string substituteEnvVars(string input) {
-    wordexp_t p;
+#ifdef _XOPEN_SOURCE
+	wordexp_t p;
     char **w;
     string output = "";
     if (input != "") {
@@ -61,6 +65,9 @@ string substituteEnvVars(string input) {
         wordfree(&p);
     }
     return output;
+#else
+    return input;
+#endif
 }
 
 string maskChars(string str) {

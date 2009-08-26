@@ -392,9 +392,13 @@ def printSummary():
 	else:
 		print 'profiling info    : no'
 	if(conf.env['use_sse']):
-		print 'SSE optimization  : yes'
+		print 'SSE optimization  : yes\n'
 	else:
-		print 'SSE optimization  : no'
+		print 'SSE optimization  : no\n'
+	if(conf.env['enable_static']):
+		print 'link type         : static'
+	else:
+		print 'link type         : shared'
 	print '\n***************************************************\n'
 
 #######################################################################
