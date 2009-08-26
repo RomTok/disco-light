@@ -238,10 +238,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 	// offsets to the other three pixels
 	unsigned int dst_y2_offs = 1;
 	unsigned int dst_y3_offs = dst_pitch;
-//	unsigned int dst_y4_offs = dst_y3_offs + 1;
 	unsigned int src2_offs = 1;
 	unsigned int src3_offs = src_pitch_pix;
-//	unsigned int src4_offs = src3_offs + 1;
 
 	// arithmetic mean
 	register unsigned int d_u;
@@ -621,6 +619,8 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 	////////////////////////////////////////////////////////////////////////
 
 #ifndef __HAVE_SSE__
+	unsigned int dst_y4_offs = dst_y3_offs + 1;
+	unsigned int src4_offs = src3_offs + 1;
 
 	// without mmx/sse
 	unsigned int *src_end = src + src_pixels;
