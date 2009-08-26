@@ -25,7 +25,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
+#ifdef __HAVE_CURL__
 #include "mmstools/mmsfiletransfer.h"
 #include <string.h>
 #include <stdlib.h>
@@ -350,3 +350,5 @@ int MMSFiletransfer::getLastError(string *errormsg = NULL) {
 	}
 	return this->lasterror;
 }
+
+#endif /*__HAVE_CURL__*/

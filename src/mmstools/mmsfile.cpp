@@ -31,10 +31,15 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#ifdef __HAVE_CURL__
 #include <curl/curl.h>
+#endif
+
 #include "mmstools/mmsfile.h"
 #include "mmstools/tools.h"
 
+#ifdef __HAVE_CURL__
 /* curl calls this c-routine to transfer data to the object */
 size_t c_write_cb(char *buffer, size_t size, size_t nitems, void *outstream) {
     if (outstream)
@@ -74,6 +79,7 @@ size_t MMSFile::write_cb(char *buffer, size_t size, size_t nitems, void *outstre
 
     return size;
 }
+#endif /* __HAVE_CURL__ */
 
 
 void MMSFile::resetAll() {
@@ -92,6 +98,7 @@ void MMSFile::resetAll() {
 
 
 bool MMSFile::fillCurlBuffer(size_t want, unsigned waittime) {
+#ifdef __HAVE_CURL__
     fd_set          fdread;
     fd_set          fdwrite;
     fd_set          fdexcep;
@@ -141,10 +148,14 @@ bool MMSFile::fillCurlBuffer(size_t want, unsigned waittime) {
     } while(this->still_progr && (this->buf_pos < want));
 
     return true;
+#else
+    return false;
+#endif
 }
 
 
 void MMSFile::freeCurlBuffer(size_t want) {
+#ifdef __HAVE_CURL__
 
     if ((this->buf_pos - want) <=0) {
         if (this->buffer) free(this->buffer);
@@ -159,8 +170,8 @@ void MMSFile::freeCurlBuffer(size_t want) {
 
         this->buf_pos -= want;
     }
+#endif /*__HAVE_CURL__*/
 }
-
 
 bool MMSFile::openFile() {
     string tmp;
@@ -222,6 +233,8 @@ bool MMSFile::openFile() {
 
     if (this->type!=MMSFT_FILE)
     {
+#ifdef __HAVE_CURL__
+
         /* try to open a url */
         if (this->mode!=MMSFM_READ) {
             /* I can't use this mode here */
@@ -257,6 +270,9 @@ bool MMSFile::openFile() {
 
         /* it is a url */
         this->type = MMSFT_URL;
+#else
+		throw MMSFileError(-1, "compile curl support!");
+#endif
     }
 
     if (this->usecache) {
@@ -306,6 +322,7 @@ bool MMSFile::closeFile() {
             break;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             /* free curl */
             if (this->curl) {
             	if(this->mhandle) {
@@ -319,7 +336,9 @@ bool MMSFile::closeFile() {
                 retcode=false;
             }
             break;
-
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
         default:
             /* unknown type */
             this->lasterror = EBADF;
@@ -359,6 +378,7 @@ MMSFile::~MMSFile() {
 
 
 string MMSFile::getName(const bool effectiveUrl) {
+#ifdef __HAVE_CURL__
     if(effectiveUrl && this->type == MMSFT_URL) {
         char *buf = NULL;
         if(curl_easy_getinfo(this->curl, CURLINFO_EFFECTIVE_URL, buf) == CURLE_OK)
@@ -366,6 +386,9 @@ string MMSFile::getName(const bool effectiveUrl) {
     }
 
     return this->name;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 }
 
 MMSFileMode MMSFile::getMode() {
@@ -421,6 +444,7 @@ int MMSFile::endOfFile() {
             return 1;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->curl) {
                 if((this->buf_pos == 0) && (!this->still_progr)) {
                     /* end of file */
@@ -432,6 +456,9 @@ int MMSFile::endOfFile() {
             }
             this->lasterror = EBADF;
             return 1;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -469,6 +496,7 @@ bool MMSFile::rewindFile() {
             return false;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->curl) {
                 /* close url */
                 closeFile();
@@ -478,6 +506,9 @@ bool MMSFile::rewindFile() {
             }
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -553,6 +584,7 @@ bool MMSFile::setFilePos(long offset, MMSFilePosOrigin origin) {
             return false;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->curl) {
                 /* currently I cannot set the pointer in an url stream */
                 /* so I will always fail */
@@ -566,6 +598,9 @@ bool MMSFile::setFilePos(long offset, MMSFilePosOrigin origin) {
             /* unknown type */
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
     }
 }
 
@@ -603,6 +638,7 @@ bool MMSFile::getFilePos(long *pos) {
             return false;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->curl) {
                 /* currently I cannot get the pointer from an url stream */
                 /* so I will always fail */
@@ -611,6 +647,9 @@ bool MMSFile::getFilePos(long *pos) {
             }
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -646,11 +685,15 @@ bool MMSFile::readBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems) 
             break;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->mode!=MMSFM_READ) {
                 this->lasterror = EBADF;
                 return false;
             }
             break;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
         default:
             /* unknown type */
             this->lasterror = EBADF;
@@ -706,7 +749,8 @@ bool MMSFile::readBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems) 
             return false;
 
         case MMSFT_URL:
-            if (this->curl) {
+#ifdef __HAVE_CURL__
+        	if (this->curl) {
                 /* calc bytes to receive */
                 *ritems = nitems * size;
 
@@ -734,6 +778,9 @@ bool MMSFile::readBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems) 
             }
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -830,10 +877,14 @@ bool MMSFile::getString(char *ptr, size_t size) {
             break;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->mode!=MMSFM_READ) {
                 this->lasterror = EBADF;
                 return false;
             }
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -901,6 +952,7 @@ bool MMSFile::getString(char *ptr, size_t size) {
             return false;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->curl) {
                 /* one byte for zero termination */
                 toget=size - 1;
@@ -937,6 +989,9 @@ bool MMSFile::getString(char *ptr, size_t size) {
             }
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -1085,10 +1140,14 @@ bool MMSFile::writeBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems)
             break;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             /* currently I cannot write to an url stream */
             /* so I will always fail */
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */
@@ -1119,12 +1178,16 @@ bool MMSFile::writeBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems)
             return false;
 
         case MMSFT_URL:
+#ifdef __HAVE_CURL__
             if (this->curl) {
                 /* currently I cannot write to an url stream */
                 /* so I will always fail */
             }
             this->lasterror = EBADF;
             return false;
+#else
+    		throw MMSFileError(-1, "compile curl support!");
+#endif
 
         default:
             /* unknown type */

@@ -31,8 +31,13 @@
 
 #include "mmstools/base.h"
 
+#ifdef __HAVE_CURL__
 #include <curl/curl.h>
+#endif
 #include <sys/stat.h>
+
+MMS_CREATEERROR(MMSFileSearchError);
+
 
 //! Specifies supported types of files.
 typedef enum {
@@ -96,11 +101,19 @@ class MMSFile {
         //! MMSFT_FILE: pointer to a file
         FILE        *file;
 
+#ifdef __HAVE_CURL__
         //! MMSFT_URL: pointer to a multi handle, if an url is used
         CURLM       *mhandle;
 
         //! MMSFT_URL: pointer to a curl, if an url is used
         CURL        *curl;
+#else
+        //! MMSFT_URL: pointer to a multi handle, if an url is used
+        void       *mhandle;
+
+        //! MMSFT_URL: pointer to a curl, if an url is used
+        void        *curl;
+#endif
 
         //! MMSFT_URL: buffer to cached data from url
         char        *buffer;
@@ -126,11 +139,13 @@ class MMSFile {
         //! Internal function which resets the most private variables.
         void resetAll();
 
+#ifdef __HAVE_CURL__
         //! Internal function which work with the own curl buffer.
         bool fillCurlBuffer(size_t want, unsigned waittime=20);
 
         //! Internal function which work with the own curl buffer.
         void freeCurlBuffer(size_t want);
+#endif
 
         //! Internal function which opens a file.
         bool openFile();
@@ -139,9 +154,11 @@ class MMSFile {
         bool closeFile();
 
     public:
+#ifdef __HAVE_CURL__
+
         //! Virtual function for the curl write callback.
         virtual size_t write_cb(char *buffer, size_t size, size_t nitems, void *outstream);
-
+#endif
         //! Constructor of class MMSFile.
         /*!
         \param name     name of the file ("/mms/data/file" or "http://address/file")

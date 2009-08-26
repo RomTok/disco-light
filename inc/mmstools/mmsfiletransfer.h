@@ -28,7 +28,7 @@
 
 #ifndef MMSFILETRANSFER_H_
 #define MMSFILETRANSFER_H_
-
+#ifdef __HAVE_CURL__
 #include "mmstools/base.h"
 
 #include <curl/curl.h>
@@ -189,4 +189,5 @@ public:
 	int getLastError(string *errormsg);
 };
 
+#endif __HAVE_CURL__
 #endif /*MMSFILETRANSFER_H_*/
