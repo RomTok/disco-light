@@ -802,7 +802,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	    printVarScreenInfo();
 
 	    struct omapfb_plane_info plane_info;
-
+	    ioctl (this->fd, OMAPFB_QUERY_PLANE, &plane_info);
 	    plane_info.enabled = 1;
 	    plane_info.pos_x = 0;
 	    plane_info.pos_y = 0;
