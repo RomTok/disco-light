@@ -578,7 +578,7 @@ if 'check' in BUILD_TARGETS:
 # TODO: handle disko_pc_libs                                          #
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
-	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2, freetype2'
+	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
 	if env['LIBPATH']:
 		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
@@ -589,6 +589,10 @@ if 'install' in BUILD_TARGETS:
 	else:
 		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
 	
+	if (env['enable_curl']):
+		disko_pc_requires += ', libcurl'
+		disko_pc_libs += ' -lcurl'
+		
 	if env.has_key('rt'):
 		disko_pc_libs += ' -lrt'
 
