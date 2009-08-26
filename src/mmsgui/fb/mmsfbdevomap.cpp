@@ -57,7 +57,8 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 		char      dev[100];
 		sprintf(dev, "/dev/fb%d", i);
 		fbdev = new MMSFBDev();
-		if (!fbdev->openDevice(dev, (!i)?-1:-2)) {
+		if (!fbdev->openDevice(dev, (i==1)?-1:-2)) {
+//			if (!fbdev->openDevice(dev, (!i)?-1:-2)) {
 			delete fbdev;
 			closeDevice();
 			return false;
