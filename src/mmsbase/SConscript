@@ -2,7 +2,7 @@ import os
 import scons.helpers
 Import('env idir_lib idir_inc')
 
-if not env['big_lib']:
+if not env['big_lib'] and not env['static_lib']:
 	libmmsbase = env.SharedLibrary('../../../lib/libmmsbase', Glob('*.cpp'), LIBS = "")
 	env.Install(idir_lib, libmmsbase)
 	Export('libmmsbase')

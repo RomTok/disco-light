@@ -2,7 +2,7 @@ import os
 import scons.helpers
 Import('env idir_lib idir_inc')
 
-if not env['big_lib']:
+if not env['big_lib'] and not env['static_lib']:
 	libmmstools = env.SharedLibrary('../../../lib/libmmstools', Glob('*.cpp'), LIBS = "")
 	env.Install(idir_lib, libmmstools)
 	Export('libmmstools')

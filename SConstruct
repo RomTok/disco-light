@@ -202,10 +202,12 @@ if env['use_sse']:
 		env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # format output
-env['SHCXXCOMSTR']  = '  [CXX] $SOURCE'
-env['SHLINKCOMSTR'] = '  [LD]  $TARGET'
-env['CXXCOMSTR']    = '  [CXX] $SOURCE'
-env['LINKCOMSTR']   = '  [LD]  $TARGET'
+env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
+env['SHLINKCOMSTR'] = '  [LD]     $TARGET'
+env['CXXCOMSTR']    = '  [CXX]    $SOURCE'
+env['LINKCOMSTR']   = '  [LD]     $TARGET'
+env['ARCOMSTR']     = '  [AR]     $TARGET'
+env['RANLIBCOMSTR'] = '  [RANLIB] $TARGET'
 
 #######################################################################
 # Subdirectories                                                      #
@@ -576,17 +578,21 @@ if 'check' in BUILD_TARGETS:
 # TODO: handle disko_pc_libs                                          #
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
-	disko_pc_requires = 'libxml-2.0 >= 2.6, libcurl, sigc++-2.0, libpng >= 1.2, freetype2'
+	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
 	if env['LIBPATH']:
 		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
 		disko_pc_libs = ''
 		
-	if env['big_lib']:
+	if env['big_lib'] or env['static_lib']:
 		disko_pc_libs += ' -ldisko'
 	else:
 		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
 	
+	if (env['enable_curl']):
+		disko_pc_requires += ', libcurl'
+		disko_pc_libs += ' -lcurl'
+		
 	if env.has_key('rt'):
 		disko_pc_libs += ' -lrt'
 
@@ -602,9 +608,9 @@ if 'install' in BUILD_TARGETS:
 	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm'
 		
-	if env['media'] != 'none':
+	if env['media'] and env['media'] != 'none':
 	 	disko_pc_requires += ', alsa'
-		if not env['big_lib']:
+		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmsmedia'
 		
 	if 'xine' in env['media']:

@@ -56,24 +56,24 @@
  * \section intro_sec Introduction
  *
  * Disko is a GPL-licensed application framework, that can be used to develop GUI applications for
- * embedded devices. It is closely connected to the DirectFB hardware abstraction library and it is
- * specialised in touchscreen and remote control navigation. It provides a plugin based management 
- * component, which enables easy writing and extending embedded applications. 
- * Media playback (DVD, DVB, IPTV and audio streams) is provided by the well known xine media library.
- * Disko has been ported to the TI Davinci chipset together with DirectFB and runs on x86 as well.
- * The goal is to have Disko up and running on every single platform DirectFB is working on.
+ * embedded devices. It uses different backends for graphics and it is specialised in touchscreen
+ * and remote control navigation. It provides a plugin based management component, which enables
+ * easy writing and extending embedded applications. 
+ * Media playback (DVD, DVB, IPTV and audio streams) is provided by the well known xine media library
+ * or gstreamer.
  * 
  * Currently the following features are supported:
  *
+ * - Graphics support for DirectFB, X11 and different framebuffer implementations (Vesa, DaVinci, OMAP)
  * - Input-Handling for Touchscreens and Remote-Controls
  * - Event-based communication
  * - flexible GUI development:
  * - XML-based dialog descriptions
  * - Themeable and skinnable
- * - Streaming of media content through xine library
+ * - Streaming of media content through xine library or gstreamer
  * - SQLite3, MySQL and ODBC database support
- * - basic SIP support
  * - basic Flash support
+ * - Filetransfer
  *
  * \section install_sec Installation
  *
@@ -89,8 +89,6 @@
  * </tr><tr>
  *   <td>libjpeg</td><td align="center">*</td><td><a href="http://www.ijg.org">http://www.ijg.org</a></td>
  * </tr><tr>
- *   <td>libcurl</td><td align="center">*</td><td><a href="http://curl.haxx.se">http://curl.haxx.se</a></td>
- * </tr><tr>
  *   <td>libsigc++</td><td align="center">*</td><td><a href="http://libsigc.sourceforge.net">http://libsigc.sourceforge.net</a></td>
  * </tr><tr>
  *   <td>libxml2</td><td align="center">2.6</td><td><a href="http://xmlsoft.org">http://xmlsoft.org</a></td>
@@ -99,11 +97,15 @@
  *
  * \subsubsection optional_sec Optional packages
  *
- * \b Note: You have to choose one graphics backend (DirectFB or X11) and at least one database backend.
+ * \b Note: You have to choose one graphics backend (FBDev, DirectFB or X11) and at least one database backend.
  *
  * <div style="border:1px solid #cccccc;background-color:#f5f5f5;">
  * <table border="0" cellspacing="10"><tr>
  *   <td><b>Feature</b></td><td><b>Package</b></td><td><b>Minimum version</b></td><td><b>Website</b></td>
+ * </tr><tr>
+ *   <td>CURL support</td><td>libcurl</td><td align="center">*</td><td><a href="http://curl.haxx.se">http://curl.haxx.se</a></td>
+ * </tr><tr>
+ *   <td>Support of loading shared libraries</td><td>libdl</td><td align="center">*</td><td>libc feature</td>
  * </tr><tr>
  *   <td>DirectFB support</td><td>DirectFB</td><td align="center">*</td><td><a href="http://www.directfb.org">http://www.directfb.org</a></td>
  * </tr><tr>
@@ -123,26 +125,32 @@
  * </tr><tr>
  *   <td>Media playback</td><td>xine</td><td align="center">1.1.15</td><td><a href="http://www.xinehq.de">http://www.xinehq.de</a></td>
  * </tr><tr>
+ *   <td></td><td>gstreamer</td><td align="center">0.10.x</td><td><a href="http://gstreamer.freedesktop.org">http://gstreamer.freedesktop.org</a></td>
+ * </tr><tr>
  *   <td></td><td>alsa-lib</td><td align="center">*</td><td><a href="http://www.alsa-project.org">http://www.alsa-project.org</a></td>
  * </tr><tr>
  *   <td>Flash support</td><td>libswfdec</td><td align="center">0.8</td><td><a href="http://swfdec.freedesktop.org">http://swfdec.freedesktop.org</a></td>
  * </tr><tr>
- *   <td>SIP support</td><td>pjsip</td><td align="center">*</td><td><a href="http://www.pjsip.org">http://www.pjsip.org</a></td>
+ *   <td>E-Mail support</td><td>vmime</td><td align="center">*</td><td><a href="http://www.vmime.org">http://www.vmime.org</a></td>
  * </tr></table>
  * </div>
  *
  * \subsection build_sec Building and installing
  *
- * Download the sources from <a href="http://www.diskohq.org/download/packages">diskohq.org</a> and build them.
- *
+ * You can fetch the sources from the git-repository or download a package from <a href="http://www.diskohq.org/download">www.diskohq.org</a>.
+ * To access the git-repository, enter the following:
  * \code
- * wget http://www.diskohq.org/downloads/disko-1.5.0.tar.bz2
- * cd <path-to-disko-1.5.0.tar.bz2>
- * tar jxf disko-1.5.0.tar.bz2
- * cd disko
+ * git clone git://diskohq.org/disko.git
+ * \endcode
+ *
+ * Now you are able to build the disko framework:
+ * \code
+ * cd <disko-source-directory>
  * scons <options>
  * scons install
  * \endcode
+ *
+ * To see a list of the options that affect the building, you can enter \c scons -h.
  *
  * If you don't specify prefix the default location will be \c /usr.
  */
