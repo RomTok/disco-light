@@ -756,7 +756,8 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 			do_switch = true;
 		}
     	else
-		if  (this->layers[0].pixelformat == pixelformat) {
+    		if  (1) {
+    	//		if  (this->layers[0].pixelformat == pixelformat) {
 			// pixelformat has not changed, so try to change only the resolution
 			printf("MMSFBDev: pixelformat is the same, so try to change the resolution to %dx%d\n",
 					width, height);
@@ -799,7 +800,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	        return false;
 	    }
 	    printVarScreenInfo();
-
+return true;
     	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
     		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
 
