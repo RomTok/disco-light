@@ -162,7 +162,7 @@ bool MMSTCPClient::receiveString(string *abuf, int buflen) {
 bool MMSTCPClient::peekString(string *abuf, int buflen) {
 	char 	mybuf[128000+1];
 	int		len;
-	unsigned int received=0;
+	int 	received=0;
 
 	if (!isConnected()) return false;
 	memset(mybuf,0,128000+1);

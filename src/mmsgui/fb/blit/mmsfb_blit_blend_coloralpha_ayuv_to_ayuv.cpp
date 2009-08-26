@@ -109,7 +109,7 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf
 				int sy = (SRC << 8) >> 24;
 				int su = (SRC << 16) >> 24;
 				int sv = SRC & 0xff;
-				register int SA= 0x100 - A;
+				//register int SA= 0x100 - A;
 
 				// multiply source with given ALPHA
 				// we have to move the 0 point of the coordinate system

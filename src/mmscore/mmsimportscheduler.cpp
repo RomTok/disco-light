@@ -128,11 +128,12 @@ void MMSImportScheduler::getImportPlugins() {
 
             /* calculate the nextTime */
             ip->nextTime = base_time;
-            if (!ip->importProperty->getOnStartUp())
+            if (!ip->importProperty->getOnStartUp()) {
                 if (ip->importProperty->getTime())
                     ip->nextTime += ip->importProperty->getTime();
                 else
                     ip->nextTime = 0;
+            }
             base_time += SCHEDULER_SLEEP_TIME;
 
             /* add item */

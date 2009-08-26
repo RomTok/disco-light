@@ -57,9 +57,8 @@ size_t c_mem_write_callback(char *buffer, size_t size, size_t nitems, void *outs
 
 
 size_t MMSFiletransfer::mem_write_callback(char *buffer, size_t size, size_t nitems, void *outstream) {
-    char    *newbuff;                           /* pointer to new buffer */
-    unsigned int     freebuff;                  /* free memory in old buffer */
-    MMSFiletransfer *instance = ((MMSFiletransfer *)outstream);
+    char    		*newbuff;                  /* pointer to new buffer */
+    unsigned int	freebuff;                  /* free memory in old buffer */
 
     /* get the byte number */
     size *= nitems;

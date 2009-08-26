@@ -28,22 +28,22 @@
 
 #include "mmsbase/mmsosdpluginhandler.h"
 
-MMSOSDPluginHandler::MMSOSDPluginHandler(MMSPluginData plugindata, bool autoload) {
-    this->loaded = false;
-    this->plugin = NULL;
-    this->plugindata = plugindata;
-    this->handler = NULL;
-    this->switcher = NULL;
-
-    if(autoload) {
+MMSOSDPluginHandler::MMSOSDPluginHandler(MMSPluginData plugindata, bool autoload, IMMSOSDPlugin *_plugin) :
+	loaded(false),
+	plugindata(plugindata),
+	plugin(_plugin),
+	handler(NULL),
+	switcher(NULL) {
+	if(plugin)
+		this->loaded = true;
+	else if(autoload)
         this->load();
-    }
 }
 
 MMSOSDPluginHandler::~MMSOSDPluginHandler() {
     if (this->loaded) {
         delete this->plugin;
-        delete this->handler;
+        if(this->handler) delete this->handler;
     }
 }
 
@@ -106,16 +106,21 @@ void MMSOSDPluginHandler::load() {
     this->handler->open();
     newproc = (NEWOSDPLUGIN_PROC)this->handler->getFunction("newOSDPlugin");
     this->plugin = newproc();
-    this->loaded = true;
+    if(this->plugin)
+    	this->loaded = true;
 }
 
 void MMSOSDPluginHandler::unload() {
     if (this->loaded == false)
         throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
-   delete this->plugin;
-   delete this->handler;
-   this->plugin = NULL;
-   this->handler = NULL;
+   if(this->plugin) {
+	   delete this->plugin;
+	   this->plugin = NULL;
+   }
+   if(this->handler) {
+	   delete this->handler;
+	   this->handler = NULL;
+   }
    this->loaded = false;
 }
 

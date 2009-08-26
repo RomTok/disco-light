@@ -130,7 +130,7 @@ static void dfb_output_cb(void *cdata, int width, int height, double ratio,
 #endif
 
 
-static void printFrameFormat(int frame_format) {
+/*static void printFrameFormat(int frame_format) {
 	switch(frame_format) {
 		case XINE_VORAW_YV12:
 			printf("YV12 frame\n");
@@ -144,7 +144,7 @@ static void printFrameFormat(int frame_format) {
 		default:
 			printf("unknown frame format\n");
 	}
-}
+}*/
 
 
 void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_height, double frame_aspect, void *data0, void *data1, void *data2) {

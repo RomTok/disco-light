@@ -56,6 +56,22 @@ MMSPluginManager::~MMSPluginManager() {
        delete *it;
 }
 
+void MMSPluginManager::registerStaticOSDPlugin(string name, IMMSOSDPlugin *plugin) {
+	this->staticOSDPlugins[name] = plugin;
+}
+
+void MMSPluginManager::registerStaticCentralPlugin(string name, IMMSCentralPlugin *plugin) {
+	this->staticCentralPlugins[name] = plugin;
+}
+
+void MMSPluginManager::registerStaticImportPlugin(string name, IMMSImportPlugin *plugin) {
+	this->staticImportPlugins[name] = plugin;
+}
+
+void MMSPluginManager::registerStaticBackendPlugin(string name, IMMSBackendPlugin *plugin) {
+	this->staticBackendPlugins[name] = plugin;
+}
+
 void MMSPluginManager::loadOSDPlugins() {
     vector<MMSPluginData *> data;
 
@@ -68,7 +84,11 @@ void MMSPluginManager::loadOSDPlugins() {
 
     for(unsigned int i=0;i<data.size();i++) {
         MMSOSDPluginHandler *myhandler;
-        myhandler = new MMSOSDPluginHandler(*(data.at(i)),true);
+        map<string, IMMSOSDPlugin*>::iterator iter = this->staticOSDPlugins.find(data.at(i)->getName());
+        if(iter != this->staticOSDPlugins.end())
+        	myhandler = new MMSOSDPluginHandler(*(data.at(i)), true, iter->second);
+        else
+        	myhandler = new MMSOSDPluginHandler(*(data.at(i)), true);
         this->osdPluginHandlers.push_back(myhandler);
         DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
@@ -85,7 +105,11 @@ void MMSPluginManager::loadCentralPlugins() {
 
     for(unsigned int i=0;i<data.size();i++) {
         MMSCentralPluginHandler *myhandler;
-        myhandler = new MMSCentralPluginHandler(*(data.at(i)),true);
+        map<string, IMMSCentralPlugin*>::iterator iter = this->staticCentralPlugins.find(data.at(i)->getName());
+        if(iter != this->staticCentralPlugins.end())
+        	myhandler = new MMSCentralPluginHandler(*(data.at(i)), true, iter->second);
+        else
+        	myhandler = new MMSCentralPluginHandler(*(data.at(i)), true);
         this->centralPluginHandlers.push_back(myhandler);
         DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
@@ -102,7 +126,11 @@ void MMSPluginManager::loadImportPlugins() {
 
     for(unsigned int i=0;i<data.size();i++) {
         MMSImportPluginHandler *myhandler;
-        myhandler = new MMSImportPluginHandler(*(data.at(i)),true);
+        map<string, IMMSImportPlugin*>::iterator iter = this->staticImportPlugins.find(data.at(i)->getName());
+        if(iter != this->staticImportPlugins.end())
+        	myhandler = new MMSImportPluginHandler(*(data.at(i)), true, iter->second);
+        else
+        	myhandler = new MMSImportPluginHandler(*(data.at(i)), true);
         this->importPluginHandlers.push_back(myhandler);
         DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }
@@ -119,7 +147,11 @@ void MMSPluginManager::loadBackendPlugins() {
 
     for(unsigned int i=0;i<data.size();i++) {
         MMSBackendPluginHandler *myhandler;
-        myhandler = new MMSBackendPluginHandler(*(data.at(i)),true);
+        map<string, IMMSBackendPlugin*>::iterator iter = this->staticBackendPlugins.find(data.at(i)->getName());
+        if(iter != this->staticBackendPlugins.end())
+        	myhandler = new MMSBackendPluginHandler(*(data.at(i)), true, iter->second);
+        else
+        	myhandler = new MMSBackendPluginHandler(*(data.at(i)), true);
         this->backendPluginHandlers.push_back(myhandler);
         DEBUGMSG("MMSCore", " %s", data.at(i)->getName().c_str());
     }

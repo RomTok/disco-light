@@ -47,7 +47,14 @@ class MMSBackendPluginHandler {
         IMMSSwitcher 		*switcher;
 
     public:
-        MMSBackendPluginHandler(MMSPluginData plugindata, bool autoload = false);
+        /**
+         * Constructor for the plugin handler of a backend plugin.
+         *
+         * @param	plugindata	The plugindata object as usually read from the database.
+         * @param	autoload	If true, the plugin will be loaded (no effect if _plugin is set)
+         * @param	_plugin		Pointer to already instantiated plugin object. Usually used for static plugins.
+         */
+        MMSBackendPluginHandler(MMSPluginData plugindata, bool autoload = false, IMMSBackendPlugin *_plugin = NULL);
         ~MMSBackendPluginHandler();
 
         bool isLoaded();
