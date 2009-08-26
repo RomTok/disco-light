@@ -584,7 +584,7 @@ if 'install' in BUILD_TARGETS:
 	else:
 		disko_pc_libs = ''
 		
-	if env['big_lib']:
+	if env['big_lib'] or env['static_lib']:
 		disko_pc_libs += ' -ldisko'
 	else:
 		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
