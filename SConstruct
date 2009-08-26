@@ -608,9 +608,9 @@ if 'install' in BUILD_TARGETS:
 	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm'
 		
-	if env['media'] != 'none':
+	if env['media'] and env['media'] != 'none':
 	 	disko_pc_requires += ', alsa'
-		if not env['big_lib']:
+		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmsmedia'
 		
 	if 'xine' in env['media']:
