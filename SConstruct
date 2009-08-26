@@ -442,7 +442,7 @@ if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
 
 # checks required if using dynamic linking support
-if(env['use_dl']);
+if(env['use_dl']):
 	if conf.CheckLibWithHeader(['libdl'], ['dlfcn.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_DL__'])
 		conf.env['libdl'] = True
