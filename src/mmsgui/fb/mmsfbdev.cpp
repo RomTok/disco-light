@@ -309,6 +309,7 @@ bool MMSFBDev::openDevice(char *device_file, int console) {
     if ((this->framebuffer_base=mmap(NULL, this->fix_screeninfo.smem_len,
                                      PROT_READ | PROT_WRITE, MAP_SHARED, this->fd, 0)) == MAP_FAILED) {
     	printf("MMSFBDev: could not mmap framebuffer memory\n");
+    	this->framebuffer_base = NULL;
     	closeDevice();
         return false;
     }
