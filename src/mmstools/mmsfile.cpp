@@ -26,11 +26,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <stdio.h>
-#include <string.h>
-#include <sys/time.h>
+#include <cstdio>
 #include <stdlib.h>
 #include <errno.h>
+#include <cstring>
 
 #ifdef __HAVE_CURL__
 #include <curl/curl.h>

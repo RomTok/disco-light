@@ -9,8 +9,8 @@ elif env['static_lib']:
 	Import('libdisko_static')
 	taffEnv.Append(LIBS = ['disko'])
 else:
-	Import('libmmsinfo libmmsconfig libmmstools libmmsgui')
-	taffEnv.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui'])
+	Import('libmmsinfo libmmsconfig libmmstools libmmsgui libmmscore libmmsinput libmmsbase')
+	taffEnv.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase'])
 
 taffEnv.Append(LIBPATH = '../../../lib') 
 taff = taffEnv.Program('../../../bin/taff', Glob('src/*.cpp'))
@@ -20,7 +20,7 @@ if env['big_lib']:
 elif env['static_lib']:
 	Depends(taff, [libdisko_static])
 else:
-	Depends(taff, [libmmsinfo, libmmsconfig, libmmstools, libmmsgui])
+	Depends(taff, [libmmsinfo, libmmsconfig, libmmstools, libmmsgui, libmmscore, libmmsinput, libmmsbase ])
 
 env.Install(idir_bin, taff)
 Export('taff')
