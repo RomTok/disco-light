@@ -67,6 +67,23 @@ void MMSWindowManager::removeWindow(MMSWindow *window){
     }
 }
 
+bool MMSWindowManager::lowerToBottom(MMSWindow *window) {
+	return window->lowerToBottom();
+}
+
+bool MMSWindowManager::raiseToTop(MMSWindow *window) {
+    // searching for popup windows and count it
+	int cnt = 0;
+    for(unsigned int i = 0; i < windows.size(); i++) {
+        if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+            if (windows.at(i)->isShown()) cnt++;
+        }
+    }
+
+    // raise window to top, cnt number of windows are over it
+    return window->raiseToTop(cnt);
+}
+
 bool MMSWindowManager::hideAllMainWindows(bool goback) {
     bool ret = false;
 
@@ -89,16 +106,26 @@ bool MMSWindowManager::hideAllMainWindows(bool goback) {
     return ret;
 }
 
-bool MMSWindowManager::hideAllPopupWindows() {
+bool MMSWindowManager::hideAllPopupWindows(bool except_modal) {
     bool ret = false;
 
-    // search for popup windows
-    for(unsigned int i = 0; i < windows.size(); i++)
-        if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW)
+    // searching for popup windows
+    for(unsigned int i = 0; i < windows.size(); i++) {
+        if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
             if (windows.at(i)->isShown()) {
+            	if (except_modal) {
+					// hide only non-modal popups
+					bool modal;
+					if (windows.at(i)->getModal(modal)) {
+						if (modal)
+							continue;
+					}
+            	}
                 windows.at(i)->hide();
                 ret = true;
             }
+        }
+    }
 
     // return true if at least one popup window was found
     return ret;
@@ -129,6 +156,23 @@ bool MMSWindowManager::hideAllRootWindows(bool willshown) {
 }
 
 void MMSWindowManager::setToplevelWindow(MMSWindow *window) {
+    if (window->getType() == MMSWINDOWTYPE_MAINWINDOW) {
+        // searching for active popup window
+        for(unsigned int i = 0; i < windows.size(); i++) {
+            if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+                if (windows.at(i)->isShown()&&(!windows.at(i)->willHide())) {
+                    // set active popup window as toplevel
+					bool modal;
+					if (windows.at(i)->getModal(modal)) {
+						if (modal) {
+		                	this->toplevel = windows.at(i);
+		                    return;
+						}
+					}
+                }
+            }
+        }
+    }
     if (window->getType() == MMSWINDOWTYPE_ROOTWINDOW) {
         // searching for active main window
         for(unsigned int i = 0; i < windows.size(); i++) {

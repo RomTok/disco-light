@@ -254,8 +254,10 @@ bool MMSFBWindow::resize(int w, int h) {
     return true;
 }
 
-bool MMSFBWindow::raiseToTop() {
+bool MMSFBWindow::raiseToTop(int zlevel) {
     DFBResult   dfbres;
+
+//TODO: zlevel does not work for DFB
 
     /* check if initialized */
     INITCHECK;
@@ -461,13 +463,13 @@ bool MMSFBWindow::resize(int w, int h) {
     return true;
 }
 
-bool MMSFBWindow::raiseToTop() {
+bool MMSFBWindow::raiseToTop(int zlevel) {
 
     /* check if initialized */
     INITCHECK;
 
     /* raise to top of the window stack */
-    mmsfbwindowmanager->raiseToTop(this);
+    mmsfbwindowmanager->raiseToTop(this, zlevel);
 
     return true;
 }

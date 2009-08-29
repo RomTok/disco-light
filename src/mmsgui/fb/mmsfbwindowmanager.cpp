@@ -226,46 +226,80 @@ bool MMSFBWindowManager::removeWindow(MMSFBWindow *window) {
     return false;
 }
 
-bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window) {
+bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window, int zlevel) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* stop parallel processing */
+    // stop parallel processing
     lock.lock();
 
-    /* search for item */
-    for (unsigned int i=0; i < this->windows.size(); i++)
-        if (this->windows.at(i).window == window) {
-            /* window found */
-            if (i < this->windows.size()-1) {
-                /* window is not at the top, raise it now */
-                AVAILABLE_WINDOWS aw = this->windows.at(i);
-                this->windows.erase(this->windows.begin()+i);
-                this->windows.push_back(aw);
+    // get requested zorder index
+    zlevel = this->vwins.size() - 1 - zlevel;
+    if (zlevel < 0)
+    	zlevel = 0;
+    else
+    if (zlevel >= (int)this->vwins.size())
+    	zlevel = this->vwins.size() - 1;
 
-                /* search for item within visible list */
-                for (unsigned int j=0; j < this->vwins.size(); j++)
-                    if (this->vwins.at(j).window == window) {
-                        /* window found */
-                        if (i < this->vwins.size()-1) {
-                            /* window is not at the top, raise it now */
-                            VISIBLE_WINDOWS vw = this->vwins.at(j);
-                            this->vwins.erase(this->vwins.begin()+j);
-                            this->vwins.push_back(vw);
+    // search for item within visible list
+    for (unsigned int i=0; i < this->vwins.size(); i++)
+        if (this->vwins.at(i).window == window) {
+            // window found
+            if ((int)i < zlevel) {
+                // window is not at the top or the requested zlevel, raise it now
+            	// if the requested zlevel is less than the current zlevel, nothing will be done
+                VISIBLE_WINDOWS vw = this->vwins.at(i);
+                this->vwins.erase(this->vwins.begin()+i);
+                this->vwins.insert(this->vwins.begin()+zlevel, vw);
 
-                            /* draw the window */
-                            flipSurface(vw.surface, NULL, true);
+                // change the windows list
+                if ((int)this->vwins.size() <= zlevel+1) {
+                	// at the top
+                    for (unsigned int i=0; i < this->windows.size(); i++)
+                        if (this->windows.at(i).window == window) {
+                            // window found
+                            if (i < this->windows.size()-1) {
+                            	// put at the top
+                                AVAILABLE_WINDOWS aw = this->windows.at(i);
+                                this->windows.erase(this->windows.begin()+i);
+                                this->windows.push_back(aw);
+                            }
+                            break;
                         }
-                    }
+                }
+                else {
+                    for (unsigned int i=0; i < this->windows.size(); i++)
+                        if (this->windows.at(i).window == window) {
+                            // window found
+                            if (i < this->windows.size()-1) {
+                            	// put it behind the swin
+            					MMSFBWindow *swin = this->vwins.at(zlevel + 1).window;
+                                for (unsigned int j=0; j < this->windows.size(); j++)
+                                    if (this->windows.at(j).window == swin) {
+                                        // window found
+                                        AVAILABLE_WINDOWS aw = this->windows.at(i);
+                                        this->windows.insert(this->windows.begin()+j, aw);
+                                        if (i>=j) i++;
+                                        this->windows.erase(this->windows.begin()+i);
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
+                }
+
+                // draw the window
+                flipSurface(vw.surface, NULL, true);
             }
 
-            /* unlock */
+            // unlock
             lock.unlock();
             return true;
         }
 
-    /* not found */
+
+    // not found
     lock.unlock();
     return false;
 }

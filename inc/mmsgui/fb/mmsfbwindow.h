@@ -82,7 +82,7 @@ class MMSFBWindow {
         bool getSize(int *w, int *h);
         bool resize(int w, int h);
 
-        bool raiseToTop();
+        bool raiseToTop(int zlevel = 0);
         bool lowerToBottom();
 
         bool setVisibleRectangle(MMSFBRectangle *rect = NULL);

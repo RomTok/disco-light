@@ -104,7 +104,7 @@ class MMSFBWindowManager {
         bool addWindow(MMSFBWindow *window);
         bool removeWindow(MMSFBWindow *window);
 
-        bool raiseToTop(MMSFBWindow *window);
+        bool raiseToTop(MMSFBWindow *window, int zlevel = 0);
         bool lowerToBottom(MMSFBWindow *window);
 
         bool loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *vwin);

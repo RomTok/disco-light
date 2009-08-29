@@ -680,7 +680,7 @@ class MMSWindow {
 
 
 
-        bool raiseToTop();
+        bool raiseToTop(int zlevel = 0);
         bool lowerToBottom();
 
 

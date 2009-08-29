@@ -1613,7 +1613,7 @@ bool MMSWindow::show() {
     if (getType() == MMSWINDOWTYPE_MAINWINDOW) {
         /* hide all main and popup windows */
         if (this->windowmanager) {
-            this->windowmanager->hideAllPopupWindows();
+            this->windowmanager->hideAllPopupWindows(true);
             this->windowmanager->hideAllMainWindows();
         }
     }
@@ -1708,13 +1708,13 @@ void MMSWindow::showBufferedShown() {
 //////////////////
 
 
-bool MMSWindow::raiseToTop() {
+bool MMSWindow::raiseToTop(int zlevel) {
 //printf("ZZZ: raisetotop %s\n", name.c_str());
     if (!this->parent) {
         // normal parent window
         // set the window to top
         if (this->window)
-            return this->window->raiseToTop();
+            return this->window->raiseToTop(zlevel);
     }
     else {
     	// child window
@@ -1869,18 +1869,24 @@ bool MMSWindow::showAction(bool *stopaction) {
 
     if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
         // hide the current root window
-        if (this->windowmanager)
+        if (this->windowmanager) {
             this->windowmanager->hideAllRootWindows(true);
-
-        // set the root window to bottom
-        lowerToBottom();
+            this->windowmanager->lowerToBottom(this);
+        }
+        else {
+        	lowerToBottom();
+        }
     }
     else {
     	// bring all other windows in foreground
         if (!this->parent) {
-            // normal parent window
-            // set the window to top
-        	raiseToTop();
+            // normal parent window (main or popup)
+            if (this->windowmanager) {
+            	this->windowmanager->raiseToTop(this);
+            }
+            else {
+            	raiseToTop();
+            }
         }
         else {
         	// change the z-order of child windows?

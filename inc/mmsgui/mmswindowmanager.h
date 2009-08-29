@@ -66,8 +66,11 @@ class MMSWindowManager : public IMMSWindowManager {
 		void addWindow(MMSWindow *window);
         void removeWindow(MMSWindow *window);
 
+        bool lowerToBottom(MMSWindow *window);
+		bool raiseToTop(MMSWindow *window);
+
         bool hideAllMainWindows(bool goback = false);
-        bool hideAllPopupWindows();
+        bool hideAllPopupWindows(bool except_modal = false);
         bool hideAllRootWindows(bool willshown = false);
 
         void setToplevelWindow(MMSWindow *window);

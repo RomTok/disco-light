@@ -44,8 +44,11 @@ class IMMSWindowManager {
         virtual void addWindow(MMSWindow *window) = 0;
         virtual void removeWindow(MMSWindow *window) = 0;
 
+        virtual bool lowerToBottom(MMSWindow *window) = 0;
+		virtual bool raiseToTop(MMSWindow *window) = 0;
+
         virtual bool hideAllMainWindows(bool goback = false) = 0;
-        virtual bool hideAllPopupWindows() = 0;
+        virtual bool hideAllPopupWindows(bool except_modal = false) = 0;
         virtual bool hideAllRootWindows(bool willshown = false) = 0;
 
         virtual void setToplevelWindow(MMSWindow *window) = 0;
