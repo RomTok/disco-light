@@ -1943,16 +1943,26 @@ bool MMSWindow::showAction(bool *stopaction) {
 	/* window is shown (important to set it before fading!!!) */
     shown=true;
 
-    /* only main or root windows can get inputs */
-    /* child windows get the inputs from the parent main or root window */
-    switch (getType()) {
-        case MMSWINDOWTYPE_MAINWINDOW:
-        case MMSWINDOWTYPE_ROOTWINDOW:
-            if (this->windowmanager)
-                this->windowmanager->setToplevelWindow(this);
-            break;
-        default:
-            break;
+    // per default only main or root windows can get inputs
+    // popup windows can get inputs if the modal mode is set
+    // child windows get the inputs from the parent main, root or popup window
+    if (this->windowmanager) {
+		switch (getType()) {
+			case MMSWINDOWTYPE_MAINWINDOW:
+			case MMSWINDOWTYPE_ROOTWINDOW:
+				this->windowmanager->setToplevelWindow(this);
+				break;
+			case MMSWINDOWTYPE_POPUPWINDOW: {
+				bool modal;
+				if (getModal(modal)) {
+					if (modal)
+						this->windowmanager->setToplevelWindow(this);
+				}
+				break;
+			}
+			default:
+				break;
+		}
     }
 
     if ((this->parent)||((!this->parent)&&(this->window))) {
@@ -2520,12 +2530,21 @@ bool MMSWindow::setFirstFocus(bool cw) {
 //printf("XXX: setFirstFocus1 to %s %x\n", name.c_str(), this);
 
 
-	/* only main, root and child windows can get inputs */
-    /* other windows do not need focused widgets */
+    // per default only main or root windows can get inputs
+    // popup windows can get inputs if the modal mode is set
+    // child windows get the inputs from the parent main, root or popup window
     switch (getType()) {
         case MMSWINDOWTYPE_MAINWINDOW:
         case MMSWINDOWTYPE_ROOTWINDOW:
             break;
+		case MMSWINDOWTYPE_POPUPWINDOW: {
+			bool modal;
+			if (getModal(modal)) {
+				if (modal)
+					this->windowmanager->setToplevelWindow(this);
+			}
+			break;
+		}
         case MMSWINDOWTYPE_CHILDWINDOW:
             if (!cw) return false;
 //printf ("parent->focusedChildWin %d\n", parent->focusedChildWin);

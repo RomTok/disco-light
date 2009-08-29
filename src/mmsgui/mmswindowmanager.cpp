@@ -51,7 +51,7 @@ MMSFBRectangle MMSWindowManager::getVRect() {
 }
 
 void MMSWindowManager::addWindow(MMSWindow *window) {
-    /* add window to list */
+    // add window to list
     this->windows.push_back(window);
 }
 
@@ -70,9 +70,9 @@ void MMSWindowManager::removeWindow(MMSWindow *window){
 bool MMSWindowManager::hideAllMainWindows(bool goback) {
     bool ret = false;
 
-    /* search for main windows */
-    for(unsigned int i = 0; i < windows.size(); i++)
-        if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW)
+    // searching for main windows
+    for(unsigned int i = 0; i < windows.size(); i++) {
+        if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW) {
             if (windows.at(i)->isShown()) {
                 if (this->toplevel == windows.at(i)) {
                     removeWindowFromToplevel(windows.at(i));
@@ -82,15 +82,17 @@ bool MMSWindowManager::hideAllMainWindows(bool goback) {
                     windows.at(i)->hide();
                 ret = true;
             }
+        }
+    }
 
-    /* return true if at least one main window was found */
+    // return true if at least one main window was found
     return ret;
 }
 
 bool MMSWindowManager::hideAllPopupWindows() {
     bool ret = false;
 
-    /* search for popup windows */
+    // search for popup windows
     for(unsigned int i = 0; i < windows.size(); i++)
         if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW)
             if (windows.at(i)->isShown()) {
@@ -98,14 +100,14 @@ bool MMSWindowManager::hideAllPopupWindows() {
                 ret = true;
             }
 
-    /* return true if at least one popup window was found */
+    // return true if at least one popup window was found
     return ret;
 }
 
 bool MMSWindowManager::hideAllRootWindows(bool willshown) {
     bool ret = false;
 
-    /* search for root windows */
+    // search for root windows
     for(unsigned int i = 0; i < windows.size(); i++)
         if (windows.at(i)->getType() == MMSWINDOWTYPE_ROOTWINDOW)
             if (windows.at(i)->isShown()) {
@@ -118,24 +120,26 @@ bool MMSWindowManager::hideAllRootWindows(bool willshown) {
                 ret = true;
             }
 
-    /* if at least one root window was hidden and no other will shown, show the default root window */
+    // if at least one root window was hidden and no other will shown, show the default root window
     if ((ret)&&(!willshown))
     	showBackgroundWindow();
 
-    /* return true if at least one root window was found */
+    // return true if at least one root window was found
     return ret;
 }
 
 void MMSWindowManager::setToplevelWindow(MMSWindow *window) {
     if (window->getType() == MMSWINDOWTYPE_ROOTWINDOW) {
-        /* search for active main window */
-        for(unsigned int i = 0; i < windows.size(); i++)
-            if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW)
+        // searching for active main window
+        for(unsigned int i = 0; i < windows.size(); i++) {
+            if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW) {
                 if (windows.at(i)->isShown()&&(!windows.at(i)->willHide())) {
-                    /* set active main window as toplevel */
+                    // set active main window as toplevel
                     this->toplevel = windows.at(i);
                     return;
                 }
+            }
+        }
     }
     this->toplevel = window;
 }
@@ -145,19 +149,49 @@ MMSWindow *MMSWindowManager::getToplevelWindow() {
 }
 
 void MMSWindowManager::removeWindowFromToplevel(MMSWindow *window) {
-    if (this->toplevel == window) {
-        if (window->getType() == MMSWINDOWTYPE_MAINWINDOW) {
-            /* search for active root window */
-            for(unsigned int i = 0; i < windows.size(); i++)
-                if (windows.at(i)->getType() == MMSWINDOWTYPE_ROOTWINDOW)
-                    if (windows.at(i)->isShown()) {
-                        /* set active root window as toplevel */
-                        this->toplevel = windows.at(i);
-                        return;
-                    }
-        }
-        this->toplevel = NULL;
-    }
+	// toplevel window?
+    if (this->toplevel != window)
+    	return;
+
+	if (window->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+		// a popup window will be hidden, so try to find an active
+		// popup or main window to get the toplevel status
+		for(unsigned int i = 0; i < windows.size(); i++) {
+			if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+				if (windows.at(i) != window && windows.at(i)->isShown()) {
+					// set active popup window as toplevel
+					this->toplevel = windows.at(i);
+					return;
+				}
+			}
+		}
+		for(unsigned int i = 0; i < windows.size(); i++) {
+			if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW) {
+				if (windows.at(i)->isShown()) {
+					// set active main window as toplevel
+					this->toplevel = windows.at(i);
+					return;
+				}
+			}
+		}
+	}
+
+	if ((window->getType() == MMSWINDOWTYPE_MAINWINDOW) || (window->getType() == MMSWINDOWTYPE_POPUPWINDOW)) {
+		// a main or popup window will be hidden, so try to find an active
+		// root window to get the toplevel status
+		for(unsigned int i = 0; i < windows.size(); i++) {
+			if (windows.at(i)->getType() == MMSWINDOWTYPE_ROOTWINDOW) {
+				if (windows.at(i)->isShown()) {
+					// set active root window as toplevel
+					this->toplevel = windows.at(i);
+					return;
+				}
+			}
+		}
+	}
+
+	// no window found, no toplevel :)
+	this->toplevel = NULL;
 }
 
 void MMSWindowManager::setBackgroundWindow(MMSWindow *window) {
