@@ -39,7 +39,7 @@
 #include <sys/mman.h>
 #include <sys/kd.h>
 #include <linux/vt.h>
-
+#include "mmsgui/fb/omapfb.h"
 #include "mmsgui/fb/mmsfbdev.h"
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDev is not initialized");return false;}
@@ -309,6 +309,7 @@ bool MMSFBDev::openDevice(char *device_file, int console) {
     if ((this->framebuffer_base=mmap(NULL, this->fix_screeninfo.smem_len,
                                      PROT_READ | PROT_WRITE, MAP_SHARED, this->fd, 0)) == MAP_FAILED) {
     	printf("MMSFBDev: could not mmap framebuffer memory\n");
+    	this->framebuffer_base = NULL;
     	closeDevice();
         return false;
     }
@@ -756,8 +757,8 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 			do_switch = true;
 		}
     	else
-    		if  (1) {
-    	//		if  (this->layers[0].pixelformat == pixelformat) {
+    		//if  (1) {
+		if  (this->layers[0].pixelformat == pixelformat) {
 			// pixelformat has not changed, so try to change only the resolution
 			printf("MMSFBDev: pixelformat is the same, so try to change the resolution to %dx%d\n",
 					width, height);
@@ -779,7 +780,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
     }
 
 	if (do_switch) {
-		this->var_screeninfo.nonstd = 12;
+		//this->var_screeninfo.nonstd = 12;
 		// switch now
 	    if (ioctl(this->fd, FBIOPUT_VSCREENINFO, &this->var_screeninfo) < 0) {
 	    	printf("MMSFBDev: could not switch to mode %dx%d, pixelformat %s (%d bits)\n",
@@ -800,7 +801,25 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	        return false;
 	    }
 	    printVarScreenInfo();
-return true;
+    	printf("MMSFBDev: query plane\n");
+
+/*	    struct omapfb_plane_info plane_info;
+	    ioctl (this->fd, OMAPFB_QUERY_PLANE, &plane_info);
+	    plane_info.enabled = 1;
+	    plane_info.pos_x = 0;
+	    plane_info.pos_y = 0;
+	    plane_info.out_width = this->var_screeninfo.xres;
+	    plane_info.out_height = this->var_screeninfo.yres;
+
+	    printf("MMSFBDev: setup plane\n");
+	    if (ioctl (this->fd, OMAPFB_SETUP_PLANE, &plane_info)) {
+	    	printf("MMSFBDev: could not setup plane\n");
+	        return false;
+
+	    }
+    	printf("MMSFBDev: done setup plane\n");
+*/
+//return true;
     	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
     		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
 

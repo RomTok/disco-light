@@ -580,9 +580,9 @@ if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
 	if env['LIBPATH']:
-		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
+		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH']) + ' -lpthread'
 	else:
-		disko_pc_libs = ''
+		disko_pc_libs = ' -lpthread'
 		
 	if env['big_lib'] or env['static_lib']:
 		disko_pc_libs += ' -ldisko'
@@ -624,12 +624,12 @@ if 'install' in BUILD_TARGETS:
 
 	if env['enable_flash']:
 		disko_pc_requires += ', swfdec-' + swfdecversion
-		if not env['big_lib']:
+		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmsflash'
 
 	if env['enable_sip']:
 		disko_pc_requires += ', libpj'
-		if not env['big_lib']:
+		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmssip'
 		if('uuid' in env['LIBS']):
 			disko_pc_requires += ', uuid'
