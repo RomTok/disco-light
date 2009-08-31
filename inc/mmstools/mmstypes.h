@@ -361,7 +361,7 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_1	"YUY2, RGB32"
 
 //! list of valid pixelformats used for layer surfaces
-#define MMSFB_PF_VALID_BUFFERMODES "BACKSYSTEM BACKVIDEO"
+#define MMSFB_PF_VALID_BUFFERMODES "BACKVIDEO BACKSYSTEM TRIPLE WINDOWS"
 
 // conversion routines for pixel formats
 string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf);

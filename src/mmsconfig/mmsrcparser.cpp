@@ -388,7 +388,9 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	        this->graphics.videolayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerbuffermode")) {
 	    	if((xmlStrcasecmp(parvalue, (const xmlChar *) "BACKSYSTEM") != 0) &&
-	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "BACKVIDEO") != 0))
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "BACKVIDEO") != 0) &&
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "TRIPLE") != 0) &&
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "WINDOWS") != 0))
             	WRONG_VALUE(parname, string((const char *)parvalue), MMSFB_PF_VALID_BUFFERMODES, "");
 	        this->graphics.videolayer.buffermode = strToUpr(string((const char *)parvalue));
 	    } else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerid"))
@@ -402,7 +404,9 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	        this->graphics.graphicslayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode")) {
 	    	if((xmlStrcasecmp(parvalue, (const xmlChar *) "BACKSYSTEM") != 0) &&
-	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "BACKVIDEO") != 0))
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "BACKVIDEO") != 0) &&
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "TRIPLE") != 0) &&
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "WINDOWS") != 0))
             	WRONG_VALUE(parname, string((const char *)parvalue), MMSFB_PF_VALID_BUFFERMODES, "");
 	        this->graphics.graphicslayer.buffermode = strToUpr(string((const char *)parvalue));
 		} else if (mode == THROUGH_GRAPHICS_MODE_NORMAL) {
