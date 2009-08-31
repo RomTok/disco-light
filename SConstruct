@@ -88,6 +88,7 @@ if sconsVersion < (0,98,1):
 	PathOption('prefix',        'Installation directory', '/usr', PathOption.PathIsDirCreate),
 	PathOption('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
 	BoolOption('debug',         'Build with debug symbols and without optimize', False),
+	BoolOption('size',          'Optimize for size (only if debug=n)', False),
 	BoolOption('messages',      'Build with logfile support', False),
 	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
 	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
@@ -110,6 +111,7 @@ else:
 	PathVariable('prefix',        'Installation directory', '/usr', PathVariable.PathIsDirCreate),
 	PathVariable('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
 	BoolVariable('debug',         'Build with debug symbols and without optimize', False),
+	BoolVariable('size',          'Optimize for size (only if debug=n)', False),
 	BoolVariable('messages',      'Build with logfile support', False),
 	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
 	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
@@ -171,9 +173,15 @@ if env['profile']:
 	env.Replace(debug = 1)
 
 if env['debug']:
+	if env['size']:
+		print 'Warning: You cannot use the size option if debugging support is enabled!'
 	env['CCFLAGS'].extend(['-O0', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
 else:
-	env['CCFLAGS'].extend(['-O3'])
+	if env['size']:
+		env['CCFLAGS'].extend(['-Os'])
+	else:
+		env['CCFLAGS'].extend(['-O3'])
+	env['LINKFLAGS'].extend(['-s'])
 
 # check which sse version to use
 if env['use_sse']:
