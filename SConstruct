@@ -588,14 +588,14 @@ if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
 	if env['LIBPATH']:
-		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH']) + ' -lpthread'
+		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
-		disko_pc_libs = ' -lpthread'
+		disko_pc_libs = ''
 		
 	if env['big_lib'] or env['static_lib']:
-		disko_pc_libs += ' -ldisko'
+		disko_pc_libs += ' -ldisko -lpthread'
 	else:
-		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
+		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread'
 	
 	if (env['enable_curl']):
 		disko_pc_requires += ', libcurl'
