@@ -155,7 +155,36 @@ bool MMSWindowManager::hideAllRootWindows(bool willshown) {
     return ret;
 }
 
-void MMSWindowManager::setToplevelWindow(MMSWindow *window) {
+bool MMSWindowManager::setToplevelWindow(MMSWindow *window) {
+    if (window->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+        // set popup window as toplevel if it is in modal mode
+		bool modal;
+		if (window->getModal(modal)) {
+			if (modal) {
+            	this->toplevel = window;
+                return true;
+			}
+		}
+
+		// popup window is not set as toplevel
+		return false;
+    }
+
+    if (window->getType() != MMSWINDOWTYPE_MAINWINDOW && window->getType() != MMSWINDOWTYPE_ROOTWINDOW) {
+    	// this type cannot be set as toplevel
+    	return false;
+    }
+
+    if (this->toplevel) {
+		// check current toplevel window
+		if (this->toplevel->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+			if (this->toplevel->isShown()&&(!this->toplevel->willHide())) {
+				// current toplevel window is already shown and keep the toplevel status
+				return false;
+			}
+		}
+	}
+
     if (window->getType() == MMSWINDOWTYPE_MAINWINDOW) {
         // searching for active popup window
         for(unsigned int i = 0; i < windows.size(); i++) {
@@ -166,13 +195,14 @@ void MMSWindowManager::setToplevelWindow(MMSWindow *window) {
 					if (windows.at(i)->getModal(modal)) {
 						if (modal) {
 		                	this->toplevel = windows.at(i);
-		                    return;
+		                    return false;
 						}
 					}
                 }
             }
         }
     }
+
     if (window->getType() == MMSWINDOWTYPE_ROOTWINDOW) {
         // searching for active main window
         for(unsigned int i = 0; i < windows.size(); i++) {
@@ -180,12 +210,15 @@ void MMSWindowManager::setToplevelWindow(MMSWindow *window) {
                 if (windows.at(i)->isShown()&&(!windows.at(i)->willHide())) {
                     // set active main window as toplevel
                     this->toplevel = windows.at(i);
-                    return;
+                    return false;
                 }
             }
         }
     }
+
+    // set new toplevel window
     this->toplevel = window;
+    return true;
 }
 
 MMSWindow *MMSWindowManager::getToplevelWindow() {
