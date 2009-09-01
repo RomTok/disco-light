@@ -53,31 +53,22 @@ h4 {
 }
 
 .example-code { 
-	background-color:#cfdceb;
-	border:1px dashed #cfdc00; 
-	padding:3px; 
+	background:#FAF9BD none repeat scroll 0 0;
+	border:1px solid black;
+	padding:5px;
 	margin:20px; 
-	font-family:Courier; 
+	width:750px;
 }
 
 .inline-code { 
 	font-family:Courier; 
 }
 
-.example-bullets { 
-	background-color:#cfdceb;
-	border:1px dashed #135cae; 
-	margin:20px; padding:23px;
-}
-
-table { 
-	background-color:#fff4f4; border:2px solid; 
-}
-
 table.example { 
-	background-color:#cfdceb;
-	border:1px dashed #135cae; 
-	padding:3px; margin:20px; 
+	background:#FAF9BD none repeat scroll 0 0;
+	border:1px solid black;
+	padding:3px; 
+	margin:20px; 
 	font-size:12px;
 	text-align:left; 
 }
