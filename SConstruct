@@ -486,7 +486,7 @@ if('xine' in env['media'] and not '-c' in sys.argv):
 			print '\n***************************************************'
 			env['media'].remove('xine')
 		else:
-			conf.env['CCFLAGS'].extend(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 	else:
@@ -497,7 +497,7 @@ if('xine' in env['media'] and not '-c' in sys.argv):
 			print '\n**************************************************'
 			env['media'].remove('xine')
 		else:
-			conf.env['CCFLAGS'].extend(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 
@@ -515,11 +515,11 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 		print '\n***************************************************'
 		env['media'].remove('gstreamer')
 	else:
-		conf.env['CCFLAGS'].extend(['-D__HAVE_GSTREAMER__'])
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
 
 if(env['media']):
-	conf.checkSimpleLib(['alsa'], 'alsa/version.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+	if conf.checkSimpleLib(['aalsa'], 'aalsa/version.h', required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 
 
 	
