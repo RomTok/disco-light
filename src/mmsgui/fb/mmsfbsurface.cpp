@@ -1654,11 +1654,15 @@ bool MMSFBSurface::getBlittingFlags(MMSFBBlittingFlags *flags) {
 
 bool MMSFBSurface::extendedLock(MMSFBSurface *src, MMSFBSurfacePlanes *src_planes,
 								MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes) {
+
+printf("src : '%p'\ndst: '%p'\nsrc_planes: '%p'\n dst_planes '%p'\n", src, dst, src_planes, dst_planes);
 	if (src) {
 		memset(src_planes, 0, sizeof(MMSFBSurfacePlanes));
 		src->lock(MMSFB_LOCK_READ, src_planes, false);
-		if (!src_planes->ptr)
+		if (!src_planes->ptr) {
+printf("src_planes->ptr is NULL\n");
 			return false;
+		}
 	}
 	if (dst) {
 		memset(dst_planes, 0, sizeof(MMSFBSurfacePlanes));
@@ -1666,11 +1670,13 @@ bool MMSFBSurface::extendedLock(MMSFBSurface *src, MMSFBSurfacePlanes *src_plane
 		if (!dst_planes->ptr) {
 			if (src)
 				src->unlock(false);
+printf("dest_planes->ptr is NULL\n");
 			return false;
 		}
 	}
 
 	if (this->surface_invert_lock) {
+printf("this->surface_invert_lock is set\n");
 		if (src_planes && dst_planes) {
 			MMSFBSurfacePlanes t_planes;
 			t_planes = *src_planes;
@@ -1860,12 +1866,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	// checking pixelformats...
 	switch (src_pixelformat) {
 	case MMSFB_PF_ARGB:
+printf("sxs: source is argb\n");
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
+printf("sxs: destination is argb, blittingflags are %d\n",blittingflags);
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+printf("sxs: destination is argb\n");
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
+printf("sxs: do mmsfb_blit_argb_to_argb\n");
 					mmsfb_blit_argb_to_argb(src_planes, src_height,
 										    sx, sy, sw, sh,
 										    (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
@@ -1873,6 +1883,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 					extendedUnlock(source, this);
 					return true;
 				}
+printf("sxs: could not aquire lock\n");
 
 				return false;
 			}

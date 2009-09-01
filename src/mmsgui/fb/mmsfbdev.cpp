@@ -542,8 +542,9 @@ bool MMSFBDev::getFrameBufferPtr(int layer_id, MMSFBSurfacePlanesBuffer buffers,
 	INITCHECK;
 
 	// is layer initialized?
-	if (!this->layers[layer_id].isinitialized)
+	if (!this->layers[layer_id].isinitialized) {
 		return false;
+	}
 
 	// return buffer infos
 	if (buffers)

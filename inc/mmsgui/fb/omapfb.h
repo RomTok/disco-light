@@ -50,6 +50,8 @@
 #define OMAPFB_UPDATE_WINDOW	OMAP_IOW(54, struct omapfb_update_window)
 #define OMAPFB_SETUP_MEM	OMAP_IOW(55, struct omapfb_mem_info)
 #define OMAPFB_QUERY_MEM	OMAP_IOW(56, struct omapfb_mem_info)
+#define OMAPFB_WAITFORVSYNC	OMAP_IO(57)
+#define OMAPFB_MEMORY_READ	OMAP_IOR(58, struct omapfb_memory_read)
 
 #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
 #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
@@ -166,6 +168,15 @@ enum omapfb_update_mode {
 	OMAPFB_UPDATE_DISABLED = 0,
 	OMAPFB_AUTO_UPDATE,
 	OMAPFB_MANUAL_UPDATE
+};
+
+struct omapfb_memory_read {
+	__u16 x;
+	__u16 y;
+	__u16 w;
+	__u16 h;
+	size_t buffer_size;
+	void __user *buffer;
 };
 
 #ifdef __KERNEL__
@@ -287,6 +298,11 @@ struct omapfb_mem_region {
 	void __iomem	*vaddr;
 	unsigned long	size;
 	u8		type;		/* OMAPFB_PLANE_MEM_* */
+	enum omapfb_color_format format;/* OMAPFB_COLOR_* */
+	unsigned	format_used:1;	/* Must be set when format is set.
+					 * Needed b/c of the badly chosen 0
+					 * base for OMAPFB_COLOR_* values
+					 */
 	unsigned	alloc:1;	/* allocated by the driver */
 	unsigned	map:1;		/* kernel mapped by the driver */
 };
@@ -383,6 +399,8 @@ extern struct lcd_ctrl omap1_lcd_ctrl;
 extern struct lcd_ctrl omap2_disp_ctrl;
 #endif
 
+extern void omapfb_set_platform_data(struct omapfb_platform_data *data);
+
 extern void omapfb_reserve_sdram(void);
 extern void omapfb_register_panel(struct lcd_panel *panel);
 extern void omapfb_write_first_pixel(struct omapfb_device *fbdev, u16 pixval);
@@ -399,13 +417,6 @@ extern int  omapfb_update_window_async(struct fb_info *fbi,
 
 /* in arch/arm/plat-omap/fb.c */
 extern void omapfb_set_ctrl_platform_data(void *pdata);
-
-/* in arch/arm/plat-omap/fb-vram */
-int omap_vram_free(unsigned long paddr, void *vaddr, size_t size);
-void *omap_vram_reserve(unsigned long paddr, size_t size);
-void *omap_vram_alloc(int mtype, size_t size, unsigned long *paddr);
-extern void omap2_set_sdram_vram(u32 size, u32 start);
-extern void omap2_set_sram_vram(u32 size, u32 start);
 
 #endif /* __KERNEL__ */
 
