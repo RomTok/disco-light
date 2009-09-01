@@ -1,26 +1,95 @@
-.example-code { background-color:#fff4c8;border:1px dashed #ffcc00; padding:3px; margin:20px; font-family:Courier; }
-.inline-code { font-family:Courier; }
-.example-bullets { background-color:#fff4c8;border:1px dashed #ffcc00; margin:20px; padding:23px;}
-table { background-color:#fff4f4; border:2px solid; }
-table.example { background-color:#fff4c8;border:1px dashed #ffcc00; padding:3px; margin:20px; text-align:left; }
-table.example th, table.example td { padding-right: 20px; }
-.field-white { background-color:#ffffff; }
-.table-heading { background-color:#fff4c8; }
-
 body {
-	color:#333333;
-	font-family:Helvetica,Arial,sans-serif;
-	font-size:12px;
-	line-height:1.3em;
-	margin:0;
+        color:#333333;
+        font-family:Helvetica,Arial,sans-serif;
+        font-size:12px;
+        line-height:1.3em;
 }
 
 a:link, a:visited {
-	font-weight:normal;
-	text-decoration:none;
+        font-weight:normal;
+        text-decoration:none;
 }
 
 a:hover {
-	font-weight:normal;
-	text-decoration:underline;
+        font-weight:normal;
+        text-decoration:underline;
+}
+
+h1 {
+        color:#135CAE;
+        font-family:Helvetica,Arial,sans-serif;
+        font-size:1.5em;
+        font-weight:bold;
+        padding:0;
+        text-align:left;
+        vertical-align:bottom;
+        width:100%;
+}
+
+h2 {
+        color:#333333;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:1.4em;
+        font-weight:bold;
+        padding:0;
+        text-align:left;
+        vertical-align:bottom;
+        width:100%;
+}
+
+h3 {
+        font-family:Helvetica,Arial,sans-serif;
+        font-size:1.0em;
+        padding-left:0;
+        text-align:left;
+}
+
+h4 {
+        color:#666666;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:1.0em;
+        padding-left:0;
+        text-align:left;
+}
+
+.example-code { 
+	background-color:#cfdceb;
+	border:1px dashed #cfdc00; 
+	padding:3px; 
+	margin:20px; 
+	font-family:Courier; 
+}
+
+.inline-code { 
+	font-family:Courier; 
+}
+
+.example-bullets { 
+	background-color:#cfdceb;
+	border:1px dashed #135cae; 
+	margin:20px; padding:23px;
+}
+
+table { 
+	background-color:#fff4f4; border:2px solid; 
+}
+
+table.example { 
+	background-color:#cfdceb;
+	border:1px dashed #135cae; 
+	padding:3px; margin:20px; 
+	font-size:12px;
+	text-align:left; 
+}
+
+table.example th, table.example td { 
+	padding-right: 20px; 
+}
+
+.field-white { 
+	background-color:#ffffff; 
+}
+
+.table-heading { 
+	background-color:#fff4c8; 
 }
