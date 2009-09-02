@@ -5,19 +5,19 @@
 <link rel="stylesheet" type="text/css" href="css/style.css">
 <body>
 
-<h1>Disko Framework - Documentation</h1>
-<h2 id="installation">Installation</h2>
+<h1 id="installation">Installation</h1>
 The installation of Disko is highly customizable. Since lots of developers
 asked for a minimal installation, we provide the steps to do so. Based on
 this, you can add the features you want, as you can see in the following
 sections.
 
-<h3 id="installation-minimal">Minimal installation</h3>
+<h2 id="installation-minimal">Minimal installation</h2>
 To use basic disko features but avoid the installation of lots of
 dependencies, you can use this type of installation. You still have to
 install some packages first. Usually your distribution will provide them,
 if not, you can use the download links.
-<h4>Required packages</h4>
+
+<h3>Required packages</h3>
 <ul class="example-bullets" >
 	<li><a href="http://gcc.gnu.org">g++</a></li>
 	<li><a href="http://pkg-config.freedesktop.org/wiki">pkg-config</a></li>
@@ -81,7 +81,7 @@ supported ones and their dependencies:
 	</tr>
 </table>
 
-<h4>Building and Installing</h4>
+<h3>Building and Installing</h3>
 After you have finished installing the required packages described in the
 previous section, you can start building the Disko-Framework.
 
@@ -106,18 +106,18 @@ your disko installation. The default is <span class="inline-code">/usr</span>.<b
 <span class="inline-code">PKG_CONFIG_PATH</span> if you are installing to
 an extraordinary location.
 
-<h3 id="installation-media">Using a media backend</h3>
+<h2 id="installation-media">Using a media backend</h2>
 If you meet all requirements of the <a href="#installation-minimal">minimal installation</a>
 and want to use media playback facilities, you can choose between xine and/or gstreamer.
 
-<h4 id="installation-media-xine">xine</h4>
+<h3 id="installation-media-xine">xine</h3>
 At first you have to install <a href="http://www.xine-project.org">libxine</a>. Please
 install at least version 1.1.15 otherwise disko won't compile.<br />
 <br />
 Now you can build disko with the parameter <span class="inline-code">media=xine</span>
 to enable xine-support.
 
-<h4 id="installation-media-gstreamer">gstreamer</h4>
+<h3 id="installation-media-gstreamer">gstreamer</h3>
 Disko was and is using libxine for media playback for good reason for years now.
 In the last years GStreamer developed into a very serious alternative
 on embedded devices. Now that TI is going to support GStreamer for their
@@ -199,7 +199,7 @@ To cut a long story short, from the application point of view there are
 no changes to be made. An application like <a href="http://www.morphine.tv">Morphine.TV</a>
 is working without any change on GStreamer.
 
-<h4 id="installation-media-mixer">Mixer facilities</h4>
+<h3 id="installation-media-mixer">Mixer facilities</h3>
 The mixer classes of mmsmedia provide a simple interface to access
 volume settings of your soundcard.<br />
 To install the mixer classes, you have to install
