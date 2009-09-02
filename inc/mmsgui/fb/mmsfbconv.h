@@ -1208,6 +1208,13 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf
 											  unsigned char alpha);
 
 
+//! Blit I420 to I420.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_i420_to_i420(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
 
 //! Blit YUY2 to YUY2.
 /*!
