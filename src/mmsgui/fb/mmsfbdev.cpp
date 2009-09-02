@@ -305,13 +305,16 @@ bool MMSFBDev::openDevice(char *device_file, int console) {
     }
     printFixScreenInfo();
 
-    // map framebuffer to memory
+    // map framebuffer to memory (try shared, if it doesn't work, i.e. on non-mmu based machines, try private)
     if ((this->framebuffer_base=mmap(NULL, this->fix_screeninfo.smem_len,
                                      PROT_READ | PROT_WRITE, MAP_SHARED, this->fd, 0)) == MAP_FAILED) {
-    	printf("MMSFBDev: could not mmap framebuffer memory\n");
-    	this->framebuffer_base = NULL;
-    	closeDevice();
-        return false;
+        if ((this->framebuffer_base=mmap(NULL, this->fix_screeninfo.smem_len,
+                                         PROT_READ | PROT_WRITE, MAP_PRIVATE, this->fd, 0)) == MAP_FAILED) {
+			printf("MMSFBDev: could not mmap framebuffer memory\n");
+			this->framebuffer_base = NULL;
+			closeDevice();
+			return false;
+        }
     }
 
     // get variable screen infos
@@ -871,6 +874,10 @@ bool MMSFBDev::vtOpen(int console) {
     // open the tty0 device
     this->vt.fd0 = open("/dev/tty0", O_RDONLY | O_NOCTTY);
     if (this->vt.fd0 < 0) {
+    	if (errno == ENXIO) {
+    		printf("MMSFBDev: virtual terminal not available (working without it)\n");
+    		return true;
+		}
 		if (errno == ENOENT) {
 			this->vt.fd0 = open("/dev/vc/0", O_RDONLY | O_NOCTTY);
 			if (this->vt.fd0 < 0) {
