@@ -2574,6 +2574,26 @@ printf("sxs: could not aquire lock\n");
 			return false;
 		}
 		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
+			// destination is RGB24
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
+											  sx, sy, sw, sh,
+											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {

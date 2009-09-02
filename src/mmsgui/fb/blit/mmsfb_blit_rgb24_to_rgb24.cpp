@@ -48,7 +48,6 @@ void mmsfb_blit_rgb24_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, i
 	int dst_pitch = dst_planes->pitch;
 
 	// prepare...
-	int src_pitch_pix = src_pitch / 3;
 	int dst_pitch_pix = dst_pitch / 3;
 	src+= sx + sy * src_pitch;
 	dst+= dx + dy * dst_pitch;
@@ -62,11 +61,12 @@ void mmsfb_blit_rgb24_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, i
 		return;
 
 	unsigned char *src_end = src + src_pitch * sh;
+	int line_len = sw * 3;
 
 	// for all lines
 	while (src < src_end) {
 		// copy the line
-		memcpy(dst, src, sw * 3);
+		memcpy(dst, src, line_len);
 
 		// go to the next line
 		src+= src_pitch;
