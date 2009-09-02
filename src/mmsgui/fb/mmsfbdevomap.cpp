@@ -271,7 +271,7 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			return false;
 		}
 
-		if   (pixelformat != MMSFB_PF_YV12) {
+		if   (pixelformat != MMSFB_PF_I420) {
 			printf("MMSFBDevOmap: Video Layer %d needs pixelformat I420 (==YUV420) but %s given\n",
 						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
@@ -358,6 +358,20 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 			printf("MMSFBDevOmap: OSD Layer %d initialized with %dx%dx%d, pixelformat %s\n",
 						layer_id, width, height, backbuffer+1, getMMSFBPixelFormatString(pixelformat).c_str());
+
+
+			// add alpha channel if alpha channel pf
+			if(isAlphaPixelFormat(pixelformat)) {
+				printf("MMSFBDevOmap: set alpha blending!\n");
+
+				int sysfd;
+				sysfd = open("/sys/devices/platform/omapdss/manager0/alpha_blending_enabled",O_WRONLY);
+				if(sysfd == -1) {
+					printf("MMSFBDevOmap: could not access display manager!\n");
+				}
+				write(sysfd,"1\n",2);
+				close(sysfd);
+			}
 
 			return true;
 		}
@@ -537,7 +551,7 @@ bool MMSFBDevOmap::setMode(int width, int height, MMSFBSurfacePixelFormat pixelf
     	    this->var_screeninfo.activate = FB_ACTIVATE_NOW;
     	    this->var_screeninfo.accel_flags = 0;
 
-			if(pixelformat == MMSFB_PF_YV12) {
+			if(pixelformat == MMSFB_PF_I420) {
 				this->var_screeninfo.nonstd = OMAPFB_COLOR_YUV420;
 			} else {
 			    this->var_screeninfo.red.length = red_length;
@@ -583,7 +597,7 @@ bool MMSFBDevOmap::setMode(int width, int height, MMSFBSurfacePixelFormat pixelf
         	    this->var_screeninfo.accel_flags = 0;
 
         	    this->var_screeninfo.bits_per_pixel = bits_per_pixel;
-				if(pixelformat == MMSFB_PF_YV12) {
+				if(pixelformat == MMSFB_PF_I420) {
 					this->var_screeninfo.nonstd = OMAPFB_COLOR_YUV420;
 				} else {
 		    	    this->var_screeninfo.red.length = red_length;
@@ -622,7 +636,7 @@ bool MMSFBDevOmap::setMode(int width, int height, MMSFBSurfacePixelFormat pixelf
 			this->var_screeninfo.accel_flags = 0;
 
 			this->var_screeninfo.bits_per_pixel = bits_per_pixel;
-			if(pixelformat == MMSFB_PF_YV12) {
+			if(pixelformat == MMSFB_PF_I420) {
 				this->var_screeninfo.nonstd = OMAPFB_COLOR_YUV420;
 			} else {
 				this->var_screeninfo.red.length = red_length;
