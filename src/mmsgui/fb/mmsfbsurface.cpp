@@ -1949,7 +1949,7 @@ printf("sxs: could not aquire lock\n");
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_argb_to_rgb32(src_planes, src_height,
 												   sx, sy, sw, sh,
-												   (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 												   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -1964,7 +1964,7 @@ printf("sxs: could not aquire lock\n");
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_coloralpha_argb_to_rgb32(src_planes, src_height,
 															  sx, sy, sw, sh,
-															  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+															  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 															  x, y,
 															  this->config.color.a);
 					extendedUnlock(source, this);

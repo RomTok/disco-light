@@ -994,8 +994,8 @@ void mmsfb_blit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-											   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+											   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
 											   unsigned char alpha);
 
 
@@ -1034,8 +1034,8 @@ void mmsfb_blit_blend_argb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_blend_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-								    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+void mmsfb_blit_blend_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 //! Blit RGB32 to RGB32.
