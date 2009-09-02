@@ -87,8 +87,10 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 
 	// init the MMSFB class
     if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), graphicslayer.rect,
-					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getHideApplication()))
+					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getHideApplication())) {
+	    DEBUGMSG("MMSGUI", "init mmsfb failed!");
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+	}
 
     DEBUGMSG("MMSGUI", "get video layer");
     if (!mmsfb->getLayer(videolayer.id, &this->videolayer))

@@ -26,6 +26,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <sys/types.h>
+#include <linux/fb.h>
+#include "mmsgui/fb/omapfb.h"
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <string.h>
@@ -39,7 +42,7 @@ MMSFB *mmsfb = new MMSFB();
 
 void MMSFB_AtExit() {
 	if (mmsfb)
-		mmsfb->release();
+		mmsfb->release(); 
 }
 
 MMSFB::MMSFB() :
@@ -163,7 +166,9 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		else
 		if (this->outputtype == MMSFB_OT_OMAPFB) {
 			// omapfb
+		    DEBUGMSG("MMSGUI", "create new MMSFBDevOmap()");
     		this->mmsfbdev = new MMSFBDevOmap();
+		    DEBUGMSG("MMSGUI", "created new MMSFBDevOmap()");
 		}
 		else {
 			// default fbdev

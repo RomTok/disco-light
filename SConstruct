@@ -88,6 +88,7 @@ if sconsVersion < (0,98,1):
 	PathOption('prefix',        'Installation directory', '/usr', PathOption.PathIsDirCreate),
 	PathOption('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
 	BoolOption('debug',         'Build with debug symbols and without optimize', False),
+	BoolOption('size',          'Optimize for size (only if debug=n)', False),
 	BoolOption('messages',      'Build with logfile support', False),
 	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
 	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
@@ -110,6 +111,7 @@ else:
 	PathVariable('prefix',        'Installation directory', '/usr', PathVariable.PathIsDirCreate),
 	PathVariable('destdir',       'Installation directory for cross-compile', 'none', PathIsDirCreateNone),
 	BoolVariable('debug',         'Build with debug symbols and without optimize', False),
+	BoolVariable('size',          'Optimize for size (only if debug=n)', False),
 	BoolVariable('messages',      'Build with logfile support', False),
 	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
 	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
@@ -171,9 +173,15 @@ if env['profile']:
 	env.Replace(debug = 1)
 
 if env['debug']:
+	if env['size']:
+		print 'Warning: You cannot use the size option if debugging support is enabled!'
 	env['CCFLAGS'].extend(['-O0', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
 else:
-	env['CCFLAGS'].extend(['-O3'])
+	if env['size']:
+		env['CCFLAGS'].extend(['-Os'])
+	else:
+		env['CCFLAGS'].extend(['-O3'])
+	env['LINKFLAGS'].extend(['-s'])
 
 # check which sse version to use
 if env['use_sse']:
@@ -202,9 +210,9 @@ if env['use_sse']:
 		env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # format output
-env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
+#env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
 env['SHLINKCOMSTR'] = '  [LD]     $TARGET'
-env['CXXCOMSTR']    = '  [CXX]    $SOURCE'
+#env['CXXCOMSTR']    = '  [CXX]    $SOURCE'
 env['LINKCOMSTR']   = '  [LD]     $TARGET'
 env['ARCOMSTR']     = '  [AR]     $TARGET'
 env['RANLIBCOMSTR'] = '  [RANLIB] $TARGET'
@@ -478,7 +486,7 @@ if('xine' in env['media'] and not '-c' in sys.argv):
 			print '\n***************************************************'
 			env['media'].remove('xine')
 		else:
-			conf.env['CCFLAGS'].extend(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 	else:
@@ -489,7 +497,7 @@ if('xine' in env['media'] and not '-c' in sys.argv):
 			print '\n**************************************************'
 			env['media'].remove('xine')
 		else:
-			conf.env['CCFLAGS'].extend(['-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 
@@ -507,11 +515,11 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 		print '\n***************************************************'
 		env['media'].remove('gstreamer')
 	else:
-		conf.env['CCFLAGS'].extend(['-D__HAVE_GSTREAMER__'])
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
 
 if(env['media']):
-	conf.checkSimpleLib(['alsa'], 'alsa/version.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+	if conf.checkSimpleLib(['aalsa'], 'aalsa/version.h', required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 
 
 	
@@ -580,14 +588,14 @@ if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
 	if env['LIBPATH']:
-		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH']) + ' -lpthread'
+		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
-		disko_pc_libs = ' -lpthread'
+		disko_pc_libs = ''
 		
 	if env['big_lib'] or env['static_lib']:
-		disko_pc_libs += ' -ldisko'
+		disko_pc_libs += ' -ldisko -lpthread'
 	else:
-		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
+		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread'
 	
 	if (env['enable_curl']):
 		disko_pc_requires += ', libcurl'

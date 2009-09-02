@@ -25,9 +25,6 @@
  *   \defgroup mmsmedia Media playback (mmsmedia)
  *     Classes to implement audio and video playback.
  *
- *   \defgroup mmssip SIP support (mmssip)
- *     Implementation of SIP support.
- *
  *   \defgroup mmstools Generic helper classes (mmstools)
  *   \ingroup mmslibs
  *     Helpful classes that didn't fit in any category.
@@ -53,8 +50,6 @@
 
 /** \page start Disko API Reference
  *
- * \section intro_sec Introduction
- *
  * Disko is a GPL-licensed application framework, that can be used to develop GUI applications for
  * embedded devices. It uses different backends for graphics and it is specialised in touchscreen
  * and remote control navigation. It provides a plugin based management component, which enables
@@ -62,95 +57,10 @@
  * Media playback (DVD, DVB, IPTV and audio streams) is provided by the well known xine media library
  * or gstreamer.
  * 
- * Currently the following features are supported:
+ * For further information go to <a href="http://www.diskohq.org">www.diskohq.org</a> or directly
+ * to the <a href="../index.html">documentation section</a>.
  *
- * - Graphics support for DirectFB, X11 and different framebuffer implementations (Vesa, DaVinci, OMAP)
- * - Input-Handling for Touchscreens and Remote-Controls
- * - Event-based communication
- * - flexible GUI development:
- * - XML-based dialog descriptions
- * - Themeable and skinnable
- * - Streaming of media content through xine library or gstreamer
- * - SQLite3, MySQL and ODBC database support
- * - basic Flash support
- * - Filetransfer
+ * A good starting point for the API reference is the <a href="modules.html">overview of our modules</a>.
  *
- * \section install_sec Installation
- *
- * \subsection prerequisites_sec Prerequisites
- * 
- * \subsubsection required_sec Required packages
- *
- * <div style="border:1px solid #cccccc;background-color:#f5f5f5;">
- * <table border="0" cellspacing="10"><tr>
- *   <td><b>Package</b></td><td><b>Minimum version</b></td><td><b>Website</b></td>
- * </tr><tr>
- *   <td>libpng</td><td align="center">1.2</td><td><a href="http://www.libpng.org/pub/png/libpng.html">http://www.libpng.org/pub/png/libpng.html</a></td>
- * </tr><tr>
- *   <td>libjpeg</td><td align="center">*</td><td><a href="http://www.ijg.org">http://www.ijg.org</a></td>
- * </tr><tr>
- *   <td>libsigc++</td><td align="center">*</td><td><a href="http://libsigc.sourceforge.net">http://libsigc.sourceforge.net</a></td>
- * </tr><tr>
- *   <td>libxml2</td><td align="center">2.6</td><td><a href="http://xmlsoft.org">http://xmlsoft.org</a></td>
- * </tr></table>
- * </div>
- *
- * \subsubsection optional_sec Optional packages
- *
- * \b Note: You have to choose one graphics backend (FBDev, DirectFB or X11) and at least one database backend.
- *
- * <div style="border:1px solid #cccccc;background-color:#f5f5f5;">
- * <table border="0" cellspacing="10"><tr>
- *   <td><b>Feature</b></td><td><b>Package</b></td><td><b>Minimum version</b></td><td><b>Website</b></td>
- * </tr><tr>
- *   <td>CURL support</td><td>libcurl</td><td align="center">*</td><td><a href="http://curl.haxx.se">http://curl.haxx.se</a></td>
- * </tr><tr>
- *   <td>Support of loading shared libraries</td><td>libdl</td><td align="center">*</td><td>libc feature</td>
- * </tr><tr>
- *   <td>DirectFB support</td><td>DirectFB</td><td align="center">*</td><td><a href="http://www.directfb.org">http://www.directfb.org</a></td>
- * </tr><tr>
- *   <td>X11 support</td><td>x11</td><td align="center">*</td><td><a href="http://www.x.org">http://www.x.org</a></td>
- * </tr><tr>
- *   <td></td><td>xv</td><td align="center">*</td><td><a href="http://www.x.org">http://www.x.org</a></td>
- * </tr><tr>
- *   <td></td><td>xxf86vm</td><td align="center">*</td><td><a href="http://www.x.org">http://www.x.org</a></td>
- * </tr><tr>
- *   <td></td><td>freetype2</td><td align="center">*</td><td><a href="http://www.freetype.org">http://www.freetype.org</a></td>
- * </tr><tr>
- *   <td>Database support</td><td>sqlite3</td><td align="center">*</td><td><a href="http://www.sqlite.org">http://www.sqlite.org</a></td>
- * </tr><tr>
- *   <td></td><td>mysql</td><td align="center">*</td><td><a href="http://www.mysql.com">http://www.mysql.com</a></td>
- * </tr><tr>
- *   <td></td><td>unix-odbc</td><td align="center">*</td><td><a href="http://www.unixodbc.org">http://www.unixodbc.org</a></td>
- * </tr><tr>
- *   <td>Media playback</td><td>xine</td><td align="center">1.1.15</td><td><a href="http://www.xinehq.de">http://www.xinehq.de</a></td>
- * </tr><tr>
- *   <td></td><td>gstreamer</td><td align="center">0.10.x</td><td><a href="http://gstreamer.freedesktop.org">http://gstreamer.freedesktop.org</a></td>
- * </tr><tr>
- *   <td></td><td>alsa-lib</td><td align="center">*</td><td><a href="http://www.alsa-project.org">http://www.alsa-project.org</a></td>
- * </tr><tr>
- *   <td>Flash support</td><td>libswfdec</td><td align="center">0.8</td><td><a href="http://swfdec.freedesktop.org">http://swfdec.freedesktop.org</a></td>
- * </tr><tr>
- *   <td>E-Mail support</td><td>vmime</td><td align="center">*</td><td><a href="http://www.vmime.org">http://www.vmime.org</a></td>
- * </tr></table>
- * </div>
- *
- * \subsection build_sec Building and installing
- *
- * You can fetch the sources from the git-repository or download a package from <a href="http://www.diskohq.org/download">www.diskohq.org</a>.
- * To access the git-repository, enter the following:
- * \code
- * git clone git://diskohq.org/disko.git
- * \endcode
- *
- * Now you are able to build the disko framework:
- * \code
- * cd <disko-source-directory>
- * scons <options>
- * scons install
- * \endcode
- *
- * To see a list of the options that affect the building, you can enter \c scons -h.
- *
- * If you don't specify prefix the default location will be \c /usr.
+ * If you have any questions, feel free to ask at our <a href="http://www.diskohq.org/forum">forum</a>.
  */
