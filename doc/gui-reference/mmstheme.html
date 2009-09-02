@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>Disko Framework - Documentation</title>
+</head>
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<body>
+
+<h1 id="gui-mmstheme">&lt;mmstheme&gt;</h1>
+
+<h2>Description</h2>
+Specifies beginning and end of a theme.<br />
+<br />
+A list of supported elements you can find <a href="elements.html">here</a>.
+
+<h2>Syntax</h2>
+<span class="inline-code">&lt;mmstheme&gt;</span>
+
+<h2>Remarks</h2>
+This element is a block element.<br />
+The special element <span class="inline-code">&lt;class&gt;</span>
+works only within this <span class="inline-code">&lt;mmstheme&gt;</span>
+element.
+
+<h2>Examples</h2>
+<h3>Set defaults for <span class="inline-code">&lt;mainwindow&gt;</span></h3>
+
+This example demonstrates how you can set/change default values for
+<span class="inline-code">&lt;mainwindow&gt;</span> with usage of 
+<span class="inline-code">&lt;mmstheme&gt;</span>. The window size is set
+to 90% of the whole screen width and height. The background is light red.
+The window is a little bit transparent (<span class="inline-code">opacity="200"</span>).
+If the window will be shown or hidden the fade effect is used. There are
+four images at the corners of the window. Each of this images should
+have a size of 8x8 pixels (see <span class="inline-code">border.thickness</span>).
+
+<pre class="example-code">
+&lt;mmstheme&gt;
+    &lt;description author="disko-team" email="info@berlinux-solutions.de" desc="example"/&gt;
+    &lt;mainwindow
+                alignment="center"
+                w="90%"
+                h="90%"
+                bgcolor="#ffa0a0ff"
+                bgimage=""
+                opacity="200"
+                fadein="true"
+                fadeout="true"
+                border.image.path="./themes/default"
+                border.image.top-left="corner1.png"
+                border.image.top-right="corner2.png"
+                border.image.bottom-right="corner3.png"
+                border.image.bottom-left="corner4.png"
+                border.color.a="0"
+                border.selcolor.a="0"
+                border.thickness="8"
+                border.margin="0"
+                border.rcorners="false"
+    /&gt;
+&lt;/mmstheme&gt;
+</pre>
+
+<h2>Related elements</h2>
+<a href="class.html">&lt;class&gt;</a>, see <a href="elements.html">elements</a><br />
+<br />
+
+<hr />
+
+<a target=_new href="index.html">&lt;&lt;&lt; GUI-Reference</a>
+
+</body>
+</html>

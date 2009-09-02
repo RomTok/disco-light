@@ -1,0 +1,430 @@
+<html>
+<head>
+<title>Disko Framework - Documentation</title>
+</head>
+<link rel="stylesheet" type="text/css" href="../../css/style.css">
+<body>
+
+<h1 id="gui-popupwindow">Element &lt;popupwindow&gt;</h1>
+
+<h2>Description</h2>
+Specifies a popupwindow.
+Popup windows will be shown as main windows but will be automatically 
+hidden after the specified duration.
+
+<h2>Syntax</h2>
+<pre class="inline-code">
+&lt;popupwindow
+    [name=&lt;string&gt;]
+    [class=&lt;string&gt;]
+    [alignment=&lt;align&gt;]
+    [dx=&lt;pos&gt;] [dy=&lt;pos&gt;]
+    [w=&lt;size&gt;] [h=&lt;size&gt;]
+    [bgcolor=&lt;color&gt;] | [[bgcolor.r=&lt;red&gt;] [bgcolor.g=&lt;green&gt;] [bgcolor.b=&lt;blue&gt;] [bgcolor.a=&lt;alpha&gt;]]
+    [bgimage=&lt;file&gt;] | [[bgimage.path=&lt;path&gt;] [bgimage.name=&lt;filename&gt;]]
+    [opacity=&lt;num&gt;]
+    [fadein=&lt;bool&gt;]
+    [fadeout=&lt;bool&gt;]
+    [movein=&lt;string&gt;]
+    [moveout=&lt;string&gt;]
+    [debug=&lt;bool&gt;]
+    [margin=&lt;pixel&gt;]
+    [up_arrow=&lt;string&gt;]
+    [down_arrow=&lt;string&gt;]
+    [left_arrow=&lt;string&gt;]
+    [right_arrow=&lt;string&gt;]
+    [navigate_up=&lt;string&gt;]
+    [navigate_down=&lt;string&gt;]
+    [navigate_left=&lt;string&gt;]
+    [navigate_right=&lt;string&gt;]
+    [own_surface=&lt;bool&gt;]
+    [modal=&lt;bool&gt;]
+    [static_zorder=&lt;bool&gt;]
+	[duration=&lt;time&gt;]
+    [border.image.path=&lt;path&gt;] 
+    [border.image.top-left=&lt;filename&gt;] 
+    [border.image.top=&lt;filename&gt;] 
+    [border.image.top-right=&lt;filename&gt;] 
+    [border.image.right=&lt;filename&gt;] 
+    [border.image.bottom-right=&lt;filename&gt;] 
+    [border.image.bottom=&lt;filename&gt;] 
+    [border.image.bottom-left=&lt;filename&gt;] 
+    [border.image.left=&lt;filename&gt;]
+    [border.color=&lt;color&gt;] | [[border.color.r=&lt;red&gt;] [border.color.g=&lt;green&gt;] [border.color.b=&lt;blue&gt;] [border.color.a=&lt;alpha&gt;]]
+    [border.thickness=&lt;pixel&gt;]
+    [border.margin=&lt;pixel&gt;]
+    [border.rcorners=&lt;bool&gt;]
+&gt;
+</pre>
+
+<h2>Attributes</h2>
+
+<table class="example">
+	<tr>
+		<th>Window Attributes</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>name</td>
+		<td>Unique name of the window.</td>
+	</tr>
+	<tr>
+		<td>class</td>
+		<td>Specifies the name of a defined theme class (see 
+		    <a href="../mmstheme.html">&lt;mmstheme&gt;</a>). 
+		</td>
+	</tr>
+	<tr>
+		<td>alignment</td>
+		<td>Specifies the alignment of the window. Default is <span class="inline-code">"center"</span>. 
+		    See <a href="#alignment">Alignment Values</a>.
+		</td>
+	</tr>
+	<tr>
+		<td>dx</td>
+		<td>Delta x position in pixels dependent on alignment. Default is <span class="inline-code">"0"</span>.</td>
+	</tr>
+	<tr>
+		<td>dy</td>
+		<td>Delta y position in pixels dependent on alignment. Default is <span class="inline-code">"0"</span>.</td>
+	</tr>
+	<tr>
+		<td>w</td>
+		<td>Width of the window. Default is <span class="inline-code">"100%"</span>.
+		    See <a href="#size">Size Values</a>.
+		</td>
+	</tr>
+	<tr>
+		<td>h</td>
+		<td>Height of the window. Default is <span class="inline-code">"100%"</span>.
+		    See <a href="#size">Size Values</a>.
+		</td>
+	</tr>
+	<tr>
+		<td>bgcolor</td>
+		<td>Specifies the background color. Per default the background color is not set.
+		    See <a href="#colors">Setting Colors</a>.
+		</td>
+	</tr>
+	<tr>
+		<td>bgimage</td>
+		<td>Specifies a image file for the background. Per default the background image is not set.
+		    See <a href="#images">Setting Images</a>.
+		</td>
+	</tr>
+	<tr>
+		<td>opacity</td>
+		<td>Specifies the opacity of the window. 
+		    Values from <span class="inline-code">"0"</span> to <span class="inline-code">"255"</span>
+			are supported. The value <span class="inline-code">"255"</span> 
+			means that the window is not transparent. The value 
+			<span class="inline-code">"0"</span> means that the window
+			is not visible. Default is <span class="inline-code">"255"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>fadein</td>
+		<td>Specifies if the window should fade during the show action.
+		    Values are <span class="inline-code">"true"</span> or
+			<span class="inline-code">"false"</span>. 
+			Default is <span class="inline-code">"false"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>fadeout</td>
+		<td>Specifies if the window should fade during the hide action.
+		    Values are <span class="inline-code">"true"</span> or
+			<span class="inline-code">"false"</span>. 
+			Default is <span class="inline-code">"false"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>movein</td>
+		<td>Specifies if the window should move in during the show action.
+		    Valid values are <span class="inline-code">"left", "right", "top", "bottom"</span>
+			and they specify the origin from where the window is moving in.
+		</td>
+	</tr>
+	<tr>
+		<td>moveout</td>
+		<td>Specifies if the window should move in during the hide action.
+		    Valid values are <span class="inline-code">"left", "right", "top", "bottom"</span>
+			and they specify the destination where the window is moving to.
+		</td>
+	</tr>
+	<tr>
+		<td>debug</td>
+		<td>Specifies if debug frames should be drawed.
+		    Values are <span class="inline-code">"true"</span> or
+			<span class="inline-code">"false"</span>. 
+			Default is <span class="inline-code">"false"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>margin</td>
+		<td>Specifies the outer margin between the border and everything
+		    outside the window. Unit is pixel. Default is <span class="inline-code">"0"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>up_arrow</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>down_arrow</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>left_arrow</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>right_arrow</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>navigate_up</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>navigate_down</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>navigate_left</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>navigate_right</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>own_surface</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>modal</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>static_zorder</td>
+		<td>...</td>
+	</tr>
+	<tr>
+		<td>duration</td>
+		<td>Time in seconds the window is shown.
+		    If <span class="inline-code">duration="0"</span>, it will not
+			hide automatically.
+		</td>
+	</tr>
+	<tr>
+		<th>Border Attributes</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>border.image.path</td>
+		<td>Here you can set the path of the border images. 
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.top-left</td>
+		<td>Specifies the border image at the top-left corner.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.top</td>
+		<td>Specifies the border image at the top.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.top-right</td>
+		<td>Specifies the border image at the top-right corner.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.right</td>
+		<td>Specifies the border image on the right side.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.bottom-right</td>
+		<td>Specifies the border image at the bottom-right corner.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.bottom</td>
+		<td>Specifies the border image at the bottom.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.bottom-left</td>
+		<td>Specifies the border image at the bottom-left corner.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.image.left</td>
+		<td>Specifies the border image on the left side.
+		    Default is <span class="inline-code">""</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.color</td>
+		<td>Specifies the border color. 
+		    Per default the border color is not set. 
+		    See <a href="#colors">Setting Colors</a>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.thickness</td>
+		<td>Specifies the thickness of the border.
+		    Unit is pixel. Default is <span class="inline-code">"0"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.margin</td>
+		<td>Specifies the inner margin between the border and the background of the element.
+		    Unit is pixel. Default is <span class="inline-code">"0"</span>.
+		</td>
+	</tr>
+	<tr>
+		<td>border.rcorners</td>
+		<td>Values are <span class="inline-code">"true"</span> or
+		<span class="inline-code">"false"</span>.
+		If you specify <span class="inline-code">"true"</span> round
+		corners will be drawn. 
+		Default is <span class="inline-code">"false"</span>.
+		</td>
+	</tr>
+</table>
+
+<h2 id="alignment">Alignment values</h2>
+
+<table class="example">
+	<tr>
+		<th>Value</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>center</td>
+		<td>Horizontally and vertically centered.</td>
+	</tr>
+	<tr>
+		<td>left</td>
+		<td>Left-aligned and vertically centered.</td>
+	</tr>
+	<tr>
+		<td>right</td>
+		<td>Right-aligned and vertically centered.</td>
+	</tr>
+	<tr>
+		<td>top-center</td>
+		<td>Top-aligned and horizontally centered.</td>
+	</tr>
+	<tr>
+		<td>top-left</td>
+		<td>Top- and left-aligned.</td>
+	</tr>
+	<tr>
+		<td>top-right</td>
+		<td>Top- and right-aligned.</td>
+	</tr>
+	<tr>
+		<td>bottom-center</td>
+		<td>Bottom-aligned and horizontally centered.</td>
+	</tr>
+	<tr>
+		<td>bottom-left</td>
+		<td>Bottom- and left-aligned.</td>
+	</tr>
+	<tr>
+		<td>bottom-right</td>
+		<td>Bottom- and right-aligned.</td>
+	</tr>
+</table>
+
+<h2 id="size">Size values</h2>
+
+<table class="example">
+	<tr>
+		<th>Value</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>&lt;X&gt;px</td>
+		<td>Size in pixel. Example: <span class="inline-code">"100px"</span></td>
+	</tr>
+	<tr>
+		<td>&lt;X&gt;%</td>
+		<td>Size in percent. Example: <span class="inline-code">"50%"</span></td>
+	</tr>
+</table>
+
+<h2 id="colors">Setting colors</h2>
+There are two ways to set a color.
+For example the color attribute is named <span class="inline-code">color</span>.<br />
+<br />
+First way is: <span class="inline-code">color="#rrggbbaa"</span>. 
+There is a hash followed by hexadecimal byte values for red, green, blue and alpha.<br />
+If you set <span class="inline-code">color="#ff0000ff"</span> you use red which is not transparent.<br />
+If you set <span class="inline-code">color="#00000000"</span> the color is marked as not set.<br />
+<br />
+Second way is to set the four color values separately: 
+<span class="inline-code">color.r=&lt;red&gt; color.g=&lt;green&gt; color.b=&lt;blue&gt; color.a=&lt;alpha&gt;</span>. 
+Each value has range from 0 to 255 decimal.<br />
+If you set <span class="inline-code">color.r="0" color.g="0" color.b="255" color.a="255"</span> 
+you use blue which is not transparent.<br />
+If you set <span class="inline-code">color.a="0"</span> the color is marked as not set.<br />
+<br />
+<b>Note on alpha value:</b><br />
+The value 0 (00) means that the whole color is not set. 
+The value 255 (ff) means that the color is set with full opacity. 
+The values 1..254 (01..fe) sets a transparent color.
+
+<h2 id="images">Setting images</h2>
+There are two ways to set a image. 
+For example the image attribute is named <span class="inline-code">image</span>.<br />
+<br />
+First way is: <span class="inline-code">image="path/filename"</span>.
+You know the complete path and the filename (inclusive the extension) 
+to the image and put it directly to the image attribute.
+If you set <span class="inline-code">image=""</span> the image is marked as not set.<br />
+<br />
+Second way is to set the path and the filename separately: 
+<span class="inline-code">image.path="path" image.name="filename"</span>.
+If you set <span class="inline-code">image.path=""</span> the image path is marked as not set.
+If you set <span class="inline-code">image.name=""</span> the image name is marked as not set.<br />
+<br />
+<b>Note on transparency of images:</b><br />
+You should only use images without alpha channel. 
+Because currently we cannot handle image-based transparency. 
+But if you want to have a transparent image you can use the alpha value
+of the correspondent color. For example you can load the 
+<span class="inline-code">bgimage="&lt;filename&gt;"</span> of a window or a
+widget and set the <span class="inline-code">bgcolor="#00000080"</span>.
+The alpha value 80 hex sets the half opacity of the bgimage.
+
+<h2>Remarks</h2>
+This element can be used within <a href="../mmsdialog.html">&lt;mmsdialog&gt;</a>
+and <a href="../mmstheme.html">&lt;mmstheme&gt;</a>.<br />
+This element can have a maximum of one child widget.
+
+<h2>Related elements</h2>
+<a href="../mmsdialog.html">&lt;mmsdialog&gt;</a>,
+<a href="../mmstheme.html">&lt;mmstheme&gt;</a>,
+<a href="../elements.html">elements</a><br />
+<br />
+
+<hr />
+
+<a target=_new href="index.html">&lt;&lt;&lt; GUI-Reference</a>
+
+</body>
+</html>

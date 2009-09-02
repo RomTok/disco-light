@@ -57,6 +57,7 @@ h4 {
 	border:1px solid black;
 	padding:5px;
 	margin:20px; 
+	font-family:Courier; 
 }
 
 .inline-code { 
@@ -72,7 +73,12 @@ table.example {
 	text-align:left; 
 }
 
-table.example th, table.example td { 
+table.example th {
+	white-space: nowrap;
+	padding-right: 20px; 
+}
+
+table.example td { 
 	padding-right: 20px; 
 }
 

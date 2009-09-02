@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>Disko Framework - Documentation</title>
+</head>
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<body>
+
+<h1 id="gui-class">Element &lt;class&gt;</h1>
+
+<h2>Description</h2>
+This element works only for <a href="mmstheme.html">&lt;mmstheme&gt;</a>.
+With the special element <span class="inline-code">&lt;class&gt;</span>
+you can define various classes of the same base element. Each class has
+a unique name. This name can be used to connect an <a href="elements.html">element</a> 
+within the dialog file to a special class defined in the theme file.
+
+<h2>Syntax</h2>
+<pre class="inline-code">
+&lt;class
+    [name=&lt;string&gt;]
+    [type=&lt;string&gt;]
+    [...]
+&gt;
+</pre>
+
+<h2>Attributes</h2>
+
+<table class="example">
+	<tr>
+		<th>Attribute</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>name</td>
+		<td>Unique name of the class.</td>
+	</tr>
+	<tr>
+		<td>type</td>
+		<td>The type describes which base element the class represents. 
+		    For example you can use <span class="inline-code">type="mainwindow", type="label", type="menu"</span>
+			and so on (see <a href="elements.html">elements</a>). Based
+			on the element type you can work with element-specific attributes.
+		</td>
+	</tr>
+</table>
+
+<h2>Remarks</h2>
+This element can only be used within <a href="mmstheme.html">&lt;mmstheme&gt;</a>.
+
+<h2>Examples</h2>
+<h3>A <span class="inline-code">&lt;progressbar&gt;</span> theme class</h3>
+
+This example demonstrates how you can create a theme class named
+myprogressbar. It is very important to set the type to 
+<span class="inline-code">"progressbar"</span>. Thus the mapping between
+class and <a href="elements.html">element</a> can be done. After the
+<span class="inline-code">type</span> attribute some progressbar-specific
+attributes will be set. For example the two pixels wide white border.
+
+<pre class="example-code">
+&lt;mmstheme&gt;
+    &lt;description author="mms-devel" email="mms-devel@morphine.tv" desc="example"/&gt;
+    &lt;class
+           name="myprogressbar"
+           type="progressbar"
+           color="#ff0000ff"
+           bgcolor="#800000ff"
+           margin="1"
+           border.color="#ffffffff"
+           border.thickness="2"
+           border.margin="1"
+           percent="100"
+    /&gt;
+&lt;/mmstheme&gt;
+</pre>
+
+<h2>Related elements</h2>
+<a href="mmstheme.html">&lt;mmstheme&gt;</a>, see <a href="elements.html">elements</a><br />
+<br />
+
+<hr />
+
+<a target=_new href="index.html">&lt;&lt;&lt; GUI-Reference</a>
+
+</body>
+</html>
