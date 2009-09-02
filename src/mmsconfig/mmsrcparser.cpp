@@ -387,12 +387,17 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayeroptions"))
 	        this->graphics.videolayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "videolayerbuffermode")) {
-	    	if((xmlStrcasecmp(parvalue, (const xmlChar *) "BACKSYSTEM") != 0) &&
+	    	if((this->graphics.outputtype == MMSFB_OT_X11) &&
+	    	   xmlStrEqual(parvalue, (const xmlChar *) "FRONTONLY")) {
+	    		WRONG_VALUE(parname, string((const char *)parvalue), MMSFB_PF_VALID_BUFFERMODES_X11, "-> this depends on outputtype=\"X11\"");
+	    	} else if((xmlStrcasecmp(parvalue, (const xmlChar *) "BACKSYSTEM") != 0) &&
 	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "BACKVIDEO") != 0) &&
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "FRONTONLY") != 0) &&
 	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "TRIPLE") != 0) &&
-	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "WINDOWS") != 0))
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "WINDOWS") != 0)) {
             	WRONG_VALUE(parname, string((const char *)parvalue), MMSFB_PF_VALID_BUFFERMODES, "");
-	        this->graphics.videolayer.buffermode = strToUpr(string((const char *)parvalue));
+	    	} else
+	    		this->graphics.videolayer.buffermode = strToUpr((const char *)parvalue);
 	    } else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerid"))
 			this->graphics.graphicslayer.id = atoi((const char *)parvalue);
 		else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerpixelformat")) {
@@ -403,12 +408,17 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayeroptions"))
 	        this->graphics.graphicslayer.options = strToUpr(string((const char *)parvalue));
 	    else if(!xmlStrcmp(parname, (const xmlChar *) "graphicslayerbuffermode")) {
-	    	if((xmlStrcasecmp(parvalue, (const xmlChar *) "BACKSYSTEM") != 0) &&
+	    	if((this->graphics.outputtype == MMSFB_OT_X11) &&
+	    	   xmlStrEqual(parvalue, (const xmlChar *) "FRONTONLY")) {
+	    		WRONG_VALUE(parname, string((const char *)parvalue), MMSFB_PF_VALID_BUFFERMODES_X11, "-> this depends on outputtype=\"X11\"");
+	    	} else if((xmlStrcasecmp(parvalue, (const xmlChar *) "BACKSYSTEM") != 0) &&
 	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "BACKVIDEO") != 0) &&
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "FRONTONLY") != 0) &&
 	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "TRIPLE") != 0) &&
-	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "WINDOWS") != 0))
+	    	   (xmlStrcasecmp(parvalue, (const xmlChar *) "WINDOWS") != 0)) {
             	WRONG_VALUE(parname, string((const char *)parvalue), MMSFB_PF_VALID_BUFFERMODES, "");
-	        this->graphics.graphicslayer.buffermode = strToUpr(string((const char *)parvalue));
+	    	} else
+	    		this->graphics.graphicslayer.buffermode = strToUpr((const char *)parvalue);
 		} else if (mode == THROUGH_GRAPHICS_MODE_NORMAL) {
 			if(!xmlStrcmp(parname, (const xmlChar *) "backend")) {
 				string val = string((const char *)parvalue);
