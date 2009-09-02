@@ -26,66 +26,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSWINDOWMANAGER_H_
-#define MMSWINDOWMANAGER_H_
+#include "mmsgui/fb/mmsfbconv.h"
+#include "mmstools/mmstools.h"
 
-#include "mmsgui/interfaces/immswindowmanager.h"
+void mmsfb_blit_i420_to_i420(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
+	// first time?
+	static bool firsttime = true;
+	if (firsttime) {
+		printf("DISKO: Using accelerated copy I420 to I420.\n");
+		firsttime = false;
+	}
 
-class MMSWindowManager : public IMMSWindowManager {
-	private:
-		//! visible screen area
-        MMSFBRectangle		vrect;
+	// use the YV12 to YV12 blit, because only the U/V pointers are different
+	// which has no effect in that case
+	mmsfb_blit_yv12_to_yv12(src_planes, src_height, sx, sy, sw, sh,
+							dst_planes, dst_height, dx, dy);
+}
 
-        //! windows known by the window manager
-        vector<MMSWindow*>	windows;
-
-        //! the toplevel window
-        MMSWindow           *toplevel;
-
-        //! the background window
-        MMSWindow           *backgroundwindow;
-
-        //! translator instance which can be used to translate text
-        MMSTranslator		translator;
-
-        //! connection object for onTargetLangChanged callback
-        sigc::connection 	onTargetLangChanged_connection;
-
-
-        void showBackgroundWindow();
-
-        void onTargetLangChanged(MMS_LANGUAGE_TYPE lang);
-
-	public:
-		MMSWindowManager(MMSFBRectangle vrect);
-		virtual ~MMSWindowManager();
-		void reset();
-
-        MMSFBRectangle getVRect();
-
-		void addWindow(MMSWindow *window);
-        void removeWindow(MMSWindow *window);
-
-        bool lowerToBottom(MMSWindow *window);
-		bool raiseToTop(MMSWindow *window);
-
-        bool hideAllMainWindows(bool goback = false);
-        bool hideAllPopupWindows(bool except_modal = false);
-        bool hideAllRootWindows(bool willshown = false);
-
-        bool setToplevelWindow(MMSWindow *window);
-        MMSWindow *getToplevelWindow();
-		void removeWindowFromToplevel(MMSWindow *window);
-
-        void setBackgroundWindow(MMSWindow *window);
-        MMSWindow *getBackgroundWindow();
-
-        void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = true);
-
-        MMSTranslator *getTranslator();
-};
-
-/* access to global mmswindowmanager */
-//extern MMSWindowManager mmswindowmanager;
-
-#endif /*MMSWINDOWMANAGER_H_*/

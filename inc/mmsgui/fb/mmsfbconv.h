@@ -994,8 +994,8 @@ void mmsfb_blit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-											   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy,
+void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+											   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
 											   unsigned char alpha);
 
 
@@ -1034,8 +1034,8 @@ void mmsfb_blit_blend_argb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_blend_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-								    unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+void mmsfb_blit_blend_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 //! Blit RGB32 to RGB32.
@@ -1044,6 +1044,25 @@ void mmsfb_blit_blend_argb_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_
 */
 void mmsfb_blit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
 							   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
+
+
+
+
+//! Blit with alpha blending ARGB to RGB24.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+//! Blit RGB24 to RGB24.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_rgb24_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 
@@ -1207,6 +1226,13 @@ void mmsfb_blit_blend_coloralpha_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf
 											  unsigned char *dst, int dst_pitch, int dst_height, int dx, int dy,
 											  unsigned char alpha);
 
+
+//! Blit I420 to I420.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_i420_to_i420(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 //! Blit YUY2 to YUY2.

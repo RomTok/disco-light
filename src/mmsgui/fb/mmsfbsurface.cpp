@@ -1949,7 +1949,7 @@ printf("sxs: could not aquire lock\n");
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_argb_to_rgb32(src_planes, src_height,
 												   sx, sy, sw, sh,
-												   (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 												   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -1964,7 +1964,7 @@ printf("sxs: could not aquire lock\n");
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_coloralpha_argb_to_rgb32(src_planes, src_height,
 															  sx, sy, sw, sh,
-															  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+															  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 															  x, y,
 															  this->config.color.a);
 					extendedUnlock(source, this);
@@ -2090,6 +2090,26 @@ printf("sxs: could not aquire lock\n");
 															 (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 															 x, y,
 															 this->config.color.a);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
+			// destination is RGB24
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_blend_argb_to_rgb24(src_planes, src_height,
+												   sx, sy, sw, sh,
+												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2417,6 +2437,27 @@ printf("sxs: could not aquire lock\n");
 
 	case MMSFB_PF_I420:
 		// source is I420
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_I420) {
+			// destination is I420
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+				// convert without alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_i420_to_i420(src_planes, src_height,
+											sx, sy, sw, sh,
+											&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
@@ -2521,6 +2562,26 @@ printf("sxs: could not aquire lock\n");
 					mmsfb_blit_rgb24_to_rgb32(src_planes, src_height,
 											  sx, sy, sw, sh,
 											  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
+			// destination is RGB24
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
+											  sx, sy, sw, sh,
+											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											  x, y);
 					extendedUnlock(source, this);
 					return true;

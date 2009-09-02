@@ -29,42 +29,28 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
-											   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
-											   unsigned char alpha) {
-	// check for full alpha value
-	if (alpha == 0xff) {
-		// max alpha is specified, so i can ignore it and use faster routine
-		mmsfb_blit_blend_argb_to_rgb32(src_planes, src_height, sx, sy, sw, sh,
-									   dst_planes, dst_height, dx, dy);
-		return;
-	}
-
+void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend coloralpha ARGB to RGB32.\n");
+		printf("DISKO: Using accelerated blend ARGB to RGB24.\n");
 		firsttime = false;
 	}
-
-	// something to do?
-	if (!alpha)
-		// source should blitted full transparent, so leave destination as is
-		return;
 
 	// get the first source ptr/pitch
 	unsigned int *src = (unsigned int *)src_planes->ptr;
 	int src_pitch = src_planes->pitch;
 
 	// get the first destination ptr/pitch
-	unsigned int *dst = (unsigned int *)dst_planes->ptr;
+	unsigned char *dst = (unsigned char *)dst_planes->ptr;
 	int dst_pitch = dst_planes->pitch;
 
 	// prepare...
 	int src_pitch_pix = src_pitch >> 2;
-	int dst_pitch_pix = dst_pitch >> 2;
+	int dst_pitch_pix = dst_pitch / 3;
 	src+= sx + sy * src_pitch_pix;
-	dst+= dx + dy * dst_pitch_pix;
+	dst+= dx + dy * dst_pitch;
 
 	// check the surface range
 	if (dst_pitch_pix - dx < sw - sx)
@@ -74,15 +60,12 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
-	unsigned int OLDDST = (*dst) + 1;
-	unsigned int OLDSRC  = (*src) + 1;
+//	unsigned int OLDDST = (*dst) + 1;
+//	unsigned int OLDSRC = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
-	int dst_pitch_diff = dst_pitch_pix - sw;
+	int dst_pitch_diff = dst_pitch - sw * 3;
 	register unsigned int d;
-
-	register unsigned int ALPHA = alpha;
-	ALPHA++;
 
 	// for all lines
 	while (src < src_end) {
@@ -90,13 +73,21 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 		unsigned int *line_end = src + sw;
 		while (src < line_end) {
 			// load pixel from memory and check if the previous pixel is the same
-			register unsigned int SRC = *src;
+			register unsigned int SRC  = *src;
 
 			// is the source alpha channel 0x00 or 0xff?
 			register unsigned int A = SRC >> 24;
+			if (A == 0xff) {
+				// source pixel is not transparent, copy it directly to the destination
+//				*dst = SRC | 0xff000000;
+				*dst = (unsigned char)((SRC & 0x00ff0000) >> 16);
+				*(dst+1) = (unsigned char)((SRC & 0x0000ff00) >> 8);
+				*(dst+2) = (unsigned char)(SRC & 0x000000ff);
+			}
+			else
 			if (A) {
-				// source alpha is > 0x00 and <= 0xff
-				register unsigned int DST = *dst;
+				// source alpha is > 0x00 and < 0xff
+/*				register unsigned int DST = *dst;
 
 				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
 					// same pixel, use the previous value
@@ -106,18 +97,12 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 					continue;
 				}
 				OLDDST = DST;
-				OLDSRC = SRC;
+				OLDSRC = SRC;*/
 
-				// load source pixel and multiply it with given ALPHA
-			    A = (ALPHA * A) >> 8;
-				unsigned int sr = (ALPHA * (SRC & 0xff0000)) >> 24;
-				unsigned int sg = (ALPHA * (SRC & 0xff00)) >> 16;
-				unsigned int sb = (ALPHA * (SRC & 0xff)) >> 8;
 				register unsigned int SA= 0x100 - A;
-
-				unsigned int r = (DST << 8) >> 24;
-				unsigned int g = (DST << 16) >> 24;
-				unsigned int b = DST & 0xff;
+				unsigned int r = *dst;
+				unsigned int g = *(dst+1);
+				unsigned int b = *(dst+2);
 
 				// invert src alpha
 			    r = (SA * r) >> 8;
@@ -125,17 +110,15 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 			    b = (SA * b) >> 8;
 
 			    // add src to dst
-			    r += (A * sr) >> 8;
-			    g += (A * sg) >> 8;
-			    b += (A * sb) >> 8;
-			    d =   0xff000000
-					| ((r >> 8) ? 0xff0000   : (r << 16))
-					| ((g >> 8) ? 0xff00     : (g << 8))
-			    	| ((b >> 8) ? 0xff 		 :  b);
-				*dst = d;
+			    r += (A*(SRC & 0xff0000)) >> 24;
+			    g += (A*(SRC & 0xff00)) >> 16;
+			    b += (A*(SRC & 0xff)) >> 8;
+			    *dst     = (r >> 8) ? 0xff : r;
+			    *(dst+1) = (g >> 8) ? 0xff : g;
+			    *(dst+2) = (b >> 8) ? 0xff : b;
 			}
 
-		    dst++;
+		    dst+=3;
 		    src++;
 		}
 
@@ -144,5 +127,4 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 		dst+= dst_pitch_diff;
 	}
 }
-
 
