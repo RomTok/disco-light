@@ -305,7 +305,7 @@ def checkGstDiskoVideosink(context):
 	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
 		ret = True
 	else:
-		ret = False
+		ret = True
 		
 	context.Result(ret)
 	return ret
@@ -518,7 +518,7 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
 
 if(env['media']):
-	if conf.checkSimpleLib(['aalsa'], 'aalsa/version.h', required = 0):
+	if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 
 

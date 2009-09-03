@@ -28,7 +28,6 @@
 
 #include <sys/types.h>
 #include <linux/fb.h>
-#include "mmsgui/fb/omapfb.h"
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 #include <string.h>
