@@ -518,7 +518,7 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
 
 if(env['media']):
-	if conf.checkSimpleLib(['aalsa'], 'aalsa/version.h', required = 0):
+	if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
 
 
