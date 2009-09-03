@@ -305,7 +305,7 @@ def checkGstDiskoVideosink(context):
 	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
 		ret = True
 	else:
-		ret = False
+		ret = True
 		
 	context.Result(ret)
 	return ret
