@@ -29,8 +29,16 @@
  ***************************************************************************/
 
 #include <fstream>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cerrno>
 #include "mmsmedia/mmsdvd.h"
+extern "C" {
+#include <linux/cdrom.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+}
 
 MMS_CREATEERROR(MMSDVDError);
 
@@ -340,28 +348,44 @@ void MMSDVD::spuChannelNext() {
 /**
  * Eject the dvd.
  *
- * It disposes the xine stream and sends a shell
- * command to eject the dvd.
+ * It disposes the xine stream and tries to eject dvd with ioctl
  *
- * @todo    use libhal for ejecting
  */
 void MMSDVD::eject() {
+
+	this->setStatus(this->STATUS_NONE);
+
     if (this->backend == MMSMEDIA_BE_GST) {
 #ifdef __HAVE_GSTREAMER__
 #endif
     }
     else {
 #ifdef __HAVE_XINE__
-		this->setStatus(this->STATUS_EJECT);
-		xine_dispose(this->stream);
 
-		// call eject on commandline, because xine_eject() didn't work
-		char cmd[64];
-		sprintf(cmd, "eject %s", this->device.c_str());
-		if(system(cmd) != 0)
-			DEBUGMSG("MMSDVD", "calling eject failed");
+		xine_dispose(this->stream);
+		this->stream = 0;
+
 #endif
     }
+    /* eject with ioctl */
+	int status = -1;
+	int fd = open(device.c_str(), O_RDONLY|O_NONBLOCK);
+
+	if(fd < 0) {
+		DEBUGMSG("MMSDVD", "Eject failed (can't open device: %s.)", strerror(errno));
+		return;
+	}
+
+#if defined(CDROMEJECT)
+	status = ioctl(fd, CDROMEJECT);
+#elif defined(CDIOCEJECT)
+	status = ioctl(fd, CDIOCEJECT);
+#endif
+
+	close(fd);
+	if(status != 0) {
+		DEBUGMSG("MMSDVD", "Eject failed: %s.", strerror(errno));
+	}
 }
 
 /**
