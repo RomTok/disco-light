@@ -21,68 +21,68 @@
 <p>Disko > 1.5.x has to be already compiled and installed for this stage as well. We have to compile and install it again after GStreamer with Disko support is compiled and ready.</p>
 <p>As we plan to install GStreamer into the users home directory, set the <i>PKG_CONFIG_PATH</i> to the <i>$HOME/gstreamer/lib/pkgconfig</i></p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/gstreamer/lib/pkgconfig
 </pre>
 </code>
 <h2>GStreamer engine</h2>
 <p>First step ist to download and install GStreamer:</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  wget http://gstreamer.freedesktop.org/src/gstreamer/gstreamer-0.10.23.tar.bz2
 </pre>
 </code>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  tar jxf gstreamer-0.10.23.tar.bz2
  cd gstreamer-0.10.23
 </pre>
 </code>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  ./configure --prefix=$HOME/gstreamer && make && make install;
 </pre>
 </code>
 <h2>GStreamer base plugins</h2>
 <p>Second step in the installation process are the base plugins.</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  wget http://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-0.10.23.tar.bz2
 </pre>
 </code>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  tar jxf gst-plugins-base-0.10.23.tar.bz2
  cd gst-plugins-base-0.10.23
 </pre>
 </code>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  ./configure --prefix=$HOME/gstreamer && make && make install;
 </pre>
 </code>
 <h2>GStreamer bad plugins</h2>
 <p>Second step in the installation process are the bad plugins. Naturally the Disko output plugin resides here, as we plan to propose Disko to be added to the GStreamer upstream.</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  wget http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-0.10.12.tar.bz2
 </pre>
 </code>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  tar jxf gst-plugins-bad-0.10.12.tar.bz2
 </pre>
 </code>
 <p>Before the bad plugins are installed the disko patch has to be applied. The patch can be found in the disko source tree as <i>ext/gst-plugins-bad-0.10.12_diskovideosink.diff</i></p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  cd gst-plugins-bad-0.10.12 
  patch -Np1 -i gst-plugins-bad-0.10.12_diskovideosink.diff
 </pre>
 </code>
 After that compile and install the plugins the usual way. Make sure that the <i>PKG_CONFIG_PATH</i> includes the current disko installation. 
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
  ./configure --prefix=$HOME/gstreamer && make && make install;
 </pre>
 </code>

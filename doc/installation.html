@@ -85,7 +85,7 @@ supported ones and their dependencies:
 After you have finished installing the required packages described in the
 previous section, you can start building the Disko-Framework.
 
-<pre class="example-code">
+<pre class="codelisting">
 # cd &lt;path to disko directory&gt;
 # scons graphics=[fbdev|x11|dfb]
 # scons [prefix=...] install
@@ -137,7 +137,7 @@ some more dependencies. Probably your distribution will have packaged them.
 </ul>
 
 Once you meet all dependencies, you can start by downloading and installing GStreamer:<br />
-<pre class="example-code" >
+<pre class="codelisting" >
 # wget http://gstreamer.freedesktop.org/src/gstreamer/gstreamer-0.10.23.tar.bz2
 # tar jxf gstreamer-0.10.23.tar.bz2
 # cd gstreamer-0.10.23
@@ -145,12 +145,12 @@ Once you meet all dependencies, you can start by downloading and installing GStr
 </pre>
 If you are using <span class="inline-code">--prefix</span>, don't forget
 to set <span class="inline-code">PKG_CONFIG_PATH</span>:
-<pre class="example-code">
+<pre class="codelisting">
 # export PKG_CONFIG_PATH=&lt;gstreamer-location&gt;/lib/pkgconfig
 </pre>
 
 Now you can install the GStreamer base plugins:
-<pre class="example-code">
+<pre class="codelisting">
 # wget http://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-0.10.23.tar.bz2
 # tar jxf gst-plugins-base-0.10.23.tar.bz2
 # cd gst-plugins-base-0.10.23
@@ -159,7 +159,7 @@ Now you can install the GStreamer base plugins:
 
 And now the bad plugins. Naturally the Disko output plugin resides here, 
 as we plan to propose Disko to be added to the GStreamer upstream.
-<pre class="example-code">
+<pre class="codelisting">
 # wget http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-0.10.12.tar.bz2
 # tar jxf gst-plugins-bad-0.10.13.tar.bz2
 # cd gst-plugins-bad-0.10.13
@@ -167,14 +167,14 @@ as we plan to propose Disko to be added to the GStreamer upstream.
 
 Before the bad plugins are installed the disko patch has to be applied. 
 It can be found in the disko source tree as <i>ext/gst-plugins-bad-0.10.13_diskovideosink.diff.</i>
-<pre class="example-code">
+<pre class="codelisting">
 # patch -Np1 &lt; gst-plugins-bad-0.10.13_diskovideosink.diff
 </pre>
 
 After that compile and install the plugins the usual way. Make sure that
 the <span class="inline-code">PKG_CONFIG_PATH</span> includes the current
 disko installation. 
-<pre class="example-code">
+<pre class="codelisting">
 # ./configure [--prefix=&lt;gstreamer-location&gt;] && make && make install;
 </pre>
 

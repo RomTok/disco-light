@@ -12,7 +12,7 @@
 <h2>The Server</h2>
 <p>First step to implement a basic server is to derive a server interface from the <i>MMSServerInterface</i> class and to overwrite the <i>processRequest()</i> method.</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
 class MyInterface : public MMSServerInterface {
     public:
         MyInterface() : MMSServerInterface("iface1") {};
@@ -30,7 +30,7 @@ bool MyInterface::processRequest(string *request, string *answer) {
 </code>
 <p>Then create an instance and append it to the interface vector</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
 MyInterface *iface = new MyInterface();
 &lt;MMSServerInterface*&gt; interfaces;
 interfaces.push_back(iface);
@@ -38,7 +38,7 @@ interfaces.push_back(iface);
 </code>
 <p>After that create an instance of the server passing the interface vector listen address and port to the constructor and start the server.</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
 MMSTCPServer *server = new MMSTCPServer(interfaces,"127.0.0.1",11111);
 server->start();
 </pre>
@@ -46,7 +46,7 @@ server->start();
 <h2>The client</h2>
 <p>The client is fairly easy to use. Just create an instance of the <i>MMSTCPClient</i> passing the target address and port to the constructor. After that just send a message to the server.</p>
 <code>
-<pre class="example-code" >
+<pre class="codelisting" >
 MMSTCPClient *client = new MMSTCPClient("127.0.0.1",11111);
 string retstr;
 client->sendAndReceive("Heres my client message!", &retstr);
