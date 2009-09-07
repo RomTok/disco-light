@@ -472,6 +472,7 @@ MMSInputLISThread::MMSInputLISThread(MMSInputLISHandler *handler, int kb_fd) {
 	this->shift_pressed = false;
 	this->altgr_pressed = false;
 	this->is_caps_lock = false;
+	this->button_pressed = false;
 }
 
 MMSInputLISThread::MMSInputLISThread(MMSInputLISHandler *handler, MMSINPUTLISHANDLER_DEV *device) {
@@ -789,7 +790,6 @@ MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 
 
 bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEvent *inputevent) {
-
 	if (linux_evt->type == EV_KEY) {
 		// key event, trying to get key symbol
 		inputevent->key = translateKey(linux_evt->code);
@@ -801,6 +801,29 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 		inputevent->type = linux_evt->value ? MMSINPUTEVENTTYPE_KEYPRESS : MMSINPUTEVENTTYPE_KEYRELEASE;
 
 		return true;
+	}
+	else if(linux_evt->type == EV_ABS) {
+		switch(linux_evt->code) {
+			case ABS_X:
+				inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+				inputevent->posx = linux_evt->value * this->device.xFactor;
+				return true;
+			case ABS_Y:
+				inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+				inputevent->posy = linux_evt->value * this->device.yFactor;
+				return true;
+			case ABS_PRESSURE:
+				if(!this->button_pressed) {
+					this->button_pressed = 1;
+					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
+					return true;
+				} else if(linux_evt->value == 0) {
+					this->button_pressed = 0;
+					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+					return true;
+				}
+
+		}
 	}
 
 	return false;
@@ -834,7 +857,8 @@ void MMSInputLISThread::threadMain() {
 	else
 	if (this->device.name != "") {
 		// working for other linux input devices
-		if (this->device.type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) {
+		if((this->device.type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) ||
+		   (this->device.type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN)) {
 			// remote device
 			if (openDevice()) {
 				while (1) {

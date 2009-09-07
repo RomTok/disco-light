@@ -62,8 +62,9 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
 	// get other linux input devices and start separate threads
 	getDevices();
 	for (int i = 0; i < this->devcnt; i++) {
-		if (this->devices[i].type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) {
-			// we start input thread only for remote controls
+		if((this->devices[i].type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) ||
+		   (this->devices[i].type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN)) {
+			// we start input thread only for remote controls and touchscreens
 			MMSInputLISThread *lt = new MMSInputLISThread(this, &this->devices[i]);
 			if (lt)
 				lt->start();
@@ -102,32 +103,47 @@ bool MMSInputLISHandler::checkDevice() {
 	ioctl(fd, EVIOCGNAME(sizeof(devdesc)-1), devdesc);
 	dev->desc = devdesc;
 	dev->type = MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN;
+	dev->xFactor = dev->yFactor = 1;
 
 	// try to find out the type of input device
 	unsigned int  keys = 0;
-	unsigned int  ext_keys = 0;
 	unsigned long ev_bit[NUMBITS(EV_MAX)];
 	unsigned long key_bit[NUMBITS(KEY_MAX)];
+	unsigned long abs_bit[NUMBITS(ABS_MAX)];
 
     // get event type of device
     ioctl(fd, EVIOCGBIT(0, sizeof(ev_bit)), ev_bit);
-    if (TSTBIT(EV_KEY, ev_bit)) {
+    if(TSTBIT(EV_KEY, ev_bit)) {
 		ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(key_bit)), key_bit);
 		for (int i = KEY_Q; i < KEY_M; i++)
 			if (TSTBIT(i, key_bit))
 				keys++;
-		for (int i = KEY_OK; i < KEY_MAX; i++)
-			if (TSTBIT(i, key_bit))
-				ext_keys++;
+		if(keys > 20)
+			dev->type = MMSINPUTLISHANDLER_DEVTYPE_KEYBOARD;
+		else {
+			for (int i = KEY_OK; i < KEY_MAX; i++) {
+				if (TSTBIT(i, key_bit)) {
+						dev->type = MMSINPUTLISHANDLER_DEVTYPE_REMOTE;
+					break;
+				}
+			}
+		}
     }
 
-    // build type
-	if (keys > 20)
-		dev->type = MMSINPUTLISHANDLER_DEVTYPE_KEYBOARD;
-	else
-	if (ext_keys)
-		dev->type = MMSINPUTLISHANDLER_DEVTYPE_REMOTE;
-
+	/* check for touchscreen (only ABS events are supported) */
+    /* TODO: add button events */
+	if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN) {
+		if(ioctl(fd, EVIOCGBIT(EV_ABS, sizeof (abs_bit)), abs_bit) != -1) {
+			if(TSTBIT(ABS_X, abs_bit) && TSTBIT(ABS_Y, abs_bit) && TSTBIT(ABS_PRESSURE, abs_bit)) {
+				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
+				struct input_absinfo abs;
+				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1)
+					dev->xFactor = mmsfb->display_w / abs.maximum;
+				if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1)
+					dev->yFactor = mmsfb->display_h / abs.maximum;
+			}
+		}
+	}
 
 	printf("Found %s, type=%s (%s)\n",
 						dev->name.c_str(),

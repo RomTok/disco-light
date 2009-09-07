@@ -43,11 +43,14 @@ typedef int MMSINPUTLISHANDLER_DEVTYPE;
 #define MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN		"UNKNOWN"
 #define MMSINPUTLISHANDLER_DEVTYPE_KEYBOARD		"KEYBOARD"
 #define MMSINPUTLISHANDLER_DEVTYPE_REMOTE		"REMOTE"
+#define MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN	"TOUCHSCREEN"
 
 typedef struct {
 	string 	name;
 	string	desc;
 	string	type;
+	unsigned int xFactor; 		/**< multiplicate the x value to get the real value (touchscreen only) */
+	unsigned int yFactor;		/**< multiplicate the y value to get the real value (touchscreen only) */
 } MMSINPUTLISHANDLER_DEV;
 
 

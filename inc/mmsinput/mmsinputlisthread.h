@@ -55,6 +55,9 @@ class MMSInputLISThread : public MMSThread {
 		//! is caps lock?
 		bool is_caps_lock;
 
+		//! button pressed?
+		bool button_pressed;
+
 		bool openDevice();
 		void closeDevice();
 
