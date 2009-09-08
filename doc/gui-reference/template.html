@@ -66,50 +66,9 @@ Please see the examples below.
 
 <h2>Examples</h2>
 
-<h3>Use a template class <span class="inline-code">right_textbox</span></h3>
-This example demonstrates how you can create a template class.
-It is very important to set the type to <span class="inline-code">"template"</span>. 
-Thus the mapping between class and <a href="elements.html">element</a> can be done.
-The name of the class is <span class="inline-code">right_textbox</span>.
-
-<pre class="codelisting">
-&lt;mmstheme&gt;
-    &lt;class name="right_textbox" type="template"&gt;
-        &lt;hbox&gt;
-            &lt;vbox size="14px"&gt;
-                &lt;image size="4px" image.name="./themes/default/textbox-top-left.png"/&gt;
-                &lt;image image.name="./themes/default/textbox-left.png"/&gt;
-                &lt;image size="4px" image.name="./themes/default/textbox-bottom-left.png"/&gt;
-            &lt;/vbox&gt;
-            &lt;textbox name="mytextbox" text="" focusable="false" alignment="justify" border.thickness="10" border.color="#ffffffff"/&gt;
-        &lt;/hbox&gt;
-    &lt;/class&gt;
-&lt;/mmstheme&gt;
-</pre>
-
-Now let's create a dialog that uses this template.<br />
-This dialog displays the text <span class="inline-code">'left text'</span>
-on the left side. On the right it displays the <span class="inline-code">right_textbox</span>.
-The <span class="inline-code">right_textbox</span> displays the text
-<span class="inline-code">'What a wonderful textbox.'</span>. 
-You see that you can access the 
-<a href="widgets/textbox.html"><span class="inline-code">&lt;textbox&gt;</span></a> 
-element <span class="inline-code">mytextbox</span> from the template with
-the attribute <span class="inline-code">widget.mytextbox</span>. All named
-elements in the template can be accessed with the attribute syntax:
-<span class="inline-code">widget.&lt;name&gt;</span>.
-
-<pre class="codelisting">
-&lt;mmsdialog&gt;
-    &lt;mainwindow w="600px" h="340px" alignment="center"&gt;
-        &lt;hbox&gt;
-            &lt;label text="left text"/&gt;
-            &lt;template name="infotext" class="right_textbox" widget.mytextbox.text="What a wonderful textbox."/&gt;
-        &lt;/hbox&gt;
-    &lt;/mainwindow&gt;
-&lt;/mmsdialog&gt;
-</pre>
-
+<ul>
+	<li><a href="../gui-examples.html#example7">Use a template class <span class="inline-code">right_textbox</span></a></li>
+</ul>
 
 <h2>Related elements</h2>
 <span class="inline-code"><a href="mmsdialog.html">&lt;mmsdialog&gt;</a></span>,
