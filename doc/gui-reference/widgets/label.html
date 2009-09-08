@@ -58,25 +58,32 @@ Specifies a label. A label is a widget which can be selected but not focused.
 
 <table class="example">
 	<tr>
-		<th>Widget Attributes</th>
+		<th>Attribute</th>
+		<th>Domain</th>
+		<th>Default Value</th>
+		
 		<th>Description</th>
+		<th>Required</th>
 	</tr>
 	<tr>
 		<td>name</td>
-		<td>Specifies the name of the widget. Default is "". The name of a widget cannot be set in a theme.</td>
+		<td>string</td>
+		<td class="inline-code">""</td>
+		<td>Specifies the name of the widget. The name of a widget cannot be set in a theme.</td>
+		<td>no</td>
 	</tr>
-	<tr>
-		<td></td>
+	<!--<tr>
+		<td>size</td>
+		<td>The size attribute does only work if the element is a child of a <a href="hbox.html">&lt;hbox&gt;</a> or <a href="vbox.html">&lt;vbox&gt;</a>. Dependent on this, the size specifies either the width or the height of the widget. Per default the size is not set. See <B>Size Values</B>. The size of a widget cannot be set in a theme.</td>
 	</tr>
 	<tr>
 		<td>class</td>
-		<td>Specifies the name of a defined theme class (see 
-		    <a href="../mmstheme.html">&lt;mmstheme&gt;</a>). 
+		<td>Specifies the name of a defined theme class (see <a href="../mmstheme.html">&lt;mmstheme&gt;</a>). 
 		</td>
 	</tr>
 	<tr>
-		<td>alignment</td>
-		<td>Specifies the alignment of the window. Default is <span class="inline-code">"center"</span>. 
+		<td>bgcolor</td>
+		<td>Specifies the background color. Per default the background color is not set. See Setting Colors.Specifies the alignment of the window. Default is <span class="inline-code">"center"</span>. 
 		    See <a href="#alignment">Alignment Values</a>.
 		</td>
 	</tr>
@@ -295,7 +302,7 @@ Specifies a label. A label is a widget which can be selected but not focused.
 		corners will be drawn. 
 		Default is <span class="inline-code">"false"</span>.
 		</td>
-	</tr>
+	</tr>-->
 </table>
 
 <h2 id="alignment">Alignment values</h2>
