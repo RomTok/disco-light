@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-gb" lang="en-gb" >
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="Disko, Disko framework, framework, linux, embedded devices, open source, documentation, gui, reference, widget, menu, menuitem" />
+    <meta name="description" content="Disko a linux application framework for embedded devices" />
+    <title>Disko Framework - Documentation - GUI-Reference</title>
+</head>
+<link rel="stylesheet" type="text/css" href="../../css/style.css">
+<body>
+
+<h1 id="gui-menu">Element &lt;menuitem&gt;</h1>
+
+<h2>Description</h2>
+This element adds an item to a <span class="inline-code"><a href="menu.html">&lt;menu&gt;</a></span>.
+
+<h2>Attributes</h2>
+
+<table class="example">
+	<tr>
+		<th>Attribute</th>
+		<th>Domain</th>
+		<th>Default Value</th>		
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>widget.&lt;name&gt;.&lt;attribute&gt;</td>
+		<td>element/attribute specific</td>
+		<td>element/attribute specific</td>
+		<td>If you use this construct you can set attributes of widgets
+		    which are located in the menu item template.
+		</td>
+	</tr>
+</table>
+
+<h2>Remarks</h2>
+This element can only be used within 
+<span class="inline-code"><a href="../mmsdialog.html">&lt;mmsdialog&gt;</a></span>
+as a child of
+<span class="inline-code"><a href="menu.html">&lt;menu&gt;</a></span>.
+
+<h2>Examples</h2>
+
+<h3>Create and fill a simple listbox</h3>
+The dialog manager creates a 
+<a href="windows/mainwindow.html"><span class="inline-code">&lt;mainwindow&gt;</span></a>
+with one 
+<a href="widgets/menu.html"><span class="inline-code">&lt;menu&gt;</span></a>
+widget with the name <span class="inline-code">listbox</span>. The item
+template of this menu consists of only one 
+<a href="widgets/label.html"><span class="inline-code">&lt;label&gt;</span></a>
+widget as top-level widget (named <span class="inline-code">mylabel</span>). 
+After creation three items will be added to the <span class="inline-code">listbox</span>
+by the dialogmanager.
+
+<pre class="codelisting">
+&lt;mmsdialog&gt;
+    &lt;mainwindow w="320" h="320"&gt;
+        &lt;menu name="listbox" item_height="32px"&gt;
+            &lt;label name="mylabel" margin="1" font.size="22px"/&gt;
+            &lt;menuitem widget.mylabel.text="First item"/&gt;
+            &lt;menuitem widget.mylabel.text="Second item"/&gt;
+            &lt;menuitem widget.mylabel.text="Third item"/&gt;
+        &lt;/menu&gt;
+    &lt;/mainwindow&gt;
+&lt;/mmsdialog&gt;
+</pre>
+
+<h2>Related elements</h2>
+<span class="inline-code"><a href="../mmsdialog.html">&lt;mmsdialog&gt;</a></span>,
+<span class="inline-code"><a href="menu.html">&lt;menu&gt;</a></span>,
+<a href="../elements.html">elements</a><br />
+<br />
+
+<hr />
+
+<a target=_new href="index.html">&lt;&lt;&lt; GUI-Reference</a>
+
+</body>
+</html>
