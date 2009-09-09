@@ -30,6 +30,7 @@
 
 #include "mmsgui/fb/mmsfbdevmatrox.h"
 #include <sys/ioctl.h>
+#include <cstring>
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSFBDevMatrox is not initialized");return false;}
 
