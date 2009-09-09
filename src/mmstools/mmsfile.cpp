@@ -883,6 +883,7 @@ bool MMSFile::getString(char *ptr, size_t size) {
 #else
     		throw MMSFileError(-1, "compile curl support!");
 #endif
+            break;
 
         default:
             /* unknown type */
