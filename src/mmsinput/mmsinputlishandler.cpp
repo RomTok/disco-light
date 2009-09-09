@@ -135,12 +135,16 @@ bool MMSInputLISHandler::checkDevice() {
 	if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN) {
 		if(ioctl(fd, EVIOCGBIT(EV_ABS, sizeof (abs_bit)), abs_bit) != -1) {
 			if(TSTBIT(ABS_X, abs_bit) && TSTBIT(ABS_Y, abs_bit) && TSTBIT(ABS_PRESSURE, abs_bit)) {
+				MMSConfigData config;
+				MMSFBRectangle rect = config.getGraphicsLayer().rect;
 				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
 				struct input_absinfo abs;
-				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1)
-					dev->xFactor = mmsfb->display_w / abs.maximum;
-				if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1)
-					dev->yFactor = mmsfb->display_h / abs.maximum;
+				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
+					dev->xFactor =  rect.w / abs.maximum;
+				}
+				if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
+					dev->yFactor = rect.h / abs.maximum;
+				}
 			}
 		}
 	}
