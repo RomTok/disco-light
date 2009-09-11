@@ -164,11 +164,11 @@ int getBitsPerPixel(MMSFBSurfacePixelFormat pf,
     }
 	else
     if(pf == MMSFB_PF_I420) {
-        return 1*8;
+        return 12;
     }
 	else
     if(pf == MMSFB_PF_YV12) {
-        return 1*8;
+        return 12;
     }
 	else
     if(pf == MMSFB_PF_AiRGB) {
