@@ -53,9 +53,9 @@ void mmsfb_fillrectangle_rgb24(MMSFBSurfacePlanes *dst_planes, int dst_height,
 	unsigned char g = color.g;
 	unsigned char b = color.b;
 	while (ls < le) {
-		*ls = r; ls++;
-		*ls = g; ls++;
 		*ls = b; ls++;
+		*ls = g; ls++;
+		*ls = r; ls++;
 	}
 	dst+= dx*3 + dy * dst_pitch;
 	unsigned char *dst_end = dst + dst_pitch * dh;

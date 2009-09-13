@@ -266,7 +266,9 @@ typedef enum {
     //! 16 bit ARGB (2 byte, alpha 4\@12, red 4\@8, green 4\@4, blue 4\@0)
     MMSFB_PF_ARGB4444,
     //! 20 bit ARGB (16 bit RGB565 plane followed by 4 bit alpha plane (highest bit unused))
-    MMSFB_PF_ARGB3565
+    MMSFB_PF_ARGB3565,
+    //! 24 bit RGB (3 byte, red 8\@0, green 8\@8, blue 8\@16)
+    MMSFB_PF_BGR24
 } MMSFBSurfacePixelFormat;
 
 //! pixel format: none
@@ -329,6 +331,8 @@ typedef enum {
 #define MMSFB_PF_ARGB4444_STR   "ARGB4444"
 //! pixel format: 20 bit ARGB (16 bit RGB565 plane followed by 4 bit alpha plane (highest bit unused))
 #define MMSFB_PF_ARGB3565_STR	"ARGB3565"
+//! pixel format: 24 bit RGB (3 byte, red 8@0, green 8@8, blue 8@16)
+#define MMSFB_PF_BGR24_STR      "BGR24"
 
 //! list of valid pixelformats
 #define MMSFB_PF_VALID_VALUES	"RGB16, RGB24, RGB32, ARGB, A8, YUY2, UYVY, I420, YV12, AiRGB, A1, NV12, NV16, NV21, AYUV, A4, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, ALUT44, LUT8, ARGB2554, ARGB4444, ARGB3565"

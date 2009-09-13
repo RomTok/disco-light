@@ -1425,6 +1425,7 @@ void mmsfb_fillrectangle_rgb32(MMSFBSurfacePlanes *dst_planes, int dst_height,
 
 //! Fill rectangle RGB24.
 /*!
+\note RGB24 byte order: blue@0, green@1, red@2
 \author Jens Schneider
 */
 void mmsfb_fillrectangle_rgb24(MMSFBSurfacePlanes *dst_planes, int dst_height,
@@ -1486,6 +1487,14 @@ void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
 void mmsfb_fillrectangle_argb3565(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						          int dx, int dy, int dw, int dh, MMSFBColor color);
 
+
+//! Fill rectangle BGR24.
+/*!
+\note BGR24 byte order: red@0, green@1, blue@2
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_bgr24(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
 //! Draw line ARGB.
