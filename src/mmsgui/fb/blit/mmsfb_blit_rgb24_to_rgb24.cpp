@@ -35,7 +35,7 @@ void mmsfb_blit_rgb24_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, i
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated copy ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated copy RGB24 to RGB24.\n");
 		firsttime = false;
 	}
 

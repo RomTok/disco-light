@@ -80,9 +80,9 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 			if (A == 0xff) {
 				// source pixel is not transparent, copy it directly to the destination
 //				*dst = SRC | 0xff000000;
-				*dst = (unsigned char)((SRC & 0x00ff0000) >> 16);
+				*dst = (unsigned char)(SRC & 0x000000ff);
 				*(dst+1) = (unsigned char)((SRC & 0x0000ff00) >> 8);
-				*(dst+2) = (unsigned char)(SRC & 0x000000ff);
+				*(dst+2) = (unsigned char)((SRC & 0x00ff0000) >> 16);
 			}
 			else
 			if (A) {
@@ -113,9 +113,9 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 			    r += (A*(SRC & 0xff0000)) >> 24;
 			    g += (A*(SRC & 0xff00)) >> 16;
 			    b += (A*(SRC & 0xff)) >> 8;
-			    *dst     = (r >> 8) ? 0xff : r;
+			    *dst     = (b >> 8) ? 0xff : b;
 			    *(dst+1) = (g >> 8) ? 0xff : g;
-			    *(dst+2) = (b >> 8) ? 0xff : b;
+			    *(dst+2) = (r >> 8) ? 0xff : r;
 			}
 
 		    dst+=3;
