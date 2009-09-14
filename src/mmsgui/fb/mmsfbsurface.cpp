@@ -2111,6 +2111,26 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// does not match
 			return false;
 		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR24) {
+			// destination is BGR24
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_blend_argb_to_bgr24(src_planes, src_height,
+												   sx, sy, sw, sh,
+												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
 
 		// does not match
 		return false;
@@ -2595,6 +2615,31 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 							sx, sy, sw, sh,
 							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_BGR24:
+		// source is BGR24
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR24) {
+			// destination is BGR24
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_bgr24_to_bgr24(src_planes, src_height,
+											  sx, sy, sw, sh,
+											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3425,6 +3470,24 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				mmsfb_fillrectangle_argb3565(&dst_planes, dst_height,
 										     sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_BGR24:
+		// destination is BGR24
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_fillrectangle_bgr24(&dst_planes, dst_height,
+										  sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}

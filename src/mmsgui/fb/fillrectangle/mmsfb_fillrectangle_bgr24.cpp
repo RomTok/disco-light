@@ -26,41 +26,45 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSTHREAD_H_
-#define MMSTHREAD_H_
+#include "mmsgui/fb/mmsfbconv.h"
+#include "mmstools/mmstools.h"
+#include <string.h>
 
-#include <pthread.h>
-#include <sched.h>
-#include "mmstools/mmslogger.h"
+void mmsfb_fillrectangle_bgr24(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color) {
+	// first time?
+	static bool firsttime = true;
+	if (firsttime) {
+		printf("DISKO: Using accelerated fill rectangle to BGR24.\n");
+		firsttime = false;
+	}
 
-class MMSThread {
+	// get the first destination ptr/pitch
+	unsigned char *dst = (unsigned char *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
-	private:
-		int				priority;
-        pthread_attr_t	tattr;
-        sched_param		param;
-		pthread_t 		id;
-		bool 			isrunning;
-		bool            isdetached;
-		bool            autoDetach;
-		size_t			stacksize;
+	// prepare a rgb line
+	int size = dw * 3;
+	if (size > dst_pitch) size = dst_pitch;
+	unsigned char line[2048*3];
+	unsigned char *ls = line;
+	unsigned char *le = line + size;
+	unsigned char r = color.r;
+	unsigned char g = color.g;
+	unsigned char b = color.b;
+	while (ls < le) {
+		*ls = r; ls++;
+		*ls = g; ls++;
+		*ls = b; ls++;
+	}
+	dst+= dx*3 + dy * dst_pitch;
+	unsigned char *dst_end = dst + dst_pitch * dh;
 
-	public:
-        string    identity;
+	// copy line buffer directly to the destination
+	// for all lines
+	while (dst < dst_end) {
+		memcpy(dst, line, size);
+		dst+= dst_pitch;
+	}
+}
 
-//	protected:
-		void run();
-
-	public:
-		MMSThread(string identity = "MMSThread", int priority = 0, bool detach = true);
-        virtual ~MMSThread() {};
-		virtual void threadMain() = 0;
-		void start();
-		void detach();
-		bool isRunning();
-		int cancel();
-		void join();
-		void setStacksize(size_t stacksize);
-};
-
-#endif /*MMSTHREAD_H_*/

@@ -26,41 +26,22 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef MMSTHREAD_H_
-#define MMSTHREAD_H_
+#include <cstring>
+#include "mmsgui/fb/mmsfbconv.h"
+#include "mmstools/mmstools.h"
 
-#include <pthread.h>
-#include <sched.h>
-#include "mmstools/mmslogger.h"
+void mmsfb_blit_bgr24_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
+	// first time?
+	static bool firsttime = true;
+	if (firsttime) {
+		printf("DISKO: Using accelerated copy BGR24 to BGR24.\n");
+		firsttime = false;
+	}
 
-class MMSThread {
+	// no difference to rgb24, use rgb24 to rgb24 routine
+	mmsfb_blit_rgb24_to_rgb24(src_planes, src_height, sx, sy, sw, sh,
+							  dst_planes, dst_height, dx, dy);
+}
 
-	private:
-		int				priority;
-        pthread_attr_t	tattr;
-        sched_param		param;
-		pthread_t 		id;
-		bool 			isrunning;
-		bool            isdetached;
-		bool            autoDetach;
-		size_t			stacksize;
 
-	public:
-        string    identity;
-
-//	protected:
-		void run();
-
-	public:
-		MMSThread(string identity = "MMSThread", int priority = 0, bool detach = true);
-        virtual ~MMSThread() {};
-		virtual void threadMain() = 0;
-		void start();
-		void detach();
-		bool isRunning();
-		int cancel();
-		void join();
-		void setStacksize(size_t stacksize);
-};
-
-#endif /*MMSTHREAD_H_*/

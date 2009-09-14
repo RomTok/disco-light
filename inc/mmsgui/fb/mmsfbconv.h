@@ -1052,6 +1052,7 @@ void mmsfb_blit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_heigh
 
 //! Blit with alpha blending ARGB to RGB24.
 /*!
+\note RGB24 byte order: blue@0, green@1, red@2
 \author Jens Schneider
 */
 void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -1059,11 +1060,29 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 
 //! Blit RGB24 to RGB24.
 /*!
+\note RGB24 byte order: blue@0, green@1, red@2
 \author Jens Schneider
 */
 void mmsfb_blit_rgb24_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 							   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
+
+
+//! Blit with alpha blending ARGB to BGR24.
+/*!
+\note BGR24 byte order: red@0, green@1, blue@2
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+//! Blit BGR24 to BGR24.
+/*!
+\note BGR24 byte order: red@0, green@1, blue@2
+\author Jens Schneider
+*/
+void mmsfb_blit_bgr24_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 //! Blit RGB16 to RGB16.
@@ -1425,6 +1444,7 @@ void mmsfb_fillrectangle_rgb32(MMSFBSurfacePlanes *dst_planes, int dst_height,
 
 //! Fill rectangle RGB24.
 /*!
+\note RGB24 byte order: blue@0, green@1, red@2
 \author Jens Schneider
 */
 void mmsfb_fillrectangle_rgb24(MMSFBSurfacePlanes *dst_planes, int dst_height,
@@ -1486,6 +1506,14 @@ void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
 void mmsfb_fillrectangle_argb3565(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						          int dx, int dy, int dw, int dh, MMSFBColor color);
 
+
+//! Fill rectangle BGR24.
+/*!
+\note BGR24 byte order: red@0, green@1, blue@2
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_bgr24(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						       int dx, int dy, int dw, int dh, MMSFBColor color);
 
 
 //! Draw line ARGB.

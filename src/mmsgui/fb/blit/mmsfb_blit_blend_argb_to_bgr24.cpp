@@ -29,12 +29,12 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+void mmsfb_blit_blend_argb_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend ARGB to RGB24.\n");
+		printf("DISKO: Using accelerated blend ARGB to BGR24.\n");
 		firsttime = false;
 	}
 
@@ -80,9 +80,9 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 			if (A == 0xff) {
 				// source pixel is not transparent, copy it directly to the destination
 //				*dst = SRC | 0xff000000;
-				*dst = (unsigned char)(SRC & 0x000000ff);
+				*dst = (unsigned char)((SRC & 0x00ff0000) >> 16);
 				*(dst+1) = (unsigned char)((SRC & 0x0000ff00) >> 8);
-				*(dst+2) = (unsigned char)((SRC & 0x00ff0000) >> 16);
+				*(dst+2) = (unsigned char)(SRC & 0x000000ff);
 			}
 			else
 			if (A) {
@@ -113,9 +113,9 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 			    r += (A*(SRC & 0xff0000)) >> 24;
 			    g += (A*(SRC & 0xff00)) >> 16;
 			    b += (A*(SRC & 0xff)) >> 8;
-			    *dst     = (b >> 8) ? 0xff : b;
+			    *dst     = (r >> 8) ? 0xff : r;
 			    *(dst+1) = (g >> 8) ? 0xff : g;
-			    *(dst+2) = (r >> 8) ? 0xff : r;
+			    *(dst+2) = (b >> 8) ? 0xff : b;
 			}
 
 		    dst+=3;

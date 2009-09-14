@@ -142,6 +142,12 @@ bool MMSFBDev::buildPixelFormat() {
     			this->layers[0].pixelformat = MMSFB_PF_RGB32;
     	}
     	else
+    	if    ((var_screeninfo.red.length == 8) && (var_screeninfo.green.length == 8) && (var_screeninfo.blue.length == 8)
+    		&& (var_screeninfo.red.offset == 0) && (var_screeninfo.green.offset == 8) && (var_screeninfo.blue.offset == 16)) {
+    		if (var_screeninfo.bits_per_pixel == 24)
+    			this->layers[0].pixelformat = MMSFB_PF_BGR24;
+    	}
+    	else
     	if    ((var_screeninfo.red.length == 0) && (var_screeninfo.green.length == 0) && (var_screeninfo.blue.length == 0)
     		&& (var_screeninfo.red.offset == 0) && (var_screeninfo.green.offset == 0) && (var_screeninfo.blue.offset == 0)) {
     		if (var_screeninfo.bits_per_pixel == 4)
@@ -805,9 +811,11 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	        return false;
 	    }
 	    printVarScreenInfo();
+
+/*
     	printf("MMSFBDev: query plane\n");
 
-/*	    struct omapfb_plane_info plane_info;
+ 	    struct omapfb_plane_info plane_info;
 	    ioctl (this->fd, OMAPFB_QUERY_PLANE, &plane_info);
 	    plane_info.enabled = 1;
 	    plane_info.pos_x = 0;
@@ -824,6 +832,7 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
     	printf("MMSFBDev: done setup plane\n");
 */
 //return true;
+
     	if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
     		&& (bits_per_pixel == (int)this->var_screeninfo.bits_per_pixel)) {
 
@@ -853,6 +862,13 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 					this->var_screeninfo.blue.length,   this->var_screeninfo.blue.offset,
 					this->var_screeninfo.transp.length, this->var_screeninfo.transp.offset,
 					this->var_screeninfo.bits_per_pixel);
+			return false;
+		}
+
+		if (this->layers[0].pixelformat != pixelformat) {
+			printf("MMSFBDev: pixelformat not correctly set, %s set, %s requested\n",
+					getMMSFBPixelFormatString(this->layers[0].pixelformat).c_str(),
+					getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
 
