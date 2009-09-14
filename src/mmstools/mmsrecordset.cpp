@@ -81,7 +81,7 @@ const int MMSRecordSet::getRecordNum() const {
     return this->recnum;
 }
 
-string defret = "";
+static string defret = "";
 
 string &MMSRecordSet::operator[](string key) {
 	if(this->recnum == -1)
