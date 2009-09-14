@@ -51,13 +51,14 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
 
 	// get access to the framebuffer console
 	this->kb_fd = -1;
-	if (mmsfb->mmsfbdev)
-		mmsfb->mmsfbdev->vtGetFd(&this->kb_fd);
-
-	// start the keyboard thread
-	this->listhread = new MMSInputLISThread(this, this->kb_fd);
-	if (this->listhread)
-		this->listhread->start();
+	if (mmsfb->mmsfbdev) {
+		if(mmsfb->mmsfbdev->vtGetFd(&this->kb_fd)) {
+			// start the keyboard thread
+			this->listhread = new MMSInputLISThread(this, this->kb_fd);
+			if (this->listhread)
+				this->listhread->start();
+		}
+	}
 
 	// get other linux input devices and start separate threads
 	getDevices();
