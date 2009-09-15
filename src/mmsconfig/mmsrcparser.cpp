@@ -607,6 +607,10 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 					WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES, "");
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "hideapplication")) {
 				this->graphics.hideapplication = strToBool(string((const char *)parvalue));
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchSwapX")) {
+				this->graphics.touchSwapX = strToBool(string((const char *)parvalue));
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchSwapY")) {
+				this->graphics.touchSwapY = strToBool(string((const char *)parvalue));
 			}
 			else
 				printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);

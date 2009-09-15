@@ -114,6 +114,8 @@ class MMSConfigDataGraphics {
 	    string 					allocmethod;
 	    MMSFBFullScreenMode		fullscreen;
 	    bool					hideapplication;
+		bool					touchSwapX;
+		bool					touchSwapY;
 
    	    MMSConfigDataGraphics() :
    		    backend(MMSFB_BE_NONE),							// set MMSFB_BE_NONE for compatibility reason
@@ -126,7 +128,9 @@ class MMSConfigDataGraphics {
    		    extendedaccel(true),							// use lowlevel disko routines for faster pixel manipulation
    		    allocmethod(""),								// the current alloc method
    		    fullscreen(MMSFB_FSM_FALSE),					// x11 fullscreen?, default no
-   		    hideapplication(false) {}
+   		    hideapplication(false),
+   		    touchSwapX(false),
+   		    touchSwapY(false) {}
 };
 
 class MMSConfigDataLanguage {
@@ -204,6 +208,8 @@ class MMSConfigData {
         const string getAllocMethod();
         const MMSFBFullScreenMode   getFullScreen();
         const bool   getHideApplication();
+        const bool   getTouchSwapX();
+        const bool   getTouchSwapY();
 
         /* language section getters */
     	const MMS_LANGUAGE_TYPE getSourceLang();

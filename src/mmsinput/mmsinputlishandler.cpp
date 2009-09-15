@@ -140,8 +140,8 @@ bool MMSInputLISHandler::checkDevice() {
 				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
 				dev->touch.xRes = rect.w;
 				dev->touch.yRes = rect.h;
-				dev->touch.swapX = false;
-				dev->touch.swapY = true;  /* TODO: make configurable */
+				dev->touch.swapX = config.getTouchSwapX();
+				dev->touch.swapY = config.getTouchSwapY();
 				struct input_absinfo abs;
 				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
 					dev->touch.xFactor =  (float)rect.w / abs.maximum;
