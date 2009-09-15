@@ -613,6 +613,10 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				this->graphics.touchSwapY = strToBool(string((const char *)parvalue));
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchSwapXY")) {
 				this->graphics.touchSwapXY = strToBool(string((const char *)parvalue));
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchResX")) {
+				this->graphics.touchResX = strToBool(string((const char *)parvalue));
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchResY")) {
+				this->graphics.touchResY = strToBool(string((const char *)parvalue));
 			}
 			else
 				printf("RcParser: ignoring parameter '%s' in tag <graphics/>\n", parname);
