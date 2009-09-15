@@ -114,8 +114,9 @@ class MMSConfigDataGraphics {
 	    string 					allocmethod;
 	    MMSFBFullScreenMode		fullscreen;
 	    bool					hideapplication;
-		bool					touchSwapX;
-		bool					touchSwapY;
+		bool					touchSwapX;					/**< swap x axis (maximum value becomes minimum) */
+		bool					touchSwapY;					/**< swap y axis (maximum value becomes minimum) */
+		bool					touchSwapXY;				/**< swap x and y axis (x axis events are handled as y axis and vice versa) */
 
    	    MMSConfigDataGraphics() :
    		    backend(MMSFB_BE_NONE),							// set MMSFB_BE_NONE for compatibility reason
@@ -130,7 +131,8 @@ class MMSConfigDataGraphics {
    		    fullscreen(MMSFB_FSM_FALSE),					// x11 fullscreen?, default no
    		    hideapplication(false),
    		    touchSwapX(false),
-   		    touchSwapY(false) {}
+   		    touchSwapY(false),
+   		    touchSwapXY(false) {}
 };
 
 class MMSConfigDataLanguage {
@@ -210,6 +212,7 @@ class MMSConfigData {
         const bool   getHideApplication();
         const bool   getTouchSwapX();
         const bool   getTouchSwapY();
+        const bool   getTouchSwapXY();
 
         /* language section getters */
     	const MMS_LANGUAGE_TYPE getSourceLang();

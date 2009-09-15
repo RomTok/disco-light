@@ -805,6 +805,10 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 		return true;
 	}
 	else if(linux_evt->type == EV_ABS) {
+		if(this->device.touch.swapXY) {
+			if(linux_evt->code == ABS_X) { linux_evt->code = ABS_Y; }
+			else if(linux_evt->code == ABS_Y) { linux_evt->code = ABS_X; }
+		}
 		switch(linux_evt->code) {
 			case ABS_X:
 				if(this->lastX >= 0 && this->lastY >= 0 && !this->button_pressed) {

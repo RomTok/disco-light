@@ -142,6 +142,7 @@ bool MMSInputLISHandler::checkDevice() {
 				dev->touch.yRes = rect.h;
 				dev->touch.swapX = config.getTouchSwapX();
 				dev->touch.swapY = config.getTouchSwapY();
+				dev->touch.swapXY = config.getTouchSwapXY();
 				struct input_absinfo abs;
 				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
 					dev->touch.xFactor =  (float)rect.w / abs.maximum;

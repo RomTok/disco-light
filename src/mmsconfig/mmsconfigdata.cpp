@@ -245,6 +245,10 @@ const bool   MMSConfigData::getTouchSwapY() {
 	return this->graphics.touchSwapY;
 }
 
+const bool   MMSConfigData::getTouchSwapXY() {
+	return this->graphics.touchSwapXY;
+}
+
 const MMS_LANGUAGE_TYPE MMSConfigData::getSourceLang() {
 	return this->language.sourcelang;
 }

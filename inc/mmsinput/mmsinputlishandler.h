@@ -50,8 +50,9 @@ typedef struct {
 	unsigned int yRes;
 	float 	xFactor;		/**< multiplicate the x value to get the real value (touchscreen only) */
 	float 	yFactor;		/**< multiplicate the y value to get the real value (touchscreen only) */
-	bool  	swapX;			/**< swap x axes */
-	bool  	swapY;			/**< swap y axes */	
+	bool  	swapX;			/**< swap x axis */
+	bool  	swapY;			/**< swap y axis */
+	bool	swapXY;			/**< swap x and y axis */
 } MMSINPUTLISHANDLER_DEV_TOUCH;
 
 typedef struct {
