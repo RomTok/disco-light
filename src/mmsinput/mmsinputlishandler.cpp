@@ -104,7 +104,6 @@ bool MMSInputLISHandler::checkDevice() {
 	ioctl(fd, EVIOCGNAME(sizeof(devdesc)-1), devdesc);
 	dev->desc = devdesc;
 	dev->type = MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN;
-	dev->xFactor = dev->yFactor = 1;
 
 	// try to find out the type of input device
 	unsigned int  keys = 0;
@@ -139,17 +138,24 @@ bool MMSInputLISHandler::checkDevice() {
 				MMSConfigData config;
 				MMSFBRectangle rect = config.getGraphicsLayer().rect;
 				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
+				dev->touch.xRes = rect.w;
+				dev->touch.yRes = rect.h;
+				dev->touch.swapX = false;
+				dev->touch.swapY = true;  /* TODO: make configurable */
 				struct input_absinfo abs;
 				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
-					dev->xFactor =  rect.w / abs.maximum;
+					dev->touch.xFactor =  (float)rect.w / abs.maximum;
+				} else {
+					dev->touch.xFactor = 1.0;
 				}
 				if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
-					dev->yFactor = rect.h / abs.maximum;
+					dev->touch.yFactor = (float)rect.h / abs.maximum;
+				} else {
+					dev->touch.yFactor = 1.0;
 				}
 			}
 		}
 	}
-
 	printf("Found %s, type=%s (%s)\n",
 						dev->name.c_str(),
 						dev->type.c_str(),

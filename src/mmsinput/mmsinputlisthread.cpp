@@ -473,6 +473,8 @@ MMSInputLISThread::MMSInputLISThread(MMSInputLISHandler *handler, int kb_fd) {
 	this->altgr_pressed = false;
 	this->is_caps_lock = false;
 	this->button_pressed = false;
+	
+	this->lastX = this->lastY = -1;
 }
 
 MMSInputLISThread::MMSInputLISThread(MMSInputLISHandler *handler, MMSINPUTLISHANDLER_DEV *device) {
@@ -805,21 +807,39 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 	else if(linux_evt->type == EV_ABS) {
 		switch(linux_evt->code) {
 			case ABS_X:
-				inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
-				inputevent->posx = linux_evt->value * this->device.xFactor;
-				return true;
-			case ABS_Y:
-				inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
-				inputevent->posy = linux_evt->value * this->device.yFactor;
-				return true;
-			case ABS_PRESSURE:
-				if(!this->button_pressed) {
+				if(this->lastX >= 0 && this->lastY >= 0 && !this->button_pressed) {
 					this->button_pressed = 1;
 					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-					return true;
-				} else if(linux_evt->value == 0) {
+					inputevent->posy = this->lastY;
+				} else {
+					inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+				}
+				inputevent->posx = (int)(linux_evt->value * this->device.touch.xFactor);
+				if(this->device.touch.swapX) {
+					inputevent->posx = this->device.touch.xRes - inputevent->posx;
+				}	
+				this->lastX = inputevent->posx;
+				return true;
+			case ABS_Y:
+				if(this->lastX >= 0 && this->lastY >= 0 && !this->button_pressed) {
+					this->button_pressed = 1;
+					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
+					inputevent->posx = this->lastX;
+				} else {
+					inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+				}
+				inputevent->posy = (int)(linux_evt->value * this->device.touch.yFactor);
+				if(this->device.touch.swapY) {
+					inputevent->posy = this->device.touch.yRes - inputevent->posy;	
+				}
+				this->lastY = inputevent->posy;
+				return true;
+			case ABS_PRESSURE:
+				if(linux_evt->value == 0) {
 					this->button_pressed = 0;
 					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+					inputevent->posx = this->lastX;
+					inputevent->posy = this->lastY;
 					return true;
 				}
 
