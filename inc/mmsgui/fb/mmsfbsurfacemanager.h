@@ -44,7 +44,8 @@ class MMSFBSurfaceManager {
 
         MMSFBSurface *tempsuf;
 
-        int surface_mem_cnt;
+        int 			surface_mem_cnt;
+        pthread_mutex_t	surface_mem_cnt_lock;
 
     public:
         MMSFBSurfaceManager();
