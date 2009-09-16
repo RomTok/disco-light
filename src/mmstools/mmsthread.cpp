@@ -46,7 +46,7 @@ static void *startmythread(void *thiz) {
 	return NULL;
 }
 
-MMSThread::MMSThread(string identity, int priority) {
+MMSThread::MMSThread(string identity, int priority, bool detach) {
 #ifdef __HAVE_DIRECTFB__
     D_DEBUG_AT( MMS_Thread, "MMSThread( %s )\n", identity.c_str() );
 
@@ -58,6 +58,7 @@ MMSThread::MMSThread(string identity, int priority) {
 
     this->isrunning = false;
     this->isdetached = false;
+    this->autoDetach = detach;
     this->stacksize = 1000000;
 }
 
@@ -66,7 +67,9 @@ void MMSThread::run() {
 #ifdef __HAVE_DIRECTFB__
         direct_thread_set_name( this->identity.c_str() );
 #endif /* __HAVE_DIRECTFB__ */
-		this->detach();
+        if(this->autoDetach) {
+        	this->detach();
+        }
         this->isrunning = true;
 		threadMain();
         this->isrunning = false;

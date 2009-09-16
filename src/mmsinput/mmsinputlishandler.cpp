@@ -51,13 +51,14 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
 
 	// get access to the framebuffer console
 	this->kb_fd = -1;
-	if (mmsfb->mmsfbdev)
-		mmsfb->mmsfbdev->vtGetFd(&this->kb_fd);
-
-	// start the keyboard thread
-	this->listhread = new MMSInputLISThread(this, this->kb_fd);
-	if (this->listhread)
-		this->listhread->start();
+	if (mmsfb->mmsfbdev) {
+		if(mmsfb->mmsfbdev->vtGetFd(&this->kb_fd)) {
+			// start the keyboard thread
+			this->listhread = new MMSInputLISThread(this, this->kb_fd);
+			if (this->listhread)
+				this->listhread->start();
+		}
+	}
 
 	// get other linux input devices and start separate threads
 	getDevices();
@@ -103,7 +104,6 @@ bool MMSInputLISHandler::checkDevice() {
 	ioctl(fd, EVIOCGNAME(sizeof(devdesc)-1), devdesc);
 	dev->desc = devdesc;
 	dev->type = MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN;
-	dev->xFactor = dev->yFactor = 1;
 
 	// try to find out the type of input device
 	unsigned int  keys = 0;
@@ -135,20 +135,40 @@ bool MMSInputLISHandler::checkDevice() {
 	if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN) {
 		if(ioctl(fd, EVIOCGBIT(EV_ABS, sizeof (abs_bit)), abs_bit) != -1) {
 			if(TSTBIT(ABS_X, abs_bit) && TSTBIT(ABS_Y, abs_bit) && TSTBIT(ABS_PRESSURE, abs_bit)) {
+				struct input_absinfo abs;
 				MMSConfigData config;
 				MMSFBRectangle rect = config.getGraphicsLayer().rect;
 				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
-				struct input_absinfo abs;
-				if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
-					dev->xFactor =  rect.w / abs.maximum;
+				dev->touch.xRes = rect.w;
+				dev->touch.yRes = rect.h;
+				dev->touch.swapX = config.getTouchSwapX();
+				dev->touch.swapY = config.getTouchSwapY();
+				dev->touch.swapXY = config.getTouchSwapXY();
+				if(config.getTouchResX()) {
+					dev->touch.xFactor = (float)rect.w / config.getTouchResX();
+				} else if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
+					if(dev->touch.swapXY) {
+						dev->touch.yFactor =  (float)rect.h / abs.maximum;
+					} else {
+						dev->touch.xFactor =  (float)rect.w / abs.maximum;
+					}
+				} else {
+					dev->touch.xFactor = 1.0;
 				}
-				if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
-					dev->yFactor = rect.h / abs.maximum;
+				if(config.getTouchResY()) {
+					dev->touch.yFactor = (float)rect.h / config.getTouchResY();
+				} else if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
+					if(dev->touch.swapXY) {
+						dev->touch.xFactor = (float)rect.w / abs.maximum;
+					} else {
+						dev->touch.yFactor = (float)rect.h / abs.maximum;
+					}
+				} else {
+					dev->touch.yFactor = 1.0;
 				}
 			}
 		}
 	}
-
 	printf("Found %s, type=%s (%s)\n",
 						dev->name.c_str(),
 						dev->type.c_str(),

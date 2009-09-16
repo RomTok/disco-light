@@ -57,6 +57,8 @@ class MMSInputLISThread : public MMSThread {
 
 		//! button pressed?
 		bool button_pressed;
+		
+		int lastX, lastY;
 
 		bool openDevice();
 		void closeDevice();

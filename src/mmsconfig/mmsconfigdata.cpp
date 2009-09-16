@@ -237,6 +237,25 @@ const bool   MMSConfigData::getHideApplication() {
 	return this->graphics.hideapplication;
 }
 
+const bool   MMSConfigData::getTouchSwapX() {
+	return this->graphics.touchSwapX;
+}
+
+const bool   MMSConfigData::getTouchSwapY() {
+	return this->graphics.touchSwapY;
+}
+
+const bool   MMSConfigData::getTouchSwapXY() {
+	return this->graphics.touchSwapXY;
+}
+
+const unsigned int MMSConfigData::getTouchResX() {
+	return this->graphics.touchResX;
+}
+
+const unsigned int MMSConfigData::getTouchResY() {
+	return this->graphics.touchResY;
+}
 
 const MMS_LANGUAGE_TYPE MMSConfigData::getSourceLang() {
 	return this->language.sourcelang;

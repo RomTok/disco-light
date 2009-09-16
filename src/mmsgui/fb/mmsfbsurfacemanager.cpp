@@ -35,9 +35,11 @@ MMSFBSurfaceManager *mmsfbsurfacemanager = new MMSFBSurfaceManager();
 MMSFBSurfaceManager::MMSFBSurfaceManager() {
     this->tempsuf = NULL;
     this->surface_mem_cnt = 0;
+    pthread_mutex_init(&this->surface_mem_cnt_lock, NULL);
 }
 
 MMSFBSurfaceManager::~MMSFBSurfaceManager() {
+	pthread_mutex_destroy(&this->surface_mem_cnt_lock);
 }
 
 MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
@@ -97,7 +99,9 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixel
 							+ iToStr(size/(bnum)) + " byte for each buffer");
 
     // add size of the surface to my global counter
+	pthread_mutex_lock(&this->surface_mem_cnt_lock);
     this->surface_mem_cnt+=size;
+	pthread_mutex_unlock(&this->surface_mem_cnt_lock);
     DEBUGMSG("MMSGUI", "Sum of allocated surface memory: " + iToStr(this->surface_mem_cnt) + " byte");
 
     /* add to used surfaces */

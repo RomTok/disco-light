@@ -66,8 +66,6 @@ class MMSMainWindowClass {
         MMSWindowClass windowClass;
         //
         MMSMainWindowClass();
-        //
-        void unsetAll();
 
         void setClassName(string className);
         string getClassName();

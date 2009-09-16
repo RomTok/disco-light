@@ -876,15 +876,11 @@ if (!AA) { \
 
 
 //! used for text output
-#define MMSFBSURFACE_BLIT_TEXT_LOCK(pw) \
-	font->lock(); \
+#define MMSFBSURFACE_BLIT_TEXT_INIT(pw) \
 	int DY = 0;   font->getHeight(&DY); \
 	int desc = 0; font->getDescender(&desc); \
 	DY -= desc + 1; \
 	int dst_pitch_pix = dst_pitch >> pw;
-
-//! used for text output
-#define MMSFBSURFACE_BLIT_TEXT_UNLOCK font->unlock();
 
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character) \

@@ -42,6 +42,7 @@ class MMSThread {
 		pthread_t 		id;
 		bool 			isrunning;
 		bool            isdetached;
+		bool            autoDetach;
 		size_t			stacksize;
 
 	public:
@@ -51,7 +52,7 @@ class MMSThread {
 		void run();
 
 	public:
-		MMSThread(string identity = "MMSThread", int priority = 0);
+		MMSThread(string identity = "MMSThread", int priority = 0, bool detach = true);
         virtual ~MMSThread() {};
 		virtual void threadMain() = 0;
 		void start();
