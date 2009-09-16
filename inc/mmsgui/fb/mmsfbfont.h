@@ -103,13 +103,14 @@ class MMSFBFont {
     	//! stores the glyph infos for method getGlyph()
     	MMSFBFont_Glyph glyph;
 
+        void lock();
+        void unlock();
+
     public:
         MMSFBFont(string filename, int w, int h);
         virtual ~MMSFBFont();
 
         bool isInitialized();
-        void lock();
-        void unlock();
 
         bool getStringWidth(string text, int len, int *width);
         bool getHeight(int *height);

@@ -39,7 +39,7 @@ void mmsfb_drawstring_blend_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
 	}
 
 	// lock font and destination surface
-	MMSFBSURFACE_BLIT_TEXT_LOCK(2);
+	MMSFBSURFACE_BLIT_TEXT_INIT(2);
 
 	// for all characters
 	unsigned int OLDDST = 0;
@@ -116,8 +116,5 @@ void mmsfb_drawstring_blend_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
 		// prepare for next loop
 		MMSFBSURFACE_BLIT_TEXT_END_RENDER;
 	}}
-
-	// unlock
-	MMSFBSURFACE_BLIT_TEXT_UNLOCK;
 }
 
