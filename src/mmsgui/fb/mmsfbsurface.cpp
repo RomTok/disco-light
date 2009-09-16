@@ -233,7 +233,12 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
 #endif
-    if ((!parent)||(!this->use_own_alloc))
+	if (llsurface > (void *)1)
+		this->use_own_alloc = false;
+	else
+		this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
+
+	if ((!parent)||(!this->use_own_alloc))
     	this->config.surface_buffer = new MMSFBSurfaceBuffer;
     else
     	this->config.surface_buffer = NULL;
@@ -253,10 +258,6 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
     	this->config.surface_buffer->xv_image[0] = NULL;
     }
 #endif
-	if (llsurface > (void *)1)
-		this->use_own_alloc = false;
-	else
-		this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
 	init(llsurface, parent, sub_surface_rect);
 }
