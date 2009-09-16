@@ -32,12 +32,8 @@
 TAFF_ATTRDESC MMSGUI_MAINWINDOW_ATTR_I[] = MMSGUI_MAINWINDOW_ATTR_INIT;
 
 
-MMSMainWindowClass::MMSMainWindowClass() {
-    unsetAll();
-}
-
-void MMSMainWindowClass::unsetAll() {
-    this->className = "";
+MMSMainWindowClass::MMSMainWindowClass() :
+	className("") {
 }
 
 void MMSMainWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
