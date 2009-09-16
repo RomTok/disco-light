@@ -49,8 +49,8 @@ void mmsfb_blit_rgb24_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_height, i
 
 	// prepare...
 	int dst_pitch_pix = dst_pitch / 3;
-	src+= sx + sy * src_pitch;
-	dst+= dx + dy * dst_pitch;
+	src+= sx*3 + sy * src_pitch;
+	dst+= dx*3 + dy * dst_pitch;
 
 	// check the surface range
 	if (dst_pitch_pix - dx < sw - sx)

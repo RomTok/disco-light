@@ -50,7 +50,7 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 	int src_pitch_pix = src_pitch >> 2;
 	int dst_pitch_pix = dst_pitch / 3;
 	src+= sx + sy * src_pitch_pix;
-	dst+= dx + dy * dst_pitch;
+	dst+= dx*3 + dy * dst_pitch;
 
 	// check the surface range
 	if (dst_pitch_pix - dx < sw - sx)
@@ -60,12 +60,9 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
-//	unsigned int OLDDST = (*dst) + 1;
-//	unsigned int OLDSRC = (*src) + 1;
 	unsigned int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch - sw * 3;
-	register unsigned int d;
 
 	// for all lines
 	while (src < src_end) {
@@ -79,30 +76,17 @@ void mmsfb_blit_blend_argb_to_rgb24(MMSFBSurfacePlanes *src_planes, int src_heig
 			register unsigned int A = SRC >> 24;
 			if (A == 0xff) {
 				// source pixel is not transparent, copy it directly to the destination
-//				*dst = SRC | 0xff000000;
-				*dst = (unsigned char)(SRC & 0x000000ff);
-				*(dst+1) = (unsigned char)((SRC & 0x0000ff00) >> 8);
-				*(dst+2) = (unsigned char)((SRC & 0x00ff0000) >> 16);
+				*dst     = (unsigned char)SRC;
+				*(dst+1) = (unsigned char)(SRC >> 8);
+				*(dst+2) = (unsigned char)(SRC >> 16);
 			}
 			else
 			if (A) {
 				// source alpha is > 0x00 and < 0xff
-/*				register unsigned int DST = *dst;
-
-				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
-					// same pixel, use the previous value
-					*dst = d;
-				    dst++;
-				    src++;
-					continue;
-				}
-				OLDDST = DST;
-				OLDSRC = SRC;*/
-
 				register unsigned int SA= 0x100 - A;
-				unsigned int r = *dst;
+				unsigned int b = *dst;
 				unsigned int g = *(dst+1);
-				unsigned int b = *(dst+2);
+				unsigned int r = *(dst+2);
 
 				// invert src alpha
 			    r = (SA * r) >> 8;
