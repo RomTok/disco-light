@@ -239,14 +239,12 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
 #endif
     }
     else {
-    	lock();
     	*width = 0;
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
     		MMSFBFont_Glyph *g = getGlyph(character);
     		if (!g) break;
 			(*width)+=g->advanceX >> 6;
     	} }
-    	unlock();
     	return true;
     }
     return false;
