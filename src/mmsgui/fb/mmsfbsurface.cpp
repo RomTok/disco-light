@@ -670,6 +670,9 @@ int MMSFBSurface::calcPitch(int width) {
     else
     if(pf == MMSFB_PF_ARGB3565)
     	pitch = width * 2;
+    else
+    if(pf == MMSFB_PF_BGR24)
+    	pitch = width * 3;
 
     if (pitch <= 0) pitch = 1;
     if (pitch % 4)
