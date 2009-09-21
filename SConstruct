@@ -153,6 +153,8 @@ if os.environ.has_key('DESTDIR'):
 	env['destdir'] = os.environ['DESTDIR']
 if env['destdir'] != 'none':
 	idir_prefix = env['destdir']
+	if env['prefix'] != 'none':
+		idir_prefix += ('/' + env['prefix'])
 else:
 	idir_prefix = env['prefix']
 
