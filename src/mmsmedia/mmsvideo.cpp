@@ -119,6 +119,10 @@ void MMSVideo::xineOpen() {
  */
 void MMSVideo::startPlaying(const string file, const bool cont) {
 //   this->open();
+#ifdef __HAVE_XINE__
+  this->xineOpen();
+#endif
+
 
    string::size_type loc = file.find( "://", 0 );
    if( loc != string::npos ) {
