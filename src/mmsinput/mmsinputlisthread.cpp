@@ -844,6 +844,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 					inputevent->posx = this->lastX;
 					inputevent->posy = this->lastY;
+					this->lastX = this->lastY = -1;
 					return true;
 				}
 
