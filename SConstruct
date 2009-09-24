@@ -287,8 +287,6 @@ def checkXineBlDvb(context):
 	pipe = os.popen('pkg-config --variable=plugindir libxine')
  	xinePluginPath = pipe.read()
  	pipe.close()
-	if env['destdir'] != 'none':
-		xinePluginPath = env['destdir'] + xinePluginPath
 	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xineplug_inp_bldvb.so', os.R_OK):
 		ret = True
 	else:
@@ -302,8 +300,6 @@ def checkGstDiskoVideosink(context):
 	pipe = os.popen('pkg-config --variable=pluginsdir gstreamer-0.10')
  	gstPluginPath = pipe.read()
  	pipe.close()
-	if env['destdir'] != 'none':
-		gstPluginPath = env['destdir'] + gstPluginPath
 	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
 		ret = True
 	else:
