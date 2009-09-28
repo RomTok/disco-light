@@ -35,8 +35,10 @@ MMSEventSignupManager::MMSEventSignupManager() {
 
 void MMSEventSignupManager::signup(IMMSEventSignup *signup) {
     this->signupmutex.lock();
-
-    this->signups.push_back((MMSEventSignup *)signup);
+    if(signup->isPlugin())
+    	this->signups.push_back((MMSEventSignup *)signup);
+    else
+    	this->signals.push_back((MMSEventSignup *)signup);
 
     this->signupmutex.unlock();
 }
@@ -71,4 +73,26 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
         throw new MMSEventSignupManagerError(0,"no subscriptions found");
 
     return mydata;
+}
+
+vector<sigc::signal<void, _IMMSEvent*> *> MMSEventSignupManager::getReceiverSignals(_IMMSEvent *event) {
+	vector<sigc::signal<void, _IMMSEvent*> *> mysignals;
+
+	for(vector<MMSEventSignup *>::iterator it = this->signups.begin();it != signups.end();it++) {
+        for(vector<string *>::iterator it2 = (*it)->getSubScriptions().begin();it2 != (*it)->getSubScriptions().end();it2++) {
+
+            /*compare heading of event with subsciptions */
+            if(strncmp((*it2)->c_str(),
+                       event->getHeading().c_str(),
+                       (*it2)->size())==0) {
+
+                mysignals.push_back((*it)->getSignal());
+            }
+        }
+    }
+    if(mysignals.empty())
+        throw new MMSEventSignupManagerError(0,"no subscriptions found");
+
+    return mysignals;
+
 }

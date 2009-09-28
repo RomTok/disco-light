@@ -42,6 +42,7 @@ MMS_CREATEERROR(MMSEventSignupManagerError);
 class MMSEventSignupManager : public IMMSEventSignupManager {
     private:
         vector<MMSEventSignup *> signups;
+        vector<MMSEventSignup *> signals;
         MMSMutex signupmutex;
         MMSMutex getrecmutex;
 
@@ -49,7 +50,8 @@ class MMSEventSignupManager : public IMMSEventSignupManager {
         MMSEventSignupManager();
         virtual ~MMSEventSignupManager() {};
         void signup(IMMSEventSignup *signup);
-        vector<MMSPluginData *> getReceiverPlugins(_IMMSEvent *event);
+        vector<MMSPluginData *>  				 getReceiverPlugins(_IMMSEvent *event);
+        vector<sigc::signal<void, _IMMSEvent*> *> getReceiverSignals(_IMMSEvent *event);
 
 };
 

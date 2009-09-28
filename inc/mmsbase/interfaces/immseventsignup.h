@@ -30,11 +30,15 @@
 #define IMMSEVENTSIGNUP_H_
 
 #include "mmstools/base.h"
+#include <sigc++/sigc++.h>
+#include "mmsbase/interfaces/immsevent.h"
 
 class IMMSEventSignup {
     public:
         virtual ~IMMSEventSignup() {};
         virtual void add(string) = 0;
+        virtual bool isPlugin() = 0;
+        virtual sigc::signal<void,_IMMSEvent*> *getSignal() =0;
 };
 
 #endif /*IMMSEVENTSIGNUP_H_*/

@@ -44,6 +44,7 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
     vector <MMSCentralPluginHandler *> centralHandlers;
     vector <MMSBackendPluginHandler *> backendHandlers;
     vector <MMSPluginData *> plugins;
+    vector <sigc::signal<void, _IMMSEvent*> *> signals;
     IMMSEvent e(event);
 
     if (id > 0) {
@@ -89,6 +90,10 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
 	            thread = new MMSEventThread(backendHandlers.at(i), e);
 	            thread->start();
 	        }
+
+	        signals = this->getSignupManager()->getReceiverSignals(event);
+			for(vector <sigc::signal<void, _IMMSEvent*> *>::iterator it = signals.begin(); it != signals.end();it++)
+				(*it)->emit((_IMMSEvent *)&e);
 
         } catch (MMSEventSignupManagerError *err) {
         	DEBUGMSG("MMSEventdispatcher", "Error: %s", err->getMessage().c_str());

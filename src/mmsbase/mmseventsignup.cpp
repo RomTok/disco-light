@@ -28,8 +28,12 @@
 
 #include "mmsbase/mmseventsignup.h"
 
-MMSEventSignup::MMSEventSignup(MMSPluginData data) {
+MMSEventSignup::MMSEventSignup(MMSPluginData data) : plugindataset(true), onSubscription(NULL) {
     this->data = data;
+}
+
+MMSEventSignup::MMSEventSignup() : plugindataset(false) {
+	onSubscription = new sigc::signal<void,_IMMSEvent*>;
 }
 
 MMSEventSignup::~MMSEventSignup() {
@@ -70,4 +74,13 @@ IMMSEventSignupManager *MMSEventSignup::manager = NULL;
 
 vector<string *> MMSEventSignup::getSubScriptions() {
     return this->subscriptions;
+}
+
+
+sigc::signal<void,_IMMSEvent*> *MMSEventSignup::getSignal() {
+	return this->onSubscription;
+}
+
+bool MMSEventSignup::isPlugin() {
+	return this->plugindataset;
 }

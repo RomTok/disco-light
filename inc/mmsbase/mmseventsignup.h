@@ -42,14 +42,21 @@ class MMSEventSignup : public IMMSEventSignup  {
         IMMSEventSignupManager 			*getManager();
         MMSPluginData          			data;
         vector<string *>       			subscriptions;
+        bool 							plugindataset;
+        sigc::signal<void,_IMMSEvent*>  *onSubscription;
+
     public:
         MMSEventSignup(MMSPluginData data);
+        MMSEventSignup();
         virtual ~MMSEventSignup();
         void add(string);
         void executeSignup();
         MMSPluginData getPluginData();
         vector<string *> getSubScriptions();
         void setManager(IMMSEventSignupManager *manager);
+        sigc::signal<void,_IMMSEvent*> *getSignal();
+        bool isPlugin();
+
 };
 
 #endif /*MMSEVENTSIGNUP_H_*/
