@@ -53,13 +53,14 @@ void MMSEventSignup::add(string subscription) {
 
    /* check for doublettes */
    if (this->subscriptions.size() > 0) {
-        for(unsigned int i; i<this->subscriptions.size();i++) {
+        for(unsigned int i=0; i<this->subscriptions.size();i++) {
             //subscriptions.at(i)->
             if(subscription.compare(*(subscriptions.at(i)))==0)
                 throw new MMSEventSignupError(0,"subscription already made");
         }
    }
    this->subscriptions.push_back(new string(subscription));
+
 }
 
 void MMSEventSignup::executeSignup() {
@@ -84,3 +85,4 @@ sigc::signal<void,_IMMSEvent*> *MMSEventSignup::getSignal() {
 bool MMSEventSignup::isPlugin() {
 	return this->plugindataset;
 }
+

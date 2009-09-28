@@ -78,15 +78,15 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
 vector<sigc::signal<void, _IMMSEvent*> *> MMSEventSignupManager::getReceiverSignals(_IMMSEvent *event) {
 	vector<sigc::signal<void, _IMMSEvent*> *> mysignals;
 
-	for(vector<MMSEventSignup *>::iterator it = this->signups.begin();it != signups.end();it++) {
-        for(vector<string *>::iterator it2 = (*it)->getSubScriptions().begin();it2 != (*it)->getSubScriptions().end();it2++) {
-
+    for(unsigned int i=0;i<this->signals.size();i++) {
+        for(unsigned int y=0;y<this->signals.at(i)->getSubScriptions().size();y++) {
+      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", this->signals.at(i)->getSubScriptions().at(y)->c_str(), event->getHeading().c_str(), this->signals.at(i)->getSubScriptions().at(y)->size());
             /*compare heading of event with subsciptions */
-            if(strncmp((*it2)->c_str(),
+            if(strncmp(this->signals.at(i)->getSubScriptions().at(y)->c_str(),
                        event->getHeading().c_str(),
-                       (*it2)->size())==0) {
+                       this->signals.at(i)->getSubScriptions().at(y)->size())==0) {
 
-                mysignals.push_back((*it)->getSignal());
+                mysignals.push_back(this->signals.at(i)->getSignal());
             }
         }
     }

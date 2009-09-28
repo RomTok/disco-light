@@ -44,7 +44,7 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
     vector <MMSCentralPluginHandler *> centralHandlers;
     vector <MMSBackendPluginHandler *> backendHandlers;
     vector <MMSPluginData *> plugins;
-    vector <sigc::signal<void, _IMMSEvent*> *> signals;
+    vector <sigc::signal<void, _IMMSEvent*> *> mysignals;
     IMMSEvent e(event);
 
     if (id > 0) {
@@ -90,14 +90,26 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
 	            thread = new MMSEventThread(backendHandlers.at(i), e);
 	            thread->start();
 	        }
+			mysignals = this->getSignupManager()->getReceiverSignals(event);
+			for(vector <sigc::signal<void, _IMMSEvent*> *>::iterator it = mysignals.begin(); it != mysignals.end();it++) {
+				printf("emit\n");
+				(*it)->emit(event);
+				printf("after emit\n");
+			}
 
-	        signals = this->getSignupManager()->getReceiverSignals(event);
-			for(vector <sigc::signal<void, _IMMSEvent*> *>::iterator it = signals.begin(); it != signals.end();it++)
-				(*it)->emit((_IMMSEvent *)&e);
 
         } catch (MMSEventSignupManagerError *err) {
         	DEBUGMSG("MMSEventdispatcher", "Error: %s", err->getMessage().c_str());
-        	return;
+        	DEBUGMSG("MMSEventdispatcher", "try signal receivers");
+        	try {
+				mysignals = this->getSignupManager()->getReceiverSignals(event);
+				for(vector <sigc::signal<void, _IMMSEvent*> *>::iterator it = mysignals.begin(); it != mysignals.end();it++) {
+					(*it)->emit(event);
+				}
+            } catch (MMSEventSignupManagerError *err) {
+            	DEBUGMSG("MMSEventdispatcher", "Error: %s", err->getMessage().c_str());
+            	return;
+            }
         }
         for(vector<MMSPluginData *>::iterator it = plugins.begin(); it != plugins.end(); ++it)
         	delete *it;
