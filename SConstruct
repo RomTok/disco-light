@@ -443,9 +443,6 @@ if (env['enable_curl']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_CURL__'])	
 conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
 
-if conf.CheckLib('rt', 'clock_gettime'):
-	conf.env['rt'] = True
-
 if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
 
@@ -599,9 +596,6 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', libcurl'
 		disko_pc_libs += ' -lcurl'
 		
-	if env.has_key('rt'):
-		disko_pc_libs += ' -lrt'
-
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
