@@ -28,8 +28,13 @@
 
 #include "mmsgui/mmsgifloader.h"
 #include "mmsgui/fb/mmsfbsurface.h"
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
+
+extern "C" {
+#include <sys/time.h>
+#include <time.h>
+}
 
 //#define GIFTRACE
 
@@ -753,10 +758,12 @@ void MMSGIFLoader::threadMain() {
  * of a GIF file is loaded.
  */
 void MMSGIFLoader::block() {
+	struct timeval  tsGet;
 	struct timespec ts;
-
-	clock_gettime(CLOCK_REALTIME, &ts);
-	ts.tv_sec += 5;
+	gettimeofday(&tsGet, NULL);
+	//clock_gettime(CLOCK_REALTIME, &ts);
+	ts.tv_sec = tsGet.tv_sec + 5;
+	ts.tv_nsec = tsGet.tv_usec * 1000;
 	pthread_mutex_lock(&this->mutex);
 	while(this->desc->loading && this->desc->sufcount <= 0)
 	    pthread_cond_timedwait(&this->cond, &this->mutex, &ts);

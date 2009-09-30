@@ -23,6 +23,11 @@
 #include <cerrno>
 #include <cstring>
 
+extern "C" {
+#include <sys/time.h>
+#include <time.h>
+}
+
 MMSTimer::MMSTimer(bool singleShot) :
 	MMSThread("MMSTimer"), repeat(false), quit(false), secs(0),
 			nSecs(0), threadID(0)
@@ -129,13 +134,14 @@ void MMSTimer::threadMain()
 	}
 
 	struct timespec absTime;
+	struct timeval  absTimeGet;
 	int rc = 0;
 	while(!quit) {
 		pthread_mutex_lock(&stopMutex);
 		while(repeat) {
-			clock_gettime(CLOCK_REALTIME, &absTime);
-			absTime.tv_sec += secs;
-			absTime.tv_nsec += nSecs;
+			gettimeofday(&absTimeGet, NULL);
+			absTime.tv_sec  = absTimeGet.tv_sec + secs;
+			absTime.tv_nsec = (absTimeGet.tv_usec * 1000) + nSecs;
 
 			if(absTime.tv_nsec > 999999999) {
 				absTime.tv_sec += 1;
