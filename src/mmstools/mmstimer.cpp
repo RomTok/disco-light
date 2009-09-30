@@ -29,6 +29,8 @@ MMSTimer::MMSTimer(bool singleShot) :
 {
 	this->singleShot = singleShot;
 
+	MMSThread::setStacksize(131072);
+
 	pthread_mutex_init(&interruptMutex, NULL);
 	pthread_mutex_init(&startMutex, NULL);
 	pthread_mutex_init(&stopMutex, NULL);
