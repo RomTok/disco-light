@@ -63,7 +63,7 @@ bool MMSXMLClientInterface::parseAnswer(string *answer, int *rc, string *error) 
 }
 
 bool MMSXMLClientInterface::checkRoot(xmlDocPtr doc, int *rc, string *error) {
-    xmlChar *name, *attr;
+    //xmlChar *name, *attr;
 
     if (!doc)
     	return false;
