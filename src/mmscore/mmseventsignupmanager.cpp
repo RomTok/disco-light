@@ -46,28 +46,27 @@ void MMSEventSignupManager::signup(IMMSEventSignup *signup) {
 vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *event) {
     vector<MMSPluginData *> mydata;
 
-    for(unsigned int i=0;i<this->signups.size();i++) {
-        for(unsigned int y=0;y<this->signups.at(i)->getSubScriptions().size();y++) {
-      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", this->signups.at(i)->getSubScriptions().at(y)->c_str(), event->getHeading().c_str(), this->signups.at(i)->getSubScriptions().at(y)->size());
+    vector<string *> subscriptions;
+    vector<string *>::iterator subsit;
+    vector<MMSEventSignup *>::iterator signit;
+
+    for(signit = this->signups.begin();signit != this->signups.end();signit++) {
+    	subscriptions = (*signit)->getSubScriptions();
+        for(subsit=subscriptions.begin();subsit!= subscriptions.end();subsit++){
+      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", (*subsit)->c_str(), event->getHeading().c_str(), (*subsit)->size());
             /*compare heading of event with subsciptions */
-            if(strncmp(this->signups.at(i)->getSubScriptions().at(y)->c_str(),
+            if(strncmp((*subsit)->c_str(),
                        event->getHeading().c_str(),
-                       this->signups.at(i)->getSubScriptions().at(y)->size())==0) {
+                       (*subsit)->size())==0) {
 
                 /* add plugindata to return vector*/
                 MMSPluginData *myplugin = new MMSPluginData;
-/* PUPEIDER
-                myplugin->setId(signups.at(i)->getPluginData().getId());
-                myplugin->setName(signups.at(i)->getPluginData().getName());
-                myplugin->setFilename(signups.at(i)->getPluginData().getFilename());
-                myplugin->setType(signups.at(i)->getPluginData().getType());
-                myplugin->setProperties(signups.at(i)->getPluginData().getProperties());
-*/
-                *myplugin = signups.at(i)->getPluginData();
+                *myplugin = (*signit)->getPluginData();
 
                 mydata.push_back(myplugin);
             }
         }
+        subscriptions.clear();
     }
     if(mydata.empty())
         throw new MMSEventSignupManagerError(0,"no subscriptions found");
@@ -77,18 +76,23 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
 
 vector<sigc::signal<void, _IMMSEvent*> *> MMSEventSignupManager::getReceiverSignals(_IMMSEvent *event) {
 	vector<sigc::signal<void, _IMMSEvent*> *> mysignals;
+    vector<string *> subscriptions;
+    vector<string *>::iterator subsit;
+    vector<MMSEventSignup *>::iterator signupsit;
 
-    for(unsigned int i=0;i<this->signals.size();i++) {
-        for(unsigned int y=0;y<this->signals.at(i)->getSubScriptions().size();y++) {
-      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", this->signals.at(i)->getSubScriptions().at(y)->c_str(), event->getHeading().c_str(), this->signals.at(i)->getSubScriptions().at(y)->size());
+    for(signupsit= this->signals.begin();signupsit != this->signals.end();signupsit++) {
+    	subscriptions = (*signupsit)->getSubScriptions();
+        for(subsit = subscriptions.begin();subsit != subscriptions.end();subsit++) {
+      		 DEBUGMSG("MMSEventSignupManager", "compare %s to %s - size: %d", (*subsit)->c_str(), event->getHeading().c_str(), (*subsit)->size());
             /*compare heading of event with subsciptions */
-            if(strncmp(this->signals.at(i)->getSubScriptions().at(y)->c_str(),
+            if(strncmp((*subsit)->c_str(),
                        event->getHeading().c_str(),
-                       this->signals.at(i)->getSubScriptions().at(y)->size())==0) {
+                       (*subsit)->size())==0) {
 
-                mysignals.push_back(this->signals.at(i)->getSignal());
+                mysignals.push_back((*signupsit)->getSignal());
             }
         }
+        subscriptions.clear();
     }
     if(mysignals.empty())
         throw new MMSEventSignupManagerError(0,"no subscriptions found");
