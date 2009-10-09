@@ -361,9 +361,10 @@ void MMSDVD::eject() {
     }
     else {
 #ifdef __HAVE_XINE__
-
-		xine_dispose(this->stream);
-		this->stream = 0;
+		if(this->stream) {
+			xine_dispose(this->stream);
+			this->stream = 0;
+		}
 
 #endif
     }
