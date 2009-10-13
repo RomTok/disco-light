@@ -50,7 +50,7 @@
 
 /** \page start Disko API Reference
  *
- * Disko is a GPL-licensed application framework, that can be used to develop GUI applications for
+ * Disko is a LGPL-licensed application framework, that can be used to develop GUI applications for
  * embedded devices. It uses different backends for graphics and it is specialised in touchscreen
  * and remote control navigation. It provides a plugin based management component, which enables
  * easy writing and extending embedded applications. 
