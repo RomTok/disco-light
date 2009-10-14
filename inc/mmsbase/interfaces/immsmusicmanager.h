@@ -2,23 +2,22 @@
  *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
  *                           Matthias Hardt, Guido Madaus                  *
  *                                                                         *
- *   Copyright (C) 2007-2008 Berlinux Solutions GbR                        *
+ *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      Berlinux Solutions GmbH                       *
+ *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
- *      Stefan Schwarzer   <SSchwarzer@berlinux-solutions.de>,             *
- *      Matthias Hardt     <MHardt@berlinux-solutions.de>,                 *
- *      Jens Schneider     <pupeider@gmx.de>                               *
- *      Guido Madaus       <GMadaus@berlinux-solutions.de>                 *
- *      Patrick Helterhoff <PHelterhoff@berlinux-solutions.de>             *
- *      René Bählkow       <RBaehlkow@berlinux-solutions.de>               *
+ *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
+ *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
+ *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
+ *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
+ *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
  *                                                                         *
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
- *   License as published by the Free Software Foundation; either          *
- *   version 2.1 of the License, or (at your option) any later version.    *
+ *   License version 2.1 as published by the Free Software Foundation.     *
  *                                                                         *
  *   This library is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
@@ -27,9 +26,9 @@
  *                                                                         *
  *   You should have received a copy of the GNU Lesser General Public      *
  *   License along with this library; if not, write to the                 *
- *   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,      *
- *   Boston, MA 02110-1301 USA                                             *
- ***************************************************************************/
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
+ **************************************************************************/
 
 #ifndef IMMSMUSICMANAGER_H_
 #define IMMSMUSICMANAGER_H_
