@@ -21,9 +21,9 @@ function usage() {
 
 while getopts  "hm:i:" flag; do
     case $flag in
-        h) usage; exit 1;;
         m) libmediaclientprefix="$OPTARG";;
         i) installprefix="--prefix=$OPTARG";;
+	?) usage; exit 1;;
     esac
 done
 

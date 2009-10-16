@@ -34923,8 +34923,8 @@ diff -Naur a/include/configure.h.in b/include/configure.h.in
  
 diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 --- a/src/input/input_bldvb.c	1970-01-01 01:00:00.000000000 +0100
-+++ b/src/input/input_bldvb.c	2009-10-01 14:33:55.000000000 +0200
-@@ -0,0 +1,1330 @@
++++ b/src/input/input_bldvb.c	2009-10-16 17:12:27.000000000 +0200
+@@ -0,0 +1,1336 @@
 +/*
 + * Copyright (C) 2000-2008 the xine project
 + *               2009      BerLinux GmbH
@@ -35557,11 +35557,22 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	struct timeval time_now;
 +	struct timeval tuning_timeout;
 +
++#ifdef LOG
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": inversion      %d\n", front_param->inversion);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": frequency      %d\n", front_param->frequency);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": code_rate_HP   %d\n", front_param->u.ofdm.code_rate_HP);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": code_rate_LP   %d\n", front_param->u.ofdm.code_rate_LP);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": constellation  %d\n", front_param->u.ofdm.constellation);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": transmission   %d\n", front_param->u.ofdm.transmission_mode);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": guard_interval %d\n", front_param->u.ofdm.guard_interval);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": hierarchy      %d\n", front_param->u.ofdm.hierarchy_information);
++	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": bandwidth      %d\n", front_param->u.ofdm.bandwidth);
++#endif
++
 +	if(net_ioctl(this->fd_frontend, FE_SET_FRONTEND, front_param) < 0) {
 +		xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": setfront front: %s\n", strerror(errno));
 +		return 0;
 +	}
-+	xprintf(this->xine, XINE_VERBOSITY_DEBUG, "after SET_FRONTEND(s)\n");
 +
 +	xine_config_lookup_entry(this->xine, "media.dvb.tuning_timeout", &config_tuning_timeout);
 +	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": media.dvb.tuning_timeout is %d\n", config_tuning_timeout.num_value );
@@ -35576,14 +35587,13 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	}
 +
 +	xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": tuner_tune_it - waiting for lock...\n" );
-+	do{
++	do {
 +		status = 0;
 +		if(net_ioctl(this->fd_frontend, FE_READ_STATUS, &status) < 0) {
 +			xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": fe get event: %s\n", strerror(errno));
 +			return 0;
 +		}
 +
-+		xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": status: %x\n", status);
 +		if(status & FE_HAS_LOCK) {
 +			break;
 +		}
@@ -35600,8 +35610,6 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +				break;
 +			}
 +		}
-+
-+		xprintf(this->xine, XINE_VERBOSITY_DEBUG, LOG_MODULE": Trying to get lock...");
 +	} while(!(status & FE_TIMEDOUT));
 +
 +	/* inform the user of frontend status */
@@ -35725,7 +35733,7 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	event.data_length = sizeof(xine_pids_data_t);
 +	xine_event_send(this->stream, &event);
 +
-+	this->fd = net_open(this->tuner->dvr_device, O_RDONLY | O_NONBLOCK);
++	this->fd = net_open(this->tuner->dvr_device, O_RDONLY);
 +	this->tuned_in = 1;
 +
 +	pthread_mutex_unlock (&this->channel_change_mutex);
@@ -35754,6 +35762,8 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	xine_cfg_entry_t savedir;
 +	DIR *dir;
 +	int i = 0;
++
++printf("do_record\n");
 +
 +	if(this->record_fd > -1) {
 +		/* stop recording */
@@ -35855,10 +35865,7 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	int have_mutex           = 0;
 +	struct pollfd pfd;
 +
-+	lprintf("in read\n");
-+	xprintf(this->class->xine,XINE_VERBOSITY_DEBUG,LOG_MODULE": in read\n");
 +	if(!this->tuned_in) {
-+	xprintf(this->class->xine,XINE_VERBOSITY_DEBUG,LOG_MODULE": exit read\n");
 +		return 0;
 +	}
 +
@@ -35886,9 +35893,7 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +			/* signal/stream regained after loss -
 +			   kick the net_buf_control layer. */
 +			this->read_failcount = 0;
-+	xprintf(this->class->xine,XINE_VERBOSITY_DEBUG,LOG_MODULE": before demux\n");
 +			_x_demux_control_start(this->stream);
-+	xprintf(this->class->xine,XINE_VERBOSITY_DEBUG,LOG_MODULE": after demux\n");
 +		}
 +
 +		if(pfd.revents & POLLPRI || pfd.revents & POLLIN) {
@@ -35909,9 +35914,10 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +		}
 +	}
 +
-+	if((this->record_fd) && (!this->record_paused)) {
-+		if(write(this->record_fd, buf, total) == -1)
++	if((this->record_fd != -1) && (!this->record_paused)) {
++		if(write(this->record_fd, buf, total) == -1) {
 +			_x_message(this->stream,1,"Error while recording. Please check file.", NULL);
++		}
 +	}
 +
 +	pthread_mutex_unlock( &this->channel_change_mutex );
@@ -35922,7 +35928,7 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	}
 +
 +
-+	xprintf(this->class->xine,XINE_VERBOSITY_DEBUG,LOG_MODULE": read %d bytes (%10s)\n", (int)total, buf);
++	xprintf(this->class->xine,XINE_VERBOSITY_DEBUG,LOG_MODULE": read %d bytes\n", (int)total);
 +	return total;
 +}
 +
@@ -36101,7 +36107,7 @@ diff -Naur a/src/input/input_bldvb.c b/src/input/input_bldvb.c
 +	char *ptr;
 +	xine_cfg_entry_t zoomdvb;
 +	xine_cfg_entry_t adapter;
-+
++	
 +	/* get adapter number: /dev/dvb/adapter<i>/ */
 +	xine_config_lookup_entry(this->stream->xine, "media.dvb.adapter", &adapter);
 +
