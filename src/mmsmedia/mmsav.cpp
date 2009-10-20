@@ -163,6 +163,11 @@ void raw_frame_cb(void *user_data, int frame_format, int frame_width, int frame_
 	printf("plane2: %p\n", data2);
 	printf("-------\n");*/
 
+	if(!userd) {
+		//there is no window to draw on!
+		return;
+	}
+
     if (userd->lastaspect != frame_aspect) {
     	// format changed
 		printf("format change %f\n", frame_aspect);
@@ -607,6 +612,8 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 		if(window) {
 			this->rawvisual.user_data = (void *)&(this->userd);
 		}
+			this->rawvisual.user_data = NULL;
+
 		this->rawvisual.raw_overlay_cb = raw_overlay_cb;
 	}
 	else {
@@ -651,11 +658,11 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 			this->userd.numOverlays = 0;
 			this->userd.overlays = NULL;
 		}
-        DEBUGMSG("MMSMedia", "opening video driver...");
-        /* open the video output driver */
-        if (!(this->vo = xine_open_video_driver(this->xine, "raw",
-                                    XINE_VISUAL_TYPE_RAW, (void*) &this->rawvisual)))
-                    throw new MMSAVError(0, "Cannot open the XINE RAW video driver");
+		DEBUGMSG("MMSMedia", "opening video driver...");
+		/* open the video output driver */
+		if (!(this->vo = xine_open_video_driver(this->xine, "raw",
+									XINE_VISUAL_TYPE_RAW, (void*) &this->rawvisual)))
+			throw new MMSAVError(0, "Cannot open the XINE RAW video driver");
 	}
 	else {
 #ifdef __HAVE_DIRECTFB__
