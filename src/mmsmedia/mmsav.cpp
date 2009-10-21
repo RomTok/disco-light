@@ -611,10 +611,10 @@ void MMSAV::initialize(const bool verbose, MMSWindow *window) {
 		this->rawvisual.supported_formats = XINE_VORAW_YV12;
 		if(window) {
 			this->rawvisual.user_data = (void *)&(this->userd);
-		}
+			this->rawvisual.raw_overlay_cb = raw_overlay_cb;
+		} else {
 			this->rawvisual.user_data = NULL;
-
-		this->rawvisual.raw_overlay_cb = raw_overlay_cb;
+		}
 	}
 	else {
 #ifdef __HAVE_DIRECTFB__
