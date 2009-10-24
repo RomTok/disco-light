@@ -150,13 +150,11 @@ void MMSCDA::xineOpen() {
  * @param   cont    if true it tries to continue at a position stopped before
  */
 void MMSCDA::startPlaying(int tracknum) {
-	string mrl;
+	string mrl = "cdda://" + this->device;
 	if(tracknum <= titlecount && tracknum >= 1)
-		mrl = "cdda://" + iToStr(tracknum);
-	else
-		mrl = "cdda://1";
+		mrl += "/" + iToStr(tracknum);
 
-	this->currtitle = tracknum;
+	this->currtitle = (tracknum >= 1 ? tracknum : 1);
 
 #ifdef __HAVE_XINE__
 	if(!this->stream) MMSAV::xineOpen(queue_cb, (void*)this);
