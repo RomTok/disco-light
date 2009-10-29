@@ -743,9 +743,18 @@ MMS_LANGUAGE_TYPE strToLang(const char *value) {
 
 string langToStr(MMS_LANGUAGE_TYPE lang) {
 	switch(lang) {
-		case MMSLANG_DE: return "de";
-		case MMSLANG_EN: return "en";
+		case MMSLANG_DE:  return "de";
+		case MMSLANG_EN:  return "en";
+		case MMSLANG_DK:  return "dk";
+		case MMSLANG_ES:  return "es";
+		case MMSLANG_FI:  return "fi";
+		case MMSLANG_FR:  return "fr";
+		case MMSLANG_IT:  return "it";
+		case MMSLANG_NL:  return "nl";
+		case MMSLANG_NO:  return "no";
+		case MMSLANG_SE:  return "se";
 		case MMSLANG_MSG: return "msg";
+
 		default: return "ukn";
 	}
 }
