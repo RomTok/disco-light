@@ -128,7 +128,7 @@ void trim(string& str);
 
 bool strToBool(string s);
 
-void executeCmd(string cmd);
+void executeCmd(string cmd, pid_t *cpid=NULL);
 
 bool file_exist( string filename );
 
