@@ -517,7 +517,7 @@ bool strToBool(string s) {
 		return false;
 }
 
-void executeCmd(string cmd) {
+void executeCmd(string cmd, pid_t *cpid) {
 	pid_t pid;
 	int i,y;
 	int argc;
@@ -577,8 +577,12 @@ void executeCmd(string cmd) {
 
 	pid = fork();
 		if(pid!=-1) {
-		if(pid>0)
+		if(pid>0) {
+		    if (cpid) {
+		      (*cpid) = pid;
+		    }
 			return;
+		}
 		if(pid==0) {
 			unsetenv("LD_PRELOAD");
 			execvp(argv[0],argv);
