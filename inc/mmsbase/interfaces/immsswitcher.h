@@ -64,7 +64,8 @@ class IMMSSwitcher {
 
         virtual bool leavePlugin(bool show_switcher) = 0;
 
-
+        /* refresh switchers main window */
+        virtual void refresh() = 0;
         /**
          * load a generic childwindow to be shown by the plugin
          *

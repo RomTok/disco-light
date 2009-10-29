@@ -596,3 +596,10 @@ MMSChildWindow* MMSSwitcher::loadChildWindow(string filename, MMSTheme *theme) {
 
 	return win;
 }
+
+void MMSSwitcher::refresh()
+{
+	if(window != NULL && window->isShown()) {
+		window->refresh();
+	}
+}
