@@ -603,3 +603,8 @@ void MMSSwitcher::refresh()
 		window->refresh();
 	}
 }
+
+
+MMSWidget *MMSSwitcher::getMyButton() {
+	return NULL;
+}

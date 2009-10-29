@@ -110,7 +110,7 @@ class MMSSwitcher : public IMMSSwitcher {
         virtual void* callback(void *data);
 		virtual MMSChildWindow* loadChildWindow(string filename, MMSTheme *theme = NULL);
 		virtual void refresh();
-
+		virtual MMSWidget *getMyButton();
     friend class MMSSwitcherThread;
 };
 
