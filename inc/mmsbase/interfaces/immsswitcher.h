@@ -83,6 +83,11 @@ class IMMSSwitcher {
          * @return	application specific data
          */
         virtual void* callback(void* data) = 0;
+
+        /* refresh switchers main window */
+        virtual MMSWidget *getMyButton() = 0;
+
+
 };
 
 #endif /*IMMSSWITCHER_H_*/
