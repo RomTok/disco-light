@@ -228,9 +228,10 @@ diskoLibs  = ["mmsinfo",
               "mmsgui",
               "mmsbase",
               "mmsinput",
-              "mmscore"]
-if env['media']:
-	diskoLibs.extend(["mmsmedia"])
+              "mmscore",
+              "mmsmedia"]
+#if env['media']:
+#	diskoLibs.extend(["mmsmedia"])
 if env['enable_flash']:
 	diskoLibs.extend(["mmsflash"])
 if env['enable_sip']:
@@ -512,9 +513,9 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 	else:
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
 
-if(env['media']):
-	if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
+	conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+	env['media']='alsa'
 
 
 	
