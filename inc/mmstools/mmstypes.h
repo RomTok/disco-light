@@ -403,13 +403,13 @@ class MMSFBColor {
 class MMSFBRectangle {
 	public:
 		//! x
-		int	x;
+		unsigned int x;
 		//! y
-		int	y;
+		unsigned int y;
 		//! width
-		int	w;
+		unsigned int w;
 		//! height
-		int	h;
+		unsigned int h;
 
 		MMSFBRectangle(unsigned int x = 0, unsigned int y = 0, unsigned int w = 0, unsigned int h = 0) {
 			this->x = x;
@@ -423,13 +423,13 @@ class MMSFBRectangle {
 class MMSFBRegion {
 	public:
 		//! x1
-		int	x1;
+		unsigned int x1;
 		//! y1
-		int	y1;
+		unsigned int y1;
 		//! x2
-		int	x2;
+		unsigned int x2;
 		//! y2
-		int	y2;
+		unsigned int y2;
 
 		MMSFBRegion(unsigned int x1 = 0, unsigned int y1 = 0, unsigned int x2 = 0, unsigned int y2 = 0) {
 			this->x1 = x1;
