@@ -59,6 +59,7 @@ class MMSAudioCtrl {
         static bool             muteFlag;   /**< if true sound is muted         */
         static long             pmin, pmax; /**< range (not in percent)         */
         static string           channel;    /**< current audio channel          */
+        static bool             isSwitchable;  /**< has a switch (to mute)?        */
 
     public:
         /* constructor */
