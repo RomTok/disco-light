@@ -79,7 +79,7 @@ void mmsfb_blit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int s
 			// load pixel from memory and check if the previous pixel is the same
 			register unsigned short int SRC = *src;
 
-			// is the source alpha channel 0x00 or 0xff?
+			// is the source alpha channel 0x00 or 0x0f?
 			register unsigned int A = SRC >> 12;
 			if (A == 0x0f) {
 				// source pixel is not transparent, copy it directly to the destination
@@ -87,7 +87,7 @@ void mmsfb_blit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int s
 			}
 			else
 			if (A) {
-				// source alpha is > 0x00 and < 0xff
+				// source alpha is > 0x00 and < 0x0f
 				register unsigned short int DST = *dst;
 
 				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
@@ -102,21 +102,21 @@ void mmsfb_blit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int s
 
 				register unsigned int SA= 0x10 - A;
 				unsigned int a = DST >> 12;
-				unsigned int r = (DST << 4) >> 12;
-				unsigned int g = DST & 0xf0;
-				unsigned int b = DST & 0x0f;
+				unsigned int r = DST & 0x0f00;
+				unsigned int g = DST & 0x00f0;
+				unsigned int b = DST & 0x000f;
 
 				// invert src alpha
 			    a = SA * a;
-			    r = SA * r;
+			    r = (SA * r) >> 8;
 			    g = (SA * g) >> 4;
 			    b = SA * b;
 
 			    // add src to dst
 			    a += A << 4;
-			    r += (SRC << 8) >> 24;
-			    g += (SRC << 16) >> 24;
-			    b += SRC & 0xff;
+			    r += (SRC & 0x0f00) >> 4;
+			    g +=  SRC & 0x00f0;
+			    b += (SRC & 0x000f) << 4;
 			    d =   ((a >> 8) ? 0xf000 : ((a >> 4) << 12))
 					| ((r >> 8) ? 0x0f00 : ((r >> 4) << 8))
 					| ((g >> 8) ? 0xf0   : ((g >> 4) << 4))

@@ -83,7 +83,27 @@ void mmsfb_blit_blend_argb4444_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_
 			register unsigned int A = SRC >> 12;
 			if (A == 0x0f) {
 				// source pixel is not transparent, copy it directly to the destination
-				*dst = SRC | 0xf000;
+				if (SRC==OLDSRC) {
+					// same pixel, use the previous value
+					*dst = d;
+				    dst++;
+				    src++;
+					continue;
+				}
+
+				// calc pixel and store it to destination
+				d =	  0xff0f0f0f
+					| ((SRC & 0x0f00) << 12)
+					| ((SRC & 0x00f0) << 8)
+					| ((SRC & 0x000f) << 4);
+				*dst = d;
+
+				// next pixel
+				dst++;
+			    src++;
+				OLDDST = (*dst) + 1;
+				OLDSRC = SRC;
+				continue;
 			}
 			else
 			if (A) {
@@ -112,8 +132,8 @@ void mmsfb_blit_blend_argb4444_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_
 
 			    // add src to dst
 			    r += (A*(SRC & 0x0f00)) >> 8;
-			    g += (A*(SRC & 0xf0)) >> 4;
-			    b +=  A*(SRC & 0x0f);
+			    g += (A*(SRC & 0x00f0)) >> 4;
+			    b +=  A*(SRC & 0x000f);
 			    d =   0xff000000
 					| ((r >> 8) ? 0xff0000   : (r << 16))
 					| ((g >> 8) ? 0xff00     : (g << 8))

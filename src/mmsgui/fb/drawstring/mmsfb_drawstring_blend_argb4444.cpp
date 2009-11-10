@@ -43,7 +43,7 @@ void mmsfb_drawstring_blend_argb4444(MMSFBFont *font, void *dst_ptr, int dst_pit
 	}
 
 	// lock font and destination surface
-	MMSFBSURFACE_BLIT_TEXT_INIT(2);
+	MMSFBSURFACE_BLIT_TEXT_INIT(1);
 
 	// for all characters
 	unsigned int OLDDST = 0;
@@ -86,13 +86,13 @@ void mmsfb_drawstring_blend_argb4444(MMSFBFont *font, void *dst_ptr, int dst_pit
 
 					register unsigned int SA= 0x100 - A;
 					unsigned int a = DST >> 12;
-					unsigned int r = (DST << 4) >> 12;
-					unsigned int g = DST & 0xf0;
-					unsigned int b = DST & 0x0f;
+					unsigned int r = DST & 0x0f00;
+					unsigned int g = DST & 0x00f0;
+					unsigned int b = DST & 0x000f;
 
 					// invert src alpha
 				    a = (SA * a) >> 4;
-				    r = (SA * r) >> 4;
+				    r = (SA * r) >> 12;
 				    g = (SA * g) >> 8;
 				    b = (SA * b) >> 4;
 

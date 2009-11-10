@@ -110,21 +110,21 @@ void mmsfb_fillrectangle_blend_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_
 
 				register int SA= 0x100 - A;
 				unsigned int a = DST >> 12;
-				unsigned int r = (DST << 4) >> 12;
-				unsigned int g = DST & 0xf0;
-				unsigned int b = DST & 0x0f;
+				unsigned int r = DST & 0x0f00;
+				unsigned int g = DST & 0x00f0;
+				unsigned int b = DST & 0x000f;
 
 				// invert src alpha
 			    a = (SA * a) >> 4;
-			    r = (SA * r) >> 4;
+			    r = (SA * r) >> 12;
 			    g = (SA * g) >> 8;
 			    b = (SA * b) >> 4;
 
 			    // add src to dst
 			    a += A;
-			    r += (SRC << 4) >> 8;
-			    g += SRC & 0xf0;
-			    b += (SRC << 12) >> 8;
+			    r += (SRC & 0x0f00) >> 4;
+			    g +=  SRC & 0x00f0;
+			    b += (SRC & 0x000f) << 4;
 			    d =   ((a >> 8) ? 0xf000 : ((a >> 4) << 12))
 					| ((r >> 8) ? 0x0f00 : ((r >> 4) << 8))
 					| ((g >> 8) ? 0xf0   : ((g >> 4) << 4))
