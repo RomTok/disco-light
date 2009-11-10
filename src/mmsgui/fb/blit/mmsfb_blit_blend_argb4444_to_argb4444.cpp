@@ -33,22 +33,26 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_blit_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-								   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy) {
+void mmsfb_blit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+										   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
 	// first time?
 	static bool firsttime = true;
 	if (firsttime) {
-		printf("DISKO: Using accelerated blend ARGB to ARGB.\n");
+		printf("DISKO: Using accelerated blend ARGB4444 to ARGB4444.\n");
 		firsttime = false;
 	}
 
 	// get the first source ptr/pitch
-	unsigned int *src = (unsigned int *)extbuf->ptr;
-	int src_pitch = extbuf->pitch;
+	unsigned short int *src = (unsigned short int *)src_planes->ptr;
+	int src_pitch = src_planes->pitch;
+
+	// get the first destination ptr/pitch
+	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
 
 	// prepare...
-	int src_pitch_pix = src_pitch >> 2;
-	int dst_pitch_pix = dst_pitch >> 2;
+	int src_pitch_pix = src_pitch >> 1;
+	int dst_pitch_pix = dst_pitch >> 1;
 	src+= sx + sy * src_pitch_pix;
 	dst+= dx + dy * dst_pitch_pix;
 
@@ -60,31 +64,31 @@ void mmsfb_blit_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 	if ((sw <= 0)||(sh <= 0))
 		return;
 
-	unsigned int OLDDST = (*dst) + 1;
-	unsigned int OLDSRC  = (*src) + 1;
-	unsigned int *src_end = src + src_pitch_pix * sh;
+	unsigned short int OLDDST = (*dst) + 1;
+	unsigned short int OLDSRC  = (*src) + 1;
+	unsigned short int *src_end = src + src_pitch_pix * sh;
 	int src_pitch_diff = src_pitch_pix - sw;
 	int dst_pitch_diff = dst_pitch_pix - sw;
-	register unsigned int d;
+	register unsigned short int d;
 
 	// for all lines
 	while (src < src_end) {
 		// for all pixels in the line
-		unsigned int *line_end = src + sw;
+		unsigned short int *line_end = src + sw;
 		while (src < line_end) {
 			// load pixel from memory and check if the previous pixel is the same
-			register unsigned int SRC = *src;
+			register unsigned short int SRC = *src;
 
 			// is the source alpha channel 0x00 or 0xff?
-			register unsigned int A = SRC >> 24;
-			if (A == 0xff) {
+			register unsigned int A = SRC >> 12;
+			if (A == 0x0f) {
 				// source pixel is not transparent, copy it directly to the destination
 				*dst = SRC;
 			}
 			else
 			if (A) {
 				// source alpha is > 0x00 and < 0xff
-				register unsigned int DST = *dst;
+				register unsigned short int DST = *dst;
 
 				if ((DST==OLDDST)&&(SRC==OLDSRC)) {
 					// same pixel, use the previous value
@@ -96,27 +100,27 @@ void mmsfb_blit_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 				OLDDST = DST;
 				OLDSRC = SRC;
 
-				register unsigned int SA= 0x100 - A;
-				unsigned int a = DST >> 24;
-				unsigned int r = (DST << 8) >> 24;
-				unsigned int g = (DST << 16) >> 24;
-				unsigned int b = DST & 0xff;
+				register unsigned int SA= 0x10 - A;
+				unsigned int a = DST >> 12;
+				unsigned int r = (DST << 4) >> 12;
+				unsigned int g = DST & 0xf0;
+				unsigned int b = DST & 0x0f;
 
 				// invert src alpha
-			    a = (SA * a) >> 8;
-			    r = (SA * r) >> 8;
-			    g = (SA * g) >> 8;
-			    b = (SA * b) >> 8;
+			    a = SA * a;
+			    r = SA * r;
+			    g = (SA * g) >> 4;
+			    b = SA * b;
 
 			    // add src to dst
-			    a += A;
+			    a += A << 4;
 			    r += (SRC << 8) >> 24;
 			    g += (SRC << 16) >> 24;
 			    b += SRC & 0xff;
-			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
-					| ((r >> 8) ? 0xff0000   : (r << 16))
-					| ((g >> 8) ? 0xff00     : (g << 8))
-			    	| ((b >> 8) ? 0xff 		 :  b);
+			    d =   ((a >> 8) ? 0xf000 : ((a >> 4) << 12))
+					| ((r >> 8) ? 0x0f00 : ((r >> 4) << 8))
+					| ((g >> 8) ? 0xf0   : ((g >> 4) << 4))
+			    	| ((b >> 8) ? 0x0f   :  (b >> 4));
 				*dst = d;
 			}
 
