@@ -146,9 +146,14 @@ void MMSFBManager::applySettings() {
 
 	// get the window pixelformat
 	MMSFBSurfacePixelFormat window_pixelformat = config.getGraphicsWindowPixelformat();
-	if    ((window_pixelformat == MMSFB_PF_NONE)
-		||((window_pixelformat != MMSFB_PF_ARGB)&&(window_pixelformat != MMSFB_PF_AiRGB)&&(window_pixelformat != MMSFB_PF_AYUV))) {
-		// surface pixelformat not set or unsupported, use the layer pixelformat
+	switch (window_pixelformat) {
+	case MMSFB_PF_ARGB:
+	case MMSFB_PF_AiRGB:
+	case MMSFB_PF_AYUV:
+	case MMSFB_PF_ARGB4444:
+		break;
+	default:
+		// window pixelformat not set or unsupported, use the layer pixelformat
 		window_pixelformat = graphicslayer.pixelformat;
 		if (!isAlphaPixelFormat(window_pixelformat)) {
 			// the gui internally needs surfaces with alpha channel
@@ -169,8 +174,13 @@ void MMSFBManager::applySettings() {
 
 	// get the surface pixelformat
 	MMSFBSurfacePixelFormat surface_pixelformat = config.getGraphicsSurfacePixelformat();
-	if    ((surface_pixelformat == MMSFB_PF_NONE)
-		||((surface_pixelformat != MMSFB_PF_ARGB)&&(surface_pixelformat != MMSFB_PF_AiRGB)&&(surface_pixelformat != MMSFB_PF_AYUV))) {
+	switch (surface_pixelformat) {
+	case MMSFB_PF_ARGB:
+	case MMSFB_PF_AiRGB:
+	case MMSFB_PF_AYUV:
+	case MMSFB_PF_ARGB4444:
+		break;
+	default:
 		// surface pixelformat not set or unsupported, use the layer pixelformat
 		surface_pixelformat = graphicslayer.pixelformat;
 		if (!isAlphaPixelFormat(surface_pixelformat)) {
@@ -189,8 +199,6 @@ void MMSFBManager::applySettings() {
 			// so switch all indexed pixelformats to ARGB
 			surface_pixelformat = MMSFB_PF_ARGB;
 	}
-
-
 
 	// set exclusive access to the graphics layer
 	DEBUGMSG("MMSGUI", "set exclusive access");

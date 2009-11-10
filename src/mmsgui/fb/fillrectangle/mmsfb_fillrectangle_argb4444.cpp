@@ -58,10 +58,10 @@ void mmsfb_fillrectangle_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_height
 	// prepare the color
 	register unsigned short int A = color.a;
 	register unsigned short int SRC;
-	SRC =     (A << 12)
-			| (color.r << 8)
-			| (color.g << 4)
-			| color.b;
+	SRC =     ((A >> 4) << 12)
+			| ((color.r >> 4) << 8)
+			| ((color.g >> 4) << 4)
+			|  (color.b >> 4);
 
 	// copy pixel directly to the destination
 	// for all lines
@@ -74,7 +74,7 @@ void mmsfb_fillrectangle_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_height
 		// go to the next line
 		dst+= dst_pitch_pix;
 #else
-		unsigned int *line_end = dst + dw;
+		unsigned short int *line_end = dst + dw;
 		while (dst < line_end) {
 			*dst = SRC;
 			dst++;

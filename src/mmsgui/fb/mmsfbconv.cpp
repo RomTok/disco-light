@@ -1045,3 +1045,80 @@ void stretch_324byte_buffer(bool h_antialiasing, bool v_antialiasing,
 	}
 }
 
+
+void mmsfb_blit_uint(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+					 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
+
+	// get the first source ptr/pitch
+	unsigned int *src = (unsigned int *)src_planes->ptr;
+	int src_pitch = src_planes->pitch;
+
+	// get the first destination ptr/pitch
+	unsigned int *dst = (unsigned int *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
+
+	// prepare...
+	int src_pitch_pix = src_pitch >> 2;
+	int dst_pitch_pix = dst_pitch >> 2;
+	src+= sx + sy * src_pitch_pix;
+	dst+= dx + dy * dst_pitch_pix;
+
+	// check the surface range
+	if (dst_pitch_pix - dx < sw - sx)
+		sw = dst_pitch_pix - dx - sx;
+	if (dst_height - dy < sh - sy)
+		sh = dst_height - dy - sy;
+	if ((sw <= 0)||(sh <= 0))
+		return;
+
+	unsigned int *src_end = src + src_pitch_pix * sh;
+
+	// for all lines
+	while (src < src_end) {
+		// copy the line
+		memcpy(dst, src, sw << 2);
+
+		// go to the next line
+		src+= src_pitch_pix;
+		dst+= dst_pitch_pix;
+	}
+}
+
+void mmsfb_blit_usint(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+					  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
+
+	// get the first source ptr/pitch
+	unsigned short int *src = (unsigned short int *)src_planes->ptr;
+	int src_pitch = src_planes->pitch;
+
+	// get the first destination ptr/pitch
+	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
+
+	// prepare...
+	int src_pitch_pix = src_pitch >> 1;
+	int dst_pitch_pix = dst_pitch >> 1;
+	src+= sx + sy * src_pitch_pix;
+	dst+= dx + dy * dst_pitch_pix;
+
+	// check the surface range
+	if (dst_pitch_pix - dx < sw - sx)
+		sw = dst_pitch_pix - dx - sx;
+	if (dst_height - dy < sh - sy)
+		sh = dst_height - dy - sy;
+	if ((sw <= 0)||(sh <= 0))
+		return;
+
+	unsigned short int *src_end = src + src_pitch_pix * sh;
+
+	// for all lines
+	while (src < src_end) {
+		// copy the line
+		memcpy(dst, src, sw << 1);
+
+		// go to the next line
+		src+= src_pitch_pix;
+		dst+= dst_pitch_pix;
+	}
+}
+

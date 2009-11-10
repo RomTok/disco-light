@@ -1878,7 +1878,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_argb_to_argb(src_planes, src_height,
 										    sx, sy, sw, sh,
-										    (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										    &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										    x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -2152,7 +2152,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb32_to_rgb32(src_planes, src_height,
 											  sx, sy, sw, sh,
-											  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											  x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -2177,7 +2177,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb16_to_rgb16(src_planes, src_height,
 											  sx, sy, sw, sh,
-											  (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											  x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -2202,7 +2202,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_airgb_to_airgb(src_planes, src_height,
 											  sx, sy, sw, sh,
-											  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											  x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -2291,7 +2291,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_ayuv_to_ayuv(src_planes, src_height,
 										    sx, sy, sw, sh,
-										    (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										    &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 										    x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -2670,6 +2670,31 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_argb3565_to_argb3565(src_planes, src_height,
+											        sx, sy, sw, sh,
+											        &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											        x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_ARGB4444:
+		// source is ARGB4444
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB4444) {
+			// destination is ARGB4444
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_argb4444_to_argb4444(src_planes, src_height,
 											        sx, sy, sw, sh,
 											        &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 											        x, y);
@@ -3488,6 +3513,24 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 		// does not match
 		return false;
 
+	case MMSFB_PF_ARGB4444:
+		// destination is ARGB4444
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_fillrectangle_argb4444(&dst_planes, dst_height,
+										     sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+
 	case MMSFB_PF_BGR24:
 		// destination is BGR24
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
@@ -3584,13 +3627,14 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 	}
 
 	// checking pixelformats...
-	if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
+	switch (this->config.surface_buffer->pixelformat) {
+	case MMSFB_PF_ARGB:
 		// destination is ARGB
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawline_argb((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height, clipreg, x1, y1, x2, y2, color);
+				mmsfb_drawline_argb(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -3602,11 +3646,35 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				// drawing with alpha channel
-				mmsfb_drawline_blend_argb((unsigned int *)dst_planes.ptr, dst_planes.pitch, dst_height, clipreg, x1, y1, x2, y2, color);
+				mmsfb_drawline_blend_argb(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
 		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_ARGB4444:
+		// destination is ARGB4444
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_drawline_argb4444(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	default:
+		// does not match
+		break;
 	}
 
 	// does not match

@@ -29,3 +29,20 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
+
+#include "mmsgui/fb/mmsfbconv.h"
+#include "mmstools/mmstools.h"
+
+void mmsfb_blit_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+								     MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy) {
+	// first time?
+	static bool firsttime = true;
+	if (firsttime) {
+		printf("DISKO: Using accelerated copy ARGB4444 to ARGB4444.\n");
+		firsttime = false;
+	}
+
+	// blit 2-byte-pixels
+	mmsfb_blit_usint(src_planes, src_height, sx, sy, sw, sh,
+					 dst_planes, dst_height, dx, dy);
+}

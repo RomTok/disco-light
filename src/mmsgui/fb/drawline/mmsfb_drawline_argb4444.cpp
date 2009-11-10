@@ -33,7 +33,7 @@
 #include "mmsgui/fb/mmsfbconv.h"
 #include "mmstools/mmstools.h"
 
-void mmsfb_drawline_argb4444(unsigned int *dst, int dst_pitch, int dst_height,
+void mmsfb_drawline_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_height,
 							 MMSFBRegion &clipreg, int x1, int y1, int x2, int y2, MMSFBColor &color) {
 	// first time?
 	static bool firsttime = true;
@@ -42,16 +42,20 @@ void mmsfb_drawline_argb4444(unsigned int *dst, int dst_pitch, int dst_height,
 		firsttime = false;
 	}
 
+	// get the first destination ptr/pitch
+	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
+	int dst_pitch = dst_planes->pitch;
+
 	// prepare...
 	int dst_pitch_pix = dst_pitch >> 1;
 
 	// prepare the color
 	register unsigned short int A = color.a;
 	register unsigned short int SRC;
-	SRC =     (A << 12)
-			| (color.r << 8)
-			| (color.g << 4)
-			| color.b;
+	SRC =     ((A >> 4) << 12)
+			| ((color.r >> 4) << 8)
+			| ((color.g >> 4) << 4)
+			|  (color.b >> 4);
 
 	// draw a line with Bresenham-Algorithm
 	MMSFB_DRAWLINE_BRESENHAM(MMSFB_DRAWLINE_PUT_PIXEL);
