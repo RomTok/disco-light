@@ -727,15 +727,44 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts) {
 	return diff;
 }
 
+//
+// TODO: find a better solution for language handling
+//
+
 MMS_LANGUAGE_TYPE strToLang(const char *value) {
-	if(strncasecmp(value,"de",3)==0) {
+
+	if(strncasecmp(value,"de", 2) == 0) {
 		return MMSLANG_DE;
 	}
-	if(strncasecmp(value,"msg",3)==0) {
-		return MMSLANG_MSG;
-	}
-	if(strncasecmp(value,"en",3)==0) {
+	if(strncasecmp(value,"en", 2) == 0) {
 		return MMSLANG_EN;
+	}
+	if(strncasecmp(value,"dk", 2) == 0) {
+		return MMSLANG_DK;
+	}
+	if(strncasecmp(value, "es", 2) == 0) {
+		return MMSLANG_ES;
+	}
+	if(strncasecmp(value,"fi", 2) == 0) {
+		return MMSLANG_FI;
+	}
+	if(strncasecmp(value,"fr", 2) == 0) {
+		return MMSLANG_FR;
+	}
+	if(strncasecmp(value,"it", 2) == 0) {
+		return MMSLANG_IT;
+	}
+	if(strncasecmp(value,"nl", 2) == 0) {
+		return MMSLANG_NL;
+	}
+	if(strncasecmp(value,"no", 2) == 0) {
+		return MMSLANG_NO;
+	}
+	if(strncasecmp(value,"se", 2) == 0) {
+		return MMSLANG_SE;
+	}
+	if(strncasecmp(value,"msg", 3) == 0) {
+		return MMSLANG_MSG;
 	}
 
 	return MMSLANG_UKN;
