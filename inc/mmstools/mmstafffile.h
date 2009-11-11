@@ -117,7 +117,9 @@ typedef enum {
 	//! 32 bit ARGB (4 byte, inv. alpha 8\@24, red 8\@16, green 8\@8, blue 8\@0)
 	MMSTAFF_PF_AiRGB,
 	//! 32 bit AYUV (4 byte, alpha 8\@24, Y 8\@16, Cb 8\@8, Cr 8\@0)
-	MMSTAFF_PF_AYUV
+	MMSTAFF_PF_AYUV,
+    //! 16 bit ARGB (2 byte, alpha 4\@12, red 4\@8, green 4\@4, blue 4\@0)
+    MMSTAFF_PF_ARGB4444
 } MMSTAFF_PF;
 
 //! convert 4 bytes from byte stream to an 32 bit integer (needed especially by ARM)

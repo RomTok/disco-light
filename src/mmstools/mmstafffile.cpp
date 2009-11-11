@@ -96,7 +96,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     png_infop       end_info_ptr = NULL;
     png_bytep       *row_pointers = NULL;
 
-    /* check if file does exist and if it is an png format */
+    // check if file does exist and if it is an png format
     *buf = NULL;
     fp = fopen(filename, "rb");
     if (!fp)
@@ -110,7 +110,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	return false;
     }
 
-    /* init png structs and abend handler */
+    // init png structs and abend handler
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
         fclose(fp);
@@ -119,7 +119,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     png_set_sig_bytes(png_ptr, sizeof(png_sig));
 
     if (setjmp(png_ptr->jmpbuf)) {
-    	//abend from libpng
+    	// abend from libpng
         printf("png read error\n");
     	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
         if (row_pointers) free(row_pointers);
@@ -143,7 +143,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	return false;
     }
 
-    /* read png infos */
+    // read png infos
     png_init_io(png_ptr, fp);
     png_read_info(png_ptr, info_ptr);
     png_uint_32 w;
@@ -152,9 +152,9 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     int color_type;
     png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
 
-    /* check the png format */
+    // check the png format
     if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
-    	/* we only support ARGB png images */
+    	// we only support ARGB png images
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
         fclose(fp);
     	return false;
@@ -164,7 +164,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     *pitch = 4 * w;
     *size = *pitch * h;
 
-    /* set input transformations */
+    // set input transformations
     if (bit_depth == 16)
     	png_set_strip_16(png_ptr);
     png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
@@ -172,7 +172,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     png_set_interlace_handling(png_ptr);
     png_read_update_info(png_ptr, info_ptr);
 
-    /* allocate memory for row pointers */
+    // allocate memory for row pointers
     row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
     if (!row_pointers) {
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
@@ -180,7 +180,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	return false;
     }
 
-    /* allocate memory for image data */
+    // allocate memory for image data
     if (this->mirror_size > *height) this->mirror_size = *height;
     *buf = malloc((*size) + (*pitch) * this->mirror_size);
     if (!*buf) {
@@ -195,9 +195,14 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	b+=*pitch;
     }
 
-    /* read the image data */
+    // read the image data
     png_read_image(png_ptr, row_pointers);
     png_read_end(png_ptr, end_info_ptr);
+
+    // all right, freeing helpers
+	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+    free(row_pointers);
+    fclose(fp);
 
     // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
     // so check now if i have to convert it
@@ -281,13 +286,40 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 		    }
     	}
     	break;
+    case MMSTAFF_PF_ARGB4444: {
+			// divide ARGB data into halves
+			*pitch = (*pitch) >> 1;
+			*size = (*size) >> 1;
+			void *newbuf = malloc(*size);
+			if (!newbuf) {
+				free(*buf);
+				*buf = NULL;
+				return false;
+			}
+
+			// convert it
+			unsigned int *src = (unsigned int*)*buf;
+			unsigned short int *dst = (unsigned short int*)newbuf;
+		    for (int i = *width * *height; i > 0; i--) {
+		    	register unsigned int s = *src;
+		    	register unsigned short int d;
+		    	d =   ((s & 0xf0000000) >> 16)
+					| ((s & 0x00f00000) >> 12)
+					| ((s & 0x0000f000) >> 8)
+					| ((s & 0x000000f0) >> 4);
+		    	*dst = d;
+		    	src++;
+		    	dst++;
+		    }
+
+			// switch buffers
+			free(*buf);
+			*buf = newbuf;
+		}
+		break;
 	default: break;
     }
 
-    // all right
-	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-    free(row_pointers);
-    fclose(fp);
 	return true;
 }
 
