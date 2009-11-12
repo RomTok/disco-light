@@ -356,13 +356,14 @@ bool MMSGIFLoader::loadBlocks() {
                     data_table[t]=index_table[t]=t;
                 bool end_of_stream = false;
 
-                /* create the surface */
+                // create the surface
                 MMSFBSurface *newsuf;
                 if (!this->layer->createSurface(&newsuf, gif_lsd.width, gif_lsd.height)) {
-                    /* cannot create surface */
+                    // cannot create surface
                     return false;
                 }
 
+                // prepare surface
                 int ci;
                 if (this->desc->sufcount <= 0) {
                     /* first surface */
@@ -377,29 +378,34 @@ bool MMSGIFLoader::loadBlocks() {
                             newsuf->clear(gif_gct.table[ci], gif_gct.table[ci+1], gif_gct.table[ci+2], 0xff);
                         }
                     }
-                    else
+                    else {
                         /* clear surface */
                         newsuf->clear();
+                    }
                 }
                 else {
-                    /* second or following surfaces */
+                	/* second or following surfaces */
                     switch (gif_gce_old.disposal) {
                         case 0: //No disposal specified
                         case 1: //Do not dispose
                             newsuf->blit(desc->suf[desc->sufcount-1].surface, NULL, 0, 0);
                             break;
                         case 2: //Restore to background
-                            newsuf->blit(desc->suf[desc->sufcount-1].surface, NULL, 0, 0);
                             ci = this->gif_lsd.bgcolor*3;
-                            if ((gif_gce_old.transparent_color) && (this->gif_lsd.bgcolor == gif_gce_old.transcolor))
-                                newsuf->setColor(0xff, 0xff, 0xff, 0xff);
-                            else
+                            if ((gif_gce_old.transparent_color) && (this->gif_lsd.bgcolor == gif_gce_old.transcolor)) {
+                            	// use the very first image as background
+                            	newsuf->blit(desc->suf[0].surface, NULL, 0, 0);
+                            }
+                            else {
+                            	// fill with background color
                                 newsuf->setColor(gif_gct.table[ci], gif_gct.table[ci+1], gif_gct.table[ci+2], 0xff);
-                            newsuf->fillRectangle(gif_id.x, gif_id.y, gif_id.w, gif_id.h);
+                                newsuf->fillRectangle(gif_id.x, gif_id.y, gif_id.w, gif_id.h);
+                            }
                             break;
                         case 3: //Restore to previous
-                            if (desc->sufcount >= 2)
+                            if (desc->sufcount >= 2) {
                                 newsuf->blit(desc->suf[desc->sufcount-2].surface, NULL, 0, 0);
+                            }
                             break;
                     }
                 }
