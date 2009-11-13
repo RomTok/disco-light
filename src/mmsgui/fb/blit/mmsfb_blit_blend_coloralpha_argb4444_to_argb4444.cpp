@@ -119,44 +119,26 @@ void mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(MMSFBSurfacePlanes *src_pl
 				unsigned int sb = (ALPHA * (SRC & 0x000f)) >> 4;
 				register unsigned int SA= 0x100 - A;
 
-/*				unsigned int a = DST >> 24;
-				unsigned int r = (DST << 8) >> 24;
-				unsigned int g = (DST << 16) >> 24;
-				unsigned int b = DST & 0xff;*/
-
 				unsigned int a = DST >> 12;
 				unsigned int r = DST & 0x0f00;
 				unsigned int g = DST & 0x00f0;
 				unsigned int b = DST & 0x000f;
 
-
 				// invert src alpha
-/*			    a = (SA * a) >> 8;
-			    r = (SA * r) >> 8;
-			    g = (SA * g) >> 8;
-			    b = (SA * b) >> 8;*/
-
 			    a = (SA * a) >> 4;
 			    r = (SA * r) >> 12;
 			    g = (SA * g) >> 8;
 			    b = (SA * b) >> 4;
-
 
 			    // add src to dst
 			    a += A;
 			    r += sr;
 			    g += sg;
 			    b += sb;
-/*			    d =   ((a >> 8) ? 0xff000000 : (a << 24))
-					| ((r >> 8) ? 0xff0000   : (r << 16))
-					| ((g >> 8) ? 0xff00     : (g << 8))
-			    	| ((b >> 8) ? 0xff 		 :  b);*/
-
 			    d =   ((a >> 8) ? 0xf000 : ((a >> 4) << 12))
 					| ((r >> 8) ? 0x0f00 : ((r >> 4) << 8))
 					| ((g >> 8) ? 0xf0   : ((g >> 4) << 4))
 			    	| ((b >> 8) ? 0x0f   :  (b >> 4));
-
 				*dst = d;
 			}
 

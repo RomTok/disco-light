@@ -1411,12 +1411,22 @@ void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_h
 void mmsfb_blit_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 								     MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
+
 //! Blit with alpha blending ARGB4444 to ARGB4444.
 /*!
 \author Jens Schneider
 */
 void mmsfb_blit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 										   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+
+//! Blit with alpha blending with alpha from color ARGB4444 to ARGB4444.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+													  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
+													  unsigned char alpha);
 
 // ----------------------------------------------------------------------------
 // --------------------------------------------------- BLITTING TO ARGB4444 ---
@@ -1438,16 +1448,16 @@ void mmsfb_stretchblit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_blend_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-										  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh);
+void mmsfb_stretchblit_blend_argb_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+										  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh);
 
 
 //! Stretch blit with alpha blending with alpha from color ARGB to ARGB.
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-													 unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+													 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 													 unsigned char alpha);
 
 
@@ -1572,6 +1582,21 @@ void mmsfb_stretchblit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 
 // ----------------------------------------------------------------------------
 // -------------------------------------------------------- STRETCH TO YV12 ---
+
+
+// --- STRETCH TO ARGB4444 ----------------------------------------------------
+// ----------------------------------------------------------------------------
+
+//! Stretch blit with alpha blending ARGB4444 to ARGB4444.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+												  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh);
+
+// ----------------------------------------------------------------------------
+// ---------------------------------------------------- STRETCH TO ARGB4444 ---
+
 
 
 // --- FILL ARGB RECTANGLE ----------------------------------------------------
