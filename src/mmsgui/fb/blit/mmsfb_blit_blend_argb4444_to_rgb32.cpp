@@ -92,7 +92,7 @@ void mmsfb_blit_blend_argb4444_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_
 				}
 
 				// calc pixel and store it to destination
-				d =	  0xff0f0f0f
+				d =	  0xff000000
 					| ((SRC & 0x0f00) << 12)
 					| ((SRC & 0x00f0) << 8)
 					| ((SRC & 0x000f) << 4);
