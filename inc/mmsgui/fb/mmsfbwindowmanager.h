@@ -93,6 +93,7 @@ class MMSFBWindowManager {
         MMSFBSurface	*pointer_surface;
         unsigned char	pointer_opacity;
         bool			button_pressed;
+        int				pointer_fadecnt;
 
         MMSMutex lock;            /* to make it thread-safe */
 
@@ -129,6 +130,7 @@ class MMSFBWindowManager {
         void drawPointer(MMSFBRegion *region);
         unsigned char getPointerOpacity();
         void setPointerOpacity(unsigned char opacity);
+        void fadePointer();
 
     public:
         MMSFBWindowManager();

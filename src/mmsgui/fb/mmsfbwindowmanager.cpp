@@ -69,6 +69,7 @@ MMSFBWindowManager::MMSFBWindowManager() {
     this->pointer_surface = NULL;
     this->pointer_opacity = 0;
     this->button_pressed = false;
+    this->pointer_fadecnt = 0;
 }
 
 MMSFBWindowManager::~MMSFBWindowManager() {
@@ -1115,6 +1116,7 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, 
 
 	// set opacity
     this->pointer_opacity = 255;
+	this->pointer_fadecnt = 0;
 
 	// check if i have to flip one or two regions
 	if   ((old_region.x1 > this->pointer_region.x2)
@@ -1360,7 +1362,36 @@ unsigned char MMSFBWindowManager::getPointerOpacity() {
 }
 
 void MMSFBWindowManager::setPointerOpacity(unsigned char opacity) {
+	// check range
+	if (opacity < 0)
+		opacity = 0;
+	else
+	if (opacity > 255)
+		opacity = 255;
+
+	// set it
 	this->pointer_opacity = opacity;
+	this->pointer_fadecnt = 0;
 	flipSurface(NULL, &this->pointer_region, false);
+}
+
+void MMSFBWindowManager::fadePointer() {
+	if (!this->button_pressed) {
+		if (this->pointer_opacity > 0) {
+			if (this->pointer_fadecnt == 0)
+				this->pointer_fadecnt = 1;
+			else
+				this->pointer_fadecnt*= 3;
+
+			if (this->pointer_fadecnt >= 3) {
+				// set it
+				if (this->pointer_opacity > this->pointer_fadecnt / 3)
+					this->pointer_opacity-= this->pointer_fadecnt / 3;
+				else
+					this->pointer_opacity = 0;
+				flipSurface(NULL, &this->pointer_region, false);
+			}
+		}
+	}
 }
 
