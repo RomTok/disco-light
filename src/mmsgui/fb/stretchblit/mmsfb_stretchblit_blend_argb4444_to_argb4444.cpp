@@ -102,8 +102,8 @@ void mmsfb_stretchblit_blend_argb4444_to_argb4444(MMSFBSurfacePlanes *src_planes
 						{
 							// source alpha is > 0x00 and < 0x0f
 							register unsigned int SA= 0x10 - A;
-							register unsigned int DST = *dst;
-							unsigned int OLDDST = DST + 1;
+							register unsigned short int DST = *dst;
+							unsigned short int OLDDST = DST + 1;
 							register unsigned short int d;
 
 							do {
