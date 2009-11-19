@@ -190,6 +190,9 @@ class MMSTaffFile {
 		//! buffer postion of the current tag
 		int		current_tag_pos;
 
+        //! Internal method: Writes a buffer to a file.
+        bool writeBuffer(MMSFile *file, void *ptr, size_t *ritems, size_t size, size_t nitems, bool *write_status = NULL);
+
 		//! Internal method: Read a PNG Image.
 		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
 

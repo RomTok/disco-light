@@ -1077,6 +1077,15 @@ void mmsfb_blit_yv12_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 void mmsfb_blit_blend_argb4444_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 										MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
+
+//! Blit with alpha blending with alpha from color ARGB4444 to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_coloralpha_argb4444_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+												   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
+												   unsigned char alpha);
+
 // ----------------------------------------------------------------------------
 // ------------------------------------------------------ BLITTING TO RGB32 ---
 
