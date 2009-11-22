@@ -238,7 +238,7 @@ if env['enable_sip']:
 	diskoLibs.extend(["mmssip"])
 	
 if env['enable_tools']:	
-	diskoTools = ["taff"]
+	diskoTools = ["taff","diskoappctrl"]
 else:
 	diskoTools = ()
 
