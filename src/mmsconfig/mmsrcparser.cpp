@@ -109,11 +109,23 @@ void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		**global,
 		                   MMSConfigDataDB     		**datadb,
 		                   MMSConfigDataGraphics    **graphics,
 		                   MMSConfigDataLanguage    **language) {
-	*global   = &this->global;
-	*configdb = &this->configdb;
-	*datadb   = &this->datadb;
-	*graphics = &this->graphics;
-	*language = &this->language;
+	if (global)		*global   = &this->global;
+	if (configdb)	*configdb = &this->configdb;
+	if (datadb)		*datadb   = &this->datadb;
+	if (graphics)	*graphics = &this->graphics;
+	if (language)	*language = &this->language;
+}
+
+void MMSRcParser::getMMSRc(MMSConfigDataGlobal 		*global,
+		                   MMSConfigDataDB     		*configdb,
+		                   MMSConfigDataDB     		*datadb,
+		                   MMSConfigDataGraphics    *graphics,
+		                   MMSConfigDataLanguage    *language) {
+	if (global)		*global   = this->global;
+	if (configdb)	*configdb = this->configdb;
+	if (datadb)		*datadb   = this->datadb;
+	if (graphics)	*graphics = this->graphics;
+	if (language)	*language = this->language;
 }
 
 /**
