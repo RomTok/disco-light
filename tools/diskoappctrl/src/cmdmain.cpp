@@ -51,7 +51,7 @@ bool isdigit(char *what) {
 }
 
 
-void usage() {
+void usage(char **argv) {
 	Console cons(true);
 
 	printf("\nusage\n");
@@ -60,19 +60,19 @@ void usage() {
 	printf("\tcommands:\n\n");
 	cons.printCommand("list","Prints a list of all plugins and/or parameters. There is one argument: @[1mtype@[0m=all|imports. type=all lists all plugins and parameters, type=import lists all import plugins and source defintions. If no argument is specified type=all will be assumed.");
     cons.printCommand("act","Activates a plugin within the application. There is one argument: @[1mplugin@[0m=name|id.");
-    cons.printExample("cmd act plugin=Mixer");
+    cons.printExample("diskoappctrl act plugin=Mixer");
 	cons.printCommand("      ","This will acivate the plugin named Mixer. At the next startup of the application this plugin will be loaded.");
 	cons.printCommand("deact","Deactivates a plugin within the application. There is one argument: @[1mplugin@[0m=name|id.");
-    cons.printExample("cmd deact plugin=Mixer");
+    cons.printExample("diskoappctrl deact plugin=Mixer");
 	cons.printCommand("      ","This will deacivate the plugin named Mixer. At the next startup of the application this plugin will no longer be loaded.");
 
 	cons.printCommand("update","Updates a plugin parameter or an import source values. To update a plugin parameter you must supply a plugin name or id (@[1mplugin@[0m=name|id) a parameter (@[1mparam@[0m=name) and a parameter vaue (@[1mvalue@[0m=value). To Update an import source you have to supply an import source (@[1msource@[0m=name|id) and a value.");
-	cons.printExample("cmd update plugin=Mixer param=channel value=PCM ");
+	cons.printExample("diskoappctrl update plugin=Mixer param=channel value=PCM ");
 	cons.printCommand("      ","This will update the parameter \"channel\" of the plugin named Mixer to the new value \"PCM\"");
-    cons.printExample("cmd update source=music value=/media/data/music ");
+    cons.printExample("diskoappctrl update source=music value=/media/data/music ");
     cons.printCommand("      ","This will update the import source with the name \"music\" to the specified value");
     cons.printCommand("execute","executes an action within the application. Currently only import plugins can be executed.");
-    cons.printExample("cmd execute import=ChannelImport");
+    cons.printExample("diskoappctrl execute import=ChannelImport");
     cons.printCommand("      ","This will execute the import plugin named \"ChannelImport\" once.");
 	exit(1);
 }
@@ -87,43 +87,68 @@ void printworkingdata(MMSConfigData *config) {
 void parseCommandLine(CmdLine &cmdline, int argc, char **argv) {
 	Console cons(true);
 	char tmpcmd[1024];
-
+	int cnt;
 	if(argc<2) {
-		usage();
+		usage(argv);
 		exit(1);
 	}
 
 	// go for command
-	if(strncmp(argv[1],MMSCMD_CMD, strlen(MMSCMD_CMD))==0) {
+	for(cnt=0;cnt<argc;cnt++) {
+		if(strncmp(argv[cnt],MMSCMD_CMD, strlen(MMSCMD_CMD))==0) {
 
-		if(strcmp(&(argv[1][strlen(MMSCMD_CMD)+1]),MMSCMD_LIST)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,&(argv[1][strlen(MMSCMD_CMD)+1])));
-		else if(strcmp(&(argv[1][strlen(MMSCMD_CMD)+1]),MMSCMD_UPDATE)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,&(argv[1][strlen(MMSCMD_CMD)+1])));
-		else if(strcmp(&(argv[1][strlen(MMSCMD_CMD)+1]),MMSCMD_ACT)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,&(argv[1][strlen(MMSCMD_CMD)+1])));
-		else if(strcmp(&(argv[1][strlen(MMSCMD_CMD)+1]),MMSCMD_DEACT)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,&(argv[1][strlen(MMSCMD_CMD)+1])));
-		else if(strcmp(&(argv[1][strlen(MMSCMD_CMD)+1]),MMSCMD_EXEC)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,&(argv[1][strlen(MMSCMD_CMD)+1])));
-		else if(strcmp(&(argv[1][strlen(MMSCMD_CMD)+1]),MMSCMD_EVENT)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,&(argv[1][strlen(MMSCMD_CMD)+1])));
+			if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_LIST)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_CMD)+1])));
+				break;
+			} else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_UPDATE)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_CMD)+1])));
+				break;
+		    } else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_ACT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_CMD)+1])));
+				break;
+		    } else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_DEACT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_CMD)+1])));
+				break;
+			} else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_EXEC)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_CMD)+1])));
+				break;
+			} else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_EVENT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_CMD)+1])));
+				break;
+			} else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_ADD)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_ADD)+1])));
+				break;
+			}
 
-	} else {
+		} else {
 
-		if(strcmp(argv[1],MMSCMD_LIST)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,argv[1]));
-		else if(strcmp(argv[1],MMSCMD_UPDATE)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,argv[1]));
-		else if(strcmp(argv[1],MMSCMD_ACT)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,argv[1]));
-		else if(strcmp(argv[1],MMSCMD_DEACT)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,argv[1]));
-		else if(strcmp(argv[1],MMSCMD_EXEC)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,argv[1]));
-		else if(strcmp(argv[1],MMSCMD_EVENT)==0)
-			cmdline.insert(make_pair(MMSCMD_CMD,argv[1]));
+			if(strcmp(argv[cnt],MMSCMD_LIST)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_UPDATE)==0) {
+			 	cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_ACT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_DEACT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_EXEC)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_EVENT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_EVENT)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_ADD)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			}
 
+		}
 	}
 
 	if(cmdline.size()==0) {
@@ -133,7 +158,10 @@ void parseCommandLine(CmdLine &cmdline, int argc, char **argv) {
 	}
 
 	//go for the rest
-	for(int i = 2; i<argc;i++) {
+	for(int i = 1; i<argc;i++) {
+		if(i==cnt)
+			continue;
+
 		char *srch = strstr(argv[i],"=");
 		if(srch==NULL) {
 			cons.printError("wrong argument format. See cmd --help for more information.");
@@ -142,31 +170,20 @@ void parseCommandLine(CmdLine &cmdline, int argc, char **argv) {
 
 		memset(tmpcmd,0,1024);
 		strncpy(tmpcmd,argv[i],srch-argv[i]);
-		if(strcmp(tmpcmd,MMSCMD_PLUGIN)!=0) {
-			if(strcmp(tmpcmd,MMSCMD_SOURCE)!=0) {
-				if(strcmp(tmpcmd,MMSCMD_PLUGIN)!=0) {
-					if(strcmp(tmpcmd,MMSCMD_IMPORT)!=0) {
-						if(strcmp(tmpcmd,MMSCMD_DEBUG)!=0) {
-							if(strcmp(tmpcmd,MMSCMD_TYPE)!=0) {
-								if(strcmp(tmpcmd,MMSCMD_VALUE)!=0) {
-									if(strcmp(tmpcmd,MMSCMD_CONFIG)!=0) {
-										if(strcmp(tmpcmd,MMSCMD_PARAM)!=0) {
-											if(strcmp(tmpcmd,MMSCMD_HEADING)!=0) {
-												if(strcmp(tmpcmd,MMSCMD_PORT)!=0) {
-													char text[1024];
-													sprintf(text, "unknown parameter @[1m%s@[0m. See cmd --help for more information.",tmpcmd);
-													cons.printError(text);
-													exit(1);
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+		if((strcmp(tmpcmd,MMSCMD_PLUGIN)!=0)    && (strcmp(tmpcmd,MMSCMD_SOURCE)!=0)    &&
+		   (strcmp(tmpcmd,MMSCMD_PLUGIN)!=0)    && (strcmp(tmpcmd,MMSCMD_IMPORT)!=0)    &&
+		   (strcmp(tmpcmd,MMSCMD_DEBUG)!=0)     && (strcmp(tmpcmd,MMSCMD_TYPE)!=0)      &&
+		   (strcmp(tmpcmd,MMSCMD_VALUE)!=0)     && (strcmp(tmpcmd,MMSCMD_CONFIG)!=0)    &&
+		   (strcmp(tmpcmd,MMSCMD_PARAM)!=0)     && (strcmp(tmpcmd,MMSCMD_HEADING)!=0)   &&
+		   (strcmp(tmpcmd,MMSCMD_MINVALUE)!=0)  && (strcmp(tmpcmd,MMSCMD_MAXVALUE)!=0)  &&
+		   (strcmp(tmpcmd,MMSCMD_VALUELIST)!=0) && (strcmp(tmpcmd,MMSCMD_SEPARATOR)!=0) &&
+		   (strcmp(tmpcmd,MMSCMD_PORT)!=0)      && (strcmp(tmpcmd,MMSCMD_TYPE)!=0)) {
+
+			char text[1024];
+			sprintf(text, "unknown parameter @[1m%s@[0m. See cmd --help for more information.",tmpcmd);
+			cons.printError(text);
+			exit(1);
+
 		}
 		srch++;
 		cmdline.insert(make_pair(tmpcmd, srch));
@@ -180,10 +197,10 @@ int main(int argc, char *argv[]) {
 
 
     if(argc<2)
-    	usage();
+    	usage(argv);
     else {
     	if(strcmp(argv[1],"--help")==0)
-    		usage();
+    		usage(argv);
     }
 
     try {

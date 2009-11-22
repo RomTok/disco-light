@@ -16,6 +16,7 @@ else:
 		diskoappctrlEnv.Append(LIBS = ['mmsmedia'])
 
 diskoappctrlEnv.Append(LIBPATH = '../../../lib') 
+diskoappctrlEnv.Append(CCFLAGS = '-I tools/diskoappctrl/inc') 
 diskoappctrl = diskoappctrlEnv.Program('../../../bin/diskoappctrl', Glob('src/*.cpp'))
 
 if env['big_lib']:

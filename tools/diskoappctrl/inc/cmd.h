@@ -43,19 +43,25 @@
 #define MMSCMD_DEACT  "deact"
 #define MMSCMD_EXEC   "execute"
 #define MMSCMD_EVENT  "event"
+#define MMSCMD_ADD    "add"
 
 
-#define MMSCMD_CMD     "cmd"
-#define MMSCMD_PLUGIN  "plugin"
-#define MMSCMD_SOURCE  "source"
-#define MMSCMD_PARAM   "param"
-#define MMSCMD_IMPORT  "import"
-#define MMSCMD_DEBUG   "debug"
-#define MMSCMD_TYPE    "type"
-#define MMSCMD_VALUE   "value"
-#define MMSCMD_CONFIG  "config"
-#define MMSCMD_HEADING "heading"
-#define MMSCMD_PORT    "port"
+#define MMSCMD_CMD       "cmd"
+#define MMSCMD_PLUGIN    "plugin"
+#define MMSCMD_SOURCE    "source"
+#define MMSCMD_PARAM     "param"
+#define MMSCMD_IMPORT    "import"
+#define MMSCMD_DEBUG     "debug"
+#define MMSCMD_TYPE      "type"
+#define MMSCMD_VALUE     "value"
+#define MMSCMD_CONFIG    "config"
+#define MMSCMD_HEADING   "heading"
+#define MMSCMD_PORT      "port"
+#define MMSCMD_TYPE      "type"
+#define MMSCMD_MINVALUE  "minvalue"
+#define MMSCMD_MAXVALUE  "maxvalue"
+#define MMSCMD_VALUELIST "valuelist"
+#define MMSCMD_SEPARATOR "separator"
 
 typedef enum  {
 	UNKNOWN = 0,
@@ -64,7 +70,8 @@ typedef enum  {
 	ACT,
 	DEACT,
     EXEC,
-    EVENT
+    EVENT,
+    ADD
 } MMSCMD_COMMANDS;
 
 typedef map<string,string> CmdLine;

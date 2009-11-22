@@ -271,9 +271,7 @@ void Cmd::executeDeact() {
         } else {
             string message = "no plugin with id @[1m" + pluginname + "@[0m found.";
             cons.printText((char *)message.c_str());
-
         }
-
     } else {
         //it looks like a name
         MMSPluginData *plugin = service.getPluginByName(pluginname);
@@ -288,7 +286,7 @@ void Cmd::executeDeact() {
             service.setPlugin(plugin);
             string message = "plugin @[1m" + pluginname + "@[0m sucessfully set to @[1inmactive@[0m.";
             cons.printText((char *)message.c_str());
-        }else {
+        } else {
             string message = "no plugin with name @[1m" + pluginname + "@[0m found.";
             cons.printText((char *)message.c_str());
         }
