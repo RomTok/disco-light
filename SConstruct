@@ -93,6 +93,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('profile',       'Build with profiling support (includes debug option)', False),
 	BoolOption('cross',         'Cross compile (to avoid some system checks)', False),
 	BoolOption('use_sse',       'Use SSE optimization', False),
+    BoolOption('enable_swscale','Build with swscale support', False),
 	BoolOption('use_dl',        'Use dynamic linking support', True),
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
@@ -100,7 +101,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
 	BoolOption('enable_sip',    'Build with mmssip support', False),
-	BoolOption('enable_curl',    'Build with curl support', True),
+	BoolOption('enable_curl',   'Build with curl support', True),
 	BoolOption('enable_mail',   'Build with email support', False),
 	BoolOption('enable_tools',  'Build disko tools', False),
 	BoolOption('static_lib',    'Create statically linked library', False),
@@ -116,6 +117,7 @@ else:
 	BoolVariable('profile',       'Build with profiling support (includes debug option)', False),
 	BoolVariable('cross',         'Cross compile (to avoid some system checks)', False),
 	BoolVariable('use_sse',       'Use SSE optimization', False),
+    BoolVariable('enable_swscale','Build with swscale support', False),
 	BoolVariable('use_dl',        'Use dynamic linking support', True),
 	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
@@ -127,7 +129,7 @@ else:
 	BoolVariable('enable_mail',   'Build with email support', False),
 	BoolVariable('enable_tools',  'Build disko tools', False),
 	BoolVariable('static_lib', 	  'Create statically linked library', False),
-	BoolVariable('big_lib',       'Create one big shared library', False))
+    BoolVariable('big_lib',       'Create one big shared library', False))
 
 env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
@@ -406,6 +408,10 @@ def printSummary():
 		print 'SSE optimization  : yes'
 	else:
 		print 'SSE optimization  : no'
+	if(conf.env['enable_swscale']):
+		print 'swscale support   : yes'
+	else:
+		print 'swscale support   : no'
 	if(conf.env['use_dl']):
 		print 'use libdl         : yes\n'
 	else:
@@ -569,6 +575,11 @@ if(env['enable_mail']):
 	conf.checkSimpleLib(['vmime'], 'vmime.h')
 	conf.env['CCFLAGS'].extend(['-D__HAVE_VMIME__'])
 
+# checks required if building with swscale support
+if(env['enable_swscale']):
+    conf.checkSimpleLib(['swscale'], 'libswscale/swscale.h')
+    conf.env['CCFLAGS'].extend(['-D__HAVE_SWSCALE__']) 
+
 env2 = conf.Finish()
 if env2:
 	env = env2
@@ -593,7 +604,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_libs += ' -ldisko -lpthread'
 	else:
 		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread'
-	
+
 	if (env['enable_curl']):
 		disko_pc_requires += ', libcurl'
 		disko_pc_libs += ' -lcurl'
@@ -647,6 +658,9 @@ if 'install' in BUILD_TARGETS:
 		
 	if 'mysql' in env['database']:
 		disko_pc_requires += ', mysql'
+
+	if env['enable_swscale']:
+		disko_pc_libs += ' -lswscale -lavutil'
 
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
