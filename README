@@ -4,7 +4,7 @@ Disko - An application framework for digital media devices
 For information about disko take a look at <http://www.diskohq.org>.
 
 ------------------------------------------------------------------------------
-1. Howto install disko?
+1. Howto install disko v1.6?
 ------------------------------------------------------------------------------
 
 Generally you would do the following:
@@ -37,3 +37,8 @@ To create it, just enter:
     
 Now there will be a directory disko-<version>/doc/html. Point your browser
 to index.html and you will have access to our doxgen API documentation.
+
+
+have fun
+the Disko team
+

@@ -1,0 +1,32 @@
+Import('env idir_bin')
+
+diskoappctrlEnv = env.Clone()
+
+if env['big_lib']:
+	Import('libdisko_shared')
+	diskoappctrlEnv.Append(LIBS = ['disko'])
+elif env['static_lib']:
+	Import('libdisko_static')
+	diskoappctrlEnv.Append(LIBS = ['disko'])
+else:
+	Import('libmmsinfo libmmsconfig libmmstools libmmsgui libmmscore libmmsinput libmmsbase')
+	diskoappctrlEnv.Append(LIBS = ['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase'])
+	if env['media']:
+		Import('libmmsmedia')
+		diskoappctrlEnv.Append(LIBS = ['mmsmedia'])
+
+diskoappctrlEnv.Append(LIBPATH = '../../../lib') 
+diskoappctrlEnv.Append(CCFLAGS = '-I tools/diskoappctrl/inc') 
+diskoappctrl = diskoappctrlEnv.Program('../../../bin/diskoappctrl', Glob('src/*.cpp'))
+
+if env['big_lib']:
+	Depends(diskoappctrl, [libdisko_shared])
+elif env['static_lib']:
+	Depends(diskoappctrl, [libdisko_static])
+else:
+	Depends(diskoappctrl, [libmmsinfo, libmmsconfig, libmmstools, libmmsgui, libmmscore, libmmsinput, libmmsbase])
+	if env['media']:
+		Depends(diskoappctrl, [libmmsmedia])
+
+env.Install(idir_bin, diskoappctrl)
+Export('diskoappctrl')
