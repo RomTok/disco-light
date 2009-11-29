@@ -49,6 +49,10 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 		firsttime = false;
 	}
 
+//dy = 200;
+//dh-= 400;
+
+
 //////TESTONLY//////
 #ifdef __HAVE_SWSCALE__
 	static int fff = 0;
@@ -139,24 +143,41 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 	}
 	if (testswitch > 0) {
 /////TESTONLY///////
-
 #ifdef __HAVE_SWSCALE__
 	// this code is for libswscale support...
-	if   ((sx == sy == dx == dy)
-		&&(src_planes->pitch == sw && src_height == sh)
-		&&(dst_planes->pitch == dw && dst_height == dh)) {
-		// stretchblit with libswscale: using full source and full destination surface
+	if   ((sx == 0 && dx == 0)
+		&&(src_planes->pitch == sw && src_height >= (sy + sh))
+		&&(dst_planes->pitch == dw && dst_height >= (dy + dh))) {
+		// stretchblit with libswscale
+		// note: the width of the source and destination rectangle MUST
+		//		 fit the width of the surfaces!!!
+		// note: the position and the height of the source and destination rectangle
+		//       should be multiple of two
 		static SwsContext *sws_context = NULL;
 		if (!sws_context) {
 			const char *license = swscale_license();
 			printf("DISKO: Using libswscale with license %s\n", license);
 		}
 
+		// multiple of two check
+		if (sy & 0x01) {
+			sy++;
+			sh--;
+		}
+		if (dy & 0x01) {
+			dy++;
+			dh--;
+		}
+		sh = sh & ~0x01;
+		dh = dh & ~0x01;
+
 		// pixel width & height of source and destination
 		int pix_src_width = src_planes->pitch;
-		int pix_src_height = src_height;
+		int pix_src_height = sh;
 		int pix_dst_width = dst_planes->pitch;
-		int pix_dst_height = dst_height;
+		int pix_dst_height = dh;
+		int src_yoffs = sy * src_planes->pitch;
+		int dst_yoffs = dy * dst_planes->pitch;
 		int flags = fff;
 
 		// get an sws context with pixelformat PIX_FMT_YUV420P
@@ -196,6 +217,11 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 				sws_src[1] = (uint8_t*)src_planes->ptr3;
 			}
 
+			// add source offset
+			sws_src[0] = sws_src[0] + src_yoffs;
+			sws_src[1] = sws_src[1] + (src_yoffs >> 2);
+			sws_src[2] = sws_src[2] + (src_yoffs >> 2);
+
 			// set destination planes (reverse order, because destination is YV12)
 			uint8_t* sws_dst[3];
 			sws_dst[0] = (uint8_t*)dst_planes->ptr;
@@ -209,6 +235,11 @@ void mmsfb_stretchblit_yv12_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 				sws_dst[2] = (uint8_t*)dst_planes->ptr2;
 				sws_dst[1] = (uint8_t*)dst_planes->ptr3;
 			}
+
+			// add destination offset
+			sws_dst[0] = sws_dst[0] + dst_yoffs;
+			sws_dst[1] = sws_dst[1] + (dst_yoffs >> 2);
+			sws_dst[2] = sws_dst[2] + (dst_yoffs >> 2);
 
 			// scale the buffer
 			sws_scale(  sws_context,
