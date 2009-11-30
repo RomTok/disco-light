@@ -85,7 +85,7 @@ void MMSPluginDAO::update(MMSPluginData *data) {
 
 void MMSPluginDAO::saveOrUpdate(MMSPluginData *data) {
     /* check if ID is set */
-    if (data->getId()<0)
+    if (data->getId()==-1)
         /* no, have to save */
         save(data);
     else

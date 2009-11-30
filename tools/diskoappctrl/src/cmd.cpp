@@ -143,6 +143,12 @@ void Cmd::executeList() {
 	    	}
 	    }
 
+	    MMSPluginData *dat = service.getPluginByID(-2);
+	    if(dat) {
+    		this->printPlugin(dat,true);
+    		//printed=true;
+	    }
+
 	} else if(type=="imports") {
 
 		vector<MMSPluginData *> imports = service.getImportPlugins(true);
@@ -346,8 +352,9 @@ void Cmd::updateParameter() {
     value=cmdline[MMSCMD_VALUE];
 
     if(plugin.empty()) {
-    	cons.printError("No plugin given to update. See cmd --help for further information.");
-    	exit(1);
+    	/*cons.printError("No plugin given to update. See cmd --help for further information.");
+    	exit(1);*/
+    	plugin="-1";
     }
     if(parameter.empty()) {
     	cons.printError("No parameter given to update. See cmd --help for further information.");
@@ -360,7 +367,7 @@ void Cmd::updateParameter() {
 
     MMSPluginService service(datasource);
 
-    if(isdigit(plugin.c_str()))
+    if(isdigit(plugin.c_str())||plugin=="-2")
         plugindata = service.getPluginByID(atoi(plugin.c_str()));
     else
         plugindata = service.getPluginByName(plugin);
@@ -406,11 +413,16 @@ MMSCMD_COMMANDS Cmd::getCommand() {
 void Cmd::printPlugin(MMSPluginData *plugin, bool full) {
 
 	if(full==true) {
-        printf("\n%c[1m%s%c[0m (id=%d)\n",27,plugin->getName().c_str(),27,plugin->getId());
-		printf("\tdesc:   %s\n",plugin->getDescription().c_str());
-        printf("\tactive: %s\n",(plugin->getActive()==true) ? ("yes") : ("no"));
-        printf("\ttype:   %s\n\n",plugin->getType()->getName().c_str());
-
+		if(plugin->getId()!=-2) {
+			printf("\n%c[1m%s%c[0m (id=%d)\n",27,plugin->getName().c_str(),27,plugin->getId());
+			printf("\tdesc:   %s\n",plugin->getDescription().c_str());
+			printf("\tactive: %s\n",(plugin->getActive()==true) ? ("yes") : ("no"));
+			printf("\ttype:   %s\n\n",plugin->getType()->getName().c_str());
+		} else {
+			if(!plugin->getProperties().empty()) {
+				printf("\n%c[1mSYSTEM PROPERTIES%c[0m\n",27,27);
+			}
+		}
         if(!plugin->getProperties().empty())
             printf("\tparameters (parameter|value): \n");
 
