@@ -184,8 +184,8 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         menu->onReturn->connect(sigc::mem_fun(this,&MMSSwitcher::onReturn));
 
     	/* create inputs */
-        subscribeKey(MMSKEY_MENU);
-        subscribeKey(MMSKEY_BACKSPACE);
+//        subscribeKey(MMSKEY_MENU);
+//        subscribeKey(MMSKEY_BACKSPACE);
 
         /* start my update thread */
         this->switcherThread = new MMSSwitcherThread(this, NULL, NULL, NULL, NULL);
