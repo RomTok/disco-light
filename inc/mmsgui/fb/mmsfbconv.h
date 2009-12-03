@@ -1014,13 +1014,19 @@ void mmsfb_blit_blend_coloralpha_argb_to_argb(MMSFBSurfacePlanes *src_planes, in
 											  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
 											  unsigned char alpha);
 
+//! Blit RGB16 to ARGB.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_rgb16_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 //! Blit RGB24 to ARGB.
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+void mmsfb_blit_rgb24_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 // ----------------------------------------------------------------------------
 // ------------------------------------------------------- BLITTING TO ARGB ---
@@ -1054,12 +1060,19 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 											   unsigned char alpha);
 
 
+//! Blit RGB16 to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_rgb16_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
 //! Blit RGB24 to RGB32.
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_rgb24_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-							   unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+void mmsfb_blit_rgb24_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 //! Blit YV12 to RGB32.
@@ -1868,5 +1881,20 @@ void mmsfb_drawstring_blend_argb4444(MMSFBFont *font, void *dst_ptr, int dst_pit
 
 // ----------------------------------------------------------------------------
 // ------------------------------------------------ DRAW STRING TO ARGB4444 ---
+
+
+// --- DRAW STRING TO RGB16 ---------------------------------------------------
+// ----------------------------------------------------------------------------
+
+//! Draw string with alpha blending RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawstring_blend_rgb16(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+								  MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+
+// ----------------------------------------------------------------------------
+// --------------------------------------------------- DRAW STRING TO RGB16 ---
+
 
 #endif /* MMSFBCONV_H_ */
