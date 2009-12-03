@@ -59,10 +59,10 @@
         "where ID = '" + ID + "'"
 
 #define PLUGINDAO_FIND_ALL_ACTIVE_PLUGINS \
-		"select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.Active = 'Y'"
+		"select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.Active = 'Y' and Plug.ID != -2"
 
 #define PLUGINDAO_FIND_ALL_PLUGINS	 \
-	    "select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID"
+	    "select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.ID != -2"
 
 #define PLUGINDAO_F_PLUGIN_BY_NAME(Name) \
 	    "select Plug.ID, Plug.PluginName, Plug.PluginTitle, Plug.PluginDescription, Plug.Filename, Plug.PluginPath, Plug.Active, Plug.Icon, Plug.SelectedIcon, Plug.SmallIcon, Plug.SmallSelectedIcon, Plug.PluginTypeID, Plug.CategoryID, Cat.CategoryName, PlugType.PluginTypeName from Plugins Plug left join Category Cat ON Cat.ID = Plug.CategoryID left join PluginTypes PlugType ON PlugType.ID = Plug.PluginTypeID where Plug.PluginName = '" + Name + "';"
