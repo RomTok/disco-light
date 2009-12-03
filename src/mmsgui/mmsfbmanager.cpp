@@ -151,6 +151,7 @@ void MMSFBManager::applySettings() {
 	case MMSFB_PF_AiRGB:
 	case MMSFB_PF_AYUV:
 	case MMSFB_PF_ARGB4444:
+	case MMSFB_PF_RGB16:
 		break;
 	default:
 		// window pixelformat not set or unsupported, use the layer pixelformat
@@ -179,6 +180,7 @@ void MMSFBManager::applySettings() {
 	case MMSFB_PF_AiRGB:
 	case MMSFB_PF_AYUV:
 	case MMSFB_PF_ARGB4444:
+	case MMSFB_PF_RGB16:
 		break;
 	default:
 		// surface pixelformat not set or unsupported, use the layer pixelformat
