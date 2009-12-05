@@ -3323,6 +3323,34 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 		// does not match
 		return false;
 
+	case MMSFB_PF_YUY2:
+		// source is YUY2
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
+			// destination is YV12
+			if   ((blittingflags == MMSFB_BLIT_NOFX)
+				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+				// stretch without alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_stretchblit_yuy2_to_yv12(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							dx, dy, dw, dh,
+							antialiasing);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+
 	case MMSFB_PF_ARGB4444:
 		// source is ARGB4444
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB4444) {
@@ -5641,5 +5669,39 @@ bool MMSFBSurface::dump(string filename, int x, int y, int w, int h) {
 	}
 
 	return false;
+}
+
+
+bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
+								 MMSFBSurfacePixelFormat pixelformat) {
+	if (!cs) return false;
+
+	// check the properties of the existing surface
+	if (*cs) {
+		// check if old surface has the same dimension
+		int w, h;
+        (*cs)->getSize(&w, &h);
+        if ((w != width) || (h != height)) {
+        	delete *cs;
+        	*cs = NULL;
+        }
+	}
+
+	if (*cs) {
+		// check if old surface has the same pixelformat
+		MMSFBSurfacePixelFormat pf;
+        (*cs)->getPixelFormat(&pf);
+        if (pf != pixelformat) {
+        	delete *cs;
+        	*cs = NULL;
+        }
+	}
+
+	if (!*cs) {
+		// create new surface
+		*cs = new MMSFBSurface(width, height, pixelformat);
+	}
+
+	return (*cs);
 }
 

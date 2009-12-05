@@ -1602,6 +1602,14 @@ void mmsfb_stretchblit_i420_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									bool antialiasing);
 
+//! Stretch blit YUY2 to YV12 with antialiasing.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
+									bool antialiasing);
+
 // ----------------------------------------------------------------------------
 // -------------------------------------------------------- STRETCH TO YV12 ---
 

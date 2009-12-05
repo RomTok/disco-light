@@ -330,4 +330,7 @@ class MMSFBSurface {
     friend class MMSFBWindowManager;
 };
 
+bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
+								 MMSFBSurfacePixelFormat pixelformat);
+
 #endif /*MMSFBSURFACE_H_*/
