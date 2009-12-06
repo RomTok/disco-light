@@ -56,7 +56,11 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 //sx+=100;
 //sw-=200;
 
+//dx+=100;
+//dw-=200;
+
 	static MMSFBSurface *interim = NULL;
+	static MMSFBSurface *interim2= NULL;
 
 
 //////TESTONLY//////
@@ -154,8 +158,14 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 	MMSFBRectangle srect = MMSFBRectangle(sx,sy,sw,sh);
 	MMSFBSurfacePlanes splanes = *src_planes;
 	int sheight = src_height;
-	if ((dx == 0) && (dst_planes->pitch == dw)) {
-		// the width of the destination rectangle MUST fit the width of the destination surface!
+	MMSFBRectangle drect = MMSFBRectangle(dx,dy,dw,dh);
+	MMSFBSurfacePlanes dplanes = *dst_planes;
+	int dheight = dst_height;
+
+
+//	if ((dx == 0) && (dst_planes->pitch == dw)) {
+	{
+// the width of the destination rectangle MUST fit the width of the destination surface!
 		if ((sx != 0) || ((src_planes->pitch >> 1) != sw)) {
 			// the width of the source rectangle is NOT equal to the width of the source surface!
 			// have to use a interim surface
@@ -178,13 +188,34 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 			}
 		}
 
+		if ((dx != 0) || (dst_planes->pitch != dw)) {
+			// the width of the destination rectangle is NOT equal to the width of the destination surface!
+			// have to use a interim surface
+			if (mmsfb_create_cached_surface(&interim2, dw, dh, MMSFB_PF_YV12)) {
+				interim2->lock(MMSFB_LOCK_READ, &dplanes);
+				interim2->unlock();
+				drect.x = 0;
+				drect.y = 0;
+				dheight = dh;
+			}
+		}
+		else {
+			// no interim surface needed
+			if (interim2) {
+				delete interim2;
+				interim2 = NULL;
+			}
+		}
+
+
+
 		// pixel width & height of source and destination
 		int pix_src_width = splanes.pitch >> 1;
 		int pix_src_height = srect.h;
-		int pix_dst_width = dst_planes->pitch;
-		int pix_dst_height = dh;
+		int pix_dst_width = dplanes.pitch;
+		int pix_dst_height = drect.h;
 		int src_yoffs = srect.y * splanes.pitch;
-		int dst_yoffs = dy * dst_planes->pitch;
+		int dst_yoffs = drect.y * dplanes.pitch;
 		int flags = fff;
 
 		// get an sws context with pixelformat PIX_FMT_YUYV422 -> PIX_FMT_YUV420P
@@ -211,8 +242,8 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 
 			// set destination pitches
 			int sws_dst_stride[3];
-			sws_dst_stride[0] = dst_planes->pitch;
-			sws_dst_stride[1] = sws_dst_stride[2] = dst_planes->pitch/2;
+			sws_dst_stride[0] = dplanes.pitch;
+			sws_dst_stride[1] = sws_dst_stride[2] = dplanes.pitch/2;
 
 			// set source planes
 			uint8_t* sws_src[3];
@@ -225,16 +256,16 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 
 			// set destination planes (reverse order, because destination is YV12)
 			uint8_t* sws_dst[3];
-			sws_dst[0] = (uint8_t*)dst_planes->ptr;
-			if (!dst_planes->ptr2) {
+			sws_dst[0] = (uint8_t*)dplanes.ptr;
+			if (!dplanes.ptr2) {
 				// no plane pointers given, calculate it
-				sws_dst[2] = sws_dst[0] + dst_planes->pitch * dst_height;
-				sws_dst[1] = sws_dst[2] + dst_planes->pitch * dst_height / 4;
+				sws_dst[2] = sws_dst[0] + dplanes.pitch * dheight;
+				sws_dst[1] = sws_dst[2] + dplanes.pitch * dheight / 4;
 			}
 			else {
 				// set plane pointers
-				sws_dst[2] = (uint8_t*)dst_planes->ptr2;
-				sws_dst[1] = (uint8_t*)dst_planes->ptr3;
+				sws_dst[2] = (uint8_t*)dplanes.ptr2;
+				sws_dst[1] = (uint8_t*)dplanes.ptr3;
 			}
 
 			// add destination offset
@@ -246,6 +277,12 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 			sws_scale(  sws_context,
 						sws_src, sws_src_stride, 0, pix_src_height,
 						sws_dst, sws_dst_stride);
+
+			if (interim2) {
+				// final blit from iterim to destination
+				mmsfb_blit_yv12_to_yv12(&dplanes, dheight, drect.x, drect.y, drect.w, drect.h,
+										dst_planes, dst_height, dx, dy);
+			}
 
 			// finished :)
 			return;
