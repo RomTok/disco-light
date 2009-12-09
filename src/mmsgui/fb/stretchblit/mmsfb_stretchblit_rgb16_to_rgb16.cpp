@@ -44,11 +44,11 @@ void mmsfb_stretchblit_rgb16_to_rgb16(MMSFBSurfacePlanes *src_planes, int src_he
 	}
 
 	// get the first source ptr/pitch
-	unsigned short int *src = (unsigned int *)src_planes->ptr;
+	unsigned short int *src = (unsigned short int *)src_planes->ptr;
 	int src_pitch = src_planes->pitch;
 
 	// get the first destination ptr/pitch
-	unsigned short int *dst = (unsigned int *)dst_planes->ptr;
+	unsigned short int *dst = (unsigned short int *)dst_planes->ptr;
 	int dst_pitch = dst_planes->pitch;
 
 	// prepare...

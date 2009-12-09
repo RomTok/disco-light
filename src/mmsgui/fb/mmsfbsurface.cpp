@@ -719,12 +719,20 @@ void MMSFBSurface::initPlanePointers(MMSFBSurfacePlanes *planes, int height) {
 
 	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
 
-    if (pf == MMSFB_PF_ARGB3565) {
+	switch (pf) {
+	case MMSFB_PF_YV12:
+    	planes->ptr3 = ((unsigned char *)planes->ptr) + planes->pitch * height;
+    	planes->pitch3 = planes->pitch / 4;
+    	planes->ptr2 = ((unsigned char *)planes->ptr3) + planes->pitch3 * height;
+    	planes->pitch2 = planes->pitch3;
+    	break;
+	case MMSFB_PF_ARGB3565:
     	planes->ptr2 = ((unsigned char *)planes->ptr) + planes->pitch * height;
     	planes->pitch2 = planes->pitch / 4;
     	planes->ptr3 = NULL;
     	planes->pitch3 = NULL;
-    }
+    	break;
+	}
 }
 
 void MMSFBSurface::getRealSubSurfacePos(MMSFBSurface *surface, bool refreshChilds) {
@@ -2103,7 +2111,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
 			// destination is RGB24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
-				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_argb_to_rgb24(src_planes, src_height,
 												   sx, sy, sw, sh,
@@ -2123,7 +2130,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR24) {
 			// destination is BGR24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
-				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_argb_to_bgr24(src_planes, src_height,
 												   sx, sy, sw, sh,
@@ -2147,8 +2153,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is RGB32
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting with alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb32_to_rgb32(src_planes, src_height,
 											  sx, sy, sw, sh,
@@ -2172,8 +2178,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is RGB16 (RGB565)
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16 (RGB565)
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting with alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb16_to_rgb16(
 							src_planes, src_height,
@@ -2193,8 +2199,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting with alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb16_to_argb(
 							src_planes, src_height,
@@ -2456,7 +2462,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_yv12_to_yv12(src_planes, src_height,
 											sx, sy, sw, sh,
@@ -2477,7 +2482,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_yv12_to_rgb32(src_planes, src_height,
 											 sx, sy, sw, sh,
@@ -2503,7 +2507,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is I420
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_i420_to_i420(src_planes, src_height,
 											sx, sy, sw, sh,
@@ -2524,7 +2527,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_i420_to_yv12(
 							src_planes, src_height,
@@ -2551,7 +2553,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_yuy2_to_yuy2(
 							src_planes, src_height,
@@ -2573,7 +2574,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_yuy2_to_yv12(
 							src_planes, src_height,
@@ -2599,7 +2599,6 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb24_to_argb(src_planes, src_height,
 										    sx, sy, sw, sh,
@@ -2618,8 +2617,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// convert without alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb24_to_rgb32(src_planes, src_height,
 											  sx, sy, sw, sh,
@@ -2638,8 +2637,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
 			// destination is RGB24
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting with alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
 											  sx, sy, sw, sh,
@@ -2658,8 +2657,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting without alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_rgb24_to_yv12(
 							src_planes, src_height,
@@ -2684,8 +2683,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		// source is BGR24
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR24) {
 			// destination is BGR24
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting with alpha channel
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_bgr24_to_bgr24(src_planes, src_height,
 											  sx, sy, sw, sh,
@@ -3024,7 +3023,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 					mmsfb_stretchblit_argb_to_argb(
 							src_planes, src_height,
 							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
 							antialiasing);
 					extendedUnlock(source, this);
@@ -3083,7 +3082,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 					mmsfb_stretchblit_rgb32_to_rgb32(
 							src_planes, src_height,
 							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
 							antialiasing);
 					extendedUnlock(source, this);
@@ -3159,7 +3158,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 					mmsfb_stretchblit_airgb_to_airgb(
 							src_planes, src_height,
 							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
 							antialiasing);
 					extendedUnlock(source, this);
@@ -3218,7 +3217,7 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 					mmsfb_stretchblit_ayuv_to_ayuv(
 							src_planes, src_height,
 							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
 							antialiasing);
 					extendedUnlock(source, this);
@@ -3380,6 +3379,33 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							dx, dy, dw, dh,
 							this->config.color.a);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_RGB16:
+		// source is RGB16
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
+			// destination is RGB16
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_NOFX))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL))) {
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_stretchblit_rgb16_to_rgb16(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							dx, dy, dw, dh,
+							antialiasing);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3621,8 +3647,23 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb16(&dst_planes, dst_height,
-										  sx, sy, sw, sh, color);
+				mmsfb_fillrectangle_rgb16(
+						&dst_planes, dst_height,
+						sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+		else
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing with alpha channel
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_fillrectangle_blend_rgb16(
+						&dst_planes, dst_height,
+						sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -5177,9 +5218,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 	case MMSFB_PF_ARGB:
 		// destination is ARGB
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_argb(this->config.font, dst_planes.ptr, dst_planes.pitch, clipreg, text, len, x, y, color);
+				mmsfb_drawstring_blend_argb(
+						&dst_planes, this->config.font, clipreg,
+						text, len, x, y, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -5187,9 +5230,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		}
 		else
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_coloralpha_argb(this->config.font, dst_planes.ptr, dst_planes.pitch, clipreg, text, len, x, y, color);
+				mmsfb_drawstring_blend_coloralpha_argb(
+						&dst_planes, this->config.font, clipreg,
+						text, len, x, y, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -5200,9 +5245,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 	case MMSFB_PF_ARGB4444:
 		// destination is ARGB4444
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_argb4444(this->config.font, dst_planes.ptr, dst_planes.pitch, clipreg, text, len, x, y, color);
+				mmsfb_drawstring_blend_argb4444(
+						&dst_planes, this->config.font, clipreg,
+						text, len, x, y, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -5213,9 +5260,23 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 	case MMSFB_PF_RGB16:
 		// destination is RGB16
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_rgb16(this->config.font, dst_planes.ptr, dst_planes.pitch, clipreg, text, len, x, y, color);
+				mmsfb_drawstring_blend_rgb16(
+						&dst_planes, this->config.font, clipreg,
+						text, len, x, y, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+			return false;
+		}
+		else
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_drawstring_blend_coloralpha_rgb16(
+						&dst_planes, this->config.font, clipreg,
+						text, len, x, y, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -5611,63 +5672,117 @@ bool MMSFBSurface::move(int x, int y) {
 	return setSubSurface(&rect);
 }
 
-bool MMSFBSurface::dump(string filename, int x, int y, int w, int h) {
+
+int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y, int w, int h) {
+#define D2B_ADDSTRING if(ob>=obe)return 0;else ob+=sprintf(ob
+	// check inputs
+	if ((!out_buffer)||(out_buffer_len<=1024))
+		return 0;
 	if ((x < 0)||(y < 0)||(w < 0)||(h < 0))
-		return false;
+		return 0;
 	if (w == 0)
 		w = this->config.w - x;
 	if (h == 0)
 		h = this->config.h - y;
 	if ((x + w > this->config.w)||(y + h > this->config.h))
-		return false;
+		return 0;
 
-	if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
-		unsigned char 	*buf;
-		int				pitch;
-		this->lock(MMSFB_LOCK_READ, (void**)&buf, &pitch);
-		if (filename == "") {
-			// dump to stdout
-			printf("\n* YV12: x=%d, y=%d, w=%d, h=%d", x, y, w, h);
+	// set buffer start and end
+	char *ob = out_buffer;
+	char *obe = ob + out_buffer_len - 512;
+
+	// get access to the surface memory
+	unsigned char 	*buf;
+	int				pitch;
+	this->lock(MMSFB_LOCK_READ, (void**)&buf, &pitch);
+
+	// print format
+	D2B_ADDSTRING, "\n* %s: x=%d, y=%d, w=%d, h=%d",
+					getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str(),
+					x, y, w, h);
+
+	switch (this->config.surface_buffer->pixelformat) {
+	case MMSFB_PF_YV12: {
 			unsigned char *buf_y = buf + x + y * pitch;
 			unsigned char *buf_u = buf + pitch * (this->config.h + (this->config.h >> 2)) + (x >> 1) + (y >> 1) * (pitch >> 1);
 			unsigned char *buf_v = buf + pitch * this->config.h + (x >> 1) + (y >> 1) * (pitch >> 1);
-			printf("\n* Y plane *****************************************************************");
+			D2B_ADDSTRING, "\n* Y plane *****************************************************************");
 			for (int j = 0; j < h; j++) {
 				int i = j * pitch;
-				printf("\n%02x", buf_y[i++]);
+				D2B_ADDSTRING, "\n%02x", buf_y[i++]);
 				while (i < w + j * pitch) {
-					printf(",%02x", buf_y[i]);
+					D2B_ADDSTRING, ",%02x", buf_y[i]);
 					i++;
 				}
 			}
-			printf("\n* U plane *****************************************************************");
+			D2B_ADDSTRING, "\n* U plane *****************************************************************");
 			x = x >> 1;
 			y = y >> 1;
 			w = w >> 1;
 			h = h >> 1;
 			for (int j = 0; j < h; j++) {
 				int i = j * (pitch >> 1);
-				printf("\n%02x", buf_u[i++]);
+				D2B_ADDSTRING, "\n%02x", buf_u[i++]);
 				while (i < w + j * (pitch >> 1)) {
-					printf(",%02x", buf_u[i]);
+					D2B_ADDSTRING, ",%02x", buf_u[i]);
 					i++;
 				}
 			}
-			printf("\n* V plane *****************************************************************");
+			D2B_ADDSTRING, "\n* V plane *****************************************************************");
 			for (int j = 0; j < h; j++) {
 				int i = j * (pitch >> 1);
-				printf("\n%02x", buf_v[i++]);
+				D2B_ADDSTRING, "\n%02x", buf_v[i++]);
 				while (i < w + j * (pitch >> 1)) {
-					printf(",%02x", buf_v[i]);
+					D2B_ADDSTRING, ",%02x", buf_v[i]);
 					i++;
 				}
 			}
-			printf("\n***************************************************************************");
+			D2B_ADDSTRING, "\n***************************************************************************");
 		}
-		this->unlock();
-		return true;
+		break;
+	default:
+		// no dump routine for this pixelformat
+		return 0;
 	}
 
+	// finalize
+	this->unlock();
+	D2B_ADDSTRING, "\n");
+	*ob = 0;
+	return ob - out_buffer + 1;
+}
+
+bool MMSFBSurface::dump2file(string filename, int x, int y, int w, int h) {
+	int buffer_len = 1024*1024;
+	char *buffer = (char *)malloc(buffer_len);
+	if (buffer) {
+		int bytes;
+		if ((bytes = dump2buffer(buffer, buffer_len, x, y, w, h))) {
+			MMSFile *mmsfile = new MMSFile(filename, MMSFM_WRITE);
+			if (mmsfile) {
+				size_t ritems;
+				mmsfile->writeBuffer(buffer, &ritems, 1, bytes);
+				delete mmsfile;
+			}
+			free(buffer);
+			return true;
+		}
+		free(buffer);
+	}
+	return false;
+}
+
+bool MMSFBSurface::dump(int x, int y, int w, int h) {
+	int buffer_len = 1024*1024;
+	char *buffer = (char *)malloc(buffer_len);
+	if (buffer) {
+		if (dump2buffer(buffer, buffer_len, x, y, w, h)) {
+			printf(buffer);
+			free(buffer);
+			return true;
+		}
+		free(buffer);
+	}
 	return false;
 }
 

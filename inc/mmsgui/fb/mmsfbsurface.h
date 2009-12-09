@@ -278,11 +278,11 @@ class MMSFBSurface {
 
         bool setBlittingFlags(MMSFBBlittingFlags flags);
         bool getBlittingFlags(MMSFBBlittingFlags *flags);
-        bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
+        bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-						MMSFBRectangle *src_rect, int x, int y);
+						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-						MMSFBRectangle *src_rect, int x, int y);
+						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 						 MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -323,7 +323,9 @@ class MMSFBSurface {
         bool moveTo(int x, int y);
         bool move(int x, int y);
 
-        bool dump(string filename = "", int x = 0, int y = 0, int w = 0, int h = 0);
+        int  dump2buffer(char *buffer, int buffer_len, int x = 0, int y = 0, int w = 0, int h = 0);
+        bool dump2file(string filename, int x = 0, int y = 0, int w = 0, int h = 0);
+        bool dump(int x = 0, int y = 0, int w = 0, int h = 0);
 
     friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;

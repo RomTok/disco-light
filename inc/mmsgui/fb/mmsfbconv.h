@@ -961,6 +961,16 @@ void stretch_uint_buffer(bool h_antialiasing, bool v_antialiasing,
 						 unsigned int *dst, int dst_pitch, int dst_pitch_pix, int dst_height,
 						 int dx, int dy, int dw, int dh);
 
+//! Stretching the source unsigned short int buffer to a destination.
+/*!
+\author Jens Schneider
+*/
+void stretch_usint_buffer(bool h_antialiasing, bool v_antialiasing,
+						  unsigned short int *src, int src_pitch, int src_pitch_pix,
+						  int src_height, int sx, int sy, int sw, int sh,
+					      unsigned short int *dst, int dst_pitch, int dst_pitch_pix,
+					      int dst_height, int dx, int dy, int dw, int dh);
+
 //! Stretching the source 3-byte-buffer to a unsigned int destination.
 /*!
 \author Jens Schneider
@@ -1461,8 +1471,8 @@ void mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(MMSFBSurfacePlanes *src_pl
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_argb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_argb_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									bool antialiasing);
 
 
@@ -1502,8 +1512,8 @@ void mmsfb_stretchblit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									  bool antialiasing);
 
 //! Stretch blit RGB24 to RGB32.
@@ -1525,8 +1535,8 @@ void mmsfb_stretchblit_rgb24_to_rgb32(MMSFBExternalSurfaceBuffer *extbuf, int sr
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									  unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_airgb_to_airgb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									  bool antialiasing);
 
 
@@ -1557,8 +1567,8 @@ void mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(MMSFBExternalSurfaceBuffe
 /*!
 \author Jens Schneider
 */
-void mmsfb_stretchblit_ayuv_to_ayuv(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy, int dw, int dh,
+void mmsfb_stretchblit_ayuv_to_ayuv(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
 									bool antialiasing);
 
 
@@ -1637,6 +1647,20 @@ void mmsfb_stretchblit_blend_coloralpha_argb4444_to_argb4444(MMSFBSurfacePlanes 
 // ---------------------------------------------------- STRETCH TO ARGB4444 ---
 
 
+// --- STRETCH TO RGB16 -------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+//! Stretch blit RGB16 to RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_rgb16_to_rgb16(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh,
+									  bool antialiasing);
+
+// ----------------------------------------------------------------------------
+// ------------------------------------------------------- STRETCH TO RGB16 ---
+
 
 // --- FILL ARGB RECTANGLE ----------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -1698,6 +1722,13 @@ void mmsfb_fillrectangle_rgb24(MMSFBSurfacePlanes *dst_planes, int dst_height,
 */
 void mmsfb_fillrectangle_rgb16(MMSFBSurfacePlanes *dst_planes, int dst_height,
 						       int dx, int dy, int dw, int dh, MMSFBColor color);
+
+//! Fill rectangle with alpha blending RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_blend_rgb16(MMSFBSurfacePlanes *dst_planes, int dst_height,
+									 int dx, int dy, int dw, int dh, MMSFBColor color);
 
 // ----------------------------------------------------------------------------
 // --------------------------------------------------- FILL RGB16 RECTANGLE ---
@@ -1862,7 +1893,7 @@ void mmsfb_drawline_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_height,
 /*!
 \author Jens Schneider
 */
-void mmsfb_drawstring_blend_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+void mmsfb_drawstring_blend_argb(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
 								 MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
 
 
@@ -1870,7 +1901,7 @@ void mmsfb_drawstring_blend_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
 /*!
 \author Jens Schneider
 */
-void mmsfb_drawstring_blend_coloralpha_argb(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+void mmsfb_drawstring_blend_coloralpha_argb(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
 											MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
 
 // ----------------------------------------------------------------------------
@@ -1884,7 +1915,7 @@ void mmsfb_drawstring_blend_coloralpha_argb(MMSFBFont *font, void *dst_ptr, int 
 /*!
 \author Jens Schneider
 */
-void mmsfb_drawstring_blend_argb4444(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+void mmsfb_drawstring_blend_argb4444(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
 									 MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
 
 // ----------------------------------------------------------------------------
@@ -1898,8 +1929,15 @@ void mmsfb_drawstring_blend_argb4444(MMSFBFont *font, void *dst_ptr, int dst_pit
 /*!
 \author Jens Schneider
 */
-void mmsfb_drawstring_blend_rgb16(MMSFBFont *font, void *dst_ptr, int dst_pitch,
+void mmsfb_drawstring_blend_rgb16(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
 								  MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+
+//! Draw string with alpha blending with alpha from color RGB16.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawstring_blend_coloralpha_rgb16(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
+											MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
 
 // ----------------------------------------------------------------------------
 // --------------------------------------------------- DRAW STRING TO RGB16 ---
