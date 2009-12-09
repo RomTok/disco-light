@@ -333,6 +333,54 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 			*buf = newbuf;
 		}
 		break;
+    case MMSTAFF_PF_RGB16: {
+			// convert into RGB16 format (remove alpha channel)
+			*pitch = (*pitch) >> 1;
+			*size = (*size) >> 1;
+			void *newbuf = malloc(*size);
+			if (!newbuf) {
+				free(*buf);
+				*buf = NULL;
+				return false;
+			}
+
+			// convert it
+			unsigned int *src = (unsigned int*)*buf;
+			unsigned short int *dst = (unsigned short int*)newbuf;
+		    for (int i = *width * *height; i > 0; i--) {
+		    	// get src
+		    	register unsigned int SRC = *src;
+		    	register unsigned int A = SRC >> 24;
+		    	register unsigned int SA= 0x100 - A;
+		    	register unsigned short int d;
+
+		    	// set background color to black
+				unsigned int r = 0;
+				unsigned int g = 0;
+				unsigned int b = 0;
+
+				// invert src alpha
+			    r = SA * r;
+			    g = SA * g;
+			    b = (SA * b) >> 5;
+
+			    // add src to dst
+			    r += (A*(SRC & 0xf80000)) >> 19;
+				g += (A*(SRC & 0xfc00)) >> 5;
+				b += (A*(SRC & 0xf8)) >> 8;
+				d =   ((r & 0xffe000)   ? 0xf800 : ((r >> 8) << 11))
+			    	| ((g & 0xfff80000) ? 0x07e0 : ((g >> 13) << 5))
+			    	| ((b & 0xff00)     ? 0x1f 	 : (b >> 3));
+		    	*dst = d;
+		    	src++;
+		    	dst++;
+		    }
+
+			// switch buffers
+			free(*buf);
+			*buf = newbuf;
+		}
+		break;
 	default: break;
     }
 
