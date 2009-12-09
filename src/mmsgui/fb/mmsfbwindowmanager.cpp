@@ -138,6 +138,11 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     	this->usetaff = true;
     	this->taffpf = MMSTAFF_PF_ARGB4444;
     	break;
+    case MMSFB_PF_RGB16:
+    	// if running in RGB16 mode, we use an ARGB surface for the mouse pointer
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_ARGB;
+    	break;
     }
 
     return true;
