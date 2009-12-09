@@ -70,6 +70,10 @@ MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
     	this->usetaff = true;
     	this->taffpf = MMSTAFF_PF_ARGB4444;
     	break;
+    case MMSFB_PF_RGB16:
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_RGB16;
+    	break;
     }
 }
 
