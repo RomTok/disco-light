@@ -38,8 +38,8 @@
 /* All queries used in the PluginDAO class                                              */
 /*                                                                                      */
 /****************************************************************************************/
-#define PLUGINDAO_SAVE(ID, Name, Title, Description, Filename, Path, Active, Icon, Icon_s, Icon_small, Icon_small_s) \
-        "insert into Plugins(PluginTypeID,PluginName,PluginTitle,PluginDescription,Filename,PluginPath,Active,Icon,SelectedIcon,SmallIcon,SmallSelectedIcon) values('" \
+#define PLUGINDAO_SAVE(ID, Name, Title, Description, Filename, Path, Active, Icon, Icon_s, Icon_small, Icon_small_s, CategoryID, Orderpos) \
+        "insert into Plugins(PluginTypeID,PluginName,PluginTitle,PluginDescription,Filename,PluginPath,Active,Icon,SelectedIcon,SmallIcon,SmallSelectedIcon,CategoryID,Orderpos) values('" \
         + ID + "','"          \
         + Name + "','"        \
         + Title + "','"       \
@@ -50,12 +50,16 @@
         + Icon + "','"        \
         + Icon_s + "','"      \
         + Icon_small + "','"  \
-        + Icon_small_s + "')"
+        + Icon_small_s + "','"  \
+        + CategoryID + "','"  \
+        + Orderpos + "')"
 
-#define PLUGINDAO_UPDATE(Filename, Active, Description, ID) \
+#define PLUGINDAO_UPDATE(Filename, Active, Description, CategoryID, Orderpos, ID) \
         "update Plugins set Filename='" + Filename + "',"   \
         + "Active='" + Active + "',"                        \
-        + "PluginDescription='" + Description + "' " +      \
+        + "PluginDescription='" + Description + "', " +      \
+        + "CategoryID='" + CategoryID + "', " +      \
+        + "Orderpos='" + Orderpos + "' " +      \
         "where ID = '" + ID + "'"
 
 #define PLUGINDAO_FIND_ALL_ACTIVE_PLUGINS \

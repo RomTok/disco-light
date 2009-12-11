@@ -67,7 +67,9 @@ void MMSPluginDAO::save(MMSPluginData *data) {
     									data->getIcon(),
     									data->getSelectedIcon(),
     									data->getSmallIcon(),
-    									data->getSmallSelectedIcon()));
+    									data->getSmallSelectedIcon(),
+    									iToStr((data->getCategory() != NULL ? data->getCategory()->getID() : 0)),
+    									iToStr(data->getOrderpos())));
 
 
     /* set the ID */
@@ -80,6 +82,8 @@ void MMSPluginDAO::update(MMSPluginData *data) {
     								  	data->getFilename(),
     								  	((data->getActive())?"Y":"N"),
         								data->getDescription(),
+        								iToStr((data->getCategory() != NULL ? data->getCategory()->getID() : 0)),
+        								iToStr(data->getOrderpos()),
         								iToStr(data->getId())));
 }
 
