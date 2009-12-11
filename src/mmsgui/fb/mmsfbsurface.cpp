@@ -609,74 +609,80 @@ int MMSFBSurface::calcPitch(int width) {
 	MMSFBSurfacePixelFormat pf = this->config.surface_buffer->pixelformat;
     int    pitch = width;
 
-    if(pf == MMSFB_PF_ARGB1555)
+    switch (pf) {
+    case MMSFB_PF_ARGB1555:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_RGB16)
+    	break;
+    case MMSFB_PF_RGB16:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_RGB24)
+    	break;
+    case MMSFB_PF_RGB24:
     	pitch = width * 3;
-    else
-    if(pf == MMSFB_PF_RGB32)
+    	break;
+    case MMSFB_PF_RGB32:
     	pitch = width * 4;
-    else
-    if(pf == MMSFB_PF_ARGB)
+    	break;
+    case MMSFB_PF_ARGB:
     	pitch = width * 4;
-    else
-    if(pf == MMSFB_PF_A8)
+    	break;
+    case MMSFB_PF_A8:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_YUY2)
+    	break;
+    case MMSFB_PF_YUY2:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_RGB332)
+    	break;
+    case MMSFB_PF_RGB332:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_UYVY)
+    	break;
+    case MMSFB_PF_UYVY:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_I420)
+    	break;
+    case MMSFB_PF_I420:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_YV12)
+    	break;
+    case MMSFB_PF_YV12:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_LUT8)
+    	break;
+    case MMSFB_PF_LUT8:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_ALUT44)
+    	break;
+    case MMSFB_PF_ALUT44:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_AiRGB)
+    	break;
+    case MMSFB_PF_AiRGB:
     	pitch = width * 4;
-    else
-    if(pf == MMSFB_PF_A1)
+    	break;
+    case MMSFB_PF_A1:
     	pitch = width / 8;
-    else
-    if(pf == MMSFB_PF_NV12)
+    	break;
+    case MMSFB_PF_NV12:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_NV16)
+    	break;
+    case MMSFB_PF_NV16:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_ARGB2554)
+    	break;
+    case MMSFB_PF_ARGB2554:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_ARGB4444)
+    	break;
+    case MMSFB_PF_ARGB4444:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_NV21)
+    	break;
+    case MMSFB_PF_NV21:
     	pitch = width;
-    else
-    if(pf == MMSFB_PF_AYUV)
+    	break;
+    case MMSFB_PF_AYUV:
     	pitch = width * 4;
-    else
-    if(pf == MMSFB_PF_ARGB3565)
+    	break;
+    case MMSFB_PF_ARGB3565:
     	pitch = width * 2;
-    else
-    if(pf == MMSFB_PF_BGR24)
+    	break;
+    case MMSFB_PF_BGR24:
     	pitch = width * 3;
+    	break;
+    case MMSFB_PF_BGR555:
+    	pitch = width * 2;
+    	break;
+    }
 
     if (pitch <= 0) pitch = 1;
     if (pitch % 4)
@@ -1217,6 +1223,10 @@ bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
     return true;
 }
 
+bool MMSFBSurface::setColor(MMSFBColor &color) {
+	return setColor(color.r, color.g, color.b, color.a);
+}
+
 bool MMSFBSurface::getColor(MMSFBColor *color) {
 
     /* check if initialized */
@@ -1428,8 +1438,16 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
 bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     bool		ret = false;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+
+    if ((w <= 0) || (h <= 0)) {
+    	// use full surface
+    	x = 0;
+    	y = 0;
+    	w = this->config.w;
+    	h = this->config.h;
+    }
 
 	if (!this->use_own_alloc) {
 #ifdef  __HAVE_DIRECTFB__
@@ -2005,7 +2023,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					mmsfb_blit_blend_argb_to_rgb16(src_planes, src_height,
 												   sx, sy, sw, sh,
-												   (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 												   x, y);
 					extendedUnlock(source, this);
 					return true;
@@ -2092,11 +2110,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb_to_yv12(src_planes, src_height,
-															 sx, sy, sw, sh,
-															 (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-															 x, y,
-															 this->config.color.a);
+					mmsfb_blit_blend_coloralpha_argb_to_yv12(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y,
+							this->config.color.a);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2112,10 +2131,11 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_rgb24(src_planes, src_height,
-												   sx, sy, sw, sh,
-												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												   x, y);
+					mmsfb_blit_blend_argb_to_rgb24(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2131,10 +2151,31 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is BGR24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_bgr24(src_planes, src_height,
-												   sx, sy, sw, sh,
-												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												   x, y);
+					mmsfb_blit_blend_argb_to_bgr24(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR555) {
+			// destination is BGR555
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_blend_argb_to_bgr555(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2811,6 +2852,47 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 							x, y,
 							this->config.color.a);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_BGR555:
+		// source is BGR555
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR555) {
+			// destination is BGR555
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_bgr555_to_bgr555(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+			else
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_blend_argb_to_bgr555(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3787,6 +3869,24 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				mmsfb_fillrectangle_bgr24(&dst_planes, dst_height,
 										  sx, sy, sw, sh, color);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+
+			return false;
+		}
+
+		// does not match
+		return false;
+
+	case MMSFB_PF_BGR555:
+		// destination is BGR555
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			// drawing without alpha channel
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				mmsfb_fillrectangle_bgr555(&dst_planes, dst_height,
+										   sx, sy, sw, sh, color);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -5692,9 +5792,9 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 	char *obe = ob + out_buffer_len - 512;
 
 	// get access to the surface memory
-	unsigned char 	*buf;
+	unsigned char 	*sbuf;
 	int				pitch;
-	this->lock(MMSFB_LOCK_READ, (void**)&buf, &pitch);
+	this->lock(MMSFB_LOCK_READ, (void**)&sbuf, &pitch);
 
 	// print format
 	D2B_ADDSTRING, "\n* %s: x=%d, y=%d, w=%d, h=%d",
@@ -5702,42 +5802,73 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 					x, y, w, h);
 
 	switch (this->config.surface_buffer->pixelformat) {
-	case MMSFB_PF_YV12: {
-			unsigned char *buf_y = buf + x + y * pitch;
-			unsigned char *buf_u = buf + pitch * (this->config.h + (this->config.h >> 2)) + (x >> 1) + (y >> 1) * (pitch >> 1);
-			unsigned char *buf_v = buf + pitch * this->config.h + (x >> 1) + (y >> 1) * (pitch >> 1);
-			D2B_ADDSTRING, "\n* Y plane *****************************************************************");
+	case MMSFB_PF_ARGB: {
+			int pitch_pix = pitch >> 2;
+			unsigned int *buf = (unsigned int*)sbuf + x + y * pitch_pix;
+			D2B_ADDSTRING, "\n* aaaaaaaarrrrrrrrggggggggbbbbbbbb ********************************************");
 			for (int j = 0; j < h; j++) {
-				int i = j * pitch;
+				int i = j * pitch_pix;
+				D2B_ADDSTRING, "\n%08x", buf[i++]);
+				while (i < w + j * pitch_pix) {
+					D2B_ADDSTRING, ",%08x", buf[i]);
+					i++;
+				}
+			}
+			D2B_ADDSTRING, "\n*******************************************************************************");
+		}
+		break;
+	case MMSFB_PF_BGR555: {
+			int pitch_pix = pitch >> 1;
+			unsigned short int *buf = (unsigned short int*)sbuf + x + y * pitch_pix;
+			D2B_ADDSTRING, "\n* 0bbbbbgggggrrrrr ************************************************************");
+			for (int j = 0; j < h; j++) {
+				int i = j * pitch_pix;
+				D2B_ADDSTRING, "\n%04x", buf[i++]);
+				while (i < w + j * pitch_pix) {
+					D2B_ADDSTRING, ",%04x", buf[i]);
+					i++;
+				}
+			}
+			D2B_ADDSTRING, "\n*******************************************************************************");
+		}
+		break;
+	case MMSFB_PF_YV12: {
+			int pitch_pix = pitch;
+			unsigned char *buf_y = sbuf + x + y * pitch_pix;
+			unsigned char *buf_u = sbuf + pitch_pix * (this->config.h + (this->config.h >> 2)) + (x >> 1) + (y >> 1) * (pitch_pix >> 1);
+			unsigned char *buf_v = sbuf + pitch_pix * this->config.h + (x >> 1) + (y >> 1) * (pitch_pix >> 1);
+			D2B_ADDSTRING, "\n* Y plane *********************************************************************");
+			for (int j = 0; j < h; j++) {
+				int i = j * pitch_pix;
 				D2B_ADDSTRING, "\n%02x", buf_y[i++]);
-				while (i < w + j * pitch) {
+				while (i < w + j * pitch_pix) {
 					D2B_ADDSTRING, ",%02x", buf_y[i]);
 					i++;
 				}
 			}
-			D2B_ADDSTRING, "\n* U plane *****************************************************************");
+			D2B_ADDSTRING, "\n* U plane *********************************************************************");
 			x = x >> 1;
 			y = y >> 1;
 			w = w >> 1;
 			h = h >> 1;
 			for (int j = 0; j < h; j++) {
-				int i = j * (pitch >> 1);
+				int i = j * (pitch_pix >> 1);
 				D2B_ADDSTRING, "\n%02x", buf_u[i++]);
-				while (i < w + j * (pitch >> 1)) {
+				while (i < w + j * (pitch_pix >> 1)) {
 					D2B_ADDSTRING, ",%02x", buf_u[i]);
 					i++;
 				}
 			}
-			D2B_ADDSTRING, "\n* V plane *****************************************************************");
+			D2B_ADDSTRING, "\n* V plane *********************************************************************");
 			for (int j = 0; j < h; j++) {
-				int i = j * (pitch >> 1);
+				int i = j * (pitch_pix >> 1);
 				D2B_ADDSTRING, "\n%02x", buf_v[i++]);
-				while (i < w + j * (pitch >> 1)) {
+				while (i < w + j * (pitch_pix >> 1)) {
 					D2B_ADDSTRING, ",%02x", buf_v[i]);
 					i++;
 				}
 			}
-			D2B_ADDSTRING, "\n***************************************************************************");
+			D2B_ADDSTRING, "\n*******************************************************************************");
 		}
 		break;
 	default:
@@ -5749,7 +5880,7 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 	this->unlock();
 	D2B_ADDSTRING, "\n");
 	*ob = 0;
-	return ob - out_buffer + 1;
+	return ob - out_buffer;
 }
 
 bool MMSFBSurface::dump2file(string filename, int x, int y, int w, int h) {

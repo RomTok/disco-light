@@ -181,6 +181,8 @@ string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf) {
         return MMSFB_PF_ARGB3565_STR;
     if(pf == MMSFB_PF_BGR24)
         return MMSFB_PF_BGR24_STR;
+    if(pf == MMSFB_PF_BGR555)
+        return MMSFB_PF_BGR555_STR;
     return MMSFB_PF_NONE_STR;
 }
 
@@ -247,6 +249,8 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
         return MMSFB_PF_ARGB3565;
     if(pf == MMSFB_PF_BGR24_STR)
         return MMSFB_PF_BGR24;
+    if(pf == MMSFB_PF_BGR555_STR)
+        return MMSFB_PF_BGR555;
     return MMSFB_PF_NONE;
 }
 

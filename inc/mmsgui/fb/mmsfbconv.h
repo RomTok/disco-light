@@ -1224,8 +1224,8 @@ void mmsfb_blit_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 /*!
 \author Jens Schneider
 */
-void mmsfb_blit_blend_argb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
-									unsigned short int *dst, int dst_pitch, int dst_height, int dx, int dy);
+void mmsfb_blit_blend_argb_to_rgb16(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
 //! Blit AiRGB to RGB16.
@@ -1462,6 +1462,28 @@ void mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(MMSFBSurfacePlanes *src_pl
 
 // ----------------------------------------------------------------------------
 // --------------------------------------------------- BLITTING TO ARGB4444 ---
+
+
+// --- BLITTING TO BGR555 -----------------------------------------------------
+// ----------------------------------------------------------------------------
+
+//! Blit BGR555 to BGR555.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_bgr555_to_bgr555(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+							     MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+//! Blit with alpha blending ARGB to BGR555.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_argb_to_bgr555(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+									 MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------- BLITTING TO BGR555 ---
+
 
 
 // --- STRETCH TO ARGB --------------------------------------------------------
@@ -1848,6 +1870,19 @@ void mmsfb_fillrectangle_bgr24(MMSFBSurfacePlanes *dst_planes, int dst_height,
 // ----------------------------------------------------------------------------
 // --------------------------------------------------- FILL BGR24 RECTANGLE ---
 
+
+// --- FILL BGR555 RECTANGLE --------------------------------------------------
+// ----------------------------------------------------------------------------
+
+//! Fill rectangle BGR555.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_fillrectangle_bgr555(MMSFBSurfacePlanes *dst_planes, int dst_height,
+						        int dx, int dy, int dw, int dh, MMSFBColor color);
+
+// ----------------------------------------------------------------------------
+// -------------------------------------------------- FILL BGR555 RECTANGLE ---
 
 
 // --- DRAW LINE TO ARGB ------------------------------------------------------

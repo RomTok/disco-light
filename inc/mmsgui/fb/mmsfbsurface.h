@@ -262,6 +262,7 @@ class MMSFBSurface {
 
         bool setColor(unsigned char r, unsigned char g,
                       unsigned char b, unsigned char a);
+        bool setColor(MMSFBColor &color);
         bool getColor(MMSFBColor *color);
 
         bool setClip(MMSFBRegion *clip);
@@ -271,7 +272,7 @@ class MMSFBSurface {
         bool setDrawingFlags(MMSFBDrawingFlags flags);
         bool drawLine(int x1, int y1, int x2, int y2);
         bool drawRectangle(int x, int y, int w, int h);
-        bool fillRectangle(int x, int y, int w, int h);
+        bool fillRectangle(int x = 0, int y = 0, int w = 0, int h = 0);
         bool drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
         bool fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
         bool drawCircle(int x, int y, int radius, int start_octant = 0, int end_octant = 7);
