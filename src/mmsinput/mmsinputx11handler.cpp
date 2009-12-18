@@ -232,6 +232,9 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     		return;
     	}
     	if(event.type==ButtonPress) {
+		//discard all buttons but the left */
+		if(event.xbutton.button != 1)
+			return;
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
@@ -246,6 +249,9 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
 			return;
     	}
     	if(event.type==ButtonRelease) {
+		//discard all buttons but the left */
+		if(event.xbutton.button != 1)
+			return;
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
