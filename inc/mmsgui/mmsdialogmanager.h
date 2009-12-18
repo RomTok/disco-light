@@ -36,6 +36,9 @@
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
 
+// support old renamed methods
+#define searchForWidget findWidget
+
 class MMSDialogManager {
 	private:
         MMSWindow               *rootWindow;
@@ -81,7 +84,7 @@ class MMSDialogManager {
         bool isLoaded();
         MMSWindow* loadDialog(string filename, MMSTheme *theme = NULL);
         MMSChildWindow* loadChildDialog(string filename, MMSTheme *theme = NULL);
-        MMSWidget* searchForWidget(string name);
+        MMSWidget* findWidget(string name);
         MMSWidget* operator[](string name);
 
         MMSDescriptionClass getDescription();

@@ -38,6 +38,9 @@
 #include "mmsgui/mmsguitools.h"
 #include <sigc++/sigc++.h>
 
+// support old renamed methods
+#define searchForWidget 	findWidget
+#define searchForWidgetType	findWidgetType
 
 //example from: http://libsigc.sourceforge.net/libsigc2/docs/reference/html/classsigc_1_1signal_1_1accumulated.html
 //! this accumulator calculates the arithmetic mean value
@@ -369,8 +372,8 @@ class MMSWidget {
 
         MMSWidget* getChild(unsigned int atpos = 0);
         MMSWidget* disconnectChild(unsigned int atpos = 0);
-        MMSWidget* searchForWidget(string name);
-        MMSWidget* searchForWidgetType(MMSWIDGETTYPE type);
+        MMSWidget* findWidget(string name);
+        MMSWidget* findWidgetType(MMSWIDGETTYPE type);
         MMSWidget* operator[](string name);
 
         virtual void add(MMSWidget *widget);

@@ -99,14 +99,14 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 		return false;
 
 	// get access to the widgets
-	this->filedialog_title = (MMSLabelWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_TITLE);
-	this->filedialog_ok = this->dialogwindow->searchForWidget(FILEDIALOG_OK);
-	this->filedialog_cancel = this->dialogwindow->searchForWidget(FILEDIALOG_CANCEL);
-	this->filedialog_path = (MMSLabelWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_PATH);
-	this->filedialog_name = (MMSInputWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_NAME);
-	this->filedialog_filelist = (MMSMenuWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_FILELIST);
-	this->filedialog_up = (MMSButtonWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_UP);
-	this->filedialog_down = (MMSButtonWidget*)this->dialogwindow->searchForWidget(FILEDIALOG_DOWN);
+	this->filedialog_title = (MMSLabelWidget*)this->dialogwindow->findWidget(FILEDIALOG_TITLE);
+	this->filedialog_ok = this->dialogwindow->findWidget(FILEDIALOG_OK);
+	this->filedialog_cancel = this->dialogwindow->findWidget(FILEDIALOG_CANCEL);
+	this->filedialog_path = (MMSLabelWidget*)this->dialogwindow->findWidget(FILEDIALOG_PATH);
+	this->filedialog_name = (MMSInputWidget*)this->dialogwindow->findWidget(FILEDIALOG_NAME);
+	this->filedialog_filelist = (MMSMenuWidget*)this->dialogwindow->findWidget(FILEDIALOG_FILELIST);
+	this->filedialog_up = (MMSButtonWidget*)this->dialogwindow->findWidget(FILEDIALOG_UP);
+	this->filedialog_down = (MMSButtonWidget*)this->dialogwindow->findWidget(FILEDIALOG_DOWN);
 
 	// check something and/or connect callbacks if widgets does exist
 	if (this->filedialog_title)
@@ -267,7 +267,7 @@ bool MMSFileDialog::fillMenu() {
 	if (this->path != "/") {
 		MMSWidget *item = filedialog_filelist->newItem();
 		if (item) {
-			MMSLabelWidget *label = (MMSLabelWidget*)item->searchForWidget(PATH_OR_FILE);
+			MMSLabelWidget *label = (MMSLabelWidget*)item->findWidget(PATH_OR_FILE);
 			if ((label)&&(label->getType() == MMSWIDGETTYPE_LABEL)) {
 				label->setText("[..]");
 			}
@@ -284,7 +284,7 @@ bool MMSFileDialog::fillMenu() {
 		if ((*it)->isdir) {
 			MMSWidget *item = filedialog_filelist->newItem();
 			if (item) {
-				MMSLabelWidget *label = (MMSLabelWidget*)item->searchForWidget(PATH_OR_FILE);
+				MMSLabelWidget *label = (MMSLabelWidget*)item->findWidget(PATH_OR_FILE);
 				if ((label)&&(label->getType() == MMSWIDGETTYPE_LABEL)) {
 					label->setText("[" + (*it)->basename + "]");
 					item->setData("D." + (*it)->name);
@@ -298,7 +298,7 @@ bool MMSFileDialog::fillMenu() {
 		if (!(*it)->isdir) {
 			MMSWidget *item = filedialog_filelist->newItem();
 			if (item) {
-				MMSLabelWidget *label = (MMSLabelWidget*)item->searchForWidget(PATH_OR_FILE);
+				MMSLabelWidget *label = (MMSLabelWidget*)item->findWidget(PATH_OR_FILE);
 				if ((label)&&(label->getType() == MMSWIDGETTYPE_LABEL)) {
 					label->setText((*it)->basename);
 					item->setData("F." + (*it)->name);

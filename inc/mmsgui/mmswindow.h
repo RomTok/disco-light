@@ -41,6 +41,10 @@
 #include "mmsgui/interfaces/immswindowmanager.h"
 #include "mmstools/mmsmutex.h"
 
+// support old renamed methods
+#define searchForWindow		findWindow
+#define searchForWidget		findWidget
+#define searchForWidgetType	findWidgetType
 
 //! The available types of windows.
 typedef enum {
@@ -468,7 +472,7 @@ class MMSWindow {
         \param name		name of the window
         \return pointer to the MMSWindow object or NULL
         */
-        MMSWindow* searchForWindow(string name);
+        MMSWindow* findWindow(string name);
 
         //! Makes a window visible.
         /*!
@@ -612,25 +616,25 @@ class MMSWindow {
         */
         bool getFocus();
 
-        //! Search a widget with a given name.
+        //! Find a widget with a given name.
         /*!
         \param name		name of the widget
         \return pointer to the widget which was found or NULL
         */
-        MMSWidget* searchForWidget(string name);
+        MMSWidget* findWidget(string name);
 
-        //! Search a widget with a given type.
+        //! Find a widget with a given type.
         /*!
         \param type		type of the widget
         \return pointer to the widget which was found or NULL
         */
-        MMSWidget* searchForWidgetType(MMSWIDGETTYPE type);
+        MMSWidget* findWidgetType(MMSWIDGETTYPE type);
 
         //! Operator [] which you can use to find a widget.
         /*!
         \param name		name of the widget
         \return pointer to the widget which was found or NULL
-        \see searchForWidget()
+        \see findWidget()
         */
         MMSWidget* operator[](string name);
 

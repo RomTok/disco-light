@@ -813,7 +813,7 @@ void MMSWindow::setName(string name) {
     this->name = name;
 }
 
-MMSWindow* MMSWindow::searchForWindow(string name) {
+MMSWindow* MMSWindow::findWindow(string name) {
     MMSWindow *window;
 
     if (name=="")
@@ -826,7 +826,7 @@ MMSWindow* MMSWindow::searchForWindow(string name) {
 
     /* second, call search method of my childwins */
     for (unsigned int i = 0; i < childwins.size(); i++)
-        if ((window = childwins.at(i).window->searchForWindow(name)))
+        if ((window = childwins.at(i).window->findWindow(name)))
             return window;
 
     return NULL;
@@ -1307,7 +1307,7 @@ void MMSWindow::loadArrowWidgets() {
     if (!this->upArrowWidget)
     	if (getUpArrow(s))
     		if (s != "")
-		        if ((this->upArrowWidget = tmp->searchForWidget(s))) {
+		        if ((this->upArrowWidget = tmp->findWidget(s))) {
 		            if (!this->upArrowWidget->getSelectable(b))
 		                this->upArrowWidget = NULL;
 	                else
@@ -1318,7 +1318,7 @@ void MMSWindow::loadArrowWidgets() {
     if (!this->downArrowWidget)
     	if (getDownArrow(s))
     		if (s != "")
-		        if ((this->downArrowWidget = tmp->searchForWidget(s))) {
+		        if ((this->downArrowWidget = tmp->findWidget(s))) {
 		            if (!this->downArrowWidget->getSelectable(b))
 		                this->downArrowWidget = NULL;
 	                else
@@ -1329,7 +1329,7 @@ void MMSWindow::loadArrowWidgets() {
     if (!this->leftArrowWidget)
     	if (getLeftArrow(s))
     		if (s != "")
-		        if ((this->leftArrowWidget = tmp->searchForWidget(s))) {
+		        if ((this->leftArrowWidget = tmp->findWidget(s))) {
 		            if (!this->leftArrowWidget->getSelectable(b))
 		                this->leftArrowWidget = NULL;
 	                else
@@ -1340,7 +1340,7 @@ void MMSWindow::loadArrowWidgets() {
     if (!this->rightArrowWidget)
     	if (getRightArrow(s))
     		if (s != "")
-		        if ((this->rightArrowWidget = tmp->searchForWidget(s))) {
+		        if ((this->rightArrowWidget = tmp->findWidget(s))) {
 		            if (!this->rightArrowWidget->getSelectable(b))
 		                this->rightArrowWidget = NULL;
 	                else
@@ -1485,13 +1485,13 @@ bool MMSWindow::init() {
     if (this->parent) {
     	string s;
     	if (getNavigateUp(s))
-    		this->navigateUpWindow = this->parent->searchForWindow(s);
+    		this->navigateUpWindow = this->parent->findWindow(s);
     	if (getNavigateDown(s))
-    		this->navigateDownWindow = this->parent->searchForWindow(s);
+    		this->navigateDownWindow = this->parent->findWindow(s);
     	if (getNavigateRight(s))
-    		this->navigateRightWindow = this->parent->searchForWindow(s);
+    		this->navigateRightWindow = this->parent->findWindow(s);
     	if (getNavigateLeft(s))
-    		this->navigateLeftWindow = this->parent->searchForWindow(s);
+    		this->navigateLeftWindow = this->parent->findWindow(s);
     }
 
     /* pre-calculate the navigation */
@@ -4010,7 +4010,7 @@ void MMSWindow::instantHide() {
 
 
 
-MMSWidget* MMSWindow::searchForWidget(string name) {
+MMSWidget* MMSWindow::findWidget(string name) {
     MMSWidget *widget;
 
 	if (name=="")
@@ -4018,7 +4018,7 @@ MMSWidget* MMSWindow::searchForWidget(string name) {
 
     /* for all child windows */
     for (unsigned int i = 0; i < childwins.size(); i++)
-        if ((widget = childwins.at(i).window->searchForWidget(name)))
+        if ((widget = childwins.at(i).window->findWidget(name)))
             return widget;
 
     /* for my own children (widgets) */
@@ -4029,12 +4029,12 @@ MMSWidget* MMSWindow::searchForWidget(string name) {
     return NULL;
 }
 
-MMSWidget* MMSWindow::searchForWidgetType(MMSWIDGETTYPE type) {
+MMSWidget* MMSWindow::findWidgetType(MMSWIDGETTYPE type) {
     MMSWidget *widget;
 
     /* for all child windows */
     for (unsigned int i = 0; i < childwins.size(); i++)
-        if ((widget = childwins.at(i).window->searchForWidgetType(type)))
+        if ((widget = childwins.at(i).window->findWidgetType(type)))
             return widget;
 
     /* first, my own children */
@@ -4044,7 +4044,7 @@ MMSWidget* MMSWindow::searchForWidgetType(MMSWIDGETTYPE type) {
 
     /* second, call search method of my children */
     for (unsigned int i = 0; i < children.size(); i++)
-        if ((widget = children.at(i)->searchForWidgetType(type)))
+        if ((widget = children.at(i)->findWidgetType(type)))
             return widget;
 
     return NULL;
@@ -4053,7 +4053,7 @@ MMSWidget* MMSWindow::searchForWidgetType(MMSWIDGETTYPE type) {
 MMSWidget* MMSWindow::operator[](string name) {
     MMSWidget *widget;
 
-    if ((widget = searchForWidget(name)))
+    if ((widget = findWidget(name)))
         return widget;
     throw new MMSWidgetError(1, "widget " + name + " not found");
 }
@@ -4426,28 +4426,28 @@ void MMSWindow::setNavigateUp(string navigateup) {
     myWindowClass.setNavigateUp(navigateup);
     this->navigateUpWindow = NULL;
     if ((this->parent)&&(navigateup!=""))
-        this->navigateUpWindow = this->parent->searchForWindow(navigateup);
+        this->navigateUpWindow = this->parent->findWindow(navigateup);
 }
 
 void MMSWindow::setNavigateDown(string navigatedown) {
     myWindowClass.setNavigateDown(navigatedown);
     this->navigateDownWindow = NULL;
     if ((this->parent)&&(navigatedown!=""))
-        this->navigateDownWindow = this->parent->searchForWindow(navigatedown);
+        this->navigateDownWindow = this->parent->findWindow(navigatedown);
 }
 
 void MMSWindow::setNavigateLeft(string navigateleft) {
     myWindowClass.setNavigateLeft(navigateleft);
     this->navigateLeftWindow = NULL;
     if ((this->parent)&&(navigateleft!=""))
-        this->navigateLeftWindow = this->parent->searchForWindow(navigateleft);
+        this->navigateLeftWindow = this->parent->findWindow(navigateleft);
 }
 
 void MMSWindow::setNavigateRight(string navigateright) {
     myWindowClass.setNavigateRight(navigateright);
     this->navigateRightWindow = NULL;
     if ((this->parent)&&(navigateright!=""))
-        this->navigateRightWindow = this->parent->searchForWindow(navigateright);
+        this->navigateRightWindow = this->parent->findWindow(navigateright);
 }
 
 void MMSWindow::setOwnSurface(bool ownsurface) {

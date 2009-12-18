@@ -68,9 +68,9 @@ void MMSDialogManager::insertNamedWidget(MMSWidget *widget) {
 }
 
 
-MMSWidget* MMSDialogManager::searchForWidget(string name) {
+MMSWidget* MMSDialogManager::findWidget(string name) {
     if (this->rootWindow)
-        return this->rootWindow->searchForWidget(name);
+        return this->rootWindow->findWidget(name);
     else
         return NULL;
 }
@@ -78,7 +78,7 @@ MMSWidget* MMSDialogManager::searchForWidget(string name) {
 MMSWidget* MMSDialogManager::operator[](string name) {
     MMSWidget *widget;
 
-    if ((widget = searchForWidget(name)))
+    if ((widget = findWidget(name)))
         return widget;
     throw new MMSDialogManagerError(1, "widget " + name + " not found");
 }
@@ -707,7 +707,7 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 
     // for each child widget which is named by attribute
     for (unsigned int i = 0; i < widgetNames.size(); i++) {
-        MMSWidget *mywidget = hbox->searchForWidget(widgetNames.at(i));
+        MMSWidget *mywidget = hbox->findWidget(widgetNames.at(i));
         if (mywidget) {
             // widget found
             string prefix = "widget." + widgetNames.at(i) + ".";
@@ -1309,7 +1309,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 		                        if (topwidget->getName() == widgetName)
 		                            widget = topwidget;
 		                        else
-		                            widget = topwidget->searchForWidget(widgetName);
+		                            widget = topwidget->findWidget(widgetName);
 
 		                        if (widget) {
 		                            /* widget found */

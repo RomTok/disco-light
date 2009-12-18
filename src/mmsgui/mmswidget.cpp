@@ -314,7 +314,7 @@ MMSWidget* MMSWidget::disconnectChild(unsigned int atpos) {
         return NULL;
 }
 
-MMSWidget* MMSWidget::searchForWidget(string name) {
+MMSWidget* MMSWidget::findWidget(string name) {
     MMSWidget *widget;
 
     if (name=="")
@@ -327,13 +327,13 @@ MMSWidget* MMSWidget::searchForWidget(string name) {
 
     /* second, call search method of my children */
     for (unsigned int i = 0; i < children.size(); i++)
-        if ((widget = children.at(i)->searchForWidget(name)))
+        if ((widget = children.at(i)->findWidget(name)))
             return widget;
 
     return NULL;
 }
 
-MMSWidget* MMSWidget::searchForWidgetType(MMSWIDGETTYPE type) {
+MMSWidget* MMSWidget::findWidgetType(MMSWIDGETTYPE type) {
     MMSWidget *widget;
 
     /* first, my own children */
@@ -343,7 +343,7 @@ MMSWidget* MMSWidget::searchForWidgetType(MMSWIDGETTYPE type) {
 
     /* second, call search method of my children */
     for (unsigned int i = 0; i < children.size(); i++)
-        if ((widget = children.at(i)->searchForWidgetType(type)))
+        if ((widget = children.at(i)->findWidgetType(type)))
             return widget;
 
     return NULL;
@@ -352,7 +352,7 @@ MMSWidget* MMSWidget::searchForWidgetType(MMSWIDGETTYPE type) {
 MMSWidget* MMSWidget::operator[](string name) {
     MMSWidget *widget;
 
-    if ((widget = searchForWidget(name)))
+    if ((widget = findWidget(name)))
         return widget;
     throw new MMSWidgetError(1, "widget " + name + " not found");
 }
@@ -585,7 +585,7 @@ bool MMSWidget::loadArrowWidgets() {
     	if (getUpArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->da->upArrowWidget = this->rootwindow->searchForWidget(s))) {
+		            if ((this->da->upArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->upArrowWidget->getSelectable(b))
 		                    this->da->upArrowWidget = NULL;
 		                else
@@ -597,7 +597,7 @@ bool MMSWidget::loadArrowWidgets() {
     	if (getDownArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->da->downArrowWidget = this->rootwindow->searchForWidget(s))) {
+		            if ((this->da->downArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->downArrowWidget->getSelectable(b))
 		                    this->da->downArrowWidget = NULL;
 		                else
@@ -609,7 +609,7 @@ bool MMSWidget::loadArrowWidgets() {
     	if (getLeftArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->da->leftArrowWidget = this->rootwindow->searchForWidget(s))) {
+		            if ((this->da->leftArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->leftArrowWidget->getSelectable(b))
 		                    this->da->leftArrowWidget = NULL;
 		                else
@@ -621,7 +621,7 @@ bool MMSWidget::loadArrowWidgets() {
     	if (getRightArrow(s))
     		if (s != "")
 		        if (this->rootwindow)
-		            if ((this->da->rightArrowWidget = this->rootwindow->searchForWidget(s))) {
+		            if ((this->da->rightArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->rightArrowWidget->getSelectable(b))
 		                    this->da->rightArrowWidget = NULL;
 		                else
@@ -848,27 +848,27 @@ bool MMSWidget::init() {
 
         /* get my four widgets to which I have to navigate */
         if (!getNavigateUp(name)) name = "";
-        this->da->navigateUpWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateUpWidget = this->rootwindow->findWidget(name);
 
         if (!getNavigateDown(name)) name = "";
-        this->da->navigateDownWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateDownWidget = this->rootwindow->findWidget(name);
 
         if (!getNavigateLeft(name)) name = "";
-        this->da->navigateLeftWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateLeftWidget = this->rootwindow->findWidget(name);
 
         if (!getNavigateRight(name)) name = "";
-        this->da->navigateRightWidget = this->rootwindow->searchForWidget(name);
+        this->da->navigateRightWidget = this->rootwindow->findWidget(name);
 
         /* get my two widgets which represents the sliders */
         if (!getVSlider(name)) name = "";
-        this->da->vSliderWidget = this->rootwindow->searchForWidget(name);
+        this->da->vSliderWidget = this->rootwindow->findWidget(name);
 
         if (!getHSlider(name)) name = "";
-        this->da->hSliderWidget = this->rootwindow->searchForWidget(name);
+        this->da->hSliderWidget = this->rootwindow->findWidget(name);
 
         // get widget which is joined to me
         if (!getJoinedWidget(name)) name = "";
-        this->da->joinedWidget = this->rootwindow->searchForWidget(name);
+        this->da->joinedWidget = this->rootwindow->findWidget(name);
     }
     return true;
 }
@@ -2871,7 +2871,7 @@ bool MMSWidget::setNavigateUp(string navigateup) {
     this->da->myWidgetClass.setNavigateUp(navigateup);
     this->da->navigateUpWidget = NULL;
     if ((this->rootwindow)&&(navigateup!=""))
-        this->da->navigateUpWidget = this->rootwindow->searchForWidget(navigateup);
+        this->da->navigateUpWidget = this->rootwindow->findWidget(navigateup);
     return true;
 }
 
@@ -2880,7 +2880,7 @@ bool MMSWidget::setNavigateDown(string navigatedown) {
     this->da->myWidgetClass.setNavigateDown(navigatedown);
     this->da->navigateDownWidget = NULL;
     if ((this->rootwindow)&&(navigatedown!=""))
-        this->da->navigateDownWidget = this->rootwindow->searchForWidget(navigatedown);
+        this->da->navigateDownWidget = this->rootwindow->findWidget(navigatedown);
     return true;
 }
 
@@ -2889,7 +2889,7 @@ bool MMSWidget::setNavigateLeft(string navigateleft) {
     this->da->myWidgetClass.setNavigateLeft(navigateleft);
     this->da->navigateLeftWidget = NULL;
     if ((this->rootwindow)&&(navigateleft!=""))
-        this->da->navigateLeftWidget = this->rootwindow->searchForWidget(navigateleft);
+        this->da->navigateLeftWidget = this->rootwindow->findWidget(navigateleft);
     return true;
 }
 
@@ -2898,7 +2898,7 @@ bool MMSWidget::setNavigateRight(string navigateright) {
     this->da->myWidgetClass.setNavigateRight(navigateright);
     this->da->navigateRightWidget = NULL;
     if ((this->rootwindow)&&(navigateright!=""))
-        this->da->navigateRightWidget = this->rootwindow->searchForWidget(navigateright);
+        this->da->navigateRightWidget = this->rootwindow->findWidget(navigateright);
     return true;
 }
 
@@ -2907,7 +2907,7 @@ bool MMSWidget::setVSlider(string vslider) {
     this->da->myWidgetClass.setVSlider(vslider);
     this->da->vSliderWidget = NULL;
     if ((this->rootwindow)&&(vslider!=""))
-        this->da->vSliderWidget = this->rootwindow->searchForWidget(vslider);
+        this->da->vSliderWidget = this->rootwindow->findWidget(vslider);
     return true;
 }
 
@@ -2916,7 +2916,7 @@ bool MMSWidget::setHSlider(string hslider) {
     this->da->myWidgetClass.setHSlider(hslider);
     this->da->hSliderWidget = NULL;
     if ((this->rootwindow)&&(hslider!=""))
-        this->da->hSliderWidget = this->rootwindow->searchForWidget(hslider);
+        this->da->hSliderWidget = this->rootwindow->findWidget(hslider);
     return true;
 }
 
@@ -2975,7 +2975,7 @@ bool MMSWidget::setJoinedWidget(string joinedwidget) {
     this->da->myWidgetClass.setJoinedWidget(joinedwidget);
     this->da->joinedWidget = NULL;
     if ((this->rootwindow)&&(joinedwidget!=""))
-        this->da->joinedWidget = this->rootwindow->searchForWidget(joinedwidget);
+        this->da->joinedWidget = this->rootwindow->findWidget(joinedwidget);
     return true;
 }
 

@@ -1005,7 +1005,7 @@ void MMSMenuWidget::initParentWindow(void) {
 	if (pw!="") {
 		MMSWindow *p = this->rootwindow->getParent(true);
 		if (p)
-			this->parent_window = p->searchForWindow(pw);
+			this->parent_window = p->findWindow(pw);
 	}
 	if (!this->parent_window)
 		this->parent_window = this->rootwindow;
@@ -1128,13 +1128,13 @@ bool MMSMenuWidget::switchToSubMenu() {
 	if (!sm->window) {
 		MMSWindow *p = this->parent_window->getParent();
 		if (!p) return false;
-		sm->window=p->searchForWindow(sm->name);
+		sm->window=p->findWindow(sm->name);
 	}
 	if (!sm->window) return false;
 
 	// get access to the menu widget of the submenu window
 	if (!sm->menu) {
-		sm->menu = (MMSMenuWidget *)sm->window->searchForWidgetType(MMSWIDGETTYPE_MENU);
+		sm->menu = (MMSMenuWidget *)sm->window->findWidgetType(MMSWIDGETTYPE_MENU);
 		if (!sm->menu) return false;
 	}
 
