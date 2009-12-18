@@ -2577,7 +2577,7 @@ bool MMSWidget::setBgColor_p(MMSFBColor bgcolor_p, bool refresh) {
 
 bool MMSWidget::setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh) {
 	if (!this->da) return false;
-    this->da->myWidgetClass.setSelBgColor(selbgcolor_p);
+    this->da->myWidgetClass.setSelBgColor_p(selbgcolor_p);
     if (refresh)
         this->refresh();
     return true;
@@ -2593,7 +2593,7 @@ bool MMSWidget::setBgColor_i(MMSFBColor bgcolor_i, bool refresh) {
 
 bool MMSWidget::setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh) {
 	if (!this->da) return false;
-    this->da->myWidgetClass.setSelBgColor(selbgcolor_i);
+    this->da->myWidgetClass.setSelBgColor_i(selbgcolor_i);
     if (refresh)
         this->refresh();
     return true;
