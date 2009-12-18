@@ -687,6 +687,8 @@ class MMSWindow {
         bool raiseToTop(int zlevel = 0);
         bool lowerToBottom();
 
+        bool moveTo(int x, int y);
+
 
 		//! inform the window, that language has changed
 		void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);

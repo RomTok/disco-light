@@ -1816,6 +1816,49 @@ bool MMSWindow::lowerToBottom() {
     return false;
 }
 
+bool MMSWindow::moveTo(int x, int y) {
+	if (!this->parent) {
+		bool os;
+		getOwnSurface(os);
+		if (os) {
+			// own surface
+			this->window->moveTo(x, y);
+		}
+		else {
+			// root, main, popup window with shared surface
+			static bool firsttime = true;
+			if (firsttime) {
+				printf("DISKO: Moving window (%s) with own_surface=\"false\" is not recommended.\n",
+						(this->name=="")?"noname":this->name.c_str());
+				firsttime = false;
+			}
+
+			// clear
+			this->surface->clear();
+			this->surface->flip();
+
+			// move subsurface
+			this->surface->moveTo(x, y);
+
+			// move visible rectangle
+			MMSFBRectangle vrect;
+	        if (this->window->getVisibleRectangle(&vrect)) {
+	        	vrect.x = x;
+	        	vrect.y = y;
+	        	this->window->setVisibleRectangle(&vrect);
+	        }
+
+	        // refresh (redraw) window
+	        this->refresh();
+		}
+	}
+	else {
+		// this is a child window
+		this->parent->moveChildWindow(this, x, y);
+	}
+
+	return true;
+}
 
 bool MMSWindow::showAction(bool *stopaction) {
     bool    saction = *stopaction;
@@ -2017,28 +2060,16 @@ bool MMSWindow::showAction(bool *stopaction) {
 
         	    switch (movein) {
         	    	case MMSDIRECTION_LEFT:
-        	    		if (!parent)
-        	    			this->window->moveTo((rect.x + i * move_step) & ~0x01, rect.y);
-        	    		else
-        	    			this->parent->moveChildWindow(this, (rect.x + i * move_step) & ~0x01, rect.y);
+        	    		moveTo((rect.x + i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_RIGHT:
-        	    		if (!parent)
-        	    			this->window->moveTo((rect.x - i * move_step) & ~0x01, rect.y);
-        	    		else
-        	    			this->parent->moveChildWindow(this, (rect.x - i * move_step) & ~0x01, rect.y);
+        	    		moveTo((rect.x - i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_UP:
-        	    		if (!parent)
-        	    			this->window->moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
-        	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, (rect.y + i * move_step) & ~0x01);
+        	    		moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
         	    		break;
         	    	case MMSDIRECTION_DOWN:
-        	    		if (!parent)
-        	    			this->window->moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
-        	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, (rect.y - i * move_step) & ~0x01);
+        	    		moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
         	    		break;
         	    	default:
         	    		break;
@@ -2073,10 +2104,7 @@ bool MMSWindow::showAction(bool *stopaction) {
 
 	    /* set final position */
 	    if (movein!=MMSDIRECTION_NOTSET) {
-    		if (!parent)
-    			this->window->moveTo(rect.x, rect.y);
-    		else
-    			this->parent->moveChildWindow(this, rect.x, rect.y);
+   			moveTo(rect.x, rect.y);
 	    }
 
 	    /* set final opacity */
@@ -2214,28 +2242,16 @@ bool MMSWindow::hideAction(bool *stopaction) {
 
     	    	switch (moveout) {
         	    	case MMSDIRECTION_LEFT:
-        	    		if (!parent)
-        	    			this->window->moveTo((rect.x - i * move_step) & ~0x01, rect.y);
-        	    		else
-        	    			this->parent->moveChildWindow(this, (rect.x - i * move_step) & ~0x01, rect.y);
+        	    		moveTo((rect.x - i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_RIGHT:
-        	    		if (!parent)
-        	    			this->window->moveTo((rect.x + i * move_step) & ~0x01, rect.y);
-        	    		else
-        	    			this->parent->moveChildWindow(this, (rect.x + i * move_step) & ~0x01, rect.y);
+        	    		moveTo((rect.x + i * move_step) & ~0x01, rect.y);
         	    		break;
         	    	case MMSDIRECTION_UP:
-        	    		if (!parent)
-        	    			this->window->moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
-        	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, (rect.y - i * move_step) & ~0x01);
+        	    		moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
         	    		break;
         	    	case MMSDIRECTION_DOWN:
-        	    		if (!parent)
-        	    			this->window->moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
-        	    		else
-        	    			this->parent->moveChildWindow(this, rect.x, (rect.y + i * move_step) & ~0x01);
+        	    		moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
         	    		break;
         	    	default:
         	    		break;
@@ -2263,23 +2279,18 @@ bool MMSWindow::hideAction(bool *stopaction) {
 	    }
 
 		if (!parent) {
-		    /* set final opacity */
+		    // set final opacity
 			this->window->setOpacity(0);
         	this->window->hide();
-
-    	    /* restore position */
-    	    if (moveout!=MMSDIRECTION_NOTSET)
-    	    	this->window->moveTo(rect.x, rect.y);
 		}
 		else {
-		    /* set final opacity */
+		    // set final opacity
 	        this->parent->setChildWindowOpacity(this, 0);
-
-	        /* restore position */
-    	    if (moveout!=MMSDIRECTION_NOTSET)
-    			this->parent->moveChildWindow(this, rect.x, rect.y);
 		}
 
+		// restore position
+	    if (moveout!=MMSDIRECTION_NOTSET)
+	    	moveTo(rect.x, rect.y);
     }
     else {
         /* check if i have the surface from layer */

@@ -121,10 +121,11 @@ class MMSFBWindowManager {
                          bool locked = false, bool refresh = true);
 
         bool setWindowOpacity(MMSFBWindow *window);
-        bool setWindowPosition(MMSFBWindow *window);
+        bool setWindowPosition(MMSFBWindow *window, MMSFBRectangle *vrect = NULL);
         bool setWindowSize(MMSFBWindow *window, int w, int h);
 
         bool setWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect = NULL);
+        bool getWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect);
 
         bool loadPointer();
         void drawPointer(MMSFBRegion *region);

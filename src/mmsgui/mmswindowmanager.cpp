@@ -97,10 +97,10 @@ bool MMSWindowManager::hideAllMainWindows(bool goback) {
             if (windows.at(i)->isShown()) {
                 if (this->toplevel == windows.at(i)) {
                     removeWindowFromToplevel(windows.at(i));
-                    windows.at(i)->hide(goback);
+                    windows.at(i)->hide(goback, true);
                 }
                 else
-                    windows.at(i)->hide();
+                    windows.at(i)->hide(false, true);
                 ret = true;
             }
         }
@@ -125,7 +125,7 @@ bool MMSWindowManager::hideAllPopupWindows(bool except_modal) {
 							continue;
 					}
             	}
-                windows.at(i)->hide();
+                windows.at(i)->hide(false, true);
                 ret = true;
             }
         }
@@ -144,10 +144,10 @@ bool MMSWindowManager::hideAllRootWindows(bool willshown) {
             if (windows.at(i)->isShown()) {
                 if (this->toplevel == windows.at(i)) {
                     removeWindowFromToplevel(windows.at(i));
-                    windows.at(i)->hide();
+                    windows.at(i)->hide(false, true);
                 }
                 else
-                    windows.at(i)->hide();
+                    windows.at(i)->hide(false, true);
                 ret = true;
             }
 

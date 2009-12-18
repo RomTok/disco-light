@@ -388,9 +388,24 @@ bool MMSFBWindowManager::loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *
 		sr.y1 += vwin->vrect.y;
 		sr.x2 = sr.x1 + vwin->vrect.w - 1;
 		sr.y2 = sr.y1 + vwin->vrect.h - 1;
-		if ((sr.x1 >= vwin->region.x1)&&(sr.y1 >= vwin->region.y1)&&(sr.x2 <= vwin->region.x2)&&(sr.y2 <= vwin->region.y2)) {
+		if (sr.x1 < vwin->region.x1)
+			sr.x1 = vwin->region.x1;
+		if (sr.y1 < vwin->region.y1)
+			sr.y1 = vwin->region.y1;
+		if (sr.x2 > vwin->region.x2)
+			sr.x2 = vwin->region.x2;
+		if (sr.y2 > vwin->region.y2)
+			sr.y2 = vwin->region.y2;
+		if ((sr.x1 <= vwin->region.x2)&&(sr.y1 <= vwin->region.y2)&&(sr.x2 >= vwin->region.x1)&&(sr.y2 >= vwin->region.y1)) {
 			// adjusted region okay, set it
 			vwin->region = sr;
+		}
+		else {
+			// window is outside it's visible region
+			vwin->region.x1 = 0;
+			vwin->region.y1 = 0;
+			vwin->region.x2 = -1;
+			vwin->region.y2 = -1;
 		}
     }
     vwin->alphachannel = winconf.surface_config.surface_buffer->alphachannel;
@@ -855,13 +870,25 @@ bool MMSFBWindowManager::setWindowOpacity(MMSFBWindow *window) {
     return false;
 }
 
-bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window) {
+bool MMSFBWindowManager::setWindowPosition(MMSFBWindow *window, MMSFBRectangle *vrect) {
 
     /* check if initialized */
     INITCHECK;
 
     /* stop parallel processing */
     lock.lock();
+
+	// change visible rectangle and position in one step?
+    if (vrect) {
+    	// yes, change visible rectangle
+        for (unsigned int i=0; i < this->windows.size(); i++) {
+            if (this->windows.at(i).window == window) {
+    			// set rect
+            	this->windows.at(i).vrect = *vrect;
+                break;
+            }
+        }
+    }
 
     /* search for item */
     for (unsigned int i=0; i < this->vwins.size(); i++)
@@ -1067,6 +1094,30 @@ bool MMSFBWindowManager::setWindowVisibleRectangle(MMSFBWindow *window, MMSFBRec
     lock.unlock();
     return ret;
 }
+
+bool MMSFBWindowManager::getWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect) {
+	bool ret = false;
+
+    // check if initialized
+    INITCHECK;
+
+    // stop parallel processing
+    lock.lock();
+
+    // search for item in available list
+    for (unsigned int i=0; i < this->windows.size(); i++)
+        if (this->windows.at(i).window == window) {
+			// set rect
+        	if (rect) *rect = this->windows.at(i).vrect;
+        	if ((this->windows.at(i).vrect.w > 0)&&(this->windows.at(i).vrect.h > 0))
+        		ret = true;
+            break;
+        }
+
+    lock.unlock();
+    return ret;
+}
+
 
 void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, bool pressed) {
 	// changed?
