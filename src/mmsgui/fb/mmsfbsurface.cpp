@@ -5797,7 +5797,7 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 	this->lock(MMSFB_LOCK_READ, (void**)&sbuf, &pitch);
 
 	// print format
-	D2B_ADDSTRING, "\n* %s: x=%d, y=%d, w=%d, h=%d",
+	D2B_ADDSTRING, "* %s: x=%d, y=%d, w=%d, h=%d",
 					getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str(),
 					x, y, w, h);
 
@@ -5908,6 +5908,7 @@ bool MMSFBSurface::dump(int x, int y, int w, int h) {
 	char *buffer = (char *)malloc(buffer_len);
 	if (buffer) {
 		if (dump2buffer(buffer, buffer_len, x, y, w, h)) {
+			printf("\n");
 			printf(buffer);
 			free(buffer);
 			return true;
