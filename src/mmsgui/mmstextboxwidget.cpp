@@ -455,6 +455,9 @@ bool MMSTextBoxWidget::loadFile(bool refresh) {
 		return false;
 	}
 
+	// free old text to save memory
+	setText("", false);
+
 	// fill the text
 	string text;
 	text.insert(0, (const char *)ptr, ritems);
@@ -466,9 +469,8 @@ bool MMSTextBoxWidget::loadFile(bool refresh) {
 	return true;
 }
 
-bool MMSTextBoxWidget::reloadFile(bool refresh) {
-	loadFile(refresh);
-	return true;
+bool MMSTextBoxWidget::reloadFile() {
+	return loadFile(true);
 }
 
 /***********************************************/
@@ -640,7 +642,7 @@ void MMSTextBoxWidget::setTranslate(bool translate, bool refresh) {
 void MMSTextBoxWidget::setFilePath(string filepath, bool load, bool refresh) {
     myTextBoxWidgetClass.setFilePath(filepath);
     if (load)
-    	reloadFile(false);
+    	loadFile(false);
     if (refresh)
         this->refresh();
 }
@@ -648,7 +650,7 @@ void MMSTextBoxWidget::setFilePath(string filepath, bool load, bool refresh) {
 void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
     myTextBoxWidgetClass.setFileName(filename);
     if (load)
-    	reloadFile(false);
+    	loadFile(false);
     if (refresh)
         this->refresh();
 }

@@ -97,7 +97,7 @@ class MMSTextBoxWidget : public MMSWidget {
 		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
 
 		//! reload the file and display it in the textbox
-		bool reloadFile(bool refresh = true);
+		bool reloadFile();
 
         // theme access methods
         string getFontPath();
