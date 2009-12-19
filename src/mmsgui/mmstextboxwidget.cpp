@@ -39,8 +39,12 @@ MMSTextBoxWidget::~MMSTextBoxWidget() {
     if (this->rootwindow) {
         this->rootwindow->fm->releaseFont(this->font);
     }
-    for(vector<TEXTBOX_WORDGEOM *>::iterator it(wordgeom.begin()); it != wordgeom.end(); ++it)
+    for(vector<TEXTBOX_WORDGEOM *>::iterator it(wordgeom.begin()); it != wordgeom.end(); ++it) {
         delete(*it);
+    }
+    if (this->file) {
+    	delete this->file;
+    }
 }
 
 bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
@@ -54,29 +58,34 @@ bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme
     this->da->baseWidgetClass = &(this->da->theme->textBoxWidgetClass.widgetClass);
     if (this->textBoxWidgetClass) this->da->widgetClass = &(this->textBoxWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
-    /* clear */
+    // clear
     this->font = NULL;
     this->lasttext = "";
     this->surfaceChanged = true;
+    this->file = NULL;
 
     return MMSWidget::create(root, true, false, true, true, false, false, true);
 }
 
 MMSWidget *MMSTextBoxWidget::copyWidget() {
-    /* create widget */
+    // create widget
     MMSTextBoxWidget *newWidget = new MMSTextBoxWidget(this->rootwindow, className);
 
-    /* copy widget */
+    // copy widget
     *newWidget = *this;
 
-    /* copy base widget */
+    // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
-    /* reload my font */
+    // reload my font
     newWidget->font = NULL;
     if (this->rootwindow) {
         newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
     }
+
+    // reload my file
+    newWidget->file = NULL;
+   	newWidget->loadFile(false);
 
     return newWidget;
 }
@@ -311,12 +320,15 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
 
 
 bool MMSTextBoxWidget::init() {
-    /* init widget basics */
+    // init widget basics
     if (!MMSWidget::init())
         return false;
 
-    /* load font */
+    // load font
     this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
+
+    // load file
+    this->loadFile(false);
 
     return true;
 }
@@ -326,7 +338,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
 
     if (!this->initialized) {
-        /* init widget (e.g. load images, fonts, ...) */
+        // init widget (e.g. load images, fonts, ...)
         init();
         this->initialized = true;
     }
@@ -338,7 +350,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     else
         backgroundFilled = &myBackgroundFilled;
 
-    /* calculate text and surface size */
+    // calculate text and surface size
     if (this->font) {
         unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
 
@@ -360,19 +372,19 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 
         if (calcWordGeom(this->translated_text, getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
                          &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
-            /* text has changed, reset something */
+            // text has changed, reset something
         	setScrollSize(scrollDX, scrollDY);
           	setSurfaceGeometry(realWidth, realHeight);
         }
     }
 
-    /* draw widget basics */
+    // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
 
-        /* lock */
+        // lock
         this->surface->lock();
 
-        /* draw my things */
+        // draw my things
         if (this->font) {
         	MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
@@ -384,13 +396,13 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
                 color = getColor();
 
             if (color.a) {
-                /* set the font */
+                // set the font
                 this->surface->setFont(this->font);
 
-                /* prepare for drawing */
+                // prepare for drawing
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
-                /* draw single words into surface */
+                // draw single words into surface
                 for (unsigned int i = 0; i < this->wordgeom.size(); i++)
                 {
 					if (this->has_own_surface)
@@ -405,20 +417,58 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
             }
         }
 
-        /* unlock */
+        // unlock
         this->surface->unlock();
 
-        /* update window surface with an area of surface */
+        // update window surface with an area of surface
         updateWindowSurfaceWithSurface(!*backgroundFilled);
     }
 
-    /* draw widgets debug frame */
+    // draw widgets debug frame
     return MMSWidget::drawDebug();
 }
 
-
 void MMSTextBoxWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
     this->translated = false;
+}
+
+bool MMSTextBoxWidget::loadFile(bool refresh) {
+	if (this->file) {
+		// free the "old" file
+		delete this->file;
+		this->file = NULL;
+	}
+
+	// create new file instance
+	this->file = new MMSFile(getFilePath() + "/" + getFileName());
+	if (!this->file)
+		return false;
+	if (this->file->getLastError())
+		return false;
+
+	// read the file
+	void *ptr;
+	size_t ritems;
+	if (!this->file->readBufferEx(&ptr, &ritems)) {
+		delete this->file;
+		this->file = NULL;
+		return false;
+	}
+
+	// fill the text
+	string text;
+	text.insert(0, (const char *)ptr, ritems);
+	setText(&text, refresh);
+
+	// free buffer
+	free(ptr);
+
+	return true;
+}
+
+bool MMSTextBoxWidget::reloadFile(bool refresh) {
+	loadFile(refresh);
+	return true;
 }
 
 /***********************************************/
@@ -477,6 +527,14 @@ void MMSTextBoxWidget::getText(string &text) {
 
 bool MMSTextBoxWidget::getTranslate() {
     GETTEXTBOX(Translate);
+}
+
+string MMSTextBoxWidget::getFilePath() {
+    GETTEXTBOX(FilePath);
+}
+
+string MMSTextBoxWidget::getFileName() {
+    GETTEXTBOX(FileName);
 }
 
 /***********************************************/
@@ -559,7 +617,7 @@ void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
         this->refresh();
 }
 
-void MMSTextBoxWidget::setText(string text, bool refresh) {
+void MMSTextBoxWidget::setText(string *text, bool refresh) {
     myTextBoxWidgetClass.setText(text);
     this->translated = false;
     this->da->scrollPosX=0;
@@ -568,9 +626,29 @@ void MMSTextBoxWidget::setText(string text, bool refresh) {
         this->refresh();
 }
 
+void MMSTextBoxWidget::setText(string text, bool refresh) {
+	setText(&text, refresh);
+}
+
 void MMSTextBoxWidget::setTranslate(bool translate, bool refresh) {
     myTextBoxWidgetClass.setTranslate(translate);
     this->translated = false;
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setFilePath(string filepath, bool load, bool refresh) {
+    myTextBoxWidgetClass.setFilePath(filepath);
+    if (load)
+    	reloadFile(false);
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
+    myTextBoxWidgetClass.setFileName(filename);
+    if (load)
+    	reloadFile(false);
     if (refresh)
         this->refresh();
 }
@@ -596,6 +674,10 @@ void MMSTextBoxWidget::updateFromThemeClass(MMSTextBoxWidgetClass *themeClass) {
         setText(themeClass->getText());
     if (themeClass->isTranslate())
         setTranslate(themeClass->getTranslate());
+    if (themeClass->isFilePath())
+        setFilePath(themeClass->getFilePath());
+    if (themeClass->isFileName())
+        setFileName(themeClass->getFileName());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

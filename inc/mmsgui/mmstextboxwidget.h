@@ -69,6 +69,8 @@ class MMSTextBoxWidget : public MMSWidget {
         //! if true the translated_text is valid
         bool translated;
 
+        //! used to load text from a file
+        MMSFile *file;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
@@ -88,11 +90,16 @@ class MMSTextBoxWidget : public MMSWidget {
         bool init();
         bool draw(bool *backgroundFilled = NULL);
 
+		bool loadFile(bool refresh);
+
     public:
 		//! inform the widget, that language has changed
 		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
 
-        /* theme access methods */
+		//! reload the file and display it in the textbox
+		bool reloadFile(bool refresh = true);
+
+        // theme access methods
         string getFontPath();
         string getFontName();
         unsigned int getFontSize();
@@ -104,6 +111,8 @@ class MMSTextBoxWidget : public MMSWidget {
         string getText();
         void getText(string &text);
         bool getTranslate();
+        string getFilePath();
+        string getFileName();
 
 		void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
@@ -114,8 +123,11 @@ class MMSTextBoxWidget : public MMSWidget {
         void setSplitWords(bool splitwords, bool refresh = true);
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
+        void setText(string *text, bool refresh = true);
         void setText(string text, bool refresh = true);
         void setTranslate(bool translate, bool refresh = true);
+		void setFilePath(string filepath, bool load = true, bool refresh = true);
+        void setFileName(string filename, bool load = true, bool refresh = true);
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
 };

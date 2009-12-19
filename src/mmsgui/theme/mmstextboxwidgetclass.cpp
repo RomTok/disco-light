@@ -57,6 +57,8 @@ void MMSTextBoxWidgetClass::unsetAll() {
     unsetSelColor();
     unsetText();
     unsetTranslate();
+    unsetFilePath();
+    unsetFileName();
 }
 
 void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
@@ -157,6 +159,15 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 	            break;
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_translate:
 	            setTranslate((attrval_int)?true:false);
+	            break;
+			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_file_path:
+	            if (*attrval_str)
+	                setFilePath(attrval_str);
+	            else
+	                setFilePath((path)?*path:"");
+	            break;
+			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_file_name:
+	            setFileName(attrval_str);
 	            break;
 			}
 		}
@@ -279,6 +290,17 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             if (ISATTRNAME(translate)) {
 	            setTranslate((attrval_int)?true:false);
 			}
+            else
+            if (ISATTRNAME(file_path)) {
+	            if (*attrval_str)
+	                setFilePath(attrval_str);
+	            else
+	                setFilePath((path)?*path:"");
+            }
+            else
+            if (ISATTRNAME(file_name)) {
+	            setFileName(attrval_str);
+            }
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -286,6 +308,8 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
     if ((!class_set)&&(path)&&(*path!="")) {
 	    if (!isFontPath())
 	        setFontPath(*path);
+	    if (!isFilePath())
+	        setFilePath(*path);
     }
 }
 
@@ -437,9 +461,13 @@ bool MMSTextBoxWidgetClass::isText() {
     return this->istext;
 }
 
-void MMSTextBoxWidgetClass::setText(string text) {
-    this->text = text;
+void MMSTextBoxWidgetClass::setText(string *text) {
+    this->text = *text;
     this->istext = true;
+}
+
+void MMSTextBoxWidgetClass::setText(string text) {
+    setText(&text);
 }
 
 void MMSTextBoxWidgetClass::unsetText() {
@@ -465,6 +493,40 @@ void MMSTextBoxWidgetClass::unsetTranslate() {
 
 bool MMSTextBoxWidgetClass::getTranslate() {
     return this->translate;
+}
+
+bool MMSTextBoxWidgetClass::isFilePath() {
+    return this->isfilepath;
+}
+
+void MMSTextBoxWidgetClass::setFilePath(string filepath) {
+    this->filepath = filepath;
+    this->isfilepath = true;
+}
+
+void MMSTextBoxWidgetClass::unsetFilePath() {
+    this->isfilepath = false;
+}
+
+string MMSTextBoxWidgetClass::getFilePath() {
+    return this->filepath;
+}
+
+bool MMSTextBoxWidgetClass::isFileName() {
+    return this->isfilename;
+}
+
+void MMSTextBoxWidgetClass::setFileName(string filename) {
+    this->filename = filename;
+    this->isfilename = true;
+}
+
+void MMSTextBoxWidgetClass::unsetFileName() {
+    this->isfilename = false;
+}
+
+string MMSTextBoxWidgetClass::getFileName() {
+    return this->filename;
 }
 
 

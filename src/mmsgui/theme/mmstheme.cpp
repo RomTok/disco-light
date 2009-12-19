@@ -1032,6 +1032,8 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.setSelColor(c);
         this->textBoxWidgetClass.setText("");
         this->textBoxWidgetClass.setTranslate(true);
+        this->textBoxWidgetClass.setFilePath("");
+        this->textBoxWidgetClass.setFileName("");
     }
 
     /* MMSArrowWidget */
@@ -1231,7 +1233,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.border.setMargin(0);
         this->inputWidgetClass.widgetClass.border.setRCorners(false);
 
-        /* label settings */
+        /* input settings */
         this->inputWidgetClass.setFontPath("./themes/default");
         this->inputWidgetClass.setFontName("decker.ttf");
         this->inputWidgetClass.setFontSize(16);
