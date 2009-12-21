@@ -630,6 +630,16 @@ class MMSWindow {
         */
         MMSWidget* findWidgetType(MMSWIDGETTYPE type);
 
+        //! Find a widget with a given name and type.
+        /*!
+        Find a root widget with the given name. If the found widget has not the
+        given type, then it searches for the given type under the root widget node.
+        \param name		name of the widget
+        \param type		type of the widget
+        \return pointer to the widget which was found or NULL
+        */
+        MMSWidget* findWidgetAndType(string name, MMSWIDGETTYPE type);
+
         //! Operator [] which you can use to find a widget.
         /*!
         \param name		name of the widget

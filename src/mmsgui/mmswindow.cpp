@@ -4050,6 +4050,24 @@ MMSWidget* MMSWindow::findWidgetType(MMSWIDGETTYPE type) {
     return NULL;
 }
 
+MMSWidget* MMSWindow::findWidgetAndType(string name, MMSWIDGETTYPE type) {
+    MMSWidget *widget;
+
+    if ((widget = findWidget(name))) {
+    	// root widget found, find child widget with type
+    	if (widget->getType() == type) {
+    		// found root widget has the correct type
+    		return widget;
+    	}
+    	else {
+    		// find the type within root's children
+    		return widget->findWidgetType(type);
+    	}
+    }
+
+    return NULL;
+}
+
 MMSWidget* MMSWindow::operator[](string name) {
     MMSWidget *widget;
 
