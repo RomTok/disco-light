@@ -30,6 +30,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 #include "mmsgui/mmstextboxwidget.h"
+#include <cstdlib>
 
 MMSTextBoxWidget::MMSTextBoxWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
     create(root, className, theme);
