@@ -381,7 +381,7 @@ string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf);
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf);
 
 
-// colors, rectangles, regions...............................................
+// color definition..........................................................
 
 //! describes a color with alpha
 class MMSFBColor {
@@ -402,6 +402,25 @@ class MMSFBColor {
 			this->a = a;
 		}
 };
+
+//! Convert a color string into MMSFBColor.
+/*!
+The input string has the syntax "#rrggbbaa".
+
+    rr - hex value for red
+    gg - hex value for green
+    bb - hex value for blue
+    aa - hex value for alpha channel (value ff means full opaque)
+
+\param input  the input string
+\param color  pointer to the color to be returned
+\return true if input is correct
+\note If the function fails, the color is set to "#00000000".
+*/
+bool getMMSFBColorFromString(string input, MMSFBColor *color);
+
+
+// rectangles, regions.......................................................
 
 //! describes a rectangle
 class MMSFBRectangle {

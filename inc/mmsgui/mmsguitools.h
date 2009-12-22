@@ -72,8 +72,6 @@ typedef struct {
 */
 bool getPixelFromSizeHint(int *retpix, string hint, int maxpixel, int secondaxis);
 
-bool getColorFromString(string input, MMSFBColor *color);
-
 #ifdef  __HAVE_DIRECTFB__
 bool loadImage(IDirectFBImageProvider **image, string path, string filename);
 #endif

@@ -118,7 +118,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setColor(color);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color_a:
@@ -148,7 +148,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setSelColor(color);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selcolor_a:
@@ -264,7 +264,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             if (ISATTRNAME(border_color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setColor(color);
             }
             else
@@ -299,7 +299,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             if (ISATTRNAME(border_selcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) getSelColor(color);
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setSelColor(color);
             }
             else

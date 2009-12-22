@@ -31,6 +31,8 @@
  **************************************************************************/
 
 #include "mmstools/mmstypes.h"
+#include "mmstools/tools.h"
+
 
 string getMMSFBBackendString(MMSFBBackend be) {
     if(be == MMSFB_BE_DFB)
@@ -254,6 +256,35 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
     return MMSFB_PF_NONE;
 }
 
+bool getMMSFBColorFromString(string input, MMSFBColor *color) {
+	// check ret ptr
+	if (!color)
+		return false;
+
+	// reset color
+    color->r = 0;
+    color->g = 0;
+    color->b = 0;
+    color->a = 0;
+
+    // check input string
+    if (input == "")
+        return false;
+
+    if (input.size()!=9)
+        return false;
+
+    if (input.substr(0,1)!="#")
+        return false;
+
+    // set color values
+    color->r = hexToInt(input.substr(1,2).c_str());
+    color->g = hexToInt(input.substr(3,2).c_str());
+    color->b = hexToInt(input.substr(5,2).c_str());
+    color->a = hexToInt(input.substr(7,2).c_str());
+
+    return true;
+}
 
 string getMMSFBPointerModeString(MMSFBPointerMode pm) {
     if(pm == MMSFB_PM_FALSE)

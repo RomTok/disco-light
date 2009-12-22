@@ -86,7 +86,7 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setColor(color);
 	            break;
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_color_a:
@@ -116,7 +116,7 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_selcolor:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setSelColor(color);
 	            break;
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_selcolor_a:
@@ -185,7 +185,7 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (ISATTRNAME(color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setColor(color);
             }
             else
@@ -220,7 +220,7 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (ISATTRNAME(selcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isSelColor()) color = getSelColor();
-	            if (getColorFromString(attrval_str, &color))
+	            if (getMMSFBColorFromString(attrval_str, &color))
 	                setSelColor(color);
             }
             else
