@@ -5773,7 +5773,8 @@ bool MMSFBSurface::move(int x, int y) {
 }
 
 
-int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y, int w, int h) {
+int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y, int w, int h,
+							  MMSFBSurfaceDumpMode dumpmode) {
 #define D2B_ADDSTRING if(ob>=obe)return 0;else ob+=sprintf(ob
 	// check inputs
 	if ((!out_buffer)||(out_buffer_len<=1024))
@@ -5801,79 +5802,122 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 					getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str(),
 					x, y, w, h);
 
-	switch (this->config.surface_buffer->pixelformat) {
-	case MMSFB_PF_ARGB: {
-			int pitch_pix = pitch >> 2;
-			unsigned int *buf = (unsigned int*)sbuf + x + y * pitch_pix;
-			D2B_ADDSTRING, "\n* aarrggbb ********************************************************************");
-			for (int j = 0; j < h; j++) {
-				int i = j * pitch_pix;
-				D2B_ADDSTRING, "\n%08x", buf[i++]);
-				while (i < w + j * pitch_pix) {
-					D2B_ADDSTRING, ",%08x", buf[i]);
-					i++;
+	bool dumpok = false;
+	if (dumpmode == MMSFBSURFACE_DUMPMODE_BYTE) {
+		// dump byte-by-byte
+		switch (this->config.surface_buffer->pixelformat) {
+		case MMSFB_PF_I420:
+		case MMSFB_PF_YV12:
+		case MMSFB_PF_NV12:
+		case MMSFB_PF_NV16:
+		case MMSFB_PF_NV21:
+		case MMSFB_PF_ARGB3565:
+			// do not dump plane formats here
+			break;
+		default: {
+				// all other formats
+				int bits_pp = getBitsPerPixel(this->config.surface_buffer->pixelformat);
+				int bytes_pp = bits_pp / 8;
+				unsigned char *buf = sbuf + x * bytes_pp + y * pitch;
+				D2B_ADDSTRING, "\n* byte-by-byte ****************************************************************");
+				for (int j = 0; j < h; j++) {
+					int i = j * pitch;
+					D2B_ADDSTRING, "\n%02x", buf[i++]);
+					while (i < w * bytes_pp + j * pitch) {
+						D2B_ADDSTRING, ",%02x", buf[i]);
+						i++;
+					}
 				}
+				dumpok = true;
 			}
-			D2B_ADDSTRING, "\n*******************************************************************************");
+			break;
 		}
-		break;
-	case MMSFB_PF_BGR555: {
-			int pitch_pix = pitch >> 1;
-			unsigned short int *buf = (unsigned short int*)sbuf + x + y * pitch_pix;
-			D2B_ADDSTRING, "\n* 0bbbbbgggggrrrrr ************************************************************");
-			for (int j = 0; j < h; j++) {
-				int i = j * pitch_pix;
-				D2B_ADDSTRING, "\n%04x", buf[i++]);
-				while (i < w + j * pitch_pix) {
-					D2B_ADDSTRING, ",%04x", buf[i]);
-					i++;
+	}
+
+	if (!dumpok) {
+		//! dump pixels
+		switch (this->config.surface_buffer->pixelformat) {
+		case MMSFB_PF_ARGB: {
+				int pitch_pix = pitch >> 2;
+				unsigned int *buf = (unsigned int*)sbuf + x + y * pitch_pix;
+				D2B_ADDSTRING, "\n* aarrggbb hex (4-byte integer) ***********************************************");
+				for (int j = 0; j < h; j++) {
+					int i = j * pitch_pix;
+					D2B_ADDSTRING, "\n%08x", buf[i++]);
+					while (i < w + j * pitch_pix) {
+						D2B_ADDSTRING, ",%08x", buf[i]);
+						i++;
+					}
 				}
+				D2B_ADDSTRING, "\n*******************************************************************************");
 			}
-			D2B_ADDSTRING, "\n*******************************************************************************");
+			break;
+		case MMSFB_PF_BGR555: {
+				int pitch_pix = pitch >> 1;
+				unsigned short int *buf = (unsigned short int*)sbuf + x + y * pitch_pix;
+				D2B_ADDSTRING, "\n* 0bbbbbgggggrrrrr bin (2-byte integer) ***************************************");
+				for (int j = 0; j < h; j++) {
+					int i = j * pitch_pix;
+					D2B_ADDSTRING, "\n%04x", buf[i++]);
+					while (i < w + j * pitch_pix) {
+						D2B_ADDSTRING, ",%04x", buf[i]);
+						i++;
+					}
+				}
+				D2B_ADDSTRING, "\n*******************************************************************************");
+			}
+			break;
+		case MMSFB_PF_I420:
+		case MMSFB_PF_YV12: {
+				int pitch_pix = pitch;
+				unsigned char *buf_y;
+				unsigned char *buf_u = sbuf + pitch_pix * this->config.h + (x >> 1) + (y >> 1) * (pitch_pix >> 1);
+				unsigned char *buf_v = sbuf + pitch_pix * (this->config.h + (this->config.h >> 2)) + (x >> 1) + (y >> 1) * (pitch_pix >> 1);
+				if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
+					buf_y = buf_u;
+					buf_u = buf_v;
+					buf_v = buf_y;
+				}
+				buf_y = sbuf + x + y * pitch_pix;
+				D2B_ADDSTRING, "\n* Y plane *********************************************************************");
+				for (int j = 0; j < h; j++) {
+					int i = j * pitch_pix;
+					D2B_ADDSTRING, "\n%02x", buf_y[i++]);
+					while (i < w + j * pitch_pix) {
+						D2B_ADDSTRING, ",%02x", buf_y[i]);
+						i++;
+					}
+				}
+				D2B_ADDSTRING, "\n* U plane *********************************************************************");
+				x = x >> 1;
+				y = y >> 1;
+				w = w >> 1;
+				h = h >> 1;
+				for (int j = 0; j < h; j++) {
+					int i = j * (pitch_pix >> 1);
+					D2B_ADDSTRING, "\n%02x", buf_u[i++]);
+					while (i < w + j * (pitch_pix >> 1)) {
+						D2B_ADDSTRING, ",%02x", buf_u[i]);
+						i++;
+					}
+				}
+				D2B_ADDSTRING, "\n* V plane *********************************************************************");
+				for (int j = 0; j < h; j++) {
+					int i = j * (pitch_pix >> 1);
+					D2B_ADDSTRING, "\n%02x", buf_v[i++]);
+					while (i < w + j * (pitch_pix >> 1)) {
+						D2B_ADDSTRING, ",%02x", buf_v[i]);
+						i++;
+					}
+				}
+				D2B_ADDSTRING, "\n*******************************************************************************");
+			}
+			break;
+		default:
+			// no dump routine for this pixelformat
+			this->unlock();
+			return 0;
 		}
-		break;
-	case MMSFB_PF_YV12: {
-			int pitch_pix = pitch;
-			unsigned char *buf_y = sbuf + x + y * pitch_pix;
-			unsigned char *buf_u = sbuf + pitch_pix * (this->config.h + (this->config.h >> 2)) + (x >> 1) + (y >> 1) * (pitch_pix >> 1);
-			unsigned char *buf_v = sbuf + pitch_pix * this->config.h + (x >> 1) + (y >> 1) * (pitch_pix >> 1);
-			D2B_ADDSTRING, "\n* Y plane *********************************************************************");
-			for (int j = 0; j < h; j++) {
-				int i = j * pitch_pix;
-				D2B_ADDSTRING, "\n%02x", buf_y[i++]);
-				while (i < w + j * pitch_pix) {
-					D2B_ADDSTRING, ",%02x", buf_y[i]);
-					i++;
-				}
-			}
-			D2B_ADDSTRING, "\n* U plane *********************************************************************");
-			x = x >> 1;
-			y = y >> 1;
-			w = w >> 1;
-			h = h >> 1;
-			for (int j = 0; j < h; j++) {
-				int i = j * (pitch_pix >> 1);
-				D2B_ADDSTRING, "\n%02x", buf_u[i++]);
-				while (i < w + j * (pitch_pix >> 1)) {
-					D2B_ADDSTRING, ",%02x", buf_u[i]);
-					i++;
-				}
-			}
-			D2B_ADDSTRING, "\n* V plane *********************************************************************");
-			for (int j = 0; j < h; j++) {
-				int i = j * (pitch_pix >> 1);
-				D2B_ADDSTRING, "\n%02x", buf_v[i++]);
-				while (i < w + j * (pitch_pix >> 1)) {
-					D2B_ADDSTRING, ",%02x", buf_v[i]);
-					i++;
-				}
-			}
-			D2B_ADDSTRING, "\n*******************************************************************************");
-		}
-		break;
-	default:
-		// no dump routine for this pixelformat
-		return 0;
 	}
 
 	// finalize
@@ -5883,12 +5927,13 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 	return ob - out_buffer;
 }
 
-bool MMSFBSurface::dump2file(string filename, int x, int y, int w, int h) {
+bool MMSFBSurface::dump2file(string filename, int x, int y, int w, int h,
+							 MMSFBSurfaceDumpMode dumpmode) {
 	int buffer_len = 1024*1024;
 	char *buffer = (char *)malloc(buffer_len);
 	if (buffer) {
 		int bytes;
-		if ((bytes = dump2buffer(buffer, buffer_len, x, y, w, h))) {
+		if ((bytes = dump2buffer(buffer, buffer_len, x, y, w, h, dumpmode))) {
 			MMSFile *mmsfile = new MMSFile(filename, MMSFM_WRITE);
 			if (mmsfile) {
 				size_t ritems;
@@ -5903,11 +5948,16 @@ bool MMSFBSurface::dump2file(string filename, int x, int y, int w, int h) {
 	return false;
 }
 
-bool MMSFBSurface::dump(int x, int y, int w, int h) {
+bool MMSFBSurface::dump2file(string filename, MMSFBSurfaceDumpMode dumpmode) {
+	return dump2file(filename, 0, 0, 0, 0, dumpmode);
+}
+
+bool MMSFBSurface::dump(int x, int y, int w, int h,
+						MMSFBSurfaceDumpMode dumpmode) {
 	int buffer_len = 1024*1024;
 	char *buffer = (char *)malloc(buffer_len);
 	if (buffer) {
-		if (dump2buffer(buffer, buffer_len, x, y, w, h)) {
+		if (dump2buffer(buffer, buffer_len, x, y, w, h, dumpmode)) {
 			printf("\n");
 			printf(buffer);
 			free(buffer);
@@ -5918,6 +5968,9 @@ bool MMSFBSurface::dump(int x, int y, int w, int h) {
 	return false;
 }
 
+bool MMSFBSurface::dump(MMSFBSurfaceDumpMode dumpmode) {
+	return dump(0, 0, 0, 0, dumpmode);
+}
 
 bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 								 MMSFBSurfacePixelFormat pixelformat) {

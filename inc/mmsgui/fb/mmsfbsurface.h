@@ -48,6 +48,14 @@ typedef enum {
 	MMSFBSurfaceAllocMethod_malloc
 } MMSFBSurfaceAllocMethod;
 
+//! dump mode
+typedef enum {
+	//! dump byte-by-byte hex values
+	MMSFBSURFACE_DUMPMODE_BYTE = 0,
+	//! dump pixels as 1, 2, 3 or 4 byte hex values
+	MMSFBSURFACE_DUMPMODE_PIXEL
+} MMSFBSurfaceDumpMode;
+
 //! this is the maximum number of buffers for a surface (backbuffers + 1)
 #define MMSFBSurfaceMaxBuffers		3
 
@@ -324,9 +332,14 @@ class MMSFBSurface {
         bool moveTo(int x, int y);
         bool move(int x, int y);
 
-        int  dump2buffer(char *buffer, int buffer_len, int x = 0, int y = 0, int w = 0, int h = 0);
-        bool dump2file(string filename, int x = 0, int y = 0, int w = 0, int h = 0);
-        bool dump(int x = 0, int y = 0, int w = 0, int h = 0);
+        int  dump2buffer(char *buffer, int buffer_len, int x = 0, int y = 0, int w = 0, int h = 0,
+						 MMSFBSurfaceDumpMode dumpmode = MMSFBSURFACE_DUMPMODE_BYTE);
+        bool dump2file(string filename, int x = 0, int y = 0, int w = 0, int h = 0,
+					   MMSFBSurfaceDumpMode dumpmode = MMSFBSURFACE_DUMPMODE_BYTE);
+        bool dump2file(string filename, MMSFBSurfaceDumpMode dumpmode);
+        bool dump(int x = 0, int y = 0, int w = 0, int h = 0,
+				  MMSFBSurfaceDumpMode dumpmode = MMSFBSURFACE_DUMPMODE_BYTE);
+        bool dump(MMSFBSurfaceDumpMode dumpmode);
 
     friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;
