@@ -5805,7 +5805,7 @@ int MMSFBSurface::dump2buffer(char *out_buffer, int out_buffer_len, int x, int y
 	case MMSFB_PF_ARGB: {
 			int pitch_pix = pitch >> 2;
 			unsigned int *buf = (unsigned int*)sbuf + x + y * pitch_pix;
-			D2B_ADDSTRING, "\n* aaaaaaaarrrrrrrrggggggggbbbbbbbb ********************************************");
+			D2B_ADDSTRING, "\n* aarrggbb ********************************************************************");
 			for (int j = 0; j < h; j++) {
 				int i = j * pitch_pix;
 				D2B_ADDSTRING, "\n%08x", buf[i++]);
