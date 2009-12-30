@@ -124,6 +124,12 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         printf("   Copyright (C) 2009      BerLinux Solutions GmbH\n");
         printf("----------------------------------------------------------------------\n");
 
+        int pcv = 1;
+        if (*((char *)&pcv) == 1)
+        	DEBUGMSG_OUTSTR("Core", "Platform type:                little-endian");
+        else
+        	DEBUGMSG_OUTSTR("Core", "Platform type:                big-endian");
+
         MMSConfigDataLayer videolayer = config->getVideoLayer();
         MMSConfigDataLayer graphicslayer = config->getGraphicsLayer();
 
