@@ -57,6 +57,17 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			 MMSConfigDataGraphics *graphics, MMSConfigDataLanguage *language) {
 
 	try {
+		// get special args from configfile string
+		int args_pos;
+		string args;
+		if ((args_pos = (int)configfile.find("--disko:")) >= 0) {
+			args = configfile.substr(args_pos);
+			if (args_pos > 1)
+				configfile = configfile.substr(0, args_pos-1);
+			else
+				configfile = "";
+		}
+
         //check if config file is given per commandline
         for (int i = 1; i < argc; i++) {
         	if (memcmp(argv[i], "--disko:config=", 15)==0) {
@@ -115,19 +126,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 									   (graphics)?*graphics:*rcGraphics, (language)?*language:*rcLanguage);
         }
 
-        // overwrite config values from argv
-        //TODO: we should implement a generic method for all parameters
-        for (int i = 1; i < argc; i++) {
-        	char *par;
-        	if (((par = strstr(argv[i], "--disko:graphics.hideapplication="))) && (par == argv[i])) {
-        		par+= strlen("--disko:graphics.hideapplication=");
-        		if (strstr(par, "true"))
-        			config->setHideApplication(true);
-        		else
-				if (strstr(par, "false"))
-					config->setHideApplication(false);
-        	}
-        }
+        // overwrite config values from args and/or argv
+        rcparser.updateConfig(config, args, argc, argv);
 
         printf("\n");
         printf("****   *   ***   *  *   ***\n");

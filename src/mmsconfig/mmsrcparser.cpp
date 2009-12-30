@@ -851,3 +851,46 @@ void MMSRcParser::throughFile(xmlNode* node) {
 	}
 }
 
+void MMSRcParser::updateConfig(MMSConfigData *config, string args, int argc, char *argv[]) {
+
+	if (!config) return;
+
+	//TODO: we should implement a generic method for all parameters
+
+	// args...
+	char *ap = (char*)args.c_str();
+	while (*ap) {
+		// find parameter
+		if (!(ap = strstr(ap, "--disko:"))) break;
+		ap+= 8;
+
+		// get parameter
+		char *par;
+		if ((par = strstr(ap, "graphics.hideapplication="))) {
+			par+= strlen("graphics.hideapplication=");
+			if (strstr(par, "true"))
+				config->setHideApplication(true);
+			else
+			if (strstr(par, "false"))
+				config->setHideApplication(false);
+		}
+
+		// go to next parameter
+		if (!(ap = strstr(ap, " "))) break;
+		ap++;
+	}
+
+	// argv...
+	for (int i = 1; i < argc; i++) {
+		char *par;
+		if (((par = strstr(argv[i], "--disko:graphics.hideapplication="))) && (par == argv[i])) {
+			par+= strlen("--disko:graphics.hideapplication=");
+			if (strstr(par, "true"))
+				config->setHideApplication(true);
+			else
+			if (strstr(par, "false"))
+				config->setHideApplication(false);
+		}
+	}
+}
+

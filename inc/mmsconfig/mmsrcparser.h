@@ -66,16 +66,20 @@ class MMSRcParser {
 		~MMSRcParser();
 
 		void parseFile(string filename);
+
 		void getMMSRc(MMSConfigDataGlobal 	**global   = NULL,
 			          MMSConfigDataDB     	**configdb = NULL,
 			          MMSConfigDataDB     	**datadb   = NULL,
 			          MMSConfigDataGraphics	**graphics = NULL,
 			          MMSConfigDataLanguage **language = NULL);
+
 		void getMMSRc(MMSConfigDataGlobal 	*global   = NULL,
 			          MMSConfigDataDB     	*configdb = NULL,
 			          MMSConfigDataDB     	*datadb   = NULL,
 			          MMSConfigDataGraphics	*graphics = NULL,
 			          MMSConfigDataLanguage *language = NULL);
+
+		void updateConfig(MMSConfigData *config, string args, int argc = 0, char *argv[] = NULL);
 };
 
 MMS_CREATEERROR(MMSRcParserError);
