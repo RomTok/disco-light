@@ -46,6 +46,10 @@ unsigned char* MMSCrypt::createUserKey(string keyfile) {
 
     /* generate random key */
     RAND_set_rand_method(RAND_SSLeay());
+	userKey = (unsigned char*)malloc(EVP_MAX_KEY_LENGTH + EVP_MAX_IV_LENGTH);
+	if(!userKey) {
+		return NULL;
+	}
     RAND_bytes(userKey, EVP_MAX_KEY_LENGTH + EVP_MAX_IV_LENGTH);
     RAND_cleanup();
 
