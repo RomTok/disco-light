@@ -59,9 +59,10 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 	try {
         //check if config file is given per commandline
         for (int i = 1; i < argc; i++) {
-        	if (memcmp(argv[i], "--disko:config=", 15)==0)
+        	if (memcmp(argv[i], "--disko:config=", 15)==0) {
         		// yes
         		configfile = &(argv[i][15]);
+        	}
         }
 
         MMSRcParser 			rcparser;
@@ -96,16 +97,36 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 		    }
         }
 
-        if (rcGlobal) {
-        	// config file read
+        // is config read?
+        bool config_read = (rcGlobal);
+
+        if (!config_read) {
+        	// config file not set, load defaults
+            MMSRcParser rcparser;
+			rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
+        }
+
+        // create first (static) MMSConfigData
+        if (config_read) {
         	config = new MMSConfigData(*rcGlobal, *rcConfigDB, *rcDataDB, *rcGraphics, *rcLanguage);
         }
         else {
-        	// config file not set, using defaults
-            MMSRcParser rcparser;
-			rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
         	config = new MMSConfigData((global)?*global:*rcGlobal, (configdb)?*configdb:*rcConfigDB, (datadb)?*datadb:*rcDataDB,
 									   (graphics)?*graphics:*rcGraphics, (language)?*language:*rcLanguage);
+        }
+
+        // overwrite config values from argv
+        //TODO: we should implement a generic method for all parameters
+        for (int i = 1; i < argc; i++) {
+        	char *par;
+        	if (((par = strstr(argv[i], "--disko:graphics.hideapplication="))) && (par == argv[i])) {
+        		par+= strlen("--disko:graphics.hideapplication=");
+        		if (strstr(par, "true"))
+        			config->setHideApplication(true);
+        		else
+				if (strstr(par, "false"))
+					config->setHideApplication(false);
+        	}
         }
 
         printf("\n");

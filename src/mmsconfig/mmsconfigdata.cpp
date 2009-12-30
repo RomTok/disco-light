@@ -261,6 +261,11 @@ const unsigned int MMSConfigData::getTouchResY() {
 	return this->graphics.touchResY;
 }
 
+void MMSConfigData::setHideApplication(bool hideapplication) {
+	this->graphics.hideapplication = hideapplication;
+}
+
+
 const MMS_LANGUAGE_TYPE MMSConfigData::getSourceLang() {
 	return this->language.sourcelang;
 }
@@ -276,4 +281,7 @@ const bool			    MMSConfigData::getAddTranslations() {
 const string 			MMSConfigData::getLanguagefileDir() {
 	return this->language.languagefiledir;
 }
+
+
+
 
