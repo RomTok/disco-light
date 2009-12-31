@@ -59,7 +59,7 @@ class MMSRcParser {
     	void throughLanguage(xmlNode* node);
     	void throughFile(xmlNode* node);
 
-    	/* helper */
+    	void updateConfigParms(MMSConfigData *config, char *ap);
 
 	public:
 		MMSRcParser();

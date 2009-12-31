@@ -851,11 +851,49 @@ void MMSRcParser::throughFile(xmlNode* node) {
 	}
 }
 
+
+void MMSRcParser::updateConfigParms(MMSConfigData *config, char *ap) {
+// helpers
+#define MMSRC_CPP_GET_PARAMETER(str,len) if(memcmp(ap,str,len)==0){char *val=ap+len;while(*val&&*val==' ')val++;char *vb=valbuf;*vb=0;while(*val&&*val!=' '){*vb=*val;vb++;*vb=0;val++;}val=valbuf;
+#define MMSRC_CPP_PROCESS_PIXELFORMAT_PARAMETER(str,len,setter) MMSRC_CPP_GET_PARAMETER(str,len)MMSFBSurfacePixelFormat pf=getMMSFBPixelFormatFromString(strToUpr(val));if(pf!=MMSFB_PF_NONE)setter else printf("DISKO: Parameter --disko:%s must be a valid pixelformat!\n",str);}
+#define MMSRC_CPP_PROCESS_BOOL_PARAMETER(str,len,truecall,falsecall) MMSRC_CPP_GET_PARAMETER(str,len)if((!strcmp(val,"true"))||(!strcmp(val,"TRUE")))truecall else if((!strcmp(val,"false"))||(!strcmp(val,"FALSE")))falsecall else printf("DISKO: Parameter --disko:%s must be true or false!\n",str);}
+
+// available commandline parameters
+#define MMSRC_CCP_GRAPHICS_VIDEOLAYER_PIXELFORMAT_STR		"graphics.videolayer.pixelformat="
+#define MMSRC_CCP_GRAPHICS_VIDEOLAYER_PIXELFORMAT_LEN		32
+#define MMSRC_CCP_GRAPHICS_GRAPHICSLAYER_PIXELFORMAT_STR	"graphics.graphicslayer.pixelformat="
+#define MMSRC_CCP_GRAPHICS_GRAPHICSLAYER_PIXELFORMAT_LEN	35
+#define MMSRC_CCP_GRAPHICS_FULLSCREEN_STR					"graphics.fullscreen="
+#define MMSRC_CCP_GRAPHICS_FULLSCREEN_LEN					20
+#define MMSRC_CCP_GRAPHICS_HIDEAPPLICATION_STR				"graphics.hideapplication="
+#define MMSRC_CCP_GRAPHICS_HIDEAPPLICATION_LEN				25
+
+	//  buffer for value
+	char valbuf[256];
+
+	// check all my parameters
+	MMSRC_CPP_PROCESS_PIXELFORMAT_PARAMETER(MMSRC_CCP_GRAPHICS_VIDEOLAYER_PIXELFORMAT_STR, MMSRC_CCP_GRAPHICS_VIDEOLAYER_PIXELFORMAT_LEN,
+											{MMSConfigDataLayer l=config->getVideoLayer();l.pixelformat=pf;config->setVideoLayer(l);})
+	else
+	MMSRC_CPP_PROCESS_PIXELFORMAT_PARAMETER(MMSRC_CCP_GRAPHICS_GRAPHICSLAYER_PIXELFORMAT_STR, MMSRC_CCP_GRAPHICS_GRAPHICSLAYER_PIXELFORMAT_LEN,
+											{MMSConfigDataLayer l=config->getGraphicsLayer();l.pixelformat=pf;config->setGraphicsLayer(l);})
+	else
+	MMSRC_CPP_GET_PARAMETER(MMSRC_CCP_GRAPHICS_FULLSCREEN_STR, MMSRC_CCP_GRAPHICS_FULLSCREEN_LEN) {
+		MMSFBFullScreenMode fsm = getMMSFBFullScreenModeFromString(strToUpr(val));
+		if (fsm != MMSFB_FSM_NONE)
+			config->setFullScreen(fsm);
+		else
+			printf("DISKO: Parameter --disko:%s must be a valid fullscreen mode (%s)!\n",
+					MMSRC_CCP_GRAPHICS_FULLSCREEN_STR, MMSFB_FSM_VALID_VALUES);
+	}}
+	else
+	MMSRC_CPP_PROCESS_BOOL_PARAMETER(MMSRC_CCP_GRAPHICS_HIDEAPPLICATION_STR, MMSRC_CCP_GRAPHICS_HIDEAPPLICATION_LEN,
+									 {config->setHideApplication(true);},{config->setHideApplication(false);});
+}
+
 void MMSRcParser::updateConfig(MMSConfigData *config, string args, int argc, char *argv[]) {
 
 	if (!config) return;
-
-	//TODO: we should implement a generic method for all parameters
 
 	// args...
 	char *ap = (char*)args.c_str();
@@ -864,16 +902,8 @@ void MMSRcParser::updateConfig(MMSConfigData *config, string args, int argc, cha
 		if (!(ap = strstr(ap, "--disko:"))) break;
 		ap+= 8;
 
-		// get parameter
-		char *par;
-		if ((par = strstr(ap, "graphics.hideapplication="))) {
-			par+= strlen("graphics.hideapplication=");
-			if (strstr(par, "true"))
-				config->setHideApplication(true);
-			else
-			if (strstr(par, "false"))
-				config->setHideApplication(false);
-		}
+		// update parameter
+		updateConfigParms(config, ap);
 
 		// go to next parameter
 		if (!(ap = strstr(ap, " "))) break;
@@ -882,15 +912,13 @@ void MMSRcParser::updateConfig(MMSConfigData *config, string args, int argc, cha
 
 	// argv...
 	for (int i = 1; i < argc; i++) {
-		char *par;
-		if (((par = strstr(argv[i], "--disko:graphics.hideapplication="))) && (par == argv[i])) {
-			par+= strlen("--disko:graphics.hideapplication=");
-			if (strstr(par, "true"))
-				config->setHideApplication(true);
-			else
-			if (strstr(par, "false"))
-				config->setHideApplication(false);
-		}
+		// find parameter
+		char *ap= argv[i];
+		if (memcmp(ap, "--disko:", 8)) continue;
+		ap+= 8;
+
+		// update parameter
+		updateConfigParms(config, ap);
 	}
 }
 

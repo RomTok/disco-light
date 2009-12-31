@@ -188,7 +188,7 @@ const string MMSConfigData::getDataDBDatabase() {
     return this->datadb.database;
 };
 
-/* graphics section getters */
+// graphics section getters
 const MMSConfigDataLayer MMSConfigData::getVideoLayer() {
     return this->graphics.videolayer;
 }
@@ -259,6 +259,19 @@ const unsigned int MMSConfigData::getTouchResX() {
 
 const unsigned int MMSConfigData::getTouchResY() {
 	return this->graphics.touchResY;
+}
+
+// graphics section setters
+void MMSConfigData::setVideoLayer(MMSConfigDataLayer layer) {
+    this->graphics.videolayer = layer;
+}
+
+void MMSConfigData::setGraphicsLayer(MMSConfigDataLayer layer) {
+    this->graphics.graphicslayer = layer;
+}
+
+void MMSConfigData::setFullScreen(MMSFBFullScreenMode fsm) {
+	this->graphics.fullscreen = fsm;
 }
 
 void MMSConfigData::setHideApplication(bool hideapplication) {

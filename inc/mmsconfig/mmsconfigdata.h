@@ -225,6 +225,9 @@ class MMSConfigData {
         const unsigned int getTouchResY();
 
         // graphics section setters
+        void setVideoLayer(MMSConfigDataLayer layer);
+        void setGraphicsLayer(MMSConfigDataLayer layer);
+        void setFullScreen(MMSFBFullScreenMode fsm);
         void setHideApplication(bool hideapplication);
 
         // language section getters
