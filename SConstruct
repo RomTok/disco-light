@@ -412,7 +412,7 @@ def printSummary():
 		print 'swscale support   : yes'
 	else:
 		print 'swscale support   : no'
-	if(conf.env['use_dl']):
+	if(conf.env['libdl']):
 		print 'use libdl         : yes\n'
 	else:
 		print 'use libdl         : no\n'
