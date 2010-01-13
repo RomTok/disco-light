@@ -146,10 +146,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         printf("----------------------------------------------------------------------\n");
 
         int pcv = 1;
-        if (*((char *)&pcv) == 1)
-        	DEBUGMSG_OUTSTR("Core", "Platform type:                little-endian");
-        else
-        	DEBUGMSG_OUTSTR("Core", "Platform type:                big-endian");
+        if (*((char *)&pcv) == 1) {
+            DEBUGMSG_OUTSTR("Core", "Platform type:                little-endian");
+        } else {
+            DEBUGMSG_OUTSTR("Core", "Platform type:                big-endian");
+        }
 
         MMSConfigDataLayer videolayer = config->getVideoLayer();
         MMSConfigDataLayer graphicslayer = config->getGraphicsLayer();

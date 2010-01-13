@@ -232,8 +232,6 @@ diskoLibs  = ["mmsinfo",
               "mmsinput",
               "mmscore",
               "mmsmedia"]
-#if env['media']:
-#	diskoLibs.extend(["mmsmedia"])
 if env['enable_flash']:
 	diskoLibs.extend(["mmsflash"])
 if env['enable_sip']:
@@ -412,7 +410,7 @@ def printSummary():
 		print 'swscale support   : yes'
 	else:
 		print 'swscale support   : no'
-	if(conf.env['use_dl']):
+	if(conf.env.has_key('libdl')):
 		print 'use libdl         : yes\n'
 	else:
 		print 'use libdl         : no\n'
@@ -521,10 +519,7 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 
 if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
-#	if not env['media']:
-#		env['media']='alsa'
-
-
+	conf.env['alsa'] = True
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
@@ -620,20 +615,22 @@ if 'install' in BUILD_TARGETS:
 	  
 	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm'
-		
-	if env['media'] and env['media'] != 'none':
+	
+	if env['alsa']:
 	 	disko_pc_requires += ', alsa'
+	
+	if env['media'] and env['media'] != 'none':
 		if not env['big_lib'] and not env['static_lib']:
 			disko_pc_libs += ' -lmmsmedia'
 		
-	if 'xine' in env['media']:
-		if('x11' in env['graphics']):
-			disko_pc_requires += ', libxine >= 1.1.15'
-		else:
-			disko_pc_requires += ', libxine'
+		if 'xine' in env['media']:
+			if('x11' in env['graphics']):
+				disko_pc_requires += ', libxine >= 1.1.15'
+			else:
+				disko_pc_requires += ', libxine'
 
-	if 'gstreamer' in env['media']:
-		disko_pc_requires += ', gstreamer-0.10'
+		if 'gstreamer' in env['media']:
+			disko_pc_requires += ', gstreamer-0.10'
 
 	if env['enable_flash']:
 		disko_pc_requires += ', swfdec-' + swfdecversion
