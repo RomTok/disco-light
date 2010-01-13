@@ -11,7 +11,7 @@ build
 lib
 # ignore doxygen files
 doc/doxygen.log
-doc/html
+doc/api-reference
 # ignore python compilations
 *.pyc
 # ignore mmsinfo.h
