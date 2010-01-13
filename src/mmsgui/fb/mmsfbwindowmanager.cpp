@@ -1418,13 +1418,6 @@ unsigned char MMSFBWindowManager::getPointerOpacity() {
 }
 
 void MMSFBWindowManager::setPointerOpacity(unsigned char opacity) {
-	// check range
-	if (opacity < 0)
-		opacity = 0;
-	else
-	if (opacity > 255)
-		opacity = 255;
-
 	// set it
 	this->pointer_opacity = opacity;
 	this->pointer_fadecnt = 0;
