@@ -104,76 +104,92 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
     int fontHeight, blankWidth;
     unsigned int x, y;
 
-    /* init */
+    // init
     *realWidth = startWidth;
     *realHeight = startHeight;
     *lines = 0;
     *paragraphs = 0;
 
-    /* get font height */
+    // get font height
     this->font->getHeight(&fontHeight);
     *scrollDX = fontHeight;
     *scrollDY = fontHeight;
 
-    /* has text or surface changed? */
+    // has text or surface changed?
     if ((text == this->lasttext)&&(!this->surfaceChanged)) return false;
     this->lasttext = text;
     this->surfaceChanged = false;
 
-    /* clear wordgeom */
+    // clear wordgeom
     for (int i = (int)(this->wordgeom.size())-1; i >= 0; i--) {
         delete this->wordgeom.at(i);
         this->wordgeom.erase(this->wordgeom.end()-1);
     }
 
-    /* is text set? */
+    // is text set?
     if (text=="")
-        /* no text, all is done */
+        // no text, all is done
         return true;
 
-    /* get width of a blank character */
+    // get width of a blank character
     this->font->getStringWidth(" ", -1, &blankWidth);
 
-    /* through the text and extract single words */
+    // through the text and extract single words
     do {
         int lfindex;
         int index;
         lfindex = (int)text.find("\n");
         index = (int)text.find(" ");
         if (lfindex < 0) {
-            if (index < 0) index = text.size();
+        	// no line feed found
+            if (index < 0) {
+            	// no blank found, so we have found the very last word in the text string
+            	index = text.size();
+            }
+            else
             if (index == 0) {
-                text = text.substr(index + 1);
-                continue;
+            	// another blank found instead of a word
+            	// so we use all the blanks up to the next word as "empty word"
+				index = (int)text.find_first_not_of(' ');
+            	index--;
+	            if (index < 0) {
+	            	// the end of the string consists of blanks only
+	            	index = text.size();
+	            }
             }
         }
         else {
-            if ((index < 0)||(index > lfindex))
+        	// line feed found
+            if ((index < 0)||(index > lfindex)) {
+            	// no blank before line feed, so we have found the last word in the line
+            	// the length of the word is equal to the lfindex
                 index = lfindex;
-            else
-            if (index < lfindex) {
-                if (index < 0) index = text.size();
+            }
+            else {
+            	// blank found before next line feed
                 if (index == 0) {
-                    text = text.substr(index + 1);
-                    continue;
+                	// another blank found instead of a word
+                	// so we use all the blanks up to the next word as "empty word"
+					index = (int)text.find_first_not_of(' ');
+					index--;
                 }
                 lfindex = -1;
             }
         }
 
         if (*lines == 0) {
-            /* first word */
+            // first word
             *lines = 1;
             x = 0;
             y = 0;
         }
 
-        /* new word */
+        // new word
         TEXTBOX_WORDGEOM *mywordgeom = new TEXTBOX_WORDGEOM;
         mywordgeom->geom.h=fontHeight;
         mywordgeom->word  =text.substr(0, index);
 
-
+        // get the width of the string
         this->font->getStringWidth(mywordgeom->word, -1, &mywordgeom->geom.w);
 
         if (x > 0)
@@ -184,9 +200,9 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         bool gotonext = true;
 
         if ((wrap)&&(splitwords)) {
-            /* split words in wrap mode */
+            // split words in wrap mode
             if ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
-                /* recalculate index */
+                // recalculate index
                 while ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
                     index--;
                     mywordgeom->word = text.substr(0, index);
@@ -239,7 +255,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
             if (lfindex >= 0) (*paragraphs)++;
         }
 
-        /* add to list */
+        // add to list
         wordgeom.push_back(mywordgeom);
 
         if (gotonext) {
@@ -250,7 +266,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
         }
     } while (text != "");
 
-    /* go through the list and calculate horizontal text alignment */
+    // go through the list and calculate horizontal text alignment
     unsigned int oldline = 1;
     unsigned int oldpos = 0;
     for (unsigned int i = 0; i < wordgeom.size(); i++) {
@@ -294,7 +310,7 @@ bool MMSTextBoxWidget::calcWordGeom(string text, unsigned int startWidth, unsign
             wordgeom.at(j)->geom.x += diff;
     }
 
-    /* go through the list and calculate vertical text alignment */
+    // go through the list and calculate vertical text alignment
     if (fontHeight * (*lines) > *realHeight)
         *realHeight = fontHeight * (*lines);
     else
