@@ -152,8 +152,8 @@ void MMSRcParser::checkVersion(xmlNode* node) {
 	int mav = atoi((char*)&version[0]);
 	int miv = atoi((char*)&version[2]);
 
-	// currently check for disko 1.5
-	if ((mav > 1)||(miv > 5)) {
+	// currently check for disko 1.6
+	if ((mav > 1)||(miv > 6)) {
 		std::cout << "Version of configuration file does not match!" << std::endl;
 		xmlFree(version);
 		throw new MMSRcParserError(1, "version mismatch");
