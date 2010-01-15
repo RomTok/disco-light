@@ -332,6 +332,8 @@ class MMSFBSurface {
         bool moveTo(int x, int y);
         bool move(int x, int y);
 
+        bool dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp, int *argi,
+					  int x, int y, int w, int h, MMSFBSurfaceDumpMode dumpmode);
         int  dump2buffer(char *buffer, int buffer_len, int x = 0, int y = 0, int w = 0, int h = 0,
 						 MMSFBSurfaceDumpMode dumpmode = MMSFBSURFACE_DUMPMODE_BYTE);
         bool dump2file(string filename, int x = 0, int y = 0, int w = 0, int h = 0,
