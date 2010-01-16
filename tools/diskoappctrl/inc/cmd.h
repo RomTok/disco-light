@@ -37,13 +37,14 @@
 
 #include "console.h"
 
-#define MMSCMD_LIST   "list"
-#define MMSCMD_UPDATE "update"
-#define MMSCMD_ACT	  "act"
-#define MMSCMD_DEACT  "deact"
-#define MMSCMD_EXEC   "execute"
-#define MMSCMD_EVENT  "event"
-#define MMSCMD_ADD    "add"
+#define MMSCMD_LIST    "list"
+#define MMSCMD_UPDATE  "update"
+#define MMSCMD_ACT	   "act"
+#define MMSCMD_DEACT   "deact"
+#define MMSCMD_EXEC    "execute"
+#define MMSCMD_EVENT   "event"
+#define MMSCMD_ADD     "add"
+#define MMSCMD_VERSION "version"
 
 
 #define MMSCMD_CMD       "cmd"
@@ -71,7 +72,8 @@ typedef enum  {
 	DEACT,
     EXEC,
     EVENT,
-    ADD
+    ADD,
+    VERSION
 } MMSCMD_COMMANDS;
 
 typedef map<string,string> CmdLine;
@@ -91,6 +93,9 @@ class Cmd {
 		void executeUpdate();
 		void executeAct();
 		void executeDeact();
+		void executeVersion();
+
+		void prepareDb();
 
 		void updateSource();
 		void updateParameter();

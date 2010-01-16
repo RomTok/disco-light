@@ -118,8 +118,10 @@ void parseCommandLine(CmdLine &cmdline, int argc, char **argv) {
 			} else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_ADD)==0) {
 				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_ADD)+1])));
 				break;
+			} else if(strcmp(&(argv[cnt][strlen(MMSCMD_CMD)+1]),MMSCMD_VERSION)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,&(argv[cnt][strlen(MMSCMD_VERSION)+1])));
+				break;
 			}
-
 		} else {
 
 			if(strcmp(argv[cnt],MMSCMD_LIST)==0) {
@@ -144,6 +146,9 @@ void parseCommandLine(CmdLine &cmdline, int argc, char **argv) {
 				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
 				break;
 			} else if(strcmp(argv[cnt],MMSCMD_ADD)==0) {
+				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
+				break;
+			} else if(strcmp(argv[cnt],MMSCMD_VERSION)==0) {
 				cmdline.insert(make_pair(MMSCMD_CMD,argv[cnt]));
 				break;
 			}
