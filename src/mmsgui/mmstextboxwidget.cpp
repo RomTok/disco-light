@@ -138,16 +138,16 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
     int text_pos = 0;
     do {
     	// index relative to text_pos where the next line feed is found
-        int lfindex;
+        size_t lfindex;
 
     	// index relative to text_pos where the next blank is found
-        int index;
+        size_t index;
 
         // searching for next line feed
-        if ((lfindex = (int)text.find('\n', text_pos)) != string::npos) lfindex-= text_pos;
+        if ((lfindex = text.find('\n', text_pos)) != string::npos) lfindex-= text_pos;
 
         // searching for next blank
-        if ((index = (int)text.find(' ', text_pos)) != string::npos) index-= text_pos;
+        if ((index = text.find(' ', text_pos)) != string::npos) index-= text_pos;
 
         if (lfindex < 0) {
         	// no line feed found
@@ -159,7 +159,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
             if (index == 0) {
             	// another blank found instead of a word
             	// so we use all the blanks up to the next word as "empty word"
-				if ((index = (int)text.find_first_not_of(' ', text_pos)) != string::npos) index-= text_pos;
+				if ((index = text.find_first_not_of(' ', text_pos)) != string::npos) index-= text_pos;
             	index--;
 	            if (index < 0) {
 	            	// the end of the string consists of blanks only
@@ -179,7 +179,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
                 if (index == 0) {
                 	// another blank found instead of a word
                 	// so we use all the blanks up to the next word as "empty word"
-					if ((index = (int)text.find_first_not_of(' ', text_pos)) != string::npos) index-= text_pos;
+					if ((index = text.find_first_not_of(' ', text_pos)) != string::npos) index-= text_pos;
 					index--;
                 }
                 lfindex = -1;
@@ -269,7 +269,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         wordgeom.push_back(mywordgeom);
 
         if (gotonext) {
-            if (index + 1 < (int)text.size() - text_pos) {
+            if (index + 1 < text.size() - text_pos) {
                 // move the pos ahead
             	text_pos+= index + 1;
             }
