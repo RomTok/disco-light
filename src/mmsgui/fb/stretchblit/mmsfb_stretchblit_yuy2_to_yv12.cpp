@@ -60,8 +60,9 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 //dw-=200;
 
 	static MMSFBSurface *interim = NULL;
+#ifdef __HAVE_SWSCALE__
 	static MMSFBSurface *interim2= NULL;
-
+#endif
 
 //////TESTONLY//////
 #ifdef __HAVE_SWSCALE__

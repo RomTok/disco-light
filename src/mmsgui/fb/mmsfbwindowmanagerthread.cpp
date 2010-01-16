@@ -44,8 +44,8 @@ MMSFBWindowManagerThread::MMSFBWindowManagerThread(MMSFBSurface **high_freq_surf
 }
 
 void MMSFBWindowManagerThread::threadMain() {
-	int	pointer_opacity = 0;
-	int	hidecnt = 1;
+	//int	pointer_opacity = 0;
+	//int	hidecnt = 1;
 
 	while (1) {
 

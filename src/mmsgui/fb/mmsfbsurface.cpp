@@ -682,6 +682,8 @@ int MMSFBSurface::calcPitch(int width) {
     case MMSFB_PF_BGR555:
     	pitch = width * 2;
     	break;
+    default:
+    	break;
     }
 
     if (pitch <= 0) pitch = 1;
@@ -737,6 +739,8 @@ void MMSFBSurface::initPlanePointers(MMSFBSurfacePlanes *planes, int height) {
     	planes->pitch2 = planes->pitch / 4;
     	planes->ptr3 = NULL;
     	planes->pitch3 = NULL;
+    	break;
+    default:
     	break;
 	}
 }
@@ -3501,6 +3505,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+    default:
+    	break;
 	}
 
 	// does not match
