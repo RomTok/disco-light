@@ -19,15 +19,19 @@
 <folderInfo id="cdt.managedbuild.toolchain.gnu.base.1257529810.555301907" name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.base.1689539087" name="cdt.managedbuild.toolchain.gnu.base" superClass="cdt.managedbuild.toolchain.gnu.base">
 <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.1322402575" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-<builder arguments="-j5" command="scons" id="cdt.managedbuild.target.gnu.builder.base.43268516" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+<builder arguments="-j2" command="scons" id="cdt.managedbuild.target.gnu.builder.base.43268516" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 <tool id="cdt.managedbuild.tool.gnu.archiver.base.1907364200" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.773557976" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 <option id="gnu.cpp.compiler.option.include.paths.1711702309" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/disko/inc}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${SIGCPP_INC}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.941861229" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1397905960" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
+<option id="gnu.c.compiler.option.include.paths.871389812" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${SIGCPP_INC}&quot;"/>
+</option>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.624807690" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.base.970955071" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
@@ -38,6 +42,9 @@
 </inputType>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.assembler.base.1309107073" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
+<option id="gnu.both.asm.option.include.paths.384826215" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${SIGCPP_INC}&quot;"/>
+</option>
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.808505487" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
 </toolChain>
