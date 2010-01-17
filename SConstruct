@@ -695,6 +695,7 @@ env.Default(all)
 
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/disko.h')
+env.Install(idir_inc, env['TOP_DIR'] + '/inc/diskoversion.h')
 env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
 Clean('lib', 'disko.pc')
 
