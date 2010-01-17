@@ -146,10 +146,18 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         // searching for next line feed
         if ((lfindex = text.find('\n', text_pos)) != string::npos) lfindex-= text_pos;
 
-        // searching for next blank
-        if ((index = text.find(' ', text_pos)) != string::npos) index-= text_pos;
+        if   ((alignment == MMSALIGNMENT_JUSTIFY)
+        	||(alignment == MMSALIGNMENT_TOP_JUSTIFY)||(alignment == MMSALIGNMENT_BOTTOM_JUSTIFY)) {
+            // searching for next blank
+        	if ((index = text.find(' ', text_pos)) != string::npos) index-= text_pos;
+        }
+        else {
+        	// for all other alignments we do not split the lines into single words
+        	// this is for better performance
+        	index = string::npos;
+        }
 
-        if (lfindex < 0) {
+        if (lfindex == string::npos) {
         	// no line feed found
             if (index < 0) {
             	// no blank found, so we have found the very last word in the text string
@@ -161,7 +169,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
             	// so we use all the blanks up to the next word as "empty word"
 				if ((index = text.find_first_not_of(' ', text_pos)) != string::npos) index-= text_pos;
             	index--;
-	            if (index < 0) {
+	            if (index == string::npos) {
 	            	// the end of the string consists of blanks only
 	            	index = text.size() - text_pos;
 	            }
@@ -169,7 +177,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         }
         else {
         	// line feed found
-            if ((index < 0)||(index > lfindex)) {
+            if ((index == string::npos)||(index > lfindex)) {
             	// no blank before line feed, so we have found the last word in the line
             	// the length of the word is equal to the lfindex
                 index = lfindex;
@@ -182,7 +190,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
 					if ((index = text.find_first_not_of(' ', text_pos)) != string::npos) index-= text_pos;
 					index--;
                 }
-                lfindex = -1;
+                lfindex = string::npos;
             }
         }
 
@@ -258,11 +266,11 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
             mywordgeom->paragraph = *paragraphs;
         }
 
-        if ((lfindex >= 0)||(gotonext==false)) {
+        if ((lfindex != string::npos)||(gotonext==false)) {
             x = 0;
             y+= fontHeight;
             (*lines)++;
-            if (lfindex >= 0) (*paragraphs)++;
+            if (lfindex != string::npos) (*paragraphs)++;
         }
 
         // add to list
@@ -286,6 +294,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
     for (unsigned int i = 0; i < wordgeom.size(); i++) {
         if (wordgeom.at(i)->line != oldline) {
             if   ((alignment == MMSALIGNMENT_CENTER)||(alignment == MMSALIGNMENT_TOP_CENTER)||(alignment == MMSALIGNMENT_BOTTOM_CENTER)) {
+            	// horizontal centered
                 unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / 2;
                 for (unsigned int j = oldpos; j < i; j++)
                     wordgeom.at(j)->geom.x += diff;
@@ -293,6 +302,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
             else
             if   ((alignment == MMSALIGNMENT_RIGHT)||(alignment == MMSALIGNMENT_TOP_RIGHT)
                 ||(alignment == MMSALIGNMENT_BOTTOM_RIGHT)) {
+            	// right aligned
                 unsigned int diff = *realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w;
                 for (unsigned int j = oldpos; j < i; j++)
                     wordgeom.at(j)->geom.x += diff;
@@ -300,6 +310,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
             else
             if  (((alignment == MMSALIGNMENT_JUSTIFY)||(alignment == MMSALIGNMENT_TOP_JUSTIFY)
                 ||(alignment == MMSALIGNMENT_BOTTOM_JUSTIFY))&&(wordgeom.at(i)->paragraph == wordgeom.at(i-1)->paragraph)) {
+            	// justified
                 if (oldpos < i-1) {
                     unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / (i-1-oldpos);
                     for (unsigned int j = oldpos; j < i; j++) {
@@ -312,6 +323,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         }
     }
     if   ((alignment == MMSALIGNMENT_CENTER)||(alignment == MMSALIGNMENT_TOP_CENTER)||(alignment == MMSALIGNMENT_BOTTOM_CENTER)) {
+    	// horizontal centered
         unsigned int diff = (*realWidth - wordgeom.at(wordgeom.size()-1)->geom.x - wordgeom.at(wordgeom.size()-1)->geom.w) / 2;
         for (unsigned int j = oldpos; j < wordgeom.size(); j++)
             wordgeom.at(j)->geom.x += diff;
@@ -319,6 +331,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
     else
     if   ((alignment == MMSALIGNMENT_RIGHT)||(alignment == MMSALIGNMENT_TOP_RIGHT)
         ||(alignment == MMSALIGNMENT_BOTTOM_RIGHT)) {
+    	// right aligned
         unsigned int diff = *realWidth - wordgeom.at(wordgeom.size()-1)->geom.x - wordgeom.at(wordgeom.size()-1)->geom.w;
         for (unsigned int j = oldpos; j < wordgeom.size(); j++)
             wordgeom.at(j)->geom.x += diff;
@@ -331,6 +344,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
     if (fontHeight * (*lines) < *realHeight) {
         if   ((alignment == MMSALIGNMENT_CENTER)||(alignment == MMSALIGNMENT_LEFT)
             ||(alignment == MMSALIGNMENT_RIGHT)||(alignment == MMSALIGNMENT_JUSTIFY)) {
+        	// vertical centered
             unsigned int diff = (*realHeight - fontHeight * (*lines)) / 2;
             if (diff > 0)
                 for (unsigned int i = 0; i < wordgeom.size(); i++)
@@ -339,6 +353,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         else
         if   ((alignment == MMSALIGNMENT_BOTTOM_CENTER)||(alignment == MMSALIGNMENT_BOTTOM_LEFT)
             ||(alignment == MMSALIGNMENT_BOTTOM_RIGHT)||(alignment == MMSALIGNMENT_BOTTOM_JUSTIFY)) {
+        	// bottom aligned
             unsigned int diff = (*realHeight - fontHeight * (*lines));
             if (diff > 0)
                 for (unsigned int i = 0; i < wordgeom.size(); i++)
