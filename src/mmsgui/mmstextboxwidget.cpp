@@ -159,7 +159,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
 
         if (lfindex == string::npos) {
         	// no line feed found
-            if (index < 0) {
+            if (index == string::npos) {
             	// no blank found, so we have found the very last word in the text string
             	index = text.size() - text_pos;
             }
@@ -218,7 +218,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
 
         if ((wrap)&&(splitwords)) {
             // split words in wrap mode
-            if ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
+            if ((index != string::npos)&&(mywordgeom->geom.w > (int)*realWidth)) {
                 // recalculate index
                 while ((index > 1)&&(mywordgeom->geom.w > (int)*realWidth)) {
                     index--;
