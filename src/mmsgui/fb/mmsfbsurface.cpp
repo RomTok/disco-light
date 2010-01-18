@@ -5781,7 +5781,8 @@ bool MMSFBSurface::move(int x, int y) {
 
 bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp, int *argi,
 						   int x, int y, int w, int h, MMSFBSurfaceDumpMode dumpmode) {
-#define D2B_ADDSTRINX(f,v) {int l=sprintf(ob,f,v);if(!fcb(ob,l,argp,argi)){this->unlock();return false;}}
+#define D2FCB_ADDSTR1(f) {int l=sprintf(ob,f);if(!fcb(ob,l,argp,argi)){this->unlock();return false;}}
+#define D2FCB_ADDSTR2(f,v) {int l=sprintf(ob,f,v);if(!fcb(ob,l,argp,argi)){this->unlock();return false;}}
 	// check inputs
 	if (!fcb)
 		return false;
@@ -5827,12 +5828,12 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 				int bits_pp = getBitsPerPixel(this->config.surface_buffer->pixelformat);
 				int bytes_pp = bits_pp / 8;
 				unsigned char *buf = sbuf + x * bytes_pp + y * pitch;
-				D2B_ADDSTRINX("\n* byte-by-byte ****************************************************************","");
+				D2FCB_ADDSTR1("\n* byte-by-byte ****************************************************************");
 				for (int j = 0; j < h-y; j++) {
 					int i = j * pitch;
-					D2B_ADDSTRINX("\n%02x", buf[i++]);
+					D2FCB_ADDSTR2("\n%02x", buf[i++]);
 					while (i < (w-x) * bytes_pp + j * pitch) {
-						D2B_ADDSTRINX(",%02x", buf[i]);
+						D2FCB_ADDSTR2(",%02x", buf[i]);
 						i++;
 					}
 				}
@@ -5848,31 +5849,31 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 		case MMSFB_PF_ARGB: {
 				int pitch_pix = pitch >> 2;
 				unsigned int *buf = (unsigned int*)sbuf + x + y * pitch_pix;
-				D2B_ADDSTRINX("\n* aarrggbb hex (4-byte integer) ***********************************************","");
+				D2FCB_ADDSTR1("\n* aarrggbb hex (4-byte integer) ***********************************************");
 				for (int j = 0; j < h-y; j++) {
 					int i = j * pitch_pix;
-					D2B_ADDSTRINX("\n%08x", (int)buf[i++]);
+					D2FCB_ADDSTR2("\n%08x", (int)buf[i++]);
 					while (i < (w-x) + j * pitch_pix) {
-						D2B_ADDSTRINX(",%08x", (int)buf[i]);
+						D2FCB_ADDSTR2(",%08x", (int)buf[i]);
 						i++;
 					}
 				}
-				D2B_ADDSTRINX("\n*******************************************************************************","");
+				D2FCB_ADDSTR1("\n*******************************************************************************");
 			}
 			break;
 		case MMSFB_PF_BGR555: {
 				int pitch_pix = pitch >> 1;
 				unsigned short int *buf = (unsigned short int*)sbuf + x + y * pitch_pix;
-				D2B_ADDSTRINX("\n* 0bbbbbgggggrrrrr bin (2-byte integer) ***************************************","");
+				D2FCB_ADDSTR1("\n* 0bbbbbgggggrrrrr bin (2-byte integer) ***************************************");
 				for (int j = 0; j < h-y; j++) {
 					int i = j * pitch_pix;
-					D2B_ADDSTRINX("\n%04x", buf[i++]);
+					D2FCB_ADDSTR2("\n%04x", buf[i++]);
 					while (i < (w-x) + j * pitch_pix) {
-						D2B_ADDSTRINX(",%04x", buf[i]);
+						D2FCB_ADDSTR2(",%04x", buf[i]);
 						i++;
 					}
 				}
-				D2B_ADDSTRINX("\n*******************************************************************************","");
+				D2FCB_ADDSTR1("\n*******************************************************************************");
 			}
 			break;
 		case MMSFB_PF_I420:
@@ -5887,38 +5888,38 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 					buf_v = buf_y;
 				}
 				buf_y = sbuf + x + y * pitch_pix;
-				D2B_ADDSTRINX("\n* Y plane *********************************************************************","");
+				D2FCB_ADDSTR1("\n* Y plane *********************************************************************");
 				for (int j = 0; j < h-y; j++) {
 					int i = j * pitch_pix;
-					D2B_ADDSTRINX("\n%02x", buf_y[i++]);
+					D2FCB_ADDSTR2("\n%02x", buf_y[i++]);
 					while (i < (w-x) + j * pitch_pix) {
-						D2B_ADDSTRINX(",%02x", buf_y[i]);
+						D2FCB_ADDSTR2(",%02x", buf_y[i]);
 						i++;
 					}
 				}
-				D2B_ADDSTRINX("\n* U plane *********************************************************************", "");
+				D2FCB_ADDSTR1("\n* U plane *********************************************************************");
 				x = x >> 1;
 				y = y >> 1;
 				w = w >> 1;
 				h = h >> 1;
 				for (int j = 0; j < h-y; j++) {
 					int i = j * (pitch_pix >> 1);
-					D2B_ADDSTRINX("\n%02x", buf_u[i++]);
+					D2FCB_ADDSTR2("\n%02x", buf_u[i++]);
 					while (i < (w-x) + j * (pitch_pix >> 1)) {
-						D2B_ADDSTRINX(",%02x", buf_u[i]);
+						D2FCB_ADDSTR2(",%02x", buf_u[i]);
 						i++;
 					}
 				}
-				D2B_ADDSTRINX("\n* V plane *********************************************************************","");
+				D2FCB_ADDSTR1("\n* V plane *********************************************************************");
 				for (int j = 0; j < h-y; j++) {
 					int i = j * (pitch_pix >> 1);
-					D2B_ADDSTRINX("\n%02x", buf_v[i++]);
+					D2FCB_ADDSTR2("\n%02x", buf_v[i++]);
 					while (i < (w-x) + j * (pitch_pix >> 1)) {
-						D2B_ADDSTRINX(",%02x", buf_v[i]);
+						D2FCB_ADDSTR2(",%02x", buf_v[i]);
 						i++;
 					}
 				}
-				D2B_ADDSTRINX("\n*******************************************************************************","");
+				D2FCB_ADDSTR1("\n*******************************************************************************");
 			}
 			break;
 		default:
@@ -5930,7 +5931,7 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 
 	// finalize
 	this->unlock();
-	D2B_ADDSTRINX("\n","");
+	D2FCB_ADDSTR1("\n");
 	return true;
 }
 
