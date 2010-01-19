@@ -37,6 +37,20 @@
 #include <sched.h>
 #include "mmstools/mmslogger.h"
 
+#include <map>
+
+typedef struct {
+	void *udata;
+	void (*handlerfunc)(void *);
+} CLEANUP_STRUCT;
+
+
+void addGarbageHandler(void (*handlerfunc)(void *), void *data);
+
+void callGarbageHandler();
+
+void cleargargabeHandler();
+
 class MMSThread {
 
 	private:
