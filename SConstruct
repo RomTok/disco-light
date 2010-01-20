@@ -98,6 +98,7 @@ if sconsVersion < (0,98,1):
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
+	BoolOption('enable_alsa',   'Build with ALSA support', True),
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
 	BoolOption('enable_sip',    'Build with mmssip support', False),
@@ -122,6 +123,7 @@ else:
 	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
+	BoolVariable('enable_alsa',   'Build with ALSA support', True),
 	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
 	BoolVariable('enable_flash',  'Build with mmsflash support', False),
 	BoolVariable('enable_sip',    'Build with mmssip support', False),
@@ -366,6 +368,10 @@ def printSummary():
 		print 'Media backends    : %s\n' % ', '.join(conf.env['media'])
 	else:
 		print 'Media backends    : none\n'
+	if(conf.env['alsa']):
+		print 'ALSA support      : yes'
+	else:
+		print 'ALSA support      : no'
 	if(conf.env['mmscrypt']):
 		print 'Building mmscrypt : yes'
 	else:
@@ -517,9 +523,15 @@ if('gstreamer' in env['media'] and not '-c' in sys.argv):
 	else:
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
 
-if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
-	conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
-	conf.env['alsa'] = True
+# check for ALSA
+if env['enable_alsa']:
+	if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+		conf.env['alsa'] = 1
+	else:
+		conf.env['alsa'] = 0
+else:
+	conf.env['alsa'] = 0
 	
 # checks required for database backends
 if 'sqlite3' in env['database']:
@@ -547,6 +559,7 @@ if env['enable_crypt']:
 		conf.env['mmscrypt'] = 1
 else:
 	conf.env['mmscrypt'] = 0
+
 # checks required if building mmsflash
 if(env['enable_flash']):
 	if conf.checkSimpleLib(['swfdec-0.9'], 'swfdec-0.9/swfdec/swfdec.h', required = 0):
