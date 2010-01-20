@@ -143,6 +143,8 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     	this->usetaff = true;
     	this->taffpf = MMSTAFF_PF_ARGB;
     	break;
+    default:
+    	break;
     }
 
     return true;

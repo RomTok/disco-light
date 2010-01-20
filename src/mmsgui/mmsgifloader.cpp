@@ -602,6 +602,8 @@ bool MMSGIFLoader::loadBlocks() {
                                         sufbuf[1] =   (my_color_table->table[ci] >> 4)
 													| 0xf0;
                                     	break;
+									default:
+										break;
                                     }
 
                                     outlen+=pixel_size;
@@ -644,6 +646,8 @@ bool MMSGIFLoader::loadBlocks() {
 													| (my_color_table->table[ci+1] & 0xf0);
                                         sufbuf[1] =   (my_color_table->table[ci] >> 4)
 													| 0xf0;
+                                    	break;
+                                    default:
                                     	break;
                                     }
 

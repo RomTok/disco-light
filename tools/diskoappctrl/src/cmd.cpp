@@ -30,7 +30,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 #include "cmd.h"
-
+#include "mmsinfo/mmsinfo.h"
 
 static bool isdigit(const char *what) {
     if(atoi(what)>0)
@@ -406,6 +406,8 @@ MMSCMD_COMMANDS Cmd::getCommand() {
         return EXEC;
     if(strcmp(command.c_str(),MMSCMD_EVENT)==0)
         return EVENT;
+    if(strcmp(command.c_str(),MMSCMD_VERSION)==0)
+        return VERSION;
 
 	return UNKNOWN;
 }
@@ -463,13 +465,12 @@ Cmd::~Cmd() {
 
 }
 
-void Cmd::handleRequest() {
+void Cmd::prepareDb() {
     MMSRcParser         	rcparser;
     MMSConfigDataGlobal		*rcGlobal;
     MMSConfigDataDB     	*rcConfigDB, *rcDataDB;
     MMSConfigDataGraphics	*rcGraphics;
     MMSConfigDataLanguage   *rcLanguage;
-
 
     //get datasource
     try {
@@ -502,25 +503,142 @@ void Cmd::handleRequest() {
     	delete ex;
     }
 
+}
+
+void Cmd::executeVersion() {
+	bool havemedia = false;
+	bool havebackend = false;
+	bool havedb = false;
+	printf("Disko the embedded GUI framework\n");
+	printf(" version:       %s\n", DISKO_VERSION_STR);
+	printf(" prefix:        %s\n", DISKO_PREFIX);
+	printf(" media support: ");
+#ifdef __HAVE_XINE__
+	printf("xine");
+	havemedia = true;
+#endif
+#ifdef __HAVE_GSTREAMER__
+	if(havemedia) {
+		printf(", gstreamer");
+	} else {
+		printf("gstreamer");
+		havemedia=true;
+	}
+#endif
+#ifdef __HAVE_MXIER__
+	if(havemedia) {
+		printf(", alsa mixing");
+	} else {
+		printf("alsa mixing");
+		havemedia=true;
+	}
+#endif
+	if(!havemedia) {
+		printf("none\n");
+	} else {
+		printf("\n");
+	}
+	printf(" gfx support:   ");
+#ifdef __HAVE_FBDEV__
+	printf("fbdev")
+	havebackend = true;
+#endif
+#ifdef __HAVE_DIRECTFB__
+	if(havebackend) {
+		printf(", directfb")
+	} else {
+		printf("directfb")
+		havebackend = true;
+	}
+#endif
+#ifdef __HAVE_XLIB__
+	if(havebackend) {
+		printf(", x11");
+	} else {
+		printf("x11");
+		havebackend = true;
+	}
+#endif
+	if(!havebackend) {
+		printf("none\n");
+	} else {
+		printf("\n");
+	}
+	printf(" db support:    ");
+
+#ifdef __ENABLE_SQLITE__
+	printf("sqlite");
+	havedb = true;
+#endif
+#ifdef __ENABLE_MYSQL__
+	if(havedb) {
+		printf(", mysql")
+	} else {
+		printf("mysql")
+		havedb = true;
+	}
+#endif
+#ifdef __ENABLE_FREETDS__
+	if(havedb) {
+		printf(", freetds")
+	} else {
+		printf("freetds")
+		havedb = true;
+	}
+#endif
+	if(!havedb) {
+		printf("none\n");
+	} else {
+		printf("\n");
+	}
+#ifdef __HAVE_CURL__
+	printf(" curl support:  no\n");
+#else
+	printf(" curl support:  yes\n");
+#endif
+#ifdef __HAVE_DL__
+	printf(" dynamic libs:  yes\n");
+#else
+	printf(" dynamic libs:  no\n");
+#endif
+#ifdef __HAVE_MMSCRYPT__
+	printf(" ssl support:   yes\n");
+#else
+	printf(" ssl support:   no\n");
+#endif
+	printf("\n");
+	exit(0);
+}
+
+void Cmd::handleRequest() {
+
     switch(getCommand()) {
 		case LIST :
+			prepareDb();
 			executeList();
 			break;
 		case UPDATE :
+			prepareDb();
 			executeUpdate();
 			break;
 		case ACT :
+			prepareDb();
 			executeAct();
 			break;
         case DEACT :
+			prepareDb();
             executeDeact();
             break;
         case EXEC :
+			prepareDb();
             executeExec();
             break;
         case EVENT :
+			prepareDb();
             executeEvent();
             break;
+        case VERSION :
+        	executeVersion();
 		default:
 			cons.printError("no command found");
 			break;

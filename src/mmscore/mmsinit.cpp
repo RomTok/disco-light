@@ -34,6 +34,7 @@
 #include "mmscore/mmsinit.h"
 #include "mms.h"
 
+
 static MMSPluginManager             *pluginmanager      = NULL;
 static MMSEventDispatcher           *eventdispatcher    = NULL;
 static MMSEventSignupManager        *eventsignupmanager = NULL;
@@ -134,7 +135,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         printf(" *  *  *  *      * *   *   *\n");
         printf(" *  *  *   ***   **    *   *\n");
         printf(" *  *  *      *  * *   *   *\n");
-        printf("****   *   ***   *  *   ***  V1.6.0\n");
+        printf("****   *   ***   *  *   ***  V%s\n",DISKO_VERSION_STR);
         printf("----------------------------------------------------------------------\n");
         printf("The Linux application framework for embedded devices.\n");
         printf("\n");

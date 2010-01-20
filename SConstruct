@@ -106,7 +106,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('enable_mail',   'Build with email support', False),
 	BoolOption('enable_tools',  'Build disko tools', False),
 	BoolOption('static_lib',    'Create statically linked library', False),
-	BoolOption('big_lib',       'Create one big shared library', False))
+	BoolOption('big_lib',       'Create one big shared library', True))
 else:
 	opts = Variables('disko.conf')
 	opts.AddVariables(
@@ -131,7 +131,7 @@ else:
 	BoolVariable('enable_mail',   'Build with email support', False),
 	BoolVariable('enable_tools',  'Build disko tools', False),
 	BoolVariable('static_lib', 	  'Create statically linked library', False),
-    BoolVariable('big_lib',       'Create one big shared library', False))
+    BoolVariable('big_lib',       'Create one big shared library', True))
 
 env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
@@ -708,6 +708,7 @@ env.Default(all)
 
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/disko.h')
+env.Install(idir_inc, env['TOP_DIR'] + '/inc/diskoversion.h')
 env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
 Clean('lib', 'disko.pc')
 

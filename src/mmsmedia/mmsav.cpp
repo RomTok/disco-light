@@ -1281,7 +1281,7 @@ void MMSAV::startPlaying(const string mrl, const bool cont) {
 		if(!cont) this->pos = 0;
 
 		/* start playing in extra thread to avoid blocking the application */
-		pthread_t thread;
+		//pthread_t thread;
 		internalStreamData *streamData = new internalStreamData;
 		streamData->stream = this->stream;
 		streamData->pos    = this->pos;
@@ -1358,7 +1358,7 @@ void MMSAV::stop(const bool savePosition) {
 				xine_get_pos_length(this->stream, &this->pos, NULL, NULL);
 
 			/* stop xine in extra thread to avoid blocking the application */
-			pthread_t thread;
+			//pthread_t thread;
 			internalStreamData *streamData = new internalStreamData;
 			streamData->stream = this->stream;
 			streamData->status = &(this->status);
