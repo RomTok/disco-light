@@ -175,6 +175,13 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			ie.type = MMSINPUTEVENTTYPE_BUTTONPRESS;
 			ie.posx = inputevent->posx - rect.x;
 			ie.posy = inputevent->posy - rect.y;
+			ie.absx = inputevent->posx;
+			ie.absy = inputevent->posy;
+			ie.dx = 0;
+			ie.dy = 0;
+
+			this->oldx = inputevent->posx;
+			this->oldy = inputevent->posy;
 			inputeventset.push_back(ie);
 			window->handleInput(&inputeventset);
 		}
@@ -202,6 +209,14 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				ie.type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 				ie.posx = inputevent->posx - rect.x;
 				ie.posy = inputevent->posy - rect.y;
+				ie.absx = inputevent->posx;
+				ie.absy = inputevent->posy;
+				ie.dx = inputevent->posx - this->oldx;
+				ie.dy = inputevent->posy - this->oldy;
+
+				this->oldx = -1;
+				this->oldy = -1;
+
 				inputeventset.push_back(ie);
 				if (window->handleInput(&inputeventset)) {
 					this->buttonpress_window = NULL;
@@ -266,6 +281,19 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			ie.type = MMSINPUTEVENTTYPE_AXISMOTION;
 			ie.posx = inputevent->posx - rect.x;
 			ie.posy = inputevent->posy - rect.y;
+			ie.absx = inputevent->posx;
+			ie.absy = inputevent->posy;
+			if(this->button_pressed) {
+				ie.dx = inputevent->posx - this->oldx;
+				ie.dy = inputevent->posy - this->oldy;
+			} else {
+				ie.dx = 0;
+				ie.dy = 0;
+			}
+
+			this->oldx = inputevent->posx;
+			this->oldy = inputevent->posy;
+
 			inputeventset.push_back(ie);
 			window->handleInput(&inputeventset);
 		}

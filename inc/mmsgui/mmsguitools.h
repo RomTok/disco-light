@@ -49,8 +49,12 @@ typedef enum {
 typedef struct {
 	MMSINPUTEVENTTYPE		type;
 	MMSKeySymbol			key;
-	int		    			posx;
-	int						posy;
+	short	    			posx;
+	short					posy;
+	short					dx;
+	short					dy;
+	short					absx;
+	short					absy;
 } MMSInputEvent;
 
 

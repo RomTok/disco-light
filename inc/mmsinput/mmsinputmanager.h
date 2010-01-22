@@ -42,6 +42,16 @@
 #include <vector>
 
 class MMSInputManager  {
+
+	public:
+		MMSInputManager(string file, string name);
+		~MMSInputManager();
+		void addDevice(MMS_INPUT_DEVICE device, int inputinterval);
+		void setWindowManager(IMMSWindowManager *wm);
+		void addSubscription(class MMSInputSubscription *sub);
+		void startListen();
+		void stopListen();
+
 	private:
 		MMSMutex mutex;
 		void handleInput(MMSInputEvent *inputevent);
@@ -56,15 +66,8 @@ class MMSInputManager  {
 		//! store the window on which the button was pressed
 		MMSWindow 	*buttonpress_window;
 		bool		button_pressed;
-
-	public:
-		MMSInputManager(string file, string name);
-		~MMSInputManager();
-		void addDevice(MMS_INPUT_DEVICE device, int inputinterval);
-		void setWindowManager(IMMSWindowManager *wm);
-		void addSubscription(class MMSInputSubscription *sub);
-		void startListen();
-		void stopListen();
+		short       oldx;
+		short		oldy;
 
 	friend class MMSInputThread;
 };
