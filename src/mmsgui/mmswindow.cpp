@@ -1272,24 +1272,31 @@ void MMSWindow::removeFocusFromChildWindow() {
     if ((this->parent->focusedChildWin < 0) || (this->parent->focusedChildWin >= this->parent->childwins.size())) return;
     if (this->parent->childwins.at(this->parent->focusedChildWin).window != this) return;
 
-    /* searching for other childwin to get the focus */
-//    for (unsigned int i = 0; i < this->parent->childwins.size(); i++) {
-	for (int i = (int)this->parent->childwins.size()-1; i >= 0; i--) {
-        if (i == (int)this->parent->focusedChildWin) continue;
-        MMSWindow *w = this->parent->childwins.at(i).window;
-        if (!w->isShown()) continue;
-        if (!w->getNumberOfFocusableWidgets())
-            if (!w->getNumberOfFocusableChildWins())
-                continue;
+    // searching for other childwin to get the focus
+    // first we are searching for focusable widgets
+    // if nothing found, we use a shown window and set the input focus to it
+	for (int retry = 0; retry <= 1; retry++) {
+		for (int i = (int)this->parent->childwins.size()-1; i >= 0; i--) {
+			if (i == (int)this->parent->focusedChildWin) continue;
+			MMSWindow *w = this->parent->childwins.at(i).window;
+			if (!w->isShown()) continue;
 
-        /* okay, i have the focus, remove it */
-        this->parent->removeChildWinFocus();
+			if (!retry) {
+				// first time: check if there are focusable widgets
+				if (!w->getNumberOfFocusableWidgets())
+					if (!w->getNumberOfFocusableChildWins())
+						continue;
+			}
 
-        /* set the new focused childwin */
-        this->parent->focusedChildWin = i;
-        this->parent->restoreChildWinFocus();
-        return;
-    }
+			// okay, i have the focus, remove it
+			this->parent->removeChildWinFocus();
+
+			// set the new focused childwin
+			this->parent->focusedChildWin = i;
+			this->parent->restoreChildWinFocus();
+			return;
+		}
+	}
 
 //TODO: it must be possible, that there is no focused childwin (-1)
 }
@@ -1584,18 +1591,19 @@ void MMSWindow::drawMyBorder() {
 
 bool MMSWindow::show() {
 
-    /* the window will be hidden in a few seconds (hideAction thread is running), wait for it */
+    // the window will be hidden in a few seconds (hideAction thread is running), wait for it
     while (this->willhide)
         msleep(100);
 
     while(1) {
-        /* check if the window is shown */
+        // check if the window is shown
         if(this->shown) {
-            /* call onAfterShow callback with already shown flag */
+            // call onAfterShow callback with already shown flag
             this->onAfterShow->emit(this, true);
             return true;
         }
-        /* check if the window will already be shown */
+
+        // check if the window will already be shown
         if (this->willshow) {
             msleep(100);
             continue;
@@ -1603,28 +1611,26 @@ bool MMSWindow::show() {
         break;
     }
 
-    /* start the show process */
+    // start the show process
     this->willshow = true;
 
-    /* call onBeforeShow callback */
+    // call onBeforeShow callback
     if (!this->onBeforeShow->emit(this)) {
-        /* a callback returns false, break the show process */
+        // a callback returns false, break the show process
         this->willshow = false;
         return false;
     }
 
-
-    if (getType() == MMSWINDOWTYPE_MAINWINDOW) {
-        /* hide all main and popup windows */
+    switch (getType()) {
+    case MMSWINDOWTYPE_MAINWINDOW:
+        // hide all main and popup windows
         if (this->windowmanager) {
             this->windowmanager->hideAllPopupWindows(true);
             this->windowmanager->hideAllMainWindows();
         }
-    }
-//////////
-    else
-    if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
-    	if (this->parent)
+        break;
+    case MMSWINDOWTYPE_CHILDWINDOW:
+    	if (this->parent) {
     		if (!this->parent->isShown(true)) {
     			// not really visible, break the show process
     			this->buffered_shown = true;
@@ -1634,8 +1640,11 @@ bool MMSWindow::show() {
     	        this->onAfterShow->emit(this, false);
     	        return true;
     		}
+    	}
+    	break;
+    default:
+    	break;
     }
-///////////////
 
     if (this->action->isRunning())
         this->action->cancelBroadcast.emit(this->getType());
@@ -1866,20 +1875,21 @@ bool MMSWindow::showAction(bool *stopaction) {
 //    printf("showAction %x\n", this);
 
     if(shown==true) {
-        /* call onAfterShow callback with already shown flag */
+        // call onAfterShow callback with already shown flag
         this->onAfterShow->emit(this, true);
+        this->willshow=false;
         return !saction;
     }
 
+//printf("showaction %s\n", name.c_str());
 
     // set the first focused widget, if not set and if window can get the focus
     this->setFirstFocus();
 
-//printf("showaction %s\n", name.c_str());
-
     if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
     	if ((int)this->parent->focusedChildWin >= 0) {
-    		if (!this->parent->childwins.at(this->parent->focusedChildWin).window->isShown()) {
+    		MMSWindow *fw = this->parent->childwins.at(this->parent->focusedChildWin).window;
+    		if ((fw != this) && (!fw->isShown())) {
 //printf("showaction2 %s\n", name.c_str());
     			// focused child window is not shown!
     			// so set focus to this window
@@ -2114,7 +2124,7 @@ bool MMSWindow::showAction(bool *stopaction) {
 			this->parent->setChildWindowOpacity(this, opacity);
     }
 
-    willshow=false;
+    this->willshow=false;
 
     if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
 
@@ -2195,7 +2205,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
             this->windowmanager->removeWindowFromToplevel(this);
 
     if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
-        /* remove the focus from me */
+        // remove the focus from me
     	removeFocusFromChildWindow();
     }
 
@@ -2593,6 +2603,10 @@ bool MMSWindow::setFirstFocus(bool cw) {
 
         for (unsigned int j = 0; j < this->childwins.size(); j++) {
             MMSWindow *w = this->childwins.at(j).window;
+            if (!w->shown && !w->willshow) {
+//printf("XXX: setFirstFocus3.1 to %s -> childwin %s %d %d %d\n", name.c_str(), w->name.c_str(), w->buffered_shown, w->shown, w->willshow);
+            	continue;
+            }
 
 //printf("XXX: setFirstFocus4 to %s -> childwin %s\n", name.c_str(), w->name.c_str());
 
@@ -3198,10 +3212,10 @@ void MMSWindow::setFocus() {
 
 //printf("setFocus %s\n", name.c_str());
 
-    /* i do only work for child windows */
+    // i do only work for child windows
     if (!this->parent) return;
 
-    /* searching me */
+    // searching me
     int me = -1;
     for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
         if (this->parent->childwins.at(i).window == this) {
@@ -3211,23 +3225,29 @@ void MMSWindow::setFocus() {
 
 //printf("setFocus2 %s\n", name.c_str());
 
-    /* i have found me within my parents list */
+    // found within parents list?
     if (me < 0) return;
 
 //printf("setFocus3 %s, %d, %d, parent = %s\n", name.c_str(), this->parent->focusedChildWin, me, this->parent->name.c_str());
 
-    /* i am the currently focused child window */
+	// check if shown
+	if (!this->isShown()) {
+		this->show();
+		this->waitUntilShown();
+	}
+
+	// currently focused child window?
     if ((int)this->parent->focusedChildWin == me) return;
 
 //printf("setFocus4 %s\n", name.c_str());
 
-    /* save focused widget from current window and remove the focus */
+    // save focused widget from current window and remove the focus
     this->parent->removeChildWinFocus();
 
-    /* i am the new focused window */
+    // i am the new focused window
     this->parent->focusedChildWin = me;
 
-    /* restore focused widget to candidate window */
+    // restore focused widget to candidate window
     this->parent->restoreChildWinFocus();
 
 	// change the z-order of child windows?
@@ -3680,7 +3700,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
     		/* button pressed */
 	        try {
 	            if (this->children.size()) {
-	            	/* searching for the right widget to get the focus */
+	            	// searching for the right widget to get the focus
 	            	int posx = inputeventset->at(i).posx;
 	            	int posy = inputeventset->at(i).posy;
 	            	bool b;
@@ -3724,7 +3744,8 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 					bool modal = false;
 					if (this->childwins.at(this->focusedChildWin).window->isShown())
 						this->childwins.at(this->focusedChildWin).window->getModal(modal);
-       				if (!modal) {
+
+					if (!modal) {
 						/* searching for the right childwin to get the focus */
 						int posx = inputeventset->at(i).posx;
 						int posy = inputeventset->at(i).posy;

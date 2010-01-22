@@ -99,6 +99,8 @@ void MMSThread::start() {
 
     /* create the new thread */
     pthread_create(&this->id, &tattr, startmythread, static_cast<void *>(this));
+
+    pthread_attr_destroy(&this->tattr);
 }
 
 void MMSThread::detach() {
