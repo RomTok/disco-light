@@ -81,6 +81,7 @@ class MMSInputWidget : public MMSWidget {
         MMSFBColor getColor();
         MMSFBColor getSelColor();
         string getText();
+        void getText(string &text);
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);

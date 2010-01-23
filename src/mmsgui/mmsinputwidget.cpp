@@ -566,6 +566,11 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
     else if ((inputWidgetClass)&&(inputWidgetClass->is##x())) return inputWidgetClass->get##x(); \
     else return this->da->theme->inputWidgetClass.get##x();
 
+#define GETINPUT2(x, y) \
+    if (this->myInputWidgetClass.is##x()) y=myInputWidgetClass.get##x(); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->is##x())) y=inputWidgetClass->get##x(); \
+    else y=this->da->theme->inputWidgetClass.get##x();
+
 string MMSInputWidget::getFontPath() {
     GETINPUT(FontPath);
 }
@@ -592,6 +597,10 @@ MMSFBColor MMSInputWidget::getSelColor() {
 
 string MMSInputWidget::getText() {
     GETINPUT(Text);
+}
+
+void MMSInputWidget::getText(string &text) {
+    GETINPUT2(Text, text);
 }
 
 /***********************************************/
