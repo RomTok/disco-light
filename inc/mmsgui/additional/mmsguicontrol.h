@@ -56,6 +56,7 @@ class MMSGUIControl {
         virtual bool show();
 
 		// friends
+		friend class MMSFileDialog;
 		friend class MMSInputControl;
 };
 

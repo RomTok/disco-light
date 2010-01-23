@@ -45,22 +45,20 @@
 #define FILEDIALOG_DOWN		"filedialog_down"
 
 
-MMSFileDialog::MMSFileDialog() {
-	this->dm = NULL;
+MMSFileDialog::MMSFileDialog(MMSWindow *dialogwindow) {
+	// init
 	this->path = "/";
 	this->filename = "";
-	this->dialogwindow = NULL;
 
 	// initialize the callbacks
     this->onOK     = new sigc::signal<void, MMSFileDialog*>;
     this->onCancel = new sigc::signal<void>;
 }
 
-MMSFileDialog::MMSFileDialog(string path, string filename, MMSWindow *dialogwindow) {
-	this->dm = NULL;
+MMSFileDialog::MMSFileDialog(string path, string filename, MMSWindow *dialogwindow) : MMSGUIControl(dialogwindow) {
+	// init
 	this->path = path;
 	this->filename = filename;
-	this->dialogwindow = dialogwindow;
 
 	// initialize the callbacks
     this->onOK     = new sigc::signal<void, MMSFileDialog*>;
@@ -68,32 +66,23 @@ MMSFileDialog::MMSFileDialog(string path, string filename, MMSWindow *dialogwind
 }
 
 MMSFileDialog::~MMSFileDialog() {
-
 	// delete the callbacks
     if (this->onOK)
     	delete this->onOK;
     if (this->onCancel)
     	delete this->onCancel;
-
-    // delete the dialog
-    if (this->dm)
-		delete dm;
 }
 
 
-bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSTheme *theme) {
-	this->dm = new MMSDialogManager(parent);
-	this->dialogfile = dialogfile;
-	this->dialogwindow = NULL;
-
-	if (this->dialogfile != "")
-		// load a user specified dialog file
-		this->dialogwindow = this->dm->loadDialog(this->dialogfile, theme);
-	else
-	if (parent)
-		// load the default dialog file which includes a child window
-		// do this only if a parent window is given!!!
-		this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsfiledialog.xml", theme);
+bool MMSFileDialog::load(MMSWindow *parent, string dialogfile, MMSTheme *theme) {
+	if (!MMSGUIControl::load(parent, dialogfile, theme)) {
+		// base class has failed to load...
+		if (parent) {
+			// load the default dialog file which includes a child window
+			// do this only if a parent window is given!!!
+			this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsfiledialog.xml", theme);
+		}
+	}
 
 	if (!this->dialogwindow)
 		return false;
@@ -148,10 +137,6 @@ bool MMSFileDialog::loadFileDialog(MMSWindow *parent, string dialogfile, MMSThem
 	return true;
 }
 
-bool MMSFileDialog::isInitialized() {
-	return (this->dialogwindow);
-}
-
 bool MMSFileDialog::setTitle(string title) {
 	if (filedialog_title) {
 		filedialog_title->setText(title);
@@ -161,6 +146,7 @@ bool MMSFileDialog::setTitle(string title) {
 }
 
 bool MMSFileDialog::show() {
+	// initialized?
 	if (!isInitialized()) return false;
 
 	// re-init the dialog
@@ -170,7 +156,6 @@ bool MMSFileDialog::show() {
 
 	// show the dialog
 	this->dialogwindow->setFocus();
-	this->dialogwindow->show();
 
 	return true;
 }
