@@ -58,19 +58,33 @@
 #define XML_ID_SLIDER       "slider"*/
 
 
+//! alignment type, used e.g. for positioning of windows, text in labels or textboxes, ...
 typedef enum {
+	//! not set
     MMSALIGNMENT_NOTSET=0,
+    //! centered, horizontal and vertical
     MMSALIGNMENT_CENTER,
+    //! left aligned, vertical centered
     MMSALIGNMENT_LEFT,
+    //! right aligned, vertical centered
     MMSALIGNMENT_RIGHT,
+    //! horizontal justified, vertical centered
     MMSALIGNMENT_JUSTIFY,
+    //! horizontal centered, top aligned
     MMSALIGNMENT_TOP_CENTER,
+    //! left and top aligned
     MMSALIGNMENT_TOP_LEFT,
+    //! right and top aligned
     MMSALIGNMENT_TOP_RIGHT,
+    //! horizontal justified, top aligned
     MMSALIGNMENT_TOP_JUSTIFY,
+    //! horizontal centered, bottom aligned
     MMSALIGNMENT_BOTTOM_CENTER,
+    //! left and bottom aligned
     MMSALIGNMENT_BOTTOM_LEFT,
+    //! right and bottom aligned
     MMSALIGNMENT_BOTTOM_RIGHT,
+    //! horizontal justified, bottom aligned
     MMSALIGNMENT_BOTTOM_JUSTIFY
 } MMSALIGNMENT;
 
