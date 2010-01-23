@@ -33,6 +33,11 @@
 #include "mmsgui/additional/mmsinputcontrol.h"
 #include "mmsinfo/mmsinfo.h"
 
+#define INPUTCONTROL_TEXTWIN	"inputcontrol_textwin"
+#define INPUTCONTROL_TEXT		"inputcontrol_text"
+#define INPUTCONTROL_SPRITE		"inputcontrol_sprite"
+#define INPUTCONTROL_STEXT		"inputcontrol_stext"
+
 MMSInputControl::MMSInputControl(MMSWindow *window) {
 }
 
@@ -53,11 +58,27 @@ bool MMSInputControl::load(MMSWindow *parent, string dialogfile, MMSTheme *theme
 		return false;
 
 	// get access to the widgets
-	// TODO
+	this->inputcontrol_textwin	= dynamic_cast<MMSWindow*>(this->window->findWindow(INPUTCONTROL_TEXTWIN));
+	this->inputcontrol_text		= dynamic_cast<MMSInputWidget*>(this->window->findWidget(INPUTCONTROL_TEXT));
+	this->inputcontrol_sprite	= dynamic_cast<MMSWindow*>(this->window->findWindow(INPUTCONTROL_SPRITE));
+	this->inputcontrol_stext	= dynamic_cast<MMSLabelWidget*>(this->window->findWidget(INPUTCONTROL_STEXT));
 
 	// check something and/or connect callbacks if widgets does exist
-	// TODO
+	if (this->inputcontrol_text) {
+		this->inputcontrol_text->onBeforeChange->connect(sigc::mem_fun(this,&MMSInputControl::onBeforeChange));
+	}
 
 	return true;
 }
 
+bool MMSInputControl::onBeforeChange(MMSWidget *widget, string text, bool add, MMSFBRectangle rect) {
+	if (add) {
+		MMSFBRectangle r = this->inputcontrol_textwin->getGeometry();
+		MMSFBRectangle rs = this->inputcontrol_sprite->getGeometry();
+		this->inputcontrol_stext->setText(text);
+		this->inputcontrol_sprite->moveTo(r.x + rect.x - rs.w / 2 + rect.w / 2, r.y + rect.y - rs.h / 2 + rect.h / 2);
+		this->inputcontrol_sprite->show();
+	}
+//	printf("'%s':%d,%d,%d,%d\n", text.c_str(),rect.x, rect.y, rect.w, rect.h);
+	return true;
+}

@@ -46,6 +46,12 @@ User inputs are additionally used to trigger animation effects.
 */
 class MMSInputControl : public MMSGUIControl {
     private:
+    	MMSWindow			*inputcontrol_textwin;
+    	MMSInputWidget		*inputcontrol_text;
+    	MMSWindow			*inputcontrol_sprite;
+    	MMSLabelWidget		*inputcontrol_stext;
+
+    	bool onBeforeChange(MMSWidget *widget, string text, bool add, MMSFBRectangle rect);
 
     public:
         MMSInputControl(MMSWindow *window = NULL);
