@@ -43,6 +43,6 @@
 
 #include "mmsgui/mmswidgets.h"
 
-#include "mmsgui/additional/mmsfiledialog.h"
+#include "mmsgui/additional/mmsguicontrols.h"
 
 #endif /*MMSGUI_H_*/

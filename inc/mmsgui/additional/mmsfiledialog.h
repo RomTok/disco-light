@@ -37,6 +37,12 @@
 #include "mmsgui/mmswidgets.h"
 #include "mmsgui/mmsdialogmanager.h"
 
+//! File dialog class.
+/*!
+Allows you to open a file dialog.
+Users can go through the directories, select files or set a new filename.
+\author Jens Schneider
+*/
 class MMSFileDialog {
     private:
     	string 				dialogfile;
