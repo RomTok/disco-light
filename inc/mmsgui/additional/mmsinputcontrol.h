@@ -48,7 +48,7 @@ class MMSInputControl : public MMSGUIControl {
     private:
 
     public:
-        MMSInputControl(MMSWindow *dialogwindow = NULL);
+        MMSInputControl(MMSWindow *window = NULL);
         ~MMSInputControl();
         bool load(MMSWindow *parent, string dialogfile = "", MMSTheme *theme = NULL);
 };

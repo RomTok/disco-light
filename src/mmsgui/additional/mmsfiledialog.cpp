@@ -45,7 +45,7 @@
 #define FILEDIALOG_DOWN		"filedialog_down"
 
 
-MMSFileDialog::MMSFileDialog(MMSWindow *dialogwindow) {
+MMSFileDialog::MMSFileDialog(MMSWindow *window) {
 	// init
 	this->path = "/";
 	this->filename = "";
@@ -55,7 +55,7 @@ MMSFileDialog::MMSFileDialog(MMSWindow *dialogwindow) {
     this->onCancel = new sigc::signal<void>;
 }
 
-MMSFileDialog::MMSFileDialog(string path, string filename, MMSWindow *dialogwindow) : MMSGUIControl(dialogwindow) {
+MMSFileDialog::MMSFileDialog(string path, string filename, MMSWindow *window) : MMSGUIControl(window) {
 	// init
 	this->path = path;
 	this->filename = filename;
@@ -80,22 +80,22 @@ bool MMSFileDialog::load(MMSWindow *parent, string dialogfile, MMSTheme *theme) 
 		if (parent) {
 			// load the default dialog file which includes a child window
 			// do this only if a parent window is given!!!
-			this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsfiledialog.xml", theme);
+			this->window = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsfiledialog.xml", theme);
 		}
 	}
 
-	if (!this->dialogwindow)
+	if (!this->window)
 		return false;
 
 	// get access to the widgets
-	this->filedialog_title = (MMSLabelWidget*)this->dialogwindow->findWidget(FILEDIALOG_TITLE);
-	this->filedialog_ok = this->dialogwindow->findWidget(FILEDIALOG_OK);
-	this->filedialog_cancel = this->dialogwindow->findWidget(FILEDIALOG_CANCEL);
-	this->filedialog_path = (MMSLabelWidget*)this->dialogwindow->findWidget(FILEDIALOG_PATH);
-	this->filedialog_name = (MMSInputWidget*)this->dialogwindow->findWidget(FILEDIALOG_NAME);
-	this->filedialog_filelist = (MMSMenuWidget*)this->dialogwindow->findWidget(FILEDIALOG_FILELIST);
-	this->filedialog_up = (MMSButtonWidget*)this->dialogwindow->findWidget(FILEDIALOG_UP);
-	this->filedialog_down = (MMSButtonWidget*)this->dialogwindow->findWidget(FILEDIALOG_DOWN);
+	this->filedialog_title = (MMSLabelWidget*)this->window->findWidget(FILEDIALOG_TITLE);
+	this->filedialog_ok = this->window->findWidget(FILEDIALOG_OK);
+	this->filedialog_cancel = this->window->findWidget(FILEDIALOG_CANCEL);
+	this->filedialog_path = (MMSLabelWidget*)this->window->findWidget(FILEDIALOG_PATH);
+	this->filedialog_name = (MMSInputWidget*)this->window->findWidget(FILEDIALOG_NAME);
+	this->filedialog_filelist = (MMSMenuWidget*)this->window->findWidget(FILEDIALOG_FILELIST);
+	this->filedialog_up = (MMSButtonWidget*)this->window->findWidget(FILEDIALOG_UP);
+	this->filedialog_down = (MMSButtonWidget*)this->window->findWidget(FILEDIALOG_DOWN);
 
 	// check something and/or connect callbacks if widgets does exist
 	if (this->filedialog_title)
@@ -155,7 +155,7 @@ bool MMSFileDialog::show() {
 	fillMenu();
 
 	// show the dialog
-	this->dialogwindow->setFocus();
+	this->window->setFocus();
 
 	return true;
 }
@@ -164,7 +164,7 @@ void MMSFileDialog::onReturn(MMSWidget *widget) {
 	if (widget == this->filedialog_ok) {
 		if (this->filename!="") {
 			// hide the window
-			dialogwindow->hide();
+			window->hide();
 
 			// call callback
 			if (this->onOK)
@@ -174,7 +174,7 @@ void MMSFileDialog::onReturn(MMSWidget *widget) {
 	else
 	if (widget == this->filedialog_cancel) {
 		// hide the window
-		dialogwindow->hide();
+		window->hide();
 
 		// call callback
 		if (this->onCancel)

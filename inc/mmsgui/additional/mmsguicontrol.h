@@ -47,9 +47,9 @@ class MMSGUIControl {
     private:
     	string 				dialogfile;
     	MMSDialogManager	*dm;
-    	MMSWindow			*dialogwindow;
+    	MMSWindow			*window;
     public:
-        MMSGUIControl(MMSWindow *dialogwindow = NULL);
+        MMSGUIControl(MMSWindow *window = NULL);
         virtual ~MMSGUIControl();
         virtual bool load(MMSWindow *parent, string dialogfile = "", MMSTheme *theme = NULL);
         virtual bool isInitialized();

@@ -68,7 +68,7 @@ class MMSFileDialog : public MMSGUIControl {
     	bool fillMenu();
 
     public:
-        MMSFileDialog(MMSWindow *dialogwindow = NULL);
+        MMSFileDialog(MMSWindow *window = NULL);
         MMSFileDialog(string path, string filename, MMSWindow *dialogwindow = NULL);
         ~MMSFileDialog();
         bool load(MMSWindow *parent, string dialogfile = "", MMSTheme *theme = NULL);

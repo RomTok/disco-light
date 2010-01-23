@@ -33,16 +33,16 @@
 #include "mmsgui/additional/mmsguicontrol.h"
 #include "mmsinfo/mmsinfo.h"
 
-MMSGUIControl::MMSGUIControl(MMSWindow *dialogwindow) {
+MMSGUIControl::MMSGUIControl(MMSWindow *window) {
 	// init
 	this->dm = NULL;
-	this->dialogwindow = dialogwindow;
+	this->window = window;
 }
 
 MMSGUIControl::~MMSGUIControl() {
 	// hide the window
-	if (this->dialogwindow)
-		this->dialogwindow->hide(false, true);
+	if (this->window)
+		this->window->hide(false, true);
 
 	// delete the dialog manager
     if (this->dm)
@@ -55,21 +55,21 @@ bool MMSGUIControl::load(MMSWindow *parent, string dialogfile, MMSTheme *theme) 
 		delete this->dm;
 	this->dm = new MMSDialogManager(parent);
 	this->dialogfile = dialogfile;
-	this->dialogwindow = NULL;
+	this->window = NULL;
 
 	if (this->dialogfile != "") {
 		// load a user specified dialog file
-		this->dialogwindow = this->dm->loadDialog(this->dialogfile, theme);
+		this->window = this->dm->loadDialog(this->dialogfile, theme);
 	}
 
-	if (!this->dialogwindow)
+	if (!this->window)
 		return false;
 
 	return true;
 }
 
 bool MMSGUIControl::isInitialized() {
-	return (this->dialogwindow);
+	return (this->window);
 }
 
 bool MMSGUIControl::show() {
@@ -77,7 +77,7 @@ bool MMSGUIControl::show() {
 	if (!isInitialized()) return false;
 
 	// show the dialog
-	this->dialogwindow->setFocus();
+	this->window->setFocus();
 
 	return true;
 }

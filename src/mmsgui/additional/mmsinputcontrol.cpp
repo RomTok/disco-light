@@ -33,7 +33,7 @@
 #include "mmsgui/additional/mmsinputcontrol.h"
 #include "mmsinfo/mmsinfo.h"
 
-MMSInputControl::MMSInputControl(MMSWindow *dialogwindow) {
+MMSInputControl::MMSInputControl(MMSWindow *window) {
 }
 
 MMSInputControl::~MMSInputControl() {
@@ -45,11 +45,11 @@ bool MMSInputControl::load(MMSWindow *parent, string dialogfile, MMSTheme *theme
 		if (parent) {
 			// load the default dialog file which includes a child window
 			// do this only if a parent window is given!!!
-			this->dialogwindow = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsinputcontrol.xml", theme);
+			this->window = this->dm->loadChildDialog((string)getPrefix() + "/share/disko/mmsgui/mmsinputcontrol.xml", theme);
 		}
 	}
 
-	if (!this->dialogwindow)
+	if (!this->window)
 		return false;
 
 	// get access to the widgets
