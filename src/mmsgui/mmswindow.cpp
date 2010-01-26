@@ -95,11 +95,12 @@ MMSWindow::MMSWindow() {
     this->initialArrowsDrawn = false;
 
     /* initialize the callbacks */
-    onBeforeShow  = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
-    onAfterShow   = new sigc::signal<void, MMSWindow*, bool>;
-    onBeforeHide  = new sigc::signal<bool, MMSWindow*, bool>::accumulated<bool_accumulator>;
-    onHide        = new sigc::signal<void, MMSWindow*, bool>;
-    onHandleInput = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
+    onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
+    onAfterShow         = new sigc::signal<void, MMSWindow*, bool>;
+    onBeforeHide        = new sigc::signal<bool, MMSWindow*, bool>::accumulated<bool_accumulator>;
+    onHide              = new sigc::signal<void, MMSWindow*, bool>;
+    onHandleInput       = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
+    onBeforeHandleInput = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
 }
 
 MMSWindow::~MMSWindow() {
@@ -116,6 +117,7 @@ MMSWindow::~MMSWindow() {
     if (onBeforeHide) delete onBeforeHide;
     if (onHide) delete onHide;
     if (onHandleInput) delete onHandleInput;
+    if(onBeforeHandleInput) delete onBeforeHandleInput;
 
 	if (this->type != MMSWINDOWTYPE_CHILDWINDOW) {
 		// remove normal window
@@ -3614,6 +3616,14 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 
 
     for(unsigned int i=0; i < inputeventset->size();i++) {
+        //check childwindows
+        if(this->childwins.empty()) {
+            if(onBeforeHandleInput->emit(this,&(inputeventset->at(i))))
+            	return true;
+        } else {
+            if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,&(inputeventset->at(i))))
+            	return true;
+        }
 
     	if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_KEYPRESS) {
     		/* keyboard inputs */
