@@ -105,6 +105,7 @@ class MMSDialogManager {
         MMSChildWindow* loadChildDialog(string filename, MMSTheme *theme = NULL);
         MMSWidget* findWidget(string name);
         MMSWidget* operator[](string name);
+        MMSWindow* getWindow();
 
         MMSDescriptionClass getDescription();
 };

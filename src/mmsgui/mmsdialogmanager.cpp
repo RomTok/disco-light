@@ -1843,5 +1843,7 @@ string MMSDialogManager::getGapValues(MMSTaffFile *tafff, MMSWidget *currentWidg
 }
 
 
-
+MMSWindow *MMSDialogManager::getWindow() {
+	return this->rootWindow;
+}
 

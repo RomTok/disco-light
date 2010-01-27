@@ -888,6 +888,41 @@ class MMSWindow {
         */
         sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator> *onHandleInput;
 
+        //! Set one or more callbacks for the onBeforeHandleInput event.
+        /*!
+        The connected callbacks will be called if an input event was raised, before any standard operation took place
+
+        A callback method must be defined like this:
+
+        	bool myclass::mycallbackmethod(MMSWindow *win, MMSInputEvent *inputevent);
+
+        	Parameters:
+
+        		win -> is the pointer to the window
+
+        		inputevent -> the input event
+
+        	Returns:
+
+        		callback should return true if the input was handled, else false
+
+        To connect your callback to onHandleInput do this:
+
+            sigc::connection connection;
+            connection = mywindow->onHandleInput->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onHandleInput BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
+        */
+        sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator> *onBeforeHandleInput;
+
 
     public:
         /* begin of theme access methods *************************************/

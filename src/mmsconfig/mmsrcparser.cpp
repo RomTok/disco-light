@@ -33,6 +33,7 @@
 #include <cstring>
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"
+#include "diskoversion.h"
 
 #define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + string(parvalue) + "' for parameter '" + string((const char *)parname) + "'\n valid value(s): " + validvals + "\n " + addmsg);
 
@@ -152,8 +153,8 @@ void MMSRcParser::checkVersion(xmlNode* node) {
 	int mav = atoi((char*)&version[0]);
 	int miv = atoi((char*)&version[2]);
 
-	// currently check for disko 1.6
-	if ((mav > 1)||(miv > 6)) {
+	// disko version check
+	if ((mav > DISKO_MAJOR_VERSION )||(miv > DISKO_MINOR_VERSION)) {
 		std::cout << "Version of configuration file does not match!" << std::endl;
 		xmlFree(version);
 		throw new MMSRcParserError(1, "version mismatch");
