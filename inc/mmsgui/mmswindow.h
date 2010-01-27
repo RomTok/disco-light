@@ -704,6 +704,16 @@ class MMSWindow {
         bool moveTo(int x, int y);
 
 
+        bool stretchmode;
+        int stretchLeft;
+        int stretchRight;
+        int stretchUp;
+        int stretchDown;
+
+        bool stretch(int left = 100, int up = 100, int right = 100, int down = 100);
+
+
+
 		//! inform the window, that language has changed
 		void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
 
