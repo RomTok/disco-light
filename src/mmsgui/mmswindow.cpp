@@ -54,44 +54,20 @@ int			MMSWindow::fullscreen_root_window_use_count = 0;
 MMSFBWindow *MMSWindow::fullscreen_main_window			= NULL;
 int			MMSWindow::fullscreen_main_window_use_count	= 0;
 
+// helper macros for horizontal stretchmode
+#define MMSFBWINDOW_CALC_STRETCH_W(w)				((w->stretchLeft-100)+(w->stretchRight-100)+100)
+#define MMSFBWINDOW_CALC_STRETCH_LEFT(x,w) 			((w->stretchLeft!=100)?(((x)*w->stretchLeft*100+50)/10000):(x))
+#define MMSFBWINDOW_CALC_STRETCH_WIDTH(x,w) 		((MMSFBWINDOW_CALC_STRETCH_W(w)!=100)?(((x)*MMSFBWINDOW_CALC_STRETCH_W(w)*100+50)/10000):(x))
+#define MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(x,w) 	((MMSFBWINDOW_CALC_STRETCH_W(w)!=100)?(((x)*100+50)/MMSFBWINDOW_CALC_STRETCH_W(w)):(x))
 
+// helper macros for vertical stretchmode
+#define MMSFBWINDOW_CALC_STRETCH_H(w)				((w->stretchUp-100)+(w->stretchDown-100)+100)
+#define MMSFBWINDOW_CALC_STRETCH_UP(x,w) 			((w->stretchUp!=100)?(((x)*w->stretchUp*100+50)/10000):(x))
+#define MMSFBWINDOW_CALC_STRETCH_HEIGHT(x,w) 		((MMSFBWINDOW_CALC_STRETCH_H(w)!=100)?(((x)*MMSFBWINDOW_CALC_STRETCH_H(w)*100+50)/10000):(x))
+#define MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(x,w)	((MMSFBWINDOW_CALC_STRETCH_H(w)!=100)?(((x)*100+50)/MMSFBWINDOW_CALC_STRETCH_H(w)):(x))
 
-#define MMSFBWINDOW_CALC_STRETCH_RIGHT(x,w) 	((w->stretchRight!=100)?(((x)*w->stretchRight*100+50)/10000):(x))
-#define MMSFBWINDOW_CALC_STRETCH_DOWN(x,w) 		((w->stretchDown!=100)?(((x)*w->stretchDown*100+50)/10000):(x))
-#define MMSFBWINDOW_CALC_STRETCH_RIGHT_REV(x,w) ((w->stretchRight!=100)?(((x)*100+50)/w->stretchRight):(x))
-#define MMSFBWINDOW_CALC_STRETCH_DOWN_REV(x,w) 	((w->stretchDown!=100)?(((x)*100+50)/w->stretchDown):(x))
-
-
-bool MMSWindow::stretch(int left, int up, int right, int down) {
-
-	if (!parent) return false;
-
-	stretchmode = false;
-	if ((left > 0)&&(right > 0)&&(up > 0)&&(down > 0)
-		&&((left != 100)||(right != 100)||(up != 100)||(down != 100))) {
-		stretchmode = true;
-	}
-
-	this->stretchLeft = left;
-	this->stretchUp = up;
-	this->stretchRight = right;
-	this->stretchDown = down;
-
-	parent->setChildWindowRegion(this, true);
-
-	return true;
-}
 
 MMSWindow::MMSWindow() {
-
-this->stretchmode = false;
-this->stretchLeft = 0;
-this->stretchUp = 0;
-this->stretchRight = 0;
-this->stretchDown = 0;
-
-
-
 
     this->TID = 0;
     this->Lock_cnt = 0;
@@ -129,6 +105,13 @@ this->stretchDown = 0;
     this->rightArrowWidget = NULL;
 
     this->initialArrowsDrawn = false;
+
+    // init stretch mode, per default the windows will not be stretched by the window manager
+    this->stretchmode = false;
+    this->stretchLeft = 0;
+    this->stretchUp = 0;
+    this->stretchRight = 0;
+    this->stretchDown = 0;
 
     /* initialize the callbacks */
     onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
@@ -967,8 +950,10 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                 currregion->y2 = childwin->geom.y + childwin->geom.h - 1;
 
                 if (childwin->stretchmode) {
-                	currregion->x2 = childwin->geom.x + MMSFBWINDOW_CALC_STRETCH_RIGHT(childwin->geom.w, childwin) - 1;
-                	currregion->y2 = childwin->geom.y + MMSFBWINDOW_CALC_STRETCH_DOWN(childwin->geom.h, childwin) - 1;
+                	currregion->x1 = childwin->geom.x - (MMSFBWINDOW_CALC_STRETCH_LEFT(childwin->geom.w, childwin) - childwin->geom.w);
+                	currregion->y1 = childwin->geom.y - (MMSFBWINDOW_CALC_STRETCH_UP(childwin->geom.h, childwin) - childwin->geom.h);
+                	currregion->x2 = currregion->x1 + MMSFBWINDOW_CALC_STRETCH_WIDTH(childwin->geom.w, childwin) - 1;
+                	currregion->y2 = currregion->y1 + MMSFBWINDOW_CALC_STRETCH_HEIGHT(childwin->geom.h, childwin) - 1;
                 }
 
                 bool os;
@@ -1133,10 +1118,10 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
                 src_rect.h-= myregion->y2 - pw_region.y2;
 
 			if (cw->window->stretchmode) {
-				src_rect.x = MMSFBWINDOW_CALC_STRETCH_RIGHT_REV(src_rect.x, cw->window);
-				src_rect.y = MMSFBWINDOW_CALC_STRETCH_DOWN_REV(src_rect.y, cw->window);
-				src_rect.w = MMSFBWINDOW_CALC_STRETCH_RIGHT_REV(src_rect.w, cw->window);
-				src_rect.h = MMSFBWINDOW_CALC_STRETCH_DOWN_REV(src_rect.h, cw->window);
+				src_rect.x = MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(src_rect.x, cw->window);
+				src_rect.y = MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(src_rect.y, cw->window);
+				src_rect.w = MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(src_rect.w , cw->window);
+				src_rect.h = MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(src_rect.h, cw->window);
 			}
 
             bool os;
@@ -1150,25 +1135,19 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
                 else
                     dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
 
-/*
-printf("srcrect %d,%d,%d,%d an offset %d+%d=%d %d+%d=%d\n", src_rect.x,src_rect.y,src_rect.w,src_rect.h,
-		dst_x , offsX, dst_x + offsX, dst_y , offsY, dst_y + offsY);
-printf("window size %dx%d, pos %d,%d\n", cw->window->geom.w, cw->window->geom.h, cw->window->geom.x, cw->window->geom.y);
-*/
-
-                /* blit window front buffer to destination surface */
+                // blit window front buffer to destination surface
                 if (!cw->window->stretchmode) {
+                	// normal blit if stretch mode is off
                 	dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
                 }
                 else {
-					MMSFBRectangle rrr = MMSFBRectangle(
+                	// stretch the window to the parent surface
+					MMSFBRectangle dr = MMSFBRectangle(
 											dst_x + offsX,
 											dst_y + offsY,
-											MMSFBWINDOW_CALC_STRETCH_RIGHT(src_rect.w, cw->window),
-											MMSFBWINDOW_CALC_STRETCH_DOWN(src_rect.h, cw->window));
-
-//					printf(">dstrect %d,%d,%d,%d\n", rrr.x-dst_x-offsX,rrr.y-dst_y-offsY,rrr.w,rrr.h);
-					dst_surface->stretchBlit(cw->window->surface, &src_rect, &rrr);
+											MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
+											MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
+					dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
                 }
         	}
         	else {
@@ -1937,6 +1916,30 @@ bool MMSWindow::moveTo(int x, int y) {
 	return true;
 }
 
+
+bool MMSWindow::stretch(int left, int up, int right, int down) {
+
+	// TODO: currently we work for child windows only
+	if (!parent) return false;
+
+	// reset stretch mode
+	this->stretchmode = false;
+	this->stretchLeft = left;
+	this->stretchUp = up;
+	this->stretchRight = right;
+	this->stretchDown = down;
+
+	if ((left > 0)&&(right > 0)&&(up > 0)&&(down > 0)
+		&&((left != 100)||(right != 100)||(up != 100)||(down != 100))) {
+		// values accepted
+		this->stretchmode = true;
+	}
+
+	// re-calculate the window region and return
+	parent->setChildWindowRegion(this, true);
+	return true;
+}
+
 bool MMSWindow::showAction(bool *stopaction) {
     bool    saction = *stopaction;
 
@@ -2433,7 +2436,7 @@ void MMSWindow::remove(MMSWidget *child) {
 
 void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, bool check_shown) {
     MMSFBRegion  	region;
-    MMSFBRectangle rrr;
+    MMSFBRectangle	flip_rect;
 
     // use own surface?
     // note: os=false must ONLY be set, if this window is a child window!!!
@@ -2449,7 +2452,7 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
 	    }
 	}
 
-    /* lock drawing */
+    // lock drawing
 //PUP    this->drawLock.lock();
 	lock();
 
@@ -2503,29 +2506,34 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
         	return;
         }
 
-    	rrr=rect;
+        // save src rectangle for separate flip() call
+        flip_rect = rect;
 
         if (stretchmode) {
-        	rect.x = MMSFBWINDOW_CALC_STRETCH_RIGHT(rect.x, this);
-        	rect.y = MMSFBWINDOW_CALC_STRETCH_DOWN(rect.y, this);
-        	rect.w = MMSFBWINDOW_CALC_STRETCH_RIGHT(rect.w, this);
-        	rect.h = MMSFBWINDOW_CALC_STRETCH_DOWN(rect.h, this);
+            // adjust the destination rectangle
+            rect.x = MMSFBWINDOW_CALC_STRETCH_WIDTH(rect.x, this);
+        	rect.y = MMSFBWINDOW_CALC_STRETCH_HEIGHT(rect.y, this);
+        	rect.w = MMSFBWINDOW_CALC_STRETCH_WIDTH(rect.w, this);
+        	rect.h = MMSFBWINDOW_CALC_STRETCH_HEIGHT(rect.h, this);
         }
     }
     else {
+    	// update complete inner geom
         rect = this->innerGeom;
-    	rrr=rect;
+
+        // save src rectangle for separate flip() call
+        flip_rect = rect;
     }
 
     if(child) {
-    	/* draw only childs of this child */
+    	// draw only childs of this child
 		if (os)
 			child->drawchildren();
     }
     else {
-        /* draw only some parts of the window */
+        // draw only some parts of the window
     	if (os)
-    		draw(true, (rect2update)?&rrr:NULL);
+    		draw(true, (rect2update)?&flip_rect:NULL);
     }
 
     // set region
@@ -2538,13 +2546,13 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
 //        iToStr(region.x1) + "," + iToStr(region.y1) + "," + iToStr(region.x2) + "," + iToStr(region.y2) +")");
 
     if (!bordergeomset)
-        /* border geom is not set -> draw the border */
+        // border geom is not set -> draw the border
         drawMyBorder();
     else {
-        /* draw the border if it is in the flipping region */
+        // draw the border if it is in the flipping region
         bool htdb = false;
 
-        /* check if border should be drawn */
+        // check if border should be drawn
         if (!htdb)
             htdb = ((bordergeom[0].x + bordergeom[0].w > region.x1)
                   &&(bordergeom[0].y + bordergeom[0].h > region.y1));
@@ -2567,32 +2575,33 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
             htdb = (bordergeom[7].x + bordergeom[7].w > region.x1);
 
         if (htdb) {
-            /* I have to draw the border */
+            // I have to draw the border
         	DEBUGMSG("MMSGUI", "draw window border");
             drawMyBorder();
         }
     }
 
-    /* flip region */
+    // flip region
     if (!this->parent)
         flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
     else {
     	if (!stretchmode) {
+    		// normal flip
             this->parent->flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
     	}
     	else {
     		// flip src region and call flipWindow with stretched region
     		MMSFBRegion rg;
-    	    rg.x1 = rrr.x;
-    	    rg.x2 = rrr.x+rrr.w-1;
-    	    rg.y1 = rrr.y;
-    	    rg.y2 = rrr.y+rrr.h-1;
+    	    rg.x1 = flip_rect.x;
+    	    rg.x2 = flip_rect.x + flip_rect.w-1;
+    	    rg.y1 = flip_rect.y;
+    	    rg.y2 = flip_rect.y + flip_rect.h-1;
     	    this->surface->flip(&rg);
             this->parent->flipWindow(this, &region, MMSFB_FLIP_ONSYNC, false);
     	}
     }
 
-    /* unlock drawing */
+    // unlock drawing
 //PUP    this->drawLock.unlock();
     unlock();
 }

@@ -308,6 +308,28 @@ class MMSWindow {
         //! child window on which the user has pressed the (mouse) button
         MMSWindow			*buttonpress_childwin;
 
+        //! window will be stretched to the layer or the parent window using stretchBlit(), default is false
+        bool 				stretchmode;
+
+        //! stretch the window to X percent of the window WIDTH to the left side
+        //! the value is valid, if window is in stretch mode
+        //! a value of 100 means 100% (normal blit() will be used)
+        int					stretchLeft;
+
+        //! stretch the window to X percent of the window HEIGHT to the up side
+        //! the value is valid, if window is in stretch mode
+        //! a value of 100 means 100% (normal blit() will be used)
+        int					stretchUp;
+
+        //! stretch the window to X percent of the window WIDTH to the right side
+        //! the value is valid, if window is in stretch mode
+        //! a value of 100 means 100% (normal blit() will be used)
+        int					stretchRight;
+
+        //! stretch the window to X percent of the window HEIGHT to the down side
+        //! the value is valid, if window is in stretch mode
+        //! a value of 100 means 100% (normal blit() will be used)
+        int					stretchDown;
 
 
         //! Internal method: Creates the window.
@@ -704,12 +726,23 @@ class MMSWindow {
         bool moveTo(int x, int y);
 
 
-        bool stretchmode;
-        int stretchLeft;
-        int stretchRight;
-        int stretchUp;
-        int stretchDown;
 
+
+        //! Stretch the window to the layer or the parent window using stretchBlit().
+        /*!
+        \param left		stretch the window to X percent of the window WIDTH to the left side,
+						a value of 100 means 100%, values <= 0 will not be accepted
+        \param up		stretch the window to X percent of the window HEIGHT to the up side,
+						a value of 100 means 100%, values <= 0 will not be accepted
+        \param right	stretch the window to X percent of the window WIDTH to the right side,
+						a value of 100 means 100%, values <= 0 will not be accepted
+        \param down		stretch the window to X percent of the window HEIGHT to the down side,
+						a value of 100 means 100%, values <= 0 will not be accepted
+        \return true, if the values are accepted
+        \note Call stretch() or stretch(100, 100, 100, 100) to switch-of the stretch mode.
+        \note This function was implemented to get cool effects. If you display windows permanently in
+              stretch mode the performance will be drastically decreased.
+        */
         bool stretch(int left = 100, int up = 100, int right = 100, int down = 100);
 
 
