@@ -57,8 +57,8 @@ MMSFBBackend getMMSFBBackendFromString(string be) {
 }
 
 string getMMSFBOutputTypeString(MMSFBOutputType ot) {
-    if(ot == MMSFB_OT_VESAFB)
-        return MMSFB_OT_VESAFB_STR;
+    if(ot == MMSFB_OT_STDFB)
+        return MMSFB_OT_STDFB_STR;
     if(ot == MMSFB_OT_MATROXFB)
         return MMSFB_OT_MATROXFB_STR;
     if(ot == MMSFB_OT_VIAFB)
@@ -79,8 +79,8 @@ string getMMSFBOutputTypeString(MMSFBOutputType ot) {
 MMSFBOutputType getMMSFBOutputTypeFromString(string ot) {
 	if(ot == MMSFB_OT_NONE_STR)
         return MMSFB_OT_NONE;
-	if(ot == MMSFB_OT_VESAFB_STR)
-        return MMSFB_OT_VESAFB;
+	if(ot == MMSFB_OT_STDFB_STR)
+        return MMSFB_OT_STDFB;
 	if(ot == MMSFB_OT_MATROXFB_STR)
         return MMSFB_OT_MATROXFB;
 	if(ot == MMSFB_OT_VIAFB_STR)

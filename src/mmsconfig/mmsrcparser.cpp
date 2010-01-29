@@ -444,14 +444,14 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 					WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES, "");
 
 				// check value against output type
-				if (this->graphics.outputtype == MMSFB_OT_VESAFB) {
+				if (this->graphics.outputtype == MMSFB_OT_STDFB) {
 					switch (this->graphics.backend) {
 					case MMSFB_BE_DFB:
 					case MMSFB_BE_FBDEV:
 						// okay
 						break;
 					default:
-						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"VESAFB\"");
+						WRONG_VALUE(parname, val, MMSFB_BE_VALID_VALUES_OT_FB, "-> this depends on outputtype=\"STDFB\"");
 					}
 				}
 				else
@@ -539,7 +539,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				// check value against backend type
 				if (this->graphics.backend == MMSFB_BE_DFB) {
 					switch (this->graphics.outputtype) {
-					case MMSFB_OT_VESAFB:
+					case MMSFB_OT_STDFB:
 					case MMSFB_OT_MATROXFB:
 					case MMSFB_OT_VIAFB:
 					case MMSFB_OT_X11:
@@ -566,7 +566,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				else
 				if (this->graphics.backend == MMSFB_BE_FBDEV) {
 					switch (this->graphics.outputtype) {
-					case MMSFB_OT_VESAFB:
+					case MMSFB_OT_STDFB:
 					case MMSFB_OT_MATROXFB:
 					case MMSFB_OT_DAVINCIFB:
 					case MMSFB_OT_OMAPFB:
