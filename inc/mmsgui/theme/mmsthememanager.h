@@ -52,7 +52,7 @@ class MMSThemeManager {
     	//! path to the theme
         static string				themepath;
 
-        //! additional application specific themes
+        //! additional application (e.g. plugin) specific themes
         static vector<MMSTheme*>	localThemes;
 
         void throughFile(MMSTaffFile *tafff, MMSTheme *theme);

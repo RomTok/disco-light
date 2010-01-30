@@ -287,7 +287,17 @@ void MMSThemeManager::throughFile(MMSTaffFile *tafff, MMSTheme *theme) {
 }
 
 void MMSThemeManager::getThemeValues(MMSTaffFile *tafff, MMSTheme *theme) {
-//TODO: read mmstheme attributes (e.g. theme name) here, is it required to do this?
+
+	theme->theme_tag.setAttributesFromTAFF(tafff);
+
+	if (theme->theme_tag.getName() != "") {
+		if (theme->themeName != theme->theme_tag.getName()) {
+			printf("Warning: Inconsistent Theme File '%s'\n>Theme name is set to '%s', but <mmstheme name=\"%s\"/> is specified!\n",
+					theme->themeFile.c_str(),
+					theme->themeName.c_str(),
+					theme->theme_tag.getName().c_str());
+		}
+	}
 }
 
 
