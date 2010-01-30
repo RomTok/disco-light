@@ -36,104 +36,11 @@
 #include "mmstools/mmslogger.h"
 #include "mmsgui/theme/mmstheme.h"
 #include "mmsgui/mmsguitools.h"
-#include <sigc++/sigc++.h>
 
 // support old renamed methods
 #define searchForWidget 	findWidget
 #define searchForWidgetType	findWidgetType
 
-//example from: http://libsigc.sourceforge.net/libsigc2/docs/reference/html/classsigc_1_1signal_1_1accumulated.html
-//! this accumulator calculates the arithmetic mean value
-struct arithmetic_mean_accumulator
-{
-  typedef double result_type;
-  template<typename T_iterator>
-  result_type operator()(T_iterator first, T_iterator last) const
-  {
-    result_type value_ = 0;
-    int n_ = 0;
-    for (; first != last; ++first, ++n_)
-      value_ += *first;
-    return value_ / n_;
-  }
-};
-
-//example from: http://libsigc.sourceforge.net/libsigc2/docs/reference/html/classsigc_1_1signal_1_1accumulated.html
-//! this accumulator stops signal emission when a slot returns zero
-struct interruptable_accumulator
-{
-  typedef bool result_type;
-  template<typename T_iterator>
-  result_type operator()(T_iterator first, T_iterator last) const
-  {
-    int n_ = 0;
-    for (; first != last; ++first, ++n_)
-      if (!*first) return false;
-    return true;
-  }
-};
-
-//! bool accumulator
-/*!
-with this accumulator the emit() method of a callback ends with
- - true,  if the no callback methods are connected or all connected callback methods returns true
- - false, if at least one connected callback method returns false
-*/
-struct bool_accumulator
-{
-  typedef bool result_type;
-  template<typename T_iterator>
-  result_type operator()(T_iterator first, T_iterator last) const
-  {
-    bool ret_ = true;
-    int n_ = 0;
-    for (; first != last; ++first, ++n_)
-      if (!*first) ret_ = false;
-    return ret_;
-  }
-};
-
-
-//! bool accumulator (not)
-/*!
-with this accumulator the emit() method of a callback ends with
- - false, if the no callback methods are connected or all connected callback methods returns false
- - true,  if at least one connected callback method returns true
-*/
-struct neg_bool_accumulator
-{
-  typedef bool result_type;
-  template<typename T_iterator>
-  result_type operator()(T_iterator first, T_iterator last) const
-  {
-    bool ret_ = false;
-    int n_ = 0;
-    for (; first != last; ++first, ++n_)
-      if (*first) ret_ = true;
-    return ret_;
-  }
-};
-
-
-
-/*
-#ifndef DFBCHECK
-    #define DFBCHECK( x... ) \
-    {\
-         DFBResult err = x;\
-         if (err != DFB_OK) {\
-              fprintf( stderr, "%s <%d>:\n\t", __FILE__, __LINE__ );\
-              DirectFBErrorFatal( #x, err );\
-         }\
-    }
-#endif*/
-
-/*typedef void(*GUIINPUTCALLBACK)(DFBInputDeviceKeySymbol);
-
-typedef struct {
-	DFBInputDeviceKeySymbol key;
-	GUIINPUTCALLBACK cb;
-} INPUT_CB;*/
 
 MMS_CREATEERROR(MMSWidgetError);
 
