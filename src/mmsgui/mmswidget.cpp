@@ -93,21 +93,8 @@ MMSWidget::~MMSWidget() {
     if (onReturn) delete onReturn;
     if (onClick)  delete onClick;
 
-    // delete images
-    if (this->rootwindow) {
-    	if (this->da) {
-			this->rootwindow->im->releaseImage(this->da->bgimage);
-			this->rootwindow->im->releaseImage(this->da->selbgimage);
-			this->rootwindow->im->releaseImage(this->da->bgimage_p);
-			this->rootwindow->im->releaseImage(this->da->selbgimage_p);
-			this->rootwindow->im->releaseImage(this->da->bgimage_i);
-			this->rootwindow->im->releaseImage(this->da->selbgimage_i);
-			for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-				this->rootwindow->im->releaseImage(this->da->borderimages[i]);
-			for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
-				this->rootwindow->im->releaseImage(this->da->borderselimages[i]);
-    	}
-    }
+    // delete images, fonts, ...
+    release();
 
     // delete children
     for (unsigned int i = 0; i < children.size(); i++)
@@ -804,10 +791,11 @@ void MMSWidget::updateWindowSurfaceWithSurface(bool useAlphaChannel) {
 }
 
 bool MMSWidget::init() {
-    if (drawable) {
-        if (!this->rootwindow)
-            return false;
+    if (!this->rootwindow)
+        return false;
 
+    if ((drawable) && (this->da)) {
+    	// load images
         string path, name;
 
         if (!getBgImagePath(path)) path = "";
@@ -846,7 +834,7 @@ bool MMSWidget::init() {
             this->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
         }
 
-        /* get my four widgets to which I have to navigate */
+        // get my four widgets to which I have to navigate
         if (!getNavigateUp(name)) name = "";
         this->da->navigateUpWidget = this->rootwindow->findWidget(name);
 
@@ -859,7 +847,7 @@ bool MMSWidget::init() {
         if (!getNavigateRight(name)) name = "";
         this->da->navigateRightWidget = this->rootwindow->findWidget(name);
 
-        /* get my two widgets which represents the sliders */
+        // get my two widgets which represents the sliders
         if (!getVSlider(name)) name = "";
         this->da->vSliderWidget = this->rootwindow->findWidget(name);
 
@@ -873,6 +861,49 @@ bool MMSWidget::init() {
     return true;
 }
 
+bool MMSWidget::release() {
+    if (!this->rootwindow)
+        return false;
+
+    if ((drawable) && (this->da)) {
+		// release all images
+		this->rootwindow->im->releaseImage(this->da->bgimage);
+		this->da->bgimage = NULL;
+		this->rootwindow->im->releaseImage(this->da->selbgimage);
+		this->da->selbgimage = NULL;
+		this->rootwindow->im->releaseImage(this->da->bgimage_p);
+		this->da->bgimage_p = NULL;
+		this->rootwindow->im->releaseImage(this->da->selbgimage_p);
+		this->da->selbgimage_p = NULL;
+		this->rootwindow->im->releaseImage(this->da->bgimage_i);
+		this->da->bgimage_i = NULL;
+		this->rootwindow->im->releaseImage(this->da->selbgimage_i);
+		this->da->selbgimage_i = NULL;
+
+		for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+			this->rootwindow->im->releaseImage(this->da->borderimages[i]);
+			this->da->borderimages[i] = NULL;
+		}
+
+		for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+			this->rootwindow->im->releaseImage(this->da->borderselimages[i]);
+			this->da->borderselimages[i] = NULL;
+		}
+
+        // reset my four widgets to which I have to navigate
+        this->da->navigateUpWidget = NULL;
+        this->da->navigateDownWidget = NULL;
+        this->da->navigateLeftWidget = NULL;
+        this->da->navigateRightWidget = NULL;
+
+        // reset my two widgets which represents the sliders
+        this->da->vSliderWidget = NULL;
+        this->da->hSliderWidget = NULL;
+
+        // reset widget which is joined to me
+        this->da->joinedWidget = NULL;
+    }
+}
 
 #ifdef OLDDRAW
 bool MMSWidget(bool *backgroundFilled) {
@@ -1128,9 +1159,8 @@ bool MMSWidget::draw(bool *backgroundFilled) {
     bool         myBackgroundFilled = false;
     bool         retry = false;
 
-
     if (!this->initialized) {
-        /* init widget (e.g. load images, fonts, ...) */
+        // init widget (e.g. load images, fonts, ...)
         init();
         this->initialized = true;
     }
@@ -2301,8 +2331,9 @@ void MMSWidget::themeChanged(string themeName) {
 	if (!isDrawable())
 		return;
 
-printf("changed....\n");
-
+    // delete images, fonts, ...
+	release();
+	this->initialized = false;
 }
 
 /***********************************************/

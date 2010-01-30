@@ -263,6 +263,7 @@ class MMSWidget {
                     bool canhavechildren, bool canselectchildren, bool clickable);
 
         virtual bool init();
+        virtual bool release();
         virtual bool draw(bool *backgroundFilled = NULL);
         void drawMyBorder();
         bool drawDebug();
