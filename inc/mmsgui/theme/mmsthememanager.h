@@ -92,17 +92,52 @@ class MMSThemeManager {
 
 
         void loadTheme(string path, string themeName, MMSTheme *theme);
+        void loadGlobalTheme(string themeName);
 
     public:
         MMSThemeManager(string themepath, string globalThemeName = DEFAULT_THEME);
         MMSThemeManager();
         ~MMSThemeManager();
 
-        void loadGlobalTheme(string themeName);
-
         MMSTheme *loadLocalTheme(string path, string themeName = "");
         void deleteLocalTheme(string path, string themeName);
         void deleteLocalTheme(MMSTheme **theme);
+
+        //! Change the theme.
+        /*!
+        \param themeName	name of the new theme to be activated
+        \note If fails, an MMSError exception will be throw.
+        */
+        void setTheme(string themeName);
+
+        //! Set one or more callbacks for the onThemeChanged event.
+        /*!
+        The connected callbacks will be called during setTheme().
+
+        A callback method must be defined like this:
+
+        	void myclass::mycallbackmethod(string themeName);
+
+        	Parameters:
+
+        		themeName -> name of the new theme
+
+        To connect your callback to onThemeChanged do this:
+
+            sigc::connection connection;
+            connection = mywindow->onThemeChanged->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onThemeChanged BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
+        */
+        static sigc::signal<void, string> onThemeChanged;
 };
 
 MMS_CREATEERROR(MMSThemeManagerError);

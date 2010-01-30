@@ -40,10 +40,14 @@ MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
 
     // add language changed callback
     onTargetLangChanged_connection = this->translator.onTargetLangChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onTargetLangChanged));
+
+    // add theme changed callback
+    onThemeChanged_connection = this->themeManager.onThemeChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onThemeChanged));
 }
 
 MMSWindowManager::~MMSWindowManager() {
 	onTargetLangChanged_connection.disconnect();
+	onThemeChanged_connection.disconnect();
 }
 
 void MMSWindowManager::reset() {
@@ -60,7 +64,7 @@ void MMSWindowManager::addWindow(MMSWindow *window) {
 }
 
 void MMSWindowManager::removeWindow(MMSWindow *window){
-    /* search for the window and erase it */
+    // search for the window and erase it
     for(unsigned int i = 0; i < windows.size(); i++) {
         if(window != windows.at(i))
             continue;
@@ -302,11 +306,21 @@ MMSTranslator *MMSWindowManager::getTranslator() {
 	return &this->translator;
 }
 
-
 void MMSWindowManager::onTargetLangChanged(MMS_LANGUAGE_TYPE lang) {
 	// the language has changed, inform all windows
-    for (unsigned int i = 0; i < this->windows.size(); i++)
+    for (unsigned int i = 0; i < this->windows.size(); i++) {
         this->windows.at(i)->targetLangChanged(lang);
+    }
 }
 
+MMSThemeManager *MMSWindowManager::getThemeManager() {
+	return &this->themeManager;
+}
+
+void MMSWindowManager::onThemeChanged(string themeName) {
+	// the theme has changed, inform all windows
+    for (unsigned int i = 0; i < this->windows.size(); i++) {
+        this->windows.at(i)->themeChanged(themeName);
+    }
+}
 

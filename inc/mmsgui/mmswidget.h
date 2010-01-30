@@ -426,6 +426,9 @@ class MMSWidget {
         MMSFBRectangle geom;
         MMSFBRectangle innerGeom;
 
+		//! inform the widget, that theme has changed
+		void themeChanged(string themeName);
+
     public:
         /* theme access methods */
         bool 	getBgColor(MMSFBColor &bgcolor);

@@ -4242,8 +4242,9 @@ void MMSWindow::setNavigateLeftWindow(MMSWindow *leftWindow) {
 
 void MMSWindow::targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh) {
     // for all child windows
-    for (unsigned int i = 0; i < childwins.size(); i++)
+    for (unsigned int i = 0; i < childwins.size(); i++) {
         childwins.at(i).window->targetLangChanged(lang, false);
+    }
 
     // for my own children (widgets)
     for (unsigned int i = 0; i < children.size(); i++)
@@ -4257,6 +4258,22 @@ void MMSWindow::targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh) {
         default:
         	break;
         }
+
+    // refresh it
+    if (refresh)
+    	this->refresh();
+}
+
+void MMSWindow::themeChanged(string themeName, bool refresh) {
+    // for all child windows
+    for (unsigned int i = 0; i < childwins.size(); i++) {
+        childwins.at(i).window->themeChanged(themeName, false);
+    }
+
+    // for my own children (widgets)
+    for (unsigned int i = 0; i < children.size(); i++) {
+        children.at(i)->themeChanged(themeName);
+    }
 
     // refresh it
     if (refresh)

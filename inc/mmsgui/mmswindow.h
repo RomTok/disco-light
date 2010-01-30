@@ -747,9 +747,20 @@ class MMSWindow {
 
 
 
-		//! inform the window, that language has changed
-		void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
 
+        //! Inform the window, that the language has changed.
+        /*!
+        \param lang		new language
+        \param refresh	refresh the window
+        */
+        void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
+
+        //! Inform the window, that the theme has changed.
+        /*!
+        \param themeName	new theme
+        \param refresh		refresh the window
+        */
+        void themeChanged(string themeName, bool refresh = true);
 
 
         //! Set one or more callbacks for the onBeforeShow event.

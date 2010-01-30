@@ -52,13 +52,20 @@ class MMSWindowManager : public IMMSWindowManager {
         //! translator instance which can be used to translate text
         MMSTranslator		translator;
 
-        //! connection object for onTargetLangChanged callback
+        //! connection object for MMSTranslator::onTargetLangChanged callback
         sigc::connection 	onTargetLangChanged_connection;
 
+        //! theme manager instance
+        MMSThemeManager		themeManager;
+
+        //! connection object for MMSThemeManager::onThemeChanged callback
+        sigc::connection 	onThemeChanged_connection;
 
         void showBackgroundWindow();
 
         void onTargetLangChanged(MMS_LANGUAGE_TYPE lang);
+
+        void onThemeChanged(string themeName);
 
 	public:
 		MMSWindowManager(MMSFBRectangle vrect);
@@ -87,9 +94,8 @@ class MMSWindowManager : public IMMSWindowManager {
         void setPointerPosition(int pointer_posx, int pointer_posy, bool pressed = true);
 
         MMSTranslator *getTranslator();
-};
 
-/* access to global mmswindowmanager */
-//extern MMSWindowManager mmswindowmanager;
+        MMSThemeManager *getThemeManager();
+};
 
 #endif /*MMSWINDOWMANAGER_H_*/

@@ -2297,6 +2297,14 @@ bool MMSWidget::canNavigateRight() {
         return scrollRight(1, false, true);
 }
 
+void MMSWidget::themeChanged(string themeName) {
+	if (!isDrawable())
+		return;
+
+printf("changed....\n");
+
+}
+
 /***********************************************/
 /* begin of theme access methods (get methods) */
 /***********************************************/

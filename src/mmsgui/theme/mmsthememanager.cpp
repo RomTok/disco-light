@@ -32,10 +32,13 @@
 
 #include "mmsgui/theme/mmsthememanager.h"
 
+#define INITCHECK if (!this->initialized) throw new MMSThemeManagerError(1, "MMSThemeManager is not initialized!");
+
 // static variables
-bool				MMSThemeManager::initialized = false;
-string				MMSThemeManager::themepath;
-vector<MMSTheme*>	MMSThemeManager::localThemes;
+bool						MMSThemeManager::initialized = false;
+string						MMSThemeManager::themepath;
+vector<MMSTheme*>			MMSThemeManager::localThemes;
+sigc::signal<void, string>  MMSThemeManager::onThemeChanged;
 
 MMSThemeManager::MMSThemeManager(string themepath, string globalThemeName) {
 	if (!this->initialized) {
@@ -47,11 +50,12 @@ MMSThemeManager::MMSThemeManager(string themepath, string globalThemeName) {
 }
 
 MMSThemeManager::MMSThemeManager() {
+    // check if initialized
+	INITCHECK;
 }
 
 MMSThemeManager::~MMSThemeManager() {
 }
-
 
 void MMSThemeManager::loadTheme(string path, string themeName, MMSTheme *theme) {
     if (themeName == "")
@@ -98,45 +102,52 @@ void MMSThemeManager::loadTheme(string path, string themeName, MMSTheme *theme) 
 }
 
 void MMSThemeManager::loadGlobalTheme(string themeName) {
-    /* load global default theme */
+    // load global default theme
     loadTheme("", DEFAULT_THEME, globalTheme);
 
-    if (themeName != DEFAULT_THEME)
-        /* overload global default theme with global theme */
+    if (themeName != DEFAULT_THEME) {
+        // overload global default theme with global theme
         loadTheme("", themeName, globalTheme);
+    }
 }
 
 MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
-    /* check if theme is already loaded */
+    // check if initialized
+	INITCHECK;
+
+	// check if theme is already loaded
 	for(vector<MMSTheme*>::const_iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
-        if(((*i)->getPath() == path) && ((*i)->getThemeName() == themeName))
-            /* already loaded */
+        if(((*i)->getPath() == path) && ((*i)->getThemeName() == themeName)) {
+            // already loaded
             return *i;
+        }
     }
 
-    /* new theme */
+    // new theme
     MMSTheme *theme = new MMSTheme();
 
     if (themeName == "") {
-        /* use the name from already loaded global theme */
+        // use the name from already loaded global theme
         themeName = globalTheme->getThemeName();
     }
 
-    /* load global default theme */
+    // load global default theme
     loadTheme("", DEFAULT_THEME, theme);
 
-    if (themeName != DEFAULT_THEME)
-        /* overload global default theme with global theme */
+    if (themeName != DEFAULT_THEME) {
+        // overload global default theme with global theme
         loadTheme("", themeName, theme);
+    }
 
-    /* overload global theme with local default theme */
+    // overload global theme with local default theme
     loadTheme(path, DEFAULT_THEME, theme);
 
-    if (themeName != DEFAULT_THEME)
-        /* overload global theme with local theme */
+    if (themeName != DEFAULT_THEME) {
+        // overload global theme with local theme
         loadTheme(path, themeName, theme);
+    }
 
-    /* add theme to list */
+    // add theme to list
     this->localThemes.push_back(theme);
 
     return theme;
@@ -160,6 +171,23 @@ void MMSThemeManager::deleteLocalTheme(MMSTheme **theme) {
             break;
     }
 }
+
+
+void MMSThemeManager::setTheme(string themeName) {
+    // check if initialized
+	INITCHECK;
+
+	// check if requested theme is equal to current theme
+	if (themeName == globalTheme->getThemeName())
+		return;
+
+	// load new theme
+	loadGlobalTheme(themeName);
+
+	// inform attached callbacks
+	this->onThemeChanged.emit(themeName);
+}
+
 
 
 #define GET_THEME_CLASS(method) \
