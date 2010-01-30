@@ -32,18 +32,21 @@
 
 #include "mmsgui/theme/mmsthememanager.h"
 
-MMSThemeManager *themeManager = NULL;
+// static variables
+bool				MMSThemeManager::initialized = false;
+string				MMSThemeManager::themepath;
+vector<MMSTheme*>	MMSThemeManager::localThemes;
 
-MMSThemeManager::MMSThemeManager(string themepath, string globalThemeName) :
-    themepath(themepath) {
+MMSThemeManager::MMSThemeManager(string themepath, string globalThemeName) {
+	if (!this->initialized) {
+		// init the first time, save the path to the global theme and load it
+		this->themepath = themepath;
+		loadGlobalTheme(globalThemeName);
+		this->initialized = true;
+	}
+}
 
-//loop von 500 dauert 21 sekunden mit xml
-//loop von 5000 dauert 3 sekunden mit mmstafffile -> verbesserung faktor 70
-//system("date");
-//for (int i=0; i < 5000; i++)
-	loadGlobalTheme(globalThemeName);
-
-//system("date");
+MMSThemeManager::MMSThemeManager() {
 }
 
 MMSThemeManager::~MMSThemeManager() {

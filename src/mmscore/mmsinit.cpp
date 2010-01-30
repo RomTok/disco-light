@@ -43,7 +43,8 @@ static MMSEvent                     *masterevent        = NULL;
 static MMSEventSignup               *mastereventsignup  = NULL;
 /* static MMSImportScheduler           *importscheduler    = NULL; */
 static MMSInputManager              *inputs             = NULL;
-static MMSWindowManager             *windowmanager = NULL;
+static MMSThemeManager 				*themeManager		= NULL;
+static MMSWindowManager             *windowmanager		= NULL;
 
 void (*pluginRegisterCallback)(MMSPluginManager*) = NULL;
 

@@ -37,17 +37,24 @@
 
 #define DEFAULT_THEME   "default"
 
-/* string constants for xml identifiers */
-#define XML_ID_THEME        "mmstheme"
-#define XML_ID_CLASS        "class"
 
-
+//! The MMSThemeManager will be used to load theme definitions from the theme file.
+/*!
+During mmsInit() the first instance will be created which loads the global theme.
+You can instantiate a separate object to interact with the theme manager.
+\author Jens Schneider
+*/
 class MMSThemeManager {
     private:
-        string				themepath;
-        vector<MMSTheme*>   localThemes;    /* list of themes which are currently loaded (without global theme) */
+    	//! first static object initialized?
+    	static bool					initialized;
 
-//        void throughFile(xmlNode *node, MMSTheme *theme);
+    	//! path to the theme
+        static string				themepath;
+
+        //! additional application specific themes
+        static vector<MMSTheme*>	localThemes;
+
         void throughFile(MMSTaffFile *tafff, MMSTheme *theme);
 
         void getThemeValues(MMSTaffFile *tafff, MMSTheme *theme);
@@ -68,7 +75,6 @@ class MMSThemeManager {
         void getArrowWidgetValues(MMSTaffFile *tafff, MMSArrowWidgetClass *themeClass, MMSTheme *theme);
         void getInputWidgetValues(MMSTaffFile *tafff, MMSInputWidgetClass *themeClass, MMSTheme *theme);
 
-//        void getClassValues(MMSTaffFile *tafff, MMSTheme *theme);
         void getTemplateClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getMainWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getPopupWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
@@ -89,6 +95,7 @@ class MMSThemeManager {
 
     public:
         MMSThemeManager(string themepath, string globalThemeName = DEFAULT_THEME);
+        MMSThemeManager();
         ~MMSThemeManager();
 
         void loadGlobalTheme(string themeName);
@@ -97,8 +104,6 @@ class MMSThemeManager {
         void deleteLocalTheme(string path, string themeName);
         void deleteLocalTheme(MMSTheme **theme);
 };
-
-extern MMSThemeManager *themeManager;
 
 MMS_CREATEERROR(MMSThemeManagerError);
 
