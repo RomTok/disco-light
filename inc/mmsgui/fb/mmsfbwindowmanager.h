@@ -76,6 +76,9 @@ class MMSFBWindowManager {
         MMSFBSurface    		*layer_surface; /* layer's surface */
         MMSFBSurfacePixelFormat layer_pixelformat;
 
+        // destination surface for flipSurface() method
+        MMSFBSurface    		*dst_surface;
+
         vector<AVAILABLE_WINDOWS> windows;  /* a list of created windows */
 
         vector<VISIBLE_WINDOWS> vwins;      /* a list of currently visible windows */
@@ -126,6 +129,7 @@ class MMSFBWindowManager {
 
         bool setWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect = NULL);
         bool getWindowVisibleRectangle(MMSFBWindow *window, MMSFBRectangle *rect);
+        bool getScreenshot(MMSFBWindow *window);
 
         bool loadPointer();
         void drawPointer(MMSFBRegion *region);

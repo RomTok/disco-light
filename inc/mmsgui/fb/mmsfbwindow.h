@@ -91,6 +91,8 @@ class MMSFBWindow {
 
         bool setVisibleRectangle(MMSFBRectangle *rect = NULL);
         bool getVisibleRectangle(MMSFBRectangle *rect);
+
+        bool getScreenshot();
 };
 
 #endif /*MMSFBWINDOW_H_*/

@@ -521,5 +521,14 @@ bool MMSFBWindow::getVisibleRectangle(MMSFBRectangle *rect) {
     return mmsfbwindowmanager->getWindowVisibleRectangle(this, rect);
 }
 
+bool MMSFBWindow::getScreenshot() {
+
+    // check if initialized
+    INITCHECK;
+
+    // get it from the window manager
+    return mmsfbwindowmanager->getScreenshot(this);
+}
+
 #endif
 
