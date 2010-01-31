@@ -903,6 +903,8 @@ bool MMSWidget::release() {
         // reset widget which is joined to me
         this->da->joinedWidget = NULL;
     }
+
+    return true;
 }
 
 #ifdef OLDDRAW

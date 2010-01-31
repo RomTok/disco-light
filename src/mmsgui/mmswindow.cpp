@@ -1572,6 +1572,8 @@ bool MMSWindow::release() {
 		this->im->releaseImage(this->borderimages[i]);
 		this->borderimages[i] = NULL;
 	}
+
+    return true;
 }
 
 
