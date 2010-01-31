@@ -69,8 +69,16 @@ MMSWidget *MMSArrowWidget::copyWidget() {
 }
 
 bool MMSArrowWidget::init() {
-    /* init widget basics */
+    // init widget basics
     if (!MMSWidget::init())
+        return false;
+
+    return true;
+}
+
+bool MMSArrowWidget::release() {
+    // release widget basics
+    if (!MMSWidget::release())
         return false;
 
     return true;
