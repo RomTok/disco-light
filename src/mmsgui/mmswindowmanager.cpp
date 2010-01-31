@@ -318,9 +318,42 @@ MMSThemeManager *MMSWindowManager::getThemeManager() {
 }
 
 void MMSWindowManager::onThemeChanged(string themeName) {
+	MMSFBLayer *layer = mmsfbmanager.getGraphicsLayer();
+	MMSFBWindow *saved_screen = NULL;
+
+	// create a temporary window to save the screen
+	// so we can have a nice animation while switching the theme
+	if (layer) {
+		MMSFBSurfacePixelFormat pixelformat;
+		layer->getPixelFormat(&pixelformat);
+		int w, h;
+		layer->getResolution(&w, &h);
+		layer->createWindow(&saved_screen, 0, 0, w, h, pixelformat, isAlphaPixelFormat(pixelformat), 0);
+	}
+
+	if (saved_screen) {
+		// get a screenshot
+		saved_screen->getScreenshot();
+
+		// show the saved screen
+/*		saved_screen->raiseToTop();
+		saved_screen->setOpacity(255);
+		saved_screen->show();*/
+	}
+
 	// the theme has changed, inform all windows
     for (unsigned int i = 0; i < this->windows.size(); i++) {
         this->windows.at(i)->themeChanged(themeName);
+    }
+
+    if (saved_screen) {
+    	// do the animation
+
+
+
+    	// delete the temporary window
+    	saved_screen->hide();
+    	delete saved_screen;
     }
 }
 
