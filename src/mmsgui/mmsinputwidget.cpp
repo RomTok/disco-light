@@ -48,10 +48,6 @@ MMSInputWidget::~MMSInputWidget() {
 
     if (this->iwt)
 		delete this->iwt;
-
-    if (this->rootwindow) {
-        this->rootwindow->fm->releaseFont(this->font);
-    }
 }
 
 bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
@@ -108,6 +104,18 @@ bool MMSInputWidget::init() {
 
     // load font
     this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
+
+    return true;
+}
+
+bool MMSInputWidget::release() {
+    // release widget basics
+    if (!MMSWidget::release())
+        return false;
+
+    // release my font
+    this->rootwindow->fm->releaseFont(this->font);
+    this->font = NULL;
 
     return true;
 }

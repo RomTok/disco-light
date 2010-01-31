@@ -60,6 +60,7 @@ class MMSInputWidget : public MMSWidget {
         void handleInput(MMSInputEvent *inputevent);
 
         bool init();
+        bool release();
         bool draw(bool *backgroundFilled = NULL);
         void drawCursor(bool cursor_on);
 
