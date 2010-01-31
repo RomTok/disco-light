@@ -44,14 +44,9 @@ MMSMenuWidget::MMSMenuWidget(MMSWindow *root, string className, MMSTheme *theme)
 }
 
 MMSMenuWidget::~MMSMenuWidget() {
-    /* delete the callbacks */
+    // delete the callbacks
     if (onSelectItem) delete onSelectItem;
     if (onBeforeScroll) delete onBeforeScroll;
-
-    // delete images
-    if (this->rootwindow) {
-        this->rootwindow->im->releaseImage(this->selimage);
-    }
 
     if (this->itemTemplate)
         delete this->itemTemplate;
@@ -130,6 +125,59 @@ MMSWidget *MMSMenuWidget::copyWidget() {
     }
 
     return newWidget;
+}
+
+bool MMSMenuWidget::init() {
+    // init widget basics
+    if (!MMSWidget::init())
+        return false;
+
+    // load my images
+    string path, name;
+    if (!getSelImagePath(path)) path = "";
+    if (!getSelImageName(name)) name = "";
+    this->selimage = this->rootwindow->im->getImage(path, name);
+
+    return true;
+}
+
+bool MMSMenuWidget::release() {
+    // release widget basics
+    if (!MMSWidget::release())
+        return false;
+
+    // release my images
+	this->rootwindow->im->releaseImage(this->selimage);
+	this->selimage = NULL;
+
+    return true;
+}
+
+bool MMSMenuWidget::draw(bool *backgroundFilled) {
+
+    bool myBackgroundFilled = false;
+
+    if (backgroundFilled) {
+    	if (this->has_own_surface)
+    		*backgroundFilled = false;
+    }
+    else
+        backgroundFilled = &myBackgroundFilled;
+
+    /* lock */
+    this->surface->lock();
+
+    /* draw widget basics */
+    if (MMSWidget::draw(backgroundFilled)) {
+        /* update window surface with an area of surface */
+        updateWindowSurfaceWithSurface(!*backgroundFilled);
+    }
+
+    /* unlock */
+    this->surface->unlock();
+
+    /* draw widgets debug frame */
+    return MMSWidget::drawDebug();
 }
 
 
@@ -2802,46 +2850,6 @@ unsigned int MMSMenuWidget::getHItems() {
 }
 
 
-
-bool MMSMenuWidget::init() {
-    /* init widget basics */
-    if (!MMSWidget::init())
-        return false;
-
-    string path, name;
-    if (!getSelImagePath(path)) path = "";
-    if (!getSelImageName(name)) name = "";
-    this->selimage = this->rootwindow->im->getImage(path, name);
-
-    return true;
-}
-
-bool MMSMenuWidget::draw(bool *backgroundFilled) {
-
-    bool myBackgroundFilled = false;
-
-    if (backgroundFilled) {
-    	if (this->has_own_surface)
-    		*backgroundFilled = false;
-    }
-    else
-        backgroundFilled = &myBackgroundFilled;
-
-    /* lock */
-    this->surface->lock();
-
-    /* draw widget basics */
-    if (MMSWidget::draw(backgroundFilled)) {
-        /* update window surface with an area of surface */
-        updateWindowSurfaceWithSurface(!*backgroundFilled);
-    }
-
-    /* unlock */
-    this->surface->unlock();
-
-    /* draw widgets debug frame */
-    return MMSWidget::drawDebug();
-}
 
 bool MMSMenuWidget::setSubMenuName(unsigned int item, const char *name) {
 	if (item >= this->iteminfos.size()) return false;

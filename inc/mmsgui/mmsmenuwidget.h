@@ -116,6 +116,10 @@ class MMSMenuWidget : public MMSWidget {
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
+        bool init();
+        bool release();
+        bool draw(bool *backgroundFilled = NULL);
+
         void add(MMSWidget *widget);
 
         void adjustVirtualRect();
@@ -168,9 +172,6 @@ class MMSMenuWidget : public MMSWidget {
 
         unsigned int getVItems();
         unsigned int getHItems();
-
-        bool init();
-        bool draw(bool *backgroundFilled = NULL);
 
         bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
