@@ -75,6 +75,7 @@ MMSWindow::MMSWindow() {
     this->baseWindowClass = NULL;
     this->windowClass = NULL;
     this->initialized = false;
+    this->precalcnav = false;
     this->parent = NULL;
     this->toplevel_parent = NULL;
 //this->im = NULL;
@@ -113,7 +114,7 @@ MMSWindow::MMSWindow() {
     this->stretchRight = 0;
     this->stretchDown = 0;
 
-    /* initialize the callbacks */
+    // initialize the callbacks
     onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
     onAfterShow         = new sigc::signal<void, MMSWindow*, bool>;
     onBeforeHide        = new sigc::signal<bool, MMSWindow*, bool>::accumulated<bool_accumulator>;
@@ -123,7 +124,7 @@ MMSWindow::MMSWindow() {
 }
 
 MMSWindow::~MMSWindow() {
-	/* wait until show/hide actions are finished */
+	// wait until show/hide actions are finished
 	while(this->action->getAction() != MMSWACTION_NONE)
 		msleep(100);
 
@@ -137,6 +138,9 @@ MMSWindow::~MMSWindow() {
     if (onHide) delete onHide;
     if (onHandleInput) delete onHandleInput;
     if(onBeforeHandleInput) delete onBeforeHandleInput;
+
+    // delete images, ...
+    release();
 
 	if (this->type != MMSWINDOWTYPE_CHILDWINDOW) {
 		// remove normal window
@@ -304,27 +308,14 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     if (!this->fm)
     	this->fm = new MMSFontManager();
 
-    /* set some attributes */
+    // set some attributes
     this->shown=false;
     this->willshow=false;
     this->willhide=false;
 
     buffered_shown = false;
 
-    /* load background image */
-    string path, name;
-    if (!getBgImagePath(path)) path = "";
-    if (!getBgImageName(name)) name = "";
-    this->bgimage = im->getImage(path, name);
-
-    /* load border images */
-    if (!getBorderImagePath(path)) path = "";
-    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-        if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-        this->borderimages[i] = im->getImage(path, name);
-    }
-
-    /* resize/create the window */
+    // resize/create the window
     if (this->windowmanager)
         resize();
 
@@ -1533,9 +1524,9 @@ void MMSWindow::recalculateChildren() {
 
 
 
-bool MMSWindow::init() {
+bool MMSWindow::initnav() {
 
-    /* get my four windows to which I have to navigate */
+    // get my four windows to which I have to navigate
     if (this->parent) {
     	string s;
     	if (getNavigateUp(s))
@@ -1548,15 +1539,49 @@ bool MMSWindow::init() {
     		this->navigateLeftWindow = this->parent->findWindow(s);
     }
 
-    /* pre-calculate the navigation */
+    // pre-calculate the navigation
     preCalcNavigation();
 
     return true;
 }
 
+bool MMSWindow::init() {
+
+	// load images
+    string path, name;
+
+    if (!getBgImagePath(path)) path = "";
+    if (!getBgImageName(name)) name = "";
+    this->bgimage = this->im->getImage(path, name);
+
+    if (!getBorderImagePath(path)) path = "";
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+        if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+        this->borderimages[i] = this->im->getImage(path, name);
+    }
+
+	return true;
+}
+
+bool MMSWindow::release() {
+	// release all images
+    this->im->releaseImage(this->bgimage);
+    this->bgimage = NULL;
+
+    for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+		this->im->releaseImage(this->borderimages[i]);
+		this->borderimages[i] = NULL;
+	}
+}
 
 
 void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear) {
+
+	if (!this->initialized) {
+        // init window (e.g. load images, fonts, ...)
+        init();
+        this->initialized = true;
+    }
 
     /* lock */
 //PUP    this->surface->lock();
@@ -1733,10 +1758,10 @@ void MMSWindow::showBufferedShown() {
 		    	// buffered shown, first time called
 				w->draw();
 				w->draw();
-				if (!w->initialized) {
-					/* init window (e.g. pre-calc navigation ...) */
-					w->init();
-					w->initialized = true;
+				if (!w->precalcnav) {
+					// init window (e.g. pre-calc navigation ...)
+					w->initnav();
+					w->precalcnav = true;
 				}
 
 				if (!w->initialArrowsDrawn) {
@@ -2048,10 +2073,10 @@ bool MMSWindow::showAction(bool *stopaction) {
 
 //    printf("showAction5 %x\n", this);
 
-    if (!this->initialized) {
+    if (!this->precalcnav) {
         /* init window (e.g. pre-calc navigation ...) */
-        init();
-        this->initialized = true;
+        initnav();
+        this->precalcnav = true;
     }
 
     if (!this->initialArrowsDrawn) {
@@ -4141,18 +4166,18 @@ void MMSWindow::instantHide() {
 
 void MMSWindow::targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh) {
     // for all child windows
-    for (unsigned int i = 0; i < childwins.size(); i++) {
-        childwins.at(i).window->targetLangChanged(lang, false);
+    for (unsigned int i = 0; i < this->childwins.size(); i++) {
+    	this->childwins.at(i).window->targetLangChanged(lang, false);
     }
 
     // for my own children (widgets)
-    for (unsigned int i = 0; i < children.size(); i++)
-        switch (children.at(i)->getType()) {
+    for (unsigned int i = 0; i < this->children.size(); i++)
+        switch (this->children.at(i)->getType()) {
         case MMSWIDGETTYPE_LABEL:
-        	((MMSLabelWidget *)children.at(i))->targetLangChanged(lang);
+        	((MMSLabelWidget *)this->children.at(i))->targetLangChanged(lang);
         	break;
         case MMSWIDGETTYPE_TEXTBOX:
-        	((MMSTextBoxWidget *)children.at(i))->targetLangChanged(lang);
+        	((MMSTextBoxWidget *)this->children.at(i))->targetLangChanged(lang);
         	break;
         default:
         	break;
@@ -4165,14 +4190,18 @@ void MMSWindow::targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh) {
 
 void MMSWindow::themeChanged(string &themeName, bool refresh) {
     // for all child windows
-    for (unsigned int i = 0; i < childwins.size(); i++) {
-        childwins.at(i).window->themeChanged(themeName, false);
+    for (unsigned int i = 0; i < this->childwins.size(); i++) {
+    	this->childwins.at(i).window->themeChanged(themeName, false);
     }
 
     // for my own children (widgets)
-    for (unsigned int i = 0; i < children.size(); i++) {
-        children.at(i)->themeChanged(themeName);
+    for (unsigned int i = 0; i < this->children.size(); i++) {
+    	this->children.at(i)->themeChanged(themeName);
     }
+
+    // delete images, ...
+	release();
+	this->initialized = false;
 
     // refresh it
     if (refresh)

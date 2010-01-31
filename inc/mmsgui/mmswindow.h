@@ -170,6 +170,9 @@ class MMSWindow {
         //! is window initialized?
         bool                initialized;
 
+        //! pre-calc navigation done?
+        bool                precalcnav;
+
         //! name of the window
         string 				name;
 
@@ -378,8 +381,14 @@ class MMSWindow {
         //! Internal method: Update the status of the arrow widgets.
         void switchArrowWidgets();
 
-        //! Internal method: Init me.
+        //! Internal method: Init navigation.
+        bool initnav();
+
+        //! Internal method: Load images and setup other things.
         virtual bool init();
+
+        //! Internal method: Release images and other things.
+        virtual bool release();
 
         //! Internal method: Draw me.
         virtual void draw(bool toRedrawOnly = false, MMSFBRectangle *rect2update = NULL,
