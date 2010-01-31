@@ -82,6 +82,7 @@ class MMSTextBoxWidget : public MMSWidget {
                           bool wrap = true, bool splitwords = true, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER);
 
         bool init();
+        bool release();
         bool draw(bool *backgroundFilled = NULL);
 
 		//! Internal method: Inform the widget, that the language has changed.

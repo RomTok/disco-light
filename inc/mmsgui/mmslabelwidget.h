@@ -68,6 +68,7 @@ class MMSLabelWidget : public MMSWidget {
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         bool init();
+        bool release();
         bool draw(bool *backgroundFilled = NULL);
 
         //! Internal method: Inform the widget, that the language has changed.

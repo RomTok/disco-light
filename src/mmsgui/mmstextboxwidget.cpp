@@ -37,9 +37,6 @@ MMSTextBoxWidget::MMSTextBoxWidget(MMSWindow *root, string className, MMSTheme *
 }
 
 MMSTextBoxWidget::~MMSTextBoxWidget() {
-    if (this->rootwindow) {
-        this->rootwindow->fm->releaseFont(this->font);
-    }
     for(vector<TEXTBOX_WORDGEOM *>::iterator it(wordgeom.begin()); it != wordgeom.end(); ++it) {
         delete(*it);
     }
@@ -379,6 +376,17 @@ bool MMSTextBoxWidget::init() {
     return true;
 }
 
+bool MMSTextBoxWidget::release() {
+    // release widget basics
+    if (!MMSWidget::release())
+        return false;
+
+    // release my font
+    this->rootwindow->fm->releaseFont(this->font);
+    this->font = NULL;
+
+    return true;
+}
 
 bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
