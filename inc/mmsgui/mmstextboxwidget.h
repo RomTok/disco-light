@@ -84,6 +84,9 @@ class MMSTextBoxWidget : public MMSWidget {
         bool init();
         bool draw(bool *backgroundFilled = NULL);
 
+		//! Internal method: Inform the widget, that the language has changed.
+		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
+
 		bool loadFile(bool refresh);
 
     public:
@@ -93,9 +96,6 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSWidget *copyWidget();
 
     public:
-		//! inform the widget, that language has changed
-		void targetLangChanged(MMS_LANGUAGE_TYPE lang);
-
 		//! reload the file and display it in the textbox
 		bool reloadFile();
 
@@ -130,6 +130,9 @@ class MMSTextBoxWidget : public MMSWidget {
         void setFileName(string filename, bool load = true, bool refresh = true);
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
+
+	// friends
+	friend class MMSWindow;
 };
 
 #endif /*MMSTEXTBOXWIDGET_H_*/

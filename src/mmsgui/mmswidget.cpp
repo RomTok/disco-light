@@ -1514,6 +1514,15 @@ void MMSWidget::startWidgetThread(int delay) {
 	}
 }
 
+void MMSWidget::themeChanged(string &themeName) {
+	if (!isDrawable())
+		return;
+
+    // delete images, fonts, ...
+	release();
+	this->initialized = false;
+}
+
 
 void MMSWidget::add(MMSWidget *widget) {
     if (canHaveChildren())
@@ -2325,15 +2334,6 @@ bool MMSWidget::canNavigateRight() {
         return true;
     else
         return scrollRight(1, false, true);
-}
-
-void MMSWidget::themeChanged(string themeName) {
-	if (!isDrawable())
-		return;
-
-    // delete images, fonts, ...
-	release();
-	this->initialized = false;
 }
 
 /***********************************************/

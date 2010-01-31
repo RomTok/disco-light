@@ -456,6 +456,12 @@ class MMSWindow {
         //! Internal method: Hide the window without animation.
 		void instantHide();
 
+        //! Internal method: Inform the window, that the language has changed.
+        void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
+
+        //! Internal method: Inform the window, that the theme has changed.
+        void themeChanged(string &themeName, bool refresh = true);
+
     protected:
 
     	//! interface to the window manager
@@ -745,22 +751,6 @@ class MMSWindow {
         */
         bool stretch(int left = 100, int up = 100, int right = 100, int down = 100);
 
-
-
-
-        //! Inform the window, that the language has changed.
-        /*!
-        \param lang		new language
-        \param refresh	refresh the window
-        */
-        void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
-
-        //! Inform the window, that the theme has changed.
-        /*!
-        \param themeName	new theme
-        \param refresh		refresh the window
-        */
-        void themeChanged(string themeName, bool refresh = true);
 
 
         //! Set one or more callbacks for the onBeforeShow event.
@@ -1511,7 +1501,8 @@ class MMSWindow {
         */
         void updateFromThemeClass(MMSWindowClass *themeClass);
 
-    /* friends */
+    // friends
+	friend class MMSWindowManager;
     friend class MMSInputManager;
     friend class MMSWindowAction;
     friend class MMSMainWindow;

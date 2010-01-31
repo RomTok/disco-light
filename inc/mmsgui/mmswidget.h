@@ -270,6 +270,9 @@ class MMSWidget {
 
         void startWidgetThread(int delay);
 
+        //! Internal method: Inform the widget, that the theme has changed.
+		void themeChanged(string &themeName);
+
     public:
         MMSWidget();
         virtual ~MMSWidget();
@@ -426,9 +429,6 @@ class MMSWidget {
 
         MMSFBRectangle geom;
         MMSFBRectangle innerGeom;
-
-		//! inform the widget, that theme has changed
-		void themeChanged(string themeName);
 
     public:
         /* theme access methods */
