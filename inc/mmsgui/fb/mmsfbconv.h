@@ -1069,6 +1069,13 @@ void mmsfb_blit_blend_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, i
 											   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
 											   unsigned char alpha);
 
+//! Blit with alpha from color RGB32 to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_coloralpha_rgb32_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+										  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
+										  unsigned char alpha);
 
 //! Blit RGB16 to RGB32.
 /*!

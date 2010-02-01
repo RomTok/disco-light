@@ -1976,10 +1976,11 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_rgb32(src_planes, src_height,
-												   sx, sy, sw, sh,
-												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												   x, y);
+					mmsfb_blit_blend_argb_to_rgb32(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -1991,11 +1992,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb_to_rgb32(src_planes, src_height,
-															  sx, sy, sw, sh,
-															  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-															  x, y,
-															  this->config.color.a);
+					mmsfb_blit_blend_coloralpha_argb_to_rgb32(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y,
+							this->config.color.a);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2201,16 +2203,34 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb32_to_rgb32(src_planes, src_height,
-											  sx, sy, sw, sh,
-											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											  x, y);
+					mmsfb_blit_rgb32_to_rgb32(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y);
 					extendedUnlock(source, this);
 					return true;
 				}
 
 				return false;
 			}
+			else
+			if (blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA)) {
+				// blitting with coloralpha
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					mmsfb_blit_coloralpha_rgb32_to_rgb32(
+							src_planes, src_height,
+							sx, sy, sw, sh,
+							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+							x, y,
+							this->config.color.a);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+
 
 			// does not match
 			return false;
