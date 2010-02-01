@@ -336,9 +336,9 @@ void MMSWindowManager::onThemeChanged(string themeName) {
 		saved_screen->getScreenshot();
 
 		// show the saved screen
-/*		saved_screen->raiseToTop();
+		saved_screen->raiseToTop();
 		saved_screen->setOpacity(255);
-		saved_screen->show();*/
+		saved_screen->show();
 	}
 
 	// the theme has changed, inform all windows
@@ -348,8 +348,23 @@ void MMSWindowManager::onThemeChanged(string themeName) {
 
     if (saved_screen) {
     	// do the animation
+	    int steps = 48;
+	    unsigned int opacity_step = 255 / (steps+1);
 
+   	    for (int i = 1; i <= steps; i++) {
 
+            // start time stamp
+	    	unsigned int start_ts = getMTimeStamp();
+
+	    	// set opacity
+	    	saved_screen->setOpacity(255 - i * opacity_step);
+
+            // end time stamp
+	    	unsigned int end_ts = getMTimeStamp();
+
+	    	// sleeping a little...
+	    	msleep(getFrameDelay(start_ts, end_ts));
+   	    }
 
     	// delete the temporary window
     	saved_screen->hide();
