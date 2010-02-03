@@ -16,7 +16,7 @@ else:
 	else:
 		diskoappctrlEnv['LIBS'] = (['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase']) + diskoappctrlEnv['LIBS']
 
-diskoappctrlEnv['LIBPATH'].extend(['../../../lib'])
+diskoappctrlEnv.Append(LIBPATH = ['../../../lib'])
 diskoappctrlEnv['CCFLAGS'].extend(['-Itools/diskoappctrl/inc'])
 diskoappctrl = diskoappctrlEnv.Program('../../../bin/diskoappctrl', Glob('src/*.cpp'))
 

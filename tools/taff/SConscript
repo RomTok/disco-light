@@ -16,7 +16,7 @@ else:
 	else:
 		taffEnv['LIBS'] = (['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase']) + taffEnv['LIBS']
 
-taffEnv['LIBPATH'].extend(['../../../lib'])
+taffEnv.Append(LIBPATH = ['../../../lib'])
 taff = taffEnv.Program('../../../bin/taff', Glob('src/*.cpp'))
 
 if env['big_lib']:

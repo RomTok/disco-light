@@ -145,6 +145,7 @@ if os.environ.has_key('LD'):
 if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'] = [os.environ['LDFLAGS'].split()]
 
+env['LIBS'] = []
 env['LIBPATH'] = ''
 env['diskoSources'] = []
 
@@ -607,6 +608,8 @@ if 'check' in BUILD_TARGETS:
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
+	if (env['enable_curl']):
+		disko_pc_requires += ', libcurl'
 	if env['LIBPATH']:
 		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
