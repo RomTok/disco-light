@@ -4,10 +4,10 @@ diskoappctrlEnv = env.Clone()
 
 if env['big_lib']:
 	Import('libdisko_shared')
-    diskoappctrlEnv['LIBS'] = (['disko']) + diskoappctrlEnv['LIBS']
+	diskoappctrlEnv['LIBS'] = (['disko']) + diskoappctrlEnv['LIBS']
 elif env['static_lib']:
 	Import('libdisko_static')
-    diskoappctrlEnv['LIBS'] = (['disko']) + diskoappctrlEnv['LIBS']
+	diskoappctrlEnv['LIBS'] = (['disko']) + diskoappctrlEnv['LIBS']
 else:
 	Import('libmmsinfo libmmsconfig libmmstools libmmsgui libmmscore libmmsinput libmmsbase')
 	if env['media']:
