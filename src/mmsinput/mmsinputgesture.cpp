@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsinput/mmsinputgesture.h"
+#include <stdlib.h>
 
 MMSInputGesture::MMSInputGesture(int sensitivity)  {
 	dy=0;
