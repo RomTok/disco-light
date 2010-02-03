@@ -540,14 +540,14 @@ void Cmd::executeVersion() {
 	}
 	printf(" gfx support:   ");
 #ifdef __HAVE_FBDEV__
-	printf("fbdev")
+	printf("fbdev");
 	havebackend = true;
 #endif
 #ifdef __HAVE_DIRECTFB__
 	if(havebackend) {
-		printf(", directfb")
+		printf(", directfb");
 	} else {
-		printf("directfb")
+		printf("directfb");
 		havebackend = true;
 	}
 #endif
