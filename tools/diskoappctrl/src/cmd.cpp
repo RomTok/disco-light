@@ -354,7 +354,7 @@ void Cmd::updateParameter() {
     if(plugin.empty()) {
     	/*cons.printError("No plugin given to update. See cmd --help for further information.");
     	exit(1);*/
-    	plugin="-1";
+    	plugin="-2";
     }
     if(parameter.empty()) {
     	cons.printError("No parameter given to update. See cmd --help for further information.");
