@@ -186,7 +186,7 @@ else:
 	if env['size']:
 		env['CCFLAGS'].extend(['-Os'])
 	else:
-		env['CCFLAGS'].extend(['-O3'])
+		env['CCFLAGS'].extend(['-O3', '-g'])
 	env['LINKFLAGS'].extend(['-s'])
 
 # check which sse version to use
@@ -456,6 +456,9 @@ conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
 
 if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
+
+if conf.CheckHeader(['wordexp.h']):
+	conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
 
 # checks required if using dynamic linking support
 if(env['use_dl']):

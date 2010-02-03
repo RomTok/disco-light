@@ -33,7 +33,7 @@
 #include "mmstools/tools.h"
 #include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsconfigdata.h"
-#ifdef _XOPEN_SOURCE
+#ifdef __HAVE_WORDEXP__
 #include <wordexp.h>
 #endif
 #include <string.h>
@@ -54,7 +54,7 @@ static MMSMutex       debugMsgMutex;
 
 
 string substituteEnvVars(string input) {
-#ifdef _XOPEN_SOURCE
+#ifdef __HAVE_WORDEXP__
 	wordexp_t p;
     char **w;
     string output = "";
@@ -70,6 +70,7 @@ string substituteEnvVars(string input) {
     }
     return output;
 #else
+#warning "wordexp not found: substituteEnvVars() has no effect"
     return input;
 #endif
 }
