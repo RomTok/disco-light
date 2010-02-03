@@ -4,16 +4,17 @@ diskoappctrlEnv = env.Clone()
 
 if env['big_lib']:
 	Import('libdisko_shared')
-	diskoappctrlEnv['LIBS'].extend(['disko'])
+    diskoappctrlEnv['LIBS'] = (['disko']) + diskoappctrlEnv['LIBS']
 elif env['static_lib']:
 	Import('libdisko_static')
-	diskoappctrlEnv['LIBS'].extend(['disko'])
+    diskoappctrlEnv['LIBS'] = (['disko']) + diskoappctrlEnv['LIBS']
 else:
 	Import('libmmsinfo libmmsconfig libmmstools libmmsgui libmmscore libmmsinput libmmsbase')
-	diskoappctrlEnv['LIBS'].extend(['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase'])
 	if env['media']:
 		Import('libmmsmedia')
-		diskoappctrlEnv['LIBS'].extend(['mmsmedia'])
+		diskoappctrlEnv['LIBS'] = (['mmsmedia', 'mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase']) + diskoappctrlEnv['LIBS']
+	else:
+		diskoappctrlEnv['LIBS'] = (['mmsinfo', 'mmsconfig', 'mmstools', 'mmsgui', 'mmscore', 'mmsinput', 'mmsbase']) + diskoappctrlEnv['LIBS']
 
 diskoappctrlEnv['LIBPATH'].extend(['../../../lib'])
 diskoappctrlEnv['CCFLAGS'].extend(['-Itools/diskoappctrl/inc'])

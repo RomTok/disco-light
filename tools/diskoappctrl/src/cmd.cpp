@@ -572,17 +572,17 @@ void Cmd::executeVersion() {
 #endif
 #ifdef __ENABLE_MYSQL__
 	if(havedb) {
-		printf(", mysql")
+		printf(", mysql");
 	} else {
-		printf("mysql")
+		printf("mysql");
 		havedb = true;
 	}
 #endif
 #ifdef __ENABLE_FREETDS__
 	if(havedb) {
-		printf(", freetds")
+		printf(", freetds");
 	} else {
-		printf("freetds")
+		printf("freetds");
 		havedb = true;
 	}
 #endif

@@ -594,6 +594,7 @@ if(env['enable_swscale']):
 env2 = conf.Finish()
 if env2:
 	env = env2
+	env['LIBS'].extend(['pthread', 'z'])
 	printSummary()
 	
 if 'check' in BUILD_TARGETS:
@@ -612,14 +613,10 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_libs = ''
 		
 	if env['big_lib'] or env['static_lib']:
-		disko_pc_libs += ' -ldisko -lpthread'
+		disko_pc_libs += ' -ldisko -lpthread -lz'
 	else:
-		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread'
+		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread -lz'
 
-	if (env['enable_curl']):
-		disko_pc_requires += ', libcurl'
-		disko_pc_libs += ' -lcurl'
-		
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
