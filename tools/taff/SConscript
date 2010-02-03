@@ -4,10 +4,10 @@ taffEnv = env.Clone()
 
 if env['big_lib']:
 	Import('libdisko_shared')
-    taffEnv['LIBS'] = (['disko']) + taffEnv['LIBS']
+	taffEnv['LIBS'] = (['disko']) + taffEnv['LIBS']
 elif env['static_lib']:
 	Import('libdisko_static')
-    taffEnv['LIBS'] = (['disko']) + taffEnv['LIBS']
+	taffEnv['LIBS'] = (['disko']) + taffEnv['LIBS']
 else:
 	Import('libmmsinfo libmmsconfig libmmstools libmmsgui libmmscore libmmsinput libmmsbase')
 	if env['media']:
