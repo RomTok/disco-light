@@ -579,9 +579,12 @@ void MMSFBSurface::freeSurfaceBuffer() {
 					}
 				}
 				delete sb;
+				sb=NULL;
 			}
 		}
-		sb->numbuffers = 0;
+		if(sb) {
+			sb->numbuffers = 0;
+		}
 	}
 	this->llsurface = NULL;
 }
