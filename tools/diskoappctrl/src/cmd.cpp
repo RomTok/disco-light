@@ -540,14 +540,14 @@ void Cmd::executeVersion() {
 	}
 	printf(" gfx support:   ");
 #ifdef __HAVE_FBDEV__
-	printf("fbdev")
+	printf("fbdev");
 	havebackend = true;
 #endif
 #ifdef __HAVE_DIRECTFB__
 	if(havebackend) {
-		printf(", directfb")
+		printf(", directfb");
 	} else {
-		printf("directfb")
+		printf("directfb");
 		havebackend = true;
 	}
 #endif
@@ -572,17 +572,17 @@ void Cmd::executeVersion() {
 #endif
 #ifdef __ENABLE_MYSQL__
 	if(havedb) {
-		printf(", mysql")
+		printf(", mysql");
 	} else {
-		printf("mysql")
+		printf("mysql");
 		havedb = true;
 	}
 #endif
 #ifdef __ENABLE_FREETDS__
 	if(havedb) {
-		printf(", freetds")
+		printf(", freetds");
 	} else {
-		printf("freetds")
+		printf("freetds");
 		havedb = true;
 	}
 #endif
