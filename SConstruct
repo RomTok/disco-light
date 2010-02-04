@@ -145,6 +145,7 @@ if os.environ.has_key('LD'):
 if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'] = [os.environ['LDFLAGS'].split()]
 
+env['LIBS'] = []
 env['LIBPATH'] = ''
 env['diskoSources'] = []
 
@@ -186,7 +187,7 @@ else:
 	if env['size']:
 		env['CCFLAGS'].extend(['-Os'])
 	else:
-		env['CCFLAGS'].extend(['-O3'])
+		env['CCFLAGS'].extend(['-O3', '-g'])
 	env['LINKFLAGS'].extend(['-s'])
 
 # check which sse version to use
@@ -457,6 +458,9 @@ conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
 if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 	conf.env['libiconv'] = True
 
+if conf.CheckHeader(['wordexp.h']):
+	conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
+
 # checks required if using dynamic linking support
 if(env['use_dl']):
 	if conf.CheckLibWithHeader(['libdl'], ['dlfcn.h'], 'c++'):
@@ -591,6 +595,7 @@ if(env['enable_swscale']):
 env2 = conf.Finish()
 if env2:
 	env = env2
+	env['LIBS'].extend(['pthread', 'z'])
 	printSummary()
 	
 if 'check' in BUILD_TARGETS:
@@ -603,20 +608,18 @@ if 'check' in BUILD_TARGETS:
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
+	if (env['enable_curl']):
+		disko_pc_requires += ', libcurl'
 	if env['LIBPATH']:
 		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
 		disko_pc_libs = ''
 		
 	if env['big_lib'] or env['static_lib']:
-		disko_pc_libs += ' -ldisko -lpthread'
+		disko_pc_libs += ' -ldisko -lpthread -lz'
 	else:
-		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread'
+		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread -lz'
 
-	if (env['enable_curl']):
-		disko_pc_requires += ', libcurl'
-		disko_pc_libs += ' -lcurl'
-		
 	if env.has_key('libiconv'):
 		disko_pc_libs += ' -liconv'
 	
