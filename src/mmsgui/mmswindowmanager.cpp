@@ -35,19 +35,28 @@
 
 
 MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
+	// init me
     this->vrect = vrect;
     this->toplevel = NULL;
+    this->anim_saved_screen = NULL;
 
     // add language changed callback
-    onTargetLangChanged_connection = this->translator.onTargetLangChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onTargetLangChanged));
+    this->onTargetLangChanged_connection = this->translator.onTargetLangChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onTargetLangChanged));
 
     // add theme changed callback
-    onThemeChanged_connection = this->themeManager.onThemeChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onThemeChanged));
+    this->onThemeChanged_connection = this->themeManager.onThemeChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onThemeChanged));
+
+    // add animation callbacks
+    this->onBeforeAnimation_connection = this->animThread.onBeforeAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onBeforeAnimation));
+    this->onAnimation_connection = this->animThread.onAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAnimation));
 }
 
 MMSWindowManager::~MMSWindowManager() {
+	// disconnect my callbacks
 	onTargetLangChanged_connection.disconnect();
 	onThemeChanged_connection.disconnect();
+	onBeforeAnimation_connection.disconnect();
+	onAnimation_connection.disconnect();
 }
 
 void MMSWindowManager::reset() {
@@ -317,9 +326,33 @@ MMSThemeManager *MMSWindowManager::getThemeManager() {
 	return &this->themeManager;
 }
 
+bool MMSWindowManager::onBeforeAnimation(MMSAnimationThread *animThread) {
+	// init animation opacity
+	this->anim_opacity = 255;
+
+	return true;
+}
+
+bool MMSWindowManager::onAnimation(MMSAnimationThread *animThread) {
+	// get new opacity
+	this->anim_opacity-= animThread->getStepLength();
+
+	// animation finished?
+	if (this->anim_opacity <= 0) {
+		// yes
+		return false;
+	}
+
+	// set new opacity
+	this->anim_saved_screen->setOpacity(this->anim_opacity);
+
+	return true;
+}
+
 void MMSWindowManager::onThemeChanged(string themeName) {
+	// get access to the layer
 	MMSFBLayer *layer = mmsfbmanager.getGraphicsLayer();
-	MMSFBWindow *saved_screen = NULL;
+	this->anim_saved_screen = NULL;
 
 	// create a temporary window to save the screen
 	// so we can have a nice animation while switching the theme
@@ -328,17 +361,18 @@ void MMSWindowManager::onThemeChanged(string themeName) {
 		layer->getPixelFormat(&pixelformat);
 		int w, h;
 		layer->getResolution(&w, &h);
-		layer->createWindow(&saved_screen, 0, 0, w, h, pixelformat, isAlphaPixelFormat(pixelformat), 0);
+		layer->createWindow(&this->anim_saved_screen, 0, 0, w, h,
+							pixelformat, isAlphaPixelFormat(pixelformat), 0);
 	}
 
-	if (saved_screen) {
+	if (this->anim_saved_screen) {
 		// get a screenshot
-		saved_screen->getScreenshot();
+		this->anim_saved_screen->getScreenshot();
 
 		// show the saved screen
-		saved_screen->raiseToTop();
-		saved_screen->setOpacity(255);
-		saved_screen->show();
+		this->anim_saved_screen->raiseToTop();
+		this->anim_saved_screen->setOpacity(255);
+		this->anim_saved_screen->show();
 	}
 
 	// the theme has changed, inform all windows
@@ -346,29 +380,15 @@ void MMSWindowManager::onThemeChanged(string themeName) {
         this->windows.at(i)->themeChanged(themeName);
     }
 
-    if (saved_screen) {
+    if (this->anim_saved_screen) {
     	// do the animation
-	    int steps = 48;
-	    unsigned int opacity_step = 255 / (steps+1);
-
-   	    for (int i = 1; i <= steps; i++) {
-
-            // start time stamp
-	    	unsigned int start_ts = getMTimeStamp();
-
-	    	// set opacity
-	    	saved_screen->setOpacity(255 - i * opacity_step);
-
-            // end time stamp
-	    	unsigned int end_ts = getMTimeStamp();
-
-	    	// sleeping a little...
-	    	msleep(getFrameDelay(start_ts, end_ts));
-   	    }
+    	this->animThread.setStepsPerSecond(255);
+    	this->animThread.start(false);
 
     	// delete the temporary window
-    	saved_screen->hide();
-    	delete saved_screen;
+    	this->anim_saved_screen->hide();
+    	delete this->anim_saved_screen;
+    	this->anim_saved_screen = NULL;
     }
 }
 
