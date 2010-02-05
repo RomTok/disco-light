@@ -40,7 +40,7 @@
 
 //! This class helps the MMSGUI and user specific applications to get smooth animations.
 /*!
-There are three callbacks: onBeforeAnimation, onAnimation and onAfterAnimation
+There are three callbacks: onBeforeAnimation, onAnimation and onAfterAnimation.
 At least the onAnimation callback should be connected. This callback will be called
 for each frame which is to draw.
 The onBeforeAnimation callback can be used to setup something.
