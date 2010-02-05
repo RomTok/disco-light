@@ -302,7 +302,8 @@ MMSFBLayer::MMSFBLayer(int id) {
 				return;
 			}
 
-			XFlush(mmsfb->x_display);
+			//XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display, True);
 		    shmctl(this->xv_shminfo1.shmid, IPC_RMID, 0);
 
 			// create x11 buffer #2
@@ -360,7 +361,8 @@ MMSFBLayer::MMSFBLayer(int id) {
 				return;
 			}
 
-			XFlush(mmsfb->x_display);
+			//XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display, True);
 		    shmctl(this->xv_shminfo2.shmid, IPC_RMID, 0);
 
 			XUnlockDisplay(mmsfb->x_display);

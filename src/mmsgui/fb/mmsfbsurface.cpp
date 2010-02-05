@@ -4831,7 +4831,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
 								  0, 0, dx, dy,
 								  this->config.w, this->config.h, False);
-					XFlush(mmsfb->x_display);
+					//XFlush(mmsfb->x_display);
+					XSync(mmsfb->x_display, True);
 				}
 				else {
 					// put only a region
@@ -4850,12 +4851,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
 									 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
 									 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
-						XFlush(mmsfb->x_display);
+						//XFlush(mmsfb->x_display);
+						XSync(mmsfb->x_display, True);
 					}
 				}
-#ifndef __NO_XSYNC__
-//				XSync(mmsfb->x_display, True);
-#endif
 				XUnlockDisplay(mmsfb->x_display);
 				mmsfb->xlock.unlock();
 			}
@@ -4925,10 +4924,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}
-			XFlush(mmsfb->x_display);
-#ifndef __NO_XSYNC__
-//			XSync(mmsfb->x_display, True);
-#endif
+			//XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display, True);
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}
@@ -4995,10 +4992,8 @@ bool MMSFBSurface::refresh() {
 				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
 							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
-				XFlush(mmsfb->x_display);
-#ifndef __NO_XSYNC__
-//				XSync(mmsfb->x_display, True);
-#endif
+				//XFlush(mmsfb->x_display);
+				XSync(mmsfb->x_display, True);
 				XUnlockDisplay(mmsfb->x_display);
 				mmsfb->xlock.unlock();
 			}
@@ -5033,10 +5028,8 @@ bool MMSFBSurface::refresh() {
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}
-			XFlush(mmsfb->x_display);
-#ifndef __NO_XSYNC__
-//			XSync(mmsfb->x_display, True);
-#endif
+			//XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display, True);
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 			this->unlock();
