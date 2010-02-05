@@ -5862,10 +5862,20 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 	if (!dumpok) {
 		// dump pixels
 		switch (this->config.surface_buffer->pixelformat) {
-		case MMSFB_PF_ARGB: {
+		case MMSFB_PF_ARGB:
+		case MMSFB_PF_RGB32: {
 				int pitch_pix = pitch >> 2;
 				unsigned int *buf = (unsigned int*)sbuf + x + y * pitch_pix;
-				D2FCB_ADDSTR1("\n* aarrggbb hex (4-byte integer) ***********************************************");
+				switch (this->config.surface_buffer->pixelformat) {
+				case MMSFB_PF_ARGB:
+					D2FCB_ADDSTR1("\n* aarrggbb hex (4-byte integer) ***********************************************");
+					break;
+				case MMSFB_PF_RGB32:
+					D2FCB_ADDSTR1("\n* --rrggbb hex (4-byte integer) ***********************************************");
+					break;
+				default:
+					break;
+				}
 				for (int j = 0; j < h-y; j++) {
 					int i = j * pitch_pix;
 					D2FCB_ADDSTR2("\n%08x", (int)buf[i++]);
