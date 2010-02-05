@@ -5910,10 +5910,20 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 				D2FCB_ADDSTR1("\n*******************************************************************************");
 			}
 			break;
+		case MMSFB_PF_RGB16:
 		case MMSFB_PF_BGR555: {
 				int pitch_pix = pitch >> 1;
 				unsigned short int *buf = (unsigned short int*)sbuf + x + y * pitch_pix;
-				D2FCB_ADDSTR1("\n* 0bbbbbgggggrrrrr bin (2-byte integer) ***************************************");
+				switch (this->config.surface_buffer->pixelformat) {
+				case MMSFB_PF_RGB16:
+					D2FCB_ADDSTR1("\n* rrrrrggggggbbbbb bin (2-byte integer) ***************************************");
+					break;
+				case MMSFB_PF_BGR555:
+					D2FCB_ADDSTR1("\n* 0bbbbbgggggrrrrr bin (2-byte integer) ***************************************");
+					break;
+				default:
+					break;
+				}
 				for (int j = 0; j < h-y; j++) {
 					int i = j * pitch_pix;
 					D2FCB_ADDSTR2("\n%04x", buf[i++]);
