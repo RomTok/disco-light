@@ -76,10 +76,14 @@ void MMSTimer::restart() {
 		return;
 	}
 
+	cerr << "MMSTIMER: restart: get lock" << endl;
 	pthread_mutex_lock(&mutex);
+	cerr << "MMSTIMER: restart: have lock" << endl;
 	this->action = RESTART;
+	cerr << "MMSTIMER: restart: signal" << endl;
 	pthread_cond_signal(&cond);
 	pthread_mutex_unlock(&mutex);
+	cerr << "MMSTIMER: restart: unlocked" << endl;
 }
 
 void MMSTimer::stop() {
@@ -91,6 +95,14 @@ void MMSTimer::stop() {
 	this->action = STOP;
 	pthread_cond_signal(&cond);
 	pthread_mutex_unlock(&mutex);
+}
+
+void* callTimeout(void *data) {
+	sigc::signal<void> *timeOutHandler = (sigc::signal<void>*)data;
+
+	timeOutHandler->emit();
+
+	return NULL;
 }
 
 void MMSTimer::threadMain() {
@@ -113,7 +125,8 @@ void MMSTimer::threadMain() {
 		}
 
 		if(pthread_cond_timedwait(&this->cond, &this->mutex, &absTime) == ETIMEDOUT) {
-			timeOut.emit();
+			pthread_t t;
+			pthread_create(&t, NULL, callTimeout, &this->timeOut);
 			if(this->singleShot)
 				break;
 		} else {
