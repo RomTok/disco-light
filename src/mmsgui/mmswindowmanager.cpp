@@ -349,20 +349,22 @@ bool MMSWindowManager::onAnimation(MMSAnimationThread *animThread) {
 	return true;
 }
 
-void MMSWindowManager::onThemeChanged(string themeName) {
+void MMSWindowManager::onThemeChanged(string themeName, bool fade_in) {
 	// get access to the layer
 	MMSFBLayer *layer = mmsfbmanager.getGraphicsLayer();
 	this->anim_saved_screen = NULL;
 
-	// create a temporary window to save the screen
-	// so we can have a nice animation while switching the theme
-	if (layer) {
-		MMSFBSurfacePixelFormat pixelformat;
-		layer->getPixelFormat(&pixelformat);
-		int w, h;
-		layer->getResolution(&w, &h);
-		layer->createWindow(&this->anim_saved_screen, 0, 0, w, h,
-							pixelformat, isAlphaPixelFormat(pixelformat), 0);
+	if (fade_in) {
+		// create a temporary window to save the screen
+		// so we can have a nice animation while switching the theme
+		if (layer) {
+			MMSFBSurfacePixelFormat pixelformat;
+			layer->getPixelFormat(&pixelformat);
+			int w, h;
+			layer->getResolution(&w, &h);
+			layer->createWindow(&this->anim_saved_screen, 0, 0, w, h,
+								pixelformat, isAlphaPixelFormat(pixelformat), 0);
+		}
 	}
 
 	if (this->anim_saved_screen) {

@@ -105,10 +105,24 @@ class MMSThemeManager {
 
         //! Change the theme.
         /*!
+        The fadein effect switcher will be used from the theme.xml definition.
+        For that, you can set the attribute "fadein" for the tag <mmstheme/> to "true" or "false".
+        The default is "false".
         \param themeName	name of the new theme to be activated
+        \note The attribute "fadein" have to set for the new theme which is to be activated.
         \note If fails, an MMSError exception will be throw.
         */
         void setTheme(string themeName);
+
+        //! Change the theme.
+        /*!
+        You can switch on/off the fading animation during the theme switch.
+        \param themeName	name of the new theme to be activated
+        \param fadein		the new theme should fade in?
+        \note If fails, an MMSError exception will be throw.
+        */
+        void setTheme(string themeName, bool fadein);
+
 
         //! Set one or more callbacks for the onThemeChanged event.
         /*!
@@ -116,11 +130,10 @@ class MMSThemeManager {
 
         A callback method must be defined like this:
 
-        	void myclass::mycallbackmethod(string themeName);
+        void myclass::mycallbackmethod(string themeName, bool fadein);
 
-        	Parameters:
-
-        		themeName -> name of the new theme
+        \param themeName	name of the new theme
+        \param fadein		the new theme should fade in?
 
         To connect your callback to onThemeChanged do this:
 
@@ -137,7 +150,7 @@ class MMSThemeManager {
             Else an abnormal program termination can occur.
             You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
-        static sigc::signal<void, string> onThemeChanged;
+        static sigc::signal<void, string, bool> onThemeChanged;
 };
 
 MMS_CREATEERROR(MMSThemeManagerError);

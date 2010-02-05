@@ -35,10 +35,10 @@
 #define INITCHECK if (!this->initialized) throw new MMSThemeManagerError(1, "MMSThemeManager is not initialized!");
 
 // static variables
-bool						MMSThemeManager::initialized = false;
-string						MMSThemeManager::themepath;
-vector<MMSTheme*>			MMSThemeManager::localThemes;
-sigc::signal<void, string>  MMSThemeManager::onThemeChanged;
+bool								MMSThemeManager::initialized = false;
+string								MMSThemeManager::themepath;
+vector<MMSTheme*>					MMSThemeManager::localThemes;
+sigc::signal<void, string, bool>	MMSThemeManager::onThemeChanged;
 
 MMSThemeManager::MMSThemeManager(string themepath, string globalThemeName) {
 	if (!this->initialized) {
@@ -181,13 +181,39 @@ void MMSThemeManager::setTheme(string themeName) {
 	if (themeName == globalTheme->getThemeName())
 		return;
 
+	// reset the global theme_tag (<mmstheme/> attributes)
+	globalTheme->theme_tag.unsetAll();
+
+	// load new theme
+	loadGlobalTheme(themeName);
+
+	// have to fade?
+	bool fadein = false;
+	if (globalTheme->theme_tag.isFadeIn())
+		fadein = globalTheme->theme_tag.getFadeIn();
+
+	// inform attached callbacks
+	this->onThemeChanged.emit(themeName, fadein);
+}
+
+
+void MMSThemeManager::setTheme(string themeName, bool fadein) {
+    // check if initialized
+	INITCHECK;
+
+	// check if requested theme is equal to current theme
+	if (themeName == globalTheme->getThemeName())
+		return;
+
+	// reset the global theme_tag (<mmstheme/> attributes)
+	globalTheme->theme_tag.unsetAll();
+
 	// load new theme
 	loadGlobalTheme(themeName);
 
 	// inform attached callbacks
-	this->onThemeChanged.emit(themeName);
+	this->onThemeChanged.emit(themeName, fadein);
 }
-
 
 
 #define GET_THEME_CLASS(method) \

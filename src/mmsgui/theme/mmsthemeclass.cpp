@@ -42,6 +42,7 @@ MMSThemeClass::MMSThemeClass() {
 
 void MMSThemeClass::unsetAll() {
     unsetName();
+    unsetFadeIn();
 }
 
 void MMSThemeClass::setAttributesFromTAFF(MMSTaffFile *tafff) {
@@ -51,6 +52,9 @@ void MMSThemeClass::setAttributesFromTAFF(MMSTaffFile *tafff) {
 		case MMSGUI_MMSTHEME_ATTR::MMSGUI_MMSTHEME_ATTR_IDS_name:
 			setName(attrval_str);
 			break;
+		case MMSGUI_MMSTHEME_ATTR::MMSGUI_MMSTHEME_ATTR_IDS_fadein:
+            setFadeIn((attrval_int) ? true : false);
+            break;
 		}
 	}
 	endTAFFScan
@@ -71,5 +75,22 @@ void MMSThemeClass::unsetName() {
 
 string MMSThemeClass::getName() {
     return this->name;
+}
+
+bool MMSThemeClass::isFadeIn() {
+    return this->isfadein;
+}
+
+void MMSThemeClass::setFadeIn(bool fadein) {
+    this->fadein = fadein;
+    this->isfadein = true;
+}
+
+void MMSThemeClass::unsetFadeIn() {
+    this->isfadein = false;
+}
+
+bool MMSThemeClass::getFadeIn() {
+    return this->fadein;
 }
 

@@ -83,7 +83,7 @@ class MMSWindowManager : public IMMSWindowManager {
         void onTargetLangChanged(MMS_LANGUAGE_TYPE lang);
 
         //! Internal method: Theme Changed callback from MMSThemeManager.
-        void onThemeChanged(string themeName);
+        void onThemeChanged(string themeName, bool fade_in);
 
         //! Internal method: Before Animation callback from MMSAnimationThread used in onThemeChanged() callback.
         bool onBeforeAnimation(MMSAnimationThread *animThread);

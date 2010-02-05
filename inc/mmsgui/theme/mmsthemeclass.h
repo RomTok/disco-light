@@ -39,10 +39,12 @@
 namespace MMSGUI_MMSTHEME_ATTR {
 
 	#define MMSGUI_MMSTHEME_ATTR_ATTRDESC \
-		{ "name", TAFF_ATTRTYPE_STRING }
+		{ "name", TAFF_ATTRTYPE_STRING }, \
+		{ "fadein", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_MMSTHEME_ATTR_IDS \
-		MMSGUI_MMSTHEME_ATTR_IDS_name
+		MMSGUI_MMSTHEME_ATTR_IDS_name, \
+		MMSGUI_MMSTHEME_ATTR_IDS_fadein
 
 	#define MMSGUI_MMSTHEME_ATTR_INIT { \
 		MMSGUI_MMSTHEME_ATTR_ATTRDESC, \
@@ -61,6 +63,8 @@ class MMSThemeClass {
     private:
         bool    isname;
         string  name;
+        bool    isfadein;
+        bool    fadein;
 
     public:
         MMSThemeClass();
@@ -77,6 +81,11 @@ class MMSThemeClass {
         void setName(string name);
         void unsetName();
         string getName();
+
+        bool isFadeIn();
+        void setFadeIn(bool fadein);
+        void unsetFadeIn();
+        bool getFadeIn();
 };
 
 #endif /*MMSTHEMECLASS_H_*/
