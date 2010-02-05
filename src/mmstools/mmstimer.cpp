@@ -76,14 +76,10 @@ void MMSTimer::restart() {
 		return;
 	}
 
-	cerr << "MMSTIMER: restart: get lock" << endl;
 	pthread_mutex_lock(&mutex);
-	cerr << "MMSTIMER: restart: have lock" << endl;
 	this->action = RESTART;
-	cerr << "MMSTIMER: restart: signal" << endl;
 	pthread_cond_signal(&cond);
 	pthread_mutex_unlock(&mutex);
-	cerr << "MMSTIMER: restart: unlocked" << endl;
 }
 
 void MMSTimer::stop() {
