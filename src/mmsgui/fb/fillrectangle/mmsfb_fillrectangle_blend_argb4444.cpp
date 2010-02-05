@@ -73,11 +73,16 @@ void mmsfb_fillrectangle_blend_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_
 		while (dst < dst_end) {
 			// for all pixels in the line
 #ifdef __HAVE_SSE__
-		// fill memory 2-byte-wise (much faster than loop see below)
-		__asm__ __volatile__ ( "\trep stosw\n" : : "D" (dst), "a" (SRC), "c" (dw));
+			// fill memory 2-byte-wise (much faster than loop see below)
+//			__asm__ __volatile__ ( "\trep stosw\n" : : "D" (dst), "a" (SRC), "c" (dw));
+			short d0, d1, d2;
+			__asm__ __volatile__ ( "\tcld\n\trep stosw" \
+					: "=&D" (d0), "=&a" (d1), "=&c" (d2) \
+					: "0" (dst), "1" (SRC), "2" (dw) \
+					: "memory", "cc");
 
-		// go to the next line
-		dst+= dst_pitch_pix;
+			// go to the next line
+			dst+= dst_pitch_pix;
 #else
 			unsigned short int *line_end = dst + dw;
 			while (dst < line_end) {
