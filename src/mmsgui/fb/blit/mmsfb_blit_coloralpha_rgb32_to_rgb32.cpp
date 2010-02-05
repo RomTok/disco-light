@@ -107,11 +107,12 @@ void mmsfb_blit_coloralpha_rgb32_to_rgb32(MMSFBSurfacePlanes *src_planes, int sr
 			OLDDST = DST;
 			OLDSRC = SRC;
 
-			// load source pixel and multiply it with given ALPHA
-			unsigned int sr = (A * (SRC & 0xff0000)) >> 24;
-			unsigned int sg = (A * (SRC & 0xff00)) >> 16;
-			unsigned int sb = (A * (SRC & 0xff)) >> 8;
+			// load source pixel
+			unsigned int sr = (SRC << 8) >> 24;
+			unsigned int sg = (SRC << 16) >> 24;
+			unsigned int sb = SRC & 0xff;
 
+			// load destination pixel
 			unsigned int r = (DST << 8) >> 24;
 			unsigned int g = (DST << 16) >> 24;
 			unsigned int b = DST & 0xff;
