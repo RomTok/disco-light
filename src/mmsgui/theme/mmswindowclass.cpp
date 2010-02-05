@@ -164,6 +164,11 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
     MMSFBColor color;
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+    	unsetBgImagePath();
+    }
+
 	startTAFFScan
 	{
         switch (attrid) {
@@ -290,6 +295,7 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
 	endTAFFScan
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
     	if (!isBgImagePath())
     		setBgImagePath(*path);
     }

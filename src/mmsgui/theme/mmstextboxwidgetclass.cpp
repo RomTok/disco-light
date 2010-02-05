@@ -65,6 +65,12 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
     MMSFBColor color;
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+        unsetFontPath();
+        unsetFilePath();
+    }
+
     if (!prefix) {
 		startTAFFScan
 		{
@@ -306,6 +312,7 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
     }
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
 	    if (!isFontPath())
 	        setFontPath(*path);
 	    if (!isFilePath())

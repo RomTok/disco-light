@@ -153,6 +153,16 @@ void MMSCheckBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *p
     MMSFBColor color;
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+	    unsetCheckedBgImagePath();
+	    unsetCheckedSelBgImagePath();
+	    unsetCheckedBgImagePath_p();
+	    unsetCheckedSelBgImagePath_p();
+	    unsetCheckedBgImagePath_i();
+	    unsetCheckedSelBgImagePath_i();
+    }
+
     if (!prefix) {
 		startTAFFScan
 		{
@@ -789,6 +799,7 @@ void MMSCheckBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *p
     }
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
 		if (!isCheckedBgImagePath())
 		    setCheckedBgImagePath(*path);
 		if (!isCheckedSelBgImagePath())

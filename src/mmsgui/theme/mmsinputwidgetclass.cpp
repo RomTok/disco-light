@@ -60,6 +60,11 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
     MMSFBColor color;
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+        unsetFontPath();
+    }
+
     if (!prefix) {
 		startTAFFScan
 		{
@@ -260,6 +265,7 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
     }
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
 	    if (!isFontPath())
 	        setFontPath(*path);
     }

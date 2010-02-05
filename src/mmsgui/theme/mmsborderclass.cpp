@@ -108,6 +108,12 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     MMSFBColor color;
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+	    unsetImagePath();
+	    unsetSelImagePath();
+    }
+
     if (!prefix) {
 		startTAFFScan
 		{
@@ -425,6 +431,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     }
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
 		if (!isImagePath())
 		    setImagePath(*path);
 		if (!isSelImagePath())

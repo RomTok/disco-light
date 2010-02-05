@@ -267,6 +267,16 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     MMSFBColor color;
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+	    unsetBgImagePath();
+	    unsetSelBgImagePath();
+	    unsetBgImagePath_p();
+	    unsetSelBgImagePath_p();
+	    unsetBgImagePath_i();
+	    unsetSelBgImagePath_i();
+    }
+
     if (!prefix) {
 		startTAFFScan
 		{
@@ -1049,6 +1059,7 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     }
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
 		if (!isBgImagePath())
 		    setBgImagePath(*path);
 		if (!isSelBgImagePath())

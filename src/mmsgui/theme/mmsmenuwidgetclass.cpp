@@ -90,6 +90,11 @@ void MMSMenuWidgetClass::unsetAll() {
 void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
     bool class_set = false;
 
+    if ((!class_set)&&(path)&&(*path!="")) {
+    	// unset my paths
+	    unsetSelImagePath();
+    }
+
     if (!prefix) {
 		startTAFFScan
 		{
@@ -336,6 +341,7 @@ void MMSMenuWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefi
     }
 
     if ((!class_set)&&(path)&&(*path!="")) {
+    	// set my paths
 		if (!isSelImagePath())
 		    setSelImagePath(*path);
     }
