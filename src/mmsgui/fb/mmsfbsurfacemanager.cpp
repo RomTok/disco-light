@@ -69,9 +69,10 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixel
             return surface;
         }
         else {
-            /* this surface is not the right one, check the timestamp */
-            if (free_surfaces.at(i).insert_time < time(NULL) - 30) {
-                /* the surface is longer than 30 seconds in the free_surfaces list, remove it */
+            // this surface is not the right one, check the timestamp
+            if (free_surfaces.at(i).insert_time < time(NULL) - 3) {
+                // the surface is longer than 3 seconds in the free_surfaces list, remove it
+            	// TODO: Rewrite memory handling while porting to PXA...
 				surface->freeSurfaceBuffer();
                 delete surface;
                 this->free_surfaces.erase(this->free_surfaces.begin()+i);
