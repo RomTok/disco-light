@@ -1204,6 +1204,15 @@ void mmsfb_blit_bgr24_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, i
 void mmsfb_blit_blend_argb_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
 									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
+
+//! Blit with alpha from color BGR24 to BGR24.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_coloralpha_bgr24_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+										  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
+										  unsigned char alpha);
+
 // ----------------------------------------------------------------------------
 // ------------------------------------------------------ BLITTING TO BGR24 ---
 
