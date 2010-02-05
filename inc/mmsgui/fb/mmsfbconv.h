@@ -1205,6 +1205,15 @@ void mmsfb_blit_blend_argb_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_heig
 									MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
+//! Blit with alpha blending with alpha from color ARGB to BGR24.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_blit_blend_coloralpha_argb_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+											   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy,
+											   unsigned char alpha);
+
+
 //! Blit with alpha from color BGR24 to BGR24.
 /*!
 \author Jens Schneider
