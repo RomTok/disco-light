@@ -52,8 +52,12 @@ MMSTimer::MMSTimer(bool singleShot) :
 }
 
 MMSTimer::~MMSTimer() {
-	this->action = QUIT;
-	stop();
+	if(isRunning()) {
+		pthread_mutex_lock(&mutex);
+		this->action = QUIT;
+		pthread_cond_signal(&cond);
+		pthread_mutex_unlock(&mutex);
+	}
 	join();
 
 	pthread_cond_destroy(&this->cond);
