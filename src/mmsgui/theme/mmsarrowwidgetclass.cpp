@@ -53,7 +53,7 @@ void MMSArrowWidgetClass::unsetAll() {
     unsetCheckSelected();
 }
 
-void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+void MMSArrowWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
     MMSFBColor color;
 
     if (!prefix) {

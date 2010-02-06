@@ -56,11 +56,10 @@ void MMSInputWidgetClass::unsetAll() {
     unsetText();
 }
 
-void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
     MMSFBColor color;
-    bool class_set = false;
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// unset my paths
         unsetFontPath();
     }
@@ -71,7 +70,6 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	        switch (attrid) {
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
 	            setClassName(attrval_str);
-	            class_set = true;
 				break;
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_font_path:
 	            if (*attrval_str)
@@ -264,7 +262,7 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
     	endTAFFScan_WITHOUT_ID
     }
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// set my paths
 	    if (!isFontPath())
 	        setFontPath(*path);

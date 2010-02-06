@@ -149,11 +149,10 @@ void MMSCheckBoxWidgetClass::unsetAll() {
     unsetChecked();
 }
 
-void MMSCheckBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+void MMSCheckBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
     MMSFBColor color;
-    bool class_set = false;
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// unset my paths
 	    unsetCheckedBgImagePath();
 	    unsetCheckedSelBgImagePath();
@@ -169,7 +168,6 @@ void MMSCheckBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *p
 	        switch (attrid) {
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
 	            setClassName(attrval_str);
-	            class_set = true;
 				break;
 			case MMSGUI_CHECKBOXWIDGET_ATTR::MMSGUI_CHECKBOXWIDGET_ATTR_IDS_checked_bgcolor:
 				color.a = color.r = color.g = color.b = 0;
@@ -798,7 +796,7 @@ void MMSCheckBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *p
     	endTAFFScan_WITHOUT_ID
     }
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// set my paths
 		if (!isCheckedBgImagePath())
 		    setCheckedBgImagePath(*path);

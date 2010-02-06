@@ -52,7 +52,7 @@ void MMSProgressBarWidgetClass::unsetAll() {
     unsetProgress();
 }
 
-void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
     MMSFBColor color;
 
     if (!prefix) {

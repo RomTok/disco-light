@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsgui/theme/mmsthememanager.h"
+#include "mmsinfo/mmsinfo.h"
 
 #define INITCHECK if (!this->initialized) throw new MMSThemeManagerError(1, "MMSThemeManager is not initialized!");
 
@@ -102,6 +103,17 @@ void MMSThemeManager::loadTheme(string path, string themeName, MMSTheme *theme) 
 }
 
 void MMSThemeManager::loadGlobalTheme(string themeName) {
+
+    try {
+        // load global default theme delivered with the disko framework
+    	loadTheme((string)getPrefix() + "/share/disko", DEFAULT_THEME, globalTheme);
+
+    	if (themeName != DEFAULT_THEME) {
+            // overload with special theme delivered with the disko framework
+            loadTheme((string)getPrefix() + "/share/disko", themeName, globalTheme);
+        }
+    } catch(MMSError *error) {}
+
     // load global default theme
     loadTheme("", DEFAULT_THEME, globalTheme);
 
@@ -130,6 +142,16 @@ MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
         // use the name from already loaded global theme
         themeName = globalTheme->getThemeName();
     }
+
+    try {
+        // load global default theme delivered with the disko framework
+    	loadTheme((string)getPrefix() + "/share/disko", DEFAULT_THEME, theme);
+
+    	if (themeName != DEFAULT_THEME) {
+            // overload with special theme delivered with the disko framework
+            loadTheme((string)getPrefix() + "/share/disko", themeName, theme);
+        }
+    } catch(MMSError *error) {}
 
     // load global default theme
     loadTheme("", DEFAULT_THEME, theme);
@@ -294,6 +316,9 @@ void MMSThemeManager::throughFile(MMSTaffFile *tafff, MMSTheme *theme) {
 		case MMSGUI_TAGTABLE_TAG_INPUTWIDGET:
             getInputWidgetValues(tafff, &(theme->inputWidgetClass), theme);
             break;
+		case MMSGUI_TAGTABLE_TAG_CHECKBOXWIDGET:
+            getCheckBoxWidgetValues(tafff, &(theme->checkBoxWidgetClass), theme);
+            break;
 		case MMSGUI_TAGTABLE_TAG_CLASS_TEMPLATE:
 			GET_THEME_CLASS(getTemplateClassValues);
 		    break;
@@ -336,6 +361,9 @@ void MMSThemeManager::throughFile(MMSTaffFile *tafff, MMSTheme *theme) {
 		case MMSGUI_TAGTABLE_TAG_CLASS_INPUTWIDGET:
 			GET_THEME_CLASS(getInputWidgetClassValues);
             break;
+		case MMSGUI_TAGTABLE_TAG_CLASS_CHECKBOXWIDGET:
+			GET_THEME_CLASS(getCheckBoxWidgetClassValues);
+            break;
 		}
 	}
 }
@@ -375,11 +403,11 @@ void MMSThemeManager::getMainWindowValues(MMSTaffFile *tafff, MMSMainWindowClass
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, &themePath, true);
 }
 
 void MMSThemeManager::getPopupWindowValues(MMSTaffFile *tafff, MMSPopupWindowClass *themeClass, MMSTheme *theme) {
@@ -388,11 +416,11 @@ void MMSThemeManager::getPopupWindowValues(MMSTaffFile *tafff, MMSPopupWindowCla
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, &themePath, true);
 }
 
 void MMSThemeManager::getRootWindowValues(MMSTaffFile *tafff, MMSRootWindowClass *themeClass, MMSTheme *theme) {
@@ -401,11 +429,11 @@ void MMSThemeManager::getRootWindowValues(MMSTaffFile *tafff, MMSRootWindowClass
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, &themePath, true);
 }
 
 
@@ -415,11 +443,11 @@ void MMSThemeManager::getChildWindowValues(MMSTaffFile *tafff, MMSChildWindowCla
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->windowClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath);
+    themeClass->windowClass.setAttributesFromTAFF(tafff, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, &themePath, true);
 }
 
 
@@ -429,11 +457,11 @@ void MMSThemeManager::getLabelWidgetValues(MMSTaffFile *tafff, MMSLabelWidgetCla
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 void  MMSThemeManager::getImageWidgetValues(MMSTaffFile *tafff, MMSImageWidgetClass *themeClass, MMSTheme *theme) {
@@ -442,11 +470,11 @@ void  MMSThemeManager::getImageWidgetValues(MMSTaffFile *tafff, MMSImageWidgetCl
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 
@@ -456,11 +484,11 @@ void  MMSThemeManager::getButtonWidgetValues(MMSTaffFile *tafff, MMSButtonWidget
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 void  MMSThemeManager::getProgressBarWidgetValues(MMSTaffFile *tafff, MMSProgressBarWidgetClass *themeClass, MMSTheme *theme) {
@@ -469,11 +497,11 @@ void  MMSThemeManager::getProgressBarWidgetValues(MMSTaffFile *tafff, MMSProgres
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 void  MMSThemeManager::getSliderWidgetValues(MMSTaffFile *tafff, MMSSliderWidgetClass *themeClass, MMSTheme *theme) {
@@ -482,11 +510,11 @@ void  MMSThemeManager::getSliderWidgetValues(MMSTaffFile *tafff, MMSSliderWidget
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 void  MMSThemeManager::getMenuWidgetValues(MMSTaffFile *tafff, MMSMenuWidgetClass *themeClass, MMSTheme *theme) {
@@ -495,11 +523,11 @@ void  MMSThemeManager::getMenuWidgetValues(MMSTaffFile *tafff, MMSMenuWidgetClas
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
     themeClass->duplicateTAFF(tafff);
 }
@@ -510,11 +538,11 @@ void  MMSThemeManager::getTextBoxWidgetValues(MMSTaffFile *tafff, MMSTextBoxWidg
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 void  MMSThemeManager::getArrowWidgetValues(MMSTaffFile *tafff, MMSArrowWidgetClass *themeClass, MMSTheme *theme) {
@@ -523,11 +551,11 @@ void  MMSThemeManager::getArrowWidgetValues(MMSTaffFile *tafff, MMSArrowWidgetCl
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
 void MMSThemeManager::getInputWidgetValues(MMSTaffFile *tafff, MMSInputWidgetClass *themeClass, MMSTheme *theme) {
@@ -536,62 +564,26 @@ void MMSThemeManager::getInputWidgetValues(MMSTaffFile *tafff, MMSInputWidgetCla
     if (theme)
         themePath = theme->getThemePath();
 
-    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
 
-/*
-void MMSThemeManager::getClassValues(xmlNode *node, MMSTheme *theme) {
-    string type, name;
-    xmlChar *xtype, *xname;
+void MMSThemeManager::getCheckBoxWidgetValues(MMSTaffFile *tafff, MMSCheckBoxWidgetClass *themeClass, MMSTheme *theme) {
 
-	xname = xmlGetProp(node, (const xmlChar*)"name");
-	xtype = xmlGetProp(node, (const xmlChar*)"type");
-	if (xname) {
-		name = (string)(char*)xname;
-	    xmlFree(xname);
-	}
-	if (xtype) {
-		type = (string)(char*)xtype;
-	    xmlFree(xtype);
-	}
+    string themePath = "";
+    if (theme)
+        themePath = theme->getThemePath();
 
-    if(name.empty() || type.empty()) {
-    	DEBUGMSG("MMSGUI", "class misses name or type (ignoring)");
-        return;
-    }
+    themeClass->widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath, true);
 
-    if(type == XML_ID_TEMPLATE)
-        getTemplateClassValues(node, theme, name);
-    else if(type == XML_ID_MAINWIN)
-        getMainWindowClassValues(node, theme, name);
-    else if(type == XML_ID_POPUPWIN)
-        getPopupWindowClassValues(node, theme, name);
-    else if(type == XML_ID_ROOTWIN)
-        getRootWindowClassValues(node, theme, name);
-    else if(type == XML_ID_CHILDWIN)
-        getChildWindowClassValues(node, theme, name);
-    else if(type == XML_ID_LABEL)
-        getLabelClassValues(node, theme, name);
-    else if(type == XML_ID_IMAGE)
-        getImageClassValues(node, theme, name);
-    else if(type == XML_ID_BUTTON)
-        getButtonClassValues(node, theme, name);
-    else if(type == XML_ID_PROGRESSBAR)
-        getProgressBarClassValues(node, theme, name);
-    else if(type == XML_ID_MENU)
-        getMenuClassValues(node, theme, name);
-    else if(type == XML_ID_TEXTBOX)
-        getTextBoxClassValues(node, theme, name);
-    else if(type == XML_ID_ARROW)
-        getArrowClassValues(node, theme, name);
-    else
-    	DEBUGMSG("MMSGUI", "invalid class type found (ignoring)");
+    themeClass->widgetClass.setAttributesFromTAFF(tafff, NULL, &themePath, true);
+
+    themeClass->setAttributesFromTAFF(tafff, NULL, &themePath, true);
 }
-*/
+
 
 void MMSThemeManager::getTemplateClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
     MMSTemplateClass *themeClass = theme->getTemplateClass(className);
@@ -813,6 +805,22 @@ void MMSThemeManager::getInputWidgetClassValues(MMSTaffFile *tafff, MMSTheme *th
     }
     else {
         getInputWidgetValues(tafff, themeClass, theme);
+        themeClass->setClassName(className);
+    }
+}
+
+void MMSThemeManager::getCheckBoxWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className) {
+    MMSCheckBoxWidgetClass *themeClass = theme->getCheckBoxWidgetClass(className);
+
+    if (!themeClass) {
+        themeClass = new MMSCheckBoxWidgetClass;
+        getCheckBoxWidgetValues(tafff, themeClass, theme);
+        themeClass->setClassName(className);
+        if (!theme->addCheckBoxWidgetClass(themeClass))
+            delete themeClass;
+    }
+    else {
+        getCheckBoxWidgetValues(tafff, themeClass, theme);
         themeClass->setClassName(className);
     }
 }

@@ -104,11 +104,10 @@ void MMSBorderClass::unsetAll() {
     unsetRCorners();
 }
 
-void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
     MMSFBColor color;
-    bool class_set = false;
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// unset my paths
 	    unsetImagePath();
 	    unsetSelImagePath();
@@ -118,9 +117,6 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 		startTAFFScan
 		{
 	        switch (attrid) {
-			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
-	            class_set = true;
-				break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color:
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) getColor(color);
@@ -430,7 +426,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
     	endTAFFScan_WITHOUT_ID
     }
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// set my paths
 		if (!isImagePath())
 		    setImagePath(*path);

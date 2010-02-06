@@ -74,6 +74,7 @@ class MMSThemeManager {
         void getTextBoxWidgetValues(MMSTaffFile *tafff, MMSTextBoxWidgetClass *themeClass, MMSTheme *theme);
         void getArrowWidgetValues(MMSTaffFile *tafff, MMSArrowWidgetClass *themeClass, MMSTheme *theme);
         void getInputWidgetValues(MMSTaffFile *tafff, MMSInputWidgetClass *themeClass, MMSTheme *theme);
+        void getCheckBoxWidgetValues(MMSTaffFile *tafff, MMSCheckBoxWidgetClass *themeClass, MMSTheme *theme);
 
         void getTemplateClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getMainWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
@@ -89,6 +90,7 @@ class MMSThemeManager {
         void getTextBoxWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getArrowWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getInputWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getCheckBoxWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
 
 
         void loadTheme(string path, string themeName, MMSTheme *theme);

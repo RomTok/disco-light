@@ -33,10 +33,10 @@
 #include "mmsgui/theme/mmslabelwidgetclass.h"
 #include <string.h>
 
-//store attribute descriptions here
+// store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;
 
-//address attribute names
+// address attribute names
 #define GETATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_##aname].name
 #define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
@@ -59,11 +59,10 @@ void MMSLabelWidgetClass::unsetAll() {
     unsetTranslate();
 }
 
-void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path) {
+void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
     MMSFBColor color;
-    bool class_set = false;
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// unset my paths
         unsetFontPath();
     }
@@ -74,7 +73,6 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	        switch (attrid) {
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
 	            setClassName(attrval_str);
-	            class_set = true;
 				break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_path:
 	            if (*attrval_str)
@@ -172,14 +170,14 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 
     	startTAFFScan_WITHOUT_ID
     	{
-    		/* check if attrname has correct prefix */
+    		// check if attrname has correct prefix
     		if (pl >= strlen(attrname))
         		continue;
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
-    		/* okay, correct prefix, check attributes now */
+    		// okay, correct prefix, check attributes now
             if (ISATTRNAME(font_path)) {
 	            if (*attrval_str)
 	                setFontPath(attrval_str);
@@ -288,7 +286,7 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
     	endTAFFScan_WITHOUT_ID
     }
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// set my paths
 	    if (!isFontPath())
 	        setFontPath(*path);

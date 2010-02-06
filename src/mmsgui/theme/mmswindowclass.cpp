@@ -160,11 +160,10 @@ void MMSWindowClass::unsetAll() {
     unsetStaticZOrder();
 }
 
-void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
+void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, bool reset_paths) {
     MMSFBColor color;
-    bool class_set = false;
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// unset my paths
     	unsetBgImagePath();
     }
@@ -172,9 +171,6 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
 	startTAFFScan
 	{
         switch (attrid) {
-		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
-            class_set = true;
-			break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_alignment:
             setAlignment(getAlignmentFromString(attrval_str));
             break;
@@ -294,7 +290,7 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path) {
 	}
 	endTAFFScan
 
-    if ((!class_set)&&(path)&&(*path!="")) {
+    if ((reset_paths)&&(path)&&(*path!="")) {
     	// set my paths
     	if (!isBgImagePath())
     		setBgImagePath(*path);
