@@ -194,15 +194,11 @@ class MMSAnimationThread : public MMSThread {
 
         A callback method must be defined like this:
 
-        	bool myclass::mycallbackmethod(MMSAnimationThread *animThread);
+			bool myclass::mycallbackmethod(MMSAnimationThread *animThread);
 
-        	Parameters:
+			\param animThread	is the pointer to the caller (the animation thread)
 
-        		animThread -> is the pointer to the caller (the animation thread)
-
-        	Returns:
-
-        		true if the animation should continue, else false if the animation should stop
+			\return true if the animation should continue, else false if the animation should stop
 
         To connect your callback to onBeforeAnimation do this:
 
@@ -228,15 +224,11 @@ class MMSAnimationThread : public MMSThread {
 
         A callback method must be defined like this:
 
-        	bool myclass::mycallbackmethod(MMSAnimationThread *animThread);
+			bool myclass::mycallbackmethod(MMSAnimationThread *animThread);
 
-        	Parameters:
+			\param animThread	is the pointer to the caller (the animation thread)
 
-        		animThread -> is the pointer to the caller (the animation thread)
-
-        	Returns:
-
-        		true if the animation should continue, else false if the animation should stop
+			\return true if the animation should continue, else false if the animation should stop
 
         To connect your callback to onAnimation do this:
 
@@ -261,11 +253,9 @@ class MMSAnimationThread : public MMSThread {
 
         A callback method must be defined like this:
 
-        	void myclass::mycallbackmethod(MMSAnimationThread *animThread);
+			void myclass::mycallbackmethod(MMSAnimationThread *animThread);
 
-        	Parameters:
-
-        		animThread -> is the pointer to the caller (the animation thread)
+			\param animThread	is the pointer to the caller (the animation thread)
 
         To connect your callback to onAfterAnimation do this:
 

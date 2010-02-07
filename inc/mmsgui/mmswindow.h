@@ -772,13 +772,9 @@ class MMSWindow {
 
         	bool myclass::mycallbackmethod(MMSWindow *win);
 
-        	Parameters:
+        	\param win	is the pointer to the window which is to be shown
 
-        		win -> is the pointer to the window which is to be shown
-
-        	Returns:
-
-        		true if the show process should continue, else false if the window should not appear
+        	\return true if the show process should continue, else false if the window should not appear
 
         To connect your callback to onBeforeShow do this:
 
@@ -805,11 +801,8 @@ class MMSWindow {
 
         	void myclass::mycallbackmethod(MMSWindow *win, bool already_shown);
 
-        	Parameters:
-
-        		win -> is the pointer to the window which is shown now
-
-        		already_shown -> the window was already shown?
+        	\param win				is the pointer to the window which is shown now
+       		\param already_shown	the window was already shown?
 
         To connect your callback to onAfterShow do this:
 
@@ -838,15 +831,10 @@ class MMSWindow {
 
         	bool myclass::mycallbackmethod(MMSWindow *win, bool goback);
 
-        	Parameters:
+        	\param win		is the pointer to the window which is to be hidden
+       		\param goback	the application can decide, what to do if true/false, see hide()
 
-        		win -> is the pointer to the window which is to be hidden
-
-        		goback -> the application can decide, what to do if true/false, see hide()
-
-        	Returns:
-
-        		true if the hide process should continue, else false if the window should not disappear
+        	\return true if the hide process should continue, else false if the window should not disappear
 
         To connect your callback to onBeforeHide do this:
 
@@ -873,11 +861,8 @@ class MMSWindow {
 
         	void myclass::mycallbackmethod(MMSWindow *win, bool goback);
 
-        	Parameters:
-
-        		win -> is the pointer to the window which is hidden now
-
-        		goback -> the application can decide, what to do if true/false, see hide()
+        	\param win		is the pointer to the window which is hidden now
+       		\param goback	the application can decide, what to do if true/false, see hide()
 
         To connect your callback to onHide do this:
 
@@ -904,15 +889,10 @@ class MMSWindow {
 
         	bool myclass::mycallbackmethod(MMSWindow *win, MMSInputEvent *inputevent);
 
-        	Parameters:
+        	\param win			is the pointer to the window
+       		\param inputevent	the input event
 
-        		win -> is the pointer to the window
-
-        		inputevent -> the input event
-
-        	Returns:
-
-        		callback should return true if the input was handled, else false
+        	\return callback should return true if the input was handled, else false
 
         To connect your callback to onHandleInput do this:
 
@@ -939,15 +919,10 @@ class MMSWindow {
 
         	bool myclass::mycallbackmethod(MMSWindow *win, MMSInputEvent *inputevent);
 
-        	Parameters:
+        	\param win			is the pointer to the window
+       		\param inputevent	the input event
 
-        		win -> is the pointer to the window
-
-        		inputevent -> the input event
-
-        	Returns:
-
-        		callback should return true if the input was handled, else false
+        	\return callback should return true if the input was handled, else false
 
         To connect your callback to onHandleInput do this:
 

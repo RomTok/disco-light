@@ -132,10 +132,10 @@ class MMSThemeManager {
 
         A callback method must be defined like this:
 
-        void myclass::mycallbackmethod(string themeName, bool fadein);
+			void myclass::mycallbackmethod(string themeName, bool fadein);
 
-        \param themeName	name of the new theme
-        \param fadein		the new theme should fade in?
+			\param themeName	name of the new theme
+			\param fadein		the new theme should fade in?
 
         To connect your callback to onThemeChanged do this:
 

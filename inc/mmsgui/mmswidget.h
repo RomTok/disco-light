@@ -376,17 +376,11 @@ class MMSWidget {
 
         	void myclass::mycallbackmethod(MMSWidget *widget, int posx, int posy, int widget_width, int widget_height);
 
-        	Parameters:
-
-        		widget -> is the pointer to the widget
-
-        		posx -> x-position of the maus pointer within the widget
-
-        		posy -> y-position of the maus pointer within the widget
-
-        		widget_width -> width of the widget
-
-        		widget_height -> height of the widget
+        	\param widget			is the pointer to the widget
+        	\param posx				x-position of the maus pointer within the widget
+        	\param posy				y-position of the maus pointer within the widget
+        	\param widget_width		width of the widget
+       		\param widget_height	height of the widget
 
         To connect your callback to onClick do this:
 
