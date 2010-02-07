@@ -95,6 +95,7 @@ class MMSThemeManager {
 
         void loadTheme(string path, string themeName, MMSTheme *theme);
         void loadGlobalTheme(string themeName);
+        void loadLocalTheme(MMSTheme *theme, string path, string themeName = "");
 
     public:
         MMSThemeManager(string themepath, string globalThemeName = DEFAULT_THEME);

@@ -123,20 +123,11 @@ void MMSThemeManager::loadGlobalTheme(string themeName) {
     }
 }
 
-MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
-    // check if initialized
+
+void MMSThemeManager::loadLocalTheme(MMSTheme *theme, string path, string themeName) {
+
+	// check if initialized
 	INITCHECK;
-
-	// check if theme is already loaded
-	for(vector<MMSTheme*>::const_iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
-        if(((*i)->getPath() == path) && ((*i)->getThemeName() == themeName)) {
-            // already loaded
-            return *i;
-        }
-    }
-
-    // new theme
-    MMSTheme *theme = new MMSTheme();
 
     if (themeName == "") {
         // use the name from already loaded global theme
@@ -168,29 +159,51 @@ MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
         // overload global theme with local theme
         loadTheme(path, themeName, theme);
     }
+}
 
-    // add theme to list
-    this->localThemes.push_back(theme);
+
+MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
+
+	// check if initialized
+	INITCHECK;
+
+	// check if theme is already loaded
+	for(vector<MMSTheme*>::const_iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
+        if(((*i)->getPath() == path) && ((*i)->getThemeName() == themeName)) {
+            // already loaded
+        	return *i;
+        }
+    }
+
+	// load new theme
+	MMSTheme *theme = new MMSTheme();
+	loadLocalTheme(theme, path, themeName);
+
+	// add theme to list
+	this->localThemes.push_back(theme);
 
     return theme;
 }
 
+
 void MMSThemeManager::deleteLocalTheme(string path, string themeName) {
 	for(vector<MMSTheme*>::iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
-        if(((*i)->getPath() == path) && ((*i)->getThemeName() == themeName))
+        if(((*i)->getPath() == path) && ((*i)->getThemeName() == themeName)) {
             delete *i;
             this->localThemes.erase(i);
             break;
+        }
     }
 }
 
 void MMSThemeManager::deleteLocalTheme(MMSTheme **theme) {
 	for(vector<MMSTheme*>::iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
-        if(*i == *theme)
+        if (*i == *theme) {
             delete *theme;
             this->localThemes.erase(i);
             *theme = NULL;
             break;
+        }
     }
 }
 
@@ -206,8 +219,13 @@ void MMSThemeManager::setTheme(string themeName) {
 	// reset the global theme_tag (<mmstheme/> attributes)
 	globalTheme->theme_tag.unsetAll();
 
-	// load new theme
+	// load new global theme
 	loadGlobalTheme(themeName);
+
+	// reload the local themes
+	for (vector<MMSTheme*>::iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
+		loadLocalTheme((*i), (*i)->getPath());
+    }
 
 	// have to fade?
 	bool fadein = false;
@@ -232,6 +250,11 @@ void MMSThemeManager::setTheme(string themeName, bool fadein) {
 
 	// load new theme
 	loadGlobalTheme(themeName);
+
+	// reload the local themes
+	for (vector<MMSTheme*>::iterator i = this->localThemes.begin(); i != this->localThemes.end(); ++i) {
+		loadLocalTheme((*i), (*i)->getPath());
+    }
 
 	// inform attached callbacks
 	this->onThemeChanged.emit(themeName, fadein);
