@@ -746,15 +746,17 @@ class MMSWindow {
         //! Stretch the window to the layer or the parent window using stretchBlit().
         /*!
         \param left		stretch the window to X percent of the window WIDTH to the left side,
-						a value of 100 means 100%, values <= 0 will not be accepted
+						a value of 100 means 100%
         \param up		stretch the window to X percent of the window HEIGHT to the up side,
-						a value of 100 means 100%, values <= 0 will not be accepted
+						a value of 100 means 100%
         \param right	stretch the window to X percent of the window WIDTH to the right side,
-						a value of 100 means 100%, values <= 0 will not be accepted
+						a value of 100 means 100%
         \param down		stretch the window to X percent of the window HEIGHT to the down side,
-						a value of 100 means 100%, values <= 0 will not be accepted
+						a value of 100 means 100%
         \return true, if the values are accepted
         \note Call stretch() or stretch(100, 100, 100, 100) to switch-of the stretch mode.
+        \note The formulas (((left-100)+(right-100)+100) > 0) and (((up-100)+(down-100)+100) > 0)
+              need to be met! Else nothing is to be displayed!
         \note This function was implemented to get cool effects. If you display windows permanently in
               stretch mode the performance will be drastically decreased.
         */

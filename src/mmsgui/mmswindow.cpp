@@ -1945,6 +1945,7 @@ bool MMSWindow::moveTo(int x, int y) {
 
 
 bool MMSWindow::stretch(int left, int up, int right, int down) {
+	bool ret = true;
 
 	// TODO: currently we work for child windows only
 	if (!parent) return false;
@@ -1956,15 +1957,20 @@ bool MMSWindow::stretch(int left, int up, int right, int down) {
 	this->stretchRight = right;
 	this->stretchDown = down;
 
-	if ((left > 0)&&(right > 0)&&(up > 0)&&(down > 0)
-		&&((left != 100)||(right != 100)||(up != 100)||(down != 100))) {
-		// values accepted
-		this->stretchmode = true;
+	if ((left != 100)||(right != 100)||(up != 100)||(down != 100)) {
+		if ((((left-100)+(right-100)+100) > 0) && (((up-100)+(down-100)+100) > 0)) {
+			// values accepted
+			this->stretchmode = true;
+		}
+		else {
+			// wrong inputs
+			ret = false;
+		}
 	}
 
 	// re-calculate the window region and return
 	parent->setChildWindowRegion(this, true);
-	return true;
+	return ret;
 }
 
 bool MMSWindow::showAction(bool *stopaction) {
