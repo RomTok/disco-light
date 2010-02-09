@@ -177,6 +177,7 @@ class MMSAnimationThread : public MMSThread {
         /*!
         \return length of the step
         \note This value is valid during the animation (e.g. in the onAnimation callback).
+        \note This value is zero for the first time onAnimation callback is called.
         */
 		int getStepLength();
 
