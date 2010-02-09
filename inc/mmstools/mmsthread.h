@@ -75,7 +75,7 @@ class MMSThread {
 		virtual void threadMain() = 0;
 		void start();
 		void detach();
-		bool isRunning();
+		virtual bool isRunning();
 		int cancel();
 		void join();
 		void setStacksize(size_t stacksize);

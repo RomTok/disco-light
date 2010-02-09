@@ -33,6 +33,9 @@
 #include "mmsgui/mmsanimationthread.h"
 
 MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
+	// animation is not running
+	this->animRunning = false;
+
 	// set attributes
 	setStepsPerSecond(25);
 	setMaxCPUUsage(75);
@@ -163,8 +166,21 @@ void MMSAnimationThread::start(bool separate_thread) {
 		}
 		else {
 			// start animation in the current thread context
+			this->animRunning = true;
 			threadMain();
+			this->animRunning = false;
 		}
+	}
+}
+
+bool MMSAnimationThread::isRunning() {
+	if (MMSThread::isRunning()) {
+		// separate thread is running
+		return true;
+	}
+	else {
+		// check if running without separate thread
+		return this->animRunning;
 	}
 }
 

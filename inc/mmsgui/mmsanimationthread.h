@@ -51,6 +51,9 @@ possible that the animation is running in a separate thread (see start(true)).
 */
 class MMSAnimationThread : public MMSThread {
     private:
+    	//! shows if the animation is running
+    	bool	animRunning;
+
     	//! recalculation requested?
     	bool	recalc_requested;
 
@@ -119,6 +122,12 @@ class MMSAnimationThread : public MMSThread {
                                        and the start() method will return if the animation is finished
         */
 		void start(bool separate_thread = true);
+
+        //! Check if the animation is running.
+        /*!
+        \return true or false
+        */
+		bool isRunning();
 
         //! Set animation steps per second.
         /*!
