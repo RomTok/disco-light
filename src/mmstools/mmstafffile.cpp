@@ -121,7 +121,11 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
         fclose(fp);
     	return false;
     }
+#if PNG_LIBPNG_VER_MINOR == 2
     if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
+#else
+   	if (png_sig_cmp((png_byte*)png_sig, 0, sizeof(png_sig)) != 0) {
+#endif
         fclose(fp);
     	return false;
     }
@@ -134,7 +138,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     }
     png_set_sig_bytes(png_ptr, sizeof(png_sig));
 
-    if (setjmp(png_ptr->jmpbuf)) {
+    if(setjmp(png_jmpbuf(png_ptr))) {
     	// abend from libpng
         printf("png read error\n");
     	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
