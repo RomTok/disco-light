@@ -272,6 +272,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
 					return;
 				}
 			}
+			lastmotion=event.xbutton.time;
     		struct timespec ts;
     		clock_gettime(CLOCK_MONOTONIC, &ts);
     		unsigned long now = ts.tv_sec*1000;
