@@ -4866,7 +4866,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 								  0, 0, dx, dy,
 								  this->config.w, this->config.h, False);
 					//XFlush(mmsfb->x_display);
-					XSync(mmsfb->x_display, True);
+					XSync(mmsfb->x_display, False);
 				}
 				else {
 					// put only a region
@@ -4886,7 +4886,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 									 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
 									 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
 						//XFlush(mmsfb->x_display);
-						XSync(mmsfb->x_display, True);
+						XSync(mmsfb->x_display, False);
 					}
 				}
 				XUnlockDisplay(mmsfb->x_display);
@@ -4959,7 +4959,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}
 			//XFlush(mmsfb->x_display);
-			XSync(mmsfb->x_display, True);
+			XSync(mmsfb->x_display, False);
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}
@@ -5027,7 +5027,7 @@ bool MMSFBSurface::refresh() {
 							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
 				//XFlush(mmsfb->x_display);
-				XSync(mmsfb->x_display, True);
+				XSync(mmsfb->x_display, False);
 				XUnlockDisplay(mmsfb->x_display);
 				mmsfb->xlock.unlock();
 			}
@@ -5063,7 +5063,7 @@ bool MMSFBSurface::refresh() {
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}
 			//XFlush(mmsfb->x_display);
-			XSync(mmsfb->x_display, True);
+			XSync(mmsfb->x_display, False);
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 			this->unlock();
