@@ -446,6 +446,8 @@ conf = Configure(env,
 conf.checkOptions()
 
 # checks that are required everytime
+if not conf.CheckCXX():
+	Exit(1)
 conf.checkPKGConfig()
 conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
@@ -511,7 +513,7 @@ if('xine' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 
-if('gstreamer' in env['media'] and not '-c' in sys.argv):
+if('gstreamer' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
 	if not conf.checkSimpleLib(['gstreamer-0.10 >= 0.10.22'], 'gst/gst.h', required = 0) or	not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
 		print '***************************************************\n'
 		print 'GStreamer not found or version is older than 0.10.22!'
