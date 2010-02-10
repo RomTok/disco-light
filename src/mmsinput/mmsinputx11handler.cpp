@@ -273,16 +273,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
 				}
 			}
 			lastmotion=event.xbutton.time;
-    		struct timespec ts;
-    		clock_gettime(CLOCK_MONOTONIC, &ts);
-    		unsigned long now = ts.tv_sec*1000;
-    		now += ts.tv_nsec / 1000000;
-//    		printf("now: %ld\n",now);
-//    		printf("input time: %ld\n",event.xbutton.time);
-    		//discard the input if its too old
-    		if(now-event.xbutton.time >150) {
-    			return;
-    		}
+
 
     		inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO || mmsfb->resized) {
