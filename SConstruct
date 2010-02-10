@@ -512,9 +512,9 @@ if('xine' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 
 if('gstreamer' in env['media'] and not '-c' in sys.argv):
-	if not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
+	if not conf.checkSimpleLib(['gstreamer-0.10 >= 0.10.22'], 'gst/gst.h', required = 0) or	not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
 		print '***************************************************\n'
-		print 'GStreamer not found!'
+		print 'GStreamer not found or version is older than 0.10.22!'
 		print 'Disabling gstreamer media backend'
 		print '\n***************************************************'
 		env['media'].remove('gstreamer')
