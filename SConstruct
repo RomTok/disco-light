@@ -446,8 +446,6 @@ conf = Configure(env,
 conf.checkOptions()
 
 # checks that are required everytime
-if not conf.CheckCXX():
-	Exit(1)
 conf.checkPKGConfig()
 conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
