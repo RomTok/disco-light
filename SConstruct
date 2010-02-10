@@ -97,7 +97,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('use_dl',        'Use dynamic linking support', True),
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
+	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
 	BoolOption('enable_alsa',   'Build with ALSA support', True),
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
