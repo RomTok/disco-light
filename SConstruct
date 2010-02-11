@@ -163,7 +163,7 @@ if env['destdir'] != 'none':
 else:
 	idir_prefix = env['prefix']
 
-idir_lib    = idir_prefix + '/lib/disko'
+idir_lib    = idir_prefix + '/lib'
 idir_bin    = idir_prefix + '/bin'
 idir_inc    = idir_prefix + '/include/disko'
 idir_data   = idir_prefix + '/share/disko'
