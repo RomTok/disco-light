@@ -64,11 +64,11 @@ class MMSWindowManager : public IMMSWindowManager {
         //! animation thread object for the animated theme switch
     	MMSAnimationThread	animThread;
 
-        //! connection object for MMSAnimationThread::onBeforeAnimation callback
-        sigc::connection 	onBeforeAnimation_connection;
-
         //! connection object for MMSAnimationThread::onAnimation callback
         sigc::connection 	onAnimation_connection;
+
+        //! connection object for MMSAnimationThread::onAfterAnimation callback
+        sigc::connection 	onAfterAnimation_connection;
 
     	//! temporary window for animated theme switch
     	MMSFBWindow 		*anim_saved_screen;
@@ -85,11 +85,11 @@ class MMSWindowManager : public IMMSWindowManager {
         //! Internal method: Theme Changed callback from MMSThemeManager.
         void onThemeChanged(string themeName, bool fade_in);
 
-        //! Internal method: Before Animation callback from MMSAnimationThread used in onThemeChanged() callback.
-        bool onBeforeAnimation(MMSAnimationThread *animThread);
-
         //! Internal method: Animation callback from MMSAnimationThread used in onThemeChanged() callback.
         bool onAnimation(MMSAnimationThread *animThread);
+
+        //! Internal method: After Animation callback from MMSAnimationThread used in onThemeChanged() callback.
+        void onAfterAnimation(MMSAnimationThread *animThread);
 
 	public:
 		MMSWindowManager(MMSFBRectangle vrect);

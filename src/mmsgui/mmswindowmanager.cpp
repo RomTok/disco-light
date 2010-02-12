@@ -47,16 +47,16 @@ MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
     this->onThemeChanged_connection = this->themeManager.onThemeChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onThemeChanged));
 
     // add animation callbacks
-    this->onBeforeAnimation_connection = this->animThread.onBeforeAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onBeforeAnimation));
     this->onAnimation_connection = this->animThread.onAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAnimation));
+    this->onAfterAnimation_connection = this->animThread.onAfterAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAfterAnimation));
 }
 
 MMSWindowManager::~MMSWindowManager() {
 	// disconnect my callbacks
-	onTargetLangChanged_connection.disconnect();
-	onThemeChanged_connection.disconnect();
-	onBeforeAnimation_connection.disconnect();
-	onAnimation_connection.disconnect();
+	this->onTargetLangChanged_connection.disconnect();
+	this->onThemeChanged_connection.disconnect();
+	this->onAnimation_connection.disconnect();
+	this->onAfterAnimation_connection.disconnect();
 }
 
 void MMSWindowManager::reset() {
@@ -326,27 +326,30 @@ MMSThemeManager *MMSWindowManager::getThemeManager() {
 	return &this->themeManager;
 }
 
-bool MMSWindowManager::onBeforeAnimation(MMSAnimationThread *animThread) {
-	// init animation opacity
-	this->anim_opacity = 255;
-
-	return true;
-}
-
 bool MMSWindowManager::onAnimation(MMSAnimationThread *animThread) {
 	// get new opacity
-	this->anim_opacity-= animThread->getStepLength();
+	int opacity = 255 - animThread->getOffset();
 
 	// animation finished?
-	if (this->anim_opacity <= 0) {
+	if (opacity <= 0) {
 		// yes
 		return false;
 	}
 
 	// set new opacity
-	this->anim_saved_screen->setOpacity(this->anim_opacity);
+	this->anim_saved_screen->setOpacity(opacity);
 
 	return true;
+}
+
+void MMSWindowManager::onAfterAnimation(MMSAnimationThread *animThread) {
+	// animation finished
+	if (this->anim_saved_screen) {
+		// delete the temporary window
+		this->anim_saved_screen->hide();
+		delete this->anim_saved_screen;
+		this->anim_saved_screen = NULL;
+	}
 }
 
 void MMSWindowManager::onThemeChanged(string themeName, bool fade_in) {
@@ -386,11 +389,6 @@ void MMSWindowManager::onThemeChanged(string themeName, bool fade_in) {
     	// do the animation
     	this->animThread.setStepsPerSecond(255);
     	this->animThread.start(false);
-
-    	// delete the temporary window
-    	this->anim_saved_screen->hide();
-    	delete this->anim_saved_screen;
-    	this->anim_saved_screen = NULL;
     }
 }
 
