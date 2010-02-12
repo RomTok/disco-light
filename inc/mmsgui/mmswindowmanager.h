@@ -73,9 +73,6 @@ class MMSWindowManager : public IMMSWindowManager {
     	//! temporary window for animated theme switch
     	MMSFBWindow 		*anim_saved_screen;
 
-    	//! temporary opacity of anim_saved_screen window for animated theme switch
-    	int					anim_opacity;
-
         //! Internal method: Make the default background window visible.
         void showBackgroundWindow();
 
