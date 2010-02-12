@@ -144,10 +144,7 @@ void MMSAnimationThread::threadMain() {
 		}
 
 		// sleeping...
-        if (this->frame_delay > 0)
-            usleep(this->frame_delay*1000);
-        else
-            usleep(1000000);
+        usleep((this->frame_delay>0)?this->frame_delay*1000:1000);
 
     	// get real animation duration
     	this->anim_end = getMTimeStamp();
