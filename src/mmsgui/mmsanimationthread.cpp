@@ -59,7 +59,7 @@ void MMSAnimationThread::reset() {
 	this->frame_rate		= 0;
 	this->times_buf_pos		= 0;
 	this->times_buf_cnt		= 0;
-	this->duration			= 0;
+	this->real_duration		= 0;
 }
 
 void MMSAnimationThread::threadMain() {
@@ -150,9 +150,9 @@ void MMSAnimationThread::threadMain() {
 
 	}
 
-	// get animation duration
+	// get real animation duration
 	this->anim_end = getMTimeStamp();
-	this->duration = getMDiff(this->anim_start, this->anim_end);
+	this->real_duration = getMDiff(this->anim_start, this->anim_end);
 
 	// call connected onAfterAnimation callbacks
     this->onAfterAnimation.emit(this);
@@ -247,6 +247,6 @@ int MMSAnimationThread::getStepLength() {
 	return this->step_len;
 }
 
-unsigned int MMSAnimationThread::getDuration() {
-	return this->duration;
+unsigned int MMSAnimationThread::getRealDuration() {
+	return this->real_duration;
 }

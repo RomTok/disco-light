@@ -99,8 +99,8 @@ class MMSAnimationThread : public MMSThread {
     	//! end timestamp of the animation
     	unsigned int anim_end;
 
-    	//! duration in milliseconds of the animation
-    	unsigned int duration;
+    	//! real duration in milliseconds of the animation (calculated after the animation)
+    	unsigned int real_duration;
 
     	//! Internal method: Reset all values.
     	void reset();
@@ -190,12 +190,12 @@ class MMSAnimationThread : public MMSThread {
         */
 		int getStepLength();
 
-        //! Get the duration in milliseconds of the animation.
+        //! Get the real duration in milliseconds of the animation.
         /*!
-        \return length of the step
+        \return real duration
         \note This value is valid after the animation (e.g. in the onAfterAnimation callback).
         */
-		unsigned int getDuration();
+		unsigned int getRealDuration();
 
         //! Set one or more callbacks for the onBeforeAnimation event.
         /*!
