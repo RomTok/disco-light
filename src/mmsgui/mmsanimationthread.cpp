@@ -55,6 +55,7 @@ void MMSAnimationThread::reset() {
 	this->recalc_cnt		= 0;
 	this->recalc_interval	= 2;
 	this->step_len			= 0;
+	this->offset			= 0;
 	this->process_time		= 0;
 	this->frame_delay		= 0;
 	this->frame_rate		= 0;
@@ -142,6 +143,9 @@ void MMSAnimationThread::threadMain() {
 				this->recalc_requested = true;
 			}
 		}
+
+		// increase offset with step length
+		this->offset+= this->step_len;
 
 		// sleeping...
         usleep((this->frame_delay>0)?this->frame_delay*1000:1000);
@@ -247,6 +251,10 @@ int MMSAnimationThread::getFrameDelay() {
 
 int MMSAnimationThread::getStepLength() {
 	return this->step_len;
+}
+
+int MMSAnimationThread::getOffset() {
+	return this->offset;
 }
 
 bool MMSAnimationThread::setDuration(unsigned int duration) {

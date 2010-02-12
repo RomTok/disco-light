@@ -66,6 +66,9 @@ class MMSAnimationThread : public MMSThread {
         //! current step length
     	int		step_len;
 
+        //! current offset
+    	int		offset;
+
     	//! animation steps per second
     	int		steps_per_second;
 
@@ -120,7 +123,7 @@ class MMSAnimationThread : public MMSThread {
 
         //! Start the animation.
         /*!
-        \param separate_thread	true:  a new thread will be started
+        \param separate_thread	true:  a new thread will be started,
                                 false: the animation is running in callers thread context
                                        and the start() method will return if the animation is finished
         */
@@ -136,12 +139,14 @@ class MMSAnimationThread : public MMSThread {
         /*!
         \param steps_per_second 1..255 steps per second, default are 25 steps
         \return true, if parameter is accepted
+        \see getStepsPerSecond()
         */
 		bool setStepsPerSecond(int steps_per_second);
 
         //! Get steps per second.
         /*!
         \return steps per second
+        \see setStepsPerSecond()
         */
 		int getStepsPerSecond();
 
@@ -149,12 +154,14 @@ class MMSAnimationThread : public MMSThread {
         /*!
         \param max_cpu_usage 10..100 percent, default is 75%
         \return true, if parameter is accepted
+        \see getMaxCPUUsage()
         */
 		bool setMaxCPUUsage(int max_cpu_usage);
 
         //! Get maximum CPU usage.
         /*!
         \return max CPU usage
+        \see setMaxCPUUsage()
         */
 		int getMaxCPUUsage();
 
@@ -162,12 +169,14 @@ class MMSAnimationThread : public MMSThread {
         /*!
         \param max_frame_rate 10..100 frames per second, default are 25 fps
         \return true, if parameter is accepted
+        \see getMaxFrameRate()
         */
 		bool setMaxFrameRate(int max_frame_rate);
 
         //! Get maximum frame rate.
         /*!
         \return max frame rate
+        \see setMaxFrameRate()
         */
 		int getMaxFrameRate();
 
@@ -190,20 +199,33 @@ class MMSAnimationThread : public MMSThread {
         \return length of the step
         \note This value is valid during the animation (e.g. in the onAnimation callback).
         \note This value is zero for the first time onAnimation callback is called.
+        \see getOffset()
         */
 		int getStepLength();
+
+		//! Get the offset of the animation.
+        /*!
+        After each onAnimation call the offset will we increased with the calculated step length.
+        \return offset
+        \note This value is valid during the animation (e.g. in the onAnimation callback).
+        \note This value is zero for the first time onAnimation callback is called.
+        \see getStepLength()
+        */
+		int getOffset();
 
         //! Set the requested duration.
         /*!
         \param duration 0..n milliseconds, default is 0 and means endless animation
         \return true, if parameter is accepted
         \note If your onAnimation callback returns false, the Animation will be stopped at any time.
+        \see getDuration()
         */
 		bool setDuration(unsigned int duration);
 
 		//! Get the requested duration in milliseconds of the animation.
         /*!
         \return requested duration in milliseconds
+        \see setDuration()
         */
 		unsigned int getDuration();
 
