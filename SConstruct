@@ -97,7 +97,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('use_dl',        'Use dynamic linking support', True),
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
-	ListOption('media',         'Set media backend', ['xine', 'gstreamer'], ['xine', 'gstreamer']),
+	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
 	BoolOption('enable_alsa',   'Build with ALSA support', True),
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
@@ -163,7 +163,7 @@ if env['destdir'] != 'none':
 else:
 	idir_prefix = env['prefix']
 
-idir_lib    = idir_prefix + '/lib/disko'
+idir_lib    = idir_prefix + '/lib'
 idir_bin    = idir_prefix + '/bin'
 idir_inc    = idir_prefix + '/include/disko'
 idir_data   = idir_prefix + '/share/disko'
@@ -511,10 +511,10 @@ if('xine' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
 			if conf.checkXineBlDvb():
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
 
-if('gstreamer' in env['media'] and not '-c' in sys.argv):
-	if not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
+if('gstreamer' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
+	if not conf.checkSimpleLib(['gstreamer-0.10 >= 0.10.22'], 'gst/gst.h', required = 0) or	not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
 		print '***************************************************\n'
-		print 'GStreamer not found!'
+		print 'GStreamer not found or version is older than 0.10.22!'
 		print 'Disabling gstreamer media backend'
 		print '\n***************************************************'
 		env['media'].remove('gstreamer')
@@ -677,7 +677,7 @@ if 'install' in BUILD_TARGETS:
 
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
-	disko_pc.write('libdir=${exec_prefix}/lib/disko\n')
+	disko_pc.write('libdir=${exec_prefix}/lib\n')
 	disko_pc.write('includedir=${exec_prefix}/include/disko\n\n')
 	disko_pc.write('Name: ' + packageRealName + '\n')
 	disko_pc.write('Description: ' + packageDescription + '\n')

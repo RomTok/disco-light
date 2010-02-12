@@ -177,7 +177,7 @@ MMSInputX11Handler::MMSInputX11Handler(MMS_INPUT_DEVICE device) {
 	this->window = *((Window*) mmsfb->getX11Window());
 	this->display = (Display *)mmsfb->getX11Display();
 	//printf("\nwindow %d, %x\n",window, display);
-
+	lastmotion = 0;
 
 #else
 	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
@@ -266,6 +266,15 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     		return;
     	}
     	if(event.type==MotionNotify) {
+
+			if(lastmotion!=0) {
+				if(lastmotion+15 > event.xbutton.time) {
+					return;
+				}
+			}
+			lastmotion=event.xbutton.time;
+
+
     		inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO || mmsfb->resized) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
