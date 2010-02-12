@@ -99,6 +99,9 @@ class MMSAnimationThread : public MMSThread {
     	//! end timestamp of the animation
     	unsigned int anim_end;
 
+    	//! requested duration in milliseconds of the animation
+    	unsigned int duration;
+
     	//! real duration in milliseconds of the animation (calculated after the animation)
     	unsigned int real_duration;
 
@@ -190,10 +193,25 @@ class MMSAnimationThread : public MMSThread {
         */
 		int getStepLength();
 
+        //! Set the requested duration.
+        /*!
+        \param duration 0..n milliseconds, default is 0 and means endless animation
+        \return true, if parameter is accepted
+        \note If your onAnimation callback returns false, the Animation will be stopped at any time.
+        */
+		bool setDuration(unsigned int duration);
+
+		//! Get the requested duration in milliseconds of the animation.
+        /*!
+        \return requested duration in milliseconds
+        */
+		unsigned int getDuration();
+
         //! Get the real duration in milliseconds of the animation.
         /*!
-        \return real duration
-        \note This value is valid after the animation (e.g. in the onAfterAnimation callback).
+        \return real duration in milliseconds
+        \note This value will be increased during the animation and has its final state at the
+              of the animation (e.g. in onAfterAnimation callback).
         */
 		unsigned int getRealDuration();
 

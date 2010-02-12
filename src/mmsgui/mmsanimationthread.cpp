@@ -40,6 +40,7 @@ MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
 	setStepsPerSecond(25);
 	setMaxCPUUsage(75);
 	setMaxFrameRate(25);
+	setDuration(0);
 
 	// reset all other values
 	reset();
@@ -148,11 +149,15 @@ void MMSAnimationThread::threadMain() {
         else
             usleep(1000000);
 
-	}
+    	// get real animation duration
+    	this->anim_end = getMTimeStamp();
+    	this->real_duration = getMDiff(this->anim_start, this->anim_end);
 
-	// get real animation duration
-	this->anim_end = getMTimeStamp();
-	this->real_duration = getMDiff(this->anim_start, this->anim_end);
+    	if ((this->duration) && (this->real_duration > this->duration)) {
+    		// requested duration reached, stop the animation
+    		break;
+    	}
+	}
 
 	// call connected onAfterAnimation callbacks
     this->onAfterAnimation.emit(this);
@@ -245,6 +250,15 @@ int MMSAnimationThread::getFrameDelay() {
 
 int MMSAnimationThread::getStepLength() {
 	return this->step_len;
+}
+
+bool MMSAnimationThread::setDuration(unsigned int duration) {
+	this->duration = duration;
+	return true;
+}
+
+unsigned int MMSAnimationThread::getDuration() {
+	return this->duration;
 }
 
 unsigned int MMSAnimationThread::getRealDuration() {
