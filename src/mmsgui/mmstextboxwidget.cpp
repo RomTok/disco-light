@@ -310,8 +310,12 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
             	// justified
                 if (oldpos < i-1) {
                     unsigned int diff = ((*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w)*10) / (i-1-oldpos);
-                    for (unsigned int j = oldpos + 1; j < i; j++) {
+                    for (unsigned int j = oldpos + 1; j < i-1; j++) {
                         wordgeom.at(j)->geom.x += ((j - oldpos) * diff) / 10;
+                    }
+                    if (oldpos < i-1) {
+                    	// at least two words in the line, set the last word exactly to the right side
+                    	wordgeom.at(i-1)->geom.x = *realWidth - wordgeom.at(i-1)->geom.w;
                     }
                 }
             }
