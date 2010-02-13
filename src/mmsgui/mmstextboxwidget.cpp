@@ -309,9 +309,9 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
                 ||(alignment == MMSALIGNMENT_BOTTOM_JUSTIFY))&&(wordgeom.at(i)->paragraph == wordgeom.at(i-1)->paragraph)) {
             	// justified
                 if (oldpos < i-1) {
-                    unsigned int diff = (*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w) / (i-1-oldpos);
-                    for (unsigned int j = oldpos; j < i; j++) {
-                        wordgeom.at(j)->geom.x += (j - oldpos) * diff;
+                    unsigned int diff = ((*realWidth - wordgeom.at(i-1)->geom.x - wordgeom.at(i-1)->geom.w)*10) / (i-1-oldpos);
+                    for (unsigned int j = oldpos + 1; j < i; j++) {
+                        wordgeom.at(j)->geom.x += ((j - oldpos) * diff) / 10;
                     }
                 }
             }
