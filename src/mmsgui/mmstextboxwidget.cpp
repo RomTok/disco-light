@@ -143,14 +143,12 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         // searching for next line feed
         if ((lfindex = text.find('\n', text_pos)) != string::npos) lfindex-= text_pos;
 
-        if   ((alignment == MMSALIGNMENT_JUSTIFY)
-        	||(alignment == MMSALIGNMENT_TOP_JUSTIFY)||(alignment == MMSALIGNMENT_BOTTOM_JUSTIFY)) {
-            // searching for next blank
+        if (wrap) {
+            // wrap mode, find next blank
         	if ((index = text.find(' ', text_pos)) != string::npos) index-= text_pos;
         }
         else {
-        	// for all other alignments we do not split the lines into single words
-        	// this is for better performance
+        	// no wrap mode, no need to find blanks
         	index = string::npos;
         }
 
