@@ -87,6 +87,9 @@ class MMSAnimationThread : public MMSThread {
     	//! current frame rate
     	int		frame_rate;
 
+    	//! frame counter
+    	unsigned int frames;
+
     	//! ring buffer to calculate the CPU average
     	unsigned int times_buf[MMSANIMATIONTHREAD_TIMES_BUF_SIZE];
 
@@ -193,6 +196,13 @@ class MMSAnimationThread : public MMSThread {
         \note This value is valid during the animation (e.g. in the onAnimation callback).
         */
 		int getFrameDelay();
+
+		//! Get the frame counter.
+        /*!
+        \return frame counter
+        \note This value is zero for the first time onAnimation callback is called.
+        */
+		unsigned int getFrames();
 
 		//! Get the length of the current animation step.
         /*!

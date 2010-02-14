@@ -59,6 +59,7 @@ void MMSAnimationThread::reset() {
 	this->process_time		= 0;
 	this->frame_delay		= 0;
 	this->frame_rate		= 0;
+	this->frames			= 0;
 	this->times_buf_pos		= 0;
 	this->times_buf_cnt		= 0;
 	this->real_duration		= 0;
@@ -143,6 +144,9 @@ void MMSAnimationThread::threadMain() {
 				this->recalc_requested = true;
 			}
 		}
+
+		// increase the frame counter
+		this->frames++;
 
 		// increase offset with step length
 		this->offset+= this->step_len;
@@ -247,6 +251,10 @@ int MMSAnimationThread::getFrameRate() {
 
 int MMSAnimationThread::getFrameDelay() {
 	return this->frame_delay;
+}
+
+unsigned int MMSAnimationThread::getFrames() {
+	return this->frames;
 }
 
 int MMSAnimationThread::getStepLength() {
