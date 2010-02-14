@@ -57,6 +57,7 @@ void MMSAnimationThread::reset() {
 	this->recalc_interval	= 2;
 	this->step_len			= 0;
 	this->offset			= 0;
+	this->offset_curve		= 0;
 	this->process_time		= 0;
 	this->frame_delay		= 0;
 	this->frame_rate		= 0;
@@ -155,14 +156,31 @@ void MMSAnimationThread::threadMain() {
 		// increase offset with step length
 		this->offset+= this->step_len;
 
+		// curve calculation
+		if (this->offset > 0) {
+			if (this->max_offset > 0) {
+				this->offset_curve+= (this->max_offset / 3) / this->offset;
+			}
+		}
+
     	// get real animation duration
     	this->anim_end = getMTimeStamp();
     	this->real_duration = getMDiff(this->anim_start, this->anim_end);
 
     	// stop the animation?
-    	if ((this->offset > 0) && (this->offset > this->max_offset)) {
-    		// offset is exceeded, stop the animation
-    		break;
+    	if (this->max_offset > 0) {
+    		if (this->offset_curve > 0) {
+    			if (this->offset_curve >= this->max_offset) {
+    	    		// offset is exceeded, stop the animation
+    	    		break;
+    			}
+    		}
+    		else {
+    			if (this->offset >= this->max_offset) {
+    	    		// offset is exceeded, stop the animation
+    	    		break;
+    			}
+    		}
     	}
 
     	// stop the animation?
@@ -277,7 +295,12 @@ bool MMSAnimationThread::setMaxOffset(double max_offset) {
 }
 
 double MMSAnimationThread::getOffset() {
-	return this->offset;
+	if (this->offset_curve > 0) {
+		return this->offset_curve;
+	}
+	else {
+		return this->offset;
+	}
 }
 
 bool MMSAnimationThread::setDuration(unsigned int duration) {

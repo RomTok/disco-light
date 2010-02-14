@@ -72,6 +72,9 @@ class MMSAnimationThread : public MMSThread {
         //! current offset
     	double	offset;
 
+        //! current offset, curve calculation
+    	double	offset_curve;
+
     	//! animation steps per second
     	int		steps_per_second;
 
