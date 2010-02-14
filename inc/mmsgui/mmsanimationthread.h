@@ -66,8 +66,11 @@ class MMSAnimationThread : public MMSThread {
         //! current step length
     	int		step_len;
 
+        //! maximum offset
+    	double	max_offset;
+
         //! current offset
-    	int		offset;
+    	double	offset;
 
     	//! animation steps per second
     	int		steps_per_second;
@@ -213,15 +216,26 @@ class MMSAnimationThread : public MMSThread {
         */
 		int getStepLength();
 
+        //! Set the maximum offset returned by getOffset().
+        /*!
+        The animation will be stopped, if the maximum offset is exceeded.
+        \param offset maximum offset, default 0 means that no maximum is set
+        \return true, if parameter is accepted
+        \note If your onAnimation callback returns false, the Animation will be stopped at any time.
+        \see getOffset()
+        */
+		bool setMaxOffset(double max_offset = 0);
+
 		//! Get the offset of the animation.
         /*!
         After each onAnimation call the offset will we increased with the calculated step length.
         \return offset
         \note This value is valid during the animation (e.g. in the onAnimation callback).
         \note This value is zero for the first time onAnimation callback is called.
+        \see setMaxOffset()
         \see getStepLength()
         */
-		int getOffset();
+		double getOffset();
 
         //! Set the requested duration.
         /*!

@@ -40,6 +40,7 @@ MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
 	setStepsPerSecond(25);
 	setMaxCPUUsage(75);
 	setMaxFrameRate(25);
+	setMaxOffset(0);
 	setDuration(0);
 
 	// reset all other values
@@ -145,19 +146,26 @@ void MMSAnimationThread::threadMain() {
 			}
 		}
 
+		// sleeping...
+        usleep((this->frame_delay>0)?this->frame_delay*1000:1000);
+
 		// increase the frame counter
 		this->frames++;
 
 		// increase offset with step length
 		this->offset+= this->step_len;
 
-		// sleeping...
-        usleep((this->frame_delay>0)?this->frame_delay*1000:1000);
-
     	// get real animation duration
     	this->anim_end = getMTimeStamp();
     	this->real_duration = getMDiff(this->anim_start, this->anim_end);
 
+    	// stop the animation?
+    	if ((this->offset > 0) && (this->offset > this->max_offset)) {
+    		// offset is exceeded, stop the animation
+    		break;
+    	}
+
+    	// stop the animation?
     	if ((this->duration) && (this->real_duration > this->duration)) {
     		// requested duration reached, stop the animation
     		break;
@@ -261,7 +269,14 @@ int MMSAnimationThread::getStepLength() {
 	return this->step_len;
 }
 
-int MMSAnimationThread::getOffset() {
+bool MMSAnimationThread::setMaxOffset(double max_offset) {
+	// check & set
+	if (max_offset < 0) return false;
+	this->max_offset = max_offset;
+	return true;
+}
+
+double MMSAnimationThread::getOffset() {
 	return this->offset;
 }
 
