@@ -55,13 +55,13 @@ void MMSInputGesture::reset() {
 
 MMSINPUTGESTURE MMSInputGesture::guess() {
 
-	if((dx < (-1 *this->threshold))&&(abs(dy)<this->threshold/2))
+	if((dx < (-1 *this->threshold))&&(abs(dy)< abs(dx)/2))
 		return MMSINPUTGESTURE_LEFT;
-	if((dx > this->threshold)&&(abs(dy)<this->threshold/2))
+	if((dx > this->threshold)&&(abs(dy)<abs(dx)/2))
 		return MMSINPUTGESTURE_RIGHT;
-	if((dy < (-1 * this->threshold))&&(abs(dx)<this->threshold/2))
+	if((dy < (-1 * this->threshold))&&(abs(dx)<abs(dy)/2))
 		return MMSINPUTGESTURE_UP;
-	if((dy > this->threshold)&&(abs(dx)<this->threshold/2))
+	if((dy > this->threshold)&&(abs(dx)<abs(dy)/2))
 		return MMSINPUTGESTURE_DOWN;
 
 
