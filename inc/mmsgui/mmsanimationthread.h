@@ -69,6 +69,9 @@ class MMSAnimationThread : public MMSThread {
         //! maximum offset
     	double	max_offset;
 
+    	//! natural logarithm of maximum offset
+    	double	max_offset_log;
+
         //! current offset
     	double	offset;
 

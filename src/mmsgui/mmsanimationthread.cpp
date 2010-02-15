@@ -32,6 +32,10 @@
 
 #include "mmsgui/mmsanimationthread.h"
 
+#include <math.h>
+
+
+
 MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
 	// animation is not running
 	this->animRunning = false;
@@ -159,7 +163,11 @@ void MMSAnimationThread::threadMain() {
 		// curve calculation
 		if (this->offset > 0) {
 			if (this->max_offset > 0) {
-				this->offset_curve+= (this->max_offset / 3) / this->offset;
+				this->offset_curve = this->max_offset * (log(this->offset) / this->max_offset_log);
+
+//				printf(">>>>>>>>offset = %f, offset_curve = %f, >>> %f\n",
+//						this->offset, this->offset_curve, (log(this->offset) / log(this->max_offset)));
+
 			}
 		}
 
@@ -291,6 +299,14 @@ bool MMSAnimationThread::setMaxOffset(double max_offset) {
 	// check & set
 	if (max_offset < 0) return false;
 	this->max_offset = max_offset;
+
+	// get the natural logarithm
+	if (this->max_offset > 1) {
+		this->max_offset_log = log(this->max_offset);
+	}
+	else {
+		this->max_offset_log = 0.01;
+	}
 	return true;
 }
 
