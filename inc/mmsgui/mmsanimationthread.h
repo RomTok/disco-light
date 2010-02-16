@@ -38,6 +38,25 @@
 // size of the times buffer needed for calculation of the CPU average
 #define MMSANIMATIONTHREAD_TIMES_BUF_SIZE 10
 
+//! Sequence mode for onAnimation callback.
+/*!
+Per default the sequence mode is set to MMSANIMATIONTHREAD_OFFSET_LINEAR.
+You can change this mode with the setMaxOffset() method. This has effect to
+the return value of getOffset() which you should use in the onAnimation callback.
+\see setMaxOffset()
+\see getOffset()
+*/
+typedef enum {
+	//! linear ascending
+	MMSANIMATIONTHREAD_SEQ_LINEAR = 0,
+	//! linear descending
+	MMSANIMATIONTHREAD_SEQ_LINEAR_DESC,
+	//! logarithmic ascending
+	MMSANIMATIONTHREAD_SEQ_LOG,
+	//! logarithmic descending
+	MMSANIMATIONTHREAD_SEQ_LOG_DESC
+} MMSANIMATIONTHREAD_SEQ;
+
 //! This class helps the MMSGUI and user specific applications to get smooth animations.
 /*!
 There are three callbacks: onBeforeAnimation, onAnimation and onAfterAnimation.
@@ -72,10 +91,13 @@ class MMSAnimationThread : public MMSThread {
     	//! natural logarithm of maximum offset
     	double	max_offset_log;
 
+    	//! sequence mode, used in conjunction with max_offset
+    	MMSANIMATIONTHREAD_SEQ	seq_mode;
+
         //! current offset
     	double	offset;
 
-        //! current offset, curve calculation
+        //! current offset, curve calculation in conjunction with seq_mode
     	double	offset_curve;
 
     	//! animation steps per second
@@ -225,19 +247,23 @@ class MMSAnimationThread : public MMSThread {
         //! Set the maximum offset returned by getOffset().
         /*!
         The animation will be stopped, if the maximum offset is exceeded.
-        \param offset maximum offset, default 0 means that no maximum is set
-        \return true, if parameter is accepted
+        Additionally you can set the sequence mode. With seq_mode you have influence
+        to the return value of getOffset().
+        \param offset	maximum offset (2..n), default 0 means that no maximum is set
+        \param seq_mode	sequence mode, default is MMSANIMATIONTHREAD_SEQ_LINEAR
+        \return true, if parameters are accepted
         \note If your onAnimation callback returns false, the Animation will be stopped at any time.
+        \note The seq_mode has NO influence to the return value of getStepLength().
         \see getOffset()
         */
-		bool setMaxOffset(double max_offset = 0);
+		bool setMaxOffset(double max_offset = 0, MMSANIMATIONTHREAD_SEQ	seq_mode = MMSANIMATIONTHREAD_SEQ_LINEAR);
 
 		//! Get the offset of the animation.
         /*!
-        After each onAnimation call the offset will we increased with the calculated step length.
+        After each onAnimation call the offset will we increased or decreased dependent on
+		the seq_mode set with setMaxOffset().
         \return offset
         \note This value is valid during the animation (e.g. in the onAnimation callback).
-        \note This value is zero for the first time onAnimation callback is called.
         \see setMaxOffset()
         \see getStepLength()
         */

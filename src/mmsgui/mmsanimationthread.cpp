@@ -69,6 +69,16 @@ void MMSAnimationThread::reset() {
 	this->times_buf_pos		= 0;
 	this->times_buf_cnt		= 0;
 	this->real_duration		= 0;
+
+	// use special seq_modes
+	switch (this->seq_mode) {
+	case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
+	case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+		this->offset = this->offset_curve = this->max_offset;
+		break;
+	default:
+		break;
+	}
 }
 
 void MMSAnimationThread::threadMain() {
@@ -157,17 +167,33 @@ void MMSAnimationThread::threadMain() {
 		// increase the frame counter
 		this->frames++;
 
-		// increase offset with step length
-		this->offset+= this->step_len;
+		// increase/decrease offset with step length
+		switch (this->seq_mode) {
+		case MMSANIMATIONTHREAD_SEQ_LINEAR:
+		case MMSANIMATIONTHREAD_SEQ_LOG:
+			this->offset+= this->step_len;
+			break;
+		case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
+		case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+			this->offset-= this->step_len;
+			break;
+		}
 
 		// curve calculation
 		if (this->offset > 0) {
 			if (this->max_offset > 0) {
-				this->offset_curve = this->max_offset * (log(this->offset) / this->max_offset_log);
-
-//				printf(">>>>>>>>offset = %f, offset_curve = %f, >>> %f\n",
-//						this->offset, this->offset_curve, (log(this->offset) / log(this->max_offset)));
-
+				switch (this->seq_mode) {
+				case MMSANIMATIONTHREAD_SEQ_LINEAR:
+				case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
+					this->offset_curve = this->offset;
+					break;
+				case MMSANIMATIONTHREAD_SEQ_LOG:
+					this->offset_curve = this->max_offset * (log(this->offset) / this->max_offset_log);
+					break;
+				case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+					this->offset_curve = this->max_offset - this->max_offset * (log(this->max_offset - this->offset) / this->max_offset_log);
+					break;
+				}
 			}
 		}
 
@@ -177,17 +203,28 @@ void MMSAnimationThread::threadMain() {
 
     	// stop the animation?
     	if (this->max_offset > 0) {
-    		if (this->offset_curve > 0) {
-    			if (this->offset_curve >= this->max_offset) {
-    	    		// offset is exceeded, stop the animation
-    	    		break;
-    			}
+    		if   ((this->seq_mode == MMSANIMATIONTHREAD_SEQ_LINEAR)
+    			||(this->seq_mode == MMSANIMATIONTHREAD_SEQ_LOG)) {
+    			// ascending modes
+				if (this->offset_curve > 0) {
+					if (this->offset_curve >= this->max_offset) {
+						// offset is exceeded, stop the animation
+						break;
+					}
+				}
+				else {
+					if (this->offset >= this->max_offset) {
+						// offset is exceeded, stop the animation
+						break;
+					}
+				}
     		}
     		else {
-    			if (this->offset >= this->max_offset) {
-    	    		// offset is exceeded, stop the animation
-    	    		break;
-    			}
+    			// descending modes
+				if ((this->offset_curve < 0)||(this->offset < 0)) {
+					// offset is exceeded, stop the animation
+					break;
+				}
     		}
     	}
 
@@ -295,18 +332,20 @@ int MMSAnimationThread::getStepLength() {
 	return this->step_len;
 }
 
-bool MMSAnimationThread::setMaxOffset(double max_offset) {
+bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	seq_mode) {
 	// check & set
-	if (max_offset < 0) return false;
+	if ((max_offset < 2)&&(max_offset != 0)) return false;
 	this->max_offset = max_offset;
+	this->seq_mode = seq_mode;
 
 	// get the natural logarithm
-	if (this->max_offset > 1) {
+	if (this->max_offset >= 2) {
 		this->max_offset_log = log(this->max_offset);
 	}
 	else {
-		this->max_offset_log = 0.01;
+		this->max_offset_log = 0;
 	}
+
 	return true;
 }
 
