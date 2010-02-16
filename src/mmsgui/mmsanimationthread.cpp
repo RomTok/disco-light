@@ -58,7 +58,7 @@ void MMSAnimationThread::reset() {
 	// reset all values
 	this->recalc_requested	= true;
 	this->recalc_cnt		= 0;
-	this->recalc_interval	= 2;
+	this->recalc_interval	= 3;
 	this->step_len			= 0;
 	this->offset			= 0;
 	this->offset_curve		= 0;
@@ -69,6 +69,11 @@ void MMSAnimationThread::reset() {
 	this->times_buf_pos		= 0;
 	this->times_buf_cnt		= 0;
 	this->real_duration		= 0;
+
+	if (this->max_offset > 0) {
+		// if max offset is set, recalculate every loop
+		this->recalc_interval = 1;
+	}
 
 	// use special seq_modes
 	switch (this->seq_mode) {
@@ -149,7 +154,7 @@ void MMSAnimationThread::threadMain() {
 
 			// mark as calculated
 			this->recalc_cnt = 1;
-			this->recalc_requested = false;
+			this->recalc_requested = (this->recalc_interval <= 1);
 		}
 		else {
 			// recalc not needed
