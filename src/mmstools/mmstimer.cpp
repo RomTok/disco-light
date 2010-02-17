@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -97,27 +97,18 @@ void MMSTimer::stop() {
 	pthread_mutex_unlock(&mutex);
 }
 
-void* callTimeout(void *data) {
-	sigc::signal<void> *timeOutHandler = (sigc::signal<void>*)data;
-
-	timeOutHandler->emit();
-
-	return NULL;
-}
-
 void MMSTimer::threadMain() {
 	if(this->secs == 0 && this->nSecs == 0) {
 		return;
 	}
 
 	struct timespec absTime;
-	struct timeval  absTimeGet;
 
 	pthread_mutex_lock(&this->mutex);
 	while(this->action != QUIT) {
-		gettimeofday(&absTimeGet, NULL);
-		absTime.tv_sec  = absTimeGet.tv_sec + secs;
-		absTime.tv_nsec = (absTimeGet.tv_usec * 1000) + nSecs;
+		clock_gettime(CLOCK_REALTIME, &absTime);
+		absTime.tv_sec  += this->secs;
+		absTime.tv_nsec += this->nSecs;
 
 		if(absTime.tv_nsec > 999999999) {
 			absTime.tv_sec += 1;
@@ -125,8 +116,10 @@ void MMSTimer::threadMain() {
 		}
 
 		if(pthread_cond_timedwait(&this->cond, &this->mutex, &absTime) == ETIMEDOUT) {
-			pthread_t t;
-			pthread_create(&t, NULL, callTimeout, &this->timeOut);
+			/* unlock mutex, because the timeout handler may call restart() or stop() */
+			pthread_mutex_unlock(&this->mutex);
+			this->timeOut.emit();
+			pthread_mutex_lock(&this->mutex);
 			if(this->singleShot)
 				break;
 		} else {

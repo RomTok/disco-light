@@ -52,6 +52,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixel
 //    DFBSurfaceDescription   surface_desc;
     MMSFBSurface            *surface;
 
+#if 0
     /* searching for free surface */
     for (unsigned int i = 0; i < this->free_surfaces.size(); i++) {
         surface = free_surfaces.at(i).surface;
@@ -79,7 +80,7 @@ MMSFBSurface *MMSFBSurfaceManager::createSurface(int w, int h, MMSFBSurfacePixel
             }
         }
     }
-
+#endif
 
     /* create a new surface instance */
     surface = new MMSFBSurface(w, h, pixelformat, backbuffer, systemonly);
@@ -124,8 +125,8 @@ return;*/
 
 
 
-    MMSFBSurface        *new_surface;
-    MMSFBSURMANLIST     sml;
+//    MMSFBSurface        *new_surface;
+//    MMSFBSURMANLIST     sml;
 
     if (!surface)
         return;
@@ -136,6 +137,9 @@ return;*/
 	if (surface->is_sub_surface)
         return;
 
+	surface->freeSurfaceBuffer();
+
+#if 0
     /* create a new surface instance */
     new_surface = new MMSFBSurface(NULL);
     if (!new_surface) {
@@ -151,7 +155,7 @@ return;*/
     sml.surface = new_surface;
     sml.insert_time = time(NULL);
     this->free_surfaces.push_back(sml);
-
+#endif
     /* remove from used surfaces */
 /*TRACE
 
