@@ -194,6 +194,7 @@ void MMSAnimationThread::threadMain() {
 		}
 
 		// curve calculation
+		this->offset_curve = 0;
 		if (this->offset > 0) {
 			if (this->max_offset > 0) {
 				switch (this->seq_mode) {
@@ -210,10 +211,14 @@ void MMSAnimationThread::threadMain() {
 						this->offset_curve = (this->offset * this->seq_range) / this->max_offset;
 					break;
 				case MMSANIMATIONTHREAD_SEQ_LOG:
+					// check offset, because log(1) is zero
+					if (this->offset == 1) this->offset++;
 					this->offset_curve = this->seq_start
 										+ (this->seq_range) * (log(this->offset) / this->max_offset_log);
 					break;
 				case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+					// check offset, because log(1) is zero
+					if (this->max_offset - this->offset == 1) this->offset--;
 					this->offset_curve = this->seq_start
 										- (this->seq_range) * (log(this->max_offset - this->offset) / this->max_offset_log);
 					break;
@@ -221,11 +226,8 @@ void MMSAnimationThread::threadMain() {
 			}
 		}
 
-    	// get real animation duration
-    	this->anim_end = getMTimeStamp();
-    	this->real_duration = getMDiff(this->anim_start, this->anim_end);
-
     	// stop the animation?
+    	bool stop = false;
     	if (this->max_offset > 0) {
     		if   ((this->seq_mode == MMSANIMATIONTHREAD_SEQ_LINEAR)
     			||(this->seq_mode == MMSANIMATIONTHREAD_SEQ_LOG)) {
@@ -233,13 +235,13 @@ void MMSAnimationThread::threadMain() {
 				if (this->offset_curve > 0) {
 					if (this->offset_curve >= this->max_offset) {
 						// offset is exceeded, stop the animation
-						break;
+						stop = true;
 					}
 				}
 				else {
 					if (this->offset >= this->max_offset) {
 						// offset is exceeded, stop the animation
-						break;
+						stop = true;
 					}
 				}
     		}
@@ -247,7 +249,7 @@ void MMSAnimationThread::threadMain() {
     			// descending modes
 				if ((this->offset_curve < 0)||(this->offset < 0)) {
 					// offset is exceeded, stop the animation
-					break;
+					stop = true;
 				}
     		}
     	}
@@ -255,6 +257,15 @@ void MMSAnimationThread::threadMain() {
     	// stop the animation?
     	if ((this->duration) && (this->real_duration > this->duration)) {
     		// requested duration reached, stop the animation
+    		stop = true;
+    	}
+
+    	// get real animation duration
+    	this->anim_end = getMTimeStamp();
+    	this->real_duration = getMDiff(this->anim_start, this->anim_end);
+
+    	if (stop) {
+    		// break the loop
     		break;
     	}
 	}
