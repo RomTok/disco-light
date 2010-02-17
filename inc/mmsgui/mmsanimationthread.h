@@ -88,11 +88,17 @@ class MMSAnimationThread : public MMSThread {
         //! maximum offset
     	double	max_offset;
 
-    	//! natural logarithm of maximum offset
+    	//! natural logarithm of max_offset
     	double	max_offset_log;
 
     	//! sequence mode, used in conjunction with max_offset
     	MMSANIMATIONTHREAD_SEQ	seq_mode;
+
+    	//! sequence range, used in conjunction with max_offset and seq_mode;
+    	double	seq_range;
+
+    	//! sequence start, used in conjunction with seq_range;
+    	double	seq_start;
 
         //! current offset
     	double	offset;
@@ -247,16 +253,20 @@ class MMSAnimationThread : public MMSThread {
         //! Set the maximum offset returned by getOffset().
         /*!
         The animation will be stopped, if the maximum offset is exceeded.
-        Additionally you can set the sequence mode. With seq_mode you have influence
-        to the return value of getOffset().
-        \param offset	maximum offset (2..n), default 0 means that no maximum is set
-        \param seq_mode	sequence mode, default is MMSANIMATIONTHREAD_SEQ_LINEAR
+        Additionally you can set the sequence mode and a sequence range. With these parameters
+        you have influence to the return value of getOffset().
+        \param max_offset	maximum offset (2..n), default 0 means that no maximum is set
+							if maximum offset is not set (value 0), the seq_mode and seq_range will be ignored
+        \param seq_mode		sequence mode, default is MMSANIMATIONTHREAD_SEQ_LINEAR
+        \param seq_range	the seq_range for the curve calculation (2..max_offset), default 0 is equal to max_offset
         \return true, if parameters are accepted
         \note If your onAnimation callback returns false, the Animation will be stopped at any time.
         \note The seq_mode has NO influence to the return value of getStepLength().
+        \note With the parameter seq_range, you can get a flat curve at the end of the animation.
         \see getOffset()
         */
-		bool setMaxOffset(double max_offset = 0, MMSANIMATIONTHREAD_SEQ	seq_mode = MMSANIMATIONTHREAD_SEQ_LINEAR);
+		bool setMaxOffset(double max_offset = 0, MMSANIMATIONTHREAD_SEQ	seq_mode = MMSANIMATIONTHREAD_SEQ_LINEAR,
+						  double seq_range = 0);
 
 		//! Get the offset of the animation.
         /*!

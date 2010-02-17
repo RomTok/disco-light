@@ -77,9 +77,15 @@ void MMSAnimationThread::reset() {
 
 	// use special seq_modes
 	switch (this->seq_mode) {
+	case MMSANIMATIONTHREAD_SEQ_LINEAR:
+	case MMSANIMATIONTHREAD_SEQ_LOG:
+		this->offset = 0;
+		this->offset_curve = this->seq_start;
+		break;
 	case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
 	case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
-		this->offset = this->offset_curve = this->max_offset;
+		this->offset = this->max_offset;
+		this->offset_curve = this->seq_start;
 		break;
 	default:
 		break;
@@ -189,14 +195,24 @@ void MMSAnimationThread::threadMain() {
 			if (this->max_offset > 0) {
 				switch (this->seq_mode) {
 				case MMSANIMATIONTHREAD_SEQ_LINEAR:
+					if (this->seq_start <= 0)
+						this->offset_curve = this->offset;
+					else
+						this->offset_curve = this->seq_start + (this->offset * this->seq_range) / this->max_offset;
+					break;
 				case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
-					this->offset_curve = this->offset;
+					if (this->seq_start <= 0)
+						this->offset_curve = this->offset;
+					else
+						this->offset_curve = (this->offset * this->seq_range) / this->max_offset;
 					break;
 				case MMSANIMATIONTHREAD_SEQ_LOG:
-					this->offset_curve = this->max_offset * (log(this->offset) / this->max_offset_log);
+					this->offset_curve = this->seq_start
+										+ (this->seq_range) * (log(this->offset) / this->max_offset_log);
 					break;
 				case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
-					this->offset_curve = this->max_offset - this->max_offset * (log(this->max_offset - this->offset) / this->max_offset_log);
+					this->offset_curve = this->seq_start
+										- (this->seq_range) * (log(this->max_offset - this->offset) / this->max_offset_log);
 					break;
 				}
 			}
@@ -337,11 +353,44 @@ int MMSAnimationThread::getStepLength() {
 	return this->step_len;
 }
 
-bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	seq_mode) {
+bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	seq_mode, double seq_range) {
 	// check & set
 	if ((max_offset < 2)&&(max_offset != 0)) return false;
+	if ((seq_range < 2)&&(seq_range != 0)) return false;
+	if (seq_range > max_offset) return false;
 	this->max_offset = max_offset;
 	this->seq_mode = seq_mode;
+	this->seq_range = seq_range;
+
+	// get the start point of the sequence
+	if (this->seq_range <= 0) {
+		// full, default
+		switch (this->seq_mode) {
+		case MMSANIMATIONTHREAD_SEQ_LINEAR:
+		case MMSANIMATIONTHREAD_SEQ_LOG:
+			this->seq_start = 0;
+			this->seq_range = this->max_offset;
+			break;
+		case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
+		case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+			this->seq_start = this->max_offset;
+			this->seq_range = this->max_offset;
+			break;
+		}
+	}
+	else {
+		// sequence should be only a little part of the max_offset range
+		switch (this->seq_mode) {
+		case MMSANIMATIONTHREAD_SEQ_LINEAR:
+		case MMSANIMATIONTHREAD_SEQ_LOG:
+			this->seq_start = this->max_offset - this->seq_range;
+			break;
+		case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
+		case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+			this->seq_start = this->seq_range;
+			break;
+		}
+	}
 
 	// get the natural logarithm
 	if (this->max_offset >= 2) {
