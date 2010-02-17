@@ -40,6 +40,9 @@ MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
 	// animation is not running
 	this->animRunning = false;
 
+	// set stacksize to 128kb, will be allocated if started with start(true)
+	setStacksize(128*1024);
+
 	// set attributes
 	setStepsPerSecond(25);
 	setMaxCPUUsage(75);
