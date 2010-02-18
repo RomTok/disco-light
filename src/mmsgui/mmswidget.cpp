@@ -1914,11 +1914,15 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
             this->onSelect->emit(this);
 
     if ((set)&&(refresh)) {
-		// start thread which removes the focus after n seconds
-		string inputmode = "";
-		getInputModeEx(inputmode);
-		if (strToUpr(inputmode) == "CLICK")
-			startWidgetThread(150);
+    	bool b = false;
+    	getFocusable(b);
+    	if (b) {
+			// focusable widget, start thread which removes the focus after n seconds
+			string inputmode = "";
+			getInputModeEx(inputmode);
+			if (strToUpr(inputmode) == "CLICK")
+				startWidgetThread(150);
+    	}
     }
 
     return true;
