@@ -924,7 +924,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
 
     for (unsigned int i = 0; i < this->childwins.size(); i++)
         if (this->childwins.at(i).window == childwin) {
-            /* get old region */
+            // get old region
             MMSFBRegion *currregion = &this->childwins.at(i).region;
             MMSFBRegion oldregion = *currregion;
 
@@ -952,30 +952,29 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
             	if (os) {
             		if   ((oldregion.x2 - oldregion.x1 + 1 != childwin->geom.w)
 	                    ||(oldregion.y2 - oldregion.y1 + 1 != childwin->geom.h)) {
-
-	                    /* resize surface */
+	                    // resize surface
 	                    childwin->surface->resize(childwin->geom.w, childwin->geom.h);
 	                }
             	}
             	else {
-            		/* working with sub surface */
+            		// working with sub surface
 					childwin->surface->setSubSurface(&(childwin->geom));
             	}
 
-                /* call resize recursive for new regions of my child windows */
+                // call resize recursive for new regions of my child windows
                 for (unsigned int j = 0; j < childwin->childwins.size(); j++)
                     childwin->childwins.at(j).window->resize(false);
 
-                /* recursive calls should stop here */
+                // recursive calls should stop here
                 if (!refresh)
                     return true;
 
-                /* draw at new pos */
+                // draw at new pos
                 flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, false);
 
-                /* redraw the old rects */
+                // redraw the old rects
                 if (oldregion.y1 < currregion->y1) {
-                    /* redraw above */
+                    // redraw above
                     MMSFBRegion region;
                     region = oldregion;
                     if (region.y2 >= currregion->y1)
@@ -988,7 +987,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                 }
                 if (oldregion.y2 > currregion->y2) {
-                    /* redraw below */
+                    // redraw below
                     MMSFBRegion region;
                     region = oldregion;
                     if (region.y1 <= currregion->y2)
@@ -1001,7 +1000,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     flipWindow(childwin, &region, MMSFB_FLIP_NONE, false, false);
                 }
                 if (oldregion.x1 < currregion->x1) {
-                    /* redraw left side */
+                    // redraw left side
                     MMSFBRegion region;
                     region = oldregion;
                     if  ((region.y2 >= currregion->y1)
@@ -1017,7 +1016,7 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     }
                 }
                 if (oldregion.x2 > currregion->x2) {
-                    /* redraw right side */
+                    // redraw right side
                     MMSFBRegion region;
                     region = oldregion;
                     if  ((region.y2 >= currregion->y1)

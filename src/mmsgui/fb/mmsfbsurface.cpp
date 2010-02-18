@@ -5117,14 +5117,16 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
 
 bool MMSFBSurface::resize(int w, int h) {
 
-    /* check if initialized */
-    INITCHECK;
+	// check old size, resize only if size changed
+    int old_w, old_h;
+    if (!getSize(&old_w, &old_h)) return false;
+    if ((old_w == w) && (old_h == h)) return true;
 
     if (!this->is_sub_surface) {
-        /* normal surface */
+        // normal surface
 	    lock();
 
-	    /* create a copy */
+	    // create a copy
 	    MMSFBSurface *dstsurface;
 	    createCopy(&dstsurface, w, h, true, true);
 
@@ -5135,12 +5137,12 @@ bool MMSFBSurface::resize(int w, int h) {
 
 		    MMSFB_TRACE();
 
-		    /* move the dfb pointers */
+		    // move the dfb pointers
 			IDirectFBSurface *s = this->llsurface;
 			this->llsurface = dstsurface->llsurface;
 			dstsurface->llsurface = s;
 
-			/* load the new configuration */
+			// load the new configuration
 			this->getConfiguration();
 			dstsurface->getConfiguration();
 #endif
@@ -5155,14 +5157,14 @@ bool MMSFBSurface::resize(int w, int h) {
 			this->getConfiguration();
 		}
 
-	    /* free dstsurface */
+	    // free dstsurface
 	    delete dstsurface;
 
 	    unlock();
 	    return true;
     }
     else  {
-    	/* sub surface */
+    	// sub surface
 	    MMSFBRectangle rect = this->sub_surface_rect;
 	    rect.w = w;
 	    rect.h = h;
