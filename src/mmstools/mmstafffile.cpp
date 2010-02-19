@@ -539,6 +539,24 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							attr_found = false;
 						}
 						break;
+					case TAFF_ATTRTYPE_STATE:
+						badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false"))
+								&&(xmlStrcmp(attrVal, (xmlChar *)"auto")));
+						if (badval) {
+							validvals = "\"true\", \"false\", \"auto\"";
+							attr_found = false;
+						}
+						else {
+							int_val_set = true;
+							if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
+								int_val = -1;
+							else
+							if (xmlStrcmp(attrVal, (xmlChar *)"auto")==0)
+								int_val = 0x01010101;
+							else
+								int_val = 0;
+						}
+						break;
 					}
 
 					/* check if the value is blank and i have to ignore it */
@@ -890,6 +908,15 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 			case TAFF_ATTRTYPE_UCHAR100:
 			case TAFF_ATTRTYPE_INT:
 				attrval = iToStr(attrval_int);
+				break;
+			case TAFF_ATTRTYPE_STATE:
+				if ((attrval_int & 0xff) == 0x01)
+					attrval = "auto";
+				else
+				if (attrval_int)
+					attrval = "true";
+				else
+					attrval = "false";
 				break;
 			default:
 				attrval = attrval_str;
@@ -1278,6 +1305,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					case TAFF_ATTRTYPE_UCHAR:
 					case TAFF_ATTRTYPE_UCHAR100:
 					case TAFF_ATTRTYPE_INT:
+					case TAFF_ATTRTYPE_STATE:
 						*value_str = NULL;
 						*value_int = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 						break;

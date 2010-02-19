@@ -56,7 +56,9 @@ typedef enum {
 	//! valid values: "-2147483648".."2147483647"
 	TAFF_ATTRTYPE_INT,
 	//! any binary data
-	TAFF_ATTRTYPE_BINDATA
+	TAFF_ATTRTYPE_BINDATA,
+	//! valid values: "true", "false", "auto"
+	TAFF_ATTRTYPE_STATE
 } TAFF_ATTRTYPE;
 
 //! Describe a TAFF attribute
