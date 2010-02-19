@@ -44,6 +44,11 @@ MMSImageWidget::MMSImageWidget(MMSWindow *root, string className, MMSTheme *them
 MMSImageWidget::~MMSImageWidget() {
     if (imageThread) {
         imageThread->stop();
+        while(imageThread->isRunning()) {
+        	usleep(1000);
+        }
+
+        delete imageThread;
         imageThread=NULL;
     }
 }
@@ -84,6 +89,13 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     selimage_i_loaded = false;
     selimage_i_curr_index = 0;
 
+    if(imageThread) {
+    	imageThread->stop();
+        while(imageThread->isRunning()) {
+        	usleep(1000);
+        }
+    	delete imageThread;
+    }
     imageThread = NULL;
 
     // create widget base
