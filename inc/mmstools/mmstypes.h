@@ -963,5 +963,17 @@ typedef enum {
 const char *convertMMSKeySymbolToXKeysymString(MMSKeySymbol key);
 
 
+// Special State Type .......................................................
+
+//! special state type
+typedef enum {
+	//! false
+	MMSSTATE_FALSE = 0,
+	//! true
+	MMSSTATE_TRUE,
+	//! auto
+	MMSSTATE_AUTO
+} MMSSTATE;
+
 
 #endif /* MMSTYPES_H_ */
