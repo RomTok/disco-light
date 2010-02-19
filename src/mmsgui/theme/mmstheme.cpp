@@ -83,7 +83,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 11, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 12, mmsgui_taff_tagtable };
 
 
 
@@ -1249,6 +1249,7 @@ MMSTheme::MMSTheme() {
         c.b = 255;
         this->inputWidgetClass.setSelColor(c);
         this->inputWidgetClass.setText("");
+        this->inputWidgetClass.setCursorState(MMSSTATE_AUTO);
     }
 
 

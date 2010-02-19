@@ -54,6 +54,7 @@ void MMSInputWidgetClass::unsetAll() {
     unsetColor();
     unsetSelColor();
     unsetText();
+    unsetCursorState();
 }
 
 void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
@@ -148,6 +149,15 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            break;
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_text:
 	            setText(attrval_str);
+	            break;
+			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_cursor_state:
+				if ((attrval_int & 0xff) == 0x01)
+					setCursorState(MMSSTATE_AUTO);
+				else
+				if (attrval_int)
+					setCursorState(MMSSTATE_TRUE);
+				else
+					setCursorState(MMSSTATE_FALSE);
 	            break;
 			}
 		}
@@ -257,6 +267,17 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             else
             if (ISATTRNAME(text)) {
 	            setText(attrval_str);
+			}
+            else
+            if (ISATTRNAME(cursor_state)) {
+				if ((attrval_int & 0xff) == 0x01)
+					setCursorState(MMSSTATE_AUTO);
+				else
+				if (attrval_int)
+					setCursorState(MMSSTATE_TRUE);
+				else
+					setCursorState(MMSSTATE_FALSE);
+	            break;
 			}
     	}
     	endTAFFScan_WITHOUT_ID
@@ -394,5 +415,22 @@ void MMSInputWidgetClass::unsetText() {
 
 string MMSInputWidgetClass::getText() {
     return this->text;
+}
+
+bool MMSInputWidgetClass::isCursorState() {
+    return this->iscursor_state;
+}
+
+void MMSInputWidgetClass::setCursorState(MMSSTATE cursor_state) {
+    this->cursor_state = cursor_state;
+    this->iscursor_state = true;
+}
+
+void MMSInputWidgetClass::unsetCursorState() {
+    this->iscursor_state = false;
+}
+
+MMSSTATE MMSInputWidgetClass::getCursorState() {
+    return this->cursor_state;
 }
 

@@ -122,6 +122,7 @@ class MMSInputWidget : public MMSWidget {
         MMSFBColor getSelColor();
         string getText();
         void getText(string &text);
+        MMSSTATE getCursorState();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
@@ -131,6 +132,7 @@ class MMSInputWidget : public MMSWidget {
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true, bool reset_cursor = true);
+        void setCursorState(MMSSTATE cursor_state, bool refresh = true);
 
         void updateFromThemeClass(MMSInputWidgetClass *themeClass);
 

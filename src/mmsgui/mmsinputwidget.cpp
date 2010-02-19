@@ -267,10 +267,13 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
             this->cursor_rect.w = cursor_w;
             this->cursor_rect.h = height;
 
-            // draw the cursor
-        	if (this->cursor_on)
-        		if (isFocused())
-        			this->surface->drawRectangle(cursor_x, y, cursor_w, height);
+        	if (this->cursor_on) {
+                // draw the cursor
+        		MMSSTATE cursor_state = getCursorState();
+        		if ((cursor_state == MMSSTATE_TRUE)||((cursor_state == MMSSTATE_AUTO) && isFocused())) {
+					this->surface->drawRectangle(cursor_x, y, cursor_w, height);
+        		}
+        	}
         }
 
         // update window surface with an area of surface
@@ -644,6 +647,10 @@ void MMSInputWidget::getText(string &text) {
     GETINPUT2(Text, text);
 }
 
+MMSSTATE MMSInputWidget::getCursorState() {
+    GETINPUT(CursorState);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
@@ -726,6 +733,12 @@ void MMSInputWidget::setText(string text, bool refresh, bool reset_cursor) {
         this->refresh();
 }
 
+void MMSInputWidget::setCursorState(MMSSTATE cursor_state, bool refresh) {
+    myInputWidgetClass.setCursorState(cursor_state);
+    if (refresh)
+        this->refresh();
+}
+
 void MMSInputWidget::updateFromThemeClass(MMSInputWidgetClass *themeClass) {
     if (themeClass->isFontPath())
         setFontPath(themeClass->getFontPath());
@@ -741,6 +754,8 @@ void MMSInputWidget::updateFromThemeClass(MMSInputWidgetClass *themeClass) {
         setSelColor(themeClass->getSelColor());
     if (themeClass->isText())
         setText(themeClass->getText());
+    if (themeClass->isCursorState())
+        setCursorState(themeClass->getCursorState());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }
