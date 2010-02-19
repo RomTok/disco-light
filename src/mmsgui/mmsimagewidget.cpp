@@ -37,8 +37,8 @@
 //#define __PUPTRACE__
 
 
-MMSImageWidget::MMSImageWidget(MMSWindow *root, string className, MMSTheme *theme) {
-    create(root, className, theme);
+MMSImageWidget::MMSImageWidget(MMSWindow *root, string className, MMSTheme *theme) : imageThread(NULL) {
+	create(root, className, theme);
 }
 
 MMSImageWidget::~MMSImageWidget() {
