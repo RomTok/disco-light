@@ -30,17 +30,18 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSANIMATIONTHREAD_H_
-#define MMSANIMATIONTHREAD_H_
+#ifndef MMSPULSER_H_
+#define MMSPULSER_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/mmsthread.h"
+#include "mmstools/mmstypes.h"
 
 // size of the times buffer needed for calculation of the CPU average
-#define MMSANIMATIONTHREAD_TIMES_BUF_SIZE 10
+#define MMSPULSER_TIMES_BUF_SIZE 10
 
 //! Sequence mode for onAnimation callback.
 /*!
-Per default the sequence mode is set to MMSANIMATIONTHREAD_OFFSET_LINEAR.
+Per default the sequence mode is set to MMSPULSER_OFFSET_LINEAR.
 You can change this mode with the setMaxOffset() method. This has effect to
 the return value of getOffset() which you should use in the onAnimation callback.
 \see setMaxOffset()
@@ -48,14 +49,14 @@ the return value of getOffset() which you should use in the onAnimation callback
 */
 typedef enum {
 	//! linear ascending
-	MMSANIMATIONTHREAD_SEQ_LINEAR = 0,
+	MMSPULSER_SEQ_LINEAR = 0,
 	//! linear descending
-	MMSANIMATIONTHREAD_SEQ_LINEAR_DESC,
+	MMSPULSER_SEQ_LINEAR_DESC,
 	//! logarithmic ascending
-	MMSANIMATIONTHREAD_SEQ_LOG,
+	MMSPULSER_SEQ_LOG,
 	//! logarithmic descending
-	MMSANIMATIONTHREAD_SEQ_LOG_DESC
-} MMSANIMATIONTHREAD_SEQ;
+	MMSPULSER_SEQ_LOG_DESC
+} MMSPULSER_SEQ;
 
 //! This class helps the MMSGUI and user specific applications to get smooth animations.
 /*!
@@ -68,7 +69,7 @@ The initiator can be blocked during the animation (see start(false)). But it is 
 possible that the animation is running in a separate thread (see start(true)).
 \author Jens Schneider
 */
-class MMSAnimationThread : public MMSThread {
+class MMSPulser : public MMSThread {
     private:
     	//! shows if the animation is running
     	bool	animRunning;
@@ -92,7 +93,7 @@ class MMSAnimationThread : public MMSThread {
     	double	max_offset_log;
 
     	//! sequence mode, used in conjunction with max_offset
-    	MMSANIMATIONTHREAD_SEQ	seq_mode;
+    	MMSPULSER_SEQ seq_mode;
 
     	//! sequence range, used in conjunction with max_offset and seq_mode;
     	double	seq_range;
@@ -128,7 +129,7 @@ class MMSAnimationThread : public MMSThread {
     	unsigned int frames;
 
     	//! ring buffer to calculate the CPU average
-    	unsigned int times_buf[MMSANIMATIONTHREAD_TIMES_BUF_SIZE];
+    	unsigned int times_buf[MMSPULSER_TIMES_BUF_SIZE];
 
     	//! next pos in the ring buffer to write to
     	unsigned int times_buf_pos;
@@ -156,10 +157,10 @@ class MMSAnimationThread : public MMSThread {
 
     public:
     	//! The constructor.
-    	MMSAnimationThread();
+    	MMSPulser();
 
     	//! The destructor.
-    	~MMSAnimationThread();
+    	~MMSPulser();
 
         //! Start the animation.
         /*!
@@ -257,7 +258,7 @@ class MMSAnimationThread : public MMSThread {
         you have influence to the return value of getOffset().
         \param max_offset	maximum offset (2..n), default 0 means that no maximum is set
 							if maximum offset is not set (value 0), the seq_mode and seq_range will be ignored
-        \param seq_mode		sequence mode, default is MMSANIMATIONTHREAD_SEQ_LINEAR
+        \param seq_mode		sequence mode, default is MMSPULSER_SEQ_LINEAR
         \param seq_range	the seq_range for the curve calculation (2..max_offset), default 0 is equal to max_offset
         \return true, if parameters are accepted
         \note If your onAnimation callback returns false, the Animation will be stopped at any time.
@@ -265,7 +266,7 @@ class MMSAnimationThread : public MMSThread {
         \note With the parameter seq_range, you can get a flat curve at the end of the animation.
         \see getOffset()
         */
-		bool setMaxOffset(double max_offset = 0, MMSANIMATIONTHREAD_SEQ	seq_mode = MMSANIMATIONTHREAD_SEQ_LINEAR,
+		bool setMaxOffset(double max_offset = 0, MMSPULSER_SEQ	seq_mode = MMSPULSER_SEQ_LINEAR,
 						  double seq_range = 0);
 
 		//! Get the offset of the animation.
@@ -310,16 +311,16 @@ class MMSAnimationThread : public MMSThread {
 
         A callback method must be defined like this:
 
-			bool myclass::mycallbackmethod(MMSAnimationThread *animThread);
+			bool myclass::mycallbackmethod(MMSPulser *pulser);
 
-			\param animThread	is the pointer to the caller (the animation thread)
+			\param pulser	is the pointer to the caller (the pulser thread)
 
 			\return true if the animation should continue, else false if the animation should stop
 
         To connect your callback to onBeforeAnimation do this:
 
             sigc::connection connection;
-            connection = myanimationthread->onBeforeAnimation.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            connection = mypulser->onBeforeAnimation.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
 
         To disconnect your callback do this:
 
@@ -331,7 +332,7 @@ class MMSAnimationThread : public MMSThread {
             Else an abnormal program termination can occur.
             You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
-        sigc::signal<bool, MMSAnimationThread*>::accumulated<bool_accumulator> onBeforeAnimation;
+        sigc::signal<bool, MMSPulser*>::accumulated<bool_accumulator> onBeforeAnimation;
 
         //! Set one or more callbacks for the onAnimation event.
         /*!
@@ -340,16 +341,16 @@ class MMSAnimationThread : public MMSThread {
 
         A callback method must be defined like this:
 
-			bool myclass::mycallbackmethod(MMSAnimationThread *animThread);
+			bool myclass::mycallbackmethod(MMSPulser *pulser);
 
-			\param animThread	is the pointer to the caller (the animation thread)
+			\param pulser	is the pointer to the caller (the pulser thread)
 
 			\return true if the animation should continue, else false if the animation should stop
 
         To connect your callback to onAnimation do this:
 
             sigc::connection connection;
-            connection = myanimationthread->onAnimation.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            connection = mypulser->onAnimation.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
 
         To disconnect your callback do this:
 
@@ -361,7 +362,7 @@ class MMSAnimationThread : public MMSThread {
             Else an abnormal program termination can occur.
             You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
-        sigc::signal<bool, MMSAnimationThread*>::accumulated<bool_accumulator> onAnimation;
+        sigc::signal<bool, MMSPulser*>::accumulated<bool_accumulator> onAnimation;
 
         //! Set one or more callbacks for the onAfterAnimation event.
         /*!
@@ -369,14 +370,14 @@ class MMSAnimationThread : public MMSThread {
 
         A callback method must be defined like this:
 
-			void myclass::mycallbackmethod(MMSAnimationThread *animThread);
+			void myclass::mycallbackmethod(MMSPulser *pulser);
 
-			\param animThread	is the pointer to the caller (the animation thread)
+			\param pulser	is the pointer to the caller (the pulser thread)
 
         To connect your callback to onAfterAnimation do this:
 
             sigc::connection connection;
-            connection = myanimationthread->onAfterAnimation.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+            connection = mypulser->onAfterAnimation.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
 
         To disconnect your callback do this:
 
@@ -388,7 +389,7 @@ class MMSAnimationThread : public MMSThread {
             Else an abnormal program termination can occur.
             You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
         */
-		sigc::signal<void, MMSAnimationThread*> onAfterAnimation;
+		sigc::signal<void, MMSPulser*> onAfterAnimation;
 };
 
-#endif /*MMSANIMATIONTHREAD_H_*/
+#endif /*MMSPULSER_H_*/

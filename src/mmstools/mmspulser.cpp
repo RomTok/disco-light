@@ -30,13 +30,11 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#include "mmsgui/mmsanimationthread.h"
-
+#include "mmstools/mmspulser.h"
+#include "mmstools/tools.h"
 #include <math.h>
 
-
-
-MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
+MMSPulser::MMSPulser() : MMSThread("MMSPulser") {
 	// animation is not running
 	this->animRunning = false;
 
@@ -54,10 +52,10 @@ MMSAnimationThread::MMSAnimationThread() : MMSThread("MMSAnimationThread")  {
 	reset();
 }
 
-MMSAnimationThread::~MMSAnimationThread() {
+MMSPulser::~MMSPulser() {
 }
 
-void MMSAnimationThread::reset() {
+void MMSPulser::reset() {
 	// reset all values
 	this->recalc_requested	= true;
 	this->recalc_cnt		= 0;
@@ -80,13 +78,13 @@ void MMSAnimationThread::reset() {
 
 	// use special seq_modes
 	switch (this->seq_mode) {
-	case MMSANIMATIONTHREAD_SEQ_LINEAR:
-	case MMSANIMATIONTHREAD_SEQ_LOG:
+	case MMSPULSER_SEQ_LINEAR:
+	case MMSPULSER_SEQ_LOG:
 		this->offset = 0;
 		this->offset_curve = this->seq_start;
 		break;
-	case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
-	case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+	case MMSPULSER_SEQ_LINEAR_DESC:
+	case MMSPULSER_SEQ_LOG_DESC:
 		this->offset = this->max_offset;
 		this->offset_curve = this->seq_start;
 		break;
@@ -95,7 +93,7 @@ void MMSAnimationThread::reset() {
 	}
 }
 
-void MMSAnimationThread::threadMain() {
+void MMSPulser::threadMain() {
 	// reset all values
 	reset();
 
@@ -130,13 +128,13 @@ void MMSAnimationThread::threadMain() {
 			end_ts = getMTimeStamp();
 
 			// get process time
-			// we collect up to MMSANIMATIONTHREAD_TIMES_BUF_SIZE times in a ring buffer
+			// we collect up to MMSPULSER_TIMES_BUF_SIZE times in a ring buffer
 			// and calculate the CPU average
 			unsigned int times = 0;
 			unsigned int diff = getMDiff(start_ts, end_ts);
 			this->times_buf[times_buf_pos++] = diff;
-			if (this->times_buf_pos >= MMSANIMATIONTHREAD_TIMES_BUF_SIZE) this->times_buf_pos = 0;
-			if (this->times_buf_cnt < MMSANIMATIONTHREAD_TIMES_BUF_SIZE) this->times_buf_cnt++;
+			if (this->times_buf_pos >= MMSPULSER_TIMES_BUF_SIZE) this->times_buf_pos = 0;
+			if (this->times_buf_cnt < MMSPULSER_TIMES_BUF_SIZE) this->times_buf_cnt++;
 			for (unsigned int i = 0; i < this->times_buf_cnt; i++) times+= this->times_buf[i];
 			this->process_time = (times + diff / 2) / this->times_buf_cnt;
 
@@ -183,12 +181,12 @@ void MMSAnimationThread::threadMain() {
 
 		// increase/decrease offset with step length
 		switch (this->seq_mode) {
-		case MMSANIMATIONTHREAD_SEQ_LINEAR:
-		case MMSANIMATIONTHREAD_SEQ_LOG:
+		case MMSPULSER_SEQ_LINEAR:
+		case MMSPULSER_SEQ_LOG:
 			this->offset+= this->step_len;
 			break;
-		case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
-		case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+		case MMSPULSER_SEQ_LINEAR_DESC:
+		case MMSPULSER_SEQ_LOG_DESC:
 			this->offset-= this->step_len;
 			break;
 		}
@@ -198,25 +196,25 @@ void MMSAnimationThread::threadMain() {
 		if (this->offset > 0) {
 			if (this->max_offset > 0) {
 				switch (this->seq_mode) {
-				case MMSANIMATIONTHREAD_SEQ_LINEAR:
+				case MMSPULSER_SEQ_LINEAR:
 					if (this->seq_start <= 0)
 						this->offset_curve = this->offset;
 					else
 						this->offset_curve = this->seq_start + (this->offset * this->seq_range) / this->max_offset;
 					break;
-				case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
+				case MMSPULSER_SEQ_LINEAR_DESC:
 					if (this->seq_start <= 0)
 						this->offset_curve = this->offset;
 					else
 						this->offset_curve = (this->offset * this->seq_range) / this->max_offset;
 					break;
-				case MMSANIMATIONTHREAD_SEQ_LOG:
+				case MMSPULSER_SEQ_LOG:
 					// check offset, because log(1) is zero
 					if (this->offset == 1) this->offset++;
 					this->offset_curve = this->seq_start
 										+ (this->seq_range) * (log(this->offset) / this->max_offset_log);
 					break;
-				case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+				case MMSPULSER_SEQ_LOG_DESC:
 					// check offset, because log(1) is zero
 					if (this->max_offset - this->offset == 1) this->offset--;
 					this->offset_curve = this->seq_start
@@ -229,8 +227,8 @@ void MMSAnimationThread::threadMain() {
     	// stop the animation?
     	bool stop = false;
     	if (this->max_offset > 0) {
-    		if   ((this->seq_mode == MMSANIMATIONTHREAD_SEQ_LINEAR)
-    			||(this->seq_mode == MMSANIMATIONTHREAD_SEQ_LOG)) {
+    		if   ((this->seq_mode == MMSPULSER_SEQ_LINEAR)
+    			||(this->seq_mode == MMSPULSER_SEQ_LOG)) {
     			// ascending modes
 				if (this->offset_curve > 0) {
 					if (this->offset_curve >= this->max_offset) {
@@ -274,7 +272,7 @@ void MMSAnimationThread::threadMain() {
     this->onAfterAnimation.emit(this);
 }
 
-void MMSAnimationThread::start(bool separate_thread) {
+void MMSPulser::start(bool separate_thread) {
 	if (!isRunning()) {
 		if (separate_thread) {
 			// start animation in a separate thread context
@@ -289,7 +287,7 @@ void MMSAnimationThread::start(bool separate_thread) {
 	}
 }
 
-bool MMSAnimationThread::isRunning() {
+bool MMSPulser::isRunning() {
 	if (MMSThread::isRunning()) {
 		// separate thread is running
 		return true;
@@ -300,7 +298,7 @@ bool MMSAnimationThread::isRunning() {
 	}
 }
 
-bool MMSAnimationThread::setStepsPerSecond(int steps_per_second) {
+bool MMSPulser::setStepsPerSecond(int steps_per_second) {
 	// check & set
 	if (steps_per_second <= 0) return false;
 	if (steps_per_second > 255) return false;
@@ -313,11 +311,11 @@ bool MMSAnimationThread::setStepsPerSecond(int steps_per_second) {
 	return true;
 }
 
-int MMSAnimationThread::getStepsPerSecond() {
+int MMSPulser::getStepsPerSecond() {
 	return this->steps_per_second;
 }
 
-bool MMSAnimationThread::setMaxCPUUsage(int max_cpu_usage) {
+bool MMSPulser::setMaxCPUUsage(int max_cpu_usage) {
 	// check & set
 	if (max_cpu_usage < 10) return false;
 	if (max_cpu_usage > 100) return false;
@@ -330,11 +328,11 @@ bool MMSAnimationThread::setMaxCPUUsage(int max_cpu_usage) {
 	return true;
 }
 
-int MMSAnimationThread::getMaxCPUUsage() {
+int MMSPulser::getMaxCPUUsage() {
 	return this->max_cpu_usage;
 }
 
-bool MMSAnimationThread::setMaxFrameRate(int max_frame_rate) {
+bool MMSPulser::setMaxFrameRate(int max_frame_rate) {
 	// check & set
 	if (max_frame_rate < 10) return false;
 	if (max_frame_rate > 100) return false;
@@ -347,27 +345,27 @@ bool MMSAnimationThread::setMaxFrameRate(int max_frame_rate) {
 	return true;
 }
 
-int MMSAnimationThread::getMaxFrameRate() {
+int MMSPulser::getMaxFrameRate() {
 	return this->max_frame_rate;
 }
 
-int MMSAnimationThread::getFrameRate() {
+int MMSPulser::getFrameRate() {
 	return this->frame_rate;
 }
 
-int MMSAnimationThread::getFrameDelay() {
+int MMSPulser::getFrameDelay() {
 	return this->frame_delay;
 }
 
-unsigned int MMSAnimationThread::getFrames() {
+unsigned int MMSPulser::getFrames() {
 	return this->frames;
 }
 
-int MMSAnimationThread::getStepLength() {
+int MMSPulser::getStepLength() {
 	return this->step_len;
 }
 
-bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	seq_mode, double seq_range) {
+bool MMSPulser::setMaxOffset(double max_offset, MMSPULSER_SEQ seq_mode, double seq_range) {
 	// check & set
 	if ((max_offset < 2)&&(max_offset != 0)) return false;
 	if ((seq_range < 2)&&(seq_range != 0)) return false;
@@ -380,13 +378,13 @@ bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	
 	if (this->seq_range <= 0) {
 		// full, default
 		switch (this->seq_mode) {
-		case MMSANIMATIONTHREAD_SEQ_LINEAR:
-		case MMSANIMATIONTHREAD_SEQ_LOG:
+		case MMSPULSER_SEQ_LINEAR:
+		case MMSPULSER_SEQ_LOG:
 			this->seq_start = 0;
 			this->seq_range = this->max_offset;
 			break;
-		case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
-		case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+		case MMSPULSER_SEQ_LINEAR_DESC:
+		case MMSPULSER_SEQ_LOG_DESC:
 			this->seq_start = this->max_offset;
 			this->seq_range = this->max_offset;
 			break;
@@ -395,12 +393,12 @@ bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	
 	else {
 		// sequence should be only a little part of the max_offset range
 		switch (this->seq_mode) {
-		case MMSANIMATIONTHREAD_SEQ_LINEAR:
-		case MMSANIMATIONTHREAD_SEQ_LOG:
+		case MMSPULSER_SEQ_LINEAR:
+		case MMSPULSER_SEQ_LOG:
 			this->seq_start = this->max_offset - this->seq_range;
 			break;
-		case MMSANIMATIONTHREAD_SEQ_LINEAR_DESC:
-		case MMSANIMATIONTHREAD_SEQ_LOG_DESC:
+		case MMSPULSER_SEQ_LINEAR_DESC:
+		case MMSPULSER_SEQ_LOG_DESC:
 			this->seq_start = this->seq_range;
 			break;
 		}
@@ -417,7 +415,7 @@ bool MMSAnimationThread::setMaxOffset(double max_offset, MMSANIMATIONTHREAD_SEQ	
 	return true;
 }
 
-double MMSAnimationThread::getOffset() {
+double MMSPulser::getOffset() {
 	if (this->offset_curve > 0) {
 		return this->offset_curve;
 	}
@@ -426,15 +424,15 @@ double MMSAnimationThread::getOffset() {
 	}
 }
 
-bool MMSAnimationThread::setDuration(unsigned int duration) {
+bool MMSPulser::setDuration(unsigned int duration) {
 	this->duration = duration;
 	return true;
 }
 
-unsigned int MMSAnimationThread::getDuration() {
+unsigned int MMSPulser::getDuration() {
 	return this->duration;
 }
 
-unsigned int MMSAnimationThread::getRealDuration() {
+unsigned int MMSPulser::getRealDuration() {
 	return this->real_duration;
 }
