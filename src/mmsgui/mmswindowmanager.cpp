@@ -47,8 +47,8 @@ MMSWindowManager::MMSWindowManager(MMSFBRectangle vrect) {
     this->onThemeChanged_connection = this->themeManager.onThemeChanged.connect(sigc::mem_fun(this, &MMSWindowManager::onThemeChanged));
 
     // add animation callbacks
-    this->onAnimation_connection = this->animThread.onAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAnimation));
-    this->onAfterAnimation_connection = this->animThread.onAfterAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAfterAnimation));
+    this->onAnimation_connection = this->pulser.onAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAnimation));
+    this->onAfterAnimation_connection = this->pulser.onAfterAnimation.connect(sigc::mem_fun(this, &MMSWindowManager::onAfterAnimation));
 }
 
 MMSWindowManager::~MMSWindowManager() {
@@ -326,9 +326,9 @@ MMSThemeManager *MMSWindowManager::getThemeManager() {
 	return &this->themeManager;
 }
 
-bool MMSWindowManager::onAnimation(MMSAnimationThread *animThread) {
+bool MMSWindowManager::onAnimation(MMSPulser *pulser) {
 	// get new opacity
-	int opacity = 255 - animThread->getOffset();
+	int opacity = 255 - pulser->getOffset();
 
 	// animation finished?
 	if (opacity <= 0) {
@@ -342,7 +342,7 @@ bool MMSWindowManager::onAnimation(MMSAnimationThread *animThread) {
 	return true;
 }
 
-void MMSWindowManager::onAfterAnimation(MMSAnimationThread *animThread) {
+void MMSWindowManager::onAfterAnimation(MMSPulser *pulser) {
 	// animation finished
 	if (this->anim_saved_screen) {
 		// delete the temporary window
@@ -387,8 +387,8 @@ void MMSWindowManager::onThemeChanged(string themeName, bool fade_in) {
 
     if (this->anim_saved_screen) {
     	// do the animation
-    	this->animThread.setStepsPerSecond(255);
-    	this->animThread.start(false);
+    	this->pulser.setStepsPerSecond(255);
+    	this->pulser.start(false);
     }
 }
 

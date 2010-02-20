@@ -36,7 +36,6 @@
 #include "mmstools/mmslogger.h"
 #include "mmsgui/theme/mmstheme.h"
 #include "mmsgui/mmsguitools.h"
-#include "mmsgui/mmsanimationthread.h"
 
 // support old renamed methods
 #define searchForWidget 	findWidget
