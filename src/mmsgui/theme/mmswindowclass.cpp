@@ -60,6 +60,7 @@ MMSWindowClass::MMSWindowClass() {
     initMoveOut();
     initModal();
     initStaticZOrder();
+    initAlwaysOnTop();
 }
 
 MMSWindowClass::~MMSWindowClass() {
@@ -89,6 +90,7 @@ MMSWindowClass::~MMSWindowClass() {
     freeMoveOut();
     freeModal();
     freeStaticZOrder();
+    freeAlwaysOnTop();
 }
 
 MMSWindowClass &MMSWindowClass::operator=(const MMSWindowClass &c) {
@@ -158,6 +160,7 @@ void MMSWindowClass::unsetAll() {
     unsetMoveOut();
     unsetModal();
     unsetStaticZOrder();
+    unsetAlwaysOnTop();
 }
 
 void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, bool reset_paths) {
@@ -285,6 +288,9 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, boo
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_static_zorder:
             setStaticZOrder((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_always_on_top:
+            setAlwaysOnTop((attrval_int) ? true : false);
             break;
 		}
 	}
@@ -921,5 +927,29 @@ void MMSWindowClass::setStaticZOrder(bool staticzorder) {
 
 bool MMSWindowClass::getStaticZOrder(bool &staticzorder) {
 	MMSTHEMECLASS_GET_BASIC(staticzorder);
+}
+
+void MMSWindowClass::initAlwaysOnTop() {
+	MMSTHEMECLASS_INIT_BASIC(alwaysontop);
+}
+
+void MMSWindowClass::freeAlwaysOnTop() {
+	MMSTHEMECLASS_FREE_BASIC(alwaysontop);
+}
+
+bool MMSWindowClass::isAlwaysOnTop() {
+	MMSTHEMECLASS_ISSET(alwaysontop);
+}
+
+void MMSWindowClass::unsetAlwaysOnTop() {
+	MMSTHEMECLASS_UNSET(alwaysontop);
+}
+
+void MMSWindowClass::setAlwaysOnTop(bool alwaysontop) {
+	MMSTHEMECLASS_SET_BASIC(alwaysontop);
+}
+
+bool MMSWindowClass::getAlwaysOnTop(bool &alwaysontop) {
+	MMSTHEMECLASS_GET_BASIC(alwaysontop);
 }
 

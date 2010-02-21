@@ -335,6 +335,10 @@ class MMSWindow {
         int					stretchDown;
 
 
+        //! index in childwins vector for the first window with the always on top flag
+        unsigned int        always_on_top_index;
+
+
         //! Internal method: Creates the window.
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
         		    bool *own_surface);
@@ -1161,6 +1165,13 @@ class MMSWindow {
         */
         bool getStaticZOrder(bool &staticzorder);
 
+    	//! Detect if the window will be permanently displayed at the top of the window stack.
+        /*!
+        \param alwaysontop	returns the always on top flag
+        \return true, if value is successfully returned
+        */
+        bool getAlwaysOnTop(bool &alwaysontop);
+
 
         //! Get the color of the window border.
         /*!
@@ -1422,6 +1433,12 @@ class MMSWindow {
         \param staticzorder	if true, the window automatically changes the zorder of child window during show() / setFocus()
         */
         void setStaticZOrder(bool staticzorder);
+
+        //! Set the always on top flag of the window.
+        /*!
+        \param alwaysontop	if true, the window will be permanently displayed at the top of the window stack
+        */
+        void setAlwaysOnTop(bool alwaysontop);
 
         //! Set the color of the window border.
         /*!

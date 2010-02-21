@@ -114,6 +114,8 @@ MMSWindow::MMSWindow() {
     this->stretchRight = 0;
     this->stretchDown = 0;
 
+    this->always_on_top_index = 0;
+
     // initialize the callbacks
     onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
     onAfterShow         = new sigc::signal<void, MMSWindow*, bool>;
@@ -848,11 +850,7 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
         return false;
 
-//printf("add child window %s, %x, %d\n", childwin->name.c_str(), childwin, this->childwins.size());
-
-    /* per default childwins are not focused */
-//    childwin->focused = false;
-
+    // per default childwins are not focused
     CHILDWINS cw;
     cw.window = childwin;
     cw.region.x1 = childwin->geom.x;
@@ -863,15 +861,20 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     cw.oldopacity = 0;
     cw.focusedWidget = 0;
 
-//printf("%x->childwins.push_back %x\n", this, cw.window);
-//printf("  %s->childwins.push_back %s\n", this->name.c_str(), cw.window->name.c_str());
-
+    // insert child window into stack
     lock();
-    this->childwins.push_back(cw);
+	bool aot = false;
+	childwin->getAlwaysOnTop(aot);
+	if (!aot) {
+		// normal stack position, insert window before windows with "always on top" flag
+		this->childwins.insert(this->childwins.begin() + this->always_on_top_index, cw);
+		this->always_on_top_index++;
+	}
+	else {
+		// window with "always on top" flag, add it to the end of list
+		this->childwins.push_back(cw);
+	}
     unlock();
-
-//printf("%x->childwins.push_back %x   <<\n", this, cw.window);
-//printf("  %s->childwins.push_back %s   <<<\n", this->name.c_str(), cw.window->name.c_str());
 
     return true;
 }
@@ -882,11 +885,23 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
     if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
         return false;
 
-    for (unsigned int i = 0; i < this->childwins.size(); i++)
+    // remove child window from stack
+    lock();
+    for (unsigned int i = 0; i < this->childwins.size(); i++) {
     	if (childwins.at(i).window == childwin) {
+    		// remove window from stack
             this->childwins.erase(this->childwins.begin()+i);
+    		bool aot = false;
+    		childwin->getAlwaysOnTop(aot);
+    		if (!aot) {
+    			// normal stack position, decrease the index for "always on top" windows
+    			this->always_on_top_index--;
+    		}
+            unlock();
     		return true;
     	}
+    }
+    unlock();
 
     return false;
 }
@@ -896,23 +911,18 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
     if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
         return false;
 
-    for (unsigned int i = 0; i < this->childwins.size(); i++)
+    // find child window and set the opacity
+	lock();
+    for (unsigned int i = 0; i < this->childwins.size(); i++) {
         if (this->childwins.at(i).window == childwin) {
-
-//PUP            flipLock.lock();
-        	lock();
-
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
             this->childwins.at(i).opacity = opacity;
-
             flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
-
-//PUP			flipLock.unlock();
             unlock();
-
-
             return true;
         }
+    }
+    unlock();
 
     return false;
 }
@@ -922,7 +932,8 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
     if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
         return false;
 
-    for (unsigned int i = 0; i < this->childwins.size(); i++)
+	lock();
+    for (unsigned int i = 0; i < this->childwins.size(); i++) {
         if (this->childwins.at(i).window == childwin) {
             // get old region
             MMSFBRegion *currregion = &this->childwins.at(i).region;
@@ -966,8 +977,10 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                     childwin->childwins.at(j).window->resize(false);
 
                 // recursive calls should stop here
-                if (!refresh)
+                if (!refresh) {
+                    unlock();
                     return true;
+                }
 
                 // draw at new pos
                 flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, false);
@@ -1033,9 +1046,12 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
                 }
             }
 
+            unlock();
             return true;
         }
+    }
 
+    unlock();
     return false;
 }
 
@@ -1791,110 +1807,177 @@ void MMSWindow::showBufferedShown() {
 	}
 }
 
-//////////////////
 
 
 bool MMSWindow::raiseToTop(int zlevel) {
-//printf("ZZZ: raisetotop %s\n", name.c_str());
     if (!this->parent) {
-        // normal parent window
-        // set the window to top
-        if (this->window)
+        // normal parent window, set the window to top
+        if (this->window) {
             return this->window->raiseToTop(zlevel);
+        }
+        return false;
     }
-    else {
-    	// child window
-    	// change the childwins vector
-    	lock();
-        for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
-        	if (this->parent->childwins.at(i).window == this) {
-        		// child window found, move it to the end of the vector
-        		if (i + 1 < this->parent->childwins.size()) {
-        			// not at the end, moving it
-        			CHILDWINS cw = this->parent->childwins.at(i);
-					this->parent->childwins.erase(this->parent->childwins.begin()+i);
-					this->parent->childwins.push_back(cw);
-//printf("ZZZ: raisetotop2 0=%s 1=%s\n", this->parent->childwins.at(0).window->name.c_str(), this->parent->childwins.at(1).window->name.c_str());
 
-//printf("QQQQQQQ1>>>>>>>>>>>>>>>>>>>>>>>>>>> %d, %d\n", this->parent->focusedChildWin, i);
-					if (this->parent->focusedChildWin > i) {
-						// the focused window will not be changed here!!!
-						this->parent->focusedChildWin--;
-//printf("QQQQQQQ2>>>>>>>>>>>>>>>>>>>>>>>>>>> %d\n", this->parent->focusedChildWin);
+    // child window, change the childwins vector
+	lock();
+	for (unsigned int i = 0; i < this->parent->childwins.size(); i++) {
+		if (this->parent->childwins.at(i).window == this) {
+			// child window found, move it to the end of the vector
+			if (i + 1 < this->parent->childwins.size()) {
+				// not at the end, moving it
+				CHILDWINS cw = this->parent->childwins.at(i);
+				this->parent->childwins.erase(this->parent->childwins.begin()+i);
+				bool aot = false;
+				this->getAlwaysOnTop(aot);
+				if (!aot) {
+					// normal stack position, move window before windows with "always on top" flag
+					this->parent->childwins.insert(this->parent->childwins.begin() + this->parent->always_on_top_index - 1, cw);
+
+					if (i < this->parent->always_on_top_index) {
+						// window is already in the "normal" area
+						if (this->parent->focusedChildWin == i) {
+							// focused child window is raised
+							this->parent->focusedChildWin = this->parent->always_on_top_index - 1;
+						}
+						else {
+							if (this->parent->focusedChildWin < this->parent->always_on_top_index) {
+								if (this->parent->focusedChildWin > i) {
+									// the focused window will not be changed here!!!
+									this->parent->focusedChildWin--;
+								}
+							}
+						}
+					}
+					else {
+						// window is switched to "normal" area
+						this->parent->always_on_top_index++;
+						if (this->parent->focusedChildWin == i) {
+							// focused child window is raised
+							this->parent->focusedChildWin = this->parent->always_on_top_index - 1;
+						}
+						else {
+							if (this->parent->focusedChildWin >= this->parent->always_on_top_index) {
+								if (this->parent->focusedChildWin < i) {
+									// the focused window will not be changed here!!!
+									this->parent->focusedChildWin++;
+								}
+							}
+						}
 					}
 
-					// the toplevel child window
+					// index to the child window
+					i = this->parent->always_on_top_index - 1;
+				}
+				else {
+					// window with "always on top" flag, move it to the end of list
+					this->parent->childwins.push_back(cw);
+
+					if (i >= this->parent->always_on_top_index) {
+						// window is already in the "always on top" area
+						if (this->parent->focusedChildWin == i) {
+							// focused child window is raised
+							this->parent->focusedChildWin = this->parent->childwins.size() - 1;
+						}
+						else {
+							if (this->parent->focusedChildWin > i) {
+								// the focused window will not be changed here!!!
+								this->parent->focusedChildWin--;
+							}
+						}
+					}
+					else {
+						// window is switched to "always on top" area
+						this->parent->always_on_top_index--;
+						if (this->parent->focusedChildWin == i) {
+							// focused child window is raised
+							this->parent->focusedChildWin = this->parent->childwins.size() - 1;
+						}
+						else {
+							if (this->parent->focusedChildWin > i) {
+								// the focused window will not be changed here!!!
+								this->parent->focusedChildWin--;
+							}
+						}
+					}
+
+					// index to the child window
 					i = this->parent->childwins.size() - 1;
-
-					// redraw the window stack if child window and parent is shown
-					if ((this->parent->childwins.at(i).window->shown)&&(this->parent->shown)) {
-						this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
-	      			}
-
-        		}
-
-/*
-        		// change the focused child win if window is shown or will be shown
-        		if (this->parent->childwins.at(i).window->shown) {// || this->parent->childwins.at(i).window->willshow) {
-printf("ZZZ: raisetotop3 0=%s 1=%s\n", this->parent->childwins.at(0).window->name.c_str(), this->parent->childwins.at(1).window->name.c_str());
-
-//this->parent->focusedChildWin = 1;
-//this->parent->childwins.at(i).window->setFocus();
-//this->setFocus();
-
-					this->parent->focusedChildWin = i;
-        		}
+				}
 
 				// redraw the window stack if child window and parent is shown
 				if ((this->parent->childwins.at(i).window->shown)&&(this->parent->shown)) {
 					this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
-      			}
-*/
-                unlock();
-        		return true;
-        	}
-        unlock();
-    }
+				}
+
+			}
+
+			unlock();
+			return true;
+		}
+	}
+	unlock();
     return false;
 }
 
 bool MMSWindow::lowerToBottom() {
     if (!this->parent) {
-        // normal parent window
-		// set the window to bottom
-		if (this->window)
+        // normal parent window, set the window to bottom
+		if (this->window) {
 			return this->window->lowerToBottom();
+		}
+		return false;
     }
-    else {
-    	// child window
-    	// change the childwins vector
-    	lock();
-        for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
-        	if (this->parent->childwins.at(i).window == this) {
-        		// child window found, move it to the begin of the vector
-        		if (i > 0) {
-					CHILDWINS cw = this->parent->childwins.at(i);
-					this->parent->childwins.erase(this->parent->childwins.begin()+i);
+
+    // child window, change the childwins vector
+	lock();
+	for (unsigned int i = 0; i < this->parent->childwins.size(); i++) {
+		if (this->parent->childwins.at(i).window == this) {
+			// child window found, move it to the beginning of the vector
+			if (i > 0) {
+				// not at the beginning, moving it
+				CHILDWINS cw = this->parent->childwins.at(i);
+				this->parent->childwins.erase(this->parent->childwins.begin()+i);
+
+				bool aot = false;
+				this->getAlwaysOnTop(aot);
+				if (!aot) {
+					// normal stack position, move window to the beginning of the list
 					this->parent->childwins.insert(this->parent->childwins.begin(), cw);
-        		}
 
-        		// change the focused child win pointer
-                for (int j = (int)this->parent->childwins.size()-1; j >= 0 ; j--)
-                	if (this->parent->childwins.at(j).window->shown) {
-						this->parent->focusedChildWin = j;
-						break;
-                	}
+					if (this->parent->focusedChildWin < i) {
+						// the focused window will not be changed here!!!
+						this->parent->focusedChildWin++;
+					}
 
-        		// redraw the window stack if parent is shown
-        		if (this->parent->shown)
-        			if (this->parent->childwins.at(0).window->shown)
-        				this->parent->flipWindow(this->parent->childwins.at(0).window, NULL, MMSFB_FLIP_NONE, false, true);
+					// index to the child window
+					i = 0;
+				}
+				else {
+					// window with "always on top" flag, move window before all windows with "always on top" flag
+					this->parent->childwins.insert(this->parent->childwins.begin() + this->parent->always_on_top_index, cw);
 
-        		unlock();
-        		return true;
-        	}
-        unlock();
-    }
+					if (this->parent->focusedChildWin >= this->parent->always_on_top_index) {
+						if (this->parent->focusedChildWin < i) {
+							// the focused window will not be changed here!!!
+							this->parent->focusedChildWin++;
+						}
+					}
+
+					// index to the child window
+					i = this->parent->always_on_top_index;
+				}
+
+				// redraw the window stack if child window and parent is shown
+				if ((this->parent->childwins.at(i).window->shown)&&(this->parent->shown)) {
+					this->parent->flipWindow(this->parent->childwins.at(i).window, NULL, MMSFB_FLIP_NONE, false, true);
+				}
+			}
+
+			unlock();
+			return true;
+		}
+	}
+	unlock();
     return false;
 }
 
@@ -4444,6 +4527,10 @@ bool MMSWindow::getStaticZOrder(bool &staticzorder) {
     GETWINDOW(StaticZOrder, staticzorder);
 }
 
+bool MMSWindow::getAlwaysOnTop(bool &alwaysontop) {
+    GETWINDOW(AlwaysOnTop, alwaysontop);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -4676,6 +4763,25 @@ void MMSWindow::setStaticZOrder(bool staticzorder) {
     myWindowClass.setStaticZOrder(staticzorder);
 }
 
+void MMSWindow::setAlwaysOnTop(bool alwaysontop) {
+	// get current status
+	bool aot = false;
+	this->getAlwaysOnTop(aot);
+
+	// status change?
+	if (aot == alwaysontop)
+		return;
+
+	// set value
+	lock();
+    myWindowClass.setAlwaysOnTop(alwaysontop);
+
+    // raise the window to the top of "normal" or "always on top" area in the childwins list
+    raiseToTop();
+
+	unlock();
+}
+
 
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
@@ -4799,6 +4905,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setModal(b);
 	if (themeClass->getStaticZOrder(b))
         setStaticZOrder(b);
+	if (themeClass->getAlwaysOnTop(b))
+        setAlwaysOnTop(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))
