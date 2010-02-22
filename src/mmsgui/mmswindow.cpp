@@ -1982,6 +1982,8 @@ bool MMSWindow::lowerToBottom() {
 }
 
 bool MMSWindow::moveTo(int x, int y) {
+	x&= ~0x01;
+	y&= ~0x01;
 	if (!this->parent) {
 		bool os;
 		getOwnSurface(os);
