@@ -316,22 +316,22 @@ class MMSWindow {
 
         //! stretch the window to X percent of the window WIDTH to the left side
         //! the value is valid, if window is in stretch mode
-        //! a value of 100 means 100% (normal blit() will be used)
+        //! a value of 25600 means 100% (normal blit() will be used)
         int					stretchLeft;
 
         //! stretch the window to X percent of the window HEIGHT to the up side
         //! the value is valid, if window is in stretch mode
-        //! a value of 100 means 100% (normal blit() will be used)
+        //! a value of 25600 means 100% (normal blit() will be used)
         int					stretchUp;
 
         //! stretch the window to X percent of the window WIDTH to the right side
         //! the value is valid, if window is in stretch mode
-        //! a value of 100 means 100% (normal blit() will be used)
+        //! a value of 25600 means 100% (normal blit() will be used)
         int					stretchRight;
 
         //! stretch the window to X percent of the window HEIGHT to the down side
         //! the value is valid, if window is in stretch mode
-        //! a value of 100 means 100% (normal blit() will be used)
+        //! a value of 25600 means 100% (normal blit() will be used)
         int					stretchDown;
 
 
@@ -764,7 +764,7 @@ class MMSWindow {
         \note This function was implemented to get cool effects. If you display windows permanently in
               stretch mode the performance will be drastically decreased.
         */
-        bool stretch(int left = 100, int up = 100, int right = 100, int down = 100);
+        bool stretch(double left = 100, double up = 100, double right = 100, double down = 100);
 
 
 

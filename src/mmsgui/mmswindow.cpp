@@ -55,16 +55,16 @@ MMSFBWindow *MMSWindow::fullscreen_main_window			= NULL;
 int			MMSWindow::fullscreen_main_window_use_count	= 0;
 
 // helper macros for horizontal stretchmode
-#define MMSFBWINDOW_CALC_STRETCH_W(w)				((w->stretchLeft-100)+(w->stretchRight-100)+100)
-#define MMSFBWINDOW_CALC_STRETCH_LEFT(x,w) 			((w->stretchLeft!=100)?(((x)*w->stretchLeft*100+50)/10000):(x))
-#define MMSFBWINDOW_CALC_STRETCH_WIDTH(x,w) 		((MMSFBWINDOW_CALC_STRETCH_W(w)!=100)?(((x)*MMSFBWINDOW_CALC_STRETCH_W(w)*100+50)/10000):(x))
-#define MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(x,w) 	((MMSFBWINDOW_CALC_STRETCH_W(w)!=100)?(((x)*100+50)/MMSFBWINDOW_CALC_STRETCH_W(w)):(x))
+#define MMSFBWINDOW_CALC_STRETCH_W(w)				((w->stretchLeft-25600)+(w->stretchRight-25600)+25600)
+#define MMSFBWINDOW_CALC_STRETCH_LEFT(x,w) 			((w->stretchLeft!=25600)?((((x)*w->stretchLeft*100+12800)/2560000)&~0x01):(x))
+#define MMSFBWINDOW_CALC_STRETCH_WIDTH(x,w) 		((MMSFBWINDOW_CALC_STRETCH_W(w)!=25600)?((((x)*MMSFBWINDOW_CALC_STRETCH_W(w)*100+12800)/2560000)&~0x01):(x))
+#define MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(x,w) 	((MMSFBWINDOW_CALC_STRETCH_W(w)!=25600)?((((x)*25600+12800)/MMSFBWINDOW_CALC_STRETCH_W(w))&~0x01):(x))
 
 // helper macros for vertical stretchmode
-#define MMSFBWINDOW_CALC_STRETCH_H(w)				((w->stretchUp-100)+(w->stretchDown-100)+100)
-#define MMSFBWINDOW_CALC_STRETCH_UP(x,w) 			((w->stretchUp!=100)?(((x)*w->stretchUp*100+50)/10000):(x))
-#define MMSFBWINDOW_CALC_STRETCH_HEIGHT(x,w) 		((MMSFBWINDOW_CALC_STRETCH_H(w)!=100)?(((x)*MMSFBWINDOW_CALC_STRETCH_H(w)*100+50)/10000):(x))
-#define MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(x,w)	((MMSFBWINDOW_CALC_STRETCH_H(w)!=100)?(((x)*100+50)/MMSFBWINDOW_CALC_STRETCH_H(w)):(x))
+#define MMSFBWINDOW_CALC_STRETCH_H(w)				((w->stretchUp-25600)+(w->stretchDown-25600)+25600)
+#define MMSFBWINDOW_CALC_STRETCH_UP(x,w) 			((w->stretchUp!=25600)?((((x)*w->stretchUp*100+12800)/2560000)&~0x01):(x))
+#define MMSFBWINDOW_CALC_STRETCH_HEIGHT(x,w) 		((MMSFBWINDOW_CALC_STRETCH_H(w)!=25600)?((((x)*MMSFBWINDOW_CALC_STRETCH_H(w)*100+12800)/2560000)&~0x01):(x))
+#define MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(x,w)	((MMSFBWINDOW_CALC_STRETCH_H(w)!=25600)?((((x)*25600+12800)/MMSFBWINDOW_CALC_STRETCH_H(w))&~0x01):(x))
 
 
 MMSWindow::MMSWindow() {
@@ -2026,7 +2026,7 @@ bool MMSWindow::moveTo(int x, int y) {
 }
 
 
-bool MMSWindow::stretch(int left, int up, int right, int down) {
+bool MMSWindow::stretch(double left, double up, double right, double down) {
 	bool ret = true;
 
 	// TODO: currently we work for child windows only
@@ -2034,10 +2034,10 @@ bool MMSWindow::stretch(int left, int up, int right, int down) {
 
 	// reset stretch mode
 	this->stretchmode = false;
-	this->stretchLeft = left;
-	this->stretchUp = up;
-	this->stretchRight = right;
-	this->stretchDown = down;
+	this->stretchLeft = (int)(left * 256);
+	this->stretchUp   = (int)(up * 256);
+	this->stretchRight= (int)(right * 256);
+	this->stretchDown = (int)(down * 256);
 
 	if ((left != 100)||(right != 100)||(up != 100)||(down != 100)) {
 		if ((((left-100)+(right-100)+100) > 0) && (((up-100)+(down-100)+100) > 0)) {
