@@ -61,6 +61,7 @@ MMSWindowClass::MMSWindowClass() {
     initModal();
     initStaticZOrder();
     initAlwaysOnTop();
+    initFocusable();
 }
 
 MMSWindowClass::~MMSWindowClass() {
@@ -91,6 +92,7 @@ MMSWindowClass::~MMSWindowClass() {
     freeModal();
     freeStaticZOrder();
     freeAlwaysOnTop();
+    freeFocusable();
 }
 
 MMSWindowClass &MMSWindowClass::operator=(const MMSWindowClass &c) {
@@ -161,6 +163,7 @@ void MMSWindowClass::unsetAll() {
     unsetModal();
     unsetStaticZOrder();
     unsetAlwaysOnTop();
+    unsetFocusable();
 }
 
 void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, bool reset_paths) {
@@ -291,6 +294,9 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, boo
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_always_on_top:
             setAlwaysOnTop((attrval_int) ? true : false);
+            break;
+		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_focusable:
+            setFocusable((attrval_int) ? true : false);
             break;
 		}
 	}
@@ -951,5 +957,29 @@ void MMSWindowClass::setAlwaysOnTop(bool alwaysontop) {
 
 bool MMSWindowClass::getAlwaysOnTop(bool &alwaysontop) {
 	MMSTHEMECLASS_GET_BASIC(alwaysontop);
+}
+
+void MMSWindowClass::initFocusable() {
+	MMSTHEMECLASS_INIT_BASIC(focusable);
+}
+
+void MMSWindowClass::freeFocusable() {
+	MMSTHEMECLASS_FREE_BASIC(focusable);
+}
+
+bool MMSWindowClass::isFocusable() {
+	MMSTHEMECLASS_ISSET(focusable);
+}
+
+void MMSWindowClass::unsetFocusable() {
+	MMSTHEMECLASS_UNSET(focusable);
+}
+
+void MMSWindowClass::setFocusable(bool focusable) {
+	MMSTHEMECLASS_SET_BASIC(focusable);
+}
+
+bool MMSWindowClass::getFocusable(bool &focusable) {
+	MMSTHEMECLASS_GET_BASIC(focusable);
 }
 

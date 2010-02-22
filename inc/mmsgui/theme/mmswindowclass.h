@@ -70,7 +70,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		{ "moveout", TAFF_ATTRTYPE_STRING }, \
 		{ "modal", TAFF_ATTRTYPE_BOOL }, \
 		{ "static_zorder", TAFF_ATTRTYPE_BOOL }, \
-		{ "always_on_top", TAFF_ATTRTYPE_BOOL }
+		{ "always_on_top", TAFF_ATTRTYPE_BOOL }, \
+		{ "focusable", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WINDOW_ATTR_IDS \
 		MMSGUI_WINDOW_ATTR_IDS_alignment, \
@@ -104,7 +105,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		MMSGUI_WINDOW_ATTR_IDS_moveout, \
 		MMSGUI_WINDOW_ATTR_IDS_modal, \
 		MMSGUI_WINDOW_ATTR_IDS_static_zorder, \
-		MMSGUI_WINDOW_ATTR_IDS_always_on_top
+		MMSGUI_WINDOW_ATTR_IDS_always_on_top, \
+		MMSGUI_WINDOW_ATTR_IDS_focusable
 
 	typedef enum {
 		MMSGUI_BASE_ATTR_IDS,
@@ -169,6 +171,12 @@ class MMSWindowClass {
 
 	        //! if true, the window will be permanently displayed at the top of the window stack
 	        bool		alwaysontop;
+
+	        //! is focusable flag set?
+	        bool		isfocusable;
+
+	        //! window can get the focus true/false
+	        bool		focusable;
     	} id;
 
         struct {
@@ -216,6 +224,7 @@ class MMSWindowClass {
         void initModal();
         void initStaticZOrder();
         void initAlwaysOnTop();
+        void initFocusable();
 
     	/* free routines */
         void freeAlignment();
@@ -245,6 +254,7 @@ class MMSWindowClass {
         void freeModal();
         void freeStaticZOrder();
         void freeAlwaysOnTop();
+        void freeFocusable();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -529,7 +539,12 @@ class MMSWindowClass {
         void setAlwaysOnTop(bool alwaysontop);
         bool getAlwaysOnTop(bool &alwaysontop);
 
-    /* friends */
+        bool isFocusable();
+        void unsetFocusable();
+        void setFocusable(bool focusable);
+        bool getFocusable(bool &focusable);
+
+    // friends
     friend class MMSThemeManager;
     friend class MMSDialogManager;
 };

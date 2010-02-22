@@ -83,7 +83,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 13, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 14, mmsgui_taff_tagtable };
 
 
 
@@ -451,6 +451,7 @@ MMSTheme::MMSTheme() {
         this->mainWindowClass.windowClass.setModal(false);
         this->mainWindowClass.windowClass.setStaticZOrder(false);
         this->mainWindowClass.windowClass.setAlwaysOnTop(false);
+        this->mainWindowClass.windowClass.setFocusable(true);
 
         /* base window border settings */
         this->mainWindowClass.windowClass.border.setColor(color);
@@ -494,6 +495,7 @@ MMSTheme::MMSTheme() {
         this->popupWindowClass.windowClass.setModal(false);
         this->popupWindowClass.windowClass.setStaticZOrder(false);
         this->popupWindowClass.windowClass.setAlwaysOnTop(false);
+        this->popupWindowClass.windowClass.setFocusable(false);
 
         /* base window border settings */
         this->popupWindowClass.windowClass.border.setColor(color);
@@ -540,6 +542,7 @@ MMSTheme::MMSTheme() {
         this->rootWindowClass.windowClass.setModal(false);
         this->rootWindowClass.windowClass.setStaticZOrder(false);
         this->rootWindowClass.windowClass.setAlwaysOnTop(false);
+        this->rootWindowClass.windowClass.setFocusable(true);
 
         /* base window border settings */
         this->rootWindowClass.windowClass.border.setColor(color);
@@ -583,6 +586,7 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.setModal(false);
         this->childWindowClass.windowClass.setStaticZOrder(false);
         this->childWindowClass.windowClass.setAlwaysOnTop(false);
+        this->childWindowClass.windowClass.setFocusable(true);
 
         /* base window border settings */
         this->childWindowClass.windowClass.border.setColor(color);

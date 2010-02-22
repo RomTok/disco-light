@@ -1172,6 +1172,12 @@ class MMSWindow {
         */
         bool getAlwaysOnTop(bool &alwaysontop);
 
+    	//! Detect if the window can be focused.
+        /*!
+        \param focusable	returns the focusable flag
+        \return true, if value is successfully returned
+        */
+        bool getFocusable(bool &focusable);
 
         //! Get the color of the window border.
         /*!
@@ -1439,6 +1445,12 @@ class MMSWindow {
         \param alwaysontop	if true, the window will be permanently displayed at the top of the window stack
         */
         void setAlwaysOnTop(bool alwaysontop);
+
+        //! Set the focusable flag of the window.
+        /*!
+        \param focusable	if true, the window will can get the focus
+        */
+        void setFocusable(bool focusable);
 
         //! Set the color of the window border.
         /*!

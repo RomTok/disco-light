@@ -3435,6 +3435,11 @@ void MMSWindow::setFocus() {
     // i do only work for child windows
     if (!this->parent) return;
 
+    // check if focusable
+    bool focusable = false;
+    getFocusable(focusable);
+    if (!focusable) return;
+
     // searching me
     int me = -1;
     for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
@@ -3981,14 +3986,26 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 						for (int j = (int)this->childwins.size()-1; j >= 0; j--) {
 							// get access to the window
 							MMSWindow *window = this->childwins.at(j).window;
-							if (!window->isShown())
+
+							// shown?
+							if (!window->isShown()) {
+								// no, ignoring it
 								continue;
-	/*	            		if (!window->getNumberOfFocusableWidgets())
-								continue;*/
+							}
+
+						    // focusable?
+						    bool focusable = false;
+						    window->getFocusable(focusable);
+						    if (!focusable) {
+								// no, ignoring it
+						    	continue;
+						    }
+
+						    // check if the window is under the pointer
 							MMSFBRectangle rect = window->getGeometry();
 							if ((posx >= rect.x)&&(posy >= rect.y)
 							  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
-								/* this is the childwin under the pointer */
+								// this is the childwin under the pointer
 								if (!window->getFocus()) {
 	//								bool modal = false;
 	//		        				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
@@ -4004,7 +4021,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 									}
 								}
 
-								/* normalize the pointer position */
+								// normalize the pointer position
 								for (unsigned int k = 0; k < inputeventset->size(); k++) {
 									inputeventset->at(k).posx-=rect.x;
 									inputeventset->at(k).posy-=rect.y;
@@ -4014,14 +4031,14 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 								this->buttonpress_childwin = window;
 								window->handleInput(inputeventset);
 
-								/* set the arrow widgets */
+								// set the arrow widgets
 								switchArrowWidgets();
 
 								return true;
 							}
 						}
 
-						/* no childwin found */
+						// no childwin found
 						this->buttonpress_childwin = NULL;
 						throw new MMSWidgetError(1,"no focusable childwin found");
        				}
@@ -4533,6 +4550,10 @@ bool MMSWindow::getAlwaysOnTop(bool &alwaysontop) {
     GETWINDOW(AlwaysOnTop, alwaysontop);
 }
 
+bool MMSWindow::getFocusable(bool &focusable) {
+    GETWINDOW(Focusable, focusable);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -4784,6 +4805,9 @@ void MMSWindow::setAlwaysOnTop(bool alwaysontop) {
 	unlock();
 }
 
+void MMSWindow::setFocusable(bool focusable) {
+    myWindowClass.setFocusable(focusable);
+}
 
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
@@ -4909,6 +4933,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setStaticZOrder(b);
 	if (themeClass->getAlwaysOnTop(b))
         setAlwaysOnTop(b);
+	if (themeClass->getFocusable(b))
+        setFocusable(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))
