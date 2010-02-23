@@ -458,7 +458,7 @@ class MMSWindow {
         void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false);
 
         //! Internal method: Will be called by MMSInputManager if the window has the input focus.
-        bool handleInput(vector<MMSInputEvent> *inputeventset);
+        bool handleInput(MMSInputEvent *inputevent);
 
         //! Internal method: (Re-)calculate the position and size of all widgets.
         void recalculateChildren();

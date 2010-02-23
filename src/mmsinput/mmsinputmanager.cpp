@@ -48,7 +48,6 @@ MMSInputManager::~MMSInputManager() {
 
 void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	MMSWindow *window=NULL;
-	vector<MMSInputEvent> inputeventset;
 
 	this->mutex.lock();
 
@@ -61,18 +60,18 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 		this->lastkey = inputevent->key;
 
-		this->mapper->mapkey(inputevent, &inputeventset);
+		this->mapper->mapkey(inputevent);
 
 #if __ENABLE_LOG__ || __ENABLE_DEBUG__
 		string symbol = mmskeys[inputevent->key];
 		TRACEOUT("MMSINPUT", "KEY PRESS %d (MMSKEY_%s)", this->lastkey, symbol.c_str());
-		for (int i = 0; i < (int)inputeventset.size(); i++) {
-			symbol = mmskeys[inputeventset.at(i).key];
-			TRACEOUT("MMSINPUT", " >MAPPED TO %d (MMSKEY_%s)", inputeventset.at(i).key, symbol.c_str());
+		if(lastkey != inputevent->key) {
+			symbol = mmskeys[inputevent->key];
+			TRACEOUT("MMSINPUT", " >MAPPED TO %d (MMSKEY_%s)", inputevent->key, symbol.c_str());
 		}
 #endif
 
-		if((inputeventset.at(0).key==MMSKEY_POWER)||(inputeventset.at(0).key==MMSKEY_POWER2)) {
+		if((inputevent->key==MMSKEY_POWER)||(inputevent->key==MMSKEY_POWER2)) {
 			if(config->getShutdown() == true) {
 				DEBUGMSG("MMSINPUTMANAGER", "executing: %s", config->getShutdownCmd().c_str());
 
@@ -85,15 +84,12 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		window = this->windowmanager->getToplevelWindow();
 
 		if(window!=NULL) {
-			/* we have a window -> lets see if there are navigation keys */
-			for(unsigned y=0;y<inputeventset.size();y++) {
-				if	((inputeventset.at(y).key==MMSKEY_CURSOR_DOWN)||(inputeventset.at(y).key==MMSKEY_CURSOR_UP)
-					||(inputeventset.at(y).key==MMSKEY_CURSOR_LEFT)||(inputeventset.at(y).key==MMSKEY_CURSOR_RIGHT)) {
-					/* ok execute input on window */
-					window->handleInput(&inputeventset);
-					this->mutex.unlock();
-					return;
-				}
+			if	((inputevent->key==MMSKEY_CURSOR_DOWN)||(inputevent->key==MMSKEY_CURSOR_UP)
+				||(inputevent->key==MMSKEY_CURSOR_LEFT)||(inputevent->key==MMSKEY_CURSOR_RIGHT)) {
+				/* ok execute input on window */
+				window->handleInput(inputevent);
+				this->mutex.unlock();
+				return;
 			}
 		}
 
@@ -109,50 +105,51 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if (call_subscriptions) {
 			// go through subscriptions
 			for(unsigned int i = 0; i < subscriptions.size();i++) {
-				for(unsigned int y = 0; y < inputeventset.size(); y++) {
-					MMSKeySymbol key;
-					if (subscriptions.at(i)->getKey(key))
-						if (key == inputeventset.at(y).key) {
-							DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
-							// ok i found one execute
-							subscriptions.at(i)->callback.emit(subscriptions.at(i));
-							// stop it only one key per subscription
-							DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
-							this->mutex.unlock();
-							return;
-						}
+				MMSKeySymbol key;
+				if (subscriptions.at(i)->getKey(key)) {
+					if (key == inputevent->key) {
+						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
+						// ok i found one execute
+						subscriptions.at(i)->callback.emit(subscriptions.at(i));
+						// stop it only one key per subscription
+						DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
+						this->mutex.unlock();
+						return;
+					}
 				}
 			}
 		}
 
 		if(window != NULL)
-			window->handleInput(&inputeventset);
+			window->handleInput(inputevent);
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
 		/* keyboard inputs */
-		this->mapper->mapkey(inputevent, &inputeventset);
-
 #if __ENABLE_LOG__ || __ENABLE_DEBUG__
 		string symbol = mmskeys[inputevent->key];
 		TRACEOUT("MMSINPUT", "KEY RELEASE %d (MMSKEY_%s)", this->lastkey, symbol.c_str());
-		for (int i = 0; i < (int)inputeventset.size(); i++) {
-			symbol = mmskeys[inputeventset.at(i).key];
-			TRACEOUT("MMSINPUT", " >MAPPED TO %d (MMSKEY_%s)", inputeventset.at(i).key, symbol.c_str());
+#endif
+		MMSKeySymbol beforemap = inputevent->key;
+		this->mapper->mapkey(inputevent);
+#if __ENABLE_LOG__ || __ENABLE_DEBUG__
+		if(inputevent->key != beforemap) {
+			symbol = mmskeys[inputevent->key];
+			TRACEOUT("MMSINPUT", " >MAPPED TO %d (MMSKEY_%s)", inputevent->key, symbol.c_str());
 		}
 #endif
 
 		window = this->windowmanager->getToplevelWindow();
 
 		if(window != NULL)
-			window->handleInput(&inputeventset);
+			window->handleInput(inputevent);
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: %d,%d", inputevent->posx, inputevent->posy);
 
-		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, true);
 		this->button_pressed = true;
+		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, true);
 
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
@@ -170,28 +167,24 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			// save the pointer for release event
 			this->buttonpress_window = window;
 
-			/* call windows handleInput with normalized coordinates */
-			MMSInputEvent ie;
-			ie.type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-			ie.posx = inputevent->posx - rect.x;
-			ie.posy = inputevent->posy - rect.y;
-			ie.absx = inputevent->posx;
-			ie.absy = inputevent->posy;
-			ie.dx = 0;
-			ie.dy = 0;
+			inputevent->absx = inputevent->posx;
+			inputevent->absy = inputevent->posy;
+			inputevent->posx-= rect.x;
+			inputevent->posy-= rect.y;
+			inputevent->dx = 0;
+			inputevent->dy = 0;
 
-			this->oldx = inputevent->posx;
-			this->oldy = inputevent->posy;
-			inputeventset.push_back(ie);
-			window->handleInput(&inputeventset);
+			this->oldx = inputevent->absx;
+			this->oldy = inputevent->absy;
+			window->handleInput(inputevent);
 		}
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE) {
 		DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON RELEASED AT: %d,%d", inputevent->posx, inputevent->posy);
+		this->button_pressed = false;
 
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, false);
-		this->button_pressed = false;
 
 		window = this->windowmanager->getToplevelWindow();
 		if (!window)
@@ -205,20 +198,18 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 					&&(inputevent->posx - rect.x >= 0)&&(inputevent->posy - rect.y >= 0)
 					&& (inputevent->posx - rect.x - rect.w < 0)&&(inputevent->posy - rect.y - rect.h < 0))) {
 				/* call windows handleInput with normalized coordinates */
-				MMSInputEvent ie;
-				ie.type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-				ie.posx = inputevent->posx - rect.x;
-				ie.posy = inputevent->posy - rect.y;
-				ie.absx = inputevent->posx;
-				ie.absy = inputevent->posy;
-				ie.dx = inputevent->posx - this->oldx;
-				ie.dy = inputevent->posy - this->oldy;
+
+				inputevent->absx = inputevent->posx;
+				inputevent->absy = inputevent->posy;
+				inputevent->posx-= rect.x;
+				inputevent->posy-= rect.y;
+				inputevent->dx = inputevent->absx - this->oldx;
+				inputevent->dy = inputevent->absy - this->oldy;
 
 				this->oldx = -1;
 				this->oldy = -1;
 
-				inputeventset.push_back(ie);
-				if (window->handleInput(&inputeventset)) {
+				if (window->handleInput(inputevent)) {
 					this->buttonpress_window = NULL;
 					this->mutex.unlock();
 					return;
@@ -240,19 +231,18 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if (call_subscriptions) {
 			// go through subscriptions
 			for(unsigned int i = 0; i < subscriptions.size();i++) {
-				for(unsigned int y = 0; y < inputeventset.size(); y++) {
-					MMSFBRectangle pointer_area;
-					if (subscriptions.at(i)->getPointerArea(pointer_area))
-						if ((inputevent->posx >= pointer_area.x)&&(inputevent->posy >= pointer_area.y)
-						  &&(inputevent->posx < pointer_area.x + pointer_area.w)&&(inputevent->posy < pointer_area.y + pointer_area.h)) {
-							DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
-							// ok i found one execute
-							subscriptions.at(i)->callback.emit(subscriptions.at(i));
-							// stop it only one key per subscription
-							DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
-							this->mutex.unlock();
-							return;
-						}
+				MMSFBRectangle pointer_area;
+				if (subscriptions.at(i)->getPointerArea(pointer_area)) {
+					if ((inputevent->posx >= pointer_area.x)&&(inputevent->posy >= pointer_area.y)
+					  &&(inputevent->posx < pointer_area.x + pointer_area.w)&&(inputevent->posy < pointer_area.y + pointer_area.h)) {
+						DEBUGMSG("MMSINPUTMANAGER", "found a subscription");
+						// ok i found one execute
+						subscriptions.at(i)->callback.emit(subscriptions.at(i));
+						// stop it only one key per subscription
+						DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
+						this->mutex.unlock();
+						return;
+					}
 				}
 			}
 		}
@@ -261,6 +251,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION) {
 
+		/* */
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, this->button_pressed);
 
 
@@ -276,26 +267,22 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				return;
 			}
 
-			/* call windows handleInput with normalized coordinates */
-			MMSInputEvent ie;
-			ie.type = MMSINPUTEVENTTYPE_AXISMOTION;
-			ie.posx = inputevent->posx - rect.x;
-			ie.posy = inputevent->posy - rect.y;
-			ie.absx = inputevent->posx;
-			ie.absy = inputevent->posy;
+			inputevent->absx = inputevent->posx;
+			inputevent->absy = inputevent->posy;
+			inputevent->posx-=rect.x;
+			inputevent->posy-=rect.y;
 			if(this->button_pressed) {
-				ie.dx = inputevent->posx - this->oldx;
-				ie.dy = inputevent->posy - this->oldy;
+				inputevent->dx = inputevent->absx - this->oldx;
+				inputevent->dy = inputevent->absy - this->oldy;
 			} else {
-				ie.dx = 0;
-				ie.dy = 0;
+				inputevent->dx = 0;
+				inputevent->dy = 0;
 			}
 
-			this->oldx = inputevent->posx;
-			this->oldy = inputevent->posy;
+			this->oldx = inputevent->absx;
+			this->oldy = inputevent->absy;
 
-			inputeventset.push_back(ie);
-			window->handleInput(&inputeventset);
+			window->handleInput(inputevent);
 		}
 	}
 
