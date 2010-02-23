@@ -350,7 +350,7 @@ MMSWidget* MMSWidget::operator[](string name) {
 
     if ((widget = findWidget(name)))
         return widget;
-    throw new MMSWidgetError(1, "widget " + name + " not found");
+    throw MMSWidgetError(1, "widget " + name + " not found");
 }
 
 
@@ -1546,9 +1546,9 @@ void MMSWidget::add(MMSWidget *widget) {
                 this->rootwindow->add(widget);
         }
         else
-            throw new MMSWidgetError(0,"this widget does only support one child");
+            throw MMSWidgetError(0,"this widget does only support one child");
     else
-        throw new MMSWidgetError(0,"this widget does not support children");
+        throw MMSWidgetError(0,"this widget does not support children");
 }
 
 void MMSWidget::markChildren2Redraw() {
@@ -2181,7 +2181,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 			}
 	}
 
-    throw new MMSWidgetError(1,"input not handled");
+    throw MMSWidgetError(1,"input not handled");
 }
 
 
