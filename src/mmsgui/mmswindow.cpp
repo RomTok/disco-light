@@ -3831,6 +3831,7 @@ void MMSWindow::preCalcNavigation() {
 
 bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
     bool ret = true;
+    bool navigate = false;
 
 //printf("YYY: input to window %s\n", name.c_str());
 
@@ -3891,36 +3892,41 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                return true;
 	            }
 	            else {
-	                throw new MMSWidgetError(1,"navigate");
+	                //throw MMSWidgetError(1,"navigate");
+	                 navigate=true;
 	            }
 
-	        } catch (MMSWidgetError *err) {
-	            if(err->getCode() == 1) {
-	                /* test if navigation must be done */
-	                ret = true;
-	                switch(inputevent->key) {
-	                    /* handle navigation */
-	                    case MMSKEY_CURSOR_DOWN:
-	                    case MMSKEY_CURSOR_LEFT:
-	                    case MMSKEY_CURSOR_RIGHT:
-	                    case MMSKEY_CURSOR_UP:
-//	                        logger.writeLog("widget threw a exception so try to navigate");
-	                        ret = this->handleNavigationForWidgets(inputevent);
-
-	                        /* set the arrow widgets */
-	                        switchArrowWidgets();
-
-	                        break;
-	                    default:
-	                        /* input is no navigation */
-	                        ret = false;
-	                        break;
-	                }
-
-	                /* call handle input callback */
-	                onHandleInput->emit(this, inputevent);
-	            }
+	        } catch (MMSWidgetError err) {
+	        	if(err.getCode() == 1) {
+	        		printf("missed navigation exception\n");
+	        	}
 	        }
+            if(navigate) {
+                /* test if navigation must be done */
+                ret = true;
+                switch(inputevent->key) {
+                    /* handle navigation */
+                    case MMSKEY_CURSOR_DOWN:
+                    case MMSKEY_CURSOR_LEFT:
+                    case MMSKEY_CURSOR_RIGHT:
+                    case MMSKEY_CURSOR_UP:
+//	                        logger.writeLog("widget threw a exception so try to navigate");
+                        ret = this->handleNavigationForWidgets(inputevent);
+
+                        /* set the arrow widgets */
+                        switchArrowWidgets();
+
+                        break;
+                    default:
+                        /* input is no navigation */
+                        ret = false;
+                        break;
+                }
+
+                /* call handle input callback */
+                onHandleInput->emit(this, inputevent);
+            }
+
     	}
     	else
     	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
@@ -3969,7 +3975,11 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 
 	            	/* no widget found */
         	        this->buttonpress_widget = NULL;
-	                throw new MMSWidgetError(1,"no focusable widget found");
+
+        	        /* call handle input callback */
+	                onHandleInput->emit(this, inputevent);
+	                return true;
+	                //throw MMSWidgetError(1,"no focusable widget found");
 	            }
 	            else
 	            if (this->childwins.size() > this->focusedChildWin) {
@@ -4037,7 +4047,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 
 						// no childwin found
 						this->buttonpress_childwin = NULL;
-						throw new MMSWidgetError(1,"no focusable childwin found");
+						throw MMSWidgetError(1,"no focusable childwin found");
        				}
        				else {
        					// modal window is active
@@ -4059,18 +4069,23 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
        				}
 	            }
 	            else {
-	                throw new MMSWidgetError(1,"navigate, buttonpress");
+	                //throw MMSWidgetError(1,"navigate, buttonpress");
+	                navigate=true;
 	            }
 
-	        } catch (MMSWidgetError *err) {
-	            if(err->getCode() == 1) {
-	                /* test if navigation must be done */
-	                ret = true;
-
-	                /* call handle input callback */
-	                onHandleInput->emit(this, inputevent);
-	            }
+	        } catch (MMSWidgetError err) {
+				if(err.getCode() == 1) {
+					printf("missed navigation exception\n");
+				}
 	        }
+            if(navigate) {
+                /* test if navigation must be done */
+                ret = true;
+
+                /* call handle input callback */
+                onHandleInput->emit(this, inputevent);
+            }
+
     	}
     	else
     	if   ((inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
@@ -4126,8 +4141,8 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 					return onHandleInput->emit(this, inputevent);
 	            }
 
-	        } catch (MMSWidgetError *err) {
-	            if(err->getCode() == 1) {
+	        } catch (MMSWidgetError err) {
+	            if(err.getCode() == 1) {
 	                /* test if navigation must be done */
 	                ret = true;
 
@@ -4377,7 +4392,7 @@ MMSWidget* MMSWindow::operator[](string name) {
 
     if ((widget = findWidget(name)))
         return widget;
-    throw new MMSWidgetError(1, "widget " + name + " not found");
+    throw MMSWidgetError(1, "widget " + name + " not found");
 }
 
 
