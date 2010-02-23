@@ -123,6 +123,11 @@ MMSWindow::MMSWindow() {
     onHide              = new sigc::signal<void, MMSWindow*, bool>;
     onHandleInput       = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
     onBeforeHandleInput = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
+
+    // initialize the animation callbacks
+    this->onBeforeAnimation_connection	= this->pulser.onBeforeAnimation.connect(sigc::mem_fun(this, &MMSWindow::onBeforeAnimation));
+    this->onAnimation_connection		= this->pulser.onAnimation.connect(sigc::mem_fun(this, &MMSWindow::onAnimation));
+    this->onAfterAnimation_connection	= this->pulser.onAfterAnimation.connect(sigc::mem_fun(this, &MMSWindow::onAfterAnimation));
 }
 
 MMSWindow::~MMSWindow() {
@@ -2057,6 +2062,113 @@ bool MMSWindow::stretch(double left, double up, double right, double down) {
 	return ret;
 }
 
+bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
+
+    // check if all of its parents are shown
+    bool really_shown = true;
+    if (this->parent) {
+		really_shown = this->parent->isShown(true);
+    }
+
+    // init animation value
+    if (!getOpacity(this->anim_opacity)) this->anim_opacity = 255;
+    this->anim_rect = getGeometry();
+    if (!getFadeIn(this->anim_fadein)) this->anim_fadein = false;
+    if (!getMoveIn(this->anim_movein)) this->anim_movein = MMSDIRECTION_NOTSET;
+
+	if ((!really_shown)||((!this->anim_fadein)&&(this->anim_movein==MMSDIRECTION_NOTSET))) {
+		// nothing to animate, set values which are valid after the animation
+		onAfterAnimation(NULL);
+		return false;
+	}
+
+	return true;
+}
+
+#define MMSWINDOW_ANIMATION_MAX_OFFSET	30
+
+bool MMSWindow::onAnimation(MMSPulser *pulser) {
+
+//printf("111111111111111 %f\n", pulser->getOffset());
+
+	// little animation
+	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
+	unsigned int opacity_step;
+	int move_step;
+
+	switch (this->anim_movein) {
+		case MMSDIRECTION_LEFT:
+			move_step = (vrect.w-this->anim_rect.x+vrect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_RIGHT:
+			move_step = (this->anim_rect.w-vrect.x+this->anim_rect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_UP:
+			move_step = (vrect.h-this->anim_rect.y+vrect.y) / (steps+1);
+			break;
+		case MMSDIRECTION_DOWN:
+			move_step = (this->anim_rect.h-vrect.y+this->anim_rect.y) / (steps+1);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fadein)
+		opacity_step = this->anim_opacity / (steps+1);
+
+	int i = steps - pulser->getOffset();
+
+	switch (this->anim_movein) {
+		case MMSDIRECTION_LEFT:
+			moveTo((this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
+			break;
+		case MMSDIRECTION_RIGHT:
+			moveTo((this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
+			break;
+		case MMSDIRECTION_UP:
+			moveTo(this->anim_rect.x, (this->anim_rect.y + i * move_step) & ~0x01);
+			break;
+		case MMSDIRECTION_DOWN:
+			moveTo(this->anim_rect.x, (this->anim_rect.y - i * move_step) & ~0x01);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fadein) {
+		if (!parent)
+			this->window->setOpacity(this->anim_opacity - i * opacity_step);
+		else
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step);
+	}
+	else
+	if (i == steps) {
+		if (!parent)
+			this->window->setOpacity(this->anim_opacity);
+		else
+			this->parent->setChildWindowOpacity(this, this->anim_opacity);
+	}
+
+	return true;
+}
+
+void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
+    // set final position
+    if (this->anim_movein != MMSDIRECTION_NOTSET) {
+		moveTo(this->anim_rect.x, this->anim_rect.y);
+    }
+
+    // set final opacity
+	if (!parent) {
+		this->window->setOpacity(this->anim_opacity);
+	}
+	else {
+		this->parent->setChildWindowOpacity(this, this->anim_opacity);
+	}
+
+	return;
+}
+
 bool MMSWindow::showAction(bool *stopaction) {
     bool    saction = *stopaction;
 
@@ -2220,99 +2332,10 @@ bool MMSWindow::showAction(bool *stopaction) {
     }
 
     if ((this->parent)||((!this->parent)&&(this->window))) {
-	    unsigned int opacity;
-	    if (!getOpacity(opacity)) opacity = 255;
-        MMSFBRectangle rect = getGeometry();
-
-	    bool fadein;
-	    if (!getFadeIn(fadein)) fadein = false;
-	    MMSDIRECTION movein;
-	    if (!getMoveIn(movein)) movein = MMSDIRECTION_NOTSET;
-
-	    if ((really_shown)&&((fadein)||(movein!=MMSDIRECTION_NOTSET))) {
-		    // little animation
-    	    int steps = 3;
-    	    unsigned int opacity_step;
-    	    int move_step;
-
-    	    switch (movein) {
-    	    	case MMSDIRECTION_LEFT:
-            	    move_step = (vrect.w-rect.x+vrect.x) / (steps+1);
-    	    		break;
-    	    	case MMSDIRECTION_RIGHT:
-            	    move_step = (rect.w-vrect.x+rect.x) / (steps+1);
-    	    		break;
-    	    	case MMSDIRECTION_UP:
-            	    move_step = (vrect.h-rect.y+vrect.y) / (steps+1);
-            	    break;
-    	    	case MMSDIRECTION_DOWN:
-            	    move_step = (rect.h-vrect.y+rect.y) / (steps+1);
-    	    		break;
-    	    	default:
-    	    		break;
-    	    }
-
-    	    if (fadein)
-    	    	opacity_step = opacity / (steps+1);
-
-    	    for (int i = steps; i > 0; i--) {
-	            // start time stamp
-    	    	unsigned int start_ts = getMTimeStamp();
-
-        	    switch (movein) {
-        	    	case MMSDIRECTION_LEFT:
-        	    		moveTo((rect.x + i * move_step) & ~0x01, rect.y);
-        	    		break;
-        	    	case MMSDIRECTION_RIGHT:
-        	    		moveTo((rect.x - i * move_step) & ~0x01, rect.y);
-        	    		break;
-        	    	case MMSDIRECTION_UP:
-        	    		moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
-        	    		break;
-        	    	case MMSDIRECTION_DOWN:
-        	    		moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
-        	    		break;
-        	    	default:
-        	    		break;
-        	    }
-
-        	    if (fadein) {
-    	    		if (!parent)
-    	    			this->window->setOpacity(opacity - i * opacity_step);
-    	    		else
-    	    	        this->parent->setChildWindowOpacity(this, opacity - i * opacity_step);
-        	    }
-        	    else
-        	    if (i == steps) {
-    	    		if (!parent)
-    	    			this->window->setOpacity(opacity);
-    	    		else
-    	    	        this->parent->setChildWindowOpacity(this, opacity);
-        	    }
-
-	            if (*stopaction) {
-	                saction=true;
-	                break;
-	            }
-
-	            // end time stamp
-    	    	unsigned int end_ts = getMTimeStamp();
-
-    	    	// sleeping a little...
-    	    	msleep(getFrameDelay(start_ts, end_ts));
-	        }
-	    }
-
-	    /* set final position */
-	    if (movein!=MMSDIRECTION_NOTSET) {
-   			moveTo(rect.x, rect.y);
-	    }
-
-	    /* set final opacity */
-		if (!parent)
-			this->window->setOpacity(opacity);
-		else
-			this->parent->setChildWindowOpacity(this, opacity);
+		// do the animation...
+		this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 5);
+		this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+		this->pulser.start(false);
     }
 
     this->willshow=false;
