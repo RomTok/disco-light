@@ -3946,7 +3946,8 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 
 	        } catch (MMSWidgetError err) {
 	        	if(err.getCode() == 1) {
-	        		printf("missed navigation exception\n");
+	        		printf("missed navigation exception 1\n");
+	        		navigate=true;
 	        	}
 	        }
             if(navigate) {
@@ -4123,7 +4124,8 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 
 	        } catch (MMSWidgetError err) {
 				if(err.getCode() == 1) {
-					printf("missed navigation exception\n");
+					printf("missed navigation exception 2\n");
+					navigate=true;
 				}
 	        }
             if(navigate) {
