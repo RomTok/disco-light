@@ -339,6 +339,27 @@ class MMSWindow {
         unsigned int        always_on_top_index;
 
 
+        //! Pulser for e.g. fade/move animations during show/hide
+        MMSPulser			pulser;
+
+        //! connection object for MMSPulser::onBeforeAnimation callback
+        sigc::connection 	onBeforeAnimation_connection;
+
+        //! connection object for MMSPulser::onAnimation callback
+        sigc::connection 	onAnimation_connection;
+
+        //! connection object for MMSPulser::onAfterAnimation callback
+        sigc::connection 	onAfterAnimation_connection;
+
+
+        unsigned int	anim_opacity;
+        MMSFBRectangle	anim_rect;
+        bool			anim_fadein;
+        MMSDIRECTION	anim_movein;
+
+
+
+
         //! Internal method: Creates the window.
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
         		    bool *own_surface);
@@ -357,7 +378,7 @@ class MMSWindow {
         bool removeChildWindow(MMSWindow *childwin);
 
         //! Internal method: Set the opacity of a child window.
-        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity);
+        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins = false);
 
         //! Internal method: Set the region of a child window.
         bool setChildWindowRegion(MMSWindow *childwin, bool refresh = true);
@@ -444,6 +465,10 @@ class MMSWindow {
 
         //! Internal method: Unlock the window. Will be used by the widgets.
         void unlock();
+
+        bool onBeforeAnimation(MMSPulser *pulser);
+        bool onAnimation(MMSPulser *pulser);
+        void onAfterAnimation(MMSPulser *pulser);
 
         //! Internal method: Will be called from the MMSWindowAction thread if the window should appear.
         virtual bool showAction(bool *stopaction);

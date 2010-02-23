@@ -123,6 +123,11 @@ MMSWindow::MMSWindow() {
     onHide              = new sigc::signal<void, MMSWindow*, bool>;
     onHandleInput       = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
     onBeforeHandleInput = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
+
+    // initialize the animation callbacks
+    this->onBeforeAnimation_connection	= this->pulser.onBeforeAnimation.connect(sigc::mem_fun(this, &MMSWindow::onBeforeAnimation));
+    this->onAnimation_connection		= this->pulser.onAnimation.connect(sigc::mem_fun(this, &MMSWindow::onAnimation));
+    this->onAfterAnimation_connection	= this->pulser.onAfterAnimation.connect(sigc::mem_fun(this, &MMSWindow::onAfterAnimation));
 }
 
 MMSWindow::~MMSWindow() {
@@ -140,6 +145,11 @@ MMSWindow::~MMSWindow() {
     if (onHide) delete onHide;
     if (onHandleInput) delete onHandleInput;
     if(onBeforeHandleInput) delete onBeforeHandleInput;
+
+    // disconnect callbacks from pulser
+    this->onBeforeAnimation_connection.disconnect();
+    this->onAnimation_connection.disconnect();
+    this->onAfterAnimation_connection.disconnect();
 
     // delete images, ...
     release();
@@ -907,24 +917,50 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
 }
 
 
-bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity) {
-    if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
-        return false;
+bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins) {
+//BAUSTELLE
 
+	if (childwin) {
+		if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
+			return false;
+	}
+//printf("11111111111111111 %d\n", opacity);
     // find child window and set the opacity
 	lock();
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
-        if (this->childwins.at(i).window == childwin) {
+        if ((!childwin)||(this->childwins.at(i).window == childwin)) {
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
-            this->childwins.at(i).opacity = opacity;
-            flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
-            unlock();
-            return true;
+            if (childwin) {
+            	this->childwins.at(i).opacity = opacity;
+            }
+            else {
+            	// calculate my opacity (see recursive calls)
+            	unsigned int op;
+            	this->childwins.at(i).window->getOpacity(op);
+//            	printf("22222222222222222 %d\n", op);
+            	if (this->childwins.at(i).opacity)
+            		this->childwins.at(i).opacity = (op * (opacity + 1)) >> 8;
+//            	printf("33333333333333333 %d\n", this->childwins.at(i).opacity);
+            }
+            if (update_childwins) {
+            	// update the opacity of my childwindows
+            	this->childwins.at(i).window->setChildWindowOpacity(NULL, this->childwins.at(i).opacity, update_childwins);
+            }
+            if (childwin) {
+            	// update screen
+            	flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+                unlock();
+                return true;
+            }
         }
     }
     unlock();
 
-    return false;
+    if (childwin) {
+    	// childwin given, but not found
+    	return false;
+    }
+    return true;
 }
 
 bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
@@ -2057,6 +2093,222 @@ bool MMSWindow::stretch(double left, double up, double right, double down) {
 	return ret;
 }
 
+bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
+
+	// lock during draw
+    lock();
+
+    if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
+        // hide the current root window
+        if (this->windowmanager) {
+            this->windowmanager->hideAllRootWindows(true);
+            this->windowmanager->lowerToBottom(this);
+        }
+        else {
+        	lowerToBottom();
+        }
+    }
+    else {
+    	// bring all other windows in foreground
+        if (!this->parent) {
+            // normal parent window (main or popup)
+            if (this->windowmanager) {
+            	this->windowmanager->raiseToTop(this);
+            }
+            else {
+            	raiseToTop();
+            }
+        }
+        else {
+        	// change the z-order of child windows?
+        	bool staticzorder = false;
+        	this->parent->getStaticZOrder(staticzorder);
+        	if (!staticzorder) {
+        		raiseToTop();
+        	}
+        }
+    }
+
+    if ((getType() == MMSWINDOWTYPE_ROOTWINDOW) || (getType() == MMSWINDOWTYPE_MAINWINDOW)) {
+		bool os;
+		getOwnSurface(os);
+		if (!os) {
+			if (this->window) {
+				// we are working with a subsurface of a fullscreen window
+				this->window->setVisibleRectangle(&this->geom);
+			}
+		}
+    }
+
+    // draw complete window two times!!! *********************************
+    // two times are needed because if window is not shown (shown=false) *
+    // refreshFromChild does not work!!! -> but the second call to draw  *
+    // uses the current settings from all childs                         *
+	draw();
+    draw();
+    //********************************************************************
+
+    if (!this->precalcnav) {
+        // init window (e.g. pre-calc navigation ...)
+        initnav();
+        this->precalcnav = true;
+    }
+
+    if (!this->initialArrowsDrawn) {
+        // set the arrow widgets
+        this->initialArrowsDrawn = true;
+        switchArrowWidgets();
+    }
+
+    // make it visible
+    if (!this->parent)
+        flipWindow(this);
+    else
+        this->parent->flipWindow(this);
+
+    // drawing finished, unlock
+    unlock();
+
+    if (this->window) {
+        // show window (normally the opacity is 0 here)
+        this->window->show();
+    }
+
+	// window is shown (important to set it before animation!!!)
+    shown=true;
+
+    // per default only main or root windows can get inputs
+    // popup windows can get inputs if the modal mode is set
+    // child windows get the inputs from the parent main, root or popup window
+    if (this->windowmanager) {
+		switch (getType()) {
+			case MMSWINDOWTYPE_MAINWINDOW:
+			case MMSWINDOWTYPE_ROOTWINDOW:
+				this->windowmanager->setToplevelWindow(this);
+				break;
+			case MMSWINDOWTYPE_POPUPWINDOW: {
+				bool modal;
+				if (getModal(modal)) {
+					if (modal)
+						this->windowmanager->setToplevelWindow(this);
+				}
+				break;
+			}
+			default:
+				break;
+		}
+    }
+
+	// check if window or parent are correctly initialized
+    if (!((this->parent)||((!this->parent)&&(this->window)))) {
+    	return false;
+    }
+
+    // check if all of its parents are shown
+    bool really_shown = true;
+    if (this->parent) {
+		really_shown = this->parent->isShown(true);
+    }
+
+    // init animation value
+    if (!getOpacity(this->anim_opacity)) this->anim_opacity = 255;
+    this->anim_rect = getGeometry();
+    if (!getFadeIn(this->anim_fadein)) this->anim_fadein = false;
+    if (!getMoveIn(this->anim_movein)) this->anim_movein = MMSDIRECTION_NOTSET;
+
+	if ((!really_shown)||((!this->anim_fadein)&&(this->anim_movein==MMSDIRECTION_NOTSET))) {
+		// nothing to animate, set values which are valid after the animation
+		onAfterAnimation(NULL);
+		return false;
+	}
+
+	return true;
+}
+
+#define MMSWINDOW_ANIMATION_MAX_OFFSET	30
+
+bool MMSWindow::onAnimation(MMSPulser *pulser) {
+
+//printf("111111111111111 %f\n", pulser->getOffset());
+
+	// little animation
+	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
+	unsigned int opacity_step;
+	int move_step;
+
+	switch (this->anim_movein) {
+		case MMSDIRECTION_LEFT:
+			move_step = (vrect.w-this->anim_rect.x+vrect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_RIGHT:
+			move_step = (this->anim_rect.w-vrect.x+this->anim_rect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_UP:
+			move_step = (vrect.h-this->anim_rect.y+vrect.y) / (steps+1);
+			break;
+		case MMSDIRECTION_DOWN:
+			move_step = (this->anim_rect.h-vrect.y+this->anim_rect.y) / (steps+1);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fadein)
+		opacity_step = this->anim_opacity / (steps+1);
+
+	double i = steps - pulser->getOffset();
+
+	switch (this->anim_movein) {
+		case MMSDIRECTION_LEFT:
+			moveTo((int)(this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
+			break;
+		case MMSDIRECTION_RIGHT:
+			moveTo((int)(this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
+			break;
+		case MMSDIRECTION_UP:
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + i * move_step) & ~0x01);
+			break;
+		case MMSDIRECTION_DOWN:
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - i * move_step) & ~0x01);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fadein) {
+		if (!parent)
+			this->window->setOpacity(this->anim_opacity - i * opacity_step);
+		else
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step, true);
+	}
+	else
+	if (i == steps) {
+		if (!parent)
+			this->window->setOpacity(this->anim_opacity);
+		else
+			this->parent->setChildWindowOpacity(this, this->anim_opacity, true);
+	}
+
+	return true;
+}
+
+void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
+    // set final position
+    if (this->anim_movein != MMSDIRECTION_NOTSET) {
+		moveTo(this->anim_rect.x, this->anim_rect.y);
+    }
+
+    // set final opacity
+	if (!parent) {
+		this->window->setOpacity(this->anim_opacity);
+	}
+	else {
+		this->parent->setChildWindowOpacity(this, this->anim_opacity, true);
+	}
+
+	return;
+}
+
 bool MMSWindow::showAction(bool *stopaction) {
     bool    saction = *stopaction;
 
@@ -2103,217 +2355,13 @@ bool MMSWindow::showAction(bool *stopaction) {
     if (this->parent)
 		really_shown = this->parent->isShown(true);
 
-    /* set the first focused widget, if not set and if window can get the focus */
-//    this->setFirstFocus();
-
-//    printf("showAction3 %x\n", this);
 
 
+	// do the animation...
+	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser.start(false);
 
-    /* lock drawing */
-//PUP    this->drawLock.lock();
-    lock();
-
-
-    if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
-        // hide the current root window
-        if (this->windowmanager) {
-            this->windowmanager->hideAllRootWindows(true);
-            this->windowmanager->lowerToBottom(this);
-        }
-        else {
-        	lowerToBottom();
-        }
-    }
-    else {
-    	// bring all other windows in foreground
-        if (!this->parent) {
-            // normal parent window (main or popup)
-            if (this->windowmanager) {
-            	this->windowmanager->raiseToTop(this);
-            }
-            else {
-            	raiseToTop();
-            }
-        }
-        else {
-        	// change the z-order of child windows?
-        	bool staticzorder = false;
-        	this->parent->getStaticZOrder(staticzorder);
-        	if (!staticzorder)
-        		raiseToTop();
-        }
-    }
-
-    if ((getType() == MMSWINDOWTYPE_ROOTWINDOW) || (getType() == MMSWINDOWTYPE_MAINWINDOW)) {
-		bool os;
-		getOwnSurface(os);
-		if (!os) {
-			if (this->window) {
-				// we are working with a subsurface of a fullscreen window
-				this->window->setVisibleRectangle(&this->geom);
-			}
-		}
-    }
-
-//    printf("showAction4 %x\n", this);
-
-    /* draw complete window two times!!! *********************************/
-    /* two times are needed because if window is not shown (shown=false) */
-    /* refreshFromChild does not work!!! -> but the second call to draw  */
-    /* uses the current settings from all childs                         */
-	draw();                                                            /**/
-    draw();                                                            /**/
-    /*********************************************************************/
-
-//    printf("showAction5 %x\n", this);
-
-    if (!this->precalcnav) {
-        /* init window (e.g. pre-calc navigation ...) */
-        initnav();
-        this->precalcnav = true;
-    }
-
-    if (!this->initialArrowsDrawn) {
-        /* set the arrow widgets */
-        this->initialArrowsDrawn = true;
-        switchArrowWidgets();
-    }
-
-    /* make it visible */
-    if (!this->parent)
-        flipWindow(this);
-    else
-        this->parent->flipWindow(this);
-
-     /* unlock drawing */
-//    this->drawLock.unlock();
-    unlock();
-
-    if (this->window)
-        /* show window (normally the opacity is 0 here) */
-        this->window->show();
-
-	/* window is shown (important to set it before fading!!!) */
-    shown=true;
-
-    // per default only main or root windows can get inputs
-    // popup windows can get inputs if the modal mode is set
-    // child windows get the inputs from the parent main, root or popup window
-    if (this->windowmanager) {
-		switch (getType()) {
-			case MMSWINDOWTYPE_MAINWINDOW:
-			case MMSWINDOWTYPE_ROOTWINDOW:
-				this->windowmanager->setToplevelWindow(this);
-				break;
-			case MMSWINDOWTYPE_POPUPWINDOW: {
-				bool modal;
-				if (getModal(modal)) {
-					if (modal)
-						this->windowmanager->setToplevelWindow(this);
-				}
-				break;
-			}
-			default:
-				break;
-		}
-    }
-
-    if ((this->parent)||((!this->parent)&&(this->window))) {
-	    unsigned int opacity;
-	    if (!getOpacity(opacity)) opacity = 255;
-        MMSFBRectangle rect = getGeometry();
-
-	    bool fadein;
-	    if (!getFadeIn(fadein)) fadein = false;
-	    MMSDIRECTION movein;
-	    if (!getMoveIn(movein)) movein = MMSDIRECTION_NOTSET;
-
-	    if ((really_shown)&&((fadein)||(movein!=MMSDIRECTION_NOTSET))) {
-		    // little animation
-    	    int steps = 3;
-    	    unsigned int opacity_step;
-    	    int move_step;
-
-    	    switch (movein) {
-    	    	case MMSDIRECTION_LEFT:
-            	    move_step = (vrect.w-rect.x+vrect.x) / (steps+1);
-    	    		break;
-    	    	case MMSDIRECTION_RIGHT:
-            	    move_step = (rect.w-vrect.x+rect.x) / (steps+1);
-    	    		break;
-    	    	case MMSDIRECTION_UP:
-            	    move_step = (vrect.h-rect.y+vrect.y) / (steps+1);
-            	    break;
-    	    	case MMSDIRECTION_DOWN:
-            	    move_step = (rect.h-vrect.y+rect.y) / (steps+1);
-    	    		break;
-    	    	default:
-    	    		break;
-    	    }
-
-    	    if (fadein)
-    	    	opacity_step = opacity / (steps+1);
-
-    	    for (int i = steps; i > 0; i--) {
-	            // start time stamp
-    	    	unsigned int start_ts = getMTimeStamp();
-
-        	    switch (movein) {
-        	    	case MMSDIRECTION_LEFT:
-        	    		moveTo((rect.x + i * move_step) & ~0x01, rect.y);
-        	    		break;
-        	    	case MMSDIRECTION_RIGHT:
-        	    		moveTo((rect.x - i * move_step) & ~0x01, rect.y);
-        	    		break;
-        	    	case MMSDIRECTION_UP:
-        	    		moveTo(rect.x, (rect.y + i * move_step) & ~0x01);
-        	    		break;
-        	    	case MMSDIRECTION_DOWN:
-        	    		moveTo(rect.x, (rect.y - i * move_step) & ~0x01);
-        	    		break;
-        	    	default:
-        	    		break;
-        	    }
-
-        	    if (fadein) {
-    	    		if (!parent)
-    	    			this->window->setOpacity(opacity - i * opacity_step);
-    	    		else
-    	    	        this->parent->setChildWindowOpacity(this, opacity - i * opacity_step);
-        	    }
-        	    else
-        	    if (i == steps) {
-    	    		if (!parent)
-    	    			this->window->setOpacity(opacity);
-    	    		else
-    	    	        this->parent->setChildWindowOpacity(this, opacity);
-        	    }
-
-	            if (*stopaction) {
-	                saction=true;
-	                break;
-	            }
-
-	            // end time stamp
-    	    	unsigned int end_ts = getMTimeStamp();
-
-    	    	// sleeping a little...
-    	    	msleep(getFrameDelay(start_ts, end_ts));
-	        }
-	    }
-
-	    /* set final position */
-	    if (movein!=MMSDIRECTION_NOTSET) {
-   			moveTo(rect.x, rect.y);
-	    }
-
-	    /* set final opacity */
-		if (!parent)
-			this->window->setOpacity(opacity);
-		else
-			this->parent->setChildWindowOpacity(this, opacity);
-    }
 
     this->willshow=false;
 
