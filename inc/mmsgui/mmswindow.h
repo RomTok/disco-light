@@ -378,7 +378,7 @@ class MMSWindow {
         bool removeChildWindow(MMSWindow *childwin);
 
         //! Internal method: Set the opacity of a child window.
-        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity);
+        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins = false);
 
         //! Internal method: Set the region of a child window.
         bool setChildWindowRegion(MMSWindow *childwin, bool refresh = true);

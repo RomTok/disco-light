@@ -146,6 +146,11 @@ MMSWindow::~MMSWindow() {
     if (onHandleInput) delete onHandleInput;
     if(onBeforeHandleInput) delete onBeforeHandleInput;
 
+    // disconnect callbacks from pulser
+    this->onBeforeAnimation_connection.disconnect();
+    this->onAnimation_connection.disconnect();
+    this->onAfterAnimation_connection.disconnect();
+
     // delete images, ...
     release();
 
@@ -912,17 +917,34 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
 }
 
 
-bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity) {
-    if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
-        return false;
+bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins) {
+	if (childwin) {
+		if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
+			return false;
+	}
 
     // find child window and set the opacity
 	lock();
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
-        if (this->childwins.at(i).window == childwin) {
+        if ((!childwin)||(this->childwins.at(i).window == childwin)) {
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
-            this->childwins.at(i).opacity = opacity;
-            flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+            if (childwin) {
+            	this->childwins.at(i).opacity = opacity;
+            }
+            else {
+            	// calculate my opacity (see recursive calls)
+            	unsigned int op;
+            	this->childwins.at(i).window->getOpacity(op);
+            	this->childwins.at(i).opacity = (op * (opacity + 1)) >> 8;
+            }
+            if (update_childwins) {
+            	// update the opacity of my childwindows
+            	this->childwins.at(i).window->setChildWindowOpacity(NULL, this->childwins.at(i).opacity, update_childwins);
+            }
+            if (childwin) {
+            	// update screen
+            	flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+            }
             unlock();
             return true;
         }
@@ -2116,20 +2138,20 @@ bool MMSWindow::onAnimation(MMSPulser *pulser) {
 	if (this->anim_fadein)
 		opacity_step = this->anim_opacity / (steps+1);
 
-	int i = steps - pulser->getOffset();
+	double i = steps - pulser->getOffset();
 
 	switch (this->anim_movein) {
 		case MMSDIRECTION_LEFT:
-			moveTo((this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
+			moveTo((int)(this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_RIGHT:
-			moveTo((this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
+			moveTo((int)(this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_UP:
-			moveTo(this->anim_rect.x, (this->anim_rect.y + i * move_step) & ~0x01);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + i * move_step) & ~0x01);
 			break;
 		case MMSDIRECTION_DOWN:
-			moveTo(this->anim_rect.x, (this->anim_rect.y - i * move_step) & ~0x01);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - i * move_step) & ~0x01);
 			break;
 		default:
 			break;
@@ -2139,14 +2161,14 @@ bool MMSWindow::onAnimation(MMSPulser *pulser) {
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity - i * opacity_step);
 		else
-			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step);
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step, true);
 	}
 	else
 	if (i == steps) {
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity);
 		else
-			this->parent->setChildWindowOpacity(this, this->anim_opacity);
+			this->parent->setChildWindowOpacity(this, this->anim_opacity, true);
 	}
 
 	return true;
@@ -2163,7 +2185,7 @@ void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
 		this->window->setOpacity(this->anim_opacity);
 	}
 	else {
-		this->parent->setChildWindowOpacity(this, this->anim_opacity);
+		this->parent->setChildWindowOpacity(this, this->anim_opacity, true);
 	}
 
 	return;
@@ -2333,7 +2355,7 @@ bool MMSWindow::showAction(bool *stopaction) {
 
     if ((this->parent)||((!this->parent)&&(this->window))) {
 		// do the animation...
-		this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 5);
+		this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
 		this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
 		this->pulser.start(false);
     }
