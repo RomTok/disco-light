@@ -43,7 +43,6 @@ string MMSWidget_inputmode = "";
 MMSWidget::MMSWidget() {
 	// per default no attributes for drawable widgets are allocated
 	this->da = NULL;
-
     this->initialized = false;
     this->rootwindow = NULL;
     this->parent_rootwindow = NULL;
@@ -54,6 +53,11 @@ MMSWidget::MMSWidget() {
     this->selected = false;
     this->activated = true;
     this->pressed = false;
+
+    this->onSelect = NULL;
+    this->onFocus = NULL;
+    this->onReturn = NULL;
+    this->onClick = NULL;
 
     this->brightness = 255;
     this->opacity = 255;
@@ -160,10 +164,15 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 
 	    this->da->joinedWidget = NULL;
 
-	    onSelect = new sigc::signal<void, MMSWidget*>;
-	    onFocus  = new sigc::signal<void, MMSWidget*, bool>;
-	    onReturn = new sigc::signal<void, MMSWidget*>;
-	    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
+	    if(!onSelect) {
+	    	onSelect = new sigc::signal<void, MMSWidget*>;
+	    }
+	    if(!onFocus)
+	    	onFocus  = new sigc::signal<void, MMSWidget*, bool>;
+	    if(!onReturn)
+	    	onReturn = new sigc::signal<void, MMSWidget*>;
+	    if(!onClick)
+	    	onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 	}
 	else {
 		// init attributes for non-drawable widgets
