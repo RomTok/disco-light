@@ -918,11 +918,13 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
 
 
 bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins) {
+//BAUSTELLE
+
 	if (childwin) {
 		if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
 			return false;
 	}
-
+//printf("11111111111111111 %d\n", opacity);
     // find child window and set the opacity
 	lock();
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
@@ -935,7 +937,10 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
             	// calculate my opacity (see recursive calls)
             	unsigned int op;
             	this->childwins.at(i).window->getOpacity(op);
-            	this->childwins.at(i).opacity = (op * (opacity + 1)) >> 8;
+//            	printf("22222222222222222 %d\n", op);
+            	if (this->childwins.at(i).opacity)
+            		this->childwins.at(i).opacity = (op * (opacity + 1)) >> 8;
+//            	printf("33333333333333333 %d\n", this->childwins.at(i).opacity);
             }
             if (update_childwins) {
             	// update the opacity of my childwindows
@@ -944,14 +949,18 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
             if (childwin) {
             	// update screen
             	flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+                unlock();
+                return true;
             }
-            unlock();
-            return true;
         }
     }
     unlock();
 
-    return false;
+    if (childwin) {
+    	// childwin given, but not found
+    	return false;
+    }
+    return true;
 }
 
 bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
@@ -2086,6 +2095,115 @@ bool MMSWindow::stretch(double left, double up, double right, double down) {
 
 bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
 
+	// lock during draw
+    lock();
+
+    if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
+        // hide the current root window
+        if (this->windowmanager) {
+            this->windowmanager->hideAllRootWindows(true);
+            this->windowmanager->lowerToBottom(this);
+        }
+        else {
+        	lowerToBottom();
+        }
+    }
+    else {
+    	// bring all other windows in foreground
+        if (!this->parent) {
+            // normal parent window (main or popup)
+            if (this->windowmanager) {
+            	this->windowmanager->raiseToTop(this);
+            }
+            else {
+            	raiseToTop();
+            }
+        }
+        else {
+        	// change the z-order of child windows?
+        	bool staticzorder = false;
+        	this->parent->getStaticZOrder(staticzorder);
+        	if (!staticzorder) {
+        		raiseToTop();
+        	}
+        }
+    }
+
+    if ((getType() == MMSWINDOWTYPE_ROOTWINDOW) || (getType() == MMSWINDOWTYPE_MAINWINDOW)) {
+		bool os;
+		getOwnSurface(os);
+		if (!os) {
+			if (this->window) {
+				// we are working with a subsurface of a fullscreen window
+				this->window->setVisibleRectangle(&this->geom);
+			}
+		}
+    }
+
+    // draw complete window two times!!! *********************************
+    // two times are needed because if window is not shown (shown=false) *
+    // refreshFromChild does not work!!! -> but the second call to draw  *
+    // uses the current settings from all childs                         *
+	draw();
+    draw();
+    //********************************************************************
+
+    if (!this->precalcnav) {
+        // init window (e.g. pre-calc navigation ...)
+        initnav();
+        this->precalcnav = true;
+    }
+
+    if (!this->initialArrowsDrawn) {
+        // set the arrow widgets
+        this->initialArrowsDrawn = true;
+        switchArrowWidgets();
+    }
+
+    // make it visible
+    if (!this->parent)
+        flipWindow(this);
+    else
+        this->parent->flipWindow(this);
+
+    // drawing finished, unlock
+    unlock();
+
+    if (this->window) {
+        // show window (normally the opacity is 0 here)
+        this->window->show();
+    }
+
+	// window is shown (important to set it before animation!!!)
+    shown=true;
+
+    // per default only main or root windows can get inputs
+    // popup windows can get inputs if the modal mode is set
+    // child windows get the inputs from the parent main, root or popup window
+    if (this->windowmanager) {
+		switch (getType()) {
+			case MMSWINDOWTYPE_MAINWINDOW:
+			case MMSWINDOWTYPE_ROOTWINDOW:
+				this->windowmanager->setToplevelWindow(this);
+				break;
+			case MMSWINDOWTYPE_POPUPWINDOW: {
+				bool modal;
+				if (getModal(modal)) {
+					if (modal)
+						this->windowmanager->setToplevelWindow(this);
+				}
+				break;
+			}
+			default:
+				break;
+		}
+    }
+
+	// check if window or parent are correctly initialized
+    if (!((this->parent)||((!this->parent)&&(this->window)))) {
+    	return false;
+    }
+
     // check if all of its parents are shown
     bool really_shown = true;
     if (this->parent) {
@@ -2237,128 +2355,13 @@ bool MMSWindow::showAction(bool *stopaction) {
     if (this->parent)
 		really_shown = this->parent->isShown(true);
 
-    /* set the first focused widget, if not set and if window can get the focus */
-//    this->setFirstFocus();
-
-//    printf("showAction3 %x\n", this);
 
 
+	// do the animation...
+	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser.start(false);
 
-    /* lock drawing */
-//PUP    this->drawLock.lock();
-    lock();
-
-
-    if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
-        // hide the current root window
-        if (this->windowmanager) {
-            this->windowmanager->hideAllRootWindows(true);
-            this->windowmanager->lowerToBottom(this);
-        }
-        else {
-        	lowerToBottom();
-        }
-    }
-    else {
-    	// bring all other windows in foreground
-        if (!this->parent) {
-            // normal parent window (main or popup)
-            if (this->windowmanager) {
-            	this->windowmanager->raiseToTop(this);
-            }
-            else {
-            	raiseToTop();
-            }
-        }
-        else {
-        	// change the z-order of child windows?
-        	bool staticzorder = false;
-        	this->parent->getStaticZOrder(staticzorder);
-        	if (!staticzorder)
-        		raiseToTop();
-        }
-    }
-
-    if ((getType() == MMSWINDOWTYPE_ROOTWINDOW) || (getType() == MMSWINDOWTYPE_MAINWINDOW)) {
-		bool os;
-		getOwnSurface(os);
-		if (!os) {
-			if (this->window) {
-				// we are working with a subsurface of a fullscreen window
-				this->window->setVisibleRectangle(&this->geom);
-			}
-		}
-    }
-
-//    printf("showAction4 %x\n", this);
-
-    /* draw complete window two times!!! *********************************/
-    /* two times are needed because if window is not shown (shown=false) */
-    /* refreshFromChild does not work!!! -> but the second call to draw  */
-    /* uses the current settings from all childs                         */
-	draw();                                                            /**/
-    draw();                                                            /**/
-    /*********************************************************************/
-
-//    printf("showAction5 %x\n", this);
-
-    if (!this->precalcnav) {
-        /* init window (e.g. pre-calc navigation ...) */
-        initnav();
-        this->precalcnav = true;
-    }
-
-    if (!this->initialArrowsDrawn) {
-        /* set the arrow widgets */
-        this->initialArrowsDrawn = true;
-        switchArrowWidgets();
-    }
-
-    /* make it visible */
-    if (!this->parent)
-        flipWindow(this);
-    else
-        this->parent->flipWindow(this);
-
-     /* unlock drawing */
-//    this->drawLock.unlock();
-    unlock();
-
-    if (this->window)
-        /* show window (normally the opacity is 0 here) */
-        this->window->show();
-
-	/* window is shown (important to set it before fading!!!) */
-    shown=true;
-
-    // per default only main or root windows can get inputs
-    // popup windows can get inputs if the modal mode is set
-    // child windows get the inputs from the parent main, root or popup window
-    if (this->windowmanager) {
-		switch (getType()) {
-			case MMSWINDOWTYPE_MAINWINDOW:
-			case MMSWINDOWTYPE_ROOTWINDOW:
-				this->windowmanager->setToplevelWindow(this);
-				break;
-			case MMSWINDOWTYPE_POPUPWINDOW: {
-				bool modal;
-				if (getModal(modal)) {
-					if (modal)
-						this->windowmanager->setToplevelWindow(this);
-				}
-				break;
-			}
-			default:
-				break;
-		}
-    }
-
-    if ((this->parent)||((!this->parent)&&(this->window))) {
-		// do the animation...
-		this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
-		this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
-		this->pulser.start(false);
-    }
 
     this->willshow=false;
 
