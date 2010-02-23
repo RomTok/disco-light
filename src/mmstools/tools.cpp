@@ -87,18 +87,11 @@ string maskChars(string str) {
 }
 
 string *strToUpr(string *src) {
-    char *dest;
-    unsigned int i, len;
-    dest=strdup(src->c_str());
+    for(string::iterator i=src->begin(); i!= src->end(); i++) {
 
-    len = strlen(dest);
-    for(i=0; i<=len; i++) {
-
-    	if((dest[i] >= 'a') && (dest[i] <= 'z'))
-            dest[i]-=32;
+    	if((*i >= 'a') && (*i <= 'z'))
+            (*i)-=32;
     }
-    *src = dest;
-    free(dest);
 
     return src;
 }

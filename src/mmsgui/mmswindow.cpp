@@ -3852,7 +3852,7 @@ void MMSWindow::preCalcNavigation() {
 }
 
 
-bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
+bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
     bool ret = true;
 
 //printf("YYY: input to window %s\n", name.c_str());
@@ -3861,24 +3861,23 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
         return false;
 
 
-    for(unsigned int i=0; i < inputeventset->size();i++) {
         //check childwindows
         if(this->childwins.empty()) {
-            if(onBeforeHandleInput->emit(this,&(inputeventset->at(i))))
+            if(onBeforeHandleInput->emit(this,inputevent))
             	return true;
         } else {
-            if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,&(inputeventset->at(i))))
+            if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent))
             	return true;
         }
 
-    	if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_KEYPRESS) {
+    	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
     		/* keyboard inputs */
 	        try {
 	            if(this->focusedwidget != NULL) {
 //printf("YYY: input3 to window %s\n", name.c_str());
-	                this->focusedwidget->handleInput(&(inputeventset->at(i)));
+	                this->focusedwidget->handleInput(inputevent);
 
-	                switch(inputeventset->at(i).key) {
+	                switch(inputevent->key) {
 	                    case MMSKEY_CURSOR_DOWN:
 	                    case MMSKEY_CURSOR_LEFT:
 	                    case MMSKEY_CURSOR_RIGHT:
@@ -3898,13 +3897,13 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 //printf("YYY: input3 to window %s, this->focusedChildWin = %d, %s %s\n", name.c_str(), this->focusedChildWin, this->childwins.at(this->focusedChildWin).window->name.c_str(), this->childwins.at(1).window->name.c_str());
 	                /* get the focus to my focused child window */
 //	                logger.writeLog("try to execute input on childwindow");
-	                if (!this->childwins.at(this->focusedChildWin).window->handleInput(inputeventset)) {
+	                if (!this->childwins.at(this->focusedChildWin).window->handleInput(inputevent)) {
 	                    /* childwin cannot navigate further, so try to find the next childwin */
 						bool modal = false;
         				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
         				if (!modal)
         					// currently focused child window is NOT marked as modal, so try to change the focus
-        					this->handleNavigationForChildWins(&(inputeventset->at(i)));
+        					this->handleNavigationForChildWins(inputevent);
 
 	                    return false;
 	                }
@@ -3922,14 +3921,14 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            if(err->getCode() == 1) {
 	                /* test if navigation must be done */
 	                ret = true;
-	                switch(inputeventset->at(i).key) {
+	                switch(inputevent->key) {
 	                    /* handle navigation */
 	                    case MMSKEY_CURSOR_DOWN:
 	                    case MMSKEY_CURSOR_LEFT:
 	                    case MMSKEY_CURSOR_RIGHT:
 	                    case MMSKEY_CURSOR_UP:
 //	                        logger.writeLog("widget threw a exception so try to navigate");
-	                        ret = this->handleNavigationForWidgets(&(inputeventset->at(i)));
+	                        ret = this->handleNavigationForWidgets(inputevent);
 
 	                        /* set the arrow widgets */
 	                        switchArrowWidgets();
@@ -3942,23 +3941,23 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                }
 
 	                /* call handle input callback */
-	                onHandleInput->emit(this, &(inputeventset->at(i)));
+	                onHandleInput->emit(this, inputevent);
 	            }
 	        }
     	}
     	else
-    	if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_KEYRELEASE) {
+    	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
             /* call handle input callback */
-            onHandleInput->emit(this, &(inputeventset->at(i)));
+            onHandleInput->emit(this, inputevent);
     	}
     	else
-    	if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
+    	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
     		/* button pressed */
 	        try {
 	            if (this->children.size()) {
 	            	// searching for the right widget to get the focus
-	            	int posx = inputeventset->at(i).posx;
-	            	int posy = inputeventset->at(i).posy;
+	            	int posx = inputevent->posx;
+	            	int posy = inputevent->posy;
 	            	bool b;
 	            	for (unsigned int j = 0; j < this->children.size(); j++) {
 	            		MMSWidget *w = this->children.at(j);
@@ -3982,7 +3981,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 
 	            			DEBUGMSG("MMSGUI", "try to execute input on widget");
 	            	        this->buttonpress_widget = w;
-	            	        this->buttonpress_widget->handleInput(&(inputeventset->at(i)));
+	            	        this->buttonpress_widget->handleInput(inputevent);
 
 	                        /* set the arrow widgets */
 	                        switchArrowWidgets();
@@ -4003,8 +4002,8 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 
 					if (!modal) {
 						/* searching for the right childwin to get the focus */
-						int posx = inputeventset->at(i).posx;
-						int posy = inputeventset->at(i).posy;
+						int posx = inputevent->posx;
+						int posy = inputevent->posy;
 	//	            	for (unsigned int j = 0; j < this->childwins.size(); j++) {
 						for (int j = (int)this->childwins.size()-1; j >= 0; j--) {
 							// get access to the window
@@ -4045,14 +4044,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 								}
 
 								// normalize the pointer position
-								for (unsigned int k = 0; k < inputeventset->size(); k++) {
-									inputeventset->at(k).posx-=rect.x;
-									inputeventset->at(k).posy-=rect.y;
-								}
+								inputevent->posx-=rect.x;
+								inputevent->posy-=rect.y;
 
 								DEBUGMSG("MMSGUI", "try to execute input on childwin");
 								this->buttonpress_childwin = window;
-								window->handleInput(inputeventset);
+								window->handleInput(inputevent);
 
 								// set the arrow widgets
 								switchArrowWidgets();
@@ -4071,15 +4068,12 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 						//int posy = inputeventset->at(i).posy;
 						MMSFBRectangle rect = this->childwins.at(this->focusedChildWin).window->getGeometry();
 
-						// normalize the pointer position
-						for (unsigned int k = 0; k < inputeventset->size(); k++) {
-							inputeventset->at(k).posx-=rect.x;
-							inputeventset->at(k).posy-=rect.y;
-						}
+						inputevent->posx-=rect.x;
+						inputevent->posy-=rect.y;
 
 						DEBUGMSG("MMSGUI", "try to execute input on childwin");
 						this->buttonpress_childwin = this->childwins.at(this->focusedChildWin).window;
-						this->childwins.at(this->focusedChildWin).window->handleInput(inputeventset);
+						this->childwins.at(this->focusedChildWin).window->handleInput(inputevent);
 
 						/* set the arrow widgets */
 						switchArrowWidgets();
@@ -4097,22 +4091,22 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                ret = true;
 
 	                /* call handle input callback */
-	                onHandleInput->emit(this, &(inputeventset->at(i)));
+	                onHandleInput->emit(this, inputevent);
 	            }
 	        }
     	}
     	else
-    	if   ((inputeventset->at(i).type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
-    		||(inputeventset->at(i).type == MMSINPUTEVENTTYPE_AXISMOTION)) {
+    	if   ((inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
+    		||(inputevent->type == MMSINPUTEVENTTYPE_AXISMOTION)) {
     		/* button released */
     		try {
 	            if (this->children.size()) {
 	            	// window with widgets
 	            	if (this->buttonpress_widget) {
 	            		DEBUGMSG("MMSGUI", "try to execute input on widget");
-            	        this->buttonpress_widget->handleInput(&(inputeventset->at(i)));
+            	        this->buttonpress_widget->handleInput(inputevent);
 
-            	        if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
+            	        if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
             	        	this->buttonpress_widget = NULL;
 
                         /* set the arrow widgets */
@@ -4129,15 +4123,13 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	            	if (this->buttonpress_childwin) {
               			/* normalize the pointer position */
 	            		MMSFBRectangle rect = this->buttonpress_childwin->getGeometry();
-            			for (unsigned int k = 0; k < inputeventset->size(); k++) {
-            				inputeventset->at(k).posx-=rect.x;
-            				inputeventset->at(k).posy-=rect.y;
-            			}
+						inputevent->posx-=rect.x;
+						inputevent->posy-=rect.y;
 
             			DEBUGMSG("MMSGUI", "try to execute input on childwin");
-            	        bool rc = this->buttonpress_childwin->handleInput(inputeventset);
+            	        bool rc = this->buttonpress_childwin->handleInput(inputevent);
 
-            	        if (inputeventset->at(i).type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
+            	        if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
             	        	this->buttonpress_childwin = NULL;
 
                         /* set the arrow widgets */
@@ -4154,7 +4146,7 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 					// window without widgets and childwindows, e.g. video/flash windows
 
 					// call handle input callback
-					return onHandleInput->emit(this, &(inputeventset->at(i)));
+					return onHandleInput->emit(this, inputevent);
 	            }
 
 	        } catch (MMSWidgetError *err) {
@@ -4163,11 +4155,10 @@ bool MMSWindow::handleInput(vector<MMSInputEvent> *inputeventset) {
 	                ret = true;
 
 	                /* call handle input callback */
-	                onHandleInput->emit(this, &(inputeventset->at(i)));
+	                onHandleInput->emit(this, inputevent);
 	            }
 	        }
     	}
-    }
 
     return ret;
 }

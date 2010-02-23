@@ -216,9 +216,7 @@ void MMSArrowWidget::handleInput(MMSInputEvent *inputevent) {
 						break;
 					}
 					if (ievt.key != MMSKEY_UNKNOWN) {
-						vector<MMSInputEvent> ievtset;
-						ievtset.push_back(ievt);
-						this->parent_rootwindow->handleInput(&ievtset);
+						this->parent_rootwindow->handleInput(&ievt);
 					}
 				}
 			}

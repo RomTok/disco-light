@@ -68,6 +68,7 @@ class MMSInputManager  {
 		bool		button_pressed;
 		short       oldx;
 		short		oldy;
+		struct      timespec lastinput;
 
 	friend class MMSInputThread;
 };
