@@ -248,9 +248,9 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 		unsigned int *dst = (unsigned int*)*buf;
 		dst+=*width * *height;
 		unsigned int *src = dst - *width;
-		unsigned int alpha = 0;
-		unsigned int alphaX = 0x100 / this->mirror_size;
-		if (0x100 % this->mirror_size >= (this->mirror_size >> 1))
+		unsigned int alpha = 170;
+		unsigned int alphaX = 0x050 / this->mirror_size;
+		if (0x050 % this->mirror_size >= (this->mirror_size >> 1))
 			alphaX++;
 		if (alphaX == 0) alphaX = 1;
     	for (int i = 0; i < this->mirror_size; i++) {
