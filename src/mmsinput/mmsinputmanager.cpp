@@ -283,6 +283,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			this->oldy = inputevent->absy;
 
 			window->handleInput(inputevent);
+			memset(inputevent, 0, sizeof(MMSInputEvent));
 		}
 	}
 
