@@ -74,7 +74,7 @@ class MMSTextBoxWidget : public MMSWidget {
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
-        void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
+        bool setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
 
         bool calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
                           unsigned int *realWidth, unsigned int *realHeight,
