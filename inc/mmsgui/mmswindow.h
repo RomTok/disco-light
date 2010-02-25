@@ -105,6 +105,8 @@ class MMSWindow {
             unsigned char   oldopacity;
             //! save the last focused widget here
             unsigned int    focusedWidget;
+            //! special blit done
+            bool			special_blit;
         } CHILDWINS;
 
         //! status area for the arrow widgets
@@ -378,7 +380,7 @@ class MMSWindow {
         bool removeChildWindow(MMSWindow *childwin);
 
         //! Internal method: Set the opacity of a child window.
-        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins = false);
+        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity);
 
         //! Internal method: Set the region of a child window.
         bool setChildWindowRegion(MMSWindow *childwin, bool refresh = true);
