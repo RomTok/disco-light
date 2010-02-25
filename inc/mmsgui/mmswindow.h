@@ -483,13 +483,13 @@ class MMSWindow {
         bool onAnimation(MMSPulser *pulser);
         void onAfterAnimation(MMSPulser *pulser);
 
-        bool beforeShowAction(MMSPulser *pulser);
-        bool showAction(MMSPulser *pulser);
-        void afterShowAction(MMSPulser *pulser);
+        virtual bool beforeShowAction(MMSPulser *pulser);
+        virtual bool showAction(MMSPulser *pulser);
+        virtual void afterShowAction(MMSPulser *pulser);
 
-        bool beforeHideAction(MMSPulser *pulser);
-        bool hideAction(MMSPulser *pulser);
-        void afterHideAction(MMSPulser *pulser);
+        virtual bool beforeHideAction(MMSPulser *pulser);
+        virtual bool hideAction(MMSPulser *pulser);
+        virtual void afterHideAction(MMSPulser *pulser);
 
 
         //! Internal method: Will be called from the MMSWindowAction thread if the window should disappear.
