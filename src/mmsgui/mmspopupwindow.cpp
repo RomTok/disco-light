@@ -67,7 +67,7 @@ bool MMSPopupWindow::show() {
     return MMSWindow::show();
 }
 
-bool MMSPopupWindow::showAction(bool *stopaction) {
+/*bool MMSPopupWindow::showAction(bool *stopaction) {
 	bool	      ret;
     unsigned int  duration;
 
@@ -91,7 +91,7 @@ bool MMSPopupWindow::showAction(bool *stopaction) {
 	}
 
 	return ret;
-}
+}*/
 
 
 /***********************************************/
