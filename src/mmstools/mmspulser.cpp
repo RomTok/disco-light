@@ -272,19 +272,36 @@ void MMSPulser::threadMain() {
     this->onAfterAnimation.emit(this);
 }
 
-void MMSPulser::start(bool separate_thread) {
-	if (!isRunning()) {
-		if (separate_thread) {
-			// start animation in a separate thread context
-			MMSThread::start();
-		}
-		else {
-			// start animation in the current thread context
-			this->animRunning = true;
-			threadMain();
-			this->animRunning = false;
-		}
+bool MMSPulser::start(bool separate_thread, bool wait) {
+	// waiting for the end of the thread
+	while (isRunning()) {
+		if (wait)
+			usleep(10000);
+		else
+			return false;
 	}
+
+	if (separate_thread) {
+		// start animation in a separate thread context
+		return MMSThread::start();
+	}
+	else {
+		// start animation in the context of the current thread
+		this->animRunning = true;
+
+		try {
+
+			// do the animation
+			threadMain();
+
+		} catch(MMSError *error) {
+		    DEBUGMSG(this->identity.c_str(), "Abort due to: %s", error->getMessage().c_str());
+		}
+
+		this->animRunning = false;
+	}
+
+	return true;
 }
 
 bool MMSPulser::isRunning() {

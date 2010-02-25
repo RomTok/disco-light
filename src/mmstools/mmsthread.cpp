@@ -86,9 +86,9 @@ void MMSThread::run() {
 	}
 }
 
-void MMSThread::start() {
+bool MMSThread::start() {
 	if (this->isrunning)
-		return;
+		return false;
 
 	/* initialize the priority */
     pthread_attr_init(&this->tattr);
@@ -101,6 +101,8 @@ void MMSThread::start() {
     pthread_create(&this->id, &tattr, startmythread, static_cast<void *>(this));
 
     pthread_attr_destroy(&this->tattr);
+
+    return true;
 }
 
 void MMSThread::detach() {

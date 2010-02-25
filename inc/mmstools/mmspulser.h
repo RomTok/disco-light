@@ -167,8 +167,10 @@ class MMSPulser : public MMSThread {
         \param separate_thread	true:  a new thread will be started,
                                 false: the animation is running in callers thread context
                                        and the start() method will return if the animation is finished
+        \param wait				waiting for end of animation and then start the new one
+        \return true or false
         */
-		void start(bool separate_thread = true);
+		bool start(bool separate_thread = true, bool wait = false);
 
         //! Check if the animation is running.
         /*!
