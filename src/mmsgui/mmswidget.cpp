@@ -355,12 +355,15 @@ MMSWidget* MMSWidget::operator[](string name) {
 
 
 
-void MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
+bool MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
     MMSFBRectangle mygeom;
 
-    if (!drawable)
-        return;
+    if (!drawable) {
+    	// not a drawable widget
+        return false;
+    }
 
+    // width and height should not lesser than innerGeom
     mygeom.x = 0;
     mygeom.y = 0;
     if ((int)width > this->innerGeom.w)
@@ -374,33 +377,40 @@ void MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
 
     if ((this->surfaceGeom.w != mygeom.w)||(this->surfaceGeom.h != mygeom.h)) {
 
-        /* surface geom has changed */
+        // surface dimension has changed
         this->surfaceGeom = mygeom;
 
-        /* create or change my surface */
+        // create or change my surface
         if (this->surface) {
             delete this->surface;
             this->surface = NULL;
         }
 
         if (this->has_own_surface) {
-        	/* has own surface, create it */
+        	// has own surface, create it
         	this->windowSurface->createCopy(&(this->surface), this->surfaceGeom.w, this->surfaceGeom.h);
         }
         else {
-        	/* get sub surface */
+        	// get sub surface
         	this->surface = this->windowSurface->getSubSurface(&(this->innerGeom));
         }
+
+        // dimension has changed
+        return true;
     }
     else {
-        if (!this->has_own_surface)
+        if (!this->has_own_surface) {
         	if (this->surface) {
-    	    	/* position of sub surface has changed */
+    	    	// position of sub surface has changed
     		    this->surfaceGeom = mygeom;
 
-    		    /* move the sub surface */
+    		    // move the sub surface
     		    this->surface->moveTo(this->innerGeom.x, this->innerGeom.y);
         	}
+        }
+
+        // dimension has NOT changed
+        return false;
     }
 }
 

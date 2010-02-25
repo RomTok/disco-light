@@ -410,7 +410,7 @@ class MMSWidget {
         MMSFBSurface *surface;
         MMSFBRectangle surfaceGeom;
 
-        virtual void setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
+        virtual bool setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
         virtual void setInnerGeometry();
 
         bool setScrollSize(unsigned int dX = 8, unsigned int dY = 8);
