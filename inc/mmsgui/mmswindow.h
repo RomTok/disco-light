@@ -84,6 +84,14 @@ typedef enum {
 
 class MMSChildWindow;
 
+//! current mode of the pulser
+typedef enum {
+	//! show action
+	MMSWINDOW_PULSER_MODE_SHOW = 0,
+	//! hide action
+	MMSWINDOW_PULSER_MODE_HIDE
+} MMSWINDOW_PULSER_MODE;
+
 //! This class is the base class for all windows.
 /*!
 This class includes the base functionality available for all windows within MMSGUI.
@@ -105,6 +113,8 @@ class MMSWindow {
             unsigned char   oldopacity;
             //! save the last focused widget here
             unsigned int    focusedWidget;
+            //! special blit done
+            bool			special_blit;
         } CHILDWINS;
 
         //! status area for the arrow widgets
@@ -340,22 +350,27 @@ class MMSWindow {
 
 
         //! Pulser for e.g. fade/move animations during show/hide
-        MMSPulser			pulser;
+        MMSPulser				pulser;
 
         //! connection object for MMSPulser::onBeforeAnimation callback
-        sigc::connection 	onBeforeAnimation_connection;
+        sigc::connection 		onBeforeAnimation_connection;
 
         //! connection object for MMSPulser::onAnimation callback
-        sigc::connection 	onAnimation_connection;
+        sigc::connection 		onAnimation_connection;
 
         //! connection object for MMSPulser::onAfterAnimation callback
-        sigc::connection 	onAfterAnimation_connection;
+        sigc::connection 		onAfterAnimation_connection;
+
+        //! current pulser mode
+        MMSWINDOW_PULSER_MODE	pulser_mode;
 
 
         unsigned int	anim_opacity;
         MMSFBRectangle	anim_rect;
-        bool			anim_fadein;
-        MMSDIRECTION	anim_movein;
+        bool			anim_fade;
+        MMSDIRECTION	anim_move;
+    	unsigned int 	anim_opacity_step;
+		int 			anim_move_step;
 
 
 
@@ -378,7 +393,7 @@ class MMSWindow {
         bool removeChildWindow(MMSWindow *childwin);
 
         //! Internal method: Set the opacity of a child window.
-        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins = false);
+        bool setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity);
 
         //! Internal method: Set the region of a child window.
         bool setChildWindowRegion(MMSWindow *childwin, bool refresh = true);
@@ -470,11 +485,17 @@ class MMSWindow {
         bool onAnimation(MMSPulser *pulser);
         void onAfterAnimation(MMSPulser *pulser);
 
-        //! Internal method: Will be called from the MMSWindowAction thread if the window should appear.
-        virtual bool showAction(bool *stopaction);
+        virtual bool beforeShowAction(MMSPulser *pulser);
+        virtual bool showAction(MMSPulser *pulser);
+        virtual void afterShowAction(MMSPulser *pulser);
+
+        virtual bool beforeHideAction(MMSPulser *pulser);
+        virtual bool hideAction(MMSPulser *pulser);
+        virtual void afterHideAction(MMSPulser *pulser);
+
 
         //! Internal method: Will be called from the MMSWindowAction thread if the window should disappear.
-        virtual bool hideAction(bool *stopaction);
+//        virtual bool hideAction(bool *stopaction);
 
         //! Internal method: Refresh a part of a window. Will be used by the widgets.
         void refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update = NULL, bool check_shown = true);

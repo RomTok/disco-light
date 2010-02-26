@@ -67,6 +67,8 @@ int			MMSWindow::fullscreen_main_window_use_count	= 0;
 #define MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(x,w)	((MMSFBWINDOW_CALC_STRETCH_H(w)!=25600)?((((x)*25600+12800)/MMSFBWINDOW_CALC_STRETCH_H(w))&~0x01):(x))
 
 
+#define MMSWINDOW_ANIMATION_MAX_OFFSET	30
+
 MMSWindow::MMSWindow() {
 
     this->TID = 0;
@@ -870,6 +872,7 @@ bool MMSWindow::addChildWindow(MMSWindow *childwin) {
     cw.opacity = 0;
     cw.oldopacity = 0;
     cw.focusedWidget = 0;
+    cw.special_blit = false;
 
     // insert child window into stack
     lock();
@@ -917,50 +920,23 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
 }
 
 
-bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool update_childwins) {
-//BAUSTELLE
+bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity) {
+	if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
+		return false;
 
-	if (childwin) {
-		if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
-			return false;
-	}
-//printf("11111111111111111 %d\n", opacity);
-    // find child window and set the opacity
+	// find child window and set the opacity
 	lock();
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
-        if ((!childwin)||(this->childwins.at(i).window == childwin)) {
+        if (this->childwins.at(i).window == childwin) {
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
-            if (childwin) {
-            	this->childwins.at(i).opacity = opacity;
-            }
-            else {
-            	// calculate my opacity (see recursive calls)
-            	unsigned int op;
-            	this->childwins.at(i).window->getOpacity(op);
-//            	printf("22222222222222222 %d\n", op);
-            	if (this->childwins.at(i).opacity)
-            		this->childwins.at(i).opacity = (op * (opacity + 1)) >> 8;
-//            	printf("33333333333333333 %d\n", this->childwins.at(i).opacity);
-            }
-            if (update_childwins) {
-            	// update the opacity of my childwindows
-            	this->childwins.at(i).window->setChildWindowOpacity(NULL, this->childwins.at(i).opacity, update_childwins);
-            }
-            if (childwin) {
-            	// update screen
-            	flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
-                unlock();
-                return true;
-            }
+           	this->childwins.at(i).opacity = opacity;
+			flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+			unlock();
+			return true;
         }
     }
     unlock();
-
-    if (childwin) {
-    	// childwin given, but not found
-    	return false;
-    }
-    return true;
+   	return false;
 }
 
 bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
@@ -1117,6 +1093,223 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         pw_region = *region;
     }
 
+    // draw all affected child windows
+    for (unsigned int i = 0; i < this->childwins.size(); i++) {
+        CHILDWINS *cw = &(this->childwins.at(i));
+        MMSFBRegion *myregion = &(cw->region);
+
+        // window pointer set?
+        if (!cw->window)
+        	continue;
+
+        // if the window has no opacity then continue
+        if (!cw->opacity)
+            continue;
+
+        if (!((myregion->x2 < pw_region.x1)||(myregion->y2 < pw_region.y1)
+            ||(myregion->x1 > pw_region.x2)||(myregion->y1 > pw_region.y2))) {
+
+            // the window is affected
+            // calc source and destination
+            MMSFBRectangle src_rect;
+            int dst_x = pw_region.x1;
+            int dst_y = pw_region.y1;
+
+            src_rect.x = pw_region.x1 - myregion->x1;
+            if (src_rect.x < 0) {
+                dst_x-= src_rect.x;
+                src_rect.x = 0;
+            }
+
+            src_rect.y = pw_region.y1 - myregion->y1;
+            if (src_rect.y < 0) {
+                dst_y-= src_rect.y;
+                src_rect.y = 0;
+            }
+
+            src_rect.w = myregion->x2 - myregion->x1 + 1 - src_rect.x;
+            if (myregion->x2 > pw_region.x2)
+                src_rect.w-= myregion->x2 - pw_region.x2;
+
+            src_rect.h = myregion->y2 - myregion->y1 + 1 - src_rect.y;
+            if (myregion->y2 > pw_region.y2)
+                src_rect.h-= myregion->y2 - pw_region.y2;
+
+			if (cw->window->stretchmode) {
+				src_rect.x = MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(src_rect.x, cw->window);
+				src_rect.y = MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(src_rect.y, cw->window);
+				src_rect.w = MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(src_rect.w , cw->window);
+				src_rect.h = MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(src_rect.h, cw->window);
+			}
+
+			// own surface?
+            bool os = true;
+            cw->window->getOwnSurface(os);
+
+        	if (os) {
+				// own surface
+        		// for this we support the opacity attribute and the stretch feature
+
+        		// check if we have to do the "special blit"
+        		bool special_blit = cw->window->stretchmode;
+        		if ((!special_blit) && (cw->opacity < 255)) {
+        			// opacity calculation requested
+        			// check if at least one child window with opacity > 0 does exists
+					for (int c = 0; c < cw->window->childwins.size(); c++) {
+						if (cw->window->childwins.at(c).opacity) {
+							special_blit = true;
+							break;
+						}
+					}
+        		}
+        		if ((!special_blit) && (cw->special_blit)) {
+        			// currently special blit is not requested
+        			// but the blit beforehand has "destroy" the window surface
+        			// so we have to redraw the window, note: draw() has to clear the window surface!
+   					cw->window->draw(false, &src_rect, true);
+        		}
+        		cw->special_blit = special_blit;
+
+                if (special_blit) {
+                	// special mode
+                	// we MUST draw (the background) to the surface of this window
+                	// then we MUST draw the window stack if the child windows to the surface of this window
+                	// afterwards we MUST blit/stretch the result to the dst_surface
+
+            		// direct draw, note: draw() has to clear the window surface!
+   					cw->window->draw(false, &src_rect, true);
+
+    				// draw the children of this child, let child windows draw to my surface
+    				MMSFBRegion reg;
+    				reg.x1 = src_rect.x;
+    				reg.y1 = src_rect.y;
+    				reg.x2 = src_rect.x + src_rect.w - 1;
+    				reg.y2 = src_rect.y + src_rect.h - 1;
+    				if(cw->window) {
+    					cw->window->drawChildWindows(cw->window->surface, &reg,
+													 reg.x1, reg.y1);
+    				}
+
+            		if (cw->opacity < 255) {
+                    	// set the blitting flags and color
+                        dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
+                        dst_surface->setColor(0, 0, 0, cw->opacity);
+            		}
+            		else {
+						// set the blitting flags
+						dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
+            		}
+
+					// blit window front buffer to destination surface
+					if (!cw->window->stretchmode) {
+						// normal blit if stretch mode is off
+						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+					}
+					else {
+						// stretch the window to the parent surface
+						MMSFBRectangle dr = MMSFBRectangle(
+												dst_x + offsX,
+												dst_y + offsY,
+												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
+												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
+						dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
+					}
+                }
+                else {
+                	// we can blit the surface of this window directly to the dst_surface
+            		if (cw->opacity < 255) {
+                    	// set the blitting flags and color
+                        dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
+                        dst_surface->setColor(0, 0, 0, cw->opacity);
+            		}
+            		else {
+						// set the blitting flags
+						dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
+            		}
+
+					// blit window front buffer to destination surface
+					if (!cw->window->stretchmode) {
+						// normal blit if stretch mode is off
+						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+					}
+					else {
+						// stretch the window to the parent surface
+						MMSFBRectangle dr = MMSFBRectangle(
+												dst_x + offsX,
+												dst_y + offsY,
+												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
+												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
+						dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
+					}
+
+					// draw the children of this child, let child windows draw to the surface of my parent
+					MMSFBRegion reg;
+					reg.x1 = src_rect.x;
+					reg.y1 = src_rect.y;
+					reg.x2 = src_rect.x + src_rect.w - 1;
+					reg.y2 = src_rect.y + src_rect.h - 1;
+					if(cw->window) {
+						cw->window->drawChildWindows(dst_surface, &reg,
+													 dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);
+					}
+                }
+        	}
+			else {
+				// no own surface
+        		// for this we DO NOT support the opacity attribute and the stretch feature!!!
+        		if (cw->opacity < 255) {
+        			printf("DISKO: Cannot use the opacity %d of window '%s' which has no own surface!\n",
+        					cw->opacity, cw->window->name.c_str());
+        		}
+        		if (cw->window->stretchmode) {
+        			printf("DISKO: Cannot stretch the window '%s' which has no own surface!\n",
+        					cw->window->name.c_str());
+        		}
+
+        		// direct draw
+				MMSFBRectangle r = cw->window->geom;
+				if ((src_rect.w == r.w)||(src_rect.h == r.h)) {
+					// draw all (e.g. border)
+					cw->window->draw(false, &src_rect, false);
+				}
+				else {
+					// minimal draw
+					cw->window->draw(true, &src_rect, false);
+				}
+
+				// draw the children of this child, let child windows draw to the surface of my parent
+				MMSFBRegion reg;
+				reg.x1 = src_rect.x;
+				reg.y1 = src_rect.y;
+				reg.x2 = src_rect.x + src_rect.w - 1;
+				reg.y2 = src_rect.y + src_rect.h - 1;
+				if(cw->window) {
+					cw->window->drawChildWindows(dst_surface, &reg,
+												 dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);
+				}
+        	}
+        }
+    }
+}
+
+
+#ifdef ddd
+
+void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region, int offsX, int offsY) {
+    MMSFBRegion       pw_region;
+
+    if (region == NULL) {
+        // complete surface
+        pw_region.x1 = 0;
+        pw_region.y1 = 0;
+        pw_region.x2 = this->geom.w - 1;
+        pw_region.y2 = this->geom.h - 1;
+    }
+    else {
+        // only a region
+        pw_region = *region;
+    }
+
     /* draw all affected child windows */
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
         CHILDWINS *cw = &(this->childwins.at(i));
@@ -1212,10 +1405,14 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
             reg.x2 = src_rect.x + src_rect.w - 1;
             reg.y2 = src_rect.y + src_rect.h - 1;
             if(cw->window)
-            	cw->window->drawChildWindows(dst_surface, &reg, dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);
+            	cw->window->drawChildWindows(dst_surface, &reg, dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);*/
         }
     }
 }
+
+#endif
+
+
 
 bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags flags,
                            bool flipChildSurface, bool locked) {
@@ -1230,22 +1427,22 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
 
     if (!win) win = this;
     if (win->getType()!=MMSWINDOWTYPE_CHILDWINDOW) {
-        /* normal parent window */
+        // normal parent window
         pw_surface = win->surface;
         if (region == NULL) {
-            /* complete surface */
+            // complete surface
         	pw_region.x1 = 0;
             pw_region.y1 = 0;
             pw_region.x2 = win->geom.w - 1;
             pw_region.y2 = win->geom.h - 1;
         }
         else {
-            /* only a region */
+            // only a region
             pw_region = *region;
         }
     }
     else {
-        /* child window */
+        // child window
         int z = -1;
         for (unsigned int i = 0; i < this->childwins.size(); i++) {
             if (this->childwins.at(i).window == win) {
@@ -1275,16 +1472,16 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
 
                 this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
 
-                /* get parents surface and break loop */
+                // get parents surface and break loop
                 pw_surface = win->parent->surface;
                 z = i;
                 break;
             }
         }
 
-        /* window found? */
+        // window found?
         if (z < 0) {
-            /* not found */
+            // not found
             if (!locked)
 //PUP                flipLock.unlock();
             	unlock();
@@ -1292,21 +1489,21 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
             return false;
         }
 
-        /* calculate the affected region on the parent surface */
+        // calculate the affected region on the parent surface
         MMSFBRegion *myregion = &(this->childwins.at(z).region);
         if (region == NULL) {
-            /* complete surface */
+            // complete surface
             pw_region = *myregion;
         }
         else {
-            /* only a region */
+            // only a region
             pw_region.x1 = myregion->x1 + region->x1;
             pw_region.y1 = myregion->y1 + region->y1;
             pw_region.x2 = myregion->x1 + region->x2;
             pw_region.y2 = myregion->y1 + region->y2;
         }
 
-        /* redraw the region within parent window */
+        // redraw the region within parent window
         MMSFBRectangle rect;
         rect.x = pw_region.x1;
         rect.y = pw_region.y1;
@@ -1315,38 +1512,41 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
 
 
         if (this->parent == NULL) {
-            /* i am the root */
+            // i am the top level parent
         	this->draw(true, &rect);
         } else {
-            /* i am also a child, call recursive */
+            // i am also a child, call recursive to the top level parent
             bool ret = this->parent->flipWindow(win->parent, &pw_region, flags, false, false);
 
-            /* unlock */
+            // unlock
             if (!locked)
 //PUP                flipLock.unlock();
             	unlock();
 
+            // stop here, because the drawing of child windows is initiated by the top level parent window
             return ret;
         }
 
     }
 
-    /* lock */
+    // here we are a top level parent window
+    // child windows are not allowed here!!!
+
+    // lock
 //PUP    pw_surface->lock();
     lock();
 
-
-	/* draw all affected child windows */
+	// draw all affected child windows
     drawChildWindows(pw_surface, &pw_region);
 
-	/* do the flip */
+	// do the flip
     pw_surface->flip(&pw_region);
 
-    /* unlock */
+    // unlock
 //PUP    pw_surface->unlock();
     unlock();
 
-    /* unlock */
+    // unlock
     if (!locked)
 //PUP        flipLock.unlock();
     	unlock();
@@ -1771,10 +1971,22 @@ bool MMSWindow::show() {
     	break;
     }
 
-    if (this->action->isRunning())
+/*    if (this->action->isRunning())
         this->action->cancelBroadcast.emit(this->getType());
     this->action->setAction(MMSWACTION_SHOW);
-    this->action->start();
+    this->action->start();*/
+
+    //////////
+
+	// do the animation in a separate thread...
+	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser_mode = MMSWINDOW_PULSER_MODE_SHOW;
+	this->pulser.start(true, true);
+
+
+    ////////////
+
 
     return true;
 }
@@ -2094,8 +2306,66 @@ bool MMSWindow::stretch(double left, double up, double right, double down) {
 }
 
 bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
+	switch (this->pulser_mode) {
+	case MMSWINDOW_PULSER_MODE_SHOW:
+		return beforeShowAction(pulser);
+	case MMSWINDOW_PULSER_MODE_HIDE:
+		return beforeHideAction(pulser);
+	}
+	return false;
+}
 
-	// lock during draw
+bool MMSWindow::onAnimation(MMSPulser *pulser) {
+	switch (this->pulser_mode) {
+	case MMSWINDOW_PULSER_MODE_SHOW:
+		return showAction(pulser);
+	case MMSWINDOW_PULSER_MODE_HIDE:
+		return hideAction(pulser);
+	}
+	return false;
+}
+
+void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
+	switch (this->pulser_mode) {
+	case MMSWINDOW_PULSER_MODE_SHOW:
+		return afterShowAction(pulser);
+	case MMSWINDOW_PULSER_MODE_HIDE:
+		return afterHideAction(pulser);
+	}
+}
+
+bool MMSWindow::beforeShowAction(MMSPulser *pulser) {
+
+	if(shown==true) {
+		// call onAfterShow callback with already shown flag
+		this->onAfterShow->emit(this, true);
+		this->willshow=false;
+		return false;
+	}
+
+    // set the first focused widget, if not set and if window can get the focus
+    this->setFirstFocus();
+
+    if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
+    	if ((int)this->parent->focusedChildWin >= 0) {
+    		MMSWindow *fw = this->parent->childwins.at(this->parent->focusedChildWin).window;
+    		if ((fw != this) && (!fw->isShown())) {
+    			// focused child window is not shown!
+    			// so set focus to this window
+    			setFocus();
+    		}
+    	}
+    }
+
+    // optimized shown
+   	showBufferedShown();
+
+    // check if all of its parents are shown
+    bool really_shown = true;
+    if (this->parent)
+		really_shown = this->parent->isShown(true);
+
+    // lock during draw
     lock();
 
     if (getType() == MMSWINDOWTYPE_ROOTWINDOW) {
@@ -2201,189 +2471,268 @@ bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
 
 	// check if window or parent are correctly initialized
     if (!((this->parent)||((!this->parent)&&(this->window)))) {
+    	// no, do not start the animation
+		afterShowAction(NULL);
     	return false;
     }
 
-    // check if all of its parents are shown
-    bool really_shown = true;
-    if (this->parent) {
-		really_shown = this->parent->isShown(true);
-    }
-
-    // init animation value
+    // init animation values
     if (!getOpacity(this->anim_opacity)) this->anim_opacity = 255;
     this->anim_rect = getGeometry();
-    if (!getFadeIn(this->anim_fadein)) this->anim_fadein = false;
-    if (!getMoveIn(this->anim_movein)) this->anim_movein = MMSDIRECTION_NOTSET;
+    if (!getFadeIn(this->anim_fade)) this->anim_fade = false;
+    if (!getMoveIn(this->anim_move)) this->anim_move = MMSDIRECTION_NOTSET;
 
-	if ((!really_shown)||((!this->anim_fadein)&&(this->anim_movein==MMSDIRECTION_NOTSET))) {
+	if ((!really_shown)||((!this->anim_fade)&&(this->anim_move==MMSDIRECTION_NOTSET))) {
 		// nothing to animate, set values which are valid after the animation
-		onAfterAnimation(NULL);
+		afterShowAction(pulser);
 		return false;
 	}
 
+	// calculate the steps
+	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
+	switch (this->anim_move) {
+		case MMSDIRECTION_LEFT:
+			this->anim_move_step = (vrect.w - this->anim_rect.x + vrect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_RIGHT:
+			this->anim_move_step = (this->anim_rect.w - vrect.x + this->anim_rect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_UP:
+			this->anim_move_step = (vrect.h - this->anim_rect.y + vrect.y) / (steps+1);
+			break;
+		case MMSDIRECTION_DOWN:
+			this->anim_move_step = (this->anim_rect.h - vrect.y + this->anim_rect.y) / (steps+1);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fade)
+		this->anim_opacity_step = this->anim_opacity / (steps+1);
+
 	return true;
 }
 
-#define MMSWINDOW_ANIMATION_MAX_OFFSET	30
 
-bool MMSWindow::onAnimation(MMSPulser *pulser) {
+bool MMSWindow::showAction(MMSPulser *pulser) {
 
-//printf("111111111111111 %f\n", pulser->getOffset());
+	// do the animation
+	double offs = MMSWINDOW_ANIMATION_MAX_OFFSET - pulser->getOffset();
 
-	// little animation
-	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
-	unsigned int opacity_step;
-	int move_step;
+//printf("111111111111111 %f\n", offs);
 
-	switch (this->anim_movein) {
+	// move it
+	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
-			move_step = (vrect.w-this->anim_rect.x+vrect.x) / (steps+1);
+			moveTo((int)(this->anim_rect.x + offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_RIGHT:
-			move_step = (this->anim_rect.w-vrect.x+this->anim_rect.x) / (steps+1);
+			moveTo((int)(this->anim_rect.x - offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_UP:
-			move_step = (vrect.h-this->anim_rect.y+vrect.y) / (steps+1);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + offs * this->anim_move_step) & ~0x01);
 			break;
 		case MMSDIRECTION_DOWN:
-			move_step = (this->anim_rect.h-vrect.y+this->anim_rect.y) / (steps+1);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - offs * this->anim_move_step) & ~0x01);
 			break;
 		default:
 			break;
 	}
 
-	if (this->anim_fadein)
-		opacity_step = this->anim_opacity / (steps+1);
-
-	double i = steps - pulser->getOffset();
-
-	switch (this->anim_movein) {
-		case MMSDIRECTION_LEFT:
-			moveTo((int)(this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
-			break;
-		case MMSDIRECTION_RIGHT:
-			moveTo((int)(this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
-			break;
-		case MMSDIRECTION_UP:
-			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + i * move_step) & ~0x01);
-			break;
-		case MMSDIRECTION_DOWN:
-			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - i * move_step) & ~0x01);
-			break;
-		default:
-			break;
-	}
-
-	if (this->anim_fadein) {
+	if (this->anim_fade) {
+		// fade it
 		if (!parent)
-			this->window->setOpacity(this->anim_opacity - i * opacity_step);
+			this->window->setOpacity(this->anim_opacity - offs * this->anim_opacity_step);
 		else
-			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step, true);
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - offs * this->anim_opacity_step);
 	}
 	else
-	if (i == steps) {
+	if (offs == MMSWINDOW_ANIMATION_MAX_OFFSET) {
+		// no fade animation and called for the first time, set the opacity
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity);
 		else
-			this->parent->setChildWindowOpacity(this, this->anim_opacity, true);
+			this->parent->setChildWindowOpacity(this, this->anim_opacity);
 	}
 
 	return true;
 }
 
-void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
-    // set final position
-    if (this->anim_movein != MMSDIRECTION_NOTSET) {
-		moveTo(this->anim_rect.x, this->anim_rect.y);
-    }
+void MMSWindow::afterShowAction(MMSPulser *pulser) {
+	if (pulser) {
+		// animation finished
+		// set final position
+		if (this->anim_move != MMSDIRECTION_NOTSET) {
+			moveTo(this->anim_rect.x, this->anim_rect.y);
+		}
 
-    // set final opacity
-	if (!parent) {
-		this->window->setOpacity(this->anim_opacity);
+		// set final opacity
+		if (!this->parent) {
+			this->window->setOpacity(this->anim_opacity);
+		}
+		else {
+			this->parent->setChildWindowOpacity(this, this->anim_opacity);
+		}
 	}
-	else {
-		this->parent->setChildWindowOpacity(this, this->anim_opacity, true);
-	}
 
-	return;
-}
-
-bool MMSWindow::showAction(bool *stopaction) {
-    bool    saction = *stopaction;
-
-//    printf("showAction %x\n", this);
-
-    if(shown==true) {
-        // call onAfterShow callback with already shown flag
-        this->onAfterShow->emit(this, true);
-        this->willshow=false;
-        return !saction;
-    }
-
-//printf("showaction %s\n", name.c_str());
-
-    // set the first focused widget, if not set and if window can get the focus
-    this->setFirstFocus();
-
-    if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
-    	if ((int)this->parent->focusedChildWin >= 0) {
-    		MMSWindow *fw = this->parent->childwins.at(this->parent->focusedChildWin).window;
-    		if ((fw != this) && (!fw->isShown())) {
-//printf("showaction2 %s\n", name.c_str());
-    			// focused child window is not shown!
-    			// so set focus to this window
-    			setFocus();
-    		}
-    	}
-    }
-
-
-//printf("showaction3 %s\n", name.c_str());
-
-/////////
-//    if (getType() != MMSWINDOWTYPE_CHILDWINDOW) {
-    	showBufferedShown();
-//    }
-///////////////////
-
-//	printf("showAction2 %x\n", this);
-
-
-    // check if all of its parents are shown
-    bool really_shown = true;
-    if (this->parent)
-		really_shown = this->parent->isShown(true);
-
-
-
-	// do the animation...
-	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
-	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
-	this->pulser.start(false);
-
-
+	// do the rest...
     this->willshow=false;
 
     if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
+    	//TODO: if no focused childwin, then i should get the focused back
 
-
-//TODO: if no focused childwin, then i should get the focused back
-
-
-    	/* pre-calculate the navigation */
+    	// pre-calculate the navigation
         if (this->parent) {
             this->parent->preCalcNavigation();
             this->switchArrowWidgets();
         }
     }
 
-    *stopaction=false;
+	// call onAfterShow callback without already shown flag
+	this->onAfterShow->emit(this, false);
+}
 
-    /* call onAfterShow callback without already shown flag */
-    this->onAfterShow->emit(this, false);
+bool MMSWindow::beforeHideAction(MMSPulser *pulser) {
+    if (shown==false) {
+    	this->willhide = false;
+        return false;
+    }
 
-    return !saction;
+    // check if all of its parents are shown
+   	bool really_shown = this->isShown(true);
+
+    if (!this->parent)
+        if (this->windowmanager)
+            this->windowmanager->removeWindowFromToplevel(this);
+
+    if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
+        // remove the focus from me
+    	removeFocusFromChildWindow();
+    }
+
+	// check if window or parent are correctly initialized
+	if (!((this->parent)||((!this->parent)&&(this->window)))) {
+        // no, check if i have the surface from layer
+        if (this->surface) {
+            // clear it
+            this->surface->clear();
+            this->surface->flip();
+        }
+		afterHideAction(NULL);
+		return false;
+	}
+
+    // init animation values
+    if (!getOpacity(this->anim_opacity)) this->anim_opacity = 255;
+    this->anim_rect = getGeometry();
+    if (!getFadeOut(this->anim_fade)) this->anim_fade = false;
+    if (!getMoveOut(this->anim_move)) this->anim_move = MMSDIRECTION_NOTSET;
+
+	if ((!really_shown)||((!this->anim_fade)&&(this->anim_move==MMSDIRECTION_NOTSET))) {
+		// nothing to animate, set values which are valid after the animation
+		afterHideAction(pulser);
+		return false;
+	}
+
+	// calculate the steps
+	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
+	switch (this->anim_move) {
+		case MMSDIRECTION_LEFT:
+			this->anim_move_step = (this->anim_rect.w - vrect.x + this->anim_rect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_RIGHT:
+			this->anim_move_step = (vrect.w - this->anim_rect.x + vrect.x) / (steps+1);
+			break;
+		case MMSDIRECTION_UP:
+			this->anim_move_step = (this->anim_rect.h - vrect.y + this->anim_rect.y) / (steps+1);
+			break;
+		case MMSDIRECTION_DOWN:
+			this->anim_move_step = (vrect.h - this->anim_rect.y + vrect.y) / (steps+1);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fade)
+		this->anim_opacity_step = this->anim_opacity / (steps+1);
+
+    return true;
+}
+
+bool MMSWindow::hideAction(MMSPulser *pulser) {
+
+	// do the animation
+	double offs = pulser->getOffset();
+
+//printf("2222222222222 %f\n", offs);
+
+
+	// move it
+	switch (this->anim_move) {
+		case MMSDIRECTION_LEFT:
+			moveTo((int)(this->anim_rect.x - offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
+			break;
+		case MMSDIRECTION_RIGHT:
+			moveTo((int)(this->anim_rect.x + offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
+			break;
+		case MMSDIRECTION_UP:
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - offs * this->anim_move_step) & ~0x01);
+			break;
+		case MMSDIRECTION_DOWN:
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + offs * this->anim_move_step) & ~0x01);
+			break;
+		default:
+			break;
+	}
+
+	if (this->anim_fade) {
+		// fade it
+		if (!parent)
+			this->window->setOpacity(this->anim_opacity - offs * this->anim_opacity_step);
+		else
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - offs * this->anim_opacity_step);
+	}
+	else
+	if (offs == 0) {
+		// no fade animation and called for the first time, set the opacity
+		if (!parent)
+			this->window->setOpacity(this->anim_opacity);
+		else
+			this->parent->setChildWindowOpacity(this, this->anim_opacity);
+	}
+
+	return true;
+}
+
+void MMSWindow::afterHideAction(MMSPulser *pulser) {
+	if (pulser) {
+		// animation finished
+	    // set final opacity
+		if (!this->parent) {
+			this->window->setOpacity(0);
+        	this->window->hide();
+		}
+		else {
+	        this->parent->setChildWindowOpacity(this, 0);
+		}
+
+		// restore position
+	    if (this->anim_move != MMSDIRECTION_NOTSET) {
+	    	moveTo(this->anim_rect.x, this->anim_rect.y);
+	    }
+	}
+
+	// do the rest...
+    shown=false;
+    willhide=false;
+
+    if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
+        // pre-calculate the navigation
+        if (this->parent) {
+            this->parent->preCalcNavigation();
+            switchArrowWidgets();
+        }
+    }
 }
 
 bool MMSWindow::hide(bool goback, bool wait) {
@@ -2414,6 +2763,7 @@ bool MMSWindow::hide(bool goback, bool wait) {
         return false;
     }
 
+/*
     if (this->action->isRunning())
         this->action->cancelBroadcast.emit(this->getType());
     this->action->setAction(MMSWACTION_HIDE);
@@ -2423,13 +2773,22 @@ bool MMSWindow::hide(bool goback, bool wait) {
     	int c = 0;
         while ((this->action->getAction()==MMSWACTION_HIDE) && c < 20) { msleep(100); c++; }
     }
+*/
 
-    /* call onHide callback */
+	// do the animation in a separate thread...
+	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser_mode = MMSWINDOW_PULSER_MODE_HIDE;
+	this->pulser.start(!wait, true);
+
+
+    // call onHide callback
     this->onHide->emit(this, goback);
 
     return true;
 }
 
+/*
 bool MMSWindow::hideAction(bool *stopaction) {
     bool    saction = *stopaction;
 
@@ -2447,7 +2806,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
         // remove the focus from me
     	removeFocusFromChildWindow();
     }
-
+/////////////////
     if ((this->parent)||((!this->parent)&&(this->window))) {
 	    unsigned int opacity;
 	    if (!getOpacity(opacity)) opacity = 255;
@@ -2526,7 +2885,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
 
 	        }
 	    }
-
+///ddd
 		if (!parent) {
 		    // set final opacity
 			this->window->setOpacity(0);
@@ -2542,19 +2901,20 @@ bool MMSWindow::hideAction(bool *stopaction) {
 	    	moveTo(rect.x, rect.y);
     }
     else {
-        /* check if i have the surface from layer */
+        // check if i have the surface from layer
         if (this->surface) {
-            /* clear it */
+            // clear it
             this->surface->clear();
             this->surface->flip();
         }
     }
+///////////
 
     shown=false;
     willhide=false;
 
     if (getType() == MMSWINDOWTYPE_CHILDWINDOW) {
-        /* pre-calculate the navigation */
+        // pre-calculate the navigation
         if (this->parent) {
             this->parent->preCalcNavigation();
             switchArrowWidgets();
@@ -2564,7 +2924,7 @@ bool MMSWindow::hideAction(bool *stopaction) {
     *stopaction=false;
 
     return !saction;
-}
+}*/
 
 void MMSWindow::waitUntilShown() {
 	while ((!isShown())||(willshow))

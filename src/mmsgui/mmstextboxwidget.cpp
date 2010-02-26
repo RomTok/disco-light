@@ -89,9 +89,12 @@ MMSWidget *MMSTextBoxWidget::copyWidget() {
 }
 
 
-void MMSTextBoxWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
-    this->surfaceChanged = true;
-   	MMSWidget::setSurfaceGeometry(width, height);
+bool MMSTextBoxWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
+   	if (MMSWidget::setSurfaceGeometry(width, height)) {
+   	    this->surfaceChanged = true;
+   	    return true;
+   	}
+   	return false;
 }
 
 bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,

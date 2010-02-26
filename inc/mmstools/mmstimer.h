@@ -85,7 +85,7 @@ class MMSTimer: public MMSThread
 		 *
 		 * \param milliSeconds    the timer interval in milli seconds
 		 */
-		void start(unsigned int milliSeconds);
+		bool start(unsigned int milliSeconds);
 
 		/*!
 		 * \brief Restarts timer.
@@ -94,14 +94,14 @@ class MMSTimer: public MMSThread
 		 * a new timer starts with the full interval set with
 		 * \see start(unsigned int milliSecs).
 		 */
-		void restart();
+		bool restart();
 
 		/*!
 		 * \brief Stops timer.
 		 *
 		 * A running timer stops and no signal emits.
 		 */
-		void stop();
+		bool stop();
 
 		/*!
 		 * \brief This signal emits if the timer expires.

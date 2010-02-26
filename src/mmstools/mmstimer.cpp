@@ -64,37 +64,41 @@ MMSTimer::~MMSTimer() {
 	pthread_mutex_destroy(&this->mutex);
 }
 
-void MMSTimer::start(unsigned int milliSeconds) {
+bool MMSTimer::start(unsigned int milliSeconds) {
 	if(isRunning()) {
-		return;
+		return false;
 	}
 
 	this->nSecs = (milliSeconds % 1000) * 1000000;
 	this->secs = milliSeconds / 1000;
 
-	MMSThread::start();
+	return MMSThread::start();
 }
 
-void MMSTimer::restart() {
+bool MMSTimer::restart() {
 	if(!isRunning()) {
-		return;
+		return false;
 	}
 
 	pthread_mutex_lock(&mutex);
 	this->action = RESTART;
 	pthread_cond_signal(&cond);
 	pthread_mutex_unlock(&mutex);
+
+	return true;
 }
 
-void MMSTimer::stop() {
+bool MMSTimer::stop() {
 	if(!isRunning()) {
-		return;
+		return false;
 	}
 
 	pthread_mutex_lock(&mutex);
 	this->action = STOP;
 	pthread_cond_signal(&cond);
 	pthread_mutex_unlock(&mutex);
+
+	return true;
 }
 
 void MMSTimer::threadMain() {

@@ -59,7 +59,7 @@ class MMSPopupWindow : public MMSWindow {
 
         virtual bool show();
 
-		bool showAction(bool *stopaction);
+//		bool showAction(bool *stopaction);
 
     public:
         /* theme access methods */

@@ -52,11 +52,21 @@ typedef enum {
 	MMSPULSER_SEQ_LINEAR = 0,
 	//! linear descending
 	MMSPULSER_SEQ_LINEAR_DESC,
-	//! logarithmic ascending
-	MMSPULSER_SEQ_LOG,
-	//! logarithmic descending
-	MMSPULSER_SEQ_LOG_DESC
+	//! logarithmic ascending, animation starts smoothly and ends fast
+	MMSPULSER_SEQ_LOG_SOFT_START,
+	//! logarithmic descending, animation starts smoothly and ends fast
+	MMSPULSER_SEQ_LOG_DESC_SOFT_START,
+	//! logarithmic ascending, animation starts fast and ends smoothly
+	MMSPULSER_SEQ_LOG_SOFT_END,
+	//! logarithmic descending, animation starts fast and ends smoothly
+	MMSPULSER_SEQ_LOG_DESC_SOFT_END,
+	//! logarithmic ascending, animation starts smoothly and ends smoothly
+	MMSPULSER_SEQ_LOG_SOFT_START_AND_END,
+	//! logarithmic descending, animation starts smoothly and ends smoothly
+	MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END
 } MMSPULSER_SEQ;
+
+
 
 //! This class helps the MMSGUI and user specific applications to get smooth animations.
 /*!
@@ -167,8 +177,10 @@ class MMSPulser : public MMSThread {
         \param separate_thread	true:  a new thread will be started,
                                 false: the animation is running in callers thread context
                                        and the start() method will return if the animation is finished
+        \param wait				waiting for end of animation and then start the new one
+        \return true or false
         */
-		void start(bool separate_thread = true);
+		bool start(bool separate_thread = true, bool wait = false);
 
         //! Check if the animation is running.
         /*!
