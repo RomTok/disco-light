@@ -52,11 +52,21 @@ typedef enum {
 	MMSPULSER_SEQ_LINEAR = 0,
 	//! linear descending
 	MMSPULSER_SEQ_LINEAR_DESC,
-	//! logarithmic ascending
-	MMSPULSER_SEQ_LOG,
-	//! logarithmic descending
-	MMSPULSER_SEQ_LOG_DESC
+	//! logarithmic ascending, animation starts smoothly and ends fast
+	MMSPULSER_SEQ_LOG_SOFT_START,
+	//! logarithmic descending, animation starts smoothly and ends fast
+	MMSPULSER_SEQ_LOG_DESC_SOFT_START,
+	//! logarithmic ascending, animation starts fast and ends smoothly
+	MMSPULSER_SEQ_LOG_SOFT_END,
+	//! logarithmic descending, animation starts fast and ends smoothly
+	MMSPULSER_SEQ_LOG_DESC_SOFT_END,
+	//! logarithmic ascending, animation starts smoothly and ends smoothly
+	MMSPULSER_SEQ_LOG_SOFT_START_AND_END,
+	//! logarithmic descending, animation starts smoothly and ends smoothly
+	MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END
 } MMSPULSER_SEQ;
+
+
 
 //! This class helps the MMSGUI and user specific applications to get smooth animations.
 /*!

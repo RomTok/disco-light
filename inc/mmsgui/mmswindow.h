@@ -369,6 +369,8 @@ class MMSWindow {
         MMSFBRectangle	anim_rect;
         bool			anim_fade;
         MMSDIRECTION	anim_move;
+    	unsigned int 	anim_opacity_step;
+		int 			anim_move_step;
 
 
 

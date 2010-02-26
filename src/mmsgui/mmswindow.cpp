@@ -1980,7 +1980,7 @@ bool MMSWindow::show() {
 
 	// do the animation in a separate thread...
 	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
-	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
 	this->pulser_mode = MMSWINDOW_PULSER_MODE_SHOW;
 	this->pulser.start(true, true);
 
@@ -2488,53 +2488,52 @@ bool MMSWindow::beforeShowAction(MMSPulser *pulser) {
 		return false;
 	}
 
-	return true;
-}
-
-
-bool MMSWindow::showAction(MMSPulser *pulser) {
-
-//printf("111111111111111 %f\n", pulser->getOffset());
-
-	// little animation
+	// calculate the steps
 	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
-	unsigned int opacity_step;
-	int move_step;
-
 	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
-			move_step = (vrect.w-this->anim_rect.x+vrect.x) / (steps+1);
+			this->anim_move_step = (vrect.w - this->anim_rect.x + vrect.x) / (steps+1);
 			break;
 		case MMSDIRECTION_RIGHT:
-			move_step = (this->anim_rect.w-vrect.x+this->anim_rect.x) / (steps+1);
+			this->anim_move_step = (this->anim_rect.w - vrect.x + this->anim_rect.x) / (steps+1);
 			break;
 		case MMSDIRECTION_UP:
-			move_step = (vrect.h-this->anim_rect.y+vrect.y) / (steps+1);
+			this->anim_move_step = (vrect.h - this->anim_rect.y + vrect.y) / (steps+1);
 			break;
 		case MMSDIRECTION_DOWN:
-			move_step = (this->anim_rect.h-vrect.y+this->anim_rect.y) / (steps+1);
+			this->anim_move_step = (this->anim_rect.h - vrect.y + this->anim_rect.y) / (steps+1);
 			break;
 		default:
 			break;
 	}
 
 	if (this->anim_fade)
-		opacity_step = this->anim_opacity / (steps+1);
+		this->anim_opacity_step = this->anim_opacity / (steps+1);
 
-	double i = steps - pulser->getOffset();
+	return true;
+}
 
+
+bool MMSWindow::showAction(MMSPulser *pulser) {
+
+	// do the animation
+	double offs = MMSWINDOW_ANIMATION_MAX_OFFSET - pulser->getOffset();
+
+//printf("111111111111111 %f\n", offs);
+
+	// move it
 	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
-			moveTo((int)(this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
+			moveTo((int)(this->anim_rect.x + offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_RIGHT:
-			moveTo((int)(this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
+			moveTo((int)(this->anim_rect.x - offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_UP:
-			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + i * move_step) & ~0x01);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + offs * this->anim_move_step) & ~0x01);
 			break;
 		case MMSDIRECTION_DOWN:
-			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - i * move_step) & ~0x01);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - offs * this->anim_move_step) & ~0x01);
 			break;
 		default:
 			break;
@@ -2543,12 +2542,12 @@ bool MMSWindow::showAction(MMSPulser *pulser) {
 	if (this->anim_fade) {
 		// fade it
 		if (!parent)
-			this->window->setOpacity(this->anim_opacity - i * opacity_step);
+			this->window->setOpacity(this->anim_opacity - offs * this->anim_opacity_step);
 		else
-			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step);
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - offs * this->anim_opacity_step);
 	}
 	else
-	if (i == steps) {
+	if (offs == MMSWINDOW_ANIMATION_MAX_OFFSET) {
 		// no fade animation and called for the first time, set the opacity
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity);
@@ -2635,52 +2634,52 @@ bool MMSWindow::beforeHideAction(MMSPulser *pulser) {
 		return false;
 	}
 
-    return true;
-}
-
-bool MMSWindow::hideAction(MMSPulser *pulser) {
-
-//printf("2222222222222 %f\n", pulser->getOffset());
-
-	// little animation
+	// calculate the steps
 	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
-	unsigned int opacity_step;
-	int move_step;
-
 	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
-			move_step = (this->anim_rect.w-vrect.x+this->anim_rect.x) / (steps+1);
+			this->anim_move_step = (this->anim_rect.w - vrect.x + this->anim_rect.x) / (steps+1);
 			break;
 		case MMSDIRECTION_RIGHT:
-			move_step = (vrect.w-this->anim_rect.x+vrect.x) / (steps+1);
+			this->anim_move_step = (vrect.w - this->anim_rect.x + vrect.x) / (steps+1);
 			break;
 		case MMSDIRECTION_UP:
-			move_step = (this->anim_rect.h-vrect.y+this->anim_rect.y) / (steps+1);
+			this->anim_move_step = (this->anim_rect.h - vrect.y + this->anim_rect.y) / (steps+1);
 			break;
 		case MMSDIRECTION_DOWN:
-			move_step = (vrect.h-this->anim_rect.y+vrect.y) / (steps+1);
+			this->anim_move_step = (vrect.h - this->anim_rect.y + vrect.y) / (steps+1);
 			break;
 		default:
 			break;
 	}
 
 	if (this->anim_fade)
-		opacity_step = this->anim_opacity / (steps+1);
+		this->anim_opacity_step = this->anim_opacity / (steps+1);
 
-	double i = 1 + pulser->getOffset();
+    return true;
+}
 
+bool MMSWindow::hideAction(MMSPulser *pulser) {
+
+	// do the animation
+	double offs = pulser->getOffset();
+
+//printf("2222222222222 %f\n", offs);
+
+
+	// move it
 	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
-			moveTo((int)(this->anim_rect.x - i * move_step) & ~0x01, this->anim_rect.y);
+			moveTo((int)(this->anim_rect.x - offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_RIGHT:
-			moveTo((int)(this->anim_rect.x + i * move_step) & ~0x01, this->anim_rect.y);
+			moveTo((int)(this->anim_rect.x + offs * this->anim_move_step) & ~0x01, this->anim_rect.y);
 			break;
 		case MMSDIRECTION_UP:
-			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - i * move_step) & ~0x01);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y - offs * this->anim_move_step) & ~0x01);
 			break;
 		case MMSDIRECTION_DOWN:
-			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + i * move_step) & ~0x01);
+			moveTo(this->anim_rect.x, (int)(this->anim_rect.y + offs * this->anim_move_step) & ~0x01);
 			break;
 		default:
 			break;
@@ -2689,12 +2688,12 @@ bool MMSWindow::hideAction(MMSPulser *pulser) {
 	if (this->anim_fade) {
 		// fade it
 		if (!parent)
-			this->window->setOpacity(this->anim_opacity - i * opacity_step);
+			this->window->setOpacity(this->anim_opacity - offs * this->anim_opacity_step);
 		else
-			this->parent->setChildWindowOpacity(this, this->anim_opacity - i * opacity_step);
+			this->parent->setChildWindowOpacity(this, this->anim_opacity - offs * this->anim_opacity_step);
 	}
 	else
-	if (i == 1) {
+	if (offs == 0) {
 		// no fade animation and called for the first time, set the opacity
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity);
@@ -2778,7 +2777,7 @@ bool MMSWindow::hide(bool goback, bool wait) {
 
 	// do the animation in a separate thread...
 	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
-	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
 	this->pulser_mode = MMSWINDOW_PULSER_MODE_HIDE;
 	this->pulser.start(!wait, true);
 
