@@ -1284,7 +1284,6 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
 
 #define MMSMENUWIDGET_GET_SLOOP(sloop) \
 	{ sloop = getSmoothDelay(); \
-	printf("sloop = %d\n", sloop); \
 	if (!sloop) { sloop = 5; this->frame_delay = 0;	this->frame_delay_set = true; } \
 	else sloop = getFrameNum(sloop); }
 

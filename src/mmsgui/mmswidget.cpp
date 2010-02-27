@@ -2991,8 +2991,7 @@ bool MMSWidget::setImagesOnDemand(bool imagesondemand) {
 }
 
 bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
-	if (!this->da) return false;
-    this->da->myWidgetClass.setBlend(blend);
+	if (this->da) this->da->myWidgetClass.setBlend(blend);
     for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setBlend(blend, false);
     if (refresh)
@@ -3001,8 +3000,7 @@ bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
 }
 
 bool MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
-	if (!this->da) return false;
-    this->da->myWidgetClass.setBlendFactor(blendfactor);
+	if (this->da) this->da->myWidgetClass.setBlendFactor(blendfactor);
     for (unsigned int i=0; i < children.size(); i++)
         children.at(i)->setBlendFactor(blendfactor, false);
     if (refresh)
