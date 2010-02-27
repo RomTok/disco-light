@@ -166,7 +166,7 @@ class MMSPulser : public MMSThread {
     	void reset();
 
     	//! Internal method: Calculate the offset curve.
-    	double calcCurve(double &offset);
+    	void calcCurve(double &offset, double &offset_curve);
 
     	//! Internal method: Main method for the animation timing control.
 		void threadMain();

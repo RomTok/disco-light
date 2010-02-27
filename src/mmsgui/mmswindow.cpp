@@ -2783,6 +2783,7 @@ bool MMSWindow::hide(bool goback, bool wait) {
 //	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LINEAR_DESC);
 //	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_DESC_SOFT_START,	MMSWINDOW_ANIM_MAX_OFFSET / 2);
 //	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_DESC_SOFT_END,	MMSWINDOW_ANIM_MAX_OFFSET / 2);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START_AND_END);
 	this->pulser_mode = MMSWINDOW_PULSER_MODE_HIDE;
 	this->pulser.start(!wait, true);
 
