@@ -35,6 +35,14 @@
 
 #include "mmsgui/mmswidget.h"
 
+//! current mode of the pulser
+typedef enum {
+	//! scroll smooth to the left item
+	MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT = 0,
+	//! scroll smooth to the right item
+	MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT
+} MMSMENUWIDGET_PULSER_MODE;
+
 //! With this class you can display a list of items.
 /*!
 The menu widget is focusable. So the user can scroll in it.
@@ -94,6 +102,24 @@ class MMSMenuWidget : public MMSWidget {
         unsigned int 	frame_delay;
         unsigned int 	frame_delay_set;
 
+        //! Pulser for e.g. fade/move animations
+        MMSPulser				pulser;
+
+        //! connection object for MMSPulser::onBeforeAnimation callback
+        sigc::connection 		onBeforeAnimation_connection;
+
+        //! connection object for MMSPulser::onAnimation callback
+        sigc::connection 		onAnimation_connection;
+
+        //! connection object for MMSPulser::onAfterAnimation callback
+        sigc::connection 		onAfterAnimation_connection;
+
+        //! current pulser mode
+        MMSMENUWIDGET_PULSER_MODE	pulser_mode;
+
+        double		anim_width;
+
+
 
         MMSFBRectangle 	virtualGeom;
 
@@ -136,6 +162,12 @@ class MMSMenuWidget : public MMSWidget {
         void setSliders();
 
         void selectItem(MMSWidget *item, bool set, bool refresh = true, bool refreshall = false);
+
+
+        bool onBeforeAnimation(MMSPulser *pulser);
+        bool onAnimation(MMSPulser *pulser);
+        void onAfterAnimation(MMSPulser *pulser);
+
 
         bool scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection);
         bool scrollUpEx(unsigned int count, bool refresh, bool test, bool leave_selection);
