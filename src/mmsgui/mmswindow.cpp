@@ -1668,10 +1668,14 @@ void MMSWindow::getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows) {
     else {
         /* for my focused child window */
         if (!childwins.empty()) {
-            MMSWindow *fWin = childwins.at(this->focusedChildWin).window;
+        	try {
+        		MMSWindow *fWin = childwins.at(this->focusedChildWin).window;
 
-            /* get all the states (my own and all children) */
-            fWin->getArrowWidgetStatus(setarrows);
+				/* get all the states (my own and all children) */
+				fWin->getArrowWidgetStatus(setarrows);
+        	} catch (std::exception) {
+				return;
+        	}
 
             /* check my window navigation */
             if (!setarrows->up)
@@ -1682,6 +1686,7 @@ void MMSWindow::getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows) {
                 setarrows->left=(getNavigateLeftWindow());
             if (!setarrows->right)
                 setarrows->right=(getNavigateRightWindow());
+
         }
     }
 }
