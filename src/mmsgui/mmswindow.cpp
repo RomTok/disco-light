@@ -3752,7 +3752,10 @@ void MMSWindow::removeChildWinFocus() {
             /* save focused widget from current window and remove the focus */
             for(unsigned int i=0;i<fWin->children.size();i++) {
                 if(fWin->children.at(i)->isFocused()) {
-                    childwins.at(this->focusedChildWin).focusedWidget = i;
+					try {
+						childwins.at(this->focusedChildWin).focusedWidget = i;
+					} catch (std::exception) {
+					}
                     fWin->children.at(i)->setFocus(false);
 
                     /* set the arrow widgets */
