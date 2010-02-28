@@ -67,7 +67,7 @@ int			MMSWindow::fullscreen_main_window_use_count	= 0;
 #define MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(x,w)	((MMSFBWINDOW_CALC_STRETCH_H(w)!=25600)?((((x)*25600+12800)/MMSFBWINDOW_CALC_STRETCH_H(w))&~0x01):(x))
 
 
-#define MMSWINDOW_ANIMATION_MAX_OFFSET	30
+#define MMSWINDOW_ANIM_MAX_OFFSET	30
 
 MMSWindow::MMSWindow() {
 
@@ -1979,8 +1979,8 @@ bool MMSWindow::show() {
     //////////
 
 	// do the animation in a separate thread...
-	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
-	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser.setStepsPerSecond(MMSWINDOW_ANIM_MAX_OFFSET * 4);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END, MMSWINDOW_ANIM_MAX_OFFSET / 2);
 	this->pulser_mode = MMSWINDOW_PULSER_MODE_SHOW;
 	this->pulser.start(true, true);
 
@@ -2489,7 +2489,7 @@ bool MMSWindow::beforeShowAction(MMSPulser *pulser) {
 	}
 
 	// calculate the steps
-	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
+	int steps = MMSWINDOW_ANIM_MAX_OFFSET;
 	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
 			this->anim_move_step = (vrect.w - this->anim_rect.x + vrect.x) / (steps+1);
@@ -2517,9 +2517,9 @@ bool MMSWindow::beforeShowAction(MMSPulser *pulser) {
 bool MMSWindow::showAction(MMSPulser *pulser) {
 
 	// do the animation
-	double offs = MMSWINDOW_ANIMATION_MAX_OFFSET - pulser->getOffset();
+	double offs = MMSWINDOW_ANIM_MAX_OFFSET - pulser->getOffset();
 
-//printf("111111111111111 %f\n", offs);
+//printf("111111111111111 %f %d\n", offs, pulser->getOnAnimationCounter());
 
 	// move it
 	switch (this->anim_move) {
@@ -2547,7 +2547,7 @@ bool MMSWindow::showAction(MMSPulser *pulser) {
 			this->parent->setChildWindowOpacity(this, this->anim_opacity - offs * this->anim_opacity_step);
 	}
 	else
-	if (offs == MMSWINDOW_ANIMATION_MAX_OFFSET) {
+	if (pulser->getOnAnimationCounter() == 0) {
 		// no fade animation and called for the first time, set the opacity
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity);
@@ -2635,7 +2635,7 @@ bool MMSWindow::beforeHideAction(MMSPulser *pulser) {
 	}
 
 	// calculate the steps
-	int steps = MMSWINDOW_ANIMATION_MAX_OFFSET;
+	int steps = MMSWINDOW_ANIM_MAX_OFFSET;
 	switch (this->anim_move) {
 		case MMSDIRECTION_LEFT:
 			this->anim_move_step = (this->anim_rect.w - vrect.x + this->anim_rect.x) / (steps+1);
@@ -2664,7 +2664,7 @@ bool MMSWindow::hideAction(MMSPulser *pulser) {
 	// do the animation
 	double offs = pulser->getOffset();
 
-//printf("2222222222222 %f\n", offs);
+//printf("2222222222222 %f %d\n", offs, pulser->getOnAnimationCounter());
 
 
 	// move it
@@ -2693,7 +2693,7 @@ bool MMSWindow::hideAction(MMSPulser *pulser) {
 			this->parent->setChildWindowOpacity(this, this->anim_opacity - offs * this->anim_opacity_step);
 	}
 	else
-	if (offs == 0) {
+	if (pulser->getOnAnimationCounter() == 0) {
 		// no fade animation and called for the first time, set the opacity
 		if (!parent)
 			this->window->setOpacity(this->anim_opacity);
@@ -2776,8 +2776,14 @@ bool MMSWindow::hide(bool goback, bool wait) {
 */
 
 	// do the animation in a separate thread...
-	this->pulser.setStepsPerSecond(MMSWINDOW_ANIMATION_MAX_OFFSET * 4);
-	this->pulser.setMaxOffset(MMSWINDOW_ANIMATION_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START, MMSWINDOW_ANIMATION_MAX_OFFSET / 2);
+	this->pulser.setStepsPerSecond(MMSWINDOW_ANIM_MAX_OFFSET * 4);
+	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START,	MMSWINDOW_ANIM_MAX_OFFSET / 2);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END,	MMSWINDOW_ANIM_MAX_OFFSET / 2);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LINEAR);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LINEAR_DESC);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_DESC_SOFT_START,	MMSWINDOW_ANIM_MAX_OFFSET / 2);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_DESC_SOFT_END,	MMSWINDOW_ANIM_MAX_OFFSET / 2);
+//	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START_AND_END);
 	this->pulser_mode = MMSWINDOW_PULSER_MODE_HIDE;
 	this->pulser.start(!wait, true);
 

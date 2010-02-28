@@ -159,8 +159,14 @@ class MMSPulser : public MMSThread {
     	//! real duration in milliseconds of the animation (calculated after the animation)
     	unsigned int real_duration;
 
+    	//! counts the onAnimation calls, zero for the first onAnimation call
+    	unsigned int onAnimation_counter;
+
     	//! Internal method: Reset all values.
     	void reset();
+
+    	//! Internal method: Calculate the offset curve.
+    	void calcCurve(double &offset, double &offset_curve);
 
     	//! Internal method: Main method for the animation timing control.
 		void threadMain();
@@ -283,7 +289,7 @@ class MMSPulser : public MMSThread {
 
 		//! Get the offset of the animation.
         /*!
-        After each onAnimation call the offset will we increased or decreased dependent on
+        After each onAnimation call the offset will be increased or decreased dependent on
 		the seq_mode set with setMaxOffset().
         \return offset
         \note This value is valid during the animation (e.g. in the onAnimation callback).
@@ -315,6 +321,13 @@ class MMSPulser : public MMSThread {
               of the animation (e.g. in onAfterAnimation callback).
         */
 		unsigned int getRealDuration();
+
+        //! Get the number of onAnimation calls after the last onBeforeAnimation call.
+        /*!
+        \return number of calls
+        \note This value is zero for the first time onAnimation is called.
+        */
+		unsigned int getOnAnimationCounter();
 
         //! Set one or more callbacks for the onBeforeAnimation event.
         /*!

@@ -57,19 +57,20 @@ MMSPulser::~MMSPulser() {
 
 void MMSPulser::reset() {
 	// reset all values
-	this->recalc_requested	= true;
-	this->recalc_cnt		= 0;
-	this->recalc_interval	= 3;
-	this->step_len			= 0;
-	this->offset			= 0;
-	this->offset_curve		= 0;
-	this->process_time		= 0;
-	this->frame_delay		= 0;
-	this->frame_rate		= 0;
-	this->frames			= 0;
-	this->times_buf_pos		= 0;
-	this->times_buf_cnt		= 0;
-	this->real_duration		= 0;
+	this->recalc_requested		= true;
+	this->recalc_cnt			= 0;
+	this->recalc_interval		= 3;
+	this->step_len				= 0;
+	this->offset				= 0;
+	this->offset_curve			= 0;
+	this->process_time			= 0;
+	this->frame_delay			= 0;
+	this->frame_rate			= 0;
+	this->frames				= 0;
+	this->times_buf_pos			= 0;
+	this->times_buf_cnt			= 0;
+	this->real_duration			= 0;
+	this->onAnimation_counter 	= 0;
 
 	if (this->max_offset > 0) {
 		// if max offset is set, recalculate every loop
@@ -81,18 +82,116 @@ void MMSPulser::reset() {
 	case MMSPULSER_SEQ_LINEAR:
 	case MMSPULSER_SEQ_LOG_SOFT_START:
 	case MMSPULSER_SEQ_LOG_SOFT_END:
-		this->offset = 0;
-		this->offset_curve = this->seq_start;
+	case MMSPULSER_SEQ_LOG_SOFT_START_AND_END:
+		this->offset = 1;
+		calcCurve(this->offset, this->offset_curve);
 		break;
 	case MMSPULSER_SEQ_LINEAR_DESC:
 	case MMSPULSER_SEQ_LOG_DESC_SOFT_START:
 	case MMSPULSER_SEQ_LOG_DESC_SOFT_END:
-		this->offset = this->max_offset;
-		this->offset_curve = this->seq_start;
+	case MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END:
+		this->offset = this->max_offset - 1;
+		calcCurve(this->offset, this->offset_curve);
 		break;
 	default:
 		break;
 	}
+}
+
+void MMSPulser::calcCurve(double &offset, double &offset_curve) {
+	// curve calculation
+	if (offset > 0) {
+		if (this->max_offset > 0) {
+			switch (this->seq_mode) {
+			case MMSPULSER_SEQ_LINEAR:
+				if (this->seq_start <= 0)
+					offset_curve = offset;
+				else
+					offset_curve = this->seq_start + (offset * this->seq_range) / this->max_offset;
+				break;
+			case MMSPULSER_SEQ_LINEAR_DESC:
+				if (this->seq_start <= 0)
+					offset_curve = offset;
+				else
+					offset_curve = (offset * this->seq_range) / this->max_offset;
+				break;
+			case MMSPULSER_SEQ_LOG_SOFT_START:
+				// check offset, because log(1) is zero
+				if (this->max_offset - offset > 1) {
+					offset_curve = this->seq_start
+									+ this->seq_range * (1 - (log(this->max_offset - offset) / this->max_offset_log));
+				}
+				else {
+					// last offset
+					offset_curve = this->max_offset;
+				}
+				break;
+			case MMSPULSER_SEQ_LOG_DESC_SOFT_START:
+				// check offset, because log(1) is zero
+				if (offset > 1) {
+					offset_curve = this->seq_start
+									- this->seq_range * (1 - (log(offset) / this->max_offset_log));
+				}
+				else {
+					// last offset
+					offset_curve = 0;
+				}
+				break;
+			case MMSPULSER_SEQ_LOG_SOFT_END:
+				// check offset, because log(1) is zero
+				if (offset == 1) offset++;
+				offset_curve = this->seq_start
+								+ this->seq_range * (log(offset) / this->max_offset_log);
+				break;
+			case MMSPULSER_SEQ_LOG_DESC_SOFT_END:
+				// check offset, because log(1) is zero
+				if (this->max_offset - offset == 1) offset--;
+				offset_curve = this->seq_start
+								- this->seq_range * (log(this->max_offset - offset) / this->max_offset_log);
+				break;
+			case MMSPULSER_SEQ_LOG_SOFT_START_AND_END:
+				if (offset_curve < this->max_offset / 2) {
+					if (this->max_offset - offset > 0) {
+						offset_curve = this->seq_start
+										+ this->seq_range * (1 - (log(this->max_offset - offset) / this->max_offset_log));
+						if (offset_curve >= this->max_offset / 2) {
+							offset = this->max_offset - offset + 1;
+							calcCurve(offset, offset_curve);
+						}
+					}
+					else {
+						// log(0)
+						offset_curve = this->max_offset;
+						offset = 1;
+						calcCurve(offset, offset_curve);
+					}
+				}
+				else {
+					offset_curve = (this->max_offset - this->seq_range)
+									+ this->seq_range * (log(offset) / this->max_offset_log);
+				}
+				break;
+			case MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END:
+				// check offset, because log(1) is zero
+				if (offset > 1) {
+					offset_curve = this->seq_start
+									- this->seq_range * (1 - (log(offset) / this->max_offset_log));
+				}
+				else {
+					// last offset
+					offset_curve = 0;
+				}
+				break;
+			default:
+				offset_curve = 0;
+				break;
+			}
+		}
+		else
+			offset_curve = 0;
+	}
+	else
+		offset_curve = 0;
 }
 
 void MMSPulser::threadMain() {
@@ -123,6 +222,7 @@ void MMSPulser::threadMain() {
 	    	// one of the connected callbacks has "failed", stop the animation
 		    break;
 	    }
+	    this->onAnimation_counter++;
 
 		// recalc speed parameters?
 		if (this->recalc_requested) {
@@ -186,76 +286,27 @@ void MMSPulser::threadMain() {
 		case MMSPULSER_SEQ_LINEAR:
 		case MMSPULSER_SEQ_LOG_SOFT_START:
 		case MMSPULSER_SEQ_LOG_SOFT_END:
+		case MMSPULSER_SEQ_LOG_SOFT_START_AND_END:
 			this->offset+= this->step_len;
 			break;
 		case MMSPULSER_SEQ_LINEAR_DESC:
 		case MMSPULSER_SEQ_LOG_DESC_SOFT_START:
 		case MMSPULSER_SEQ_LOG_DESC_SOFT_END:
+		case MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END:
 			this->offset-= this->step_len;
 			break;
 		}
 
 		// curve calculation
-		this->offset_curve = 0;
-		if (this->offset > 0) {
-			if (this->max_offset > 0) {
-				switch (this->seq_mode) {
-				case MMSPULSER_SEQ_LINEAR:
-					if (this->seq_start <= 0)
-						this->offset_curve = this->offset;
-					else
-						this->offset_curve = this->seq_start + (this->offset * this->seq_range) / this->max_offset;
-					break;
-				case MMSPULSER_SEQ_LINEAR_DESC:
-					if (this->seq_start <= 0)
-						this->offset_curve = this->offset;
-					else
-						this->offset_curve = (this->offset * this->seq_range) / this->max_offset;
-					break;
-				case MMSPULSER_SEQ_LOG_SOFT_START:
-					// check offset, because log(1) is zero
-					if (this->max_offset - this->offset > 1) {
-						this->offset_curve = this->seq_start
-											+ this->seq_range * (1 - (log(this->max_offset - this->offset) / this->max_offset_log));
-					}
-					else {
-						// last offset
-						this->offset_curve = this->max_offset;
-					}
-					break;
-				case MMSPULSER_SEQ_LOG_DESC_SOFT_START:
-					// check offset, because log(1) is zero
-					if (this->offset > 1) {
-						this->offset_curve = this->seq_start
-											- this->seq_range * (1 - (log(this->offset) / this->max_offset_log));
-					}
-					else {
-						// last offset
-						this->offset_curve = 0;
-					}
-					break;
-				case MMSPULSER_SEQ_LOG_SOFT_END:
-					// check offset, because log(1) is zero
-					if (this->offset == 1) this->offset++;
-					this->offset_curve = this->seq_start
-										+ this->seq_range * (log(this->offset) / this->max_offset_log);
-					break;
-				case MMSPULSER_SEQ_LOG_DESC_SOFT_END:
-					// check offset, because log(1) is zero
-					if (this->max_offset - this->offset == 1) this->offset--;
-					this->offset_curve = this->seq_start
-										- this->seq_range * (log(this->max_offset - this->offset) / this->max_offset_log);
-					break;
-				}
-			}
-		}
+		calcCurve(this->offset, this->offset_curve);
 
     	// stop the animation?
     	bool stop = false;
     	if (this->max_offset > 0) {
     		if   ((this->seq_mode == MMSPULSER_SEQ_LINEAR)
 				||(this->seq_mode == MMSPULSER_SEQ_LOG_SOFT_START)
-    			||(this->seq_mode == MMSPULSER_SEQ_LOG_SOFT_END)) {
+				||(this->seq_mode == MMSPULSER_SEQ_LOG_SOFT_END)
+    			||(this->seq_mode == MMSPULSER_SEQ_LOG_SOFT_START_AND_END)) {
     			// ascending modes
 				if (this->offset_curve > 0) {
 					if (this->offset_curve >= this->max_offset) {
@@ -428,11 +479,19 @@ bool MMSPulser::setMaxOffset(double max_offset, MMSPULSER_SEQ seq_mode, double s
 			this->seq_start = 0;
 			this->seq_range = this->max_offset;
 			break;
+		case MMSPULSER_SEQ_LOG_SOFT_START_AND_END:
+			this->seq_start = 0;
+			this->seq_range = this->max_offset / 2;
+			break;
 		case MMSPULSER_SEQ_LINEAR_DESC:
 		case MMSPULSER_SEQ_LOG_DESC_SOFT_START:
 		case MMSPULSER_SEQ_LOG_DESC_SOFT_END:
 			this->seq_start = this->max_offset;
 			this->seq_range = this->max_offset;
+			break;
+		case MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END:
+			this->seq_start = this->max_offset;
+			this->seq_range = this->max_offset / 2;
 			break;
 		}
 	}
@@ -450,8 +509,16 @@ bool MMSPulser::setMaxOffset(double max_offset, MMSPULSER_SEQ seq_mode, double s
 		case MMSPULSER_SEQ_LOG_SOFT_START:
 			this->seq_start = 0;
 			break;
+		case MMSPULSER_SEQ_LOG_SOFT_START_AND_END:
+			this->seq_start = 0;
+			this->seq_range/= 2;
+			break;
 		case MMSPULSER_SEQ_LOG_DESC_SOFT_START:
 			this->seq_start = this->max_offset;
+			break;
+		case MMSPULSER_SEQ_LOG_DESC_SOFT_START_AND_END:
+			this->seq_start = this->max_offset;
+			this->seq_range/= 2;
 			break;
 		}
 	}
@@ -482,4 +549,8 @@ unsigned int MMSPulser::getDuration() {
 
 unsigned int MMSPulser::getRealDuration() {
 	return this->real_duration;
+}
+
+unsigned int MMSPulser::getOnAnimationCounter() {
+	return this->onAnimation_counter;
 }
