@@ -4203,8 +4203,11 @@ void MMSWindow::preCalcNavigation() {
                                 candidate = window;
                                 dgcode = cand_dgcode;
 
-                                if (fwn>0)
+                                if (fwn>0) {
+                                	preCalcNaviLock.unlock();
                                     window->preCalcNavigation();
+                                    preCalcNaviLock.lock();
+                                }
                             }
                         }
                     }
