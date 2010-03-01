@@ -40,6 +40,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #ifdef __ENABLE_LOG__
 #define DEBUGMSG(ident, msg...) writeDebugMessage(ident, __FILE__, __LINE__, msg)
@@ -144,5 +145,7 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts);
 MMS_LANGUAGE_TYPE strToLang(const char *value);
 
 string langToStr(MMS_LANGUAGE_TYPE lang);
+
+int64_t timespecDiff(struct timespec *timeA, struct timespec *timeB);
 
 #endif /*TOOLS_H_*/

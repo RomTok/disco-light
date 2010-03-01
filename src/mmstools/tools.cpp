@@ -308,7 +308,7 @@ int strToInt(string s) {
 }
 
 string iToStr(int i) {
-    char mychar[1024];
+    char mychar[24];
     string mystr;
 
     sprintf(mychar,"%d",i);
@@ -316,6 +316,7 @@ string iToStr(int i) {
     return mystr;
 }
 
+/* ToDo: get the maximum number of digits for this */
 string fToStr(double i) {
     char mychar[1024];
     string mystr;
@@ -780,4 +781,9 @@ string langToStr(MMS_LANGUAGE_TYPE lang) {
 
 		default: return "ukn";
 	}
+}
+
+int64_t timespecDiff(struct timespec *timeA, struct timespec *timeB) {
+  return ((timeA->tv_sec * 1000000000) + timeA->tv_nsec) -
+           ((timeB->tv_sec * 1000000000) + timeB->tv_nsec);
 }
