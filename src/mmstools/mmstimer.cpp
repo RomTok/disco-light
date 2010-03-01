@@ -45,7 +45,7 @@ MMSTimer::MMSTimer(bool singleShot) :
 	action(START),
 	secs(0),
 	nSecs(0) {
-	MMSThread::setStacksize(131072);
+	MMSThread::setStacksize(131072-4096);
 
 	pthread_mutex_init(&this->mutex, NULL);
 	pthread_cond_init(&this->cond, NULL);
