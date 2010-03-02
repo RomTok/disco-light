@@ -329,7 +329,6 @@ MMSThemeManager *MMSWindowManager::getThemeManager() {
 bool MMSWindowManager::onAnimation(MMSPulser *pulser) {
 	// get new opacity
 	int opacity = 255 - pulser->getOffset();
-
 	// animation finished?
 	if (opacity <= 0) {
 		// yes
@@ -387,6 +386,7 @@ void MMSWindowManager::onThemeChanged(string themeName, bool fade_in) {
 
     if (this->anim_saved_screen) {
     	// do the animation
+    	this->pulser.setMaxOffset(255,MMSPULSER_SEQ_LINEAR);
     	this->pulser.setStepsPerSecond(255);
     	this->pulser.start(false);
     }
