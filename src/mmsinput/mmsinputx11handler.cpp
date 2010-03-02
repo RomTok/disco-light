@@ -267,13 +267,14 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	}
     	if(event.type==MotionNotify) {
 
+#if 0
 			if(lastmotion!=0) {
 				if(lastmotion+15 > event.xbutton.time) {
 					return;
 				}
 			}
 			lastmotion=event.xbutton.time;
-
+#endif
 
     		inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO || mmsfb->resized) {

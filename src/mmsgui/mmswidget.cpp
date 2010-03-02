@@ -2154,6 +2154,10 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 					}
 	    		}
 
+	    		// reset the pressed status
+				if (isPressed())
+					setPressed(false);
+
 	    		// save last inputevent
 	    		this->da->last_inputevent = *inputevent;
 	    		return;
