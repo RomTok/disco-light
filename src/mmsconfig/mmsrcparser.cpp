@@ -90,12 +90,6 @@ void MMSRcParser::parseFile(string filename) {
     	    /*free the document */
     	    xmlFreeDoc(parser);
 		}
-
-	    /*
-	     *Free the global variables that may
-	     *have been allocated by the parser.
-	     */
-	    xmlCleanupParser();
 	}
 	catch(MMSError *error)
 	{

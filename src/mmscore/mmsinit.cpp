@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include <cstring>
+extern "C" {
+#include <libxml/parser.h>
+}
 #include "mmscore/mmsinit.h"
 #include "mms.h"
 
@@ -50,6 +53,9 @@ void (*pluginRegisterCallback)(MMSPluginManager*) = NULL;
 
 static void on_exit() {
 	if(pluginmanager) delete pluginmanager;
+
+	// free memory from libxml2
+	xmlCleanupParser();
 }
 
 
@@ -77,6 +83,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         		configfile = &(argv[i][15]);
         	}
         }
+
+        // initialize libxml2
+        xmlInitParser();
 
         MMSRcParser 			rcparser;
         MMSConfigDataGlobal     *rcGlobal 	= NULL;
