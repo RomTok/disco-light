@@ -611,20 +611,22 @@ if 'install' in BUILD_TARGETS:
 	if (env['enable_curl']):
 		disko_pc_requires += ', libcurl'
 	if env['LIBPATH']:
-		disko_pc_libs     = '-L%s' % ' -L'.join(env['LIBPATH'])
+		disko_pc_libs_private = '-L%s' % ' -L'.join(env['LIBPATH'])
 	else:
-		disko_pc_libs = ''
+		disko_pc_libs_private = ''
+
+	disko_pc_libs_private += ' -lpthread -lz'
 		
 	if env['big_lib'] or env['static_lib']:
-		disko_pc_libs += ' -ldisko -lpthread -lz'
+		disko_pc_libs = '-ldisko'
 	else:
-		disko_pc_libs += ' -lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore -lpthread -lz'
+		disko_pc_libs = '-lmmsinfo -lmmsconfig -lmmstools -lmmsgui -lmmsinput -lmmsbase -lmmscore'
 
 	if env.has_key('libiconv'):
-		disko_pc_libs += ' -liconv'
+		disko_pc_libs_private += ' -liconv'
 	
 	if env.has_key('libdl'):
-		disko_pc_libs += ' -ldl'
+		disko_pc_libs_private += ' -ldl'
 
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
@@ -673,7 +675,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', mysql'
 
 	if env['enable_swscale']:
-		disko_pc_libs += ' -lswscale -lavutil'
+		disko_pc_libs_private += ' -lswscale -lavutil'
 
 	disko_pc.write('prefix=' + env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
@@ -684,6 +686,7 @@ if 'install' in BUILD_TARGETS:
 	disko_pc.write('Version: ' + packageVersion + '\n')
 	disko_pc.write('Requires: ' + disko_pc_requires + '\n')
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
+	disko_pc.write('Libs.private: ' + disko_pc_libs_private + '\n')
 	disko_pc.write('Cflags: -I${includedir}/ ')
 	for ccflag in env['CCFLAGS']:
 		if type(ccflag).__name__ == 'str' and not ccflag.startswith('-isystem'):
