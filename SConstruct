@@ -187,7 +187,8 @@ else:
 	if env['size']:
 		env['CCFLAGS'].extend(['-Os'])
 	else:
-		env['CCFLAGS'].extend(['-O3', '-g'])
+		if not os.environ.has_key('CXXFLAGS'):
+			env['CCFLAGS'].extend(['-O3', '-g'])
 	env['LINKFLAGS'].extend(['-s'])
 
 # check which sse version to use
