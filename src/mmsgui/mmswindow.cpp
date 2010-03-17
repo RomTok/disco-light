@@ -2234,7 +2234,7 @@ bool MMSWindow::lowerToBottom() {
     return false;
 }
 
-bool MMSWindow::moveTo(int x, int y) {
+bool MMSWindow::moveTo(int x, int y, bool refresh) {
 	x&= ~0x01;
 	y&= ~0x01;
 	if (!this->parent) {
