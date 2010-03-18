@@ -722,67 +722,6 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts) {
 	return diff;
 }
 
-//
-// TODO: find a better solution for language handling
-//
-
-MMS_LANGUAGE_TYPE strToLang(const char *value) {
-
-	if(strncasecmp(value,"de", 2) == 0) {
-		return MMSLANG_DE;
-	}
-	if(strncasecmp(value,"en", 2) == 0) {
-		return MMSLANG_EN;
-	}
-	if(strncasecmp(value,"dk", 2) == 0) {
-		return MMSLANG_DK;
-	}
-	if(strncasecmp(value, "es", 2) == 0) {
-		return MMSLANG_ES;
-	}
-	if(strncasecmp(value,"fi", 2) == 0) {
-		return MMSLANG_FI;
-	}
-	if(strncasecmp(value,"fr", 2) == 0) {
-		return MMSLANG_FR;
-	}
-	if(strncasecmp(value,"it", 2) == 0) {
-		return MMSLANG_IT;
-	}
-	if(strncasecmp(value,"nl", 2) == 0) {
-		return MMSLANG_NL;
-	}
-	if(strncasecmp(value,"no", 2) == 0) {
-		return MMSLANG_NO;
-	}
-	if(strncasecmp(value,"se", 2) == 0) {
-		return MMSLANG_SE;
-	}
-	if(strncasecmp(value,"msg", 3) == 0) {
-		return MMSLANG_MSG;
-	}
-
-	return MMSLANG_UKN;
-}
-
-string langToStr(MMS_LANGUAGE_TYPE lang) {
-	switch(lang) {
-		case MMSLANG_DE:  return "de";
-		case MMSLANG_EN:  return "en";
-		case MMSLANG_DK:  return "dk";
-		case MMSLANG_ES:  return "es";
-		case MMSLANG_FI:  return "fi";
-		case MMSLANG_FR:  return "fr";
-		case MMSLANG_IT:  return "it";
-		case MMSLANG_NL:  return "nl";
-		case MMSLANG_NO:  return "no";
-		case MMSLANG_SE:  return "se";
-		case MMSLANG_MSG: return "msg";
-
-		default: return "ukn";
-	}
-}
-
 int64_t timespecDiff(struct timespec *timeA, struct timespec *timeB) {
   return ((timeA->tv_sec * 1000000000) + timeA->tv_nsec) -
            ((timeB->tv_sec * 1000000000) + timeB->tv_nsec);

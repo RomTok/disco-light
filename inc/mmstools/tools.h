@@ -142,10 +142,6 @@ void writeMessage2Stdout(const char *identity, const char *filename, const int l
 unsigned int getMTimeStamp();
 unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts);
 
-MMS_LANGUAGE_TYPE strToLang(const char *value);
-
-string langToStr(MMS_LANGUAGE_TYPE lang);
-
 int64_t timespecDiff(struct timespec *timeA, struct timespec *timeB);
 
 #endif /*TOOLS_H_*/
