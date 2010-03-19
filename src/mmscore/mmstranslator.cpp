@@ -113,10 +113,10 @@ void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
 
 			MMSTRANSLATION_MAP::iterator transit = this->transmap.find(phrase);
 			if(transit != this->transmap.end()) {
-				transit->second.at(idx) = "";
+				transit->second.at(idx) = phrase;
 			} else {
 				vector<string> trans(this->files.size());
-				trans.at(idx) = "";
+				trans.at(idx) = phrase;
 				transmap.insert(make_pair(phrase, trans));
 			}
 		}
@@ -129,6 +129,7 @@ void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
 				char line[1024];
 				snprintf(line, sizeof(line) - 4, "%s===\n", phrase.c_str());
 				file.writeBuffer(line, NULL, strlen(line), 1);
+				transit->second.at(idx) = phrase;
 			}
 		}
 	}
@@ -136,13 +137,12 @@ void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
 
 
 void MMSTranslator::translate(const string &source, string &dest) {
-	dest = source;
-
 	if(this->targetIdx == -1)
 		return;
 
 	MMSTRANSLATION_MAP::iterator it = this->transmap.find(source);
 	if(it == this->transmap.end()) {
+		dest = source;
 		if(this->addtranslations) {
 			addMissing(source, true);
 		}
@@ -179,7 +179,7 @@ void MMSTranslator::processFile(const string &file) {
 	if(it == this->transIdx.end()) {
 		idx = this->files.size();
 		this->transIdx[countryCode] = idx;
-		this->files.push_back(basename(file.c_str()));
+		this->files.push_back(file);
 		for(MMSTRANSLATION_MAP::iterator it = this->transmap.begin(); it != this->transmap.end(); ++it) {
 			it->second.resize(idx + 1, "");
 		}
