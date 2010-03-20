@@ -2274,7 +2274,7 @@ bool MMSWindow::moveTo(int x, int y, bool refresh) {
 	}
 	else {
 		// this is a child window
-		this->parent->moveChildWindow(this, x, y);
+		this->parent->moveChildWindow(this, x, y, refresh);
 	}
 
 	return true;
