@@ -261,9 +261,15 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
     	        	return false;
     	        }
 
+    	        // creating the background window
+    	        // note: regarding performance, this window must not have a alphachannel!
+    	        //         --> using MMSW_VIDEO flag
+    	        // note: additionally the window should never reside on the video layer
+    	        //         --> using MMSW_USEGRAPHICSLAYER flag
     	        DEBUGMSG("Core", "creating background window");
     	        MMSRootWindow *rootwin = new MMSRootWindow("background_rootwindow","","",
-    	        											MMSALIGNMENT_NOTSET,MMSW_NONE);
+    	        											MMSALIGNMENT_NOTSET,
+    	        											(MMSWINDOW_FLAGS)(MMSW_VIDEO | MMSW_USEGRAPHICSLAYER));
     	        if(!rootwin) {
     	        	DEBUGMSG("Core", "couldn't create background window.");
     	        	return false;
