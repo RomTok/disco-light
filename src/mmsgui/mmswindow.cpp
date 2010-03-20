@@ -409,7 +409,6 @@ bool MMSWindow::resize(bool refresh) {
 //        logger.writeLog("got inner size from parent " + iToStr(vrect.w) + "x" + iToStr(vrect.h));
     }
 
-
     /* calculate the window position */
     /* first try with xpos */
     if (!getDx(dx)) dx = "";
@@ -977,16 +976,22 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
 	                    ||(oldregion.y2 - oldregion.y1 + 1 != childwin->geom.h)) {
 	                    // resize surface
 	                    childwin->surface->resize(childwin->geom.w, childwin->geom.h);
-	                }
+
+	                    // call resize recursive for new regions of my child windows
+	                    for (unsigned int j = 0; j < childwin->childwins.size(); j++) {
+	                        childwin->childwins.at(j).window->resize(false);
+	                    }
+            		}
             	}
             	else {
             		// working with sub surface
 					childwin->surface->setSubSurface(&(childwin->geom));
-            	}
 
-                // call resize recursive for new regions of my child windows
-                for (unsigned int j = 0; j < childwin->childwins.size(); j++)
-                    childwin->childwins.at(j).window->resize(false);
+	                // call resize recursive for new regions of my child windows
+	                for (unsigned int j = 0; j < childwin->childwins.size(); j++) {
+	                    childwin->childwins.at(j).window->resize(false);
+	                }
+            	}
 
                 // recursive calls should stop here
                 if (!refresh) {
@@ -1446,27 +1451,36 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
         int z = -1;
         for (unsigned int i = 0; i < this->childwins.size(); i++) {
             if (this->childwins.at(i).window == win) {
-                /* child window found, flip it */
+                // child window found, flip it
                 if (flipChildSurface) {
                     win->surface->flip(region);
                 }
 
-                /* return if parent window is not shown */
+                // return if parent window is not shown
                 if ((win->parent->isShown()==false)&&(win->parent->willshow==false)) {
-                    /* unlock */
+                    // unlock
                     if (!locked)
 //PUP                        flipLock.unlock();
                     	unlock();
                     return true;
                 }
 
-                /* return if opacity is zero */
+                // return if opacity is zero
                 if ((this->childwins.at(i).opacity==0)&&(this->childwins.at(i).oldopacity==0)) {
-                    /* unlock */
+                    // unlock
                     if (!locked)
 //PUP                        flipLock.unlock();
                     	unlock();
+                    return true;
+                }
 
+                // return if the child window is out of the visible parent region
+                if   ((win->geom.x >= win->parent->geom.w) || (win->geom.y >= win->parent->geom.h)
+                	||(win->geom.x + win->geom.w <= 0) || (win->geom.y + win->geom.h <= 0)) {
+                    // unlock
+                    if (!locked)
+//PUP                        flipLock.unlock();
+                    	unlock();
                     return true;
                 }
 
