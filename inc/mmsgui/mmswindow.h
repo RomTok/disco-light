@@ -627,10 +627,11 @@ class MMSWindow {
         */
         int getNumberOfFocusableChildWins();
 
-        //! Refresh (redraw) the whole window.
+        //! Refresh (redraw) the whole window or a part of it.
         /*!
         It is possible to update window attributes without refresh.
         In this case you have to refresh() the window 'manually' to make the changes visible.
+        \param region	region of the window which is to refresh, default NULL means the whole window
 
         For example you can call:
 
@@ -645,7 +646,7 @@ class MMSWindow {
         This works also for widgets. You can update a few widgets without direct refresh
         and call window->refresh() afterwards.
         */
-        void refresh();
+        void refresh(MMSFBRegion *region = NULL);
 
         //! Flip the surface of the window to make changes visible.
         /*!

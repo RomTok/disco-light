@@ -3158,28 +3158,40 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
     unlock();
 }
 
-void MMSWindow::refresh() {
+void MMSWindow::refresh(MMSFBRegion *region) {
 
     if(shown==false) {
 //        logger.writeLog("drawing skipped because window is not shown");
         return;
     }
 
-    /* lock drawing */
+    // lock drawing
 //PUP    this->drawLock.lock();
     lock();
 
-    /* draw complete window */
+    // draw window
     this->draw_setgeom = true;
-    draw();
+    if (region) {
+    	// draw a region
+		MMSFBRectangle rect2update;
+		rect2update.x = region->x1;
+		rect2update.y = region->y1;
+		rect2update.w = region->x2 - region->x1 + 1;
+		rect2update.h = region->y2 - region->y1 + 1;
+		draw(false, &rect2update);
+    }
+    else {
+    	// draw whole window
+    	draw();
+    }
 
-    /* make it visible */
+    // make it visible
     if (!this->parent)
-        flipWindow(this);
+        flipWindow(this, region);
     else
-        this->parent->flipWindow(this);
+        this->parent->flipWindow(this, region);
 
-    /* unlock drawing */
+    // unlock drawing
 //PUP    this->drawLock.unlock();
     unlock();
 }
