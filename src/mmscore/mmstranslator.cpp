@@ -137,8 +137,10 @@ void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
 
 
 void MMSTranslator::translate(const string &source, string &dest) {
-	if(this->targetIdx == -1)
+	if(this->targetIdx == -1) {
+		dest = source;
 		return;
+	}
 
 	MMSTRANSLATION_MAP::iterator it = this->transmap.find(source);
 	if(it == this->transmap.end()) {
