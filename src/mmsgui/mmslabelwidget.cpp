@@ -236,7 +236,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
     return MMSWidget::drawDebug();
 }
 
-void MMSLabelWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
+void MMSLabelWidget::targetLangChanged(int lang) {
     this->translated = false;
 }
 

@@ -279,19 +279,19 @@ void MMSConfigData::setHideApplication(bool hideapplication) {
 }
 
 
-const MMS_LANGUAGE_TYPE MMSConfigData::getSourceLang() {
+const string MMSConfigData::getSourceLang() {
 	return this->language.sourcelang;
 }
 
-const MMS_LANGUAGE_TYPE MMSConfigData::getDefaultTargetLang() {
+const string MMSConfigData::getDefaultTargetLang() {
 	return this->language.defaulttargetlang;
 }
 
-const bool			    MMSConfigData::getAddTranslations() {
+const bool MMSConfigData::getAddTranslations() {
 	return this->language.addtranslations;
 }
 
-const string 			MMSConfigData::getLanguagefileDir() {
+const string MMSConfigData::getLanguagefileDir() {
 	return this->language.languagefiledir;
 }
 

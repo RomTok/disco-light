@@ -33,7 +33,10 @@
 #ifndef MMSINIT_H_
 #define MMSINIT_H_
 
+extern "C" {
 #include <stdlib.h>
+}
+
 #include <string>
 #include <mmsbase/interfaces/immsswitcher.h>
 

@@ -694,7 +694,11 @@ bool MMSTaffFile::convertXML2TAFF() {
 
 
 	/* read the XML file */
-	parser = xmlReadFile(this->external_filename.c_str(), NULL, 0);
+	parser = xmlReadFile(this->external_filename.c_str(),
+			NULL,
+			XML_PARSE_PEDANTIC |
+			XML_PARSE_NOBLANKS | XML_PARSE_NONET | XML_PARSE_NODICT |
+			XML_PARSE_NOXINCNODE | XML_PARSE_NOBASEFIX);
 
 	if (parser) {
 

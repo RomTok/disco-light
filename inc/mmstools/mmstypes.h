@@ -571,28 +571,6 @@ typedef enum {
 string getMMSFBPointerModeString(MMSFBPointerMode pm);
 MMSFBPointerMode getMMSFBPointerModeFromString(string pm);
 
-
-// national language support.................................................
-
-//! supported languages
-typedef enum {
-	MMSLANG_UKN,
-	MMSLANG_DE,
-	MMSLANG_EN,
-	MMSLANG_DK,
-	MMSLANG_ES,
-	MMSLANG_FI,
-	MMSLANG_FR,
-	MMSLANG_IT,
-	MMSLANG_NL,
-	MMSLANG_NO,
-	MMSLANG_SE,
-	MMSLANG_MSG
-} MMS_LANGUAGE_TYPE;
-
-
-
-
 // media backend types.......................................................
 
 //! supported media backends

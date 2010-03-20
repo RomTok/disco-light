@@ -516,7 +516,7 @@ class MMSWindow {
 		void instantHide();
 
         //! Internal method: Inform the window, that the language has changed.
-        void targetLangChanged(MMS_LANGUAGE_TYPE lang, bool refresh = true);
+        void targetLangChanged(int lang, bool refresh = true);
 
         //! Internal method: Inform the window, that the theme has changed.
         void themeChanged(string &themeName, bool refresh = true);
@@ -788,7 +788,7 @@ class MMSWindow {
         bool raiseToTop(int zlevel = 0);
         bool lowerToBottom();
 
-        bool moveTo(int x, int y);
+        bool moveTo(int x, int y, bool refresh = true);
 
 
 

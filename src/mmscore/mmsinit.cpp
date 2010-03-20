@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include <cstring>
+extern "C" {
+#include <libxml/parser.h>
+}
 #include "mmscore/mmsinit.h"
 #include "mms.h"
 
@@ -50,6 +53,9 @@ void (*pluginRegisterCallback)(MMSPluginManager*) = NULL;
 
 static void on_exit() {
 	if(pluginmanager) delete pluginmanager;
+
+	// free memory from libxml2
+	xmlCleanupParser();
 }
 
 
@@ -77,6 +83,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         		configfile = &(argv[i][15]);
         	}
         }
+
+        // initialize libxml2
+        xmlInitParser();
 
         MMSRcParser 			rcparser;
         MMSConfigDataGlobal     *rcGlobal 	= NULL;
@@ -214,8 +223,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         DEBUGMSG_OUTSTR("Core", "Fullscreen:                   " + getMMSFBFullScreenModeString(config->getFullScreen()));
 
-        DEBUGMSG_OUTSTR("Core", "Sourcelanguage:               " + langToStr(config->getSourceLang()));
-        DEBUGMSG_OUTSTR("Core", "Targetlanguage:               " + langToStr(config->getDefaultTargetLang()));
+        DEBUGMSG_OUTSTR("Core", "Sourcelanguage:               " + config->getSourceLang());
+        DEBUGMSG_OUTSTR("Core", "Targetlanguage:               " + config->getDefaultTargetLang());
         DEBUGMSG_OUTSTR("Core", "Add missing translations:     " + (config->getAddTranslations() ? string("yes") : string("no")));
 
         printf("----------------------------------------------------------------------\n");

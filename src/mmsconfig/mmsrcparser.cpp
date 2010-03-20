@@ -90,12 +90,6 @@ void MMSRcParser::parseFile(string filename) {
     	    /*free the document */
     	    xmlFreeDoc(parser);
 		}
-
-	    /*
-	     *Free the global variables that may
-	     *have been allocated by the parser.
-	     */
-	    xmlCleanupParser();
 	}
 	catch(MMSError *error)
 	{
@@ -236,9 +230,9 @@ void MMSRcParser::throughLanguage(xmlNode* node) {
     		continue;
 
 	    if(!xmlStrcmp(parname, (const xmlChar *) "sourcelang"))
-	    	this->language.sourcelang = strToLang((const char *)parvalue);
+	    	this->language.sourcelang = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "defaultdestlang"))
-            this->language.defaulttargetlang = strToLang((const char *)parvalue);
+            this->language.defaulttargetlang = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "addtranslations"))
             this->language.addtranslations = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "languagefiledir"))

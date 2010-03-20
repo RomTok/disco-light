@@ -487,7 +487,7 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     return MMSWidget::drawDebug();
 }
 
-void MMSTextBoxWidget::targetLangChanged(MMS_LANGUAGE_TYPE lang) {
+void MMSTextBoxWidget::targetLangChanged(int lang) {
     this->translated = false;
 }
 
