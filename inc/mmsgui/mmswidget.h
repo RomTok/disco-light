@@ -314,7 +314,7 @@ class MMSWidget {
         void setActivated(bool set, bool refresh = true);
         bool isActivated();
 
-        void setPressed(bool set, bool refresh = true);
+        bool setPressed(bool set, bool refresh = true);
         bool isPressed();
 
         void setASelected(bool set, bool refresh = true);
