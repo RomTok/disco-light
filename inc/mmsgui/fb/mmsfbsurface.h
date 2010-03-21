@@ -107,7 +107,7 @@ typedef struct {
     //! the surface is a window surface
     bool        	iswinsurface;
     //! the surface is the layer surface
-    //!note: for example it is possible to have a window surface in combination with this layer flag
+    //! note: for example it is possible to have a window surface in combination with this layer flag
     bool        	islayersurface;
     //! drawing flags
     MMSFBDrawingFlags 	drawingflags;
@@ -173,7 +173,7 @@ class MMSFBSurface {
 
         bool extendedLock(MMSFBSurface *src, MMSFBSurfacePlanes *src_planes,
         				  MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes);
-        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst);
+        void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes = NULL);
 
         bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBSurfacePlanes *src_planes = NULL,
 									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);

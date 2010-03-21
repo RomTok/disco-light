@@ -118,6 +118,10 @@ class MMSFBSurfacePlanes {
 	public:
 	    //! buffer is a hardware buffer?
 	    bool	hwbuffer;
+	    //! the current pixel data describes a full opaque surface
+	    bool	opaque;
+	    //! the current pixel data describes a full transparent surface
+	    bool	transparent;
 		//! first plane
 		void	*ptr;
 		//! pitch of first plane
@@ -132,13 +136,15 @@ class MMSFBSurfacePlanes {
 		int 	pitch3;
 
 		MMSFBSurfacePlanes(void *ptr = NULL, int pitch = 0, void *ptr2 = NULL, int pitch2 = 0, void *ptr3 = NULL, int pitch3 = 0) {
-			this->hwbuffer	= false;
-			this->ptr		= ptr;
-			this->pitch		= pitch;
-			this->ptr2		= ptr2;
-			this->pitch2	= pitch2;
-			this->ptr3		= ptr3;
-			this->pitch3	= pitch3;
+			this->hwbuffer		= false;
+		    this->opaque		= false;
+		    this->transparent	= false;
+			this->ptr			= ptr;
+			this->pitch			= pitch;
+			this->ptr2			= ptr2;
+			this->pitch2		= pitch2;
+			this->ptr3			= ptr3;
+			this->pitch3		= pitch3;
 		}
 };
 
