@@ -107,7 +107,7 @@ void mmsfb_fillrectangle_argb(MMSFBSurfacePlanes *dst_planes, int dst_height,
 		}
 		else {
 			// clear one big block
-			memset(dst, A, (int)(dst_end - dst));
+			memset(dst, A, (int)((char*)dst_end - (char*)dst));
 		}
 	}
 }
