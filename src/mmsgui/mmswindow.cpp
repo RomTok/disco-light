@@ -587,7 +587,7 @@ bool MMSWindow::resize(bool refresh) {
                                                         + "), alphachannel requested");
                     this->layer->createWindow(&(this->window),
                                               wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                              MMSFB_PF_NONE, true);
+                                              MMSFB_PF_NONE, true, 0);
                     DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
 
                     // window should not be visible at this time
@@ -621,7 +621,7 @@ bool MMSWindow::resize(bool refresh) {
                                                           + "), no alphachannel");
                 this->layer->createWindow(&(this->window),
                                           wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                          MMSFB_PF_NONE, false);
+                                          MMSFB_PF_NONE, false, 0);
                 DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
 
                 // window should not be visible at this time
