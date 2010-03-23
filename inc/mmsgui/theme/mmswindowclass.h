@@ -71,7 +71,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		{ "modal", TAFF_ATTRTYPE_BOOL }, \
 		{ "static_zorder", TAFF_ATTRTYPE_BOOL }, \
 		{ "always_on_top", TAFF_ATTRTYPE_BOOL }, \
-		{ "focusable", TAFF_ATTRTYPE_BOOL }
+		{ "focusable", TAFF_ATTRTYPE_BOOL }, \
+		{ "backbuffer", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_WINDOW_ATTR_IDS \
 		MMSGUI_WINDOW_ATTR_IDS_alignment, \
@@ -106,7 +107,8 @@ namespace MMSGUI_WINDOW_ATTR {
 		MMSGUI_WINDOW_ATTR_IDS_modal, \
 		MMSGUI_WINDOW_ATTR_IDS_static_zorder, \
 		MMSGUI_WINDOW_ATTR_IDS_always_on_top, \
-		MMSGUI_WINDOW_ATTR_IDS_focusable
+		MMSGUI_WINDOW_ATTR_IDS_focusable, \
+		MMSGUI_WINDOW_ATTR_IDS_backbuffer
 
 	typedef enum {
 		MMSGUI_BASE_ATTR_IDS,
@@ -177,6 +179,12 @@ class MMSWindowClass {
 
 	        //! window can get the focus true/false
 	        bool		focusable;
+
+	        //! is backbuffer flag set?
+	        bool		isbackbuffer;
+
+	        //! window surface has an backbuffer true/false
+	        bool		backbuffer;
     	} id;
 
         struct {
@@ -225,6 +233,7 @@ class MMSWindowClass {
         void initStaticZOrder();
         void initAlwaysOnTop();
         void initFocusable();
+        void initBackBuffer();
 
     	/* free routines */
         void freeAlignment();
@@ -255,6 +264,7 @@ class MMSWindowClass {
         void freeStaticZOrder();
         void freeAlwaysOnTop();
         void freeFocusable();
+        void freeBackBuffer();
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -543,6 +553,11 @@ class MMSWindowClass {
         void unsetFocusable();
         void setFocusable(bool focusable);
         bool getFocusable(bool &focusable);
+
+        bool isBackBuffer();
+        void unsetBackBuffer();
+        void setBackBuffer(bool backbuffer);
+        bool getBackBuffer(bool &backbuffer);
 
     // friends
     friend class MMSThemeManager;

@@ -231,7 +231,7 @@ MMSWINDOWTYPE MMSWindow::getType() {
 }
 
 bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
-		               bool *own_surface) {
+		               bool *own_surface, bool *backbuffer) {
     /* save flags */
     this->flags = flags;
 
@@ -248,6 +248,8 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
         setAlignment(alignment, false, false);
     if (own_surface)
     	setOwnSurface(*own_surface);
+    if (backbuffer)
+    	setBackBuffer(*backbuffer);
 
     this->action = new MMSWindowAction(this);
     this->firstfocusset = false;
@@ -336,8 +338,9 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     return true;
 }
 
-bool MMSWindow::create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags, bool *own_surface) {
-    return create("", "", w, h, alignment, flags, own_surface);
+bool MMSWindow::create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags, bool *own_surface,
+					   bool *backbuffer) {
+    return create("", "", w, h, alignment, flags, own_surface, backbuffer);
 }
 
 
@@ -579,15 +582,30 @@ bool MMSWindow::resize(bool refresh) {
     			        this->layer->getResolution(&wdesc_width, &wdesc_height);
     				}
 
-    				// window should have own surface
-                	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
-                                                        + iToStr(wdesc_posy) + ","
-                                                        + iToStr(wdesc_width) + ","
-                                                        + iToStr(wdesc_height)
-                                                        + "), alphachannel requested");
-                    this->layer->createWindow(&(this->window),
-                                              wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                              MMSFB_PF_NONE, true, 0);
+    				// window should have own surface, backbuffer requested?
+    				bool backbuffer = false;
+    				getBackBuffer(backbuffer);
+    				if (backbuffer) {
+						DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+															+ iToStr(wdesc_posy) + ","
+															+ iToStr(wdesc_width) + ","
+															+ iToStr(wdesc_height)
+															+ ") with alphachannel and backbuffer");
+						this->layer->createWindow(&(this->window),
+												  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+												  MMSFB_PF_NONE, true, 1);
+    				}
+    				else {
+						DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+															+ iToStr(wdesc_posy) + ","
+															+ iToStr(wdesc_width) + ","
+															+ iToStr(wdesc_height)
+															+ ") with alphachannel, no backbuffer");
+						this->layer->createWindow(&(this->window),
+												  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+												  MMSFB_PF_NONE, true, 0);
+    				}
+
                     DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
 
                     // window should not be visible at this time
@@ -614,15 +632,30 @@ bool MMSWindow::resize(bool refresh) {
             }
             else {
                 // video window, do not use alpha
-            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
-                                                          + iToStr(wdesc_posy) + ","
-                                                          + iToStr(wdesc_width) + ","
-                                                          + iToStr(wdesc_height)
-                                                          + "), no alphachannel");
-                this->layer->createWindow(&(this->window),
-                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                          MMSFB_PF_NONE, false, 0);
-                DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
+				bool backbuffer = false;
+				getBackBuffer(backbuffer);
+				if (backbuffer) {
+					DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
+															  + iToStr(wdesc_posy) + ","
+															  + iToStr(wdesc_width) + ","
+															  + iToStr(wdesc_height)
+															  + ") with backbuffer, no alphachannel");
+					this->layer->createWindow(&(this->window),
+											  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+											  MMSFB_PF_NONE, false, 1);
+				}
+				else {
+					DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
+															  + iToStr(wdesc_posy) + ","
+															  + iToStr(wdesc_width) + ","
+															  + iToStr(wdesc_height)
+															  + "), no alphachannel, no backbuffer");
+					this->layer->createWindow(&(this->window),
+											  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+											  MMSFB_PF_NONE, false, 0);
+				}
+
+				DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
 
                 // window should not be visible at this time
                 this->window->setOpacity(0);
@@ -692,15 +725,30 @@ bool MMSWindow::resize(bool refresh) {
             bool os;
             getOwnSurface(os);
         	if (os) {
-        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
-	                                                                  + iToStr(wdesc_posy) + ","
-	                                                                  + iToStr(wdesc_width) + ","
-	                                                                  + iToStr(wdesc_height)
-	                                                                  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
-	                                                                  + " (use alpha)");
+				bool backbuffer = false;
+				getBackBuffer(backbuffer);
+				if (backbuffer) {
+					DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
+																		  + iToStr(wdesc_posy) + ","
+																		  + iToStr(wdesc_width) + ","
+																		  + iToStr(wdesc_height)
+																		  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
+																		  + " (alphachannel and backbuffer)");
 
-	            this->layer->createSurface(&(this->surface),
-	                                      wdesc_width, wdesc_height, MMSFB_PF_NONE, 0);
+					this->layer->createSurface(&(this->surface),
+											  wdesc_width, wdesc_height, MMSFB_PF_NONE, 1);
+				}
+				else {
+					DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
+																		  + iToStr(wdesc_posy) + ","
+																		  + iToStr(wdesc_width) + ","
+																		  + iToStr(wdesc_height)
+																		  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
+																		  + " (alphachannel, no backbuffer)");
+
+					this->layer->createSurface(&(this->surface),
+											  wdesc_width, wdesc_height, MMSFB_PF_NONE, 0);
+				}
 	        }
 	        else {
 	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc_posx) + ","
@@ -5013,6 +5061,10 @@ bool MMSWindow::getFocusable(bool &focusable) {
     GETWINDOW(Focusable, focusable);
 }
 
+bool MMSWindow::getBackBuffer(bool &backbuffer) {
+    GETWINDOW(BackBuffer, backbuffer);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -5268,6 +5320,10 @@ void MMSWindow::setFocusable(bool focusable) {
     myWindowClass.setFocusable(focusable);
 }
 
+void MMSWindow::setBackBuffer(bool backbuffer) {
+    myWindowClass.setBackBuffer(backbuffer);
+}
+
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
     if (refresh)
@@ -5394,6 +5450,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setAlwaysOnTop(b);
 	if (themeClass->getFocusable(b))
         setFocusable(b);
+	if (themeClass->getBackBuffer(b))
+        setBackBuffer(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))

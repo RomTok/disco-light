@@ -45,16 +45,16 @@ class MMSPopupWindow : public MMSWindow {
         unsigned int    counter;
 
         bool create(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
-                    MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface,
+                    MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, bool *backbuffer,
                     unsigned int duration);
 
 	public:
 		MMSPopupWindow(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER,
                        MMSWINDOW_FLAGS flags = MMSW_NONE, MMSTheme *theme = NULL, bool *own_surface = NULL,
-                       unsigned int duration = 0);
+                       bool *backbuffer = NULL, unsigned int duration = 0);
 		MMSPopupWindow(string className, string w, string h, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER,
                        MMSWINDOW_FLAGS flags = MMSW_NONE, MMSTheme *theme = NULL, bool *own_surface = NULL,
-                       unsigned int duration = 0);
+                       bool *backbuffer = NULL, unsigned int duration = 0);
         virtual ~MMSPopupWindow();
 
         virtual bool show();

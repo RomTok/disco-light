@@ -33,20 +33,23 @@
 #include "mmsgui/mmspopupwindow.h"
 
 MMSPopupWindow::MMSPopupWindow(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
-                               MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, unsigned int duration) {
-	create(className, dx, dy, w, h, alignment, flags, theme, own_surface, duration);
+                               MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface,
+                               bool *backbuffer, unsigned int duration) {
+	create(className, dx, dy, w, h, alignment, flags, theme, own_surface, backbuffer, duration);
 }
 
 MMSPopupWindow::MMSPopupWindow(string className, string w, string h, MMSALIGNMENT alignment,
-                               MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, unsigned int duration) {
-	create(className, "", "", w, h, alignment, flags, theme, own_surface, duration);
+                               MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface,
+                               bool *backbuffer, unsigned int duration) {
+	create(className, "", "", w, h, alignment, flags, theme, own_surface, backbuffer, duration);
 }
 
 MMSPopupWindow::~MMSPopupWindow() {
 }
 
 bool MMSPopupWindow::create(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
-                            MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, unsigned int duration) {
+                            MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface,
+                            bool *backbuffer, unsigned int duration) {
 	this->type = MMSWINDOWTYPE_POPUPWINDOW;
     this->className = className;
     if (theme) this->theme = theme; else this->theme = globalTheme;
@@ -59,7 +62,7 @@ bool MMSPopupWindow::create(string className, string dx, string dy, string w, st
     if (duration)
         setDuration(duration);
 
-	return MMSWindow::create(dx, dy, w, h, alignment, flags, own_surface);
+	return MMSWindow::create(dx, dy, w, h, alignment, flags, own_surface, backbuffer);
 }
 
 bool MMSPopupWindow::show() {

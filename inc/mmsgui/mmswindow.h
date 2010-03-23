@@ -377,11 +377,11 @@ class MMSWindow {
 
         //! Internal method: Creates the window.
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
-        		    bool *own_surface);
+        		    bool *own_surface, bool *backbuffer);
 
         //! Internal method: Creates the window.
         bool create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
-					bool *own_surface);
+					bool *own_surface, bool *backbuffer);
 
         //! Internal method: Resize the window.
         bool resize(bool refresh = true);
@@ -1226,6 +1226,13 @@ class MMSWindow {
         */
         bool getFocusable(bool &focusable);
 
+    	//! Detect if the window has an backbuffer.
+        /*!
+        \param backbuffer	returns the backbuffer flag
+        \return true, if value is successfully returned
+        */
+        bool getBackBuffer(bool &backbuffer);
+
         //! Get the color of the window border.
         /*!
         \param color	returns the border color
@@ -1498,6 +1505,12 @@ class MMSWindow {
         \param focusable	if true, the window will can get the focus
         */
         void setFocusable(bool focusable);
+
+        //! Set the backbuffer flag of the window.
+        /*!
+        \param backbuffer	if true, the window surface has a front and a backbuffer
+        */
+        void setBackBuffer(bool backbuffer);
 
         //! Set the color of the window border.
         /*!
