@@ -34,6 +34,7 @@
 #define MMSPOPUPWINDOW_H_
 
 #include "mmsgui/mmswindow.h"
+#include "mmstools/mmstimer.h"
 
 class MMSPopupWindow : public MMSWindow {
 
@@ -42,7 +43,8 @@ class MMSPopupWindow : public MMSWindow {
         MMSPopupWindowClass *popupWindowClass;
         MMSPopupWindowClass myPopupWindowClass;
 
-        unsigned int    counter;
+        MMSTimer			*timer;
+        sigc::connection 	timeOut_connection;
 
         bool create(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,
                     MMSWINDOW_FLAGS flags, MMSTheme *theme, bool *own_surface, bool *backbuffer,
@@ -57,9 +59,9 @@ class MMSPopupWindow : public MMSWindow {
                        bool *backbuffer = NULL, unsigned int duration = 0);
         virtual ~MMSPopupWindow();
 
-        virtual bool show();
-
-//		bool showAction(bool *stopaction);
+        void timeOut(void);
+        virtual void afterShowAction(MMSPulser *pulser);
+        virtual bool beforeHideAction(MMSPulser *pulser);
 
     public:
         /* theme access methods */
