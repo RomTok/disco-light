@@ -342,6 +342,10 @@ void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
     bool *osp = NULL;
     if (themeClass.windowClass.getOwnSurface(os))
     	osp = &os;
+    bool bb;
+    bool *bbp = NULL;
+    if (themeClass.windowClass.getBackBuffer(bb))
+    	bbp = &bb;
 
     startTAFFScan
     {
@@ -366,7 +370,8 @@ void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
                                              alignment,
                                              MMSW_NONE,
                                              theme,
-                                             osp);
+                                             osp,
+                                             bbp);
     else
         this->rootWindow = new MMSMainWindow(themeClass.getClassName(),
                                              width,
@@ -374,7 +379,8 @@ void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
                                              alignment,
                                              MMSW_NONE,
                                              theme,
-                                             osp);
+                                             osp,
+                                             bbp);
 
     this->rootWindow->setName(name);
     ((MMSMainWindow*)this->rootWindow)->updateFromThemeClass(&themeClass);
@@ -421,6 +427,10 @@ void MMSDialogManager::getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme)
     bool *osp = NULL;
     if (themeClass.windowClass.getOwnSurface(os))
     	osp = &os;
+    bool bb;
+    bool *bbp = NULL;
+    if (themeClass.windowClass.getBackBuffer(bb))
+    	bbp = &bb;
 
     startTAFFScan
     {
@@ -446,6 +456,7 @@ void MMSDialogManager::getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme)
                                               MMSW_NONE,
                                               theme,
                                               osp,
+                                              bbp,
                                               0);
     else
         this->rootWindow = new MMSPopupWindow(themeClass.getClassName(),
@@ -455,6 +466,7 @@ void MMSDialogManager::getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme)
                                               MMSW_NONE,
                                               theme,
                                               osp,
+                                              bbp,
                                               0);
 
     this->rootWindow->setName(name);
@@ -501,6 +513,10 @@ void MMSDialogManager::getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
     bool *osp = NULL;
     if (themeClass.windowClass.getOwnSurface(os))
     	osp = &os;
+    bool bb;
+    bool *bbp = NULL;
+    if (themeClass.windowClass.getBackBuffer(bb))
+    	bbp = &bb;
 
     startTAFFScan
     {
@@ -525,7 +541,8 @@ void MMSDialogManager::getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
 								             alignment,
                                              MMSW_NONE,
                                              theme,
-                                             osp);
+                                             osp,
+                                             bbp);
     else
         this->rootWindow = new MMSRootWindow(themeClass.getClassName(),
 								             width,
@@ -533,7 +550,8 @@ void MMSDialogManager::getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
 								             alignment,
                                              MMSW_NONE,
                                              theme,
-                                             osp);
+                                             osp,
+                                             bbp);
 
     this->rootWindow->setName(name);
     ((MMSRootWindow*)this->rootWindow)->updateFromThemeClass(&themeClass);
@@ -581,6 +599,10 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
     bool *osp = NULL;
     if (themeClass.windowClass.getOwnSurface(os))
     	osp = &os;
+    bool bb;
+    bool *bbp = NULL;
+    if (themeClass.windowClass.getBackBuffer(bb))
+    	bbp = &bb;
 
     startTAFFScan
     {
@@ -609,7 +631,8 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
                                       alignment,
                                       MMSW_NONE,
                                       theme,
-                                      osp);
+                                      osp,
+                                      bbp);
     else
         childwin = new MMSChildWindow(themeClass.getClassName(),
                                       rootWindow,
@@ -618,7 +641,8 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
                                       alignment,
                                       MMSW_NONE,
                                       theme,
-                                      osp);
+                                      osp,
+                                      bbp);
 
     // store only the 'root' child window in my list
     if (this->rootWindow == rootWindow)

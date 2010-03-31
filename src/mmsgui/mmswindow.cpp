@@ -231,7 +231,7 @@ MMSWINDOWTYPE MMSWindow::getType() {
 }
 
 bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,
-		               bool *own_surface) {
+		               bool *own_surface, bool *backbuffer) {
     /* save flags */
     this->flags = flags;
 
@@ -248,6 +248,8 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
         setAlignment(alignment, false, false);
     if (own_surface)
     	setOwnSurface(*own_surface);
+    if (backbuffer)
+    	setBackBuffer(*backbuffer);
 
     this->action = new MMSWindowAction(this);
     this->firstfocusset = false;
@@ -336,8 +338,9 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     return true;
 }
 
-bool MMSWindow::create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags, bool *own_surface) {
-    return create("", "", w, h, alignment, flags, own_surface);
+bool MMSWindow::create(string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags, bool *own_surface,
+					   bool *backbuffer) {
+    return create("", "", w, h, alignment, flags, own_surface, backbuffer);
 }
 
 
@@ -408,7 +411,6 @@ bool MMSWindow::resize(bool refresh) {
         this->vrect.h = this->parent->innerGeom.h;
 //        logger.writeLog("got inner size from parent " + iToStr(vrect.w) + "x" + iToStr(vrect.h));
     }
-
 
     /* calculate the window position */
     /* first try with xpos */
@@ -580,15 +582,30 @@ bool MMSWindow::resize(bool refresh) {
     			        this->layer->getResolution(&wdesc_width, &wdesc_height);
     				}
 
-    				// window should have own surface
-                	DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
-                                                        + iToStr(wdesc_posy) + ","
-                                                        + iToStr(wdesc_width) + ","
-                                                        + iToStr(wdesc_height)
-                                                        + "), alphachannel requested");
-                    this->layer->createWindow(&(this->window),
-                                              wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                              MMSFB_PF_NONE, true);
+    				// window should have own surface, backbuffer requested?
+    				bool backbuffer = false;
+    				getBackBuffer(backbuffer);
+    				if (backbuffer) {
+						DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+															+ iToStr(wdesc_posy) + ","
+															+ iToStr(wdesc_width) + ","
+															+ iToStr(wdesc_height)
+															+ ") with alphachannel and backbuffer");
+						this->layer->createWindow(&(this->window),
+												  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+												  MMSFB_PF_NONE, true, 1);
+    				}
+    				else {
+						DEBUGMSG("MMSGUI", "creating window (" + iToStr(wdesc_posx) + ","
+															+ iToStr(wdesc_posy) + ","
+															+ iToStr(wdesc_width) + ","
+															+ iToStr(wdesc_height)
+															+ ") with alphachannel, no backbuffer");
+						this->layer->createWindow(&(this->window),
+												  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+												  MMSFB_PF_NONE, true, 0);
+    				}
+
                     DEBUGMSG("MMSGUI", "window created (0x%x)", this->window);
 
                     // window should not be visible at this time
@@ -615,15 +632,30 @@ bool MMSWindow::resize(bool refresh) {
             }
             else {
                 // video window, do not use alpha
-            	DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
-                                                          + iToStr(wdesc_posy) + ","
-                                                          + iToStr(wdesc_width) + ","
-                                                          + iToStr(wdesc_height)
-                                                          + "), no alphachannel");
-                this->layer->createWindow(&(this->window),
-                                          wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
-                                          MMSFB_PF_NONE, false);
-                DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
+				bool backbuffer = false;
+				getBackBuffer(backbuffer);
+				if (backbuffer) {
+					DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
+															  + iToStr(wdesc_posy) + ","
+															  + iToStr(wdesc_width) + ","
+															  + iToStr(wdesc_height)
+															  + ") with backbuffer, no alphachannel");
+					this->layer->createWindow(&(this->window),
+											  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+											  MMSFB_PF_NONE, false, 1);
+				}
+				else {
+					DEBUGMSG("MMSGUI", "creating video window (" + iToStr(wdesc_posx) + ","
+															  + iToStr(wdesc_posy) + ","
+															  + iToStr(wdesc_width) + ","
+															  + iToStr(wdesc_height)
+															  + "), no alphachannel, no backbuffer");
+					this->layer->createWindow(&(this->window),
+											  wdesc_posx, wdesc_posy, wdesc_width, wdesc_height,
+											  MMSFB_PF_NONE, false, 0);
+				}
+
+				DEBUGMSG("MMSGUI", "video window created (0x%x)", this->window);
 
                 // window should not be visible at this time
                 this->window->setOpacity(0);
@@ -693,15 +725,30 @@ bool MMSWindow::resize(bool refresh) {
             bool os;
             getOwnSurface(os);
         	if (os) {
-        		DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
-	                                                                  + iToStr(wdesc_posy) + ","
-	                                                                  + iToStr(wdesc_width) + ","
-	                                                                  + iToStr(wdesc_height)
-	                                                                  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
-	                                                                  + " (use alpha)");
+				bool backbuffer = false;
+				getBackBuffer(backbuffer);
+				if (backbuffer) {
+					DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
+																		  + iToStr(wdesc_posy) + ","
+																		  + iToStr(wdesc_width) + ","
+																		  + iToStr(wdesc_height)
+																		  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
+																		  + " (alphachannel and backbuffer)");
 
-	            this->layer->createSurface(&(this->surface),
-	                                      wdesc_width, wdesc_height, MMSFB_PF_NONE, 0);
+					this->layer->createSurface(&(this->surface),
+											  wdesc_width, wdesc_height, MMSFB_PF_NONE, 1);
+				}
+				else {
+					DEBUGMSG("MMSGUI", "creating surface for child window (" + iToStr(wdesc_posx) + ","
+																		  + iToStr(wdesc_posy) + ","
+																		  + iToStr(wdesc_width) + ","
+																		  + iToStr(wdesc_height)
+																		  + ") with pixelformat " + getMMSFBPixelFormatString(pixelformat)
+																		  + " (alphachannel, no backbuffer)");
+
+					this->layer->createSurface(&(this->surface),
+											  wdesc_width, wdesc_height, MMSFB_PF_NONE, 0);
+				}
 	        }
 	        else {
 	        	DEBUGMSG("MMSGUI", "creating sub surface for child window (" + iToStr(wdesc_posx) + ","
@@ -977,16 +1024,22 @@ bool MMSWindow::setChildWindowRegion(MMSWindow *childwin, bool refresh) {
 	                    ||(oldregion.y2 - oldregion.y1 + 1 != childwin->geom.h)) {
 	                    // resize surface
 	                    childwin->surface->resize(childwin->geom.w, childwin->geom.h);
-	                }
+
+	                    // call resize recursive for new regions of my child windows
+	                    for (unsigned int j = 0; j < childwin->childwins.size(); j++) {
+	                        childwin->childwins.at(j).window->resize(false);
+	                    }
+            		}
             	}
             	else {
             		// working with sub surface
 					childwin->surface->setSubSurface(&(childwin->geom));
-            	}
 
-                // call resize recursive for new regions of my child windows
-                for (unsigned int j = 0; j < childwin->childwins.size(); j++)
-                    childwin->childwins.at(j).window->resize(false);
+	                // call resize recursive for new regions of my child windows
+	                for (unsigned int j = 0; j < childwin->childwins.size(); j++) {
+	                    childwin->childwins.at(j).window->resize(false);
+	                }
+            	}
 
                 // recursive calls should stop here
                 if (!refresh) {
@@ -1446,27 +1499,36 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
         int z = -1;
         for (unsigned int i = 0; i < this->childwins.size(); i++) {
             if (this->childwins.at(i).window == win) {
-                /* child window found, flip it */
+                // child window found, flip it
                 if (flipChildSurface) {
                     win->surface->flip(region);
                 }
 
-                /* return if parent window is not shown */
+                // return if parent window is not shown
                 if ((win->parent->isShown()==false)&&(win->parent->willshow==false)) {
-                    /* unlock */
+                    // unlock
                     if (!locked)
 //PUP                        flipLock.unlock();
                     	unlock();
                     return true;
                 }
 
-                /* return if opacity is zero */
+                // return if opacity is zero
                 if ((this->childwins.at(i).opacity==0)&&(this->childwins.at(i).oldopacity==0)) {
-                    /* unlock */
+                    // unlock
                     if (!locked)
 //PUP                        flipLock.unlock();
                     	unlock();
+                    return true;
+                }
 
+                // return if the child window is out of the visible parent region
+                if   ((win->geom.x >= win->parent->geom.w) || (win->geom.y >= win->parent->geom.h)
+                	||(win->geom.x + win->geom.w <= 0) || (win->geom.y + win->geom.h <= 0)) {
+                    // unlock
+                    if (!locked)
+//PUP                        flipLock.unlock();
+                    	unlock();
                     return true;
                 }
 
@@ -2274,7 +2336,7 @@ bool MMSWindow::moveTo(int x, int y, bool refresh) {
 	}
 	else {
 		// this is a child window
-		this->parent->moveChildWindow(this, x, y);
+		this->parent->moveChildWindow(this, x, y, refresh);
 	}
 
 	return true;
@@ -3144,28 +3206,40 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
     unlock();
 }
 
-void MMSWindow::refresh() {
+void MMSWindow::refresh(MMSFBRegion *region) {
 
     if(shown==false) {
 //        logger.writeLog("drawing skipped because window is not shown");
         return;
     }
 
-    /* lock drawing */
+    // lock drawing
 //PUP    this->drawLock.lock();
     lock();
 
-    /* draw complete window */
+    // draw window
     this->draw_setgeom = true;
-    draw();
+    if (region) {
+    	// draw a region
+		MMSFBRectangle rect2update;
+		rect2update.x = region->x1;
+		rect2update.y = region->y1;
+		rect2update.w = region->x2 - region->x1 + 1;
+		rect2update.h = region->y2 - region->y1 + 1;
+		draw(false, &rect2update);
+    }
+    else {
+    	// draw whole window
+    	draw();
+    }
 
-    /* make it visible */
+    // make it visible
     if (!this->parent)
-        flipWindow(this);
+        flipWindow(this, region);
     else
-        this->parent->flipWindow(this);
+        this->parent->flipWindow(this, region);
 
-    /* unlock drawing */
+    // unlock drawing
 //PUP    this->drawLock.unlock();
     unlock();
 }
@@ -4987,6 +5061,10 @@ bool MMSWindow::getFocusable(bool &focusable) {
     GETWINDOW(Focusable, focusable);
 }
 
+bool MMSWindow::getBackBuffer(bool &backbuffer) {
+    GETWINDOW(BackBuffer, backbuffer);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -5242,6 +5320,10 @@ void MMSWindow::setFocusable(bool focusable) {
     myWindowClass.setFocusable(focusable);
 }
 
+void MMSWindow::setBackBuffer(bool backbuffer) {
+    myWindowClass.setBackBuffer(backbuffer);
+}
+
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
     if (refresh)
@@ -5368,6 +5450,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setAlwaysOnTop(b);
 	if (themeClass->getFocusable(b))
         setFocusable(b);
+	if (themeClass->getBackBuffer(b))
+        setBackBuffer(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))

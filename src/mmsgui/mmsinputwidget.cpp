@@ -288,8 +288,13 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 }
 
 void MMSInputWidget::drawCursor(bool cursor_on) {
+	// show/hide the cursor
 	this->cursor_on = cursor_on;
-	refresh();
+	MMSSTATE cursor_state = getCursorState();
+	if ((cursor_state == MMSSTATE_TRUE)||((cursor_state == MMSSTATE_AUTO) && isFocused())) {
+		// refresh only, if cursor should be shown
+		refresh();
+	}
 }
 
 

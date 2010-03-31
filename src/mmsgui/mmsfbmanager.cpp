@@ -252,55 +252,25 @@ void MMSFBManager::applySettings() {
     string buffermode = graphicslayer.buffermode;
     MMSFBSurface *gls;
     if (this->graphicslayer->getSurface(&gls)) {
-        // currently we do not accelerate using video hardware
-    	// if buffermode is not MMSFB_BM_BACKSYSTEM we use the directfb hardware acceleration
-    	if (buffermode == MMSFB_BM_BACKSYSTEM) {
-    		gls->setExtendedAcceleration(config.getExtendedAccel());
+    	// set the static extended accel flag
+		gls->setExtendedAcceleration(config.getExtendedAccel());
 
-    		// set the global alloc method (default is malloc)
-    		if (mmsfb->getBackend() == MMSFB_BE_DFB) {
+		// set the global alloc method (default is malloc)
+		if (mmsfb->getBackend() == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
-				string am = config.getAllocMethod();
-				if (am == "MALLOC") {
-					if (!config.getExtendedAccel())
-						gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-				}
-				else
+			string am = config.getAllocMethod();
+			if (am == "MALLOC") {
+				if (!config.getExtendedAccel())
 					gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
+			}
+			else
+				gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
 #endif
-    		}
-    	}
-    	else {
-			gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
-    	}
+		}
     }
 
     // init the mmsfbwindowmanager
 	mmsfbwindowmanager->init(this->graphicslayer, (config.getPointer()==MMSFB_PM_TRUE));
-
-/*
-    // create a global temporary surface
-    MMSFBSurfacePixelFormat pixelformat = config.getGraphicsLayerPixelformat();
-    if (!isAlphaPixelFormat(pixelformat)) {
-    	// the gui internally needs surfaces with alpha channel
-    	// now we have to decide if we are working in RGB or YUV color space
-    	MMSFBSurfacePixelFormat pixelformat = config.getGraphicsSurfacePixelformat();
-    	if ((pixelformat == MMSFB_PF_NONE)||((pixelformat != MMSFB_PF_ARGB)&&(pixelformat != MMSFB_PF_AYUV))) {
-    		// use autodetection
-	        if (!isRGBPixelFormat(pixelformat))
-	            // so switch all non-alpha pixelformats to AYUV
-	            pixelformat = MMSFB_PF_AYUV;
-	        else
-	            // so switch all non-alpha pixelformats to ARGB
-	            pixelformat = MMSFB_PF_ARGB;
-    	}
-	}
-    else
-    if (isIndexedPixelFormat(pixelformat))
-        // the gui internally needs non-indexed surfaces
-        // so switch all indexed pixelformats to ARGB
-        pixelformat = MMSFB_PF_ARGB;
-*/
 
     DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", graphicslayer.rect.w, graphicslayer.rect.h, getMMSFBPixelFormatString(surface_pixelformat).c_str());
     mmsfbsurfacemanager->createTemporarySurface(graphicslayer.rect.w, graphicslayer.rect.h, surface_pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));

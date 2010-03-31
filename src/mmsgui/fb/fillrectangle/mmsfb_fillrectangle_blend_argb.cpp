@@ -67,6 +67,19 @@ void mmsfb_fillrectangle_blend_argb(MMSFBSurfacePlanes *dst_planes, int dst_heig
 			| (color.g << 8)
 			| color.b;
 
+	// set flags for dst_planes
+	switch (A) {
+	case 0xff:
+		// full opaque
+		dst_planes->opaque = true;
+		dst_planes->transparent = false;
+		break;
+	default:
+		// semitransparent, but leave opaque flag as is
+		dst_planes->transparent = false;
+		break;
+	}
+
 	if (color.a == 0xff) {
 		// source pixel is not transparent, copy it directly to the destination
 		// for all lines

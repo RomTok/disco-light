@@ -1986,32 +1986,43 @@ bool MMSWidget::isActivated() {
     return this->activated;
 }
 
-void MMSWidget::setPressed(bool set, bool refresh) {
+bool MMSWidget::setPressed(bool set, bool refresh) {
 
-    /* check if pressed status already set */
+    // check if pressed status already set
     if (this->pressed == set) {
-        /* refresh my children */
+        // refresh my children
     	if (canSelectChildren()) {
-			for (unsigned int i=0; i < children.size(); i++)
-				children.at(i)->setPressed(set, false);
-			if (refresh)
+    		bool ref = false;
+			for (unsigned int i=0; i < children.size(); i++) {
+				if (children.at(i)->setPressed(set, false))
+					ref = true;
+			}
+			if (ref && refresh) {
+				// call refresh only, if at least one children has changed it's status
 				this->refresh();
+			}
     	}
-		return;
+
+    	// status not changed
+		return false;
     }
 
-    /* switch pressed on/off */
+    // switch pressed on/off
     this->pressed = set;
 
-    /* refresh my children */
+    // refresh my children
 	if (canSelectChildren()) {
-		for (unsigned int i=0; i < children.size(); i++)
+		for (unsigned int i=0; i < children.size(); i++) {
 			children.at(i)->setPressed(set, false);
+		}
 	}
 
-    /* refresh widget */
+    // refresh widget
     if (refresh)
         this->refresh();
+
+    // status changed
+    return true;
 }
 
 bool MMSWidget::isPressed() {

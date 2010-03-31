@@ -1063,21 +1063,21 @@ bool MMSTaffFile::readFile() {
 	// check the version of the file
 	this->correct_version = false;
 	if (strcmp((char*)this->taff_buf, (char*)&(this->taff_desc->type))) {
-		/* wrong type */
+		// wrong type
 		printf("TAFF: Wrong TAFF type (%s)\n", this->taff_filename.c_str());
 		free(this->taff_buf);
 		this->taff_buf = NULL;
 		return false;
 	}
 	if (memcmp(this->taff_buf+sizeof(this->taff_desc->type), &(this->taff_desc->version), sizeof(this->taff_desc->version))) {
-		/* wrong version */
+		// wrong version
 		free(this->taff_buf);
 		this->taff_buf = NULL;
 		return false;
 	}
 	this->correct_version = true;
 
-	/* compare the modification time of the taff and external file */
+	// compare the modification time of the taff and external file
 	if (this->external_filename!="") {
         struct stat statbuf1;
         struct stat statbuf2;
@@ -1087,16 +1087,19 @@ bool MMSTaffFile::readFile() {
     		return false;
     	}
         if (stat(this->external_filename.c_str(), &statbuf2)==0) {
-        	if (statbuf2.st_mtime >= statbuf1.st_mtime) {
-                /* external file has been modified, therefore the taff file maybe not up-to-date */
-        		free(this->taff_buf);
-        		this->taff_buf = NULL;
-        		return false;
-        	}
+			if (statbuf2.st_mtime <= time(NULL)) {
+				// ok, external file created in the past
+				if (statbuf2.st_mtime >= statbuf1.st_mtime) {
+					// external file has been modified, therefore the taff file maybe not up-to-date
+					free(this->taff_buf);
+					this->taff_buf = NULL;
+					return false;
+				}
+			}
         }
 	}
 
-	/* all right */
+	// all right
 	this->taff_buf_size = ritems;
 	getFirstTag();
 	this->loaded = true;
