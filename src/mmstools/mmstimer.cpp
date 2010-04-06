@@ -126,9 +126,10 @@ void MMSTimer::threadMain() {
 			pthread_mutex_lock(&this->mutex);
 			if(this->singleShot)
 				break;
-		} else {
-			if(this->action == STOP)
-				pthread_cond_wait(&this->cond, &this->mutex);
+		}
+
+		if(this->action == STOP) {
+			pthread_cond_wait(&this->cond, &this->mutex);
 		}
 	}
 	pthread_mutex_unlock(&this->mutex);
