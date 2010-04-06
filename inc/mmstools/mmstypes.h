@@ -502,7 +502,7 @@ The input string has the syntax "#rrggbbaa".
 bool getMMSFBColorFromString(string input, MMSFBColor *color);
 
 
-// rectangles, regions.......................................................
+// rectangles, regions, etc..................................................
 
 //! describes a rectangle
 class MMSFBRectangle {
@@ -544,6 +544,112 @@ class MMSFBRegion {
 		}
 };
 
+//! describes a 3D point
+class MMS3DPoint {
+	private:
+		//! x
+		double x;
+		//! y
+		double y;
+		//! z
+		double z;
+
+	public:
+		MMS3DPoint(double x = 0, double y = 0, double z = 0) {
+			set(x, y, z);
+		}
+
+		bool operator==(MMS3DPoint &p) {
+			return ((this->x == p.x) && (this->y == p.y) && (this->z == p.z));
+		}
+
+		bool operator!=(MMS3DPoint &p) {
+			return ((this->x != p.x) || (this->y != p.y) || (this->z != p.z));
+		}
+
+		void set(double x = 0, double y = 0, double z = 0) {
+			this->x = x;
+			this->y = y;
+			this->z = z;
+		}
+
+		void get(double &x, double &y, double &z) {
+			x = this->x;
+			y = this->y;
+			z = this->z;
+		}
+
+	friend class MMS3DObject;
+	friend class MMS3DSpace;
+};
+
+// describes a 3D region
+class MMS3DRegion {
+	private:
+		//! x1
+		double x1;
+		//! y1
+		double y1;
+		//! z1
+		double z1;
+
+		//! x2
+		double x2;
+		//! y2
+		double y2;
+		//! z2
+		double z2;
+
+		//! x center
+		double x_center;
+		//! y center
+		double y_center;
+		//! z center
+		double z_center;
+
+	public:
+		MMS3DRegion(double x1 = 0, double y1 = 0, double z1 = 0,
+						 double x2 = 0, double y2 = 0, double z2 = 0) {
+			set(x1, y1, z1, x2, y2, z2);
+		}
+
+		bool operator==(MMS3DRegion &r) {
+			return ((this->x1 == r.x1) && (this->y1 == r.y1) && (this->z1 == r.z1)
+				 && (this->x2 == r.x2) && (this->y2 == r.y2) && (this->z2 == r.z2));
+		}
+
+		bool operator!=(MMS3DRegion &r) {
+			return ((this->x1 != r.x1) || (this->y1 != r.y1) || (this->z1 != r.z1)
+				 || (this->x2 != r.x2) || (this->y2 != r.y2) || (this->z2 != r.z2));
+		}
+
+		void set(double x1 = 0, double y1 = 0, double z1 = 0,
+				 double x2 = 0, double y2 = 0, double z2 = 0) {
+			this->x1 = x1;
+			this->y1 = y1;
+			this->z1 = z1;
+			this->x2 = x2;
+			this->y2 = y2;
+			this->z2 = z2;
+
+			this->x_center = (this->x1 + this->x2) / 2;
+			this->y_center = (this->y1 + this->y2) / 2;
+			this->z_center = (this->z1 + this->z2) / 2;
+		}
+
+		void get(double &x1, double &y1, double &z1,
+				 double &x2, double &y2, double &z2) {
+			x1 = this->x1;
+			y1 = this->y1;
+			z1 = this->z1;
+			x2 = this->x2;
+			y2 = this->y2;
+			z2 = this->z2;
+		}
+
+	friend class MMS3DObject;
+	friend class MMS3DSpace;
+};
 
 
 // pointer mode..............................................................
