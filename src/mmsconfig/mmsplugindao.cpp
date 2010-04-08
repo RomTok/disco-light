@@ -153,6 +153,10 @@ MMSPluginData *MMSPluginDAO::findPluginByName(string name) {
 
     if(!rs["PluginTypeID"].empty())
         plugintype->setID(atoi(rs["PluginTypeID"].c_str()));
+
+    if(!rs["OrderPos"].empty())
+    	plugin->setOrderpos(atoi(rs["OrderPos"].c_str()));
+
     plugintype->setName(rs["PluginTypeName"]);
     plugin->setType(plugintype);
     plugin->setCategory(category);
@@ -185,6 +189,10 @@ MMSPluginData *MMSPluginDAO::findPluginByID(int id) {
 
     if(!rs["PluginTypeID"].empty())
         plugintype->setID(atoi(rs["PluginTypeID"].c_str()));
+
+    if(!rs["OrderPos"].empty())
+    	plugin->setOrderpos(atoi(rs["OrderPos"].c_str()));
+
     plugintype->setName(rs["PluginTypeName"]);
     plugin->setType(plugintype);
     plugin->setCategory(category);
@@ -222,7 +230,11 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPlugins(const bool inactiveToo){
 
 		if(!rs["PluginTypeID"].empty())
         	plugintype->setID(atoi(rs["PluginTypeID"].c_str()));
-        plugintype->setName(rs["PluginTypeName"]);
+
+		if(!rs["OrderPos"].empty())
+	    	plugin->setOrderpos(atoi(rs["OrderPos"].c_str()));
+
+		plugintype->setName(rs["PluginTypeName"]);
         plugin->setType(plugintype);
         plugin->setCategory(category);
 
@@ -258,6 +270,9 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByCategory(MMSPluginCategory
         plugintype->setID(atoi(rs["PluginTypeID"].c_str()));
         plugintype->setName(rs["PluginTypeName"]);
         plugin->setType(plugintype);
+
+        if(!rs["OrderPos"].empty())
+        	plugin->setOrderpos(atoi(rs["OrderPos"].c_str()));
 
         /* push to list */
         pluginList.push_back(plugin);
@@ -304,6 +319,9 @@ vector<MMSPluginData *> MMSPluginDAO::findAllPluginsByType(string typeName, cons
 
         if(!rs["CategoryName"].empty())
             plugincategory->setName(rs["CategoryName"]);
+
+        if(!rs["OrderPos"].empty())
+        	plugin->setOrderpos(atoi(rs["OrderPos"].c_str()));
 
         plugintype->setID(atoi(rs["PluginTypeID"].c_str()));
         plugintype->setName(rs["PluginTypeName"]);
