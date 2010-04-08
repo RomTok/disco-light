@@ -30,21 +30,53 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DOBJECT_H_
+#define MMS3DOBJECT_H_
 
-#include "mmsgui/3d/mms3dspace.h"
+#include "mmstools/mmstypes.h"
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+//! Describes a 3D object.
+/*!
+\author Jens Schneider
+*/
+class MMS3DObject {
+	private:
+		MMS3DRegion region;
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+		vector<MMS3DPoint>	org_points;
+		vector<MMS3DPoint>	tmp_points;
+		vector<MMS3DPoint>	fin_points;
 
-#include "mmsgui/mmswidgets.h"
+		bool finalized;
 
-#include "mmsgui/additional/mmsguicontrols.h"
+		bool rotate_object;
+		double rotate_xa;
+		double rotate_ya;
+		double rotate_za;
 
-#endif /*MMSGUI_H_*/
+	public:
+		MMS3DObject(MMS3DRegion &region);
+
+		void setPoint(MMS3DPoint &p);
+
+		void setPoint(double x, double y, double z);
+
+		void reset();
+
+		void rotate_point_x(MMS3DPoint *src, MMS3DPoint *dst);
+		void rotate_point_y(MMS3DPoint *src, MMS3DPoint *dst);
+		void rotate_point_z(MMS3DPoint *src, MMS3DPoint *dst);
+
+		void rotate_x(double angle = 0);
+		void rotate_y(double angle = 0);
+		void rotate_z(double angle = 0);
+
+		void finalize();
+
+
+	friend class MMS3DLine;
+	friend class MMS3DCircle;
+	friend class MMS3DSpace;
+};
+
+#endif /*MMS3DOBJECT_H_*/

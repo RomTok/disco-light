@@ -30,21 +30,33 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DSPACE_H_
+#define MMS3DSPACE_H_
 
-#include "mmsgui/3d/mms3dspace.h"
+#include "mmsgui/3d/mms3dcircle.h"
+#include "mmsgui/3d/mms3dline.h"
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+#include "mmsgui/fb/mmsfb.h"
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+//! Describes a 3D space.
+/*!
+\author Jens Schneider
+*/
+class MMS3DSpace {
+	private:
+		double width;
+		double height;
+		double depth;
 
-#include "mmsgui/mmswidgets.h"
+		vector<MMS3DObject*>	objects;
 
-#include "mmsgui/additional/mmsguicontrols.h"
+	public:
+		MMS3DSpace(double width, double height, double depth);
 
-#endif /*MMSGUI_H_*/
+		void addObject(MMS3DObject *o);
+
+		void render(MMSFBSurface *surface, int distance = 0);
+		void render(vector<MMS3DPoint> *points, int distance = 0);
+};
+
+#endif /*MMS3DSPACE_H_*/

@@ -30,21 +30,25 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#include "mmsgui/3d/mms3dline.h"
 
-#include "mmsgui/3d/mms3dspace.h"
+MMS3DLine::MMS3DLine(MMS3DRegion &region) : MMS3DObject(region) {
+}
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+void MMS3DLine::draw(MMS3DPoint &p1, MMS3DPoint &p2) {
+	this->p1 = p1;
+	this->p2 = p2;
+	if (this->p1 != this->p2) {
+//				this->lines.push_back(MMS3DLine(p1, p2));
+	}
+	else {
+		this->org_points.push_back(this->p1);
+	}
+}
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+void MMS3DLine::draw(double x1, double y1, double z1, double x2, double y2, double z2) {
+	MMS3DPoint p1 = MMS3DPoint(x1, y1, z1);
+	MMS3DPoint p2 = MMS3DPoint(x2, y2, z2);
+	draw(p1, p2);
+}
 
-#include "mmsgui/mmswidgets.h"
-
-#include "mmsgui/additional/mmsguicontrols.h"
-
-#endif /*MMSGUI_H_*/

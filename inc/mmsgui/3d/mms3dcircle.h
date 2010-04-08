@@ -30,21 +30,30 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DCIRCLE_H_
+#define MMS3DCIRCLE_H_
 
-#include "mmsgui/3d/mms3dspace.h"
+#include "mmsgui/3d/mms3dobject.h"
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+//! Describes a 3D circle.
+/*!
+\author Jens Schneider
+*/
+class MMS3DCircle : public MMS3DObject {
+	private:
+		MMS3DPoint	p1;
+		MMS3DPoint	p2;
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+		void point(int x, int y, int z, int octant);
 
-#include "mmsgui/mmswidgets.h"
+	public:
 
-#include "mmsgui/additional/mmsguicontrols.h"
+		MMS3DCircle(MMS3DRegion &region);
 
-#endif /*MMSGUI_H_*/
+		void draw(int x, int y, int z, int radius, int start_octant = 0, int end_octant = 7);
+		void draw(int x, int y, int z, int radius, bool sort);
+
+	friend class MMS3DSpace;
+};
+
+#endif /*MMS3DCIRCLE_H_*/

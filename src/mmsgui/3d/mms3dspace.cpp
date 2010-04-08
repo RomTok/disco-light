@@ -30,21 +30,91 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
-
 #include "mmsgui/3d/mms3dspace.h"
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+MMS3DSpace::MMS3DSpace(double width, double height, double depth) {
+	this->width = width;
+	this->height = height;
+	this->depth = depth;
+}
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+void MMS3DSpace::addObject(MMS3DObject *o) {
+	this->objects.push_back(o);
+}
 
-#include "mmsgui/mmswidgets.h"
+void MMS3DSpace::render(MMSFBSurface *surface, int distance) {
+	unsigned int *ptr;
+	int pitch;
+	surface->setColor(0x80, 0, 0, 0xff);
+	surface->fillRectangle(0, 0, this->width, this->height);
+	surface->lock(MMSFB_LOCK_WRITE, (void**)&ptr, &pitch);
 
-#include "mmsgui/additional/mmsguicontrols.h"
 
-#endif /*MMSGUI_H_*/
+	if (distance < this->width / 2)
+		distance = this->width / 2;
+	if (distance < this->height / 2)
+		distance = this->height / 2;
+
+	double d = distance;
+
+	for (int oc = 0; oc < this->objects.size(); oc++) {
+		MMS3DObject *o = this->objects.at(oc);
+		o->finalize();
+		for (int pc = 0; pc < o->fin_points.size(); pc++) {
+			MMS3DPoint *p = &o->fin_points.at(pc);
+
+			double f = d + p->z;
+			double x = (p->x * d) / f;
+			double y = -(p->y * d) / f;
+
+			int xx = x + this->width / 2;
+			int yy = y + this->height / 2;
+
+			if   ((xx >= 0) && (yy >= 0)
+			   && (xx < this->width) && (yy < this->height)) {
+
+				ptr[(int)xx+(int)yy*pitch/4] = 0xffffffff;
+			}
+
+		}
+	}
+
+	surface->unlock();
+}
+
+void MMS3DSpace::render(vector<MMS3DPoint> *points, int distance) {
+
+	if (distance < this->width / 2)
+		distance = this->width / 2;
+	if (distance < this->height / 2)
+		distance = this->height / 2;
+
+	double d = distance;
+
+	points->clear();
+
+	for (int oc = 0; oc < this->objects.size(); oc++) {
+		MMS3DObject *o = this->objects.at(oc);
+		o->finalize();
+		for (int pc = 0; pc < o->fin_points.size(); pc++) {
+			MMS3DPoint *p = &o->fin_points.at(pc);
+
+			double f = d + p->z;
+			double x = (p->x * d) / f;
+			double y = -(p->y * d) / f;
+
+			int xx = x + this->width / 2;
+			int yy = y + this->height / 2;
+
+			if   ((xx >= 0) && (yy >= 0)
+			   && (xx < this->width) && (yy < this->height)) {
+
+				MMS3DPoint fp(xx, yy, p->z);
+
+				points->push_back(fp);
+			}
+
+		}
+	}
+}
+

@@ -30,21 +30,29 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DLINE_H_
+#define MMS3DLINE_H_
 
-#include "mmsgui/3d/mms3dspace.h"
+#include "mmsgui/3d/mms3dobject.h"
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+//! Describes a 3D line.
+/*!
+\author Jens Schneider
+*/
+class MMS3DLine : public MMS3DObject {
+	private:
+		MMS3DPoint	p1;
+		MMS3DPoint	p2;
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+	public:
 
-#include "mmsgui/mmswidgets.h"
+		MMS3DLine(MMS3DRegion &region);
 
-#include "mmsgui/additional/mmsguicontrols.h"
+		void draw(MMS3DPoint &p1, MMS3DPoint &p2);
 
-#endif /*MMSGUI_H_*/
+		void draw(double x1, double y1, double z1, double x2, double y2, double z2);
+
+	friend class MMS3DSpace;
+};
+
+#endif /*MMS3DLINE_H_*/
