@@ -128,7 +128,7 @@ void MMSTimer::threadMain() {
 				break;
 		}
 
-		if(this->action == STOP) {
+		while(this->action == STOP) {
 			pthread_cond_wait(&this->cond, &this->mutex);
 		}
 	}
