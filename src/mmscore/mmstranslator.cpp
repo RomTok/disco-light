@@ -101,6 +101,10 @@ void MMSTranslator::loadTranslations() {
 }
 
 void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
+	if(phrase.empty()) {
+		return;
+	}
+	
 	size_t size = this->files.size();
 
 	if(completemiss) {
@@ -137,7 +141,7 @@ void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
 
 
 void MMSTranslator::translate(const string &source, string &dest) {
-	if(this->targetIdx == -1) {
+	if((this->targetIdx == -1) || source.empty()) {
 		dest = source;
 		return;
 	}
@@ -152,9 +156,6 @@ void MMSTranslator::translate(const string &source, string &dest) {
 		dest = it->second.at(this->targetIdx);
 		if(dest.empty()) {
 			dest = source;
-			if(this->addtranslations) {
-				addMissing(source);
-			}
 		}
 	}
 }
