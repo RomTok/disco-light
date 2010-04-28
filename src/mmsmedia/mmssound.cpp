@@ -82,6 +82,9 @@ MMSSound::~MMSSound() {
  */
 void MMSSound::xineOpen() {
     MMSAV::xineOpen(queue_cb);
+
+    // ignore video
+    xine_set_param(this->stream, XINE_PARAM_IGNORE_VIDEO, true);
 }
 #endif
 
