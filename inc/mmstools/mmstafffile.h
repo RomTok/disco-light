@@ -197,8 +197,14 @@ class MMSTaffFile {
         //! Internal method: Writes a buffer to a file.
         bool writeBuffer(MMSFile *file, void *ptr, size_t *ritems, size_t size, size_t nitems, bool *write_status = NULL);
 
-		//! Internal method: Read a PNG Image.
+        //! Internal method: Create mirror effect and convert to target pixelformat.
+        bool postprocessImage(void **buf, int *width, int *height, int *pitch, int *size);
+
+        //! Internal method: Read a PNG Image.
 		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
+
+        //! Internal method: Read a JPEG Image.
+		bool readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
 
 		//! Internal method: Recursive called method for XML to TAFF conversion.
         bool convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file);

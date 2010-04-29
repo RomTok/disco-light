@@ -98,6 +98,7 @@ if sconsVersion < (0,98,1):
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
+	ListOption('images',        'Set image backends', 'all', ['png', 'jpeg']),
 	BoolOption('enable_alsa',   'Build with ALSA support', True),
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
@@ -123,6 +124,7 @@ else:
 	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
+	ListVariable('images',        'Set image backends', 'all', ['png', 'jpeg']),
 	BoolVariable('enable_alsa',   'Build with ALSA support', True),
 	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
 	BoolVariable('enable_flash',  'Build with mmsflash support', False),
@@ -367,9 +369,11 @@ def printSummary():
 	print 'Graphic backends  : %s' % conf.env['graphics']
 	print 'Database backends : %s' % ', '.join(conf.env['database'])
 	if(conf.env['media']):
-		print 'Media backends    : %s\n' % ', '.join(conf.env['media'])
+		print 'Media backends    : %s' % ', '.join(conf.env['media'])
 	else:
-		print 'Media backends    : none\n'
+		print 'Media backends    : none'
+	print 'Image support     : %s' % ', '.join(conf.env['images'])
+	print
 	if(conf.env['alsa']):
 		print 'ALSA support      : yes'
 	else:
@@ -450,7 +454,6 @@ conf.checkOptions()
 conf.checkPKGConfig()
 conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
-conf.checkSimpleLib(['libpng >= 1.2'],     'libpng/png.h')
 if (env['enable_curl']):
 	conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
 	conf.env['CCFLAGS'].extend(['-D__HAVE_CURL__'])	
@@ -461,6 +464,18 @@ if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
 
 if conf.CheckHeader(['wordexp.h']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
+
+if('png' in env['images']):
+	if conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
+	else:
+		conf.env['images'].remove('png')
+
+if('jpeg' in env['images']):
+	if conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
+	else:
+		conf.env['images'].remove('jpeg')
 
 # checks required if using dynamic linking support
 if(env['use_dl']):
@@ -608,7 +623,7 @@ if 'check' in BUILD_TARGETS:
 # TODO: handle disko_pc_libs                                          #
 if 'install' in BUILD_TARGETS:
 	disko_pc = open('disko.pc', 'w')
-	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, libpng >= 1.2, freetype2'
+	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, freetype2'
 	if (env['enable_curl']):
 		disko_pc_requires += ', libcurl'
 	if env['LIBPATH']:
@@ -626,6 +641,15 @@ if 'install' in BUILD_TARGETS:
 	if env.has_key('libiconv'):
 		disko_pc_libs_private += ' -liconv'
 	
+	if 'png' in env['images']:
+		disko_pc_requires += ', libpng >= 1.2'
+
+	if 'jpeg' in env['images']:
+		if(env['static_lib']):
+			disko_pc_libs += ' -ljpeg'
+		else:
+			disko_pc_libs_private += ' -ljpeg'
+
 	if env.has_key('libdl'):
 		disko_pc_libs_private += ' -ldl'
 

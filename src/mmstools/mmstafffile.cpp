@@ -37,9 +37,18 @@
 #include <unistd.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <cstring>
+
+#ifdef __HAVE_PNG__
 #include <png.h>
+#endif
 
-
+#ifdef __HAVE_JPEG__
+#include <csetjmp>
+extern "C" {
+#include <jpeglib.h>
+}
+#endif
 
 MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 			             string external_filename, MMSTAFF_EXTERNAL_TYPE external_type,
@@ -104,144 +113,7 @@ bool MMSTaffFile::writeBuffer(MMSFile *mmsfile, void *ptr, size_t *ritems, size_
 	return true;
 }
 
-bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
-	FILE 			*fp;
-	char			png_sig[8];
-    png_structp     png_ptr = NULL;
-    png_infop       info_ptr = NULL;
-    png_infop       end_info_ptr = NULL;
-    png_bytep       *row_pointers = NULL;
-
-    // check if file does exist and if it is an png format
-    *buf = NULL;
-    fp = fopen(filename, "rb");
-    if (!fp)
-    	return false;
-    if (fread(png_sig, 1, sizeof(png_sig), fp)!=sizeof(png_sig)) {
-        fclose(fp);
-    	return false;
-    }
-#if PNG_LIBPNG_VER_MINOR == 2
-    if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
-#else
-   	if (png_sig_cmp((png_byte*)png_sig, 0, sizeof(png_sig)) != 0) {
-#endif
-        fclose(fp);
-    	return false;
-    }
-
-    // init png structs and abend handler
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png_ptr) {
-        fclose(fp);
-    	return false;
-    }
-    png_set_sig_bytes(png_ptr, sizeof(png_sig));
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-    	// abend from libpng
-        printf("png read error\n");
-    	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
-        if (row_pointers) free(row_pointers);
-    	if (*buf) free(*buf);
-        *buf = NULL;
-        fclose(fp);
-        return false;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
-    	png_destroy_read_struct(&png_ptr, NULL, NULL);
-        fclose(fp);
-    	return false;
-    }
-
-    end_info_ptr = png_create_info_struct(png_ptr);
-    if (!end_info_ptr) {
-    	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
-    	return false;
-    }
-
-    // read png infos
-    png_init_io(png_ptr, fp);
-    png_read_info(png_ptr, info_ptr);
-    png_uint_32 w;
-    png_uint_32 h;
-    int bit_depth;
-    int color_type;
-    png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
-
-    // check the png format
-    if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
-    	// we only support ARGB png images
-    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        fclose(fp);
-    	return false;
-    }
-    *width = w;
-    *height = h;
-    *pitch = 4 * w;
-    *size = *pitch * h;
-
-    // set input transformations
-    if (bit_depth == 16)
-    	png_set_strip_16(png_ptr);
-    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
-    png_set_bgr(png_ptr);
-    png_set_interlace_handling(png_ptr);
-    png_read_update_info(png_ptr, info_ptr);
-
-    // allocate memory for row pointers
-    row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
-    if (!row_pointers) {
-    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        fclose(fp);
-    	return false;
-    }
-
-    // allocate memory for image data
-    if (this->mirror_size > *height) this->mirror_size = *height;
-    *buf = malloc((*size) + (*pitch) * this->mirror_size);
-    if (!*buf) {
-    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        free(row_pointers);
-        fclose(fp);
-    	return false;
-    }
-    char *b = (char*)*buf;
-    for (int i = 0; i < *height; i++) {
-    	row_pointers[i]=(png_byte*)b;
-    	b+=*pitch;
-    }
-
-    // read the image data
-    png_read_image(png_ptr, row_pointers);
-    png_read_end(png_ptr, end_info_ptr);
-
-    // all right, freeing helpers
-	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-    free(row_pointers);
-    fclose(fp);
-
-    // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
-    // so check now if i have to convert it
-
-    // should i pre-multiply with alpha channel?
-    if (this->destination_premultiplied) {
-		unsigned int *src = (unsigned int*)*buf;
-	    for (int i = *width * *height; i > 0; i--) {
-	    	register unsigned int s = *src;
-	        register unsigned int sa = s >> 24;
-	        if (sa != 0xff)
-	        	// source alpha is > 0x00 and < 0xff
-		        *src = ((((s & 0x00ff00ff) * sa) >> 8) & 0x00ff00ff) |
-		               ((((s & 0x0000ff00) * sa) >> 8) & 0x0000ff00) |
-		               ((((s & 0xff000000))));
-	        src++;
-	    }
-    }
-
+bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pitch, int *size) {
     // should create a mirror effect?
     if (this->mirror_size > 0) {
     	// yes
@@ -388,7 +260,246 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 	default: break;
     }
 
-	return true;
+    return true;
+}
+
+bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
+#ifdef __HAVE_PNG__
+	FILE 			*fp;
+	char			png_sig[8];
+    png_structp     png_ptr = NULL;
+    png_infop       info_ptr = NULL;
+    png_infop       end_info_ptr = NULL;
+    png_bytep       *row_pointers = NULL;
+
+    // check if file does exist and if it is an png format
+    *buf = NULL;
+    fp = fopen(filename, "rb");
+    if (!fp)
+    	return false;
+    if (fread(png_sig, 1, sizeof(png_sig), fp)!=sizeof(png_sig)) {
+        fclose(fp);
+    	return false;
+    }
+#if PNG_LIBPNG_VER_MINOR == 2
+    if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
+#else
+   	if (png_sig_cmp((png_byte*)png_sig, 0, sizeof(png_sig)) != 0) {
+#endif
+        fclose(fp);
+    	return false;
+    }
+
+    // init png structs and abend handler
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fclose(fp);
+    	return false;
+    }
+    png_set_sig_bytes(png_ptr, sizeof(png_sig));
+
+    if(setjmp(png_jmpbuf(png_ptr))) {
+    	// abend from libpng
+        printf("png read error\n");
+    	png_destroy_read_struct(&png_ptr, (info_ptr)?&info_ptr:NULL, (end_info_ptr)?&end_info_ptr:NULL);
+        if (row_pointers) free(row_pointers);
+    	if (*buf) free(*buf);
+        *buf = NULL;
+        fclose(fp);
+        return false;
+    }
+
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+    	png_destroy_read_struct(&png_ptr, NULL, NULL);
+        fclose(fp);
+    	return false;
+    }
+
+    end_info_ptr = png_create_info_struct(png_ptr);
+    if (!end_info_ptr) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+    	return false;
+    }
+
+    // read png infos
+    png_init_io(png_ptr, fp);
+    png_read_info(png_ptr, info_ptr);
+    png_uint_32 w;
+    png_uint_32 h;
+    int bit_depth;
+    int color_type;
+    png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
+
+    // check the png format
+    if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
+    	// we only support ARGB png images
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        fclose(fp);
+    	return false;
+    }
+    *width = w;
+    *height = h;
+    *pitch = 4 * w;
+    *size = *pitch * h;
+
+    // set input transformations
+    if (bit_depth == 16)
+    	png_set_strip_16(png_ptr);
+    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+    png_set_bgr(png_ptr);
+    png_set_interlace_handling(png_ptr);
+    png_read_update_info(png_ptr, info_ptr);
+
+    // allocate memory for row pointers
+    row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
+    if (!row_pointers) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        fclose(fp);
+    	return false;
+    }
+
+    // allocate memory for image data
+    if (this->mirror_size > *height) this->mirror_size = *height;
+    *buf = malloc((*size) + (*pitch) * this->mirror_size);
+    if (!*buf) {
+    	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+        free(row_pointers);
+        fclose(fp);
+    	return false;
+    }
+    char *b = (char*)*buf;
+    for (int i = 0; i < *height; i++) {
+    	row_pointers[i]=(png_byte*)b;
+    	b+=*pitch;
+    }
+
+    // read the image data
+    png_read_image(png_ptr, row_pointers);
+    png_read_end(png_ptr, end_info_ptr);
+
+    // all right, freeing helpers
+	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
+    free(row_pointers);
+    fclose(fp);
+
+    // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
+    // so check now if i have to convert it
+
+    // should i pre-multiply with alpha channel?
+    if (this->destination_premultiplied) {
+		unsigned int *src = (unsigned int*)*buf;
+	    for (int i = *width * *height; i > 0; i--) {
+	    	register unsigned int s = *src;
+	        register unsigned int sa = s >> 24;
+	        if (sa != 0xff)
+	        	// source alpha is > 0x00 and < 0xff
+		        *src = ((((s & 0x00ff00ff) * sa) >> 8) & 0x00ff00ff) |
+		               ((((s & 0x0000ff00) * sa) >> 8) & 0x0000ff00) |
+		               ((((s & 0xff000000))));
+	        src++;
+	    }
+    }
+
+    /* create mirror and convert to target pixelformat */
+    return postprocessImage(buf, width, height, pitch, size);
+#else
+    return false;
+#endif
+}
+
+#ifdef __HAVE_JPEG__
+struct JPEGErrorManager {
+  struct jpeg_error_mgr pub;			/**< "public" fields 		*/
+  jmp_buf 				setjmpBuffer;	/**< for return to caller 	*/
+};
+
+METHODDEF(void) JPEGErrorExit(j_common_ptr cinfo) {
+	/* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
+	struct JPEGErrorManager *myerr = (struct JPEGErrorManager*)cinfo->err;
+
+	/* Always display the message. */
+	/* We could postpone this until after returning, if we chose. */
+	(*cinfo->err->output_message)(cinfo);
+
+	/* Return control to the setjmp point */
+	longjmp(myerr->setjmpBuffer, 1);
+}
+#endif
+
+bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
+#ifdef __HAVE_JPEG__
+	struct jpeg_decompress_struct	cinfo;
+	struct JPEGErrorManager 		jerr;
+	FILE 							*fp;
+	JSAMPARRAY 						rowBuf;		/**< Output row buffer */
+	int 							rowStride;	/**< physical row width in output buffer */
+
+	if((fp = fopen(filename, "rb")) == NULL) {
+		return false;
+	}
+
+	cinfo.err = jpeg_std_error(&jerr.pub);
+	jerr.pub.error_exit = JPEGErrorExit;
+	if(setjmp(jerr.setjmpBuffer)) {
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fp);
+		return false;
+	}
+	jpeg_create_decompress(&cinfo);
+	jpeg_stdio_src(&cinfo, fp);
+
+	if(jpeg_read_header(&cinfo, TRUE) != JPEG_HEADER_OK) {
+		fclose(fp);
+		return false;
+	}
+
+	/* dimension filled by jpeg_read_header() */
+	*width  = (int)cinfo.image_width;
+	*height = (int)cinfo.image_height;
+	*pitch  = *width * 4;
+    *size   = *pitch * *height;
+
+	/* setting decompression parameters */
+	cinfo.out_color_space = JCS_RGB;	/**< setting output colorspace to RGB */
+
+	/* start decompression */
+	jpeg_start_decompress(&cinfo);
+
+	rowStride = cinfo.output_width * cinfo.output_components;
+	rowBuf = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, rowStride, 1);
+
+	/* allocate memory for ARGB output */
+    if(this->mirror_size > *height) this->mirror_size = *height;
+    *buf = malloc((*size) + (*pitch) * this->mirror_size);
+    if(!*buf) {
+    	jpeg_finish_decompress(&cinfo);
+    	jpeg_destroy_decompress(&cinfo);
+    	fclose(fp);
+    	return false;
+    }
+
+	unsigned int *src = (unsigned int*)*buf;
+	while(cinfo.output_scanline < cinfo.output_height) {
+	    jpeg_read_scanlines(&cinfo, rowBuf, 1);
+	    unsigned char *b = *rowBuf;
+	    for(unsigned int i = 0; i < cinfo.output_width; ++i) {
+	    	*src = 0xff000000 + (b[0] << 16) + (b[1] << 8) + b[2];
+	    	b += 3;
+	    	src++;
+	    }
+	}
+
+	jpeg_finish_decompress(&cinfo);
+	jpeg_destroy_decompress(&cinfo);
+	fclose(fp);
+
+    /* create mirror and convert to target pixelformat */
+    return postprocessImage(buf, width, height, pitch, size);
+#else
+    return false;
+#endif
 }
 
 bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file) {
@@ -689,9 +800,9 @@ bool MMSTaffFile::convertXML2TAFF() {
 	LIBXML_TEST_VERSION
 
 	/* check input parameters */
-	if (!this->taff_desc) return false;
-	if (this->external_filename=="") return false;
-
+	if (!this->taff_desc || this->external_filename.empty()) {
+		return false;
+	}
 
 	/* read the XML file */
 	parser = xmlReadFile(this->external_filename.c_str(),
@@ -754,22 +865,48 @@ bool MMSTaffFile::convertXML2TAFF() {
 
 bool MMSTaffFile::convertIMAGE2TAFF() {
 	bool   	rc = false;
-	void	*png_buf;
-	int 	png_width;
-	int 	png_height;
-	int     png_pitch;
-	int     png_size;
+	void	*imgBuf;
+	int 	imgWidth;
+	int 	imgHeight;
+	int     imgPitch;
+	int     imgSize;
 
 	/* check input parameters */
-	if (!this->taff_desc) return false;
-	if (this->external_filename=="") return false;
+	if (!this->taff_desc || this->external_filename.empty()) {
+		return false;
+	}
 
-	/* read the whole PNG image */
-	if (readPNG(this->external_filename.c_str(), &png_buf, &png_width, &png_height, &png_pitch, &png_size)) {
+	/* check file extension (if this fails try readPNG() and/or readJPEG()) */
+	if(this->external_filename.rfind(".png") == this->external_filename.size() - 4) {
+#ifdef __HAVE_PNG__
+		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+#else
+		cout << "Disko was built without PNG support: skipping " << this->external_filename << endl;
+		return false;
+#endif
+	} else if(this->external_filename.rfind(".jpg") == this->external_filename.size() - 4) {
+#ifdef __HAVE_JPEG__
+		rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+#else
+		cout << "Disko was built without JPEG support: skipping " << this->external_filename << endl;
+		return false;
+#endif
+	} else {
+#ifdef __HAVE_PNG__
+		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+#endif
+		if(!rc) {
+#ifdef __HAVE_JPEG__
+			rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+#endif
+		}
+	}
+
+	if(rc) {
 		/* open binary destination file */
 		MMSFile *taff_file = NULL;
 		bool wok = true;
-		if (this->taff_filename!="") {
+		if (!this->taff_filename.empty()) {
 			taff_file = new MMSFile(this->taff_filename.c_str(), MMSFM_WRITE);
 			size_t ritems;
 			writeBuffer(taff_file, (void*)TAFF_IDENT, &ritems, 1, strlen(TAFF_IDENT), &wok);
@@ -787,28 +924,28 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width;
 			wb[2]=sizeof(int);
 			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &png_width, &ritems, 1, sizeof(int), &wok);
+			writeBuffer(taff_file, &imgWidth, &ritems, 1, sizeof(int), &wok);
 
 			/* write attributes: height */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height;
 			wb[2]=sizeof(int);
 			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &png_height, &ritems, 1, sizeof(int), &wok);
+			writeBuffer(taff_file, &imgHeight, &ritems, 1, sizeof(int), &wok);
 
 			/* write attributes: pitch */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch;
 			wb[2]=sizeof(int);
 			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &png_pitch, &ritems, 1, sizeof(int), &wok);
+			writeBuffer(taff_file, &imgPitch, &ritems, 1, sizeof(int), &wok);
 
 			/* write attributes: size */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size;
 			wb[2]=sizeof(int);
 			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &png_size, &ritems, 1, sizeof(int), &wok);
+			writeBuffer(taff_file, &imgSize, &ritems, 1, sizeof(int), &wok);
 
 			/* write attributes: pixelformat */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
@@ -839,8 +976,8 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
 			wb[2]=0xff;
 			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &png_size, &ritems, 1, sizeof(int), &wok);
-			writeBuffer(taff_file, png_buf, &ritems, 1, png_size, &wok);
+			writeBuffer(taff_file, &imgSize, &ritems, 1, sizeof(int), &wok);
+			writeBuffer(taff_file, imgBuf, &ritems, 1, imgSize, &wok);
 
 			/* write the close tag */
 			wb[0]=MMSTAFF_TAGTABLE_TYPE_CLOSETAG;
@@ -854,7 +991,7 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 		// close file and free
 		if (taff_file)
 			delete taff_file;
-		free(png_buf);
+		free(imgBuf);
 
 	    if (!rc) {
 	    	// failed, reset the file
