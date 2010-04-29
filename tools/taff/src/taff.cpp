@@ -52,12 +52,21 @@ void help() {
 	printf("--tafffile <filename>       file for reading/writing the taff format\n");
 	printf("--tafftype mmsgui           type of the taff file, default is mmsgui\n");
 	printf("--extfile <filename>        file for reading/writing the external format\n");
+#if defined(__HAVE_PNG__) or defined(__HAVE_JPEG__)
 	printf("--exttype xml|image         type of the external file, default is xml\n");
-	printf("                            (we do only support PNG images for exttype image)\n");
+	printf("                            (image support:");
+#ifdef __HAVE_PNG__
+	printf(" png");
+#endif
+#ifdef __HAVE_JPEG__
+	printf(" jpeg");
+#endif
+	printf(")\n");
 	printf("--image:pf ARGB|AiRGB|      pixelformat of the taff image (see --exttype image)\n");
     printf("           AYUV|ARGB4444|   default is ARGB\n");
     printf("           RGB16\n");
 	printf("--image:mirror_size <size>  size of the mirror effect in pixels, default is 0\n");
+#endif
 	printf("--ignore_blanks yes|no      ignore blank values?, default no\n");
 	printf("--trace yes|no              print trace messages?, default no\n");
 	printf("--warnings yes|no           print warnings?, default yes\n");
