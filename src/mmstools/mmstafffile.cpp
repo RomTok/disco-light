@@ -50,6 +50,12 @@ extern "C" {
 }
 #endif
 
+#ifdef __HAVE_TIFF__
+extern "C" {
+#include <tiffio.h>
+}
+#endif
+
 MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 			             string external_filename, MMSTAFF_EXTERNAL_TYPE external_type,
 			             bool ignore_blank_values, bool trace, bool print_warnings,
@@ -502,6 +508,52 @@ bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *he
 #endif
 }
 
+bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
+#ifdef __HAVE_TIFF__
+	TIFF* tiff;
+
+	if((tiff = TIFFOpen(filename, "rb")) == NULL) {
+		return false;
+	}
+
+	TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, width);
+	TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, height);
+	*pitch  = *width * 4;
+    *size   = *pitch * *height;
+
+	/* allocate memory for ARGB output */
+    if(this->mirror_size > *height) this->mirror_size = *height;
+    //*buf = (unsigned int*)_TIFFmalloc((*size) + (*pitch) * this->mirror_size);
+    *buf = malloc((*size) + (*pitch) * this->mirror_size);
+    if(!*buf) {
+    	TIFFClose(tiff);
+    	return false;
+    }
+
+	if(TIFFReadRGBAImageOriented(tiff, *width, *height, (uint32*)*buf, ORIENTATION_TOPLEFT, 0) == 0) {
+    	TIFFClose(tiff);
+    	return false;
+	}
+
+	/* convert from BGRA to ARGB */
+	unsigned int *src = (unsigned int*)*buf;
+	unsigned int nPixels = *width * *height;
+	for(unsigned int i = 0; i < nPixels; ++i) {
+		register unsigned int s = (*src ^ (*src >> 16)) & 0xff;
+		*src = *src ^ (s | (s << 16));
+		src++;
+	}
+
+	//_TIFFfree(*buf);
+	TIFFClose(tiff);
+
+    /* create mirror and convert to target pixelformat */
+    return postprocessImage(buf, width, height, pitch, size);
+#else
+    return false;
+#endif
+}
+
 bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file) {
 
 	bool wok = true;
@@ -891,15 +943,28 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 		cout << "Disko was built without JPEG support: skipping " << this->external_filename << endl;
 		return false;
 #endif
+	} else if((this->external_filename.rfind(".tif") == this->external_filename.size() - 4) ||
+			  (this->external_filename.rfind(".tiff") == this->external_filename.size() - 5)) {
+#ifdef __HAVE_TIFF__
+		rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+#else
+		cout << "Disko was built without TIFF support: skipping " << this->external_filename << endl;
+		return false;
+#endif
 	} else {
 #ifdef __HAVE_PNG__
 		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
 #endif
-		if(!rc) {
 #ifdef __HAVE_JPEG__
+		if(!rc) {
 			rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
-#endif
 		}
+#endif
+#ifdef __HAVE_TIFF__
+		if(!rc) {
+			rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+		}
+#endif
 	}
 
 	if(rc) {

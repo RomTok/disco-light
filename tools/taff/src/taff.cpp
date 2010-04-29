@@ -61,6 +61,9 @@ void help() {
 #ifdef __HAVE_JPEG__
 	printf(" jpeg");
 #endif
+#ifdef __HAVE_TIFF__
+	printf(" tiff");
+#endif
 	printf(")\n");
 	printf("--image:pf ARGB|AiRGB|      pixelformat of the taff image (see --exttype image)\n");
     printf("           AYUV|ARGB4444|   default is ARGB\n");

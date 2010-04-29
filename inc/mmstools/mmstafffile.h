@@ -206,6 +206,9 @@ class MMSTaffFile {
         //! Internal method: Read a JPEG Image.
 		bool readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
 
+        //! Internal method: Read a JPEG Image.
+		bool readTIFF(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
+
 		//! Internal method: Recursive called method for XML to TAFF conversion.
         bool convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file);
 

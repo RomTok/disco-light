@@ -98,7 +98,7 @@ if sconsVersion < (0,98,1):
 	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
-	ListOption('images',        'Set image backends', 'all', ['png', 'jpeg']),
+	ListOption('images',        'Set image backends', 'all', ['png', 'jpeg', 'tiff']),
 	BoolOption('enable_alsa',   'Build with ALSA support', True),
 	BoolOption('enable_crypt',  'Build with mmscrypt support', True),
 	BoolOption('enable_flash',  'Build with mmsflash support', False),
@@ -124,7 +124,7 @@ else:
 	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
-	ListVariable('images',        'Set image backends', 'all', ['png', 'jpeg']),
+	ListVariable('images',        'Set image backends', 'all', ['png', 'jpeg', 'tiff']),
 	BoolVariable('enable_alsa',   'Build with ALSA support', True),
 	BoolVariable('enable_crypt',  'Build with mmscrypt support', True),
 	BoolVariable('enable_flash',  'Build with mmsflash support', False),
@@ -477,6 +477,12 @@ if('jpeg' in env['images']):
 	else:
 		conf.env['images'].remove('jpeg')
 
+if('tiff' in env['images']):
+	if conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
+	else:
+		conf.env['images'].remove('tiff')
+
 # checks required if using dynamic linking support
 if(env['use_dl']):
 	if conf.CheckLibWithHeader(['libdl'], ['dlfcn.h'], 'c++'):
@@ -649,6 +655,12 @@ if 'install' in BUILD_TARGETS:
 			disko_pc_libs += ' -ljpeg'
 		else:
 			disko_pc_libs_private += ' -ljpeg'
+
+	if 'tiff' in env['images']:
+		if(env['static_lib']):
+			disko_pc_libs += ' -ltiff'
+		else:
+			disko_pc_libs_private += ' -ltiff'
 
 	if env.has_key('libdl'):
 		disko_pc_libs_private += ' -ldl'
