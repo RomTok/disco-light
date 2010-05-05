@@ -928,23 +928,24 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 		return false;
 	}
 
-	/* check file extension (if this fails try readPNG() and/or readJPEG()) */
-	if(this->external_filename.rfind(".png") == this->external_filename.size() - 4) {
+	/* check file extension (if this fails try readPNG() and/or readJPEG() and/or readTIFF()) */
+	if(strToUpr(this->external_filename).rfind(".PNG") == this->external_filename.size() - 4) {
 #ifdef __HAVE_PNG__
 		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
 #else
 		cout << "Disko was built without PNG support: skipping " << this->external_filename << endl;
 		return false;
 #endif
-	} else if(this->external_filename.rfind(".jpg") == this->external_filename.size() - 4) {
+	} else if((strToUpr(this->external_filename).rfind(".JPG") == this->external_filename.size() - 4) ||
+			  (strToUpr(this->external_filename).rfind(".JPEG") == this->external_filename.size() - 5)) {
 #ifdef __HAVE_JPEG__
 		rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
 #else
 		cout << "Disko was built without JPEG support: skipping " << this->external_filename << endl;
 		return false;
 #endif
-	} else if((this->external_filename.rfind(".tif") == this->external_filename.size() - 4) ||
-			  (this->external_filename.rfind(".tiff") == this->external_filename.size() - 5)) {
+	} else if((strToUpr(this->external_filename).rfind(".TIF") == this->external_filename.size() - 4) ||
+			  (strToUpr(this->external_filename).rfind(".TIFF") == this->external_filename.size() - 5)) {
 #ifdef __HAVE_TIFF__
 		rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
 #else
