@@ -39,13 +39,14 @@
 #include <string.h>
 
 
-MMSFileSearch::MMSFileSearch(string directory, string mask, bool recursive, bool caseinsensitive, bool getdirs) {
-	setDircetory(directory);
-	this->mask = mask;
-	this->recursive = recursive;
-	this->caseinsensitive = caseinsensitive;
-	this->getdirs = getdirs;
-	this->option = MMSFILESEARCH_NONE;
+MMSFileSearch::MMSFileSearch(string directory, string mask, bool recursive, bool caseinsensitive, bool getdirs) :
+	recursive(recursive),
+	caseinsensitive(caseinsensitive),
+	getdirs(getdirs),
+	mask(mask),
+	dirhandle(NULL),
+	option(MMSFILESEARCH_NONE) {
+	setDirectory(directory);
 	seperateMask();
 }
 
@@ -68,7 +69,7 @@ void MMSFileSearch::setRecursive(bool recursive) {
 	this->recursive = recursive;
 }
 
-void MMSFileSearch::setDircetory(string directory) {
+void MMSFileSearch::setDirectory(string directory) {
 	if (directory=="")
 		this->directory = "/";
 	else

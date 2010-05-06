@@ -78,7 +78,7 @@ class MMSFileSearch {
 	public:
 		MMSFileSearch(string directory, string mask, bool recursive=true, bool caseinsensitive=false, bool getdirs = false);
 		void setRecursive(bool recursive);
-		void setDircetory(string directory);
+		void setDirectory(string directory);
 		void setString(string mask);
 		void setCaseInsensitive(bool caseinsensitive);
 		MMSFILEENTRY_LIST execute();
