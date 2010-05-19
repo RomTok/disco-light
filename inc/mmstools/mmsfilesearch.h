@@ -72,7 +72,7 @@ class MMSFileSearch {
 		DIR *dirhandle;
 		bool match(char *entry);
 		void scanDir(list<MMSFILE_ENTRY *> *result,DIR *dirhandle, string cwd);
-		void seperateMask();
+		void separateMask();
 		MMSFILESEARCH_OPTION option;
 
 	public:
