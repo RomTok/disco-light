@@ -184,7 +184,7 @@ if env['profile']:
 if env['debug']:
 	if env['size']:
 		print 'Warning: You cannot use the size option if debugging support is enabled!'
-	env['CCFLAGS'].extend(['-O0', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
+	env['CCFLAGS'].extend(['-O3', '-g', '-Wall', '-D__ENABLE_DEBUG__'])
 else:
 	if env['size']:
 		env['CCFLAGS'].extend(['-Os'])
