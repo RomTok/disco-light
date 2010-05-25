@@ -866,6 +866,11 @@ MMSAV::~MMSAV() {
  * @exception   MMSAVError  Cannot get a new stream
  */
 void MMSAV::xineOpen(xine_event_listener_cb_t queue_cb, void *userData) {
+	if(this->stream) {
+		DEBUGMSG("MMSAV", "xine stream already present, skipping xineOpen");
+		return;
+	}
+
     /* open stream */
     if (!(this->stream = xine_stream_new(this->xine, this->ao, this->vo)))
         throw new MMSAVError(0, "Cannot get a new stream");
