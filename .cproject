@@ -27,12 +27,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/disko/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../${SIGCPP_INC}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/libxml2"/>
+									<listOptionValue builtIn="false" value="&quot;../${DIRECTFB_INC}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${FREETYPE_INC}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1505076671" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__HAVE_FBDEV__=1"/>
 									<listOptionValue builtIn="false" value="__HAVE_PNG__=1"/>
 									<listOptionValue builtIn="false" value="__HAVE_JPEG__=1"/>
 									<listOptionValue builtIn="false" value="__HAVE_TIFF__=1"/>
+									<listOptionValue builtIn="false" value="__HAVE_DIRECTFB__=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.941861229" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -337,6 +340,7 @@
 					</target>
 					<target name="install" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>scons</buildCommand>
+						<buildArguments/>
 						<buildTarget>install</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
@@ -344,7 +348,6 @@
 					</target>
 					<target name="clear" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>scons</buildCommand>
-						<buildArguments/>
 						<buildTarget>-c</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
