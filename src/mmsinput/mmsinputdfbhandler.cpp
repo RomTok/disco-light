@@ -564,7 +564,7 @@ void MMSInputDFBHandler::grabEvents(MMSInputEvent *inputevent) {
 		    			if (this->pointer_rect.w) {
 				       	 	if (evt.axis == DIAI_X) {
 				       	 		/* x axis */
-					        	if (evt.axisabs < 0) {
+					        	if (evt.flags & DIEF_AXISREL) {
 					        		/* work with relative value (e.g. normal mouse move) */
 									if ((evt.axisrel>1)||(evt.axisrel<-1))
 										this->pointer_xpos+= evt.axisrel*2;
@@ -584,7 +584,7 @@ void MMSInputDFBHandler::grabEvents(MMSInputEvent *inputevent) {
 				       	 	else
 			        	 	if (evt.axis == DIAI_Y) {
 				       	 		/* y axis */
-					        	if (evt.axisabs < 0) {
+					        	if (evt.flags & DIEF_AXISREL) {
 					        		/* work with relative value (e.g. normal mouse move) */
 									if ((evt.axisrel>1)||(evt.axisrel<-1))
 										this->pointer_ypos+= evt.axisrel*3;
