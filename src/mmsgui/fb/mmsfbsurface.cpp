@@ -1122,7 +1122,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "clear( argb %02x %02x %02x %02x ) <- %dx%d\n",
-	                a, r, g, b, this->config.surface_buffer->w, this->config.surface_buffer->h );
+	                a, r, g, b, this->config.surface_buffer->sbw, this->config.surface_buffer->sbh );
 	    MMSFB_TRACE();
 
 	    if ((a < 0xff)&&(this->config.surface_buffer->premultiplied)) {
@@ -1460,7 +1460,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "fill( %d,%d - %dx%d ) <- %dx%d, %02x %02x %02x %02x\n",
-	                x, y, w, h, this->config.surface_buffer->w, this->config.surface_buffer->h,
+	                x, y, w, h, this->config.surface_buffer->sbw, this->config.surface_buffer->sbh,
 	                this->config.color.a, this->config.color.r, this->config.color.g, this->config.color.b );
 	    MMSFB_TRACE();
 
@@ -1750,7 +1750,7 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 										   MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height) {
 #ifdef  __HAVE_DIRECTFB__
 	// failed, check if it must not
-	if ((!this->use_own_alloc)&&(!source->use_own_alloc))
+	if ((!this->use_own_alloc) && (!source || !source->use_own_alloc))
 		return false;
 #endif
 
@@ -4147,7 +4147,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult    dfbres;
 	    D_DEBUG_AT( MMS_Surface, "blit( %d,%d - %dx%d -> %d,%d ) <- %dx%d\n",
-	                DFB_RECTANGLE_VALS(&srcr), x, y, this->config.w, this->config.h );
+	                DFB_RECTANGLE_VALS(&src), x, y, this->config.w, this->config.h );
 	    MMSFB_TRACE();
 
 #ifndef USE_DFB_SUBSURFACE
