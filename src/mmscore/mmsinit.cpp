@@ -94,7 +94,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         MMSConfigDataGraphics   *rcGraphics = NULL;
         MMSConfigDataLanguage	*rcLanguage = NULL;
 
-        if(configfile != "") {
+        if(!configfile.empty()) {
         	// config file given
         	DEBUGOUT("set configfile: %s\n", configfile.c_str());
 		    try {
@@ -102,6 +102,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 				rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		    } catch (MMSRcParserError *ex) {
 	        	// config file not found
+		    	DEBUGOUT("configfile not found\n");
 		    }
         } else {
         	// searching for diskorc.xml
@@ -115,26 +116,20 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 					rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		        } catch (MMSRcParserError *ex) {
 		        	// config file not found
+			    	DEBUGOUT("configfile not found\n");
 		        }
 		    }
         }
 
-        // is config read?
-        bool config_read = (rcGlobal);
-
-        if (!config_read) {
+        // create first (static) MMSConfigData
+        if (!rcGlobal) {
         	// config file not set, load defaults
             MMSRcParser rcparser;
 			rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
-        }
-
-        // create first (static) MMSConfigData
-        if (config_read) {
-        	config = new MMSConfigData(*rcGlobal, *rcConfigDB, *rcDataDB, *rcGraphics, *rcLanguage);
-        }
-        else {
         	config = new MMSConfigData((global)?*global:*rcGlobal, (configdb)?*configdb:*rcConfigDB, (datadb)?*datadb:*rcDataDB,
 									   (graphics)?*graphics:*rcGraphics, (language)?*language:*rcLanguage);
+        } else {
+        	config = new MMSConfigData(*rcGlobal, *rcConfigDB, *rcDataDB, *rcGraphics, *rcLanguage);
         }
 
         // overwrite config values from args and/or argv
