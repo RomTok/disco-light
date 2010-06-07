@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -36,51 +36,50 @@
 #include "mmsgui/mmsmenuwidget.h"
 #include "mmsgui/mmssliderwidget.h"
 #include <string.h>
+#include <algorithm>
 
 // static variables
 string MMSWidget_inputmode = "";
 
-MMSWidget::MMSWidget() {
-	// per default no attributes for drawable widgets are allocated
-	this->da = NULL;
-    this->initialized = false;
-    this->rootwindow = NULL;
-    this->parent_rootwindow = NULL;
-//    this->dfb = NULL;
-    this->windowSurface = NULL;
-    this->parent = NULL;
-    this->focused = false;
-    this->selected = false;
-    this->activated = true;
-    this->pressed = false;
+MMSWidget::MMSWidget() :
+	da(NULL), // per default no attributes for drawable widgets are allocated
+	initialized(false),
+	name(""),
+	sizehint(""),
+	bindata(NULL),
+	rootwindow(NULL),
+	parent_rootwindow(NULL),
+	drawable(false),
+	needsparentdraw(false),
+	focusable_initial(false),
+	selectable_initial(false),
+	clickable_initial(false),
+	canhavechildren(false),
+	canselectchildren(false),
+	visible(true),
+	focused(false),
+	selected(false),
+	activated(true),
+	pressed(false),
+	brightness(255),
+	opacity(255),
+	has_own_surface(false), //TODO: textbox widget should have its one surface
+	onSelect(NULL),
+	onFocus(NULL),
+	onReturn(NULL),
+	onClick(NULL),
+	geomset(false),
+	toRedraw(false),
+	redrawChildren(false),
+	windowSurface(NULL),
+	surface(NULL),
+	surfaceGeom(MMSFBRectangle(0,0,0,0)),
+	parent(NULL),
+	geom(MMSFBRectangle(0,0,0,0)),
+	innerGeom(MMSFBRectangle(0,0,0,0)) {
 
-    this->onSelect = NULL;
-    this->onFocus = NULL;
-    this->onReturn = NULL;
-    this->onClick = NULL;
-
-    this->brightness = 255;
-    this->opacity = 255;
-
-    this->name = "";
-    MMSIdFactory factory;
+	MMSIdFactory factory;
     this->id = factory.getId();
-
-    this->toRedraw = false;
-    this->redrawChildren = false;
-    this->visible = true;
-
-
-    this->surface = NULL;
-
-    memset(&(this->geom), 0, sizeof(this->geom));
-    memset(&(this->innerGeom), 0, sizeof(this->innerGeom));
-    memset(&(this->surfaceGeom), 0, sizeof(this->surfaceGeom));
-
-
-
-//TODO: textbox widget should have its one surface
-this->has_own_surface = false;
 }
 
 MMSWidget::~MMSWidget() {
@@ -101,8 +100,10 @@ MMSWidget::~MMSWidget() {
     release();
 
     // delete children
-    for (unsigned int i = 0; i < children.size(); i++)
-        delete children.at(i);
+    vector<MMSWidget*>::iterator end = children.end();
+    for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+    	delete *i;
+    }
 
     // remove me from root window list
     if (this->rootwindow)
@@ -223,7 +224,8 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     newWidget->id = factory.getId();
 
     /* copy my children */
-    for (unsigned int i = 0; i < children.size(); i++)
+    unsigned int size = children.size();
+    for (unsigned int i = 0; i < size; i++)
         newWidget->children.at(i) = children.at(i)->copyWidget();
 
     if (drawable) {
@@ -311,36 +313,47 @@ MMSWidget* MMSWidget::disconnectChild(unsigned int atpos) {
 }
 
 MMSWidget* MMSWidget::findWidget(string name) {
-    MMSWidget *widget;
+	MMSWidget *widget;
 
-    if (name=="")
-        return NULL;
+	if(name.empty()) {
+		return NULL;
+	}
 
-    /* first, my own children */
-    for (unsigned int i = 0; i < children.size(); i++)
-        if (children.at(i)->getName() == name)
-            return children.at(i);
+	/* first, my own children */
+	vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		if((*i)->getName() == name) {
+			return *i;
+		}
+	}
 
-    /* second, call search method of my children */
-    for (unsigned int i = 0; i < children.size(); i++)
-        if ((widget = children.at(i)->findWidget(name)))
-            return widget;
+	/* second, call search method of my children */
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		if((widget = (*i)->findWidget(name))) {
+			return widget;
+		}
+	}
 
-    return NULL;
+	return NULL;
 }
 
 MMSWidget* MMSWidget::findWidgetType(MMSWIDGETTYPE type) {
     MMSWidget *widget;
 
     /* first, my own children */
-    for (unsigned int i = 0; i < children.size(); i++)
-        if (children.at(i)->getType() == type)
-            return children.at(i);
+	vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		if((*i)->getType() == type) {
+			return *i;
+		}
+	}
 
     /* second, call search method of my children */
-    for (unsigned int i = 0; i < children.size(); i++)
-        if ((widget = children.at(i)->findWidgetType(type)))
-            return widget;
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		if((widget = (*i)->findWidget(name))) {
+			return widget;
+		}
+	}
 
     return NULL;
 }
@@ -589,7 +602,7 @@ bool MMSWidget::loadArrowWidgets() {
 	// connect arrow widgets
     if (!this->da->upArrowWidget)
     	if (getUpArrow(s))
-    		if (s != "")
+    		if (!s.empty())
 		        if (this->rootwindow)
 		            if ((this->da->upArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->upArrowWidget->getSelectable(b))
@@ -601,7 +614,7 @@ bool MMSWidget::loadArrowWidgets() {
 
     if (!this->da->downArrowWidget)
     	if (getDownArrow(s))
-    		if (s != "")
+    		if (!s.empty())
 		        if (this->rootwindow)
 		            if ((this->da->downArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->downArrowWidget->getSelectable(b))
@@ -613,7 +626,7 @@ bool MMSWidget::loadArrowWidgets() {
 
     if (!this->da->leftArrowWidget)
     	if (getLeftArrow(s))
-    		if (s != "")
+    		if (!s.empty())
 		        if (this->rootwindow)
 		            if ((this->da->leftArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->leftArrowWidget->getSelectable(b))
@@ -625,7 +638,7 @@ bool MMSWidget::loadArrowWidgets() {
 
     if (!this->da->rightArrowWidget)
     	if (getRightArrow(s))
-    		if (s != "")
+    		if (!s.empty())
 		        if (this->rootwindow)
 		            if ((this->da->rightArrowWidget = this->rootwindow->findWidget(s))) {
 		                if (!this->da->rightArrowWidget->getSelectable(b))
@@ -1516,8 +1529,10 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
     	this->draw(backgroundFilled);
 
     if ((!toRedrawOnly)||(this->toRedraw)||(this->redrawChildren)) {
-	    for(unsigned int i=0;i<this->children.size();i++)
-	        this->children.at(i)->drawchildren(toRedrawOnly, backgroundFilled);
+    	vector<MMSWidget *>::iterator end = this->children.end();
+    	for(vector<MMSWidget *>::iterator i = this->children.begin(); i != end; ++i) {
+    		(*i)->drawchildren(toRedrawOnly, backgroundFilled);
+    	}
 
     	drawMyBorder();
     }
@@ -1564,10 +1579,12 @@ void MMSWidget::add(MMSWidget *widget) {
 void MMSWidget::markChildren2Redraw() {
 	this->toRedraw = true;
 	this->redrawChildren = true;
-    for(unsigned int i=0;i<this->children.size();i++) {
-        if (this->children.at(i)->isVisible())
-            this->children.at(i)->markChildren2Redraw();
-    }
+	vector<MMSWidget*>::iterator end = this->children.end();
+	for(vector<MMSWidget*>::iterator i = this->children.begin(); i != end; ++i) {
+		if((*i)->isVisible()) {
+			(*i)->markChildren2Redraw();
+		}
+	}
 }
 
 MMSWidget *MMSWidget::getDrawableParent(bool mark2Redraw, bool markChildren2Redraw, bool checkborder,
@@ -1576,11 +1593,7 @@ MMSWidget *MMSWidget::getDrawableParent(bool mark2Redraw, bool markChildren2Redr
         this->toRedraw = true;
 
 		if (markChildren2Redraw) {
-		    this->redrawChildren = true;
-
-		    for(unsigned int i=0;i<this->children.size();i++)
-		        if (this->children.at(i)->isVisible())
-		            this->children.at(i)->markChildren2Redraw();
+			this->markChildren2Redraw();
 		}
     }
 
@@ -1749,8 +1762,7 @@ bool MMSWidget::canSelectChildren() {
 
 void MMSWidget::setParent(MMSWidget *parent) {
     this->parent = parent;
-    for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setParent(this);
+    for_each(children.begin(), children.end(), bind2nd(mem_fun(&MMSWidget::setParent), this));
 }
 
 MMSWidget *MMSWidget::getParent() {
@@ -1778,8 +1790,10 @@ void MMSWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
     }
 
     // set root window to all children
-    for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setRootWindow(this->rootwindow, this->parent_rootwindow);
+    vector<MMSWidget*>::iterator end = this->children.end();
+    for(vector<MMSWidget*>::iterator i = this->children.begin(); i != end; ++i) {
+    	(*i)->setRootWindow(this->rootwindow, this->parent_rootwindow);
+    }
 }
 
 void MMSWidget::recalculateChildren() {
@@ -1895,9 +1909,12 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
         /* refresh my children */
     	if (canSelectChildren()) {
         	bool rf = false;
-            for (unsigned int i=0; i < children.size(); i++)
-                if (children.at(i)->setSelected(set, false))
+        	vector<MMSWidget*>::iterator end = children.end();
+        	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+                if((*i)->setSelected(set, false)) {
                 	rf = true;
+                }
+        	}
 
             if (refresh && rf)
             	this->refresh();
@@ -1919,8 +1936,10 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
 
     /* refresh my children */
     if (canselchildren) {
-        for (unsigned int i=0; i < children.size(); i++)
-            children.at(i)->setSelected(set, false);
+    	vector<MMSWidget*>::iterator end = children.end();
+    	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+            (*i)->setSelected(set, false);
+    	}
     }
 
     /* refresh widget */
@@ -1952,30 +1971,22 @@ bool MMSWidget::isSelected() {
 }
 
 void MMSWidget::unsetFocusableForAllChildren(bool refresh) {
-    for (unsigned int i = 0; i < children.size(); i++) {
-        children.at(i)->setFocusable(false, refresh);
-        children.at(i)->unsetFocusableForAllChildren(refresh);
+	vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+        (*i)->setFocusable(false, refresh);
+        (*i)->unsetFocusableForAllChildren(refresh);
     }
 }
 
 void MMSWidget::setActivated(bool set, bool refresh) {
-
-    /* check if activated status already set */
-    if (this->activated == set) {
-        /* refresh my children */
-        for (unsigned int i=0; i < children.size(); i++)
-            children.at(i)->setActivated(set, false);
-        if (refresh)
-            this->refresh();
-        return;
-    }
-
     /* switch activated on/off */
     this->activated = set;
 
     /* refresh my children */
-    for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setActivated(set, false);
+	vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+        (*i)->setActivated(set, false);
+    }
 
     /* refresh widget */
     if (refresh)
@@ -1993,9 +2004,11 @@ bool MMSWidget::setPressed(bool set, bool refresh) {
         // refresh my children
     	if (canSelectChildren()) {
     		bool ref = false;
-			for (unsigned int i=0; i < children.size(); i++) {
-				if (children.at(i)->setPressed(set, false))
+    		vector<MMSWidget*>::iterator end = children.end();
+    		for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+				if((*i)->setPressed(set, false)) {
 					ref = true;
+				}
 			}
 			if (ref && refresh) {
 				// call refresh only, if at least one children has changed it's status
@@ -2012,8 +2025,9 @@ bool MMSWidget::setPressed(bool set, bool refresh) {
 
     // refresh my children
 	if (canSelectChildren()) {
-		for (unsigned int i=0; i < children.size(); i++) {
-			children.at(i)->setPressed(set, false);
+		vector<MMSWidget*>::iterator end = children.end();
+		for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+			(*i)->setPressed(set, false);
 		}
 	}
 
@@ -2285,8 +2299,10 @@ void MMSWidget::setVisible(bool visible, bool refresh) {
 
 
     this->visible = visible;
-    for (unsigned int i = 0; i < children.size(); i++)
-        children.at(i)->setVisible(this->visible, false);
+    vector<MMSWidget*>::iterator end = children.end();
+    for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+    	(*i)->setVisible(this->visible, false);
+    }
     if (refresh)
         this->refresh();
 }
@@ -2297,8 +2313,11 @@ unsigned char MMSWidget::getBrightness() {
 
 void MMSWidget::setBrightness(unsigned char brightness, bool refresh) {
     this->brightness = brightness;
-    for (unsigned int i = 0; i < children.size(); i++)
-        children.at(i)->setBrightness(this->brightness, false);
+    vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		(*i)->setBrightness(brightness, false);
+	}
+
     if (refresh)
         this->refresh();
 }
@@ -2309,8 +2328,11 @@ unsigned char MMSWidget::getOpacity() {
 
 void MMSWidget::setOpacity(unsigned char opacity, bool refresh) {
     this->opacity = opacity;
-    for (unsigned int i = 0; i < children.size(); i++)
-        children.at(i)->setOpacity(this->opacity, false);
+    vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		(*i)->setOpacity(opacity, false);
+	}
+
     if (refresh)
         this->refresh();
 }
@@ -2949,7 +2971,7 @@ bool MMSWidget::setNavigateUp(string navigateup) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setNavigateUp(navigateup);
     this->da->navigateUpWidget = NULL;
-    if ((this->rootwindow)&&(navigateup!=""))
+    if ((this->rootwindow)&&(!navigateup.empty()))
         this->da->navigateUpWidget = this->rootwindow->findWidget(navigateup);
     return true;
 }
@@ -2958,7 +2980,7 @@ bool MMSWidget::setNavigateDown(string navigatedown) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setNavigateDown(navigatedown);
     this->da->navigateDownWidget = NULL;
-    if ((this->rootwindow)&&(navigatedown!=""))
+    if ((this->rootwindow)&&(!navigatedown.empty()))
         this->da->navigateDownWidget = this->rootwindow->findWidget(navigatedown);
     return true;
 }
@@ -2967,7 +2989,7 @@ bool MMSWidget::setNavigateLeft(string navigateleft) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setNavigateLeft(navigateleft);
     this->da->navigateLeftWidget = NULL;
-    if ((this->rootwindow)&&(navigateleft!=""))
+    if ((this->rootwindow)&&(!navigateleft.empty()))
         this->da->navigateLeftWidget = this->rootwindow->findWidget(navigateleft);
     return true;
 }
@@ -2976,7 +2998,7 @@ bool MMSWidget::setNavigateRight(string navigateright) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setNavigateRight(navigateright);
     this->da->navigateRightWidget = NULL;
-    if ((this->rootwindow)&&(navigateright!=""))
+    if ((this->rootwindow)&&(!navigateright.empty()))
         this->da->navigateRightWidget = this->rootwindow->findWidget(navigateright);
     return true;
 }
@@ -2985,7 +3007,7 @@ bool MMSWidget::setVSlider(string vslider) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setVSlider(vslider);
     this->da->vSliderWidget = NULL;
-    if ((this->rootwindow)&&(vslider!=""))
+    if ((this->rootwindow)&&(!vslider.empty()))
         this->da->vSliderWidget = this->rootwindow->findWidget(vslider);
     return true;
 }
@@ -2994,7 +3016,7 @@ bool MMSWidget::setHSlider(string hslider) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setHSlider(hslider);
     this->da->hSliderWidget = NULL;
-    if ((this->rootwindow)&&(hslider!=""))
+    if ((this->rootwindow)&&(!hslider.empty()))
         this->da->hSliderWidget = this->rootwindow->findWidget(hslider);
     return true;
 }
@@ -3007,8 +3029,10 @@ bool MMSWidget::setImagesOnDemand(bool imagesondemand) {
 
 bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
 	if (this->da) this->da->myWidgetClass.setBlend(blend);
-    for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setBlend(blend, false);
+    vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		(*i)->setBlend(blend, false);
+	}
     if (refresh)
         this->refresh();
     return true;
@@ -3016,8 +3040,10 @@ bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
 
 bool MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
 	if (this->da) this->da->myWidgetClass.setBlendFactor(blendfactor);
-    for (unsigned int i=0; i < children.size(); i++)
-        children.at(i)->setBlendFactor(blendfactor, false);
+    vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+		(*i)->setBlendFactor(blendfactor, false);
+	}
     if (refresh)
         this->refresh();
     return true;
@@ -3051,7 +3077,7 @@ bool MMSWidget::setJoinedWidget(string joinedwidget) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setJoinedWidget(joinedwidget);
     this->da->joinedWidget = NULL;
-    if ((this->rootwindow)&&(joinedwidget!=""))
+    if ((this->rootwindow)&&(!joinedwidget.empty()))
         this->da->joinedWidget = this->rootwindow->findWidget(joinedwidget);
     return true;
 }
