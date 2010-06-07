@@ -4343,8 +4343,12 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
             if(onBeforeHandleInput->emit(this,inputevent))
             	return true;
         } else {
-            if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent))
-            	return true;
+        	try {
+				if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent))
+					return true;
+        	} catch(std::exception) {
+        		return true;
+        	}
         }
 
     	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
