@@ -96,6 +96,8 @@ class MMSDialogManager {
         string getCheckBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getGapValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
 
+        void updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widget, string &widgetName);
+
     public:
         MMSDialogManager(bool leave_window = false);
         MMSDialogManager(MMSWindow *rootWindow);
