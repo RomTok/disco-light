@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -60,6 +60,9 @@ MMSDialogManager::~MMSDialogManager() {
 		else {
 			// i should not delete the rootWindow because it was not initialized by me
 			// so delete only the loaded child windows
+			for(vector<MMSChildWindow*>::iterator i = this->childWins.begin(); i != this->childWins.end(); ++i) {
+				delete *i;
+			}
 			this->childWins.clear();
 		}
 	}
