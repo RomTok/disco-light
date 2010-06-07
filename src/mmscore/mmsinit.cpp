@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -94,7 +94,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         MMSConfigDataGraphics   *rcGraphics = NULL;
         MMSConfigDataLanguage	*rcLanguage = NULL;
 
-        if(configfile != "") {
+        if(!configfile.empty()) {
         	// config file given
         	DEBUGOUT("set configfile: %s\n", configfile.c_str());
 		    try {
@@ -102,6 +102,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 				rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		    } catch (MMSRcParserError *ex) {
 	        	// config file not found
+		    	DEBUGOUT("configfile not found\n");
 		    }
         } else {
         	// searching for diskorc.xml
@@ -115,26 +116,20 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 					rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		        } catch (MMSRcParserError *ex) {
 		        	// config file not found
+			    	DEBUGOUT("configfile not found\n");
 		        }
 		    }
         }
 
-        // is config read?
-        bool config_read = (rcGlobal);
-
-        if (!config_read) {
+        // create first (static) MMSConfigData
+        if (!rcGlobal) {
         	// config file not set, load defaults
             MMSRcParser rcparser;
 			rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
-        }
-
-        // create first (static) MMSConfigData
-        if (config_read) {
-        	config = new MMSConfigData(*rcGlobal, *rcConfigDB, *rcDataDB, *rcGraphics, *rcLanguage);
-        }
-        else {
         	config = new MMSConfigData((global)?*global:*rcGlobal, (configdb)?*configdb:*rcConfigDB, (datadb)?*datadb:*rcDataDB,
 									   (graphics)?*graphics:*rcGraphics, (language)?*language:*rcLanguage);
+        } else {
+        	config = new MMSConfigData(*rcGlobal, *rcConfigDB, *rcDataDB, *rcGraphics, *rcLanguage);
         }
 
         // overwrite config values from args and/or argv
@@ -153,7 +148,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         printf("                           Matthias Hardt, Guido Madaus\n");
         printf("   Copyright (C) 2007-2008 BerLinux Solutions GbR\n");
         printf("                           Stefan Schwarzer & Guido Madaus\n");
-        printf("   Copyright (C) 2009      BerLinux Solutions GmbH\n");
+        printf("   Copyright (C) 2009-2010 BerLinux Solutions GmbH\n");
         printf("----------------------------------------------------------------------\n");
 
         int pcv = 1;
@@ -229,7 +224,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         printf("----------------------------------------------------------------------\n");
 
-        if (appl_name!="")
+        if (!appl_name.empty())
         	DEBUGMSG_OUTSTR("Core", "Starting " + appl_name + "...");
 
 
@@ -249,13 +244,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
             if(flags & MMSINIT_WINDOWMANAGER) {
                 DEBUGMSG("Core", "starting window manager");
-                MMSFBRectangle vrect;
-                vrect.x = config->getVRect().x;
-                vrect.y = config->getVRect().y;
-                vrect.w = config->getVRect().w;
-                vrect.h = config->getVRect().h;
-
-                windowmanager = new MMSWindowManager(vrect);
+                windowmanager = new MMSWindowManager(config->getVRect());
     	        if(!windowmanager) {
     	        	DEBUGMSG("Core", "couldn't create windowmanager.");
     	        	return false;
