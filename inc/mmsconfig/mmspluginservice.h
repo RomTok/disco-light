@@ -46,7 +46,10 @@ class MMSPluginService {
     private:
         IMMSDB 		*dbconn;
 
-    public:
+		const void setPluginProperties(MMSPluginData *plugin) const;
+		const void setPluginProperties(vector<MMSPluginData*> &pluginList) const;
+
+	public:
         MMSPluginService (DataSource *datasource);
         virtual ~MMSPluginService();
 

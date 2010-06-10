@@ -115,57 +115,8 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
         /* fill the menu */
         MMSPluginService service(&source);
-        osdplugs = service.getOSDPlugins();
-        for(unsigned int i = 0; i < osdplugs.size();i++) {
-        	// new item
-            MMSWidget *pluginItem = this->menu->newItem();
-            if (!pluginItem) break;
-
-            // set plugin data to the item
-            DEBUGMSG("MMSSwitcher", osdplugs.at(i)->getName().c_str());
-            pluginItem->setBinData((void*)osdplugs.at(i));
-
-            // set values if widgets are defined
-            setMenuItemValues(pluginItem);
-
-
-        	// new static item
-            if (this->menu_static) {
-	            pluginItem = this->menu_static->newItem();
-	            if (pluginItem) {
-			        // set plugin data to the item
-			        pluginItem->setBinData((void*)osdplugs.at(i));
-
-			        // set values if widgets are defined
-			        setMenuItemValues(pluginItem);
-	            }
-            }
-        }
-        centralplugs = service.getCentralPlugins();
-        for(unsigned int i = 0; i < centralplugs.size();i++) {
-        	// new item
-            MMSWidget *pluginItem = menu->newItem();
-            if (!pluginItem) break;
-
-            // set plugin data to the item
-            DEBUGMSG("MMSSwitcher", centralplugs.at(i)->getName().c_str());
-            pluginItem->setBinData((void*)centralplugs.at(i));
-
-            // set values if widgets are defined
-            setMenuItemValues(pluginItem);
-
-        	// new static item
-            if (this->menu_static) {
-	            pluginItem = this->menu_static->newItem();
-	            if (pluginItem) {
-			        // set plugin data to the item
-			        pluginItem->setBinData((void*)centralplugs.at(i));
-
-			        // set values if widgets are defined
-			        setMenuItemValues(pluginItem);
-	            }
-            }
-        }
+        addPluginsToMenu(service.getOSDPlugins());
+        addPluginsToMenu(service.getCentralPlugins());
 
         /* show the menu bar */
         if (this->menuBar_static) {
@@ -205,6 +156,35 @@ MMSSwitcher::~MMSSwitcher() {
 	this->subscriptions.clear();
 }
 
+const void MMSSwitcher::addPluginsToMenu(const vector<MMSPluginData *> &plugins) {
+	vector<MMSPluginData*>::const_iterator i;
+	vector<MMSPluginData*>::const_iterator end = plugins.end();
+	for(i = plugins.begin(); i != end; ++i) {
+    	// new item
+        MMSWidget *pluginItem = this->menu->newItem();
+        if (!pluginItem) break;
+
+        // set plugin data to the item
+        DEBUGMSG("MMSSwitcher", (*i)->getName().c_str());
+        pluginItem->setBinData((void*)(*i));
+
+        // set values if widgets are defined
+        setMenuItemValues(pluginItem);
+
+    	// new static item
+        if (this->menu_static) {
+            pluginItem = this->menu_static->newItem();
+            if (pluginItem) {
+		        // set plugin data to the item
+		        pluginItem->setBinData((void*)(*i));
+
+		        // set values if widgets are defined
+		        setMenuItemValues(pluginItem);
+            }
+        }
+    }
+}
+
 void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
 	// get the plugin data
 	if (!item) return;
@@ -226,7 +206,7 @@ void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
 
         name = plugindata->getIcon();
 		if (!searchingForImage(plugindata->getPath(), name, &path))
-            if (path!="")
+            if (!path.empty())
             	pluginIcon->setImage(path, name);
             else
 				pluginIcon->setImageName(name);
@@ -235,7 +215,7 @@ void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
 
         name = plugindata->getSelectedIcon();
 		if (!searchingForImage(plugindata->getPath(), name, &path))
-            if (path!="")
+            if (!path.empty())
             	pluginIcon->setSelImage(path, name);
             else
 				pluginIcon->setSelImageName(name);
@@ -250,7 +230,7 @@ int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *
     MMSFile *myfile;
     int err;
 
-    if (imagename=="") {
+    if (imagename.empty()) {
         *path = "";
         return 1;
     }
