@@ -326,7 +326,6 @@ void MMSSwitcher::subscribeKey(MMSKeySymbol key){
 
 
 void MMSSwitcher::onBeforeScroll(MMSWidget *widget) {
-
     // no plugin set
     this->curr_plugin = -1;
 
@@ -345,8 +344,6 @@ void MMSSwitcher::onBeforeScroll(MMSWidget *widget) {
 }
 
 void MMSSwitcher::onSelectItem(MMSWidget *widget) {
-//return;
-
 	if (!widget)
         widget = this->menu->getSelectedItem();
 
@@ -407,8 +404,6 @@ void MMSSwitcher::onReturn(MMSWidget *widget) {
 }
 
 void MMSSwitcher::show() {
-    if(!this->plugins.empty())
-        onSelectItem(NULL);
     this->window->show();
 }
 
