@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsgui/theme/mmswindowclass.h"
+#include "mmsconfig/mmsconfigdata.h"
 #include <string.h>
 
 MMSWindowClass::MMSWindowClass() {
@@ -281,6 +282,15 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, boo
             setNavigateRight(attrval_str);
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_own_surface:
+#ifdef __HAVE_DIRECTFB__
+			if(attrval_int) {
+				MMSConfigData config;
+				if(config.getBackend() == MMSFB_BE_DFB) {
+					cerr << "Warning: DirectFB backend does not support own_surface=true (ignored)" << endl;
+					break;
+				}
+			}
+#endif
             setOwnSurface((attrval_int) ? true : false);
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_movein:
