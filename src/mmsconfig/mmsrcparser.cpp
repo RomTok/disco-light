@@ -475,6 +475,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 					switch (this->graphics.backend) {
 					case MMSFB_BE_DFB:
 					case MMSFB_BE_X11:
+					case MMSFB_BE_OGL:
 						// okay
 						break;
 					default:
@@ -568,6 +569,16 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 						break;
 					default:
 						WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, "-> this depends on backend=\"FBDEV\"");
+					}
+				}
+				else
+				if (this->graphics.backend == MMSFB_BE_OGL) {
+					switch (this->graphics.outputtype) {
+					case MMSFB_OT_X11:
+						// okay
+						break;
+					default:
+						WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_OGL, "-> this depends on backend=\"OGL\"");
 					}
 				}
 			}
@@ -807,6 +818,12 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 		// overwite values needed for this backends
 		this->graphics.extendedaccel = true;
 		this->graphics.allocmethod = "MALLOC";
+	}
+
+	if (this->graphics.backend == MMSFB_BE_OGL) {
+		// overwite values needed for this backend
+		this->graphics.extendedaccel = false;
+		this->graphics.allocmethod = "OGL";
 	}
 }
 

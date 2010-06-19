@@ -45,7 +45,13 @@ typedef enum {
 	//! using directfb surfaces
 	MMSFBSurfaceAllocMethod_dfb = 0,
 	//! using malloc
-	MMSFBSurfaceAllocMethod_malloc
+	MMSFBSurfaceAllocMethod_malloc,
+	//! using xvimage surfaces
+	MMSFBSurfaceAllocMethod_xvimage,
+	//! using ximage surfaces
+	MMSFBSurfaceAllocMethod_ximage,
+	//! using opengl surfaces
+	MMSFBSurfaceAllocMethod_ogl
 } MMSFBSurfaceAllocMethod;
 
 //! dump mode
@@ -128,12 +134,21 @@ typedef struct {
 class MMSFBSurface {
     private:
 #ifdef  __HAVE_DIRECTFB__
-        //! dfbsurface for drawing/blitting
-        IDirectFBSurface    *llsurface;
-#else
-    	//! pointer if compiled without dfb
-    	void 	*llsurface;
+		//! dfb surface for drawing/blitting
+		IDirectFBSurface	*dfb_surface;
 #endif
+#ifdef  __HAVE_OPENGL__
+		//! opengl framebuffer object (FBO)
+		GLuint	ogl_fbo;
+#endif
+
+		//! which backend has allocated the memory?
+		MMSFBSurfaceAllocMethod	allocated_by;
+
+		//! surface initialized?
+		bool	initialized;
+
+
         bool				surface_read_locked;
         int					surface_read_lock_cnt;
         bool				surface_write_locked;
@@ -144,15 +159,13 @@ class MMSFBSurface {
         MMSFBSurface 		*scaler;
 #endif
 
-        MMSFBSurfaceConfig  config;     /* surface configuration */
-
-        // using own allocated surfaces?
-        bool				use_own_alloc;
+        //! surface configuration
+        MMSFBSurfaceConfig  config;
 
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
 
-        // how surface memory will be allocated?
+        // how surface memory should be allocated?
         static MMSFBSurfaceAllocMethod	allocmethod;
 
         void freeSurfaceBuffer();
@@ -204,33 +217,47 @@ class MMSFBSurface {
         bool blit_text(string &text, int len, int x, int y);
 
 
-        MMSFBFlipFlags			flipflags;		/* flags which are used when flipping */
+        //! flags which are used when flipping
+        MMSFBFlipFlags			flipflags;
 
-        MMSMutex  				Lock;       		/* to make it thread-safe */
-        unsigned long       	TID;        		/* save the id of the thread which has locked the surface */
-        int       				Lock_cnt;   		/* count the number of times the thread has call lock() */
+        //! to make it thread-safe
+        MMSMutex  				Lock;
+        //! save the id of the thread which has locked the surface
+        unsigned long       	TID;
+        //! count the number of times the thread has call lock()
+        int       				Lock_cnt;
 
-        bool					is_sub_surface;		/* is it a sub surface? */
-        MMSFBSurface    		*parent;			/* parent surface in case of subsurface */
-        MMSFBSurface    		*root_parent;		/* root parent surface in case of subsurface */
-        MMSFBRectangle 			sub_surface_rect;   /* sub surface position and size relative to the parent */
-        int						sub_surface_xoff;	/* x offset which is added to sub_surface_rect */
-        int						sub_surface_yoff;	/* y offset which is added to sub_surface_rect */
-        vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
+        //! is it a sub surface?
+        bool					is_sub_surface;
+        //! parent surface in case of subsurface
+        MMSFBSurface    		*parent;
+        //! root parent surface in case of subsurface
+        MMSFBSurface    		*root_parent;
+        //! sub surface position and size relative to the parent
+        MMSFBRectangle 			sub_surface_rect;
+        //! x offset which is added to sub_surface_rect
+        int						sub_surface_xoff;
+        //! y offset which is added to sub_surface_rect
+        int						sub_surface_yoff;
+        //! list of sub surfaces connected to this surface
+        vector<MMSFBSurface *>  children;
 
 
-        void init(void *llsurface,
-				  MMSFBSurface *parent,
+
+        void init(MMSFBSurfaceAllocMethod allocated_by, MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
+
 
         void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock);
         void unlock(bool pthread_unlock);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);
-        MMSFBSurface(void *llsurface,
-					 MMSFBSurface *parent = NULL,
+#ifdef  __HAVE_DIRECTFB__
+        MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent = NULL,
 					 MMSFBRectangle *sub_surface_rect = NULL);
+#endif
+        MMSFBSurface(MMSFBSurface *parent = NULL, MMSFBRectangle *sub_surface_rect = NULL);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, MMSFBSurfacePlanes *planes);
 #ifdef __HAVE_XLIB__
@@ -249,7 +276,7 @@ class MMSFBSurface {
         void setExtendedAcceleration(bool extendedaccel);
         bool getExtendedAcceleration();
 
-        void setAllocMethod(MMSFBSurfaceAllocMethod allocmethod, bool reset = false);
+        void setAllocMethod(MMSFBSurfaceAllocMethod allocmethod);
         MMSFBSurfaceAllocMethod getAllocMethod();
 
         bool isWinSurface();

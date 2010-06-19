@@ -41,6 +41,8 @@ string getMMSFBBackendString(MMSFBBackend be) {
         return MMSFB_BE_X11_STR;
     if(be == MMSFB_BE_FBDEV)
         return MMSFB_BE_FBDEV_STR;
+    if(be == MMSFB_BE_OGL)
+        return MMSFB_BE_OGL_STR;
     return MMSFB_BE_NONE_STR;
 }
 
@@ -53,6 +55,8 @@ MMSFBBackend getMMSFBBackendFromString(string be) {
         return MMSFB_BE_X11;
     if(be == MMSFB_BE_FBDEV_STR)
         return MMSFB_BE_FBDEV;
+    if(be == MMSFB_BE_OGL_STR)
+        return MMSFB_BE_OGL;
     return MMSFB_BE_NONE;
 }
 

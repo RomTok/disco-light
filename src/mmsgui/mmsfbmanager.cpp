@@ -167,10 +167,11 @@ void MMSFBManager::applySettings() {
 				window_pixelformat = MMSFB_PF_ARGB;
 		}
 		else
-		if (isIndexedPixelFormat(window_pixelformat))
+		if (isIndexedPixelFormat(window_pixelformat)) {
 			// the gui internally needs non-indexed surfaces
 			// so switch all indexed pixelformats to ARGB
 			window_pixelformat = MMSFB_PF_ARGB;
+		}
 	}
 
 	// get the surface pixelformat
@@ -196,10 +197,11 @@ void MMSFBManager::applySettings() {
 				surface_pixelformat = MMSFB_PF_ARGB;
 		}
 		else
-		if (isIndexedPixelFormat(surface_pixelformat))
+		if (isIndexedPixelFormat(surface_pixelformat)) {
 			// the gui internally needs non-indexed surfaces
 			// so switch all indexed pixelformats to ARGB
 			surface_pixelformat = MMSFB_PF_ARGB;
+		}
 	}
 
 	// set exclusive access to the graphics layer
@@ -218,19 +220,19 @@ void MMSFBManager::applySettings() {
 
     if (this->videolayerid != this->graphicslayerid) {
         if(config.getOutputType() == MMSFB_OT_X11)
-        //give a little time to window routines
-        usleep(300000);
+			//give a little time to window routines
+			usleep(300000);
 
-        /* use both layers */
+        // use both layers
         DEBUGMSG("MMSGUI", "configure video layer");
 
         DEBUGMSG("MMSGUI", "set exclusive access");
-        /* set exclusive access to the video layer */
+        // set exclusive access to the video layer
         if (!this->videolayer->setExclusiveAccess())
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     	DEBUGMSG("MMSGUI", "set configuration");
-        /* set video layer's config */
+        // set video layer's config
         if (!this->videolayer->setConfiguration(videolayer.rect.w, videolayer.rect.h,
 												videolayer.pixelformat,
 												videolayer.buffermode,
@@ -238,11 +240,11 @@ void MMSFBManager::applySettings() {
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 		//this->videolayer->dfblayer->SetFieldParity(this->videolayer->dfblayer,0);
 
-        /* set the full opacity of the graphics layer */
+        // set the full opacity of the graphics layer
         this->graphicslayer->setOpacity(0);
 
         if (config.getOutputType() == MMSFB_OT_VIAFB) {
-            /* set the video layer behind the graphics layer */
+            // set the video layer behind the graphics layer
         	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
             this->videolayer->setLevel(-1);
         }
@@ -266,6 +268,10 @@ void MMSFBManager::applySettings() {
 			else
 				gls->setAllocMethod(MMSFBSurfaceAllocMethod_dfb);
 #endif
+		}
+		else
+		if (mmsfb->getBackend() == MMSFB_BE_OGL) {
+			gls->setAllocMethod(MMSFBSurfaceAllocMethod_ogl);
 		}
     }
 
