@@ -999,7 +999,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     this->surface = *surface;
 
     if (this->surface) {
-printf("---------\n");
+//printf("---------\n");
 
     	// mark this surface as a layer surface
     	this->surface->setLayerSurface();
@@ -1007,8 +1007,8 @@ printf("---------\n");
 		// clear all surface buffers
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
-printf("dddd %d\n", bufnum);
-sleep(2);
+//printf("dddd %d\n", bufnum);
+//sleep(2);
     	this->surface->clear();
 		this->surface->flip();
     	while (bufnum > 1) {
