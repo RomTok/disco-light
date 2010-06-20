@@ -46,13 +46,22 @@ typedef enum {
 	MMSFBSurfaceAllocMethod_dfb = 0,
 	//! using malloc
 	MMSFBSurfaceAllocMethod_malloc,
-	//! using xvimage surfaces
-	MMSFBSurfaceAllocMethod_xvimage,
-	//! using ximage surfaces
-	MMSFBSurfaceAllocMethod_ximage,
 	//! using opengl surfaces
 	MMSFBSurfaceAllocMethod_ogl
 } MMSFBSurfaceAllocMethod;
+
+typedef enum {
+	//! allocated by directfb
+	MMSFBSurfaceAllocatedBy_dfb = 0,
+	//! allocated with malloc
+	MMSFBSurfaceAllocatedBy_malloc,
+	//! allocated by xv
+	MMSFBSurfaceAllocatedBy_xvimage,
+	//! allocated by x
+	MMSFBSurfaceAllocatedBy_ximage,
+	//! allocated by opengl
+	MMSFBSurfaceAllocatedBy_ogl
+} MMSFBSurfaceAllocatedBy;
 
 //! dump mode
 typedef enum {
@@ -142,8 +151,8 @@ class MMSFBSurface {
 		GLuint	ogl_fbo;
 #endif
 
-		//! which backend has allocated the memory?
-		MMSFBSurfaceAllocMethod	allocated_by;
+		//! which system has allocated the memory?
+		MMSFBSurfaceAllocatedBy	allocated_by;
 
 		//! surface initialized?
 		bool	initialized;
@@ -244,7 +253,7 @@ class MMSFBSurface {
 
 
 
-        void init(MMSFBSurfaceAllocMethod allocated_by, MMSFBSurface *parent,
+        void init(MMSFBSurfaceAllocatedBy allocated_by, MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
 
 

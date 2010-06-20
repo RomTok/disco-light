@@ -188,7 +188,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			return;
 		}
 
-	    init(MMSFBSurfaceAllocMethod_dfb, NULL, NULL);
+	    init(MMSFBSurfaceAllocatedBy_dfb, NULL, NULL);
 #endif
 	}
 	else {
@@ -229,7 +229,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		}
 		DEBUGMSG("MMSGUI", "allocating surface buffer finished");
 
-		init(MMSFBSurfaceAllocMethod_malloc, NULL, NULL);
+		init(MMSFBSurfaceAllocatedBy_malloc, NULL, NULL);
 	}
 }
 
@@ -268,7 +268,7 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent,
     }
 #endif
 
-	init(MMSFBSurfaceAllocMethod_dfb, parent, sub_surface_rect);
+	init(MMSFBSurfaceAllocatedBy_dfb, parent, sub_surface_rect);
 }
 
 #endif
@@ -375,7 +375,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 	this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 
-	init(MMSFBSurfaceAllocMethod_malloc, NULL, NULL);
+	init(MMSFBSurfaceAllocatedBy_malloc, NULL, NULL);
 }
 
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes) {
@@ -432,7 +432,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 
-	init(MMSFBSurfaceAllocMethod_xvimage, NULL, NULL);
+	init(MMSFBSurfaceAllocatedBy_xvimage, NULL, NULL);
 }
 
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2, MMSFBSurface *scaler) {
@@ -502,7 +502,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 
-	init(MMSFBSurfaceAllocMethod_ximage, NULL, NULL);
+	init(MMSFBSurfaceAllocatedBy_ximage, NULL, NULL);
 }
 #endif
 
@@ -533,7 +533,7 @@ MMSFBSurface::~MMSFBSurface() {
 }
 
 
-void MMSFBSurface::init(MMSFBSurfaceAllocMethod allocated_by,
+void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 	        		    MMSFBSurface *parent,
 						MMSFBRectangle *sub_surface_rect) {
     // init me
@@ -617,7 +617,7 @@ void MMSFBSurface::freeSurfaceBuffer() {
 	if (!this->initialized)
 		return;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		if (this->dfb_surface) {
 			this->dfb_surface->Release(this->dfb_surface);
@@ -912,7 +912,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBSurfaceCapabilities  caps;
 		DFBResult               dfbres;
@@ -1177,7 +1177,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
     INITCHECK;
 
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "clear( argb %02x %02x %02x %02x ) <- %dx%d\n",
@@ -1251,7 +1251,7 @@ bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
@@ -1309,7 +1309,7 @@ bool MMSFBSurface::setClip(MMSFBRegion *clip) {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
@@ -1375,7 +1375,7 @@ bool MMSFBSurface::setDrawingFlags(MMSFBDrawingFlags flags) {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
@@ -1410,7 +1410,7 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
     // check if initialized
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    MMSFB_BREAK();
@@ -1515,7 +1515,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	h = this->config.h;
     }
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "fill( %d,%d - %dx%d ) <- %dx%d, %02x %02x %02x %02x\n",
@@ -1597,7 +1597,7 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    MMSFB_BREAK();
@@ -1706,7 +1706,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
@@ -1809,7 +1809,7 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 										   MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height) {
 #ifdef  __HAVE_DIRECTFB__
 	// failed, check if it must not
-	if ((this->allocated_by == MMSFBSurfaceAllocMethod_dfb) && (!source || (source->allocated_by == MMSFBSurfaceAllocMethod_dfb)))
+	if ((this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) && (!source || (source->allocated_by == MMSFBSurfaceAllocatedBy_dfb)))
 		return false;
 #endif
 
@@ -1820,19 +1820,19 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 	if (source) {
 		printf("  source type:               %s\n", (source->is_sub_surface)?"subsurface":"surface");
 		switch (source->allocated_by) {
-		case MMSFBSurfaceAllocMethod_dfb:
+		case MMSFBSurfaceAllocatedBy_dfb:
 			printf("  source memory:             managed by dfb\n");
 			break;
-		case MMSFBSurfaceAllocMethod_malloc:
+		case MMSFBSurfaceAllocatedBy_malloc:
 			printf("  source memory:             managed by disko\n");
 			break;
-		case MMSFBSurfaceAllocMethod_xvimage:
+		case MMSFBSurfaceAllocatedBy_xvimage:
 			printf("  source memory:             managed by x11 (xvimage)\n");
 			break;
-		case MMSFBSurfaceAllocMethod_ximage:
+		case MMSFBSurfaceAllocatedBy_ximage:
 			printf("  source memory:             managed by x11 (ximage)\n");
 			break;
-		case MMSFBSurfaceAllocMethod_ogl:
+		case MMSFBSurfaceAllocatedBy_ogl:
 			printf("  source memory:             managed by opengl\n");
 			break;
 		}
@@ -1851,19 +1851,19 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 	}
 	printf("  destination type:          %s\n", (this->is_sub_surface)?"subsurface":"surface");
 	switch (this->allocated_by) {
-	case MMSFBSurfaceAllocMethod_dfb:
+	case MMSFBSurfaceAllocatedBy_dfb:
 		printf("  destination memory:        managed by dfb\n");
 		break;
-	case MMSFBSurfaceAllocMethod_malloc:
+	case MMSFBSurfaceAllocatedBy_malloc:
 		printf("  destination memory:        managed by disko\n");
 		break;
-	case MMSFBSurfaceAllocMethod_xvimage:
+	case MMSFBSurfaceAllocatedBy_xvimage:
 		printf("  destination memory:        managed by x11 (xvimage)\n");
 		break;
-	case MMSFBSurfaceAllocMethod_ximage:
+	case MMSFBSurfaceAllocatedBy_ximage:
 		printf("  destination memory:        managed by x11 (ximage)\n");
 		break;
-	case MMSFBSurfaceAllocMethod_ogl:
+	case MMSFBSurfaceAllocatedBy_ogl:
 		printf("  destination memory:        managed by opengl\n");
 		break;
 	}
@@ -4234,7 +4234,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
          src.h = source->config.h;
     }
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult    dfbres;
 	    D_DEBUG_AT( MMS_Surface, "blit( %d,%d - %dx%d -> %d,%d ) <- %dx%d\n",
@@ -4354,7 +4354,7 @@ bool MMSFBSurface::blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePi
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
 	}
@@ -4440,7 +4440,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult    dfbres;
 	    bool         blit_done = false;
@@ -4695,7 +4695,7 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
 	}
@@ -4743,7 +4743,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    if (region)
 	         D_DEBUG_AT( MMS_Surface, "flip( %d,%d - %dx%d ) <- %dx%d\n",
@@ -5112,7 +5112,7 @@ bool MMSFBSurface::refresh() {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
 	}
@@ -5238,7 +5238,7 @@ bool MMSFBSurface::resize(int w, int h) {
 	    MMSFBSurface *dstsurface;
 	    createCopy(&dstsurface, w, h, true, true);
 
-		if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		    D_DEBUG_AT( MMS_Surface, "resize( %dx%d -> %dx%d )\n",
 		                this->config.w, this->config.h, w, h );
@@ -5414,7 +5414,7 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
     /* check if initialized */
     INITCHECK;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
@@ -5571,7 +5571,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 	if (len < 0) len = text.size();
 	if (!len) return true;
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    D_DEBUG_AT( MMS_Surface, "drawString( '%s', %d, %d,%d ) <- %dx%d\n",
 	                text.c_str(), len, x, y, this->config.w, this->config.h );
@@ -5629,7 +5629,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock) {
 	if (!pthread_lock) {
 		// no pthread lock needed
-		if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 			if (flags && planes) {
 				// get the access to the surface buffer
@@ -5693,7 +5693,7 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool p
         }
     }
 
-	if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		if (flags && planes) {
 			// get the access to the surface buffer
@@ -5771,7 +5771,7 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes) {
 void MMSFBSurface::unlock(bool pthread_unlock) {
 	if (!pthread_unlock) {
 		// no pthread unlock needed
-		if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 			this->dfb_surface->Unlock(this->dfb_surface);
 #endif
@@ -5795,7 +5795,7 @@ void MMSFBSurface::unlock(bool pthread_unlock) {
 
 	// unlock dfb surface?
 	if ((tolock->surface_read_locked)&&(tolock->surface_read_lock_cnt == tolock->Lock_cnt)) {
-		if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 			this->dfb_surface->Unlock(this->dfb_surface);
 #endif
@@ -5805,7 +5805,7 @@ void MMSFBSurface::unlock(bool pthread_unlock) {
 	}
 	else
 	if ((tolock->surface_write_locked)&&(tolock->surface_write_lock_cnt == tolock->Lock_cnt)) {
-		if (this->allocated_by == MMSFBSurfaceAllocMethod_dfb) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 			this->dfb_surface->Unlock(this->dfb_surface);
 #endif
