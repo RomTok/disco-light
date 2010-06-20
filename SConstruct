@@ -95,7 +95,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('use_sse',       'Use SSE optimization', False),
     BoolOption('enable_swscale','Build with swscale support', False),
 	BoolOption('use_dl',        'Use dynamic linking support', True),
-	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
+	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11', 'ogl']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
 	ListOption('images',        'Set image backends', 'all', ['png', 'jpeg', 'tiff']),
@@ -121,7 +121,7 @@ else:
 	BoolVariable('use_sse',       'Use SSE optimization', False),
     BoolVariable('enable_swscale','Build with swscale support', False),
 	BoolVariable('use_dl',        'Use dynamic linking support', True),
-	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
+	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11', 'ogl']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
 	ListVariable('images',        'Set image backends', 'all', ['png', 'jpeg', 'tiff']),
@@ -259,6 +259,7 @@ def checkOptions(context):
 		print '  \'scons graphics=dfb\'   or'
 		print '  \'scons graphics=fbdev\' or'
 		print '  \'scons graphics=x11\'   or'
+		print '  \'scons graphics=ogl\'   or'
 		print '  \'scons graphics=all\'\n'
 		Exit(1)
 
@@ -504,8 +505,15 @@ if('x11' in env['graphics']):
 	conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
 	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
 	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__',
-				'-D__ENABLE_MMSFB_X11_CORE__',
-				'-D__ENABLE_MMSFBSURFACE_X11_CORE__'])
+				'-D__HAVE_XV__'])
+
+# checks required if building OpenGL backend
+if('ogl' in env['graphics']):
+	conf.checkSimpleLib(['gl'],   'GL/gl.h')
+	conf.checkSimpleLib(['glu'],  'GL/glu.h')
+	conf.checkSimpleLib(['x11'],  'X11/Xlib.h')
+	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__',
+				'-D__HAVE_XLIB__'])
 	
 # checks required if building mmsmedia
 
@@ -670,6 +678,10 @@ if 'install' in BUILD_TARGETS:
 	  
 	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm'
+
+	if 'ogl' in env['graphics']:
+		disko_pc_requires += ', x11, gl, glu'
+		disko_pc_libs_private += ' -lGLEW'
 	
 	if env['alsa']:
 	 	disko_pc_requires += ', alsa'
