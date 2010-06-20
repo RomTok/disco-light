@@ -43,10 +43,20 @@
 #ifdef __HAVE_XLIB__
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/extensions/Xv.h>
 #include <X11/extensions/XShm.h>
+#endif
+
+#ifdef __HAVE_XV__
+#include <X11/extensions/Xv.h>
 #include <X11/extensions/Xvlib.h>
 #include <X11/extensions/xf86vmode.h>
+#endif
+
+#ifdef __HAVE_OPENGL__
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#include <GL/glu.h>
 #endif
 
 #ifdef  __HAVE_DIRECTFB__

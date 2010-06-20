@@ -77,6 +77,8 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->x_image2 = NULL;
     this->x_image_scaler = NULL;
     this->scaler = NULL;
+#endif
+#ifdef __HAVE_XV__
     this->xv_image1 = NULL;
     this->xv_image2 = NULL;
 #endif
@@ -234,6 +236,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			XUnlockDisplay(mmsfb->x_display);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 			this->config.pixelformat = MMSFB_PF_YV12;
 
@@ -366,6 +369,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 		    shmctl(this->xv_shminfo2.shmid, IPC_RMID, 0);
 
 			XUnlockDisplay(mmsfb->x_display);
+#endif
 		}
 
 		this->initialized = true;
@@ -404,11 +408,13 @@ MMSFBLayer::~MMSFBLayer() {
 				XFree(this->x_image2);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 			if (this->xv_image1)
 				XFree(this->xv_image1);
 			if (this->xv_image2)
 				XFree(this->xv_image2);
+#endif
 		}
 #endif
     }
@@ -434,9 +440,11 @@ bool MMSFBLayer::isInitialized() {
 			return (this->x_image1 != NULL);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 
 			return (this->xv_image1 != NULL);
+#endif
 		}
 #endif
     }
@@ -927,6 +935,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 			(*surface)->setExtendedAcceleration(true);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 			if ((!this->xv_image1)||(!this->xv_image2)) {
 				MMSFB_SetError(0, "xv_image not available, cannot get surface");
@@ -943,6 +952,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 
 			// we must switch extended accel on
 			(*surface)->setExtendedAcceleration(true);
+#endif
 		}
 #endif
     }

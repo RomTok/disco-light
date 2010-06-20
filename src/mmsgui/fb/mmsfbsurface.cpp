@@ -147,6 +147,8 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #endif
 #ifdef __HAVE_XLIB__
     this->config.surface_buffer->x_image[0] = NULL;
+#endif
+#ifdef __HAVE_XV__
     this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 
@@ -304,6 +306,10 @@ MMSFBSurface::MMSFBSurface(MMSFBSurface *parent, MMSFBRectangle *sub_surface_rec
 #ifdef __HAVE_XLIB__
     if (this->config.surface_buffer) {
     	this->config.surface_buffer->x_image[0] = NULL;
+    }
+#endif
+#ifdef __HAVE_XV__
+    if (this->config.surface_buffer) {
     	this->config.surface_buffer->xv_image[0] = NULL;
     }
 #endif
@@ -372,6 +378,8 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #endif
 #ifdef __HAVE_XLIB__
 	this->config.surface_buffer->x_image[0] = NULL;
+#endif
+#ifdef __HAVE_XV__
 	this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 
@@ -383,7 +391,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 }
 
 
-#ifdef __HAVE_XLIB__
+#ifdef __HAVE_XV__
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2) {
     // init me
 	this->initialized = false;
@@ -434,7 +442,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 
 	init(MMSFBSurfaceAllocatedBy_xvimage, NULL, NULL);
 }
+#endif
 
+#ifdef __HAVE_XLIB__
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2, MMSFBSurface *scaler) {
     // init me
 	this->initialized = false;
@@ -496,7 +506,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->external_buffer = true;
 	}
 
+#ifdef __HAVE_XV__
 	this->config.surface_buffer->xv_image[0] = NULL;
+#endif
 
 #ifdef __HAVE_FBDEV__
     this->config.surface_buffer->mmsfbdev_surface = NULL;
@@ -5040,6 +5052,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				}
 			}
 		}
+#ifdef __HAVE_XV__
 		else
 		if (sb->xv_image[0]) {
 			// XVSHM, put the image to the x-server
@@ -5071,6 +5084,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}
+#endif
 #endif
 
 #ifdef __HAVE_FBDEV__
@@ -5145,6 +5159,7 @@ bool MMSFBSurface::refresh() {
 				this->scaler->flip();
 			}
 		}
+#ifdef __HAVE_XV__
 		else
 		if (sb->xv_image[0]) {
 			// XVSHM, put the image to the x-server
@@ -5176,6 +5191,7 @@ bool MMSFBSurface::refresh() {
 			mmsfb->xlock.unlock();
 			this->unlock();
 		}
+#endif
 #endif
 	}
 

@@ -86,7 +86,8 @@ class MMSFBLayer {
         XImage  		*x_image_scaler;
         XShmSegmentInfo x_shminfo_scaler;
         MMSFBSurface	*scaler;
-
+#endif
+#ifdef __HAVE_XV__
         XvImage  		*xv_image1;
         XShmSegmentInfo xv_shminfo1;
         XvImage  		*xv_image2;

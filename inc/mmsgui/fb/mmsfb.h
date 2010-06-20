@@ -75,7 +75,6 @@ class MMSFB {
         GC 				x_gc;
         Visual			*x_visual;
         int				x_depth;
-        int 			xv_port;
         MMSMutex		xlock;
         int				display_w;
         int				display_h;
@@ -84,6 +83,13 @@ class MMSFB {
         MMSFBFullScreenMode fullscreen;
         bool            resized;
         bool 			resizeWindow();
+#endif
+
+#ifdef __HAVE_XV__
+        int 			xv_port;
+#endif
+
+#ifdef __HAVE_OPENGL__
 #endif
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];

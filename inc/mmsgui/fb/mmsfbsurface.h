@@ -103,8 +103,10 @@ typedef struct {
     class MMSFBSurface	*mmsfbdev_surface;
 #endif
 #ifdef __HAVE_XLIB__
-    XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
     XImage	*x_image[MMSFBSurfaceMaxBuffers];
+#endif
+#ifdef __HAVE_XV__
+    XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
 #endif
 } MMSFBSurfaceBuffer;
 
@@ -270,8 +272,10 @@ class MMSFBSurface {
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, MMSFBSurfacePlanes *planes);
 #ifdef __HAVE_XLIB__
-        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2, MMSFBSurface *scaler);
+#endif
+#ifdef __HAVE_XV__
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
 
         virtual ~MMSFBSurface();

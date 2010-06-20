@@ -45,7 +45,7 @@ MMSFB *mmsfb = new MMSFB();
 
 void MMSFB_AtExit() {
 	if (mmsfb)
-		mmsfb->release(); 
+		mmsfb->release();
 }
 
 MMSFB::MMSFB() :
@@ -60,6 +60,8 @@ MMSFB::MMSFB() :
 #endif
 #ifdef __HAVE_XLIB__
     x_display(NULL),
+#endif
+#ifdef __HAVE_XV__
 	xv_port(0),
 #endif
 	outputtype(MMSFB_OT_NONE) {
@@ -68,12 +70,13 @@ MMSFB::MMSFB() :
 }
 
 MMSFB::~MMSFB() {
-#ifdef __HAVE_XLIB__
+#ifdef __HAVE_XV__
 	if(this->x_display && this->xv_port) {
 		XvUngrabPort(this->x_display, this->xv_port, CurrentTime);
 	}
 #endif
 }
+
 
 bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, MMSFBRectangle x11_win_rect,
 				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
@@ -114,6 +117,13 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		MMSFB_SetError(0, "compile X11 support!");
 		return false;
 #endif
+		if (this->outputtype == MMSFB_OT_XVSHM) {
+#ifdef __HAVE_XV__
+#else
+			MMSFB_SetError(0, "compile X11/XV support!");
+			return false;
+#endif
+		}
     }
     else
 	if (this->backend == MMSFB_BE_FBDEV) {
@@ -123,6 +133,16 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		return false;
 #endif
 	}
+    else
+    if (this->backend == MMSFB_BE_OGL) {
+#ifdef __HAVE_OPENGL__
+		XInitThreads();
+		this->resized=false;
+#else
+		MMSFB_SetError(0, "compile OPENGL support!");
+		return false;
+#endif
+    }
 	else
 	if (this->backend == MMSFB_BE_NONE) {
 		// fall back, auto detection
@@ -144,10 +164,10 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 #ifdef __HAVE_DIRECTFB__
         DFBResult dfbres;
 
-        /* init dfb */
+        // init dfb
 		DirectFBInit(&this->argc,&this->argv);
 
-		/* get interface to dfb */
+		// get interface to dfb
 		if ((dfbres = DirectFBCreate(&this->dfb)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "DirectFBCreate() failed");
 			return false;
@@ -186,7 +206,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			}
 #endif
     }
-    else {
+	else {
 #ifdef __HAVE_XLIB__
 		// initialize the X11 window
         if (!(this->x_display = XOpenDisplay((char*)0))) {
@@ -284,50 +304,62 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
 
 
-		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
-			// XSHM
-	        if (!XShmQueryExtension(this->x_display)) {
-				MMSFB_SetError(0, "XShmQueryExtension() failed");
-	        	return false;
-	        }
 
-	        this->x_visual = DefaultVisual(this->x_display, 0);
-	        this->x_depth = DefaultDepth(this->x_display, 0);
+		if (this->backend == MMSFB_BE_X11) {
 
-//printf("depth=%d\n", this->x_depth);
-//exit(0);
+			if (mmsfb->outputtype == MMSFB_OT_XSHM) {
+				// XSHM
+				if (!XShmQueryExtension(this->x_display)) {
+					MMSFB_SetError(0, "XShmQueryExtension() failed");
+					return false;
+				}
+
+				this->x_visual = DefaultVisual(this->x_display, 0);
+				this->x_depth = DefaultDepth(this->x_display, 0);
+
+	//printf("depth=%d\n", this->x_depth);
+	//exit(0);
+			}
+			else {
+#ifdef __HAVE_XV__
+				// XVSHM
+				unsigned int 	p_version,
+								p_release,
+								p_request_base,
+								p_event_base,
+								p_error_base;
+				if (XvQueryExtension(this->x_display, &p_version, &p_release, &p_request_base, &p_event_base, &p_error_base) != Success) {
+					MMSFB_SetError(0, "XvQueryExtension() failed");
+					return false;
+				}
+
+				unsigned int num_adaptors;
+				XvAdaptorInfo *ai;
+				if (XvQueryAdaptors(this->x_display, DefaultRootWindow(this->x_display), &num_adaptors, &ai)) {
+					MMSFB_SetError(0, "XvQueryAdaptors() failed");
+					return false;
+				}
+				printf("DISKO: Available xv adaptors:\n");
+				for(unsigned int cnt=0;cnt<num_adaptors;cnt++) {
+					/* grab the first port with XvImageMask bit */
+					if((this->xv_port == 0) &&
+					   (ai[cnt].type & XvImageMask) &&
+					   (XvGrabPort(this->x_display, ai[cnt].base_id, 0) == Success)) {
+						this->xv_port = ai[cnt].base_id;
+						printf("  %s (used)\n", ai[cnt].name);
+					}
+					else
+						printf("  %s\n", ai[cnt].name);
+				}
+				XvFreeAdaptorInfo(ai);
+#endif
+			}
 		}
 		else {
-			// XVSHM
-			unsigned int 	p_version,
-							p_release,
-							p_request_base,
-							p_event_base,
-							p_error_base;
-	        if (XvQueryExtension(this->x_display, &p_version, &p_release, &p_request_base, &p_event_base, &p_error_base) != Success) {
-				MMSFB_SetError(0, "XvQueryExtension() failed");
-	        	return false;
-	        }
-
-	        unsigned int num_adaptors;
-			XvAdaptorInfo *ai;
-			if (XvQueryAdaptors(this->x_display, DefaultRootWindow(this->x_display), &num_adaptors, &ai)) {
-				MMSFB_SetError(0, "XvQueryAdaptors() failed");
-				return false;
-			}
-			printf("DISKO: Available xv adaptors:\n");
-			for(unsigned int cnt=0;cnt<num_adaptors;cnt++) {
-				/* grab the first port with XvImageMask bit */
-				if((this->xv_port == 0) &&
-				   (ai[cnt].type & XvImageMask) &&
-				   (XvGrabPort(this->x_display, ai[cnt].base_id, 0) == Success)) {
-					this->xv_port = ai[cnt].base_id;
-					printf("  %s (used)\n", ai[cnt].name);
-				}
-				else
-					printf("  %s\n", ai[cnt].name);
-			}
-			XvFreeAdaptorInfo(ai);
+			//ogl
+printf("hey---------\n");
+sleep(5);
+exit(0);
 		}
 #endif
     }
@@ -352,7 +384,7 @@ bool MMSFB::release() {
     	}
 #endif
     }
-	else {
+    else {
 #ifdef __HAVE_XLIB__
 #endif
     }
