@@ -86,10 +86,11 @@ class MMSFB {
 #endif
 
 #ifdef __HAVE_XV__
-        int 			xv_port;
+        int 		xv_port;
 #endif
 
 #ifdef __HAVE_OPENGL__
+        GLXContext	glx_context;
 #endif
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];

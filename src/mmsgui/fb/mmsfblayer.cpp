@@ -110,7 +110,8 @@ MMSFBLayer::MMSFBLayer(int id) {
         }
 #endif
     }
-    else {
+    else
+	if (mmsfb->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
     	// check layer 0
         if (this->config.id != 0) {
@@ -375,6 +376,27 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->initialized = true;
 #endif
     }
+    else {
+#ifdef __HAVE_OPENGL__
+    	// check layer 0
+        if (this->config.id != 0) {
+			MMSFB_SetError(0, "OPENGL support needs layer 0!");
+        	return;
+        }
+
+		// fill my config partly from mmsfb
+		this->config.w = mmsfb->x11_win_rect.w;
+		this->config.h = mmsfb->x11_win_rect.h;
+		this->config.pixelformat = MMSFB_PF_ARGB;
+		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+		this->config.options = MMSFB_LO_NONE;
+
+		this->glx_context = mmsfb->glx_context;
+
+		this->initialized = true;
+
+#endif
+    }
 
     // get the current config
     if (this->initialized) {
@@ -432,7 +454,8 @@ bool MMSFBLayer::isInitialized() {
     	return this->initialized;
 #endif
     }
-    else {
+    else
+	if (mmsfb->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
 		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
@@ -448,6 +471,9 @@ bool MMSFBLayer::isInitialized() {
 		}
 #endif
     }
+	else {
+		return (this->glx_context != 0);
+	}
 
     return false;
 }
@@ -914,7 +940,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     	}
 #endif
     }
-    else {
+    else
+	if (mmsfb->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
 		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
@@ -956,17 +983,32 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 		}
 #endif
     }
+    else {
+#ifdef __HAVE_OPENGL__
+		// create a new surface instance
+		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
+									this->glx_context);
+		if (!*surface) {
+			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+			return false;
+		}
+#endif
+    }
 
     // save this for the next call
     this->surface = *surface;
 
     if (this->surface) {
+printf("---------\n");
+
     	// mark this surface as a layer surface
     	this->surface->setLayerSurface();
 
 		// clear all surface buffers
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
+printf("dddd %d\n", bufnum);
+sleep(2);
     	this->surface->clear();
 		this->surface->flip();
     	while (bufnum > 1) {

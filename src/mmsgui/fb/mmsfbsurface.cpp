@@ -518,6 +518,37 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 }
 #endif
 
+
+
+#ifdef __HAVE_OPENGL__
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GLXContext glx_context) {
+    // init me
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
+#ifdef  __HAVE_OPENGL__
+	this->glx_context = glx_context;
+	this->ogl_fbo = 0;
+#endif
+#ifdef __HAVE_XLIB__
+    this->scaler = NULL;
+#endif
+
+#ifdef __HAVE_XV__
+	this->config.surface_buffer->xv_image[0] = NULL;
+#endif
+
+#ifdef __HAVE_FBDEV__
+    this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
+
+	init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
+}
+#endif
+
+
+
 MMSFBSurface::~MMSFBSurface() {
 
     if (!mmsfb->isInitialized()) return;

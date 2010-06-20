@@ -357,9 +357,65 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		}
 		else {
 			//ogl
-printf("hey---------\n");
-sleep(5);
-exit(0);
+			int glxMajor, glxMinor;
+		    XVisualInfo *vi;
+
+		    glXQueryVersion(this->x_display, &glxMajor, &glxMinor);
+		    printf("GLX-Version %d.%d\n", glxMajor, glxMinor);
+		    int attribList[] =
+		        {GLX_RGBA,
+		        GLX_RED_SIZE, 8,
+		        GLX_GREEN_SIZE, 8,
+		        GLX_BLUE_SIZE, 8,
+		        GLX_DEPTH_SIZE, 16,
+		        GLX_DOUBLEBUFFER,
+		        None};
+
+		    vi = glXChooseVisual(this->x_display, this->x_screen, attribList);
+		    if (vi == NULL) {
+		    	int attribList[] =
+		    	        {GLX_RGBA,
+		    	        GLX_RED_SIZE, 8,
+		    	        GLX_GREEN_SIZE, 8,
+		    	        GLX_BLUE_SIZE, 8,
+		    	        None};
+		        vi = glXChooseVisual(this->x_display, this->x_screen, attribList );
+		        printf("singlebuffered rendering will be used, no doublebuffering available\n");
+		        if(vi == NULL) {
+		        	printf("shit happens.... \n");
+		        	return false;
+		        }
+		    }
+		    else {
+		        printf("doublebuffered rendering available\n");
+		    }
+
+		    // create a GLX context
+		    this->glx_context = glXCreateContext(this->x_display, vi, 0, GL_TRUE);
+		    if (!this->glx_context) {
+		    	printf("context generation failed...\n");
+		    	return false;
+		    }
+
+		    if(glXMakeCurrent(this->x_display, this->x_window, this->glx_context) != True) {
+		    	printf("make current failed\n");
+		    	return false;
+		    }
+		    if (glXIsDirect(this->x_display, this->glx_context))
+		        printf("DRI enabled\n");
+		    else
+		        printf("no DRI available\n");
+
+		    XMapRaised(this->x_display, this->x_window);
+			XFlush(this->x_display);
+
+			// init extension pointers
+			GLenum err=glewInit();
+			if(err!=GLEW_OK) {
+				//problem: glewInit failed, something is seriously wrong
+				printf("Error: %s\n", glewGetErrorString(err));
+				return false;
+			}
 		}
 #endif
     }

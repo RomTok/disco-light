@@ -93,6 +93,10 @@ class MMSFBLayer {
         XvImage  		*xv_image2;
         XShmSegmentInfo xv_shminfo2;
 #endif
+#ifdef  __HAVE_OPENGL__
+		//! opengl context
+		GLXContext glx_context;
+#endif
 
         // layer configuration
         MMSFBLayerConfig        config;

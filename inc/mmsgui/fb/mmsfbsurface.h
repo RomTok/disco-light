@@ -149,6 +149,9 @@ class MMSFBSurface {
 		IDirectFBSurface	*dfb_surface;
 #endif
 #ifdef  __HAVE_OPENGL__
+		//! opengl context
+		GLXContext glx_context;
+
 		//! opengl framebuffer object (FBO)
 		GLuint	ogl_fbo;
 #endif
@@ -276,6 +279,9 @@ class MMSFBSurface {
 #endif
 #ifdef __HAVE_XV__
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
+#endif
+#ifdef __HAVE_OPENGL__
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GLXContext glx_context);
 #endif
 
         virtual ~MMSFBSurface();
