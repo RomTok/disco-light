@@ -356,7 +356,8 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			}
 		}
 		else {
-			//ogl
+#ifdef __HAVE_OPENGL__
+			// OGL
 			int glxMajor, glxMinor;
 		    XVisualInfo *vi;
 
@@ -416,6 +417,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 				printf("Error: %s\n", glewGetErrorString(err));
 				return false;
 			}
+#endif
 		}
 #endif
     }

@@ -454,26 +454,27 @@ bool MMSFBLayer::isInitialized() {
     	return this->initialized;
 #endif
     }
+#ifdef __HAVE_XLIB__
     else
 	if (mmsfb->backend == MMSFB_BE_X11) {
-#ifdef __HAVE_XLIB__
 		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
-
 			return (this->x_image1 != NULL);
 		}
 		else {
 #ifdef __HAVE_XV__
 			// XVSHM
-
 			return (this->xv_image1 != NULL);
 #endif
 		}
-#endif
     }
 	else {
+#ifdef __HAVE_OPENGL__
+		// OGL
 		return (this->glx_context != 0);
+#endif
 	}
+#endif
 
     return false;
 }
