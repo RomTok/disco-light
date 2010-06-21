@@ -100,13 +100,20 @@ typedef struct {
     //! surface buffer attached to this MMSFBSurface is externally allocated?
     bool	external_buffer;
 #ifdef __HAVE_FBDEV__
+    //! interface to the fb layer surface
     class MMSFBSurface	*mmsfbdev_surface;
 #endif
 #ifdef __HAVE_XLIB__
+    //! ximage of the x11 window
     XImage	*x_image[MMSFBSurfaceMaxBuffers];
 #endif
 #ifdef __HAVE_XV__
+    //! xvimage of the x11 window
     XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
+#endif
+#ifdef __HAVE_OPENGL__
+	//! opengl framebuffer object (FBO)
+	GLuint	ogl_fbo;
 #endif
 } MMSFBSurfaceBuffer;
 
@@ -150,10 +157,7 @@ class MMSFBSurface {
 #endif
 #ifdef  __HAVE_OPENGL__
 		//! opengl context
-		GLXContext glx_context;
-
-		//! opengl framebuffer object (FBO)
-		GLuint	ogl_fbo;
+		static GLXContext glx_context;
 #endif
 
 		//! which system has allocated the memory?

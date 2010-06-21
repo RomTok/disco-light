@@ -50,6 +50,9 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 // static variables
 bool MMSFBSurface::extendedaccel								= false;
 MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_malloc;
+#ifdef  __HAVE_OPENGL__
+GLXContext MMSFBSurface::glx_context = 0;
+#endif
 
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->initialized)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
 
@@ -127,9 +130,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = NULL;
-#endif
-#ifdef  __HAVE_OPENGL__
-	this->ogl_fbo = 0;
 #endif
     this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
@@ -245,9 +245,6 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent,
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = dfb_surface;
 #endif
-#ifdef  __HAVE_OPENGL__
-	this->ogl_fbo = 0;
-#endif
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
 #endif
@@ -263,11 +260,21 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent,
     if (this->config.surface_buffer)
     	this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
+
 #ifdef __HAVE_XLIB__
     if (this->config.surface_buffer) {
     	this->config.surface_buffer->x_image[0] = NULL;
+    }
+#endif
+
+#ifdef __HAVE_XV__
+    if (this->config.surface_buffer) {
     	this->config.surface_buffer->xv_image[0] = NULL;
     }
+#endif
+
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
 #endif
 
 	init(MMSFBSurfaceAllocatedBy_dfb, parent, sub_surface_rect);
@@ -281,9 +288,6 @@ MMSFBSurface::MMSFBSurface(MMSFBSurface *parent, MMSFBRectangle *sub_surface_rec
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = NULL;
-#endif
-#ifdef  __HAVE_OPENGL__
-	this->ogl_fbo = 0;
 #endif
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
@@ -299,19 +303,26 @@ MMSFBSurface::MMSFBSurface(MMSFBSurface *parent, MMSFBRectangle *sub_surface_rec
 	   this->config.surface_buffer->numbuffers = 0;
 	   this->config.surface_buffer->external_buffer = false;
    }
+
 #ifdef __HAVE_FBDEV__
     if (this->config.surface_buffer)
     	this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
+
 #ifdef __HAVE_XLIB__
     if (this->config.surface_buffer) {
     	this->config.surface_buffer->x_image[0] = NULL;
     }
 #endif
+
 #ifdef __HAVE_XV__
     if (this->config.surface_buffer) {
     	this->config.surface_buffer->xv_image[0] = NULL;
     }
+#endif
+
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
 #endif
 
 	init(parent->allocated_by, parent, sub_surface_rect);
@@ -324,9 +335,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = NULL;
-#endif
-#ifdef  __HAVE_OPENGL__
-	this->ogl_fbo = 0;
 #endif
 	this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
@@ -376,11 +384,17 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #ifdef __HAVE_FBDEV__
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
+
 #ifdef __HAVE_XLIB__
 	this->config.surface_buffer->x_image[0] = NULL;
 #endif
+
 #ifdef __HAVE_XV__
 	this->config.surface_buffer->xv_image[0] = NULL;
+#endif
+
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
 #endif
 
 	init(MMSFBSurfaceAllocatedBy_malloc, NULL, NULL);
@@ -397,9 +411,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = NULL;
-#endif
-#ifdef  __HAVE_OPENGL__
-	this->ogl_fbo = 0;
 #endif
 	this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
@@ -440,6 +451,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
+
 	init(MMSFBSurfaceAllocatedBy_xvimage, NULL, NULL);
 }
 #endif
@@ -450,9 +465,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = NULL;
-#endif
-#ifdef  __HAVE_OPENGL__
-	this->ogl_fbo = 0;
 #endif
     this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
@@ -514,6 +526,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
+
 	init(MMSFBSurfaceAllocatedBy_ximage, NULL, NULL);
 }
 #endif
@@ -529,10 +545,20 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GL
 #endif
 #ifdef  __HAVE_OPENGL__
 	this->glx_context = glx_context;
-	this->ogl_fbo = 0;
 #endif
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
+#endif
+
+
+    // setup surface attributes
+	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+
+//..............
+
+
+#ifdef __HAVE_XLIB__
+	this->config.surface_buffer->x_image[0] = NULL;
 #endif
 
 #ifdef __HAVE_XV__
@@ -611,11 +637,8 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 
 #ifndef USE_DFB_SUBSURFACE
 
-#ifdef  __HAVE_DIRECTFB__
+#ifdef __HAVE_DIRECTFB__
     	this->dfb_surface = this->root_parent->dfb_surface;
-#endif
-#ifdef  __HAVE_OPENGL__
-    	this->ogl_fbo = this->root_parent->ogl_fbo;
 #endif
 
     	getRealSubSurfacePos();
