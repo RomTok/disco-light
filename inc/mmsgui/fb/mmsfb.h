@@ -69,6 +69,7 @@ class MMSFB {
 #endif
 
 #ifdef __HAVE_XLIB__
+        //! connection to the x-server
         Display 		*x_display;
         int				x_screen;
         Window 			x_window;
@@ -90,6 +91,10 @@ class MMSFB {
 #endif
 
 #ifdef __HAVE_OPENGL__
+        //! x-visual
+	    XVisualInfo *xvi;
+
+	    //! opengl context
         GLXContext	glx_context;
 #endif
 

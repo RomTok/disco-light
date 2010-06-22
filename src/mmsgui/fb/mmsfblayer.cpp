@@ -391,8 +391,6 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
 
-		this->glx_context = mmsfb->glx_context;
-
 		this->initialized = true;
 
 #endif
@@ -471,7 +469,7 @@ bool MMSFBLayer::isInitialized() {
 	else {
 #ifdef __HAVE_OPENGL__
 		// OGL
-		return (this->glx_context != 0);
+		return (mmsfb->glx_context != 0);
 #endif
 	}
 #endif
@@ -988,7 +986,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #ifdef __HAVE_OPENGL__
 		// create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
-									this->glx_context);
+									mmsfb->glx_context, mmsfb->x_display, mmsfb->xvi);
 		if (!*surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
@@ -1014,10 +1012,14 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 		// clear all surface buffers
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
-//printf("dddd %d\n", bufnum);
-//sleep(2);
+/*printf("dddd %d\n", bufnum);
+sleep(2);*/
     	this->surface->clear();
+/*printf("clear finished\n");
+sleep(2);*/
 		this->surface->flip();
+/*printf("flip finished\n");
+sleep(2);*/
     	while (bufnum > 1) {
 			this->surface->clear();
 			this->surface->flip();

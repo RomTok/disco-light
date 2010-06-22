@@ -359,7 +359,6 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 #ifdef __HAVE_OPENGL__
 			// OGL
 			int glxMajor, glxMinor;
-		    XVisualInfo *vi;
 
 		    glXQueryVersion(this->x_display, &glxMajor, &glxMinor);
 		    printf("GLX-Version %d.%d\n", glxMajor, glxMinor);
@@ -372,17 +371,17 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		        GLX_DOUBLEBUFFER,
 		        None};
 
-		    vi = glXChooseVisual(this->x_display, this->x_screen, attribList);
-		    if (vi == NULL) {
+		    this->xvi = glXChooseVisual(this->x_display, this->x_screen, attribList);
+		    if (this->xvi == NULL) {
 		    	int attribList[] =
 		    	        {GLX_RGBA,
 		    	        GLX_RED_SIZE, 8,
 		    	        GLX_GREEN_SIZE, 8,
 		    	        GLX_BLUE_SIZE, 8,
 		    	        None};
-		        vi = glXChooseVisual(this->x_display, this->x_screen, attribList );
+		    	this->xvi = glXChooseVisual(this->x_display, this->x_screen, attribList);
 		        printf("singlebuffered rendering will be used, no doublebuffering available\n");
-		        if(vi == NULL) {
+		        if(this->xvi == NULL) {
 		        	printf("shit happens.... \n");
 		        	return false;
 		        }
@@ -392,7 +391,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		    }
 
 		    // create a GLX context
-		    this->glx_context = glXCreateContext(this->x_display, vi, 0, GL_TRUE);
+		    this->glx_context = glXCreateContext(this->x_display, this->xvi, 0, GL_TRUE);
 		    if (!this->glx_context) {
 		    	printf("context generation failed...\n");
 		    	return false;

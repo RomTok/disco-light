@@ -112,7 +112,7 @@ typedef struct {
     XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
 #endif
 #ifdef __HAVE_OPENGL__
-	//! opengl framebuffer object (FBO)
+	//! opengl framebuffer object (FBO), 0 means primary display buffer connected to the x-window
 	GLuint	ogl_fbo;
 #endif
 } MMSFBSurfaceBuffer;
@@ -156,7 +156,13 @@ class MMSFBSurface {
 		IDirectFBSurface	*dfb_surface;
 #endif
 #ifdef  __HAVE_OPENGL__
-		//! opengl context
+        //! connection to the x-server
+        static Display *x_display;
+
+        //! x-visual
+	    static XVisualInfo *xvi;
+
+	    //! opengl context
 		static GLXContext glx_context;
 #endif
 
@@ -285,7 +291,8 @@ class MMSFBSurface {
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
 #ifdef __HAVE_OPENGL__
-        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GLXContext glx_context);
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
+					 GLXContext glx_context, Display *x_display, XVisualInfo *xvi);
 #endif
 
         virtual ~MMSFBSurface();

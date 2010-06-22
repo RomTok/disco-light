@@ -51,6 +51,8 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 bool MMSFBSurface::extendedaccel								= false;
 MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_malloc;
 #ifdef  __HAVE_OPENGL__
+Display *MMSFBSurface::x_display;
+XVisualInfo *MMSFBSurface::xvi;
 GLXContext MMSFBSurface::glx_context = 0;
 #endif
 
@@ -537,7 +539,8 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 
 
 #ifdef __HAVE_OPENGL__
-MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GLXContext glx_context) {
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
+						   GLXContext glx_context, Display *x_display, XVisualInfo *xvi) {
     // init me
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
@@ -545,6 +548,8 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GL
 #endif
 #ifdef  __HAVE_OPENGL__
 	this->glx_context = glx_context;
+	this->x_display = x_display;
+	this->xvi = xvi;
 #endif
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
@@ -553,9 +558,15 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, GL
 
     // setup surface attributes
 	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	this->config.w = this->config.surface_buffer->sbw = w;
+	this->config.h = this->config.surface_buffer->sbh = h;
 
-//..............
-
+	if (this->config.surface_buffer) {
+	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
+	   this->config.surface_buffer->numbuffers = 0;
+	   this->config.surface_buffer->external_buffer = false;
+	   this->config.surface_buffer->ogl_fbo = 0;
+	}
 
 #ifdef __HAVE_XLIB__
 	this->config.surface_buffer->x_image[0] = NULL;
@@ -1051,6 +1062,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	    if ((!config)&&(!this->is_sub_surface)) {
 	    	DEBUGMSG("MMSGUI", "Surface properties:");
 
+	    	DEBUGMSG("MMSGUI", " type:         DFB");
 	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
 
@@ -1078,21 +1090,76 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	    return true;
 #endif
 	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (this->config.surface_buffer->ogl_fbo == 0) {
+			// this surface is the primary display buffer connected to the x-window
+			int glxres, val;
+
+			// get size
+			if (this->is_sub_surface) {
+				this->config.w = this->sub_surface_rect.w;
+				this->config.h = this->sub_surface_rect.h;
+			}
+			this->config.surface_buffer->buffers[0].pitch = this->config.w * 4;
+
+			this->config.surface_buffer->pixelformat = MMSFB_PF_ARGB;
+			this->config.surface_buffer->alphachannel = true;
+			this->config.surface_buffer->premultiplied = false;
+
+			// get double buffering status
+			if ((glxres = glXGetConfig(this->x_display, this->xvi, GLX_DOUBLEBUFFER, &val))) {
+				MMSFB_SetError(glxres, "glXGetConfig() failed");
+				return false;
+			}
+			this->config.surface_buffer->backbuffer = (val)?1:0;
+
+		    this->config.surface_buffer->systemonly = false;
+		}
+
+	    // fill return config
+	    if (config)
+	        *config = this->config;
+
+	    // log some infos
+	    if ((!config)&&(!this->is_sub_surface)) {
+	    	DEBUGMSG("MMSGUI", "Surface properties:");
+
+	    	DEBUGMSG("MMSGUI", " type:         OGL");
+	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
+
+		    if (this->config.surface_buffer->alphachannel)
+		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
+		    else
+		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat));
+
+		    DEBUGMSG("MMSGUI", " capabilities:");
+
+		    if (this->config.surface_buffer->ogl_fbo == 0)
+		    	DEBUGMSG("MMSGUI", "  PRIMARY");
+			if (this->config.surface_buffer->backbuffer == 1)
+				DEBUGMSG("MMSGUI", "  DOUBLE");
+		}
+#endif
+	}
 	else {
-		/* get size */
+		// get size
 		if (this->is_sub_surface) {
 			this->config.w = this->sub_surface_rect.w;
 			this->config.h = this->sub_surface_rect.h;
 		}
 
-		/* fill return config */
+		// fill return config
 		if (config)
 			*config = this->config;
 
-		/* log some infos */
+		// log some infos
 		if ((!config)&&(!this->is_sub_surface)) {
 			DEBUGMSG("MMSGUI", "Surface properties:");
 
+	    	DEBUGMSG("MMSGUI", " type:         MMS");
 			DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
 
@@ -1279,6 +1346,16 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 #ifndef USE_DFB_SUBSURFACE
 			UNCLIPSUBSURFACE
 #endif
+		}
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			glClearColor(1.0, 0.0, 0.5, 1);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 #endif
 	}
@@ -4905,6 +4982,13 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 		return true;
 #else
 		return false;
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
+		printf("ddddddddddddddddddddddddddddddddddddddddddddd\n");
 #endif
 	}
 	else {
