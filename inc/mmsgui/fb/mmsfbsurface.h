@@ -114,6 +114,10 @@ typedef struct {
 #ifdef __HAVE_OPENGL__
 	//! opengl framebuffer object (FBO), 0 means primary display buffer connected to the x-window
 	GLuint	ogl_fbo;
+	//! opengl texture attached to the FBO
+	GLuint	ogl_tex;
+	//! opengl renderbuffer attached to the FBO
+	GLuint	ogl_rb;
 #endif
 } MMSFBSurfaceBuffer;
 

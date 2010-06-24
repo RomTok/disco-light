@@ -195,6 +195,84 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 	    init(MMSFBSurfaceAllocatedBy_dfb, NULL, NULL);
 #endif
 	}
+	else
+	if (this->allocmethod == MMSFBSurfaceAllocMethod_ogl) {
+#ifdef  __HAVE_OPENGL__
+		// setup surface attributes
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		this->config.w = sb->sbw = w;
+		this->config.h = sb->sbh = h;
+		sb->pixelformat = MMSFB_PF_ARGB;
+		sb->alphachannel = true;
+		sb->premultiplied = false;
+		sb->backbuffer = backbuffer;
+		sb->systemonly = systemonly;
+
+		// RGBA8 2D texture, 24 bit depth texture
+		glGenTextures(1, &sb->ogl_tex);
+		glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this->config.w, this->config.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+		// ---
+		glGenRenderbuffersEXT(1, &sb->ogl_rb);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, sb->ogl_rb);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, this->config.w, this->config.h);
+		// ---
+		glGenFramebuffersEXT(1, &sb->ogl_fbo);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, sb->ogl_tex, 0);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, sb->ogl_rb);
+		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+			// the GPU does not support current FBO configuration
+			MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(w) + "x" + iToStr(h) + " failed, the GPU does not support current FBO configuration");
+			return;
+		}
+
+/////////// TEST //////////
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
+		glClearColor(1.0, 1.0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_DEPTH_TEST);
+
+		glColor4ub(255, 0, 0, 255);
+		glRecti(0,0,0.5,0.5);
+
+		printf("puuuuu\n");
+
+
+
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
+		glBegin(GL_QUADS);
+		glTexCoord2i(0.0,1.0);
+		glVertex3i(0, 100, 0);
+
+		glTexCoord2f(1.0,1.0);
+		glVertex3i(100, 100, 0);
+
+		glTexCoord2f(1.0,0.0);
+		glVertex3i(100, 0, 0);
+
+		glTexCoord2f(0.0,0.0);
+		glVertex3i(0, 0, 0);
+		glEnd();
+
+
+		/* swap the buffers if we have doublebuffered */
+		glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
+		sleep(2);
+//////////
+
+
+#endif
+	}
 	else {
 		// setup surface attributes
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;

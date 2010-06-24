@@ -416,6 +416,15 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 				printf("Error: %s\n", glewGetErrorString(err));
 				return false;
 			}
+
+			//set the coordinate system
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glViewport(0, 0, this->x11_win_rect.w, this->x11_win_rect.h);
+			glOrtho(0, this->x11_win_rect.w, 0, this->x11_win_rect.h, 10.0, -10.0);
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+
 #endif
 		}
 #endif
