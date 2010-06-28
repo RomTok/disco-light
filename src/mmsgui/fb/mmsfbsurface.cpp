@@ -87,6 +87,9 @@ GLXContext MMSFBSurface::glx_context = 0;
     this->dfb_surface->SetBlittingFlags(this->dfb_surface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(this->root_parent->config.blittingflags));
 
 
+
+
+
 /*
 #define MMSFBSurface_RGB2Y(r,g,b) ((((66*r+129*g+25*b+128)>>8)+16) & 0xff)
 #define MMSFBSurface_RGB2U(r,g,b) ((((-38*r-74*g+112*b+128)>>8)+128) & 0xff)
@@ -209,6 +212,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		sb->systemonly = systemonly;
 
 		// RGBA8 2D texture, 24 bit depth texture
+		LOCK_OGL(0);
 		glGenTextures(1, &sb->ogl_tex);
 		glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -228,46 +232,55 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 			// the GPU does not support current FBO configuration
 			MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(w) + "x" + iToStr(h) + " failed, the GPU does not support current FBO configuration");
+			UNLOCK_OGL;
 			return;
 		}
 
-/////////// TEST //////////
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
-		glClearColor(1.0, 1.0, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		UNLOCK_OGL;
 
+	    init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
+
+
+
+/////////// TEST //////////
+
+		// clear
+	    if (w == 800) {
+	    	this->setClip(0, 0, 700, 400);
+	    }
+		this->clear(0, 255, 255, 255);
+
+//TODO
+    	this->setClip(NULL);
+		this->setColor(0, 0, 255, 80);
+		this->fillRectangle(w/4,h/4,w/2,h/2);
+
+		// scissor draw
+/*		LOCK_OGL(sb->ogl_fbo);
+		glScissor(w/4,h/4,w/2,h/2);
+		printf("%dx%d\n", w,h);
+		glEnable(GL_SCISSOR_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_DEPTH_TEST);
-
-		glColor4ub(255, 0, 0, 255);
-		glRecti(0,0,0.5,0.5);
+		glDisable(GL_TEXTURE_2D);
+		glColor4ub(0, 0, 255, 160);
+		glRecti(0, 0, w, h);
+		glDisable(GL_BLEND);
+		glDisable(GL_SCISSOR_TEST);
+		UNLOCK_OGL;*/
 
 		printf("puuuuu\n");
 
+		MMSFBLayer *layer;
+		mmsfb->getLayer(0, &layer);
+		MMSFBSurface *sur;
+		layer->getSurface(&sur);
+		sur->blit(this);
+		sur->flip();
 
-
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
-		glBegin(GL_QUADS);
-		glTexCoord2i(0.0,1.0);
-		glVertex3i(0, 100, 0);
-
-		glTexCoord2f(1.0,1.0);
-		glVertex3i(100, 100, 0);
-
-		glTexCoord2f(1.0,0.0);
-		glVertex3i(100, 0, 0);
-
-		glTexCoord2f(0.0,0.0);
-		glVertex3i(0, 0, 0);
-		glEnd();
-
-
-		/* swap the buffers if we have doublebuffered */
-		glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
 		sleep(2);
+
 //////////
 
 
@@ -1187,10 +1200,13 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			this->config.surface_buffer->premultiplied = false;
 
 			// get double buffering status
+			LOCK_OGL(0);
 			if ((glxres = glXGetConfig(this->x_display, this->xvi, GLX_DOUBLEBUFFER, &val))) {
 				MMSFB_SetError(glxres, "glXGetConfig() failed");
+				UNLOCK_OGL;
 				return false;
 			}
+			UNLOCK_OGL;
 			this->config.surface_buffer->backbuffer = (val)?1:0;
 
 		    this->config.surface_buffer->systemonly = false;
@@ -1380,13 +1396,92 @@ bool MMSFBSurface::setFlipFlags(MMSFBFlipFlags flags) {
 
 
 
+bool MMSFBSurface::calcClip(int x, int y, int w, int h, MMSFBRectangle *crect) {
+	MMSFBRegion clipreg;
+
+#ifndef USE_DFB_SUBSURFACE
+	if (!this->is_sub_surface) {
+#endif
+		// normal surface or dfb subsurface
+		if (!this->config.clipped) {
+			clipreg.x1 = 0;
+			clipreg.y1 = 0;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
+		}
+		else {
+			clipreg = this->config.clip;
+		}
+#ifndef USE_DFB_SUBSURFACE
+	}
+	else {
+		// subsurface
+		if (!this->root_parent->config.clipped) {
+			clipreg.x1 = 0;
+			clipreg.y1 = 0;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
+		}
+		else {
+			clipreg = this->root_parent->config.clip;
+		}
+	}
+#endif
+
+	if (x < clipreg.x1) {
+		// left outside
+		w-= clipreg.x1 - x;
+		if (w <= 0) {
+			return false;
+		}
+		x = clipreg.x1;
+	}
+	else
+	if (x > clipreg.x2) {
+		// right outside
+		return false;
+	}
+
+	if (y < clipreg.y1) {
+		// top outside
+		h-= clipreg.y1 - y;
+		if (h <= 0) {
+			return false;
+		}
+		y = clipreg.y1;
+	}
+	else
+	if (y > clipreg.y2) {
+		// bottom outside
+		return false;
+	}
+
+	if (x + w - 1 > clipreg.x2) {
+		// to width
+		w = clipreg.x2 - x + 1;
+	}
+
+	if (y + h - 1 > clipreg.y2) {
+		// to height
+		h = clipreg.y2 - y + 1;
+	}
+
+	// set crect and return
+	if (crect) {
+		crect->x = x;
+		crect->y = y;
+		crect->w = w;
+		crect->h = h;
+	}
+	return true;
+}
+
 bool MMSFBSurface::clear(unsigned char r, unsigned char g,
                          unsigned char b, unsigned char a) {
     bool ret = false;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
-
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1404,7 +1499,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 		}
 
 		if (!this->is_sub_surface) {
-			/* clear surface */
+			// clear surface
 			if ((dfbres=this->dfb_surface->Clear(this->dfb_surface, r, g, b, a)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::Clear() failed");
 				return false;
@@ -1417,7 +1512,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 			CLIPSUBSURFACE
 #endif
 
-			/* clear surface */
+			// clear surface
 			if (this->dfb_surface->Clear(this->dfb_surface, r, g, b, a) == DFB_OK)
 				ret = true;
 
@@ -1431,9 +1526,27 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
 		if (!this->is_sub_surface) {
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-			glClearColor(1.0, 0.0, 0.5, 1);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_BLEND);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+			glColor4ub(r, g, b, a);
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			if (calcClip(0, 0, this->config.w, this->config.h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// fill rectangle
+				glRecti(0, 0, this->config.w, this->config.h);
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
 		}
 #endif
 	}
@@ -1775,6 +1888,36 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 
 			UNCLIPSUBSURFACE
 #endif
+		}
+#endif
+	}
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+//TODO>
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//<TODO
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+			glColor4ub(this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			if (calcClip(x, y, w, h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// fill rectangle
+				glRecti(x, y, w, h);
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
 		}
 #endif
 	}
@@ -4523,6 +4666,53 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 
 #endif
 	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		// lock destination fbo and bind source texture to it
+		LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+		glColor4ub(255, 255, 255, 255);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, source->config.surface_buffer->ogl_tex);
+
+		// get source region
+		double sx1 = src.x;
+		double sy1 = src.y;
+		double sx2 = src.w - src.x - 1;
+		double sy2 = src.h - src.y - 1;
+
+		// normalize source region
+		sx1 = sx1 / (source->config.w - 1);
+		sy1 = sy1 / (source->config.h - 1);
+		sx2 = sx2 / (source->config.w - 1);
+		sy2 = sy2 / (source->config.h - 1);
+
+		// get destination region
+		double dx1 = x;
+		double dy1 = y;
+		double dx2 = x + src.w - 1;
+		double dy2 = y + src.h - 1;
+
+		// blit source texture to the destination
+		glBegin(GL_QUADS);
+			glTexCoord2f(sx1, sy1);
+			glVertex2i(dx1, dy1);
+
+			glTexCoord2f(sx2, sy1);
+			glVertex2i(dx2, dy1);
+
+			glTexCoord2f(sx2, sy2);
+			glVertex2i(dx2, dy2);
+
+			glTexCoord2f(sx1, sy2);
+			glVertex2i(dx1, dy2);
+		glEnd();
+
+		// all is fine
+		UNLOCK_OGL;
+		ret = true;
+#endif
+	}
 	else {
 
 		// prepare source rectangle
@@ -5065,8 +5255,9 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 	else
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
+		LOCK_OGL(0);
 		glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
-		printf("ddddddddddddddddddddddddddddddddddddddddddddd\n");
+		UNLOCK_OGL;
 #endif
 	}
 	else {

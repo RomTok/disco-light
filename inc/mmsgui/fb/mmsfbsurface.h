@@ -326,6 +326,13 @@ class MMSFBSurface {
 
         bool setFlipFlags(MMSFBFlipFlags flags);
 
+        //! Get the clipping rectangle.
+        /*!
+        \return true, if clipping rectangle (crect) is set
+        \return false, if the rectangle described with x,y,w,h is outside of the surface or clipping rectangle
+        */
+        bool calcClip(int x, int y, int w, int h, MMSFBRectangle *crect);
+
         bool clear(unsigned char r = 0, unsigned char g = 0,
                    unsigned char b = 0, unsigned char a = 0);
 

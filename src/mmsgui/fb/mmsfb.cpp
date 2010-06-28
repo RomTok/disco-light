@@ -467,6 +467,16 @@ MMSFBBackend MMSFB::getBackend() {
 	return this->backend;
 }
 
+bool MMSFB::lock() {
+	this->Lock.lock();
+	return true;
+}
+
+bool MMSFB::unlock() {
+	this->Lock.unlock();
+	return true;
+}
+
 bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
 
 	// check if initialized
