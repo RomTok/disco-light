@@ -130,6 +130,23 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 */
 
 
+#ifdef __HAVE_OPENGL__
+
+#define INIT_OGL_DRAWING \
+			switch (this->config.drawingflags) { \
+			case MMSFB_DRAW_BLEND: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); break; \
+			default: glDisable(GL_BLEND); break; } \
+			glColor4ub(this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+
+#define INIT_OGL_BLITTING \
+		switch (this->config.blittingflags) { \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, 255); break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, this->config.color.a); break; \
+		default: glDisable(GL_BLEND); glColor4ub(255, 255, 255, 255); break; }
+
+#endif
+
+
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
     // init me
 	this->initialized = false;
@@ -251,24 +268,11 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		this->clear(0, 255, 255, 255);
 
 //TODO
-    	this->setClip(NULL);
-		this->setColor(0, 0, 255, 80);
-		this->fillRectangle(w/4,h/4,w/2,h/2);
+    	this->setClip(w/4+200,h/4,w/4+w/2-1+200,h/4+h/2-1);
+		this->setColor(0, 0, 255, 160);
+		this->setDrawingFlags(MMSFB_DRAW_BLEND);
+		this->fillRectangle(w/4+200,h/4,w/2,h/2);
 
-		// scissor draw
-/*		LOCK_OGL(sb->ogl_fbo);
-		glScissor(w/4,h/4,w/2,h/2);
-		printf("%dx%d\n", w,h);
-		glEnable(GL_SCISSOR_TEST);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_TEXTURE_2D);
-		glColor4ub(0, 0, 255, 160);
-		glRecti(0, 0, w, h);
-		glDisable(GL_BLEND);
-		glDisable(GL_SCISSOR_TEST);
-		UNLOCK_OGL;*/
 
 		printf("puuuuu\n");
 
@@ -276,8 +280,16 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		mmsfb->getLayer(0, &layer);
 		MMSFBSurface *sur;
 		layer->getSurface(&sur);
-		sur->blit(this);
-		sur->flip();
+
+		if (w==800)
+		for (int i=0;i<120;i++) {
+			sur->clear(255, 0, 0, 255);
+			sur->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA);
+			sur->setColor(255,255,255,255-i*2);
+			sur->blit(this);
+			sur->flip();
+			usleep(50000);
+		}
 
 		sleep(2);
 
@@ -1640,14 +1652,14 @@ bool MMSFBSurface::getColor(MMSFBColor *color) {
 
 bool MMSFBSurface::setClip(MMSFBRegion *clip) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
-	    /* set clip */
+	    // set clip
 #ifdef USE_DFB_SUBSURFACE
 		if ((dfbres=this->dfb_surface->SetClip(this->dfb_surface, (DFBRegion*)clip)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetClip() failed");
@@ -1664,13 +1676,14 @@ bool MMSFBSurface::setClip(MMSFBRegion *clip) {
 #endif
 	}
 
-    /* save the region */
+    // save the region
     if (clip) {
     	this->config.clipped = true;
 	    this->config.clip = *clip;
     }
-    else
+    else {
     	this->config.clipped = false;
+    }
 
     return true;
 }
@@ -1896,13 +1909,9 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 		if (!this->is_sub_surface) {
 			// lock destination fbo and prepare it
 			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
-//TODO>
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//<TODO
 			glDisable(GL_DEPTH_TEST);
 			glDisable(GL_TEXTURE_2D);
-			glColor4ub(this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+			INIT_OGL_DRAWING;
 
 			// set the clip to ogl
 			MMSFBRectangle crect;
@@ -1912,7 +1921,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 				glEnable(GL_SCISSOR_TEST);
 
 				// fill rectangle
-				glRecti(x, y, w, h);
+				glRecti(x, y, x + w - 1, y + h - 1);
 			}
 
 			// all is fine
@@ -2067,7 +2076,7 @@ bool MMSFBSurface::drawCircle(int x, int y, int radius, int start_octant, int en
 
 bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
@@ -2075,7 +2084,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 	    DFBResult   dfbres;
 
 	    if ((flags & MMSFB_BLIT_BLEND_ALPHACHANNEL)||(flags & MMSFB_BLIT_BLEND_COLORALPHA)) {
-			/* if we do alpha channel blitting, we have to change the default settings to become correct results */
+			// if we do alpha channel blitting, we have to change the default settings to become correct results
 			if (this->config.surface_buffer->alphachannel)
 				dfb_surface->SetSrcBlendFunction(dfb_surface,(DFBSurfaceBlendFunction)DSBF_ONE);
 			else
@@ -2086,7 +2095,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 				 flags = (MMSFBBlittingFlags)(flags | MMSFB_BLIT_SRC_PREMULTCOLOR);
 		}
 
-		/* set the blitting flags */
+		// set the blitting flags
 		if ((dfbres=this->dfb_surface->SetBlittingFlags(this->dfb_surface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(flags))) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetBlittingFlags() failed");
 
@@ -2095,7 +2104,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 #endif
 	}
 
-    /* save the flags */
+    // save the flags
     this->config.blittingflags = flags;
 
     return true;
@@ -4671,42 +4680,50 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 #ifdef  __HAVE_OPENGL__
 		// lock destination fbo and bind source texture to it
 		LOCK_OGL(this->config.surface_buffer->ogl_fbo);
-		glColor4ub(255, 255, 255, 255);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, source->config.surface_buffer->ogl_tex);
+		INIT_OGL_BLITTING;
 
-		// get source region
-		double sx1 = src.x;
-		double sy1 = src.y;
-		double sx2 = src.w - src.x - 1;
-		double sy2 = src.h - src.y - 1;
+		// set the clip to ogl
+		MMSFBRectangle crect;
+		if (calcClip(x, y, src.w, src.h, &crect)) {
+			// inside clipping region
+			glScissor(crect.x, crect.y, crect.w, crect.h);
+			glEnable(GL_SCISSOR_TEST);
 
-		// normalize source region
-		sx1 = sx1 / (source->config.w - 1);
-		sy1 = sy1 / (source->config.h - 1);
-		sx2 = sx2 / (source->config.w - 1);
-		sy2 = sy2 / (source->config.h - 1);
+			// get source region
+			double sx1 = src.x;
+			double sy1 = src.y;
+			double sx2 = src.w - src.x - 1;
+			double sy2 = src.h - src.y - 1;
 
-		// get destination region
-		double dx1 = x;
-		double dy1 = y;
-		double dx2 = x + src.w - 1;
-		double dy2 = y + src.h - 1;
+			// normalize source region
+			sx1 = sx1 / (source->config.w - 1);
+			sy1 = sy1 / (source->config.h - 1);
+			sx2 = sx2 / (source->config.w - 1);
+			sy2 = sy2 / (source->config.h - 1);
 
-		// blit source texture to the destination
-		glBegin(GL_QUADS);
-			glTexCoord2f(sx1, sy1);
-			glVertex2i(dx1, dy1);
+			// get destination region
+			int dx1 = x;
+			int dy1 = y;
+			int dx2 = x + src.w - 1;
+			int dy2 = y + src.h - 1;
 
-			glTexCoord2f(sx2, sy1);
-			glVertex2i(dx2, dy1);
+			// blit source texture to the destination
+			glBegin(GL_QUADS);
+				glTexCoord2f(sx1, sy1);
+				glVertex2i(dx1, dy1);
 
-			glTexCoord2f(sx2, sy2);
-			glVertex2i(dx2, dy2);
+				glTexCoord2f(sx2, sy1);
+				glVertex2i(dx2, dy1);
 
-			glTexCoord2f(sx1, sy2);
-			glVertex2i(dx1, dy2);
-		glEnd();
+				glTexCoord2f(sx2, sy2);
+				glVertex2i(dx2, dy2);
+
+				glTexCoord2f(sx1, sy2);
+				glVertex2i(dx1, dy2);
+			glEnd();
+		}
 
 		// all is fine
 		UNLOCK_OGL;
