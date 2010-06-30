@@ -360,7 +360,7 @@ class MMSFBSurface {
 						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
-        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect = NULL, MMSFBRectangle *dest_rect = NULL,
 						 MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
