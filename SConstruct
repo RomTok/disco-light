@@ -580,11 +580,13 @@ if 'odbc' in env['database']:
 if env['enable_crypt']:
 	if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
 		conf.env['mmscrypt'] = 0
+		env['enable_crypt'] = False
 	else:
 		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSCRYPT__'])
 		conf.env['mmscrypt'] = 1
 else:
 	conf.env['mmscrypt'] = 0
+	env['enable_crypt'] = False
 
 # checks required if building mmsflash
 if(env['enable_flash']):
