@@ -44,6 +44,11 @@
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"
 
+#ifdef __HAVE_OPENGL__
+#define LOCK_OGL(fbo)	{ mmsfb->lock(); glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); glDisable(GL_SCISSOR_TEST); }
+#define UNLOCK_OGL		{ glDisable(GL_SCISSOR_TEST); glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); mmsfb->unlock(); }
+#endif
+
 #define MMSFBLAYER_MAXNUM 32
 
 //! The lowest layer to the backends like DFB, X11(XSHM/XVSHM) or FBDEV.
@@ -69,13 +74,13 @@ class MMSFB {
 #endif
 
 #ifdef __HAVE_XLIB__
+        //! connection to the x-server
         Display 		*x_display;
         int				x_screen;
         Window 			x_window;
         GC 				x_gc;
         Visual			*x_visual;
         int				x_depth;
-        int 			xv_port;
         MMSMutex		xlock;
         int				display_w;
         int				display_h;
@@ -86,11 +91,26 @@ class MMSFB {
         bool 			resizeWindow();
 #endif
 
+#ifdef __HAVE_XV__
+        int 		xv_port;
+#endif
+
+#ifdef __HAVE_OPENGL__
+        //! x-visual
+	    XVisualInfo *xvi;
+
+	    //! opengl context
+        GLXContext	glx_context;
+#endif
+
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
 
         MMSFBBackend	backend;
         MMSFBOutputType	outputtype;
         MMSFBRectangle  x11_win_rect;
+
+        //! to make it thread-safe
+        MMSMutex  		Lock;
 
     public:
         MMSFB();
@@ -103,6 +123,9 @@ class MMSFB {
         bool isInitialized();
 
         MMSFBBackend getBackend();
+
+        bool lock();
+        bool unlock();
 
         bool getLayer(int id, MMSFBLayer **layer);
 

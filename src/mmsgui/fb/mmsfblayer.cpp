@@ -77,6 +77,8 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->x_image2 = NULL;
     this->x_image_scaler = NULL;
     this->scaler = NULL;
+#endif
+#ifdef __HAVE_XV__
     this->xv_image1 = NULL;
     this->xv_image2 = NULL;
 #endif
@@ -108,7 +110,8 @@ MMSFBLayer::MMSFBLayer(int id) {
         }
 #endif
     }
-    else {
+    else
+	if (mmsfb->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
     	// check layer 0
         if (this->config.id != 0) {
@@ -234,6 +237,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 			XUnlockDisplay(mmsfb->x_display);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 			this->config.pixelformat = MMSFB_PF_YV12;
 
@@ -366,9 +370,29 @@ MMSFBLayer::MMSFBLayer(int id) {
 		    shmctl(this->xv_shminfo2.shmid, IPC_RMID, 0);
 
 			XUnlockDisplay(mmsfb->x_display);
+#endif
 		}
 
 		this->initialized = true;
+#endif
+    }
+    else {
+#ifdef __HAVE_OPENGL__
+    	// check layer 0
+        if (this->config.id != 0) {
+			MMSFB_SetError(0, "OPENGL support needs layer 0!");
+        	return;
+        }
+
+		// fill my config partly from mmsfb
+		this->config.w = mmsfb->x11_win_rect.w;
+		this->config.h = mmsfb->x11_win_rect.h;
+		this->config.pixelformat = MMSFB_PF_ARGB;
+		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+		this->config.options = MMSFB_LO_NONE;
+
+		this->initialized = true;
+
 #endif
     }
 
@@ -404,11 +428,13 @@ MMSFBLayer::~MMSFBLayer() {
 				XFree(this->x_image2);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 			if (this->xv_image1)
 				XFree(this->xv_image1);
 			if (this->xv_image2)
 				XFree(this->xv_image2);
+#endif
 		}
 #endif
     }
@@ -426,20 +452,27 @@ bool MMSFBLayer::isInitialized() {
     	return this->initialized;
 #endif
     }
-    else {
 #ifdef __HAVE_XLIB__
+    else
+	if (mmsfb->backend == MMSFB_BE_X11) {
 		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
-
 			return (this->x_image1 != NULL);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
-
 			return (this->xv_image1 != NULL);
-		}
 #endif
+		}
     }
+	else {
+#ifdef __HAVE_OPENGL__
+		// OGL
+		return (mmsfb->glx_context != 0);
+#endif
+	}
+#endif
 
     return false;
 }
@@ -906,7 +939,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     	}
 #endif
     }
-    else {
+    else
+	if (mmsfb->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
 		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
 			// XSHM
@@ -927,6 +961,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 			(*surface)->setExtendedAcceleration(true);
 		}
 		else {
+#ifdef __HAVE_XV__
 			// XVSHM
 			if ((!this->xv_image1)||(!this->xv_image2)) {
 				MMSFB_SetError(0, "xv_image not available, cannot get surface");
@@ -943,6 +978,18 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 
 			// we must switch extended accel on
 			(*surface)->setExtendedAcceleration(true);
+#endif
+		}
+#endif
+    }
+    else {
+#ifdef __HAVE_OPENGL__
+		// create a new surface instance
+		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
+									mmsfb->glx_context, mmsfb->x_display, mmsfb->xvi);
+		if (!*surface) {
+			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+			return false;
 		}
 #endif
     }
@@ -951,14 +998,28 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     this->surface = *surface;
 
     if (this->surface) {
+/*    	printf("---------\n");
+    	sleep(1);
+    	printf("---------\n");
+    	sleep(1);
+*/
     	// mark this surface as a layer surface
     	this->surface->setLayerSurface();
 
+/*   	printf("---------\n");
+    	sleep(1);
+*/
 		// clear all surface buffers
     	int bufnum = 0;
     	this->surface->getNumberOfBuffers(&bufnum);
+/*printf("dddd %d\n", bufnum);
+sleep(2);*/
     	this->surface->clear();
+/*printf("clear finished\n");
+sleep(2);*/
 		this->surface->flip();
+/*printf("flip finished\n");
+sleep(2);*/
     	while (bufnum > 1) {
 			this->surface->clear();
 			this->surface->flip();
@@ -1149,10 +1210,13 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 
 #ifdef USE_MMSFB_WINMAN
 
+printf("ddddddddddddd1\n");
     // create a window surface
     MMSFBSurface *surface;
 	if (!mmsfb->createSurface(&surface, w, h, pixelformat, backbuffer, (this->config.buffermode == MMSFB_BM_BACKSYSTEM)))
 		return false;
+
+printf("ddddddddddddd2\n");
 
     // create a new window instance
     *window = new MMSFBWindow(surface, x, y);
@@ -1162,11 +1226,21 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
         return false;
     }
 
+printf("ddddddddddddd3\n");
+
     // that is a window surface
     surface->setWinSurface();
 
     // inform the window manager
     mmsfbwindowmanager->addWindow(*window);
+
+printf("ddddddddddddd4\n");
+
+sleep(1);
+
+surface->clear();
+
+printf("ddddddddddddd5\n");
 
 #endif
 

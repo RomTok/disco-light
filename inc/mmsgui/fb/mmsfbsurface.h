@@ -45,8 +45,23 @@ typedef enum {
 	//! using directfb surfaces
 	MMSFBSurfaceAllocMethod_dfb = 0,
 	//! using malloc
-	MMSFBSurfaceAllocMethod_malloc
+	MMSFBSurfaceAllocMethod_malloc,
+	//! using opengl surfaces
+	MMSFBSurfaceAllocMethod_ogl
 } MMSFBSurfaceAllocMethod;
+
+typedef enum {
+	//! allocated by directfb
+	MMSFBSurfaceAllocatedBy_dfb = 0,
+	//! allocated with malloc
+	MMSFBSurfaceAllocatedBy_malloc,
+	//! allocated by xv
+	MMSFBSurfaceAllocatedBy_xvimage,
+	//! allocated by x
+	MMSFBSurfaceAllocatedBy_ximage,
+	//! allocated by opengl
+	MMSFBSurfaceAllocatedBy_ogl
+} MMSFBSurfaceAllocatedBy;
 
 //! dump mode
 typedef enum {
@@ -85,11 +100,24 @@ typedef struct {
     //! surface buffer attached to this MMSFBSurface is externally allocated?
     bool	external_buffer;
 #ifdef __HAVE_FBDEV__
+    //! interface to the fb layer surface
     class MMSFBSurface	*mmsfbdev_surface;
 #endif
 #ifdef __HAVE_XLIB__
-    XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
+    //! ximage of the x11 window
     XImage	*x_image[MMSFBSurfaceMaxBuffers];
+#endif
+#ifdef __HAVE_XV__
+    //! xvimage of the x11 window
+    XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
+#endif
+#ifdef __HAVE_OPENGL__
+	//! opengl framebuffer object (FBO), 0 means primary display buffer connected to the x-window
+	GLuint	ogl_fbo;
+	//! opengl texture attached to the FBO
+	GLuint	ogl_tex;
+	//! opengl renderbuffer attached to the FBO
+	GLuint	ogl_rb;
 #endif
 } MMSFBSurfaceBuffer;
 
@@ -128,12 +156,27 @@ typedef struct {
 class MMSFBSurface {
     private:
 #ifdef  __HAVE_DIRECTFB__
-        //! dfbsurface for drawing/blitting
-        IDirectFBSurface    *llsurface;
-#else
-    	//! pointer if compiled without dfb
-    	void 	*llsurface;
+		//! dfb surface for drawing/blitting
+		IDirectFBSurface	*dfb_surface;
 #endif
+#ifdef  __HAVE_OPENGL__
+        //! connection to the x-server
+        static Display *x_display;
+
+        //! x-visual
+	    static XVisualInfo *xvi;
+
+	    //! opengl context
+		static GLXContext glx_context;
+#endif
+
+		//! which system has allocated the memory?
+		MMSFBSurfaceAllocatedBy	allocated_by;
+
+		//! surface initialized?
+		bool	initialized;
+
+
         bool				surface_read_locked;
         int					surface_read_lock_cnt;
         bool				surface_write_locked;
@@ -144,15 +187,13 @@ class MMSFBSurface {
         MMSFBSurface 		*scaler;
 #endif
 
-        MMSFBSurfaceConfig  config;     /* surface configuration */
-
-        // using own allocated surfaces?
-        bool				use_own_alloc;
+        //! surface configuration
+        MMSFBSurfaceConfig  config;
 
         // if set to true, a few self-coded blend/stretch methods will be used instead of the according DFB functions
         static bool			extendedaccel;
 
-        // how surface memory will be allocated?
+        // how surface memory should be allocated?
         static MMSFBSurfaceAllocMethod	allocmethod;
 
         void freeSurfaceBuffer();
@@ -204,38 +245,58 @@ class MMSFBSurface {
         bool blit_text(string &text, int len, int x, int y);
 
 
-        MMSFBFlipFlags			flipflags;		/* flags which are used when flipping */
+        //! flags which are used when flipping
+        MMSFBFlipFlags			flipflags;
 
-        MMSMutex  				Lock;       		/* to make it thread-safe */
-        unsigned long       	TID;        		/* save the id of the thread which has locked the surface */
-        int       				Lock_cnt;   		/* count the number of times the thread has call lock() */
+        //! to make it thread-safe
+        MMSMutex  				Lock;
+        //! save the id of the thread which has locked the surface
+        unsigned long       	TID;
+        //! count the number of times the thread has call lock()
+        int       				Lock_cnt;
 
-        bool					is_sub_surface;		/* is it a sub surface? */
-        MMSFBSurface    		*parent;			/* parent surface in case of subsurface */
-        MMSFBSurface    		*root_parent;		/* root parent surface in case of subsurface */
-        MMSFBRectangle 			sub_surface_rect;   /* sub surface position and size relative to the parent */
-        int						sub_surface_xoff;	/* x offset which is added to sub_surface_rect */
-        int						sub_surface_yoff;	/* y offset which is added to sub_surface_rect */
-        vector<MMSFBSurface *>  children;			/* list of sub surfaces connected to this surface */
+        //! is it a sub surface?
+        bool					is_sub_surface;
+        //! parent surface in case of subsurface
+        MMSFBSurface    		*parent;
+        //! root parent surface in case of subsurface
+        MMSFBSurface    		*root_parent;
+        //! sub surface position and size relative to the parent
+        MMSFBRectangle 			sub_surface_rect;
+        //! x offset which is added to sub_surface_rect
+        int						sub_surface_xoff;
+        //! y offset which is added to sub_surface_rect
+        int						sub_surface_yoff;
+        //! list of sub surfaces connected to this surface
+        vector<MMSFBSurface *>  children;
 
 
-        void init(void *llsurface,
-				  MMSFBSurface *parent,
+
+        void init(MMSFBSurfaceAllocatedBy allocated_by, MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
+
 
         void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock);
         void unlock(bool pthread_unlock);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);
-        MMSFBSurface(void *llsurface,
-					 MMSFBSurface *parent = NULL,
+#ifdef  __HAVE_DIRECTFB__
+        MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent = NULL,
 					 MMSFBRectangle *sub_surface_rect = NULL);
+#endif
+        MMSFBSurface(MMSFBSurface *parent = NULL, MMSFBRectangle *sub_surface_rect = NULL);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, MMSFBSurfacePlanes *planes);
 #ifdef __HAVE_XLIB__
-        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2, MMSFBSurface *scaler);
+#endif
+#ifdef __HAVE_XV__
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
+#endif
+#ifdef __HAVE_OPENGL__
+        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
+					 GLXContext glx_context, Display *x_display, XVisualInfo *xvi);
 #endif
 
         virtual ~MMSFBSurface();
@@ -249,7 +310,7 @@ class MMSFBSurface {
         void setExtendedAcceleration(bool extendedaccel);
         bool getExtendedAcceleration();
 
-        void setAllocMethod(MMSFBSurfaceAllocMethod allocmethod, bool reset = false);
+        void setAllocMethod(MMSFBSurfaceAllocMethod allocmethod);
         MMSFBSurfaceAllocMethod getAllocMethod();
 
         bool isWinSurface();
@@ -264,6 +325,13 @@ class MMSFBSurface {
         bool getMemSize(int *size);
 
         bool setFlipFlags(MMSFBFlipFlags flags);
+
+        //! Get the clipping rectangle.
+        /*!
+        \return true, if clipping rectangle (crect) is set
+        \return false, if the rectangle described with x,y,w,h is outside of the surface or clipping rectangle
+        */
+        bool calcClip(int x, int y, int w, int h, MMSFBRectangle *crect);
 
         bool clear(unsigned char r = 0, unsigned char g = 0,
                    unsigned char b = 0, unsigned char a = 0);
@@ -292,7 +360,7 @@ class MMSFBSurface {
 						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
-        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
+        bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect = NULL, MMSFBRectangle *dest_rect = NULL,
 						 MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,

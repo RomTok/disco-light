@@ -164,12 +164,14 @@ typedef class MMSFBSurfacePlanes MMSFBSurfacePlanesBuffer[MMSFB_MAX_SURFACE_PLAN
 typedef enum {
 	//! none
 	MMSFB_BE_NONE = 0,
-	//! directfb
+	//! directfb backend
 	MMSFB_BE_DFB,
 	//! X11 backend from disko framework
 	MMSFB_BE_X11,
 	//! FBDEV backend from disko framework
-	MMSFB_BE_FBDEV
+	MMSFB_BE_FBDEV,
+	//! opengl backend
+	MMSFB_BE_OGL
 } MMSFBBackend;
 
 //! backend: none
@@ -180,17 +182,19 @@ typedef enum {
 #define MMSFB_BE_X11_STR		"X11"
 //! backend: FBDEV
 #define MMSFB_BE_FBDEV_STR		"FBDEV"
+//! backend: OGL
+#define MMSFB_BE_OGL_STR		"OGL"
 
 //! list of valid backend types
-#define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV"
+#define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV, OGL"
 
 //! list of valid backend types for output types MMSFB_OT_xxxFB
 #define MMSFB_BE_VALID_VALUES_OT_FB		"DFB, FBDEV"
 
-//! list of valid backend types for output types MMSFB_OT_X11
-#define MMSFB_BE_VALID_VALUES_OT_X11	"DFB, X11"
+//! list of valid backend types for output type MMSFB_OT_X11
+#define MMSFB_BE_VALID_VALUES_OT_X11	"DFB, X11, OGL"
 
-//! list of valid backend types for output types MMSFB_OT_X
+//! list of valid backend types for output type MMSFB_OT_X
 #define MMSFB_BE_VALID_VALUES_OT_X		"X11"
 
 // conversion routines for backend types
@@ -210,7 +214,7 @@ typedef enum {
 	MMSFB_OT_MATROXFB,
 	//! VIAFB (backend: DFB)
 	MMSFB_OT_VIAFB,
-	//! X11 (backend: DFB)
+	//! X11 (backend: DFB, X11 and OGL)
 	MMSFB_OT_X11,
 	//! XSHM (backend: X11)
 	MMSFB_OT_XSHM,
@@ -230,7 +234,7 @@ typedef enum {
 #define MMSFB_OT_MATROXFB_STR	"MATROXFB"
 //! output type: VIAFB (backend: DFB)
 #define MMSFB_OT_VIAFB_STR		"VIAFB"
-//! output type: X11 (backend: DFB)
+//! output type: X11 (backend: DFB, X11 and OGL)
 #define MMSFB_OT_X11_STR		"X11"
 //! output type: XSHM (backend: X11)
 #define MMSFB_OT_XSHM_STR		"XSHM"
@@ -239,7 +243,7 @@ typedef enum {
 //! output type: DAVINCIFB (backend: DFB and FBDEV)
 #define MMSFB_OT_DAVINCIFB_STR	"DAVINCIFB"
 //! output type: OMAPFB (backend: DFB and FBDEV)
-#define MMSFB_OT_OMAPFB_STR	"OMAPFB"
+#define MMSFB_OT_OMAPFB_STR		"OMAPFB"
 
 //! list of valid output types
 #define MMSFB_OT_VALID_VALUES			"STDFB, MATROXFB, VIAFB, X11, XSHM, XVSHM, DAVINCIFB, OMAPFB"
@@ -252,6 +256,9 @@ typedef enum {
 
 //! list of valid output types for backend MMSFB_BE_FBDEV
 #define MMSFB_OT_VALID_VALUES_BE_FBDEV	"STDFB, MATROXFB, DAVINCIFB, OMAPFB"
+
+//! list of valid output types for backend MMSFB_BE_OGL
+#define MMSFB_OT_VALID_VALUES_BE_OGL	"X11"
 
 // conversion routines for output types
 string getMMSFBOutputTypeString(MMSFBOutputType ot);

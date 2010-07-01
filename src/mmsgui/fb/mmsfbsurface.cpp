@@ -50,8 +50,13 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 // static variables
 bool MMSFBSurface::extendedaccel								= false;
 MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_malloc;
+#ifdef  __HAVE_OPENGL__
+Display *MMSFBSurface::x_display;
+XVisualInfo *MMSFBSurface::xvi;
+GLXContext MMSFBSurface::glx_context = 0;
+#endif
 
-#define INITCHECK  if((!mmsfb->isInitialized())||(!this->llsurface)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
+#define INITCHECK  if((!mmsfb->isInitialized())||(!this->initialized)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
 
 #define CLIPSUBSURFACE \
 	MMSFBRegion reg, tmp; \
@@ -63,23 +68,26 @@ MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_m
 
 #define SETSUBSURFACE_DRAWINGFLAGS \
 	MMSFBColor ccc = this->config.color; \
-	this->llsurface->SetColor(this->llsurface, ccc.r, ccc.g, ccc.b, ccc.a); \
-	this->llsurface->SetDrawingFlags(this->llsurface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(this->config.drawingflags));
+	this->dfb_surface->SetColor(this->dfb_surface, ccc.r, ccc.g, ccc.b, ccc.a); \
+	this->dfb_surface->SetDrawingFlags(this->dfb_surface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(this->config.drawingflags));
 
 #define RESETSUBSURFACE_DRAWINGFLAGS \
     ccc = this->root_parent->config.color; \
-    this->llsurface->SetColor(this->llsurface, ccc.r, ccc.g, ccc.b, ccc.a); \
-    this->llsurface->SetDrawingFlags(this->llsurface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(this->root_parent->config.drawingflags));
+    this->dfb_surface->SetColor(this->dfb_surface, ccc.r, ccc.g, ccc.b, ccc.a); \
+    this->dfb_surface->SetDrawingFlags(this->dfb_surface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(this->root_parent->config.drawingflags));
 
 #define SETSUBSURFACE_BLITTINGFLAGS \
 	MMSFBColor ccc = this->config.color; \
-	this->llsurface->SetColor(this->llsurface, ccc.r, ccc.g, ccc.b, ccc.a); \
-	this->llsurface->SetBlittingFlags(this->llsurface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(this->config.blittingflags));
+	this->dfb_surface->SetColor(this->dfb_surface, ccc.r, ccc.g, ccc.b, ccc.a); \
+	this->dfb_surface->SetBlittingFlags(this->dfb_surface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(this->config.blittingflags));
 
 #define RESETSUBSURFACE_BLITTINGFLAGS \
     ccc = this->root_parent->config.color; \
-    this->llsurface->SetColor(this->llsurface, ccc.r, ccc.g, ccc.b, ccc.a); \
-    this->llsurface->SetBlittingFlags(this->llsurface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(this->root_parent->config.blittingflags));
+    this->dfb_surface->SetColor(this->dfb_surface, ccc.r, ccc.g, ccc.b, ccc.a); \
+    this->dfb_surface->SetBlittingFlags(this->dfb_surface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(this->root_parent->config.blittingflags));
+
+
+
 
 
 /*
@@ -122,9 +130,29 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 */
 
 
+#ifdef __HAVE_OPENGL__
+
+#define INIT_OGL_DRAWING \
+			switch (this->config.drawingflags) { \
+			case MMSFB_DRAW_BLEND: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); break; \
+			default: glDisable(GL_BLEND); break; } \
+			glColor4ub(this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+
+#define INIT_OGL_BLITTING \
+		switch (this->config.blittingflags) { \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, 255); break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, this->config.color.a); break; \
+		default: glDisable(GL_BLEND); glColor4ub(255, 255, 255, 255); break; }
+
+#endif
+
+
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
     // init me
-    this->llsurface = NULL;
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
     this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
     this->surface_write_locked = false;
@@ -141,11 +169,12 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #endif
 #ifdef __HAVE_XLIB__
     this->config.surface_buffer->x_image[0] = NULL;
+#endif
+#ifdef __HAVE_XV__
     this->config.surface_buffer->xv_image[0] = NULL;
 #endif
-	this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
-	if (!this->use_own_alloc) {
+    if (this->allocmethod == MMSFBSurfaceAllocMethod_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		// create surface description
 		DFBSurfaceDescription   surface_desc;
@@ -175,16 +204,107 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			surface_desc.caps = (DFBSurfaceCapabilities)(surface_desc.caps | DSCAPS_SYSTEMONLY);
 
 		// create the surface
-		DFBResult			dfbres;
-		IDirectFBSurface	*dfbsurface;
-		if ((dfbres=mmsfb->dfb->CreateSurface(mmsfb->dfb, &surface_desc, &dfbsurface)) != DFB_OK) {
-			this->llsurface = NULL;
+		DFBResult dfbres;
+		if ((dfbres=mmsfb->dfb->CreateSurface(mmsfb->dfb, &surface_desc, &this->dfb_surface)) != DFB_OK) {
+			this->dfb_surface = NULL;
 			DEBUGMSG("MMSGUI", "ERROR");
 			MMSFB_SetError(dfbres, "IDirectFB::CreateSurface(" + iToStr(w) + "x" + iToStr(h) + ") failed");
 			return;
 		}
 
-		init(dfbsurface, NULL, NULL);
+	    init(MMSFBSurfaceAllocatedBy_dfb, NULL, NULL);
+#endif
+	}
+	else
+	if (this->allocmethod == MMSFBSurfaceAllocMethod_ogl) {
+#ifdef  __HAVE_OPENGL__
+		// setup surface attributes
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		this->config.w = sb->sbw = w;
+		this->config.h = sb->sbh = h;
+		sb->pixelformat = MMSFB_PF_ARGB;
+		sb->alphachannel = true;
+		sb->premultiplied = false;
+		sb->backbuffer = backbuffer;
+		sb->systemonly = systemonly;
+
+		// RGBA8 2D texture, 24 bit depth texture
+		LOCK_OGL(0);
+		glGenTextures(1, &sb->ogl_tex);
+		glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this->config.w, this->config.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+		// ---
+		glGenRenderbuffersEXT(1, &sb->ogl_rb);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, sb->ogl_rb);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, this->config.w, this->config.h);
+		// ---
+		glGenFramebuffersEXT(1, &sb->ogl_fbo);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, sb->ogl_tex, 0);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, sb->ogl_rb);
+		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+			// the GPU does not support current FBO configuration
+			MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(w) + "x" + iToStr(h) + " failed, the GPU does not support current FBO configuration");
+			UNLOCK_OGL;
+			return;
+		}
+
+		UNLOCK_OGL;
+
+	    init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
+
+
+
+/////////// TEST //////////
+
+		// clear
+	    if (w == 800) {
+	    	this->setClip(0, 0, 700, 400);
+	    }
+		this->clear(0, 255, 255, 255);
+
+//TODO
+    	this->setClip(w/4+200,h/4,w/4+w/2-1+200,h/4+h/2-1);
+		this->setColor(0, 0, 255, 160);
+		this->setDrawingFlags(MMSFB_DRAW_BLEND);
+		this->fillRectangle(w/4+200,h/4,w/2,h/2);
+
+
+		printf("puuuuu\n");
+
+		MMSFBLayer *layer;
+		mmsfb->getLayer(0, &layer);
+		MMSFBSurface *sur;
+		layer->getSurface(&sur);
+
+		if (w==800) {
+			for (int i=0;i<120;i++) {
+				sur->clear(255, 0, 0, 255);
+				sur->setBlittingFlags(MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA);
+				sur->setColor(255,255,255,255-i*2);
+	//			sur->blit(this);
+				MMSFBRectangle d;
+				d.x = 0;
+				d.y = 0;
+				d.w = 800-i*4;
+				d.h = 480;
+				sur->setClip(100,0,800,480);
+				sur->stretchBlit(this, NULL, &d);
+				sur->setClip(NULL);
+				sur->flip();
+				usleep(50000);
+			}
+		}
+
+		sleep(2);
+
+//////////
+
+
 #endif
 	}
 	else {
@@ -225,27 +345,25 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		}
 		DEBUGMSG("MMSGUI", "allocating surface buffer finished");
 
-		init((void*)1, NULL, NULL);
+		init(MMSFBSurfaceAllocatedBy_malloc, NULL, NULL);
 	}
 }
 
 
-MMSFBSurface::MMSFBSurface(void *llsurface,
-	        		       MMSFBSurface *parent,
+#ifdef  __HAVE_DIRECTFB__
+
+MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent,
 						   MMSFBRectangle *sub_surface_rect) {
     // init me
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = dfb_surface;
+#endif
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
 #endif
-	if (llsurface > (void *)1)
-		this->use_own_alloc = false;
-	else
-		this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
 
-	if ((!parent)||(!this->use_own_alloc))
-    	this->config.surface_buffer = new MMSFBSurfaceBuffer;
-    else
-    	this->config.surface_buffer = NULL;
+    this->config.surface_buffer = new MMSFBSurfaceBuffer;
 
    if (this->config.surface_buffer) {
 	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
@@ -256,20 +374,83 @@ MMSFBSurface::MMSFBSurface(void *llsurface,
     if (this->config.surface_buffer)
     	this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
+
 #ifdef __HAVE_XLIB__
     if (this->config.surface_buffer) {
     	this->config.surface_buffer->x_image[0] = NULL;
+    }
+#endif
+
+#ifdef __HAVE_XV__
+    if (this->config.surface_buffer) {
     	this->config.surface_buffer->xv_image[0] = NULL;
     }
 #endif
 
-	init(llsurface, parent, sub_surface_rect);
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
+
+	init(MMSFBSurfaceAllocatedBy_dfb, parent, sub_surface_rect);
 }
+
+#endif
+
+
+MMSFBSurface::MMSFBSurface(MMSFBSurface *parent, MMSFBRectangle *sub_surface_rect) {
+    // init me
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
+#ifdef __HAVE_XLIB__
+    this->scaler = NULL;
+#endif
+
+	if ((!parent)||(this->allocmethod == MMSFBSurfaceAllocMethod_dfb))
+    	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+    else
+    	this->config.surface_buffer = NULL;
+
+   if (this->config.surface_buffer) {
+	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
+	   this->config.surface_buffer->numbuffers = 0;
+	   this->config.surface_buffer->external_buffer = false;
+   }
+
+#ifdef __HAVE_FBDEV__
+    if (this->config.surface_buffer)
+    	this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
+
+#ifdef __HAVE_XLIB__
+    if (this->config.surface_buffer) {
+    	this->config.surface_buffer->x_image[0] = NULL;
+    }
+#endif
+
+#ifdef __HAVE_XV__
+    if (this->config.surface_buffer) {
+    	this->config.surface_buffer->xv_image[0] = NULL;
+    }
+#endif
+
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
+
+	init(parent->allocated_by, parent, sub_surface_rect);
+}
+
+
 
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, MMSFBSurfacePlanes *planes) {
     // init me
-    this->llsurface = NULL;
-    this->surface_read_locked = false;
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
+	this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
@@ -277,7 +458,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
 #endif
-	this->use_own_alloc = true;
 
     // setup surface attributes
 	this->config.surface_buffer = new MMSFBSurfaceBuffer;
@@ -318,12 +498,20 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #ifdef __HAVE_FBDEV__
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
+
 #ifdef __HAVE_XLIB__
 	this->config.surface_buffer->x_image[0] = NULL;
+#endif
+
+#ifdef __HAVE_XV__
 	this->config.surface_buffer->xv_image[0] = NULL;
 #endif
 
-	init((void*)1, NULL, NULL);
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
+
+	init(MMSFBSurfaceAllocatedBy_malloc, NULL, NULL);
 }
 
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MMSFBSurfacePlanes *planes) {
@@ -331,17 +519,19 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, MM
 }
 
 
-#ifdef __HAVE_XLIB__
+#ifdef __HAVE_XV__
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2) {
     // init me
-    this->llsurface = NULL;
-    this->surface_read_locked = false;
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
+	this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
     this->scaler = NULL;
-	this->use_own_alloc = true;
 
     // setup surface attributes
 	this->config.surface_buffer = new MMSFBSurfaceBuffer;
@@ -375,19 +565,27 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 
-	init((void*)1, NULL, NULL);
-}
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
 
+	init(MMSFBSurfaceAllocatedBy_xvimage, NULL, NULL);
+}
+#endif
+
+#ifdef __HAVE_XLIB__
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XImage *x_image1, XImage *x_image2, MMSFBSurface *scaler) {
     // init me
-    this->llsurface = NULL;
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
     this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
     this->surface_write_locked = false;
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
 	this->scaler = scaler;
-	this->use_own_alloc = true;
 
     // setup surface attributes
 	this->config.surface_buffer = new MMSFBSurfaceBuffer;
@@ -434,22 +632,78 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->external_buffer = true;
 	}
 
+#ifdef __HAVE_XV__
 	this->config.surface_buffer->xv_image[0] = NULL;
+#endif
 
 #ifdef __HAVE_FBDEV__
     this->config.surface_buffer->mmsfbdev_surface = NULL;
 #endif
 
-	init((void*)1, NULL, NULL);
+#ifdef  __HAVE_OPENGL__
+	this->config.surface_buffer->ogl_fbo = 0;
+#endif
+
+	init(MMSFBSurfaceAllocatedBy_ximage, NULL, NULL);
 }
 #endif
+
+
+
+#ifdef __HAVE_OPENGL__
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
+						   GLXContext glx_context, Display *x_display, XVisualInfo *xvi) {
+    // init me
+	this->initialized = false;
+#ifdef  __HAVE_DIRECTFB__
+	this->dfb_surface = NULL;
+#endif
+#ifdef  __HAVE_OPENGL__
+	this->glx_context = glx_context;
+	this->x_display = x_display;
+	this->xvi = xvi;
+#endif
+#ifdef __HAVE_XLIB__
+    this->scaler = NULL;
+#endif
+
+
+    // setup surface attributes
+	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	this->config.w = this->config.surface_buffer->sbw = w;
+	this->config.h = this->config.surface_buffer->sbh = h;
+
+	if (this->config.surface_buffer) {
+	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
+	   this->config.surface_buffer->numbuffers = 0;
+	   this->config.surface_buffer->external_buffer = false;
+	   this->config.surface_buffer->ogl_fbo = 0;
+	}
+
+#ifdef __HAVE_XLIB__
+	this->config.surface_buffer->x_image[0] = NULL;
+#endif
+
+#ifdef __HAVE_XV__
+	this->config.surface_buffer->xv_image[0] = NULL;
+#endif
+
+#ifdef __HAVE_FBDEV__
+    this->config.surface_buffer->mmsfbdev_surface = NULL;
+#endif
+
+	init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
+}
+#endif
+
+
 
 MMSFBSurface::~MMSFBSurface() {
 
     if (!mmsfb->isInitialized()) return;
 
     // release memory - only if not the layer surface
-    if (this->llsurface) {
+    if (this->initialized) {
 		if (!this->is_sub_surface) {
 #ifndef USE_DFB_SUBSURFACE
 			// delete all sub surfaces
@@ -459,7 +713,9 @@ MMSFBSurface::~MMSFBSurface() {
 		}
 		else {
 #ifdef USE_DFB_SUBSURFACE
-			this->llsurface->Release(this->llsurface);
+			if (this->dfb_surface) {
+				this->dfb_surface->Release(this->dfb_surface);
+			}
 #endif
 
 			if (this->parent)
@@ -469,15 +725,13 @@ MMSFBSurface::~MMSFBSurface() {
 }
 
 
-void MMSFBSurface::init(void *llsurface,
+void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 	        		    MMSFBSurface *parent,
 						MMSFBRectangle *sub_surface_rect) {
-    /* init me */
-#ifdef  __HAVE_DIRECTFB__
-    this->llsurface = (IDirectFBSurface*)llsurface;
-#else
-    this->llsurface = llsurface;
-#endif
+    // init me
+	this->allocated_by = allocated_by;
+	this->initialized = true;
+
     this->surface_read_locked = false;
     this->surface_read_lock_cnt = 0;
     this->surface_write_locked = false;
@@ -487,7 +741,7 @@ void MMSFBSurface::init(void *llsurface,
     this->TID = 0;
     this->Lock_cnt = 0;
 
-    /* init subsurface */
+    // init subsurface
     this->parent = parent;
     this->root_parent =  NULL;
     this->sub_surface_xoff = 0;
@@ -506,7 +760,9 @@ void MMSFBSurface::init(void *llsurface,
 
 #ifndef USE_DFB_SUBSURFACE
 
-    	this->llsurface = this->root_parent->llsurface;
+#ifdef __HAVE_DIRECTFB__
+    	this->dfb_surface = this->root_parent->dfb_surface;
+#endif
 
     	getRealSubSurfacePos();
 #endif
@@ -521,11 +777,11 @@ void MMSFBSurface::init(void *llsurface,
     }
 
 
-    /* get the current config */
-    if (this->llsurface) {
+    // get current config
+    if (this->initialized) {
         getConfiguration();
 
-        /* init the color */
+        // init color
         this->config.color.r = 0;
         this->config.color.g = 0;
         this->config.color.b = 0;
@@ -542,25 +798,20 @@ void MMSFBSurface::init(void *llsurface,
 
 
 bool MMSFBSurface::isInitialized() {
-	if (!this->use_own_alloc) {
-#ifdef  __HAVE_DIRECTFB__
-		return (this->llsurface != NULL);
-#else
-		return false;
-#endif
-	}
-	else {
-		//TODO
-		return true;
-	}
+	return this->initialized;
 }
 
 void MMSFBSurface::freeSurfaceBuffer() {
 
-	if (!this->use_own_alloc) {
+	if (!this->initialized)
+		return;
+
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
-		if (this->llsurface > (IDirectFBSurface*)1)
-			this->llsurface->Release(this->llsurface);
+		if (this->dfb_surface) {
+			this->dfb_surface->Release(this->dfb_surface);
+			this->dfb_surface = NULL;
+		}
 #endif
 	}
 	else {
@@ -586,7 +837,8 @@ void MMSFBSurface::freeSurfaceBuffer() {
 			sb->numbuffers = 0;
 		}
 	}
-	this->llsurface = NULL;
+
+	this->initialized = false;
 }
 
 void MMSFBSurface::deleteSubSurface(MMSFBSurface *surface) {
@@ -834,10 +1086,13 @@ bool MMSFBSurface::clipSubSurface(MMSFBRegion *region, bool regionset, MMSFBRegi
 }
 
 void *MMSFBSurface::getDFBSurface() {
+	if (!initialized)
+		return NULL;
+
 #ifdef  __HAVE_DIRECTFB__
-	if (!this->use_own_alloc)
-		return this->llsurface;
+	return this->dfb_surface;
 #endif
+
 	return NULL;
 }
 
@@ -846,7 +1101,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBSurfaceCapabilities  caps;
 		DFBResult               dfbres;
@@ -854,7 +1109,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 
 		/* get size */
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->GetSize(this->llsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->GetSize(this->dfb_surface, &(this->config.w), &(this->config.h))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
 				return false;
 			}
@@ -863,7 +1118,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 		}
 		else {
 #ifdef USE_DFB_SUBSURFACE
-			if ((dfbres=this->llsurface->GetSize(this->llsurface, &(this->config.w), &(this->config.h))) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->GetSize(this->dfb_surface, &(this->config.w), &(this->config.h))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::GetSize() failed");
 				return false;
 			}
@@ -875,12 +1130,12 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 
 		// get the surface pitch
 		void *ptr;
-		if (this->llsurface->Lock(this->llsurface, DSLF_READ, &ptr, &this->config.surface_buffer->buffers[0].pitch) == DFB_OK) {
-			this->llsurface->Unlock(this->llsurface);
+		if (this->dfb_surface->Lock(this->dfb_surface, DSLF_READ, &ptr, &this->config.surface_buffer->buffers[0].pitch) == DFB_OK) {
+			this->dfb_surface->Unlock(this->dfb_surface);
 		}
 
 		/* get pixelformat */
-		if ((dfbres=this->llsurface->GetPixelFormat(this->llsurface, &mypf)) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->GetPixelFormat(this->dfb_surface, &mypf)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::GetPixelFormat() failed");
 			return false;
 		}
@@ -890,7 +1145,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 		this->config.surface_buffer->alphachannel = isAlphaPixelFormat(this->config.surface_buffer->pixelformat);
 
 		/* get capabilities */
-		if ((dfbres=this->llsurface->GetCapabilities(this->llsurface, &caps)) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->GetCapabilities(this->dfb_surface, &caps)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::GetCapabilities() failed");
 			return false;
 		}
@@ -919,6 +1174,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	    if ((!config)&&(!this->is_sub_surface)) {
 	    	DEBUGMSG("MMSGUI", "Surface properties:");
 
+	    	DEBUGMSG("MMSGUI", " type:         DFB");
 	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
 
@@ -946,21 +1202,79 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 	    return true;
 #endif
 	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (this->config.surface_buffer->ogl_fbo == 0) {
+			// this surface is the primary display buffer connected to the x-window
+			int glxres, val;
+
+			// get size
+			if (this->is_sub_surface) {
+				this->config.w = this->sub_surface_rect.w;
+				this->config.h = this->sub_surface_rect.h;
+			}
+			this->config.surface_buffer->buffers[0].pitch = this->config.w * 4;
+
+			this->config.surface_buffer->pixelformat = MMSFB_PF_ARGB;
+			this->config.surface_buffer->alphachannel = true;
+			this->config.surface_buffer->premultiplied = false;
+
+			// get double buffering status
+			LOCK_OGL(0);
+			if ((glxres = glXGetConfig(this->x_display, this->xvi, GLX_DOUBLEBUFFER, &val))) {
+				MMSFB_SetError(glxres, "glXGetConfig() failed");
+				UNLOCK_OGL;
+				return false;
+			}
+			UNLOCK_OGL;
+			this->config.surface_buffer->backbuffer = (val)?1:0;
+
+		    this->config.surface_buffer->systemonly = false;
+		}
+
+	    // fill return config
+	    if (config)
+	        *config = this->config;
+
+	    // log some infos
+	    if ((!config)&&(!this->is_sub_surface)) {
+	    	DEBUGMSG("MMSGUI", "Surface properties:");
+
+	    	DEBUGMSG("MMSGUI", " type:         OGL");
+	    	DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
+			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
+
+		    if (this->config.surface_buffer->alphachannel)
+		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat) + ",ALPHACHANNEL");
+		    else
+		    	DEBUGMSG("MMSGUI", " pixelformat:  " + getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat));
+
+		    DEBUGMSG("MMSGUI", " capabilities:");
+
+		    if (this->config.surface_buffer->ogl_fbo == 0)
+		    	DEBUGMSG("MMSGUI", "  PRIMARY");
+			if (this->config.surface_buffer->backbuffer == 1)
+				DEBUGMSG("MMSGUI", "  DOUBLE");
+		}
+#endif
+	}
 	else {
-		/* get size */
+		// get size
 		if (this->is_sub_surface) {
 			this->config.w = this->sub_surface_rect.w;
 			this->config.h = this->sub_surface_rect.h;
 		}
 
-		/* fill return config */
+		// fill return config
 		if (config)
 			*config = this->config;
 
-		/* log some infos */
+		// log some infos
 		if ((!config)&&(!this->is_sub_surface)) {
 			DEBUGMSG("MMSGUI", "Surface properties:");
 
+	    	DEBUGMSG("MMSGUI", " type:         MMS");
 			DEBUGMSG("MMSGUI", " size:         " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 			DEBUGMSG("MMSGUI", " pitch:        " + iToStr(this->config.surface_buffer->buffers[0].pitch));
 
@@ -993,17 +1307,10 @@ bool MMSFBSurface::getExtendedAcceleration() {
 	return this->extendedaccel;
 }
 
-void MMSFBSurface::setAllocMethod(MMSFBSurfaceAllocMethod allocmethod, bool reset) {
+void MMSFBSurface::setAllocMethod(MMSFBSurfaceAllocMethod allocmethod) {
 	this->allocmethod = allocmethod;
-	if (reset) {
-		if (this->use_own_alloc != (this->allocmethod != MMSFBSurfaceAllocMethod_dfb)) {
-			this->use_own_alloc = (this->allocmethod != MMSFBSurfaceAllocMethod_dfb);
-			getConfiguration();
-		}
-	}
-	else
-		if (this->allocmethod != MMSFBSurfaceAllocMethod_dfb)
-			printf("DISKO: Using own surface memory management.\n");
+	if (this->allocmethod == MMSFBSurfaceAllocMethod_malloc)
+		printf("DISKO: Using own surface memory management.\n");
 }
 
 MMSFBSurfaceAllocMethod MMSFBSurface::getAllocMethod() {
@@ -1110,15 +1417,94 @@ bool MMSFBSurface::setFlipFlags(MMSFBFlipFlags flags) {
 
 
 
+bool MMSFBSurface::calcClip(int x, int y, int w, int h, MMSFBRectangle *crect) {
+	MMSFBRegion clipreg;
+
+#ifndef USE_DFB_SUBSURFACE
+	if (!this->is_sub_surface) {
+#endif
+		// normal surface or dfb subsurface
+		if (!this->config.clipped) {
+			clipreg.x1 = 0;
+			clipreg.y1 = 0;
+			clipreg.x2 = this->config.w - 1;
+			clipreg.y2 = this->config.h - 1;
+		}
+		else {
+			clipreg = this->config.clip;
+		}
+#ifndef USE_DFB_SUBSURFACE
+	}
+	else {
+		// subsurface
+		if (!this->root_parent->config.clipped) {
+			clipreg.x1 = 0;
+			clipreg.y1 = 0;
+			clipreg.x2 = this->root_parent->config.w - 1;
+			clipreg.y2 = this->root_parent->config.h - 1;
+		}
+		else {
+			clipreg = this->root_parent->config.clip;
+		}
+	}
+#endif
+
+	if (x < clipreg.x1) {
+		// left outside
+		w-= clipreg.x1 - x;
+		if (w <= 0) {
+			return false;
+		}
+		x = clipreg.x1;
+	}
+	else
+	if (x > clipreg.x2) {
+		// right outside
+		return false;
+	}
+
+	if (y < clipreg.y1) {
+		// top outside
+		h-= clipreg.y1 - y;
+		if (h <= 0) {
+			return false;
+		}
+		y = clipreg.y1;
+	}
+	else
+	if (y > clipreg.y2) {
+		// bottom outside
+		return false;
+	}
+
+	if (x + w - 1 > clipreg.x2) {
+		// to width
+		w = clipreg.x2 - x + 1;
+	}
+
+	if (y + h - 1 > clipreg.y2) {
+		// to height
+		h = clipreg.y2 - y + 1;
+	}
+
+	// set crect and return
+	if (crect) {
+		crect->x = x;
+		crect->y = y;
+		crect->w = w;
+		crect->h = h;
+	}
+	return true;
+}
+
 bool MMSFBSurface::clear(unsigned char r, unsigned char g,
                          unsigned char b, unsigned char a) {
     bool ret = false;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "clear( argb %02x %02x %02x %02x ) <- %dx%d\n",
@@ -1134,8 +1520,8 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 		}
 
 		if (!this->is_sub_surface) {
-			/* clear surface */
-			if ((dfbres=this->llsurface->Clear(this->llsurface, r, g, b, a)) != DFB_OK) {
+			// clear surface
+			if ((dfbres=this->dfb_surface->Clear(this->dfb_surface, r, g, b, a)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::Clear() failed");
 				return false;
 			}
@@ -1147,13 +1533,41 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 			CLIPSUBSURFACE
 #endif
 
-			/* clear surface */
-			if (this->llsurface->Clear(this->llsurface, r, g, b, a) == DFB_OK)
+			// clear surface
+			if (this->dfb_surface->Clear(this->dfb_surface, r, g, b, a) == DFB_OK)
 				ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
 			UNCLIPSUBSURFACE
 #endif
+		}
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_BLEND);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+			glColor4ub(r, g, b, a);
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			if (calcClip(0, 0, this->config.w, this->config.h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// fill rectangle
+				glRecti(0, 0, this->config.w, this->config.h);
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
 		}
 #endif
 	}
@@ -1192,19 +1606,19 @@ bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
 	    /* set color */
 #ifdef USE_DFB_SUBSURFACE
-		if ((dfbres=this->llsurface->SetColor(this->llsurface, r, g, b, a)) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->SetColor(this->dfb_surface, r, g, b, a)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetColor() failed");
 			return false;
 		}
 #else
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->SetColor(this->llsurface, r, g, b, a)) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->SetColor(this->dfb_surface, r, g, b, a)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::SetColor() failed");
 				return false;
 			}
@@ -1247,22 +1661,22 @@ bool MMSFBSurface::getColor(MMSFBColor *color) {
 
 bool MMSFBSurface::setClip(MMSFBRegion *clip) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
-	    /* set clip */
+	    // set clip
 #ifdef USE_DFB_SUBSURFACE
-		if ((dfbres=this->llsurface->SetClip(this->llsurface, (DFBRegion*)clip)) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->SetClip(this->dfb_surface, (DFBRegion*)clip)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetClip() failed");
 			return false;
 		}
 #else
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->SetClip(this->llsurface, (DFBRegion*)clip)) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->SetClip(this->dfb_surface, (DFBRegion*)clip)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::SetClip() failed");
 				return false;
 			}
@@ -1271,13 +1685,14 @@ bool MMSFBSurface::setClip(MMSFBRegion *clip) {
 #endif
 	}
 
-    /* save the region */
+    // save the region
     if (clip) {
     	this->config.clipped = true;
 	    this->config.clip = *clip;
     }
-    else
+    else {
     	this->config.clipped = false;
+    }
 
     return true;
 }
@@ -1316,19 +1731,19 @@ bool MMSFBSurface::setDrawingFlags(MMSFBDrawingFlags flags) {
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
 	    /* set the drawing flags */
 #ifdef USE_DFB_SUBSURFACE
-		if ((dfbres=this->llsurface->SetDrawingFlags(this->llsurface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(flags))) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->SetDrawingFlags(this->dfb_surface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(flags))) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetDrawingFlags() failed");
 			return false;
 		}
 #else
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->SetDrawingFlags(this->llsurface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(flags))) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->SetDrawingFlags(this->dfb_surface, getDFBSurfaceDrawingFlagsFromMMSFBDrawingFlags(flags))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::SetDrawingFlags() failed");
 				return false;
 			}
@@ -1351,7 +1766,7 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
     // check if initialized
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    MMSFB_BREAK();
@@ -1359,7 +1774,7 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
 	    // draw a line
 		if (!this->is_sub_surface) {
 			if (!extendedAccelDrawLine(x1, y1, x2, y2))
-				if ((dfbres=this->llsurface->DrawLine(this->llsurface, x1, y1, x2, y2)) != DFB_OK) {
+				if ((dfbres=this->dfb_surface->DrawLine(this->dfb_surface, x1, y1, x2, y2)) != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::DrawLine() failed");
 					return false;
 				}
@@ -1381,7 +1796,7 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
 			if (extendedAccelDrawLine(x1, y1, x2, y2))
 				ret = true;
 			else
-				if (this->llsurface->DrawLine(this->llsurface, x1, y1, x2, y2) == DFB_OK)
+				if (this->dfb_surface->DrawLine(this->dfb_surface, x1, y1, x2, y2) == DFB_OK)
 					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -1456,7 +1871,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	h = this->config.h;
     }
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "fill( %d,%d - %dx%d ) <- %dx%d, %02x %02x %02x %02x\n",
@@ -1467,7 +1882,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 	    /* fill rectangle */
 		if (!this->is_sub_surface) {
 			if (!extendedAccelFillRectangle(x, y, w, h))
-				if ((dfbres=this->llsurface->FillRectangle(this->llsurface, x, y, w, h)) != DFB_OK) {
+				if ((dfbres=this->dfb_surface->FillRectangle(this->dfb_surface, x, y, w, h)) != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::FillRectangle() failed");
 					return false;
 				}
@@ -1487,7 +1902,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 			if (extendedAccelFillRectangle(x, y, w, h))
 				ret = true;
 			else
-				if (this->llsurface->FillRectangle(this->llsurface, x, y, w, h) == DFB_OK)
+				if (this->dfb_surface->FillRectangle(this->dfb_surface, x, y, w, h) == DFB_OK)
 					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -1495,6 +1910,34 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 
 			UNCLIPSUBSURFACE
 #endif
+		}
+#endif
+	}
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+
+			// setup drawing
+			INIT_OGL_DRAWING;
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			if (calcClip(x, y, w, h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// fill rectangle
+				glRecti(x, y, x + w - 1, y + h - 1);
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
 		}
 #endif
 	}
@@ -1538,14 +1981,14 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 	    MMSFB_BREAK();
 
 	    /* fill triangle */
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->FillTriangle(this->llsurface, x1, y1, x2, y2, x3, y3)) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->FillTriangle(this->dfb_surface, x1, y1, x2, y2, x3, y3)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::FillTriangle() failed");
 				return false;
 			}
@@ -1565,7 +2008,7 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
 			SETSUBSURFACE_DRAWINGFLAGS;
 #endif
 
-			this->llsurface->FillTriangle(this->llsurface, x1, y1, x2, y2, x3, y3);
+			this->dfb_surface->FillTriangle(this->dfb_surface, x1, y1, x2, y2, x3, y3);
 
 #ifndef USE_DFB_SUBSURFACE
 			RESETSUBSURFACE_DRAWINGFLAGS;
@@ -1644,27 +2087,27 @@ bool MMSFBSurface::drawCircle(int x, int y, int radius, int start_octant, int en
 
 bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
 	    if ((flags & MMSFB_BLIT_BLEND_ALPHACHANNEL)||(flags & MMSFB_BLIT_BLEND_COLORALPHA)) {
-			/* if we do alpha channel blitting, we have to change the default settings to become correct results */
+			// if we do alpha channel blitting, we have to change the default settings to become correct results
 			if (this->config.surface_buffer->alphachannel)
-				llsurface->SetSrcBlendFunction(llsurface,(DFBSurfaceBlendFunction)DSBF_ONE);
+				dfb_surface->SetSrcBlendFunction(dfb_surface,(DFBSurfaceBlendFunction)DSBF_ONE);
 			else
-				llsurface->SetSrcBlendFunction(llsurface,(DFBSurfaceBlendFunction)DSBF_SRCALPHA);
-			llsurface->SetDstBlendFunction(llsurface,(DFBSurfaceBlendFunction)(DSBF_INVSRCALPHA));
+				dfb_surface->SetSrcBlendFunction(dfb_surface,(DFBSurfaceBlendFunction)DSBF_SRCALPHA);
+			dfb_surface->SetDstBlendFunction(dfb_surface,(DFBSurfaceBlendFunction)(DSBF_INVSRCALPHA));
 
 			if (flags & MMSFB_BLIT_BLEND_COLORALPHA)
 				 flags = (MMSFBBlittingFlags)(flags | MMSFB_BLIT_SRC_PREMULTCOLOR);
 		}
 
-		/* set the blitting flags */
-		if ((dfbres=this->llsurface->SetBlittingFlags(this->llsurface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(flags))) != DFB_OK) {
+		// set the blitting flags
+		if ((dfbres=this->dfb_surface->SetBlittingFlags(this->dfb_surface, getDFBSurfaceBlittingFlagsFromMMSFBBlittingFlags(flags))) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetBlittingFlags() failed");
 
 			return false;
@@ -1672,7 +2115,7 @@ bool MMSFBSurface::setBlittingFlags(MMSFBBlittingFlags flags) {
 #endif
 	}
 
-    /* save the flags */
+    // save the flags
     this->config.blittingflags = flags;
 
     return true;
@@ -1750,7 +2193,7 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 										   MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height) {
 #ifdef  __HAVE_DIRECTFB__
 	// failed, check if it must not
-	if ((!this->use_own_alloc) && (!source || !source->use_own_alloc))
+	if ((this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) && (!source || (source->allocated_by == MMSFBSurfaceAllocatedBy_dfb)))
 		return false;
 #endif
 
@@ -1760,7 +2203,23 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 	printf("DISKO: Missing following combination in method %s\n", method.c_str());
 	if (source) {
 		printf("  source type:               %s\n", (source->is_sub_surface)?"subsurface":"surface");
-		printf("  source memory:             %s\n", (source->use_own_alloc)?"managed by disko":"managed by dfb");
+		switch (source->allocated_by) {
+		case MMSFBSurfaceAllocatedBy_dfb:
+			printf("  source memory:             managed by dfb\n");
+			break;
+		case MMSFBSurfaceAllocatedBy_malloc:
+			printf("  source memory:             managed by disko\n");
+			break;
+		case MMSFBSurfaceAllocatedBy_xvimage:
+			printf("  source memory:             managed by x11 (xvimage)\n");
+			break;
+		case MMSFBSurfaceAllocatedBy_ximage:
+			printf("  source memory:             managed by x11 (ximage)\n");
+			break;
+		case MMSFBSurfaceAllocatedBy_ogl:
+			printf("  source memory:             managed by opengl\n");
+			break;
+		}
 		printf("  source pixelformat:        %s\n", getMMSFBPixelFormatString(source->config.surface_buffer->pixelformat).c_str());
 		printf("  source premultiplied:      %s\n", (source->config.surface_buffer->premultiplied)?"yes":"no");
 	}
@@ -1775,7 +2234,23 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 		printf("  source pixelformat:        %s\n", getMMSFBPixelFormatString(src_pixelformat).c_str());
 	}
 	printf("  destination type:          %s\n", (this->is_sub_surface)?"subsurface":"surface");
-	printf("  destination memory:        %s\n", (this->use_own_alloc)?"managed by disko":"managed by dfb");
+	switch (this->allocated_by) {
+	case MMSFBSurfaceAllocatedBy_dfb:
+		printf("  destination memory:        managed by dfb\n");
+		break;
+	case MMSFBSurfaceAllocatedBy_malloc:
+		printf("  destination memory:        managed by disko\n");
+		break;
+	case MMSFBSurfaceAllocatedBy_xvimage:
+		printf("  destination memory:        managed by x11 (xvimage)\n");
+		break;
+	case MMSFBSurfaceAllocatedBy_ximage:
+		printf("  destination memory:        managed by x11 (ximage)\n");
+		break;
+	case MMSFBSurfaceAllocatedBy_ogl:
+		printf("  destination memory:        managed by opengl\n");
+		break;
+	}
 	printf("  destination pixelformat:   %s\n", getMMSFBPixelFormatString(this->config.surface_buffer->pixelformat).c_str());
 	printf("  destination premultiplied: %s\n", (this->config.surface_buffer->premultiplied)?"yes":"no");
 	printf("  destination color:         r=%d, g=%d, b=%d, a=%d\n", this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
@@ -4143,7 +4618,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
          src.h = source->config.h;
     }
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult    dfbres;
 	    D_DEBUG_AT( MMS_Surface, "blit( %d,%d - %dx%d -> %d,%d ) <- %dx%d\n",
@@ -4161,7 +4636,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 	    // blit
 		if (!this->is_sub_surface) {
 			if (!extendedAccelBlit(source, &src, x, y))
-				if ((dfbres=this->llsurface->Blit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y)) != DFB_OK) {
+				if ((dfbres=this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y)) != DFB_OK) {
 #ifndef USE_DFB_SUBSURFACE
 					// reset source rectangle
 					if (source->is_sub_surface) {
@@ -4190,7 +4665,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 			if (extendedAccelBlit(source, &src, x, y))
 				ret = true;
 			else
-				if (this->llsurface->Blit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y) == DFB_OK)
+				if (this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y) == DFB_OK)
 					ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -4209,6 +4684,63 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 		}
 #endif
 
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		// lock destination fbo and bind source texture to it
+		LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, source->config.surface_buffer->ogl_tex);
+
+		// setup blitting
+		INIT_OGL_BLITTING;
+
+		// set the clip to ogl
+		MMSFBRectangle crect;
+		if (calcClip(x, y, src.w, src.h, &crect)) {
+			// inside clipping region
+			glScissor(crect.x, crect.y, crect.w, crect.h);
+			glEnable(GL_SCISSOR_TEST);
+
+			// get source region
+			double sx1 = src.x;
+			double sy1 = src.y;
+			double sx2 = src.w - src.x - 1;
+			double sy2 = src.h - src.y - 1;
+
+			// normalize source region
+			sx1 = sx1 / (source->config.w - 1);
+			sy1 = sy1 / (source->config.h - 1);
+			sx2 = sx2 / (source->config.w - 1);
+			sy2 = sy2 / (source->config.h - 1);
+
+			// get destination region
+			int dx1 = x;
+			int dy1 = y;
+			int dx2 = x + src.w - 1;
+			int dy2 = y + src.h - 1;
+
+			// blit source texture to the destination
+			glBegin(GL_QUADS);
+				glTexCoord2f(sx1, sy1);
+				glVertex2i(dx1, dy1);
+
+				glTexCoord2f(sx2, sy1);
+				glVertex2i(dx2, dy1);
+
+				glTexCoord2f(sx2, sy2);
+				glVertex2i(dx2, dy2);
+
+				glTexCoord2f(sx1, sy2);
+				glVertex2i(dx1, dy2);
+			glEnd();
+		}
+
+		// all is fine
+		UNLOCK_OGL;
+		ret = true;
 #endif
 	}
 	else {
@@ -4263,7 +4795,7 @@ bool MMSFBSurface::blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePi
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
 	}
@@ -4338,18 +4870,19 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     	}
     }
 
-    // return the used dest_rect
+    // return the used destination rectangle
     if (real_dest_rect)
     	*real_dest_rect = dst;
 
-    /* check if i can blit without stretching */
-    if (src.w == dst.w && src.h == dst.h)
+    // check if i can blit without stretching
+    if (src.w == dst.w && src.h == dst.h) {
         return blit(source, &src, dst.x, dst.y);
+    }
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult    dfbres;
 	    bool         blit_done = false;
@@ -4421,7 +4954,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 								ret = true;
 							}
 							else
-							if ((dfbres=this->llsurface->Blit(this->llsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y)) == DFB_OK) {
+							if ((dfbres=this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y)) == DFB_OK) {
 								blit_done = true;
 								ret = true;
 							}
@@ -4438,7 +4971,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 #endif
 
 							if (!extendedAccelBlit(tempsuf, &temp, dst.x, dst.y))
-								this->llsurface->Blit(this->llsurface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y);
+								this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y);
 
 #ifndef USE_DFB_SUBSURFACE
 							RESETSUBSURFACE_BLITTINGFLAGS;
@@ -4465,7 +4998,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 			if (!this->is_sub_surface) {
 				dfbres = DFB_OK;
 				if (!extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect))
-					dfbres=this->llsurface->StretchBlit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
+					dfbres=this->dfb_surface->StretchBlit(this->dfb_surface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				if (dfbres != DFB_OK) {
 #ifndef USE_DFB_SUBSURFACE
 					// reset source rectangle
@@ -4491,7 +5024,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 #endif
 
 				if (!extendedAccelStretchBlit(source, &src, &dst, real_dest_rect, calc_dest_rect))
-					this->llsurface->StretchBlit(this->llsurface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
+					this->dfb_surface->StretchBlit(this->dfb_surface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&dst);
 				ret = true;
 
 #ifndef USE_DFB_SUBSURFACE
@@ -4513,6 +5046,63 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 		}
 #endif
 
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		// lock destination fbo and bind source texture to it
+		LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, source->config.surface_buffer->ogl_tex);
+
+		// setup blitting
+		INIT_OGL_BLITTING;
+
+		// set the clip to ogl
+		MMSFBRectangle crect;
+		if (calcClip(dst.x, dst.y, dst.w, dst.h, &crect)) {
+			// inside clipping region
+			glScissor(crect.x, crect.y, crect.w, crect.h);
+			glEnable(GL_SCISSOR_TEST);
+
+			// get source region
+			double sx1 = src.x;
+			double sy1 = src.y;
+			double sx2 = src.w - src.x - 1;
+			double sy2 = src.h - src.y - 1;
+
+			// normalize source region
+			sx1 = sx1 / (source->config.w - 1);
+			sy1 = sy1 / (source->config.h - 1);
+			sx2 = sx2 / (source->config.w - 1);
+			sy2 = sy2 / (source->config.h - 1);
+
+			// get destination region
+			int dx1 = dst.x;
+			int dy1 = dst.y;
+			int dx2 = dst.x + dst.w - 1;
+			int dy2 = dst.y + dst.h - 1;
+
+			// blit source texture to the destination
+			glBegin(GL_QUADS);
+				glTexCoord2f(sx1, sy1);
+				glVertex2i(dx1, dy1);
+
+				glTexCoord2f(sx2, sy1);
+				glVertex2i(dx2, dy1);
+
+				glTexCoord2f(sx2, sy2);
+				glVertex2i(dx2, dy2);
+
+				glTexCoord2f(sx1, sy2);
+				glVertex2i(dx1, dy2);
+			glEnd();
+		}
+
+		// all is fine
+		UNLOCK_OGL;
+		ret = true;
 #endif
 	}
 	else {
@@ -4604,7 +5194,7 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
 	}
@@ -4652,7 +5242,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    if (region)
 	         D_DEBUG_AT( MMS_Surface, "flip( %d,%d - %dx%d ) <- %dx%d\n",
@@ -4668,7 +5258,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #ifdef USE_DFB_WINMAN
 
 		/* flip */
-		if ((dfbres=this->llsurface->Flip(this->llsurface, region, this->flipflags)) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->Flip(this->dfb_surface, region, this->flipflags)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
 			return false;
@@ -4680,7 +5270,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 		/* flip */
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->Flip(this->llsurface, (DFBRegion*)region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags))) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->Flip(this->dfb_surface, (DFBRegion*)region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
 				return false;
@@ -4705,10 +5295,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			myregion.x2+=this->sub_surface_xoff;
 			myregion.y2+=this->sub_surface_yoff;
 
-			this->llsurface->Flip(this->llsurface, (DFBRegion*)&myregion, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
+			this->dfb_surface->Flip(this->dfb_surface, (DFBRegion*)&myregion, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
 
 #else
-			this->llsurface->Flip(this->llsurface, region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
+			this->dfb_surface->Flip(this->dfb_surface, region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags));
 #endif
 
 #ifndef USE_DFB_SUBSURFACE
@@ -4748,6 +5338,14 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 		return true;
 #else
 		return false;
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		LOCK_OGL(0);
+		glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
+		UNLOCK_OGL;
 #endif
 	}
 	else {
@@ -4949,6 +5547,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				}
 			}
 		}
+#ifdef __HAVE_XV__
 		else
 		if (sb->xv_image[0]) {
 			// XVSHM, put the image to the x-server
@@ -4980,6 +5579,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}
+#endif
 #endif
 
 #ifdef __HAVE_FBDEV__
@@ -5021,7 +5621,7 @@ bool MMSFBSurface::refresh() {
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
 	}
@@ -5054,6 +5654,7 @@ bool MMSFBSurface::refresh() {
 				this->scaler->flip();
 			}
 		}
+#ifdef __HAVE_XV__
 		else
 		if (sb->xv_image[0]) {
 			// XVSHM, put the image to the x-server
@@ -5085,6 +5686,7 @@ bool MMSFBSurface::refresh() {
 			mmsfb->xlock.unlock();
 			this->unlock();
 		}
+#endif
 #endif
 	}
 
@@ -5147,7 +5749,7 @@ bool MMSFBSurface::resize(int w, int h) {
 	    MMSFBSurface *dstsurface;
 	    createCopy(&dstsurface, w, h, true, true);
 
-		if (!this->use_own_alloc) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		    D_DEBUG_AT( MMS_Surface, "resize( %dx%d -> %dx%d )\n",
 		                this->config.w, this->config.h, w, h );
@@ -5155,9 +5757,9 @@ bool MMSFBSurface::resize(int w, int h) {
 		    MMSFB_TRACE();
 
 		    // move the dfb pointers
-			IDirectFBSurface *s = this->llsurface;
-			this->llsurface = dstsurface->llsurface;
-			dstsurface->llsurface = s;
+			IDirectFBSurface *s = this->dfb_surface;
+			this->dfb_surface = dstsurface->dfb_surface;
+			dstsurface->dfb_surface = s;
 
 			// load the new configuration
 			this->getConfiguration();
@@ -5323,12 +5925,12 @@ bool MMSFBSurface::setFont(MMSFBFont *font) {
     /* check if initialized */
     INITCHECK;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
 	    /* set font */
-		if ((dfbres=this->llsurface->SetFont(this->llsurface, (IDirectFBFont*)font->dfbfont)) != DFB_OK) {
+		if ((dfbres=this->dfb_surface->SetFont(this->dfb_surface, (IDirectFBFont*)font->dfbfont)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetFont() failed");
 			return false;
 		}
@@ -5480,7 +6082,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 	if (len < 0) len = text.size();
 	if (!len) return true;
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    D_DEBUG_AT( MMS_Surface, "drawString( '%s', %d, %d,%d ) <- %dx%d\n",
 	                text.c_str(), len, x, y, this->config.w, this->config.h );
@@ -5489,7 +6091,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 	    // draw a string
 	    DFBResult dfbres;
 		if (!this->is_sub_surface) {
-			if ((dfbres=this->llsurface->DrawString(this->llsurface, text.c_str(), len, x, y, DSTF_TOPLEFT)) != DFB_OK) {
+			if ((dfbres=this->dfb_surface->DrawString(this->dfb_surface, text.c_str(), len, x, y, DSTF_TOPLEFT)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::DrawString() failed");
 
 				return false;
@@ -5505,7 +6107,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 			SETSUBSURFACE_DRAWINGFLAGS;
 #endif
 
-			this->llsurface->DrawString(this->llsurface, text.c_str(), len, x, y, DSTF_TOPLEFT);
+			this->dfb_surface->DrawString(this->dfb_surface, text.c_str(), len, x, y, DSTF_TOPLEFT);
 
 #ifndef USE_DFB_SUBSURFACE
 			RESETSUBSURFACE_DRAWINGFLAGS;
@@ -5538,20 +6140,20 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock) {
 	if (!pthread_lock) {
 		// no pthread lock needed
-		if (!this->use_own_alloc) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 			if (flags && planes) {
 				// get the access to the surface buffer
 				memset(planes, 0, sizeof(MMSFBSurfacePlanes));
 				if (flags == MMSFB_LOCK_READ) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_READ, &planes->ptr, &planes->pitch) != DFB_OK) {
+					if (this->dfb_surface->Lock(this->dfb_surface, DSLF_READ, &planes->ptr, &planes->pitch) != DFB_OK) {
 						planes->ptr = NULL;
 						planes->pitch = 0;
 					}
 				}
 				else
 				if (flags == MMSFB_LOCK_WRITE) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_WRITE, &planes->ptr, &planes->pitch) != DFB_OK) {
+					if (this->dfb_surface->Lock(this->dfb_surface, DSLF_WRITE, &planes->ptr, &planes->pitch) != DFB_OK) {
 						planes->ptr = NULL;
 						planes->pitch = 0;
 					}
@@ -5602,14 +6204,14 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool p
         }
     }
 
-	if (!this->use_own_alloc) {
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 		if (flags && planes) {
 			// get the access to the surface buffer
 			memset(planes, 0, sizeof(MMSFBSurfacePlanes));
 			if (flags == MMSFB_LOCK_READ) {
 				if (!tolock->surface_read_locked) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_READ, &planes->ptr, &planes->pitch) != DFB_OK) {
+					if (this->dfb_surface->Lock(this->dfb_surface, DSLF_READ, &planes->ptr, &planes->pitch) != DFB_OK) {
 						planes->ptr = NULL;
 						planes->pitch = 0;
 					}
@@ -5622,7 +6224,7 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool p
 			else
 			if (flags == MMSFB_LOCK_WRITE) {
 				if (!tolock->surface_write_locked) {
-					if (this->llsurface->Lock(this->llsurface, DSLF_WRITE, &planes->ptr, &planes->pitch) != DFB_OK) {
+					if (this->dfb_surface->Lock(this->dfb_surface, DSLF_WRITE, &planes->ptr, &planes->pitch) != DFB_OK) {
 						planes->ptr = NULL;
 						planes->pitch = 0;
 					}
@@ -5680,9 +6282,9 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes) {
 void MMSFBSurface::unlock(bool pthread_unlock) {
 	if (!pthread_unlock) {
 		// no pthread unlock needed
-		if (!this->use_own_alloc) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
-			this->llsurface->Unlock(this->llsurface);
+			this->dfb_surface->Unlock(this->dfb_surface);
 #endif
 		}
 		return;
@@ -5704,9 +6306,9 @@ void MMSFBSurface::unlock(bool pthread_unlock) {
 
 	// unlock dfb surface?
 	if ((tolock->surface_read_locked)&&(tolock->surface_read_lock_cnt == tolock->Lock_cnt)) {
-		if (!this->use_own_alloc) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
-			this->llsurface->Unlock(this->llsurface);
+			this->dfb_surface->Unlock(this->dfb_surface);
 #endif
 		}
 		tolock->surface_read_locked = false;
@@ -5714,9 +6316,9 @@ void MMSFBSurface::unlock(bool pthread_unlock) {
 	}
 	else
 	if ((tolock->surface_write_locked)&&(tolock->surface_write_lock_cnt == tolock->Lock_cnt)) {
-		if (!this->use_own_alloc) {
+		if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
-			this->llsurface->Unlock(this->llsurface);
+			this->dfb_surface->Unlock(this->dfb_surface);
 #endif
 		}
 		tolock->surface_write_locked = false;
@@ -5734,33 +6336,39 @@ void MMSFBSurface::unlock() {
 }
 
 MMSFBSurface *MMSFBSurface::getSubSurface(MMSFBRectangle *rect) {
-    void   			*subsuf = NULL;
+#ifdef  __HAVE_DIRECTFB__
+	IDirectFBSurface *subsuf = NULL;
+#endif
     MMSFBSurface 	*surface;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 #ifdef USE_DFB_SUBSURFACE
-    /* get a sub surface */
+    // get a sub surface
     DFBResult dfbres;
-    if ((dfbres=this->llsurface->GetSubSurface(this->llsurface, rect, (IDirectFBSurface*)&subsuf)) != DFB_OK) {
+    if ((dfbres=this->dfb_surface->GetSubSurface(this->dfb_surface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
         return false;
     }
+
+    // create a new surface instance
+    surface = new MMSFBSurface(subsuf, this, rect);
+#else
+    // create a new surface instance
+    surface = new MMSFBSurface(this, rect);
 #endif
 
-    /* create a new surface instance */
-    surface = new MMSFBSurface(subsuf, this, rect);
     if (!surface) {
 #ifdef USE_DFB_SUBSURFACE
     	if (subsuf)
-    		((IDirectFBSurface*)subsuf)->Release((IDirectFBSurface*)subsuf);
+    		subsuf->Release(subsuf);
 #endif
         MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
         return NULL;
     }
 
-    /* add to my list */
+    // add to my list
     this->children.push_back(surface);
 
     return surface;
@@ -5787,16 +6395,16 @@ bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
     /* because dfb has no IDirectFBSurface::setSubSurface(), allocate a new and release the old one */
     DFBResult dfbres;
     IDirectFBSurface *subsuf = NULL;
-    if ((dfbres=this->parent->llsurface->GetSubSurface(this->parent->llsurface, rect, &subsuf)) != DFB_OK) {
+    if ((dfbres=this->parent->dfb_surface->GetSubSurface(this->parent->dfb_surface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
         unlock();
         return false;
     }
 
-    if (this->llsurface)
-    	this->llsurface->Release(this->llsurface);
+    if (this->dfb_surface)
+    	this->dfb_surface->Release(this->dfb_surface);
 
-    this->llsurface = subsuf;
+    this->dfb_surface = subsuf;
 
 #endif
 

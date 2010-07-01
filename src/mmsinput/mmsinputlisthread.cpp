@@ -33,14 +33,12 @@
 #include "mmsinput/mmsinputlisthread.h"
 
 #include <string.h>
-#include <linux/keyboard.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/kd.h>
-#include <linux/vt.h>
-
-#include <linux/input.h>
 #include <errno.h>
+
+#ifndef __LIS_DEBUG__
+#undef MSG2OUT
+#define MSG2OUT(ident, msg...)
+#endif
 
 // keycode translation table e.g. for remote controls
 MMSKeySymbol MMSInputLISThread_extkeycodes [] = {
@@ -495,21 +493,21 @@ bool MMSInputLISThread::openDevice() {
 	// close device if already opened
 	closeDevice();
 
-	printf("Opening %s, type=%s (%s)\n",
+	MSG2OUT("MMSINPUTMANAGER", "Opening %s, type=%s (%s)\n",
 						this->device.name.c_str(),
 						this->device.type.c_str(),
 						this->device.desc.c_str());
 
 	// open the device
 	if ((this->dv_fd = open(this->device.name.c_str(), O_RDWR)) < 0) {
-		printf("could not open device: %s\n", this->device.name.c_str());
+		MSG2OUT("MMSINPUTMANAGER", "could not open device: %s\n", this->device.name.c_str());
 		this->dv_fd = -1;
 		return false;
 	}
 
 	// try to grab the device
 	if (ioctl(this->dv_fd, EVIOCGRAB, 1)) {
-		printf("could not grab device: %s\n", this->device.name.c_str());
+		MSG2OUT("MMSINPUTMANAGER", "could not grab device: %s\n", this->device.name.c_str());
 		close(this->dv_fd);
 		this->dv_fd = -1;
 		return false;
@@ -794,9 +792,89 @@ MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 	return MMSInputLISThread_extkeycodes[code];
 }
 
-
+int safex, safey;
 bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEvent *inputevent) {
+//	printf("code received: 	%d\n",linux_evt->type);
+	if(linux_evt->type == EV_SYN) {
+		MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: EV_SYN received");
+		if(lastevent.type == EV_KEY) {
+			if(lastevent.code == BTN_TOUCH) {
+				if(lastevent.value == 0) {
+					this->button_pressed = 0;
+					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+					inputevent->posx = safex;
+					inputevent->posy = safey;
+					this->lastevent = *linux_evt;				
+					return true;
+				} else if(lastevent.value == 1) {
+					this->button_pressed = 1;
+					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
+					inputevent->posx = this->lastX;
+					inputevent->posy = this->lastY;
+					safex=this->lastX;
+					safey=this->lastY;
+					this->lastevent = *linux_evt;				
+					return true;
+				}
+			} else {
+				if (inputevent->key == MMSKEY_UNKNOWN)
+					return false;
+				else
+					return true;			
+			}
+		} else if(lastevent.type == EV_ABS) {
+			switch(lastevent.code) {
+				case ABS_X:
+				case ABS_Y:
+					if(this->button_pressed == 1) {
+						//this->button_pressed = 0;
+						inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+//						printf("release at: %d:%d\n", this->lastX, this->lastY);
+					} else {
+						inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+					}
+					inputevent->posx = this->lastX;
+					inputevent->posy = this->lastY;
+
+					this->lastevent = *linux_evt;				
+					return true;
+				case ABS_PRESSURE:
+					this->lastevent = *linux_evt;				
+					return false;
+					if(this->button_pressed == 1) {
+						//printf("pressure released\n");
+						this->button_pressed = 0;
+						inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
+					} else {
+						//printf("pressure pressed\n");
+						this->button_pressed = 1;
+						inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
+					}
+					inputevent->posx = this->lastX;
+					inputevent->posy = this->lastY;
+					this->lastevent = *linux_evt;				
+					return true;
+				default:
+					return false;
+
+			}
+		}
+		return false;
+	}
 	if (linux_evt->type == EV_KEY) {
+		this->lastevent = *linux_evt;				
+		/* check for BTN_TOUCH */
+		if(linux_evt->code == BTN_TOUCH) {
+			MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON TOUCH %d received", linux_evt->value);
+			if(linux_evt->value == 0) {
+				this->button_pressed = 0;
+				return false;
+			} else if(linux_evt->value == 1) {
+				this->button_pressed = 1;
+				return false;
+			}
+		}
+
 		// key event, trying to get key symbol
 		inputevent->key = translateKey(linux_evt->code);
 
@@ -806,52 +884,36 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 		// press/release
 		inputevent->type = linux_evt->value ? MMSINPUTEVENTTYPE_KEYPRESS : MMSINPUTEVENTTYPE_KEYRELEASE;
 
-		return true;
+		return false;
 	}
 	else if(linux_evt->type == EV_ABS) {
+		this->lastevent = *linux_evt;
+		
+						
 		if(this->device.touch.swapXY) {
 			if(linux_evt->code == ABS_X) { linux_evt->code = ABS_Y; }
 			else if(linux_evt->code == ABS_Y) { linux_evt->code = ABS_X; }
 		}
 		switch(linux_evt->code) {
 			case ABS_X:
-				if(this->lastX >= 0 && this->lastY >= 0 && !this->button_pressed) {
-					this->button_pressed = 1;
-					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-					inputevent->posy = this->lastY;
-				} else {
-					inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
-				}
 				inputevent->posx = (int)(linux_evt->value * this->device.touch.xFactor);
 				if(this->device.touch.swapX) {
 					inputevent->posx = this->device.touch.xRes - inputevent->posx;
 				}	
+				MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: ABS_X %d(%d) received", linux_evt->value,inputevent->posx);
 				this->lastX = inputevent->posx;
-				return true;
+				return false;
 			case ABS_Y:
-				if(this->lastX >= 0 && this->lastY >= 0 && !this->button_pressed) {
-					this->button_pressed = 1;
-					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-					inputevent->posx = this->lastX;
-				} else {
-					inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
-				}
 				inputevent->posy = (int)(linux_evt->value * this->device.touch.yFactor);
 				if(this->device.touch.swapY) {
 					inputevent->posy = this->device.touch.yRes - inputevent->posy;	
 				}
+				MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: ABS_Y %d(%d) received", linux_evt->value,inputevent->posy);
 				this->lastY = inputevent->posy;
-				return true;
+				return false;
 			case ABS_PRESSURE:
-				if(linux_evt->value == 0) {
-					this->button_pressed = 0;
-					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-					inputevent->posx = this->lastX;
-					inputevent->posy = this->lastY;
-					this->lastX = this->lastY = -1;
-					return true;
-				}
-
+					MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: ABS_PRESSURE received", linux_evt->value);
+					return false;
 		}
 	}
 
@@ -884,7 +946,7 @@ void MMSInputLISThread::threadMain() {
 		}
 	}
 	else
-	if (this->device.name != "") {
+	if (!this->device.name.empty()) {
 		// working for other linux input devices
 		if((this->device.type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) ||
 		   (this->device.type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN)) {
@@ -914,7 +976,7 @@ void MMSInputLISThread::threadMain() {
 			}
 		}
 		else {
-			printf("Wrong type of device %s, type=%s (%s)\n",
+			MSG2OUT("MMSINPUTMANAGER", "Wrong type of device %s, type=%s (%s)\n",
 								this->device.name.c_str(),
 								this->device.type.c_str(),
 								this->device.desc.c_str());
