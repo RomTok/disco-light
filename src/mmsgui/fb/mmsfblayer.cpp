@@ -1210,13 +1210,10 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 
 #ifdef USE_MMSFB_WINMAN
 
-printf("ddddddddddddd1\n");
     // create a window surface
     MMSFBSurface *surface;
 	if (!mmsfb->createSurface(&surface, w, h, pixelformat, backbuffer, (this->config.buffermode == MMSFB_BM_BACKSYSTEM)))
 		return false;
-
-printf("ddddddddddddd2\n");
 
     // create a new window instance
     *window = new MMSFBWindow(surface, x, y);
@@ -1226,21 +1223,11 @@ printf("ddddddddddddd2\n");
         return false;
     }
 
-printf("ddddddddddddd3\n");
-
     // that is a window surface
     surface->setWinSurface();
 
     // inform the window manager
     mmsfbwindowmanager->addWindow(*window);
-
-printf("ddddddddddddd4\n");
-
-sleep(1);
-
-surface->clear();
-
-printf("ddddddddddddd5\n");
 
 #endif
 
