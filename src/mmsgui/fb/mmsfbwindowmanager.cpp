@@ -614,13 +614,25 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
         // no surface given, have to redraw a layer region?
         if (region == NULL) {
             // no
-            if (!locked)
+/*            if (!locked)
                 lock.unlock();
-            return false;
-        }
+            return false;*/
 
-        // take this region
-        ls_region = *region;
+        	if (!this->dst_surface->getSize(&ls_region.x2, &ls_region.y2)) {
+				if (!locked)
+					lock.unlock();
+				return false;
+        	}
+
+        	ls_region.x1=0;
+        	ls_region.y1=0;
+        	ls_region.x2--;
+        	ls_region.y2--;
+        }
+        else {
+			// take this region
+			ls_region = *region;
+        }
     }
 
     if (region == NULL) {

@@ -147,6 +147,8 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 #endif
 
 
+static int mm=0;
+
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
     // init me
 	this->initialized = false;
@@ -219,14 +221,16 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 	if (this->allocmethod == MMSFBSurfaceAllocMethod_ogl) {
 #ifdef  __HAVE_OPENGL__
 		// setup surface attributes
+		// if we allocate an fbo, backbuffers are not supported
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		this->config.w = sb->sbw = w;
 		this->config.h = sb->sbh = h;
 		sb->pixelformat = MMSFB_PF_ARGB;
 		sb->alphachannel = true;
 		sb->premultiplied = false;
-		sb->backbuffer = backbuffer;
-		sb->systemonly = systemonly;
+		sb->backbuffer = 0;
+		sb->numbuffers = 1;
+		sb->systemonly = false;
 
 		// RGBA8 2D texture, 24 bit depth texture
 		LOCK_OGL(0);
@@ -238,6 +242,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this->config.w, this->config.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
 		// ---
+//remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
 		glGenRenderbuffersEXT(1, &sb->ogl_rb);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, sb->ogl_rb);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, this->config.w, this->config.h);
@@ -245,6 +250,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		glGenFramebuffersEXT(1, &sb->ogl_fbo);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, sb->ogl_tex, 0);
+//remove glFramebufferRenderbufferEXT?
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, sb->ogl_rb);
 		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 			// the GPU does not support current FBO configuration
@@ -252,13 +258,12 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 			UNLOCK_OGL;
 			return;
 		}
-
 		UNLOCK_OGL;
 
 	    init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
 
 
-
+/*
 /////////// TEST //////////
 
 		// clear
@@ -273,6 +278,21 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		this->setDrawingFlags(MMSFB_DRAW_BLEND);
 		this->fillRectangle(w/4+200,h/4,w/2,h/2);
 
+    	this->setClip(100, 100, 200, 200);
+		this->setColor(0, 255, 0, 255);
+    	this->fillTriangle(100, 100, 200, 200, 200, 100);
+
+    	this->setClip(200, 200, 300, 300);
+		this->setColor(0, 255, 0, 255);
+    	this->drawTriangle(200, 200, 300, 300, 300, 200);
+
+    	this->setClip(300, 300, 400, 400);
+		this->setColor(255, 255, 0, 255);
+    	this->drawRectangle(300, 300, 100, 100);
+
+    	this->setClip(200, 200, 400, 400);
+		this->setColor(0, 0, 0, 255);
+    	this->drawLine(200, 400, 400, 200);
 
 		printf("puuuuu\n");
 
@@ -301,7 +321,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		}
 
 		sleep(2);
-
+*/
 //////////
 
 
@@ -1229,6 +1249,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			}
 			UNLOCK_OGL;
 			this->config.surface_buffer->backbuffer = (val)?1:0;
+			this->config.surface_buffer->numbuffers = this->config.surface_buffer->backbuffer + 1;
 
 		    this->config.surface_buffer->systemonly = false;
 		}
@@ -1808,6 +1829,56 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
 
 #endif
 	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+
+			// setup drawing
+			INIT_OGL_DRAWING;
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			int x, y, w, h;
+			if (x2 >= x1) {
+				x = x1;
+				w = x2 - x1 + 1;
+			}
+			else {
+				x = x2;
+				w = x1 - x2 + 1;
+			}
+			if (y2 >= y1) {
+				y = y1;
+				h = y2 - y1 + 1;
+			}
+			else {
+				y = y2;
+				h = y1 - y2 + 1;
+			}
+
+			if (calcClip(x, y, w, h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// draw rectangle
+				glBegin(GL_LINES);
+				glVertex2i(x1, y1);
+				glVertex2i(x2, y2);
+				glEnd();
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
+		}
+#endif
+	}
 	else {
 
 		if (!this->is_sub_surface) {
@@ -1839,20 +1910,56 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
     if (w < 1 || h < 1)
     	return false;
 
-    // draw lines...
-    if (w==1)
-    	ret = drawLine(x, y, x, y+h-1);
-    else
-    if (h==1)
-    	ret = drawLine(x, y, x+w-1, y);
-    else {
-    	ret = drawLine(x, y, x+w-1, y);
-    	ret = drawLine(x, y+h-1, x+w-1, y+h-1);
-    	if (h>2) {
-        	ret = drawLine(x, y+1, x, y+h-2);
-        	ret = drawLine(x+w-1, y+1, x+w-1, y+h-2);
-    	}
-    }
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+
+			// setup drawing
+			INIT_OGL_DRAWING;
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			if (calcClip(x, y, w, h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// draw rectangle
+				glBegin(GL_LINE_STRIP);
+				glVertex2i(x, y);
+				glVertex2i(x+w-1, y);
+				glVertex2i(x+w-1, y+h-1);
+				glVertex2i(x, y+h-1);
+				glVertex2i(x, y);
+				glEnd();
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
+		}
+#endif
+	}
+	else {
+		// draw lines...
+		if (w==1)
+			ret = drawLine(x, y, x, y+h-1);
+		else
+		if (h==1)
+			ret = drawLine(x, y, x+w-1, y);
+		else {
+			ret = drawLine(x, y, x+w-1, y);
+			ret = drawLine(x, y+h-1, x+w-1, y+h-1);
+			if (h>2) {
+				ret = drawLine(x, y+1, x, y+h-2);
+				ret = drawLine(x+w-1, y+1, x+w-1, y+h-2);
+			}
+		}
+	}
 
     return ret;
 }
@@ -1965,20 +2072,81 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 bool MMSFBSurface::drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3) {
     MMSFB_BREAK();
 
-    /* check if initialized */
+	bool ret = false;
+
+    // check if initialized
     INITCHECK;
 
-    /* draw triangle */
-    drawLine(x1, y1, x2, y2);
-    drawLine(x1, y1, x3, y3);
-    drawLine(x2, y2, x3, y3);
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
 
-    return true;
+			// setup drawing
+			INIT_OGL_DRAWING;
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			int x, y, w, h;
+			if (x2 >= x1) {
+				x = x1;
+				w = x2 - x1 + 1;
+			}
+			else {
+				x = x2;
+				w = x1 - x2 + 1;
+			}
+			if (y2 >= y1) {
+				y = y1;
+				h = y2 - y1 + 1;
+			}
+			else {
+				y = y2;
+				h = y1 - y2 + 1;
+			}
+			if (x3 < x) x = x3;
+			if (x3 > x + w - 1) w = x3 - x + 1;
+			if (y3 < y) y = y3;
+			if (y3 > y + h - 1) h = y3 - y + 1;
+
+			if (calcClip(x, y, w, h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// draw triangle
+				glBegin(GL_LINE_STRIP);
+				glVertex2i(x1, y1);
+				glVertex2i(x2, y2);
+				glVertex2i(x3, y3);
+				glVertex2i(x1, y1);
+				glEnd();
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
+		}
+#endif
+	}
+	else {
+		// draw triangle
+		drawLine(x1, y1, x2, y2);
+		drawLine(x1, y1, x3, y3);
+		drawLine(x2, y2, x3, y3);
+		ret = true;
+	}
+
+    return ret;
 }
 
 bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) {
+	bool ret = false;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
@@ -1986,7 +2154,7 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
 	    DFBResult   dfbres;
 	    MMSFB_BREAK();
 
-	    /* fill triangle */
+	    // fill triangle
 		if (!this->is_sub_surface) {
 			if ((dfbres=this->dfb_surface->FillTriangle(this->dfb_surface, x1, y1, x2, y2, x3, y3)) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::FillTriangle() failed");
@@ -2017,13 +2185,71 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
 #endif
 
 		}
+
+		ret = true;
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			// lock destination fbo and prepare it
+			LOCK_OGL(this->config.surface_buffer->ogl_fbo);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_TEXTURE_2D);
+
+			// setup drawing
+			INIT_OGL_DRAWING;
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			int x, y, w, h;
+			if (x2 >= x1) {
+				x = x1;
+				w = x2 - x1 + 1;
+			}
+			else {
+				x = x2;
+				w = x1 - x2 + 1;
+			}
+			if (y2 >= y1) {
+				y = y1;
+				h = y2 - y1 + 1;
+			}
+			else {
+				y = y2;
+				h = y1 - y2 + 1;
+			}
+			if (x3 < x) x = x3;
+			if (x3 > x + w - 1) w = x3 - x + 1;
+			if (y3 < y) y = y3;
+			if (y3 > y + h - 1) h = y3 - y + 1;
+
+			if (calcClip(x, y, w, h, &crect)) {
+				// inside clipping region
+				glScissor(crect.x, crect.y, crect.w, crect.h);
+				glEnable(GL_SCISSOR_TEST);
+
+				// fill triangle
+				glBegin(GL_TRIANGLES);
+				glVertex2i(x1, y1);
+				glVertex2i(x2, y2);
+				glVertex2i(x3, y3);
+				glEnd();
+			}
+
+			// all is fine
+			UNLOCK_OGL;
+			ret = true;
+		}
 #endif
 	}
 	else {
 		//TODO
+		ret = true;
 	}
 
-    return true;
+    return ret;
 }
 
 bool MMSFBSurface::drawCircle(int x, int y, int radius, int start_octant, int end_octant) {
@@ -5239,7 +5465,7 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 bool MMSFBSurface::flip(MMSFBRegion *region) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
@@ -5257,7 +5483,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 #ifdef USE_DFB_WINMAN
 
-		/* flip */
+		// flip
 		if ((dfbres=this->dfb_surface->Flip(this->dfb_surface, region, this->flipflags)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
 
@@ -5268,7 +5494,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 #ifdef USE_MMSFB_WINMAN
 
-		/* flip */
+		// flip
 		if (!this->is_sub_surface) {
 			if ((dfbres=this->dfb_surface->Flip(this->dfb_surface, (DFBRegion*)region, getDFBSurfaceFlipFlagsFromMMSFBFlipFlags(this->flipflags))) != DFB_OK) {
 				MMSFB_SetError(dfbres, "IDirectFBSurface::Flip() failed");
@@ -5343,9 +5569,51 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 	else
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
-		LOCK_OGL(0);
-		glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
-		UNLOCK_OGL;
+		if (this->config.surface_buffer->numbuffers > 1) {
+			// currently we work with fbo frontbuffers only, ogl flips will only supported via glXSwapBuffers()
+
+			//TODO...
+
+		}
+
+		if (!this->config.surface_buffer->ogl_fbo) {
+			// this is the primary fbo, flip it to the xwindow
+			// note: there is no chance to flip a region with glXSwapBuffers!!!
+			LOCK_OGL(0);
+			glXSwapBuffers(mmsfb->x_display, mmsfb->x_window);
+			UNLOCK_OGL;
+		}
+
+		if (this->config.iswinsurface) {
+			// inform the window manager
+			mmsfbwindowmanager->flipSurface(NULL);
+		}
+		else {
+	    	if (this->is_sub_surface) {
+				// sub surface, use the root parent surface
+	    		if (this->root_parent->config.iswinsurface) {
+	    			// inform the window manager, use the correct region
+/*	    			MMSFBRegion reg;
+	    			if (region)
+	    				reg = *region;
+	    			else {
+	    				reg.x1=0;
+	    				reg.y1=0;
+	    				reg.x2=sub_surface_rect.w-1;
+	    				reg.y2=sub_surface_rect.h-1;
+	    			}
+	    			reg.x1+=this->sub_surface_xoff;
+	    			reg.y1+=this->sub_surface_yoff;
+	    			reg.x2+=this->sub_surface_xoff;
+	    			reg.y2+=this->sub_surface_yoff;*/
+	    			mmsfbwindowmanager->flipSurface(NULL);
+	    		}
+			}
+		}
+
+		return true;
+#else
+		return false;
 #endif
 	}
 	else {
