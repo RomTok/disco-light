@@ -137,16 +137,6 @@ else:
 
 env = Environment(ENV = os.environ, CPPPATH = os.getcwd() + '/inc')
 
-# use environment variables to override defaults
-if os.environ.has_key('CXX'):
-	env['CXX'] = [os.environ['CXX'].split()] 
-if os.environ.has_key('CXXFLAGS'):
-	env['CCFLAGS'] = [os.environ['CXXFLAGS'].split()]
-if os.environ.has_key('LD'):
-	env['LINK'] = [os.environ['LD'].split()]
-if os.environ.has_key('LDFLAGS'):
-	env['LINKFLAGS'] = [os.environ['LDFLAGS'].split()]
-
 env['LIBS'] = []
 env['LIBPATH'] = ''
 env['diskoSources'] = []
@@ -218,6 +208,16 @@ if env['use_sse']:
 			env['use_sse'] = False
 	else:
 		env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
+
+# use environment variables to override defaults
+if os.environ.has_key('CXX'):
+	env['CXX'] = [os.environ['CXX'].split()] 
+if os.environ.has_key('CXXFLAGS'):
+	env['CCFLAGS'].extend([os.environ['CXXFLAGS'].split()])
+if os.environ.has_key('LD'):
+	env['LINK'] = [os.environ['LD'].split()]
+if os.environ.has_key('LDFLAGS'):
+	env['LINKFLAGS'].extend([os.environ['LDFLAGS'].split()])
 
 # format output
 env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
