@@ -165,10 +165,15 @@ bool MMSTranslator::setTargetLang(const string &countryCode) {
 	if(it == this->transIdx.end())
 		return false;
 
+	this->target = countryCode;
 	this->targetIdx = it->second;
 	this->onTargetLangChanged.emit(this->targetIdx);
 
 	return true;
+}
+
+void MMSTranslator::getTargetLang(string &countryCode) {
+	countryCode = this->target;
 }
 
 void MMSTranslator::processFile(const string &file) {

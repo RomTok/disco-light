@@ -66,6 +66,7 @@ class MMSTranslator {
 
 		void translate(const std::string &source, std::string &dest);
 		bool setTargetLang(const std::string &countryCode);
+		void getTargetLang(std::string &countryCode);
 
         static sigc::signal<void, unsigned int> onTargetLangChanged;
 
