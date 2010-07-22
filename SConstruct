@@ -621,7 +621,7 @@ if(env['enable_mail']):
 
 # checks required if building with swscale support
 if(env['enable_swscale']):
-    conf.checkSimpleLib(['swscale'], 'libswscale/swscale.h')
+    conf.checkSimpleLib(['libswscale'], 'libswscale/swscale.h')
     conf.env['CCFLAGS'].extend(['-D__HAVE_SWSCALE__']) 
 
 env2 = conf.Finish()
@@ -739,13 +739,13 @@ if 'install' in BUILD_TARGETS:
 	disko_pc.write('Libs: -L${libdir} ' + disko_pc_libs + '\n')
 	disko_pc.write('Libs.private: ' + disko_pc_libs_private + '\n')
 	disko_pc.write('Cflags: -I${includedir}/ ')
+
 	for ccflag in env['CCFLAGS']:
-		if type(ccflag).__name__ == 'str' and not ccflag.startswith('-isystem'):
-			disko_pc.write(' ')
-			if(type(ccflag).__name__ == 'str'):
-				disko_pc.write(ccflag)
-			else:
-				disko_pc.write(' '.join(ccflag))
+		if(type(ccflag).__name__ == 'str'):
+			if not ccflag.startswith('-isystem'):
+				disko_pc.write(' ' + ccflag)
+		else:
+			disko_pc.write(' '.join(ccflag))
 	disko_pc.write('\n')
 	
 	disko_pc.close()
