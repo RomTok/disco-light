@@ -93,6 +93,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
     this->argv = argv;
     this->appliconname = appl_icon_name;
     this->applname = appl_name;
+    this->fullscreen = fullscreen;
 
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
@@ -210,7 +211,6 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
     }
 	else {
 #ifdef __HAVE_XLIB__
-		// initialize the X11 window
         if (!(this->x_display = XOpenDisplay((char*)0))) {
 			MMSFB_SetError(0, "XOpenDisplay() failed");
         	return false;

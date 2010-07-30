@@ -1226,8 +1226,18 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			}
 			if(!mmsfb->hidden)
 				XSetInputFocus(mmsfb->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
-		}
+		} else {
+			if(!mmsfb->hidden) {
+				XMapWindow(mmsfb->x_display, this->x_window);
+				XEvent x_event;
+				do {
+					XNextEvent(mmsfb->x_display, &x_event);
+				}
+				while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
 
+				XRaiseWindow(mmsfb->x_display, this->x_window);
+			}
+		}
 		XUnlockDisplay(mmsfb->x_display);
 
 
