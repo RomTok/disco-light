@@ -57,9 +57,12 @@
 */
 class MMSFB {
     private:
-        int             argc;       /* commandline arguments */
-        char            **argv;
-
+        int              argc;       /* commandline arguments */
+        char             **argv;
+        string 			 applname;
+        string			 appliconname;
+        bool			 hidden;
+        MMSFBPointerMode pointer;
     	//! is initialized?
     	bool initialized;
 
@@ -78,6 +81,7 @@ class MMSFB {
         Display 		*x_display;
         int				x_screen;
         Window 			x_window;
+        Window 			input_window;
         GC 				x_gc;
         Visual			*x_visual;
         int				x_depth;

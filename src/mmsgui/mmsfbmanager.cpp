@@ -210,7 +210,7 @@ void MMSFBManager::applySettings() {
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
 	DEBUGMSG("MMSGUI", "set configuration");
-    if (!this->graphicslayer->setConfiguration(graphicslayer.rect.w, graphicslayer.rect.h,
+    if(!this->graphicslayer->setConfiguration(graphicslayer.rect.w, graphicslayer.rect.h,
 											   graphicslayer.pixelformat,
 											   graphicslayer.buffermode,
 											   graphicslayer.options,
@@ -247,6 +247,9 @@ void MMSFBManager::applySettings() {
             // set the video layer behind the graphics layer
         	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
             this->videolayer->setLevel(-1);
+        } else if(config.getOutputType() == MMSFB_OT_XSHM) {
+        	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
+            this->graphicslayer->setLevel(+1);
         }
     }
 

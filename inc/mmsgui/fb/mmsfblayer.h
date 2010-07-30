@@ -38,6 +38,23 @@
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfbwindow.h"
 
+#ifdef __HAVE_XLIB__
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/Xcomposite.h>
+
+typedef struct {
+	Display *x_display;
+	Window x_window;
+	GC x_gc;
+	int xv_port;
+	XvImage *xv_image1;
+	XvImage *xv_image2;
+	int w;
+	int h;
+	int x_screen;
+} X11_IMPL;
+#endif
+
 //! describes the config of a layer
 typedef struct {
 	//! config available?
@@ -79,13 +96,24 @@ class MMSFBLayer {
 #endif
 
 #ifdef __HAVE_XLIB__
-        XImage  		*x_image1;
-        XShmSegmentInfo x_shminfo1;
-        XImage  		*x_image2;
-        XShmSegmentInfo x_shminfo2;
-        XImage  		*x_image_scaler;
-        XShmSegmentInfo x_shminfo_scaler;
-        MMSFBSurface	*scaler;
+        XImage  		  *x_image1;
+        XShmSegmentInfo   x_shminfo1;
+        XImage  		  *x_image2;
+        XShmSegmentInfo   x_shminfo2;
+        XImage  		  *x_image_scaler;
+        XShmSegmentInfo   x_shminfo_scaler;
+        MMSFBSurface	  *scaler;
+        Visual			  *x_visual;
+        Window			  x_window;
+        Pixmap 			  pixmap;
+        XRenderPictFormat *pict_format;
+        Picture 		  x_pixmap_pict;
+        Picture           x_window_pict;
+        GC 				  x_gc;
+        int				  x_window_h;
+        int               x_window_w;
+        X11_IMPL		  impl;
+
 #endif
 #ifdef __HAVE_XV__
         XvImage  		*xv_image1;
@@ -137,6 +165,8 @@ class MMSFBLayer {
         bool createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 						   MMSFBSurfacePixelFormat pixelformat = MMSFB_PF_NONE,
                            bool usealpha = true, int backbuffer = 1);
+
+        void *getImplementation();
 
 		friend class MMSFBManager;
 		friend class MMSFBSurface;

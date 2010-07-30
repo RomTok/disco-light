@@ -679,7 +679,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', directfb'
 	  
 	if 'x11' in env['graphics']:
-		disko_pc_requires += ', x11, xv, xxf86vm'
+		disko_pc_requires += ', x11, xv, xxf86vm, xcomposite, xrender'
 
 	if 'ogl' in env['graphics']:
 		disko_pc_requires += ', x11, gl, glu'

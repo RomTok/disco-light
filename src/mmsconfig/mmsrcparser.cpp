@@ -68,8 +68,10 @@ void MMSRcParser::parseFile(string filename) {
 			//Walk the tree:
 			xmlNode* pNode = xmlDocGetRootElement(parser);
 	  		if(xmlStrcmp(pNode->name, (const xmlChar *) "mmsrc")) {
-	  			std::cout << "invalid configuration file (" << filename << ") - does not contain mmsrc root node" << std::endl;
-	  			throw new MMSRcParserError(1, "invalid file");
+		  		if(xmlStrcmp(pNode->name, (const xmlChar *) "diskorc")) {
+					std::cout << "invalid configuration file (" << filename << ") - does not contain mmsrc root node" << std::endl;
+					throw new MMSRcParserError(1, "invalid file");
+		  		}
 	  		}
 	      	this->throughFile(pNode);
 
@@ -731,14 +733,14 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
-			if (this->graphics.videolayer.id != 0)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.videolayer.id != 0 && this->graphics.videolayer.id != 1)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "0, 1", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			if (this->graphics.graphicslayer.id != 0)
 				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			break;
 		case MMSFB_OT_XSHM:
-			if (this->graphics.videolayer.id != 0)
-				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
+			if (this->graphics.videolayer.id != 0 && this->graphics.videolayer.id != 1)
+				WRONG_VALUE("videolayerid", iToStr(this->graphics.videolayer.id), "0, 1", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			if (this->graphics.graphicslayer.id != 0)
 				WRONG_VALUE("graphicslayerid", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
@@ -775,15 +777,10 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 		switch (this->graphics.outputtype) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
-			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YV12)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
-			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_YV12)
-				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
-			break;
 		case MMSFB_OT_XSHM:
-			if (this->graphics.videolayer.pixelformat != MMSFB_PF_RGB32)
-				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
-			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32)
+			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YV12 && this->graphics.videolayer.pixelformat != MMSFB_PF_RGB32)
+				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
+			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_YV12 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB)
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
 		default:
@@ -834,7 +831,7 @@ void MMSRcParser::throughFile(xmlNode* node) {
 	if(node==NULL)
 		return;
 
-	if(!xmlStrcmp(node->name, (const xmlChar *) "mmsrc")) {
+	if(!xmlStrcmp(node->name, (const xmlChar *) "mmsrc") || !xmlStrcmp(node->name, (const xmlChar *) "diskorc")) {
 		checkVersion(node);
 
 		node = node->xmlChildrenNode;

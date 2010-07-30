@@ -447,7 +447,7 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM	"YV12"
 
 //! list of valid pixelformats for XSHM
-#define MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM	"RGB32"
+#define MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM	"RGB32, ARGB, YV12"
 
 //! list of valid pixelformats for DAVINCIFB, OSD Layer
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0	"ARGB3565, RGB16"

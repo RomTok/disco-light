@@ -91,6 +91,8 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
     // save arguments
     this->argc = argc;
     this->argv = argv;
+    this->appliconname = appl_icon_name;
+    this->applname = appl_name;
 
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
@@ -213,6 +215,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			MMSFB_SetError(0, "XOpenDisplay() failed");
         	return false;
         }
+
         this->x_screen = DefaultScreen(this->x_display);
 
         Window myroot=RootWindow(this->x_display, this->x_screen);
@@ -221,141 +224,17 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
         unsigned int borderw, depthret;
         XGetGeometry(this->x_display, myroot, &root_ret, &myx, &myy, (unsigned int *)&(this->display_w), (unsigned int *)&(this->display_h), &borderw, &depthret);
 
-		//XF86VidModeGetModeLine(this->x_display, 0, &dot, &line);
-		/*this->display_w=line.hdisplay;
-		this->display_h=line.vdisplay;*/
         printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
-		XSetWindowAttributes x_window_attr;
-		x_window_attr.event_mask        = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |PointerMotionMask|EnterWindowMask|ResizeRedirectMask;
-		x_window_attr.background_pixel  = 0;
-		x_window_attr.border_pixel      = 0;
+		x_depth=DefaultDepth(this->x_display, this->x_screen);
 
-
-		unsigned long x_window_mask;
-		//this->window_w
-		this->fullscreen = fullscreen;
-		if (fullscreen == MMSFB_FSM_TRUE || fullscreen == MMSFB_FSM_ASPECT_RATIO) {
-			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask |CWOverrideRedirect;
-			x_window_attr.override_redirect = True;
-	/*		int cnt;
-			XF86VidModeModeInfo **info;
-			XF86VidModeGetAllModeLines(this->x_display, 0, &cnt, &info);
-			int best=-1;
-			for(int i=0;i<cnt;i++) {
-				if((info[i]->hdisplay==w)&&(info[i]->vdisplay==h)) {
-					best=i;
-					break;
-				}
-				//printf("w,h: %d %d\n", info[i]->hdisplay,info[i]->vdisplay);
-			}
-*/
-			int x_depth = DefaultDepth(this->x_display, this->x_screen);
-			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display), 0, 0, this->display_w, this->display_h, 0, x_depth,
-										   InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
-		} else {
-			this->fullscreen = MMSFB_FSM_FALSE;
-			x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ;
-			x_window_attr.override_redirect = 0;
-			int x_depth = DefaultDepth(this->x_display, this->x_screen);
-			this->x_window = XCreateWindow(this->x_display, DefaultRootWindow(this->x_display),
-										   this->x11_win_rect.x, this->x11_win_rect.y, this->x11_win_rect.w, this->x11_win_rect.h,
-										   0, x_depth, InputOutput, CopyFromParent, x_window_mask, &x_window_attr);
-		}
-
-		XStoreName(this->x_display, this->x_window, appl_name.c_str());
-		XSetIconName(this->x_display, this->x_window, appl_icon_name.c_str());
-		XClassHint clhi;
-		clhi.res_name=(argc ? basename(argv[0]) : (char*)"disko");
-		clhi.res_class=(char*)"disko";
-		XSetClassHint(this->x_display, this->x_window,&clhi);
-		this->x_gc = XCreateGC(this->x_display, this->x_window, 0, 0);
-		if(!hidden) {
-			XMapWindow(this->x_display, this->x_window);
-			XEvent x_event;
-			do {
-				XNextEvent(this->x_display, &x_event);
-			}
-			while (x_event.type != MapNotify || x_event.xmap.event != this->x_window);
-
-			XRaiseWindow(this->x_display, this->x_window);
-		}
-		// hide X cursor
-//		if(this->outputtype != MMS_OT_XSHM) {
-		if (pointer != MMSFB_PM_EXTERNAL) {
-			Pixmap bm_no;
-			Colormap cmap;
-			Cursor no_ptr;
-			XColor black, dummy;
-			static char bm_no_data[] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-			cmap = DefaultColormap(this->x_display, DefaultScreen(this->x_display));
-			XAllocNamedColor(this->x_display, cmap, "black", &black, &dummy);
-			bm_no = XCreateBitmapFromData(this->x_display, this->x_window, bm_no_data, 8, 8);
-			no_ptr = XCreatePixmapCursor(this->x_display, bm_no, bm_no, &black, &black, 0, 0);
-
-			XDefineCursor(this->x_display, this->x_window, no_ptr);
-			XFreeCursor(this->x_display, no_ptr);
-			if (bm_no != None)
-					XFreePixmap(this->x_display, bm_no);
-			XFreeColors(this->x_display, cmap, &black.pixel, 1, 0);
-		}
-		if(!hidden)
-			XSetInputFocus(this->x_display, this->x_window,RevertToPointerRoot,CurrentTime);
+		this->hidden = hidden;
+		this->pointer = pointer;
 
 
 
-		if (this->backend == MMSFB_BE_X11) {
 
-			if (mmsfb->outputtype == MMSFB_OT_XSHM) {
-				// XSHM
-				if (!XShmQueryExtension(this->x_display)) {
-					MMSFB_SetError(0, "XShmQueryExtension() failed");
-					return false;
-				}
-
-				this->x_visual = DefaultVisual(this->x_display, 0);
-				this->x_depth = DefaultDepth(this->x_display, 0);
-
-	//printf("depth=%d\n", this->x_depth);
-	//exit(0);
-			}
-			else {
-#ifdef __HAVE_XV__
-				// XVSHM
-				unsigned int 	p_version,
-								p_release,
-								p_request_base,
-								p_event_base,
-								p_error_base;
-				if (XvQueryExtension(this->x_display, &p_version, &p_release, &p_request_base, &p_event_base, &p_error_base) != Success) {
-					MMSFB_SetError(0, "XvQueryExtension() failed");
-					return false;
-				}
-
-				unsigned int num_adaptors;
-				XvAdaptorInfo *ai;
-				if (XvQueryAdaptors(this->x_display, DefaultRootWindow(this->x_display), &num_adaptors, &ai)) {
-					MMSFB_SetError(0, "XvQueryAdaptors() failed");
-					return false;
-				}
-				printf("DISKO: Available xv adaptors:\n");
-				for(unsigned int cnt=0;cnt<num_adaptors;cnt++) {
-					/* grab the first port with XvImageMask bit */
-					if((this->xv_port == 0) &&
-					   (ai[cnt].type & XvImageMask) &&
-					   (XvGrabPort(this->x_display, ai[cnt].base_id, 0) == Success)) {
-						this->xv_port = ai[cnt].base_id;
-						printf("  %s (used)\n", ai[cnt].name);
-					}
-					else
-						printf("  %s\n", ai[cnt].name);
-				}
-				XvFreeAdaptorInfo(ai);
-#endif
-			}
-		}
-		else {
+		if (this->backend == MMSFB_BE_OGL) {
 #ifdef __HAVE_OPENGL__
 			// OGL
 			int glxMajor, glxMinor;
@@ -519,7 +398,9 @@ void *MMSFB::getX11Window() {
 	}
     else {
 #ifdef __HAVE_XLIB__
-    	return &this->x_window;
+
+    	return &this->input_window;
+    	//return &this->x_window;
 #endif
     }
     return NULL;

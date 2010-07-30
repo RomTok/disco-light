@@ -458,7 +458,7 @@ MMSFBSurface::MMSFBSurface(MMSFBSurface *parent, MMSFBRectangle *sub_surface_rec
 #ifdef  __HAVE_OPENGL__
 	this->config.surface_buffer->ogl_fbo = 0;
 #endif
-
+	this->layer = NULL;
 	init(parent->allocated_by, parent, sub_surface_rect);
 }
 
@@ -552,6 +552,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
     this->surface_write_lock_cnt = 0;
     this->surface_invert_lock = false;
     this->scaler = NULL;
+
 
     // setup surface attributes
 	this->config.surface_buffer = new MMSFBSurfaceBuffer;
@@ -777,6 +778,8 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
     	this->sub_surface_rect = *sub_surface_rect;
 
 		this->config.surface_buffer = this->root_parent->config.surface_buffer;
+
+		this->layer = parent->layer;
 
 #ifndef USE_DFB_SUBSURFACE
 
@@ -5745,9 +5748,48 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						dx = (mmsfb->display_w - this->config.w) >> 1;
 						dy = (mmsfb->display_h - this->config.h) >> 1;
 					}
-					XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-								  0, 0, dx, dy,
-								  this->config.w, this->config.h, False);
+					if(this->layer) {
+						//printf("before putimage window %d\n layerid %d\n this->config.w: %d\n this->config.h: %d\n", layer->x_window, layer->config.id, layer->config.w, layer->config.h);
+
+						if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)) {
+							//put image to layer pixmap
+							XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
+										  0, 0, dx, dy,
+										  layer->config.w, layer->config.h, False);
+
+
+
+							double scale = (double)layer->x_window_w / layer->config.w;
+
+							// Scaling matrix
+							XTransform xform = {{
+								{ XDoubleToFixed( 1 ), XDoubleToFixed( 0 ), XDoubleToFixed(     0 ) },
+								{ XDoubleToFixed( 0 ), XDoubleToFixed( 1 ), XDoubleToFixed(     0 ) },
+								{ XDoubleToFixed( 0 ), XDoubleToFixed( 0 ), XDoubleToFixed( scale ) }
+							}};
+
+							XRenderSetPictureTransform( mmsfb->x_display, layer->x_pixmap_pict, &xform );
+							XRenderSetPictureFilter( mmsfb->x_display, layer->x_pixmap_pict, FilterBilinear, 0, 0 );
+
+
+							//put render image
+							  /* copy the pixmap content using XRender */
+							XRenderComposite(mmsfb->x_display,
+								   PictOpSrc,
+								   layer->x_pixmap_pict,
+								   None,
+								   layer->x_window_pict,
+								   0, 0,
+								   0, 0,
+								   0, 0,
+								   layer->x_window_w, layer->x_window_h);
+
+						} else {
+							XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
+										  0, 0, dx, dy,
+										  this->config.w, this->config.h, False);
+						}
+					}
 					//XFlush(mmsfb->x_display);
 					XSync(mmsfb->x_display, False);
 				}
@@ -5765,17 +5807,55 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							dx = (mmsfb->display_w - this->config.w) >> 1;
 							dy = (mmsfb->display_h - this->config.h) >> 1;
 						}
-						XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
-									 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
-									 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
+						if(this->layer) {
+							//printf("before putimage region %d\n layerid %d\n this->config.w: %d\n this->config.h: %d\n", layer->x_window, layer->config.id, layer->config.w, layer->config.h);
+
+							if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)) {
+								XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
+											 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
+											 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
+
+
+
+								double scale = (double)layer->x_window_w / layer->config.w; // We'll scale the window to 50% of its original size
+
+								// Scaling matrix
+								XTransform xform = {{
+									{ XDoubleToFixed( 1 ), XDoubleToFixed( 0 ), XDoubleToFixed(     0 ) },
+									{ XDoubleToFixed( 0 ), XDoubleToFixed( 1 ), XDoubleToFixed(     0 ) },
+									{ XDoubleToFixed( 0 ), XDoubleToFixed( 0 ), XDoubleToFixed( scale ) }
+								}};
+
+								XRenderSetPictureTransform( mmsfb->x_display, layer->x_pixmap_pict, &xform );
+								XRenderSetPictureFilter( mmsfb->x_display, layer->x_pixmap_pict, FilterBilinear, 0, 0 );
+
+								//put render image
+								/* copy the pixmap content using XRender */
+								XRenderComposite(mmsfb->x_display,
+									   PictOpSrc,
+									   layer->x_pixmap_pict,
+									   None,
+									   layer->x_window_pict,
+									   0, 0,
+									   0, 0,
+									   0, 0,
+									   layer->x_window_w, layer->x_window_h);
+
+							} else {
+								XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
+										  0, 0, dx, dy,
+										  this->config.w, this->config.h, False);
+							}
+						}
 						//XFlush(mmsfb->x_display);
 						XSync(mmsfb->x_display, False);
 					}
 				}
 				XUnlockDisplay(mmsfb->x_display);
 				mmsfb->xlock.unlock();
-			}
-			else {
+			} else {
+				//printf("do scaler....\n");
+
 				// scale to scaler
 				if (!region) {
 					// scale whole image
@@ -5827,20 +5907,26 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				calcAspectRatio(mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, mmsfb->display_w, mmsfb->display_h, dest,
 								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
 
+				//printf("do vputimage\n");
 				// put image
-				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  dest.x, dest.y, dest.w, dest.h, False);
 
 			} else if(mmsfb->resized) {
-				printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
-				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+				//printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, False);
 			}else{
-				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+				/*printf("do vputimage2\n");
+				printf("layer: %x, this: %x\n", layer, this);
+				printf("sb->xv_image: %x\n", sb->xv_image[sb->currbuffer_read]);
+*/
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
+
 			}
 			//XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display, False);
@@ -5908,9 +5994,16 @@ bool MMSFBSurface::refresh() {
 					dx = (mmsfb->display_w - this->config.w) >> 1;
 					dy = (mmsfb->display_h - this->config.h) >> 1;
 				}
-				XShmPutImage(mmsfb->x_display, mmsfb->x_window, mmsfb->x_gc, sb->x_image[sb->currbuffer_read],
+
+				XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
+
+
+
+
+
+
 				//XFlush(mmsfb->x_display);
 				XSync(mmsfb->x_display, False);
 				XUnlockDisplay(mmsfb->x_display);
@@ -5936,15 +6029,15 @@ bool MMSFBSurface::refresh() {
 								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
 
 				// put image
-				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  dest.x, dest.y, dest.w, dest.h, False);
 			} else if(mmsfb->resized) {
-				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, False);
 			}else{
-				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, mmsfb->x_window, mmsfb->x_gc, sb->xv_image[sb->currbuffer_read],
+				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 			}

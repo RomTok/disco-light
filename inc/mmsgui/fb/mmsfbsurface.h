@@ -186,7 +186,7 @@ class MMSFBSurface {
 #ifdef __HAVE_XLIB__
         MMSFBSurface 		*scaler;
 #endif
-
+        class MMSFBLayer *layer;
         //! surface configuration
         MMSFBSurfaceConfig  config;
 
