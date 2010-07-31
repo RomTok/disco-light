@@ -43,7 +43,10 @@
 #include <xine.h>
 #endif
 #include <map>
-
+#ifdef __HAVE_XLIB__
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
+#endif
 #include "mmsgui/mmsgui.h"
 #include "mmstools/mmstools.h"
 
