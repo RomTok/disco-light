@@ -414,6 +414,7 @@ class MMSFBSurface {
     friend class MMSFBLayer;
     friend class MMSFBSurfaceManager;
     friend class MMSFBWindowManager;
+    friend class MMSFBBackEndInterface;
 };
 
 bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
