@@ -233,7 +233,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 
 
 
-
+/*
 		if (this->backend == MMSFB_BE_OGL) {
 #ifdef __HAVE_OPENGL__
 			// OGL
@@ -280,6 +280,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		    	printf("make current failed\n");
 		    	return false;
 		    }
+		    printf("2222222222\n");
 		    if (glXIsDirect(this->x_display, this->glx_context))
 		        printf("DRI enabled\n");
 		    else
@@ -306,6 +307,9 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 
 #endif
 		}
+		*/
+
+
 #endif
     }
 

@@ -5752,6 +5752,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						//printf("before putimage window %d\n layerid %d\n this->config.w: %d\n this->config.h: %d\n", layer->x_window, layer->config.id, layer->config.w, layer->config.h);
 
 						if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)) {
+//TODO: change the ifdef, what to do if XRenderComposite not available?
+#ifdef __HAVE_XV__
 							//put image to layer pixmap
 							XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
 										  0, 0, dx, dy,
@@ -5783,7 +5785,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 								   0, 0,
 								   0, 0,
 								   layer->x_window_w, layer->x_window_h);
-
+#endif
 						} else {
 							XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 										  0, 0, dx, dy,
@@ -5811,6 +5813,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							//printf("before putimage region %d\n layerid %d\n this->config.w: %d\n this->config.h: %d\n", layer->x_window, layer->config.id, layer->config.w, layer->config.h);
 
 							if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)) {
+//TODO: change the ifdef, what to do if XRenderComposite not available?
+#ifdef __HAVE_XV__
 								XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
 											 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
 											 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
@@ -5840,7 +5844,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 									   0, 0,
 									   0, 0,
 									   layer->x_window_w, layer->x_window_h);
-
+#endif
 							} else {
 								XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 										  0, 0, dx, dy,

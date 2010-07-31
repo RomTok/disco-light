@@ -245,6 +245,7 @@ bool MMSFBLayer::isInitialized() {
 	else {
 #ifdef __HAVE_OPENGL__
 		// OGL
+		return this->initialized;
 		return (mmsfb->glx_context != 0);
 #endif
 	}
@@ -596,7 +597,10 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		Colormap colormap;
 	    Window root = RootWindow(mmsfb->x_display, mmsfb->x_screen);
 
+	    if (mmsfb->backend == MMSFB_BE_X11) {
 		if(config.pixelformat == MMSFB_PF_ARGB) {
+//TODO: change the ifdef, what to do if XRenderComposite not available?
+#ifdef __HAVE_XV__
 			//check the composite extension
 			int major, minor;
 			if (!XCompositeQueryVersion(mmsfb->x_display,&major, &minor)) {
@@ -845,6 +849,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			this->impl.w = this->x_window_w;
 			this->impl.h = this->x_window_h;
 			this->impl.x_screen = mmsfb->x_screen;
+#endif
 		} else if(config.pixelformat == MMSFB_PF_RGB32) {
 
 			this->x_visual = DefaultVisual(mmsfb->x_display, mmsfb->x_screen);
@@ -1187,6 +1192,11 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			this->impl.x_screen = mmsfb->x_screen;
 #endif
 		}
+	    }
+	    else {
+#ifdef __HAVE_OPENGL__
+#endif
+	    }
 
 		if(this->config.id == 0) {
 			mmsfb->input_window = this->x_window;
