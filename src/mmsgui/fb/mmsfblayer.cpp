@@ -986,6 +986,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			this->impl.h = this->x_window_h;
 			this->impl.x_screen = mmsfb->x_screen;
 		} else if(config.pixelformat == MMSFB_PF_YV12) {
+#ifdef __HAVE_XV__
 			// XVSHM
 			unsigned int 	p_version,
 							p_release,
@@ -1184,7 +1185,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			this->impl.xv_image2 = this->xv_image2;
 			this->impl.xv_port = mmsfb->xv_port;
 			this->impl.x_screen = mmsfb->x_screen;
-
+#endif
 		}
 
 		if(this->config.id == 0) {

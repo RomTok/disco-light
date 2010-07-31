@@ -47,8 +47,10 @@ typedef struct {
 	Window x_window;
 	GC x_gc;
 	int xv_port;
+#ifdef __HAVE_XV__
 	XvImage *xv_image1;
 	XvImage *xv_image2;
+#endif
 	int w;
 	int h;
 	int x_screen;
