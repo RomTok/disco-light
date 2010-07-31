@@ -1,0 +1,127 @@
+/***************************************************************************
+ *   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,             *
+ *                           Matthias Hardt, Guido Madaus                  *
+ *                                                                         *
+ *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
+ *                           Stefan Schwarzer & Guido Madaus               *
+ *                                                                         *
+ *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *                                                                         *
+ *   Authors:                                                              *
+ *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
+ *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
+ *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
+ *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
+ *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
+ *                                                                         *
+ *   This library is free software; you can redistribute it and/or         *
+ *   modify it under the terms of the GNU Lesser General Public            *
+ *   License version 2.1 as published by the Free Software Foundation.     *
+ *                                                                         *
+ *   This library is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ *   Lesser General Public License for more details.                       *
+ *                                                                         *
+ *   You should have received a copy of the GNU Lesser General Public      *
+ *   License along with this library; if not, write to the                 *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
+ **************************************************************************/
+
+#include "mmstools/mmsthreadserver.h"
+#include <stdlib.h>
+
+MMSThreadServer::MMSThreadServer(int queue_size, string identity) : MMSThread(identity) {
+	// allocate and setup the queue
+	this->queue_size = queue_size;
+	this->queue = (MMSTS_QUEUE_ITEM**)malloc(this->queue_size * sizeof(MMSTS_QUEUE_ITEM*));
+	this->queue_rp = 0;
+	this->queue_wp = 0;
+	this->buffer_full = false;
+
+	// init the mutex and cond variable for the server thread
+	pthread_mutex_init(&this->mutex, NULL);
+	pthread_cond_init(&this->cond, NULL);
+}
+
+MMSThreadServer::~MMSThreadServer() {
+	pthread_mutex_unlock(&this->mutex);
+	pthread_cond_destroy(&this->cond);
+	pthread_mutex_destroy(&this->mutex);
+	free(this->queue);
+}
+
+void MMSThreadServer::threadMain() {
+	// server loop
+	pthread_mutex_lock(&this->mutex);
+	while (1) {
+		if (pthread_cond_wait(&this->cond, &this->mutex) == 0) {
+			// signal from a client thread received
+			while (this->queue_rp != this->queue_wp) {
+				// processing next item in the queue
+				MMSTS_QUEUE_ITEM *item = this->queue[this->queue_rp];
+				this->queue_rp++;
+				if (this->queue_rp >= this->queue_size)
+					this->queue_rp = 0;
+				this->buffer_full = false;
+				if (!item) continue;
+
+				// now calling the worker routine for data processing
+				processData(item->in_data, item->in_data_len, item->out_data, item->out_data_len);
+
+				// handshake with the client thread
+				pthread_mutex_lock(&item->mutex);
+				pthread_cond_signal(&item->cond);
+				pthread_mutex_unlock(&item->mutex);
+			}
+		}
+	}
+	pthread_mutex_unlock(&this->mutex);
+}
+
+bool MMSThreadServer::trigger(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
+	// create new queue item and put data to it
+	MMSTS_QUEUE_ITEM item;
+	item.in_data =		in_data;
+	item.in_data_len =	in_data_len;
+	item.out_data =		out_data;
+	item.out_data_len =	out_data_len;
+
+	// init queue item's conditional variables
+	pthread_mutex_init(&item.mutex, NULL);
+	pthread_cond_init(&item.cond, NULL);
+	pthread_mutex_lock(&item.mutex);
+
+	// lock the server mutex and push the new item at the end of the queue
+	pthread_mutex_lock(&this->mutex);
+	int saved_rp = this->queue_rp;
+	this->queue[this->queue_wp] = &item;
+	this->queue_wp++;
+	if (this->queue_wp >= this->queue_size)
+		this->queue_wp = 0;
+
+	// check if the queue is full now
+	if (this->queue_rp == this->queue_wp) {
+		// yes, the ring buffer is full, no next request can be inserted
+		this->buffer_full = true;
+		printf("%s - ring buffer is full!\n", this->identity.c_str());
+		while (this->buffer_full) usleep(10000);
+	}
+
+	// send signal to the server and unlock the server mutex
+	pthread_cond_signal(&this->cond);
+	pthread_mutex_unlock(&this->mutex);
+
+	// waiting for the answer from the server
+	pthread_cond_wait(&item.cond, &item.mutex);
+
+	// freeing temporary conditional variables
+	pthread_mutex_unlock(&item.mutex);
+	pthread_cond_destroy(&item.cond);
+	pthread_mutex_destroy(&item.mutex);
+
+	return true;
+}
+
