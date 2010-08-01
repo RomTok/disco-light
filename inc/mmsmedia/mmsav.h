@@ -43,7 +43,7 @@
 #include <xine.h>
 #endif
 #include <map>
-#ifdef __HAVE_XLIB__
+#ifdef __HAVE_XV__
 #include <X11/extensions/Xv.h>
 #include <X11/extensions/Xvlib.h>
 #endif
@@ -137,7 +137,7 @@ typedef struct {
  * @author      Guido Madaus (guido.madaus@diskohq.org)
  * @author      Patrick Helterhoff (patrick.helterhoff@diskohq.org)
  * @author		René Bählkow (rene.baehlkow@diskohq.org)
- * 
+ *
  * It is the base class for all audio and video related
  * classes.
  */
