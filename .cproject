@@ -35,12 +35,18 @@
 									<listOptionValue builtIn="false" value="__HAVE_PNG__=1"/>
 									<listOptionValue builtIn="false" value="__HAVE_JPEG__=1"/>
 									<listOptionValue builtIn="false" value="__HAVE_TIFF__=1"/>
-									<listOptionValue builtIn="false" value="__HAVE_DIRECTFB__=1"/>
+									<listOptionValue builtIn="false" value="__HAVE_XLIB__"/>
+									<listOptionValue builtIn="false" value="__HAVE_XV__"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.941861229" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1397905960" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.paths.871389812" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1650575236" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__HAVE_X11__"/>
+									<listOptionValue builtIn="false" value="__HAVE_XLIB__"/>
+									<listOptionValue builtIn="false" value="__HAVE_XV__"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.624807690" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.970955071" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
