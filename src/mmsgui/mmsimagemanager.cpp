@@ -360,6 +360,13 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                }
 				                im_desc->sufcount = 1;
 
+
+								// blit from external buffer to surface
+								im_desc->suf[0].surface->blitBuffer(img_buf, img_pitch, this->pixelformat,
+																	img_width, img_height, NULL, 0, 0);
+
+
+#ifdef sfsf
 				                /* copy img_buf to the surface */
 				                char *suf_ptr;
 				                int suf_pitch;
@@ -377,6 +384,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                	}
 				                }
 				                im_desc->suf[0].surface->unlock();
+#endif
+
 
 				                /* free */
 				                delete tafff;
