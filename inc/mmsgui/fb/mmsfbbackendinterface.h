@@ -39,14 +39,35 @@
 class MMSFBBackEndInterface : public MMSThreadServer {
 private:
 	typedef enum {
-		BEI_REQUEST_TYPE_CLEAR = 0,
+		BEI_REQUEST_TYPE_INIT = 0,
+		BEI_REQUEST_TYPE_SWAP,
+		BEI_REQUEST_TYPE_ALLOC,
+		BEI_REQUEST_TYPE_CLEAR,
 		BEI_REQUEST_TYPE_FILLRECTANGLE,
 		BEI_REQUEST_TYPE_FILLTRIANGLE,
 		BEI_REQUEST_TYPE_DRAWLINE,
 		BEI_REQUEST_TYPE_DRAWRECTANGLE,
 		BEI_REQUEST_TYPE_DRAWTRIANGLE,
-		BEI_REQUEST_TYPE_STRETCHBLIT
+		BEI_REQUEST_TYPE_STRETCHBLIT,
+		BEI_REQUEST_TYPE_STRETCHBLITBUFFER
 	} BEI_REQUEST_TYPE;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		Display 			*x_display;
+		int					x_screen;
+		Window				x_window;
+		MMSFBRectangle		x11_win_rect;
+	} BEI_INIT;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+	} BEI_SWAP;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		MMSFBSurface		*surface;
+	} BEI_ALLOC;
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
@@ -92,7 +113,21 @@ private:
 		MMSFBRectangle		dst_rect;
 	} BEI_STRETCHBLIT;
 
+	typedef struct {
+		BEI_REQUEST_TYPE		type;
+		MMSFBSurface			*surface;
+		MMSFBSurfacePlanes		*src_planes;
+		MMSFBSurfacePixelFormat	src_pixelformat;
+		int						src_width;
+		int						src_height;
+		MMSFBRectangle			src_rect;
+		MMSFBRectangle			dst_rect;
+	} BEI_STRETCHBLITBUFFER;
+
 	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);
+	void processInit(BEI_INIT *req);
+	void processSwap(BEI_SWAP *req);
+	void processAlloc(BEI_ALLOC *req);
 	void processClear(BEI_CLEAR *req);
 	void processFillRectangle(BEI_FILLRECTANGLE *req);
 	void processFillTriangle(BEI_FILLTRIANGLE *req);
@@ -100,10 +135,25 @@ private:
 	void processDrawRectangle(BEI_DRAWRECTANGLE *req);
 	void processDrawTriangle(BEI_DRAWTRIANGLE *req);
 	void processStretchBlit(BEI_STRETCHBLIT *req);
+	void processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req);
 
 public:
+#ifdef  __HAVE_OPENGL__
+    //! x-visual
+	XVisualInfo *xvi;
+
+	//! opengl context
+    GLXContext	glx_context;
+
+    Display *x_display;
+    Window 	x_window;
+#endif
+
 	MMSFBBackEndInterface(int queue_size = 1000);
 
+	void init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect);
+	void swap();
+	void alloc(MMSFBSurface *surface);
 	void clear(MMSFBSurface *surface, MMSFBColor &color);
 	void fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
 	void fillTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
@@ -111,6 +161,9 @@ public:
 	void drawRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
 	void drawTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
 	void stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+	void stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */

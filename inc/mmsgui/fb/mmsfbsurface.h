@@ -356,7 +356,7 @@ class MMSFBSurface {
         bool setBlittingFlags(MMSFBBlittingFlags flags);
         bool getBlittingFlags(MMSFBBlittingFlags *flags);
         bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
-        bool blitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+        bool blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);

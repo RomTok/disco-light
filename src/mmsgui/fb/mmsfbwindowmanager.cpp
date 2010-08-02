@@ -533,6 +533,11 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     if (!locked)
         lock.lock();
 
+#ifdef  __HAVE_OPENGL__
+	surface = NULL;
+	region = NULL;
+#endif
+
     /* search for item */
     if (surface) {
         /* surface given */
@@ -635,7 +640,7 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
         }
     }
 
-    if (region == NULL) {
+    if ((region == NULL)&&(vw)) {
         /* this is only for whole (window) surfaces with an high flip frequency */
         struct  timeval tv;
         /* get the flip time */
@@ -694,8 +699,10 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
         }
     }
 
+
     // set the region of the layer surface
     this->dst_surface->setClip(&ls_region);
+
 
     // check if i have to clear the background
     if (!vw)
@@ -721,7 +728,6 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
 
         if (!((myregion->x2 < ls_region.x1)||(myregion->y2 < ls_region.y1)
             ||(myregion->x1 > ls_region.x2)||(myregion->y1 > ls_region.y2))) {
-
             // the window is affected
             // calc source and destination
             MMSFBRectangle src_rect;

@@ -232,6 +232,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		this->pointer = pointer;
 
 
+		if (this->backend == MMSFB_BE_OGL) {
+#ifdef __HAVE_OPENGL__
+			this->bei = new MMSFBBackEndInterface();
+#endif
+		}
 
 /*
 		if (this->backend == MMSFB_BE_OGL) {

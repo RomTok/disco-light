@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbbackendinterface.h"
+#include "mmstools/tools.h"
 
 #ifdef __HAVE_OPENGL__
 
@@ -46,6 +47,18 @@
 		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, surface->config.color.a); break; \
 		default: glDisable(GL_BLEND); glColor4ub(255, 255, 255, 255); break; }
 
+#define GET_OFFS(surface) \
+		int xoff = 0; int yoff = 0; \
+		if (surface->is_sub_surface) { \
+			xoff = surface->sub_surface_xoff; \
+			yoff = surface->sub_surface_yoff; }
+
+#define GET_OFFS_SRC(surface) \
+		int src_xoff = 0; int src_yoff = 0; \
+		if (surface->is_sub_surface) { \
+			src_xoff = surface->sub_surface_xoff; \
+			src_yoff = surface->sub_surface_yoff; }
+
 #endif
 
 MMSFBBackEndInterface::MMSFBBackEndInterface(int queue_size) : MMSThreadServer(queue_size, "MMSFBBackEndInterface") {
@@ -58,6 +71,15 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	BEI_REQUEST_TYPE *type = (BEI_REQUEST_TYPE *)in_data;
 
 	switch (*type) {
+	case BEI_REQUEST_TYPE_INIT:
+		processInit((BEI_INIT *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_SWAP:
+		processSwap((BEI_SWAP *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_ALLOC:
+		processAlloc((BEI_ALLOC *)in_data);
+		break;
 	case BEI_REQUEST_TYPE_CLEAR:
 		processClear((BEI_CLEAR *)in_data);
 		break;
@@ -79,9 +101,173 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_STRETCHBLIT:
 		processStretchBlit((BEI_STRETCHBLIT *)in_data);
 		break;
+	case BEI_REQUEST_TYPE_STRETCHBLITBUFFER:
+		processStretchBlitBuffer((BEI_STRETCHBLITBUFFER *)in_data);
+		break;
 	default:
 		break;
 	}
+}
+
+void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect) {
+
+	// start the server thread
+	this->start();
+sleep(2);
+
+
+	BEI_INIT req;
+	req.type		= BEI_REQUEST_TYPE_INIT;
+	req.x_display	= x_display;
+	req.x_screen	= x_screen;
+	req.x_window	= x_window;
+	req.x11_win_rect= x11_win_rect;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
+#ifdef __HAVE_OPENGL__
+	// OGL
+
+	this->x_display = req->x_display;
+	this->x_window = req->x_window;
+
+	int glxMajor, glxMinor;
+
+	glXQueryVersion(x_display, &glxMajor, &glxMinor);
+	printf("GLX-Version %d.%d\n", glxMajor, glxMinor);
+	int attribList[] =
+		{GLX_RGBA,
+		GLX_RED_SIZE, 8,
+		GLX_GREEN_SIZE, 8,
+		GLX_BLUE_SIZE, 8,
+		GLX_DEPTH_SIZE, 16,
+		GLX_DOUBLEBUFFER,
+		None};
+	this->xvi = glXChooseVisual(req->x_display, req->x_screen, attribList);
+	if (this->xvi == NULL) {
+		int attribList[] =
+				{GLX_RGBA,
+				GLX_RED_SIZE, 8,
+				GLX_GREEN_SIZE, 8,
+				GLX_BLUE_SIZE, 8,
+				None};
+		this->xvi = glXChooseVisual(req->x_display, req->x_screen, attribList);
+		printf("singlebuffered rendering will be used, no doublebuffering available\n");
+		if(this->xvi == NULL) {
+			printf("shit happens.... \n");
+			return;
+		}
+	}
+	else {
+		printf("doublebuffered rendering available\n");
+	}
+
+	// create a GLX context
+	this->glx_context = glXCreateContext(req->x_display, this->xvi, 0, GL_TRUE);
+	if (!this->glx_context) {
+		printf("context generation failed...\n");
+		return;
+	}
+
+	if(glXMakeCurrent(req->x_display, req->x_window, this->glx_context) != True) {
+		printf("make current failed\n");
+		return;
+	}
+
+	if (glXIsDirect(req->x_display, this->glx_context))
+		printf("DRI enabled\n");
+	else
+		printf("no DRI available\n");
+
+	XMapRaised(req->x_display, req->x_window);
+	XFlush(req->x_display);
+
+	// init extension pointers
+	GLenum err=glewInit();
+	if(err!=GLEW_OK) {
+		//problem: glewInit failed, something is seriously wrong
+		printf("Error: %s\n", glewGetErrorString(err));
+		return;
+	}
+
+	//set the coordinate system
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, req->x11_win_rect.w, req->x11_win_rect.h);
+	glOrtho(0, req->x11_win_rect.w, 0, req->x11_win_rect.h, 10.0, -10.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+#endif
+
+}
+
+
+void MMSFBBackEndInterface::swap() {
+	BEI_SWAP req;
+	req.type	= BEI_REQUEST_TYPE_SWAP;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processSwap(BEI_SWAP *req) {
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glDisable(GL_SCISSOR_TEST);
+
+	glXSwapBuffers(this->x_display, this->x_window);
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+#endif
+}
+
+void MMSFBBackEndInterface::alloc(MMSFBSurface *surface) {
+	BEI_ALLOC req;
+	req.type	= BEI_REQUEST_TYPE_ALLOC;
+	req.surface	= surface;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processAlloc(BEI_ALLOC *req) {
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glDisable(GL_SCISSOR_TEST);
+
+	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
+	glGenTextures(1, &sb->ogl_tex);
+	glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, req->surface->config.w, req->surface->config.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+	// ---
+//remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
+	glGenRenderbuffersEXT(1, &sb->ogl_rb);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, sb->ogl_rb);
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, req->surface->config.w, req->surface->config.h);
+	// ---
+	glGenFramebuffersEXT(1, &sb->ogl_fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, sb->ogl_tex, 0);
+//remove glFramebufferRenderbufferEXT?
+	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, sb->ogl_rb);
+	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		// the GPU does not support current FBO configuration
+		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(req->surface->config.w) + "x" + iToStr(req->surface->config.h) + " failed, the GPU does not support current FBO configuration");
+		glDisable(GL_SCISSOR_TEST);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+printf("TODO: fatal error while allocating new fbo\n");
+		return;
+	}
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+#endif
 }
 
 void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
@@ -102,15 +288,21 @@ void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 	glDisable(GL_TEXTURE_2D);
 	glColor4ub(req->color.r, req->color.g, req->color.b, req->color.a);
 
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+
 	// set the clip to ogl
 	MMSFBRectangle crect;
-	if (req->surface->calcClip(0, 0, req->surface->config.w, req->surface->config.h, &crect)) {
+	if (req->surface->calcClip(0 + xoff, 0 + yoff, req->surface->config.w, req->surface->config.h, &crect)) {
 		// inside clipping region
 		glScissor(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// fill rectangle
-		glRecti(0, 0, req->surface->config.w, req->surface->config.h);
+		glRecti(0								+ xoff,
+				0								+ yoff,
+				0 + req->surface->config.w - 1	+ xoff,
+				0 + req->surface->config.h - 1	+ yoff);
 	}
 
 	// all is fine
@@ -129,31 +321,35 @@ void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle 
 
 void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
-	if (!req->surface->is_sub_surface) {
-		// lock destination fbo and prepare it
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_TEXTURE_2D);
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
-		// setup drawing
-		INIT_OGL_DRAWING(req->surface);
+	// setup drawing
+	INIT_OGL_DRAWING(req->surface);
 
-		// set the clip to ogl
-		MMSFBRectangle crect;
-		if (req->surface->calcClip(req->rect.x, req->rect.y, req->rect.w, req->rect.h, &crect)) {
-			// inside clipping region
-			glScissor(crect.x, crect.y, crect.w, crect.h);
-			glEnable(GL_SCISSOR_TEST);
+	// get subsurface offsets
+	GET_OFFS(req->surface);
 
-			// fill rectangle
-			glRecti(req->rect.x, req->rect.y, req->rect.x + req->rect.w - 1, req->rect.y + req->rect.h - 1);
-		}
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
+		// inside clipping region
+		glScissor(crect.x, crect.y, crect.w, crect.h);
+		glEnable(GL_SCISSOR_TEST);
 
-		// all is fine
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		// fill rectangle
+		glRecti(req->rect.x						+ xoff,
+				req->rect.y						+ yoff,
+				req->rect.x + req->rect.w - 1	+ xoff,
+				req->rect.y + req->rect.h - 1	+ yoff);
 	}
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -167,57 +363,58 @@ void MMSFBBackEndInterface::fillTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 
 void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 #ifdef  __HAVE_OPENGL__
-	if (!req->surface->is_sub_surface) {
-		// lock destination fbo and prepare it
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_TEXTURE_2D);
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
-		// setup drawing
-		INIT_OGL_DRAWING(req->surface);
+	// setup drawing
+	INIT_OGL_DRAWING(req->surface);
 
-		// set the clip to ogl
-		MMSFBRectangle crect;
-		int x, y, w, h;
-		if (req->triangle.x2 >= req->triangle.x1) {
-			x = req->triangle.x1;
-			w = req->triangle.x2 - req->triangle.x1 + 1;
-		}
-		else {
-			x = req->triangle.x2;
-			w = req->triangle.x1 - req->triangle.x2 + 1;
-		}
-		if (req->triangle.y2 >= req->triangle.y1) {
-			y = req->triangle.y1;
-			h = req->triangle.y2 - req->triangle.y1 + 1;
-		}
-		else {
-			y = req->triangle.y2;
-			h = req->triangle.y1 - req->triangle.y2 + 1;
-		}
-		if (req->triangle.x3 < x) x = req->triangle.x3;
-		if (req->triangle.x3 > x + w - 1) w = req->triangle.x3 - x + 1;
-		if (req->triangle.y3 < y) y = req->triangle.y3;
-		if (req->triangle.y3 > y + h - 1) h = req->triangle.y3 - y + 1;
+	// get subsurface offsets
+	GET_OFFS(req->surface);
 
-		if (req->surface->calcClip(x, y, w, h, &crect)) {
-			// inside clipping region
-			glScissor(crect.x, crect.y, crect.w, crect.h);
-			glEnable(GL_SCISSOR_TEST);
-
-			// fill triangle
-			glBegin(GL_TRIANGLES);
-			glVertex2i(req->triangle.x1, req->triangle.y1);
-			glVertex2i(req->triangle.x2, req->triangle.y2);
-			glVertex2i(req->triangle.x3, req->triangle.y3);
-			glEnd();
-		}
-
-		// all is fine
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	int x, y, w, h;
+	if (req->triangle.x2 >= req->triangle.x1) {
+		x = req->triangle.x1;
+		w = req->triangle.x2 - req->triangle.x1 + 1;
 	}
+	else {
+		x = req->triangle.x2;
+		w = req->triangle.x1 - req->triangle.x2 + 1;
+	}
+	if (req->triangle.y2 >= req->triangle.y1) {
+		y = req->triangle.y1;
+		h = req->triangle.y2 - req->triangle.y1 + 1;
+	}
+	else {
+		y = req->triangle.y2;
+		h = req->triangle.y1 - req->triangle.y2 + 1;
+	}
+	if (req->triangle.x3 < x) x = req->triangle.x3;
+	if (req->triangle.x3 > x + w - 1) w = req->triangle.x3 - x + 1;
+	if (req->triangle.y3 < y) y = req->triangle.y3;
+	if (req->triangle.y3 > y + h - 1) h = req->triangle.y3 - y + 1;
+
+	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
+		// inside clipping region
+		glScissor(crect.x, crect.y, crect.w, crect.h);
+		glEnable(GL_SCISSOR_TEST);
+
+		// fill triangle
+		glBegin(GL_TRIANGLES);
+		glVertex2i(req->triangle.x1 + xoff, req->triangle.y1 + yoff);
+		glVertex2i(req->triangle.x2 + xoff, req->triangle.y2 + yoff);
+		glVertex2i(req->triangle.x3 + xoff, req->triangle.y3 + yoff);
+		glEnd();
+	}
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -231,52 +428,53 @@ void MMSFBBackEndInterface::drawLine(MMSFBSurface *surface, MMSFBRegion &region)
 
 void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 #ifdef  __HAVE_OPENGL__
-	if (!req->surface->is_sub_surface) {
-		// lock destination fbo and prepare it
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_TEXTURE_2D);
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
-		// setup drawing
-		INIT_OGL_DRAWING(req->surface);
+	// setup drawing
+	INIT_OGL_DRAWING(req->surface);
 
-		// set the clip to ogl
-		MMSFBRectangle crect;
-		int x, y, w, h;
-		if (req->region.x2 >= req->region.x1) {
-			x = req->region.x1;
-			w = req->region.x2 - req->region.x1 + 1;
-		}
-		else {
-			x = req->region.x2;
-			w = req->region.x1 - req->region.x2 + 1;
-		}
-		if (req->region.y2 >= req->region.y1) {
-			y = req->region.y1;
-			h = req->region.y2 - req->region.y1 + 1;
-		}
-		else {
-			y = req->region.y2;
-			h = req->region.y1 - req->region.y2 + 1;
-		}
+	// get subsurface offsets
+	GET_OFFS(req->surface);
 
-		if (req->surface->calcClip(x, y, w, h, &crect)) {
-			// inside clipping region
-			glScissor(crect.x, crect.y, crect.w, crect.h);
-			glEnable(GL_SCISSOR_TEST);
-
-			// draw line
-			glBegin(GL_LINES);
-			glVertex2i(req->region.x1, req->region.y1);
-			glVertex2i(req->region.x2, req->region.y2);
-			glEnd();
-		}
-
-		// all is fine
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	int x, y, w, h;
+	if (req->region.x2 >= req->region.x1) {
+		x = req->region.x1;
+		w = req->region.x2 - req->region.x1 + 1;
 	}
+	else {
+		x = req->region.x2;
+		w = req->region.x1 - req->region.x2 + 1;
+	}
+	if (req->region.y2 >= req->region.y1) {
+		y = req->region.y1;
+		h = req->region.y2 - req->region.y1 + 1;
+	}
+	else {
+		y = req->region.y2;
+		h = req->region.y1 - req->region.y2 + 1;
+	}
+
+	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
+		// inside clipping region
+		glScissor(crect.x, crect.y, crect.w, crect.h);
+		glEnable(GL_SCISSOR_TEST);
+
+		// draw line
+		glBegin(GL_LINES);
+		glVertex2i(req->region.x1 + xoff, req->region.y1 + yoff);
+		glVertex2i(req->region.x2 + xoff, req->region.y2 + yoff);
+		glEnd();
+	}
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -290,37 +488,38 @@ void MMSFBBackEndInterface::drawRectangle(MMSFBSurface *surface, MMSFBRectangle 
 
 void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
-	if (!req->surface->is_sub_surface) {
-		// lock destination fbo and prepare it
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_TEXTURE_2D);
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
-		// setup drawing
-		INIT_OGL_DRAWING(req->surface);
+	// setup drawing
+	INIT_OGL_DRAWING(req->surface);
 
-		// set the clip to ogl
-		MMSFBRectangle crect;
-		if (req->surface->calcClip(req->rect.x, req->rect.y, req->rect.w, req->rect.h, &crect)) {
-			// inside clipping region
-			glScissor(crect.x, crect.y, crect.w, crect.h);
-			glEnable(GL_SCISSOR_TEST);
+	// get subsurface offsets
+	GET_OFFS(req->surface);
 
-			// draw rectangle
-			glBegin(GL_LINE_STRIP);
-			glVertex2i(req->rect.x, req->rect.y);
-			glVertex2i(req->rect.x+req->rect.w-1, req->rect.y);
-			glVertex2i(req->rect.x+req->rect.w-1, req->rect.y+req->rect.h-1);
-			glVertex2i(req->rect.x, req->rect.y+req->rect.h-1);
-			glVertex2i(req->rect.x, req->rect.y);
-			glEnd();
-		}
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
+		// inside clipping region
+		glScissor(crect.x, crect.y, crect.w, crect.h);
+		glEnable(GL_SCISSOR_TEST);
 
-		// all is fine
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		// draw rectangle
+		glBegin(GL_LINE_STRIP);
+		glVertex2i(req->rect.x				+ xoff, req->rect.y					+ yoff);
+		glVertex2i(req->rect.x+req->rect.w-1+ xoff, req->rect.y					+ yoff);
+		glVertex2i(req->rect.x+req->rect.w-1+ xoff, req->rect.y+req->rect.h-1	+ yoff);
+		glVertex2i(req->rect.x				+ xoff, req->rect.y+req->rect.h-1	+ yoff);
+		glVertex2i(req->rect.x				+ xoff, req->rect.y					+ yoff);
+		glEnd();
 	}
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -334,58 +533,59 @@ void MMSFBBackEndInterface::drawTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 
 void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 #ifdef  __HAVE_OPENGL__
-	if (!req->surface->is_sub_surface) {
-		// lock destination fbo and prepare it
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_TEXTURE_2D);
+	// lock destination fbo and prepare it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
-		// setup drawing
-		INIT_OGL_DRAWING(req->surface);
+	// setup drawing
+	INIT_OGL_DRAWING(req->surface);
 
-		// set the clip to ogl
-		MMSFBRectangle crect;
-		int x, y, w, h;
-		if (req->triangle.x2 >= req->triangle.x1) {
-			x = req->triangle.x1;
-			w = req->triangle.x2 - req->triangle.x1 + 1;
-		}
-		else {
-			x = req->triangle.x2;
-			w = req->triangle.x1 - req->triangle.x2 + 1;
-		}
-		if (req->triangle.y2 >= req->triangle.y1) {
-			y = req->triangle.y1;
-			h = req->triangle.y2 - req->triangle.y1 + 1;
-		}
-		else {
-			y = req->triangle.y2;
-			h = req->triangle.y1 - req->triangle.y2 + 1;
-		}
-		if (req->triangle.x3 < x) x = req->triangle.x3;
-		if (req->triangle.x3 > x + w - 1) w = req->triangle.x3 - x + 1;
-		if (req->triangle.y3 < y) y = req->triangle.y3;
-		if (req->triangle.y3 > y + h - 1) h = req->triangle.y3 - y + 1;
+	// get subsurface offsets
+	GET_OFFS(req->surface);
 
-		if (req->surface->calcClip(x, y, w, h, &crect)) {
-			// inside clipping region
-			glScissor(crect.x, crect.y, crect.w, crect.h);
-			glEnable(GL_SCISSOR_TEST);
-
-			// draw triangle
-			glBegin(GL_LINE_STRIP);
-			glVertex2i(req->triangle.x1, req->triangle.y1);
-			glVertex2i(req->triangle.x2, req->triangle.y2);
-			glVertex2i(req->triangle.x3, req->triangle.y3);
-			glVertex2i(req->triangle.x1, req->triangle.y1);
-			glEnd();
-		}
-
-		// all is fine
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	int x, y, w, h;
+	if (req->triangle.x2 >= req->triangle.x1) {
+		x = req->triangle.x1;
+		w = req->triangle.x2 - req->triangle.x1 + 1;
 	}
+	else {
+		x = req->triangle.x2;
+		w = req->triangle.x1 - req->triangle.x2 + 1;
+	}
+	if (req->triangle.y2 >= req->triangle.y1) {
+		y = req->triangle.y1;
+		h = req->triangle.y2 - req->triangle.y1 + 1;
+	}
+	else {
+		y = req->triangle.y2;
+		h = req->triangle.y1 - req->triangle.y2 + 1;
+	}
+	if (req->triangle.x3 < x) x = req->triangle.x3;
+	if (req->triangle.x3 > x + w - 1) w = req->triangle.x3 - x + 1;
+	if (req->triangle.y3 < y) y = req->triangle.y3;
+	if (req->triangle.y3 > y + h - 1) h = req->triangle.y3 - y + 1;
+
+	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
+		// inside clipping region
+		glScissor(crect.x, crect.y, crect.w, crect.h);
+		glEnable(GL_SCISSOR_TEST);
+
+		// draw triangle
+		glBegin(GL_LINE_STRIP);
+		glVertex2i(req->triangle.x1 + xoff, req->triangle.y1 + yoff);
+		glVertex2i(req->triangle.x2 + xoff, req->triangle.y2 + yoff);
+		glVertex2i(req->triangle.x3 + xoff, req->triangle.y3 + yoff);
+		glVertex2i(req->triangle.x1 + xoff, req->triangle.y1 + yoff);
+		glEnd();
+	}
+
+	// all is fine
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -411,18 +611,22 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface);
 
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+	GET_OFFS_SRC(req->source);
+
 	// set the clip to ogl
 	MMSFBRectangle crect;
-	if (req->surface->calcClip(req->dst_rect.x, req->dst_rect.y, req->dst_rect.w, req->dst_rect.h, &crect)) {
+	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
 		// inside clipping region
 		glScissor(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// get source region
-		double sx1 = req->src_rect.x;
-		double sy1 = req->src_rect.y;
-		double sx2 = req->src_rect.w - req->src_rect.x - 1;
-		double sy2 = req->src_rect.h - req->src_rect.y - 1;
+		double sx1 = req->src_rect.x + src_xoff;
+		double sy1 = req->src_rect.y + src_yoff;
+		double sx2 = req->src_rect.x + req->src_rect.w - 1 + src_xoff;
+		double sy2 = req->src_rect.y + req->src_rect.h - 1 + src_yoff;
 
 		// normalize source region
 		sx1 = sx1 / (req->source->config.w - 1);
@@ -431,10 +635,10 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		sy2 = sy2 / (req->source->config.h - 1);
 
 		// get destination region
-		int dx1 = req->dst_rect.x;
-		int dy1 = req->dst_rect.y;
-		int dx2 = req->dst_rect.x + req->dst_rect.w - 1;
-		int dy2 = req->dst_rect.y + req->dst_rect.h - 1;
+		int dx1 = req->dst_rect.x + xoff;
+		int dy1 = req->dst_rect.y + yoff;
+		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
+		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
 
 		// blit source texture to the destination
 		glBegin(GL_QUADS);
@@ -457,4 +661,132 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
+
+void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+											  int src_width, int src_height,MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect) {
+	BEI_STRETCHBLITBUFFER req;
+	req.type			= BEI_REQUEST_TYPE_STRETCHBLITBUFFER;
+	req.surface			= surface;
+	req.src_planes		= src_planes;
+	req.src_pixelformat	= src_pixelformat;
+	req.src_width		= src_width;
+	req.src_height		= src_height;
+	req.src_rect		= src_rect;
+	req.dst_rect		= dst_rect;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req) {
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and bind source texture to it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glEnable(GL_TEXTURE_2D);
+
+	// allocate a texture name
+	GLuint texture;
+	glGenTextures( 1, &texture );
+    glBindTexture (GL_TEXTURE_2D, texture);
+    // select modulate to mix texture with color for shading
+    //glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+    // when texture area is small, bilinear filter the closest mipmap
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                     GL_LINEAR_MIPMAP_NEAREST );
+    // when texture area is large, bilinear filter the original
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+    // the texture wraps over at the edges (repeat)
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+	glTexImage2D(GL_TEXTURE_2D,
+	 	0,
+	 	GL_RGBA,
+	 	req->src_width,
+	 	req->src_height,
+	 	0,
+	 	GL_RGBA,
+	 	GL_UNSIGNED_BYTE,
+	 	req->src_planes->ptr);
+
+/*
+unsigned char pix[8*8];
+memset(pix, 0, sizeof(pix));
+pix[0]=0xff;
+pix[9]=0x90;
+pix[18]=0x40;
+glTexImage2D(GL_TEXTURE_2D,
+	0,
+	GL_ALPHA,
+	8,
+	8,
+	0,
+	GL_ALPHA,
+	GL_UNSIGNED_BYTE,
+	pix);
+*/
+
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	// setup blitting
+	INIT_OGL_BLITTING(req->surface);
+
+//glDisable(GL_BLEND);
+//glColor4ub(255, 255, 0, 255);
+
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
+		// inside clipping region
+		glScissor(crect.x, crect.y, crect.w, crect.h);
+		glEnable(GL_SCISSOR_TEST);
+
+		// get source region
+		double sx1 = req->src_rect.x;
+		double sy1 = req->src_rect.y;
+		double sx2 = req->src_rect.x + req->src_rect.w - 1;
+		double sy2 = req->src_rect.y + req->src_rect.h - 1;
+
+		// normalize source region
+		sx1 = sx1 / (req->src_width - 1);
+		sy1 = sy1 / (req->src_height - 1);
+		sx2 = sx2 / (req->src_width - 1);
+		sy2 = sy2 / (req->src_height - 1);
+
+		// get destination region
+		int dx1 = req->dst_rect.x + xoff;
+		int dy1 = req->dst_rect.y + yoff;
+		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
+		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
+
+		// blit source texture to the destination
+		glBegin(GL_QUADS);
+			glTexCoord2f(sx1, sy1);
+			glVertex2i(dx1, dy1);
+
+			glTexCoord2f(sx2, sy1);
+			glVertex2i(dx2, dy1);
+
+			glTexCoord2f(sx2, sy2);
+			glVertex2i(dx2, dy2);
+
+			glTexCoord2f(sx1, sy2);
+			glVertex2i(dx1, dy2);
+		glEnd();
+	}
+
+	// all is fine
+	glDisable(GL_TEXTURE_2D);
+	glDeleteTextures(1, &texture);
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+
+#endif
+}
+
 

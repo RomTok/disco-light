@@ -43,6 +43,7 @@
 #include "mmsgui/fb/mmsfblayer.h"
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"
+#include "mmsgui/fb/mmsfbbackendinterface.h"
 
 #ifdef __HAVE_OPENGL__
 #define LOCK_OGL(fbo)	{ mmsfb->lock(); glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); glDisable(GL_SCISSOR_TEST); }
@@ -101,10 +102,12 @@ class MMSFB {
 
 #ifdef __HAVE_OPENGL__
         //! x-visual
-	    XVisualInfo *xvi;
+//	    XVisualInfo *xvi;
 
 	    //! opengl context
-        GLXContext	glx_context;
+//        GLXContext	glx_context;
+
+        MMSFBBackEndInterface	*bei;
 #endif
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];

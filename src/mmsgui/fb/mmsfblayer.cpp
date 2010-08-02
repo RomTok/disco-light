@@ -246,7 +246,7 @@ bool MMSFBLayer::isInitialized() {
 #ifdef __HAVE_OPENGL__
 		// OGL
 		return this->initialized;
-		return (mmsfb->glx_context != 0);
+//		return (mmsfb->glx_context != 0);
 #endif
 	}
 #endif
@@ -597,7 +597,10 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		Colormap colormap;
 	    Window root = RootWindow(mmsfb->x_display, mmsfb->x_screen);
 
-	    if (mmsfb->backend == MMSFB_BE_X11) {
+
+
+
+
 		if(config.pixelformat == MMSFB_PF_ARGB) {
 //TODO: change the ifdef, what to do if XRenderComposite not available?
 #ifdef __HAVE_XV__
@@ -1192,11 +1195,16 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			this->impl.x_screen = mmsfb->x_screen;
 #endif
 		}
-	    }
-	    else {
+
+
+	    if (mmsfb->backend == MMSFB_BE_OGL) {
 #ifdef __HAVE_OPENGL__
+			XUnlockDisplay(mmsfb->x_display);
+	    	mmsfb->bei->init(mmsfb->x_display, mmsfb->x_screen, this->x_window, mmsfb->x11_win_rect);
+			XLockDisplay(mmsfb->x_display);
 #endif
 	    }
+
 
 		if(this->config.id == 0) {
 			mmsfb->input_window = this->x_window;
@@ -1250,7 +1258,6 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			}
 		}
 		XUnlockDisplay(mmsfb->x_display);
-
 
 		return true;
 #endif
@@ -1436,7 +1443,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #ifdef __HAVE_OPENGL__
 		// create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
-									mmsfb->glx_context, mmsfb->x_display, mmsfb->xvi);
+									mmsfb->bei->glx_context, mmsfb->x_display, mmsfb->bei->xvi);
 		if (!*surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
