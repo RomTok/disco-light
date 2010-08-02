@@ -43,12 +43,12 @@
 #include <xine.h>
 #endif
 #include <map>
+#include "mmsgui/mmsgui.h"
+#include "mmstools/mmstools.h"
 #ifdef __HAVE_XV__
 #include <X11/extensions/Xv.h>
 #include <X11/extensions/Xvlib.h>
 #endif
-#include "mmsgui/mmsgui.h"
-#include "mmstools/mmstools.h"
 
 
 #ifdef __HAVE_GSTREAMER__
