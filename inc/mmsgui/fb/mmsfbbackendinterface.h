@@ -49,7 +49,8 @@ private:
 		BEI_REQUEST_TYPE_DRAWRECTANGLE,
 		BEI_REQUEST_TYPE_DRAWTRIANGLE,
 		BEI_REQUEST_TYPE_STRETCHBLIT,
-		BEI_REQUEST_TYPE_STRETCHBLITBUFFER
+		BEI_REQUEST_TYPE_STRETCHBLITBUFFER,
+		BEI_REQUEST_TYPE_DRAWSTRING
 	} BEI_REQUEST_TYPE;
 
 	typedef struct {
@@ -124,6 +125,15 @@ private:
 		MMSFBRectangle			dst_rect;
 	} BEI_STRETCHBLITBUFFER;
 
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		MMSFBSurface		*surface;
+		string				text;
+		int					len;
+		int					x;
+		int					y;
+	} BEI_DRAWSTRING;
+
 	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);
 	void processInit(BEI_INIT *req);
 	void processSwap(BEI_SWAP *req);
@@ -136,6 +146,7 @@ private:
 	void processDrawTriangle(BEI_DRAWTRIANGLE *req);
 	void processStretchBlit(BEI_STRETCHBLIT *req);
 	void processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req);
+	void processDrawString(BEI_DRAWSTRING *req);
 
 public:
 #ifdef  __HAVE_OPENGL__
@@ -163,6 +174,7 @@ public:
 	void stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
 	void stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
 						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);
 
 };
 

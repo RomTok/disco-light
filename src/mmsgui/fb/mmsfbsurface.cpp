@@ -6251,6 +6251,16 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 	else
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
+		if (!this->is_sub_surface) {
+			mmsfb->bei->drawString(this, text, len, x, y);
+		}
+		else {
+			CLIPSUBSURFACE
+
+			mmsfb->bei->drawString(this, text, len, x, y);
+
+			UNCLIPSUBSURFACE
+		}
 #endif
 	}
 	else {
