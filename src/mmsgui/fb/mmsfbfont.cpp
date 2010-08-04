@@ -123,8 +123,8 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender >> 6);
     	this->height = this->ascender + this->descender + 1;
 
-    	// allocate my glyph pool, currently fixed size of 50000 byte should be enough for up to 100 glyphs
-    	this->glyphpool_size = 50000;
+    	// allocate my glyph pool, currently fixed size of 100000 byte should be enough for up to 150 glyphs
+    	this->glyphpool_size = 100000;
     	this->glyphpool = (unsigned char *)malloc(this->glyphpool_size);
     	this->glyphpool_ptr = this->glyphpool;
 
@@ -184,19 +184,21 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
 			this->glyph.height	= g->bitmap.rows;
 			this->glyph.advanceX= g->advance.x;
 
-			// add glyph to charmap
+			// add glyph to charmap, we use a pitch which is divisible by 4 needed e.g. for OGL textures
 	    	lock();
-			int glyph_size = this->glyph.width * this->glyph.height;
+			int glyph_pitch = this->glyph.width + ((this->glyph.width % 4)?4 - (this->glyph.width % 4):0);
+			int glyph_size = glyph_pitch * this->glyph.height;
 			if (this->glyphpool + this->glyphpool_size - this->glyphpool_ptr >= glyph_size) {
 				// have free space in glyph pool
-				if (this->glyph.pitch != this->glyph.width) {
+				if (this->glyph.pitch != glyph_pitch) {
 					// different pitch, copy line per line
+					memset(this->glyphpool_ptr, 0, glyph_size);
 					for (int i = 0; i < this->glyph.height; i++) {
 						memcpy(this->glyphpool_ptr, this->glyph.buffer, this->glyph.width);
 						this->glyph.buffer+=this->glyph.pitch;
-						this->glyphpool_ptr+=this->glyph.width;
+						this->glyphpool_ptr+=glyph_pitch;
 					}
-					this->glyph.pitch = this->glyph.width;
+					this->glyph.pitch = glyph_pitch;
 				}
 				else {
 					// one copy can do it
