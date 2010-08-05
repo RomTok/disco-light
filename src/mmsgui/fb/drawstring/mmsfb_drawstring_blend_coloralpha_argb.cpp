@@ -69,7 +69,7 @@ void mmsfb_drawstring_blend_coloralpha_argb(MMSFBSurfacePlanes *dst_planes, MMSF
 	ALPHA++;
 	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
 		// load the glyph
-		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(font, character);
 
 		// start rendering of glyph to destination
 		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned int);

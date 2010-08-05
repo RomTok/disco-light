@@ -56,7 +56,7 @@ void mmsfb_drawstring_blend_rgb16(MMSFBSurfacePlanes *dst_planes, MMSFBFont *fon
 	register unsigned short int SRCPIX = (((unsigned int)color.r >> 3) << 11) | (((unsigned int)color.g >> 2) << 5) | ((unsigned int)color.b >> 3);
 	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
 		// load the glyph
-		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(font, character);
 
 		// start rendering of glyph to destination
 		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned short int);

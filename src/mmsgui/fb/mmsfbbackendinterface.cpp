@@ -199,8 +199,19 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	glLoadIdentity();
 	glViewport(0, 0, req->x11_win_rect.w, req->x11_win_rect.h);
 	glOrtho(0, req->x11_win_rect.w, 0, req->x11_win_rect.h, 10.0, -10.0);
+//	glOrtho(0, req->x11_win_rect.w, -req->x11_win_rect.h, 0, 10.0, -10.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+/*
+glColor4ub(0xff,0xff,0xff,0xff);
+glRecti(0,0,100,-50);
+glColor4ub(0xff,0x00,0xff,0xff);
+glRecti(0,-50,100,-100);
+glXSwapBuffers(this->x_display, this->x_window);
+sleep(10);
+*/
+
 #endif
 
 }
@@ -246,7 +257,7 @@ void MMSFBBackEndInterface::processAlloc(BEI_ALLOC *req) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, req->surface->config.w, req->surface->config.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, req->surface->config.w, req->surface->config.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	// ---
 //remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
 	glGenRenderbuffersEXT(1, &sb->ogl_rb);
@@ -709,7 +720,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	 	req->src_width,
 	 	req->src_height,
 	 	0,
-	 	GL_RGBA,
+	 	GL_BGRA,
 	 	GL_UNSIGNED_BYTE,
 	 	req->src_planes->ptr);
 
@@ -806,99 +817,55 @@ void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int 
 void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #ifdef  __HAVE_OPENGL__
 
+	// lock destination fbo and bind source texture to it
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+	glEnable(GL_TEXTURE_2D);
 
+	// allocate a texture name
+	GLuint texture;
+	glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
-	// get the first destination ptr/pitch
-	void *dst_ptr = NULL;
-	int dst_pitch = 0;
+    // select modulate to mix texture with color for shading
+//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND );
+//    glTexEnvf( GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE );
+//    glTexEnvf( GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1.0 );
+//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
 
-	// lock font and destination surface
-//	MMSFBSURFACE_BLIT_TEXT_INIT(2);
-	int DY = 0;   req->surface->config.font->getHeight(&DY);
-	int desc = 0; req->surface->config.font->getDescender(&desc);
-	DY -= desc + 1; \
-	int dst_pitch_pix = dst_pitch >> 2;
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	// setup blitting
+    glEnable(GL_BLEND);
+	glColor4ub(req->surface->config.color.r,
+			   req->surface->config.color.g,
+			   req->surface->config.color.b,
+			   req->surface->config.color.a);
+
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+
+	// get vertical font settings
+	int DY = 0, desc = 0;
+	req->surface->config.font->getHeight(&DY);
+	req->surface->config.font->getDescender(&desc);
+	DY -= desc + 1;
 
 	// for all characters
-	unsigned int OLDDST = 0;
-	unsigned int OLDSRC = 0;
-	register unsigned int d = 0;
-//	register unsigned int SRCPIX = 0xff000000 | (((unsigned int)color.r) << 16) | (((unsigned int)color.g) << 8) | (unsigned int)color.b;
 	MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {
 
 		// load the glyph
-//		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character);
-
-		int			  src_pitch_pix;
-		int 		  src_w;
-		int 		  src_h;
-		unsigned char *src;
-		MMSFBFont_Glyph *glyph = req->surface->config.font->getGlyph(character);
-		if (glyph) {
-			src_pitch_pix = glyph->pitch;
-			src_w         = glyph->width;
-			src_h         = glyph->height;
-			src           = glyph->buffer;
-		}
-
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(req->surface->config.font, character);
 
 		// start rendering of glyph to destination
-//		MMSFBSURFACE_BLIT_TEXT_START_RENDER(unsigned int);
-
 		if (glyph) {
-
+			// calc destination position of the character
 			int dx = req->x + glyph->left;
 			int dy = req->y + DY - glyph->top;
-
-////////////////////////////////
-
-
-			// lock destination fbo and bind source texture to it
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-			glDisable(GL_SCISSOR_TEST);
-			glEnable(GL_TEXTURE_2D);
-
-			// allocate a texture name
-			GLuint texture;
-			glGenTextures( 1, &texture );
-		    glBindTexture (GL_TEXTURE_2D, texture);
-		    // select modulate to mix texture with color for shading
-		    //glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-		    // when texture area is small, bilinear filter the closest mipmap
-		    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		                     GL_LINEAR_MIPMAP_NEAREST );
-		    // when texture area is large, bilinear filter the original
-		    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-		    // the texture wraps over at the edges (repeat)
-		    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-		    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-
-		    // specify two-dimensional texture image
-		    // we use pitch instead of width here, because we need a width which is divisible by 4!!!
-			glTexImage2D(GL_TEXTURE_2D,
-				0,
-				GL_ALPHA,
-				src_pitch_pix,
-				src_h,
-				0,
-				GL_ALPHA,
-				GL_UNSIGNED_BYTE,
-				src);
-
-
-			 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-			// setup blitting
-			INIT_OGL_BLITTING(req->surface);
-
-//		glDisable(GL_BLEND);
-		glEnable(GL_BLEND);
-		glColor4ub(255, 255, 255, 255);
-
-			// get subsurface offsets
-			GET_OFFS(req->surface);
 
 			// set the clip to ogl
 			MMSFBRectangle crect;
@@ -919,7 +886,19 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dx2 = dx + src_w - 1 + xoff;
 				int dy2 = dy + src_h - 1 + yoff;
 
-				// blit source texture to the destination
+			    // specify two-dimensional glyph texture
+			    // we use pitch instead of width here, because we need a width which is divisible by 4!!!
+				glTexImage2D(GL_TEXTURE_2D,
+					0,
+					GL_ALPHA,
+					src_pitch_pix,
+					src_h,
+					0,
+					GL_ALPHA,
+					GL_UNSIGNED_BYTE,
+					src);
+
+				// blit glyph texture to the destination
 				glBegin(GL_QUADS);
 					glTexCoord2f(sx1, sy1);
 					glVertex2i(dx1, dy1);
@@ -935,105 +914,16 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				glEnd();
 			}
 
-			// all is fine
-			glDisable(GL_TEXTURE_2D);
-			glDeleteTextures(1, &texture);
-			glDisable(GL_SCISSOR_TEST);
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-
-
-
-
-
-///////////////////////////////
-
-
-
-
-
-#ifdef fffff
-/*			if (dx < clipreg.x1) { \
-				src_w -= clipreg.x1 - dx; \
-				src   += clipreg.x1 - dx; \
-				dx     = clipreg.x1; } \
-			if (dx + src_w - 1 > clipreg.x2) src_w = clipreg.x2 - dx + 1; \
-			if (dy < clipreg.y1) { \
-				src_h -= clipreg.y1 - dy; \
-				src   +=(clipreg.y1 - dy) * src_pitch_pix; \
-				dy     = clipreg.y1; } \
-			if (dy + src_h - 1 > clipreg.y2) src_h = clipreg.y2 - dy + 1; \*/
-			unsigned char *src_end = src + src_h * src_pitch_pix;
-			unsigned char *line_end = src + src_w;
-			int src_pitch_pix_diff = src_pitch_pix - src_w;
-			int dst_pitch_pix_diff = dst_pitch_pix - src_w;
-//			pt *dst = ((pt *)dst_ptr) + dx + dy * dst_pitch_pix;
-
-		// through the pixels
-		while (src < src_end) {
-			while (src < line_end) {
-				// load pixel from memory
-				register unsigned int SRC = *src;
-
-				// is the source alpha channel 0x00 or 0xff?
-				register unsigned int A = SRC;
-				if (A == 0xff) {
-					// source pixel is not transparent, copy it directly to the destination
-//					*dst = SRCPIX;
-				}
-				else
-				if (A) {
-					// source alpha is > 0x00 and < 0xff
-/*					register unsigned int DST = *dst;
-
-					if ((DST==OLDDST)&&(SRC==OLDSRC)) {
-						// same pixel, use the previous value
-						*dst = d;
-					    dst++;
-					    src++;
-						continue;
-					}
-					OLDDST = DST;
-					OLDSRC = SRC;
-
-					register unsigned int SA= 0x100 - A;
-					unsigned int a = DST >> 24;
-					unsigned int r = (DST << 8) >> 24;
-					unsigned int g = (DST << 16) >> 24;
-					unsigned int b = DST & 0xff;
-
-					// invert src alpha
-				    a = (SA * a) >> 8;
-				    r = (SA * r) >> 8;
-				    g = (SA * g) >> 8;
-				    b = (SA * b) >> 8;
-
-				    // add src to dst
-				    a += A;
-				    A++;
-				    r += (A * color.r) >> 8;
-				    g += (A * color.g) >> 8;
-				    b += (A * color.b) >> 8;
-				    d =   ((a >> 8) ? 0xff000000 : (a << 24))
-						| ((r >> 8) ? 0xff0000   : (r << 16))
-						| ((g >> 8) ? 0xff00     : (g << 8))
-				    	| ((b >> 8) ? 0xff 		 :  b);
-					*dst = d;*/
-				}
-
-				src++;
-//				dst++;
-			}
-			line_end+= src_pitch_pix;
-			src     += src_pitch_pix_diff;
-//			dst     += dst_pitch_pix_diff;
+			// prepare for next loop
+			req->x+=glyph->advanceX >> 6;
 		}
-#endif
-		// prepare for next loop
-//		MMSFBSURFACE_BLIT_TEXT_END_RENDER;
-		req->x+=glyph->advanceX >> 6; }
 	}}
 
-
+	// all is fine
+	glDisable(GL_TEXTURE_2D);
+	glDeleteTextures(1, &texture);
+	glDisable(GL_SCISSOR_TEST);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 #endif
 }

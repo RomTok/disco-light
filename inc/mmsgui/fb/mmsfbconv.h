@@ -892,7 +892,7 @@ if (!AA) { \
 	int dst_pitch_pix = dst_pitch >> pw;
 
 //! used for text output
-#define MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(character) \
+#define MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(font, character) \
 	int			  src_pitch_pix; \
 	int 		  src_w; \
 	int 		  src_h; \
