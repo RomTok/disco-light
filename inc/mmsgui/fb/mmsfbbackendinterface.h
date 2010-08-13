@@ -171,7 +171,10 @@ public:
 	void drawLine(MMSFBSurface *surface, MMSFBRegion &region);
 	void drawRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
 	void drawTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
+	void blit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, int x, int y);
 	void stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+	void blitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+				    int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y);
 	void stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
 						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
 	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);

@@ -4737,16 +4737,14 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 
 		if (!this->is_sub_surface) {
 
-			MMSFBRectangle dst = MMSFBRectangle(x, y, src.w, src.h);
-			mmsfb->bei->stretchBlit(this, source, src, dst);
+			mmsfb->bei->blit(this, source, src, x, y);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			MMSFBRectangle dst = MMSFBRectangle(x, y, src.w, src.h);
-			mmsfb->bei->stretchBlit(this, source, src, dst);
+			mmsfb->bei->blit(this, source, src, x, y);
 
 			UNCLIPSUBSURFACE
 
@@ -4816,16 +4814,14 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
 
 		if (!this->is_sub_surface) {
 
-			MMSFBRectangle dst = MMSFBRectangle(x, y, src.w, src.h);
-			mmsfb->bei->stretchBlitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, dst);
+			mmsfb->bei->blitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, x, y);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			MMSFBRectangle dst = MMSFBRectangle(x, y, src.w, src.h);
-			mmsfb->bei->stretchBlitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, dst);
+			mmsfb->bei->blitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, x, y);
 
 			UNCLIPSUBSURFACE
 
