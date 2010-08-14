@@ -64,37 +64,51 @@
 
 #define OGL_GLSCISSOR(X, Y, W, H) glScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
 
-#define OGL_FILL_RECTANGLE(x1, y1, x2, y2) glRecti(x1, BEI_SURFACE_BOTTOM - (y1), x2, BEI_SURFACE_BOTTOM - (y2))
+#define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2i(x, BEI_SURFACE_BOTTOM - (y)); glEnd(); }
+
+#define OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
+		if (x1 == x2 && y1 == y2) OGL_DRAW_POINT(x1, y1) else
+
+#define OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) \
+		if (x1 == x2 && x1 == x3 && y1 == y2 && y1 == y3) OGL_DRAW_POINT(x1, y1) else
+
+#define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
+		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
+		glRecti(x1, BEI_SURFACE_BOTTOM - (y1), x2, BEI_SURFACE_BOTTOM - (y2));
 
 #define OGL_DRAW_LINE(x1, y1, x2, y2) \
+		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
 		glBegin(GL_LINES); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
 			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
-		glEnd();
+		glEnd(); }
 
 #define OGL_DRAW_RECTANGLE(x1, y1, x2, y2) \
+		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
 		glBegin(GL_LINE_STRIP); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
 			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y1)); \
 			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y2)); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
-		glEnd();
+		glEnd(); }
 
 #define OGL_FILL_TRIANGLE(x1, y1, x2, y2, x3, y3) \
+		OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) { \
 		glBegin(GL_TRIANGLES); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
 			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
 			glVertex2i(x3, BEI_SURFACE_BOTTOM - (y3)); \
-		glEnd();
+		glEnd(); }
 
 #define OGL_DRAW_TRIANGLE(x1, y1, x2, y2, x3, y3) \
+		OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) { \
 		glBegin(GL_LINE_STRIP); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
 			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
 			glVertex2i(x3, BEI_SURFACE_BOTTOM - (y3)); \
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
-		glEnd();
+		glEnd(); }
 
 #define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2) \
 		glBegin(GL_QUADS); \
