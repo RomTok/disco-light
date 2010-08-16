@@ -181,7 +181,7 @@ bool MMSInputLISHandler::checkDevice() {
 				dev->touch.swapX = config.getTouchSwapX();
 				dev->touch.swapY = config.getTouchSwapY();
 				dev->touch.swapXY = config.getTouchSwapXY();
-
+/*
 				if (dev->touch.swapXY) {
 					int t;
 					t = dev->touch.xfac;
@@ -191,7 +191,7 @@ bool MMSInputLISHandler::checkDevice() {
 					t = dev->touch.pointer_xpos;
 					dev->touch.pointer_xpos = dev->touch.pointer_ypos;
 					dev->touch.pointer_ypos = t;
-				}
+				}*/
 				//////////////////////////////////////////////////////////////////////////
 
 /*
