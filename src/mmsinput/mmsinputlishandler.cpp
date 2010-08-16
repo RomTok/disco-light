@@ -167,7 +167,9 @@ bool MMSInputLISHandler::checkDevice() {
 				// calculate a factor between screen and pointer rectangle
 				if ((dev->touch.pointer_rect.w > 0)&&(dev->touch.pointer_rect.h > 0)) {
 					dev->touch.xfac = (100 * dev->touch.screen_rect.w) / dev->touch.pointer_rect.w;
+					printf("--------------\n%d, %d, %d\n", dev->touch.screen_rect.w, dev->touch.pointer_rect.w, dev->touch.xfac);
 					dev->touch.yfac = (100 * dev->touch.screen_rect.h) / dev->touch.pointer_rect.h;
+					printf("--------------\n%d, %d, %d\n", dev->touch.screen_rect.h, dev->touch.pointer_rect.h, dev->touch.yfac);
 					dev->touch.pointer_xpos = dev->touch.pointer_old_xpos = dev->touch.screen_rect.x + dev->touch.screen_rect.w / 2;
 					dev->touch.pointer_ypos = dev->touch.pointer_old_ypos = dev->touch.screen_rect.y + dev->touch.screen_rect.h / 2;
 				}
