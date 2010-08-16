@@ -927,7 +927,8 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 				}
 
 				inputevent->posy = this->device.touch.pointer_ypos;
-				printf("MMSInputManager:handleInput: ABS_Y %d(%d) received\n", linux_evt->value,inputevent->posy);
+				printf("MMSInputManager:handleInput: ABS_Y %d(%d) received, %d, %d, %d\n", linux_evt->value,inputevent->posy,
+						this->device.touch.screen_rect.y, this->device.touch.yfac, this->device.touch.pointer_rect.y);
         		//////////////////////////////////////////////////
 
 				/*
