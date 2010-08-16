@@ -142,6 +142,57 @@ bool MMSInputLISHandler::checkDevice() {
 				MMSConfigData config;
 				MMSFBRectangle rect = config.getGraphicsLayer().rect;
 				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
+
+				//////////////////////////////////////////////////////////////////////////
+				// get the screen rectangle
+				dev->touch.screen_rect.x = config.getVRect().x;
+				dev->touch.screen_rect.y = config.getVRect().y;
+				dev->touch.screen_rect.w = config.getVRect().w;
+				dev->touch.screen_rect.h = config.getVRect().h;
+
+				// get the pointer rectangle
+				dev->touch.pointer_rect.x = config.getTouchRect().x;
+				dev->touch.pointer_rect.y = config.getTouchRect().y;
+				dev->touch.pointer_rect.w = config.getTouchRect().w;
+				dev->touch.pointer_rect.h = config.getTouchRect().h;
+				if ((dev->touch.pointer_rect.w<=0)||(dev->touch.pointer_rect.h<=0))
+					if (config.getPointer()!=MMSFB_PM_FALSE) {
+						// no touch rect given but pointer needed
+						dev->touch.pointer_rect.x = dev->touch.screen_rect.x;
+						dev->touch.pointer_rect.y = dev->touch.screen_rect.y;
+						dev->touch.pointer_rect.w = dev->touch.screen_rect.w;
+						dev->touch.pointer_rect.h = dev->touch.screen_rect.h;
+					}
+
+				// calculate a factor between screen and pointer rectangle
+				if ((dev->touch.pointer_rect.w > 0)&&(dev->touch.pointer_rect.h > 0)) {
+					dev->touch.xfac = (100 * dev->touch.screen_rect.w) / dev->touch.pointer_rect.w;
+					dev->touch.yfac = (100 * dev->touch.screen_rect.h) / dev->touch.pointer_rect.h;
+					dev->touch.pointer_xpos = dev->touch.pointer_old_xpos = dev->touch.screen_rect.x + dev->touch.screen_rect.w / 2;
+					dev->touch.pointer_ypos = dev->touch.pointer_old_ypos = dev->touch.screen_rect.y + dev->touch.screen_rect.h / 2;
+				}
+				else {
+					// this means that touch pad/screen is not used
+					dev->touch.pointer_rect.w = 0;
+					dev->touch.pointer_rect.h = 0;
+				}
+				dev->touch.swapX = config.getTouchSwapX();
+				dev->touch.swapY = config.getTouchSwapY();
+				dev->touch.swapXY = config.getTouchSwapXY();
+
+				if (dev->touch.swapXY) {
+					int t;
+					t = dev->touch.xfac;
+					dev->touch.xfac = dev->touch.yfac;
+					dev->touch.yfac = t;
+
+					t = dev->touch.pointer_xpos;
+					dev->touch.pointer_xpos = dev->touch.pointer_ypos;
+					dev->touch.pointer_ypos = t;
+				}
+				//////////////////////////////////////////////////////////////////////////
+
+/*
 				dev->touch.xRes = rect.w;
 				dev->touch.yRes = rect.h;
 				dev->touch.swapX = config.getTouchSwapX();
@@ -169,6 +220,8 @@ bool MMSInputLISHandler::checkDevice() {
 				} else {
 					dev->touch.yFactor = 1.0;
 				}
+*/
+
 			}
 		}
 	}
