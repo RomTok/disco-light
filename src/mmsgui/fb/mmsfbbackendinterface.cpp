@@ -33,6 +33,10 @@
 #include "mmsgui/fb/mmsfbbackendinterface.h"
 #include "mmstools/tools.h"
 
+#define BEI_SOURCE_WIDTH  ((!req->source->is_sub_surface)?req->source->config.w:req->source->root_parent->config.w)
+#define BEI_SOURCE_HEIGHT ((!req->source->is_sub_surface)?req->source->config.h:req->source->root_parent->config.h)
+
+#define BEI_SURFACE_WIDTH  ((!req->surface->is_sub_surface)?req->surface->config.w:req->surface->root_parent->config.w)
 #define BEI_SURFACE_HEIGHT ((!req->surface->is_sub_surface)?req->surface->config.h:req->surface->root_parent->config.h)
 #define BEI_SURFACE_BOTTOM BEI_SURFACE_HEIGHT - 1
 
@@ -72,9 +76,11 @@
 #define OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) \
 		if (x1 == x2 && x1 == x3 && y1 == y2 && y1 == y3) OGL_DRAW_POINT(x1, y1) else
 
+#define XXX 0
+
 #define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
-		glRecti(x1, BEI_SURFACE_BOTTOM - (y1), x2, BEI_SURFACE_BOTTOM - (y2));
+		glRecti(x1 - XXX, BEI_SURFACE_BOTTOM - (y1 - XXX), x2 + XXX, BEI_SURFACE_BOTTOM - (y2 + XXX));
 
 #define OGL_DRAW_LINE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
@@ -110,7 +116,25 @@
 			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
 		glEnd(); }
 
+
+//#define XXXX ((BEI_SURFACE_WIDTH / 32)?1:0 + BEI_SURFACE_WIDTH / 512)
+//#define YYYY ((BEI_SURFACE_HEIGHT / 32)?1:0 + BEI_SURFACE_HEIGHT / 512)
+//#define XXXX (1 + BEI_SOURCE_WIDTH / 512)
+//#define YYYY (1 + BEI_SOURCE_HEIGHT / 512)
+//#define XXXX ((BEI_SOURCE_WIDTH) / 256)
+//#define YYYY ((BEI_SOURCE_HEIGHT) / 256)
+#define XXXX 0
+#define YYYY 0
+
 #define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2) \
+		glBegin(GL_QUADS); \
+			glTexCoord2f(sx1, 1 - sy1);	glVertex2i(dx1 - XXXX, BEI_SURFACE_BOTTOM - (dy1 - YYYY)); \
+			glTexCoord2f(sx2, 1 - sy1); glVertex2i(dx2 + XXXX, BEI_SURFACE_BOTTOM - (dy1 - YYYY)); \
+			glTexCoord2f(sx2, 1 - sy2);	glVertex2i(dx2 + XXXX, BEI_SURFACE_BOTTOM - (dy2 + YYYY)); \
+			glTexCoord2f(sx1, 1 - sy2); glVertex2i(dx1 - XXXX, BEI_SURFACE_BOTTOM - (dy2 + YYYY)); \
+		glEnd();
+
+#define OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2) \
 		glBegin(GL_QUADS); \
 			glTexCoord2f(sx1, 1 - sy1);	glVertex2i(dx1, BEI_SURFACE_BOTTOM - (dy1)); \
 			glTexCoord2f(sx2, 1 - sy1); glVertex2i(dx2, BEI_SURFACE_BOTTOM - (dy1)); \
@@ -170,6 +194,7 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	}
 }
 
+#ifdef  __HAVE_OPENGL__
 void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect) {
 
 	// start the server thread
@@ -185,6 +210,7 @@ sleep(2);
 	req.x11_win_rect= x11_win_rect;
 	trigger((void*)&req, sizeof(req));
 }
+#endif
 
 void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 #ifdef __HAVE_OPENGL__
@@ -837,7 +863,7 @@ glTexImage2D(GL_TEXTURE_2D,
 
 		// blit source texture to the destination
 		// note: the source has to be flipped vertical because the difference between 2D input and OGL
-		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, dx1, dy2, dx2, dy1);
+		OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, dx1, dy2, dx2, dy1);
 	}
 
 	// all is fine
@@ -947,7 +973,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 				// blit glyph texture to the destination
 				// note: the source has to be flipped vertical because the difference between 2D input and OGL
-				OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, dx1, dy2, dx2, dy1);
+				OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, dx1, dy2, dx2, dy1);
 			}
 
 			// prepare for next loop

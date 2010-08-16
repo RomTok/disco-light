@@ -55,9 +55,11 @@ private:
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
+#ifdef  __HAVE_OPENGL__
 		Display 			*x_display;
 		int					x_screen;
 		Window				x_window;
+#endif
 		MMSFBRectangle		x11_win_rect;
 	} BEI_INIT;
 
@@ -162,7 +164,9 @@ public:
 
 	MMSFBBackEndInterface(int queue_size = 1000);
 
+#ifdef  __HAVE_OPENGL__
 	void init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect);
+#endif
 	void swap();
 	void alloc(MMSFBSurface *surface);
 	void clear(MMSFBSurface *surface, MMSFBColor &color);
