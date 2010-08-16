@@ -1009,8 +1009,10 @@ void MMSInputLISThread::threadMain() {
 
 					// new event
 					MMSInputEvent inputevent;
-					if (translateEvent(&linux_evt, &inputevent))
+					if (translateEvent(&linux_evt, &inputevent)) {
+						printf("add event %d, %d, %d\n", inputevent.type, inputevent.posx, inputevent.posy);
 						this->handler->addEvent(&inputevent);
+					}
 				}
 
 				// release the device
