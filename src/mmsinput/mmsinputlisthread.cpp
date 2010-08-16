@@ -794,7 +794,7 @@ MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 
 int safex, safey;
 bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEvent *inputevent) {
-//	printf("code received: 	%d\n",linux_evt->type);
+	printf("code received: 	%d, value: %d\n",linux_evt->type, linux_evt->value);
 	if(linux_evt->type == EV_SYN) {
 		MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: EV_SYN received");
 		if(lastevent.type == EV_KEY) {
@@ -905,7 +905,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 				}
 
 				inputevent->posx = this->device.touch.pointer_xpos;
-				printf("MMSInputManager:handleInput: ABS_X %d(%d) received", linux_evt->value,inputevent->posx);
+				printf("MMSInputManager:handleInput: ABS_X %d(%d) received\n", linux_evt->value,inputevent->posx);
         		//////////////////////////////////////////////////
 
 				/*
@@ -927,7 +927,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 				}
 
 				inputevent->posy = this->device.touch.pointer_ypos;
-				printf("MMSInputManager:handleInput: ABS_Y %d(%d) received", linux_evt->value,inputevent->posy);
+				printf("MMSInputManager:handleInput: ABS_Y %d(%d) received\n", linux_evt->value,inputevent->posy);
         		//////////////////////////////////////////////////
 
 				/*
