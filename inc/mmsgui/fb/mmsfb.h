@@ -67,6 +67,8 @@ class MMSFB {
     	//! is initialized?
     	bool initialized;
 
+        MMSFBFullScreenMode fullscreen;
+
 #ifdef  __HAVE_DIRECTFB__
         // interface to dfb
         IDirectFB       *dfb;
@@ -91,7 +93,6 @@ class MMSFB {
         int				display_h;
         int				target_window_w;
         int				target_window_h;
-        MMSFBFullScreenMode fullscreen;
         bool            resized;
         bool 			resizeWindow();
 #endif
