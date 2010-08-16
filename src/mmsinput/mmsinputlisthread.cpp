@@ -797,9 +797,13 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 	printf("code received: 	%d, value: %d\n",linux_evt->type, linux_evt->value);
 	if(linux_evt->type == EV_SYN) {
 		MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: EV_SYN received");
+printf("1---\n");
 		if(lastevent.type == EV_KEY) {
+printf("2---\n");
 			if(lastevent.code == BTN_TOUCH) {
+printf("3---\n");
 				if(lastevent.value == 0) {
+printf("4---\n");
 					this->button_pressed = 0;
 					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 					inputevent->posx = safex;
@@ -807,6 +811,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 					this->lastevent = *linux_evt;
 					return true;
 				} else if(lastevent.value == 1) {
+printf("5---\n");
 					this->button_pressed = 1;
 					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
 					inputevent->posx = this->lastX;
@@ -817,20 +822,25 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 					return true;
 				}
 			} else {
+printf("6---\n");
 				if (inputevent->key == MMSKEY_UNKNOWN)
 					return false;
 				else
 					return true;
 			}
 		} else if(lastevent.type == EV_ABS) {
+printf("7---\n");
 			switch(lastevent.code) {
 				case ABS_X:
 				case ABS_Y:
+printf("8---\n");
 					if(this->button_pressed == 1) {
+printf("9---\n");
 						//this->button_pressed = 0;
 						inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 //						printf("release at: %d:%d\n", this->lastX, this->lastY);
 					} else {
+printf("10---\n");
 						inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 					}
 					inputevent->posx = this->lastX;
@@ -839,6 +849,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 					this->lastevent = *linux_evt;
 					return true;
 				case ABS_PRESSURE:
+printf("11---\n");
 					this->lastevent = *linux_evt;
 					return false;
 					if(this->button_pressed == 1) {
@@ -855,6 +866,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 					this->lastevent = *linux_evt;
 					return true;
 				default:
+printf("12---\n");
 					return false;
 
 			}
@@ -862,6 +874,7 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 		return false;
 	}
 	if (linux_evt->type == EV_KEY) {
+printf("13---\n");
 		this->lastevent = *linux_evt;
 		/* check for BTN_TOUCH */
 		if(linux_evt->code == BTN_TOUCH) {
