@@ -409,8 +409,7 @@ pixelformat=DSPF_ALUT44;
                 borderimages[1]->clear();
                 if (color.a) {
                     borderimages[1]->setColor(color.r, color.g, color.b, 255);
-                    for(int i = 0; i < bordergeom[1].h; i++)
-                        borderimages[1]->drawLine(0, i, bordergeom[1].w-1, i);
+                    borderimages[1]->fillRectangle(0, 0, bordergeom[1].w, bordergeom[1].h);
                 }
 
                 /* set the blitting flags */
@@ -427,8 +426,7 @@ pixelformat=DSPF_ALUT44;
                 borderimages[3]->clear();
                 if (color.a) {
                     borderimages[3]->setColor(color.r, color.g, color.b, 255);
-                    for(int i = 0; i < bordergeom[3].w; i++)
-                        borderimages[3]->drawLine(i, 0, i, bordergeom[3].h-1);
+                    borderimages[3]->fillRectangle(0, 0, bordergeom[3].w, bordergeom[3].h);
                 }
 
                 /* set the blitting flags */
@@ -445,8 +443,7 @@ pixelformat=DSPF_ALUT44;
                 borderimages[5]->clear();
                 if (color.a) {
                     borderimages[5]->setColor(color.r, color.g, color.b, 255);
-                    for(int i = 0; i < bordergeom[5].h; i++)
-                        borderimages[5]->drawLine(0, i, bordergeom[5].w-1, i);
+                    borderimages[5]->fillRectangle(0, 0, bordergeom[5].w, bordergeom[5].h);
                 }
 
                 /* set the blitting flags */
@@ -463,8 +460,7 @@ pixelformat=DSPF_ALUT44;
                 borderimages[7]->clear();
                 if (color.a) {
                     borderimages[7]->setColor(color.r, color.g, color.b, 255);
-                    for(int i = 0; i < bordergeom[7].w; i++)
-                        borderimages[7]->drawLine(i, 0, i, bordergeom[7].h-1);
+                    borderimages[7]->fillRectangle(0, 0, bordergeom[7].w, bordergeom[7].h);
                 }
 
                 /* set the blitting flags */
