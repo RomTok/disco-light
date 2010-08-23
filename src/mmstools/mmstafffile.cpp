@@ -641,6 +641,8 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 					bool badval = false;
 					bool int_val_set = false;
 					int	 int_val;
+					bool byte_val_set = false;
+					unsigned char byte_val;
 					switch (attr[attrid].type) {
 					case TAFF_ATTRTYPE_NONE:
 					case TAFF_ATTRTYPE_STRING:
@@ -660,11 +662,11 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							attr_found = false;
 						}
 						else {
-							int_val_set = true;
+							byte_val_set = true;
 							if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
-								int_val = -1;
+								byte_val = 0xff;
 							else
-								int_val = 0;
+								byte_val = 0;
 						}
 						break;
 					case TAFF_ATTRTYPE_UCHAR:
@@ -681,7 +683,9 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 								else
 									badval = (int_val<0||int_val>255);
 							}
-							int_val_set = !badval;
+							byte_val_set = !badval;
+							if (byte_val_set)
+								byte_val = int_val;
 						}
 						if (badval) {
 							if (attr[attrid].type == TAFF_ATTRTYPE_UCHAR100)
@@ -710,14 +714,14 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							attr_found = false;
 						}
 						else {
-							int_val_set = true;
+							byte_val_set = true;
 							if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
-								int_val = -1;
+								byte_val = 0xff;
 							else
 							if (xmlStrcmp(attrVal, (xmlChar *)"auto")==0)
-								int_val = 0x01010101;
+								byte_val = 0x01;
 							else
-								int_val = 0;
+								byte_val = 0;
 						}
 						break;
 					}
@@ -740,7 +744,7 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 
 					/* write attribute value */
 					if (taff_file) {
-						if (!int_val_set) {
+						if (!int_val_set && !byte_val_set) {
 							/* get the length of the value INCLUDING the 0x00 because of fast read & parse of the TAFF */
 							int attrvallen = xmlStrlen(attrVal) + 1;
 
@@ -761,8 +765,9 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							}
 							writeBuffer(taff_file, attrVal, &ritems, 1, attrvallen, &wok);
 						}
-						else {
-							/* writing the value as INT and not as STRING */
+						else
+						if (int_val_set) {
+							// writing value as INTEGER
 							size_t ritems;
 							unsigned char wb[3];
 							wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
@@ -770,6 +775,16 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							wb[2]=sizeof(int);
 							writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
 							writeBuffer(taff_file, &int_val, &ritems, 1, sizeof(int), &wok);
+						}
+						else {
+							// writing value as single BYTE
+							size_t ritems;
+							unsigned char wb[3];
+							wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+							wb[1]=(unsigned char)attrid;
+							wb[2]=sizeof(char);
+							writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+							writeBuffer(taff_file, &byte_val, &ritems, 1, sizeof(char), &wok);
 						}
 					}
 				}
@@ -1518,8 +1533,12 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					case TAFF_ATTRTYPE_BOOL:
 					case TAFF_ATTRTYPE_UCHAR:
 					case TAFF_ATTRTYPE_UCHAR100:
-					case TAFF_ATTRTYPE_INT:
 					case TAFF_ATTRTYPE_STATE:
+						*value_str = NULL;
+						{	unsigned char v = this->taff_buf[this->taff_buf_pos];
+							*value_int = (int)v; }
+						break;
+					case TAFF_ATTRTYPE_INT:
 						*value_str = NULL;
 						*value_int = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 						break;
