@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -31,7 +31,8 @@
  **************************************************************************/
 
 #include "mmstools/mmsthreadserver.h"
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
 
 MMSThreadServer::MMSThreadServer(int queue_size, string identity) : MMSThread(identity) {
 	// allocate and setup the queue
