@@ -232,7 +232,12 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         				// set external file and requested pixelformat
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
 	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
+#ifdef __HAVE_OPENGL__
+						// for ogl we don't need premultiplied images
+	    				tafff->setDestinationPixelFormat(taffpf, false);
+#else
 	    				tafff->setDestinationPixelFormat(taffpf);
+#endif
 	    				tafff->setMirrorEffect(mirror_size);
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
@@ -327,7 +332,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    		// the image from the file has not the same mirror_size
 				    		if (!retry) {
 				    			// retry with given mirror_size
-				    			DEBUGOUT("ImageManager, request new mirrot_size\n");
+				    			DEBUGOUT("ImageManager, request new mirror_size\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -336,6 +341,37 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    			retry = false;
 				    	}
 				    	else
+#ifdef __HAVE_OPENGL__
+						if (img_premultiplied) {
+							DEBUGOUT("ImageManager, premultiplied image\n");
+							// for ogl we don't need premultiplied images
+							if (!retry) {
+								// retry without pre-multiplication
+								DEBUGOUT("ImageManager, retry without pre-multiplication\n");
+								retry = true;
+								delete tafff;
+								continue;
+							}
+							else
+								retry = false;
+						}
+						else
+#else
+						if (!img_premultiplied) {
+							DEBUGOUT("ImageManager, image not premultiplied\n");
+							// we use premultiplied images
+							if (!retry) {
+								// retry with pre-multiplication
+								DEBUGOUT("ImageManager, retry with pre-multiplication\n");
+								retry = true;
+								delete tafff;
+								continue;
+							}
+							else
+								retry = false;
+						}
+						else
+#endif
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	/* successfully read */
 //				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
@@ -360,13 +396,20 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				                }
 				                im_desc->sufcount = 1;
 
+/*printf("blitBuffer: imagefile %s\n", imagefile.c_str());
 
+if (imagefile != "./share/themes/default/photos/fuerteventura_3.png")*/
 								// blit from external buffer to surface
 								im_desc->suf[0].surface->blitBuffer(img_buf, img_pitch, this->pixelformat,
 																	img_width, img_height, NULL, 0, 0);
+/*else {
+	im_desc->suf[0].surface->clear(0xff,0xff,0xff,0xff);
+}
 
+printf("blitBuffer: imagefile %s finished\n", imagefile.c_str());
+*/
 
-#ifdef sfsf
+#ifdef __OLD_CODE__
 				                /* copy img_buf to the surface */
 				                char *suf_ptr;
 				                int suf_pitch;
