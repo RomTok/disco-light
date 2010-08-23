@@ -751,6 +751,26 @@ void MMSFBSurface::freeSurfaceBuffer() {
 		}
 #endif
 	}
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+		//free my surface buffers
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		if (!sb->external_buffer) {
+			// buffer which is internally allocated
+			if (!this->is_sub_surface) {
+				// no subsurface
+				// free all buffers (front and back buffers)
+				mmsfb->bei->free(this);
+				delete sb;
+				sb=NULL;
+			}
+		}
+
+		if(sb) {
+			sb->numbuffers = 0;
+		}
+#endif
+	}
 	else {
 		//free my surface buffers
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;

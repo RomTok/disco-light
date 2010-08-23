@@ -33,12 +33,13 @@
 #include "mmsgui/fb/mmsfbbackendinterface.h"
 #include "mmstools/tools.h"
 
-#define BEI_SOURCE_WIDTH  ((!req->source->is_sub_surface)?req->source->config.w:req->source->root_parent->config.w)
-#define BEI_SOURCE_HEIGHT ((!req->source->is_sub_surface)?req->source->config.h:req->source->root_parent->config.h)
+#define BEI_SOURCE_WIDTH	((!req->source->is_sub_surface)?req->source->config.w:req->source->root_parent->config.w)
+#define BEI_SOURCE_HEIGHT	((!req->source->is_sub_surface)?req->source->config.h:req->source->root_parent->config.h)
 
-#define BEI_SURFACE_WIDTH  ((!req->surface->is_sub_surface)?req->surface->config.w:req->surface->root_parent->config.w)
-#define BEI_SURFACE_HEIGHT ((!req->surface->is_sub_surface)?req->surface->config.h:req->surface->root_parent->config.h)
-#define BEI_SURFACE_BOTTOM BEI_SURFACE_HEIGHT - 1
+#define BEI_SURFACE_WIDTH		((!req->surface->is_sub_surface)?req->surface->config.w:req->surface->root_parent->config.w)
+#define BEI_SURFACE_HEIGHT		((!req->surface->is_sub_surface)?req->surface->config.h:req->surface->root_parent->config.h)
+#define BEI_SURFACE_BOTTOM		(BEI_SURFACE_HEIGHT - 1)
+#define BEI_SURFACE_BOTTOM_F	(float)BEI_SURFACE_BOTTOM
 
 #ifdef __HAVE_OPENGL__
 
@@ -68,79 +69,107 @@
 
 #define OGL_GLSCISSOR(X, Y, W, H) glScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
 
-#define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2i(x, BEI_SURFACE_BOTTOM - (y)); glEnd(); }
+#define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2f((float)(x) + 0.5, (float)(BEI_SURFACE_BOTTOM - (y)) + 0.5); glEnd(); }
 
 #define OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
 		if (x1 == x2 && y1 == y2) OGL_DRAW_POINT(x1, y1) else
 
+//TODO: am dreieck nochwas???
 #define OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) \
 		if (x1 == x2 && x1 == x3 && y1 == y2 && y1 == y3) OGL_DRAW_POINT(x1, y1) else
 
-#define XXX 0
+
+
+#define OGL_CALC_2X(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.9)
+#define OGL_CALC_2Y(v1, v2) OGL_CALC_2Y_H(v1, v2, BEI_SURFACE_HEIGHT)
+#define OGL_CALC_2Y_H(v1, v2, height) (((v1)<(v2)) ? (float)(height-1) - (float)(v1) + 0.9 : (float)(height-1) - (float)(v1))
+
+#define OGL_CALC_3X(v1, v2, v3) (((v1)<=(v2) && (v1)<=(v3)) ? (float)(v1) : ((v1)>(v2) && (v1)>(v3)) ? (float)(v1) + 0.9 : (float)(v1) + 0.5)
+#define OGL_CALC_3Y(v1, v2, v3) (((v1)<=(v2) && (v1)<=(v3)) ? BEI_SURFACE_BOTTOM_F - (float)(v1) + 0.9 : ((v1)>(v2) && (v1)>(v3)) ? BEI_SURFACE_BOTTOM_F - (float)(v1) : BEI_SURFACE_BOTTOM_F - (float)(v1) + 0.5)
+
+#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_2X(v1, v2) / (width))
+#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_2Y_H(v1, v2, height) / (height))
 
 #define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
-		glRecti(x1 - XXX, BEI_SURFACE_BOTTOM - (y1 - XXX), x2 + XXX, BEI_SURFACE_BOTTOM - (y2 + XXX));
+		glRectf(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2), OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1));
+
 
 #define OGL_DRAW_LINE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
 		glBegin(GL_LINES); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
-			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
+			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2)); \
+			glVertex2f(OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1)); \
 		glEnd(); }
 
 #define OGL_DRAW_RECTANGLE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
 		glBegin(GL_LINE_STRIP); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
-			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y1)); \
-			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y2)); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
+			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2)); \
+			glVertex2f(OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y1, y2)); \
+			glVertex2f(OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1)); \
+			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y2, y1)); \
+			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2)); \
 		glEnd(); }
 
 #define OGL_FILL_TRIANGLE(x1, y1, x2, y2, x3, y3) \
 		OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) { \
 		glBegin(GL_TRIANGLES); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
-			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
-			glVertex2i(x3, BEI_SURFACE_BOTTOM - (y3)); \
+			glVertex2f(OGL_CALC_3X(x1, x2, x3), OGL_CALC_3Y(y1, y2, y3)); \
+			glVertex2f(OGL_CALC_3X(x2, x3, x1), OGL_CALC_3Y(y2, y3, y1)); \
+			glVertex2f(OGL_CALC_3X(x3, x1, x2), OGL_CALC_3Y(y3, y1, y2)); \
 		glEnd(); }
 
 #define OGL_DRAW_TRIANGLE(x1, y1, x2, y2, x3, y3) \
 		OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) { \
 		glBegin(GL_LINE_STRIP); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
-			glVertex2i(x2, BEI_SURFACE_BOTTOM - (y2)); \
-			glVertex2i(x3, BEI_SURFACE_BOTTOM - (y3)); \
-			glVertex2i(x1, BEI_SURFACE_BOTTOM - (y1)); \
+			glVertex2f(OGL_CALC_3X(x1, x2, x3), OGL_CALC_3Y(y1, y2, y3)); \
+			glVertex2f(OGL_CALC_3X(x2, x3, x1), OGL_CALC_3Y(y2, y3, y1)); \
+			glVertex2f(OGL_CALC_3X(x3, x1, x2), OGL_CALC_3Y(y3, y1, y2)); \
+			glVertex2f(OGL_CALC_3X(x1, x2, x3), OGL_CALC_3Y(y1, y2, y3)); \
 		glEnd(); }
 
-
-//#define XXXX ((BEI_SURFACE_WIDTH / 32)?1:0 + BEI_SURFACE_WIDTH / 512)
-//#define YYYY ((BEI_SURFACE_HEIGHT / 32)?1:0 + BEI_SURFACE_HEIGHT / 512)
-//#define XXXX (1 + BEI_SOURCE_WIDTH / 512)
-//#define YYYY (1 + BEI_SOURCE_HEIGHT / 512)
-//#define XXXX ((BEI_SOURCE_WIDTH) / 256)
-//#define YYYY ((BEI_SOURCE_HEIGHT) / 256)
-#define XXXX 0
-#define YYYY 0
-
-#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2) \
+#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
 		glBegin(GL_QUADS); \
-			glTexCoord2f(sx1, 1 - sy1);	glVertex2i(dx1 - XXXX, BEI_SURFACE_BOTTOM - (dy1 - YYYY)); \
-			glTexCoord2f(sx2, 1 - sy1); glVertex2i(dx2 + XXXX, BEI_SURFACE_BOTTOM - (dy1 - YYYY)); \
-			glTexCoord2f(sx2, 1 - sy2);	glVertex2i(dx2 + XXXX, BEI_SURFACE_BOTTOM - (dy2 + YYYY)); \
-			glTexCoord2f(sx1, 1 - sy2); glVertex2i(dx1 - XXXX, BEI_SURFACE_BOTTOM - (dy2 + YYYY)); \
+		if (dx1 != dx2 && dy1 != dy2) { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy2, dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy2, dy1)); \
+		} else if (dy1 != dy2) { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1) + 0.9,	OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1) + 0.9,	OGL_CALC_2Y(dy2, dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy2, dy1)); \
+		} else if (dx1 != dx2) { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.9); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.9); \
+		} else { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1) + 0.9,	BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1) + 0.9,	BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.9); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.9); \
+		} \
 		glEnd();
 
-#define OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2) \
-		glBegin(GL_QUADS); \
-			glTexCoord2f(sx1, 1 - sy1);	glVertex2i(dx1, BEI_SURFACE_BOTTOM - (dy1)); \
-			glTexCoord2f(sx2, 1 - sy1); glVertex2i(dx2, BEI_SURFACE_BOTTOM - (dy1)); \
-			glTexCoord2f(sx2, 1 - sy2);	glVertex2i(dx2, BEI_SURFACE_BOTTOM - (dy2)); \
-			glTexCoord2f(sx1, 1 - sy2); glVertex2i(dx1, BEI_SURFACE_BOTTOM - (dy2)); \
-		glEnd();
 #endif
 
 MMSFBBackEndInterface::MMSFBBackEndInterface(int queue_size) : MMSThreadServer(queue_size, "MMSFBBackEndInterface") {
@@ -161,6 +190,9 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 		break;
 	case BEI_REQUEST_TYPE_ALLOC:
 		processAlloc((BEI_ALLOC *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_FREE:
+		processFree((BEI_FREE *)in_data);
 		break;
 	case BEI_REQUEST_TYPE_CLEAR:
 		processClear((BEI_CLEAR *)in_data);
@@ -285,6 +317,36 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	glOrtho(0, req->x11_win_rect.w, 0, req->x11_win_rect.h, 10.0, -10.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	/////////////////////
+	GLuint ogl_fbo, ogl_tex, ogl_rb;
+	oglAlloc(100, 100, &ogl_fbo, &ogl_tex, &ogl_rb);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ogl_fbo);
+	glDisable(GL_SCISSOR_TEST);
+
+	unsigned int data[100*100];
+
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glReadPixels(0, 0, 100, 100, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
+	printf("%x %x %x %x\n", data[0], data[99], data[99*100], data[99*100+99]);
+
+	glDisable(GL_BLEND);
+	glColor4ub(0xff, 0xff, 0x00, 0xff);
+
+	glRecti(0, 0, 99, 99);
+	glReadPixels(0, 0, 100, 100, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
+	printf("%x %x %x %x\n", data[0], data[99], data[99*100], data[99*100+99]);
+
+	glRecti(0, 0, 100, 100);
+	glReadPixels(0, 0, 100, 100, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
+	printf("%x %x %x %x\n", data[0], data[99], data[99*100], data[99*100+99]);
+
+	oglFree(ogl_fbo, ogl_tex, ogl_rb);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glDisable(GL_SCISSOR_TEST);
+	sleep(2);
 #endif
 }
 
@@ -318,32 +380,42 @@ void MMSFBBackEndInterface::alloc(MMSFBSurface *surface) {
 
 void MMSFBBackEndInterface::processAlloc(BEI_ALLOC *req) {
 #ifdef  __HAVE_OPENGL__
+	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
+	oglAlloc(req->surface->config.w, req->surface->config.h, &sb->ogl_fbo, &sb->ogl_tex, &sb->ogl_rb);
+	return;
+#endif
+}
+
+int fff=0;
+#ifdef  __HAVE_OPENGL__
+void MMSFBBackEndInterface::oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb) {
+	fff+=width*4*height;
+	printf("allocate: %dx%d, %d\n", width, height, fff);
 	// lock destination fbo and prepare it
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glDisable(GL_SCISSOR_TEST);
 
-	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
-	glGenTextures(1, &sb->ogl_tex);
-	glBindTexture(GL_TEXTURE_2D, sb->ogl_tex);
+	glGenTextures(1, ogl_tex);
+	glBindTexture(GL_TEXTURE_2D, *ogl_tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, req->surface->config.w, req->surface->config.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	// ---
 //remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
-	glGenRenderbuffersEXT(1, &sb->ogl_rb);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, sb->ogl_rb);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, req->surface->config.w, req->surface->config.h);
+	glGenRenderbuffersEXT(1, ogl_rb);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, *ogl_rb);
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
 	// ---
-	glGenFramebuffersEXT(1, &sb->ogl_fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, sb->ogl_fbo);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, sb->ogl_tex, 0);
+	glGenFramebuffersEXT(1, ogl_fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, *ogl_fbo);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, *ogl_tex, 0);
 //remove glFramebufferRenderbufferEXT?
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, sb->ogl_rb);
+	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, *ogl_rb);
 	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 		// the GPU does not support current FBO configuration
-		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(req->surface->config.w) + "x" + iToStr(req->surface->config.h) + " failed, the GPU does not support current FBO configuration");
+		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(width) + "x" + iToStr(height) + " failed, the GPU does not support current FBO configuration");
 		glDisable(GL_SCISSOR_TEST);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 printf("TODO: fatal error while allocating new fbo\n");
@@ -353,8 +425,29 @@ printf("TODO: fatal error while allocating new fbo\n");
 	// all is fine
 	glDisable(GL_SCISSOR_TEST);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+#endif
+
+void MMSFBBackEndInterface::free(MMSFBSurface *surface) {
+	BEI_FREE req;
+	req.type	= BEI_REQUEST_TYPE_FREE;
+	req.surface	= surface;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processFree(BEI_FREE *req) {
+#ifdef  __HAVE_OPENGL__
+	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
+	oglFree(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rb);
+	return;
 #endif
 }
+
+#ifdef  __HAVE_OPENGL__
+void MMSFBBackEndInterface::oglFree(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb) {
+	// TODO
+}
+#endif
 
 void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
 	BEI_CLEAR req;
@@ -716,16 +809,10 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		glEnable(GL_SCISSOR_TEST);
 
 		// get source region
-		double sx1 = req->src_rect.x + src_xoff;
-		double sy1 = req->src_rect.y + src_yoff;
-		double sx2 = req->src_rect.x + req->src_rect.w - 1 + src_xoff;
-		double sy2 = req->src_rect.y + req->src_rect.h - 1 + src_yoff;
-
-		// normalize source region
-		sx1 = sx1 / (req->source->config.w - 1);
-		sy1 = sy1 / (req->source->config.h - 1);
-		sx2 = sx2 / (req->source->config.w - 1);
-		sy2 = sy2 / (req->source->config.h - 1);
+		int sx1 = req->src_rect.x + src_xoff;
+		int sy1 = req->src_rect.y + src_yoff;
+		int sx2 = req->src_rect.x + req->src_rect.w - 1 + src_xoff;
+		int sy2 = req->src_rect.y + req->src_rect.h - 1 + src_yoff;
 
 		// get destination region
 		int dx1 = req->dst_rect.x + xoff;
@@ -734,7 +821,7 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
 
 		// blit source texture to the destination
-		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2);
+		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
 	}
 
 	// all is fine
@@ -797,7 +884,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
     // the texture wraps over at the edges (repeat)
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-
+printf("allocate buffer: %dx%d\n", req->src_width, req->src_height);
 	glTexImage2D(GL_TEXTURE_2D,
 	 	0,
 	 	GL_RGBA,
@@ -844,16 +931,10 @@ glTexImage2D(GL_TEXTURE_2D,
 		glEnable(GL_SCISSOR_TEST);
 
 		// get source region
-		double sx1 = req->src_rect.x;
-		double sy1 = req->src_rect.y;
-		double sx2 = req->src_rect.x + req->src_rect.w - 1;
-		double sy2 = req->src_rect.y + req->src_rect.h - 1;
-
-		// normalize source region
-		sx1 = sx1 / (req->src_width - 1);
-		sy1 = sy1 / (req->src_height - 1);
-		sx2 = sx2 / (req->src_width - 1);
-		sy2 = sy2 / (req->src_height - 1);
+		int sx1 = req->src_rect.x;
+		int sy1 = req->src_rect.y;
+		int sx2 = req->src_rect.x + req->src_rect.w - 1;
+		int sy2 = req->src_rect.y + req->src_rect.h - 1;
 
 		// get destination region
 		int dx1 = req->dst_rect.x + xoff;
@@ -863,7 +944,51 @@ glTexImage2D(GL_TEXTURE_2D,
 
 		// blit source texture to the destination
 		// note: the source has to be flipped vertical because the difference between 2D input and OGL
-		OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, dx1, dy2, dx2, dy1);
+		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->src_width, req->src_height, dx1, dy2, dx2, dy1);
+
+#ifdef sfsfss
+		if (req->src_width==12) {
+/*			glDisable(GL_BLEND);
+//			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glBlendFunc(GL_ONE, GL_ZERO);
+			glColor4ub(0xff,0xff,0xff,0xff);
+			glBlendColor(1,1,0,1);
+			glColor3f(1,0,0);
+			glRecti(0,0,800,480);
+*/
+
+/*glDisable(GL_DEPTH_TEST);
+glDisable(GL_TEXTURE_2D);
+*/
+			printf("req->dst_rect.w = %d\n", req->dst_rect.w);
+
+			unsigned int data[100*100];
+/*			glClearColor(1,1,0,1);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+*/
+			glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
+			printf(">data1:    >>> %x\n", data[0]);
+/*
+			glDisable(GL_BLEND);
+			glColor4f(1,0,0,1);
+			glRecti(0,0,12,12);
+			glFlush();
+
+			glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
+			printf(">>data2:   >>> %x\n", data[0]);
+*/
+			glClearColor(1,1,0,0.5);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+			glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
+			printf(">>>data3:  >>> %x\n", data[0]);
+
+		}
+		else {
+//			OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->src_width, req->src_height, dx1, dy2, dx2, dy1);
+		}
+#endif
+
 	}
 
 	// all is fine
@@ -947,11 +1072,11 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
 				glEnable(GL_SCISSOR_TEST);
 
-				// get source region, we have to adjust the right x position because of pitch != width
-				double sx1 = 0;
-				double sy1 = 0;
-				double sx2 = (double)src_w / (double)src_pitch_pix;
-				double sy2 = 1;
+				// get source region
+				int sx1 = 0;
+				int sy1 = 0;
+				int sx2 = src_w - 1;
+				int sy2 = src_h - 1;
 
 				// get destination region
 				int dx1 = dx + xoff;
@@ -973,7 +1098,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 				// blit glyph texture to the destination
 				// note: the source has to be flipped vertical because the difference between 2D input and OGL
-				OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, dx1, dy2, dx2, dy1);
+				OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, src_pitch_pix, src_h, dx1, dy2, dx2, dy1);
 			}
 
 			// prepare for next loop

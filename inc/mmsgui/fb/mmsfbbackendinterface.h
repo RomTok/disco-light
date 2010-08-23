@@ -42,6 +42,7 @@ private:
 		BEI_REQUEST_TYPE_INIT = 0,
 		BEI_REQUEST_TYPE_SWAP,
 		BEI_REQUEST_TYPE_ALLOC,
+		BEI_REQUEST_TYPE_FREE,
 		BEI_REQUEST_TYPE_CLEAR,
 		BEI_REQUEST_TYPE_FILLRECTANGLE,
 		BEI_REQUEST_TYPE_FILLTRIANGLE,
@@ -71,6 +72,11 @@ private:
 		BEI_REQUEST_TYPE	type;
 		MMSFBSurface		*surface;
 	} BEI_ALLOC;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		MMSFBSurface		*surface;
+	} BEI_FREE;
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
@@ -136,10 +142,16 @@ private:
 		int					y;
 	} BEI_DRAWSTRING;
 
+#ifdef  __HAVE_OPENGL__
+void oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
+void oglFree(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb);
+#endif
+
 	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);
 	void processInit(BEI_INIT *req);
 	void processSwap(BEI_SWAP *req);
 	void processAlloc(BEI_ALLOC *req);
+	void processFree(BEI_FREE *req);
 	void processClear(BEI_CLEAR *req);
 	void processFillRectangle(BEI_FILLRECTANGLE *req);
 	void processFillTriangle(BEI_FILLTRIANGLE *req);
@@ -169,6 +181,7 @@ public:
 #endif
 	void swap();
 	void alloc(MMSFBSurface *surface);
+	void free(MMSFBSurface *surface);
 	void clear(MMSFBSurface *surface, MMSFBColor &color);
 	void fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
 	void fillTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
