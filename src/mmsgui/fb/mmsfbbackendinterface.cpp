@@ -43,17 +43,58 @@
 
 #ifdef __HAVE_OPENGL__
 
-#define INIT_OGL_DRAWING(surface) \
+#define INIT_OGL_DRAWING(surface) { \
 			switch (surface->config.drawingflags) { \
-			case MMSFB_DRAW_BLEND: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); break; \
-			default: glDisable(GL_BLEND); break; } \
-			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a);
+			case MMSFB_DRAW_BLEND: \
+				glEnable(GL_BLEND); \
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
+				break; \
+			default: \
+				glDisable(GL_BLEND); \
+				break; } \
+			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
 
 #define INIT_OGL_BLITTING(surface) \
 		switch (surface->config.blittingflags) { \
-		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, 255); break; \
-		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); glColor4ub(255, 255, 255, surface->config.color.a); break; \
-		default: glDisable(GL_BLEND); glColor4ub(255, 255, 255, 255); break; }
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	\
+			glEnable(GL_BLEND); \
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); \
+			break; \
+		case MMSFB_BLIT_BLEND_COLORALPHA: \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
+			glColor4ub(255, 255, 255, surface->config.color.a); \
+			break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: \
+			glEnable(GL_BLEND); \
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
+			glColor4ub(255, 255, 255, surface->config.color.a); \
+			break; \
+		case MMSFB_BLIT_COLORIZE: \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
+			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, 0xff); \
+			break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_COLORIZE: \
+			glEnable(GL_BLEND); \
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
+			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, 0xff); \
+			break; \
+		case MMSFB_BLIT_BLEND_COLORALPHA + MMSFB_BLIT_COLORIZE: \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
+			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); \
+			break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA + MMSFB_BLIT_COLORIZE: \
+			glEnable(GL_BLEND); \
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
+			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); \
+			break; \
+		default: \
+			glDisable(GL_BLEND); \
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); \
+			break; }
 
 #define GET_OFFS(surface) \
 		int xoff = 0; int yoff = 0; \
@@ -446,6 +487,8 @@ void MMSFBBackEndInterface::processFree(BEI_FREE *req) {
 #ifdef  __HAVE_OPENGL__
 void MMSFBBackEndInterface::oglFree(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb) {
 	// TODO
+	printf("free\n");
+	sleep(1);
 }
 #endif
 
