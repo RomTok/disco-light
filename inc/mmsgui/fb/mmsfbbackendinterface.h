@@ -143,6 +143,11 @@ private:
 	} BEI_DRAWSTRING;
 
 #ifdef  __HAVE_OPENGL__
+GLuint matrix_w;
+GLuint matrix_h;
+float  matrix_ratio;
+
+void oglMatrix(GLuint w, GLuint h);
 void oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
 void oglFree(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb);
 #endif

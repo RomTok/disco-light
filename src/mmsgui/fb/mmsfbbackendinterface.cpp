@@ -43,6 +43,12 @@
 
 #ifdef __HAVE_OPENGL__
 
+#define INIT_OGL_FBO(surface) \
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
+	if (!surface->is_sub_surface) oglMatrix(surface->config.w, surface->config.h); \
+	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
+	glDisable(GL_SCISSOR_TEST);
+
 #define INIT_OGL_DRAWING(surface) { \
 			switch (surface->config.drawingflags) { \
 			case MMSFB_DRAW_BLEND: \
@@ -352,45 +358,29 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	}
 
 	//set the coordinate system
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, req->x11_win_rect.w, req->x11_win_rect.h);
-	glOrtho(0, req->x11_win_rect.w, 0, req->x11_win_rect.h, 10.0, -10.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	this->matrix_w = 0;
+	this->matrix_h = 0;
+	oglMatrix(req->x11_win_rect.w, req->x11_win_rect.h);
 
-	/////////////////////
-	GLuint ogl_fbo, ogl_tex, ogl_rb;
-	oglAlloc(100, 100, &ogl_fbo, &ogl_tex, &ogl_rb);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
-
-	unsigned int data[100*100];
-
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glReadPixels(0, 0, 100, 100, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
-	printf("%x %x %x %x\n", data[0], data[99], data[99*100], data[99*100+99]);
-
-	glDisable(GL_BLEND);
-	glColor4ub(0xff, 0xff, 0x00, 0xff);
-
-	glRecti(0, 0, 99, 99);
-	glReadPixels(0, 0, 100, 100, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
-	printf("%x %x %x %x\n", data[0], data[99], data[99*100], data[99*100+99]);
-
-	glRecti(0, 0, 100, 100);
-	glReadPixels(0, 0, 100, 100, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)data);
-	printf("%x %x %x %x\n", data[0], data[99], data[99*100], data[99*100+99]);
-
-	oglFree(ogl_fbo, ogl_tex, ogl_rb);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	glDisable(GL_SCISSOR_TEST);
-	sleep(2);
 #endif
 }
 
+#ifdef __HAVE_OPENGL__
+void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
+	float ratio = (float)w / (float)h;
+	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
+		this->matrix_w = w;
+		this->matrix_h = h;
+		this->matrix_ratio = ratio;
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glViewport(0, 0, w, h);
+		glOrtho(0, w, 0, h, 10.0, -10.0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+	}
+}
+#endif
 
 void MMSFBBackEndInterface::swap() {
 	BEI_SWAP req;
@@ -405,10 +395,6 @@ void MMSFBBackEndInterface::processSwap(BEI_SWAP *req) {
 	glDisable(GL_SCISSOR_TEST);
 
 	glXSwapBuffers(this->x_display, this->x_window);
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -504,8 +490,7 @@ void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
 void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
@@ -527,10 +512,6 @@ void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 						   0 + req->surface->config.w - 1	+ xoff,
 						   0 + req->surface->config.h - 1	+ yoff);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -545,8 +526,7 @@ void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle 
 void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -569,10 +549,6 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 						   req->rect.x + req->rect.w - 1	+ xoff,
 						   req->rect.y + req->rect.h - 1	+ yoff);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -587,8 +563,7 @@ void MMSFBBackEndInterface::fillTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -632,10 +607,6 @@ void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 						  req->triangle.x2 + xoff, req->triangle.y2 + yoff,
 						  req->triangle.x3 + xoff, req->triangle.y3 + yoff);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -650,8 +621,7 @@ void MMSFBBackEndInterface::drawLine(MMSFBSurface *surface, MMSFBRegion &region)
 void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -692,10 +662,6 @@ void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 					  req->region.x2 + xoff,
 					  req->region.y2 + yoff);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -710,8 +676,7 @@ void MMSFBBackEndInterface::drawRectangle(MMSFBSurface *surface, MMSFBRectangle 
 void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -734,10 +699,6 @@ void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 						   req->rect.x + req->rect.w - 1	+ xoff,
 						   req->rect.y + req->rect.h - 1	+ yoff);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -752,8 +713,7 @@ void MMSFBBackEndInterface::drawTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -797,10 +757,6 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 						  req->triangle.x2 + xoff, req->triangle.y2 + yoff,
 						  req->triangle.x3 + xoff, req->triangle.y3 + yoff);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -832,8 +788,7 @@ void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *sou
 void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and bind source texture to it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, req->source->config.surface_buffer->ogl_tex);
 
@@ -866,10 +821,6 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		// blit source texture to the destination
 		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
 	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
 }
 
@@ -907,8 +858,7 @@ void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfac
 void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and bind source texture to it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 
 	// allocate a texture name
@@ -1037,8 +987,6 @@ glDisable(GL_TEXTURE_2D);
 	// all is fine
 	glDisable(GL_TEXTURE_2D);
 	glDeleteTextures(1, &texture);
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 
 #endif
@@ -1059,8 +1007,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #ifdef  __HAVE_OPENGL__
 
 	// lock destination fbo and bind source texture to it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, req->surface->config.surface_buffer->ogl_fbo);
-	glDisable(GL_SCISSOR_TEST);
+	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 
 	// allocate a texture name
@@ -1152,8 +1099,6 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 	// all is fine
 	glDisable(GL_TEXTURE_2D);
 	glDeleteTextures(1, &texture);
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 #endif
 }
