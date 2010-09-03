@@ -220,12 +220,12 @@ if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'].extend([os.environ['LDFLAGS'].split()])
 
 # format output
-env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
-env['SHLINKCOMSTR'] = '  [LD]     $TARGET'
-env['CXXCOMSTR']    = '  [CXX]    $SOURCE'
-env['LINKCOMSTR']   = '  [LD]     $TARGET'
-env['ARCOMSTR']     = '  [AR]     $TARGET'
-env['RANLIBCOMSTR'] = '  [RANLIB] $TARGET'
+#env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
+#env['SHLINKCOMSTR'] = '  [LD]     $TARGET'
+#env['CXXCOMSTR']    = '  [CXX]    $SOURCE'
+#env['LINKCOMSTR']   = '  [LD]     $TARGET'
+#env['ARCOMSTR']     = '  [AR]     $TARGET'
+#env['RANLIBCOMSTR'] = '  [RANLIB] $TARGET'
 
 #######################################################################
 # Subdirectories                                                      #
@@ -514,6 +514,8 @@ if('ogl' in env['graphics']):
 	conf.checkSimpleLib(['x11'],  'X11/Xlib.h')
 	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__',
 				'-D__HAVE_XLIB__'])
+	conf.checkSimpleLib(['GLEW'], 'GL/glew.h')
+	conf.env['LIBS'].append('GLEW')
 	
 # checks required if building mmsmedia
 
