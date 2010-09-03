@@ -149,7 +149,7 @@ float  matrix_ratio;
 
 void oglMatrix(GLuint w, GLuint h);
 void oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
-void oglFree(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb);
+void oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
 #endif
 
 	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);

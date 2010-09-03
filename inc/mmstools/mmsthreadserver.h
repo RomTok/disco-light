@@ -91,6 +91,14 @@ class MMSThreadServer : public MMSThread {
 		//! destructor
 		~MMSThreadServer();
 
+		//! Start the server thread.
+        /*!
+        This method starts the server thread. This has to be done before the first trigger() call.
+        \return true if successful
+        \note The method returns false, if the server is already started.
+        */
+		bool start();
+
 		//! will be called in the server loop
 		virtual void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len) = 0;
 

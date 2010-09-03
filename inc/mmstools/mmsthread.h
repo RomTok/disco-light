@@ -73,7 +73,7 @@ class MMSThread {
 		MMSThread(string identity = "MMSThread", int priority = 0, bool detach = true);
         virtual ~MMSThread() {};
 		virtual void threadMain() = 0;
-		bool start();
+		virtual bool start();
 		void detach();
 		virtual bool isRunning();
 		int cancel();

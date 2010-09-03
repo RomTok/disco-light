@@ -54,9 +54,16 @@ MMSThreadServer::~MMSThreadServer() {
 	free(this->queue);
 }
 
+bool MMSThreadServer::start() {
+	// lock the server mutex
+	pthread_mutex_lock(&this->mutex);
+
+	// start the thread
+	return MMSThread::start();
+}
+
 void MMSThreadServer::threadMain() {
 	// server loop
-	pthread_mutex_lock(&this->mutex);
 	while (1) {
 		if (pthread_cond_wait(&this->cond, &this->mutex) == 0) {
 			// signal from a client thread received
@@ -79,7 +86,6 @@ void MMSThreadServer::threadMain() {
 			}
 		}
 	}
-	pthread_mutex_unlock(&this->mutex);
 }
 
 bool MMSThreadServer::trigger(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
