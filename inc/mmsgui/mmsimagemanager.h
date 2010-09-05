@@ -36,6 +36,7 @@
 #include "mmsgui/mmsguitools.h"
 #include "mmstools/mmstafffile.h"
 #include "mmstools/mmslogger.h"
+#include "mmsconfig/mmsconfigdata.h"
 
 #define MMSIM_MAX_DESC_SUF      64
 #define MMSIM_DESC_SUF_LOADING  0xfffffffe
@@ -66,6 +67,8 @@ class MMSImageManager {
         vector<MMSIM_DESC*> images;
 
         MMSMutex  			lock;
+
+        MMSConfigData       config;
 
         bool surface2TAFF(string &imagefile, MMSFBSurface *surface);
 

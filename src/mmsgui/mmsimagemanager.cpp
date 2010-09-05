@@ -232,12 +232,16 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         				// set external file and requested pixelformat
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
 	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
-#ifdef __HAVE_OPENGL__
-						// for ogl we don't need premultiplied images
-	    				tafff->setDestinationPixelFormat(taffpf, false);
-#else
-	    				tafff->setDestinationPixelFormat(taffpf);
-#endif
+
+	    				if (config.getBackend() == MMSFB_BE_OGL) {
+							// for ogl we don't need premultiplied images
+							tafff->setDestinationPixelFormat(taffpf, false);
+	    				}
+	    				else {
+	    					// use premultiplied images
+	    					tafff->setDestinationPixelFormat(taffpf, true);
+	    				}
+
 	    				tafff->setMirrorEffect(mirror_size);
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
@@ -341,8 +345,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    			retry = false;
 				    	}
 				    	else
-#ifdef __HAVE_OPENGL__
-						if (img_premultiplied) {
+						if (img_premultiplied && (config.getBackend() == MMSFB_BE_OGL)) {
 							DEBUGOUT("ImageManager, premultiplied image\n");
 							// for ogl we don't need premultiplied images
 							if (!retry) {
@@ -356,8 +359,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 								retry = false;
 						}
 						else
-#else
-						if (!img_premultiplied) {
+						if (!img_premultiplied && (config.getBackend() != MMSFB_BE_OGL)) {
 							DEBUGOUT("ImageManager, image not premultiplied\n");
 							// we use premultiplied images
 							if (!retry) {
@@ -371,7 +373,6 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 								retry = false;
 						}
 						else
-#endif
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	/* successfully read */
 //				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
