@@ -778,7 +778,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 		case MMSFB_OT_X11:
 		case MMSFB_OT_XVSHM:
 		case MMSFB_OT_XSHM:
-			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YV12 && this->graphics.videolayer.pixelformat != MMSFB_PF_RGB32)
+			if (this->graphics.videolayer.pixelformat != MMSFB_PF_YV12 && this->graphics.videolayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.videolayer.pixelformat != MMSFB_PF_ARGB)
 				WRONG_VALUE("videolayerpixelformat", getMMSFBPixelFormatString(this->graphics.videolayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM, "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_YV12 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB)
 				WRONG_VALUE("graphicslayerpixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
