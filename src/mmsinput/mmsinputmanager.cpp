@@ -170,6 +170,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		this->button_pressed = true;
 		this->windowmanager->setPointerPosition(inputevent->posx, inputevent->posy, true);
 
+		this->oldx = inputevent->posx;
+		this->oldy = inputevent->posy;
 		window = this->windowmanager->getToplevelWindow();
 		if (window) {
 			/* get the window rect and check if the pointer is in there */
@@ -179,6 +181,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 					||(inputevent->posx - rect.x - rect.w >= 0)||(inputevent->posy - rect.y - rect.h >= 0)) {
 				/* pointer is not over the window */
 				DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED, NOT OVER THE WINDOW");
+				MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED, NOT OVER THE WINDOW");
+
 				this->mutex.unlock();
 				memset(inputevent, 0, sizeof(MMSInputEvent));
 				return;
@@ -187,9 +191,11 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				inputevent->absx = this->oldx;
 				inputevent->absy = this->oldy;
 			} else {
-				this->oldx = inputevent->absx;
-				this->oldy = inputevent->absy;
+				this->oldx = inputevent->posx;
+				this->oldy = inputevent->posy;
 			}
+
+
 			// save the pointer for release event
 			this->buttonpress_window = window;
 
@@ -322,8 +328,12 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				memset(inputevent, 0, sizeof(MMSInputEvent));
 				return;
 			}
+			//printf("oldx = %d\n", this->oldx);
+			fflush(stdout);
 			this->oldx = inputevent->absx;
 			this->oldy = inputevent->absy;
+
+
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
 		}
