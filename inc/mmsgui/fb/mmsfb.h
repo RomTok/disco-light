@@ -95,6 +95,8 @@ class MMSFB {
         int				target_window_h;
         bool            resized;
         bool 			resizeWindow();
+        Window			x_windows[MMSFBLAYER_MAXNUM];
+        XImage			*rootimage;
 #endif
 
 #ifdef __HAVE_XV__
@@ -147,6 +149,9 @@ class MMSFB {
         bool createImageProvider(IDirectFBImageProvider **provider, string filename);
 #endif
         bool createFont(MMSFBFont **font, string filename, int width = 0, int height = 0);
+
+
+        void realignLayer();
 
     friend class MMSFBLayer;
     friend class MMSFBSurface;

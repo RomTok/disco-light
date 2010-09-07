@@ -227,6 +227,9 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
         printf("w: %d, h: %d\n", this->display_w, this->display_h);
 
 		x_depth=DefaultDepth(this->x_display, this->x_screen);
+		rootimage =  XGetImage(mmsfb->x_display, myroot, 0, 0,
+				      mmsfb->display_w,mmsfb->display_h, -1, ZPixmap);
+		x_depth=DefaultDepth(this->x_display, this->x_screen);
 
 		this->hidden = hidden;
 		this->pointer = pointer;
@@ -530,3 +533,24 @@ bool MMSFB::resizeWindow() {
 	return true;
 }
 #endif
+
+void MMSFB::realignLayer() {
+#ifdef __HAVE_XLIB__
+	for(int i=0; ;i++) {
+		if(mmsfb->x_windows[i]==0)
+			break;
+		else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
+			XLowerWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+			XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display,False);
+			XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+			XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display,False);
+			XRaiseWindow(mmsfb->x_display, mmsfb->input_window);
+			printf("mapping layer %d\n", i);
+			XFlush(mmsfb->x_display);
+			XSync(mmsfb->x_display,False);
+		}
+	}
+#endif
+}
