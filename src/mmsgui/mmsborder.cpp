@@ -275,19 +275,13 @@ pixelformat=DSPF_ALUT44;
                         }
                     }
                     else {
-                        /* the corner is like an rectangle */
-                        int j = bordergeom[0].w-1;
-                        for(int i = 0; i < bordergeom[0].h; i++)
-                            borderimages[0]->drawLine(0, i, j, i);
+                        // the corner is like an rectangle
+                        borderimages[0]->fillRectangle(0, 0, bordergeom[0].w, bordergeom[0].h);
                     }
                 }
 
                 /* set the blitting flags */
                 surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, alpha, opacity);
-
-//surface->SetColor(surface, 255,255,255, 255);
-//surface->FillRectangle(surface,0,0,10,10);
-
 
                 /* blit the first time */
                 surface->stretchBlit(borderimages[0], NULL, &bordergeom[0]);
@@ -315,10 +309,8 @@ pixelformat=DSPF_ALUT44;
                         }
                     }
                     else {
-                        /* the corner is like an rectangle */
-                        int j = bordergeom[2].w-1;
-                        for(int i = 0; i < bordergeom[2].h; i++)
-                            borderimages[2]->drawLine(0, i, j, i);
+                        // the corner is like an rectangle
+                        borderimages[2]->fillRectangle(0, 0, bordergeom[2].w, bordergeom[2].h);
                     }
                 }
 
@@ -350,10 +342,8 @@ pixelformat=DSPF_ALUT44;
                         }
                     }
                     else {
-                        /* the corner is like an rectangle */
-                        int j = bordergeom[4].w-1;
-                        for(int i = 0; i < bordergeom[4].h; i++)
-                            borderimages[4]->drawLine(0, i, j, i);
+                        // the corner is like an rectangle
+                        borderimages[4]->fillRectangle(0, 0, bordergeom[4].w, bordergeom[4].h);
                     }
                 }
 
@@ -386,10 +376,8 @@ pixelformat=DSPF_ALUT44;
                         }
                     }
                     else {
-                        /* the corner is like an rectangle */
-                        int j = bordergeom[6].w-1;
-                        for(int i = 0; i < bordergeom[6].h; i++)
-                            borderimages[6]->drawLine(0, i, j, i);
+                        // the corner is like an rectangle
+                        borderimages[6]->fillRectangle(0, 0, bordergeom[6].w, bordergeom[6].h);
                     }
                 }
 
