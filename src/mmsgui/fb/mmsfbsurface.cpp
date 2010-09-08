@@ -33,6 +33,7 @@
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
+#include "mmsgui/fb/mmsfbperf.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -4251,8 +4252,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_argb(&dst_planes, dst_height,
-										 sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING_FILLRECT;
+					mmsfb_fillrectangle_argb(&dst_planes, dst_height,
+											 sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT;
 				extendedUnlock(NULL, this, &dst_planes);
 				return true;
 			}

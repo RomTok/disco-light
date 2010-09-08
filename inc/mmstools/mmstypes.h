@@ -363,7 +363,9 @@ typedef enum {
     //! 24 bit BGR (3 byte, blue 8\@16, green 8\@8, red 8\@0)
     MMSFB_PF_BGR24,
     //! 15 bit BGR (2 byte, nothing 1\@15, blue 5\@10, green 5\@5, red 5\@0)
-    MMSFB_PF_BGR555
+    MMSFB_PF_BGR555,
+    //! number of supported pixelformats
+    MMSFB_PF_CNT
 } MMSFBSurfacePixelFormat;
 
 //! pixel format: none
