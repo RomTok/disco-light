@@ -403,7 +403,7 @@ class MMSWidget {
         void markChildren2Redraw();
         virtual MMSWidget *getDrawableParent(bool mark2Redraw = false, bool markChildren2Redraw = false,
                                              bool checkborder = true, vector<MMSWidget*> *wlist = NULL, bool followpath = false);
-        void refresh();
+//        void refresh();
 
         MMSFBSurface *windowSurface;
 
@@ -425,6 +425,8 @@ class MMSWidget {
         MMSFBRectangle innerGeom;
 
     public:
+    	void refresh();
+
         /* theme access methods */
         bool 	getBgColor(MMSFBColor &bgcolor);
         bool 	getSelBgColor(MMSFBColor &selbgcolor);

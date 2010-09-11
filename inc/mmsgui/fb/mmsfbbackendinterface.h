@@ -51,7 +51,8 @@ private:
 		BEI_REQUEST_TYPE_DRAWTRIANGLE,
 		BEI_REQUEST_TYPE_STRETCHBLIT,
 		BEI_REQUEST_TYPE_STRETCHBLITBUFFER,
-		BEI_REQUEST_TYPE_DRAWSTRING
+		BEI_REQUEST_TYPE_DRAWSTRING,
+		BEI_REQUEST_TYPE_CUBE
 	} BEI_REQUEST_TYPE;
 
 	typedef struct {
@@ -142,6 +143,20 @@ private:
 		int					y;
 	} BEI_DRAWSTRING;
 
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		MMSFBSurface		*surface;
+		MMSFBSurface		*front;
+		MMSFBSurface		*back;
+		MMSFBSurface		*left;
+		MMSFBSurface		*right;
+		MMSFBSurface		*top;
+		MMSFBSurface		*bottom;
+		float				angle_x;
+		float				angle_y;
+		float				angle_z;
+	} BEI_CUBE;
+
 #ifdef  __HAVE_OPENGL__
 GLuint matrix_w;
 GLuint matrix_h;
@@ -150,6 +165,8 @@ float  matrix_ratio;
 void oglMatrix(GLuint w, GLuint h);
 void oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
 void oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
+
+void oglMatrixXX(GLuint w, GLuint h);
 #endif
 
 	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);
@@ -166,6 +183,8 @@ void oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
 	void processStretchBlit(BEI_STRETCHBLIT *req);
 	void processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req);
 	void processDrawString(BEI_DRAWSTRING *req);
+
+	void processCube(BEI_CUBE *req);
 
 public:
 #ifdef  __HAVE_OPENGL__
@@ -201,6 +220,11 @@ public:
 						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
 	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);
 
+	void cube(MMSFBSurface *surface,
+				MMSFBSurface *front, MMSFBSurface *back,
+				MMSFBSurface *left, MMSFBSurface *right,
+				MMSFBSurface *top, MMSFBSurface *bottom,
+				float angle_x, float angle_y, float angle_z);
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */

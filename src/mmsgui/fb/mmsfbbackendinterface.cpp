@@ -49,6 +49,12 @@
 	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
 	glDisable(GL_SCISSOR_TEST);
 
+#define INIT_OGL_FBOXX(surface) \
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
+	if (!surface->is_sub_surface) oglMatrixXX(surface->config.w, surface->config.h); \
+	else oglMatrixXX(surface->root_parent->config.w, surface->root_parent->config.h); \
+	glDisable(GL_SCISSOR_TEST);
+
 #define INIT_OGL_DRAWING(surface) { \
 			switch (surface->config.drawingflags) { \
 			case MMSFB_DRAW_BLEND: \
@@ -268,6 +274,9 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_DRAWSTRING:
 		processDrawString((BEI_DRAWSTRING *)in_data);
 		break;
+	case BEI_REQUEST_TYPE_CUBE:
+		processCube((BEI_CUBE *)in_data);
+		break;
 	default:
 		break;
 	}
@@ -366,7 +375,7 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 #ifdef __HAVE_OPENGL__
 void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 	float ratio = (float)w / (float)h;
-	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
+//	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
 		this->matrix_w = w;
 		this->matrix_h = h;
 		this->matrix_ratio = ratio;
@@ -376,7 +385,7 @@ void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 		glOrtho(0, w, 0, h, 10.0, -10.0);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-	}
+//	}
 }
 #endif
 
@@ -491,6 +500,10 @@ void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 	glDisable(GL_TEXTURE_2D);
 	glColor4ub(req->color.r, req->color.g, req->color.b, req->color.a);
 
+/*	printf("%08x, %dx%d, %d,%d,%d,%d, %d,%d,%d,%d DISKO: processClear\n",
+			req->surface,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT,0,0,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT,
+			req->color.r,req->color.g,req->color.b,req->color.a);
+*/
 	// get subsurface offsets
 	GET_OFFS(req->surface);
 
@@ -525,6 +538,10 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
+/*	printf("%08x, %dx%d, %d,%d,%d,%d, %d,%d,%d,%d DISKO: processFillRectangle\n",
+			req->surface,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT,req->rect.x,req->rect.y,req->rect.w,req->rect.h,
+			req->surface->config.color.r,req->surface->config.color.g,req->surface->config.color.b,req->surface->config.color.a);
+*/
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
 
@@ -620,6 +637,10 @@ void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
+/*	printf("%08x, %dx%d, %d,%d,%d,%d DISKO: processDrawLine\n",
+			req->surface,
+			req->surface->config.color.r,req->surface->config.color.g,req->surface->config.color.b,req->surface->config.color.a);
+*/
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
 
@@ -787,6 +808,9 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, req->source->config.surface_buffer->ogl_tex);
 
+/*	printf("%08x, src %08x DISKO: processStretchBlit\n",
+			req->surface, req->source);
+*/
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface);
 
@@ -856,6 +880,9 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 
+/*	printf("%08x, src %08x DISKO: processStretchBlitBuffer\n",
+			req->surface, req->src_planes->ptr);
+*/
 	// allocate a texture name
 	GLuint texture;
 	glGenTextures( 1, &texture );
@@ -961,6 +988,9 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 
+/*	printf("%08x, DISKO: processDrawString\n",
+			req->surface);
+*/
 	// allocate a texture name
 	GLuint texture;
 	glGenTextures(1, &texture);
@@ -1054,3 +1084,216 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #endif
 }
 
+void MMSFBBackEndInterface::cube(MMSFBSurface *surface,
+									MMSFBSurface *front, MMSFBSurface *back,
+									MMSFBSurface *left, MMSFBSurface *right,
+									MMSFBSurface *top, MMSFBSurface *bottom,
+									float angle_x, float angle_y, float angle_z) {
+	BEI_CUBE req;
+	req.type		= BEI_REQUEST_TYPE_CUBE;
+	req.surface		= surface;
+	req.front		= front;
+	req.back		= back;
+	req.left		= left;
+	req.right		= right;
+	req.top			= top;
+	req.bottom		= bottom;
+	req.angle_x		= angle_x;
+	req.angle_y		= angle_y;
+	req.angle_z		= angle_z;
+	trigger((void*)&req, sizeof(req));
+}
+
+
+
+void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and bind source texture to it
+	INIT_OGL_FBOXX(req->surface);
+
+
+	// setup blitting
+	INIT_OGL_BLITTING(req->surface);
+
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+//	GET_OFFS_SRC(req->source);
+
+	MMSFBRectangle dst_rect(0,0,300,300);
+//	MMSFBRectangle src_rect(0,0,req->source->config.w,req->source->config.h);
+
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(dst_rect.x + xoff, dst_rect.y + yoff, dst_rect.w, dst_rect.h, &crect)) {
+		// inside clipping region
+		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+//		glEnable(GL_SCISSOR_TEST);
+
+		dst_rect.x+=90;
+		dst_rect.y+=90;
+		dst_rect.w-=180;
+		dst_rect.h-=180;
+
+		// get source region
+/*		int sx1 = src_rect.x + src_xoff;
+		int sy1 = src_rect.y + src_yoff;
+		int sx2 = src_rect.x + src_rect.w - 1 + src_xoff;
+		int sy2 = src_rect.y + src_rect.h - 1 + src_yoff;
+*/
+		// get destination region
+		int dx1 = dst_rect.x + xoff;
+		int dy1 = dst_rect.y + yoff;
+		int dx2 = dst_rect.x + dst_rect.w - 1 + xoff;
+		int dy2 = dst_rect.y + dst_rect.h - 1 + yoff;
+
+		// blit source texture to the destination
+//		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
+
+//		int sw = req->source->config.w;
+//		int sh = req->source->config.h;
+
+glDepthMask(GL_TRUE);
+//glDisable(GL_BLEND);
+glClearColor(0.0, 0.0, 0.0, 0.0);
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+glEnable(GL_DEPTH_TEST);
+glDepthRange(1,-1);
+
+		glPushMatrix();
+		//glTranslatef(-150,-150,0);
+//		glTranslatef(0,0,-1);
+//		glTranslatef(-0.25,-0.25,0);
+//		glRotatef(req->angle, req->x,req->y,req->z);
+//		glRotatef(4, req->x,req->y,req->z);
+//		glTranslatef(100,100,0);
+
+//		glRotatef(req->angle, 0,0,1);
+		glRotatef(req->angle_x, 1, 0, 0);
+		glRotatef(req->angle_y, 0, 1, 0);
+		glRotatef(req->angle_z, 0, 0, 1);
+
+		int ddw = 100;
+		int ddh = 100;
+		int ddz = 100;
+
+
+
+		// front
+		if (req->front) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, req->front->config.surface_buffer->ogl_tex);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0);
+					glVertex3f(-ddw/2, -ddh/2, ddz/2);
+				glTexCoord2f(1, 0);
+					glVertex3f(ddw/2, -ddh/2, ddz/2);
+				glTexCoord2f(1, 1);
+					glVertex3f(ddw/2, ddh/2, ddz/2);
+				glTexCoord2f(0, 1);
+					glVertex3f(-ddw/2, ddh/2, ddz/2);
+			glEnd();
+		}
+
+		// back
+		if (req->back) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, req->back->config.surface_buffer->ogl_tex);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0);
+					glVertex3f(ddw/2, -ddh/2, -ddz/2);
+				glTexCoord2f(1, 0);
+					glVertex3f(-ddw/2, -ddh/2, -ddz/2);
+				glTexCoord2f(1, 1);
+					glVertex3f(-ddw/2, ddh/2, -ddz/2);
+				glTexCoord2f(0, 1);
+					glVertex3f(ddw/2, ddh/2, -ddz/2);
+			glEnd();
+		}
+
+		// left
+		if (req->left) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, req->left->config.surface_buffer->ogl_tex);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0);
+					glVertex3f(-ddw/2, -ddh/2, -ddz/2);
+				glTexCoord2f(1, 0);
+					glVertex3f(-ddw/2, -ddh/2, ddz/2);
+				glTexCoord2f(1, 1);
+					glVertex3f(-ddw/2, ddh/2, ddz/2);
+				glTexCoord2f(0, 1);
+					glVertex3f(-ddw/2, ddh/2, -ddz/2);
+			glEnd();
+		}
+
+		// right
+		if (req->right) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, req->right->config.surface_buffer->ogl_tex);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0);
+					glVertex3f(ddw/2, -ddh/2, ddz/2);
+				glTexCoord2f(1, 0);
+					glVertex3f(ddw/2, -ddh/2, -ddz/2);
+				glTexCoord2f(1, 1);
+					glVertex3f(ddw/2, ddh/2, -ddz/2);
+				glTexCoord2f(0, 1);
+					glVertex3f(ddw/2, ddh/2, ddz/2);
+			glEnd();
+		}
+
+		// top
+		if (req->top) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, req->top->config.surface_buffer->ogl_tex);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0);
+					glVertex3f(-ddw/2, ddh/2, ddz/2);
+				glTexCoord2f(1, 0);
+					glVertex3f(ddw/2, ddh/2, ddz/2);
+				glTexCoord2f(1, 1);
+					glVertex3f(ddw/2, ddh/2, -ddz/2);
+				glTexCoord2f(0, 1);
+					glVertex3f(-ddw/2, ddh/2, -ddz/2);
+			glEnd();
+		}
+
+		// bottom
+		if (req->bottom) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, req->bottom->config.surface_buffer->ogl_tex);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0, 0);
+					glVertex3f(-ddw/2, -ddh/2, -ddz/2);
+				glTexCoord2f(1, 0);
+					glVertex3f(ddw/2, -ddh/2, -ddz/2);
+				glTexCoord2f(1, 1);
+					glVertex3f(ddw/2, -ddh/2, ddz/2);
+				glTexCoord2f(0, 1);
+					glVertex3f(-ddw/2, -ddh/2, ddz/2);
+			glEnd();
+		}
+
+		glPopMatrix();
+
+glDepthMask(GL_FALSE);
+glDisable(GL_DEPTH_TEST);
+
+	}
+#endif
+}
+
+#ifdef __HAVE_OPENGL__
+void MMSFBBackEndInterface::oglMatrixXX(GLuint w, GLuint h) {
+	float ratio = (float)w / (float)h;
+	this->matrix_w = w;
+	this->matrix_h = h;
+	this->matrix_ratio = ratio;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, w, h);
+	glOrtho(-(int)w/2, w/2, -(int)h/2, h/2, 600.0, -600.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+#endif

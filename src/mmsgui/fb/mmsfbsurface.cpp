@@ -4668,6 +4668,35 @@ bool MMSFBSurface::extendedAccelDrawLine(int x1, int y1, int x2, int y2) {
 
 
 
+bool MMSFBSurface::cube(MMSFBSurface *front, MMSFBSurface *back,
+		MMSFBSurface *left, MMSFBSurface *right,
+		MMSFBSurface *top, MMSFBSurface *bottom,
+		float angle_x, float angle_y, float angle_z) {
+    bool 		 ret = false;
+
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+
+		if (!this->is_sub_surface) {
+
+			mmsfb->bei->cube(this, front, back, left, right, top, bottom, angle_x, angle_y, angle_z);
+
+			ret = true;
+		}
+		else {
+			CLIPSUBSURFACE
+
+			mmsfb->bei->cube(this, front, back, left, right, top, bottom, angle_x, angle_y, angle_z);
+
+			UNCLIPSUBSURFACE
+
+			ret = true;
+		}
+#endif
+	}
+
+	return ret;
+}
 
 bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y) {
     MMSFBRectangle src;
