@@ -369,9 +369,9 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeo
 
 #ifdef  __HAVE_OPENGL__
 
-int angle_x = 45;
-int angle_y = 0;
-int angle_z = 0;
+float angle_x = 45;
+float angle_y = 0;
+float angle_z = 0;
 
 #endif
 
@@ -1061,19 +1061,19 @@ void MMSImageWidget::setMirrorSize(unsigned int mirrorsize, bool refresh) {
 
 #ifdef  __HAVE_OPENGL__
 	if (getName() == "ogl_cube") {
-		if (mirrorsize < 1000) {
+		if (mirrorsize < 100000) {
 			// angle_x
-			angle_x = mirrorsize;
+			angle_x = (float)mirrorsize / 100;
 		}
 		else
-		if (mirrorsize < 2000) {
+		if (mirrorsize < 200000) {
 			// angle_y
-			angle_y = mirrorsize % 1000;
+			angle_y = (float)(mirrorsize % 100000) / 100;
 		}
 		else
-		if (mirrorsize < 3000) {
+		if (mirrorsize < 300000) {
 			// angle_z
-			angle_z = mirrorsize % 2000;
+			angle_z = (float)(mirrorsize % 200000) / 100;
 		}
 		return;
 	}
