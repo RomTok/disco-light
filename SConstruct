@@ -218,6 +218,10 @@ if os.environ.has_key('LD'):
 	env['LINK'] = [os.environ['LD'].split()]
 if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'].extend([os.environ['LDFLAGS'].split()])
+if os.environ.has_key('PKG_CONFIG'):
+	env['PKG_CONFIG'] = os.environ['PKG_CONFIG']
+else:
+	env['PKG_CONFIG'] = 'pkg-config'
 
 # format output
 #env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
@@ -284,9 +288,9 @@ def tryConfigCommand(context, cmd):
 			ret = 0
 	return ret
 
-def checkPKGConfig(context):
+def checkPKGConfig(context, version):
 	context.Message('Checking for pkg-config... ')
-	ret = context.TryAction('pkg-config --version')[0]
+	ret = context.TryAction(context.env['PKG_CONFIG'] + ' --atleast-pkgconfig-version=%s' % version)[0]
 	context.Result(ret)
 	return ret
 
@@ -452,7 +456,8 @@ conf = Configure(env,
 conf.checkOptions()
 
 # checks that are required everytime
-conf.checkPKGConfig()
+if not conf.checkPKGConfig('0.8'):
+	Exit(1)
 conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 if (env['enable_curl']):
