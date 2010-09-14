@@ -296,7 +296,7 @@ def checkPKGConfig(context, version):
 
 def checkXineBlDvb(context):
 	context.Message('Checking for xine bldvb input plugin... ')
-	pipe = os.popen('pkg-config --variable=plugindir libxine')
+	pipe = os.popen(context.env['PKG_CONFIG'] + ' --variable=plugindir libxine')
  	xinePluginPath = pipe.read()
  	pipe.close()
 	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xineplug_inp_bldvb.so', os.R_OK):
@@ -309,7 +309,7 @@ def checkXineBlDvb(context):
 
 def checkGstDiskoVideosink(context):
 	context.Message('Checking for gstreamer plugin diskovideosink... ')
-	pipe = os.popen('pkg-config --variable=pluginsdir gstreamer-0.10')
+	pipe = os.popen(context.env['PKG_CONFIG'] + ' --variable=pluginsdir gstreamer-0.10')
  	gstPluginPath = pipe.read()
  	pipe.close()
 	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
@@ -321,7 +321,7 @@ def checkGstDiskoVideosink(context):
 	return ret
 
 def checkPKG(context, name):
-	return tryConfigCommand(context, 'pkg-config --libs --cflags \'%s\'' % name)
+	return tryConfigCommand(context, context.env['PKG_CONFIG'] + ' --libs --cflags \'%s\'' % name)
 
 def checkConf(context, name):
 	if name.find(' '):
