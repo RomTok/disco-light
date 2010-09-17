@@ -472,19 +472,25 @@ if conf.CheckHeader(['wordexp.h']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
 
 if('png' in env['images']):
-	if conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
+	if conf.checkSimpleLib(['libpng'], ['png.h'], required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
+	elif conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
 	else:
 		conf.env['images'].remove('png')
 
 if('jpeg' in env['images']):
-	if conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
+	if conf.checkSimpleLib(['libjpeg'], ['cstdio', 'jpeglib.h'], required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
+	elif conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
 	else:
 		conf.env['images'].remove('jpeg')
 
 if('tiff' in env['images']):
-	if conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
+	if conf.checkSimpleLib(['libtiff'], ['tiffio.h'], required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
+	elif conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
 	else:
 		conf.env['images'].remove('tiff')
