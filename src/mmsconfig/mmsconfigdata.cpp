@@ -140,6 +140,14 @@ const string MMSConfigData::getInputMode() {
 	return this->global.inputmode;
 }
 
+const string MMSConfigData::getPerfMonAddress() {
+	return this->global.perfmonaddress;
+}
+
+const unsigned int MMSConfigData::getPerfMonPort() {
+	return this->global.perfmonport;
+}
+
 /* db section getters */
 const string MMSConfigData::getConfigDBDBMS() {
 	return this->configdb.dbms;
