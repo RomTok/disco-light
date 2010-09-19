@@ -636,6 +636,11 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
 
 MMSFBSurface::~MMSFBSurface() {
 
+#ifdef __ENABLE_PERFMON__
+	if (this->mmsfbperf)
+		delete this->mmsfbperf;
+#endif
+
     if (!mmsfb->isInitialized()) return;
 
     // release memory - only if not the layer surface
@@ -665,6 +670,10 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 	        		    MMSFBSurface *parent,
 						MMSFBRectangle *sub_surface_rect) {
     // init me
+#ifdef __ENABLE_PERFMON__
+	this->mmsfbperf = new MMSFBPerf();
+#endif
+
 	this->allocated_by = allocated_by;
 	this->initialized = true;
 
@@ -2463,11 +2472,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2478,11 +2489,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2494,12 +2507,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_argb_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2516,11 +2531,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_airgb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_airgb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2537,11 +2554,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2553,12 +2572,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_argb_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2575,10 +2596,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb_to_rgb16(src_planes, src_height,
-											 sx, sy, sw, sh,
-											 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											 x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb_to_rgb16(src_planes, src_height,
+												 sx, sy, sw, sh,
+												 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												 x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2588,10 +2611,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_rgb16(src_planes, src_height,
-												   sx, sy, sw, sh,
-												   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												   x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_rgb16(src_planes, src_height,
+													   sx, sy, sw, sh,
+													   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													   x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2613,11 +2638,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			case MMSFB_BLIT_NOFX:
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb_to_argb3565(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb_to_argb3565(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2626,11 +2653,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			case MMSFB_BLIT_BLEND_ALPHACHANNEL:
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_argb3565(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_argb3565(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2646,11 +2675,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2661,11 +2692,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2677,12 +2710,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_argb_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2698,11 +2733,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_rgb24(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_rgb24(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2718,11 +2755,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is BGR24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_bgr24(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_bgr24(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2734,12 +2773,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb_to_bgr24(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_argb_to_bgr24(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2755,11 +2796,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is BGR555
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_bgr555(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_bgr555(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2781,11 +2824,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb32_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb32_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2796,12 +2841,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA)) {
 				// blitting with coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_coloralpha_rgb32_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_coloralpha_rgb32_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2824,11 +2871,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb16_to_rgb16(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb16_to_rgb16(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2845,11 +2894,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb16_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb16_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2866,11 +2917,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb16_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb16_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2892,10 +2945,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_airgb_to_airgb(src_planes, src_height,
-											  sx, sy, sw, sh,
-											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											  x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_airgb_to_airgb(src_planes, src_height,
+												  sx, sy, sw, sh,
+												  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												  x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2906,10 +2961,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_airgb_to_airgb(src_planes, src_height,
-													sx, sy, sw, sh,
-													(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-													x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_airgb_to_airgb(src_planes, src_height,
+														sx, sy, sw, sh,
+														(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+														x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2921,11 +2978,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_airgb_to_airgb(src_planes, src_height,
-															   sx, sy, sw, sh,
-															   (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-															   x, y,
-															   this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_airgb_to_airgb(src_planes, src_height,
+																   sx, sy, sw, sh,
+																   (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+																   x, y,
+																   this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2942,10 +3001,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_airgb_to_rgb16(src_planes, src_height,
-											  sx, sy, sw, sh,
-											  (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											  x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_airgb_to_rgb16(src_planes, src_height,
+												  sx, sy, sw, sh,
+												  (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												  x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2956,10 +3017,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_airgb_to_rgb16(src_planes, src_height,
-													sx, sy, sw, sh,
-													(unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-													x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_airgb_to_rgb16(src_planes, src_height,
+														sx, sy, sw, sh,
+														(unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+														x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2981,10 +3044,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_ayuv_to_ayuv(src_planes, src_height,
-										    sx, sy, sw, sh,
-										    &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-										    x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_ayuv_to_ayuv(src_planes, src_height,
+												sx, sy, sw, sh,
+												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -2995,10 +3060,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_ayuv_to_ayuv(src_planes, src_height,
-												  sx, sy, sw, sh,
-												  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												  x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_ayuv_to_ayuv(src_planes, src_height,
+													  sx, sy, sw, sh,
+													  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													  x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3010,11 +3077,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(src_planes, src_height,
-															 sx, sy, sw, sh,
-															 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-															 x, y,
-															 this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(src_planes, src_height,
+																 sx, sy, sw, sh,
+																 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+																 x, y,
+																 this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3031,10 +3100,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_ayuv_to_rgb16(src_planes, src_height,
-											 sx, sy, sw, sh,
-											 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											 x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_ayuv_to_rgb16(src_planes, src_height,
+												 sx, sy, sw, sh,
+												 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												 x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3045,10 +3116,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_ayuv_to_rgb16(src_planes, src_height,
-												   sx, sy, sw, sh,
-												   (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												   x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_ayuv_to_rgb16(src_planes, src_height,
+													   sx, sy, sw, sh,
+													   (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													   x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3065,10 +3138,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_ayuv_to_yv12(src_planes, src_height,
-												  sx, sy, sw, sh,
-												  (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												  x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_ayuv_to_yv12(src_planes, src_height,
+													  sx, sy, sw, sh,
+													  (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													  x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3080,11 +3155,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_ayuv_to_yv12(src_planes, src_height,
-															 sx, sy, sw, sh,
-															 (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-															 x, y,
-															 this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_ayuv_to_yv12(src_planes, src_height,
+																 sx, sy, sw, sh,
+																 (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+																 x, y,
+																 this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3106,10 +3183,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_yv12_to_yv12(src_planes, src_height,
-											sx, sy, sw, sh,
-											&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_yv12_to_yv12(src_planes, src_height,
+												sx, sy, sw, sh,
+												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3126,10 +3205,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_yv12_to_rgb32(src_planes, src_height,
-											 sx, sy, sw, sh,
-											 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											 x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_yv12_to_rgb32(src_planes, src_height,
+												 sx, sy, sw, sh,
+												 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												 x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3151,10 +3232,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_i420_to_i420(src_planes, src_height,
-											sx, sy, sw, sh,
-											&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_i420_to_i420(src_planes, src_height,
+												sx, sy, sw, sh,
+												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3171,11 +3254,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_i420_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_i420_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3197,11 +3282,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_yuy2_to_yuy2(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_yuy2_to_yuy2(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3218,11 +3305,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_yuy2_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_yuy2_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3243,10 +3332,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb24_to_argb(src_planes, src_height,
-										    sx, sy, sw, sh,
-										    &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-										    x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb24_to_argb(src_planes, src_height,
+												sx, sy, sw, sh,
+												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3263,10 +3354,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb24_to_rgb32(src_planes, src_height,
-											  sx, sy, sw, sh,
-											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											  x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb24_to_rgb32(src_planes, src_height,
+												  sx, sy, sw, sh,
+												  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												  x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3283,10 +3376,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
-											  sx, sy, sw, sh,
-											  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											  x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
+												  sx, sy, sw, sh,
+												  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+												  x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3303,11 +3398,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_rgb24_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_rgb24_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3329,11 +3426,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_bgr24_to_bgr24(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_bgr24_to_bgr24(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3344,12 +3443,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA)) {
 				// blitting with coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_coloralpha_bgr24_to_bgr24(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_coloralpha_bgr24_to_bgr24(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3371,10 +3472,12 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb3565_to_argb3565(src_planes, src_height,
-											        sx, sy, sw, sh,
-											        &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											        x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb3565_to_argb3565(src_planes, src_height,
+														sx, sy, sw, sh,
+														&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+														x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3396,11 +3499,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_argb4444_to_argb4444(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb4444_to_argb4444(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3411,11 +3516,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb4444_to_argb4444(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb4444_to_argb4444(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3427,12 +3534,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3449,11 +3558,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb4444_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb4444_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3465,12 +3576,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_coloralpha_argb4444_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_coloralpha_argb4444_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3492,11 +3605,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_bgr555_to_bgr555(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_bgr555_to_bgr555(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3507,11 +3622,13 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_blit_blend_argb_to_bgr555(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							x, y);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_blend_argb_to_bgr555(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -3721,12 +3838,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_argb_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_argb_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3737,11 +3856,13 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_argb_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_argb_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3753,12 +3874,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_coloralpha_argb_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_coloralpha_argb_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3780,12 +3903,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_rgb32_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_rgb32_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3807,12 +3932,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_rgb24_to_argb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_rgb24_to_argb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3829,12 +3956,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_rgb24_to_rgb32(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_rgb24_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3856,12 +3985,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_airgb_to_airgb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_airgb_to_airgb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3872,11 +4003,13 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_airgb_to_airgb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_airgb_to_airgb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3888,12 +4021,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3915,12 +4050,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_ayuv_to_ayuv(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_ayuv_to_ayuv(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3931,11 +4068,13 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_ayuv_to_ayuv(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_ayuv_to_ayuv(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3947,12 +4086,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_coloralpha_ayuv_to_ayuv(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_coloralpha_ayuv_to_ayuv(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -3975,12 +4116,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_yv12_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_yv12_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -4003,12 +4146,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_i420_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_i420_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -4031,12 +4176,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_yuy2_to_yv12(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_yuy2_to_yv12(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 					return true;
 				}
@@ -4058,11 +4205,13 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_argb4444_to_argb4444(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_argb4444_to_argb4444(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -4074,12 +4223,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_blend_coloralpha_argb4444_to_argb4444(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							this->config.color.a);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_coloralpha_argb4444_to_argb4444(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -4101,12 +4252,14 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_NOFX))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL))) {
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					mmsfb_stretchblit_rgb16_to_rgb16(
-							src_planes, src_height,
-							sx, sy, sw, sh,
-							&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-							dx, dy, dw, dh,
-							antialiasing);
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_rgb16_to_rgb16(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh,
+								antialiasing);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 
 					return true;
@@ -4252,10 +4405,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFBPERF_START_MEASURING_FILLRECT;
+				MMSFBPERF_START_MEASURING;
 					mmsfb_fillrectangle_argb(&dst_planes, dst_height,
 											 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT;
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this, &dst_planes);
 				return true;
 			}
@@ -4267,8 +4420,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_blend_argb(&dst_planes, dst_height,
-											   sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_blend_argb(&dst_planes, dst_height,
+												   sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this, &dst_planes);
 				return true;
 			}
@@ -4285,8 +4440,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_ayuv(&dst_planes, dst_height,
-										 sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_ayuv(&dst_planes, dst_height,
+											 sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4298,8 +4455,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_blend_ayuv(&dst_planes, dst_height,
-											   sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_blend_ayuv(&dst_planes, dst_height,
+												   sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4316,8 +4475,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb32(&dst_planes, dst_height,
-										  sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_rgb32(&dst_planes, dst_height,
+											  sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4334,8 +4495,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb24(&dst_planes, dst_height,
-										  sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_rgb24(&dst_planes, dst_height,
+											  sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4352,9 +4515,11 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_rgb16(
-						&dst_planes, dst_height,
-						sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_rgb16(
+							&dst_planes, dst_height,
+							sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4366,9 +4531,11 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_blend_rgb16(
-						&dst_planes, dst_height,
-						sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_blend_rgb16(
+							&dst_planes, dst_height,
+							sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4385,8 +4552,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_yv12(&dst_planes, dst_height,
-										 sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_yv12(&dst_planes, dst_height,
+											 sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4403,8 +4572,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_i420(&dst_planes, dst_height,
-										 sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_i420(&dst_planes, dst_height,
+											 sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4421,8 +4592,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_yuy2(&dst_planes, dst_height,
-										 sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_yuy2(&dst_planes, dst_height,
+											 sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4439,8 +4612,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_argb3565(&dst_planes, dst_height,
-										     sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_argb3565(&dst_planes, dst_height,
+												 sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4457,9 +4632,11 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_argb4444(
-						&dst_planes, dst_height,
-						sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_argb4444(
+							&dst_planes, dst_height,
+							sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4471,9 +4648,11 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_blend_argb4444(
-						&dst_planes, dst_height,
-						sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_blend_argb4444(
+							&dst_planes, dst_height,
+							sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4490,8 +4669,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_bgr24(&dst_planes, dst_height,
-										  sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_bgr24(&dst_planes, dst_height,
+											  sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4508,8 +4689,10 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_fillrectangle_bgr555(&dst_planes, dst_height,
-										   sx, sy, sw, sh, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_fillrectangle_bgr555(&dst_planes, dst_height,
+											   sx, sy, sw, sh, color);
+				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4605,7 +4788,9 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawline_argb(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawline_argb(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				MMSFBPERF_STOP_MEASURING_DRAWLINE(this, x1, y1, x2, y2);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4617,7 +4802,9 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				// drawing with alpha channel
-				mmsfb_drawline_blend_argb(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawline_blend_argb(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				MMSFBPERF_STOP_MEASURING_DRAWLINE(this, x1, y1, x2, y2);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -4632,7 +4819,9 @@ bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
 			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawline_argb4444(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawline_argb4444(&dst_planes, dst_height, clipreg, x1, y1, x2, y2, color);
+				MMSFBPERF_STOP_MEASURING_DRAWLINE(this, x1, y1, x2, y2);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -6176,9 +6365,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_argb(
-						&dst_planes, this->config.font, clipreg,
-						text, len, x, y, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_argb(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -6188,9 +6379,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
 			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_coloralpha_argb(
-						&dst_planes, this->config.font, clipreg,
-						text, len, x, y, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_coloralpha_argb(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -6203,9 +6396,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_argb4444(
-						&dst_planes, this->config.font, clipreg,
-						text, len, x, y, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_argb4444(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -6218,9 +6413,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_rgb16(
-						&dst_planes, this->config.font, clipreg,
-						text, len, x, y, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_rgb16(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
 				extendedUnlock(NULL, this);
 				return true;
 			}
@@ -6230,9 +6427,11 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
 			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				mmsfb_drawstring_blend_coloralpha_rgb16(
-						&dst_planes, this->config.font, clipreg,
-						text, len, x, y, color);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_coloralpha_rgb16(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
 				extendedUnlock(NULL, this);
 				return true;
 			}

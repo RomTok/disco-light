@@ -62,4 +62,3 @@ bool MMSFBPerfInterface::processRequest(string *request, string *answer) {
 
 	return false;
 }
-

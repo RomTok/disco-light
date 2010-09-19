@@ -110,7 +110,7 @@ void MMSTCPServer::threadMain() {
 		timeout.tv_usec = 0;
 
 		/* check socket */
-		if (select(this->s+1, &readfds, &writefds, &errorfds, &timeout)<0) { 
+		if (select(this->s+1, &readfds, &writefds, &errorfds, &timeout)<0) {
 			DEBUGMSG("MMSTCPServer", "select failed");
 			return;
 		}

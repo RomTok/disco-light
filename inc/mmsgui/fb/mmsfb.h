@@ -44,6 +44,7 @@
 #include "mmsgui/fb/mmsfbwindowmanager.h"
 #include "mmsgui/fb/mmsfbfont.h"
 #include "mmsgui/fb/mmsfbbackendinterface.h"
+#include "mmsgui/fb/mmsfbperf.h"
 
 #ifdef __HAVE_OPENGL__
 #define LOCK_OGL(fbo)	{ mmsfb->lock(); glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); glDisable(GL_SCISSOR_TEST); }

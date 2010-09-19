@@ -38,6 +38,10 @@ extern "C" {
 #include "mms.h"
 
 
+#ifdef __ENABLE_PERFMON__
+static MMSFBPerf *mmsfbperf = NULL;
+#endif
+
 static MMSPluginManager             *pluginmanager      = NULL;
 static MMSEventDispatcher           *eventdispatcher    = NULL;
 static MMSEventSignupManager        *eventsignupmanager = NULL;
@@ -227,6 +231,10 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         if (!appl_name.empty())
         	DEBUGMSG_OUTSTR("Core", "Starting " + appl_name + "...");
 
+#ifdef __ENABLE_PERFMON__
+        // init mmsfb performance data collector and interface
+        mmsfbperf = new MMSFBPerf();
+#endif
 
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");

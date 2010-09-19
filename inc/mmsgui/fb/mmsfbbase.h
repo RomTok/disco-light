@@ -98,6 +98,9 @@ extern string MMSFB_LastErrorString;
 //! surface blitting flags
 typedef unsigned int MMSFBBlittingFlags;
 
+//! max combination of blitting flags
+#define MMSFB_BLIT_CNT					0x40
+
 //! surface blitting flag: no effects
 #define MMSFB_BLIT_NOFX					0x00000000
 //! surface blitting flag: use alphachannel from source
@@ -113,9 +116,11 @@ typedef unsigned int MMSFBBlittingFlags;
 //! surface blitting flag: antialiasing (stretchBlit(), not all pixelformats will be supported)
 #define MMSFB_BLIT_ANTIALIASING			0x00000020
 
-
 //! surface drawing flags
 typedef unsigned int MMSFBDrawingFlags;
+
+//! max combination of drawing flags
+#define MMSFB_DRAW_CNT					0x04
 
 //! surface drawing flag: no effects
 #define MMSFB_DRAW_NOFX					0x00000000

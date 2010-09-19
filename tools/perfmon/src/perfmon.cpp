@@ -35,8 +35,13 @@
 
 int main(int argc, char *argv[]) {
 
-	MMSTCPClient *tcl = new MMSTCPClient();
+	printf("starting\n");
+	MMSTCPClient *tcl = new MMSTCPClient("127.0.0.1", 9999);
 	string ret;
+	tcl->connectToServer();
+	if (!tcl->isConnected())
+		printf("cannot connect server\n");
+	printf("connected\n");
 	tcl->sendAndReceive("in", &ret);
 	printf(ret.c_str());
 
