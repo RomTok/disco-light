@@ -220,6 +220,10 @@ if os.environ.has_key('LD'):
 	env['LINK'] = [os.environ['LD'].split()]
 if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'].extend([os.environ['LDFLAGS'].split()])
+if os.environ.has_key('PKG_CONFIG'):
+	env['PKG_CONFIG'] = os.environ['PKG_CONFIG']
+else:
+	env['PKG_CONFIG'] = 'pkg-config'
 
 # format output
 #env['SHCXXCOMSTR']  = '  [CXX]    $SOURCE'
@@ -290,15 +294,15 @@ def tryConfigCommand(context, cmd):
 			ret = 0
 	return ret
 
-def checkPKGConfig(context):
+def checkPKGConfig(context, version):
 	context.Message('Checking for pkg-config... ')
-	ret = context.TryAction('pkg-config --version')[0]
+	ret = context.TryAction(context.env['PKG_CONFIG'] + ' --atleast-pkgconfig-version=%s' % version)[0]
 	context.Result(ret)
 	return ret
 
 def checkXineBlDvb(context):
 	context.Message('Checking for xine bldvb input plugin... ')
-	pipe = os.popen('pkg-config --variable=plugindir libxine')
+	pipe = os.popen(context.env['PKG_CONFIG'] + ' --variable=plugindir libxine')
  	xinePluginPath = pipe.read()
  	pipe.close()
 	if xinePluginPath != "" and os.access(xinePluginPath.rstrip('\n') + '/xineplug_inp_bldvb.so', os.R_OK):
@@ -311,7 +315,7 @@ def checkXineBlDvb(context):
 
 def checkGstDiskoVideosink(context):
 	context.Message('Checking for gstreamer plugin diskovideosink... ')
-	pipe = os.popen('pkg-config --variable=pluginsdir gstreamer-0.10')
+	pipe = os.popen(context.env['PKG_CONFIG'] + ' --variable=pluginsdir gstreamer-0.10')
  	gstPluginPath = pipe.read()
  	pipe.close()
 	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
@@ -323,7 +327,7 @@ def checkGstDiskoVideosink(context):
 	return ret
 
 def checkPKG(context, name):
-	return tryConfigCommand(context, 'pkg-config --libs --cflags \'%s\'' % name)
+	return tryConfigCommand(context, context.env['PKG_CONFIG'] + ' --libs --cflags \'%s\'' % name)
 
 def checkConf(context, name):
 	if name.find(' '):
@@ -462,7 +466,8 @@ conf = Configure(env,
 conf.checkOptions()
 
 # checks that are required everytime
-conf.checkPKGConfig()
+if not conf.checkPKGConfig('0.8'):
+	Exit(1)
 conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
 conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
 if (env['enable_curl']):
@@ -477,19 +482,25 @@ if conf.CheckHeader(['wordexp.h']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
 
 if('png' in env['images']):
-	if conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
+	if conf.checkSimpleLib(['libpng'], ['png.h'], required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
+	elif conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
 	else:
 		conf.env['images'].remove('png')
 
 if('jpeg' in env['images']):
-	if conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
+	if conf.checkSimpleLib(['libjpeg'], ['cstdio', 'jpeglib.h'], required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
+	elif conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
 	else:
 		conf.env['images'].remove('jpeg')
 
 if('tiff' in env['images']):
-	if conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
+	if conf.checkSimpleLib(['libtiff'], ['tiffio.h'], required = 0):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
+	elif conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
 	else:
 		conf.env['images'].remove('tiff')
