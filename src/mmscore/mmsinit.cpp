@@ -139,105 +139,116 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         // overwrite config values from args and/or argv
         rcparser.updateConfig(config, args, argc, argv);
 
-        printf("\n");
-        printf("****   *   ***   *  *   ***\n");
-        printf(" *  *  *  *      * *   *   *\n");
-        printf(" *  *  *   ***   **    *   *\n");
-        printf(" *  *  *      *  * *   *   *\n");
-        printf("****   *   ***   *  *   ***  V%s\n",DISKO_VERSION_STR);
-        printf("----------------------------------------------------------------------\n");
-        printf("The Linux application framework for embedded devices.\n");
-        printf("\n");
-        printf("   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,\n");
-        printf("                           Matthias Hardt, Guido Madaus\n");
-        printf("   Copyright (C) 2007-2008 BerLinux Solutions GbR\n");
-        printf("                           Stefan Schwarzer & Guido Madaus\n");
-        printf("   Copyright (C) 2009-2010 BerLinux Solutions GmbH\n");
-        printf("----------------------------------------------------------------------\n");
+        if(!(flags & MMSINIT_SILENT)) {
+			printf("\n");
+			printf("****   *   ***   *  *   ***\n");
+			printf(" *  *  *  *      * *   *   *\n");
+			printf(" *  *  *   ***   **    *   *\n");
+			printf(" *  *  *      *  * *   *   *\n");
+			printf("****   *   ***   *  *   ***  V%s\n",DISKO_VERSION_STR);
+			printf("----------------------------------------------------------------------\n");
+			printf("The Linux application framework for embedded devices.\n");
+			printf("\n");
+			printf("   Copyright (C) 2005-2007 Stefan Schwarzer, Jens Schneider,\n");
+			printf("                           Matthias Hardt, Guido Madaus\n");
+			printf("   Copyright (C) 2007-2008 BerLinux Solutions GbR\n");
+			printf("                           Stefan Schwarzer & Guido Madaus\n");
+			printf("   Copyright (C) 2009-2010 BerLinux Solutions GmbH\n");
+			printf("----------------------------------------------------------------------\n");
 
-        int pcv = 1;
-        if (*((char *)&pcv) == 1) {
-            DEBUGMSG_OUTSTR("Core", "Platform type:                little-endian");
-        } else {
-            DEBUGMSG_OUTSTR("Core", "Platform type:                big-endian");
+			int pcv = 1;
+			if (*((char *)&pcv) == 1) {
+				DEBUGMSG_OUTSTR("Core", "Platform type................: little-endian");
+			} else {
+				DEBUGMSG_OUTSTR("Core", "Platform type................: big-endian");
+			}
+
+			MMSConfigDataLayer videolayer = config->getVideoLayer();
+			MMSConfigDataLayer graphicslayer = config->getGraphicsLayer();
+
+			DEBUGMSG_OUTSTR("Core", "ConfigDB.....................: " + config->getConfigDBDatabase() + " (" + config->getConfigDBAddress() + ")");
+			DEBUGMSG_OUTSTR("Core", "DataDB.......................: " + config->getDataDBDatabase() + " (" + config->getDataDBAddress() + ")");
+			DEBUGMSG_OUTSTR("Core", "Logfile......................: " + config->getLogfile());
+			DEBUGMSG_OUTSTR("Core", "First plugin.................: " + config->getFirstPlugin());
+			DEBUGMSG_OUTSTR("Core", "Input map....................: " + config->getInputMap());
+			DEBUGMSG_OUTSTR("Core", "Prefix.......................: " + config->getPrefix());
+			DEBUGMSG_OUTSTR("Core", "Theme........................: " + config->getTheme());
+			DEBUGMSG_OUTSTR("Core", "Backend......................: " + getMMSFBBackendString(config->getBackend()));
+			DEBUGMSG_OUTSTR("Core", "Output type..................: " + getMMSFBOutputTypeString(config->getOutputType()));
+			DEBUGMSG_OUTSTR("Core", "Video layer id...............: " + iToStr(videolayer.id));
+			DEBUGMSG_OUTSTR("Core", "Video layer resolution.......: " + iToStr(videolayer.rect.w) + "x" + iToStr(videolayer.rect.h));
+			DEBUGMSG_OUTSTR("Core", "Video layer position.........: " + iToStr(videolayer.rect.x) + "," + iToStr(videolayer.rect.y));
+			DEBUGMSG_OUTSTR("Core", "Video layer pixelformat......: " + getMMSFBPixelFormatString(videolayer.pixelformat));
+			DEBUGMSG_OUTSTR("Core", "Video layer options..........: " + videolayer.options);
+			DEBUGMSG_OUTSTR("Core", "Video layer buffermode.......: " + videolayer.buffermode);
+			DEBUGMSG_OUTSTR("Core", "Graphics layer id............: " + iToStr(graphicslayer.id));
+			DEBUGMSG_OUTSTR("Core", "Graphics layer resolution....: " + iToStr(graphicslayer.rect.w) + "x" + iToStr(graphicslayer.rect.h));
+			DEBUGMSG_OUTSTR("Core", "Graphics layer position......: " + iToStr(graphicslayer.rect.x) + "," + iToStr(graphicslayer.rect.y));
+			DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat...: " + getMMSFBPixelFormatString(graphicslayer.pixelformat));
+			DEBUGMSG_OUTSTR("Core", "Graphics layer options.......: " + graphicslayer.options);
+			DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode....: " + graphicslayer.buffermode);
+			DEBUGMSG_OUTSTR("Core", "Visible screen area..........: " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
+
+			if (config->getStdout()) {
+				DEBUGMSG_OUTSTR("Core", "Log to stdout................: yes");
+			} else {
+				DEBUGMSG_OUTSTR("Core", "Log to stdout................: no");
+			}
+
+			DEBUGMSG_OUTSTR("Core", "Input Interval...............: " + iToStr(config->getInputInterval()) + " ms");
+			DEBUGMSG_OUTSTR("Core", "Input Mode...................: " + config->getInputMode());
+
+			if (config->getShutdown()) {
+				DEBUGMSG_OUTSTR("Core", "Call shutdown command........: yes");
+			} else {
+				DEBUGMSG_OUTSTR("Core", "Call shutdown command........: no");
+			}
+
+			DEBUGMSG_OUTSTR("Core", "Shutdown command.............: " + config->getShutdownCmd());
+
+			DEBUGMSG_OUTSTR("Core", "Touch pad/screen area........: " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
+
+			DEBUGMSG_OUTSTR("Core", "Show mouse pointer...........: " + getMMSFBPointerModeString(config->getPointer()));
+
+			DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat..: " + getMMSFBPixelFormatString(config->getGraphicsWindowPixelformat()));
+			DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat.: " + getMMSFBPixelFormatString(config->getGraphicsSurfacePixelformat()));
+
+			if (config->getExtendedAccel()) {
+				DEBUGMSG_OUTSTR("Core", "Extended acceleration........: yes");
+			} else {
+				DEBUGMSG_OUTSTR("Core", "Extended acceleration........: no");
+			}
+
+			DEBUGMSG_OUTSTR("Core", "Alloc Method.................: " + config->getAllocMethod());
+
+			DEBUGMSG_OUTSTR("Core", "Fullscreen...................: " + getMMSFBFullScreenModeString(config->getFullScreen()));
+
+			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + config->getSourceLang());
+			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + config->getDefaultTargetLang());
+			DEBUGMSG_OUTSTR("Core", "Add missing translations.....: " + (config->getAddTranslations() ? string("yes") : string("no")));
+
+			DEBUGMSG_OUTSTR("Core", "Address for perfmon..........: " + config->getPerfMonAddress());
+			DEBUGMSG_OUTSTR("Core", "Port for perfmon.............: " + iToStr(config->getPerfMonPort()));
+
+			printf("----------------------------------------------------------------------\n");
+
+			if (!appl_name.empty())
+				DEBUGMSG_OUTSTR("Core", "Starting " + appl_name + "...");
         }
-
-        MMSConfigDataLayer videolayer = config->getVideoLayer();
-        MMSConfigDataLayer graphicslayer = config->getGraphicsLayer();
-
-        DEBUGMSG_OUTSTR("Core", "ConfigDB:                     " + config->getConfigDBDatabase() + " (" + config->getConfigDBAddress() + ")");
-        DEBUGMSG_OUTSTR("Core", "DataDB:                       " + config->getDataDBDatabase() + " (" + config->getDataDBAddress() + ")");
-        DEBUGMSG_OUTSTR("Core", "Logfile:                      " + config->getLogfile());
-        DEBUGMSG_OUTSTR("Core", "First plugin:                 " + config->getFirstPlugin());
-        DEBUGMSG_OUTSTR("Core", "Input map:                    " + config->getInputMap());
-        DEBUGMSG_OUTSTR("Core", "Prefix:                       " + config->getPrefix());
-        DEBUGMSG_OUTSTR("Core", "Theme:                        " + config->getTheme());
-        DEBUGMSG_OUTSTR("Core", "Backend:                      " + getMMSFBBackendString(config->getBackend()));
-        DEBUGMSG_OUTSTR("Core", "Output type:                  " + getMMSFBOutputTypeString(config->getOutputType()));
-		DEBUGMSG_OUTSTR("Core", "Video layer id:               " + iToStr(videolayer.id));
-		DEBUGMSG_OUTSTR("Core", "Video layer resolution:       " + iToStr(videolayer.rect.w) + "x" + iToStr(videolayer.rect.h));
-		DEBUGMSG_OUTSTR("Core", "Video layer position:         " + iToStr(videolayer.rect.x) + "," + iToStr(videolayer.rect.y));
-		DEBUGMSG_OUTSTR("Core", "Video layer pixelformat:      " + getMMSFBPixelFormatString(videolayer.pixelformat));
-		DEBUGMSG_OUTSTR("Core", "Video layer options:          " + videolayer.options);
-		DEBUGMSG_OUTSTR("Core", "Video layer buffermode:       " + videolayer.buffermode);
-		DEBUGMSG_OUTSTR("Core", "Graphics layer id:            " + iToStr(graphicslayer.id));
-		DEBUGMSG_OUTSTR("Core", "Graphics layer resolution:    " + iToStr(graphicslayer.rect.w) + "x" + iToStr(graphicslayer.rect.h));
-		DEBUGMSG_OUTSTR("Core", "Graphics layer position:      " + iToStr(graphicslayer.rect.x) + "," + iToStr(graphicslayer.rect.y));
-		DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat:   " + getMMSFBPixelFormatString(graphicslayer.pixelformat));
-		DEBUGMSG_OUTSTR("Core", "Graphics layer options:       " + graphicslayer.options);
-		DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode:    " + graphicslayer.buffermode);
-        DEBUGMSG_OUTSTR("Core", "Visible screen area:          " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
-
-        if (config->getStdout()) {
-            DEBUGMSG_OUTSTR("Core", "Log to stdout:                yes");
-        } else {
-            DEBUGMSG_OUTSTR("Core", "Log to stdout:                no");
-        }
-
-        DEBUGMSG_OUTSTR("Core", "Input Interval:               " + iToStr(config->getInputInterval()) + " ms");
-        DEBUGMSG_OUTSTR("Core", "Input Mode:                   " + config->getInputMode());
-
-        if (config->getShutdown()) {
-            DEBUGMSG_OUTSTR("Core", "Call shutdown command:        yes");
-        } else {
-            DEBUGMSG_OUTSTR("Core", "Call shutdown command:        no");
-        }
-
-        DEBUGMSG_OUTSTR("Core", "Shutdown command:             " + config->getShutdownCmd());
-
-        DEBUGMSG_OUTSTR("Core", "Touch pad/screen area:        " + iToStr(config->getTouchRect().x) + "," + iToStr(config->getTouchRect().y) + "," + iToStr(config->getTouchRect().w) + "," + iToStr(config->getTouchRect().h));
-
-		DEBUGMSG_OUTSTR("Core", "Show mouse pointer:           " + getMMSFBPointerModeString(config->getPointer()));
-
-        DEBUGMSG_OUTSTR("Core", "Graphics window pixelformat:  " + getMMSFBPixelFormatString(config->getGraphicsWindowPixelformat()));
-        DEBUGMSG_OUTSTR("Core", "Graphics surface pixelformat: " + getMMSFBPixelFormatString(config->getGraphicsSurfacePixelformat()));
-
-        if (config->getExtendedAccel()) {
-            DEBUGMSG_OUTSTR("Core", "Extended acceleration:        yes");
-        } else {
-            DEBUGMSG_OUTSTR("Core", "Extended acceleration:        no");
-        }
-
-        DEBUGMSG_OUTSTR("Core", "Alloc Method:                 " + config->getAllocMethod());
-
-        DEBUGMSG_OUTSTR("Core", "Fullscreen:                   " + getMMSFBFullScreenModeString(config->getFullScreen()));
-
-        DEBUGMSG_OUTSTR("Core", "Sourcelanguage:               " + config->getSourceLang());
-        DEBUGMSG_OUTSTR("Core", "Targetlanguage:               " + config->getDefaultTargetLang());
-        DEBUGMSG_OUTSTR("Core", "Add missing translations:     " + (config->getAddTranslations() ? string("yes") : string("no")));
-
-        printf("----------------------------------------------------------------------\n");
-
-        if (!appl_name.empty())
-        	DEBUGMSG_OUTSTR("Core", "Starting " + appl_name + "...");
-
-#ifdef __ENABLE_PERFMON__
-        // init mmsfb performance data collector and interface
-        mmsfbperf = new MMSFBPerf();
-#endif
 
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");
+
+#ifdef __ENABLE_PERFMON__
+			// init mmsfb performance data collector
+			mmsfbperf = new MMSFBPerf();
+
+			// init mmsfb performance data interface
+			MMSTCPServer *server = new MMSTCPServer(new MMSFBPerfInterface(mmsfbperf),
+													config->getPerfMonAddress(), config->getPerfMonPort(),
+													"MMSTCPServer4Perfmon");
+			server->start();
+#endif
 
             // set static MMSWidget inputmode
         	MMSWidget_inputmode = config->getInputMode();

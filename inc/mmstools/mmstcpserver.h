@@ -47,7 +47,9 @@ class MMSTCPServer : public MMSThread {
 
 	public:
 		MMSTCPServer(vector<MMSServerInterface *> interfaces,
-					 string host = "0.0.0.0", unsigned int port = 9999);
+					 string host = "0.0.0.0", unsigned int port = 9999, string identity = "MMSTCPServer");
+		MMSTCPServer(MMSServerInterface *interface,
+					 string host = "0.0.0.0", unsigned int port = 9999, string identity = "MMSTCPServer");
 		virtual void threadMain();
 };
 

@@ -33,7 +33,6 @@
 #include "mmsgui/fb/mmsfbperf.h"
 
 // static variables
-bool MMSFBPerf::firsttime	= true;
 bool MMSFBPerf::initialized	= false;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::fillrect;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::drawline;
@@ -51,15 +50,6 @@ MMSFBPerf::MMSFBPerf() {
 		memset(this->blit, 0, sizeof(this->blit));
 		memset(this->stretchblit, 0, sizeof(this->stretchblit));
 		this->initialized = true;
-	}
-
-	if (this->firsttime) {
-		// start the tcp interface
-		this->interface = new MMSFBPerfInterface(this);
-		this->si.push_back(this->interface);
-		this->server = new MMSTCPServer(si);
-		this->server->start();
-		this->firsttime = false;
 	}
 }
 

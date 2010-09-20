@@ -61,6 +61,8 @@ typedef int MMSINIT_FLAGS;
 #define MMSINIT_WINDOWS			0x00000039
 //! initializing all components
 #define MMSINIT_FULL 			0x0000003f
+//! silent mode (no output)
+#define MMSINIT_SILENT 			0x00000100
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
 			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application",

@@ -35,8 +35,6 @@
 
 #include "mmstools/mmsthread.h"
 #include "mmsgui/fb/mmsfbsurface.h"
-#include "mmsgui/fb/mmsfbperfinterface.h"
-#include "mmstools/mmstcpserver.h"
 
 #ifdef __ENABLE_PERFMON__
 
@@ -105,9 +103,6 @@ typedef MMSFBPERF_MEASURING_VALS MMSFBPERF_MEASURING_LIST[MMSFB_PF_CNT][MMSFB_PF
 class MMSFBPerf {
 private:
 
-	//! first time called?
-	static bool firsttime;
-
 	//! already initialized?
 	static bool initialized;
 
@@ -125,10 +120,6 @@ private:
 
 	//! statistic for stretchblit routines
 	static MMSFBPERF_MEASURING_LIST stretchblit;
-
-	MMSFBPerfInterface *interface;
-	vector<MMSServerInterface *> si;
-	MMSTCPServer *server;
 
 	int getPerfVals(MMSFBPERF_MEASURING_LIST *mlist, const char *prefix, char *retbuf, int retbuf_size);
 
