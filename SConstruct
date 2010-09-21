@@ -762,7 +762,10 @@ if 'install' in BUILD_TARGETS:
 	if env['enable_swscale']:
 		disko_pc_libs_private += ' -lswscale -lavutil'
 
-	disko_pc.write('prefix=' + env['prefix'] + '\n')
+	disko_pc.write('prefix=')
+	if env['destdir'] and env['destdir'] != 'none':
+		disko_pc.write(env['destdir'] + '/')
+	disko_pc.write(env['prefix'] + '\n')
 	disko_pc.write('exec_prefix=${prefix}\n')
 	disko_pc.write('libdir=${exec_prefix}/lib\n')
 	disko_pc.write('includedir=${exec_prefix}/include/disko\n\n')
