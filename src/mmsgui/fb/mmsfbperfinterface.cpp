@@ -30,68 +30,35 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSINIT_H_
-#define MMSINIT_H_
+#include "mmsgui/fb/mmsfbperf.h"
+#include "mmsgui/fb/mmsfbperfinterface.h"
 
-extern "C" {
-#include <stdlib.h>
+MMSFBPerfInterface::MMSFBPerfInterface(class MMSFBPerf *mmsfbperf) : MMSServerInterface("MMSFBPerfInterface") {
+	this->mmsfbperf = mmsfbperf;
 }
 
-#include <string>
-#include <mmsbase/interfaces/immsswitcher.h>
+MMSFBPerfInterface::~MMSFBPerfInterface() {
+}
 
-//! type of the init flags
-typedef int MMSINIT_FLAGS;
+bool MMSFBPerfInterface::processRequest(string *request, string *answer) {
+	if (this->mmsfbperf) {
+		char retbuf[40960];
+		char *rb = retbuf;
 
-//! none
-#define MMSINIT_NONE			0x00000000
-//! initializing the window manager
-#define MMSINIT_WINDOWMANAGER 	0x00000001
-//! initializing the plugin manager (the configdb where the plugins are defined is required)
-#define MMSINIT_PLUGINMANAGER 	0x00000002
-//! initializing the event manager
-#define MMSINIT_EVENTS 			0x00000004
-//! initializing the graphic backends (x11/dfb/fbdev/...)
-#define MMSINIT_GRAPHICS 		0x00000008
-//! initializing the input manager
-#define MMSINIT_INPUTS 			0x00000010
-//! initializing the theme manager
-#define MMSINIT_THEMEMANAGER	0x00000020
-//! initializing the graphic backends including the window, the input and the theme manager
-#define MMSINIT_WINDOWS			0x00000039
-//! initializing all components
-#define MMSINIT_FULL 			0x0000003f
-//! silent mode (no output)
-#define MMSINIT_SILENT 			0x00000100
+		rb+= sprintf(rb, "\n");
+		rb+= sprintf(rb, "Function    Dest PF  Src PF   Flags Calls  MegaPix   MicroSecs   MP Per Sec\n");
+		rb+= sprintf(rb, "---------------------------------------------------------------------------\n");
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->fillrect, 	"FILLRECT", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf));
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->drawline, 	"DRAWLINE", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf));
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->drawstring, "DRAWSTRING", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf));
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->blit,		"BLIT", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf));
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->stretchblit,"STRETCHBLIT", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf));
+		rb+= sprintf(rb, "\n");
 
-bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
-			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application",
-		     MMSConfigDataGlobal *global = NULL, MMSConfigDataDB *configdb = NULL, MMSConfigDataDB *datadb = NULL,
-		     MMSConfigDataGraphics *graphics = NULL, MMSConfigDataLanguage *language = NULL);
+		*answer = retbuf;
 
-bool mmsRelease();
+		return true;
+	}
 
-bool registerSwitcher(IMMSSwitcher *switcher);
-
-void setPluginRegisterCallback(void(*cb)(MMSPluginManager*));
-
-IMMSWindowManager *getWindowManager();
-
-void setPluginManager(MMSPluginManager *pm);
-MMSPluginManager *getPluginManager();
-
-//! get access to the video layer
-/*!
-\return pointer to the MMSFBLayer video layer object
-\note If using only one layer, the graphics and video layer are the same.
-*/
-MMSFBLayer *getVideoLayer();
-
-//! get access to the graphics layer
-/*!
-\return pointer to the MMSFBLayer graphics layer object
-\note If using only one layer, the graphics and video layer are the same.
-*/
-MMSFBLayer *getGraphicsLayer();
-
-#endif /*MMSINIT_H_*/
+	return false;
+}

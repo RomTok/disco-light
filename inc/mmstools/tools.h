@@ -67,6 +67,18 @@
 #define MSG2OUT(ident, msg...) writeMessage2Stdout(ident, __FILE__, __LINE__, msg)
 
 
+#ifdef __ENABLE_DEBUG__
+#define WRITE_MSG(ident, msg...) printf("%s: ", ident);printf(msg);printf("\n");
+#define WRITE_MSGI(msg...) printf("%s: ", identity.c_str());printf(msg);printf("\n");
+#else
+#define WRITE_MSG(ident, msg...)
+#define WRITE_MSGI(msg...)
+#endif
+
+#define WRITE_ERR(ident, msg...) fprintf(stderr, "%s: ", ident);fprintf(stderr, msg);printf("\n");
+#define WRITE_ERRI(msg...) fprintf(stderr, "%s: ", identity.c_str());fprintf(stderr, msg);printf("\n");
+
+
 /**
  * substitutes environment variables in a string
  *

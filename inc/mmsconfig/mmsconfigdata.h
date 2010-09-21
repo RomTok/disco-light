@@ -53,6 +53,8 @@ class MMSConfigDataGlobal {
         bool   shutdown;
         string shutdowncmd;
 	    string inputmode;
+	    string perfmonaddress;
+	    unsigned int perfmonport;
 
 	    MMSConfigDataGlobal() :
 	    	logfile("/tmp/mmscore"),
@@ -66,7 +68,9 @@ class MMSConfigDataGlobal {
 	    	firstplugin("<none>"),
 	        shutdown(false),
 	        shutdowncmd(""),
-		    inputmode("") {}
+		    inputmode(""),
+			perfmonaddress("127.0.0.1"),
+			perfmonport(9999) {}
 };
 
 class MMSConfigDataDB {
@@ -189,6 +193,8 @@ class MMSConfigData {
         const bool   getShutdown();
         const string getShutdownCmd();
         const string getInputMode();
+        const string getPerfMonAddress();
+        const unsigned int getPerfMonPort();
 
         // db section getters
         const string       getConfigDBDBMS();

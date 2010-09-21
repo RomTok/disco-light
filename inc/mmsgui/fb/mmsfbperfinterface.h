@@ -30,68 +30,19 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSINIT_H_
-#define MMSINIT_H_
+#ifndef MMSFBPERFINTERFACE_H_
+#define MMSFBPERFINTERFACE_H_
 
-extern "C" {
-#include <stdlib.h>
-}
+#include "mmstools/mmsserverinterface.h"
 
-#include <string>
-#include <mmsbase/interfaces/immsswitcher.h>
+class MMSFBPerfInterface : public MMSServerInterface {
+	private:
+		class MMSFBPerf *mmsfbperf;
 
-//! type of the init flags
-typedef int MMSINIT_FLAGS;
+	public:
+		MMSFBPerfInterface(class MMSFBPerf *mmsfbperf);
+		~MMSFBPerfInterface();
+		bool processRequest(string *request, string *answer);
+};
 
-//! none
-#define MMSINIT_NONE			0x00000000
-//! initializing the window manager
-#define MMSINIT_WINDOWMANAGER 	0x00000001
-//! initializing the plugin manager (the configdb where the plugins are defined is required)
-#define MMSINIT_PLUGINMANAGER 	0x00000002
-//! initializing the event manager
-#define MMSINIT_EVENTS 			0x00000004
-//! initializing the graphic backends (x11/dfb/fbdev/...)
-#define MMSINIT_GRAPHICS 		0x00000008
-//! initializing the input manager
-#define MMSINIT_INPUTS 			0x00000010
-//! initializing the theme manager
-#define MMSINIT_THEMEMANAGER	0x00000020
-//! initializing the graphic backends including the window, the input and the theme manager
-#define MMSINIT_WINDOWS			0x00000039
-//! initializing all components
-#define MMSINIT_FULL 			0x0000003f
-//! silent mode (no output)
-#define MMSINIT_SILENT 			0x00000100
-
-bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
-			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application",
-		     MMSConfigDataGlobal *global = NULL, MMSConfigDataDB *configdb = NULL, MMSConfigDataDB *datadb = NULL,
-		     MMSConfigDataGraphics *graphics = NULL, MMSConfigDataLanguage *language = NULL);
-
-bool mmsRelease();
-
-bool registerSwitcher(IMMSSwitcher *switcher);
-
-void setPluginRegisterCallback(void(*cb)(MMSPluginManager*));
-
-IMMSWindowManager *getWindowManager();
-
-void setPluginManager(MMSPluginManager *pm);
-MMSPluginManager *getPluginManager();
-
-//! get access to the video layer
-/*!
-\return pointer to the MMSFBLayer video layer object
-\note If using only one layer, the graphics and video layer are the same.
-*/
-MMSFBLayer *getVideoLayer();
-
-//! get access to the graphics layer
-/*!
-\return pointer to the MMSFBLayer graphics layer object
-\note If using only one layer, the graphics and video layer are the same.
-*/
-MMSFBLayer *getGraphicsLayer();
-
-#endif /*MMSINIT_H_*/
+#endif /* MMSFBPERFINTERFACE_H_ */

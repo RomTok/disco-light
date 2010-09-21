@@ -170,6 +170,11 @@ class MMSFBSurface {
 		static GLXContext glx_context;
 #endif
 
+#ifdef __ENABLE_PERFMON__
+		//! mmsfb performance collector
+		class MMSFBPerf *mmsfbperf;
+#endif
+
 		//! which system has allocated the memory?
 		MMSFBSurfaceAllocatedBy	allocated_by;
 
@@ -419,6 +424,7 @@ bool cube(MMSFBSurface *front, MMSFBSurface *back,
     friend class MMSFBSurfaceManager;
     friend class MMSFBWindowManager;
     friend class MMSFBBackEndInterface;
+    friend class MMSFBPerf;
 };
 
 bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
