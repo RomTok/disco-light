@@ -55,7 +55,7 @@ bool MMSTCPClient::connectToServer() {
 	WRITE_MSG("MMSTCPClient", "connect to %s:%u",this->host.c_str(), this->port);
 
 	if (this->s>=0) {
-		WRITE_MSG("already connected");
+		WRITE_MSG("MMSTCPClient", "already connected");
 		return true;
 	}
 
