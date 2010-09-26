@@ -92,7 +92,7 @@ size_t MMSFiletransfer::mem_write_callback(char *buffer, size_t size, size_t nit
 
 
 int progress_callback(void *pclient, double dltotal, double dlnow, double ultotal, double ulnow) {
-	((MMSFiletransfer::MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
+	((MMSFiletransfer*) pclient)->progress.emit(dltotal != 0 ? (int) (.5 + 100* dlnow / dltotal) : (int) (.5 + 100* ulnow / ultotal));
 	return 0;
 }
 
