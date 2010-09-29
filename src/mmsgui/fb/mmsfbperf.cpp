@@ -141,7 +141,7 @@ void MMSFBPerf::stopMeasuring(struct timeval *perf_stime, MMSFBPERF_MEASURING_VA
 	if (perf_etime.tv_usec >= perf_stime->tv_usec)
 		mvals->usecs+= perf_etime.tv_usec - perf_stime->tv_usec;
 	else
-		mvals->usecs+= 1000000 - perf_stime->tv_usec + perf_etime.tv_usec;
+		mvals->usecs-= perf_stime->tv_usec - perf_etime.tv_usec;
 	if (mvals->usecs == 0) mvals->usecs = 1;
 
 	// calculate mpps (mega pixel per second)
