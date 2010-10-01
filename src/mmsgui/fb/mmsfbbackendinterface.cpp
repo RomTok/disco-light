@@ -314,6 +314,7 @@ void MMSFBBackEndInterface::init() {
 
 
 void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
+#ifdef __HAVE_OPENGL__
 
 #ifdef __HAVE_XLIB__
 
@@ -332,9 +333,11 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	mmsfbgl.getResolution(&w, &h);
 	oglMatrix(w, h);
 
+#endif
 }
 
 
+#ifdef __HAVE_OPENGL__
 void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 	float ratio = (float)w / (float)h;
 	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
@@ -344,7 +347,7 @@ void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 		mmsfbgl.setModelViewMatrix(w, h);
 	}
 }
-
+#endif
 
 void MMSFBBackEndInterface::swap() {
 	BEI_SWAP req;
@@ -353,8 +356,10 @@ void MMSFBBackEndInterface::swap() {
 }
 
 void MMSFBBackEndInterface::processSwap(BEI_SWAP *req) {
+#ifdef __HAVE_OPENGL__
 	// swap screen
 	mmsfbgl.swap();
+#endif
 }
 
 void MMSFBBackEndInterface::alloc(MMSFBSurface *surface) {

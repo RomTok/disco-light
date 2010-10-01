@@ -158,6 +158,7 @@ private:
 		float				angle_z;
 	} BEI_CUBE;
 
+#ifdef __HAVE_OPENGL__
 
 	//! access to the OpenGL wrapper class
 	MMSFBGL	mmsfbgl;
@@ -169,6 +170,9 @@ private:
 	float			matrix_ratio;
 
 	void oglMatrix(GLuint w, GLuint h);
+
+#endif
+
 
 #ifdef  __HAVE_GL2__
 void oglMatrixXX(GLuint w, GLuint h);

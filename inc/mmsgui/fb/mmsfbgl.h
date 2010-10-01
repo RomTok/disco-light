@@ -33,6 +33,8 @@
 #ifndef MMSFBGL_H_
 #define MMSFBGL_H_
 
+#ifdef __HAVE_OPENGL__
+
 #ifdef __HAVE_GL2__
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -173,5 +175,6 @@ class MMSFBGL {
         bool stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, int dw, int dh);
 };
 
+#endif
 
 #endif /* MMSFBGL_H_ */

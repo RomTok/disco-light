@@ -35,6 +35,8 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef __HAVE_OPENGL__
+
 #define INITCHECK if (!this->initialized) return false;
 
 #define MMSFBGL_PI 3.1415926535897932384626433832795f
@@ -1292,6 +1294,6 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, in
 	return true;
 }
 
-
+#endif
 
 
