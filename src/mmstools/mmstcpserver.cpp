@@ -147,6 +147,10 @@ void MMSTCPServer::threadMain() {
 			}
 			WRITE_MSGI("set and start thread");
 			if (this->st_cnt >= this->st_size) this->st_cnt=0;
+			while(this->sthreads.at(this->st_cnt)->isRunning()) {
+				//fprintf(stderr, "still running \n");
+				usleep(50);
+			}
 			this->sthreads.at(this->st_cnt)->setSocket(new_s);
 			this->sthreads.at(this->st_cnt)->start();
 			this->st_cnt++;
