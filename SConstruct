@@ -533,14 +533,20 @@ if('ogl' in env['graphics']):
 	conf.checkSimpleLib(['gl'],   'GL/gl.h')
 	conf.checkSimpleLib(['glu'],  'GL/glu.h')
 	conf.checkSimpleLib(['x11'],  'X11/Xlib.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__',
-				'-D__HAVE_XLIB__'])
+	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+	conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])
+	conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
+	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
 	conf.checkSimpleLib(['GLEW'], 'GL/glew.h')
 	conf.env['LIBS'].append('GLEW')
 
 # checks required if building OpenGL ES 2.0 backend
 if('gles2' in env['graphics']):
+	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 	conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
+	conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
+	conf.env['CCFLAGS'].extend(['-I/home2/devkit/targetfs/usr/include'])
+	conf.env['CCFLAGS'].extend(['-I/home2/devkit/ti-dvsdk_omap3530-evm_4_00_00_17/omap35x_graphics_sdk_3.01.00.06/GFX_Linux_SDK/OGLES2/SDKPackage/Builds/OGLES2/Include'])
 	
 # checks required if building mmsmedia
 
@@ -717,7 +723,7 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_libs_private += ' -lGLEW'
 
 	if 'gles2' in env['graphics']:
-		disko_pc_libs_private += ' -lEGL, -lGLESv2'
+		disko_pc_libs_private += ' -lIMGegl -lsrv_um -lEGL -lGLESv2'
 
 	if env['alsa']:
 	 	disko_pc_requires += ', alsa'

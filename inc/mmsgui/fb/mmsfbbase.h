@@ -52,12 +52,6 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 
-#ifdef __HAVE_OPENGL__
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <GL/glu.h>
-#endif
 
 #ifdef  __HAVE_DIRECTFB__
 extern "C" {

@@ -37,6 +37,7 @@
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
 #include "mmsgui/fb/mmsfbconv.h"
+#include "mmsgui/fb/mmsfbgl.h"
 
 /* use DFB subsurfaces? */
 //#define USE_DFB_SUBSURFACE
@@ -159,7 +160,7 @@ class MMSFBSurface {
 		//! dfb surface for drawing/blitting
 		IDirectFBSurface	*dfb_surface;
 #endif
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GLX__
         //! connection to the x-server
         static Display *x_display;
 
@@ -299,7 +300,9 @@ class MMSFBSurface {
 #ifdef __HAVE_XV__
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
-#ifdef __HAVE_OPENGL__
+
+//TODO: we need __HAVE_OPENGL__ here
+#ifdef __HAVE_GLX__
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
 					 GLXContext glx_context, Display *x_display, XVisualInfo *xvi);
 #endif

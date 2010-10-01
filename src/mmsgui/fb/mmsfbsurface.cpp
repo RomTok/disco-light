@@ -51,7 +51,7 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 // static variables
 bool MMSFBSurface::extendedaccel								= false;
 MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_malloc;
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 Display *MMSFBSurface::x_display;
 XVisualInfo *MMSFBSurface::xvi;
 GLXContext MMSFBSurface::glx_context = 0;
@@ -586,7 +586,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 
 
 
-#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GLX__
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
 						   GLXContext glx_context, Display *x_display, XVisualInfo *xvi) {
     // init me

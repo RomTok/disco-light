@@ -41,7 +41,7 @@
 #define BEI_SURFACE_BOTTOM		(BEI_SURFACE_HEIGHT - 1)
 #define BEI_SURFACE_BOTTOM_F	(float)BEI_SURFACE_BOTTOM
 
-#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GL2__
 
 #define INIT_OGL_FBO(surface) \
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
@@ -282,7 +282,7 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	}
 }
 
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GLX__
 void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect) {
 	// start the server thread
 	start();
@@ -298,8 +298,20 @@ void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_wind
 }
 #endif
 
+#ifdef  __HAVE_EGL__
+void MMSFBBackEndInterface::init() {
+	// start the server thread
+	start();
+
+	// trigger the init request
+	BEI_INIT req;
+	req.type		= BEI_REQUEST_TYPE_INIT;
+	trigger((void*)&req, sizeof(req));
+}
+#endif
+
 void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
-#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GLX__
 	// OGL
 
 	this->x_display = req->x_display;
@@ -370,9 +382,15 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	oglMatrix(req->x11_win_rect.w, req->x11_win_rect.h);
 
 #endif
+
+#ifdef __HAVE_EGL__
+
+	mmsfbgl.init();
+
+#endif
 }
 
-#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GL2__
 void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 	float ratio = (float)w / (float)h;
 //	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
@@ -396,7 +414,7 @@ void MMSFBBackEndInterface::swap() {
 }
 
 void MMSFBBackEndInterface::processSwap(BEI_SWAP *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glDisable(GL_SCISSOR_TEST);
@@ -422,6 +440,7 @@ void MMSFBBackEndInterface::processAlloc(BEI_ALLOC *req) {
 
 #ifdef  __HAVE_OPENGL__
 void MMSFBBackEndInterface::oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb) {
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glDisable(GL_SCISSOR_TEST);
@@ -456,6 +475,7 @@ printf("TODO: fatal error while allocating new fbo\n");
 	// all is fine
 	glDisable(GL_SCISSOR_TEST);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+#endif
 }
 #endif
 
@@ -476,9 +496,11 @@ void MMSFBBackEndInterface::processFree(BEI_FREE *req) {
 
 #ifdef  __HAVE_OPENGL__
 void MMSFBBackEndInterface::oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex) {
+#ifdef  __HAVE_GL2__
 	glDeleteFramebuffersEXT(1, &ogl_fbo);
 	glDeleteRenderbuffersEXT(1, &ogl_rb);
 	glDeleteTextures(1, &ogl_tex);
+#endif
 }
 #endif
 
@@ -492,7 +514,7 @@ void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
 
 
 void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
 	glDisable(GL_BLEND);
@@ -532,7 +554,7 @@ void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle 
 }
 
 void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
@@ -573,7 +595,7 @@ void MMSFBBackEndInterface::fillTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 }
 
 void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
@@ -631,7 +653,7 @@ void MMSFBBackEndInterface::drawLine(MMSFBSurface *surface, MMSFBRegion &region)
 }
 
 void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
@@ -690,7 +712,7 @@ void MMSFBBackEndInterface::drawRectangle(MMSFBSurface *surface, MMSFBRectangle 
 }
 
 void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
@@ -727,7 +749,7 @@ void MMSFBBackEndInterface::drawTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 }
 
 void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
 	glDisable(GL_DEPTH_TEST);
@@ -802,7 +824,7 @@ void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *sou
 }
 
 void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
@@ -875,7 +897,7 @@ void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfac
 }
 
 void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
@@ -982,7 +1004,7 @@ void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int 
 }
 
 void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
@@ -1107,7 +1129,7 @@ void MMSFBBackEndInterface::cube(MMSFBSurface *surface,
 
 
 void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GL2__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBOXX(req->surface);
 
@@ -1283,7 +1305,7 @@ glDisable(GL_DEPTH_TEST);
 #endif
 }
 
-#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GL2__
 void MMSFBBackEndInterface::oglMatrixXX(GLuint w, GLuint h) {
 	float ratio = (float)w / (float)h;
 	this->matrix_w = w;
@@ -1297,3 +1319,4 @@ void MMSFBBackEndInterface::oglMatrixXX(GLuint w, GLuint h) {
 	glLoadIdentity();
 }
 #endif
+

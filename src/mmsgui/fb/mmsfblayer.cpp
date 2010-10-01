@@ -579,6 +579,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		return true;
 #endif
     }
+
+
+//TODO: diskorc handling has to be fixed
+#ifdef __HAVE_GLES2__
+    else
+    if (mmsfb->backend == MMSFB_BE_OGL) {
+#ifdef __HAVE_EGL__
+    	mmsfb->bei->init();
+#endif
+    }
+#endif
+
+
+
     else {
 #ifdef __HAVE_XLIB__
 		// get configuration
@@ -1198,7 +1212,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
 
 	    if (mmsfb->backend == MMSFB_BE_OGL) {
-#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GLX__
 			XUnlockDisplay(mmsfb->x_display);
 	    	mmsfb->bei->init(mmsfb->x_display, mmsfb->x_screen, this->x_window, mmsfb->x11_win_rect);
 			XLockDisplay(mmsfb->x_display);
@@ -1440,7 +1454,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else {
-#ifdef __HAVE_OPENGL__
+//TODO: need __HAVE_OPENGL__ here
+#ifdef __HAVE_GLX__
 		// create a new surface instance
 		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
 									mmsfb->bei->glx_context, mmsfb->x_display, mmsfb->bei->xvi);

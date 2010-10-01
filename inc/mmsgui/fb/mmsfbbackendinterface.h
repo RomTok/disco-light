@@ -35,6 +35,7 @@
 
 #include "mmstools/mmsthreadserver.h"
 #include "mmsgui/fb/mmsfbsurface.h"
+#include "mmsgui/fb/mmsfbgl.h"
 
 class MMSFBBackEndInterface : public MMSThreadServer {
 private:
@@ -57,12 +58,12 @@ private:
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GLX__
 		Display 			*x_display;
 		int					x_screen;
 		Window				x_window;
-#endif
 		MMSFBRectangle		x11_win_rect;
+#endif
 	} BEI_INIT;
 
 	typedef struct {
@@ -157,16 +158,24 @@ private:
 		float				angle_z;
 	} BEI_CUBE;
 
-#ifdef  __HAVE_OPENGL__
+
+	//! access to the OpenGL wrapper class
+	MMSFBGL	mmsfbgl;
+
+
+#ifdef  __HAVE_GL2__
 GLuint matrix_w;
 GLuint matrix_h;
 float  matrix_ratio;
 
 void oglMatrix(GLuint w, GLuint h);
-void oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
-void oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
 
 void oglMatrixXX(GLuint w, GLuint h);
+#endif
+
+#ifdef  __HAVE_OPENGL__
+void oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
+void oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
 #endif
 
 	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);
@@ -187,7 +196,7 @@ void oglMatrixXX(GLuint w, GLuint h);
 	void processCube(BEI_CUBE *req);
 
 public:
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GLX__
     //! x-visual
 	XVisualInfo *xvi;
 
@@ -200,9 +209,13 @@ public:
 
 	MMSFBBackEndInterface(int queue_size = 1000);
 
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GLX__
 	void init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect);
 #endif
+#ifdef  __HAVE_EGL__
+	void init();
+#endif
+
 	void swap();
 	void alloc(MMSFBSurface *surface);
 	void free(MMSFBSurface *surface);
