@@ -312,6 +312,97 @@ void MMSFBGL::deleteShaders() {
 }
 
 
+#ifdef __HAVE_XLIB__
+bool MMSFBGL::init(Display *x_display, int x_screen, Window x_window, int w, int h) {
+
+	if (this->initialized) {
+		// already initialized
+		return false;
+	}
+
+	printf("initializing...\n");
+
+#ifdef __HAVE_EGL__
+	//TODO: implement EGL for XLIB
+	return false;
+#endif
+
+#ifdef __HAVE_GLX__
+
+	this->x_display = x_display;
+	this->x_window = x_window;
+
+	int glxMajor, glxMinor;
+	glXQueryVersion(x_display, &glxMajor, &glxMinor);
+	printf("GLX-Version %d.%d\n", glxMajor, glxMinor);
+	int attribList[] =
+		{GLX_RGBA,
+		GLX_RED_SIZE, 8,
+		GLX_GREEN_SIZE, 8,
+		GLX_BLUE_SIZE, 8,
+		GLX_DEPTH_SIZE, 16,
+		GLX_DOUBLEBUFFER,
+		None};
+	this->xvi = glXChooseVisual(x_display, x_screen, attribList);
+	if (this->xvi == NULL) {
+		int attribList[] =
+				{GLX_RGBA,
+				GLX_RED_SIZE, 8,
+				GLX_GREEN_SIZE, 8,
+				GLX_BLUE_SIZE, 8,
+				None};
+		this->xvi = glXChooseVisual(x_display, x_screen, attribList);
+		printf("singlebuffered rendering will be used, no doublebuffering available\n");
+		if(this->xvi == NULL) {
+			printf("shit happens.... \n");
+			return false;
+		}
+	}
+	else {
+		printf("doublebuffered rendering available\n");
+	}
+
+	// create a GLX context
+	this->glx_context = glXCreateContext(x_display, this->xvi, 0, GL_TRUE);
+	if (!this->glx_context) {
+		printf("context generation failed...\n");
+		return false;
+	}
+
+	if(glXMakeCurrent(x_display, x_window, this->glx_context) != True) {
+		printf("make current failed\n");
+		return false;
+	}
+
+	if (glXIsDirect(x_display, this->glx_context))
+		printf("DRI enabled\n");
+	else
+		printf("no DRI available\n");
+
+	XMapRaised(x_display, x_window);
+	XFlush(x_display);
+
+	// init extension pointers
+	GLenum err=glewInit();
+	if(err!=GLEW_OK) {
+		//problem: glewInit failed, something is seriously wrong
+		printf("Error: %s\n", glewGetErrorString(err));
+		return false;
+	}
+
+	// wrapper successfully initialized
+	this->initialized = true;
+	this->screen_width = w;
+	this->screen_width = h;
+
+	return true;
+
+#else
+	return false;
+#endif
+}
+
+#else
 
 bool MMSFBGL::init() {
 
@@ -323,7 +414,6 @@ bool MMSFBGL::init() {
 	printf("initializing...\n");
 
 #ifdef __HAVE_EGL__
-
 	/*
 		Step 1 - Get the default display.
 		EGL uses the concept of a "display" which in most environments
@@ -520,6 +610,8 @@ bool MMSFBGL::init() {
 
 #endif
 }
+#endif
+
 
 
 bool MMSFBGL::terminate() {
@@ -559,6 +651,14 @@ bool MMSFBGL::getResolution(int *w, int *h) {
 bool MMSFBGL::swap() {
 
 	INITCHECK;
+
+#ifdef __HAVE_GLX__
+
+	glXSwapBuffers(this->x_display, this->x_window);
+
+	return true;
+
+#endif
 
 #ifdef __HAVE_EGL__
 
@@ -745,7 +845,7 @@ void MMSFBGL::rotate(MMSFBGLMatrix result, GLfloat angle, GLfloat x, GLfloat y, 
       rotMat[3][2] = 0.0f;
       rotMat[3][3] = 1.0f;
 
-      MMSFBGL::matrixMultiply(result, rotMat, result);
+      matrixMultiply(result, rotMat, result);
    }
 }
 
@@ -773,7 +873,7 @@ void MMSFBGL::frustum(MMSFBGLMatrix result, float left, float right, float botto
     frust[3][2] = -2.0f * nearZ * farZ / deltaZ;
     frust[3][0] = frust[3][1] = frust[3][3] = 0.0f;
 
-    MMSFBGL::matrixMultiply(result, frust, result);
+    matrixMultiply(result, frust, result);
 }
 
 
@@ -783,7 +883,7 @@ void MMSFBGL::perspective(MMSFBGLMatrix result, float fovy, float aspect, float 
    frustumH = tanf(fovy / 360.0f * MMSFBGL_PI) * nearZ;
    frustumW = frustumH * aspect;
 
-   MMSFBGL::frustum(result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ);
+   frustum(result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ);
 }
 
 void MMSFBGL::ortho(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
@@ -795,7 +895,7 @@ void MMSFBGL::ortho(MMSFBGLMatrix result, float left, float right, float bottom,
         return;
 
     MMSFBGLMatrix ortho;
-    MMSFBGL::matrixLoadIdentity(ortho);
+    matrixLoadIdentity(ortho);
     ortho[0][0] = 2.0f / deltaX;
     ortho[3][0] = -(right + left) / deltaX;
     ortho[1][1] = 2.0f / deltaY;
@@ -803,7 +903,7 @@ void MMSFBGL::ortho(MMSFBGLMatrix result, float left, float right, float bottom,
     ortho[2][2] = -2.0f / deltaZ;
     ortho[3][2] = -(nearZ + farZ) / deltaZ;
 
-    MMSFBGL::matrixMultiply(result, ortho, result);
+    matrixMultiply(result, ortho, result);
 }
 
 
@@ -822,6 +922,8 @@ bool MMSFBGL::useShaderProgram4Drawing() {
 		this->FSColorLoc_initialized = false;
 	}
 
+	setMatrix(this->current_matrix);
+
 	return true;
 }
 
@@ -835,6 +937,8 @@ bool MMSFBGL::useShaderProgram4Blitting() {
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
 	}
+
+	setMatrix(this->current_matrix);
 
 	return true;
 }
@@ -850,11 +954,13 @@ bool MMSFBGL::useShaderProgram4ModulateBlitting() {
 		this->FSColorLoc_initialized = false;
 	}
 
+	setMatrix(this->current_matrix);
+
 	return true;
 }
 
 
-bool MMSFBGL::setModelViewMatrix(int w, int h) {
+bool MMSFBGL::setMatrix(MMSFBGLMatrix matrix) {
 
 	INITCHECK;
 
@@ -864,18 +970,56 @@ bool MMSFBGL::setModelViewMatrix(int w, int h) {
 		this->VSMatrixLoc_initialized = true;
 	}
 
-	// calculate the new matrix
-	MMSFBGLMatrix matrix;
-	matrixLoadIdentity(matrix);
-	glViewport(0, 0, w, h);
-	ortho(matrix, 0, w, 0, h, 10.0, -10.0);
-
 	if (this->VSMatrixLoc >= 0) {
 		// store the new matrix for the vertex shader
 		glUniformMatrix4fv(this->VSMatrixLoc, 1, GL_FALSE, (GLfloat*)matrix);
 	}
 
+	if (this->current_matrix != matrix) {
+		// change the current matrix
+		memcpy(this->current_matrix, matrix, sizeof(MMSFBGLMatrix));
+	}
+
 	return true;
+}
+
+
+bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, int w, int h) {
+
+	INITCHECK;
+
+	// calculate the new matrix
+	MMSFBGLMatrix matrix;
+	matrixLoadIdentity(matrix);
+	ortho(matrix, 0, w, 0, h, 10.0, -10.0);
+
+	// return the matrix to the caller
+	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
+
+	return true;
+}
+
+
+bool MMSFBGL::setModelViewMatrix(int w, int h) {
+
+	INITCHECK;
+
+#ifdef __HAVE_GL2__
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, w, h);
+	glOrtho(0, w, 0, h, 10.0, -10.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+#endif
+
+#ifdef __HAVE_GLES2__
+	// set the model view matrix for the shader
+	MMSFBGLMatrix matrix;
+	getModelViewMatrix(matrix, w, h);
+	glViewport(0, 0, w, h);
+	return setMatrix(matrix);
+#endif
 }
 
 

@@ -282,7 +282,8 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	}
 }
 
-#ifdef  __HAVE_GLX__
+#ifdef  __HAVE_XLIB__
+
 void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect) {
 	// start the server thread
 	start();
@@ -296,116 +297,54 @@ void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_wind
 	req.x11_win_rect= x11_win_rect;
 	trigger((void*)&req, sizeof(req));
 }
-#endif
 
-#ifdef  __HAVE_EGL__
+#else
+
 void MMSFBBackEndInterface::init() {
 	// start the server thread
 	start();
 
 	// trigger the init request
 	BEI_INIT req;
-	req.type		= BEI_REQUEST_TYPE_INIT;
+	req.type = BEI_REQUEST_TYPE_INIT;
 	trigger((void*)&req, sizeof(req));
 }
+
 #endif
+
 
 void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
-#ifdef __HAVE_GLX__
-	// OGL
 
-	this->x_display = req->x_display;
-	this->x_window = req->x_window;
+#ifdef __HAVE_XLIB__
 
-	int glxMajor, glxMinor;
+	mmsfbgl.init(req->x_display, req->x_screen, req->x_window, req->x11_win_rect.w, req->x11_win_rect.h);
 
-	glXQueryVersion(x_display, &glxMajor, &glxMinor);
-	printf("GLX-Version %d.%d\n", glxMajor, glxMinor);
-	int attribList[] =
-		{GLX_RGBA,
-		GLX_RED_SIZE, 8,
-		GLX_GREEN_SIZE, 8,
-		GLX_BLUE_SIZE, 8,
-		GLX_DEPTH_SIZE, 16,
-		GLX_DOUBLEBUFFER,
-		None};
-	this->xvi = glXChooseVisual(req->x_display, req->x_screen, attribList);
-	if (this->xvi == NULL) {
-		int attribList[] =
-				{GLX_RGBA,
-				GLX_RED_SIZE, 8,
-				GLX_GREEN_SIZE, 8,
-				GLX_BLUE_SIZE, 8,
-				None};
-		this->xvi = glXChooseVisual(req->x_display, req->x_screen, attribList);
-		printf("singlebuffered rendering will be used, no doublebuffering available\n");
-		if(this->xvi == NULL) {
-			printf("shit happens.... \n");
-			return;
-		}
-	}
-	else {
-		printf("doublebuffered rendering available\n");
-	}
-
-	// create a GLX context
-	this->glx_context = glXCreateContext(req->x_display, this->xvi, 0, GL_TRUE);
-	if (!this->glx_context) {
-		printf("context generation failed...\n");
-		return;
-	}
-
-	if(glXMakeCurrent(req->x_display, req->x_window, this->glx_context) != True) {
-		printf("make current failed\n");
-		return;
-	}
-
-	if (glXIsDirect(req->x_display, this->glx_context))
-		printf("DRI enabled\n");
-	else
-		printf("no DRI available\n");
-
-	XMapRaised(req->x_display, req->x_window);
-	XFlush(req->x_display);
-
-	// init extension pointers
-	GLenum err=glewInit();
-	if(err!=GLEW_OK) {
-		//problem: glewInit failed, something is seriously wrong
-		printf("Error: %s\n", glewGetErrorString(err));
-		return;
-	}
-
-	//set the coordinate system
-	this->matrix_w = 0;
-	this->matrix_h = 0;
-	oglMatrix(req->x11_win_rect.w, req->x11_win_rect.h);
-
-#endif
-
-#ifdef __HAVE_EGL__
+#else
 
 	mmsfbgl.init();
 
 #endif
+
+	//set the coordinate system
+	this->matrix_w = 0;
+	this->matrix_h = 0;
+	int w, h;
+	mmsfbgl.getResolution(&w, &h);
+	oglMatrix(w, h);
+
 }
 
-#ifdef __HAVE_GL2__
+
 void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 	float ratio = (float)w / (float)h;
-//	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
+	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
 		this->matrix_w = w;
 		this->matrix_h = h;
 		this->matrix_ratio = ratio;
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glViewport(0, 0, w, h);
-		glOrtho(0, w, 0, h, 10.0, -10.0);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-//	}
+		mmsfbgl.setModelViewMatrix(w, h);
+	}
 }
-#endif
+
 
 void MMSFBBackEndInterface::swap() {
 	BEI_SWAP req;
@@ -414,13 +353,8 @@ void MMSFBBackEndInterface::swap() {
 }
 
 void MMSFBBackEndInterface::processSwap(BEI_SWAP *req) {
-#ifdef  __HAVE_GL2__
-	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	glDisable(GL_SCISSOR_TEST);
-
-	glXSwapBuffers(this->x_display, this->x_window);
-#endif
+	// swap screen
+	mmsfbgl.swap();
 }
 
 void MMSFBBackEndInterface::alloc(MMSFBSurface *surface) {
@@ -1317,6 +1251,8 @@ void MMSFBBackEndInterface::oglMatrixXX(GLuint w, GLuint h) {
 	glOrtho(-(int)w/2, w/2, -(int)h/2, h/2, 600.0, -600.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	this->matrix_ratio = 0;
 }
 #endif
 

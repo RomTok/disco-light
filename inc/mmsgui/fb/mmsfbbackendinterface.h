@@ -58,7 +58,7 @@ private:
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
-#ifdef  __HAVE_GLX__
+#ifdef  __HAVE_XLIB__
 		Display 			*x_display;
 		int					x_screen;
 		Window				x_window;
@@ -163,13 +163,14 @@ private:
 	MMSFBGL	mmsfbgl;
 
 
+	MMSFBGLMatrix	matrix;
+	GLuint			matrix_w;
+	GLuint			matrix_h;
+	float			matrix_ratio;
+
+	void oglMatrix(GLuint w, GLuint h);
+
 #ifdef  __HAVE_GL2__
-GLuint matrix_w;
-GLuint matrix_h;
-float  matrix_ratio;
-
-void oglMatrix(GLuint w, GLuint h);
-
 void oglMatrixXX(GLuint w, GLuint h);
 #endif
 
@@ -195,24 +196,14 @@ void oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
 
 	void processCube(BEI_CUBE *req);
 
+
 public:
-#ifdef  __HAVE_GLX__
-    //! x-visual
-	XVisualInfo *xvi;
-
-	//! opengl context
-    GLXContext	glx_context;
-
-    Display *x_display;
-    Window 	x_window;
-#endif
 
 	MMSFBBackEndInterface(int queue_size = 1000);
 
-#ifdef  __HAVE_GLX__
+#ifdef  __HAVE_XLIB__
 	void init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect);
-#endif
-#ifdef  __HAVE_EGL__
+#else
 	void init();
 #endif
 

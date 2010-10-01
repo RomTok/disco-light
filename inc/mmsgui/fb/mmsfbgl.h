@@ -70,13 +70,21 @@ class MMSFBGL {
     		MMSFBGL_SHADER_TYPE_VERTEX_SHADER
     	} MMSFBGL_SHADER_TYPE;
 
-#ifdef __HAVE_EGL__
+#ifdef __HAVE_XLIB__
+    	Display *x_display;
+    	Window 	x_window;
+#endif
 
+#ifdef __HAVE_GLX__
+    	XVisualInfo *xvi;
+    	GLXContext	glx_context;
+#endif
+
+#ifdef __HAVE_EGL__
     	EGLDisplay eglDisplay;
     	EGLConfig  eglConfig[10];
     	EGLSurface eglSurface;
     	EGLContext eglContext;
-
 #endif
 
     	bool initialized;
@@ -102,6 +110,7 @@ class MMSFBGL {
     	GLint FSColorLoc;
     	bool FSColorLoc_initialized;
 
+    	MMSFBGLMatrix	current_matrix;
 
     	bool getError(const char* where);
 
@@ -119,7 +128,11 @@ class MMSFBGL {
         MMSFBGL();
         ~MMSFBGL();
 
+#ifdef __HAVE_XLIB__
+        bool init(Display *x_display, int x_screen, Window x_window, int w, int h);
+#else
         bool init();
+#endif
     	bool terminate();
     	bool getResolution(int *w, int *h);
     	bool swap();
@@ -140,7 +153,10 @@ class MMSFBGL {
         bool useShaderProgram4Blitting();
         bool useShaderProgram4ModulateBlitting();
 
+        bool setMatrix(MMSFBGLMatrix matrix);
+        bool getModelViewMatrix(MMSFBGLMatrix result, int w, int h);
         bool setModelViewMatrix(int w, int h);
+
         bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool enableBlend();

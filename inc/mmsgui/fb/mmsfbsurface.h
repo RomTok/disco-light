@@ -160,16 +160,6 @@ class MMSFBSurface {
 		//! dfb surface for drawing/blitting
 		IDirectFBSurface	*dfb_surface;
 #endif
-#ifdef  __HAVE_GLX__
-        //! connection to the x-server
-        static Display *x_display;
-
-        //! x-visual
-	    static XVisualInfo *xvi;
-
-	    //! opengl context
-		static GLXContext glx_context;
-#endif
 
 #ifdef __ENABLE_PERFMON__
 		//! mmsfb performance collector
@@ -301,10 +291,8 @@ class MMSFBSurface {
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XvImage *xv_image1, XvImage *xv_image2);
 #endif
 
-//TODO: we need __HAVE_OPENGL__ here
-#ifdef __HAVE_GLX__
-        MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
-					 GLXContext glx_context, Display *x_display, XVisualInfo *xvi);
+#ifdef __HAVE_OPENGL__
+        MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by);
 #endif
 
         virtual ~MMSFBSurface();

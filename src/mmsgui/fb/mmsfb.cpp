@@ -209,7 +209,21 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			}
 #endif
     }
-	else {
+
+
+
+//TODO: diskorc handling has to be fixed
+#ifdef __HAVE_GLES2__
+	else
+	if (mmsfb->backend == MMSFB_BE_OGL) {
+		this->bei = new MMSFBBackEndInterface();
+	}
+#endif
+
+
+
+
+    else {
 #ifdef __HAVE_XLIB__
         if (!(this->x_display = XOpenDisplay((char*)0))) {
 			MMSFB_SetError(0, "XOpenDisplay() failed");
@@ -240,82 +254,6 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 			this->bei = new MMSFBBackEndInterface();
 #endif
 		}
-
-/*
-		if (this->backend == MMSFB_BE_OGL) {
-#ifdef __HAVE_OPENGL__
-			// OGL
-			int glxMajor, glxMinor;
-
-		    glXQueryVersion(this->x_display, &glxMajor, &glxMinor);
-		    printf("GLX-Version %d.%d\n", glxMajor, glxMinor);
-		    int attribList[] =
-		        {GLX_RGBA,
-		        GLX_RED_SIZE, 8,
-		        GLX_GREEN_SIZE, 8,
-		        GLX_BLUE_SIZE, 8,
-		        GLX_DEPTH_SIZE, 16,
-		        GLX_DOUBLEBUFFER,
-		        None};
-
-		    this->xvi = glXChooseVisual(this->x_display, this->x_screen, attribList);
-		    if (this->xvi == NULL) {
-		    	int attribList[] =
-		    	        {GLX_RGBA,
-		    	        GLX_RED_SIZE, 8,
-		    	        GLX_GREEN_SIZE, 8,
-		    	        GLX_BLUE_SIZE, 8,
-		    	        None};
-		    	this->xvi = glXChooseVisual(this->x_display, this->x_screen, attribList);
-		        printf("singlebuffered rendering will be used, no doublebuffering available\n");
-		        if(this->xvi == NULL) {
-		        	printf("shit happens.... \n");
-		        	return false;
-		        }
-		    }
-		    else {
-		        printf("doublebuffered rendering available\n");
-		    }
-
-		    // create a GLX context
-		    this->glx_context = glXCreateContext(this->x_display, this->xvi, 0, GL_TRUE);
-		    if (!this->glx_context) {
-		    	printf("context generation failed...\n");
-		    	return false;
-		    }
-
-		    if(glXMakeCurrent(this->x_display, this->x_window, this->glx_context) != True) {
-		    	printf("make current failed\n");
-		    	return false;
-		    }
-		    printf("2222222222\n");
-		    if (glXIsDirect(this->x_display, this->glx_context))
-		        printf("DRI enabled\n");
-		    else
-		        printf("no DRI available\n");
-
-		    XMapRaised(this->x_display, this->x_window);
-			XFlush(this->x_display);
-
-			// init extension pointers
-			GLenum err=glewInit();
-			if(err!=GLEW_OK) {
-				//problem: glewInit failed, something is seriously wrong
-				printf("Error: %s\n", glewGetErrorString(err));
-				return false;
-			}
-
-			//set the coordinate system
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glViewport(0, 0, this->x11_win_rect.w, this->x11_win_rect.h);
-			glOrtho(0, this->x11_win_rect.w, 0, this->x11_win_rect.h, 10.0, -10.0);
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
-
-#endif
-		}
-		*/
 
 
 #endif

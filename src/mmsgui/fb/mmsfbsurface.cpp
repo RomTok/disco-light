@@ -51,11 +51,6 @@ D_DEBUG_DOMAIN( MMS_Surface, "MMS/Surface", "MMS FB Surface" );
 // static variables
 bool MMSFBSurface::extendedaccel								= false;
 MMSFBSurfaceAllocMethod MMSFBSurface::allocmethod				= MMSFBSurfaceAllocMethod_malloc;
-#ifdef  __HAVE_GL2__
-Display *MMSFBSurface::x_display;
-XVisualInfo *MMSFBSurface::xvi;
-GLXContext MMSFBSurface::glx_context = 0;
-#endif
 
 #define INITCHECK  if((!mmsfb->isInitialized())||(!this->initialized)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return false;}
 
@@ -586,22 +581,20 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 
 
 
-#ifdef __HAVE_GLX__
-MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat,
-						   GLXContext glx_context, Display *x_display, XVisualInfo *xvi) {
+#ifdef __HAVE_OPENGL__
+MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by) {
     // init me
 	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
 	this->dfb_surface = NULL;
 #endif
-#ifdef  __HAVE_OPENGL__
-	this->glx_context = glx_context;
-	this->x_display = x_display;
-	this->xvi = xvi;
-#endif
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
 #endif
+
+    // currently only for ogl
+	if (allocated_by != MMSFBSurfaceAllocatedBy_ogl)
+		return;
 
 
     // setup surface attributes

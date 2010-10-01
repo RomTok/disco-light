@@ -1454,11 +1454,9 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else {
-//TODO: need __HAVE_OPENGL__ here
-#ifdef __HAVE_GLX__
+#ifdef __HAVE_OPENGL__
 		// create a new surface instance
-		*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
-									mmsfb->bei->glx_context, mmsfb->x_display, mmsfb->bei->xvi);
+		*surface = new MMSFBSurface(this->config.w, this->config.h, MMSFBSurfaceAllocatedBy_ogl);
 		if (!*surface) {
 			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
 			return false;
