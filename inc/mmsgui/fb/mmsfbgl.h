@@ -152,7 +152,7 @@ class MMSFBGL {
     	bool getResolution(int *w, int *h);
     	bool swap();
     	bool alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
-    	bool free(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex);
+    	bool free(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb);
     	bool bindFrameBuffer(GLuint ogl_fbo);
 
         void matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB);

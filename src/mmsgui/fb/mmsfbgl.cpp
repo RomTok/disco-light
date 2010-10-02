@@ -682,7 +682,7 @@ bool MMSFBGL::swap() {
 }
 
 
-bool MMSFBGL::alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_rb, GLuint *ogl_tex) {
+bool MMSFBGL::alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb) {
 
 	INITCHECK;
 
@@ -694,7 +694,28 @@ bool MMSFBGL::alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_rb, GLui
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	// ---
+
 //remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
+#ifdef __HAVE_GL2__
+	glGenRenderbuffersEXT(1, ogl_rb);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, *ogl_rb);
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
+	// ---
+	glGenFramebuffersEXT(1, ogl_fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, *ogl_fbo);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, *ogl_tex, 0);
+//remove glFramebufferRenderbufferEXT?
+	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, *ogl_rb);
+	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		// the GPU does not support current FBO configuration
+/*		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(width) + "x" + iToStr(height) + " failed, the GPU does not support current FBO configuration");*/
+printf("TODO: fatal error while allocating new fbo (GL2)\n");
+		return false;
+	}
+
+	return true;
+#endif
+
 #ifdef __HAVE_GLES2__
 	glGenRenderbuffers(1, ogl_rb);
 	glBindRenderbuffer(GL_RENDERBUFFER, *ogl_rb);
@@ -708,25 +729,31 @@ bool MMSFBGL::alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_rb, GLui
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		// the GPU does not support current FBO configuration
 /*		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(width) + "x" + iToStr(height) + " failed, the GPU does not support current FBO configuration");*/
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-printf("TODO: fatal error while allocating new fbo\n");
+printf("TODO: fatal error while allocating new fbo (GLES2)\n");
 		return false;
 	}
-#endif
 
 	return true;
+#endif
+
+	return false;
 }
 
 
-bool MMSFBGL::free(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex) {
+bool MMSFBGL::free(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb) {
 
 	INITCHECK;
+
+#ifdef  __HAVE_GL2__
+	glDeleteFramebuffersEXT(1, &ogl_fbo);
+	glDeleteRenderbuffersEXT(1, &ogl_rb);
+#endif
 
 #ifdef __HAVE_GLES2__
 	glDeleteFramebuffers(1, &ogl_fbo);
 	glDeleteRenderbuffers(1, &ogl_rb);
 #endif
+
 	glDeleteTextures(1, &ogl_tex);
 
 	return true;

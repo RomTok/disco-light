@@ -386,54 +386,14 @@ void MMSFBBackEndInterface::alloc(MMSFBSurface *surface) {
 	trigger((void*)&req, sizeof(req));
 }
 
+
 void MMSFBBackEndInterface::processAlloc(BEI_ALLOC *req) {
 #ifdef  __HAVE_OPENGL__
 	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
-	oglAlloc(req->surface->config.w, req->surface->config.h, &sb->ogl_fbo, &sb->ogl_tex, &sb->ogl_rb);
-	return;
+	mmsfbgl.alloc(req->surface->config.w, req->surface->config.h, &sb->ogl_fbo, &sb->ogl_tex, &sb->ogl_rb);
 #endif
 }
 
-#ifdef  __HAVE_OPENGL__
-void MMSFBBackEndInterface::oglAlloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb) {
-#ifdef  __HAVE_GL2__
-	// lock destination fbo and prepare it
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	glDisable(GL_SCISSOR_TEST);
-
-	glGenTextures(1, ogl_tex);
-	glBindTexture(GL_TEXTURE_2D, *ogl_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	// ---
-//remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
-	glGenRenderbuffersEXT(1, ogl_rb);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, *ogl_rb);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
-	// ---
-	glGenFramebuffersEXT(1, ogl_fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, *ogl_fbo);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, *ogl_tex, 0);
-//remove glFramebufferRenderbufferEXT?
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, *ogl_rb);
-	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-		// the GPU does not support current FBO configuration
-		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(width) + "x" + iToStr(height) + " failed, the GPU does not support current FBO configuration");
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-printf("TODO: fatal error while allocating new fbo\n");
-		return;
-	}
-
-	// all is fine
-	glDisable(GL_SCISSOR_TEST);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-#endif
-}
-#endif
 
 void MMSFBBackEndInterface::free(MMSFBSurface *surface) {
 	BEI_FREE req;
@@ -442,23 +402,14 @@ void MMSFBBackEndInterface::free(MMSFBSurface *surface) {
 	trigger((void*)&req, sizeof(req));
 }
 
+
 void MMSFBBackEndInterface::processFree(BEI_FREE *req) {
 #ifdef  __HAVE_OPENGL__
 	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
-	oglFree(sb->ogl_fbo, sb->ogl_rb, sb->ogl_tex);
-	return;
+	mmsfbgl.free(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rb);
 #endif
 }
 
-#ifdef  __HAVE_OPENGL__
-void MMSFBBackEndInterface::oglFree(GLuint ogl_fbo, GLuint ogl_rb, GLuint ogl_tex) {
-#ifdef  __HAVE_GL2__
-	glDeleteFramebuffersEXT(1, &ogl_fbo);
-	glDeleteRenderbuffersEXT(1, &ogl_rb);
-	glDeleteTextures(1, &ogl_tex);
-#endif
-}
-#endif
 
 void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
 	BEI_CLEAR req;
