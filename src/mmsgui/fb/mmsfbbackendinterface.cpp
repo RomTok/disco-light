@@ -41,13 +41,96 @@
 #define BEI_SURFACE_BOTTOM		(BEI_SURFACE_HEIGHT - 1)
 #define BEI_SURFACE_BOTTOM_F	(float)BEI_SURFACE_BOTTOM
 
-#ifdef __HAVE_GL2__
+
+#define GET_OFFS(surface) \
+		int xoff = 0; int yoff = 0; \
+		if (surface->is_sub_surface) { \
+			xoff = surface->sub_surface_xoff; \
+			yoff = surface->sub_surface_yoff; }
+
+#define GET_OFFS_SRC(surface) \
+		int src_xoff = 0; int src_yoff = 0; \
+		if (surface->is_sub_surface) { \
+			src_xoff = surface->sub_surface_xoff; \
+			src_yoff = surface->sub_surface_yoff; }
+
+
+
+
+
+#ifdef __HAVE_OPENGL__
 
 #define INIT_OGL_FBO(surface) \
+	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo); \
+	if (!surface->is_sub_surface) oglMatrix(surface->config.w, surface->config.h); \
+	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
+	mmsfbgl.disableScissor();
+
+#define OGL_SCISSOR(X, Y, W, H) mmsfbgl.setScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
+
+#define INIT_OGL_DRAWING(surface) { \
+			switch (surface->config.drawingflags) { \
+			case MMSFB_DRAW_BLEND: \
+				mmsfbgl.enableBlend(); \
+				break; \
+			default: \
+				mmsfbgl.disableBlend(); \
+				break; } \
+			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
+
+
+
+#ifdef __HAVE_GL2__
+#define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2f((float)(x) + 0.5, (float)(BEI_SURFACE_BOTTOM - (y)) + 0.5); glEnd(); }
+#endif
+
+#ifdef __HAVE_GLES2__
+#define OGL_DRAW_POINT(x, y) {}
+#endif
+
+#define OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
+		if (x1 == x2 && y1 == y2) OGL_DRAW_POINT(x1, y1) else
+
+//TODO: am dreieck nochwas???
+#define OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) \
+		if (x1 == x2 && x1 == x3 && y1 == y2 && y1 == y3) OGL_DRAW_POINT(x1, y1) else
+
+
+
+#define OGL_CALC_2X(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
+#define OGL_CALC_2Y(v1, v2) OGL_CALC_2Y_H(v1, v2, BEI_SURFACE_HEIGHT)
+#define OGL_CALC_2Y_H(v1, v2, height) (((v1)<(v2)) ? (float)(height-1) - (float)(v1) + 0.99 : (float)(height-1) - (float)(v1))
+
+#define OGL_CALC_3X(v1, v2, v3) (((v1)<=(v2) && (v1)<=(v3)) ? (float)(v1) : ((v1)>(v2) && (v1)>(v3)) ? (float)(v1) + 0.99 : (float)(v1) + 0.5)
+#define OGL_CALC_3Y(v1, v2, v3) (((v1)<=(v2) && (v1)<=(v3)) ? BEI_SURFACE_BOTTOM_F - (float)(v1) + 0.99 : ((v1)>(v2) && (v1)>(v3)) ? BEI_SURFACE_BOTTOM_F - (float)(v1) : BEI_SURFACE_BOTTOM_F - (float)(v1) + 0.5)
+
+#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_2X(v1, v2) / (width))
+#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_2Y_H(v1, v2, height) / (height))
+
+#ifdef __HAVE_GL2__
+#define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
+		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
+		glRectf(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2), OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1));
+#endif
+
+#ifdef __HAVE_GLES2__
+#define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
+		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
+		mmsfbgl.fillRectangle2D(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2), OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1));
+#endif
+
+
+#endif
+
+
+#ifdef __HAVE_GL2__
+
+/*#define INIT_OGL_FBO(surface) \
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
 	if (!surface->is_sub_surface) oglMatrix(surface->config.w, surface->config.h); \
 	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
 	glDisable(GL_SCISSOR_TEST);
+*/
 
 #define INIT_OGL_FBOXX(surface) \
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
@@ -55,7 +138,7 @@
 	else oglMatrixXX(surface->root_parent->config.w, surface->root_parent->config.h); \
 	glDisable(GL_SCISSOR_TEST);
 
-#define INIT_OGL_DRAWING(surface) { \
+/*#define INIT_OGL_DRAWING(surface) { \
 			switch (surface->config.drawingflags) { \
 			case MMSFB_DRAW_BLEND: \
 				glEnable(GL_BLEND); \
@@ -65,6 +148,7 @@
 				glDisable(GL_BLEND); \
 				break; } \
 			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
+*/
 
 #define INIT_OGL_BLITTING(surface) \
 		switch (surface->config.blittingflags) { \
@@ -108,20 +192,21 @@
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); \
 			break; }
 
-#define GET_OFFS(surface) \
+/*#define GET_OFFS(surface) \
 		int xoff = 0; int yoff = 0; \
 		if (surface->is_sub_surface) { \
 			xoff = surface->sub_surface_xoff; \
-			yoff = surface->sub_surface_yoff; }
+			yoff = surface->sub_surface_yoff; }*/
 
-#define GET_OFFS_SRC(surface) \
+/*#define GET_OFFS_SRC(surface) \
 		int src_xoff = 0; int src_yoff = 0; \
 		if (surface->is_sub_surface) { \
 			src_xoff = surface->sub_surface_xoff; \
-			src_yoff = surface->sub_surface_yoff; }
+			src_yoff = surface->sub_surface_yoff; }*/
 
-#define OGL_GLSCISSOR(X, Y, W, H) glScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
+//#define OGL_SCISSOR(X, Y, W, H) glScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
 
+/*
 #define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2f((float)(x) + 0.5, (float)(BEI_SURFACE_BOTTOM - (y)) + 0.5); glEnd(); }
 
 #define OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
@@ -146,7 +231,7 @@
 #define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
 		glRectf(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2), OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1));
-
+*/
 
 #define OGL_DRAW_LINE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
@@ -333,23 +418,6 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	mmsfbgl.getResolution(&w, &h);
 	oglMatrix(w, h);
 
-
-	mmsfbgl.useShaderProgram4Drawing();
-
-	mmsfbgl.clear(0xff, 0xff, 0x00, 0xff);
-
-	mmsfbgl.setColor(0x00, 0xff, 0xff, 0x80);
-
-	mmsfbgl.enableBlend();
-
-	mmsfbgl.fillTriangle2D(0, 0, 399, 0, 199, 239);
-
-
-	mmsfbgl.swap();
-
-	sleep(10);
-
-
 #endif
 }
 
@@ -421,18 +489,10 @@ void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
 
 
 void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
-#ifdef  __HAVE_GL2__
+#ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
-	glDisable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
-	glColor4ub(req->color.r, req->color.g, req->color.b, req->color.a);
 
-/*	printf("%08x, %dx%d, %d,%d,%d,%d, %d,%d,%d,%d DISKO: processClear\n",
-			req->surface,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT,0,0,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT,
-			req->color.r,req->color.g,req->color.b,req->color.a);
-*/
 	// get subsurface offsets
 	GET_OFFS(req->surface);
 
@@ -440,14 +500,9 @@ void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(0 + xoff, 0 + yoff, req->surface->config.w, req->surface->config.h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 
-		// fill rectangle
-		OGL_FILL_RECTANGLE(0								+ xoff,
-						   0								+ yoff,
-						   0 + req->surface->config.w - 1	+ xoff,
-						   0 + req->surface->config.h - 1	+ yoff);
+		mmsfbgl.clear(req->color.r, req->color.g, req->color.b, req->color.a);
 	}
 #endif
 }
@@ -461,16 +516,12 @@ void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle 
 }
 
 void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
-#ifdef  __HAVE_GL2__
+#ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	mmsfbgl.disableDepthTest();
+	mmsfbgl.disableTexture2D();
 
-/*	printf("%08x, %dx%d, %d,%d,%d,%d, %d,%d,%d,%d DISKO: processFillRectangle\n",
-			req->surface,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT,req->rect.x,req->rect.y,req->rect.w,req->rect.h,
-			req->surface->config.color.r,req->surface->config.color.g,req->surface->config.color.b,req->surface->config.color.a);
-*/
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
 
@@ -481,8 +532,7 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 
 		// fill rectangle
 		OGL_FILL_RECTANGLE(req->rect.x						+ xoff,
@@ -540,7 +590,7 @@ void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// fill triangle
@@ -598,7 +648,7 @@ void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// draw line
@@ -635,7 +685,7 @@ void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// draw rectangle
@@ -694,7 +744,7 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// draw triangle
@@ -751,7 +801,7 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// get source region
@@ -871,7 +921,7 @@ glTexImage2D(GL_TEXTURE_2D,
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// get source region
@@ -969,7 +1019,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 			MMSFBRectangle crect;
 			if (req->surface->calcClip(dx + xoff, dy + yoff, src_w, src_h, &crect)) {
 				// inside clipping region
-				OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+				OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 				glEnable(GL_SCISSOR_TEST);
 
 				// get source region
@@ -1055,7 +1105,7 @@ void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(dst_rect.x + xoff, dst_rect.y + yoff, dst_rect.w, dst_rect.h, &crect)) {
 		// inside clipping region
-		OGL_GLSCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 //		glEnable(GL_SCISSOR_TEST);
 
 		dst_rect.x+=90;

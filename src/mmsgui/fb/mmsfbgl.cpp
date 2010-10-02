@@ -764,12 +764,58 @@ bool MMSFBGL::bindFrameBuffer(GLuint ogl_fbo) {
 
 	INITCHECK;
 
+#ifdef  __HAVE_GL2__
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ogl_fbo);
+#endif
+
 #ifdef __HAVE_GLES2__
 	glBindFramebuffer(GL_FRAMEBUFFER, ogl_fbo);
 #endif
 
 	return true;
 }
+
+
+bool MMSFBGL::setScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
+
+	INITCHECK;
+
+	glScissor(x, y, width, height);
+	glEnable(GL_SCISSOR_TEST);
+
+	return true;
+}
+
+
+bool MMSFBGL::disableScissor() {
+
+	INITCHECK;
+
+	glDisable(GL_SCISSOR_TEST);
+
+	return true;
+}
+
+
+void MMSFBGL::enableBlend() {
+	glEnable(GL_BLEND);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+
+void MMSFBGL::disableBlend() {
+	glDisable(GL_BLEND);
+}
+
+
+void MMSFBGL::disableDepthTest() {
+	glDisable(GL_DEPTH_TEST);
+}
+
+void MMSFBGL::disableTexture2D() {
+	glDisable(GL_TEXTURE_2D);
+}
+
 
 
 void MMSFBGL::matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB) {
@@ -1071,6 +1117,11 @@ bool MMSFBGL::clear(unsigned char r, unsigned char g, unsigned char b, unsigned 
 				 (!b)?0:(b==0xff)?1:(float)b/255,
 				 (!a)?0:(a==0xff)?1:(float)a/255);
 
+#ifdef __HAVE_GL2__
+	// specify the clear value for the depth buffer
+	glClearDepth(1.0);
+#endif
+
 #ifdef __HAVE_GLES2__
 	// specify the clear value for the depth buffer
 	glClearDepthf(1.0);
@@ -1087,6 +1138,18 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 
 	INITCHECK;
 
+	// change the current color
+	this->current_color_r = r;
+	this->current_color_g = g;
+	this->current_color_b = b;
+	this->current_color_a = a;
+
+#ifdef __HAVE_GL2__
+	glColor4ub(r, g, b, a);
+	return true;
+#endif
+
+#ifdef __HAVE_GLES2__
 	if (!this->FSColorLoc_initialized) {
 		// get the location of color uniform variable within the fragment shader
 		this->FSColorLoc = glGetUniformLocation(this->po_current, "FSColor");
@@ -1102,34 +1165,8 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 					(!a)?0:(a==0xff)?1:(float)a/255);
 	}
 
-	// change the current color
-	this->current_color_r = r;
-	this->current_color_g = g;
-	this->current_color_b = b;
-	this->current_color_a = a;
-
 	return true;
-}
-
-
-bool MMSFBGL::enableBlend() {
-
-	INITCHECK;
-
-	glEnable(GL_BLEND);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-	return true;
-}
-
-
-bool MMSFBGL::disableBlend() {
-
-	INITCHECK;
-
-	glDisable(GL_BLEND);
-
-	return true;
+#endif
 }
 
 

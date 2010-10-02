@@ -154,6 +154,13 @@ class MMSFBGL {
     	bool alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
     	bool free(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb);
     	bool bindFrameBuffer(GLuint ogl_fbo);
+    	bool setScissor(GLint x, GLint y, GLsizei width, GLsizei height);
+    	bool disableScissor();
+
+        void enableBlend();
+        void disableBlend();
+        void disableDepthTest();
+        void disableTexture2D();
 
         void matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB);
         void matrixLoadIdentity(MMSFBGLMatrix result);
@@ -174,8 +181,6 @@ class MMSFBGL {
 
         bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
-        bool enableBlend();
-        bool disableBlend();
         bool fillTriangle(float x1, float y1, float z1,
 							 float x2, float y2, float z2,
 							 float x3, float y3, float z3);
