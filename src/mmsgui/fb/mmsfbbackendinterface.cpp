@@ -72,11 +72,58 @@
 			switch (surface->config.drawingflags) { \
 			case MMSFB_DRAW_BLEND: \
 				mmsfbgl.enableBlend(); \
+				mmsfbgl.setDrawingMode(); \
 				break; \
 			default: \
 				mmsfbgl.disableBlend(); \
+				mmsfbgl.setDrawingMode(); \
 				break; } \
 			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
+
+
+
+
+#define INIT_OGL_BLITTING(surface) \
+		switch (surface->config.blittingflags) { \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	\
+			mmsfbgl.enableBlend(); \
+			mmsfbgl.setTexEnvReplace(); \
+			break; \
+		case MMSFB_BLIT_BLEND_COLORALPHA: \
+			mmsfbgl.disableBlend(); \
+			mmsfbgl.setTexEnvModulate(); \
+			mmsfbgl.setColor(255, 255, 255, surface->config.color.a); \
+			break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: \
+			mmsfbgl.enableBlend(); \
+			mmsfbgl.setTexEnvModulate(); \
+			mmsfbgl.setColor(255, 255, 255, surface->config.color.a); \
+			break; \
+		case MMSFB_BLIT_COLORIZE: \
+			mmsfbgl.disableBlend(); \
+			mmsfbgl.setTexEnvModulate(); \
+			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, 0xff); \
+			break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_COLORIZE: \
+			mmsfbgl.enableBlend(); \
+			mmsfbgl.setTexEnvModulate(); \
+			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, 0xff); \
+			break; \
+		case MMSFB_BLIT_BLEND_COLORALPHA + MMSFB_BLIT_COLORIZE: \
+			mmsfbgl.disableBlend(); \
+			mmsfbgl.setTexEnvModulate(); \
+			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); \
+			break; \
+		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA + MMSFB_BLIT_COLORIZE: \
+			mmsfbgl.enableBlend(); \
+			mmsfbgl.setTexEnvModulate(); \
+			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); \
+			break; \
+		default: \
+			mmsfbgl.disableBlend(); \
+			mmsfbgl.setTexEnvReplace(); \
+			break; }
+
 
 
 
@@ -120,6 +167,58 @@
 #endif
 
 
+
+
+
+#ifdef __HAVE_GL2__
+#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
+		glBegin(GL_QUADS); \
+		if (dx1 != dx2 && dy1 != dy2) { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy2, dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy2, dy1)); \
+		} else if (dy1 != dy2) { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1) + 0.99,	OGL_CALC_2Y(dy1, dy2)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1) + 0.99,	OGL_CALC_2Y(dy2, dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy2, dy1)); \
+		} else if (dx1 != dx2) { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
+		} else { \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
+				glVertex2f((float)(dx1) + 0.99,	BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
+			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1) + 0.99,	BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
+			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
+				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
+		} \
+		glEnd();
+#endif
+
+#ifdef __HAVE_GLES2__
+
+#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2)
+
+#endif
+
 #endif
 
 
@@ -150,7 +249,7 @@
 			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
 */
 
-#define INIT_OGL_BLITTING(surface) \
+/*#define INIT_OGL_BLITTING(surface) \
 		switch (surface->config.blittingflags) { \
 		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	\
 			glEnable(GL_BLEND); \
@@ -190,7 +289,7 @@
 		default: \
 			glDisable(GL_BLEND); \
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); \
-			break; }
+			break; }*/
 
 /*#define GET_OFFS(surface) \
 		int xoff = 0; int yoff = 0; \
@@ -267,6 +366,7 @@
 			glVertex2f(OGL_CALC_3X(x1, x2, x3), OGL_CALC_3Y(y1, y2, y3)); \
 		glEnd(); }
 
+/*
 #define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
 		glBegin(GL_QUADS); \
 		if (dx1 != dx2 && dy1 != dy2) { \
@@ -306,7 +406,7 @@
 			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
 				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
 		} \
-		glEnd();
+		glEnd();*/
 
 #endif
 
@@ -781,15 +881,12 @@ void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *sou
 }
 
 void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
-#ifdef  __HAVE_GL2__
+/*#ifdef  __HAVE_GL2__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, req->source->config.surface_buffer->ogl_tex);
 
-/*	printf("%08x, src %08x DISKO: processStretchBlit\n",
-			req->surface, req->source);
-*/
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface);
 
@@ -803,6 +900,44 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		// inside clipping region
 		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
+
+		// get source region
+		int sx1 = req->src_rect.x + src_xoff;
+		int sy1 = req->src_rect.y + src_yoff;
+		int sx2 = req->src_rect.x + req->src_rect.w - 1 + src_xoff;
+		int sy2 = req->src_rect.y + req->src_rect.h - 1 + src_yoff;
+
+		// get destination region
+		int dx1 = req->dst_rect.x + xoff;
+		int dy1 = req->dst_rect.y + yoff;
+		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
+		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
+
+		// blit source texture to the destination
+		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
+	}
+#endif*/
+
+
+
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and bind source texture to it
+	INIT_OGL_FBO(req->surface);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, req->source->config.surface_buffer->ogl_tex);
+
+	// setup blitting
+	INIT_OGL_BLITTING(req->surface);
+
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+	GET_OFFS_SRC(req->source);
+
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
+		// inside clipping region
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
 
 		// get source region
 		int sx1 = req->src_rect.x + src_xoff;

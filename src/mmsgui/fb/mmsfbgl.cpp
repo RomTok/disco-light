@@ -817,6 +817,33 @@ void MMSFBGL::disableTexture2D() {
 }
 
 
+void MMSFBGL::setDrawingMode() {
+#ifdef __HAVE_GLES2__
+	useShaderProgram4Drawing();
+#endif
+}
+
+void MMSFBGL::setTexEnvReplace() {
+#ifdef __HAVE_GL2__
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+#endif
+
+#ifdef __HAVE_GLES2__
+	useShaderProgram4Blitting();
+#endif
+}
+
+void MMSFBGL::setTexEnvModulate() {
+#ifdef __HAVE_GL2__
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+#endif
+
+#ifdef __HAVE_GLES2__
+	useShaderProgram4ModulateBlitting();
+#endif
+}
+
+
 
 void MMSFBGL::matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB) {
     MMSFBGLMatrix    tmp;
@@ -1243,7 +1270,8 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBGL::stretchBlit(GLuint src_tex, int sw, int sh, int dx, int dy, int dw, int dh) {
+bool MMSFBGL::stretchBlit(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
+							int dx1, int dy1, int dx2, int dy2) {
 
 	INITCHECK;
 
@@ -1258,15 +1286,16 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, int sw, int sh, int dx, int dy, int dw
 	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
 	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
 
-	GLfloat vVertices[] = { dx,  dy+dh, 0.0f,  // Position 0
-							0.0f,  0.0f,        // TexCoord 0
-						    dx, dy, 0.0f,  // Position 1
-							0.0f,  1.0f,        // TexCoord 1
-							dx+dw, dy, 0.0f,  // Position 2
-							1.0f,  1.0f,        // TexCoord 2
-							dx+dw,  dy+dh, 0.0f,  // Position 3
-							1.0f,  0.0f         // TexCoord 3
+	GLfloat vVertices[] = { dx1,  dy2, 0.0f,  // Position 0
+							sx1,  sy1,        // TexCoord 0
+						    dx1, dy1, 0.0f,  // Position 1
+							sx1,  sy2,        // TexCoord 1
+							dx2, dy1, 0.0f,  // Position 2
+							sx2,  sy2,        // TexCoord 2
+							dx2,  dy2, 0.0f,  // Position 3
+							sx2,  sy1         // TexCoord 3
 						 };
+
 
 	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
