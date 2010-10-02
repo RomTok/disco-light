@@ -597,8 +597,14 @@ bool MMSFBGL::init() {
 	// init fragment and vertex shaders
 	if (initShaders()) {
 
-		// set the 2D matrix based on the screen dimensions
-		setModelViewMatrix(screen_width, screen_height);
+		// prepare current matrix for shaders
+		matrixLoadIdentity(this->current_matrix);
+
+		// prepare current color for shaders
+		this->current_color_r = 0;
+		this->current_color_g = 0;
+		this->current_color_b = 0;
+		this->current_color_a = 0;
 
 		// wrapper successfully initialized
 		this->initialized = true;
@@ -925,6 +931,7 @@ bool MMSFBGL::useShaderProgram4Drawing() {
 	}
 
 	setMatrix(this->current_matrix);
+	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
 }
@@ -941,6 +948,7 @@ bool MMSFBGL::useShaderProgram4Blitting() {
 	}
 
 	setMatrix(this->current_matrix);
+	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
 }
@@ -957,6 +965,7 @@ bool MMSFBGL::useShaderProgram4ModulateBlitting() {
 	}
 
 	setMatrix(this->current_matrix);
+	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
 }
@@ -1065,6 +1074,12 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 					(!b)?0:(b==0xff)?1:(float)b/255,
 					(!a)?0:(a==0xff)?1:(float)a/255);
 	}
+
+	// change the current color
+	this->current_color_r = r;
+	this->current_color_g = g;
+	this->current_color_b = b;
+	this->current_color_a = a;
 
 	return true;
 }

@@ -138,9 +138,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 	}
     else
     if (this->backend == MMSFB_BE_OGL) {
+#ifdef __HAVE_OPENGL__
 #ifdef __HAVE_GLX__
 		XInitThreads();
 		this->resized=false;
+#endif
 #else
 		MMSFB_SetError(0, "compile OPENGL support!");
 		return false;

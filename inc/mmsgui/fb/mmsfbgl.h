@@ -106,13 +106,26 @@ class MMSFBGL {
     	//! currently active program
     	GLuint po_current;
 
-
+    	//! matrix location in the vertex shader
     	GLint VSMatrixLoc;
+
+    	//! matrix location in the vertex shader initialized
     	bool VSMatrixLoc_initialized;
+
+    	//! color location in the fragment shader
     	GLint FSColorLoc;
+
+    	//! color location in the fragment shader initialized
     	bool FSColorLoc_initialized;
 
+    	//! current matrix
     	MMSFBGLMatrix	current_matrix;
+
+    	//! current color
+    	unsigned char	current_color_r;
+    	unsigned char	current_color_g;
+    	unsigned char	current_color_b;
+    	unsigned char	current_color_a;
 
     	bool getError(const char* where);
 

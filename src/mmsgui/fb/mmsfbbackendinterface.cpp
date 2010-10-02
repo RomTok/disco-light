@@ -333,6 +333,23 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 	mmsfbgl.getResolution(&w, &h);
 	oglMatrix(w, h);
 
+
+	mmsfbgl.useShaderProgram4Drawing();
+
+	mmsfbgl.clear(0xff, 0xff, 0x00, 0xff);
+
+	mmsfbgl.setColor(0x00, 0xff, 0xff, 0x80);
+
+	mmsfbgl.enableBlend();
+
+	mmsfbgl.fillTriangle2D(0, 0, 399, 0, 199, 239);
+
+
+	mmsfbgl.swap();
+
+	sleep(10);
+
+
 #endif
 }
 
