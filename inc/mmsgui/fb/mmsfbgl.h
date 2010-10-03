@@ -198,7 +198,7 @@ class MMSFBGL {
 
         bool genTexture2D(GLuint *texture);
         bool deleteTexture(GLuint texture);
-        bool loadTexture2D(GLuint texture, void *buffer, int sw, int sh);
+        bool loadTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
 
         bool stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
 							float dx1, float dy1, float dx2, float dy2);

@@ -1286,16 +1286,15 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
 	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
 
-	GLfloat vVertices[] = { dx1,  dy2, 0.0f,  // Position 0
+	GLfloat vVertices[] = { dx1,  dy1, 0.0f,  // Position 0
 							sx1,  sy1,        // TexCoord 0
-						    dx1, dy1, 0.0f,  // Position 1
-							sx1,  sy2,        // TexCoord 1
-							dx2, dy1, 0.0f,  // Position 2
+						    dx2, dy1, 0.0f,  // Position 1
+							sx2,  sy1,        // TexCoord 1
+							dx2, dy2, 0.0f,  // Position 2
 							sx2,  sy2,        // TexCoord 2
-							dx2,  dy2, 0.0f,  // Position 3
-							sx2,  sy1         // TexCoord 3
+							dx1,  dy2, 0.0f,  // Position 3
+							sx1,  sy2         // TexCoord 3
 						 };
-
 
 	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -1349,18 +1348,18 @@ bool MMSFBGL::deleteTexture(GLuint texture) {
 	return true;
 }
 
-bool MMSFBGL::loadTexture2D(GLuint texture, void *buffer, int sw, int sh) {
+bool MMSFBGL::loadTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh) {
 
 	INITCHECK;
 
 	// initializing texture from buffer
 	glTexImage2D(GL_TEXTURE_2D,
 	 	0,
-	 	GL_RGBA,
+	 	texture_format,
 	 	sw,
 	 	sh,
 	 	0,
-	 	GL_RGBA,
+	 	buffer_format,
 	 	GL_UNSIGNED_BYTE,
 	 	buffer);
 
@@ -1375,7 +1374,7 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, f
 	// alloc and load texture from buffer
 	GLuint texture;
 	genTexture2D(&texture);
-	loadTexture2D(texture, buffer, sw, sh);
+	loadTexture2D(texture, GL_RGBA, buffer, GL_RGBA, sw, sh);
 
 	// blit texture to active FBO
 	stretchBlit(texture, sx1, sy1, sx2, sy2, sw, sh,

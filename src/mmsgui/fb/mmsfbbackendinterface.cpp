@@ -228,6 +228,19 @@
 						OGL_CALC_2X(dx2, dx1), \
 						OGL_CALC_2Y(dy2, dy1));
 
+#define OGL_STRETCH_BLIT_STR(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
+			mmsfbgl.stretchBlit(texture, \
+						OGL_CALC_2X_N(sx1, sx2, sw), \
+						OGL_CALC_2Y_N(sy1, sy2, sh), \
+						OGL_CALC_2X_N(sx2, sx1, sw), \
+						OGL_CALC_2Y_N(sy2, sy1, sh), \
+						sw, \
+						sh, \
+						OGL_CALC_2X(dx1, dx2), \
+						OGL_CALC_2Y(dy1, dy2), \
+						OGL_CALC_2X(dx2, dx1), \
+						OGL_CALC_2Y(dy2, dy1));
+
 
 #define OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
 			mmsfbgl.stretchBlitBuffer(req->src_planes->ptr, \
@@ -1252,6 +1265,84 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 	// all is fine
 	glDisable(GL_TEXTURE_2D);
 	glDeleteTextures(1, &texture);
+
+#endif
+
+#ifdef  __HAVE_GLES2__
+
+	// lock destination fbo and bind source texture to it
+	INIT_OGL_FBO(req->surface);
+
+
+	// alloc a texture
+	GLuint texture;
+	mmsfbgl.genTexture2D(&texture);
+
+
+	//TODO: blitting GL_ALPHA textures, new shader???
+	mmsfbgl.enableBlend();
+//	mmsfbgl.setTexEnvReplace();
+	mmsfbgl.setTexEnvModulate();
+	mmsfbgl.setColor(req->surface->config.color.r,
+					req->surface->config.color.g,
+					req->surface->config.color.b,
+					req->surface->config.color.a);
+
+
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+
+	// get vertical font settings
+	int DY = 0, desc = 0;
+	req->surface->config.font->getHeight(&DY);
+	req->surface->config.font->getDescender(&desc);
+	DY -= desc + 1;
+
+	// for all characters
+	MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {
+
+		// load the glyph
+		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(req->surface->config.font, character);
+
+		// start rendering of glyph to destination
+		if (glyph) {
+			// calc destination position of the character
+			int dx = req->x + glyph->left;
+			int dy = req->y + DY - glyph->top;
+
+			// set the clip to ogl
+			MMSFBRectangle crect;
+			if (req->surface->calcClip(dx + xoff, dy + yoff, src_w, src_h, &crect)) {
+				// inside clipping region
+				OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+
+				// get source region
+				int sx1 = 0;
+				int sy1 = 0;
+				int sx2 = src_w - 1;
+				int sy2 = src_h - 1;
+
+				// get destination region
+				int dx1 = dx + xoff;
+				int dy1 = dy + yoff;
+				int dx2 = dx + src_w - 1 + xoff;
+				int dy2 = dy + src_h - 1 + yoff;
+
+			    // specify two-dimensional glyph texture
+			    // we use pitch instead of width here, because we need a width which is divisible by 4!!!
+				mmsfbgl.loadTexture2D(texture, GL_ALPHA, src, GL_ALPHA, src_pitch_pix, src_h);
+
+				// blit glyph texture to the destination
+				// note: the source has to be flipped vertical because the difference between 2D input and OGL
+				OGL_STRETCH_BLIT_STR(sx1, sy1, sx2, sy2, src_pitch_pix, src_h, dx1, dy2, dx2, dy1);
+			}
+
+			// prepare for next loop
+			req->x+=glyph->advanceX >> 6;
+		}
+	}}
+
+	mmsfbgl.deleteTexture(texture);
 
 #endif
 }
