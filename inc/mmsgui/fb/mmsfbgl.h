@@ -192,9 +192,16 @@ class MMSFBGL {
         bool fillRectangle2D(float x1, float y1, float x2, float y2);
         bool fillRectangle2Di(int x1, int y1, int x2, int y2);
 
-        bool stretchBlit(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
-							int dx1, int dy1, int dx2, int dy2);
-        bool stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, int dw, int dh);
+
+        bool stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
+							float dx1, float dy1, float dx2, float dy2);
+
+        bool genTexture2D(GLuint *texture);
+        bool deleteTexture(GLuint texture);
+        bool loadTexture2D(GLuint texture, void *buffer, int sw, int sh);
+
+        bool stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
+							float dx1, float dy1, float dx2, float dy2);
 };
 
 #endif

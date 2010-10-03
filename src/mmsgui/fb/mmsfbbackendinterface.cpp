@@ -215,9 +215,36 @@
 
 #ifdef __HAVE_GLES2__
 
-#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2)
+#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
+			mmsfbgl.stretchBlit(req->source->config.surface_buffer->ogl_tex, \
+						OGL_CALC_2X_N(sx1, sx2, sw), \
+						OGL_CALC_2Y_N(sy1, sy2, sh), \
+						OGL_CALC_2X_N(sx2, sx1, sw), \
+						OGL_CALC_2Y_N(sy2, sy1, sh), \
+						sw, \
+						sh, \
+						OGL_CALC_2X(dx1, dx2), \
+						OGL_CALC_2Y(dy1, dy2), \
+						OGL_CALC_2X(dx2, dx1), \
+						OGL_CALC_2Y(dy2, dy1));
+
+
+#define OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
+			mmsfbgl.stretchBlitBuffer(req->src_planes->ptr, \
+						OGL_CALC_2X_N(sx1, sx2, sw), \
+						OGL_CALC_2Y_N(sy1, sy2, sh), \
+						OGL_CALC_2X_N(sx2, sx1, sw), \
+						OGL_CALC_2Y_N(sy2, sy1, sh), \
+						sw, \
+						sh, \
+						OGL_CALC_2X(dx1, dx2), \
+						OGL_CALC_2Y(dy1, dy2), \
+						OGL_CALC_2X(dx2, dx1), \
+						OGL_CALC_2Y(dy2, dy1));
 
 #endif
+
+
 
 #endif
 
@@ -994,9 +1021,6 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 
-/*	printf("%08x, src %08x DISKO: processStretchBlitBuffer\n",
-			req->surface, req->src_planes->ptr);
-*/
 	// allocate a texture name
 	GLuint texture;
 	glGenTextures( 1, &texture );
@@ -1024,7 +1048,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	 	GL_UNSIGNED_BYTE,
 	 	req->src_planes->ptr);
 
-/*
+#ifdef sdsfsfs
 unsigned char pix[8*8];
 memset(pix, 0, sizeof(pix));
 pix[0]=0xff;
@@ -1039,7 +1063,7 @@ glTexImage2D(GL_TEXTURE_2D,
 	GL_ALPHA,
 	GL_UNSIGNED_BYTE,
 	pix);
-*/
+#endif
 
 	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -1082,6 +1106,43 @@ glTexImage2D(GL_TEXTURE_2D,
 
 
 #endif
+
+
+
+#ifdef  __HAVE_GLES2__
+	// lock destination fbo and bind source texture to it
+	INIT_OGL_FBO(req->surface);
+
+	// setup blitting
+	INIT_OGL_BLITTING(req->surface);
+
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
+		// inside clipping region
+		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+
+		// get source region
+		int sx1 = req->src_rect.x;
+		int sy1 = req->src_rect.y;
+		int sx2 = req->src_rect.x + req->src_rect.w - 1;
+		int sy2 = req->src_rect.y + req->src_rect.h - 1;
+
+		// get destination region
+		int dx1 = req->dst_rect.x + xoff;
+		int dy1 = req->dst_rect.y + yoff;
+		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
+		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
+
+		// blit source texture to the destination
+		// note: the source has to be flipped vertical because the difference between 2D input and OGL
+		OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, req->src_width, req->src_height, dx1, dy2, dx2, dy1);
+	}
+
+#endif
 }
 
 void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int len, int x, int y) {
@@ -1102,9 +1163,6 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 	INIT_OGL_FBO(req->surface);
 	glEnable(GL_TEXTURE_2D);
 
-/*	printf("%08x, DISKO: processDrawString\n",
-			req->surface);
-*/
 	// allocate a texture name
 	GLuint texture;
 	glGenTextures(1, &texture);

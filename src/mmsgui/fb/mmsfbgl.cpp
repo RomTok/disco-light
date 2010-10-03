@@ -1270,8 +1270,8 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBGL::stretchBlit(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
-							int dx1, int dy1, int dx2, int dy2) {
+bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
+							float dx1, float dy1, float dx2, float dy2) {
 
 	INITCHECK;
 
@@ -1320,29 +1320,26 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, in
 	return true;
 }
 
-
-bool MMSFBGL::stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, int dw, int dh) {
-
-	INITCHECK;
-
-	// enable 2D texturing
-	glEnable(GL_TEXTURE_2D);
-
+bool MMSFBGL::genTexture2D(GLuint *texture) {
 	// allocate a texture name
-	GLuint texture;
-	glGenTextures( 1, &texture );
-    glBindTexture (GL_TEXTURE_2D, texture);
+	glGenTextures(1, texture);
+    glBindTexture(GL_TEXTURE_2D, *texture);
 
     // when texture area is small, bilinear filter the closest mipmap
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                     GL_LINEAR_MIPMAP_NEAREST );
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     // when texture area is large, bilinear filter the original
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // the texture wraps over at the edges (repeat)
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
 
+bool MMSFBGL::deleteTexture(GLuint texture) {
+	glDeleteTextures(1, &texture);
+}
+
+bool MMSFBGL::loadTexture2D(GLuint texture, void *buffer, int sw, int sh) {
 	glTexImage2D(GL_TEXTURE_2D,
 	 	0,
 	 	GL_RGBA,
@@ -1352,10 +1349,20 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, in
 	 	GL_RGBA,
 	 	GL_UNSIGNED_BYTE,
 	 	buffer);
+}
 
+bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
+								float dx1, float dy1, float dx2, float dy2) {
 
-	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	INITCHECK;
 
+	// alloc and load texture from buffer
+	GLuint texture;
+	genTexture2D(&texture);
+	loadTexture2D(texture, buffer, sw, sh);
+
+	// enable 2D texturing
+	glEnable(GL_TEXTURE_2D);
 
 
 	GLint  texCoordLoc;
@@ -1364,14 +1371,15 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, in
 	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
 	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
 
-	GLfloat vVertices[] = { dx,  dy+dh, 0.0f,  // Position 0
-							0.0f,  0.0f,        // TexCoord 0
-							dx, dy, 0.0f,  // Position 1
-							0.0f,  1.0f,        // TexCoord 1
-							dx+dw, dy, 0.0f,  // Position 2
-							1.0f,  1.0f,        // TexCoord 2
-							dx+dw,  dy+dh, 0.0f,  // Position 3
-							1.0f,  0.0f         // TexCoord 3
+
+	GLfloat vVertices[] = { dx1,  dy2, 0.0f,  // Position 0
+							sx1,  sy1,        // TexCoord 0
+						    dx1, dy1, 0.0f,  // Position 1
+							sx1,  sy2,        // TexCoord 1
+							dx2, dy1, 0.0f,  // Position 2
+							sx2,  sy2,        // TexCoord 2
+							dx2,  dy2, 0.0f,  // Position 3
+							sx2,  sy1         // TexCoord 3
 						 };
 
 	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -1396,8 +1404,10 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, int sw, int sh, int dx, int dy, in
 
 
 	// all is fine
-	glDisable(GL_TEXTURE_2D);
+/*	glDisable(GL_TEXTURE_2D);
 	glDeleteTextures(1, &texture);
+*/
+	deleteTexture(texture);
 
 	return true;
 }
