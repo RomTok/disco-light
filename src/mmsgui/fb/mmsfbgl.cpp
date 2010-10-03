@@ -1321,6 +1321,9 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 }
 
 bool MMSFBGL::genTexture2D(GLuint *texture) {
+
+	INITCHECK;
+
 	// allocate a texture name
 	glGenTextures(1, texture);
     glBindTexture(GL_TEXTURE_2D, *texture);
@@ -1333,13 +1336,24 @@ bool MMSFBGL::genTexture2D(GLuint *texture) {
     // the texture wraps over at the edges (repeat)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    return true;
 }
 
 bool MMSFBGL::deleteTexture(GLuint texture) {
+
+	INITCHECK;
+
 	glDeleteTextures(1, &texture);
+
+	return true;
 }
 
 bool MMSFBGL::loadTexture2D(GLuint texture, void *buffer, int sw, int sh) {
+
+	INITCHECK;
+
+	// initializing texture from buffer
 	glTexImage2D(GL_TEXTURE_2D,
 	 	0,
 	 	GL_RGBA,
@@ -1349,6 +1363,8 @@ bool MMSFBGL::loadTexture2D(GLuint texture, void *buffer, int sw, int sh) {
 	 	GL_RGBA,
 	 	GL_UNSIGNED_BYTE,
 	 	buffer);
+
+	return true;
 }
 
 bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
@@ -1361,52 +1377,11 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, f
 	genTexture2D(&texture);
 	loadTexture2D(texture, buffer, sw, sh);
 
-	// enable 2D texturing
-	glEnable(GL_TEXTURE_2D);
+	// blit texture to active FBO
+	stretchBlit(texture, sx1, sy1, sx2, sy2, sw, sh,
+				dx1, dy1, dx2, dy2);
 
-
-	GLint  texCoordLoc;
-	GLint samplerLoc;
-
-	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
-	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
-
-
-	GLfloat vVertices[] = { dx1,  dy2, 0.0f,  // Position 0
-							sx1,  sy1,        // TexCoord 0
-						    dx1, dy1, 0.0f,  // Position 1
-							sx1,  sy2,        // TexCoord 1
-							dx2, dy1, 0.0f,  // Position 2
-							sx2,  sy2,        // TexCoord 2
-							dx2,  dy2, 0.0f,  // Position 3
-							sx2,  sy1         // TexCoord 3
-						 };
-
-	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
-
-	// Load the vertex position
-	glVertexAttribPointer (MMSFBGL_VSV_LOC, 3, GL_FLOAT,
-						   GL_FALSE, 5 * sizeof(GLfloat), vVertices );
-	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
-
-	// Load the texture coordinate
-	glVertexAttribPointer (texCoordLoc, 2, GL_FLOAT,
-						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
-	glEnableVertexAttribArray(texCoordLoc);
-
-
-	// bind the texture unit0
-	glActiveTexture ( GL_TEXTURE0 );
-	glUniform1i(samplerLoc, 0);
-
-
-	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
-
-
-	// all is fine
-/*	glDisable(GL_TEXTURE_2D);
-	glDeleteTextures(1, &texture);
-*/
+	// delete texture
 	deleteTexture(texture);
 
 	return true;
