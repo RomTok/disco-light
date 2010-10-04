@@ -516,13 +516,11 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
 	# checks for building OpenGL ES 2.0 backend
-		if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
+		if conf.CheckLibWithHeader(['GLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
-			conf.env['LIBS'].append('GLESv2')
-		if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
+		if conf.CheckLibWithHeader(['EGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
-			conf.env['LIBS'].append('EGL')
 
 	# checks required if building X11 backend
 	if('x11' in env['graphics']):
@@ -547,13 +545,11 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 				if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
 					conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
 		else:
-			if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
+			if conf.CheckLibWithHeader(['GLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 				conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
-				conf.env['LIBS'].append('GLESv2')
-			if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
+			if conf.CheckLibWithHeader(['EGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
-				conf.env['LIBS'].append('EGL')
 		
 	# checks required if building mmsmedia
 
@@ -721,16 +717,15 @@ if 'install' in BUILD_TARGETS:
 
 	if 'dfb' in env['graphics']:
 		disko_pc_requires += ', directfb'
-	  
+	 
 	if 'x11' in env['graphics']:
 		disko_pc_requires += ', x11, xv, xxf86vm, xcomposite, xrender'
-
-	if 'ogl' in env['graphics']:
-		disko_pc_requires += ', x11, gl, glu'
-		disko_pc_libs_private += ' -lGLEW'
-
-	if 'gles2' in env['graphics']:
-		disko_pc_libs_private += ' -lIMGegl -lsrv_um -lEGL -lGLESv2'
+		if '-D__HAVE_OPENGL__' in env['CCFLAGS']:
+			disko_pc_requires += ', gl, glu'
+	
+	for l in ['GLEW', 'GLESv2' , 'EGL']:
+		if l in env['LIBS']:
+			disko_pc_libs += ' -l%s' % l
 
 	if env['alsa']:
 	 	disko_pc_requires += ', alsa'
@@ -792,8 +787,7 @@ if 'install' in BUILD_TARGETS:
 
 	for ccflag in env['CCFLAGS']:
 		if(type(ccflag).__name__ == 'str'):
-			if not ccflag.startswith('-isystem'):
-				disko_pc.write(' ' + ccflag)
+			disko_pc.write(' ' + ccflag)
 		else:
 			disko_pc.write(' '.join(ccflag))
 	disko_pc.write('\n')
