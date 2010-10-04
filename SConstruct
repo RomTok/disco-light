@@ -444,108 +444,78 @@ def printSummary():
 #######################################################################
 # Check dependencies                                                  #
 #######################################################################
-conf = Configure(env,
-                 custom_tests = {'checkOptions' : checkOptions,
-                 				 'checkPKGConfig' : checkPKGConfig,
-                 				 'checkXineBlDvb' : checkXineBlDvb,
-                 				 'checkGstDiskoVideosink' : checkGstDiskoVideosink,
-                 				 'checkConf' : checkConf,
-                 				 'checkPKG' : checkPKG,
-                 				 'checkSimpleLib' : checkSimpleLib},
-                 conf_dir = 'build/.sconf_temp',
-                 log_file = 'build/.config.log',
-                 clean = False,
-                 help  = False)
+if not ('-c' in sys.argv or '-h' in sys.argv):
+	conf = Configure(env,
+                     custom_tests = {'checkOptions' : checkOptions,
+                                     'checkPKGConfig' : checkPKGConfig,
+                                     'checkXineBlDvb' : checkXineBlDvb,
+                                     'checkGstDiskoVideosink' : checkGstDiskoVideosink,
+                                     'checkConf' : checkConf,
+                                     'checkPKG' : checkPKG,
+                                     'checkSimpleLib' : checkSimpleLib},
+                     conf_dir = 'build/.sconf_temp',
+                     log_file = 'build/.config.log',
+                     clean = False,
+                     help  = False)
 
-conf.checkOptions()
+	conf.checkOptions()
 
-# checks that are required everytime
-if not conf.checkPKGConfig('0.8'):
-	Exit(1)
-conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
-conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
-if (env['enable_curl']):
-	conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_CURL__'])	
-conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
+	# checks that are required everytime
+	if not conf.checkPKGConfig('0.8'):
+		Exit(1)
+	conf.checkSimpleLib(['sigc++-2.0'],        'sigc++-2.0/sigc++/sigc++.h')
+	conf.checkSimpleLib(['libxml-2.0 >= 2.6'], 'libxml2/libxml/parser.h')
+	if (env['enable_curl']):
+		conf.checkSimpleLib(['libcurl'],           'curl/curl.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_CURL__'])	
+	conf.checkSimpleLib(['freetype2'],         'freetype/freetype.h')
 
-if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
-	conf.env['libiconv'] = True
+	if conf.CheckLibWithHeader(['libiconv'], ['iconv.h'], 'c++'):
+		conf.env['libiconv'] = True
 
-if conf.CheckHeader(['wordexp.h']):
-	conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
+	if conf.CheckHeader(['wordexp.h']):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_WORDEXP__'])
 
-if('png' in env['images']):
-	if conf.checkSimpleLib(['libpng'], ['png.h'], required = 0):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
-	elif conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
-	else:
-		conf.env['images'].remove('png')
+	if('png' in env['images']):
+		if conf.checkSimpleLib(['libpng'], ['png.h'], required = 0):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
+		elif conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
+		else:
+			conf.env['images'].remove('png')
 
-if('jpeg' in env['images']):
-	if conf.checkSimpleLib(['libjpeg'], ['cstdio', 'jpeglib.h'], required = 0):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
-	elif conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
-	else:
-		conf.env['images'].remove('jpeg')
+	if('jpeg' in env['images']):
+		if conf.checkSimpleLib(['libjpeg'], ['cstdio', 'jpeglib.h'], required = 0):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
+		elif conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
+		else:
+			conf.env['images'].remove('jpeg')
 
-if('tiff' in env['images']):
-	if conf.checkSimpleLib(['libtiff'], ['tiffio.h'], required = 0):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
-	elif conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
-	else:
-		conf.env['images'].remove('tiff')
+	if('tiff' in env['images']):
+		if conf.checkSimpleLib(['libtiff'], ['tiffio.h'], required = 0):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
+		elif conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
+		else:
+			conf.env['images'].remove('tiff')
 
-# checks required if using dynamic linking support
-if(env['use_dl']):
-	if conf.CheckLibWithHeader(['libdl'], ['dlfcn.h'], 'c++'):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_DL__'])
-		conf.env['libdl'] = True
+	# checks required if using dynamic linking support
+	if(env['use_dl']):
+		if conf.CheckLibWithHeader(['libdl'], ['dlfcn.h'], 'c++'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_DL__'])
+			conf.env['libdl'] = True
 
-# checks required if building DirectFB backend
-if('dfb' in env['graphics']):
-	conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_DIRECTFB__'])
-	
-# checks required if building fbdev backend
-if('fbdev' in env['graphics']):
-	conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
+	# checks required if building DirectFB backend
+	if('dfb' in env['graphics']):
+		conf.checkSimpleLib(['directfb'],   'directfb/directfb.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_DIRECTFB__'])
+		
+	# checks required if building fbdev backend
+	if('fbdev' in env['graphics']):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
-# checks for building OpenGL ES 2.0 backend
-	if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
-		conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
-		conf.env['LIBS'].append('GLESv2')
-	if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
-		conf.env['LIBS'].append('EGL')
-
-# checks required if building X11 backend
-if('x11' in env['graphics']):
-	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
-	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
-	# TODO: actually XV doesn't depend on XRender/XComposite, but for now it won't compile without it
-	if conf.checkSimpleLib(['xv'], 'X11/extensions/Xvlib.h', 0):
-		if conf.checkSimpleLib(['xrender'], 'X11/extensions/Xrender.h', 0):
-			conf.env['CCFLAGS'].extend(['-D__HAVE_XRENDER__'])
-			if conf.checkSimpleLib(['xcomposite'], 'X11/extensions/Xcomposite.h', 0):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_XCOMPOSITE__', '-D__HAVE_XV__'])
-
-# checks for OpenGL and X11 backend
-	if conf.CheckLib('GLEW', 'glGenFramebuffersEXT'):
-		conf.env['LIBS'].append('GLEW')
-		if conf.checkSimpleLib(['gl'],   'GL/gl.h'):
-			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
-			if conf.CheckLib('GL', 'glBlendEquation'):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])	
-			conf.checkSimpleLib(['glu'],  'GL/glu.h')
-			if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
-	else:
+	# checks for building OpenGL ES 2.0 backend
 		if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
@@ -553,128 +523,159 @@ if('x11' in env['graphics']):
 		if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
 			conf.env['LIBS'].append('EGL')
-	
-# checks required if building mmsmedia
 
-if('xine' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
+	# checks required if building X11 backend
 	if('x11' in env['graphics']):
-		if not conf.checkSimpleLib(['libxine >= 1.1.15'], 'xine.h', required = 0):
+		conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
+		conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
+		# TODO: actually XV doesn't depend on XRender/XComposite, but for now it won't compile without it
+		if conf.checkSimpleLib(['xv'], 'X11/extensions/Xvlib.h', 0):
+			if conf.checkSimpleLib(['xrender'], 'X11/extensions/Xrender.h', 0):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_XRENDER__'])
+				if conf.checkSimpleLib(['xcomposite'], 'X11/extensions/Xcomposite.h', 0):
+					conf.env['CCFLAGS'].extend(['-D__HAVE_XCOMPOSITE__', '-D__HAVE_XV__'])
+
+	# checks for OpenGL and X11 backend
+		if conf.CheckLib('GLEW', 'glGenFramebuffersEXT'):
+			conf.env['LIBS'].append('GLEW')
+			if conf.checkSimpleLib(['gl'],   'GL/gl.h'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+				if conf.CheckLib('GL', 'glBlendEquation'):
+					conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])	
+				conf.checkSimpleLib(['glu'],  'GL/glu.h')
+				if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
+					conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
+		else:
+			if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+				conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
+				conf.env['LIBS'].append('GLESv2')
+			if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
+				conf.env['LIBS'].append('EGL')
+		
+	# checks required if building mmsmedia
+
+	if('xine' in env['media']):
+		if('x11' in env['graphics']):
+			if not conf.checkSimpleLib(['libxine >= 1.1.15'], 'xine.h', required = 0):
+				print '***************************************************\n'
+				print 'Xine not found!'
+				print 'Disabling xine media backend'
+				print '\n***************************************************'
+				env['media'].remove('xine')
+			else:
+				conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+				if conf.checkXineBlDvb():
+					conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
+		else:
+			if not conf.checkSimpleLib(['libxine'], 'xine.h', required = 0):
+				print '**************************************************\n'
+				print 'Xine not found!'
+				print 'Disabling xine media backend'
+				print '\n**************************************************'
+				env['media'].remove('xine')
+			else:
+				conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
+				if conf.checkXineBlDvb():
+					conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
+
+	if('gstreamer' in env['media']):
+		if not conf.checkSimpleLib(['gstreamer-0.10 >= 0.10.22'], 'gst/gst.h', required = 0) or	not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
 			print '***************************************************\n'
-			print 'Xine not found!'
-			print 'Disabling xine media backend'
+			print 'GStreamer not found or version is older than 0.10.22!'
+			print 'Disabling gstreamer media backend'
 			print '\n***************************************************'
-			env['media'].remove('xine')
+			env['media'].remove('gstreamer')
+		elif not conf.checkGstDiskoVideosink():
+			print '***************************************************\n'
+			print 'GStreamer plugin diskovideosink not found!'
+			print 'Disabling gstreamer media backend'
+			print '\n***************************************************'
+			env['media'].remove('gstreamer')
 		else:
-			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
-			if conf.checkXineBlDvb():
-				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
-	else:
-		if not conf.checkSimpleLib(['libxine'], 'xine.h', required = 0):
-			print '**************************************************\n'
-			print 'Xine not found!'
-			print 'Disabling xine media backend'
-			print '\n**************************************************'
-			env['media'].remove('xine')
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
+
+	# check for ALSA
+	if env['enable_alsa']:
+		if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
+			conf.env['alsa'] = 1
 		else:
-			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-DXINE_DISABLE_DEPRECATED_FEATURES', '-D__HAVE_XINE__'])
-			if conf.checkXineBlDvb():
-				conf.env['CCFLAGS'].extend(['-D__HAVE_XINE_BLDVB__'])
-
-if('gstreamer' in env['media'] and not ('-c' in sys.argv or '-h' in sys.argv)):
-	if not conf.checkSimpleLib(['gstreamer-0.10 >= 0.10.22'], 'gst/gst.h', required = 0) or	not conf.checkSimpleLib(['gstreamer-plugins-base-0.10'], 'gst/gst.h', required = 0):
-		print '***************************************************\n'
-		print 'GStreamer not found or version is older than 0.10.22!'
-		print 'Disabling gstreamer media backend'
-		print '\n***************************************************'
-		env['media'].remove('gstreamer')
-	elif not conf.checkGstDiskoVideosink():
-		print '***************************************************\n'
-		print 'GStreamer plugin diskovideosink not found!'
-		print 'Disabling gstreamer media backend'
-		print '\n***************************************************'
-		env['media'].remove('gstreamer')
-	else:
-		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_GSTREAMER__'])
-
-# check for ALSA
-if env['enable_alsa']:
-	if conf.checkSimpleLib(['alsa'], 'alsa/version.h', required = 0):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSMEDIA__', '-D__HAVE_MIXER__'])
-		conf.env['alsa'] = 1
+			conf.env['alsa'] = 0
 	else:
 		conf.env['alsa'] = 0
-else:
-	conf.env['alsa'] = 0
-	
-# checks required for database backends
-if 'sqlite3' in env['database']:
-	conf.checkSimpleLib(['sqlite3'], 'sqlite3.h')
-	conf.env['CCFLAGS'].extend(['-D__ENABLE_SQLITE__'])
-if 'mysql' in env['database']:
-	conf.checkSimpleLib(['mysql'],      'mysql.h')
-	conf.env['CCFLAGS'].extend(['-D__ENABLE_MYSQL__'])
-if 'odbc' in env['database']:
-	if conf.CheckCXXHeader('/usr/include/sql.h'):
-		conf.env.Append(LIBS = 'odbc')
-		conf.env['CCFLAGS'].extend(['-D__ENABLE_FREETDS__'])
-	elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
-		conf.env.Append(LIBPATH = '/usr/local/lib', LIBS = 'odbc')
-		conf.env['CCFLAGS'].extend(['-D__ENABLE_FREETDS__', '-I/usr/local/include'])
-	else:
-		Exit(1)
+		
+	# checks required for database backends
+	if 'sqlite3' in env['database']:
+		conf.checkSimpleLib(['sqlite3'], 'sqlite3.h')
+		conf.env['CCFLAGS'].extend(['-D__ENABLE_SQLITE__'])
+	if 'mysql' in env['database']:
+		conf.checkSimpleLib(['mysql'],      'mysql.h')
+		conf.env['CCFLAGS'].extend(['-D__ENABLE_MYSQL__'])
+	if 'odbc' in env['database']:
+		if conf.CheckCXXHeader('/usr/include/sql.h'):
+			conf.env.Append(LIBS = 'odbc')
+			conf.env['CCFLAGS'].extend(['-D__ENABLE_FREETDS__'])
+		elif conf.CheckCXXHeader('/usr/local/include/sql.h'):
+			conf.env.Append(LIBPATH = '/usr/local/lib', LIBS = 'odbc')
+			conf.env['CCFLAGS'].extend(['-D__ENABLE_FREETDS__', '-I/usr/local/include'])
+		else:
+			Exit(1)
 
-# check for openssl
-if env['enable_crypt']:
-	if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
+	# check for openssl
+	if env['enable_crypt']:
+		if not conf.checkSimpleLib(['openssl'],    'openssl/conf.h', required = 0):
+			conf.env['mmscrypt'] = 0
+			env['enable_crypt'] = False
+		else:
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSCRYPT__'])
+			conf.env['mmscrypt'] = 1
+	else:
 		conf.env['mmscrypt'] = 0
 		env['enable_crypt'] = False
-	else:
-		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSCRYPT__'])
-		conf.env['mmscrypt'] = 1
-else:
-	conf.env['mmscrypt'] = 0
-	env['enable_crypt'] = False
 
-# checks required if building mmsflash
-if(env['enable_flash']):
-	if conf.checkSimpleLib(['swfdec-0.9'], 'swfdec-0.9/swfdec/swfdec.h', required = 0):
-		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSFLASH__'])
-		swfdecversion='0.9'
-	else: 
-		if conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h'):
+	# checks required if building mmsflash
+	if(env['enable_flash']):
+		if conf.checkSimpleLib(['swfdec-0.9'], 'swfdec-0.9/swfdec/swfdec.h', required = 0):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSFLASH__'])
-			swfdecversion='0.8'
+			swfdecversion='0.9'
+		else: 
+			if conf.checkSimpleLib(['swfdec-0.8'], 'swfdec-0.8/swfdec/swfdec.h'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_MMSFLASH__'])
+				swfdecversion='0.8'
 
 
-# checks required if building mmssip
-if(env['enable_sip']):
-	if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
-		conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)
-		conf.env['CCFLAGS'].extend(['-D__HAVE_MMSSIP__'])
+	# checks required if building mmssip
+	if(env['enable_sip']):
+		if conf.checkSimpleLib(['libpj'], 'pjlib.h'):
+			conf.checkSimpleLib(['uuid'], 'uuid/uuid.h', required = 0)
+			conf.env['CCFLAGS'].extend(['-D__HAVE_MMSSIP__'])
 
-	
-# checks required if building with email support
-if(env['enable_mail']):
-	conf.checkSimpleLib(['vmime'], 'vmime.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_VMIME__'])
+		
+	# checks required if building with email support
+	if(env['enable_mail']):
+		conf.checkSimpleLib(['vmime'], 'vmime.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_VMIME__'])
 
-# checks required if building with swscale support
-if(env['enable_swscale']):
-    conf.checkSimpleLib(['libswscale'], 'libswscale/swscale.h')
-    conf.env['CCFLAGS'].extend(['-D__HAVE_SWSCALE__']) 
+	# checks required if building with swscale support
+	if(env['enable_swscale']):
+		conf.checkSimpleLib(['libswscale'], 'libswscale/swscale.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_SWSCALE__']) 
 
-# checks required if building performance monitor
-if(env['enable_perfmon']):
-	conf.env['CCFLAGS'].extend(['-D__ENABLE_PERFMON__'])
+	# checks required if building performance monitor
+	if(env['enable_perfmon']):
+		conf.env['CCFLAGS'].extend(['-D__ENABLE_PERFMON__'])
 
-env2 = conf.Finish()
-if env2:
-	env = env2
-	env['LIBS'].extend(['pthread', 'z'])
-	printSummary()
-	
-if 'check' in BUILD_TARGETS:
-	Exit(0)
+	env2 = conf.Finish()
+	if env2:
+		env = env2
+		env['LIBS'].extend(['pthread', 'z'])
+		printSummary()
+		
+	if 'check' in BUILD_TARGETS:
+		Exit(0)
 
 #######################################################################
 # Creating pkg-config file                                            #
