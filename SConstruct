@@ -532,7 +532,7 @@ if('x11' in env['graphics']):
 				'-D__HAVE_XV__'])
 
 # checks for OpenGL and X11 backend
-	if conf.CheckLib('GLEW', 'glGenFramebuffers'):
+	if conf.CheckLib('GLEW', 'glGenFramebuffersEXT'):
 		conf.env['LIBS'].append('GLEW')
 		if conf.checkSimpleLib(['gl'],   'GL/gl.h'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
