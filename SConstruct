@@ -33,7 +33,7 @@ packageVersionRC    = ''
 # Package information
 packageName        = 'disko'
 packageRealName    = 'Disko Framework'
-packageDescription = 'Disko application framework for embedded devices (http://www.diskohq.org)'
+packageDescription = 'Disko application framework for embedded devices (http://www.diskohq.com)'
 packageVersion     = '%d.%d.%d%s' % (packageVersionMajor, packageVersionMinor, packageVersionMicro, packageVersionRC)
 
 #######################################################################
@@ -318,11 +318,7 @@ def checkGstDiskoVideosink(context):
 	pipe = os.popen(context.env['PKG_CONFIG'] + ' --variable=pluginsdir gstreamer-0.10')
  	gstPluginPath = pipe.read()
  	pipe.close()
-	if gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK):
-		ret = True
-	else:
-		ret = True
-		
+	ret = (gstPluginPath != "" and os.access(gstPluginPath.rstrip('\n') + '/libgstdiskovideosink.so', os.R_OK))
 	context.Result(ret)
 	return ret
 
@@ -459,7 +455,7 @@ conf = Configure(env,
                  				 'checkPKG' : checkPKG,
                  				 'checkSimpleLib' : checkSimpleLib},
                  conf_dir = 'build/.sconf_temp',
-                 log_file = '/dev/null',
+                 log_file = 'build/.config.log',
                  clean = False,
                  help  = False)
 
@@ -542,11 +538,18 @@ if('ogl' in env['graphics']):
 
 # checks required if building OpenGL ES 2.0 backend
 if('gles2' in env['graphics']):
+	if not conf.CheckLibWithHeader(['libGLESv2'], ['GLES2/gl2.h'], 'c++', 'glCreateProgram();'):
+		print 'required lib libGLESv2 not found'
+		Exit(1)
+		
 	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 	conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
+
+	if not conf.CheckLibWithHeader(['libEGL'], ['EGL/egl.h'], 'c++', 'eglQueryAPI()'):
+		print 'required lib libEGL not found'
+		Exit(1)
+		
 	conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
-	conf.env['CCFLAGS'].extend(['-I/home2/devkit/targetfs/usr/include'])
-	conf.env['CCFLAGS'].extend(['-I/home2/devkit/ti-dvsdk_omap3530-evm_4_00_00_17/omap35x_graphics_sdk_3.01.00.06/GFX_Linux_SDK/OGLES2/SDKPackage/Builds/OGLES2/Include'])
 	
 # checks required if building mmsmedia
 
