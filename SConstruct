@@ -515,11 +515,11 @@ if('fbdev' in env['graphics']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
 # checks for building OpenGL ES 2.0 backend
-	if conf.CheckLib('libGLESv2', 'glGenFramebuffers', 'GLES2/gl2.h', 'c++'):
+	if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 		conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
 		conf.env['LIBS'].append('GLESv2')
-	if conf.CheckLib('libEGL', 'eglQueryAPI', 'EGL/egl.h', 'eglQueryAPI', 'c++'):
+	if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
 		conf.env['LIBS'].append('EGL')
 
@@ -542,11 +542,11 @@ if('x11' in env['graphics']):
 			if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
 	else:
-		if conf.CheckLib('libGLESv2', 'glGenFramebuffers', 'GLES2/gl2.h', 'c++'):
+		if conf.CheckLibWithHeader(['libGLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
 			conf.env['LIBS'].append('GLESv2')
-		if conf.CheckLib('libEGL', 'eglQueryAPI', 'EGL/egl.h', 'eglQueryAPI', 'c++'):
+		if conf.CheckLibWithHeader(['libEGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
 			conf.env['LIBS'].append('EGL')
 	
