@@ -95,7 +95,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('use_sse',       'Use SSE optimization', False),
     BoolOption('enable_swscale','Build with swscale support', False),
 	BoolOption('use_dl',        'Use dynamic linking support', True),
-	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11', 'ogl', 'gles2']),
+	ListOption('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListOption('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListOption('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
 	ListOption('images',        'Set image backends', 'all', ['png', 'jpeg', 'tiff']),
@@ -122,7 +122,7 @@ else:
 	BoolVariable('use_sse',       'Use SSE optimization', False),
     BoolVariable('enable_swscale','Build with swscale support', False),
 	BoolVariable('use_dl',        'Use dynamic linking support', True),
-	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11', 'ogl', 'gles2']),
+	ListVariable('graphics',      'Set graphics backend', 'none', ['dfb', 'fbdev', 'x11']),
 	ListVariable('database',      'Set database backend', 'sqlite3', ['sqlite3', 'mysql', 'odbc']),
 	ListVariable('media',         'Set media backend', 'all', ['xine', 'gstreamer']),
 	ListVariable('images',        'Set image backends', 'all', ['png', 'jpeg', 'tiff']),
@@ -268,8 +268,6 @@ def checkOptions(context):
 		print '  \'scons graphics=dfb\'   or'
 		print '  \'scons graphics=fbdev\' or'
 		print '  \'scons graphics=x11\'   or'
-		print '  \'scons graphics=ogl\'   or'
-		print '  \'scons graphics=gles2\' or'
 		print '  \'scons graphics=all\'\n'
 		Exit(1)
 
@@ -516,6 +514,15 @@ if('dfb' in env['graphics']):
 if('fbdev' in env['graphics']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
+# checks for building OpenGL ES 2.0 backend
+	if conf.CheckLib('libGLESv2', 'glGenFramebuffers', 'GLES2/gl2.h', 'c++'):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+		conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
+		conf.env['LIBS'].append('GLESv2')
+	if conf.CheckLib('libEGL', 'eglQueryAPI', 'EGL/egl.h', 'eglQueryAPI', 'c++'):
+		conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
+		conf.env['LIBS'].append('EGL')
+
 # checks required if building X11 backend
 if('x11' in env['graphics']):
 	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
@@ -524,32 +531,24 @@ if('x11' in env['graphics']):
 	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__',
 				'-D__HAVE_XV__'])
 
-# checks required if building OpenGL backend
-if('ogl' in env['graphics']):
-	conf.checkSimpleLib(['gl'],   'GL/gl.h')
-	conf.checkSimpleLib(['glu'],  'GL/glu.h')
-	conf.checkSimpleLib(['x11'],  'X11/Xlib.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
-	conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])
-	conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
-	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
-	conf.checkSimpleLib(['GLEW'], 'GL/glew.h')
-	conf.env['LIBS'].append('GLEW')
-
-# checks required if building OpenGL ES 2.0 backend
-if('gles2' in env['graphics']):
-	if not conf.CheckLibWithHeader(['libGLESv2'], ['GLES2/gl2.h'], 'c++', 'glCreateProgram();'):
-		print 'required lib libGLESv2 not found'
-		Exit(1)
-		
-	conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
-	conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
-
-	if not conf.CheckLibWithHeader(['libEGL'], ['EGL/egl.h'], 'c++', 'eglQueryAPI()'):
-		print 'required lib libEGL not found'
-		Exit(1)
-		
-	conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
+# checks for OpenGL and X11 backend
+	if conf.CheckLib('GLEW', 'glGenFramebuffers'):
+		conf.env['LIBS'].append('GLEW')
+		if conf.checkSimpleLib(['gl'],   'GL/gl.h'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+			if conf.CheckLib('GL', 'glBlendEquation'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])	
+			conf.checkSimpleLib(['glu'],  'GL/glu.h')
+			if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
+	else:
+		if conf.CheckLib('libGLESv2', 'glGenFramebuffers', 'GLES2/gl2.h', 'c++'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
+			conf.env['LIBS'].append('GLESv2')
+		if conf.CheckLib('libEGL', 'eglQueryAPI', 'EGL/egl.h', 'eglQueryAPI', 'c++'):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
+			conf.env['LIBS'].append('EGL')
 	
 # checks required if building mmsmedia
 
