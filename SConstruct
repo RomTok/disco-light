@@ -526,10 +526,13 @@ if('fbdev' in env['graphics']):
 # checks required if building X11 backend
 if('x11' in env['graphics']):
 	conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
-	conf.checkSimpleLib(['xv'],        'X11/extensions/Xvlib.h')
 	conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
-	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__',
-				'-D__HAVE_XV__'])
+	conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
+	# TODO: actually XV doesn't depend on XRender, but for now it won't compile without it
+	if conf.checkSimpleLib(['xv'], 'X11/extensions/Xvlib.h', 0):
+		if conf.checkSimpleLib(['xrender'], 'X11/extensions/Xrender.h', 0):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_XV__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_XRENDER__'])
 
 # checks for OpenGL and X11 backend
 	if conf.CheckLib('GLEW', 'glGenFramebuffersEXT'):
