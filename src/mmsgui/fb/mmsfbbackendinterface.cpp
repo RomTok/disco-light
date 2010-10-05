@@ -168,108 +168,11 @@
 
 
 
-
-
-#ifdef __HAVE_GL2__
-#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
-		glBegin(GL_QUADS); \
-		if (dx1 != dx2 && dy1 != dy2) { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy2, dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy2, dy1)); \
-		} else if (dy1 != dy2) { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	OGL_CALC_2Y(dy2, dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy2, dy1)); \
-		} else if (dx1 != dx2) { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-		} else { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-		} \
-		glEnd();
-#endif
-
-#ifdef __HAVE_GLES2__
-
-#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
-			mmsfbgl.stretchBlit(req->source->config.surface_buffer->ogl_tex, \
-						OGL_CALC_2X_N(sx1, sx2, sw), \
-						OGL_CALC_2Y_N(sy1, sy2, sh), \
-						OGL_CALC_2X_N(sx2, sx1, sw), \
-						OGL_CALC_2Y_N(sy2, sy1, sh), \
-						sw, \
-						sh, \
-						OGL_CALC_2X(dx1, dx2), \
-						OGL_CALC_2Y(dy1, dy2), \
-						OGL_CALC_2X(dx2, dx1), \
-						OGL_CALC_2Y(dy2, dy1));
-
-#define OGL_STRETCH_BLIT_STR(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
-			mmsfbgl.stretchBlit(texture, \
-						OGL_CALC_2X_N(sx1, sx2, sw), \
-						OGL_CALC_2Y_N(sy1, sy2, sh), \
-						OGL_CALC_2X_N(sx2, sx1, sw), \
-						OGL_CALC_2Y_N(sy2, sy1, sh), \
-						sw, \
-						sh, \
-						OGL_CALC_2X(dx1, dx2), \
-						OGL_CALC_2Y(dy1, dy2), \
-						OGL_CALC_2X(dx2, dx1), \
-						OGL_CALC_2Y(dy2, dy1));
-
-
-#define OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
-			mmsfbgl.stretchBlitBuffer(req->src_planes->ptr, \
-						OGL_CALC_2X_N(sx1, sx2, sw), \
-						OGL_CALC_2Y_N(sy1, sy2, sh), \
-						OGL_CALC_2X_N(sx2, sx1, sw), \
-						OGL_CALC_2Y_N(sy2, sy1, sh), \
-						sw, \
-						sh, \
-						OGL_CALC_2X(dx1, dx2), \
-						OGL_CALC_2Y(dy1, dy2), \
-						OGL_CALC_2X(dx2, dx1), \
-						OGL_CALC_2Y(dy2, dy1));
-
-#endif
-
-
-
 #endif
 
 
 #ifdef __HAVE_GL2__
 
-/*#define INIT_OGL_FBO(surface) \
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
-	if (!surface->is_sub_surface) oglMatrix(surface->config.w, surface->config.h); \
-	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
-	glDisable(GL_SCISSOR_TEST);
-*/
 
 #define INIT_OGL_FBOXX(surface) \
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
@@ -277,73 +180,6 @@
 	else oglMatrixXX(surface->root_parent->config.w, surface->root_parent->config.h); \
 	glDisable(GL_SCISSOR_TEST);
 
-/*#define INIT_OGL_DRAWING(surface) { \
-			switch (surface->config.drawingflags) { \
-			case MMSFB_DRAW_BLEND: \
-				glEnable(GL_BLEND); \
-				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
-				break; \
-			default: \
-				glDisable(GL_BLEND); \
-				break; } \
-			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
-*/
-
-/*#define INIT_OGL_BLITTING(surface) \
-		switch (surface->config.blittingflags) { \
-		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	\
-			glEnable(GL_BLEND); \
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); \
-			break; \
-		case MMSFB_BLIT_BLEND_COLORALPHA: \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
-			glColor4ub(255, 255, 255, surface->config.color.a); \
-			break; \
-		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA: \
-			glEnable(GL_BLEND); \
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
-			glColor4ub(255, 255, 255, surface->config.color.a); \
-			break; \
-		case MMSFB_BLIT_COLORIZE: \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
-			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, 0xff); \
-			break; \
-		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_COLORIZE: \
-			glEnable(GL_BLEND); \
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
-			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, 0xff); \
-			break; \
-		case MMSFB_BLIT_BLEND_COLORALPHA + MMSFB_BLIT_COLORIZE: \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
-			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); \
-			break; \
-		case MMSFB_BLIT_BLEND_ALPHACHANNEL + MMSFB_BLIT_BLEND_COLORALPHA + MMSFB_BLIT_COLORIZE: \
-			glEnable(GL_BLEND); \
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); \
-			glColor4ub(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); \
-			break; \
-		default: \
-			glDisable(GL_BLEND); \
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); \
-			break; }*/
-
-/*#define GET_OFFS(surface) \
-		int xoff = 0; int yoff = 0; \
-		if (surface->is_sub_surface) { \
-			xoff = surface->sub_surface_xoff; \
-			yoff = surface->sub_surface_yoff; }*/
-
-/*#define GET_OFFS_SRC(surface) \
-		int src_xoff = 0; int src_yoff = 0; \
-		if (surface->is_sub_surface) { \
-			src_xoff = surface->sub_surface_xoff; \
-			src_yoff = surface->sub_surface_yoff; }*/
-
-//#define OGL_SCISSOR(X, Y, W, H) glScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
 
 /*
 #define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2f((float)(x) + 0.5, (float)(BEI_SURFACE_BOTTOM - (y)) + 0.5); glEnd(); }
@@ -406,47 +242,6 @@
 			glVertex2f(OGL_CALC_3X(x1, x2, x3), OGL_CALC_3Y(y1, y2, y3)); \
 		glEnd(); }
 
-/*
-#define OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2) \
-		glBegin(GL_QUADS); \
-		if (dx1 != dx2 && dy1 != dy2) { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), OGL_CALC_2Y(dy2, dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), OGL_CALC_2Y(dy2, dy1)); \
-		} else if (dy1 != dy2) { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	OGL_CALC_2Y(dy1, dy2)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	OGL_CALC_2Y(dy2, dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1),		OGL_CALC_2Y(dy2, dy1)); \
-		} else if (dx1 != dx2) { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx2, dx1), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f(OGL_CALC_2X(dx1, dx2), BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-		} else { \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy1, sy2, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	BEI_SURFACE_BOTTOM_F - (float)(dy1)); \
-			glTexCoord2f(OGL_CALC_2X_N(sx2, sx1, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1) + 0.99,	BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-			glTexCoord2f(OGL_CALC_2X_N(sx1, sx2, sw), OGL_CALC_2Y_N(sy2, sy1, sh)); \
-				glVertex2f((float)(dx1),		BEI_SURFACE_BOTTOM_F - (float)(dy1) + 0.99); \
-		} \
-		glEnd();*/
 
 #endif
 
@@ -921,45 +716,6 @@ void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *sou
 }
 
 void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
-/*#ifdef  __HAVE_GL2__
-	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBO(req->surface);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, req->source->config.surface_buffer->ogl_tex);
-
-	// setup blitting
-	INIT_OGL_BLITTING(req->surface);
-
-	// get subsurface offsets
-	GET_OFFS(req->surface);
-	GET_OFFS_SRC(req->source);
-
-	// set the clip to ogl
-	MMSFBRectangle crect;
-	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
-		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
-
-		// get source region
-		int sx1 = req->src_rect.x + src_xoff;
-		int sy1 = req->src_rect.y + src_yoff;
-		int sx2 = req->src_rect.x + req->src_rect.w - 1 + src_xoff;
-		int sy2 = req->src_rect.y + req->src_rect.h - 1 + src_yoff;
-
-		// get destination region
-		int dx1 = req->dst_rect.x + xoff;
-		int dy1 = req->dst_rect.y + yoff;
-		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
-		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
-
-		// blit source texture to the destination
-		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
-	}
-#endif*/
-
-
-
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
@@ -992,7 +748,9 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
 
 		// blit source texture to the destination
-		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
+		mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
+					sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h,
+					dx1, dy1, dx2, dy2, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
 	}
 #endif
 }
@@ -1029,100 +787,7 @@ void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfac
 }
 
 void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req) {
-#ifdef  __HAVE_GL2__
-	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBO(req->surface);
-	glEnable(GL_TEXTURE_2D);
-
-	// allocate a texture name
-	GLuint texture;
-	glGenTextures( 1, &texture );
-    glBindTexture (GL_TEXTURE_2D, texture);
-    // select modulate to mix texture with color for shading
-    //glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    // when texture area is small, bilinear filter the closest mipmap
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                     GL_LINEAR_MIPMAP_NEAREST );
-    // when texture area is large, bilinear filter the original
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-    // the texture wraps over at the edges (repeat)
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(GL_TEXTURE_2D,
-	 	0,
-	 	GL_RGBA,
-	 	req->src_width,
-	 	req->src_height,
-	 	0,
-	 	GL_BGRA,
-	 	GL_UNSIGNED_BYTE,
-	 	req->src_planes->ptr);
-
-#ifdef sdsfsfs
-unsigned char pix[8*8];
-memset(pix, 0, sizeof(pix));
-pix[0]=0xff;
-pix[9]=0x90;
-pix[18]=0x40;
-glTexImage2D(GL_TEXTURE_2D,
-	0,
-	GL_ALPHA,
-	8,
-	8,
-	0,
-	GL_ALPHA,
-	GL_UNSIGNED_BYTE,
-	pix);
-#endif
-
-	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	// setup blitting
-	INIT_OGL_BLITTING(req->surface);
-
-//glDisable(GL_BLEND);
-//glColor4ub(255, 255, 0, 255);
-
-	// get subsurface offsets
-	GET_OFFS(req->surface);
-
-	// set the clip to ogl
-	MMSFBRectangle crect;
-	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
-		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
-
-		// get source region
-		int sx1 = req->src_rect.x;
-		int sy1 = req->src_rect.y;
-		int sx2 = req->src_rect.x + req->src_rect.w - 1;
-		int sy2 = req->src_rect.y + req->src_rect.h - 1;
-
-		// get destination region
-		int dx1 = req->dst_rect.x + xoff;
-		int dy1 = req->dst_rect.y + yoff;
-		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
-		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
-
-		// blit source texture to the destination
-		// note: the source has to be flipped vertical because the difference between 2D input and OGL
-		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->src_width, req->src_height, dx1, dy2, dx2, dy1);
-	}
-
-	// all is fine
-	glDisable(GL_TEXTURE_2D);
-	glDeleteTextures(1, &texture);
-
-
-#endif
-
-
-
-#ifdef  __HAVE_GLES2__
+#ifdef  __HAVE_OPENGL__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
 
@@ -1152,9 +817,10 @@ glTexImage2D(GL_TEXTURE_2D,
 
 		// blit source texture to the destination
 		// note: the source has to be flipped vertical because the difference between 2D input and OGL
-		OGL_STRETCH_BLIT_BUFFER(sx1, sy1, sx2, sy2, req->src_width, req->src_height, dx1, dy2, dx2, dy1);
+		mmsfbgl.stretchBlitBufferi(req->src_planes->ptr,
+					sx1, sy1, sx2, sy2, req->src_width, req->src_height,
+					dx1, dy2, dx2, dy1, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
 	}
-
 #endif
 }
 
@@ -1170,28 +836,18 @@ void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int 
 }
 
 void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
-#ifdef  __HAVE_GL2__
+#ifdef  __HAVE_OPENGL__
 
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
-	glEnable(GL_TEXTURE_2D);
 
-	// allocate a texture name
+	// alloc a texture
 	GLuint texture;
-	glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+	mmsfbgl.genTexture(&texture);
 
-    // select modulate to mix texture with color for shading
-//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND );
-//    glTexEnvf( GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE );
-//    glTexEnvf( GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1.0 );
-//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
+#endif
 
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifdef  __HAVE_GL2__
 
 	// setup blitting
     glEnable(GL_BLEND);
@@ -1242,19 +898,13 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 			    // specify two-dimensional glyph texture
 			    // we use pitch instead of width here, because we need a width which is divisible by 4!!!
-				glTexImage2D(GL_TEXTURE_2D,
-					0,
-					GL_ALPHA,
-					src_pitch_pix,
-					src_h,
-					0,
-					GL_ALPHA,
-					GL_UNSIGNED_BYTE,
-					src);
+				mmsfbgl.initTexture2D(texture, GL_ALPHA, src, GL_ALPHA, src_pitch_pix, src_h);
 
 				// blit glyph texture to the destination
 				// note: the source has to be flipped vertical because the difference between 2D input and OGL
-				OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, src_pitch_pix, src_h, dx1, dy2, dx2, dy1);
+				mmsfbgl.stretchBliti(texture,
+							sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
+							dx1, dy2, dx2, dy1, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
 			}
 
 			// prepare for next loop
@@ -1262,22 +912,11 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 		}
 	}}
 
-	// all is fine
-	glDisable(GL_TEXTURE_2D);
-	glDeleteTextures(1, &texture);
+	mmsfbgl.deleteTexture(texture);
 
 #endif
 
 #ifdef  __HAVE_GLES2__
-
-	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBO(req->surface);
-
-
-	// alloc a texture
-	GLuint texture;
-	mmsfbgl.genTexture2D(&texture);
-
 
 	//TODO: blitting GL_ALPHA textures, new shader???
 	mmsfbgl.enableBlend();
@@ -1330,11 +969,13 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 			    // specify two-dimensional glyph texture
 			    // we use pitch instead of width here, because we need a width which is divisible by 4!!!
-				mmsfbgl.loadTexture2D(texture, GL_ALPHA, src, GL_ALPHA, src_pitch_pix, src_h);
+				mmsfbgl.initTexture2D(texture, GL_ALPHA, src, GL_ALPHA, src_pitch_pix, src_h);
 
 				// blit glyph texture to the destination
 				// note: the source has to be flipped vertical because the difference between 2D input and OGL
-				OGL_STRETCH_BLIT_STR(sx1, sy1, sx2, sy2, src_pitch_pix, src_h, dx1, dy2, dx2, dy1);
+				mmsfbgl.stretchBliti(texture,
+							sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
+							dx1, dy2, dx2, dy1, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
 			}
 
 			// prepare for next loop

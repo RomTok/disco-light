@@ -46,6 +46,18 @@
 	printf("  %s = %x\n", str, value);
 
 
+#define OGL_CALC_2X(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
+#define OGL_CALC_2Y(v1, v2, height) OGL_CALC_2Y_H(v1, v2, height)
+#define OGL_CALC_2Y_H(v1, v2, height) (((v1)<(v2)) ? (float)(height-1) - (float)(v1) + 0.99 : (float)(height-1) - (float)(v1))
+
+#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_2X(v1, v2) / (width))
+#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_2Y_H(v1, v2, height) / (height))
+
+#define BEI_SURFACE_BOTTOM(height)		(height - 1)
+#define BEI_SURFACE_BOTTOM_F(height)	(float)BEI_SURFACE_BOTTOM(height)
+
+
+
 MMSFBGL::MMSFBGL() {
 	this->initialized = false;
 }
@@ -681,18 +693,18 @@ bool MMSFBGL::swap() {
 #endif
 }
 
-
+//genTexture(GLuint *texture);
+//genFrameBuffer(GLuint *fbo);
+//genRenderBuffer(GLuint *rbo);
+//initTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
+//attachTexture2FrameBuffer(GLuint fbo, GLuint texture);
+//attachRenderBufferToFrameBuffer(GLuint fbo, GLuint rbo, int sw, int sh);
 bool MMSFBGL::alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb) {
 
 	INITCHECK;
 
-	glGenTextures(1, ogl_tex);
-	glBindTexture(GL_TEXTURE_2D, *ogl_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	genTexture(ogl_tex);
+	initTexture2D(*ogl_tex, GL_RGBA, NULL, GL_RGBA, width, height);
 	// ---
 
 //remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
@@ -1270,15 +1282,32 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
-							float dx1, float dy1, float dx2, float dy2) {
+
+bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
+										   float dx1, float dy1, float dx2, float dy2) {
 
 	INITCHECK;
 
 	// bind source texture
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, src_tex);
+	bindTexture2D(src_tex);
 
+#ifdef __HAVE_GL2__
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(sx1, sy1);
+			glVertex2f(dx1, dy1);
+		glTexCoord2f(sx2, sy1);
+			glVertex2f(dx2, dy1);
+		glTexCoord2f(sx2, sy2);
+			glVertex2f(dx2, dy2);
+		glTexCoord2f(sx1, sy2);
+			glVertex2f(dx1, dy2);
+	glEnd();
+
+#endif
+
+#ifdef __HAVE_GLES2__
 
 	GLint  texCoordLoc;
 	GLint samplerLoc;
@@ -1316,25 +1345,66 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
 
+#endif
+
 	return true;
 }
 
-bool MMSFBGL::genTexture2D(GLuint *texture) {
+
+bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
+							int dx1, int dy1, int dx2, int dy2, int dw, int dh) {
+
+	if (dx1 != dx2 && dy1 != dy2) {
+		return stretchBlit(src_tex,
+							OGL_CALC_2X_N(sx1, sx2, sw),
+							OGL_CALC_2Y_N(sy1, sy2, sh),
+							OGL_CALC_2X_N(sx2, sx1, sw),
+							OGL_CALC_2Y_N(sy2, sy1, sh),
+							OGL_CALC_2X(dx1, dx2),
+							OGL_CALC_2Y(dy1, dy2, dh),
+							OGL_CALC_2X(dx2, dx1),
+							OGL_CALC_2Y(dy2, dy1, dh));
+	} else if (dy1 != dy2) {
+		return stretchBlit(src_tex,
+							OGL_CALC_2X_N(sx1, sx2, sw),
+							OGL_CALC_2Y_N(sy1, sy2, sh),
+							OGL_CALC_2X_N(sx2, sx1, sw),
+							OGL_CALC_2Y_N(sy2, sy1, sh),
+							(float)(dx1),
+							OGL_CALC_2Y(dy1, dy2, dh),
+							(float)(dx1) + 0.99,
+							OGL_CALC_2Y(dy2, dy1, dh));
+	} else if (dx1 != dx2) {
+		return stretchBlit(src_tex,
+							OGL_CALC_2X_N(sx1, sx2, sw),
+							OGL_CALC_2Y_N(sy1, sy2, sh),
+							OGL_CALC_2X_N(sx2, sx1, sw),
+							OGL_CALC_2Y_N(sy2, sy1, sh),
+							OGL_CALC_2X(dx1, dx2),
+							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1),
+							OGL_CALC_2X(dx2, dx1),
+							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1) + 0.99);
+	} else {
+		return stretchBlit(src_tex,
+							OGL_CALC_2X_N(sx1, sx2, sw),
+							OGL_CALC_2Y_N(sy1, sy2, sh),
+							OGL_CALC_2X_N(sx2, sx1, sw),
+							OGL_CALC_2Y_N(sy2, sy1, sh),
+							(float)(dx1),
+							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1),
+							(float)(dx1) + 0.99,
+							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1) + 0.99);
+	}
+}
+
+
+
+bool MMSFBGL::genTexture(GLuint *texture) {
 
 	INITCHECK;
 
 	// allocate a texture name
 	glGenTextures(1, texture);
-    glBindTexture(GL_TEXTURE_2D, *texture);
-
-    // when texture area is small, bilinear filter the closest mipmap
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // when texture area is large, bilinear filter the original
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // the texture wraps over at the edges (repeat)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return true;
 }
@@ -1348,11 +1418,32 @@ bool MMSFBGL::deleteTexture(GLuint texture) {
 	return true;
 }
 
-bool MMSFBGL::loadTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh) {
+bool MMSFBGL::bindTexture2D(GLuint texture) {
 
 	INITCHECK;
 
-	// initializing texture from buffer
+	// activate texture
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // set min and max filter
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // the texture wraps over at the edges (repeat)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    return true;
+}
+
+bool MMSFBGL::initTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh) {
+
+	INITCHECK;
+
+	// activate texture
+	bindTexture2D(texture);
+
+    // initializing texture from buffer
 	glTexImage2D(GL_TEXTURE_2D,
 	 	0,
 	 	texture_format,
@@ -1367,18 +1458,36 @@ bool MMSFBGL::loadTexture2D(GLuint texture, GLenum texture_format, void *buffer,
 }
 
 bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
-								float dx1, float dy1, float dx2, float dy2) {
+												float dx1, float dy1, float dx2, float dy2) {
 
 	INITCHECK;
 
 	// alloc and load texture from buffer
 	GLuint texture;
-	genTexture2D(&texture);
-	loadTexture2D(texture, GL_RGBA, buffer, GL_RGBA, sw, sh);
+	genTexture(&texture);
+	initTexture2D(texture, GL_RGBA, buffer, GL_RGBA, sw, sh);
 
 	// blit texture to active FBO
-	stretchBlit(texture, sx1, sy1, sx2, sy2, sw, sh,
-				dx1, dy1, dx2, dy2);
+	stretchBlit(texture, sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2);
+
+	// delete texture
+	deleteTexture(texture);
+
+	return true;
+}
+
+bool MMSFBGL::stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
+												int dx1, int dy1, int dx2, int dy2, int dw, int dh) {
+
+	INITCHECK;
+
+	// alloc and load texture from buffer
+	GLuint texture;
+	genTexture(&texture);
+	initTexture2D(texture, GL_RGBA, buffer, GL_RGBA, sw, sh);
+
+	// blit texture to active FBO
+	stretchBliti(texture, sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2, dw, dh);
 
 	// delete texture
 	deleteTexture(texture);
