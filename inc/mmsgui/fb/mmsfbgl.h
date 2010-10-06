@@ -156,6 +156,7 @@ class MMSFBGL {
         bool deleteTexture(GLuint tex);
         bool bindTexture2D(GLuint tex);
         bool initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
+        bool initSubTexture2D(GLuint tex, void *buffer, GLenum buffer_format, int sw, int sh, int dx, int dy);
 
         bool genFrameBuffer(GLuint *fbo);
         bool deleteFrameBuffer(GLuint fbo);
@@ -221,7 +222,7 @@ class MMSFBGL {
         bool stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
 										   int dx1, int dy1, int dx2, int dy2, int dw, int dh);
 
-        bool blitBuffer2Texture(GLuint dst_tex, void *buffer, int sw, int sh);
+        bool blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int sw, int sh);
 };
 
 #endif

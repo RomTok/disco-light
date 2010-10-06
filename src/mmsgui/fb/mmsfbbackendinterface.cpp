@@ -861,6 +861,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 		&&(req->surface->config.blittingflags == MMSFB_BLIT_NOFX)) {
 		// FBO and it's texture is not initialized and we only have to COPY the buffer in a texture
 		mmsfbgl.blitBuffer2Texture(req->surface->config.surface_buffer->ogl_tex,
+								   (!req->surface->config.surface_buffer->ogl_tex_initialized),
 								   req->src_planes->ptr, req->src_width, req->src_height);
 
 		// now we have a texture allocated

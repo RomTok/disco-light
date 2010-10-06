@@ -755,6 +755,28 @@ bool MMSFBGL::initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLe
 }
 
 
+bool MMSFBGL::initSubTexture2D(GLuint tex, void *buffer, GLenum buffer_format, int sw, int sh, int dx, int dy) {
+
+	INITCHECK;
+
+	// activate texture
+	bindTexture2D(tex);
+
+	// overwrite existing texture memory
+	glTexSubImage2D(GL_TEXTURE_2D,
+					0,
+					dx,
+					dy,
+					sw,
+					sh,
+					buffer_format,
+					GL_UNSIGNED_BYTE,
+					buffer);
+
+	return true;
+}
+
+
 bool MMSFBGL::genFrameBuffer(GLuint *fbo) {
 
 	INITCHECK;
@@ -1610,12 +1632,19 @@ bool MMSFBGL::stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy
 }
 
 
-bool MMSFBGL::blitBuffer2Texture(GLuint dst_tex, void *buffer, int sw, int sh) {
+bool MMSFBGL::blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int sw, int sh) {
 
 	INITCHECK;
 
 	// load texture from buffer
-	return initTexture2D(dst_tex, GL_RGBA, buffer, GL_RGBA, sw, sh);
+	if (realloc) {
+		// (re-)allocate texture memory
+		return initTexture2D(dst_tex, GL_RGBA, buffer, GL_RGBA, sw, sh);
+	}
+	else {
+		// overwrite existing texture memory
+		return initSubTexture2D(dst_tex, buffer, GL_RGBA, sw, sh, 0, 0);
+	}
 }
 
 
