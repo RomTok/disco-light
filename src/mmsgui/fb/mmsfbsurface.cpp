@@ -143,6 +143,7 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 #endif
 
 
+
 static int mm=0;
 
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
@@ -159,18 +160,9 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 #ifdef __HAVE_XLIB__
     this->scaler = NULL;
 #endif
-    this->config.surface_buffer = new MMSFBSurfaceBuffer;
-	this->config.surface_buffer->numbuffers = 0;
-	this->config.surface_buffer->external_buffer = false;
-#ifdef __HAVE_FBDEV__
-    this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
-#ifdef __HAVE_XLIB__
-    this->config.surface_buffer->x_image[0] = NULL;
-#endif
-#ifdef __HAVE_XV__
-    this->config.surface_buffer->xv_image[0] = NULL;
-#endif
+
+    // create the surfacebuffer where additional infos are stored
+    createSurfaceBuffer();
 
     if (this->allocmethod == MMSFBSurfaceAllocMethod_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -290,33 +282,8 @@ MMSFBSurface::MMSFBSurface(IDirectFBSurface *dfb_surface, MMSFBSurface *parent,
     this->scaler = NULL;
 #endif
 
-    this->config.surface_buffer = new MMSFBSurfaceBuffer;
-
-   if (this->config.surface_buffer) {
-	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
-	   this->config.surface_buffer->numbuffers = 0;
-	   this->config.surface_buffer->external_buffer = false;
-   }
-#ifdef __HAVE_FBDEV__
-    if (this->config.surface_buffer)
-    	this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
-
-#ifdef __HAVE_XLIB__
-    if (this->config.surface_buffer) {
-    	this->config.surface_buffer->x_image[0] = NULL;
-    }
-#endif
-
-#ifdef __HAVE_XV__
-    if (this->config.surface_buffer) {
-    	this->config.surface_buffer->xv_image[0] = NULL;
-    }
-#endif
-
-#ifdef  __HAVE_OPENGL__
-	this->config.surface_buffer->ogl_fbo = 0;
-#endif
+    // create the surfacebuffer where additional infos are stored
+    createSurfaceBuffer();
 
 	init(MMSFBSurfaceAllocatedBy_dfb, parent, sub_surface_rect);
 }
@@ -334,39 +301,15 @@ MMSFBSurface::MMSFBSurface(MMSFBSurface *parent, MMSFBRectangle *sub_surface_rec
     this->scaler = NULL;
 #endif
 
-	if ((!parent)||(this->allocmethod == MMSFBSurfaceAllocMethod_dfb))
-    	this->config.surface_buffer = new MMSFBSurfaceBuffer;
-    else
+	if ((!parent)||(this->allocmethod == MMSFBSurfaceAllocMethod_dfb)) {
+	    // create the surfacebuffer where additional infos are stored
+	    createSurfaceBuffer();
+	}
+    else {
+    	// != DFB and parent set
     	this->config.surface_buffer = NULL;
-
-   if (this->config.surface_buffer) {
-	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
-	   this->config.surface_buffer->numbuffers = 0;
-	   this->config.surface_buffer->external_buffer = false;
-   }
-
-#ifdef __HAVE_FBDEV__
-    if (this->config.surface_buffer)
-    	this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
-
-#ifdef __HAVE_XLIB__
-    if (this->config.surface_buffer) {
-    	this->config.surface_buffer->x_image[0] = NULL;
     }
-#endif
 
-#ifdef __HAVE_XV__
-    if (this->config.surface_buffer) {
-    	this->config.surface_buffer->xv_image[0] = NULL;
-    }
-#endif
-
-#ifdef  __HAVE_OPENGL__
-    if (this->config.surface_buffer) {
-    	this->config.surface_buffer->ogl_fbo = 0;
-    }
-#endif
 	this->layer = NULL;
 
 	init(parent->allocated_by, parent, sub_surface_rect);
@@ -389,8 +332,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
     this->scaler = NULL;
 #endif
 
+    // create the surfacebuffer where additional infos are stored
+    createSurfaceBuffer();
+
     // setup surface attributes
-	this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 	this->config.w = sb->sbw = w;
 	this->config.h = sb->sbh = h;
@@ -425,22 +370,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		sb->currbuffer_write = 1;
 	sb->external_buffer = true;
 
-#ifdef __HAVE_FBDEV__
-    this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
-
-#ifdef __HAVE_XLIB__
-	this->config.surface_buffer->x_image[0] = NULL;
-#endif
-
-#ifdef __HAVE_XV__
-	this->config.surface_buffer->xv_image[0] = NULL;
-#endif
-
-#ifdef  __HAVE_OPENGL__
-	this->config.surface_buffer->ogl_fbo = 0;
-#endif
-
 	init(MMSFBSurfaceAllocatedBy_malloc, NULL, NULL);
 }
 
@@ -463,9 +392,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
     this->surface_invert_lock = false;
     this->scaler = NULL;
 
+    // create the surfacebuffer where additional infos are stored
+    createSurfaceBuffer();
 
     // setup surface attributes
-	this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 	this->config.w = sb->sbw = w;
 	this->config.h = sb->sbh = h;
@@ -490,16 +420,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, Xv
 	sb->currbuffer_write = 1;
 	sb->external_buffer = true;
 
-	this->config.surface_buffer->x_image[0] = NULL;
-
-#ifdef __HAVE_FBDEV__
-    this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
-
-#ifdef  __HAVE_OPENGL__
-	this->config.surface_buffer->ogl_fbo = 0;
-#endif
-
 	init(MMSFBSurfaceAllocatedBy_xvimage, NULL, NULL);
 }
 #endif
@@ -518,8 +438,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
     this->surface_invert_lock = false;
 	this->scaler = scaler;
 
+    // create the surfacebuffer where additional infos are stored
+    createSurfaceBuffer();
+
     // setup surface attributes
-	this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 	this->config.w = sb->sbw = w;
 	this->config.h = sb->sbh = h;
@@ -563,18 +485,6 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, XI
 		sb->external_buffer = true;
 	}
 
-#ifdef __HAVE_XV__
-	this->config.surface_buffer->xv_image[0] = NULL;
-#endif
-
-#ifdef __HAVE_FBDEV__
-    this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
-
-#ifdef  __HAVE_OPENGL__
-	this->config.surface_buffer->ogl_fbo = 0;
-#endif
-
 	init(MMSFBSurfaceAllocatedBy_ximage, NULL, NULL);
 }
 #endif
@@ -596,9 +506,10 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by) {
 	if (allocated_by != MMSFBSurfaceAllocatedBy_ogl)
 		return;
 
+    // create the surfacebuffer where additional infos are stored
+    createSurfaceBuffer();
 
     // setup surface attributes
-	this->config.surface_buffer = new MMSFBSurfaceBuffer;
 	this->config.w = this->config.surface_buffer->sbw = w;
 	this->config.h = this->config.surface_buffer->sbh = h;
 
@@ -606,20 +517,11 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by) {
 	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
 	   this->config.surface_buffer->numbuffers = 0;
 	   this->config.surface_buffer->external_buffer = false;
+
+	   // this surface is the primary opengl framebuffer
 	   this->config.surface_buffer->ogl_fbo = 0;
+	   this->config.surface_buffer->ogl_fbo_initialized = true;
 	}
-
-#ifdef __HAVE_XLIB__
-	this->config.surface_buffer->x_image[0] = NULL;
-#endif
-
-#ifdef __HAVE_XV__
-	this->config.surface_buffer->xv_image[0] = NULL;
-#endif
-
-#ifdef __HAVE_FBDEV__
-    this->config.surface_buffer->mmsfbdev_surface = NULL;
-#endif
 
 	init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
 }
@@ -657,6 +559,7 @@ MMSFBSurface::~MMSFBSurface() {
 		}
 	}
 }
+
 
 
 void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
@@ -740,6 +643,37 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 bool MMSFBSurface::isInitialized() {
 	return this->initialized;
 }
+
+
+void MMSFBSurface::createSurfaceBuffer() {
+
+	// create the surfacebuffer where additional infos are stored
+	this->config.surface_buffer = new MMSFBSurfaceBuffer;
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+    if (!sb) return;
+
+	memset(sb->buffers, 0, sizeof(sb->buffers));
+	sb->numbuffers = 0;
+	sb->external_buffer = false;
+#ifdef __HAVE_FBDEV__
+	sb->mmsfbdev_surface = NULL;
+#endif
+#ifdef __HAVE_XLIB__
+	sb->x_image[0] = NULL;
+#endif
+#ifdef __HAVE_XV__
+	sb->xv_image[0] = NULL;
+#endif
+#ifdef __HAVE_OPENGL__
+	sb->ogl_fbo = 0;
+	sb->ogl_tex = 0;
+	sb->ogl_rbo = 0;
+	sb->ogl_fbo_initialized = false;
+	sb->ogl_tex_initialized = false;
+	sb->ogl_rbo_initialized = false;
+#endif
+}
+
 
 void MMSFBSurface::freeSurfaceBuffer() {
 

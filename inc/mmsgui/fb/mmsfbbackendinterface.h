@@ -170,6 +170,7 @@ private:
 	float			matrix_ratio;
 
 	void oglMatrix(GLuint w, GLuint h);
+	void oglAlloc(MMSFBSurface *surface);
 
 #endif
 

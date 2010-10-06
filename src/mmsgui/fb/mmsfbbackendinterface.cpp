@@ -61,6 +61,7 @@
 #ifdef __HAVE_OPENGL__
 
 #define INIT_OGL_FBO(surface) \
+	oglAlloc(surface); \
 	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo); \
 	if (!surface->is_sub_surface) oglMatrix(surface->config.w, surface->config.h); \
 	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
@@ -369,6 +370,61 @@ void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
 }
 #endif
 
+
+#ifdef __HAVE_OPENGL__
+void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface) {
+	MMSFBSurfaceBuffer *sb = surface->config.surface_buffer;
+
+#ifdef __HAVE_GL2__
+	if (!sb->ogl_fbo_initialized) {
+		//TODO: GL2 needs always a renderbuffer???
+		if (!surface->config.surface_buffer->ogl_tex_initialized) {
+			// texture is also not initialized
+			mmsfbgl.allocFBOandRBO(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rbo, surface->config.w, surface->config.h);
+		}
+		else {
+			// texture is already initialized, so we can use it for FBO
+			mmsfbgl.attachTexture2FrameBuffer(sb->ogl_fbo, sb->ogl_tex);
+			mmsfbgl.attachRenderBuffer2FrameBuffer(sb->ogl_fbo, sb->ogl_rbo, surface->config.w, surface->config.h);
+		}
+
+		sb->ogl_fbo_initialized = true;
+		sb->ogl_tex_initialized = true;
+		sb->ogl_rbo_initialized = true;
+
+
+		static int iiij=0;
+		printf("alloc cnt %d\n", iiij++);
+
+	}
+#endif
+
+#ifdef __HAVE_GLES2__
+	if (!sb->ogl_fbo_initialized) {
+		// allocate a texture (color buffer) and bind it to a new FBO
+		if (!surface->config.surface_buffer->ogl_tex_initialized) {
+			// texture is also not initialized
+			mmsfbgl.allocFBO(sb->ogl_fbo, sb->ogl_tex, surface->config.w, surface->config.h);
+		}
+		else {
+			// texture is already initialized, so we can use it for FBO
+			mmsfbgl.attachTexture2FrameBuffer(sb->ogl_fbo, sb->ogl_tex);
+		}
+		sb->ogl_fbo_initialized = true;
+		sb->ogl_tex_initialized = true;
+
+		// per default we do NOT attach a renderbuffer to the FBO (not needed for 2D, reduce memory foot print)
+		sb->ogl_rbo_initialized = false;
+
+
+		static int iiij=0;
+		printf("alloc cnt %d\n", iiij++);
+
+	}
+#endif
+}
+#endif
+
 void MMSFBBackEndInterface::swap() {
 	BEI_SWAP req;
 	req.type	= BEI_REQUEST_TYPE_SWAP;
@@ -392,8 +448,17 @@ void MMSFBBackEndInterface::alloc(MMSFBSurface *surface) {
 
 void MMSFBBackEndInterface::processAlloc(BEI_ALLOC *req) {
 #ifdef  __HAVE_OPENGL__
+
 	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
-	mmsfbgl.alloc(req->surface->config.w, req->surface->config.h, &sb->ogl_fbo, &sb->ogl_tex, &sb->ogl_rb);
+
+	// generate id's for texture, fbo and rbo - but do NOT initialize it
+	mmsfbgl.genTexture(&sb->ogl_tex);
+	mmsfbgl.genFrameBuffer(&sb->ogl_fbo);
+	mmsfbgl.genRenderBuffer(&sb->ogl_rbo);
+	sb->ogl_fbo_initialized = false;
+	sb->ogl_tex_initialized = false;
+	sb->ogl_rbo_initialized = false;
+
 #endif
 }
 
@@ -409,7 +474,7 @@ void MMSFBBackEndInterface::free(MMSFBSurface *surface) {
 void MMSFBBackEndInterface::processFree(BEI_FREE *req) {
 #ifdef  __HAVE_OPENGL__
 	MMSFBSurfaceBuffer *sb = req->surface->config.surface_buffer;
-	mmsfbgl.free(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rb);
+	mmsfbgl.freeFBO(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rbo);
 #endif
 }
 
@@ -719,8 +784,6 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, req->source->config.surface_buffer->ogl_tex);
 
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface);
@@ -747,10 +810,15 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		int dx2 = req->dst_rect.x + req->dst_rect.w - 1 + xoff;
 		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
 
-		// blit source texture to the destination
-		mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
-					sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h,
-					dx1, dy1, dx2, dy2, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
+		if (req->source->config.surface_buffer->ogl_tex_initialized) {
+			// blit source texture to the destination
+			mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
+						sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h,
+						dx1, dy1, dx2, dy2, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
+		}
+		else {
+			printf("skip blitting from texture which is not initialized\n");
+		}
 	}
 #endif
 }
@@ -788,6 +856,22 @@ void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfac
 
 void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req) {
 #ifdef  __HAVE_OPENGL__
+
+	if ((!req->surface->config.surface_buffer->ogl_fbo_initialized)
+		&&(req->surface->config.blittingflags == MMSFB_BLIT_NOFX)) {
+		// FBO and it's texture is not initialized and we only have to COPY the buffer in a texture
+		mmsfbgl.blitBuffer2Texture(req->surface->config.surface_buffer->ogl_tex,
+								   req->src_planes->ptr, req->src_width, req->src_height);
+
+		// now we have a texture allocated
+		req->surface->config.surface_buffer->ogl_tex_initialized = true;
+
+		static int iiij=0;
+		printf("blit to texture cnt %d\n", iiij++);
+
+		return;
+	}
+
 	// lock destination fbo and bind source texture to it
 	INIT_OGL_FBO(req->surface);
 
@@ -1060,6 +1144,7 @@ glDepthMask(GL_TRUE);
 //glDisable(GL_BLEND);
 glClearColor(0.0, 0.0, 0.0, 0.0);
 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+printf("ffffffffffffff\n");
 glEnable(GL_DEPTH_TEST);
 glDepthRange(1,-1);
 

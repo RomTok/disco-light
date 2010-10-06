@@ -113,12 +113,18 @@ typedef struct {
     XvImage	*xv_image[MMSFBSurfaceMaxBuffers];
 #endif
 #ifdef __HAVE_OPENGL__
-	//! opengl framebuffer object (FBO), 0 means primary display buffer connected to the x-window
+	//! opengl framebuffer object (FBO), 0 means primary display buffer connected to the x-window or the fbdev
 	GLuint	ogl_fbo;
-	//! opengl texture attached to the FBO
+	//! opengl texture attached to the FBO (this is the color buffer where normal 2D surface is stored)
 	GLuint	ogl_tex;
-	//! opengl renderbuffer attached to the FBO
-	GLuint	ogl_rb;
+	//! opengl renderbuffer attached to the FBO (this is the depth buffer needed for 3D rendering)
+	GLuint	ogl_rbo;
+	//! FBO initialized?
+	bool ogl_fbo_initialized;
+	//! texture initialized?
+	bool ogl_tex_initialized;
+	//! RBO initialized?
+	bool ogl_rbo_initialized;
 #endif
 } MMSFBSurfaceBuffer;
 
@@ -192,6 +198,7 @@ class MMSFBSurface {
         // how surface memory should be allocated?
         static MMSFBSurfaceAllocMethod	allocmethod;
 
+        void createSurfaceBuffer();
         void freeSurfaceBuffer();
 
         void deleteSubSurface(MMSFBSurface *surface);

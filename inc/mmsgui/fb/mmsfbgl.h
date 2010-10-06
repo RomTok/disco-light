@@ -151,8 +151,24 @@ class MMSFBGL {
     	bool terminate();
     	bool getResolution(int *w, int *h);
     	bool swap();
-    	bool alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb);
-    	bool free(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb);
+
+        bool genTexture(GLuint *tex);
+        bool deleteTexture(GLuint tex);
+        bool bindTexture2D(GLuint tex);
+        bool initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
+
+        bool genFrameBuffer(GLuint *fbo);
+        bool deleteFrameBuffer(GLuint fbo);
+        bool genRenderBuffer(GLuint *rbo);
+        bool deleteRenderBuffer(GLuint rbo);
+        bool attachTexture2FrameBuffer(GLuint fbo, GLuint tex);
+        bool attachRenderBuffer2FrameBuffer(GLuint fbo, GLuint rbo, int width, int height);
+
+        bool allocTexture(GLuint tex, int width, int height);
+        bool allocFBO(GLuint fbo, GLuint tex, int width, int height);
+        bool allocFBOandRBO(GLuint fbo, GLuint tex, GLuint rbo, int width, int height);
+    	bool freeFBO(GLuint fbo, GLuint tex, GLuint rbo = 0);
+
     	bool bindFrameBuffer(GLuint ogl_fbo);
     	bool setScissor(GLint x, GLint y, GLsizei width, GLsizei height);
     	bool disableScissor();
@@ -198,15 +214,14 @@ class MMSFBGL {
         bool stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
 										   int dx1, int dy1, int dx2, int dy2, int dw, int dh);
 
-        bool genTexture(GLuint *texture);
-        bool deleteTexture(GLuint texture);
-        bool bindTexture2D(GLuint texture);
-        bool initTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
+
 
         bool stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
 											  float dx1, float dy1, float dx2, float dy2);
         bool stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
 										   int dx1, int dy1, int dx2, int dy2, int dw, int dh);
+
+        bool blitBuffer2Texture(GLuint dst_tex, void *buffer, int sw, int sh);
 };
 
 #endif

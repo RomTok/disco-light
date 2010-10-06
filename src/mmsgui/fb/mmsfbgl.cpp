@@ -693,80 +693,250 @@ bool MMSFBGL::swap() {
 #endif
 }
 
-//genTexture(GLuint *texture);
-//genFrameBuffer(GLuint *fbo);
-//genRenderBuffer(GLuint *rbo);
-//initTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
-//attachTexture2FrameBuffer(GLuint fbo, GLuint texture);
-//attachRenderBufferToFrameBuffer(GLuint fbo, GLuint rbo, int sw, int sh);
-bool MMSFBGL::alloc(int width, int height, GLuint *ogl_fbo, GLuint *ogl_tex, GLuint *ogl_rb) {
+
+
+bool MMSFBGL::genTexture(GLuint *tex) {
 
 	INITCHECK;
 
-	genTexture(ogl_tex);
-	initTexture2D(*ogl_tex, GL_RGBA, NULL, GL_RGBA, width, height);
-	// ---
+	// generate a unique texture id
+	glGenTextures(1, tex);
 
-//remove glGenRenderbuffersEXT, glBindRenderbufferEXT, glRenderbufferStorageEXT?
-#ifdef __HAVE_GL2__
-	glGenRenderbuffersEXT(1, ogl_rb);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, *ogl_rb);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
-	// ---
-	glGenFramebuffersEXT(1, ogl_fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, *ogl_fbo);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, *ogl_tex, 0);
-//remove glFramebufferRenderbufferEXT?
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, *ogl_rb);
-	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-		// the GPU does not support current FBO configuration
-/*		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(width) + "x" + iToStr(height) + " failed, the GPU does not support current FBO configuration");*/
-printf("TODO: fatal error while allocating new fbo (GL2)\n");
-		return false;
-	}
+    return true;
+}
+
+bool MMSFBGL::deleteTexture(GLuint tex) {
+
+	INITCHECK;
+
+	if (tex)
+		glDeleteTextures(1, &tex);
 
 	return true;
-#endif
+}
 
-#ifdef __HAVE_GLES2__
-	glGenRenderbuffers(1, ogl_rb);
-	glBindRenderbuffer(GL_RENDERBUFFER, *ogl_rb);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-	// ---
-	glGenFramebuffers(1, ogl_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, *ogl_fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *ogl_tex, 0);
-//remove glFramebufferRenderbufferEXT?
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, *ogl_rb);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		// the GPU does not support current FBO configuration
-/*		MMSFB_SetError(0, "creating OPENGL FBO with " + iToStr(width) + "x" + iToStr(height) + " failed, the GPU does not support current FBO configuration");*/
-printf("TODO: fatal error while allocating new fbo (GLES2)\n");
-		return false;
-	}
+bool MMSFBGL::bindTexture2D(GLuint tex) {
+
+	INITCHECK;
+
+	// activate texture
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    // set min and max filter
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // the texture wraps over at the edges (repeat)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    return true;
+}
+
+bool MMSFBGL::initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh) {
+
+	INITCHECK;
+
+	// activate texture
+	bindTexture2D(tex);
+
+    // initializing texture from buffer
+	glTexImage2D(GL_TEXTURE_2D,
+	 	0,
+	 	texture_format,
+	 	sw,
+	 	sh,
+	 	0,
+	 	buffer_format,
+	 	GL_UNSIGNED_BYTE,
+	 	buffer);
 
 	return true;
-#endif
-
-	return false;
 }
 
 
-bool MMSFBGL::free(GLuint ogl_fbo, GLuint ogl_tex, GLuint ogl_rb) {
+bool MMSFBGL::genFrameBuffer(GLuint *fbo) {
+
+	INITCHECK;
+
+	// generate a unique FBO id
+#ifdef __HAVE_GL2__
+	glGenFramebuffersEXT(1, fbo);
+#endif
+
+#ifdef __HAVE_GLES2__
+	glGenFramebuffers(1, fbo);
+#endif
+
+    return true;
+}
+
+
+bool MMSFBGL::deleteFrameBuffer(GLuint fbo) {
 
 	INITCHECK;
 
 #ifdef  __HAVE_GL2__
-	glDeleteFramebuffersEXT(1, &ogl_fbo);
-	glDeleteRenderbuffersEXT(1, &ogl_rb);
+	if (fbo)
+		glDeleteFramebuffersEXT(1, &fbo);
 #endif
 
 #ifdef __HAVE_GLES2__
-	glDeleteFramebuffers(1, &ogl_fbo);
-	glDeleteRenderbuffers(1, &ogl_rb);
+	if (fbo)
+		glDeleteFramebuffers(1, &fbo);
 #endif
 
-	glDeleteTextures(1, &ogl_tex);
+	return true;
+}
+
+
+bool MMSFBGL::genRenderBuffer(GLuint *rbo) {
+
+	INITCHECK;
+
+	// generate a unique RBO id
+#ifdef __HAVE_GL2__
+	glGenRenderbuffersEXT(1, rbo);
+#endif
+
+#ifdef __HAVE_GLES2__
+	glGenRenderbuffers(1, rbo);
+#endif
+
+    return true;
+}
+
+
+bool MMSFBGL::deleteRenderBuffer(GLuint rbo) {
+
+	INITCHECK;
+
+#ifdef  __HAVE_GL2__
+	if (rbo)
+		glDeleteRenderbuffersEXT(1, &rbo);
+#endif
+
+#ifdef __HAVE_GLES2__
+	if (rbo)
+		glDeleteRenderbuffers(1, &rbo);
+#endif
+
+	return true;
+}
+
+
+bool MMSFBGL::attachTexture2FrameBuffer(GLuint fbo, GLuint tex) {
+
+	INITCHECK;
+
+#ifdef  __HAVE_GL2__
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex, 0);
+	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		// the GPU does not support current FBO configuration
+		printf("Fatal error: attaching texture to framebuffer failed (GL2)\n");
+		return false;
+	}
+#endif
+
+#ifdef __HAVE_GLES2__
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		// the GPU does not support current FBO configuration
+		printf("Fatal error: attaching texture to framebuffer failed (GLES2)\n");
+		return false;
+	}
+#endif
+
+	return true;
+}
+
+
+bool MMSFBGL::attachRenderBuffer2FrameBuffer(GLuint fbo, GLuint rbo, int width, int height) {
+
+	INITCHECK;
+
+#ifdef  __HAVE_GL2__
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo);
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo);
+	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		// the GPU does not support current FBO configuration
+		printf("Fatal error: attaching renderbuffer to framebuffer failed (GL2)\n");
+		return false;
+	}
+#endif
+
+#ifdef __HAVE_GLES2__
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		// the GPU does not support current FBO configuration
+		printf("Fatal error: attaching renderbuffer to framebuffer failed (GLES2)\n");
+		return false;
+	}
+#endif
+
+	return true;
+}
+
+
+bool MMSFBGL::allocTexture(GLuint tex, int width, int height) {
+
+	INITCHECK;
+
+	if (!initTexture2D(tex, GL_RGBA, NULL, GL_RGBA, width, height))
+		return false;
+
+	return true;
+}
+
+
+bool MMSFBGL::allocFBO(GLuint fbo, GLuint tex, int width, int height) {
+
+	INITCHECK;
+
+	if (!allocTexture(tex, width, height))
+		return false;
+
+	if (!attachTexture2FrameBuffer(fbo, tex))
+		return false;
+
+	return true;
+}
+
+
+bool MMSFBGL::allocFBOandRBO(GLuint fbo, GLuint tex, GLuint rbo, int width, int height) {
+
+	INITCHECK;
+
+	if (!allocTexture(tex, width, height))
+		return false;
+
+	if (!attachTexture2FrameBuffer(fbo, tex))
+		return false;
+
+	if (!attachRenderBuffer2FrameBuffer(fbo, rbo, width, height))
+		return false;
+
+	return true;
+}
+
+
+
+bool MMSFBGL::freeFBO(GLuint fbo, GLuint tex, GLuint rbo) {
+
+	INITCHECK;
+
+	bindFrameBuffer(fbo);
+	deleteRenderBuffer(rbo);
+	deleteTexture(tex);
+	deleteFrameBuffer(fbo);
+	bindFrameBuffer(0);
 
 	return true;
 }
@@ -783,6 +953,7 @@ bool MMSFBGL::bindFrameBuffer(GLuint ogl_fbo) {
 #ifdef __HAVE_GLES2__
 	glBindFramebuffer(GL_FRAMEBUFFER, ogl_fbo);
 #endif
+	glDisable(GL_DEPTH_TEST);
 
 	return true;
 }
@@ -912,12 +1083,14 @@ void MMSFBGL::scale(MMSFBGLMatrix result, GLfloat sx, GLfloat sy, GLfloat sz) {
     result[2][3] *= sz;
 }
 
+
 void MMSFBGL::translate(MMSFBGLMatrix result, GLfloat tx, GLfloat ty, GLfloat tz) {
     result[3][0] += (result[0][0] * tx + result[1][0] * ty + result[2][0] * tz);
     result[3][1] += (result[0][1] * tx + result[1][1] * ty + result[2][1] * tz);
     result[3][2] += (result[0][2] * tx + result[1][2] * ty + result[2][2] * tz);
     result[3][3] += (result[0][3] * tx + result[1][3] * ty + result[2][3] * tz);
 }
+
 
 void MMSFBGL::rotate(MMSFBGLMatrix result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
    GLfloat sinAngle, cosAngle;
@@ -968,6 +1141,7 @@ void MMSFBGL::rotate(MMSFBGLMatrix result, GLfloat angle, GLfloat x, GLfloat y, 
       matrixMultiply(result, rotMat, result);
    }
 }
+
 
 void MMSFBGL::frustum(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
     float	deltaX = right - left;
@@ -1025,8 +1199,6 @@ void MMSFBGL::ortho(MMSFBGLMatrix result, float left, float right, float bottom,
 
     matrixMultiply(result, ortho, result);
 }
-
-
 
 
 
@@ -1282,7 +1454,6 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 
 
 
-
 bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
 										   float dx1, float dy1, float dx2, float dy2) {
 
@@ -1399,82 +1570,25 @@ bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, i
 
 
 
-bool MMSFBGL::genTexture(GLuint *texture) {
-
-	INITCHECK;
-
-	// allocate a texture name
-	glGenTextures(1, texture);
-
-    return true;
-}
-
-bool MMSFBGL::deleteTexture(GLuint texture) {
-
-	INITCHECK;
-
-	glDeleteTextures(1, &texture);
-
-	return true;
-}
-
-bool MMSFBGL::bindTexture2D(GLuint texture) {
-
-	INITCHECK;
-
-	// activate texture
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    // set min and max filter
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    // the texture wraps over at the edges (repeat)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    return true;
-}
-
-bool MMSFBGL::initTexture2D(GLuint texture, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh) {
-
-	INITCHECK;
-
-	// activate texture
-	bindTexture2D(texture);
-
-    // initializing texture from buffer
-	glTexImage2D(GL_TEXTURE_2D,
-	 	0,
-	 	texture_format,
-	 	sw,
-	 	sh,
-	 	0,
-	 	buffer_format,
-	 	GL_UNSIGNED_BYTE,
-	 	buffer);
-
-	return true;
-}
-
 bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
 												float dx1, float dy1, float dx2, float dy2) {
 
 	INITCHECK;
 
 	// alloc and load texture from buffer
-	GLuint texture;
-	genTexture(&texture);
-	initTexture2D(texture, GL_RGBA, buffer, GL_RGBA, sw, sh);
+	GLuint tex;
+	genTexture(&tex);
+	initTexture2D(tex, GL_RGBA, buffer, GL_RGBA, sw, sh);
 
 	// blit texture to active FBO
-	stretchBlit(texture, sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2);
+	stretchBlit(tex, sx1, sy1, sx2, sy2, dx1, dy1, dx2, dy2);
 
 	// delete texture
-	deleteTexture(texture);
+	deleteTexture(tex);
 
 	return true;
 }
+
 
 bool MMSFBGL::stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
 												int dx1, int dy1, int dx2, int dy2, int dw, int dh) {
@@ -1482,18 +1596,28 @@ bool MMSFBGL::stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy
 	INITCHECK;
 
 	// alloc and load texture from buffer
-	GLuint texture;
-	genTexture(&texture);
-	initTexture2D(texture, GL_RGBA, buffer, GL_RGBA, sw, sh);
+	GLuint tex;
+	genTexture(&tex);
+	initTexture2D(tex, GL_RGBA, buffer, GL_RGBA, sw, sh);
 
 	// blit texture to active FBO
-	stretchBliti(texture, sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2, dw, dh);
+	stretchBliti(tex, sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2, dw, dh);
 
 	// delete texture
-	deleteTexture(texture);
+	deleteTexture(tex);
 
 	return true;
 }
+
+
+bool MMSFBGL::blitBuffer2Texture(GLuint dst_tex, void *buffer, int sw, int sh) {
+
+	INITCHECK;
+
+	// load texture from buffer
+	return initTexture2D(dst_tex, GL_RGBA, buffer, GL_RGBA, sw, sh);
+}
+
 
 #endif
 
