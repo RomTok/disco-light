@@ -64,9 +64,6 @@ class MMSFBGL {
     	// bind the "VSVertex" attribute to shader index 0
     	#define MMSFBGL_VSV_LOC	0
 
-		#define MMSFBGL_CALC_2X(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
-		#define MMSFBGL_CALC_2Y(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
-
     	typedef enum {
     		MMSFBGL_SHADER_TYPE_FRAGMENT_SHADER = 0,
     		MMSFBGL_SHADER_TYPE_VERTEX_SHADER
@@ -196,8 +193,8 @@ class MMSFBGL {
         bool useShaderProgram4ModulateBlitting();
 
         bool setMatrix(MMSFBGLMatrix matrix);
-        bool getModelViewMatrix(MMSFBGLMatrix result, int w, int h);
-        bool setModelViewMatrix(int w, int h);
+        bool getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top);
+        bool setModelViewMatrix(float left, float right, float bottom, float top);
 
         bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
@@ -213,14 +210,14 @@ class MMSFBGL {
         bool stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
 										  float dx1, float dy1, float dx2, float dy2);
         bool stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
-										   int dx1, int dy1, int dx2, int dy2, int dw, int dh);
+										   int dx1, int dy1, int dx2, int dy2);
 
 
 
         bool stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, float sy2, int sw, int sh,
 											  float dx1, float dy1, float dx2, float dy2);
         bool stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
-										   int dx1, int dy1, int dx2, int dy2, int dw, int dh);
+										   int dx1, int dy1, int dx2, int dy2);
 
         bool blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int sw, int sh);
 };

@@ -63,11 +63,19 @@
 #define INIT_OGL_FBO(surface) \
 	oglAlloc(surface); \
 	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo); \
-	if (!surface->is_sub_surface) oglMatrix(surface->config.w, surface->config.h); \
-	else oglMatrix(surface->root_parent->config.w, surface->root_parent->config.h); \
-	mmsfbgl.disableScissor();
+	if (surface->config.surface_buffer->ogl_fbo) { \
+		if (!surface->is_sub_surface) oglMatrix(0, surface->config.w, 0, surface->config.h); \
+		else oglMatrix(0, surface->root_parent->config.w, 0, surface->root_parent->config.h); \
+	} else { \
+		if (!surface->is_sub_surface) oglMatrix(0, surface->config.w, surface->config.h, 0); \
+		else oglMatrix(0, surface->root_parent->config.w, surface->root_parent->config.h, 0); \
+	} mmsfbgl.disableScissor();
 
-#define OGL_SCISSOR(X, Y, W, H) mmsfbgl.setScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H)
+
+#define OGL_SCISSOR(surface, X, Y, W, H) \
+	if (surface->config.surface_buffer->ogl_fbo) mmsfbgl.setScissor(X, Y, W, H); \
+	else mmsfbgl.setScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H);
+
 
 #define INIT_OGL_DRAWING(surface) { \
 			switch (surface->config.drawingflags) { \
@@ -144,28 +152,20 @@
 		if (x1 == x2 && x1 == x3 && y1 == y2 && y1 == y3) OGL_DRAW_POINT(x1, y1) else
 
 
+#define OGL_CALC_COORD(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
 
-#define OGL_CALC_2X(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
-#define OGL_CALC_2Y(v1, v2) OGL_CALC_2Y_H(v1, v2, BEI_SURFACE_HEIGHT)
-#define OGL_CALC_2Y_H(v1, v2, height) (((v1)<(v2)) ? (float)(height-1) - (float)(v1) + 0.99 : (float)(height-1) - (float)(v1))
+#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_COORD(v1, v2) / (width))
+#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_COORD(v1, v2) / (height))
+
 
 #define OGL_CALC_3X(v1, v2, v3) (((v1)<=(v2) && (v1)<=(v3)) ? (float)(v1) : ((v1)>(v2) && (v1)>(v3)) ? (float)(v1) + 0.99 : (float)(v1) + 0.5)
 #define OGL_CALC_3Y(v1, v2, v3) (((v1)<=(v2) && (v1)<=(v3)) ? BEI_SURFACE_BOTTOM_F - (float)(v1) + 0.99 : ((v1)>(v2) && (v1)>(v3)) ? BEI_SURFACE_BOTTOM_F - (float)(v1) : BEI_SURFACE_BOTTOM_F - (float)(v1) + 0.5)
 
-#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_2X(v1, v2) / (width))
-#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_2Y_H(v1, v2, height) / (height))
 
-#ifdef __HAVE_GL2__
+
 #define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
-		glRectf(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2), OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1));
-#endif
-
-#ifdef __HAVE_GLES2__
-#define OGL_FILL_RECTANGLE(x1, y1, x2, y2) \
-		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
-		mmsfbgl.fillRectangle2D(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2), OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1));
-#endif
+		mmsfbgl.fillRectangle2Di(x1, y1, x2, y2);
 
 
 
@@ -177,8 +177,8 @@
 
 #define INIT_OGL_FBOXX(surface) \
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
-	if (!surface->is_sub_surface) oglMatrixXX(surface->config.w, surface->config.h); \
-	else oglMatrixXX(surface->root_parent->config.w, surface->root_parent->config.h); \
+	if (!surface->is_sub_surface) oglMatrixXX(0, surface->config.w, 0, surface->config.h); \
+	else oglMatrixXX(0, surface->root_parent->config.w, 0, surface->root_parent->config.h); \
 	glDisable(GL_SCISSOR_TEST);
 
 
@@ -212,18 +212,18 @@
 #define OGL_DRAW_LINE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
 		glBegin(GL_LINES); \
-			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2)); \
-			glVertex2f(OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1)); \
+			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2)); \
+			glVertex2f(OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1)); \
 		glEnd(); }
 
 #define OGL_DRAW_RECTANGLE(x1, y1, x2, y2) \
 		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
 		glBegin(GL_LINE_STRIP); \
-			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2)); \
-			glVertex2f(OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y1, y2)); \
-			glVertex2f(OGL_CALC_2X(x2, x1), OGL_CALC_2Y(y2, y1)); \
-			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y2, y1)); \
-			glVertex2f(OGL_CALC_2X(x1, x2), OGL_CALC_2Y(y1, y2)); \
+			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2)); \
+			glVertex2f(OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y1, y2)); \
+			glVertex2f(OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1)); \
+			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y2, y1)); \
+			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2)); \
 		glEnd(); }
 
 #define OGL_FILL_TRIANGLE(x1, y1, x2, y2, x3, y3) \
@@ -348,24 +348,27 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 #endif
 
 	//set the coordinate system
-	this->matrix_w = 0;
-	this->matrix_h = 0;
+	this->matrix_left = 0;
+	this->matrix_right = 0;
+	this->matrix_bottom = 0;
+	this->matrix_top = 0;
 	int w, h;
 	mmsfbgl.getResolution(&w, &h);
-	oglMatrix(w, h);
+	oglMatrix(0, w, h, 0);
 
 #endif
 }
 
 
 #ifdef __HAVE_OPENGL__
-void MMSFBBackEndInterface::oglMatrix(GLuint w, GLuint h) {
-	float ratio = (float)w / (float)h;
-	if ((ratio != this->matrix_ratio) || (w > this->matrix_w) || (h > this->matrix_h)) {
-		this->matrix_w = w;
-		this->matrix_h = h;
-		this->matrix_ratio = ratio;
-		mmsfbgl.setModelViewMatrix(w, h);
+void MMSFBBackEndInterface::oglMatrix(GLuint left, GLuint right, GLuint bottom, GLuint top) {
+	if ((left != this->matrix_left) || (right != this->matrix_right)
+	  || (bottom != this->matrix_bottom) || (top != this->matrix_top)) {
+		this->matrix_left = left;
+		this->matrix_right = right;
+		this->matrix_bottom = bottom;
+		this->matrix_top = top;
+		mmsfbgl.setModelViewMatrix(left, right, bottom, top);
 	}
 }
 #endif
@@ -500,7 +503,7 @@ void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(0 + xoff, 0 + yoff, req->surface->config.w, req->surface->config.h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
 		mmsfbgl.clear(req->color.r, req->color.g, req->color.b, req->color.a);
 	}
@@ -532,7 +535,7 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
 		// fill rectangle
 		OGL_FILL_RECTANGLE(req->rect.x						+ xoff,
@@ -590,7 +593,7 @@ void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// fill triangle
@@ -648,7 +651,7 @@ void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// draw line
@@ -685,7 +688,7 @@ void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// draw rectangle
@@ -744,7 +747,7 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 		glEnable(GL_SCISSOR_TEST);
 
 		// draw triangle
@@ -796,7 +799,7 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
 		// get source region
 		int sx1 = req->src_rect.x + src_xoff;
@@ -814,7 +817,7 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 			// blit source texture to the destination
 			mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
 						sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h,
-						dx1, dy1, dx2, dy2, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
+						dx1, dy1, dx2, dy2);
 		}
 		else {
 			printf("skip blitting from texture which is not initialized\n");
@@ -886,7 +889,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->dst_rect.x + xoff, req->dst_rect.y + yoff, req->dst_rect.w, req->dst_rect.h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
 		// get source region
 		int sx1 = req->src_rect.x;
@@ -904,7 +907,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 		// note: the source has to be flipped vertical because the difference between 2D input and OGL
 		mmsfbgl.stretchBlitBufferi(req->src_planes->ptr,
 					sx1, sy1, sx2, sy2, req->src_width, req->src_height,
-					dx1, dy2, dx2, dy1, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
+					dx1, dy1, dx2, dy2);
 	}
 #endif
 }
@@ -966,7 +969,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 			MMSFBRectangle crect;
 			if (req->surface->calcClip(dx + xoff, dy + yoff, src_w, src_h, &crect)) {
 				// inside clipping region
-				OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+				OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 				glEnable(GL_SCISSOR_TEST);
 
 				// get source region
@@ -989,7 +992,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				// note: the source has to be flipped vertical because the difference between 2D input and OGL
 				mmsfbgl.stretchBliti(texture,
 							sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
-							dx1, dy2, dx2, dy1, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
+							dx1, dy1, dx2, dy2);
 			}
 
 			// prepare for next loop
@@ -1038,7 +1041,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 			MMSFBRectangle crect;
 			if (req->surface->calcClip(dx + xoff, dy + yoff, src_w, src_h, &crect)) {
 				// inside clipping region
-				OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+				OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
 				// get source region
 				int sx1 = 0;
@@ -1060,7 +1063,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				// note: the source has to be flipped vertical because the difference between 2D input and OGL
 				mmsfbgl.stretchBliti(texture,
 							sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
-							dx1, dy2, dx2, dy1, BEI_SURFACE_WIDTH, BEI_SURFACE_HEIGHT);
+							dx1, dy1, dx2, dy2);
 			}
 
 			// prepare for next loop
@@ -1115,7 +1118,7 @@ void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(dst_rect.x + xoff, dst_rect.y + yoff, dst_rect.w, dst_rect.h, &crect)) {
 		// inside clipping region
-		OGL_SCISSOR(crect.x, crect.y, crect.w, crect.h);
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 //		glEnable(GL_SCISSOR_TEST);
 
 		dst_rect.x+=90;
@@ -1274,19 +1277,22 @@ glDisable(GL_DEPTH_TEST);
 }
 
 #ifdef __HAVE_GL2__
-void MMSFBBackEndInterface::oglMatrixXX(GLuint w, GLuint h) {
-	float ratio = (float)w / (float)h;
-	this->matrix_w = w;
-	this->matrix_h = h;
-	this->matrix_ratio = ratio;
+void MMSFBBackEndInterface::oglMatrixXX(GLuint left, GLuint right, GLuint bottom, GLuint top) {
+	this->matrix_left = left;
+	this->matrix_right = right;
+	this->matrix_bottom = bottom;
+	this->matrix_top = top;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glViewport(0, 0, w, h);
+	glViewport(	(left<right)?left:right,
+				(bottom<top)?bottom:top,
+				(left<right)?right-left:left-right,
+				(bottom<top)?top-bottom:bottom-top);
+	int w = (left<right)?right-left:left-right;
+	int h = (bottom<top)?top-bottom:bottom-top;
 	glOrtho(-(int)w/2, w/2, -(int)h/2, h/2, 600.0, -600.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	this->matrix_ratio = 0;
 }
 #endif
 

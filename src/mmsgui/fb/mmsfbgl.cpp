@@ -46,16 +46,9 @@
 	printf("  %s = %x\n", str, value);
 
 
-#define OGL_CALC_2X(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
-#define OGL_CALC_2Y(v1, v2, height) OGL_CALC_2Y_H(v1, v2, height)
-#define OGL_CALC_2Y_H(v1, v2, height) (((v1)<(v2)) ? (float)(height-1) - (float)(v1) + 0.99 : (float)(height-1) - (float)(v1))
-
-#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_2X(v1, v2) / (width))
-#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_2Y_H(v1, v2, height) / (height))
-
-#define BEI_SURFACE_BOTTOM(height)		(height - 1)
-#define BEI_SURFACE_BOTTOM_F(height)	(float)BEI_SURFACE_BOTTOM(height)
-
+#define OGL_CALC_COORD(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
+#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_COORD(v1, v2) / (width))
+#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_COORD(v1, v2) / (height))
 
 
 MMSFBGL::MMSFBGL() {
@@ -1301,14 +1294,14 @@ bool MMSFBGL::setMatrix(MMSFBGLMatrix matrix) {
 }
 
 
-bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, int w, int h) {
+bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top) {
 
 	INITCHECK;
 
 	// calculate the new matrix
 	MMSFBGLMatrix matrix;
 	matrixLoadIdentity(matrix);
-	ortho(matrix, 0, w, 0, h, 10.0, -10.0);
+	ortho(matrix, left, right, bottom, top, 10.0, -10.0);
 
 	// return the matrix to the caller
 	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
@@ -1317,15 +1310,18 @@ bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, int w, int h) {
 }
 
 
-bool MMSFBGL::setModelViewMatrix(int w, int h) {
+bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float top) {
 
 	INITCHECK;
 
 #ifdef __HAVE_GL2__
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glViewport(0, 0, w, h);
-	glOrtho(0, w, 0, h, 10.0, -10.0);
+	glViewport(	(left<right)?left:right,
+				(bottom<top)?bottom:top,
+				(left<right)?right-left:left-right,
+				(bottom<top)?top-bottom:bottom-top);
+	glOrtho(left, right, bottom, top, 10.0, -10.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 #endif
@@ -1333,8 +1329,11 @@ bool MMSFBGL::setModelViewMatrix(int w, int h) {
 #ifdef __HAVE_GLES2__
 	// set the model view matrix for the shader
 	MMSFBGLMatrix matrix;
-	getModelViewMatrix(matrix, w, h);
-	glViewport(0, 0, w, h);
+	getModelViewMatrix(matrix, left, right, bottom, top);
+	glViewport(	(left<right)?left:right,
+				(bottom<top)?bottom:top,
+				(left<right)?right-left:left-right,
+				(bottom<top)?top-bottom:bottom-top);
 	return setMatrix(matrix);
 #endif
 }
@@ -1456,6 +1455,14 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 
 	INITCHECK;
 
+#ifdef __HAVE_GL2__
+
+	glRectf(x1, y1, x2, y2);
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x2,y1,x1,y1,x1,y2,x2,y2};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
@@ -1464,14 +1471,16 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 	// draw it
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+#endif
+
 	return true;
 }
 
 
 bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 	// change pixel based values to float values and draw it
-	return fillRectangle2D(MMSFBGL_CALC_2X(x1, x2), MMSFBGL_CALC_2Y(y1, y2),
-							MMSFBGL_CALC_2X(x2, x1), MMSFBGL_CALC_2Y(y2, y1));
+	return fillRectangle2D(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2),
+							OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1));
 }
 
 
@@ -1545,7 +1554,7 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 
 bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
-							int dx1, int dy1, int dx2, int dy2, int dw, int dh) {
+							int dx1, int dy1, int dx2, int dy2) {
 
 	if (dx1 != dx2 && dy1 != dy2) {
 		return stretchBlit(src_tex,
@@ -1553,10 +1562,10 @@ bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, i
 							OGL_CALC_2Y_N(sy1, sy2, sh),
 							OGL_CALC_2X_N(sx2, sx1, sw),
 							OGL_CALC_2Y_N(sy2, sy1, sh),
-							OGL_CALC_2X(dx1, dx2),
-							OGL_CALC_2Y(dy1, dy2, dh),
-							OGL_CALC_2X(dx2, dx1),
-							OGL_CALC_2Y(dy2, dy1, dh));
+							OGL_CALC_COORD(dx1, dx2),
+							OGL_CALC_COORD(dy1, dy2),
+							OGL_CALC_COORD(dx2, dx1),
+							OGL_CALC_COORD(dy2, dy1));
 	} else if (dy1 != dy2) {
 		return stretchBlit(src_tex,
 							OGL_CALC_2X_N(sx1, sx2, sw),
@@ -1564,19 +1573,20 @@ bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, i
 							OGL_CALC_2X_N(sx2, sx1, sw),
 							OGL_CALC_2Y_N(sy2, sy1, sh),
 							(float)(dx1),
-							OGL_CALC_2Y(dy1, dy2, dh),
+							OGL_CALC_COORD(dy1, dy2),
 							(float)(dx1) + 0.99,
-							OGL_CALC_2Y(dy2, dy1, dh));
+							OGL_CALC_COORD(dy2, dy1));
 	} else if (dx1 != dx2) {
 		return stretchBlit(src_tex,
 							OGL_CALC_2X_N(sx1, sx2, sw),
 							OGL_CALC_2Y_N(sy1, sy2, sh),
 							OGL_CALC_2X_N(sx2, sx1, sw),
 							OGL_CALC_2Y_N(sy2, sy1, sh),
-							OGL_CALC_2X(dx1, dx2),
-							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1),
-							OGL_CALC_2X(dx2, dx1),
-							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1) + 0.99);
+							OGL_CALC_COORD(dx1, dx2),
+							(float)(dy1),
+							OGL_CALC_COORD(dx2, dx1),
+							(float)(dy1) + 0.99);
+
 	} else {
 		return stretchBlit(src_tex,
 							OGL_CALC_2X_N(sx1, sx2, sw),
@@ -1584,9 +1594,9 @@ bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, i
 							OGL_CALC_2X_N(sx2, sx1, sw),
 							OGL_CALC_2Y_N(sy2, sy1, sh),
 							(float)(dx1),
-							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1),
+							(float)(dy1),
 							(float)(dx1) + 0.99,
-							BEI_SURFACE_BOTTOM_F(dh) - (float)(dy1) + 0.99);
+							(float)(dy1) + 0.99);
 	}
 }
 
@@ -1613,7 +1623,7 @@ bool MMSFBGL::stretchBlitBuffer(void *buffer, float sx1, float sy1, float sx2, f
 
 
 bool MMSFBGL::stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
-												int dx1, int dy1, int dx2, int dy2, int dw, int dh) {
+												int dx1, int dy1, int dx2, int dy2) {
 
 	INITCHECK;
 
@@ -1623,7 +1633,7 @@ bool MMSFBGL::stretchBlitBufferi(void *buffer, int sx1, int sy1, int sx2, int sy
 	initTexture2D(tex, GL_RGBA, buffer, GL_RGBA, sw, sh);
 
 	// blit texture to active FBO
-	stretchBliti(tex, sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2, dw, dh);
+	stretchBliti(tex, sx1, sy1, sx2, sy2, sw, sh, dx1, dy1, dx2, dy2);
 
 	// delete texture
 	deleteTexture(tex);

@@ -163,20 +163,20 @@ private:
 	//! access to the OpenGL wrapper class
 	MMSFBGL	mmsfbgl;
 
-
-	MMSFBGLMatrix	matrix;
-	GLuint			matrix_w;
-	GLuint			matrix_h;
+	GLuint			matrix_left;
+	GLuint			matrix_right;
+	GLuint			matrix_bottom;
+	GLuint			matrix_top;
 	float			matrix_ratio;
 
-	void oglMatrix(GLuint w, GLuint h);
+	void oglMatrix(GLuint left, GLuint right, GLuint bottom, GLuint top);
 	void oglAlloc(MMSFBSurface *surface);
 
 #endif
 
 
 #ifdef  __HAVE_GL2__
-void oglMatrixXX(GLuint w, GLuint h);
+void oglMatrixXX(GLuint left, GLuint right, GLuint bottom, GLuint top);
 #endif
 
 
