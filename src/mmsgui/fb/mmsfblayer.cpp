@@ -1557,6 +1557,10 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
     if (pixelformat == MMSFB_PF_NONE) {
     	pixelformat = this->config.surface_pixelformat;
 
+    	if (mmsfb->backend == MMSFB_BE_OGL) {
+    		pixelformat = MMSFB_PF_ABGR;
+    	}
+
 /*toberemoved        pixelformat = this->config.pixelformat;
         if (!isAlphaPixelFormat(pixelformat)) {
         	// the gui internally needs surfaces with alpha channel
@@ -1626,6 +1630,11 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
 				pixelformat = MMSFB_PF_ARGB;
     	    }
     	}
+
+    	if (mmsfb->backend == MMSFB_BE_OGL) {
+    		pixelformat = MMSFB_PF_ABGR;
+    	}
+
     }
 
 

@@ -263,6 +263,21 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
 			*buf = newbuf;
 		}
 		break;
+    case MMSTAFF_PF_ABGR: {
+    		// change the positions of red and blue
+			// for example disko's ABGR is equal to GL_RGBA in OpenGL
+			unsigned int *src = (unsigned int*)*buf;
+		    for (int i = *width * *height; i > 0; i--) {
+		    	register unsigned int s = *src;
+		    	register unsigned int rb = s & 0x00ff00ff;
+		    	s = s & 0xff00ff00;
+		    	s = s | (rb << 16);
+		    	s = s | (rb >> 16);
+		    	*src = s;
+		    	src++;
+		    }
+    	}
+   		break;
 	default: break;
     }
 

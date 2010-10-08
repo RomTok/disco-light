@@ -213,7 +213,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 		this->config.w = sb->sbw = w;
 		this->config.h = sb->sbh = h;
-		sb->pixelformat = MMSFB_PF_ARGB;
+		sb->pixelformat = MMSFB_PF_ABGR;
 		sb->alphachannel = true;
 		sb->premultiplied = false;
 		sb->backbuffer = 0;
@@ -831,6 +831,9 @@ int MMSFBSurface::calcPitch(int width) {
     case MMSFB_PF_BGR555:
     	pitch = width * 2;
     	break;
+    case MMSFB_PF_ABGR:
+    	pitch = width * 4;
+    	break;
     default:
     	break;
     }
@@ -1111,7 +1114,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 			}
 			this->config.surface_buffer->buffers[0].pitch = this->config.w * 4;
 
-			this->config.surface_buffer->pixelformat = MMSFB_PF_ARGB;
+			this->config.surface_buffer->pixelformat = MMSFB_PF_ABGR;
 			this->config.surface_buffer->alphachannel = true;
 			this->config.surface_buffer->premultiplied = false;
 
@@ -1140,7 +1143,7 @@ printf("getconfig2\n");fflush(stdout);
 			}
 			this->config.surface_buffer->buffers[0].pitch = this->config.w * 4;
 
-			this->config.surface_buffer->pixelformat = MMSFB_PF_ARGB;
+			this->config.surface_buffer->pixelformat = MMSFB_PF_ABGR;
 			this->config.surface_buffer->alphachannel = true;
 			this->config.surface_buffer->premultiplied = false;
 

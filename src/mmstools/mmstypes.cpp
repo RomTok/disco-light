@@ -127,69 +127,41 @@ MMSFBFullScreenMode getMMSFBFullScreenModeFromString(string fsm) {
 
 
 string getMMSFBPixelFormatString(MMSFBSurfacePixelFormat pf) {
-    if(pf == MMSFB_PF_RGB16)
-        return MMSFB_PF_RGB16_STR;
-    if(pf == MMSFB_PF_RGB24)
-        return MMSFB_PF_RGB24_STR;
-    if(pf == MMSFB_PF_RGB32)
-        return MMSFB_PF_RGB32_STR;
-    if(pf == MMSFB_PF_ARGB)
-        return MMSFB_PF_ARGB_STR;
-    if(pf == MMSFB_PF_A8)
-        return MMSFB_PF_A8_STR;
-    if(pf == MMSFB_PF_YUY2)
-        return MMSFB_PF_YUY2_STR;
-    if(pf == MMSFB_PF_UYVY)
-        return MMSFB_PF_UYVY_STR;
-    if(pf == MMSFB_PF_I420)
-        return MMSFB_PF_I420_STR;
-    if(pf == MMSFB_PF_YV12)
-        return MMSFB_PF_YV12_STR;
-    if(pf == MMSFB_PF_AiRGB)
-        return MMSFB_PF_AiRGB_STR;
-    if(pf == MMSFB_PF_A1)
-        return MMSFB_PF_A1_STR;
-    if(pf == MMSFB_PF_NV12)
-        return MMSFB_PF_NV12_STR;
-    if(pf == MMSFB_PF_NV16)
-        return MMSFB_PF_NV16_STR;
-    if (pf == MMSFB_PF_NV21)
-        return MMSFB_PF_NV21_STR;
-    if (pf == MMSFB_PF_AYUV)
-        return MMSFB_PF_AYUV_STR;
-    if (pf == MMSFB_PF_A4)
-        return MMSFB_PF_A4_STR;
-    if (pf == MMSFB_PF_ARGB1666)
-        return MMSFB_PF_ARGB1666_STR;
-    if (pf == MMSFB_PF_ARGB6666)
-        return MMSFB_PF_ARGB6666_STR;
-    if (pf == MMSFB_PF_RGB18)
-        return MMSFB_PF_RGB18_STR;
-    if (pf == MMSFB_PF_LUT2)
-        return MMSFB_PF_LUT2_STR;
-    if (pf == MMSFB_PF_RGB444)
-        return MMSFB_PF_RGB444_STR;
-    if (pf == MMSFB_PF_RGB555)
-        return MMSFB_PF_RGB555_STR;
-    if(pf == MMSFB_PF_ARGB1555)
-        return MMSFB_PF_ARGB1555_STR;
-    if(pf == MMSFB_PF_RGB332)
-        return MMSFB_PF_RGB332_STR;
-    if(pf == MMSFB_PF_ALUT44)
-        return MMSFB_PF_ALUT44_STR;
-    if(pf == MMSFB_PF_LUT8)
-        return MMSFB_PF_LUT8_STR;
-    if(pf == MMSFB_PF_ARGB2554)
-        return MMSFB_PF_ARGB2554_STR;
-    if(pf == MMSFB_PF_ARGB4444)
-        return MMSFB_PF_ARGB4444_STR;
-    if(pf == MMSFB_PF_ARGB3565)
-        return MMSFB_PF_ARGB3565_STR;
-    if(pf == MMSFB_PF_BGR24)
-        return MMSFB_PF_BGR24_STR;
-    if(pf == MMSFB_PF_BGR555)
-        return MMSFB_PF_BGR555_STR;
-    return MMSFB_PF_NONE_STR;
+	switch (pf) {
+    case MMSFB_PF_RGB16:	return MMSFB_PF_RGB16_STR;
+    case MMSFB_PF_RGB24:	return MMSFB_PF_RGB24_STR;
+    case MMSFB_PF_RGB32:	return MMSFB_PF_RGB32_STR;
+    case MMSFB_PF_ARGB:		return MMSFB_PF_ARGB_STR;
+    case MMSFB_PF_A8:		return MMSFB_PF_A8_STR;
+    case MMSFB_PF_YUY2:		return MMSFB_PF_YUY2_STR;
+    case MMSFB_PF_UYVY:		return MMSFB_PF_UYVY_STR;
+    case MMSFB_PF_I420:		return MMSFB_PF_I420_STR;
+    case MMSFB_PF_YV12:		return MMSFB_PF_YV12_STR;
+    case MMSFB_PF_AiRGB:	return MMSFB_PF_AiRGB_STR;
+    case MMSFB_PF_A1:		return MMSFB_PF_A1_STR;
+    case MMSFB_PF_NV12:		return MMSFB_PF_NV12_STR;
+    case MMSFB_PF_NV16:		return MMSFB_PF_NV16_STR;
+    case MMSFB_PF_NV21:		return MMSFB_PF_NV21_STR;
+    case MMSFB_PF_AYUV:		return MMSFB_PF_AYUV_STR;
+    case MMSFB_PF_A4:		return MMSFB_PF_A4_STR;
+    case MMSFB_PF_ARGB1666:return MMSFB_PF_ARGB1666_STR;
+    case MMSFB_PF_ARGB6666:return MMSFB_PF_ARGB6666_STR;
+    case MMSFB_PF_RGB18:	return MMSFB_PF_RGB18_STR;
+    case MMSFB_PF_LUT2:		return MMSFB_PF_LUT2_STR;
+    case MMSFB_PF_RGB444:	return MMSFB_PF_RGB444_STR;
+    case MMSFB_PF_RGB555:	return MMSFB_PF_RGB555_STR;
+    case MMSFB_PF_ARGB1555:return MMSFB_PF_ARGB1555_STR;
+    case MMSFB_PF_RGB332:	return MMSFB_PF_RGB332_STR;
+    case MMSFB_PF_ALUT44:	return MMSFB_PF_ALUT44_STR;
+    case MMSFB_PF_LUT8:		return MMSFB_PF_LUT8_STR;
+    case MMSFB_PF_ARGB2554:return MMSFB_PF_ARGB2554_STR;
+    case MMSFB_PF_ARGB4444:return MMSFB_PF_ARGB4444_STR;
+    case MMSFB_PF_ARGB3565:return MMSFB_PF_ARGB3565_STR;
+    case MMSFB_PF_BGR24:	return MMSFB_PF_BGR24_STR;
+    case MMSFB_PF_BGR555:	return MMSFB_PF_BGR555_STR;
+    case MMSFB_PF_ABGR:		return MMSFB_PF_ABGR_STR;
+    default:				return MMSFB_PF_NONE_STR;
+	}
 }
 
 MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
@@ -257,6 +229,8 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
         return MMSFB_PF_BGR24;
     if(pf == MMSFB_PF_BGR555_STR)
         return MMSFB_PF_BGR555;
+    if(pf == MMSFB_PF_ABGR_STR)
+        return MMSFB_PF_ABGR;
     return MMSFB_PF_NONE;
 }
 

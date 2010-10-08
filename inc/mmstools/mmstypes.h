@@ -364,6 +364,8 @@ typedef enum {
     MMSFB_PF_BGR24,
     //! 15 bit BGR (2 byte, nothing 1\@15, blue 5\@10, green 5\@5, red 5\@0)
     MMSFB_PF_BGR555,
+    //! 32 bit ABGR (4 byte, alpha 8\@24, blue 8\@16, green 8\@8, red 8\@0)
+    MMSFB_PF_ABGR,
     //! number of supported pixelformats
     MMSFB_PF_CNT
 } MMSFBSurfacePixelFormat;
@@ -432,18 +434,20 @@ typedef enum {
 #define MMSFB_PF_BGR24_STR      "BGR24"
 //! pixel format: 15 bit BGR (2 byte, nothing 1\@15, blue 5\@10, green 5\@5, red 5\@0)
 #define MMSFB_PF_BGR555_STR     "BGR555"
+//! pixel format: 32 bit ABGR (4 byte, alpha 8\@24, blue 8\@16, green 8\@8, red 8\@0)
+#define MMSFB_PF_ABGR_STR       "ABGR"
 
 //! list of valid pixelformats
-#define MMSFB_PF_VALID_VALUES	"RGB16, RGB24, RGB32, ARGB, A8, YUY2, UYVY, I420, YV12, AiRGB, A1, NV12, NV16, NV21, AYUV, A4, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, ALUT44, LUT8, ARGB2554, ARGB4444, ARGB3565, BGR24, BGR555"
+#define MMSFB_PF_VALID_VALUES	"RGB16, RGB24, RGB32, ARGB, A8, YUY2, UYVY, I420, YV12, AiRGB, A1, NV12, NV16, NV21, AYUV, A4, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, ALUT44, LUT8, ARGB2554, ARGB4444, ARGB3565, BGR24, BGR555, ABGR"
 
 //! list of valid pixelformats used for layer surfaces
-#define MMSFB_PF_VALID_VALUES_LAYER	"RGB16, RGB24, RGB32, ARGB, YUY2, UYVY, I420, YV12, AiRGB, NV12, NV16, NV21, AYUV, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, LUT8, ARGB2554, ARGB4444, ARGB3565, BGR24, BGR555"
+#define MMSFB_PF_VALID_VALUES_LAYER	"RGB16, RGB24, RGB32, ARGB, YUY2, UYVY, I420, YV12, AiRGB, NV12, NV16, NV21, AYUV, ARGB1666, ARGB6666, RGB18, LUT2, RGB444, RGB555, ARGB1555, RGB332, LUT8, ARGB2554, ARGB4444, ARGB3565, BGR24, BGR555, ABGR"
 
 //! list of valid pixelformats used for windows surfaces
-#define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV, ARGB4444, RGB16, empty string for auto detection"
+#define MMSFB_PF_VALID_VALUES_WINDOWS	"ARGB, AiRGB, AYUV, ARGB4444, RGB16, ABGR, empty string for auto detection"
 
 //! list of valid pixelformats used for worker surfaces
-#define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV, ARGB4444, RGB16, empty string for auto detection"
+#define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV, ARGB4444, RGB16, ABGR, empty string for auto detection"
 
 //! list of valid pixelformats for XVSHM
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM	"YV12"
