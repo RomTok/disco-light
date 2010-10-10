@@ -1600,7 +1600,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
     	else {
     		// use layer pixelformat
     		pixelformat = this->config.pixelformat;
-    	    if (isAlphaPixelFormat(pixelformat)) {
+/*    	    if (isAlphaPixelFormat(pixelformat)) {
 				// switch all alpha pixelformats to RGB32
 				pixelformat = MMSFB_PF_RGB32;
     	    }
@@ -1608,7 +1608,7 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
     	    if (isIndexedPixelFormat(pixelformat)) {
 				// switch all indexed pixelformats to RGB32
 				pixelformat = MMSFB_PF_RGB32;
-    	    }
+    	    }*/
     	}
 
     	if (this->config.outputtype == MMSFB_OT_OGL) {
