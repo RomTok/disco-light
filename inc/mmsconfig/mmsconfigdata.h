@@ -126,8 +126,6 @@ class MMSConfigDataGraphics {
 		bool					touchSwapX;					/**< swap x axis (maximum value becomes minimum) */
 		bool					touchSwapY;					/**< swap y axis (maximum value becomes minimum) */
 		bool					touchSwapXY;				/**< swap x and y axis (x axis events are handled as y axis and vice versa) */
-		unsigned int			touchResX;					/**< x resolution of touchscreen (if values from driver are false) */
-		unsigned int			touchResY;					/**< y resolution of touchscreen (if values from driver are false) */
 
    	    MMSConfigDataGraphics() :
    		    backend(MMSFB_BE_X11),
@@ -142,9 +140,7 @@ class MMSConfigDataGraphics {
    		    hideapplication(false),
    		    touchSwapX(false),
    		    touchSwapY(false),
-   		    touchSwapXY(false),
-   		    touchResX(0),
-   		    touchResY(0) {}
+   		    touchSwapXY(false) {}
 };
 
 class MMSConfigDataLanguage {
@@ -226,8 +222,6 @@ class MMSConfigData {
         const bool   getTouchSwapX();
         const bool   getTouchSwapY();
         const bool   getTouchSwapXY();
-        const unsigned int getTouchResX();
-        const unsigned int getTouchResY();
 
         // graphics section setters
         void setVideoLayer(MMSConfigDataLayer layer);

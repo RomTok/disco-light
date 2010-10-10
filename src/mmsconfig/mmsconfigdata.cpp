@@ -257,13 +257,6 @@ const bool   MMSConfigData::getTouchSwapXY() {
 	return this->graphics.touchSwapXY;
 }
 
-const unsigned int MMSConfigData::getTouchResX() {
-	return this->graphics.touchResX;
-}
-
-const unsigned int MMSConfigData::getTouchResY() {
-	return this->graphics.touchResY;
-}
 
 // graphics section setters
 void MMSConfigData::setVideoLayer(MMSConfigDataLayer layer) {
