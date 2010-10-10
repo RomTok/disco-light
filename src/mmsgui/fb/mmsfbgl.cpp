@@ -271,6 +271,62 @@ bool MMSFBGL::buildShaderProgram4ModulateBlitting(GLuint *program) {
 }
 
 
+bool MMSFBGL::buildShaderProgram4BlittingFromAlpha(GLuint *program) {
+	// fragment and vertex shaders code
+	const char* fragment_shader =
+		"precision mediump float;												\n"
+		"varying vec2 v_texCoord;												\n"
+		"uniform sampler2D s_texture;											\n"
+		"uniform mediump vec4 FSColor;											\n"
+		"void main()															\n"
+		"{																		\n"
+		"   vec4 baseColor = texture2D(s_texture, v_texCoord);          		\n"
+		"	gl_FragColor = vec4(FSColor.r, FSColor.g, FSColor.b, baseColor.a);	\n"
+		"}																		\n";
+
+	const char* vertex_shader =
+		"attribute vec4 VSVertex;				\n"
+		"attribute vec2 a_texCoord;				\n"
+		"varying vec2 v_texCoord;				\n"
+		"uniform mediump mat4 VSMatrix;			\n"
+		"void main()							\n"
+		"{										\n"
+		"   gl_Position = VSMatrix * VSVertex;	\n"
+		"   v_texCoord = a_texCoord;			\n"
+		"}										\n";
+
+	return buildShaderProgram(fragment_shader, vertex_shader, program);
+}
+
+
+bool MMSFBGL::buildShaderProgram4ModulateBlittingFromAlpha(GLuint *program) {
+	// fragment and vertex shaders code
+	const char* fragment_shader =
+		"precision mediump float;															\n"
+		"varying vec2 v_texCoord;															\n"
+		"uniform sampler2D s_texture;														\n"
+		"uniform mediump vec4 FSColor;														\n"
+		"void main()																		\n"
+		"{																					\n"
+		"   vec4 baseColor = texture2D(s_texture, v_texCoord);          					\n"
+		"	gl_FragColor = vec4(FSColor.r, FSColor.g, FSColor.b, FSColor.a * baseColor.a);	\n"
+		"}																					\n";
+
+	const char* vertex_shader =
+		"attribute vec4 VSVertex;				\n"
+		"attribute vec2 a_texCoord;				\n"
+		"varying vec2 v_texCoord;				\n"
+		"uniform mediump mat4 VSMatrix;			\n"
+		"void main()							\n"
+		"{										\n"
+		"   gl_Position = VSMatrix * VSVertex;	\n"
+		"   v_texCoord = a_texCoord;			\n"
+		"}										\n";
+
+	return buildShaderProgram(fragment_shader, vertex_shader, program);
+}
+
+
 bool MMSFBGL::initShaders() {
 
 #ifdef __HAVE_GLES2__
@@ -284,6 +340,8 @@ bool MMSFBGL::initShaders() {
 	buildShaderProgram4Drawing(&this->po_draw);
 	buildShaderProgram4Blitting(&this->po_blit);
 	buildShaderProgram4ModulateBlitting(&this->po_modulateblit);
+	buildShaderProgram4BlittingFromAlpha(&this->po_blit_fromalpha);
+	buildShaderProgram4ModulateBlittingFromAlpha(&this->po_modulateblit_fromalpha);
 
     return true;
 
@@ -311,6 +369,16 @@ void MMSFBGL::deleteShaders() {
 	if (this->po_modulateblit) {
 		glDeleteProgram(this->po_modulateblit);
 		this->po_modulateblit = 0;
+	}
+
+	if (this->po_blit_fromalpha) {
+		glDeleteProgram(this->po_blit_fromalpha);
+		this->po_blit_fromalpha = 0;
+	}
+
+	if (this->po_modulateblit_fromalpha) {
+		glDeleteProgram(this->po_modulateblit_fromalpha);
+		this->po_modulateblit_fromalpha = 0;
 	}
 
 	this->po_current = 0;
@@ -1021,25 +1089,36 @@ void MMSFBGL::setDrawingMode() {
 #endif
 }
 
-void MMSFBGL::setTexEnvReplace() {
+void MMSFBGL::setTexEnvReplace(GLenum format) {
 #ifdef __HAVE_GL2__
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #endif
 
 #ifdef __HAVE_GLES2__
-	useShaderProgram4Blitting();
+	if (format != GL_ALPHA) {
+		useShaderProgram4Blitting();
+	}
+	else {
+		useShaderProgram4BlittingFromAlpha();
+	}
 #endif
 }
 
-void MMSFBGL::setTexEnvModulate() {
+void MMSFBGL::setTexEnvModulate(GLenum format) {
 #ifdef __HAVE_GL2__
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 #endif
 
 #ifdef __HAVE_GLES2__
-	useShaderProgram4ModulateBlitting();
+	if (format != GL_ALPHA) {
+		useShaderProgram4ModulateBlitting();
+	}
+	else {
+		useShaderProgram4ModulateBlittingFromAlpha();
+	}
 #endif
 }
+
 
 
 
@@ -1258,6 +1337,42 @@ bool MMSFBGL::useShaderProgram4ModulateBlitting() {
 
 	if (this->po_current != this->po_modulateblit) {
 		this->po_current = this->po_modulateblit;
+		glUseProgram(this->po_current);
+		this->VSMatrixLoc_initialized = false;
+		this->FSColorLoc_initialized = false;
+	}
+
+	setMatrix(this->current_matrix);
+	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
+
+	return true;
+}
+
+
+bool MMSFBGL::useShaderProgram4BlittingFromAlpha() {
+	if (!this->po_blit_fromalpha)
+		return false;
+
+	if (this->po_current != this->po_blit_fromalpha) {
+		this->po_current = this->po_blit_fromalpha;
+		glUseProgram(this->po_current);
+		this->VSMatrixLoc_initialized = false;
+		this->FSColorLoc_initialized = false;
+	}
+
+	setMatrix(this->current_matrix);
+	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
+
+	return true;
+}
+
+
+bool MMSFBGL::useShaderProgram4ModulateBlittingFromAlpha() {
+	if (!this->po_modulateblit_fromalpha)
+		return false;
+
+	if (this->po_current != this->po_modulateblit_fromalpha) {
+		this->po_current = this->po_modulateblit_fromalpha;
 		glUseProgram(this->po_current);
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;

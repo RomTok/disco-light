@@ -100,6 +100,12 @@ class MMSFBGL {
     	//! program handle to the fragment and vertex shader used for blitting with source modulation beforehand
     	GLuint po_modulateblit;
 
+    	//! program handle to the fragment and vertex shader used for blitting from alpha
+    	GLuint po_blit_fromalpha;
+
+    	//! program handle to the fragment and vertex shader used for blitting from alpha source and modulation beforehand
+    	GLuint po_modulateblit_fromalpha;
+
     	//! currently active program
     	GLuint po_current;
 
@@ -132,6 +138,8 @@ class MMSFBGL {
     	bool buildShaderProgram4Drawing(GLuint *program);
     	bool buildShaderProgram4Blitting(GLuint *program);
     	bool buildShaderProgram4ModulateBlitting(GLuint *program);
+    	bool buildShaderProgram4BlittingFromAlpha(GLuint *program);
+    	bool buildShaderProgram4ModulateBlittingFromAlpha(GLuint *program);
 
     	void deleteShaders();
         bool initShaders();
@@ -176,8 +184,8 @@ class MMSFBGL {
         void disableDepthTest();
         void disableTexture2D();
 		void setDrawingMode();
-		void setTexEnvReplace();
-		void setTexEnvModulate();
+		void setTexEnvReplace(GLenum format);
+		void setTexEnvModulate(GLenum format);
 
         void matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB);
         void matrixLoadIdentity(MMSFBGLMatrix result);
@@ -191,6 +199,8 @@ class MMSFBGL {
         bool useShaderProgram4Drawing();
         bool useShaderProgram4Blitting();
         bool useShaderProgram4ModulateBlitting();
+        bool useShaderProgram4BlittingFromAlpha();
+        bool useShaderProgram4ModulateBlittingFromAlpha();
 
         bool setMatrix(MMSFBGLMatrix matrix);
         bool getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top);
