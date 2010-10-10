@@ -91,6 +91,8 @@ class MMSFBGL {
     	int screen_width;
     	int screen_height;
 
+    	GLuint bound_fbo;
+
     	//! program handle to the fragment and vertex shader used for drawing primitives
     	GLuint po_draw;
 
@@ -175,7 +177,7 @@ class MMSFBGL {
         bool allocFBOandRBO(GLuint fbo, GLuint tex, GLuint rbo, int width, int height);
     	bool freeFBO(GLuint fbo, GLuint tex, GLuint rbo = 0);
 
-    	bool bindFrameBuffer(GLuint ogl_fbo);
+    	bool bindFrameBuffer(GLuint ogl);
     	bool setScissor(GLint x, GLint y, GLsizei width, GLsizei height);
     	bool disableScissor();
 

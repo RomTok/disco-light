@@ -55,6 +55,9 @@
 
 MMSFBGL::MMSFBGL() {
 	this->initialized = false;
+
+	// default framebuffer object is always 0, so set bound_fbo to 0
+	this->bound_fbo = 0;
 }
 
 MMSFBGL::~MMSFBGL() {
@@ -772,8 +775,25 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 
 	INITCHECK;
 
-	if (tex)
+	if (tex) {
+		// finishing all operations
+		glFinish();
+
+		// switch to the primary frame buffer
+		// so OpenGL have to finish tasks which are not finished during glFinish()
+		GLuint fbo = this->bound_fbo;
+		bindFrameBuffer(0);
+
+		// detach texture
+		glDisable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// now is safe to delete the texture
 		glDeleteTextures(1, &tex);
+
+		// switch back to the saved fbo
+		bindFrameBuffer(fbo);
+	}
 
 	return true;
 }
@@ -781,6 +801,10 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 bool MMSFBGL::bindTexture2D(GLuint tex) {
 
 	INITCHECK;
+
+	// flush all queued commands to the OpenGL server
+	// but do NOT wait until all queued commands are finished by the OpenGL server
+	glFlush();
 
 	// activate texture
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -861,6 +885,13 @@ bool MMSFBGL::deleteFrameBuffer(GLuint fbo) {
 
 	INITCHECK;
 
+	// finishing all operations
+	glFinish();
+
+	// switch to the primary frame buffer
+	// so OpenGL have to finish tasks which are not finished during glFinish()
+	bindFrameBuffer(0);
+
 #ifdef  __HAVE_GL2__
 	if (fbo)
 		glDeleteFramebuffersEXT(1, &fbo);
@@ -896,6 +927,13 @@ bool MMSFBGL::deleteRenderBuffer(GLuint rbo) {
 
 	INITCHECK;
 
+	// finishing all operations
+	glFinish();
+
+	// switch to the primary frame buffer
+	// so OpenGL have to finish tasks which are not finished during glFinish()
+	bindFrameBuffer(0);
+
 #ifdef  __HAVE_GL2__
 	if (rbo)
 		glDeleteRenderbuffersEXT(1, &rbo);
@@ -915,7 +953,7 @@ bool MMSFBGL::attachTexture2FrameBuffer(GLuint fbo, GLuint tex) {
 	INITCHECK;
 
 #ifdef  __HAVE_GL2__
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	bindFrameBuffer(fbo);
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex, 0);
 	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 		// the GPU does not support current FBO configuration
@@ -925,7 +963,7 @@ bool MMSFBGL::attachTexture2FrameBuffer(GLuint fbo, GLuint tex) {
 #endif
 
 #ifdef __HAVE_GLES2__
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	bindFrameBuffer(fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		// the GPU does not support current FBO configuration
@@ -945,7 +983,7 @@ bool MMSFBGL::attachRenderBuffer2FrameBuffer(GLuint fbo, GLuint rbo, int width, 
 #ifdef  __HAVE_GL2__
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo);
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	bindFrameBuffer(fbo);
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo);
 	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 		// the GPU does not support current FBO configuration
@@ -957,7 +995,7 @@ bool MMSFBGL::attachRenderBuffer2FrameBuffer(GLuint fbo, GLuint rbo, int width, 
 #ifdef __HAVE_GLES2__
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	bindFrameBuffer(fbo);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		// the GPU does not support current FBO configuration
@@ -1017,28 +1055,35 @@ bool MMSFBGL::freeFBO(GLuint fbo, GLuint tex, GLuint rbo) {
 
 	INITCHECK;
 
-	bindFrameBuffer(fbo);
+	bindFrameBuffer(0);
 	deleteRenderBuffer(rbo);
 	deleteTexture(tex);
 	deleteFrameBuffer(fbo);
-	bindFrameBuffer(0);
 
 	return true;
 }
 
 
-bool MMSFBGL::bindFrameBuffer(GLuint ogl_fbo) {
+bool MMSFBGL::bindFrameBuffer(GLuint fbo) {
 
 	INITCHECK;
 
+	if (this->bound_fbo != fbo) {
+		// going to change the framebuffer object
+		this->bound_fbo = fbo;
+
 #ifdef  __HAVE_GL2__
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ogl_fbo);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 #endif
 
 #ifdef __HAVE_GLES2__
-	glBindFramebuffer(GL_FRAMEBUFFER, ogl_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 #endif
+	}
+
+	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
 
 	return true;
 }
@@ -1742,7 +1787,6 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	// bind the texture unit0
 	glActiveTexture ( GL_TEXTURE0 );
 	glUniform1i(samplerLoc, 0);
-
 
 	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
 

@@ -69,10 +69,7 @@
 	} else { \
 		if (!surface->is_sub_surface) oglMatrix(0, surface->config.w, surface->config.h, 0); \
 		else oglMatrix(0, surface->root_parent->config.w, surface->root_parent->config.h, 0); \
-	} \
-	mmsfbgl.disableScissor(); \
-	mmsfbgl.disableDepthTest(); \
-	mmsfbgl.disableTexture2D();
+	}
 
 
 
@@ -183,10 +180,10 @@
 
 
 #define INIT_OGL_FBOXX(surface) \
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surface->config.surface_buffer->ogl_fbo); \
+	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo); \
 	if (!surface->is_sub_surface) oglMatrixXX(0, surface->config.w, 0, surface->config.h); \
-	else oglMatrixXX(0, surface->root_parent->config.w, 0, surface->root_parent->config.h); \
-	glDisable(GL_SCISSOR_TEST);
+	else oglMatrixXX(0, surface->root_parent->config.w, 0, surface->root_parent->config.h);
+
 
 
 /*
