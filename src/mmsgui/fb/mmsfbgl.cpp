@@ -50,6 +50,8 @@
 #define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_COORD(v1, v2) / (width))
 #define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_COORD(v1, v2) / (height))
 
+#define OGL_CALC_COORD_MIDDLE(v1, v2) (((v1)<(v2)) ? (float)(v1) + 0.49 : (float)(v1) + 0.51)
+
 
 MMSFBGL::MMSFBGL() {
 	this->initialized = false;
@@ -1517,6 +1519,80 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 }
 
 
+bool MMSFBGL::drawRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2) {
+
+	INITCHECK;
+
+#ifdef __HAVE_GL2__
+
+	glBegin(GL_LINE_STRIP);
+		glVertex3f(x1, y1, z1);
+		glVertex3f(x2, y1, z2);
+		glVertex3f(x2, y2, z2);
+		glVertex3f(x1, y2, z1);
+		glVertex3f(x1, y1, z1);
+	glEnd();
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
+	// configure generic vertex attribute array
+	GLfloat vertices[] = {x1,y1,z1,x2,y1,z2,x2,y2,z2,x1,y2,z1,x1,y1,z1};
+	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	glVertexAttribPointer(MMSFBGL_VSV_LOC, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), vertices);
+
+	// draw it
+	glDrawArrays(GL_LINE_STRIP, 0, 5);
+
+#endif
+
+	return true;
+}
+
+bool MMSFBGL::drawRectangle2D(float x1, float y1, float x2, float y2) {
+
+	INITCHECK;
+
+#ifdef __HAVE_GL2__
+
+	glBegin(GL_LINE_STRIP);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x1, y2);
+		glVertex2f(x1, y1);
+	glEnd();
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
+	// configure generic vertex attribute array
+	GLfloat vertices[] = {x1,y1,x2,y1,x2,y2,x1,y2,x1,y1};
+	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	glVertexAttribPointer(MMSFBGL_VSV_LOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), vertices);
+
+	// draw it
+	glDrawArrays(GL_LINE_STRIP, 0, 5);
+
+#endif
+
+	return true;
+}
+
+
+bool MMSFBGL::drawRectangle2Di(int x1, int y1, int x2, int y2) {
+	// change pixel based values to float values and draw it
+	return drawRectangle2D(OGL_CALC_COORD_MIDDLE(x1, x2), OGL_CALC_COORD_MIDDLE(y1, y2),
+							OGL_CALC_COORD_MIDDLE(x2, x1), OGL_CALC_COORD_MIDDLE(y2, y1));
+}
+
+
+
+
+
+
 bool MMSFBGL::fillTriangle(float x1, float y1, float z1,
 							   float x2, float y2, float z2,
 							   float x3, float y3, float z3) {
@@ -1554,6 +1630,12 @@ bool MMSFBGL::fillRectangle3D(float x1, float y1, float z1, float x2, float y2, 
 
 	INITCHECK;
 
+#ifdef __HAVE_GL2__
+//TODO
+#endif
+
+#ifdef __HAVE_GLES2__
+
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x2,y1,z2,x1,y1,z1,x1,y2,z1,x2,y2,z2};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
@@ -1561,6 +1643,8 @@ bool MMSFBGL::fillRectangle3D(float x1, float y1, float z1, float x2, float y2, 
 
 	// draw it
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+#endif
 
 	return true;
 }

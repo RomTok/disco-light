@@ -208,10 +208,17 @@ class MMSFBGL {
 
         bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+
+        bool drawRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2);
+        bool drawRectangle2D(float x1, float y1, float x2, float y2);
+        bool drawRectangle2Di(int x1, int y1, int x2, int y2);
+
+
         bool fillTriangle(float x1, float y1, float z1,
 							 float x2, float y2, float z2,
 							 float x3, float y3, float z3);
         bool fillTriangle2D(float x1, float y1, float x2, float y2, float x3, float y3);
+
         bool fillRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2);
         bool fillRectangle2D(float x1, float y1, float x2, float y2);
         bool fillRectangle2Di(int x1, int y1, int x2, int y2);

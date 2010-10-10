@@ -69,7 +69,11 @@
 	} else { \
 		if (!surface->is_sub_surface) oglMatrix(0, surface->config.w, surface->config.h, 0); \
 		else oglMatrix(0, surface->root_parent->config.w, surface->root_parent->config.h, 0); \
-	} mmsfbgl.disableScissor();
+	} \
+	mmsfbgl.disableScissor(); \
+	mmsfbgl.disableDepthTest(); \
+	mmsfbgl.disableTexture2D();
+
 
 
 #define OGL_SCISSOR(surface, X, Y, W, H) \
@@ -168,6 +172,9 @@
 		mmsfbgl.fillRectangle2Di(x1, y1, x2, y2);
 
 
+#define OGL_DRAW_RECTANGLE(x1, y1, x2, y2) \
+		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) \
+		mmsfbgl.drawRectangle2Di(x1, y1, x2, y2);
 
 #endif
 
@@ -216,15 +223,6 @@
 			glVertex2f(OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1)); \
 		glEnd(); }
 
-#define OGL_DRAW_RECTANGLE(x1, y1, x2, y2) \
-		OGL_SINGLE_POINT_FALLBACK(x1, y1, x2, y2) { \
-		glBegin(GL_LINE_STRIP); \
-			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2)); \
-			glVertex2f(OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y1, y2)); \
-			glVertex2f(OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1)); \
-			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y2, y1)); \
-			glVertex2f(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2)); \
-		glEnd(); }
 
 #define OGL_FILL_TRIANGLE(x1, y1, x2, y2, x3, y3) \
 		OGL_SINGLE_POINT_FALLBACK2(x1, y1, x2, y2, x3, y3) { \
@@ -522,8 +520,6 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
-	mmsfbgl.disableDepthTest();
-	mmsfbgl.disableTexture2D();
 
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
@@ -672,11 +668,9 @@ void MMSFBBackEndInterface::drawRectangle(MMSFBSurface *surface, MMSFBRectangle 
 }
 
 void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
-#ifdef  __HAVE_GL2__
+#ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
 	INIT_OGL_FBO(req->surface);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
 
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
@@ -689,7 +683,6 @@ void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
 
 		// draw rectangle
 		OGL_DRAW_RECTANGLE(req->rect.x						+ xoff,
