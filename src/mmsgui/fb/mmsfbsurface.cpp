@@ -144,7 +144,6 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 
 
 
-static int mm=0;
 
 MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer, bool systemonly) {
     // init me
@@ -1105,7 +1104,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 #ifdef  __HAVE_OPENGL__
 		if (this->config.surface_buffer->ogl_fbo == 0) {
 			// this surface is the primary display buffer connected to the x-window
-			int glxres, val;
+			int val;
 
 			// get size
 			if (this->is_sub_surface) {
@@ -1122,6 +1121,7 @@ bool MMSFBSurface::getConfiguration(MMSFBSurfaceConfig *config) {
 /*printf("getconfig\n");fflush(stdout);
 			LOCK_OGL(0);
 printf("getconfig2\n");fflush(stdout);
+			int glxres;
 			if ((glxres = glXGetConfig(this->x_display, this->xvi, GLX_DOUBLEBUFFER, &val))) {
 				MMSFB_SetError(glxres, "glXGetConfig() failed");
 				UNLOCK_OGL;
@@ -3811,6 +3811,29 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
 								dx, dy, dw, dh,
 								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+					extendedUnlock(source, this);
+
+					return true;
+				}
+				return false;
+			}
+
+			// does not match
+			return false;
+		}
+		else
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
+			// destination is RGB32
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				// blitting with alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					MMSFBPERF_START_MEASURING;
+						mmsfb_stretchblit_blend_argb_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								dx, dy, dw, dh);
 					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
 					extendedUnlock(source, this);
 

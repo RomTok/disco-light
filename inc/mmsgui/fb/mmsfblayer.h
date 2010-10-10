@@ -63,6 +63,10 @@ typedef struct {
 	bool	avail;
 	//! layer's id
 	int 	id;
+	//! used backend, normally it is not layer specific
+	MMSFBBackend backend;
+	//! used outputtype, can be layer specific
+	MMSFBOutputType outputtype;
 	//! width
     int     w;
     //! height
@@ -141,7 +145,7 @@ class MMSFBLayer {
         static bool 			firsttime_createwindow_noalpha;
 
     public:
-        MMSFBLayer(int id);
+        MMSFBLayer(int id, MMSFBBackend backend, MMSFBOutputType outputtype);
         virtual ~MMSFBLayer();
 
         bool isInitialized();

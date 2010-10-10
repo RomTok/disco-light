@@ -48,23 +48,26 @@ void MMSFB_AtExit() {
 		mmsfb->release();
 }
 
-MMSFB::MMSFB() :
-	argc(0),
-	argv(NULL),
-	initialized(false),
+MMSFB::MMSFB() {
+	this->argc = 0;
+	this->argv = NULL;
+	this->initialized = false;
 #ifdef  __HAVE_DIRECTFB__
-    dfb(NULL),
+	this->dfb = NULL;
 #endif
 #ifdef  __HAVE_FBDEV__
-    mmsfbdev(NULL),
+	this->mmsfbdev = NULL;
 #endif
 #ifdef __HAVE_XLIB__
-    x_display(NULL),
+	this->x_display = NULL;
 #endif
 #ifdef __HAVE_XV__
-	xv_port(0),
+	this->xv_port = 0;
 #endif
-	outputtype(MMSFB_OT_NONE) {
+#ifdef __HAVE_OPENGL__
+	this->bei = NULL;
+#endif
+
 	// set the atexit routine
 	atexit(MMSFB_AtExit);
 }
@@ -78,7 +81,7 @@ MMSFB::~MMSFB() {
 }
 
 
-bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, MMSFBRectangle x11_win_rect,
+bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11_win_rect,
 				 bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
 				 string appl_name, string appl_icon_name, bool hidden) {
 
@@ -99,7 +102,6 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
 
     // basic information mainly needed by X11 initialization
-    this->outputtype = outputtype;
     this->x11_win_rect = x11_win_rect;
 
     // which backend should i use?
@@ -120,13 +122,6 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		MMSFB_SetError(0, "compile X11 support!");
 		return false;
 #endif
-		if (this->outputtype == MMSFB_OT_XVSHM) {
-#ifdef __HAVE_XV__
-#else
-			MMSFB_SetError(0, "compile X11/XV support!");
-			return false;
-#endif
-		}
     }
     else
 	if (this->backend == MMSFB_BE_FBDEV) {
@@ -136,34 +131,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 		return false;
 #endif
 	}
-    else
-    if (this->backend == MMSFB_BE_OGL) {
-#ifdef __HAVE_OPENGL__
-#ifdef __HAVE_GLX__
-		XInitThreads();
-		this->resized=false;
-#endif
-#else
-		MMSFB_SetError(0, "compile OPENGL support!");
-		return false;
-#endif
-    }
-	else
-	if (this->backend == MMSFB_BE_NONE) {
-		// fall back, auto detection
-		this->backend = MMSFB_BE_DFB;
-#ifdef __HAVE_XLIB__
-		if ((this->outputtype == MMSFB_OT_X11)&&(extendedaccel)) {
-			this->backend = MMSFB_BE_X11;
-			XInitThreads();
-			this->resized=false;
-		}
-#endif
-	}
 	else {
 		MMSFB_SetError(0, "wrong backend " + getMMSFBBackendString(backend));
 		return false;
 	}
+
 
     if (this->backend == MMSFB_BE_DFB) {
 #ifdef __HAVE_DIRECTFB__
@@ -180,52 +152,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 #endif
     }
     else
-    if (this->backend == MMSFB_BE_FBDEV) {
-#ifdef __HAVE_FBDEV__
-		if (this->outputtype == MMSFB_OT_MATROXFB) {
-			// matroxfb
-    		this->mmsfbdev = new MMSFBDevMatrox();
-		}
-		else
-		if (this->outputtype == MMSFB_OT_DAVINCIFB) {
-			// davincifb
-    		this->mmsfbdev = new MMSFBDevDavinci();
-		}
-		else
-		if (this->outputtype == MMSFB_OT_OMAPFB) {
-			// omapfb
-		    DEBUGMSG("MMSGUI", "create new MMSFBDevOmap()");
-    		this->mmsfbdev = new MMSFBDevOmap();
-		    DEBUGMSG("MMSGUI", "created new MMSFBDevOmap()");
-		}
-		else {
-			// default fbdev
-		    DEBUGMSG("MMSGUI", "create generic fbdev");
-    		this->mmsfbdev = new MMSFBDev();
-		}
-
-    	if (this->mmsfbdev)
-			if (!this->mmsfbdev->openDevice()) {
-				MMSFB_SetError(0, "MMSFBDEV device cannot be opened");
-				return false;
-			}
-#endif
-    }
-
-
-
-//TODO: diskorc handling has to be fixed
-#ifdef __HAVE_GLES2__
-	else
-	if (mmsfb->backend == MMSFB_BE_OGL) {
-		this->bei = new MMSFBBackEndInterface();
-	}
-#endif
-
-
-
-
-    else {
+    if (this->backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
         if (!(this->x_display = XOpenDisplay((char*)0))) {
 			MMSFB_SetError(0, "XOpenDisplay() failed");
@@ -249,15 +176,6 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 
 		this->hidden = hidden;
 		this->pointer = pointer;
-
-
-		if (this->backend == MMSFB_BE_OGL) {
-#ifdef __HAVE_OPENGL__
-			this->bei = new MMSFBBackEndInterface();
-#endif
-		}
-
-
 #endif
     }
 
@@ -266,6 +184,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType ou
 }
 
 bool MMSFB::release() {
+#ifdef __HAVE_OPENGL__
+	// stop backend interface server
+	if (this->bei) delete this->bei;
+#endif
+
     if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		if (this->dfb)
@@ -308,7 +231,7 @@ bool MMSFB::unlock() {
 	return true;
 }
 
-bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
+bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype) {
 
 	// check if initialized
     INITCHECK;
@@ -319,8 +242,101 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
         return true;
     }
 
+
+    // check the backend / outputtype combination
+    if (this->backend == MMSFB_BE_X11) {
+		if (outputtype == MMSFB_OT_XVSHM) {
+#ifdef __HAVE_XV__
+#else
+			MMSFB_SetError(0, "compile X11/XV support!");
+			return false;
+#endif
+		}
+		else
+		if (outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+#else
+			MMSFB_SetError(0, "compile OPENGL support!");
+			return false;
+#endif
+#ifdef __HAVE_GLX__
+#else
+			MMSFB_SetError(0, "compile GLX support!");
+			return false;
+#endif
+		}
+    }
+    else
+	if (this->backend == MMSFB_BE_FBDEV) {
+		if (outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+#else
+			MMSFB_SetError(0, "compile OPENGL support!");
+			return false;
+#endif
+#ifdef __HAVE_EGL__
+#else
+			MMSFB_SetError(0, "compile EGL support!");
+			return false;
+#endif
+		}
+	}
+
+
+
+
+    if (this->backend == MMSFB_BE_FBDEV) {
+#ifdef __HAVE_FBDEV__
+    	if (!this->mmsfbdev) {
+			if (outputtype == MMSFB_OT_MATROXFB) {
+				// matroxfb
+				this->mmsfbdev = new MMSFBDevMatrox();
+			}
+			else
+			if (outputtype == MMSFB_OT_DAVINCIFB) {
+				// davincifb
+				this->mmsfbdev = new MMSFBDevDavinci();
+			}
+			else
+			if (outputtype == MMSFB_OT_OMAPFB) {
+				// omapfb
+				DEBUGMSG("MMSGUI", "create new MMSFBDevOmap()");
+				this->mmsfbdev = new MMSFBDevOmap();
+				DEBUGMSG("MMSGUI", "created new MMSFBDevOmap()");
+			}
+			else {
+				// default fbdev
+				DEBUGMSG("MMSGUI", "create generic fbdev");
+				this->mmsfbdev = new MMSFBDev();
+			}
+
+			if (this->mmsfbdev) {
+				if (!this->mmsfbdev->openDevice()) {
+					MMSFB_SetError(0, "MMSFBDEV device cannot be opened");
+					return false;
+				}
+			}
+    	}
+#endif
+    }
+
+
+
+
+	if (outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+		if (!this->bei) {
+			// start backend interface server
+			this->bei = new MMSFBBackEndInterface();
+		}
+#endif
+	}
+
+
+
+
     // create a new layer instance
-    *layer = new MMSFBLayer(id);
+    *layer = new MMSFBLayer(id, this->backend, outputtype);
     if (!*layer) {
         MMSFB_SetError(0, "cannot create new instance of MMSFBLayer");
         return false;

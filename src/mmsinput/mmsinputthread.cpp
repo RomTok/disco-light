@@ -71,10 +71,6 @@ void MMSInputThread::threadMain() {
 		if (mmsfb->getBackend()==MMSFB_BE_X11) {
 			this->handler = new MMSInputX11Handler(this->device);
 		}
-		else
-		if (mmsfb->getBackend()==MMSFB_BE_OGL) {
-			this->handler = new MMSInputX11Handler(this->device);
-		}
 
 
 /*		if(config->getOutputType()!= MMS_OT_X11FB) {

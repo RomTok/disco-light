@@ -209,10 +209,6 @@ const MMSFBBackend MMSConfigData::getBackend() {
     return this->graphics.backend;
 }
 
-const MMSFBOutputType MMSConfigData::getOutputType() {
-    return this->graphics.outputtype;
-}
-
 const MMSFBRectangle MMSConfigData::getVRect() {
     return this->graphics.vrect;
 }

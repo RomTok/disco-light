@@ -237,7 +237,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
 	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
 
-	    				if (config.getBackend() == MMSFB_BE_OGL) {
+	    				if (config.getGraphicsLayer().outputtype == MMSFB_OT_OGL) {
 							// for ogl we don't need premultiplied images
 							tafff->setDestinationPixelFormat(taffpf, false);
 	    				}
@@ -349,7 +349,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    			retry = false;
 				    	}
 				    	else
-						if (img_premultiplied && (config.getBackend() == MMSFB_BE_OGL)) {
+						if (img_premultiplied && (config.getGraphicsLayer().outputtype == MMSFB_OT_OGL)) {
 							DEBUGOUT("ImageManager, premultiplied image\n");
 							// for ogl we don't need premultiplied images
 							if (!retry) {
@@ -363,7 +363,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 								retry = false;
 						}
 						else
-						if (!img_premultiplied && (config.getBackend() != MMSFB_BE_OGL)) {
+						if (!img_premultiplied && (config.getGraphicsLayer().outputtype != MMSFB_OT_OGL)) {
 							DEBUGOUT("ImageManager, image not premultiplied\n");
 							// we use premultiplied images
 							if (!retry) {

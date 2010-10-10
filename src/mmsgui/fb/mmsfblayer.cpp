@@ -61,13 +61,15 @@ bool MMSFBLayer::firsttime_createwindow_noalpha	= true;
 #define INITCHECK  if(!this->initialized){MMSFB_SetError(0,"not initialized");return false;}
 
 
-MMSFBLayer::MMSFBLayer(int id) {
+MMSFBLayer::MMSFBLayer(int id, MMSFBBackend backend, MMSFBOutputType outputtype) {
     // init me
 	this->initialized = false;
     this->surface = NULL;
     this->flipflags = MMSFB_FLIP_NONE;
     this->config.avail = false;
     this->config.id = id;
+    this->config.backend = backend;
+    this->config.outputtype = outputtype;
     this->config.window_pixelformat = MMSFB_PF_ARGB;
     this->config.surface_pixelformat = MMSFB_PF_ARGB;
 
@@ -86,7 +88,7 @@ MMSFBLayer::MMSFBLayer(int id) {
     this->xv_image2 = NULL;
 #endif
 
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// get the layer
 		DFBResult	dfbres;
@@ -100,7 +102,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+    if (this->config.backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
 			// test layer initialization
@@ -109,12 +111,20 @@ MMSFBLayer::MMSFBLayer(int id) {
 				return;
 			}
 
+			if (this->config.outputtype == MMSFB_OT_OGL) {
+				// check layer 0
+				if (this->config.id != 0) {
+					MMSFB_SetError(0, "OPENGL support needs layer 0!");
+					return;
+				}
+			}
+
 			this->initialized = true;
         }
 #endif
     }
     else
-	if (mmsfb->backend == MMSFB_BE_X11) {
+	if (this->config.backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
 
 		// fill my config partly from mmsfb
@@ -123,7 +133,7 @@ MMSFBLayer::MMSFBLayer(int id) {
 		this->config.pixelformat = MMSFB_PF_NONE;
 		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
 		this->config.options = MMSFB_LO_NONE;
-		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
+		if (this->config.outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 			switch (mmsfb->x_depth) {
 			case 16:
@@ -137,33 +147,32 @@ MMSFBLayer::MMSFBLayer(int id) {
 				break;
 			}
 
+			this->initialized = true;
 		}
-		else {
-#ifdef __HAVE_XV__
+		else
+		if (this->config.outputtype == MMSFB_OT_XVSHM) {
 			// XVSHM
 			this->config.pixelformat = MMSFB_PF_YV12;
-#endif
+
+			this->initialized = true;
 		}
+		else
+		if (this->config.outputtype == MMSFB_OT_OGL) {
+			// OPENGL, check layer 0
+			if (this->config.id != 0) {
+				MMSFB_SetError(0, "OPENGL support needs layer 0!");
+				return;
+			}
 
-		this->initialized = true;
-#endif
-    }
-    else {
-#ifdef __HAVE_OPENGL__
-    	// check layer 0
-        if (this->config.id != 0) {
-			MMSFB_SetError(0, "OPENGL support needs layer 0!");
-        	return;
-        }
+			// fill my config partly from mmsfb
+			this->config.w = mmsfb->x11_win_rect.w;
+			this->config.h = mmsfb->x11_win_rect.h;
+			this->config.pixelformat = MMSFB_PF_ARGB;
+			this->config.buffermode = MMSFB_BM_BACKSYSTEM;
+			this->config.options = MMSFB_LO_NONE;
 
-		// fill my config partly from mmsfb
-		this->config.w = mmsfb->x11_win_rect.w;
-		this->config.h = mmsfb->x11_win_rect.h;
-		this->config.pixelformat = MMSFB_PF_ARGB;
-		this->config.buffermode = MMSFB_BM_BACKSYSTEM;
-		this->config.options = MMSFB_LO_NONE;
-
-		this->initialized = true;
+			this->initialized = true;
+		}
 #endif
     }
 
@@ -176,14 +185,14 @@ MMSFBLayer::MMSFBLayer(int id) {
 
 
 MMSFBLayer::~MMSFBLayer() {
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		if (this->dfblayer)
 			this->dfblayer->Release(this->dfblayer);
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+    if (this->config.backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (this->mmsfbdev_surface)
         	delete this->mmsfbdev_surface;
@@ -191,7 +200,7 @@ MMSFBLayer::~MMSFBLayer() {
     }
     else {
 #ifdef __HAVE_XLIB__
-		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
+		if (this->config.outputtype == MMSFB_OT_XSHM) {
 			// XSHM
 			if (this->x_image1)
 				XFree(this->x_image1);
@@ -212,39 +221,13 @@ MMSFBLayer::~MMSFBLayer() {
 }
 
 bool MMSFBLayer::isInitialized() {
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
     	return (this->dfblayer != NULL);
 #endif
     }
-    else
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
-#ifdef __HAVE_FBDEV__
-    	return this->initialized;
-#endif
-    }
-#ifdef __HAVE_XLIB__
-    else
-	if (mmsfb->backend == MMSFB_BE_X11) {
-
-		return this->initialized;
-
-
-		if (mmsfb->outputtype == MMSFB_OT_XSHM) {
-			// XSHM
-			return (this->x_image1 != NULL);
-		}
-		else {
-#ifdef __HAVE_XV__
-			// XVSHM
-			return (this->xv_image1 != NULL);
-#endif
-		}
-    }
-#endif
     else {
-		// OGL
-		return this->initialized;
+    	return this->initialized;
 	}
 
     return false;
@@ -271,7 +254,7 @@ bool MMSFBLayer::setExclusiveAccess() {
     // check if initialized
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -303,7 +286,7 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
         return true;
     }
 
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult               dfbres;
 		DFBDisplayLayerConfig   dlc;
@@ -322,12 +305,6 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
 		this->config.buffermode = getDFBLayerBufferModeString(dlc.buffermode);
 		this->config.options = getDFBLayerOptionsString(dlc.options);
 
-#endif
-    }
-    else
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
-#ifdef  __HAVE_FBDEV__
-		this->config.avail = true;
 #endif
     }
     else {
@@ -364,7 +341,8 @@ bool MMSFBLayer::getConfiguration(MMSFBLayerConfig *config) {
         }
 */
 
-    	DEBUGMSG("MMSGUI", " backend:     " + getMMSFBBackendString(mmsfb->backend));
+    	DEBUGMSG("MMSGUI", " backend:     " + getMMSFBBackendString(this->config.backend));
+    	DEBUGMSG("MMSGUI", " outputtype:  " + getMMSFBOutputTypeString(this->config.outputtype));
 
         DEBUGMSG("MMSGUI", " size:        " + iToStr(this->config.w) + "x" + iToStr(this->config.h));
 
@@ -426,7 +404,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
     // check if initialized
     INITCHECK;
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// get configuration
 		MMSFBLayerConfig config;
@@ -513,7 +491,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+    if (this->config.backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (!mmsfb->mmsfbdev)
         	return false;
@@ -544,37 +522,26 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			return false;
 		}
 
-		// we must switch extended accel on
-		this->mmsfbdev_surface->setExtendedAcceleration(true);
+	    if (this->config.outputtype == MMSFB_OT_OGL) {
+			// we must switch extended accel off
+			this->mmsfbdev_surface->setExtendedAcceleration(false);
+	    }
+	    else {
+			// we must switch extended accel on
+			this->mmsfbdev_surface->setExtendedAcceleration(true);
+	    }
 
     	// mark this surface as a layer surface
 		this->mmsfbdev_surface->setLayerSurface();
 
-		// get configuration
-		this->config.avail = false;
-		if (!getConfiguration()) {
-			printf("getconfiguration failed!");
-			return false;
-		}
-
-
-		// set special config
-		this->config.window_pixelformat = window_pixelformat;
-		this->config.surface_pixelformat = surface_pixelformat;
-
-
-		return true;
-#endif
-    }
-
-
-//TODO: diskorc handling has to be fixed
-#ifdef __HAVE_GLES2__
-    else
-    if (mmsfb->backend == MMSFB_BE_OGL) {
+	    if (this->config.outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
 #ifdef __HAVE_EGL__
-
-    	mmsfb->bei->init();
+	    	// initialize the backend interface server
+	    	mmsfb->bei->init();
+#endif
+#endif
+	    }
 
 		// get configuration
 		this->config.avail = false;
@@ -583,17 +550,15 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			return false;
 		}
 
+
 		// set special config
 		this->config.window_pixelformat = window_pixelformat;
 		this->config.surface_pixelformat = surface_pixelformat;
 
+
 		return true;
 #endif
     }
-#endif
-
-
-
     else {
 #ifdef __HAVE_XLIB__
 		// get configuration
@@ -1212,11 +1177,13 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		}
 
 
-	    if (mmsfb->backend == MMSFB_BE_OGL) {
+	    if (this->config.outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
 #ifdef __HAVE_GLX__
 			XUnlockDisplay(mmsfb->x_display);
 	    	mmsfb->bei->init(mmsfb->x_display, mmsfb->x_screen, this->x_window, mmsfb->x11_win_rect);
 			XLockDisplay(mmsfb->x_display);
+#endif
 #endif
 	    }
 
@@ -1286,7 +1253,7 @@ bool MMSFBLayer::setOpacity(unsigned char opacity) {
     // check if initialized
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -1313,7 +1280,7 @@ bool MMSFBLayer::setLevel(int level) {
     // check if initialized
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		DFBResult   dfbres;
 
@@ -1324,7 +1291,7 @@ bool MMSFBLayer::setLevel(int level) {
 		}
 		return true;
 #endif
-    } else if (mmsfb->backend == MMSFB_BE_X11) {
+    } else if (this->config.backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
 		XRaiseWindow(mmsfb->x_display, this->x_window);
 
@@ -1345,7 +1312,10 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
         return true;
     }
 
-    if (mmsfb->backend == MMSFB_BE_DFB) {
+    // reset surface pointer
+    *surface = NULL;
+
+    if (this->config.backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 		// get layers surface
 		DFBResult           dfbres;
@@ -1368,8 +1338,19 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+    if (this->config.backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
+    	if (this->config.outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+    		// create a new surface instance
+    		*surface = new MMSFBSurface(this->config.w, this->config.h, MMSFBSurfaceAllocatedBy_ogl);
+    		if (!*surface) {
+    			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface for OPENGL");
+    			return false;
+    		}
+#endif
+        }
+        else
     	if (this->config.buffermode == MMSFB_BM_FRONTONLY) {
     		// we have only the front buffer, no backbuffer to be allocated
     		*surface = this->mmsfbdev_surface;
@@ -1409,8 +1390,19 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 #endif
     }
     else
-	if (mmsfb->backend == MMSFB_BE_X11) {
+	if (this->config.backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
+    	if (this->config.outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+    		// create a new surface instance
+    		*surface = new MMSFBSurface(this->config.w, this->config.h, MMSFBSurfaceAllocatedBy_ogl);
+    		if (!*surface) {
+    			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface for OPENGL");
+    			return false;
+    		}
+#endif
+        }
+    	else
 		if (isRGBPixelFormat(this->config.pixelformat)) {
 			// XSHM
 			if ((!this->x_image1)||(!this->x_image2)) {
@@ -1451,16 +1443,6 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
 			(*surface)->setExtendedAcceleration(true);
 			(*surface)->layer=this;
 #endif
-		}
-#endif
-    }
-    else {
-#ifdef __HAVE_OPENGL__
-		// create a new surface instance
-		*surface = new MMSFBSurface(this->config.w, this->config.h, MMSFBSurfaceAllocatedBy_ogl);
-		if (!*surface) {
-			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
-			return false;
 		}
 #endif
     }
@@ -1521,7 +1503,7 @@ bool MMSFBLayer::releaseLayer() {
 	// check if initialized
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+    if (this->config.backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
         	return mmsfb->mmsfbdev->releaseLayer(this->config.id);
@@ -1537,7 +1519,7 @@ bool MMSFBLayer::restoreLayer() {
     // check if initialized
     INITCHECK;
 
-    if (mmsfb->backend == MMSFB_BE_FBDEV) {
+    if (this->config.backend == MMSFB_BE_FBDEV) {
 #ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
         	return mmsfb->mmsfbdev->restoreLayer(this->config.id);
@@ -1557,7 +1539,7 @@ bool MMSFBLayer::createSurface(MMSFBSurface **surface, int w, int h,
     if (pixelformat == MMSFB_PF_NONE) {
     	pixelformat = this->config.surface_pixelformat;
 
-    	if (mmsfb->backend == MMSFB_BE_OGL) {
+    	if (this->config.outputtype == MMSFB_OT_OGL) {
     		pixelformat = MMSFB_PF_ABGR;
     	}
 
@@ -1620,18 +1602,16 @@ bool MMSFBLayer::createWindow(MMSFBWindow **window, int x, int y, int w, int h,
     		pixelformat = this->config.pixelformat;
     	    if (isAlphaPixelFormat(pixelformat)) {
 				// switch all alpha pixelformats to RGB32
-				//pixelformat = MMSFB_PF_RGB32;
-				pixelformat = MMSFB_PF_ARGB;
+				pixelformat = MMSFB_PF_RGB32;
     	    }
     	    else
     	    if (isIndexedPixelFormat(pixelformat)) {
 				// switch all indexed pixelformats to RGB32
-				//pixelformat = MMSFB_PF_RGB32;
-				pixelformat = MMSFB_PF_ARGB;
+				pixelformat = MMSFB_PF_RGB32;
     	    }
     	}
 
-    	if (mmsfb->backend == MMSFB_BE_OGL) {
+    	if (this->config.outputtype == MMSFB_OT_OGL) {
     		pixelformat = MMSFB_PF_ABGR;
     	}
 

@@ -106,19 +106,13 @@ class MMSFB {
 #endif
 
 #ifdef __HAVE_OPENGL__
-        //! x-visual
-//	    XVisualInfo *xvi;
-
-	    //! opengl context
-//        GLXContext	glx_context;
-
+        // backend interface server needed for OPENGL
         MMSFBBackEndInterface	*bei;
 #endif
 
         MMSFBLayer 		*layer[MMSFBLAYER_MAXNUM];
 
         MMSFBBackend	backend;
-        MMSFBOutputType	outputtype;
         MMSFBRectangle  x11_win_rect;
 
         //! to make it thread-safe
@@ -128,7 +122,7 @@ class MMSFB {
         MMSFB();
         virtual ~MMSFB();
 
-        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBOutputType outputtype, MMSFBRectangle x11_win_rect,
+        bool init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11_win_rect,
         		  bool extendedaccel, MMSFBFullScreenMode fullscreen, MMSFBPointerMode pointer,
 				  string appl_name = "Disko Application", string appl_icon_name = "Disko Application", bool hidden=false);
         bool release();
@@ -139,7 +133,7 @@ class MMSFB {
         bool lock();
         bool unlock();
 
-        bool getLayer(int id, MMSFBLayer **layer);
+        bool getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype);
 
         void *getX11Window();
         void *getX11Display();

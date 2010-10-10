@@ -41,8 +41,6 @@ string getMMSFBBackendString(MMSFBBackend be) {
         return MMSFB_BE_X11_STR;
     if(be == MMSFB_BE_FBDEV)
         return MMSFB_BE_FBDEV_STR;
-    if(be == MMSFB_BE_OGL)
-        return MMSFB_BE_OGL_STR;
     return MMSFB_BE_NONE_STR;
 }
 
@@ -55,8 +53,6 @@ MMSFBBackend getMMSFBBackendFromString(string be) {
         return MMSFB_BE_X11;
     if(be == MMSFB_BE_FBDEV_STR)
         return MMSFB_BE_FBDEV;
-    if(be == MMSFB_BE_OGL_STR)
-        return MMSFB_BE_OGL;
     return MMSFB_BE_NONE;
 }
 
@@ -77,6 +73,8 @@ string getMMSFBOutputTypeString(MMSFBOutputType ot) {
         return MMSFB_OT_DAVINCIFB_STR;
     if(ot == MMSFB_OT_OMAPFB)
         return MMSFB_OT_OMAPFB_STR;
+    if(ot == MMSFB_OT_OGL)
+        return MMSFB_OT_OGL_STR;
     return MMSFB_OT_NONE_STR;
 }
 
@@ -99,6 +97,8 @@ MMSFBOutputType getMMSFBOutputTypeFromString(string ot) {
         return MMSFB_OT_DAVINCIFB;
 	if(ot == MMSFB_OT_OMAPFB_STR)
         return MMSFB_OT_OMAPFB;
+	if(ot == MMSFB_OT_OGL_STR)
+        return MMSFB_OT_OGL;
     return MMSFB_OT_NONE;
 }
 

@@ -1555,6 +1555,13 @@ void mmsfb_stretchblit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src
 // --- STRETCH TO RGB32 -------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+//! Stretch blit with alpha blending ARGB to RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_stretchblit_blend_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
+										  MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy, int dw, int dh);
+
 //! Stretch blit RGB32 to RGB32.
 /*!
 \author Jens Schneider

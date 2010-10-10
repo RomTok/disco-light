@@ -169,9 +169,7 @@ typedef enum {
 	//! X11 backend from disko framework
 	MMSFB_BE_X11,
 	//! FBDEV backend from disko framework
-	MMSFB_BE_FBDEV,
-	//! opengl backend
-	MMSFB_BE_OGL
+	MMSFB_BE_FBDEV
 } MMSFBBackend;
 
 //! backend: none
@@ -182,17 +180,15 @@ typedef enum {
 #define MMSFB_BE_X11_STR		"X11"
 //! backend: FBDEV
 #define MMSFB_BE_FBDEV_STR		"FBDEV"
-//! backend: OGL
-#define MMSFB_BE_OGL_STR		"OGL"
 
 //! list of valid backend types
-#define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV, OGL"
+#define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV"
 
 //! list of valid backend types for output types MMSFB_OT_xxxFB
-#define MMSFB_BE_VALID_VALUES_OT_FB		"DFB, FBDEV"
+#define MMSFB_BE_VALID_VALUES_OT_FB	"DFB, FBDEV"
 
 //! list of valid backend types for output type MMSFB_OT_X11
-#define MMSFB_BE_VALID_VALUES_OT_X11	"DFB, X11, OGL"
+#define MMSFB_BE_VALID_VALUES_OT_X11	"DFB, X11"
 
 //! list of valid backend types for output type MMSFB_OT_X
 #define MMSFB_BE_VALID_VALUES_OT_X		"X11"
@@ -214,7 +210,7 @@ typedef enum {
 	MMSFB_OT_MATROXFB,
 	//! VIAFB (backend: DFB)
 	MMSFB_OT_VIAFB,
-	//! X11 (backend: DFB, X11 and OGL)
+	//! X11 (backend: DFB and X11)
 	MMSFB_OT_X11,
 	//! XSHM (backend: X11)
 	MMSFB_OT_XSHM,
@@ -223,7 +219,9 @@ typedef enum {
 	//! DAVINCIFB (backend: DFB and FBDEV)
 	MMSFB_OT_DAVINCIFB,
 	//! OMAPFB (backend: DFB and FBDEV)
-	MMSFB_OT_OMAPFB
+	MMSFB_OT_OMAPFB,
+	//! OGL (backend: X11 and FBDEV)
+	MMSFB_OT_OGL
 } MMSFBOutputType;
 
 //! output type: none
@@ -234,7 +232,7 @@ typedef enum {
 #define MMSFB_OT_MATROXFB_STR	"MATROXFB"
 //! output type: VIAFB (backend: DFB)
 #define MMSFB_OT_VIAFB_STR		"VIAFB"
-//! output type: X11 (backend: DFB, X11 and OGL)
+//! output type: X11 (backend: DFB and X11)
 #define MMSFB_OT_X11_STR		"X11"
 //! output type: XSHM (backend: X11)
 #define MMSFB_OT_XSHM_STR		"XSHM"
@@ -243,22 +241,21 @@ typedef enum {
 //! output type: DAVINCIFB (backend: DFB and FBDEV)
 #define MMSFB_OT_DAVINCIFB_STR	"DAVINCIFB"
 //! output type: OMAPFB (backend: DFB and FBDEV)
-#define MMSFB_OT_OMAPFB_STR		"OMAPFB"
+#define MMSFB_OT_OMAPFB_STR	"OMAPFB"
+//! output type: OGL (backend: X11 and FBDEV)
+#define MMSFB_OT_OGL_STR		"OGL"
 
 //! list of valid output types
-#define MMSFB_OT_VALID_VALUES			"STDFB, MATROXFB, VIAFB, X11, XSHM, XVSHM, DAVINCIFB, OMAPFB"
+#define MMSFB_OT_VALID_VALUES			"STDFB, MATROXFB, VIAFB, X11, XSHM, XVSHM, DAVINCIFB, OMAPFB, OGL"
 
 //! list of valid output types for backend MMSFB_BE_DFB
 #define MMSFB_OT_VALID_VALUES_BE_DFB	"STDFB, MATROXFB, VIAFB, X11, DAVINCIFB, OMAPFB"
 
 //! list of valid output types for backend MMSFB_BE_X11
-#define MMSFB_OT_VALID_VALUES_BE_X11	"X11, XSHM, XVSHM"
+#define MMSFB_OT_VALID_VALUES_BE_X11	"X11, XSHM, XVSHM, OGL"
 
 //! list of valid output types for backend MMSFB_BE_FBDEV
-#define MMSFB_OT_VALID_VALUES_BE_FBDEV	"STDFB, MATROXFB, DAVINCIFB, OMAPFB"
-
-//! list of valid output types for backend MMSFB_BE_OGL
-#define MMSFB_OT_VALID_VALUES_BE_OGL	"X11"
+#define MMSFB_OT_VALID_VALUES_BE_FBDEV	"STDFB, MATROXFB, DAVINCIFB, OMAPFB, OGL"
 
 // conversion routines for output types
 string getMMSFBOutputTypeString(MMSFBOutputType ot);
@@ -449,11 +446,14 @@ typedef enum {
 //! list of valid pixelformats used for worker surfaces
 #define MMSFB_PF_VALID_VALUES_SURFACES	"ARGB, AiRGB, AYUV, ARGB4444, RGB16, ABGR, empty string for auto detection"
 
-//! list of valid pixelformats for XVSHM
+//! list of valid pixelformats for X11.XVSHM
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XVSHM	"YV12"
 
-//! list of valid pixelformats for XSHM
+//! list of valid pixelformats for X11.XSHM
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM	"RGB32, ARGB, YV12"
+
+//! list of valid pixelformats for X11.OGL
+#define MMSFB_PF_VALID_VALUES_BE_X11_OT_OGL	"ABGR"
 
 //! list of valid pixelformats for DAVINCIFB, OSD Layer
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0	"ARGB3565, RGB16"
@@ -466,6 +466,9 @@ typedef enum {
 
 //! list of valid pixelformats for OMAPFB, Video Layer
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_1	"YUY2, RGB32"
+
+//! list of valid pixelformats for FBDEV.OGL
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL	"RGB32, ABGR"
 
 //! list of valid pixelformats used for layer surfaces
 #define MMSFB_PF_VALID_BUFFERMODES "BACKVIDEO BACKSYSTEM FRONTONLY TRIPLE WINDOWS"

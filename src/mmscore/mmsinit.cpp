@@ -98,12 +98,15 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         MMSConfigDataGraphics   *rcGraphics = NULL;
         MMSConfigDataLanguage	*rcLanguage = NULL;
 
+        bool config_avail = false;
+
         if(!configfile.empty()) {
         	// config file given
         	DEBUGOUT("set configfile: %s\n", configfile.c_str());
 		    try {
 				rcparser.parseFile(configfile);
 				rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
+				config_avail = true;
 		    } catch (MMSRcParserError *ex) {
 	        	// config file not found
 		    	DEBUGOUT("configfile not found\n");
@@ -113,6 +116,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 		    try {
 		        rcparser.parseFile("./etc/diskorc.xml");
 		        rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
+				config_avail = true;
 		    } catch (MMSRcParserError *ex) {
 		    	// next try
 		        try {
@@ -124,6 +128,11 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 		        }
 		    }
         }
+
+		if (!config_avail) {
+			// failed to read diskorc
+			return false;
+		}
 
         // create first (static) MMSConfigData
         if (!rcGlobal) {
@@ -174,19 +183,20 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			DEBUGMSG_OUTSTR("Core", "Prefix.......................: " + config->getPrefix());
 			DEBUGMSG_OUTSTR("Core", "Theme........................: " + config->getTheme());
 			DEBUGMSG_OUTSTR("Core", "Backend......................: " + getMMSFBBackendString(config->getBackend()));
-			DEBUGMSG_OUTSTR("Core", "Output type..................: " + getMMSFBOutputTypeString(config->getOutputType()));
-			DEBUGMSG_OUTSTR("Core", "Video layer id...............: " + iToStr(videolayer.id));
-			DEBUGMSG_OUTSTR("Core", "Video layer resolution.......: " + iToStr(videolayer.rect.w) + "x" + iToStr(videolayer.rect.h));
-			DEBUGMSG_OUTSTR("Core", "Video layer position.........: " + iToStr(videolayer.rect.x) + "," + iToStr(videolayer.rect.y));
-			DEBUGMSG_OUTSTR("Core", "Video layer pixelformat......: " + getMMSFBPixelFormatString(videolayer.pixelformat));
-			DEBUGMSG_OUTSTR("Core", "Video layer options..........: " + videolayer.options);
-			DEBUGMSG_OUTSTR("Core", "Video layer buffermode.......: " + videolayer.buffermode);
 			DEBUGMSG_OUTSTR("Core", "Graphics layer id............: " + iToStr(graphicslayer.id));
+			DEBUGMSG_OUTSTR("Core", "Output type..................: " + getMMSFBOutputTypeString(config->getGraphicsLayer().outputtype));
 			DEBUGMSG_OUTSTR("Core", "Graphics layer resolution....: " + iToStr(graphicslayer.rect.w) + "x" + iToStr(graphicslayer.rect.h));
 			DEBUGMSG_OUTSTR("Core", "Graphics layer position......: " + iToStr(graphicslayer.rect.x) + "," + iToStr(graphicslayer.rect.y));
 			DEBUGMSG_OUTSTR("Core", "Graphics layer pixelformat...: " + getMMSFBPixelFormatString(graphicslayer.pixelformat));
 			DEBUGMSG_OUTSTR("Core", "Graphics layer options.......: " + graphicslayer.options);
 			DEBUGMSG_OUTSTR("Core", "Graphics layer buffermode....: " + graphicslayer.buffermode);
+			DEBUGMSG_OUTSTR("Core", "Video layer id...............: " + iToStr(videolayer.id));
+			DEBUGMSG_OUTSTR("Core", "Output type..................: " + getMMSFBOutputTypeString(config->getVideoLayer().outputtype));
+			DEBUGMSG_OUTSTR("Core", "Video layer resolution.......: " + iToStr(videolayer.rect.w) + "x" + iToStr(videolayer.rect.h));
+			DEBUGMSG_OUTSTR("Core", "Video layer position.........: " + iToStr(videolayer.rect.x) + "," + iToStr(videolayer.rect.y));
+			DEBUGMSG_OUTSTR("Core", "Video layer pixelformat......: " + getMMSFBPixelFormatString(videolayer.pixelformat));
+			DEBUGMSG_OUTSTR("Core", "Video layer options..........: " + videolayer.options);
+			DEBUGMSG_OUTSTR("Core", "Video layer buffermode.......: " + videolayer.buffermode);
 			DEBUGMSG_OUTSTR("Core", "Visible screen area..........: " + iToStr(config->getVRect().x) + "," + iToStr(config->getVRect().y) + "," + iToStr(config->getVRect().w) + "," + iToStr(config->getVRect().h));
 
 			if (config->getStdout()) {

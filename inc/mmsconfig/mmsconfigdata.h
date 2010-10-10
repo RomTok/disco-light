@@ -93,6 +93,7 @@ class MMSConfigDataDB {
 
 class MMSConfigDataLayer {
     public:
+	    MMSFBOutputType			outputtype;
 		int    					id;
     	MMSFBRectangle			rect;
 		MMSFBSurfacePixelFormat pixelformat;
@@ -100,9 +101,10 @@ class MMSConfigDataLayer {
 	    string 					buffermode;
 
    	    MMSConfigDataLayer() :
+   		    outputtype(MMSFB_OT_XSHM),
    			id(0),
    			rect(MMSFBRectangle(50,50,800,600)),
-   			pixelformat(MMSFB_PF_RGB16),
+   			pixelformat(MMSFB_PF_RGB32),
    		    options(""),
    		    buffermode("BACKSYSTEM") {}
 };
@@ -110,7 +112,6 @@ class MMSConfigDataLayer {
 class MMSConfigDataGraphics {
     public:
 	    MMSFBBackend 			backend;
-	    MMSFBOutputType			outputtype;
 	    MMSConfigDataLayer		videolayer;
 	    MMSConfigDataLayer		graphicslayer;
 	    MMSFBRectangle			vrect;
@@ -129,8 +130,7 @@ class MMSConfigDataGraphics {
 		unsigned int			touchResY;					/**< y resolution of touchscreen (if values from driver are false) */
 
    	    MMSConfigDataGraphics() :
-   		    backend(MMSFB_BE_NONE),							// set MMSFB_BE_NONE for compatibility reason
-   		    outputtype(MMSFB_OT_NONE),
+   		    backend(MMSFB_BE_X11),
    		    vrect(MMSFBRectangle(0,0,0,0)),
    		    touchrect(MMSFBRectangle(0,0,0,0)),
    		    pointer(MMSFB_PM_FALSE),						// use the mouse pointer, default no
@@ -214,7 +214,6 @@ class MMSConfigData {
         const MMSConfigDataLayer getVideoLayer();
         const MMSConfigDataLayer getGraphicsLayer();
         const MMSFBBackend getBackend();
-        const MMSFBOutputType getOutputType();
         const MMSFBRectangle getVRect();
         const MMSFBRectangle getTouchRect();
         const MMSFBPointerMode getPointer();

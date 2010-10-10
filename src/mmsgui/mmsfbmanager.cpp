@@ -86,34 +86,34 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 
 
 	// get layer settings from config
-	MMSConfigDataLayer videolayer = this->config.getVideoLayer();
-	MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
+	MMSConfigDataLayer videolayer_conf = this->config.getVideoLayer();
+	MMSConfigDataLayer graphicslayer_conf = this->config.getGraphicsLayer();
 
 	// init the MMSFB class
-    if (!mmsfb->init(myargc, myargv, config.getBackend(), config.getOutputType(), graphicslayer.rect,
+    if (!mmsfb->init(myargc, myargv, config.getBackend(), graphicslayer_conf.rect,
 					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getHideApplication())) {
 	    DEBUGMSG("MMSGUI", "init mmsfb failed!");
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 	}
 
     DEBUGMSG("MMSGUI", "get video layer");
-    if (!mmsfb->getLayer(videolayer.id, &this->videolayer))
+    if (!mmsfb->getLayer(videolayer_conf.id, &this->videolayer, videolayer_conf.outputtype))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
-    if(videolayer.id == graphicslayer.id) {
+    if(videolayer_conf.id == graphicslayer_conf.id) {
     	DEBUGMSG("MMSGUI", "video layer and graphics layer are the same");
         this->graphicslayer = this->videolayer;
     }
     else {
         this->layercount++;
         DEBUGMSG("MMSGUI", "get graphics layer");
-        if (!mmsfb->getLayer(graphicslayer.id, &this->graphicslayer))
+        if (!mmsfb->getLayer(graphicslayer_conf.id, &this->graphicslayer, graphicslayer_conf.outputtype))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
     }
 
-	if (config.getOutputType() == MMSFB_OT_MATROXFB)
+	if (videolayer_conf.outputtype == MMSFB_OT_MATROXFB)
     	this->videolayer->setFlipFlags(MMSFB_FLIP_WAITFORSYNC);
     else
     	this->videolayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
@@ -141,8 +141,8 @@ void MMSFBManager::applySettings() {
 	DEBUGMSG("MMSGUI", "configure graphics layer");
 
 	// get layer settings from config
-	MMSConfigDataLayer videolayer = this->config.getVideoLayer();
-	MMSConfigDataLayer graphicslayer = this->config.getGraphicsLayer();
+	MMSConfigDataLayer videolayer_conf = this->config.getVideoLayer();
+	MMSConfigDataLayer graphicslayer_conf = this->config.getGraphicsLayer();
 
 	// get the window pixelformat
 	MMSFBSurfacePixelFormat window_pixelformat = config.getGraphicsWindowPixelformat();
@@ -155,7 +155,7 @@ void MMSFBManager::applySettings() {
 		break;
 	default:
 		// window pixelformat not set or unsupported, use the layer pixelformat
-		window_pixelformat = graphicslayer.pixelformat;
+		window_pixelformat = graphicslayer_conf.pixelformat;
 		if (!isAlphaPixelFormat(window_pixelformat)) {
 			// the gui internally needs surfaces with alpha channel
 			// now we have to decide if we are working in RGB or YUV color space
@@ -185,7 +185,7 @@ void MMSFBManager::applySettings() {
 		break;
 	default:
 		// surface pixelformat not set or unsupported, use the layer pixelformat
-		surface_pixelformat = graphicslayer.pixelformat;
+		surface_pixelformat = graphicslayer_conf.pixelformat;
 		if (!isAlphaPixelFormat(surface_pixelformat)) {
 			// the gui internally needs surfaces with alpha channel
 			// now we have to decide if we are working in RGB or YUV color space
@@ -210,18 +210,19 @@ void MMSFBManager::applySettings() {
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
 	DEBUGMSG("MMSGUI", "set configuration");
-    if(!this->graphicslayer->setConfiguration(graphicslayer.rect.w, graphicslayer.rect.h,
-											   graphicslayer.pixelformat,
-											   graphicslayer.buffermode,
-											   graphicslayer.options,
+    if(!this->graphicslayer->setConfiguration(graphicslayer_conf.rect.w, graphicslayer_conf.rect.h,
+											   graphicslayer_conf.pixelformat,
+											   graphicslayer_conf.buffermode,
+											   graphicslayer_conf.options,
                                                window_pixelformat,
                                                surface_pixelformat))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
-        if(config.getOutputType() == MMSFB_OT_X11)
+        if (config.getBackend() == MMSFB_BE_X11) {
 			//give a little time to window routines
 			usleep(300000);
+        }
 
         // use both layers
         DEBUGMSG("MMSGUI", "configure video layer");
@@ -233,28 +234,30 @@ void MMSFBManager::applySettings() {
 
     	DEBUGMSG("MMSGUI", "set configuration");
         // set video layer's config
-        if (!this->videolayer->setConfiguration(videolayer.rect.w, videolayer.rect.h,
-												videolayer.pixelformat,
-												videolayer.buffermode,
-												videolayer.options))
+        if (!this->videolayer->setConfiguration(videolayer_conf.rect.w, videolayer_conf.rect.h,
+												videolayer_conf.pixelformat,
+												videolayer_conf.buffermode,
+												videolayer_conf.options))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 		//this->videolayer->dfblayer->SetFieldParity(this->videolayer->dfblayer,0);
 
         // set the full opacity of the graphics layer
         this->graphicslayer->setOpacity(0);
 
-        if (config.getOutputType() == MMSFB_OT_VIAFB) {
+        if (graphicslayer_conf.outputtype == MMSFB_OT_VIAFB) {
             // set the video layer behind the graphics layer
         	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
             this->videolayer->setLevel(-1);
-        } else if(config.getOutputType() == MMSFB_OT_XSHM) {
+        }
+        else
+        if (graphicslayer_conf.outputtype == MMSFB_OT_XSHM) {
         	DEBUGMSG("MMSGUI", "set the video layer behind the graphics layer");
             this->graphicslayer->setLevel(+1);
         }
     }
 
     // set global surface attributes
-    string buffermode = graphicslayer.buffermode;
+    string buffermode = graphicslayer_conf.buffermode;
     MMSFBSurface *gls;
     if (this->graphicslayer->getSurface(&gls)) {
     	// set the static extended accel flag
@@ -273,7 +276,7 @@ void MMSFBManager::applySettings() {
 #endif
 		}
 		else
-		if (mmsfb->getBackend() == MMSFB_BE_OGL) {
+		if (graphicslayer_conf.outputtype == MMSFB_OT_OGL) {
 			gls->setAllocMethod(MMSFBSurfaceAllocMethod_ogl);
 		}
     }
@@ -281,8 +284,8 @@ void MMSFBManager::applySettings() {
     // init the mmsfbwindowmanager
 	mmsfbwindowmanager->init(this->graphicslayer, (config.getPointer()==MMSFB_PM_TRUE));
 
-    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", graphicslayer.rect.w, graphicslayer.rect.h, getMMSFBPixelFormatString(surface_pixelformat).c_str());
-    mmsfbsurfacemanager->createTemporarySurface(graphicslayer.rect.w, graphicslayer.rect.h, surface_pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
+    DEBUGMSG("MMSGUI", "creating temporary surface: %dx%d, %s", graphicslayer_conf.rect.w, graphicslayer_conf.rect.h, getMMSFBPixelFormatString(surface_pixelformat).c_str());
+    mmsfbsurfacemanager->createTemporarySurface(graphicslayer_conf.rect.w, graphicslayer_conf.rect.h, surface_pixelformat, (buffermode == MMSFB_BM_BACKSYSTEM));
 }
 
 
