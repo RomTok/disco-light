@@ -205,7 +205,9 @@ class MMSFBGL {
         bool useShaderProgram4BlittingFromAlpha();
         bool useShaderProgram4ModulateBlittingFromAlpha();
 
-        bool setMatrix(MMSFBGLMatrix matrix);
+        bool setCurrentMatrix(MMSFBGLMatrix matrix);
+        bool rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
+
         bool getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
         bool setModelViewMatrix(float left, float right, float bottom, float top, float nearZ, float farZ);
 

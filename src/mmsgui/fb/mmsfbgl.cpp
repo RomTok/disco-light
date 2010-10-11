@@ -1367,7 +1367,7 @@ bool MMSFBGL::useShaderProgram4Drawing() {
 		this->FSColorLoc_initialized = false;
 	}
 
-	setMatrix(this->current_matrix);
+	setCurrentMatrix(this->current_matrix);
 	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
@@ -1384,7 +1384,7 @@ bool MMSFBGL::useShaderProgram4Blitting() {
 		this->FSColorLoc_initialized = false;
 	}
 
-	setMatrix(this->current_matrix);
+	setCurrentMatrix(this->current_matrix);
 	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
@@ -1401,7 +1401,7 @@ bool MMSFBGL::useShaderProgram4ModulateBlitting() {
 		this->FSColorLoc_initialized = false;
 	}
 
-	setMatrix(this->current_matrix);
+	setCurrentMatrix(this->current_matrix);
 	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
@@ -1419,7 +1419,7 @@ bool MMSFBGL::useShaderProgram4BlittingFromAlpha() {
 		this->FSColorLoc_initialized = false;
 	}
 
-	setMatrix(this->current_matrix);
+	setCurrentMatrix(this->current_matrix);
 	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
@@ -1437,16 +1437,18 @@ bool MMSFBGL::useShaderProgram4ModulateBlittingFromAlpha() {
 		this->FSColorLoc_initialized = false;
 	}
 
-	setMatrix(this->current_matrix);
+	setCurrentMatrix(this->current_matrix);
 	setColor(this->current_color_r, this->current_color_g, this->current_color_b, this->current_color_a);
 
 	return true;
 }
 
 
-bool MMSFBGL::setMatrix(MMSFBGLMatrix matrix) {
+bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
 
 	INITCHECK;
+
+#ifdef __HAVE_GLES2__
 
 	if (!this->VSMatrixLoc_initialized) {
 		// get the location of matrix uniform variable within the vertex shader
@@ -1459,12 +1461,31 @@ bool MMSFBGL::setMatrix(MMSFBGLMatrix matrix) {
 		glUniformMatrix4fv(this->VSMatrixLoc, 1, GL_FALSE, (GLfloat*)matrix);
 	}
 
+#endif
+
 	if (this->current_matrix != matrix) {
 		// change the current matrix
 		memcpy(this->current_matrix, matrix, sizeof(MMSFBGLMatrix));
 	}
 
+
 	return true;
+}
+
+
+bool MMSFBGL::rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
+
+	INITCHECK;
+
+#ifdef __HAVE_GL2__
+	glRotatef(angle, x, y, z);
+	return true;
+#endif
+
+#ifdef __HAVE_GLES2__
+	rotate(this->current_matrix, angle, x, y, z);
+	return setCurrentMatrix(this->current_matrix);
+#endif
 }
 
 
@@ -1495,6 +1516,7 @@ bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float to
 	glOrtho(left, right, bottom, top, nearZ, farZ);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	return true;
 #endif
 
 #ifdef __HAVE_GLES2__
@@ -1502,7 +1524,7 @@ bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float to
 	MMSFBGLMatrix matrix;
 	getModelViewMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
-	return setMatrix(matrix);
+	return setCurrentMatrix(matrix);
 #endif
 }
 
@@ -1709,7 +1731,7 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	glEnd();
 
 #endif
-/*
+
 #ifdef __HAVE_GLES2__
 
 	GLint  texCoordLoc;
@@ -1718,13 +1740,13 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
 	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
 
-	GLfloat vVertices[] = { dx1,  dy1, 0.0f,  // Position 0
+	GLfloat vVertices[] = { dx1,  dy1, dz1,  // Position 0
 							sx1,  sy1,        // TexCoord 0
-						    dx2, dy1, 0.0f,  // Position 1
+						    dx2, dy2, dz2,  // Position 1
 							sx2,  sy1,        // TexCoord 1
-							dx2, dy2, 0.0f,  // Position 2
+							dx3, dy3, dz3,  // Position 2
 							sx2,  sy2,        // TexCoord 2
-							dx1,  dy2, 0.0f,  // Position 3
+							dx4,  dy4, dz4,  // Position 3
 							sx1,  sy2         // TexCoord 3
 						 };
 
@@ -1748,7 +1770,7 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
 
 #endif
-*/
+
 	return true;
 }
 

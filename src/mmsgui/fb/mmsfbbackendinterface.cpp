@@ -1144,14 +1144,10 @@ void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
 
 		mmsfbgl.enableDepthTest();
 		mmsfbgl.clear(0, 0, 0, 0);
-		printf("ffffffffffffff\n");
 
-
-#ifdef  __HAVE_GL2__
-		glRotatef(req->angle_x, 1, 0, 0);
-		glRotatef(req->angle_y, 0, 1, 0);
-		glRotatef(req->angle_z, 0, 0, 1);
-#endif
+		mmsfbgl.rotateCurrentMatrix(req->angle_x, 1, 0, 0);
+		mmsfbgl.rotateCurrentMatrix(req->angle_y, 0, 1, 0);
+		mmsfbgl.rotateCurrentMatrix(req->angle_z, 0, 0, 1);
 
 		int ddw = 100;
 		int ddh = 100;
