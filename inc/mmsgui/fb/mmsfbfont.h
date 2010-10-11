@@ -51,6 +51,10 @@ typedef struct {
 	int 			height;
 	//! width in pixel of the whole character
 	int				advanceX;
+#ifdef  __HAVE_OPENGL__
+	//! OpenGL texture for this glyph
+	unsigned int	texture;
+#endif
 } MMSFBFont_Glyph;
 
 //! Font rendering class.

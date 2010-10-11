@@ -183,6 +183,7 @@ class MMSFBGL {
 
         void enableBlend();
         void disableBlend();
+        void enableDepthTest();
         void disableDepthTest();
         void disableTexture2D();
 		void setDrawingMode();
@@ -205,13 +206,12 @@ class MMSFBGL {
         bool useShaderProgram4ModulateBlittingFromAlpha();
 
         bool setMatrix(MMSFBGLMatrix matrix);
-        bool getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top);
-        bool setModelViewMatrix(float left, float right, float bottom, float top);
+        bool getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool setModelViewMatrix(float left, float right, float bottom, float top, float nearZ, float farZ);
 
         bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
-        bool drawRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2);
         bool drawRectangle2D(float x1, float y1, float x2, float y2);
         bool drawRectangle2Di(int x1, int y1, int x2, int y2);
 
@@ -221,10 +221,15 @@ class MMSFBGL {
 							 float x3, float y3, float z3);
         bool fillTriangle2D(float x1, float y1, float x2, float y2, float x3, float y3);
 
-        bool fillRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2);
         bool fillRectangle2D(float x1, float y1, float x2, float y2);
         bool fillRectangle2Di(int x1, int y1, int x2, int y2);
 
+
+        bool stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
+										  float dx1, float dy1, float dz1,
+										  float dx2, float dy2, float dz2,
+										  float dx3, float dy3, float dz3,
+										  float dx4, float dy4, float dz4);
 
         bool stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
 										  float dx1, float dy1, float dx2, float dy2);

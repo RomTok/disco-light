@@ -1081,9 +1081,9 @@ bool MMSFBGL::bindFrameBuffer(GLuint fbo) {
 #endif
 	}
 
-	glDisable(GL_SCISSOR_TEST);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	disableScissor();
+	disableDepthTest();
+	disableTexture2D();
 
 	return true;
 }
@@ -1121,8 +1121,20 @@ void MMSFBGL::disableBlend() {
 }
 
 
+void MMSFBGL::enableDepthTest() {
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+#ifdef __HAVE_GL2__
+	glDepthRange(1,-1);
+#endif
+#ifdef __HAVE_GLES2__
+	glDepthRangef(1,-1);
+#endif
+}
+
 void MMSFBGL::disableDepthTest() {
 	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
 }
 
 void MMSFBGL::disableTexture2D() {
@@ -1456,14 +1468,14 @@ bool MMSFBGL::setMatrix(MMSFBGLMatrix matrix) {
 }
 
 
-bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top) {
+bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
 	MMSFBGLMatrix matrix;
 	matrixLoadIdentity(matrix);
-	ortho(matrix, left, right, bottom, top, 10.0, -10.0);
+	ortho(matrix, left, right, bottom, top, nearZ, farZ);
 
 	// return the matrix to the caller
 	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
@@ -1472,18 +1484,15 @@ bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, float left, float right, 
 }
 
 
-bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float top) {
+bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
 #ifdef __HAVE_GL2__
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glViewport(	(left<right)?left:right,
-				(bottom<top)?bottom:top,
-				(left<right)?right-left:left-right,
-				(bottom<top)?top-bottom:bottom-top);
-	glOrtho(left, right, bottom, top, 10.0, -10.0);
+	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
+	glOrtho(left, right, bottom, top, nearZ, farZ);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 #endif
@@ -1491,11 +1500,8 @@ bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float to
 #ifdef __HAVE_GLES2__
 	// set the model view matrix for the shader
 	MMSFBGLMatrix matrix;
-	getModelViewMatrix(matrix, left, right, bottom, top);
-	glViewport(	(left<right)?left:right,
-				(bottom<top)?bottom:top,
-				(left<right)?right-left:left-right,
-				(bottom<top)?top-bottom:bottom-top);
+	getModelViewMatrix(matrix, left, right, bottom, top, nearZ, farZ);
+	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
 	return setMatrix(matrix);
 #endif
 }
@@ -1564,36 +1570,6 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 }
 
 
-bool MMSFBGL::drawRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2) {
-
-	INITCHECK;
-
-#ifdef __HAVE_GL2__
-
-	glBegin(GL_LINE_STRIP);
-		glVertex3f(x1, y1, z1);
-		glVertex3f(x2, y1, z2);
-		glVertex3f(x2, y2, z2);
-		glVertex3f(x1, y2, z1);
-		glVertex3f(x1, y1, z1);
-	glEnd();
-
-#endif
-
-#ifdef __HAVE_GLES2__
-
-	// configure generic vertex attribute array
-	GLfloat vertices[] = {x1,y1,z1,x2,y1,z2,x2,y2,z2,x1,y2,z1,x1,y1,z1};
-	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
-	glVertexAttribPointer(MMSFBGL_VSV_LOC, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), vertices);
-
-	// draw it
-	glDrawArrays(GL_LINE_STRIP, 0, 5);
-
-#endif
-
-	return true;
-}
 
 bool MMSFBGL::drawRectangle2D(float x1, float y1, float x2, float y2) {
 
@@ -1671,29 +1647,6 @@ bool MMSFBGL::fillTriangle2D(float x1, float y1, float x2, float y2, float x3, f
 }
 
 
-bool MMSFBGL::fillRectangle3D(float x1, float y1, float z1, float x2, float y2, float z2) {
-
-	INITCHECK;
-
-#ifdef __HAVE_GL2__
-//TODO
-#endif
-
-#ifdef __HAVE_GLES2__
-
-	// configure generic vertex attribute array
-	GLfloat vertices[] = {x2,y1,z2,x1,y1,z1,x1,y2,z1,x2,y2,z2};
-	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
-	glVertexAttribPointer(MMSFBGL_VSV_LOC, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), vertices);
-
-	// draw it
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-#endif
-
-	return true;
-}
-
 
 bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 
@@ -1726,6 +1679,79 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 	return fillRectangle2D(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2),
 							OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1));
 }
+
+
+
+
+bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
+								  float dx1, float dy1, float dz1,
+								  float dx2, float dy2, float dz2,
+								  float dx3, float dy3, float dz3,
+								  float dx4, float dy4, float dz4) {
+
+	INITCHECK;
+
+	// bind source texture
+	glEnable(GL_TEXTURE_2D);
+	bindTexture2D(src_tex);
+
+#ifdef __HAVE_GL2__
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(sx1, sy1);
+			glVertex3f(dx1, dy1, dz1);
+		glTexCoord2f(sx2, sy1);
+			glVertex3f(dx2, dy2, dz2);
+		glTexCoord2f(sx2, sy2);
+			glVertex3f(dx3, dy3, dz3);
+		glTexCoord2f(sx1, sy2);
+			glVertex3f(dx4, dy4, dz4);
+	glEnd();
+
+#endif
+/*
+#ifdef __HAVE_GLES2__
+
+	GLint  texCoordLoc;
+	GLint samplerLoc;
+
+	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
+	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
+
+	GLfloat vVertices[] = { dx1,  dy1, 0.0f,  // Position 0
+							sx1,  sy1,        // TexCoord 0
+						    dx2, dy1, 0.0f,  // Position 1
+							sx2,  sy1,        // TexCoord 1
+							dx2, dy2, 0.0f,  // Position 2
+							sx2,  sy2,        // TexCoord 2
+							dx1,  dy2, 0.0f,  // Position 3
+							sx1,  sy2         // TexCoord 3
+						 };
+
+	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+
+	// Load the vertex position
+	glVertexAttribPointer (MMSFBGL_VSV_LOC, 3, GL_FLOAT,
+						   GL_FALSE, 5 * sizeof(GLfloat), vVertices );
+	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+
+	// Load the texture coordinate
+	glVertexAttribPointer (texCoordLoc, 2, GL_FLOAT,
+						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
+	glEnableVertexAttribArray(texCoordLoc);
+
+
+	// bind the texture unit0
+	glActiveTexture ( GL_TEXTURE0 );
+	glUniform1i(samplerLoc, 0);
+
+	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+
+#endif
+*/
+	return true;
+}
+
 
 
 

@@ -133,8 +133,21 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
 }
 
 MMSFBFont::~MMSFBFont() {
-	if (this->glyphpool)
+
+#ifdef  __HAVE_OPENGL__
+	// if disko is built and initialized for OpenGL, we have to delete glyph textures
+	if (mmsfb->bei) {
+	    for (std::map<unsigned int, MMSFBFont_Glyph>::iterator it = this->charmap.begin(); it != this->charmap.end(); it++) {
+	    	MMSFBFont_Glyph glyph = it->second;
+	    	mmsfb->bei->deleteTexture(glyph.texture);
+	    }
+	}
+#endif
+
+	// delete the glyphpool
+	if (this->glyphpool) {
 		free (this->glyphpool);
+	}
 }
 
 bool MMSFBFont::isInitialized() {
@@ -206,8 +219,19 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
 					this->glyphpool_ptr+=glyph_size;
 				}
 
-				// add to charmap
+				// get pointer to data
 				this->glyph.buffer = this->glyphpool_ptr - glyph_size;
+
+#ifdef  __HAVE_OPENGL__
+				// if disko is built and initialized for OpenGL, we create a texture for this glyph
+				if (mmsfb->bei) {
+					this->glyph.texture = 0;
+					mmsfb->bei->createAlphaTexture(&this->glyph.texture, this->glyph.buffer,
+													this->glyph.pitch, this->glyph.height);
+				}
+#endif
+
+				// add to charmap
 				this->charmap.insert(std::make_pair(character, this->glyph));
 			}
 			else {

@@ -60,18 +60,6 @@
 
 #ifdef __HAVE_OPENGL__
 
-#define INIT_OGL_FBO(surface) \
-	oglAlloc(surface); \
-	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo); \
-	if (surface->config.surface_buffer->ogl_fbo) { \
-		if (!surface->is_sub_surface) oglMatrix(0, surface->config.w, 0, surface->config.h); \
-		else oglMatrix(0, surface->root_parent->config.w, 0, surface->root_parent->config.h); \
-	} else { \
-		if (!surface->is_sub_surface) oglMatrix(0, surface->config.w, surface->config.h, 0); \
-		else oglMatrix(0, surface->root_parent->config.w, surface->root_parent->config.h, 0); \
-	}
-
-
 
 #define OGL_SCISSOR(surface, X, Y, W, H) \
 	if (surface->config.surface_buffer->ogl_fbo) mmsfbgl.setScissor(X, Y, W, H); \
@@ -179,12 +167,6 @@
 #ifdef __HAVE_GL2__
 
 
-#define INIT_OGL_FBOXX(surface) \
-	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo); \
-	if (!surface->is_sub_surface) oglMatrixXX(0, surface->config.w, 0, surface->config.h); \
-	else oglMatrixXX(0, surface->root_parent->config.w, 0, surface->root_parent->config.h);
-
-
 
 /*
 #define OGL_DRAW_POINT(x, y) { glBegin(GL_POINTS); glVertex2f((float)(x) + 0.5, (float)(BEI_SURFACE_BOTTOM - (y)) + 0.5); glEnd(); }
@@ -287,6 +269,12 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_STRETCHBLITBUFFER:
 		processStretchBlitBuffer((BEI_STRETCHBLITBUFFER *)in_data);
 		break;
+	case BEI_REQUEST_TYPE_CREATEALPHATEXTURE:
+		processCreateAlphaTexture((BEI_CREATEALPHATEXTURE *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_DELETETEXTURE:
+		processDeleteTexture((BEI_DELETETEXTURE *)in_data);
+		break;
 	case BEI_REQUEST_TYPE_DRAWSTRING:
 		processDrawString((BEI_DRAWSTRING *)in_data);
 		break;
@@ -343,10 +331,7 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 #endif
 
 	//set the coordinate system
-	this->matrix_left = 0;
-	this->matrix_right = 0;
-	this->matrix_bottom = 0;
-	this->matrix_top = 0;
+	this->reset_matrix = true;
 	int w, h;
 	mmsfbgl.getResolution(&w, &h);
 	oglMatrix(0, w, h, 0);
@@ -356,21 +341,24 @@ void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 
 
 #ifdef __HAVE_OPENGL__
-void MMSFBBackEndInterface::oglMatrix(GLuint left, GLuint right, GLuint bottom, GLuint top) {
-	if ((left != this->matrix_left) || (right != this->matrix_right)
-	  || (bottom != this->matrix_bottom) || (top != this->matrix_top)) {
+void MMSFBBackEndInterface::oglMatrix(int left, int right, int bottom, int top, int nearZ, int farZ) {
+	if (this->reset_matrix
+	  || (left != this->matrix_left) || (right != this->matrix_right)
+	  || (bottom != this->matrix_bottom) || (top != this->matrix_top)
+	  || (nearZ != this->matrix_nearZ) || (farZ != this->matrix_farZ)) {
+		this->reset_matrix = false;
 		this->matrix_left = left;
 		this->matrix_right = right;
 		this->matrix_bottom = bottom;
 		this->matrix_top = top;
-		mmsfbgl.setModelViewMatrix(left, right, bottom, top);
+		this->matrix_nearZ = nearZ;
+		this->matrix_farZ = farZ;
+		mmsfbgl.setModelViewMatrix(left, right, bottom, top, nearZ, farZ);
 	}
 }
-#endif
 
 
-#ifdef __HAVE_OPENGL__
-void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface) {
+void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
 	MMSFBSurfaceBuffer *sb = surface->config.surface_buffer;
 
 #ifdef __HAVE_GL2__
@@ -399,20 +387,38 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface) {
 
 #ifdef __HAVE_GLES2__
 	if (!sb->ogl_fbo_initialized) {
+		// per default we do NOT attach a renderbuffer to the FBO (not needed for 2D, reduce memory foot print)
+		sb->ogl_rbo_initialized = false;
+
 		// allocate a texture (color buffer) and bind it to a new FBO
 		if (!surface->config.surface_buffer->ogl_tex_initialized) {
 			// texture is also not initialized
-			mmsfbgl.allocFBO(sb->ogl_fbo, sb->ogl_tex, surface->config.w, surface->config.h);
+			if (rbo_required) {
+				// additionally have to initialize RBO
+				// so, initialize FBO, RBO and texture
+				mmsfbgl.allocFBOandRBO(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rbo, surface->config.w, surface->config.h);
+				sb->ogl_rbo_initialized = true;
+			}
+			else {
+				// RBO not needed
+				// so, initialize FBO and texture
+				mmsfbgl.allocFBO(sb->ogl_fbo, sb->ogl_tex, surface->config.w, surface->config.h);
+			}
 		}
 		else {
 			// texture is already initialized, so we can use it for FBO
 			mmsfbgl.attachTexture2FrameBuffer(sb->ogl_fbo, sb->ogl_tex);
+
+			if (rbo_required) {
+				// additionally have to initialize RBO
+				mmsfbgl.attachRenderBuffer2FrameBuffer(sb->ogl_fbo, sb->ogl_rbo, surface->config.w, surface->config.h);
+				sb->ogl_rbo_initialized = true;
+			}
 		}
+
 		sb->ogl_fbo_initialized = true;
 		sb->ogl_tex_initialized = true;
 
-		// per default we do NOT attach a renderbuffer to the FBO (not needed for 2D, reduce memory foot print)
-		sb->ogl_rbo_initialized = false;
 
 
 		static int iiij=0;
@@ -421,6 +427,74 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface) {
 	}
 #endif
 }
+
+
+void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface) {
+	// allocate FBO, RBO and texture
+	oglAlloc(surface);
+
+	// bind FBO
+	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo);
+
+	if (surface->config.surface_buffer->ogl_fbo) {
+		// set the matrix for off-screen FBO's
+		if (!surface->is_sub_surface) {
+			oglMatrix(0, surface->config.w, 0, surface->config.h);
+		}
+		else {
+			oglMatrix(0, surface->root_parent->config.w, 0, surface->root_parent->config.h);
+		}
+	} else {
+		// set the matrix for primary FBO
+		if (!surface->is_sub_surface) {
+			oglMatrix(0, surface->config.w, surface->config.h, 0);
+		}
+		else {
+			oglMatrix(0, surface->root_parent->config.w, surface->root_parent->config.h, 0);
+		}
+	}
+}
+
+void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ) {
+	// allocate FBO, RBO and texture
+	oglAlloc(surface, true);
+
+	// bind FBO
+	mmsfbgl.bindFrameBuffer(surface->config.surface_buffer->ogl_fbo);
+
+	if (surface->config.surface_buffer->ogl_fbo) {
+		// set the matrix for off-screen FBO's
+		if (!surface->is_sub_surface) {
+			oglMatrix(-(int)surface->config.w/2, (int)surface->config.w/2,
+					  -(int)surface->config.h/2, (int)surface->config.h/2,
+					  nearZ, farZ);
+		}
+		else {
+			oglMatrix(-(int)surface->root_parent->config.w/2, (int)surface->root_parent->config.w/2,
+					  -(int)surface->root_parent->config.h/2, (int)surface->root_parent->config.h/2,
+					  nearZ, farZ);
+		}
+	} else {
+		// set the matrix for primary FBO
+		if (!surface->is_sub_surface) {
+			oglMatrix(-(int)surface->config.w/2, (int)surface->config.w/2,
+					   (int)surface->config.h/2,-(int)surface->config.h/2,
+					   nearZ, farZ);
+		}
+		else {
+			oglMatrix(-(int)surface->root_parent->config.w/2, (int)surface->root_parent->config.w/2,
+					   (int)surface->root_parent->config.h/2,-(int)surface->root_parent->config.h/2,
+					   nearZ, farZ);
+		}
+	}
+}
+/*
+	int w = (left<right)?right-left:left-right;
+	int h = (bottom<top)?top-bottom:bottom-top;
+	glOrtho(-(int)w/2, w/2, -(int)h/2, h/2, 600.0, -600.0);
+*/
+
+
 #endif
 
 void MMSFBBackEndInterface::swap() {
@@ -489,7 +563,7 @@ void MMSFBBackEndInterface::clear(MMSFBSurface *surface, MMSFBColor &color) {
 void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
@@ -516,7 +590,7 @@ void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle 
 void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
@@ -550,7 +624,7 @@ void MMSFBBackEndInterface::fillTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 #ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -608,7 +682,7 @@ void MMSFBBackEndInterface::drawLine(MMSFBSurface *surface, MMSFBRegion &region)
 void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 #ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -667,7 +741,7 @@ void MMSFBBackEndInterface::drawRectangle(MMSFBSurface *surface, MMSFBRectangle 
 void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface);
@@ -701,7 +775,7 @@ void MMSFBBackEndInterface::drawTriangle(MMSFBSurface *surface, MMSFBTriangle &t
 void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 #ifdef  __HAVE_GL2__
 	// lock destination fbo and prepare it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 
@@ -776,7 +850,7 @@ void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *sou
 void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 #ifdef  __HAVE_OPENGL__
 	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface);
@@ -867,7 +941,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	}
 
 	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBO(req->surface);
+	oglBindSurface(req->surface);
 
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface);
@@ -894,13 +968,54 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 		int dy2 = req->dst_rect.y + req->dst_rect.h - 1 + yoff;
 
 		// blit source texture to the destination
-		// note: the source has to be flipped vertical because the difference between 2D input and OGL
 		mmsfbgl.stretchBlitBufferi(req->src_planes->ptr,
 					sx1, sy1, sx2, sy2, req->src_width, req->src_height,
 					dx1, dy1, dx2, dy2);
 	}
 #endif
 }
+
+
+
+void MMSFBBackEndInterface::createAlphaTexture(unsigned int *texture, unsigned char *buffer, int width, int height) {
+	BEI_CREATEALPHATEXTURE req;
+	req.type	= BEI_REQUEST_TYPE_CREATEALPHATEXTURE;
+	req.texture	= texture;
+	req.buffer	= buffer;
+	req.width	= width;
+	req.height	= height;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processCreateAlphaTexture(BEI_CREATEALPHATEXTURE *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// alloc a texture
+	mmsfbgl.genTexture(req->texture);
+
+	// specify two-dimensional glyph texture
+	mmsfbgl.initTexture2D(*(req->texture), GL_ALPHA, req->buffer, GL_ALPHA, req->width, req->height);
+
+#endif
+}
+
+
+void MMSFBBackEndInterface::deleteTexture(unsigned int texture) {
+	BEI_DELETETEXTURE req;
+	req.type	= BEI_REQUEST_TYPE_DELETETEXTURE;
+	req.texture	= texture;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processDeleteTexture(BEI_DELETETEXTURE *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// delete a texture
+	mmsfbgl.deleteTexture(req->texture);
+
+#endif
+}
+
 
 void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int len, int x, int y) {
 	BEI_DRAWSTRING req;
@@ -917,11 +1032,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #ifdef  __HAVE_OPENGL__
 
 	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBO(req->surface);
-
-	// alloc a texture
-	GLuint texture;
-	mmsfbgl.genTexture(&texture);
+	oglBindSurface(req->surface);
 
 	// setup blitting
 	mmsfbgl.enableBlend();
@@ -973,23 +1084,16 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dx2 = dx + src_w - 1 + xoff;
 				int dy2 = dy + src_h - 1 + yoff;
 
-			    // specify two-dimensional glyph texture
-			    // we use pitch instead of width here, because we need a width which is divisible by 4!!!
-				mmsfbgl.initTexture2D(texture, GL_ALPHA, src, GL_ALPHA, src_pitch_pix, src_h);
-
 				// blit glyph texture to the destination
-				// note: the source has to be flipped vertical because the difference between 2D input and OGL
-				mmsfbgl.stretchBliti(texture,
-							sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
-							dx1, dy1, dx2, dy2);
+				mmsfbgl.stretchBliti(glyph->texture,
+										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
+										dx1, dy1, dx2, dy2);
 			}
 
 			// prepare for next loop
 			req->x+=glyph->advanceX >> 6;
 		}
 	}}
-
-	mmsfbgl.deleteTexture(texture);
 
 #endif
 }
@@ -1017,200 +1121,113 @@ void MMSFBBackEndInterface::cube(MMSFBSurface *surface,
 
 
 void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
-#ifdef  __HAVE_GL2__
-	// lock destination fbo and bind source texture to it
-	INIT_OGL_FBOXX(req->surface);
+#ifdef  __HAVE_OPENGL__
 
+	// lock destination fbo and bind source texture to it
+	oglBindSurface(req->surface, 600, -600);
 
 	// setup blitting
-	INIT_OGL_BLITTING(req->surface);
+	mmsfbgl.disableBlend();
+	mmsfbgl.setTexEnvReplace(GL_RGBA);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
-//	GET_OFFS_SRC(req->source);
 
-	MMSFBRectangle dst_rect(0,0,300,300);
-//	MMSFBRectangle src_rect(0,0,req->source->config.w,req->source->config.h);
+
+	MMSFBRectangle dst_rect(0,0,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT);
 
 	// set the clip to ogl
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(dst_rect.x + xoff, dst_rect.y + yoff, dst_rect.w, dst_rect.h, &crect)) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-//		glEnable(GL_SCISSOR_TEST);
 
-		dst_rect.x+=90;
-		dst_rect.y+=90;
-		dst_rect.w-=180;
-		dst_rect.h-=180;
+		mmsfbgl.enableDepthTest();
+		mmsfbgl.clear(0, 0, 0, 0);
+		printf("ffffffffffffff\n");
 
-		// get source region
-/*		int sx1 = src_rect.x + src_xoff;
-		int sy1 = src_rect.y + src_yoff;
-		int sx2 = src_rect.x + src_rect.w - 1 + src_xoff;
-		int sy2 = src_rect.y + src_rect.h - 1 + src_yoff;
-*/
-		// get destination region
-		int dx1 = dst_rect.x + xoff;
-		int dy1 = dst_rect.y + yoff;
-		int dx2 = dst_rect.x + dst_rect.w - 1 + xoff;
-		int dy2 = dst_rect.y + dst_rect.h - 1 + yoff;
 
-		// blit source texture to the destination
-//		OGL_STRETCH_BLIT(sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h, dx1, dy1, dx2, dy2);
-
-//		int sw = req->source->config.w;
-//		int sh = req->source->config.h;
-
-glDepthMask(GL_TRUE);
-//glDisable(GL_BLEND);
-glClearColor(0.0, 0.0, 0.0, 0.0);
-glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-printf("ffffffffffffff\n");
-glEnable(GL_DEPTH_TEST);
-glDepthRange(1,-1);
-
-		glPushMatrix();
-		//glTranslatef(-150,-150,0);
-//		glTranslatef(0,0,-1);
-//		glTranslatef(-0.25,-0.25,0);
-//		glRotatef(req->angle, req->x,req->y,req->z);
-//		glRotatef(4, req->x,req->y,req->z);
-//		glTranslatef(100,100,0);
-
-//		glRotatef(req->angle, 0,0,1);
+#ifdef  __HAVE_GL2__
 		glRotatef(req->angle_x, 1, 0, 0);
 		glRotatef(req->angle_y, 0, 1, 0);
 		glRotatef(req->angle_z, 0, 0, 1);
+#endif
 
 		int ddw = 100;
 		int ddh = 100;
 		int ddz = 100;
 
-
-
 		// front
 		if (req->front) {
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, req->front->config.surface_buffer->ogl_tex);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0, 0);
-					glVertex3f(-ddw/2, -ddh/2, ddz/2);
-				glTexCoord2f(1, 0);
-					glVertex3f(ddw/2, -ddh/2, ddz/2);
-				glTexCoord2f(1, 1);
-					glVertex3f(ddw/2, ddh/2, ddz/2);
-				glTexCoord2f(0, 1);
-					glVertex3f(-ddw/2, ddh/2, ddz/2);
-			glEnd();
+			MMSFBSurface *surface = req->front;
+			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
+									 0, 0, 1, 1,
+									 -ddw/2, -ddh/2, ddz/2,
+									 ddw/2, -ddh/2, ddz/2,
+									 ddw/2, ddh/2, ddz/2,
+									 -ddw/2, ddh/2, ddz/2);
 		}
 
 		// back
 		if (req->back) {
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, req->back->config.surface_buffer->ogl_tex);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0, 0);
-					glVertex3f(ddw/2, -ddh/2, -ddz/2);
-				glTexCoord2f(1, 0);
-					glVertex3f(-ddw/2, -ddh/2, -ddz/2);
-				glTexCoord2f(1, 1);
-					glVertex3f(-ddw/2, ddh/2, -ddz/2);
-				glTexCoord2f(0, 1);
-					glVertex3f(ddw/2, ddh/2, -ddz/2);
-			glEnd();
+			MMSFBSurface *surface = req->back;
+			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
+									 0, 0, 1, 1,
+									 ddw/2, -ddh/2, -ddz/2,
+									 -ddw/2, -ddh/2, -ddz/2,
+									 -ddw/2, ddh/2, -ddz/2,
+									 ddw/2, ddh/2, -ddz/2);
 		}
 
 		// left
 		if (req->left) {
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, req->left->config.surface_buffer->ogl_tex);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0, 0);
-					glVertex3f(-ddw/2, -ddh/2, -ddz/2);
-				glTexCoord2f(1, 0);
-					glVertex3f(-ddw/2, -ddh/2, ddz/2);
-				glTexCoord2f(1, 1);
-					glVertex3f(-ddw/2, ddh/2, ddz/2);
-				glTexCoord2f(0, 1);
-					glVertex3f(-ddw/2, ddh/2, -ddz/2);
-			glEnd();
+			MMSFBSurface *surface = req->left;
+			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
+									 0, 0, 1, 1,
+									 -ddw/2, -ddh/2, -ddz/2,
+									 -ddw/2, -ddh/2, ddz/2,
+									 -ddw/2, ddh/2, ddz/2,
+									 -ddw/2, ddh/2, -ddz/2);
 		}
 
 		// right
 		if (req->right) {
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, req->right->config.surface_buffer->ogl_tex);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0, 0);
-					glVertex3f(ddw/2, -ddh/2, ddz/2);
-				glTexCoord2f(1, 0);
-					glVertex3f(ddw/2, -ddh/2, -ddz/2);
-				glTexCoord2f(1, 1);
-					glVertex3f(ddw/2, ddh/2, -ddz/2);
-				glTexCoord2f(0, 1);
-					glVertex3f(ddw/2, ddh/2, ddz/2);
-			glEnd();
+			MMSFBSurface *surface = req->right;
+			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
+									 0, 0, 1, 1,
+									 ddw/2, -ddh/2, ddz/2,
+									 ddw/2, -ddh/2, -ddz/2,
+									 ddw/2, ddh/2, -ddz/2,
+									 ddw/2, ddh/2, ddz/2);
 		}
 
 		// top
 		if (req->top) {
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, req->top->config.surface_buffer->ogl_tex);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0, 0);
-					glVertex3f(-ddw/2, ddh/2, ddz/2);
-				glTexCoord2f(1, 0);
-					glVertex3f(ddw/2, ddh/2, ddz/2);
-				glTexCoord2f(1, 1);
-					glVertex3f(ddw/2, ddh/2, -ddz/2);
-				glTexCoord2f(0, 1);
-					glVertex3f(-ddw/2, ddh/2, -ddz/2);
-			glEnd();
+			MMSFBSurface *surface = req->top;
+			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
+									 0, 0, 1, 1,
+									 -ddw/2, ddh/2, ddz/2,
+									 ddw/2, ddh/2, ddz/2,
+									 ddw/2, ddh/2, -ddz/2,
+									 -ddw/2, ddh/2, -ddz/2);
 		}
 
 		// bottom
 		if (req->bottom) {
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, req->bottom->config.surface_buffer->ogl_tex);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0, 0);
-					glVertex3f(-ddw/2, -ddh/2, -ddz/2);
-				glTexCoord2f(1, 0);
-					glVertex3f(ddw/2, -ddh/2, -ddz/2);
-				glTexCoord2f(1, 1);
-					glVertex3f(ddw/2, -ddh/2, ddz/2);
-				glTexCoord2f(0, 1);
-					glVertex3f(-ddw/2, -ddh/2, ddz/2);
-			glEnd();
+			MMSFBSurface *surface = req->bottom;
+			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
+									 0, 0, 1, 1,
+									 -ddw/2, -ddh/2, -ddz/2,
+									 ddw/2, -ddh/2, -ddz/2,
+									 ddw/2, -ddh/2, ddz/2,
+									 -ddw/2, -ddh/2, ddz/2);
 		}
 
-		glPopMatrix();
-
-glDepthMask(GL_FALSE);
-glDisable(GL_DEPTH_TEST);
+		this->reset_matrix = true;
 
 	}
 #endif
 }
 
-#ifdef __HAVE_GL2__
-void MMSFBBackEndInterface::oglMatrixXX(GLuint left, GLuint right, GLuint bottom, GLuint top) {
-	this->matrix_left = left;
-	this->matrix_right = right;
-	this->matrix_bottom = bottom;
-	this->matrix_top = top;
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(	(left<right)?left:right,
-				(bottom<top)?bottom:top,
-				(left<right)?right-left:left-right,
-				(bottom<top)?top-bottom:bottom-top);
-	int w = (left<right)?right-left:left-right;
-	int h = (bottom<top)?top-bottom:bottom-top;
-	glOrtho(-(int)w/2, w/2, -(int)h/2, h/2, 600.0, -600.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-}
-#endif
+
 

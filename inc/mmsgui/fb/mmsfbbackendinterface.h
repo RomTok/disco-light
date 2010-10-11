@@ -52,6 +52,8 @@ private:
 		BEI_REQUEST_TYPE_DRAWTRIANGLE,
 		BEI_REQUEST_TYPE_STRETCHBLIT,
 		BEI_REQUEST_TYPE_STRETCHBLITBUFFER,
+		BEI_REQUEST_TYPE_CREATEALPHATEXTURE,
+		BEI_REQUEST_TYPE_DELETETEXTURE,
 		BEI_REQUEST_TYPE_DRAWSTRING,
 		BEI_REQUEST_TYPE_CUBE
 	} BEI_REQUEST_TYPE;
@@ -137,6 +139,19 @@ private:
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
+		unsigned int		*texture;
+		unsigned char		*buffer;
+		int					width;
+		int					height;
+	} BEI_CREATEALPHATEXTURE;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		unsigned int		texture;
+	} BEI_DELETETEXTURE;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
 		MMSFBSurface		*surface;
 		string				text;
 		int					len;
@@ -163,20 +178,19 @@ private:
 	//! access to the OpenGL wrapper class
 	MMSFBGL	mmsfbgl;
 
-	GLuint			matrix_left;
-	GLuint			matrix_right;
-	GLuint			matrix_bottom;
-	GLuint			matrix_top;
-	float			matrix_ratio;
+	bool	reset_matrix;
+	int		matrix_left;
+	int		matrix_right;
+	int		matrix_bottom;
+	int		matrix_top;
+	int		matrix_nearZ;
+	int		matrix_farZ;
 
-	void oglMatrix(GLuint left, GLuint right, GLuint bottom, GLuint top);
-	void oglAlloc(MMSFBSurface *surface);
+	void oglMatrix(int left, int right, int bottom, int top, int nearZ = 1, int farZ = -1);
+	void oglAlloc(MMSFBSurface *surface, bool rbo_required = false);
+	void oglBindSurface(MMSFBSurface *surface);
+	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ);
 
-#endif
-
-
-#ifdef  __HAVE_GL2__
-void oglMatrixXX(GLuint left, GLuint right, GLuint bottom, GLuint top);
 #endif
 
 
@@ -193,6 +207,8 @@ void oglMatrixXX(GLuint left, GLuint right, GLuint bottom, GLuint top);
 	void processDrawTriangle(BEI_DRAWTRIANGLE *req);
 	void processStretchBlit(BEI_STRETCHBLIT *req);
 	void processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req);
+	void processCreateAlphaTexture(BEI_CREATEALPHATEXTURE *req);
+	void processDeleteTexture(BEI_DELETETEXTURE *req);
 	void processDrawString(BEI_DRAWSTRING *req);
 
 	void processCube(BEI_CUBE *req);
@@ -223,6 +239,9 @@ public:
 				    int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y);
 	void stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
 						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+
+	void createAlphaTexture(unsigned int *texture, unsigned char *buffer, int width, int height);
+	void deleteTexture(unsigned int texture);
 	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);
 
 	void cube(MMSFBSurface *surface,
