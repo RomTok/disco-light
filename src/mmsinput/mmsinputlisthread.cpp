@@ -851,7 +851,7 @@ printf("10---\n");
 				case ABS_PRESSURE:
 printf("11---\n");
 					this->lastevent = *linux_evt;
-					return false;
+//					return false;
 					if(this->button_pressed == 1) {
 						//printf("pressure released\n");
 						this->button_pressed = 0;

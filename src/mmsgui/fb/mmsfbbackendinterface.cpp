@@ -408,12 +408,6 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
 		else {
 			// texture is already initialized, so we can use it for FBO
 			mmsfbgl.attachTexture2FrameBuffer(sb->ogl_fbo, sb->ogl_tex);
-
-			if (rbo_required) {
-				// additionally have to initialize RBO
-				mmsfbgl.attachRenderBuffer2FrameBuffer(sb->ogl_fbo, sb->ogl_rbo, surface->config.w, surface->config.h);
-				sb->ogl_rbo_initialized = true;
-			}
 		}
 
 		sb->ogl_fbo_initialized = true;
@@ -426,6 +420,20 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
 
 	}
 #endif
+
+	// it can be, that the decision to have an RBO comes later
+	// so it is possible to have a initialized FBO here without an RBO
+	if (sb->ogl_fbo_initialized) {
+		// FBO is already initialized
+		if (!sb->ogl_rbo_initialized) {
+			// RBO is not initialized
+			if (rbo_required) {
+				// additionally have to initialize RBO
+				mmsfbgl.attachRenderBuffer2FrameBuffer(sb->ogl_fbo, sb->ogl_rbo, surface->config.w, surface->config.h);
+				sb->ogl_rbo_initialized = true;
+			}
+		}
+	}
 }
 
 
@@ -456,6 +464,7 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface) {
 }
 
 void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ) {
+
 	// allocate FBO, RBO and texture
 	oglAlloc(surface, true);
 

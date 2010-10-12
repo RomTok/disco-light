@@ -5544,7 +5544,11 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 		if (this->config.iswinsurface) {
 			// inform the window manager
+#ifdef  __HAVE_GLX__
 			mmsfbwindowmanager->flipSurface(NULL);
+#else
+			mmsfbwindowmanager->flipSurface(this, region);
+#endif
 		}
 		else {
 	    	if (this->is_sub_surface) {
@@ -5552,7 +5556,10 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 	    		if (this->root_parent->config.iswinsurface) {
 
 	    			// inform the window manager, use the correct region
-/*	    			MMSFBRegion reg;
+#ifdef  __HAVE_GLX__
+	    			mmsfbwindowmanager->flipSurface(NULL);
+#else
+	    			MMSFBRegion reg;
 	    			if (region)
 	    				reg = *region;
 	    			else {
@@ -5564,11 +5571,15 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 	    			reg.x1+=this->sub_surface_xoff;
 	    			reg.y1+=this->sub_surface_yoff;
 	    			reg.x2+=this->sub_surface_xoff;
-	    			reg.y2+=this->sub_surface_yoff;*/
-	    			mmsfbwindowmanager->flipSurface(NULL);
+	    			reg.y2+=this->sub_surface_yoff;
+	    			mmsfbwindowmanager->flipSurface(this->root_parent, &reg);
+#endif
 	    		}
 			}
 		}
+
+
+
 
 		return true;
 #else

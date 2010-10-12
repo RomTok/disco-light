@@ -533,7 +533,7 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     if (!locked)
         lock.lock();
 
-#ifdef  __HAVE_OPENGL__
+#ifdef  __HAVE_GLX__
 	surface = NULL;
 	region = NULL;
 #endif
