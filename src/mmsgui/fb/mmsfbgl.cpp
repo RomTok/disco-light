@@ -504,6 +504,11 @@ bool MMSFBGL::init() {
 	*/
 //	eglDisplay = eglGetDisplay((EGLNativeDisplayType)0);
 	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (eglDisplay == EGL_NO_DISPLAY) {
+		printf("Error: eglGetDisplay() returned EGL_NO_DISPLAY.\n");
+		terminate();
+		return false;
+	}
 
 	/*
 		Step 2 - Initialize EGL.
