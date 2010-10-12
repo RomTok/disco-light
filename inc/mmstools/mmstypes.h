@@ -453,7 +453,7 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM	"RGB32, ARGB, YV12"
 
 //! list of valid pixelformats for X11.OGL
-#define MMSFB_PF_VALID_VALUES_BE_X11_OT_OGL	"ABGR"
+#define MMSFB_PF_VALID_VALUES_BE_X11_OT_OGL	"RGB32, ARGB, ABGR"
 
 //! list of valid pixelformats for DAVINCIFB, OSD Layer
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_DAVINCIFB_LAYER_0	"ARGB3565, RGB16"
@@ -468,7 +468,7 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_1	"YUY2, RGB32"
 
 //! list of valid pixelformats for FBDEV.OGL
-#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL	"RGB32, ARGB"
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL	"RGB32, ARGB, ABGR"
 
 //! list of valid pixelformats used for layer surfaces
 #define MMSFB_PF_VALID_BUFFERMODES "BACKVIDEO BACKSYSTEM FRONTONLY TRIPLE WINDOWS"

@@ -929,7 +929,8 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				WRONG_VALUE("graphicslayer.pixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_X11_OT_XSHM, "-> this depends on backend=\"X11\", outputtype=\"XSHM\"");
 			break;
 		case MMSFB_OT_OGL:
-			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB)
+			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB
+					 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ABGR)
 				WRONG_VALUE("graphicslayer.pixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL, "-> this depends on backend=\"FBDEV\", outputtype=\"OGL\"");
 			break;
 		default:
@@ -969,7 +970,8 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 			break;*/
 
 		case MMSFB_OT_OGL:
-			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB)
+			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB
+					 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ABGR)
 				WRONG_VALUE("graphicslayer.pixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL, "-> this depends on backend=\"FBDEV\", outputtype=\"OGL\"");
 			break;
 

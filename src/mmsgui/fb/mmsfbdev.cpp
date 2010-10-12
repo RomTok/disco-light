@@ -175,6 +175,11 @@ bool MMSFBDev::buildPixelFormat() {
     		&& (var_screeninfo.red.offset == 16) && (var_screeninfo.green.offset == 8) && (var_screeninfo.blue.offset == 0)) {
     		this->layers[0].pixelformat = MMSFB_PF_ARGB;
     	}
+    	else
+    	if    ((var_screeninfo.red.length == 8)  && (var_screeninfo.green.length == 8) && (var_screeninfo.blue.length == 8)
+    		&& (var_screeninfo.red.offset == 0) && (var_screeninfo.green.offset == 8) && (var_screeninfo.blue.offset == 16)) {
+    		this->layers[0].pixelformat = MMSFB_PF_ABGR;
+    	}
     	break;
     }
 

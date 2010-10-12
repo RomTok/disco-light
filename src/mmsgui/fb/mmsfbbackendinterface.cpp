@@ -378,10 +378,6 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
 		sb->ogl_tex_initialized = true;
 		sb->ogl_rbo_initialized = true;
 
-
-		static int iiij=0;
-		printf("alloc cnt %d\n", iiij++);
-
 	}
 #endif
 
@@ -412,11 +408,6 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
 
 		sb->ogl_fbo_initialized = true;
 		sb->ogl_tex_initialized = true;
-
-
-
-		static int iiij=0;
-		printf("alloc cnt %d\n", iiij++);
 
 	}
 #endif
@@ -942,9 +933,6 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 
 		// now we have a texture allocated
 		req->surface->config.surface_buffer->ogl_tex_initialized = true;
-
-		static int iiij=0;
-		printf("blit to texture cnt %d\n", iiij++);
 
 		return;
 	}

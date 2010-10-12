@@ -502,7 +502,6 @@ bool MMSFBGL::init() {
 		with, we let EGL pick the default display.
 		Querying other displays is platform specific.
 	*/
-//	eglDisplay = eglGetDisplay((EGLNativeDisplayType)0);
 	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (eglDisplay == EGL_NO_DISPLAY) {
 		printf("Error: eglGetDisplay() returned EGL_NO_DISPLAY.\n");
