@@ -468,7 +468,7 @@ typedef enum {
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OMAPFB_LAYER_1	"YUY2, RGB32"
 
 //! list of valid pixelformats for FBDEV.OGL
-#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL	"RGB32, ABGR"
+#define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL	"RGB32, ARGB"
 
 //! list of valid pixelformats used for layer surfaces
 #define MMSFB_PF_VALID_BUFFERMODES "BACKVIDEO BACKSYSTEM FRONTONLY TRIPLE WINDOWS"
