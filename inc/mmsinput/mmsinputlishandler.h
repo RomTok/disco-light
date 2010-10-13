@@ -50,26 +50,13 @@ typedef int MMSINPUTLISHANDLER_DEVTYPE;
 #define MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN	"TOUCHSCREEN"
 
 typedef struct {
-	///////////////////////////////////
-	MMSFBRectangle	screen_rect;
-	MMSFBRectangle	pointer_rect;
-	int				xfac;
-	int				yfac;
-	int				pointer_xpos;
-	int				pointer_ypos;
-	int				pointer_old_xpos;
-	int				pointer_old_ypos;
-	///////////////////////////////////
-
-#ifdef sdsdsdsd
-	unsigned int xRes;
-	unsigned int yRes;
-	float 	xFactor;		/**< multiplicate the x value to get the real value (touchscreen only) */
-	float 	yFactor;		/**< multiplicate the y value to get the real value (touchscreen only) */
-#endif
-	bool  	swapX;			/**< swap x axis */
-	bool  	swapY;			/**< swap y axis */
-	bool	swapXY;			/**< swap x and y axis */
+	float 			xFactor;		/**< multiplicate the x value to get the real value (touchscreen only) */
+	float 			yFactor;		/**< multiplicate the y value to get the real value (touchscreen only) */
+	bool  			swapX;			/**< swap x axis */
+	bool  			swapY;			/**< swap y axis */
+	bool			swapXY;			/**< swap x and y axis */
+	MMSFBRectangle	rect;			/**< specifies resolution of touch controller */
+	bool			haveBtnEvents;	/**< touch driver sends BTN_xxx events */
 } MMSINPUTLISHANDLER_DEV_TOUCH;
 
 typedef struct {
@@ -102,17 +89,10 @@ class MMSInputLISHandler : public MMSInputHandler {
 		//! event ring buffer, write pos
 		unsigned char	ie_write_pos;
 
-		//! filedescriptor from which we read keyboard inputs (this should be the fd to the framebuffer console)
-		int	kb_fd;
-
-
 		class MMSInputLISThread	*listhread;
-
 
         //! lock
         MMSMutex lock;
-
-
 
         bool checkDevice();
         void getDevices();

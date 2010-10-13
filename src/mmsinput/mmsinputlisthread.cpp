@@ -780,10 +780,6 @@ void MMSInputLISThread::updateLED() {
     ioctl(this->kb_fd, KDSKBLED, locks);
 }
 
-
-
-
-
 MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 	if (code < 0)
 		return MMSKEY_UNKNOWN;
@@ -792,173 +788,72 @@ MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 	return MMSInputLISThread_extkeycodes[code];
 }
 
-int safex, safey;
 bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEvent *inputevent) {
-	printf("code received: 	%d, value: %d\n",linux_evt->type, linux_evt->value);
-	if(linux_evt->type == EV_SYN) {
-		MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: EV_SYN received");
-printf("1---\n");
-		if(lastevent.type == EV_KEY) {
-printf("2---\n");
-			if(lastevent.code == BTN_TOUCH) {
-printf("3---\n");
-				if(lastevent.value == 0) {
-printf("4---\n");
-					this->button_pressed = 0;
-					inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-					inputevent->posx = safex;
-					inputevent->posy = safey;
-					this->lastevent = *linux_evt;
-					return true;
-				} else if(lastevent.value == 1) {
-printf("5---\n");
-					this->button_pressed = 1;
-					inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-					inputevent->posx = this->lastX;
-					inputevent->posy = this->lastY;
-					safex=this->lastX;
-					safey=this->lastY;
-					this->lastevent = *linux_evt;
-					return true;
-				}
-			} else {
-printf("6---\n");
-				if (inputevent->key == MMSKEY_UNKNOWN)
-					return false;
-				else
-					return true;
-			}
-		} else if(lastevent.type == EV_ABS) {
-printf("7---\n");
-			switch(lastevent.code) {
-				case ABS_X:
-				case ABS_Y:
-printf("8---\n");
-					if(this->button_pressed == 1) {
-printf("9---\n");
-						//this->button_pressed = 0;
-						inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-//						printf("release at: %d:%d\n", this->lastX, this->lastY);
-					} else {
-printf("10---\n");
-						inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
-					}
-					inputevent->posx = this->lastX;
-					inputevent->posy = this->lastY;
+	static int x, y;
+	static char pressed = 0xff;
 
-					this->lastevent = *linux_evt;
-					return true;
-				case ABS_PRESSURE:
-printf("11---\n");
-					this->lastevent = *linux_evt;
-//					return false;
-					if(this->button_pressed == 1) {
-						//printf("pressure released\n");
-						this->button_pressed = 0;
-						inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
-					} else {
-						//printf("pressure pressed\n");
-						this->button_pressed = 1;
-						inputevent->type = MMSINPUTEVENTTYPE_BUTTONPRESS;
-					}
-					inputevent->posx = this->lastX;
-					inputevent->posy = this->lastY;
-					this->lastevent = *linux_evt;
-					return true;
-				default:
-printf("12---\n");
-					return false;
-
-			}
-		}
-		return false;
-	}
-	if (linux_evt->type == EV_KEY) {
-printf("13---\n");
-		this->lastevent = *linux_evt;
-		/* check for BTN_TOUCH */
-		if(linux_evt->code == BTN_TOUCH) {
-			MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON TOUCH %d received", linux_evt->value);
-			if(linux_evt->value == 0) {
-				this->button_pressed = 0;
-				return false;
-			} else if(linux_evt->value == 1) {
-				this->button_pressed = 1;
-				return false;
-			}
-		}
-
-		// key event, trying to get key symbol
-		inputevent->key = translateKey(linux_evt->code);
-
-		if (inputevent->key == MMSKEY_UNKNOWN)
-			return false;
-
-		// press/release
-		inputevent->type = linux_evt->value ? MMSINPUTEVENTTYPE_KEYPRESS : MMSINPUTEVENTTYPE_KEYRELEASE;
-
-		return false;
-	}
-	else if(linux_evt->type == EV_ABS) {
-		this->lastevent = *linux_evt;
-
-
+	if(linux_evt->type == EV_ABS) {
 		if(this->device.touch.swapXY) {
 			if(linux_evt->code == ABS_X) { linux_evt->code = ABS_Y; }
 			else if(linux_evt->code == ABS_Y) { linux_evt->code = ABS_X; }
 		}
+
 		switch(linux_evt->code) {
-			case ABS_X:
-				///////////////////////////////////////////////////
-				this->device.touch.pointer_xpos = this->device.touch.screen_rect.x
-	        						 + ((this->device.touch.xfac * (linux_evt->value - this->device.touch.pointer_rect.x)) / 100);
+			case ABS_X: 
+				x = linux_evt->value * this->device.touch.xFactor; 
 				if(this->device.touch.swapX) {
-					this->device.touch.pointer_xpos = this->device.touch.screen_rect.x + this->device.touch.screen_rect.w - 1
-													- this->device.touch.pointer_xpos;
+					x = this->device.touch.rect.w - this->device.touch.rect.x - x;
 				}
-
-				inputevent->posx = this->device.touch.pointer_xpos;
-				printf("MMSInputManager:handleInput: ABS_X %d(%d) received\n", linux_evt->value,inputevent->posx);
-        		//////////////////////////////////////////////////
-
-				/*
-				inputevent->posx = (int)(linux_evt->value * this->device.touch.xFactor);
-				if(this->device.touch.swapX) {
-					inputevent->posx = this->device.touch.xRes - inputevent->posx;
-				}*/
-
-				MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: ABS_X %d(%d) received", linux_evt->value,inputevent->posx);
-				this->lastX = inputevent->posx;
-				return false;
+				break;
 			case ABS_Y:
-				///////////////////////////////////////////////////
-				this->device.touch.pointer_ypos = this->device.touch.screen_rect.y
-	        						 + ((this->device.touch.yfac * (linux_evt->value - this->device.touch.pointer_rect.y)) / 100);
+				y = linux_evt->value * this->device.touch.yFactor; 
 				if(this->device.touch.swapY) {
-					this->device.touch.pointer_ypos = this->device.touch.screen_rect.y + this->device.touch.screen_rect.h - 1
-													- this->device.touch.pointer_ypos;
+					y = this->device.touch.rect.h - this->device.touch.rect.y - y;
 				}
-
-				inputevent->posy = this->device.touch.pointer_ypos;
-				printf("MMSInputManager:handleInput: ABS_Y %d(%d) received, %d, %d, %d\n", linux_evt->value,inputevent->posy,
-						this->device.touch.screen_rect.y, this->device.touch.yfac, this->device.touch.pointer_rect.y);
-        		//////////////////////////////////////////////////
-
-				/*
-				inputevent->posy = (int)(linux_evt->value * this->device.touch.yFactor);
-				if(this->device.touch.swapY) {
-					inputevent->posy = this->device.touch.yRes - inputevent->posy;
-				}
-				*/
-				MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: ABS_Y %d(%d) received", linux_evt->value,inputevent->posy);
-				this->lastY = inputevent->posy;
-				return false;
+				break;
 			case ABS_PRESSURE:
-					MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: ABS_PRESSURE received", linux_evt->value);
-					return false;
+				/* 
+				 * if the touch driver doesn't send BTN_xxx events, use
+				 * ABS_PRESSURE as indicator for pressed/released
+				 */
+				if(!this->device.touch.haveBtnEvents) {
+					pressed = (linux_evt->value ? 1 : 0);
+				}
+				break;
+			default: 
+				break;
 		}
-	}
+	} else if(linux_evt->type == EV_KEY) {
+		switch(linux_evt->code) {
+			case BTN_LEFT:
+			case BTN_TOUCH:
+				pressed = (linux_evt->value ? 1 : 0); 
+				break;
+			default: 
+				inputevent->key = translateKey(linux_evt->code);
+				if (inputevent->key == MMSKEY_UNKNOWN)
+					return false;
 
+				inputevent->type = linux_evt->value ? MMSINPUTEVENTTYPE_KEYPRESS : MMSINPUTEVENTTYPE_KEYRELEASE;
+				TRACEOUT("MMSINPUT", "KEY %s %d", (pressed ? "PRESS" : "RELEASE"), inputevent->key);
+				return true;
+				break;
+		}
+	} else if(linux_evt->type == EV_SYN) {
+		inputevent->posx = x;
+		inputevent->posy = y;
+		if(pressed != 0xff) {
+			inputevent->type = (pressed ? MMSINPUTEVENTTYPE_BUTTONPRESS : MMSINPUTEVENTTYPE_BUTTONRELEASE);
+			pressed = 0xff;
+
+			TRACEOUT("MMSINPUT", "BUTTON %s at %dx%d", (pressed ? "PRESS" : "RELEASE"), x, y);
+		} else {
+			inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
+		}
+		
+		return true;
+	}
+	
 	return false;
 }
 
@@ -989,10 +884,7 @@ void MMSInputLISThread::threadMain() {
 	}
 	else
 	if (!this->device.name.empty()) {
-		// working for other linux input devices
-		if((this->device.type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) ||
-		   (this->device.type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN)) {
-			// remote device
+		if(this->device.type != MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN) {
 			if (openDevice()) {
 				while (1) {
 					int readlen;
@@ -1010,7 +902,6 @@ void MMSInputLISThread::threadMain() {
 					// new event
 					MMSInputEvent inputevent;
 					if (translateEvent(&linux_evt, &inputevent)) {
-						printf("add event %d, %d, %d\n", inputevent.type, inputevent.posx, inputevent.posy);
 						this->handler->addEvent(&inputevent);
 					}
 				}
