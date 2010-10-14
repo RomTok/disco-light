@@ -84,8 +84,10 @@ class MMSTimer: public MMSThread
 		 * \brief Starts timer.
 		 *
 		 * \param milliSeconds    the timer interval in milli seconds
+		 * \param firsttime_ms    the first timeOut will be emitted after firsttime_ms milliseconds
+		 *                        default 0 means that the first timeOut will also be emitted after milliSeconds
 		 */
-		bool start(unsigned int milliSeconds);
+		bool start(unsigned int milliSeconds, unsigned int firsttime_ms = 0);
 
 		/*!
 		 * \brief Restarts timer.
@@ -119,8 +121,11 @@ class MMSTimer: public MMSThread
 			QUIT
 		} 				action;
 
+		bool			firsttime;
 		__time_t 		secs;
 		long int 		nSecs;
+		__time_t 		ft_secs;
+		long int 		ft_nSecs;
 
 		pthread_cond_t 	cond;
 		pthread_mutex_t	mutex;
