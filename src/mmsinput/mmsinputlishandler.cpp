@@ -33,13 +33,9 @@
 #include "mmsinput/mmsinputlishandler.h"
 #include "mmsinput/mmsinputlisthread.h"
 #include "mmsgui/fb/mmsfb.h"
-#include <string.h>
+#include <cstring>
 #include <typeinfo>
-#include <linux/keyboard.h>
-#include <fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/kd.h>
-#include <linux/vt.h>
 
 #include <linux/input.h>
 
@@ -49,27 +45,15 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) :
 	devcnt(0),
 	ie_count(0),
 	ie_read_pos(0),
-	ie_write_pos(0),
-	kb_fd(-1) {
-	// get access to the framebuffer console
-	if (mmsfb->mmsfbdev) {
-		if(mmsfb->mmsfbdev->vtGetFd(&this->kb_fd)) {
-			// start the keyboard thread
-			this->listhread = new MMSInputLISThread(this, this->kb_fd);
-			if (this->listhread)
-				this->listhread->start();
-		}
-	}
+	ie_write_pos(0) {
 
-	// get other linux input devices and start separate threads
 	getDevices();
 	for (int i = 0; i < this->devcnt; i++) {
-		if((this->devices[i].type == MMSINPUTLISHANDLER_DEVTYPE_REMOTE) ||
-		   (this->devices[i].type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN)) {
-			// we start input thread only for remote controls and touchscreens
+		if(this->devices[i].type != MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN) {
 			MMSInputLISThread *lt = new MMSInputLISThread(this, &this->devices[i]);
-			if (lt)
+			if (lt) {
 				lt->start();
+			}
 		}
 	}
 }
@@ -118,115 +102,75 @@ bool MMSInputLISHandler::checkDevice() {
     ioctl(fd, EVIOCGBIT(0, sizeof(ev_bit)), ev_bit);
     if(TSTBIT(EV_KEY, ev_bit)) {
 		ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(key_bit)), key_bit);
-		for (int i = KEY_Q; i < KEY_M; i++)
+		for(int i = KEY_Q; i < KEY_M; i++)
 			if (TSTBIT(i, key_bit))
 				keys++;
-		if(keys > 20)
+		if(keys > 20) {
 			dev->type = MMSINPUTLISHANDLER_DEVTYPE_KEYBOARD;
-		else {
-			for (int i = KEY_OK; i < KEY_MAX; i++) {
-				if (TSTBIT(i, key_bit)) {
-						dev->type = MMSINPUTLISHANDLER_DEVTYPE_REMOTE;
+		} else {
+			for(int i = KEY_OK; i < KEY_MAX; i++) {
+				if(TSTBIT(i, key_bit)) {
+					dev->type = MMSINPUTLISHANDLER_DEVTYPE_REMOTE;
 					break;
 				}
 			}
 		}
     }
 
-	/* check for touchscreen (only ABS events are supported) */
-    /* TODO: add button events */
+	/* check for touchscreen */
 	if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_UNKNOWN) {
 		if(ioctl(fd, EVIOCGBIT(EV_ABS, sizeof (abs_bit)), abs_bit) != -1) {
-			if(TSTBIT(ABS_X, abs_bit) && TSTBIT(ABS_Y, abs_bit) && TSTBIT(ABS_PRESSURE, abs_bit)) {
-				struct input_absinfo abs;
-				MMSConfigData config;
-				MMSFBRectangle rect = config.getGraphicsLayer().rect;
-				dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
-
-				//////////////////////////////////////////////////////////////////////////
-				// get the screen rectangle
-				dev->touch.screen_rect.x = config.getVRect().x;
-				dev->touch.screen_rect.y = config.getVRect().y;
-				dev->touch.screen_rect.w = config.getVRect().w;
-				dev->touch.screen_rect.h = config.getVRect().h;
-
-				// get the pointer rectangle
-				dev->touch.pointer_rect.x = config.getTouchRect().x;
-				dev->touch.pointer_rect.y = config.getTouchRect().y;
-				dev->touch.pointer_rect.w = config.getTouchRect().w;
-				dev->touch.pointer_rect.h = config.getTouchRect().h;
-				if ((dev->touch.pointer_rect.w<=0)||(dev->touch.pointer_rect.h<=0))
-					if (config.getPointer()!=MMSFB_PM_FALSE) {
-						// no touch rect given but pointer needed
-						dev->touch.pointer_rect.x = dev->touch.screen_rect.x;
-						dev->touch.pointer_rect.y = dev->touch.screen_rect.y;
-						dev->touch.pointer_rect.w = dev->touch.screen_rect.w;
-						dev->touch.pointer_rect.h = dev->touch.screen_rect.h;
-					}
-
-				// calculate a factor between screen and pointer rectangle
-				if ((dev->touch.pointer_rect.w > 0)&&(dev->touch.pointer_rect.h > 0)) {
-					dev->touch.xfac = (100 * dev->touch.screen_rect.w) / dev->touch.pointer_rect.w;
-					printf("--------------\n%d, %d, %d\n", dev->touch.screen_rect.w, dev->touch.pointer_rect.w, dev->touch.xfac);
-					dev->touch.yfac = (100 * dev->touch.screen_rect.h) / dev->touch.pointer_rect.h;
-					printf("--------------\n%d, %d, %d\n", dev->touch.screen_rect.h, dev->touch.pointer_rect.h, dev->touch.yfac);
-					dev->touch.pointer_xpos = dev->touch.pointer_old_xpos = dev->touch.screen_rect.x + dev->touch.screen_rect.w / 2;
-					dev->touch.pointer_ypos = dev->touch.pointer_old_ypos = dev->touch.screen_rect.y + dev->touch.screen_rect.h / 2;
+			if(TSTBIT(ABS_X, abs_bit) && TSTBIT(ABS_Y, abs_bit)) {
+				if(TSTBIT(EV_KEY, ev_bit) && (TSTBIT(BTN_LEFT, key_bit) || TSTBIT(BTN_TOUCH, key_bit))) {
+					dev->touch.haveBtnEvents = true;
+					dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
+				} else if(TSTBIT(ABS_PRESSURE, abs_bit)) {
+					dev->touch.haveBtnEvents = false;
+					dev->type = MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN;
 				}
-				else {
-					// this means that touch pad/screen is not used
-					dev->touch.pointer_rect.w = 0;
-					dev->touch.pointer_rect.h = 0;
-				}
-				dev->touch.swapX = config.getTouchSwapX();
-				dev->touch.swapY = config.getTouchSwapY();
-				dev->touch.swapXY = config.getTouchSwapXY();
-/*
-				if (dev->touch.swapXY) {
-					int t;
-					t = dev->touch.xfac;
-					dev->touch.xfac = dev->touch.yfac;
-					dev->touch.yfac = t;
+			}
+		}
 
-					t = dev->touch.pointer_xpos;
-					dev->touch.pointer_xpos = dev->touch.pointer_ypos;
-					dev->touch.pointer_ypos = t;
-				}*/
-				//////////////////////////////////////////////////////////////////////////
+		if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN) {		
+			struct input_absinfo abs;
+			MMSConfigData config;
+			MMSFBRectangle vRect = config.getVRect();
+			
+			/* use the graphicslayer resolution if vrect isn't set */
+			if(!vRect.w) {
+				vRect = config.getGraphicsLayer().rect;
+			}
+			
+			dev->touch.rect 	= config.getTouchRect();
+			dev->touch.swapX 	= config.getTouchSwapX();
+			dev->touch.swapY 	= config.getTouchSwapY();
+			dev->touch.swapXY 	= config.getTouchSwapXY();
 
-/*
-				dev->touch.xRes = rect.w;
-				dev->touch.yRes = rect.h;
-				dev->touch.swapX = config.getTouchSwapX();
-				dev->touch.swapY = config.getTouchSwapY();
-				dev->touch.swapXY = config.getTouchSwapXY();
-				if(config.getTouchResX()) {
-					dev->touch.xFactor = (float)rect.w / config.getTouchResX();
-				} else if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
-					if(dev->touch.swapXY) {
-						dev->touch.yFactor =  (float)rect.h / abs.maximum;
-					} else {
-						dev->touch.xFactor =  (float)rect.w / abs.maximum;
-					}
+			if(dev->touch.rect.w) {
+				dev->touch.xFactor = (float)vRect.w / (dev->touch.rect.w - dev->touch.rect.x);
+			} else if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
+				if(dev->touch.swapXY) {
+					dev->touch.yFactor =  (float)vRect.h / (abs.maximum - abs.minimum);
 				} else {
-					dev->touch.xFactor = 1.0;
+					dev->touch.xFactor =  (float)vRect.w / (abs.maximum - abs.minimum);
 				}
-				if(config.getTouchResY()) {
-					dev->touch.yFactor = (float)rect.h / config.getTouchResY();
-				} else if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
-					if(dev->touch.swapXY) {
-						dev->touch.xFactor = (float)rect.w / abs.maximum;
-					} else {
-						dev->touch.yFactor = (float)rect.h / abs.maximum;
-					}
+			} else {
+				dev->touch.xFactor = 1.0;
+			}
+			if(dev->touch.rect.h) {
+				dev->touch.yFactor = (float)vRect.h / (dev->touch.rect.h - dev->touch.rect.y);
+			} else if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
+				if(dev->touch.swapXY) {
+					dev->touch.xFactor = (float)vRect.w / (abs.maximum - abs.minimum);
 				} else {
-					dev->touch.yFactor = 1.0;
+					dev->touch.yFactor = (float)vRect.h / (abs.maximum - abs.minimum);
 				}
-*/
-
+			} else {
+				dev->touch.yFactor = 1.0;
 			}
 		}
 	}
+
 	printf("Found %s, type=%s (%s)\n",
 						dev->name.c_str(),
 						dev->type.c_str(),
