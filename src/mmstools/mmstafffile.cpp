@@ -284,9 +284,23 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
     return true;
 }
 
+
+
+#ifdef __HAVE_PNG__
+// PNG callback function (read)
+// so we are able to read data with MMSFile class instead of standard FILE*
+void MMSTaff_read_png_data_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
+	MMSFile	*file = (MMSFile *)png_get_io_ptr(png_ptr);
+	size_t ritems;
+	file->readBuffer((void *)data, &ritems, 1, length);
+}
+#endif
+
+
+
 bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
 #ifdef __HAVE_PNG__
-	FILE 			*fp;
+	MMSFile			*file;
 	char			png_sig[8];
     png_structp     png_ptr = NULL;
     png_infop       info_ptr = NULL;
@@ -295,29 +309,46 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 
     // check if file does exist and if it is an png format
     *buf = NULL;
-    fp = fopen(filename, "rb");
-    if (!fp)
-    	return false;
-    if (fread(png_sig, 1, sizeof(png_sig), fp)!=sizeof(png_sig)) {
-        fclose(fp);
+    file = new MMSFile(filename);
+    if (!file) {
     	return false;
     }
+    if (file->getLastError()) {
+    	return false;
+    }
+
+    size_t ritems = 0;
+    if (file->readBuffer(png_sig, &ritems, 1, sizeof(png_sig))) {
+    	if (ritems != sizeof(png_sig)) {
+			delete file;
+			return false;
+    	}
+    }
+    else {
+		delete file;
+		return false;
+    }
+
 #if PNG_LIBPNG_VER_MINOR == 2
     if (!png_check_sig((png_byte*)png_sig, sizeof(png_sig))) {
 #else
    	if (png_sig_cmp((png_byte*)png_sig, 0, sizeof(png_sig)) != 0) {
 #endif
-        fclose(fp);
+   		delete file;
     	return false;
     }
+
 
     // init png structs and abend handler
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
-        fclose(fp);
+    	delete file;
     	return false;
     }
     png_set_sig_bytes(png_ptr, sizeof(png_sig));
+
+    // set read callback function
+    png_set_read_fn(png_ptr, file, MMSTaff_read_png_data_callback);
 
     if(setjmp(png_jmpbuf(png_ptr))) {
     	// abend from libpng
@@ -326,26 +357,25 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
         if (row_pointers) free(row_pointers);
     	if (*buf) free(*buf);
         *buf = NULL;
-        fclose(fp);
+        delete file;
         return false;
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
     	png_destroy_read_struct(&png_ptr, NULL, NULL);
-        fclose(fp);
+        delete file;
     	return false;
     }
 
     end_info_ptr = png_create_info_struct(png_ptr);
     if (!end_info_ptr) {
     	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
+        delete file;
     	return false;
     }
 
     // read png infos
-    png_init_io(png_ptr, fp);
     png_read_info(png_ptr, info_ptr);
     png_uint_32 w;
     png_uint_32 h;
@@ -359,7 +389,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 			&& color_type != PNG_COLOR_TYPE_RGB && color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
     	// format not supported
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        fclose(fp);
+        delete file;
     	return false;
     }
 
@@ -393,7 +423,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
     if (!row_pointers) {
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
-        fclose(fp);
+        delete file;
     	return false;
     }
 
@@ -403,7 +433,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     if (!*buf) {
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
         free(row_pointers);
-        fclose(fp);
+        delete file;
     	return false;
     }
     char *b = (char*)*buf;
@@ -419,7 +449,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     // all right, freeing helpers
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
     free(row_pointers);
-    fclose(fp);
+    delete file;
 
     // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
     // so check now if i have to convert it
@@ -439,12 +469,14 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
 	    }
     }
 
-    /* create mirror and convert to target pixelformat */
+    // create mirror and convert to target pixelformat
     return postprocessImage(buf, width, height, pitch, size);
 #else
     return false;
 #endif
 }
+
+
 
 #ifdef __HAVE_JPEG__
 struct JPEGErrorManager {
