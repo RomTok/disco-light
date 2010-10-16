@@ -354,26 +354,42 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
 
     // check the png format
-    if (((bit_depth != 8)&&(bit_depth != 16)) || (color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
-    	// we only support ARGB png images
+    if ((bit_depth != 8 && bit_depth != 16)
+    	|| (color_type != PNG_COLOR_TYPE_PALETTE && color_type != PNG_COLOR_TYPE_GRAY
+			&& color_type != PNG_COLOR_TYPE_RGB && color_type != PNG_COLOR_TYPE_RGB_ALPHA)) {
+    	// format not supported
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
         fclose(fp);
     	return false;
     }
+
+    // set input transformations
+    if (bit_depth == 16) {
+    	// strip to 8 bit channels
+    	png_set_strip_16(png_ptr);
+    }
+    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+    png_set_bgr(png_ptr);
+    png_set_interlace_handling(png_ptr);
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
+    	// convert palette to rgb data
+        png_set_palette_to_rgb(png_ptr);
+    }
+    if (color_type == PNG_COLOR_TYPE_GRAY) {
+    	// convert grayscale to rgb data
+    	png_set_gray_to_rgb(png_ptr);
+    }
+    if (color_type != PNG_COLOR_TYPE_RGB_ALPHA && color_type != PNG_COLOR_TYPE_GRAY_ALPHA) {
+        // add alpha channel 0xff if not existing
+    	png_set_add_alpha(png_ptr, 0xff, PNG_FILLER_AFTER);
+    }
+    png_read_update_info(png_ptr, info_ptr);
+
+    // allocate memory for row pointers
     *width = w;
     *height = h;
     *pitch = 4 * w;
     *size = *pitch * h;
-
-    // set input transformations
-    if (bit_depth == 16)
-    	png_set_strip_16(png_ptr);
-    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
-    png_set_bgr(png_ptr);
-    png_set_interlace_handling(png_ptr);
-    png_read_update_info(png_ptr, info_ptr);
-
-    // allocate memory for row pointers
     row_pointers = (png_bytep*)malloc(*height * sizeof(png_bytep));
     if (!row_pointers) {
     	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info_ptr);
