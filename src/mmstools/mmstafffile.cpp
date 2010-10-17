@@ -92,10 +92,14 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 		ret = readFile();
 	if (!ret)
 		// failed or rewrite, try to convert from external_filename
-		if ((force_rewrite_taff)||(auto_rewrite_taff))
-			if (convertExternal2TAFF())
-				// auto read in
-				readFile();
+		if ((force_rewrite_taff)||(auto_rewrite_taff)) {
+			if (convertExternal2TAFF()) {
+				if (this->taff_filename != "") {
+					// auto read in
+					readFile();
+				}
+			}
+		}
 }
 
 MMSTaffFile::~MMSTaffFile() {
@@ -104,16 +108,22 @@ MMSTaffFile::~MMSTaffFile() {
 }
 
 bool MMSTaffFile::writeBuffer(MMSFile *mmsfile, void *ptr, size_t *ritems, size_t size, size_t nitems, bool *write_status) {
-	if (!mmsfile) {
-		if (write_status) *write_status = false;
-		return false;
-	}
 
-	if (!mmsfile->writeBuffer(ptr, ritems, size, nitems)) {
-		// error while writing file
-		printf("TAFF: Error while writing to file %s\n", mmsfile->getName().c_str());
-		if (write_status) *write_status = false;
-		return false;
+	if (mmsfile) {
+		// writing to file
+		if (!mmsfile->writeBuffer(ptr, ritems, size, nitems)) {
+			// error while writing file
+			printf("TAFF: Error while writing to file %s\n", mmsfile->getName().c_str());
+			if (write_status) *write_status = false;
+			return false;
+		}
+	}
+	else {
+		// writing to taff_buf
+		memcpy(&this->taff_buf[taff_buf_pos], ptr, size * nitems);
+		this->taff_buf_pos+= size * nitems;
+
+		//TODO: check the taff_buf_size and realloc the buffer if taff_buf_size is to small
 	}
 
 	return true;
@@ -1047,100 +1057,120 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 	}
 
 	if(rc) {
-		/* open binary destination file */
+		// open binary destination file
 		MMSFile *taff_file = NULL;
 		bool wok = true;
+		size_t ritems;
 		if (!this->taff_filename.empty()) {
 			taff_file = new MMSFile(this->taff_filename.c_str(), MMSFM_WRITE);
-			size_t ritems;
 			writeBuffer(taff_file, (void*)TAFF_IDENT, &ritems, 1, strlen(TAFF_IDENT), &wok);
-			writeBuffer(taff_file, &(this->taff_desc->type), &ritems, 1, sizeof(this->taff_desc->type), &wok);
-			writeBuffer(taff_file, &(this->taff_desc->version), &ritems, 1, sizeof(this->taff_desc->version), &wok);
-
-			/* write the tag */
-			unsigned char wb[3];
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_TAG;
-			wb[1]=MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE;
-			writeBuffer(taff_file, wb, &ritems, 1, 2, &wok);
-
-			/* write attributes: width */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width;
-			wb[2]=sizeof(int);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &imgWidth, &ritems, 1, sizeof(int), &wok);
-
-			/* write attributes: height */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height;
-			wb[2]=sizeof(int);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &imgHeight, &ritems, 1, sizeof(int), &wok);
-
-			/* write attributes: pitch */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch;
-			wb[2]=sizeof(int);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &imgPitch, &ritems, 1, sizeof(int), &wok);
-
-			/* write attributes: size */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size;
-			wb[2]=sizeof(int);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &imgSize, &ritems, 1, sizeof(int), &wok);
-
-			/* write attributes: pixelformat */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat;
-			wb[2]=sizeof(int);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			int pf = (int)this->destination_pixelformat;
-			writeBuffer(taff_file, &pf, &ritems, 1, sizeof(int), &wok);
-
-			/* write attributes: premultiplied */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied;
-			wb[2]=sizeof(bool);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			bool pm = (this->destination_premultiplied);
-			writeBuffer(taff_file, &pm, &ritems, 1, sizeof(bool), &wok);
-
-			/* write attributes: mirror_size */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size;
-			wb[2]=sizeof(int);
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			int ms = (int)this->mirror_size;
-			writeBuffer(taff_file, &ms, &ritems, 1, sizeof(int), &wok);
-
-			/* write attributes: data */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
-			wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
-			wb[2]=0xff;
-			writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
-			writeBuffer(taff_file, &imgSize, &ritems, 1, sizeof(int), &wok);
-			writeBuffer(taff_file, imgBuf, &ritems, 1, imgSize, &wok);
-
-			/* write the close tag */
-			wb[0]=MMSTAFF_TAGTABLE_TYPE_CLOSETAG;
-			wb[1]=MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE;
-			writeBuffer(taff_file, wb, &ritems, 1, 2, &wok);
 		}
+
+		if (!taff_file) {
+			// no regular file, so setup the buffer so that we have not to resize it
+			this->taff_buf_size = imgSize + 256;
+			this->taff_buf_pos = 0;
+			if (this->taff_buf) free(this->taff_buf);
+			this->taff_buf = (unsigned char *)malloc(this->taff_buf_size);
+		}
+
+		// write type and version
+		writeBuffer(taff_file, &(this->taff_desc->type), &ritems, 1, sizeof(this->taff_desc->type), &wok);
+		writeBuffer(taff_file, &(this->taff_desc->version), &ritems, 1, sizeof(this->taff_desc->version), &wok);
+
+		// write the tag
+		unsigned char wb[3];
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_TAG;
+		wb[1]=MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE;
+		writeBuffer(taff_file, wb, &ritems, 1, 2, &wok);
+
+		// write attributes: width
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width;
+		wb[2]=sizeof(int);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		writeBuffer(taff_file, &imgWidth, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: height
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_height;
+		wb[2]=sizeof(int);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		writeBuffer(taff_file, &imgHeight, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: pitch
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pitch;
+		wb[2]=sizeof(int);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		writeBuffer(taff_file, &imgPitch, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: size
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_size;
+		wb[2]=sizeof(int);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		writeBuffer(taff_file, &imgSize, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: pixelformat
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat;
+		wb[2]=sizeof(int);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		int pf = (int)this->destination_pixelformat;
+		writeBuffer(taff_file, &pf, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: premultiplied
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied;
+		wb[2]=sizeof(bool);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		bool pm = (this->destination_premultiplied);
+		writeBuffer(taff_file, &pm, &ritems, 1, sizeof(bool), &wok);
+
+		// write attributes: mirror_size
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size;
+		wb[2]=sizeof(int);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		int ms = (int)this->mirror_size;
+		writeBuffer(taff_file, &ms, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: data
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
+		wb[2]=0xff;
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		writeBuffer(taff_file, &imgSize, &ritems, 1, sizeof(int), &wok);
+		writeBuffer(taff_file, imgBuf, &ritems, 1, imgSize, &wok);
+
+		// write the close tag
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_CLOSETAG;
+		wb[1]=MMSTAFF_IMAGE_TAGTABLE_TAG_RAWIMAGE;
+		writeBuffer(taff_file, wb, &ritems, 1, 2, &wok);
 
 		// set rc
 		rc = wok;
 
 		// close file and free
-		if (taff_file)
+		if (taff_file) {
 			delete taff_file;
+		}
+		else {
+			// no regular file, set buffer values
+			this->taff_buf_size = this->taff_buf_pos;
+			this->taff_buf_pos = 0;
+			getFirstTag();
+			this->loaded = true;
+		}
 		free(imgBuf);
 
 	    if (!rc) {
 	    	// failed, reset the file
-			taff_file = new MMSFile(this->taff_filename.c_str(), MMSFM_WRITE);
-			if (taff_file) delete taff_file;
+			if (!this->taff_filename.empty()) {
+				taff_file = new MMSFile(this->taff_filename.c_str(), MMSFM_WRITE);
+				if (taff_file) delete taff_file;
+			}
 	    }
 	}
 	else {
