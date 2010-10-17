@@ -86,7 +86,7 @@ class MMSImageWidget : public MMSWidget {
         bool draw(bool *backgroundFilled = NULL);
 
         void loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc,
-        				 unsigned int *index, unsigned int mirror_size);
+        				 unsigned int *index, unsigned int mirror_size, bool gen_taff);
 
         void workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom);
 
@@ -117,6 +117,7 @@ class MMSImageWidget : public MMSWidget {
         bool getFitHeight();
         MMSALIGNMENT getAlignment();
         unsigned int getMirrorSize();
+        bool getGenTaff();
 
         void setImagePath(string imagepath, bool load = true, bool refresh = true);
         void setImageName(string imagename, bool load = true, bool refresh = true);
@@ -141,6 +142,7 @@ class MMSImageWidget : public MMSWidget {
         void setFitHeight(bool fitheight, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setMirrorSize(unsigned int mirrorsize, bool refresh = true);
+        void setGenTaff(bool gentaff, bool refresh = true);
 
         void updateFromThemeClass(MMSImageWidgetClass *themeClass);
 

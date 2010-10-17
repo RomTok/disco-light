@@ -83,7 +83,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 16, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 17, mmsgui_taff_tagtable };
 
 
 
@@ -754,6 +754,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.setFitHeight(false);
         this->imageWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         this->imageWidgetClass.setMirrorSize(0);
+        this->imageWidgetClass.setGenTaff(true);
     }
 
     /* MMSButtonWidget */
