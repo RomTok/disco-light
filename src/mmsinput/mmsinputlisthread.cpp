@@ -35,11 +35,11 @@
 #include <string.h>
 #include <errno.h>
 
-/*#ifndef __LIS_DEBUG__
+#ifndef __LIS_DEBUG__
 #undef MSG2OUT
 #define MSG2OUT(ident, msg...)
 #endif
-*/
+
 
 // keycode translation table e.g. for remote controls
 MMSKeySymbol MMSInputLISThread_extkeycodes [] = {
