@@ -47,6 +47,15 @@ class MMSSliderWidget : public MMSWidget {
         MMSSliderWidgetClass 	*sliderWidgetClass;
         MMSSliderWidgetClass 	mySliderWidgetClass;
 
+        bool imagepath_set;
+        bool selimagepath_set;
+
+        bool imagepath_p_set;
+        bool selimagepath_p_set;
+
+        bool imagepath_i_set;
+        bool selimagepath_i_set;
+
         MMSFBSurface    *image;
         MMSFBSurface    *selimage;
         MMSFBSurface    *image_p;

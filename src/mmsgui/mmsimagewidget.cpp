@@ -65,6 +65,15 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     if (this->imageWidgetClass) this->da->widgetClass = &(this->imageWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     // clear
+    this->imagepath_set = false;
+    this->selimagepath_set = false;
+
+    this->imagepath_p_set = false;
+    this->selimagepath_p_set = false;
+
+    this->imagepath_i_set = false;
+    this->selimagepath_i_set = false;
+
     this->image = NULL;
     image_loaded = false;
     image_curr_index = 0;
@@ -688,6 +697,7 @@ bool MMSImageWidget::getGenTaff() {
 
 void MMSImageWidget::setImagePath(string imagepath, bool load, bool refresh) {
     myImageWidgetClass.setImagePath(imagepath);
+    this->imagepath_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->image);
@@ -706,6 +716,7 @@ void MMSImageWidget::setImagePath(string imagepath, bool load, bool refresh) {
 }
 
 void MMSImageWidget::setImageName(string imagename, bool load, bool refresh) {
+	if (!this->imagepath_set) myImageWidgetClass.unsetImagePath();
     myImageWidgetClass.setImageName(imagename);
     if (load)
         if (this->rootwindow) {
@@ -746,6 +757,7 @@ void MMSImageWidget::setImage(string imagepath, string imagename, bool load, boo
 
 void MMSImageWidget::setSelImagePath(string selimagepath, bool load, bool refresh) {
     myImageWidgetClass.setSelImagePath(selimagepath);
+    this->selimagepath_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->selimage);
@@ -764,6 +776,7 @@ void MMSImageWidget::setSelImagePath(string selimagepath, bool load, bool refres
 }
 
 void MMSImageWidget::setSelImageName(string selimagename, bool load, bool refresh) {
+	if (!this->selimagepath_set) myImageWidgetClass.unsetSelImagePath();
     myImageWidgetClass.setSelImageName(selimagename);
     if (load)
         if (this->rootwindow) {
@@ -806,6 +819,7 @@ void MMSImageWidget::setSelImage(string selimagepath, string selimagename, bool 
 
 void MMSImageWidget::setImagePath_p(string imagepath_p, bool load, bool refresh) {
     myImageWidgetClass.setImagePath_p(imagepath_p);
+    this->imagepath_p_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->image_p);
@@ -824,6 +838,7 @@ void MMSImageWidget::setImagePath_p(string imagepath_p, bool load, bool refresh)
 }
 
 void MMSImageWidget::setImageName_p(string imagename_p, bool load, bool refresh) {
+	if (!this->imagepath_p_set) myImageWidgetClass.unsetImagePath_p();
     myImageWidgetClass.setImageName_p(imagename_p);
     if (load)
         if (this->rootwindow) {
@@ -864,6 +879,7 @@ void MMSImageWidget::setImage_p(string imagepath_p, string imagename_p, bool loa
 
 void MMSImageWidget::setSelImagePath_p(string selimagepath_p, bool load, bool refresh) {
     myImageWidgetClass.setSelImagePath_p(selimagepath_p);
+    this->selimagepath_p_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->selimage_p);
@@ -882,6 +898,7 @@ void MMSImageWidget::setSelImagePath_p(string selimagepath_p, bool load, bool re
 }
 
 void MMSImageWidget::setSelImageName_p(string selimagename_p, bool load, bool refresh) {
+	if (!this->selimagepath_p_set) myImageWidgetClass.unsetSelImagePath_p();
     myImageWidgetClass.setSelImageName_p(selimagename_p);
     if (load)
         if (this->rootwindow) {
@@ -924,6 +941,7 @@ void MMSImageWidget::setSelImage_p(string selimagepath_p, string selimagename_p,
 
 void MMSImageWidget::setImagePath_i(string imagepath_i, bool load, bool refresh) {
     myImageWidgetClass.setImagePath_i(imagepath_i);
+    this->imagepath_i_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->image_i);
@@ -942,6 +960,7 @@ void MMSImageWidget::setImagePath_i(string imagepath_i, bool load, bool refresh)
 }
 
 void MMSImageWidget::setImageName_i(string imagename_i, bool load, bool refresh) {
+	if (!this->imagepath_i_set) myImageWidgetClass.unsetImagePath_i();
     myImageWidgetClass.setImageName_i(imagename_i);
     if (load)
         if (this->rootwindow) {
@@ -982,6 +1001,7 @@ void MMSImageWidget::setImage_i(string imagepath_i, string imagename_i, bool loa
 
 void MMSImageWidget::setSelImagePath_i(string selimagepath_i, bool load, bool refresh) {
     myImageWidgetClass.setSelImagePath_i(selimagepath_i);
+    this->selimagepath_i_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->selimage_i);
@@ -1000,6 +1020,7 @@ void MMSImageWidget::setSelImagePath_i(string selimagepath_i, bool load, bool re
 }
 
 void MMSImageWidget::setSelImageName_i(string selimagename_i, bool load, bool refresh) {
+	if (!this->selimagepath_i_set) myImageWidgetClass.unsetSelImagePath_i();
     myImageWidgetClass.setSelImageName_i(selimagename_i);
     if (load)
         if (this->rootwindow) {

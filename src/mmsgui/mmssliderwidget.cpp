@@ -54,6 +54,15 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     if (this->sliderWidgetClass) this->da->widgetClass = &(this->sliderWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     // clear
+    this->imagepath_set = false;
+    this->selimagepath_set = false;
+
+    this->imagepath_p_set = false;
+    this->selimagepath_p_set = false;
+
+    this->imagepath_i_set = false;
+    this->selimagepath_i_set = false;
+
     this->image = NULL;
     this->selimage = NULL;
     this->image_p = NULL;
@@ -365,6 +374,7 @@ unsigned int MMSSliderWidget::getPosition() {
 
 void MMSSliderWidget::setImagePath(string imagepath, bool load, bool refresh) {
     mySliderWidgetClass.setImagePath(imagepath);
+    this->imagepath_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->image);
@@ -375,6 +385,7 @@ void MMSSliderWidget::setImagePath(string imagepath, bool load, bool refresh) {
 }
 
 void MMSSliderWidget::setImageName(string imagename, bool load, bool refresh) {
+	if (!this->imagepath_set) mySliderWidgetClass.unsetImagePath();
     mySliderWidgetClass.setImageName(imagename);
     if (load)
         if (this->rootwindow) {
@@ -398,7 +409,9 @@ void MMSSliderWidget::setImage(string imagepath, string imagename, bool load, bo
 }
 
 void MMSSliderWidget::setSelImagePath(string selimagepath, bool load, bool refresh) {
+	if (!this->selimagepath_set) mySliderWidgetClass.unsetSelImagePath();
     mySliderWidgetClass.setSelImagePath(selimagepath);
+    this->selimagepath_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->selimage);
@@ -432,7 +445,9 @@ void MMSSliderWidget::setSelImage(string selimagepath, string selimagename, bool
 }
 
 void MMSSliderWidget::setImagePath_p(string imagepath_p, bool load, bool refresh) {
+	if (!this->imagepath_p_set) mySliderWidgetClass.unsetImagePath_p();
     mySliderWidgetClass.setImagePath_p(imagepath_p);
+    this->imagepath_p_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->image_p);
@@ -466,7 +481,9 @@ void MMSSliderWidget::setImage_p(string imagepath_p, string imagename_p, bool lo
 }
 
 void MMSSliderWidget::setSelImagePath_p(string selimagepath_p, bool load, bool refresh) {
+	if (!this->selimagepath_p_set) mySliderWidgetClass.unsetSelImagePath_p();
     mySliderWidgetClass.setSelImagePath_p(selimagepath_p);
+    this->selimagepath_p_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->selimage_p);
@@ -500,7 +517,9 @@ void MMSSliderWidget::setSelImage_p(string selimagepath_p, string selimagename_p
 }
 
 void MMSSliderWidget::setImagePath_i(string imagepath_i, bool load, bool refresh) {
+	if (!this->imagepath_i_set) mySliderWidgetClass.unsetImagePath_i();
     mySliderWidgetClass.setImagePath_i(imagepath_i);
+    this->imagepath_i_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->image_i);
@@ -534,7 +553,9 @@ void MMSSliderWidget::setImage_i(string imagepath_i, string imagename_i, bool lo
 }
 
 void MMSSliderWidget::setSelImagePath_i(string selimagepath_i, bool load, bool refresh) {
+	if (!this->selimagepath_i_set) mySliderWidgetClass.unsetSelImagePath_i();
     mySliderWidgetClass.setSelImagePath_i(selimagepath_i);
+    this->selimagepath_i_set = true;
     if (load)
         if (this->rootwindow) {
             this->rootwindow->im->releaseImage(this->selimage_i);

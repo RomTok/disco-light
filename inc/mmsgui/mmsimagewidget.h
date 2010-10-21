@@ -49,6 +49,15 @@ class MMSImageWidget : public MMSWidget {
         MMSImageWidgetClass *imageWidgetClass;
         MMSImageWidgetClass myImageWidgetClass;
 
+        bool imagepath_set;
+        bool selimagepath_set;
+
+        bool imagepath_p_set;
+        bool selimagepath_p_set;
+
+        bool imagepath_i_set;
+        bool selimagepath_i_set;
+
         MMSFBSurface    *image;
         MMSIM_DESC_SUF  *image_suf;
         unsigned int    image_curr_index;
