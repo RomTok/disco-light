@@ -131,23 +131,23 @@ bool MMSInputLISHandler::checkDevice() {
 			}
 		}
 
-		if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN) {		
+		if(dev->type == MMSINPUTLISHANDLER_DEVTYPE_TOUCHSCREEN) {
 			struct input_absinfo abs;
 			MMSConfigData config;
 			MMSFBRectangle vRect = config.getVRect();
-			
+
 			/* use the graphicslayer resolution if vrect isn't set */
-			if(!vRect.w) {
+			if(vRect.w <= 0) {
 				vRect = config.getGraphicsLayer().rect;
 			}
-			
+
 			dev->touch.rect 	= config.getTouchRect();
 			dev->touch.swapX 	= config.getTouchSwapX();
 			dev->touch.swapY 	= config.getTouchSwapY();
 			dev->touch.swapXY 	= config.getTouchSwapXY();
 
 			if(dev->touch.rect.w) {
-				dev->touch.xFactor = (float)vRect.w / (dev->touch.rect.w - dev->touch.rect.x);
+				dev->touch.xFactor = (float)vRect.w / (float)dev->touch.rect.w;
 			} else if(ioctl(fd, EVIOCGABS(ABS_X), &abs) != -1) {
 				if(dev->touch.swapXY) {
 					dev->touch.yFactor =  (float)vRect.h / (abs.maximum - abs.minimum);
@@ -158,7 +158,7 @@ bool MMSInputLISHandler::checkDevice() {
 				dev->touch.xFactor = 1.0;
 			}
 			if(dev->touch.rect.h) {
-				dev->touch.yFactor = (float)vRect.h / (dev->touch.rect.h - dev->touch.rect.y);
+				dev->touch.yFactor = (float)vRect.h / (float)dev->touch.rect.h;
 			} else if(ioctl(fd, EVIOCGABS(ABS_Y), &abs) != -1) {
 				if(dev->touch.swapXY) {
 					dev->touch.xFactor = (float)vRect.w / (abs.maximum - abs.minimum);

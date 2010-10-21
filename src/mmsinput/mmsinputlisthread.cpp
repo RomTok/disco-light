@@ -40,6 +40,7 @@
 #define MSG2OUT(ident, msg...)
 #endif
 
+
 // keycode translation table e.g. for remote controls
 MMSKeySymbol MMSInputLISThread_extkeycodes [] = {
 	MMSKEY_UNKNOWN,
@@ -789,8 +790,11 @@ MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 }
 
 bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEvent *inputevent) {
-	static int x, y;
+	static int x = -1, y = -1;
+	static int px = 0, py = 0;
 	static char pressed = 0xff;
+
+	TRACEOUT("MMSINPUT", "EVENT TYPE = %d, CODE = %d, VALUE = %d", linux_evt->type, linux_evt->code, linux_evt->value);
 
 	if(linux_evt->type == EV_ABS) {
 		if(this->device.touch.swapXY) {
@@ -799,37 +803,51 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 		}
 
 		switch(linux_evt->code) {
-			case ABS_X: 
-				x = linux_evt->value * this->device.touch.xFactor; 
+			case ABS_X:
+				x = linux_evt->value - this->device.touch.rect.x;
+
 				if(this->device.touch.swapX) {
-					x = this->device.touch.rect.w - this->device.touch.rect.x - x;
+					x = this->device.touch.rect.w - x;
 				}
+
+				x*= this->device.touch.xFactor;
+
+				TRACEOUT("MMSINPUT", "EVENT TYPE = EV_ABS, CODE = ABS_X, X = %d, XF = %f", x, this->device.touch.xFactor);
+
 				break;
 			case ABS_Y:
-				y = linux_evt->value * this->device.touch.yFactor; 
+				y = linux_evt->value - this->device.touch.rect.y;
+
 				if(this->device.touch.swapY) {
-					y = this->device.touch.rect.h - this->device.touch.rect.y - y;
+					y = this->device.touch.rect.h - y;
 				}
+
+				y*= this->device.touch.yFactor;
+
+				TRACEOUT("MMSINPUT", "EVENT TYPE = EV_ABS, CODE = ABS_Y, Y = %d, YF = %f", y, this->device.touch.yFactor);
+
 				break;
 			case ABS_PRESSURE:
-				/* 
+				/*
 				 * if the touch driver doesn't send BTN_xxx events, use
 				 * ABS_PRESSURE as indicator for pressed/released
 				 */
+				TRACEOUT("MMSINPUT", "EVENT TYPE = EV_ABS, CODE = ABS_PRESSURE, VALUE = %d", linux_evt->value);
+
 				if(!this->device.touch.haveBtnEvents) {
 					pressed = (linux_evt->value ? 1 : 0);
 				}
 				break;
-			default: 
+			default:
 				break;
 		}
 	} else if(linux_evt->type == EV_KEY) {
 		switch(linux_evt->code) {
 			case BTN_LEFT:
 			case BTN_TOUCH:
-				pressed = (linux_evt->value ? 1 : 0); 
+				pressed = (linux_evt->value ? 1 : 0);
 				break;
-			default: 
+			default:
 				inputevent->key = translateKey(linux_evt->code);
 				if (inputevent->key == MMSKEY_UNKNOWN)
 					return false;
@@ -840,20 +858,60 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 				break;
 		}
 	} else if(linux_evt->type == EV_SYN) {
-		inputevent->posx = x;
-		inputevent->posy = y;
 		if(pressed != 0xff) {
 			inputevent->type = (pressed ? MMSINPUTEVENTTYPE_BUTTONPRESS : MMSINPUTEVENTTYPE_BUTTONRELEASE);
-			pressed = 0xff;
 
-			TRACEOUT("MMSINPUT", "BUTTON %s at %dx%d", (pressed ? "PRESS" : "RELEASE"), x, y);
+			if (pressed) {
+				px = x;
+				py = y;
+				if (x<0 || y<0) {
+					// x or y coordinate not set, ignore the PRESS event
+					x = -1;
+					y = -1;
+					return false;
+				}
+				inputevent->posx = x;
+				inputevent->posy = y;
+				x = -1;
+				y = -1;
+			}
+			else {
+				if (x<0 || y<0) {
+					// x or y coordinate not set, check pressed coordinate
+					x = -1;
+					y = -1;
+					if (px<0 || py<0) {
+						// px or py coordinate not set, ignore the RELEASE event
+						return false;
+					}
+					else {
+						inputevent->posx = px;
+						inputevent->posy = py;
+					}
+				}
+				else {
+					inputevent->posx = x;
+					inputevent->posy = y;
+					x = -1;
+					y = -1;
+				}
+
+			}
+
+			TRACEOUT("MMSINPUT", "BUTTON %s at %dx%d", (pressed ? "PRESS" : "RELEASE"), inputevent->posx, inputevent->posy);
+
+			pressed = 0xff;
 		} else {
+//TODO: we discuss to return false in case AXISMOTION should not emitted
+return false;
+			inputevent->posx = x;
+			inputevent->posy = y;
 			inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
 		}
-		
+
 		return true;
 	}
-	
+
 	return false;
 }
 
