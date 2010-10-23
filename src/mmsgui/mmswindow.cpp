@@ -1136,7 +1136,6 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 
     if (region == NULL) {
         // complete surface
-printf("gggggggg\n");
         pw_region.x1 = 0;
         pw_region.y1 = 0;
         pw_region.x2 = this->geom.w - 1;
@@ -1247,6 +1246,7 @@ printf("gggggggg\n");
     				reg.x2 = src_rect.x + src_rect.w - 1;
     				reg.y2 = src_rect.y + src_rect.h - 1;
     				if(cw->window) {
+printf("draw childwins of %s to %d,%d\n", cw->window->name.c_str(),reg.x1, reg.y1);
 						cw->window->drawChildWindows(cw->window->surface, &reg,
 													 reg.x1, reg.y1);
     				}
@@ -1266,7 +1266,8 @@ printf("blitting to %d,%d %s from %s\n", dst_x + offsX, dst_y + offsY, name.c_st
 					// blit window front buffer to destination surface
 					if (!cw->window->stretchmode) {
 						// normal blit if stretch mode is off
-						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+//						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+						dst_surface->blit(cw->window->surface, &src_rect, dst_x, dst_y);
 					}
 					else {
 						// stretch the window to the parent surface
