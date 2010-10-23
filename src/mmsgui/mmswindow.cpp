@@ -1266,14 +1266,21 @@ printf("blitting to %d,%d %s from %s\n", dst_x + offsX, dst_y + offsY, name.c_st
 					// blit window front buffer to destination surface
 					if (!cw->window->stretchmode) {
 						// normal blit if stretch mode is off
+//DO WE NEED THE OFFSET???
 //						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
 						dst_surface->blit(cw->window->surface, &src_rect, dst_x, dst_y);
 					}
 					else {
 						// stretch the window to the parent surface
-						MMSFBRectangle dr = MMSFBRectangle(
+//DO WE NEED THE OFFSET???
+/*						MMSFBRectangle dr = MMSFBRectangle(
 												dst_x + offsX,
 												dst_y + offsY,
+												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
+												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));*/
+						MMSFBRectangle dr = MMSFBRectangle(
+												dst_x,
+												dst_y,
 												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
 												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
 						dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
