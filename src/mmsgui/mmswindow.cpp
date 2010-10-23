@@ -1246,7 +1246,6 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
     				reg.x2 = src_rect.x + src_rect.w - 1;
     				reg.y2 = src_rect.y + src_rect.h - 1;
     				if(cw->window) {
-printf("draw childwins of %s to %d,%d\n", cw->window->name.c_str(),reg.x1, reg.y1);
 						cw->window->drawChildWindows(cw->window->surface, &reg,
 													 reg.x1, reg.y1);
     				}
@@ -1260,8 +1259,6 @@ printf("draw childwins of %s to %d,%d\n", cw->window->name.c_str(),reg.x1, reg.y
 						// set the blitting flags
 						dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
             		}
-
-printf("blitting to %d,%d %s from %s\n", dst_x + offsX, dst_y + offsY, name.c_str(), cw->window->name.c_str());
 
 					// blit window front buffer to destination surface
 					if (!cw->window->stretchmode) {
@@ -1327,7 +1324,6 @@ printf("blitting to %d,%d %s from %s\n", dst_x + offsX, dst_y + offsY, name.c_st
         	}
 			else {
 				// no own surface
-printf("src_rect %d,%d,%d,%d\n", src_rect.x,src_rect.y,src_rect.w,src_rect.h);
         		// for this we DO NOT support the opacity attribute and the stretch feature!!!
         		if (cw->opacity < 255) {
         			printf("DISKO: Cannot use the opacity %d of window '%s' which has no own surface!\n",
