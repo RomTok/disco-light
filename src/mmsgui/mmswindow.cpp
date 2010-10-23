@@ -1215,7 +1215,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         		if ((!special_blit) && (cw->opacity < 255)) {
         			// opacity calculation requested
         			// check if at least one child window with opacity > 0 does exists
-					for (int c = 0; c < cw->window->childwins.size(); c++) {
+					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
 						if (cw->window->childwins.at(c).opacity) {
 							special_blit = true;
 							break;
