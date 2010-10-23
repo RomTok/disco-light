@@ -1205,6 +1205,13 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 
         		// check if we have to do the "special blit"
         		bool special_blit = cw->window->stretchmode;
+
+        		///////////////////////////////
+        		// always special_blit=true
+        		// performance probs???
+        		special_blit = true;
+        		///////////////////////////////
+
         		if ((!special_blit) && (cw->opacity < 255)) {
         			// opacity calculation requested
         			// check if at least one child window with opacity > 0 does exists
@@ -1240,7 +1247,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
     				reg.y2 = src_rect.y + src_rect.h - 1;
     				if(cw->window) {
     					cw->window->drawChildWindows(cw->window->surface, &reg,
-													 reg.x1, reg.y1);
+													 dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);
     				}
 
             		if (cw->opacity < 255) {
