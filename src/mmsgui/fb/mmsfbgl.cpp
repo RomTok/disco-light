@@ -55,7 +55,12 @@
 
 
 MMSFBGL::MMSFBGL() {
+	// init vars...
 	this->initialized = false;
+	this->VSMatrixLoc_initialized = false;
+	this->FSColorLoc_initialized = false;
+	this->FSTextureLoc_initialized = false;
+	this->VSTexCoordLoc_initialized = false;
 
 	// default framebuffer object is always 0, so set bound_fbo to 0
 	this->bound_fbo = 0;
@@ -329,21 +334,21 @@ bool MMSFBGL::buildShaderProgram4Blitting(GLuint *program) {
 	const char* fragment_shader =
 		"precision mediump float;								\n"
 		"varying vec2 v_texCoord;								\n"
-		"uniform sampler2D s_texture;							\n"
+		"uniform sampler2D FSTexture;							\n"
 		"void main()											\n"
 		"{														\n"
-		"	gl_FragColor = texture2D(s_texture, v_texCoord);	\n"
+		"	gl_FragColor = texture2D(FSTexture, v_texCoord);	\n"
 		"}														\n";
 
 	const char* vertex_shader =
 		"attribute vec4 VSVertex;				\n"
-		"attribute vec2 a_texCoord;				\n"
+		"attribute vec2 VSTexCoord;				\n"
 		"varying vec2 v_texCoord;				\n"
 		"uniform mediump mat4 VSMatrix;			\n"
 		"void main()							\n"
 		"{										\n"
 		"   gl_Position = VSMatrix * VSVertex;	\n"
-		"   v_texCoord = a_texCoord;			\n"
+		"   v_texCoord = VSTexCoord;			\n"
 		"}										\n";
 
 	return buildShaderProgram(fragment_shader, vertex_shader, program);
@@ -355,22 +360,22 @@ bool MMSFBGL::buildShaderProgram4ModulateBlitting(GLuint *program) {
 	const char* fragment_shader =
 		"precision mediump float;										\n"
 		"varying vec2 v_texCoord;										\n"
-		"uniform sampler2D s_texture;									\n"
+		"uniform sampler2D FSTexture;									\n"
 		"uniform mediump vec4 FSColor;									\n"
 		"void main()													\n"
 		"{																\n"
-		"	gl_FragColor = FSColor * texture2D(s_texture, v_texCoord);	\n"
+		"	gl_FragColor = FSColor * texture2D(FSTexture, v_texCoord);	\n"
 		"}																\n";
 
 	const char* vertex_shader =
 		"attribute vec4 VSVertex;				\n"
-		"attribute vec2 a_texCoord;				\n"
+		"attribute vec2 VSTexCoord;				\n"
 		"varying vec2 v_texCoord;				\n"
 		"uniform mediump mat4 VSMatrix;			\n"
 		"void main()							\n"
 		"{										\n"
 		"   gl_Position = VSMatrix * VSVertex;	\n"
-		"   v_texCoord = a_texCoord;			\n"
+		"   v_texCoord = VSTexCoord;			\n"
 		"}										\n";
 
 	return buildShaderProgram(fragment_shader, vertex_shader, program);
@@ -382,23 +387,23 @@ bool MMSFBGL::buildShaderProgram4BlittingFromAlpha(GLuint *program) {
 	const char* fragment_shader =
 		"precision mediump float;												\n"
 		"varying vec2 v_texCoord;												\n"
-		"uniform sampler2D s_texture;											\n"
+		"uniform sampler2D FSTexture;											\n"
 		"uniform mediump vec4 FSColor;											\n"
 		"void main()															\n"
 		"{																		\n"
-		"   vec4 baseColor = texture2D(s_texture, v_texCoord);          		\n"
+		"   vec4 baseColor = texture2D(FSTexture, v_texCoord);          		\n"
 		"	gl_FragColor = vec4(FSColor.r, FSColor.g, FSColor.b, baseColor.a);	\n"
 		"}																		\n";
 
 	const char* vertex_shader =
 		"attribute vec4 VSVertex;				\n"
-		"attribute vec2 a_texCoord;				\n"
+		"attribute vec2 VSTexCoord;				\n"
 		"varying vec2 v_texCoord;				\n"
 		"uniform mediump mat4 VSMatrix;			\n"
 		"void main()							\n"
 		"{										\n"
 		"   gl_Position = VSMatrix * VSVertex;	\n"
-		"   v_texCoord = a_texCoord;			\n"
+		"   v_texCoord = VSTexCoord;			\n"
 		"}										\n";
 
 	return buildShaderProgram(fragment_shader, vertex_shader, program);
@@ -410,23 +415,23 @@ bool MMSFBGL::buildShaderProgram4ModulateBlittingFromAlpha(GLuint *program) {
 	const char* fragment_shader =
 		"precision mediump float;															\n"
 		"varying vec2 v_texCoord;															\n"
-		"uniform sampler2D s_texture;														\n"
+		"uniform sampler2D FSTexture;														\n"
 		"uniform mediump vec4 FSColor;														\n"
 		"void main()																		\n"
 		"{																					\n"
-		"   vec4 baseColor = texture2D(s_texture, v_texCoord);          					\n"
+		"   vec4 baseColor = texture2D(FSTexture, v_texCoord);          					\n"
 		"	gl_FragColor = vec4(FSColor.r, FSColor.g, FSColor.b, FSColor.a * baseColor.a);	\n"
 		"}																					\n";
 
 	const char* vertex_shader =
 		"attribute vec4 VSVertex;				\n"
-		"attribute vec2 a_texCoord;				\n"
+		"attribute vec2 VSTexCoord;				\n"
 		"varying vec2 v_texCoord;				\n"
 		"uniform mediump mat4 VSMatrix;			\n"
 		"void main()							\n"
 		"{										\n"
 		"   gl_Position = VSMatrix * VSVertex;	\n"
-		"   v_texCoord = a_texCoord;			\n"
+		"   v_texCoord = VSTexCoord;			\n"
 		"}										\n";
 
 	return buildShaderProgram(fragment_shader, vertex_shader, program);
@@ -1550,6 +1555,8 @@ bool MMSFBGL::useShaderProgram4Drawing() {
 
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
+		this->FSTextureLoc_initialized = false;
+		this->VSTexCoordLoc_initialized = false;
 	}
 
 	setCurrentMatrix(this->current_matrix);
@@ -1570,6 +1577,8 @@ bool MMSFBGL::useShaderProgram4Blitting() {
 
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
+		this->FSTextureLoc_initialized = false;
+		this->VSTexCoordLoc_initialized = false;
 	}
 
 	setCurrentMatrix(this->current_matrix);
@@ -1590,6 +1599,8 @@ bool MMSFBGL::useShaderProgram4ModulateBlitting() {
 
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
+		this->FSTextureLoc_initialized = false;
+		this->VSTexCoordLoc_initialized = false;
 	}
 
 	setCurrentMatrix(this->current_matrix);
@@ -1611,6 +1622,8 @@ bool MMSFBGL::useShaderProgram4BlittingFromAlpha() {
 
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
+		this->FSTextureLoc_initialized = false;
+		this->VSTexCoordLoc_initialized = false;
 	}
 
 	setCurrentMatrix(this->current_matrix);
@@ -1632,6 +1645,8 @@ bool MMSFBGL::useShaderProgram4ModulateBlittingFromAlpha() {
 
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
+		this->FSTextureLoc_initialized = false;
+		this->VSTexCoordLoc_initialized = false;
 	}
 
 	setCurrentMatrix(this->current_matrix);
@@ -1649,10 +1664,13 @@ bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
 
 	if (!this->VSMatrixLoc_initialized) {
 		// get the location of matrix uniform variable within the vertex shader
-		this->VSMatrixLoc = glGetUniformLocation(this->po_current, "VSMatrix");
-		ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"VSMatrix\")");
+		this->VSMatrixLoc = -1;
+		if (this->po_current) {
+			this->VSMatrixLoc = glGetUniformLocation(this->po_current, "VSMatrix");
+			ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"VSMatrix\")");
 
-		this->VSMatrixLoc_initialized = true;
+			this->VSMatrixLoc_initialized = true;
+		}
 	}
 
 	if (this->VSMatrixLoc >= 0) {
@@ -1793,10 +1811,13 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 #ifdef __HAVE_GLES2__
 	if (!this->FSColorLoc_initialized) {
 		// get the location of color uniform variable within the fragment shader
-		this->FSColorLoc = glGetUniformLocation(this->po_current, "FSColor");
-		ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"FSColor\")");
+		this->FSColorLoc = -1;
+		if (this->po_current) {
+			this->FSColorLoc = glGetUniformLocation(this->po_current, "FSColor");
+			ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"FSColor\")");
 
-		this->FSColorLoc_initialized = true;
+			this->FSColorLoc_initialized = true;
+		}
 	}
 
 	if (this->FSColorLoc >= 0) {
@@ -1944,14 +1965,7 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 
 
 
-
-bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
-								  float dx1, float dy1, float dz1,
-								  float dx2, float dy2, float dz2,
-								  float dx3, float dy3, float dz3,
-								  float dx4, float dy4, float dz4) {
-
-	INITCHECK;
+bool MMSFBGL::initBlitting(GLuint src_tex) {
 
 #ifdef __HAVE_GL2__
 	// enabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
@@ -1961,6 +1975,47 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 
 	// bind source texture
 	bindTexture2D(src_tex);
+
+#ifdef __HAVE_GLES2__
+
+	if (!this->FSTextureLoc_initialized) {
+		// get the location of source texture uniform variable within the fragment shader
+		this->FSTextureLoc = -1;
+		if (this->po_current) {
+			this->FSTextureLoc = glGetUniformLocation(this->po_current, "FSTexture");
+			ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"FSTexture\")");
+
+			this->FSTextureLoc_initialized = true;
+		}
+	}
+
+	if (!this->VSTexCoordLoc_initialized) {
+		// get the location of texture coordinates attribute variable within the vertex shader
+		this->VSTexCoordLoc = -1;
+		if (this->po_current) {
+			this->VSTexCoordLoc = glGetAttribLocation(this->po_current, "VSTexCoord");
+			ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"VSTexCoord\")");
+
+			this->VSTexCoordLoc_initialized = true;
+		}
+	}
+
+#endif
+
+	return true;
+}
+
+
+bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
+								  float dx1, float dy1, float dz1,
+								  float dx2, float dy2, float dz2,
+								  float dx3, float dy3, float dz3,
+								  float dx4, float dy4, float dz4) {
+
+	INITCHECK;
+
+	// setup blitting
+	initBlitting(src_tex);
 
 #ifdef __HAVE_GL2__
 
@@ -1979,15 +2034,6 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 #endif
 
 #ifdef __HAVE_GLES2__
-
-	GLint  texCoordLoc;
-	GLint samplerLoc;
-
-	texCoordLoc = glGetAttribLocation(this->po_current, "a_texCoord");
-	ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"a_texCoord\")");
-
-	samplerLoc = glGetUniformLocation(this->po_current, "s_texture");
-	ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"s_texture\")");
 
 	GLfloat vVertices[] = { dx1,  dy1, dz1,  // Position 0
 							sx1,  sy1,        // TexCoord 0
@@ -2010,20 +2056,20 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
 
 	// Load the texture coordinate
-	glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT,
+	glVertexAttribPointer(VSTexCoordLoc, 2, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
-	ERROR_CHECK_BOOL("glVertexAttribPointer(texCoordLoc,...)");
+	ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,...)");
 
-	glEnableVertexAttribArray(texCoordLoc);
-	ERROR_CHECK_BOOL("glEnableVertexAttribArray(texCoordLoc)");
+	glEnableVertexAttribArray(VSTexCoordLoc);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
 
 
 	// bind the texture unit0
 	glActiveTexture(GL_TEXTURE0);
 	ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
 
-	glUniform1i(samplerLoc, 0);
-	ERROR_CHECK_BOOL("glUniform1i(samplerLoc, 0)");
+	glUniform1i(FSTextureLoc, 0);
+	ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc, 0)");
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
 	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
@@ -2041,14 +2087,8 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 	INITCHECK;
 
-#ifdef __HAVE_GL2__
-	// enabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
-	glEnable(GL_TEXTURE_2D);
-	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
-#endif
-
-	// bind source texture
-	bindTexture2D(src_tex);
+	// setup blitting
+	initBlitting(src_tex);
 
 #ifdef __HAVE_GL2__
 
@@ -2067,15 +2107,6 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 #endif
 
 #ifdef __HAVE_GLES2__
-
-	GLint  texCoordLoc;
-	GLint samplerLoc;
-
-	texCoordLoc = glGetAttribLocation(this->po_current, "a_texCoord");
-	ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"a_texCoord\")");
-
-	samplerLoc = glGetUniformLocation(this->po_current, "s_texture");
-	ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"s_texture\")");
 
 	GLfloat vVertices[] = { dx1,  dy1, 0.0f,  // Position 0
 							sx1,  sy1,        // TexCoord 0
@@ -2098,19 +2129,19 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
 
 	// Load the texture coordinate
-	glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT,
+	glVertexAttribPointer(VSTexCoordLoc, 2, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3]);
-	ERROR_CHECK_BOOL("glVertexAttribPointer(texCoordLoc,...");
+	ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,...");
 
-	glEnableVertexAttribArray(texCoordLoc);
-	ERROR_CHECK_BOOL("glEnableVertexAttribArray(texCoordLoc)");
+	glEnableVertexAttribArray(VSTexCoordLoc);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
 
 	// bind the texture unit0
 	glActiveTexture(GL_TEXTURE0);
 	ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
 
-	glUniform1i(samplerLoc, 0);
-	ERROR_CHECK_BOOL("glUniform1i(samplerLoc,...)");
+	glUniform1i(FSTextureLoc, 0);
+	ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc,...)");
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
 	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");

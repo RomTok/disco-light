@@ -123,6 +123,18 @@ class MMSFBGL {
     	//! color location in the fragment shader initialized
     	bool FSColorLoc_initialized;
 
+    	//! texture location in the fragment shader
+    	GLint FSTextureLoc;
+
+    	//! texture location in the fragment shader initialized
+    	bool FSTextureLoc_initialized;
+
+    	//! texture coordinates location in the vertex shader
+    	GLint VSTexCoordLoc;
+
+    	//! texture coordinates location in the vertex shader initialized
+    	bool VSTexCoordLoc_initialized;
+
     	//! current matrix
     	MMSFBGLMatrix	current_matrix;
 
@@ -145,6 +157,8 @@ class MMSFBGL {
 
     	void deleteShaders();
         bool initShaders();
+
+        bool initBlitting(GLuint src_tex);
 
     public:
         MMSFBGL();
