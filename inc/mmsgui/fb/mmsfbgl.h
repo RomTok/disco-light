@@ -132,7 +132,7 @@ class MMSFBGL {
     	unsigned char	current_color_b;
     	unsigned char	current_color_a;
 
-    	bool getError(const char* where);
+    	bool getError(const char* where, int line = __LINE__);
 
     	bool buildShader(MMSFBGL_SHADER_TYPE shader_type, const char *shader_code, GLuint *shader);
     	bool linkProgram(GLuint fragment_shader, GLuint vertex_shader, GLuint *program);

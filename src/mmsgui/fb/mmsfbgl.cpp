@@ -73,18 +73,18 @@ MMSFBGL::~MMSFBGL() {
 #define ERROR_CHECK_PRINT
 
 #ifdef ERROR_CHECK_EXIT
-#define ERROR_CHECK_VOID(where) if (!getError(where)) exit(1);
-#define ERROR_CHECK_BOOL(where) if (!getError(where)) exit(1);
+#define ERROR_CHECK_VOID(where) if (!getError(where, __LINE__)) exit(1);
+#define ERROR_CHECK_BOOL(where) if (!getError(where, __LINE__)) exit(1);
 #endif
 
 #ifdef ERROR_CHECK_RETURN
-#define ERROR_CHECK_VOID(where) if (!getError(where)) return;
-#define ERROR_CHECK_BOOL(where) if (!getError(where)) return false;
+#define ERROR_CHECK_VOID(where) if (!getError(where, __LINE__)) return;
+#define ERROR_CHECK_BOOL(where) if (!getError(where, __LINE__)) return false;
 #endif
 
 #ifdef ERROR_CHECK_PRINT
-#define ERROR_CHECK_VOID(where) getError(where);
-#define ERROR_CHECK_BOOL(where) getError(where);
+#define ERROR_CHECK_VOID(where) getError(where, __LINE__);
+#define ERROR_CHECK_BOOL(where) getError(where, __LINE__);
 #endif
 
 #ifndef ERROR_CHECK_VOID
@@ -98,7 +98,7 @@ MMSFBGL::~MMSFBGL() {
 //////////////////////////////
 
 
-bool MMSFBGL::getError(const char* where) {
+bool MMSFBGL::getError(const char* where, int line) {
 #ifdef __HAVE_OPENGL__
 	int err = glGetError();
 	if (err != GL_NO_ERROR) {
@@ -140,7 +140,7 @@ bool MMSFBGL::getError(const char* where) {
 		}
 
 		// print error to stdout
-		printf("MMSFBGL: ERR 0x%x (%s) AT LINE %d, %s\n", err, desc, __LINE__, where);
+		printf("MMSFBGL: ERR 0x%x (%s) AT LINE %d, %s\n", err, desc, line, where);
 		return false;
 	}
 #endif
@@ -148,7 +148,7 @@ bool MMSFBGL::getError(const char* where) {
 #ifdef __HAVE_EGL__
 	EGLint iErr = eglGetError();
 	if (iErr != EGL_SUCCESS) {
-		printf("MMSFBGL: ERR 0x%x AT LINE %d, %s\n", iErr, __LINE__, where);
+		printf("MMSFBGL: ERR 0x%x AT LINE %d, %s\n", iErr, line, where);
 		return false;
 	}
 #endif
@@ -898,9 +898,13 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 		GLuint fbo = this->bound_fbo;
 		bindFrameBuffer(0);
 
-		// detach texture
+#ifdef __HAVE_GL2__
+		// disabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
 		glDisable(GL_TEXTURE_2D);
 		ERROR_CHECK_BOOL("glDisable(GL_TEXTURE_2D)");
+#endif
+
+		// detach texture
 		glBindTexture(GL_TEXTURE_2D, 0);
 		ERROR_CHECK_BOOL("glBindTexture(GL_TEXTURE_2D, 0)");
 
@@ -1310,8 +1314,11 @@ void MMSFBGL::disableDepthTest() {
 }
 
 void MMSFBGL::disableTexture2D() {
+#ifdef __HAVE_GL2__
+	// disabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
 	glDisable(GL_TEXTURE_2D);
 	ERROR_CHECK_VOID("glDisable(GL_TEXTURE_2D)");
+#endif
 }
 
 
@@ -1946,10 +1953,13 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 
 	INITCHECK;
 
-	// bind source texture
+#ifdef __HAVE_GL2__
+	// enabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
 	glEnable(GL_TEXTURE_2D);
 	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
+#endif
 
+	// bind source texture
 	bindTexture2D(src_tex);
 
 #ifdef __HAVE_GL2__
@@ -2031,10 +2041,13 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 	INITCHECK;
 
-	// bind source texture
+#ifdef __HAVE_GL2__
+	// enabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
 	glEnable(GL_TEXTURE_2D);
 	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
+#endif
 
+	// bind source texture
 	bindTexture2D(src_tex);
 
 #ifdef __HAVE_GL2__
