@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef __HAVE_OPENGL__
 
@@ -65,14 +66,93 @@ MMSFBGL::~MMSFBGL() {
 }
 
 
+//////////////////////////////
+
+//#define ERROR_CHECK_EXIT
+//#define ERROR_CHECK_RETURN
+#define ERROR_CHECK_PRINT
+
+#ifdef ERROR_CHECK_EXIT
+#define ERROR_CHECK_VOID(where) if (!getError(where)) exit(1);
+#define ERROR_CHECK_BOOL(where) if (!getError(where)) exit(1);
+#endif
+
+#ifdef ERROR_CHECK_RETURN
+#define ERROR_CHECK_VOID(where) if (!getError(where)) return;
+#define ERROR_CHECK_BOOL(where) if (!getError(where)) return false;
+#endif
+
+#ifdef ERROR_CHECK_PRINT
+#define ERROR_CHECK_VOID(where) getError(where);
+#define ERROR_CHECK_BOOL(where) getError(where);
+#endif
+
+#ifndef ERROR_CHECK_VOID
+#define ERROR_CHECK_VOID(where)
+#endif
+
+#ifndef ERROR_CHECK_BOOL
+#define ERROR_CHECK_BOOL(where)
+#endif
+
+//////////////////////////////
+
+
 bool MMSFBGL::getError(const char* where) {
-#ifdef __HAVE_EGL__
-	EGLint iErr = eglGetError();
-	if (iErr != EGL_SUCCESS) {
-		printf("%s failed (%d).\n", where, iErr);
+#ifdef __HAVE_OPENGL__
+	int err = glGetError();
+	if (err != GL_NO_ERROR) {
+		// try to get description
+		const char *desc = "unknown";
+		switch (err) {
+		case GL_INVALID_ENUM:
+			desc = "GL_INVALID_ENUM";
+			break;
+		case GL_INVALID_VALUE:
+			desc = "GL_INVALID_VALUE";
+			break;
+		case GL_INVALID_OPERATION:
+			desc = "GL_INVALID_OPERATION";
+			break;
+		case GL_OUT_OF_MEMORY:
+			desc = "GL_OUT_OF_MEMORY";
+			break;
+#ifdef GL_STACK_OVERFLOW
+		case GL_STACK_OVERFLOW:
+			desc = "GL_STACK_OVERFLOW";
+			break;
+#endif
+#ifdef GL_STACK_UNDERFLOW
+		case GL_STACK_UNDERFLOW:
+			desc = "GL_STACK_UNDERFLOW";
+			break;
+#endif
+#ifdef GL_TABLE_TOO_LARGE
+		case GL_TABLE_TOO_LARGE:
+			desc = "GL_TABLE_TOO_LARGE";
+			break;
+#endif
+#ifdef GL_INVALID_FRAMEBUFFER_OPERATION
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			desc = "GL_INVALID_FRAMEBUFFER_OPERATION";
+			break;
+#endif
+		}
+
+		// print error to stdout
+		printf("MMSFBGL: ERR 0x%x (%s) AT LINE %d, %s\n", err, desc, __LINE__, where);
 		return false;
 	}
 #endif
+
+#ifdef __HAVE_EGL__
+	EGLint iErr = eglGetError();
+	if (iErr != EGL_SUCCESS) {
+		printf("MMSFBGL: ERR 0x%x AT LINE %d, %s\n", iErr, __LINE__, where);
+		return false;
+	}
+#endif
+
 	return true;
 }
 
@@ -83,25 +163,31 @@ bool MMSFBGL::buildShader(MMSFBGL_SHADER_TYPE shader_type, const char *shader_co
 
 	// create the shader object
 	*shader = glCreateShader((shader_type==MMSFBGL_SHADER_TYPE_FRAGMENT_SHADER)?GL_FRAGMENT_SHADER:GL_VERTEX_SHADER);
+	ERROR_CHECK_BOOL("glCreateShader()");
 
 	// load the source code into it
 	glShaderSource(*shader, 1, (const char**)&shader_code, NULL);
+	ERROR_CHECK_BOOL("glShaderSource()");
 
 	// compile the source code
 	glCompileShader(*shader);
+	ERROR_CHECK_BOOL("glCompileShader()");
 
 	// check if compilation succeeded
 	GLint compiled;
 	glGetShaderiv(*shader, GL_COMPILE_STATUS, &compiled);
+	ERROR_CHECK_BOOL("glGetShaderiv()");
 
 	if (!compiled) {
 		// an error happened, first retrieve the length of the log message
 		int i32InfoLogLength, i32CharsWritten;
 		glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &i32InfoLogLength);
+		ERROR_CHECK_BOOL("glGetShaderiv()");
 
 		// allocate enough space for the message and retrieve it
 		char* pszInfoLog = new char[i32InfoLogLength];
 		glGetShaderInfoLog(*shader, i32InfoLogLength, &i32CharsWritten, pszInfoLog);
+		ERROR_CHECK_BOOL("glGetShaderInfoLog()");
 
 		// displays the error
 		printf("Failed to compile %s shader: %s\n",
@@ -111,6 +197,7 @@ bool MMSFBGL::buildShader(MMSFBGL_SHADER_TYPE shader_type, const char *shader_co
 		// freeing memory
 		delete [] pszInfoLog;
 		glDeleteShader(*shader);
+		ERROR_CHECK_BOOL("glDeleteShader()");
 		*shader = 0;
 		return false;
 	}
@@ -130,29 +217,37 @@ bool MMSFBGL::linkProgram(GLuint fragment_shader, GLuint vertex_shader, GLuint *
 
 	// create the shader program
     *program = glCreateProgram();
+	ERROR_CHECK_BOOL("glCreateProgram()");
 
 	// attach the fragment and vertex shaders to it
     glAttachShader(*program, fragment_shader);
+	ERROR_CHECK_BOOL("glAttachShader(*program, fragment_shader)");
     glAttachShader(*program, vertex_shader);
+	ERROR_CHECK_BOOL("glAttachShader(*program, vertex_shader)");
 
 	// bind the vertex attribute to specified location
     glBindAttribLocation(*program, MMSFBGL_VSV_LOC, "VSVertex");
+	ERROR_CHECK_BOOL("glBindAttribLocation(*program, MMSFBGL_VSV_LOC, \"VSVertex\")");
 
 	// link the program
     glLinkProgram(*program);
+	ERROR_CHECK_BOOL("glLinkProgram()");
 
 	// check if linking succeeded in the same way we checked for compilation success
     GLint linked;
     glGetProgramiv(*program, GL_LINK_STATUS, &linked);
+	ERROR_CHECK_BOOL("glGetProgramiv()");
 
 	if (!linked) {
 		// an error happened, first retrieve the length of the log message
 		int ui32InfoLogLength, ui32CharsWritten;
 		glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &ui32InfoLogLength);
+		ERROR_CHECK_BOOL("glGetProgramiv()");
 
 		// allocate enough space for the message and retrieve it
 		char* pszInfoLog = new char[ui32InfoLogLength];
 		glGetProgramInfoLog(*program, ui32InfoLogLength, &ui32CharsWritten, pszInfoLog);
+		ERROR_CHECK_BOOL("glGetProgramInfoLog()");
 
 		// displays the error
 		printf("Failed to link program: %s\n", pszInfoLog);
@@ -160,6 +255,7 @@ bool MMSFBGL::linkProgram(GLuint fragment_shader, GLuint vertex_shader, GLuint *
 		// freeing memory
 		delete [] pszInfoLog;
 		glDeleteProgram(*program);
+		ERROR_CHECK_BOOL("glDeleteProgram()");
 		*program = 0;
 		return false;
 	}
@@ -185,16 +281,21 @@ bool MMSFBGL::buildShaderProgram(const char *fragment_shader_code, const char *v
 		if (buildShader(MMSFBGL_SHADER_TYPE_VERTEX_SHADER, vertex_shader_code, &vshader)) {
 			if (linkProgram(fshader, vshader, program)) {
 				glDeleteShader(fshader);
+				ERROR_CHECK_BOOL("glDeleteShader(fshader)");
 				glDeleteShader(vshader);
+				ERROR_CHECK_BOOL("glDeleteShader(vshader)");
 				return true;
 			}
 			else {
 				glDeleteShader(fshader);
+				ERROR_CHECK_BOOL("glDeleteShader(fshader)");
 				glDeleteShader(vshader);
+				ERROR_CHECK_BOOL("glDeleteShader(vshader)");
 			}
 		}
 		else {
 			glDeleteShader(fshader);
+			ERROR_CHECK_BOOL("glDeleteShader(fshader)");
 		}
 	}
 
@@ -363,26 +464,31 @@ void MMSFBGL::deleteShaders() {
 
 	if (this->po_draw) {
 		glDeleteProgram(this->po_draw);
+		ERROR_CHECK_VOID("glDeleteProgram(this->po_draw)");
 		this->po_draw = 0;
 	}
 
 	if (this->po_blit) {
 		glDeleteProgram(this->po_blit);
+		ERROR_CHECK_VOID("glDeleteProgram(this->po_blit)");
 		this->po_blit = 0;
 	}
 
 	if (this->po_modulateblit) {
 		glDeleteProgram(this->po_modulateblit);
+		ERROR_CHECK_VOID("glDeleteProgram(this->po_modulateblit)");
 		this->po_modulateblit = 0;
 	}
 
 	if (this->po_blit_fromalpha) {
 		glDeleteProgram(this->po_blit_fromalpha);
+		ERROR_CHECK_VOID("glDeleteProgram(this->po_blit_fromalpha)");
 		this->po_blit_fromalpha = 0;
 	}
 
 	if (this->po_modulateblit_fromalpha) {
 		glDeleteProgram(this->po_modulateblit_fromalpha);
+		ERROR_CHECK_VOID("glDeleteProgram(this->po_modulateblit_fromalpha)");
 		this->po_modulateblit_fromalpha = 0;
 	}
 
@@ -754,6 +860,7 @@ bool MMSFBGL::swap() {
 #ifdef __HAVE_EGL__
 
 	eglSwapBuffers(this->eglDisplay, this->eglSurface);
+	ERROR_CHECK_BOOL("eglSwapBuffers()");
 
 	return true;
 
@@ -772,6 +879,7 @@ bool MMSFBGL::genTexture(GLuint *tex) {
 
 	// generate a unique texture id
 	glGenTextures(1, tex);
+	ERROR_CHECK_BOOL("glGenTextures()");
 
     return true;
 }
@@ -783,6 +891,7 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 	if (tex) {
 		// finishing all operations
 		glFinish();
+		ERROR_CHECK_BOOL("glFinish()");
 
 		// switch to the primary frame buffer
 		// so OpenGL have to finish tasks which are not finished during glFinish()
@@ -791,10 +900,13 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 
 		// detach texture
 		glDisable(GL_TEXTURE_2D);
+		ERROR_CHECK_BOOL("glDisable(GL_TEXTURE_2D)");
 		glBindTexture(GL_TEXTURE_2D, 0);
+		ERROR_CHECK_BOOL("glBindTexture(GL_TEXTURE_2D, 0)");
 
 		// now is safe to delete the texture
 		glDeleteTextures(1, &tex);
+		ERROR_CHECK_BOOL("glDeleteTextures()");
 
 		// switch back to the saved fbo
 		bindFrameBuffer(fbo);
@@ -810,17 +922,23 @@ bool MMSFBGL::bindTexture2D(GLuint tex) {
 	// flush all queued commands to the OpenGL server
 	// but do NOT wait until all queued commands are finished by the OpenGL server
 	glFlush();
+	ERROR_CHECK_BOOL("glFlush()");
 
 	// activate texture
     glBindTexture(GL_TEXTURE_2D, tex);
+	ERROR_CHECK_BOOL("glBindTexture(GL_TEXTURE_2D, tex)");
 
     // set min and max filter
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)");
 
     // the texture wraps over at the edges (repeat)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)");
 
     return true;
 }
@@ -842,6 +960,7 @@ bool MMSFBGL::initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLe
 	 	buffer_format,
 	 	GL_UNSIGNED_BYTE,
 	 	buffer);
+	ERROR_CHECK_BOOL("glTexImage2D(GL_TEXTURE_2D,...)");
 
 	return true;
 }
@@ -864,6 +983,7 @@ bool MMSFBGL::initSubTexture2D(GLuint tex, void *buffer, GLenum buffer_format, i
 					buffer_format,
 					GL_UNSIGNED_BYTE,
 					buffer);
+	ERROR_CHECK_BOOL("glTexSubImage2D(GL_TEXTURE_2D,...)");
 
 	return true;
 }
@@ -876,10 +996,12 @@ bool MMSFBGL::genFrameBuffer(GLuint *fbo) {
 	// generate a unique FBO id
 #ifdef __HAVE_GL2__
 	glGenFramebuffersEXT(1, fbo);
+	ERROR_CHECK_BOOL("glGenFramebuffersEXT(1, fbo)");
 #endif
 
 #ifdef __HAVE_GLES2__
 	glGenFramebuffers(1, fbo);
+	ERROR_CHECK_BOOL("glGenFramebuffers(1, fbo)");
 #endif
 
     return true;
@@ -892,19 +1014,24 @@ bool MMSFBGL::deleteFrameBuffer(GLuint fbo) {
 
 	// finishing all operations
 	glFinish();
+	ERROR_CHECK_BOOL("glFinish()");
 
 	// switch to the primary frame buffer
 	// so OpenGL have to finish tasks which are not finished during glFinish()
 	bindFrameBuffer(0);
 
 #ifdef  __HAVE_GL2__
-	if (fbo)
+	if (fbo) {
 		glDeleteFramebuffersEXT(1, &fbo);
+		ERROR_CHECK_BOOL("glDeleteFramebuffersEXT()");
+	}
 #endif
 
 #ifdef __HAVE_GLES2__
-	if (fbo)
+	if (fbo) {
 		glDeleteFramebuffers(1, &fbo);
+		ERROR_CHECK_BOOL("glDeleteFramebuffers()");
+	}
 #endif
 
 	return true;
@@ -918,10 +1045,12 @@ bool MMSFBGL::genRenderBuffer(GLuint *rbo) {
 	// generate a unique RBO id
 #ifdef __HAVE_GL2__
 	glGenRenderbuffersEXT(1, rbo);
+	ERROR_CHECK_BOOL("glGenRenderbuffersEXT()");
 #endif
 
 #ifdef __HAVE_GLES2__
 	glGenRenderbuffers(1, rbo);
+	ERROR_CHECK_BOOL("glGenRenderbuffers()");
 #endif
 
     return true;
@@ -934,19 +1063,24 @@ bool MMSFBGL::deleteRenderBuffer(GLuint rbo) {
 
 	// finishing all operations
 	glFinish();
+	ERROR_CHECK_BOOL("glFinish()");
 
 	// switch to the primary frame buffer
 	// so OpenGL have to finish tasks which are not finished during glFinish()
 	bindFrameBuffer(0);
 
 #ifdef  __HAVE_GL2__
-	if (rbo)
+	if (rbo) {
 		glDeleteRenderbuffersEXT(1, &rbo);
+		ERROR_CHECK_BOOL("glDeleteRenderbuffersEXT()");
+	}
 #endif
 
 #ifdef __HAVE_GLES2__
-	if (rbo)
+	if (rbo) {
 		glDeleteRenderbuffers(1, &rbo);
+		ERROR_CHECK_BOOL("glDeleteRenderbuffers()");
+	}
 #endif
 
 	return true;
@@ -960,9 +1094,11 @@ bool MMSFBGL::attachTexture2FrameBuffer(GLuint fbo, GLuint tex) {
 #ifdef  __HAVE_GL2__
 	bindFrameBuffer(fbo);
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex, 0);
+	ERROR_CHECK_BOOL("glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex, 0)");
+
 	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 		// the GPU does not support current FBO configuration
-		printf("Fatal error: attaching texture to framebuffer failed (GL2)\n");
+		printf("MMSFBGL: fatal error while attaching texture to framebuffer failed (GL2)\n");
 		return false;
 	}
 #endif
@@ -970,9 +1106,11 @@ bool MMSFBGL::attachTexture2FrameBuffer(GLuint fbo, GLuint tex) {
 #ifdef __HAVE_GLES2__
 	bindFrameBuffer(fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+	ERROR_CHECK_BOOL("glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)");
+
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		// the GPU does not support current FBO configuration
-		printf("Fatal error: attaching texture to framebuffer failed (GLES2)\n");
+		printf("MMSFBGL: fatal error while attaching texture to framebuffer failed (GLES2)\n");
 		return false;
 	}
 #endif
@@ -987,24 +1125,36 @@ bool MMSFBGL::attachRenderBuffer2FrameBuffer(GLuint fbo, GLuint rbo, int width, 
 
 #ifdef  __HAVE_GL2__
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo);
+	ERROR_CHECK_BOOL("glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo)");
+
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
+	ERROR_CHECK_BOOL("glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height)");
+
 	bindFrameBuffer(fbo);
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo);
+	ERROR_CHECK_BOOL("glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo)");
+
 	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
 		// the GPU does not support current FBO configuration
-		printf("Fatal error: attaching renderbuffer to framebuffer failed (GL2)\n");
+		printf("MMSFBGL: fatal error while attaching renderbuffer to framebuffer failed (GL2)\n");
 		return false;
 	}
 #endif
 
 #ifdef __HAVE_GLES2__
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	ERROR_CHECK_BOOL("glBindRenderbuffer(GL_RENDERBUFFER, rbo)");
+
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+	ERROR_CHECK_BOOL("glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height)");
+
 	bindFrameBuffer(fbo);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	ERROR_CHECK_BOOL("glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo)");
+
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		// the GPU does not support current FBO configuration
-		printf("Fatal error: attaching renderbuffer to framebuffer failed (GLES2)\n");
+		printf("MMSFBGL: fatal error while attaching renderbuffer to framebuffer failed (GLES2)\n");
 		return false;
 	}
 #endif
@@ -1079,10 +1229,12 @@ bool MMSFBGL::bindFrameBuffer(GLuint fbo) {
 
 #ifdef  __HAVE_GL2__
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		ERROR_CHECK_BOOL("glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo)");
 #endif
 
 #ifdef __HAVE_GLES2__
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		ERROR_CHECK_BOOL("glBindFramebuffer(GL_FRAMEBUFFER, fbo)");
 #endif
 	}
 
@@ -1099,7 +1251,9 @@ bool MMSFBGL::setScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
 	INITCHECK;
 
 	glScissor(x, y, width, height);
+	ERROR_CHECK_BOOL("glScissor()");
 	glEnable(GL_SCISSOR_TEST);
+	ERROR_CHECK_BOOL("glEnable(GL_SCISSOR_TEST)");
 
 	return true;
 }
@@ -1110,6 +1264,7 @@ bool MMSFBGL::disableScissor() {
 	INITCHECK;
 
 	glDisable(GL_SCISSOR_TEST);
+	ERROR_CHECK_BOOL("glDisable(GL_SCISSOR_TEST)");
 
 	return true;
 }
@@ -1117,33 +1272,46 @@ bool MMSFBGL::disableScissor() {
 
 void MMSFBGL::enableBlend() {
 	glEnable(GL_BLEND);
+	ERROR_CHECK_VOID("glEnable(GL_BLEND)");
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	ERROR_CHECK_VOID("glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)");
 }
 
 
 void MMSFBGL::disableBlend() {
 	glDisable(GL_BLEND);
+	ERROR_CHECK_VOID("glDisable(GL_BLEND)");
 }
 
 
 void MMSFBGL::enableDepthTest() {
 	glEnable(GL_DEPTH_TEST);
+	ERROR_CHECK_VOID("glEnable(GL_DEPTH_TEST)");
+
 	glDepthMask(GL_TRUE);
+	ERROR_CHECK_VOID("glDepthMask(GL_TRUE)");
+
 #ifdef __HAVE_GL2__
 	glDepthRange(1,-1);
+	ERROR_CHECK_VOID("glDepthRange(1,-1)");
 #endif
 #ifdef __HAVE_GLES2__
 	glDepthRangef(1,-1);
+	ERROR_CHECK_VOID("glDepthRangef(1,-1)");
 #endif
 }
 
 void MMSFBGL::disableDepthTest() {
 	glDisable(GL_DEPTH_TEST);
+	ERROR_CHECK_VOID("glDisable(GL_DEPTH_TEST)");
+
 	glDepthMask(GL_FALSE);
+	ERROR_CHECK_VOID("glDepthMask(GL_FALSE)");
 }
 
 void MMSFBGL::disableTexture2D() {
 	glDisable(GL_TEXTURE_2D);
+	ERROR_CHECK_VOID("glDisable(GL_TEXTURE_2D)");
 }
 
 
@@ -1156,6 +1324,7 @@ void MMSFBGL::setDrawingMode() {
 void MMSFBGL::setTexEnvReplace(GLenum format) {
 #ifdef __HAVE_GL2__
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	ERROR_CHECK_VOID("glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)");
 #endif
 
 #ifdef __HAVE_GLES2__
@@ -1171,6 +1340,7 @@ void MMSFBGL::setTexEnvReplace(GLenum format) {
 void MMSFBGL::setTexEnvModulate(GLenum format) {
 #ifdef __HAVE_GL2__
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	ERROR_CHECK_VOID("glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)");
 #endif
 
 #ifdef __HAVE_GLES2__
@@ -1367,7 +1537,10 @@ bool MMSFBGL::useShaderProgram4Drawing() {
 
 	if (this->po_current != this->po_draw) {
 		this->po_current = this->po_draw;
+
 		glUseProgram(this->po_current);
+		ERROR_CHECK_BOOL("glUseProgram()");
+
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
 	}
@@ -1384,7 +1557,10 @@ bool MMSFBGL::useShaderProgram4Blitting() {
 
 	if (this->po_current != this->po_blit) {
 		this->po_current = this->po_blit;
+
 		glUseProgram(this->po_current);
+		ERROR_CHECK_BOOL("glUseProgram()");
+
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
 	}
@@ -1401,7 +1577,10 @@ bool MMSFBGL::useShaderProgram4ModulateBlitting() {
 
 	if (this->po_current != this->po_modulateblit) {
 		this->po_current = this->po_modulateblit;
+
 		glUseProgram(this->po_current);
+		ERROR_CHECK_BOOL("glUseProgram()");
+
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
 	}
@@ -1419,7 +1598,10 @@ bool MMSFBGL::useShaderProgram4BlittingFromAlpha() {
 
 	if (this->po_current != this->po_blit_fromalpha) {
 		this->po_current = this->po_blit_fromalpha;
+
 		glUseProgram(this->po_current);
+		ERROR_CHECK_BOOL("glUseProgram()");
+
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
 	}
@@ -1437,7 +1619,10 @@ bool MMSFBGL::useShaderProgram4ModulateBlittingFromAlpha() {
 
 	if (this->po_current != this->po_modulateblit_fromalpha) {
 		this->po_current = this->po_modulateblit_fromalpha;
+
 		glUseProgram(this->po_current);
+		ERROR_CHECK_BOOL("glUseProgram()");
+
 		this->VSMatrixLoc_initialized = false;
 		this->FSColorLoc_initialized = false;
 	}
@@ -1458,12 +1643,15 @@ bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
 	if (!this->VSMatrixLoc_initialized) {
 		// get the location of matrix uniform variable within the vertex shader
 		this->VSMatrixLoc = glGetUniformLocation(this->po_current, "VSMatrix");
+		ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"VSMatrix\")");
+
 		this->VSMatrixLoc_initialized = true;
 	}
 
 	if (this->VSMatrixLoc >= 0) {
 		// store the new matrix for the vertex shader
 		glUniformMatrix4fv(this->VSMatrixLoc, 1, GL_FALSE, (GLfloat*)matrix);
+		ERROR_CHECK_BOOL("glUniformMatrix4fv(this->VSMatrixLoc, 1, GL_FALSE, (GLfloat*)matrix)");
 	}
 
 #endif
@@ -1484,6 +1672,7 @@ bool MMSFBGL::rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z
 
 #ifdef __HAVE_GL2__
 	glRotatef(angle, x, y, z);
+	ERROR_CHECK_BOOL("glRotatef()");
 	return true;
 #endif
 
@@ -1516,11 +1705,23 @@ bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float to
 
 #ifdef __HAVE_GL2__
 	glMatrixMode(GL_PROJECTION);
+	ERROR_CHECK_BOOL("glMatrixMode(GL_PROJECTION)");
+
 	glLoadIdentity();
+	ERROR_CHECK_BOOL("glLoadIdentity()");
+
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
+	ERROR_CHECK_BOOL("glViewport()");
+
 	glOrtho(left, right, bottom, top, nearZ, farZ);
+	ERROR_CHECK_BOOL("glOrtho()");
+
 	glMatrixMode(GL_MODELVIEW);
+	ERROR_CHECK_BOOL("glMatrixMode(GL_MODELVIEW)");
+
 	glLoadIdentity();
+	ERROR_CHECK_BOOL("glLoadIdentity()");
+
 	return true;
 #endif
 
@@ -1529,6 +1730,7 @@ bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float to
 	MMSFBGLMatrix matrix;
 	getModelViewMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
+	ERROR_CHECK_BOOL("glViewport()");
 	return setCurrentMatrix(matrix);
 #endif
 }
@@ -1543,19 +1745,23 @@ bool MMSFBGL::clear(unsigned char r, unsigned char g, unsigned char b, unsigned 
 				 (!g)?0:(g==0xff)?1:(float)g/255,
 				 (!b)?0:(b==0xff)?1:(float)b/255,
 				 (!a)?0:(a==0xff)?1:(float)a/255);
+	ERROR_CHECK_BOOL("glClearColor()");
 
 #ifdef __HAVE_GL2__
 	// specify the clear value for the depth buffer
 	glClearDepth(1.0);
+	ERROR_CHECK_BOOL("glClearDepth(1.0)");
 #endif
 
 #ifdef __HAVE_GLES2__
 	// specify the clear value for the depth buffer
 	glClearDepthf(1.0);
+	ERROR_CHECK_BOOL("glClearDepthf(1.0)");
 #endif
 
 	// clear color and depth buffer if existent
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ERROR_CHECK_BOOL("glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)");
 
 	return true;
 }
@@ -1573,6 +1779,7 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 
 #ifdef __HAVE_GL2__
 	glColor4ub(r, g, b, a);
+	ERROR_CHECK_BOOL("glColor4ub()");
 	return true;
 #endif
 
@@ -1580,6 +1787,8 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 	if (!this->FSColorLoc_initialized) {
 		// get the location of color uniform variable within the fragment shader
 		this->FSColorLoc = glGetUniformLocation(this->po_current, "FSColor");
+		ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"FSColor\")");
+
 		this->FSColorLoc_initialized = true;
 	}
 
@@ -1590,6 +1799,7 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 					(!g)?0:(g==0xff)?1:(float)g/255,
 					(!b)?0:(b==0xff)?1:(float)b/255,
 					(!a)?0:(a==0xff)?1:(float)a/255);
+		ERROR_CHECK_BOOL("glUniform4f(this->FSColorLoc,...)");
 	}
 
 	return true;
@@ -1611,6 +1821,7 @@ bool MMSFBGL::drawRectangle2D(float x1, float y1, float x2, float y2) {
 		glVertex2f(x1, y2);
 		glVertex2f(x1, y1);
 	glEnd();
+	ERROR_CHECK_BOOL("glBegin(GL_LINE_STRIP)");
 
 #endif
 
@@ -1619,10 +1830,14 @@ bool MMSFBGL::drawRectangle2D(float x1, float y1, float x2, float y2) {
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x1,y1,x2,y1,x2,y2,x1,y2,x1,y1};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+
 	glVertexAttribPointer(MMSFBGL_VSV_LOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), vertices);
+	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
 
 	// draw it
 	glDrawArrays(GL_LINE_STRIP, 0, 5);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_STRIP,...)");
 
 #endif
 
@@ -1650,10 +1865,14 @@ bool MMSFBGL::fillTriangle(float x1, float y1, float z1,
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x1,y1,z1,x2,y2,z2,x3,y3,z3};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+
 	glVertexAttribPointer(MMSFBGL_VSV_LOC, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), vertices);
+	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
 
 	// draw it
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
 
 	return true;
 }
@@ -1665,10 +1884,14 @@ bool MMSFBGL::fillTriangle2D(float x1, float y1, float x2, float y2, float x3, f
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x1,y1,x2,y2,x3,y3};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+
 	glVertexAttribPointer(MMSFBGL_VSV_LOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), vertices);
+	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
 
 	// draw it
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
 
 	return true;
 }
@@ -1682,6 +1905,7 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 #ifdef __HAVE_GL2__
 
 	glRectf(x1, y1, x2, y2);
+	ERROR_CHECK_BOOL("glRectf()");
 
 #endif
 
@@ -1690,10 +1914,14 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x2,y1,x1,y1,x1,y2,x2,y2};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+
 	glVertexAttribPointer(MMSFBGL_VSV_LOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), vertices);
+	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
 
 	// draw it
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
 
 #endif
 
@@ -1720,6 +1948,8 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 
 	// bind source texture
 	glEnable(GL_TEXTURE_2D);
+	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
+
 	bindTexture2D(src_tex);
 
 #ifdef __HAVE_GL2__
@@ -1734,6 +1964,7 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 		glTexCoord2f(sx1, sy2);
 			glVertex3f(dx4, dy4, dz4);
 	glEnd();
+	ERROR_CHECK_BOOL("glBegin(GL_QUADS)");
 
 #endif
 
@@ -1742,8 +1973,11 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	GLint  texCoordLoc;
 	GLint samplerLoc;
 
-	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
-	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
+	texCoordLoc = glGetAttribLocation(this->po_current, "a_texCoord");
+	ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"a_texCoord\")");
+
+	samplerLoc = glGetUniformLocation(this->po_current, "s_texture");
+	ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"s_texture\")");
 
 	GLfloat vVertices[] = { dx1,  dy1, dz1,  // Position 0
 							sx1,  sy1,        // TexCoord 0
@@ -1758,21 +1992,31 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
 	// Load the vertex position
-	glVertexAttribPointer (MMSFBGL_VSV_LOC, 3, GL_FLOAT,
+	glVertexAttribPointer(MMSFBGL_VSV_LOC, 3, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), vVertices );
+	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
+
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
 
 	// Load the texture coordinate
-	glVertexAttribPointer (texCoordLoc, 2, GL_FLOAT,
+	glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
+	ERROR_CHECK_BOOL("glVertexAttribPointer(texCoordLoc,...)");
+
 	glEnableVertexAttribArray(texCoordLoc);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(texCoordLoc)");
 
 
 	// bind the texture unit0
-	glActiveTexture ( GL_TEXTURE0 );
-	glUniform1i(samplerLoc, 0);
+	glActiveTexture(GL_TEXTURE0);
+	ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
 
-	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+	glUniform1i(samplerLoc, 0);
+	ERROR_CHECK_BOOL("glUniform1i(samplerLoc, 0)");
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
+	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 
 #endif
 
@@ -1789,6 +2033,8 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 	// bind source texture
 	glEnable(GL_TEXTURE_2D);
+	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
+
 	bindTexture2D(src_tex);
 
 #ifdef __HAVE_GL2__
@@ -1803,6 +2049,7 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 		glTexCoord2f(sx1, sy2);
 			glVertex2f(dx1, dy2);
 	glEnd();
+	ERROR_CHECK_BOOL("glBegin(GL_QUADS)");
 
 #endif
 
@@ -1811,8 +2058,11 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	GLint  texCoordLoc;
 	GLint samplerLoc;
 
-	texCoordLoc = glGetAttribLocation (this->po_current, "a_texCoord" );
-	samplerLoc = glGetUniformLocation (this->po_current, "s_texture" );
+	texCoordLoc = glGetAttribLocation(this->po_current, "a_texCoord");
+	ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"a_texCoord\")");
+
+	samplerLoc = glGetUniformLocation(this->po_current, "s_texture");
+	ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"s_texture\")");
 
 	GLfloat vVertices[] = { dx1,  dy1, 0.0f,  // Position 0
 							sx1,  sy1,        // TexCoord 0
@@ -1829,19 +2079,28 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	// Load the vertex position
 	glVertexAttribPointer (MMSFBGL_VSV_LOC, 3, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), vVertices );
+	ERROR_CHECK_BOOL("glVertexAttribPointer (MMSFBGL_VSV_LOC,...)");
+
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
 
 	// Load the texture coordinate
-	glVertexAttribPointer (texCoordLoc, 2, GL_FLOAT,
-						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
-	glEnableVertexAttribArray(texCoordLoc);
+	glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT,
+						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3]);
+	ERROR_CHECK_BOOL("glVertexAttribPointer(texCoordLoc,...");
 
+	glEnableVertexAttribArray(texCoordLoc);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(texCoordLoc)");
 
 	// bind the texture unit0
-	glActiveTexture ( GL_TEXTURE0 );
-	glUniform1i(samplerLoc, 0);
+	glActiveTexture(GL_TEXTURE0);
+	ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
 
-	glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+	glUniform1i(samplerLoc, 0);
+	ERROR_CHECK_BOOL("glUniform1i(samplerLoc,...)");
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
+	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 
 #endif
 
