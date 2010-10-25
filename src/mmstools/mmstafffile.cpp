@@ -1689,6 +1689,6 @@ TAFF_TAGTABLE mmstaff_image_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 1, mmstaff_image_taff_tagtable };
+TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 2, mmstaff_image_taff_tagtable };
 
 
