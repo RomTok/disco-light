@@ -123,6 +123,18 @@ class MMSFBGL {
     	//! color location in the fragment shader initialized
     	bool FSColorLoc_initialized;
 
+    	//! texture location in the fragment shader
+    	GLint FSTextureLoc;
+
+    	//! texture location in the fragment shader initialized
+    	bool FSTextureLoc_initialized;
+
+    	//! texture coordinates location in the vertex shader
+    	GLint VSTexCoordLoc;
+
+    	//! texture coordinates location in the vertex shader initialized
+    	bool VSTexCoordLoc_initialized;
+
     	//! current matrix
     	MMSFBGLMatrix	current_matrix;
 
@@ -132,7 +144,7 @@ class MMSFBGL {
     	unsigned char	current_color_b;
     	unsigned char	current_color_a;
 
-    	bool getError(const char* where);
+    	bool getError(const char* where, int line = __LINE__);
 
     	bool buildShader(MMSFBGL_SHADER_TYPE shader_type, const char *shader_code, GLuint *shader);
     	bool linkProgram(GLuint fragment_shader, GLuint vertex_shader, GLuint *program);
@@ -145,6 +157,8 @@ class MMSFBGL {
 
     	void deleteShaders();
         bool initShaders();
+
+        bool initBlitting(GLuint src_tex);
 
     public:
         MMSFBGL();
