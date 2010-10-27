@@ -68,10 +68,8 @@ MMSTimer::~MMSTimer() {
 }
 
 bool MMSTimer::start(unsigned int milliSeconds, unsigned int firsttime_ms) {
-	if(isRunning()) {
-		return false;
-	}
 
+	// init timings...
 	this->nSecs = (milliSeconds % 1000) * 1000000;
 	this->secs = milliSeconds / 1000;
 	this->ft_nSecs = (firsttime_ms % 1000) * 1000000;
@@ -79,7 +77,14 @@ bool MMSTimer::start(unsigned int milliSeconds, unsigned int firsttime_ms) {
 
 	this->firsttime = true;
 
-	return MMSThread::start();
+	if (!isRunning()) {
+		// start the thread
+		return MMSThread::start();
+	}
+	else {
+		// wakeup the thread
+		return restart();
+	}
 }
 
 bool MMSTimer::restart() {
@@ -109,6 +114,7 @@ bool MMSTimer::stop() {
 }
 
 void MMSTimer::threadMain() {
+
 	if(this->secs == 0 && this->nSecs == 0) {
 		return;
 	}
