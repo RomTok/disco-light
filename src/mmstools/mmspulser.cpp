@@ -57,6 +57,7 @@ MMSPulser::~MMSPulser() {
 
 void MMSPulser::reset() {
 	// reset all values
+	this->cancel				= false;
 	this->recalc_requested		= true;
 	this->recalc_cnt			= 0;
 	this->recalc_interval		= 3;
@@ -215,6 +216,11 @@ void MMSPulser::threadMain() {
 		// get start timestamp if needed
 		if (this->recalc_requested) {
 			start_ts = getMTimeStamp();
+		}
+
+		if (this->cancel) {
+			// we should stop the animation
+			break;
 		}
 
 		// call connected onAnimation callbacks
@@ -391,6 +397,10 @@ bool MMSPulser::isRunning() {
 		// check if running without separate thread
 		return this->animRunning;
 	}
+}
+
+void MMSPulser::stop() {
+	this->cancel = true;
 }
 
 bool MMSPulser::setStepsPerSecond(int steps_per_second) {

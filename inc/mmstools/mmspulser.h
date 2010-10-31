@@ -84,6 +84,9 @@ class MMSPulser : public MMSThread {
     	//! shows if the animation is running
     	bool	animRunning;
 
+    	//! true if animation thread should stop
+		bool	cancel;
+
     	//! recalculation requested?
     	bool	recalc_requested;
 
@@ -193,6 +196,9 @@ class MMSPulser : public MMSThread {
         \return true or false
         */
 		bool isRunning();
+
+        //! Signals the animation thread that it has to stop immediately.
+		void stop();
 
         //! Set animation steps per second.
         /*!
