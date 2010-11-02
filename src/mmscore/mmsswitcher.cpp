@@ -226,7 +226,7 @@ void MMSSwitcher::setMenuItemValues(MMSWidget *item) {
 
 int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *path) {
 
-    /* searching for image */
+    // searching for image
     MMSFile *myfile;
     int err;
 
@@ -235,36 +235,61 @@ int MMSSwitcher::searchingForImage(string pluginpath, string imagename, string *
         return 1;
     }
 
-    /* first: current plugin theme */
+    // first: current plugin theme, try with ".taff" extension
     *path = pluginpath + "/themes/" + config.getTheme() + "/";
-    myfile = new MMSFile(*path + imagename);
+    myfile = new MMSFile(*path + imagename + ".taff");
     err = myfile->getLastError();
     delete myfile;
     if (err) {
-        /* second: plugin default theme */
+        // try without ".taff" extension
+        myfile = new MMSFile(*path + imagename);
+        err = myfile->getLastError();
+        delete myfile;
+    }
+
+    if (err) {
+        // second: plugin default theme, try with ".taff" extension
         if (config.getTheme() != DEFAULT_THEME) {
             *path = pluginpath + "/themes/" + DEFAULT_THEME + "/";
+            myfile = new MMSFile(*path + imagename + ".taff");
+            err = myfile->getLastError();
+            delete myfile;
+            if (err) {
+                // try without ".taff" extension
+                myfile = new MMSFile(*path + imagename);
+                err = myfile->getLastError();
+                delete myfile;
+            }
+        }
+    }
+    if (err) {
+        // third: current theme, try with ".taff" extension
+        *path = "./themes/" + config.getTheme() + "/";
+        myfile = new MMSFile(*path + imagename + ".taff");
+        err = myfile->getLastError();
+        delete myfile;
+        if (err) {
+        	// try without ".taff" extension
             myfile = new MMSFile(*path + imagename);
             err = myfile->getLastError();
             delete myfile;
         }
-    }
-    if (err) {
-        /* third: current theme */
-        *path = "./themes/" + config.getTheme() + "/";
-        myfile = new MMSFile(*path + imagename);
-        err = myfile->getLastError();
-        delete myfile;
         if (!err) *path = "";
     }
     if (err) {
-        /* fourth: default theme */
+        // fourth: default theme, try with ".taff" extension
         if (config.getTheme() != DEFAULT_THEME) {
             *path = "./themes/";
             *path = *path + DEFAULT_THEME + "/";
-            myfile = new MMSFile(*path + imagename);
+            myfile = new MMSFile(*path + imagename + ".taff");
             err = myfile->getLastError();
             delete myfile;
+            if (err) {
+            	// try without ".taff" extension
+                myfile = new MMSFile(*path + imagename);
+                err = myfile->getLastError();
+                delete myfile;
+            }
             if (!err) *path = "";
         }
     }
