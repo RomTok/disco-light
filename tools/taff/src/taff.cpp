@@ -65,9 +65,9 @@ void help() {
 	printf(" tiff");
 #endif
 	printf(")\n");
-	printf("--image:pf ARGB|AiRGB|      pixelformat of the taff image (see --exttype image)\n");
-    printf("           AYUV|ARGB4444|   default is ARGB\n");
-    printf("           RGB16\n");
+	printf("--image:pf ARGB|ABGR|       pixelformat of the taff image (see --exttype image)\n");
+    printf("           AiRGB|AYUV|      default is ARGB\n");
+    printf("           ARGB4444|RGB16\n");
     printf("--image:premulti yes|no     generate premultiplied images?, default yes\n");
 	printf("--image:mirror_size <size>  size of the mirror effect in pixels, default is 0\n");
 #endif
@@ -157,6 +157,10 @@ bool getparams(int argc, char *argv[],
 			i++;
 			if (strcmp(argv[i], "ARGB")==0)
 				pf = MMSTAFF_PF_ARGB;
+			else
+			if (strcmp(argv[i], "ABGR")==0) {
+				pf = MMSTAFF_PF_ABGR;
+			}
 			else
 			if (strcmp(argv[i], "AiRGB")==0) {
 				pf = MMSTAFF_PF_AiRGB;
