@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -68,6 +68,7 @@ void help() {
 	printf("--image:pf ARGB|AiRGB|      pixelformat of the taff image (see --exttype image)\n");
     printf("           AYUV|ARGB4444|   default is ARGB\n");
     printf("           RGB16\n");
+    printf("--image:premulti yes|no     generate premultiplied images?, default yes\n");
 	printf("--image:mirror_size <size>  size of the mirror effect in pixels, default is 0\n");
 #endif
 	printf("--ignore_blanks yes|no      ignore blank values?, default no\n");
@@ -82,7 +83,7 @@ void help() {
 bool getparams(int argc, char *argv[],
 			   string &mode, string &tafffile, TAFF_DESCRIPTION **tafftype,
 			   string &extfile, MMSTAFF_EXTERNAL_TYPE *exttype,
-			   MMSTAFF_PF &pf, int &mirror_size,
+			   MMSTAFF_PF &pf, int &mirror_size, bool &premultiplied,
 			   bool &ignore_blanks, bool &trace, bool &print_warnings, bool &silent) {
 
 	if ((argc<3)||((argc-1)%2)) {
@@ -184,6 +185,20 @@ bool getparams(int argc, char *argv[],
 			mirror_size = atoi(argv[i]);
 		}
 		else
+		if (strcmp(argv[i], "--image:premulti")==0)
+		{
+			i++;
+			if (strcmp(argv[i], "yes")==0)
+				premultiplied = true;
+			else
+			if (strcmp(argv[i], "no")==0)
+				premultiplied = false;
+			else {
+				printf("Error: --image:premulti is invalid\n");
+				return false;
+			}
+		}
+		else
 		if (strcmp(argv[i], "--ignore_blanks")==0)
 		{
 			i++;
@@ -262,9 +277,10 @@ int main(int argc, char *argv[]) {
 	MMSTAFF_EXTERNAL_TYPE exttype;
 	MMSTAFF_PF pf = MMSTAFF_PF_ARGB;
 	int mirror_size = 0;
+	bool premultiplied = true;
 
 	if (!getparams(argc, argv, mode, tafffile, &tafftype, extfile, &exttype,
-				   pf, mirror_size, ignore_blanks, trace, print_warnings, silent)) {
+				   pf, mirror_size, premultiplied, ignore_blanks, trace, print_warnings, silent)) {
 		help();
 		return 1;
 	}
@@ -289,7 +305,7 @@ int main(int argc, char *argv[]) {
 			// special settings for images
 			tafff = new MMSTaffFile(tafffile, tafftype, "", exttype, ignore_blanks, trace, print_warnings, true);
 			tafff->setExternal(extfile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
-			tafff->setDestinationPixelFormat(pf);
+			tafff->setDestinationPixelFormat(pf, premultiplied);
 			tafff->setMirrorEffect(mirror_size);
 			tafff->convertExternal2TAFF();
 			tafff->readFile();
