@@ -584,7 +584,8 @@ bool MMSFBGL::init(Display *x_display, int x_screen, Window x_window, int w, int
 	// wrapper successfully initialized
 	this->initialized = true;
 	this->screen_width = w;
-	this->screen_width = h;
+	this->screen_height = h;
+	printf("SCREEN WIDTH = %d, HEIGHT = %d\n", this->screen_width, this->screen_height);
 
 	return true;
 
@@ -785,7 +786,7 @@ bool MMSFBGL::init() {
 	glGetIntegerv(GL_VIEWPORT, wh);
 	this->screen_width = wh[2];
 	this->screen_height = wh[3];
-	printf("SCREEN WIDTH = %d, HEIGHT = %d\n", screen_width, screen_height);
+	printf("SCREEN WIDTH = %d, HEIGHT = %d\n", this->screen_width, this->screen_height);
 
 
 	// init fragment and vertex shaders

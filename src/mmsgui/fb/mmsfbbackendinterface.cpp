@@ -359,12 +359,19 @@ void MMSFBBackEndInterface::oglMatrix(int left, int right, int bottom, int top, 
 
 
 void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
+
+	if (surface->is_sub_surface) {
+		// surface is a subsurface without own memory
+		// so set surface to root parents surface for allocation check
+		surface = surface->root_parent;
+	}
+
 	MMSFBSurfaceBuffer *sb = surface->config.surface_buffer;
 
 #ifdef __HAVE_GL2__
 	if (!sb->ogl_fbo_initialized) {
 		//TODO: GL2 needs always a renderbuffer???
-		if (!surface->config.surface_buffer->ogl_tex_initialized) {
+		if (!sb->ogl_tex_initialized) {
 			// texture is also not initialized
 			mmsfbgl.allocFBOandRBO(sb->ogl_fbo, sb->ogl_tex, sb->ogl_rbo, surface->config.w, surface->config.h);
 		}
@@ -387,7 +394,7 @@ void MMSFBBackEndInterface::oglAlloc(MMSFBSurface *surface, bool rbo_required) {
 		sb->ogl_rbo_initialized = false;
 
 		// allocate a texture (color buffer) and bind it to a new FBO
-		if (!surface->config.surface_buffer->ogl_tex_initialized) {
+		if (!sb->ogl_tex_initialized) {
 			// texture is also not initialized
 			if (rbo_required) {
 				// additionally have to initialize RBO
