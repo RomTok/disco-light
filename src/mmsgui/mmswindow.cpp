@@ -3223,8 +3223,8 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
 
 void MMSWindow::refresh(MMSFBRegion *region) {
 
-    if(shown==false) {
-//        logger.writeLog("drawing skipped because window is not shown");
+	if (!isShown(true)) {
+		// drawing skipped because window is or it's parents are not shown
         return;
     }
 
