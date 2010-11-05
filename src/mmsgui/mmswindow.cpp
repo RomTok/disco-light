@@ -1880,6 +1880,11 @@ bool MMSWindow::initnav() {
 
 bool MMSWindow::init() {
 
+	if (this->initialized) {
+		// already initialized
+		return true;
+	}
+
 	// load images
     string path, name;
 
@@ -1893,10 +1898,17 @@ bool MMSWindow::init() {
         this->borderimages[i] = this->im->getImage(path, name);
     }
 
+    this->initialized = true;
 	return true;
 }
 
 bool MMSWindow::release() {
+
+	if (!this->initialized) {
+		// not initialized
+		return true;
+	}
+
 	// release all images
     this->im->releaseImage(this->bgimage);
     this->bgimage = NULL;
@@ -1906,20 +1918,17 @@ bool MMSWindow::release() {
 		this->borderimages[i] = NULL;
 	}
 
+	this->initialized = false;
     return true;
 }
 
 
 void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear) {
 
-	if (!this->initialized) {
-        // init window (e.g. load images, fonts, ...)
-        init();
-        this->initialized = true;
-    }
+	// init window (e.g. load images, fonts, ...)
+	init();
 
-    /* lock */
-//PUP    this->surface->lock();
+	// lock
 	lock();
 
     if (rect2update) {
@@ -2815,6 +2824,9 @@ void MMSWindow::afterHideAction(MMSPulser *pulser) {
             switchArrowWidgets();
         }
     }
+
+    //TODO: release images...
+    release();
 }
 
 bool MMSWindow::hide(bool goback, bool wait) {
@@ -4840,7 +4852,6 @@ void MMSWindow::themeChanged(string &themeName, bool refresh) {
 
     // delete images, ...
 	release();
-	this->initialized = false;
 
     // refresh it
     if (refresh)
@@ -5182,28 +5193,32 @@ void MMSWindow::setBgColor(MMSFBColor bgcolor, bool refresh) {
 
 void MMSWindow::setBgImagePath(string bgimagepath, bool load, bool refresh) {
     myWindowClass.setBgImagePath(bgimagepath);
-    if (load) {
-        im->releaseImage(this->bgimage);
-        string path, name;
-        if (!getBgImagePath(path)) path = "";
-        if (!getBgImageName(name)) name = "";
-        this->bgimage = im->getImage(path, name);
+    if (this->initialized) {
+		if (load) {
+			im->releaseImage(this->bgimage);
+			string path, name;
+			if (!getBgImagePath(path)) path = "";
+			if (!getBgImageName(name)) name = "";
+			this->bgimage = im->getImage(path, name);
+		}
+		if (refresh)
+			this->refresh();
     }
-    if (refresh)
-        this->refresh();
 }
 
 void MMSWindow::setBgImageName(string bgimagename, bool load, bool refresh) {
     myWindowClass.setBgImageName(bgimagename);
-    if (load) {
-        im->releaseImage(this->bgimage);
-        string path, name;
-        if (!getBgImagePath(path)) path = "";
-        if (!getBgImageName(name)) name = "";
-        this->bgimage = im->getImage(path, name);
+    if (this->initialized) {
+		if (load) {
+			im->releaseImage(this->bgimage);
+			string path, name;
+			if (!getBgImagePath(path)) path = "";
+			if (!getBgImageName(name)) name = "";
+			this->bgimage = im->getImage(path, name);
+		}
+		if (refresh)
+			this->refresh();
     }
-    if (refresh)
-        this->refresh();
 }
 
 void MMSWindow::setOpacity(unsigned int opacity, bool refresh) {
@@ -5351,17 +5366,19 @@ void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
 
 void MMSWindow::setBorderImagePath(string imagepath, bool load, bool refresh) {
     myWindowClass.border.setImagePath(imagepath);
-    if (load) {
-        string path, name;
-        if (!getBorderImagePath(path)) path = "";
-        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-            im->releaseImage(this->borderimages[i]);
-            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-            this->borderimages[i] = im->getImage(path, name);
-        }
+    if (this->initialized) {
+		if (load) {
+			string path, name;
+			if (!getBorderImagePath(path)) path = "";
+			for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+				im->releaseImage(this->borderimages[i]);
+				if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+				this->borderimages[i] = im->getImage(path, name);
+			}
+		}
+		if (refresh)
+			this->refresh();
     }
-    if (refresh)
-        this->refresh();
 }
 
 void MMSWindow::setBorderImageNames(string imagename_1, string imagename_2, string imagename_3, string imagename_4,
@@ -5369,17 +5386,19 @@ void MMSWindow::setBorderImageNames(string imagename_1, string imagename_2, stri
                                     bool load, bool refresh) {
     myWindowClass.border.setImageNames(imagename_1, imagename_2, imagename_3, imagename_4,
                                        imagename_5, imagename_6, imagename_7, imagename_8);
-    if (load) {
-        string path, name;
-        if (!getBorderImagePath(path)) path = "";
-        for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
-            im->releaseImage(this->borderimages[i]);
-            if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
-            this->borderimages[i] = im->getImage(path, name);
-        }
+    if (this->initialized) {
+		if (load) {
+			string path, name;
+			if (!getBorderImagePath(path)) path = "";
+			for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
+				im->releaseImage(this->borderimages[i]);
+				if (!getBorderImageNames((MMSBORDER_IMAGE_NUM)i, name)) name = "";
+				this->borderimages[i] = im->getImage(path, name);
+			}
+		}
+		if (refresh)
+			this->refresh();
     }
-    if (refresh)
-        this->refresh();
 }
 
 void MMSWindow::setBorderThickness(unsigned int thickness, bool refresh, bool resize) {
