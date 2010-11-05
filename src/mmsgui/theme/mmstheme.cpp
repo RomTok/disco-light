@@ -662,6 +662,7 @@ MMSTheme::MMSTheme() {
         /* label settings */
         this->labelWidgetClass.setFontPath("./themes/default");
         this->labelWidgetClass.setFontName("decker.ttf");
+        this->labelWidgetClass.setFontNameCN("");
         this->labelWidgetClass.setFontSize(16);
         this->labelWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         MMSFBColor c;
@@ -1027,6 +1028,7 @@ MMSTheme::MMSTheme() {
         /* textbox settings */
         this->textBoxWidgetClass.setFontPath("./themes/default");
         this->textBoxWidgetClass.setFontName("decker.ttf");
+        this->textBoxWidgetClass.setFontNameCN("");
         this->textBoxWidgetClass.setFontSize(16);
         this->textBoxWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         this->textBoxWidgetClass.setWrap(true);

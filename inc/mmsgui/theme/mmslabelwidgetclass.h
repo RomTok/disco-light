@@ -41,6 +41,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 	#define MMSGUI_LABELWIDGET_ATTR_ATTRDESC \
 		{ "font.path", TAFF_ATTRTYPE_STRING }, \
 		{ "font.name", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.cn", TAFF_ATTRTYPE_STRING }, \
 		{ "font.size", TAFF_ATTRTYPE_UCHAR }, \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
 		{ "color", TAFF_ATTRTYPE_STRING }, \
@@ -61,6 +62,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 	#define MMSGUI_LABELWIDGET_ATTR_IDS \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_path, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_name, \
+		MMSGUI_LABELWIDGET_ATTR_IDS_font_name_cn, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_font_size, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_alignment, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_color, \
@@ -122,6 +124,12 @@ class MMSLabelWidgetClass {
 
         //! name of the font
         string          fontname;
+
+        //! is fontname set?
+        bool            isfontname_cn;
+
+        //! name of the font
+        string          fontname_cn;
 
         //! is fontsize set?
         bool            isfontsize;
@@ -238,6 +246,24 @@ class MMSLabelWidgetClass {
         \return name of the font
         */
         string getFontName();
+
+        //! Check if the fontname is set.
+        bool isFontNameCN();
+
+        //! Set the fontname which is used to draw the text.
+        /*!
+        \param fontname  name of the font
+        */
+        void setFontNameCN(string fontname);
+
+        //! Mark the fontname as not set.
+        void unsetFontNameCN();
+
+        //! Get the fontname which is used to draw the text.
+        /*!
+        \return name of the font
+        */
+        string getFontNameCN();
 
         //! Check if the fontsize is set.
         bool isFontSize();

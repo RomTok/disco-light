@@ -50,9 +50,12 @@ class MMSLabelWidget : public MMSWidget {
         MMSLabelWidgetClass myLabelWidgetClass;
 
         MMSFBFont *font;
+        string    countrycode;
 
         int slide_width;
         int slide_offset;
+
+        string current_fontname;
 
         unsigned int frame_delay;
         unsigned int frame_delay_set;
@@ -84,6 +87,7 @@ class MMSLabelWidget : public MMSWidget {
         /* theme access methods */
         string getFontPath();
         string getFontName();
+        string getCurrentFontName();
         unsigned int getFontSize();
         MMSALIGNMENT getAlignment();
         MMSFBColor getColor();
@@ -96,6 +100,7 @@ class MMSLabelWidget : public MMSWidget {
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
+        void setCurrentFontName(string fontname);
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
         void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);

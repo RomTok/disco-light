@@ -372,8 +372,18 @@ bool MMSTextBoxWidget::init() {
     if (!MMSWidget::init())
         return false;
 
+    rootwindow->windowmanager->getTranslator()->getTargetLang(this->countrycode);
+    if(countrycode=="cn") {
+    	string fontcn = this->textBoxWidgetClass->getFontNameCN();
+    	if(!fontcn.empty()) {
+    		this->current_fontname = fontcn;
+    	}
+    } else {
+    	this->current_fontname = textBoxWidgetClass->getFontName();
+    }
+
     // load font
-    this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
+    this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
 
     // load file
     this->loadFile(false);
@@ -413,6 +423,38 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     if (this->font) {
         unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
 
+        string cc;
+    	if(!this->translated) {
+    	    rootwindow->windowmanager->getTranslator()->getTargetLang(cc);
+    	    if(cc!=countrycode) {
+    	    	//country code changed
+    	    	if(countrycode == "cn") {
+    	    		this->current_fontname = this->textBoxWidgetClass->getFontName();
+					//releasefont
+					if(this->font) {
+						this->rootwindow->fm->releaseFont(this->font);
+					}
+	    			//load font
+					this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+
+    	    	}
+    	    	countrycode = cc;
+
+    	    	if(countrycode == "cn") {
+    	    		cc = this->textBoxWidgetClass->getFontNameCN();
+    	    		if(!cc.empty()) {
+    	    			this->current_fontname = cc;
+						//releasefont
+						if(this->font) {
+							this->rootwindow->fm->releaseFont(this->font);
+						}
+    	    			//load font
+						this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+    	    		}
+    	    	}
+    	    }
+    	}
+
         if (!this->translated) {
         	if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
 				// translate the text
@@ -442,6 +484,39 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 
         // lock
         this->surface->lock();
+
+    	string cc;
+    	if(!this->translated) {
+    	    rootwindow->windowmanager->getTranslator()->getTargetLang(cc);
+    	    if(cc!=countrycode) {
+    	    	//country code changed
+    	    	if(countrycode == "cn") {
+    	    		this->current_fontname = this->textBoxWidgetClass->getFontName();
+					//releasefont
+					if(this->font) {
+						this->rootwindow->fm->releaseFont(this->font);
+					}
+	    			//load font
+					this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+
+    	    	}
+    	    	countrycode = cc;
+
+    	    	if(countrycode == "cn") {
+    	    		cc = this->textBoxWidgetClass->getFontNameCN();
+    	    		if(!cc.empty()) {
+    	    			this->current_fontname = cc;
+						//releasefont
+						if(this->font) {
+							this->rootwindow->fm->releaseFont(this->font);
+						}
+    	    			//load font
+						this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+    	    		}
+    	    	}
+    	    }
+    	}
+
 
         // draw my things
         if (this->font) {
@@ -530,6 +605,10 @@ bool MMSTextBoxWidget::loadFile(bool refresh) {
 
 bool MMSTextBoxWidget::reloadFile() {
 	return loadFile(true);
+}
+
+string MMSTextBoxWidget::getCurrentFontName() {
+	return this->current_fontname;
 }
 
 /***********************************************/

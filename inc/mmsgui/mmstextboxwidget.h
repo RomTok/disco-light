@@ -57,6 +57,8 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSTextBoxWidgetClass 	myTextBoxWidgetClass;
 
         MMSFBFont *font;
+        string    current_fontname;
+        string    countrycode;
 
         vector<TEXTBOX_WORDGEOM *> wordgeom;
 
@@ -129,6 +131,7 @@ class MMSTextBoxWidget : public MMSWidget {
         void setTranslate(bool translate, bool refresh = true);
 		void setFilePath(string filepath, bool load = true, bool refresh = true);
         void setFileName(string filename, bool load = true, bool refresh = true);
+        string getCurrentFontName();
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
 

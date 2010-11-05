@@ -43,12 +43,14 @@ TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;
 
 MMSLabelWidgetClass::MMSLabelWidgetClass() {
     unsetAll();
+    this->fontname_cn = "";
 }
 
 void MMSLabelWidgetClass::unsetAll() {
     this->className = "";
     unsetFontPath();
     unsetFontName();
+    unsetFontNameCN();
     unsetFontSize();
     unsetAlignment();
     unsetColor();
@@ -82,6 +84,9 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_name:
 	            setFontName(attrval_str);
+	            break;
+			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_name_cn:
+	            setFontNameCN(attrval_str);
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_size:
 	            setFontSize(attrval_int);
@@ -187,6 +192,10 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             else
             if (ISATTRNAME(font_name)) {
 	            setFontName(attrval_str);
+            }
+            else
+            if (ISATTRNAME(font_name_cn)) {
+	            setFontNameCN(attrval_str);
             }
             else
             if (ISATTRNAME(font_size)) {
@@ -333,6 +342,23 @@ void MMSLabelWidgetClass::unsetFontName() {
 
 string MMSLabelWidgetClass::getFontName() {
     return this->fontname;
+}
+
+bool MMSLabelWidgetClass::isFontNameCN() {
+    return this->isfontname_cn;
+}
+
+void MMSLabelWidgetClass::setFontNameCN(string fontname) {
+    this->fontname_cn = fontname;
+    this->isfontname_cn = true;
+}
+
+void MMSLabelWidgetClass::unsetFontNameCN() {
+    this->isfontname_cn = false;
+}
+
+string MMSLabelWidgetClass::getFontNameCN() {
+    return this->fontname_cn;
 }
 
 bool MMSLabelWidgetClass::isFontSize() {

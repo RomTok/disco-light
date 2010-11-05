@@ -81,7 +81,7 @@ MMSWidget *MMSLabelWidget::copyWidget() {
     newWidget->font = NULL;
     newWidget->labelThread = NULL;
     if (this->rootwindow) {
-        newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
+        newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getCurrentFontName(), newWidget->getFontSize());
 
         // first time the label thread has to be started
         if (newWidget->getSlidable()) {
@@ -97,8 +97,20 @@ bool MMSLabelWidget::init() {
     if (!MMSWidget::init())
         return false;
 
+    rootwindow->windowmanager->getTranslator()->getTargetLang(this->countrycode);
+    if(countrycode=="cn") {
+    	if(this->labelWidgetClass) {
+			string fontcn = this->labelWidgetClass->getFontNameCN();
+			if(!fontcn.empty()) {
+				this->current_fontname = fontcn;
+			}
+    	}
+    } else {
+    	this->current_fontname = this->getFontName();
+    }
+
     // load font
-    this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
+    this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
 
     // first time the label thread has to be started
     if (getSlidable()) {
@@ -137,7 +149,43 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
     /* draw widget basics */
     if (MMSWidget::draw(backgroundFilled)) {
 
-        /* draw my things */
+    	string cc;
+    	if(!this->translated) {
+    	    rootwindow->windowmanager->getTranslator()->getTargetLang(cc);
+    	    if(cc!=countrycode) {
+    	    	//country code changed
+    	    	if(countrycode == "cn") {
+    	    		this->current_fontname = this->getFontName();
+					//releasefont
+					if(this->font) {
+						this->rootwindow->fm->releaseFont(this->font);
+					}
+	    			//load font
+					this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+
+    	    	}
+    	    	countrycode = cc;
+
+    	    	if(countrycode == "cn") {
+    	    		cc="";
+    	    		if(this->labelWidgetClass)
+    	    			cc = this->labelWidgetClass->getFontNameCN();
+
+    	    		if(!cc.empty()) {
+    	    			this->current_fontname = cc;
+						//releasefont
+						if(this->font) {
+							this->rootwindow->fm->releaseFont(this->font);
+						}
+    	    			//load font
+						this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+    	    		}
+    	    	}
+    	    }
+    	}
+
+
+		/* draw my things */
         if (this->font) {
             MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
@@ -296,6 +344,14 @@ unsigned char MMSLabelWidget::getSlideSpeed() {
 
 bool MMSLabelWidget::getTranslate() {
     GETLABEL(Translate);
+}
+
+string MMSLabelWidget::getCurrentFontName() {
+	return this->current_fontname;
+}
+
+void MMSLabelWidget::setCurrentFontName(string fontname) {
+	this->current_fontname = fontname;
 }
 
 /***********************************************/

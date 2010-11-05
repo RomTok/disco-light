@@ -41,6 +41,7 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_ATTRDESC \
 		{ "font.path", TAFF_ATTRTYPE_STRING }, \
 		{ "font.name", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.cn", TAFF_ATTRTYPE_STRING }, \
 		{ "font.size", TAFF_ATTRTYPE_UCHAR }, \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
 		{ "wrap", TAFF_ATTRTYPE_BOOL }, \
@@ -63,6 +64,7 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_IDS \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_path, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name, \
+		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name_cn, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_size, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_alignment, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_wrap, \
@@ -126,6 +128,12 @@ class MMSTextBoxWidgetClass {
 
         //! name of the font
         string          fontname;
+
+        //! is fontname set?
+        bool            isfontname_cn;
+
+        //! name of the font
+        string          fontname_cn;
 
         //! is fontsize set?
         bool            isfontsize;
@@ -254,6 +262,24 @@ class MMSTextBoxWidgetClass {
         \return name of the font
         */
         string getFontName();
+
+        //! Check if the fontname_cn is set.
+        bool isFontNameCN();
+
+        //! Set the fontname_cn which is used to draw the text.
+        /*!
+        \param fontname  name of the font
+        */
+        void setFontNameCN(string fontname);
+
+        //! Mark the fontname_cn as not set.
+        void unsetFontNameCN();
+
+        //! Get the fontname_cn which is used to draw the text.
+        /*!
+        \return name of the font
+        */
+        string getFontNameCN();
 
         //! Check if the fontsize is set.
         bool isFontSize();
