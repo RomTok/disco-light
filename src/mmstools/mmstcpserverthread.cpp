@@ -89,7 +89,7 @@ void MMSTCPServerThread::threadMain() {
 	do {
 		strcpy(mybuf, (this->answer_buffer.substr(from, sizeof(mybuf)-1)).c_str());
 		if (!*mybuf) break;
-		if ((len = send(this->s, mybuf, strlen(mybuf), 0))<0) {
+		if ((len = send(this->s, mybuf, strlen(mybuf), MSG_NOSIGNAL))<0) {
 			close(this->s);
 			this->s=-1;
 			return;
