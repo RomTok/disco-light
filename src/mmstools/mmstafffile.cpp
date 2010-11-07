@@ -129,8 +129,25 @@ bool MMSTaffFile::writeBuffer(MMSFile *mmsfile, void *ptr, size_t *ritems, size_
 	return true;
 }
 
-bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pitch, int *size) {
-    // should create a mirror effect?
+bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pitch,
+										int *size, bool *alphachannel) {
+
+    // should i pre-multiply with alpha channel?
+    if (this->destination_premultiplied && (*alphachannel == true)) {
+		unsigned int *src = (unsigned int*)*buf;
+	    for (int i = *width * *height; i > 0; i--) {
+	    	register unsigned int s = *src;
+	        register unsigned int sa = s >> 24;
+	        if (sa != 0xff)
+	        	// source alpha is > 0x00 and < 0xff
+		        *src = ((((s & 0x00ff00ff) * sa) >> 8) & 0x00ff00ff) |
+		               ((((s & 0x0000ff00) * sa) >> 8) & 0x0000ff00) |
+		               ((((s & 0xff000000))));
+	        src++;
+	    }
+    }
+
+	// should create a mirror effect?
     if (this->mirror_size > 0) {
     	// yes
 		unsigned int *dst = (unsigned int*)*buf;
@@ -159,7 +176,21 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
     }
 
     // have to convert the pixelformat?
+    bool has_alpha = false;
     switch (this->destination_pixelformat) {
+    case MMSTAFF_PF_ARGB:
+		if (*alphachannel) {
+			// no convertion, only have to check if we have really an alpha channel
+			unsigned int *src = (unsigned int*)*buf;
+		    for (int i = *width * *height; i > 0; i--) {
+		    	register unsigned int s = *src;
+				s = s >> 24;
+				if (s != 0xff) has_alpha = true;
+		    	if (has_alpha) break;
+		    	src++;
+		    }
+		}
+		break;
     case MMSTAFF_PF_AiRGB: {
     		// invert the alpha channel
 			unsigned int *src = (unsigned int*)*buf;
@@ -168,6 +199,7 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
 		    	register unsigned int a = s;
 		    	a = ~a;
 		    	a = a & 0xff000000;
+		    	if (a && !has_alpha) has_alpha = true;
 		    	s = s & 0x00ffffff;
 		    	s = s | a;
 		    	*src = s;
@@ -183,7 +215,9 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
 		    	register int r = (s >> 16) & 0xff;
 		    	register int g = (s >> 8) & 0xff;
 		    	register int b = s  & 0xff;
-		    	s = s & 0xff000000;											//A
+		    	if (!has_alpha)
+		    		if ((s >> 24) != 0xff) has_alpha = true;
+		    	s = s & 0xff000000;										//A
 		    	if (s) {
 			    	s = s | (((((66*r+129*g+25*b+128)>>8)+16) & 0xff) << 16);	//Y
 			    	s = s | (((((-38*r-74*g+112*b+128)>>8)+128) & 0xff) << 8);	//U (Cb)
@@ -211,7 +245,9 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
 		    for (int i = *width * *height; i > 0; i--) {
 		    	register unsigned int s = *src;
 		    	register unsigned short int d;
-		    	d =   ((s & 0xf0000000) >> 16)
+		    	if (!has_alpha)
+		    		if ((s >> 28) != 0x0f) has_alpha = true;
+				d =   ((s & 0xf0000000) >> 16)
 					| ((s & 0x00f00000) >> 12)
 					| ((s & 0x0000f000) >> 8)
 					| ((s & 0x000000f0) >> 4);
@@ -280,6 +316,8 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
 		    for (int i = *width * *height; i > 0; i--) {
 		    	register unsigned int s = *src;
 		    	register unsigned int rb = s & 0x00ff00ff;
+		    	if (!has_alpha)
+		    		if ((s >> 24) != 0xff) has_alpha = true;
 		    	s = s & 0xff00ff00;
 		    	s = s | (rb << 16);
 		    	s = s | (rb >> 16);
@@ -289,6 +327,14 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
     	}
    		break;
 	default: break;
+    }
+
+    if (*alphachannel) {
+    	// per input parameter we assumed, that we have an alpha channel
+    	// here we overwrite it with the result from the previous check
+    	// so it can be, that we have an image with alpha channel but all alpha values are 0xff
+    	// in this case we mark the image with "no alpha channel"
+    	*alphachannel = has_alpha;
     }
 
     return true;
@@ -308,7 +354,8 @@ void MMSTaff_read_png_data_callback(png_structp png_ptr, png_bytep data, png_siz
 
 
 
-bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
+bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *height, int *pitch,
+							  int *size, bool *alphachannel) {
 #ifdef __HAVE_PNG__
 	MMSFile			*file;
 	char			png_sig[8];
@@ -419,10 +466,14 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	// convert grayscale to rgb data
     	png_set_gray_to_rgb(png_ptr);
     }
+
+    *alphachannel = true;
     if (color_type != PNG_COLOR_TYPE_RGB_ALPHA && color_type != PNG_COLOR_TYPE_GRAY_ALPHA) {
-        // add alpha channel 0xff if not existing
+        // image has no alpha channel, add alpha channel 0xff
+    	*alphachannel = false;
     	png_set_add_alpha(png_ptr, 0xff, PNG_FILLER_AFTER);
     }
+
     png_read_update_info(png_ptr, info_ptr);
 
     // allocate memory for row pointers
@@ -464,23 +515,8 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
     // so check now if i have to convert it
 
-    // should i pre-multiply with alpha channel?
-    if (this->destination_premultiplied) {
-		unsigned int *src = (unsigned int*)*buf;
-	    for (int i = *width * *height; i > 0; i--) {
-	    	register unsigned int s = *src;
-	        register unsigned int sa = s >> 24;
-	        if (sa != 0xff)
-	        	// source alpha is > 0x00 and < 0xff
-		        *src = ((((s & 0x00ff00ff) * sa) >> 8) & 0x00ff00ff) |
-		               ((((s & 0x0000ff00) * sa) >> 8) & 0x0000ff00) |
-		               ((((s & 0xff000000))));
-	        src++;
-	    }
-    }
-
     // create mirror and convert to target pixelformat
-    return postprocessImage(buf, width, height, pitch, size);
+    return postprocessImage(buf, width, height, pitch, size, alphachannel);
 #else
     return false;
 #endif
@@ -507,7 +543,8 @@ METHODDEF(void) JPEGErrorExit(j_common_ptr cinfo) {
 }
 #endif
 
-bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
+bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch,
+								int *size, bool *alphachannel) {
 #ifdef __HAVE_JPEG__
 	struct jpeg_decompress_struct	cinfo;
 	struct JPEGErrorManager 		jerr;
@@ -539,6 +576,9 @@ bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *he
 	*height = (int)cinfo.image_height;
 	*pitch  = *width * 4;
     *size   = *pitch * *height;
+
+    // jpeg generally has no alpha channel
+    *alphachannel = false;
 
 	/* setting decompression parameters */
 	cinfo.out_color_space = JCS_RGB;	/**< setting output colorspace to RGB */
@@ -575,13 +615,14 @@ bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *he
 	fclose(fp);
 
     /* create mirror and convert to target pixelformat */
-    return postprocessImage(buf, width, height, pitch, size);
+    return postprocessImage(buf, width, height, pitch, size, alphachannel);
 #else
     return false;
 #endif
 }
 
-bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *height, int *pitch, int *size) {
+bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *height, int *pitch,
+								int *size, bool *alphachannel) {
 #ifdef __HAVE_TIFF__
 	TIFF* tiff;
 
@@ -593,6 +634,9 @@ bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *he
 	TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, height);
 	*pitch  = *width * 4;
     *size   = *pitch * *height;
+
+    // we assume that we have an alpha channel
+    *alphachannel = true;
 
 	/* allocate memory for ARGB output */
     if(this->mirror_size > *height) this->mirror_size = *height;
@@ -621,7 +665,7 @@ bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *he
 	TIFFClose(tiff);
 
     /* create mirror and convert to target pixelformat */
-    return postprocessImage(buf, width, height, pitch, size);
+    return postprocessImage(buf, width, height, pitch, size, alphachannel);
 #else
     return false;
 #endif
@@ -1004,12 +1048,13 @@ bool MMSTaffFile::convertXML2TAFF() {
 }
 
 bool MMSTaffFile::convertIMAGE2TAFF() {
-	bool   	rc = false;
+	bool	rc = false;
 	void	*imgBuf;
-	int 	imgWidth;
-	int 	imgHeight;
-	int     imgPitch;
-	int     imgSize;
+	int		imgWidth;
+	int		imgHeight;
+	int		imgPitch;
+	int		imgSize;
+	bool	imgAlphaChannel;
 
 	/* check input parameters */
 	if (!this->taff_desc || this->external_filename.empty()) {
@@ -1019,7 +1064,7 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 	/* check file extension (if this fails try readPNG() and/or readJPEG() and/or readTIFF()) */
 	if(strToUpr(this->external_filename).rfind(".PNG") == this->external_filename.size() - 4) {
 #ifdef __HAVE_PNG__
-		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize, &imgAlphaChannel);
 #else
 		cout << "Disko was built without PNG support: skipping " << this->external_filename << endl;
 		return false;
@@ -1027,7 +1072,7 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 	} else if((strToUpr(this->external_filename).rfind(".JPG") == this->external_filename.size() - 4) ||
 			  (strToUpr(this->external_filename).rfind(".JPEG") == this->external_filename.size() - 5)) {
 #ifdef __HAVE_JPEG__
-		rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+		rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize, &imgAlphaChannel);
 #else
 		cout << "Disko was built without JPEG support: skipping " << this->external_filename << endl;
 		return false;
@@ -1035,23 +1080,23 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 	} else if((strToUpr(this->external_filename).rfind(".TIF") == this->external_filename.size() - 4) ||
 			  (strToUpr(this->external_filename).rfind(".TIFF") == this->external_filename.size() - 5)) {
 #ifdef __HAVE_TIFF__
-		rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+		rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize, &imgAlphaChannel);
 #else
 		cout << "Disko was built without TIFF support: skipping " << this->external_filename << endl;
 		return false;
 #endif
 	} else {
 #ifdef __HAVE_PNG__
-		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+		rc = readPNG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize, &imgAlphaChannel);
 #endif
 #ifdef __HAVE_JPEG__
 		if(!rc) {
-			rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+			rc = readJPEG(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize, &imgAlphaChannel);
 		}
 #endif
 #ifdef __HAVE_TIFF__
 		if(!rc) {
-			rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize);
+			rc = readTIFF(this->external_filename.c_str(), &imgBuf, &imgWidth, &imgHeight, &imgPitch, &imgSize, &imgAlphaChannel);
 		}
 #endif
 	}
@@ -1135,6 +1180,13 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
 		int ms = (int)this->mirror_size;
 		writeBuffer(taff_file, &ms, &ritems, 1, sizeof(int), &wok);
+
+		// write attributes: alphachannel
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_alphachannel;
+		wb[2]=sizeof(bool);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		writeBuffer(taff_file, &imgAlphaChannel, &ritems, 1, sizeof(bool), &wok);
 
 		// write attributes: data
 		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
@@ -1689,6 +1741,6 @@ TAFF_TAGTABLE mmstaff_image_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 2, mmstaff_image_taff_tagtable };
+TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 3, mmstaff_image_taff_tagtable };
 
 

@@ -200,16 +200,20 @@ class MMSTaffFile {
         bool writeBuffer(MMSFile *file, void *ptr, size_t *ritems, size_t size, size_t nitems, bool *write_status = NULL);
 
         //! Internal method: Create mirror effect and convert to target pixelformat.
-        bool postprocessImage(void **buf, int *width, int *height, int *pitch, int *size);
+        bool postprocessImage(void **buf, int *width, int *height, int *pitch,
+								 int *size, bool *alphachannel);
 
         //! Internal method: Read a PNG Image.
-		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
+		bool readPNG(const char *filename, void **buf, int *width, int *height, int *pitch,
+						int *size, bool *alphachannel);
 
         //! Internal method: Read a JPEG Image.
-		bool readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
+		bool readJPEG(const char *filename, void **buf, int *width, int *height, int *pitch,
+						int *size, bool *alphachannel);
 
         //! Internal method: Read a TIFF Image.
-		bool readTIFF(const char *filename, void **buf, int *width, int *height, int *pitch, int *size);
+		bool readTIFF(const char *filename, void **buf, int *width, int *height, int *pitch,
+						int *size, bool *alphachannel);
 
 		//! Internal method: Recursive called method for XML to TAFF conversion.
         bool convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file);
@@ -373,7 +377,8 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		{ "data", TAFF_ATTRTYPE_BINDATA }, \
 		{ "pixelformat", TAFF_ATTRTYPE_INT }, \
 		{ "premultiplied", TAFF_ATTRTYPE_BOOL }, \
-		{ "mirror_size", TAFF_ATTRTYPE_INT }
+		{ "mirror_size", TAFF_ATTRTYPE_INT }, \
+		{ "alphachannel", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width, \
@@ -383,7 +388,8 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied, \
-		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_alphachannel
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT { \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC, \
