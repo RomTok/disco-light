@@ -5268,20 +5268,9 @@ void MMSWindow::setBgImage(MMSFBSurface *bgimage, bool refresh) {
 
 void MMSWindow::setOpacity(unsigned int opacity, bool refresh) {
     myWindowClass.setOpacity(opacity);
-/*    if (refresh) {
-        if (!this->parent) {
-            if (this->window)
-                this->window->setOpacity(opacity);
-        }
-        else
-            this->parent->setChildWindowOpacity(this, opacity);
-    }*/
-
 	if (!this->parent) {
-	    if (refresh) {
-			if (this->window)
-				this->window->setOpacity(opacity);
-	    }
+		if (this->window)
+			this->window->setOpacity(opacity);
 	}
 	else {
     	this->parent->setChildWindowOpacity(this, opacity, refresh);
