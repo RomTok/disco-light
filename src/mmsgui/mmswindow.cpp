@@ -968,7 +968,7 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
 }
 
 
-bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity) {
+bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity, bool refresh) {
 	if (childwin->getType()!=MMSWINDOWTYPE_CHILDWINDOW)
 		return false;
 
@@ -978,7 +978,9 @@ bool MMSWindow::setChildWindowOpacity(MMSWindow *childwin, unsigned char opacity
         if (this->childwins.at(i).window == childwin) {
             this->childwins.at(i).oldopacity = this->childwins.at(i).opacity;
            	this->childwins.at(i).opacity = opacity;
-			flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+           	if (refresh) {
+           		flipWindow(childwin, NULL, MMSFB_FLIP_NONE, false, true);
+           	}
 			unlock();
 			return true;
         }
@@ -5266,14 +5268,24 @@ void MMSWindow::setBgImage(MMSFBSurface *bgimage, bool refresh) {
 
 void MMSWindow::setOpacity(unsigned int opacity, bool refresh) {
     myWindowClass.setOpacity(opacity);
-    if (refresh) {
+/*    if (refresh) {
         if (!this->parent) {
             if (this->window)
                 this->window->setOpacity(opacity);
         }
         else
             this->parent->setChildWindowOpacity(this, opacity);
-    }
+    }*/
+
+	if (!this->parent) {
+	    if (refresh) {
+			if (this->window)
+				this->window->setOpacity(opacity);
+	    }
+	}
+	else {
+    	this->parent->setChildWindowOpacity(this, opacity, refresh);
+	}
 }
 
 void MMSWindow::setFadeIn(bool fadein) {
