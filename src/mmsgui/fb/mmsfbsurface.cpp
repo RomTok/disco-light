@@ -219,6 +219,12 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, in
 		sb->numbuffers = 1;
 		sb->systemonly = false;
 
+		// setup plane buffer
+		sb->currbuffer_read = 0;
+		sb->currbuffer_write = 0;
+		sb->buffers[0].hwbuffer = true;
+		sb->buffers[0].opaque = false;
+		sb->buffers[0].transparent = false;
 
 		mmsfb->bei->alloc(this);
 
@@ -513,13 +519,21 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by) {
 	this->config.h = this->config.surface_buffer->sbh = h;
 
 	if (this->config.surface_buffer) {
-	   memset(this->config.surface_buffer->buffers, 0, sizeof(this->config.surface_buffer->buffers));
-	   this->config.surface_buffer->numbuffers = 0;
-	   this->config.surface_buffer->external_buffer = false;
+		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+		memset(sb->buffers, 0, sizeof(sb->buffers));
+		sb->numbuffers = 0;
+		sb->external_buffer = false;
 
-	   // this surface is the primary opengl framebuffer
-	   this->config.surface_buffer->ogl_fbo = 0;
-	   this->config.surface_buffer->ogl_fbo_initialized = true;
+		// setup plane buffer
+		sb->currbuffer_read = 0;
+		sb->currbuffer_write = 0;
+		sb->buffers[0].hwbuffer = true;
+		sb->buffers[0].opaque = false;
+		sb->buffers[0].transparent = false;
+
+		// this surface is the primary opengl framebuffer
+		sb->ogl_fbo = 0;
+		sb->ogl_fbo_initialized = true;
 	}
 
 	init(MMSFBSurfaceAllocatedBy_ogl, NULL, NULL);
@@ -1281,6 +1295,16 @@ bool MMSFBSurface::setLayerSurface(bool islayersurface) {
 }
 
 
+bool MMSFBSurface::isOpaque() {
+	if (MMSFBSURFACE_READ_BUFFER(this).opaque) {
+		return true;
+	}
+	else {
+		return (!isAlphaPixelFormat(this->config.surface_buffer->pixelformat));
+	}
+}
+
+
 bool MMSFBSurface::getPixelFormat(MMSFBSurfacePixelFormat *pixelformat) {
 
     /* check if initialized */
@@ -1424,6 +1448,8 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 
     // check if initialized
     INITCHECK;
+
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1681,6 +1707,8 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
     // check if initialized
     INITCHECK;
 
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
@@ -1776,6 +1804,8 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
     if (w < 1 || h < 1)
     	return false;
 
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
 		if (!this->is_sub_surface) {
@@ -1822,6 +1852,8 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 
     // check if initialized
     INITCHECK;
+
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
 
     if ((w <= 0) || (h <= 0)) {
     	// use full surface
@@ -1923,6 +1955,8 @@ bool MMSFBSurface::drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
     // check if initialized
     INITCHECK;
 
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
 		if (!this->is_sub_surface) {
@@ -1960,6 +1994,8 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
 
     // check if initialized
     INITCHECK;
+
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -2037,6 +2073,8 @@ bool MMSFBSurface::drawCircle(int x, int y, int radius, int start_octant, int en
 
     /* check if initialized */
     INITCHECK;
+
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
 
     /* draw circle */
     if (end_octant < start_octant) end_octant = start_octant;
@@ -2183,7 +2221,7 @@ void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSur
 		else {
 			// dst_planes not given, reset the special flags
 			MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
-			sb->buffers[sb->currbuffer_write].opaque = false;
+//			sb->buffers[sb->currbuffer_write].opaque = false;
 			sb->buffers[sb->currbuffer_write].transparent = false;
 		}
 		dst->unlock(false);
@@ -2195,7 +2233,8 @@ void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSur
 
 
 bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, MMSFBSurfacePlanes *src_planes,
-										   MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height) {
+										   MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
+										   MMSFBBlittingFlags blittingflags) {
 #ifdef  __HAVE_DIRECTFB__
 	// failed, check if it must not
 	if ((this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) && (!source || (source->allocated_by == MMSFBSurfaceAllocatedBy_dfb)))
@@ -2260,18 +2299,18 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 	printf("  destination premultiplied: %s\n", (this->config.surface_buffer->premultiplied)?"yes":"no");
 	printf("  destination color:         r=%d, g=%d, b=%d, a=%d\n", this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
 	if ((source)||(src_planes)) {
-		printf("  blitting flags (%06x):  ", this->config.blittingflags);
-		if (this->config.blittingflags == MMSFB_BLIT_NOFX)
+		printf("  blitting flags (%06x):  ", blittingflags);
+		if (blittingflags == MMSFB_BLIT_NOFX)
 			printf(" NOFX");
-		if (this->config.blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)
+		if (blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)
 			printf(" BLEND_ALPHACHANNEL");
-		if (this->config.blittingflags & MMSFB_BLIT_BLEND_COLORALPHA)
+		if (blittingflags & MMSFB_BLIT_BLEND_COLORALPHA)
 			printf(" BLEND_COLORALPHA");
-		if (this->config.blittingflags & MMSFB_BLIT_COLORIZE)
+		if (blittingflags & MMSFB_BLIT_COLORIZE)
 			printf(" COLORIZE");
-		if (this->config.blittingflags & MMSFB_BLIT_SRC_PREMULTIPLY)
+		if (blittingflags & MMSFB_BLIT_SRC_PREMULTIPLY)
 			printf(" SRC_PREMULTIPLY");
-		if (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING)
+		if (blittingflags & MMSFB_BLIT_ANTIALIASING)
 			printf(" ANTIALIASING");
 		printf("\n");
 	}
@@ -2294,7 +2333,8 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 
 bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 									   MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									   MMSFBRectangle *src_rect, int x, int y) {
+									   MMSFBRectangle *src_rect, int x, int y, MMSFBBlittingFlags blittingflags) {
+
 	MMSFBSurfacePlanes my_src_planes;
 	if (source) {
 		// premultiplied surface?
@@ -2391,7 +2431,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 	// extract antialiasing flag from blittingflags
 //	bool antialiasing = (this->config.blittingflags & MMSFB_BLIT_ANTIALIASING);
-	MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
+//	MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
 
 	// checking pixelformats...
 	switch (src_pixelformat) {
@@ -2481,6 +2521,23 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
+			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				// convert without alpha channel
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
@@ -2504,6 +2561,25 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				if (extendedLock(source, src_planes, this, &dst_planes)) {
 					MMSFBPERF_START_MEASURING;
 						mmsfb_blit_blend_coloralpha_argb_to_rgb32(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y,
+								this->config.color.a);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+					extendedUnlock(source, this);
+					return true;
+				}
+
+				return false;
+			}
+			else
+			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA))
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
+				// blitting with coloralpha
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_coloralpha_argb_to_rgb32(
 								src_planes, src_height,
 								sx, sy, sw, sh,
 								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
@@ -3583,29 +3659,31 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 	return false;
 }
 
-bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y) {
+bool MMSFBSurface::extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect,
+										   int x, int y, MMSFBBlittingFlags blittingflags) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
 	if (!extendedAccelBlitEx(source,
 			                 NULL, MMSFB_PF_NONE, 0, 0,
-			                 src_rect, x, y))
-		return printMissingCombination("extendedAccelBlit()", source);
+			                 src_rect, x, y, blittingflags))
+		return printMissingCombination("extendedAccelBlit()", source, NULL, MMSFB_PF_NONE, 0, 0, blittingflags);
 	else
 		return true;
 }
 
 bool MMSFBSurface::extendedAccelBlitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-										   MMSFBRectangle *src_rect, int x, int y) {
+										   MMSFBRectangle *src_rect, int x, int y, MMSFBBlittingFlags blittingflags) {
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
 	if (!extendedAccelBlitEx(NULL,
 							 src_planes, src_pixelformat, src_width, src_height,
-			                 src_rect, x, y))
-		return printMissingCombination("extendedAccelBlitBuffer()", NULL, src_planes, src_pixelformat, src_width, src_height);
+			                 src_rect, x, y, blittingflags))
+		return printMissingCombination("extendedAccelBlitBuffer()", NULL,
+							src_planes, src_pixelformat, src_width, src_height, blittingflags);
 	else
 		return true;
 }
@@ -4245,7 +4323,8 @@ bool MMSFBSurface::extendedAccelStretchBlit(MMSFBSurface *source, MMSFBRectangle
 			                        NULL, MMSFB_PF_NONE, 0, 0,
 			                        src_rect, dest_rect,
 			                        real_dest_rect, calc_dest_rect))
-		return printMissingCombination("extendedAccelStretchBlit()", source);
+		return printMissingCombination("extendedAccelStretchBlit()", source,
+				NULL, MMSFB_PF_NONE, 0, 0, this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING);
 	else
 		return true;
 }
@@ -4261,7 +4340,8 @@ bool MMSFBSurface::extendedAccelStretchBlitBuffer(MMSFBSurfacePlanes *src_planes
 							        src_planes, src_pixelformat, src_width, src_height,
 							        src_rect, dest_rect,
 							        real_dest_rect, calc_dest_rect))
-		return printMissingCombination("extendedAccelStretchBlitBuffer()", NULL, src_planes, src_pixelformat, src_width, src_height);
+		return printMissingCombination("extendedAccelStretchBlitBuffer()", NULL, src_planes,
+								src_pixelformat, src_width, src_height, this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING);
 	else
 		return true;
 }
@@ -4857,6 +4937,43 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
          src.h = source->config.h;
     }
 
+
+    // save the opaque state
+    bool opaque_saved = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+
+    // set new opaque state and get blitting flags for it
+    MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
+    if (MMSFBSURFACE_READ_BUFFER(source).opaque) {
+    	// source is an opaque buffer
+    	// so remove the BLEND_ALPHACHANNEL flag if set
+    	blittingflags = blittingflags & ~MMSFB_BLIT_BLEND_ALPHACHANNEL;
+
+    	switch (blittingflags) {
+		case MMSFB_BLIT_NOFX:
+		case MMSFB_BLIT_COLORIZE:
+			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.w) && (y + src.h >= this->config.h)) {
+				// blit writes the whole destination surface
+				// so switch opaque to true
+				MMSFBSURFACE_WRITE_BUFFER(this).opaque = true;
+			}
+			else {
+				// let opaque state unchanged
+			}
+			break;
+		default:
+			// after the blitting surface is not opaque
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+			break;
+		}
+    }
+    else {
+    	if (!(blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+			// after the blitting surface is not opaque
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    	}
+    }
+
+
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult    dfbres;
@@ -4931,14 +5048,14 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 
 		if (!this->is_sub_surface) {
 
-			mmsfb->bei->blit(this, source, src, x, y);
+			mmsfb->bei->blit(this, source, src, x, y, blittingflags);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			mmsfb->bei->blit(this, source, src, x, y);
+			mmsfb->bei->blit(this, source, src, x, y, blittingflags);
 
 			UNCLIPSUBSURFACE
 
@@ -4956,7 +5073,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 
 		// blit
 		if (!this->is_sub_surface) {
-			ret = extendedAccelBlit(source, &src, x, y);
+			ret = extendedAccelBlit(source, &src, x, y, blittingflags);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -4964,7 +5081,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 			x+=this->sub_surface_xoff;
 			y+=this->sub_surface_yoff;
 
-			ret = extendedAccelBlit(source, &src, x, y);
+			ret = extendedAccelBlit(source, &src, x, y, blittingflags);
 
 			UNCLIPSUBSURFACE
 		}
@@ -4976,12 +5093,18 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 		}
 	}
 
+	if (!ret) {
+		// restore the opaque state
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque = opaque_saved;
+	}
+
     return ret;
 }
 
 
+
 bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							  MMSFBRectangle *src_rect, int x, int y) {
+							  MMSFBRectangle *src_rect, int x, int y, bool opaque) {
     MMSFBRectangle src;
     bool 		 ret = false;
 
@@ -4995,8 +5118,44 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
          src.h = src_height;
     }
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+
+    // save the opaque state
+    bool opaque_saved = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+
+    // set new opaque state and get blitting flags for it
+    MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
+    if (opaque) {
+    	// caller puts an opaque buffer to this surface
+    	// so remove the BLEND_ALPHACHANNEL flag if set
+    	blittingflags = blittingflags & ~MMSFB_BLIT_BLEND_ALPHACHANNEL;
+
+    	switch (blittingflags) {
+		case MMSFB_BLIT_NOFX:
+		case MMSFB_BLIT_COLORIZE:
+			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.w) && (y + src.h >= this->config.h)) {
+				// blit writes the whole destination surface
+				// so switch opaque to true
+				MMSFBSURFACE_WRITE_BUFFER(this).opaque = true;
+			}
+			else {
+				// let opaque state unchanged
+			}
+			break;
+		default:
+			// after the blitting surface is not opaque
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+			break;
+		}
+    }
+    else {
+    	if (!(blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+			// after the blitting surface is not opaque
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    	}
+    }
+
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5008,14 +5167,16 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
 
 		if (!this->is_sub_surface) {
 
-			mmsfb->bei->blitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, x, y);
+			mmsfb->bei->blitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, x, y,
+									blittingflags);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			mmsfb->bei->blitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, x, y);
+			mmsfb->bei->blitBuffer(this, src_planes, src_pixelformat, src_width, src_height, src, x, y,
+									blittingflags);
 
 			UNCLIPSUBSURFACE
 
@@ -5025,9 +5186,10 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
 #endif
 	}
 	else {
-		/* blit buffer */
+		// blit buffer
 		if (!this->is_sub_surface) {
-			ret = extendedAccelBlitBuffer(src_planes, src_pixelformat, src_width, src_height, &src, x, y);
+			ret = extendedAccelBlitBuffer(src_planes, src_pixelformat, src_width, src_height, &src,
+										  x, y, blittingflags);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -5035,20 +5197,28 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
 			x+=this->sub_surface_xoff;
 			y+=this->sub_surface_yoff;
 
-			ret = extendedAccelBlitBuffer(src_planes, src_pixelformat, src_width, src_height, &src, x, y);
+			ret = extendedAccelBlitBuffer(src_planes, src_pixelformat, src_width, src_height, &src,
+										  x, y, blittingflags);
 
 			UNCLIPSUBSURFACE
 
 		}
 	}
 
+
+	if (!ret) {
+		// restore the opaque state
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque = opaque_saved;
+	}
+
+
     return ret;
 }
 
 bool MMSFBSurface::blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-							  MMSFBRectangle *src_rect, int x, int y) {
+							  MMSFBRectangle *src_rect, int x, int y, bool opaque) {
 	MMSFBSurfacePlanes src_planes = MMSFBSurfacePlanes(src_ptr, src_pitch);
-	return blitBuffer(&src_planes, src_pixelformat, src_width, src_height, src_rect, x, y);
+	return blitBuffer(&src_planes, src_pixelformat, src_width, src_height, src_rect, x, y, opaque);
 }
 
 bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
@@ -5067,6 +5237,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
          src.w = source->config.w;
          src.h = source->config.h;
     }
+
 
     // use whole destination surface if dest_rect is not given and calc_dest_rect is not set
     if ((dest_rect)&&(!calc_dest_rect)) {
@@ -5103,6 +5274,11 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 
     // check if initialized
     INITCHECK;
+
+
+    //TODO: this reset is to be improved...
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5276,14 +5452,14 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 
 		if (!this->is_sub_surface) {
 
-			mmsfb->bei->stretchBlit(this, source, src, dst);
+			mmsfb->bei->stretchBlit(this, source, src, dst, this->config.blittingflags);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			mmsfb->bei->stretchBlit(this, source, src, dst);
+			mmsfb->bei->stretchBlit(this, source, src, dst, this->config.blittingflags);
 
 			UNCLIPSUBSURFACE
 
@@ -5346,6 +5522,8 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
          src.h = src_height;
     }
 
+
+
     // use whole destination surface if dest_rect is not given and calc_dest_rect is not set
     if ((dest_rect)&&(!calc_dest_rect)) {
          dst = *dest_rect;
@@ -5375,14 +5553,44 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
     	*real_dest_rect = dst;
 
     // check if i can blit without stretching
-    if (src.w == dst.w && src.h == dst.h)
+    if (src.w == dst.w && src.h == dst.h) {
         return blitBuffer(extbuf->ptr, extbuf->pitch, src_pixelformat, src_width, src_height, &src, dst.x, dst.y);
+    }
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+
+
+    //TODO: this reset is to be improved...
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
+#endif
+	}
+	else
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+
+		if (!this->is_sub_surface) {
+
+			mmsfb->bei->stretchBlitBuffer(this, extbuf, src_pixelformat, src_width, src_height,
+											src, dst, this->config.blittingflags);
+
+			ret = true;
+		}
+		else {
+			CLIPSUBSURFACE
+
+			mmsfb->bei->stretchBlitBuffer(this, extbuf, src_pixelformat, src_width, src_height,
+											src, dst, this->config.blittingflags);
+
+			UNCLIPSUBSURFACE
+
+			ret = true;
+		}
+
 #endif
 	}
 	else {
@@ -5631,7 +5839,9 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
 
 						this->surface_invert_lock = true;
-						this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
+						if (MMSFBSURFACE_READ_BUFFER(this).opaque)
+							MMSFBSURFACE_READ_BUFFER(this).opaque = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+						this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y, MMSFB_BLIT_NOFX);
 						this->surface_invert_lock = false;
 
 						this->config.blittingflags = savedbf;
@@ -5663,7 +5873,9 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
 
 				this->surface_invert_lock = true;
-				this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y);
+				if (MMSFBSURFACE_READ_BUFFER(this).opaque)
+					MMSFBSURFACE_READ_BUFFER(this).opaque = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+				this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y, MMSFB_BLIT_NOFX);
 				this->surface_invert_lock = false;
 
 				this->config.blittingflags = savedbf;
@@ -6205,6 +6417,59 @@ bool MMSFBSurface::setBlittingFlagsByBrightnessAlphaAndOpacity(
 
     return true;
 }
+
+
+bool MMSFBSurface::setBlittingFlagsByBrightnessAlphaAndOpacityAndSource(
+                    unsigned char brightness, unsigned char alpha, unsigned char opacity,
+                    MMSFBSurface *source) {
+    MMSFBColor color;
+
+    // check if initialized
+    INITCHECK;
+
+    // modulate the opacity into the color
+    color.a = alpha;
+    modulateOpacity(&color, opacity);
+
+    // set color for blitting
+    setColor(brightness, brightness, brightness, color.a);
+
+    // set blitting flags
+    if (!MMSFBSURFACE_READ_BUFFER(source).opaque) {
+    	// source is not opaque
+		if (brightness != 255) {
+			if (color.a == 255)
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_COLORIZE|MMSFB_BLIT_BLEND_ALPHACHANNEL));
+			else
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_COLORIZE|MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
+		}
+		else {
+			if (color.a == 255)
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL));
+			else
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
+		}
+    }
+    else {
+		// source is opaque, so we do not need MMSFB_BLIT_BLEND_ALPHACHANNEL
+		if (brightness != 255) {
+			if (color.a == 255)
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_COLORIZE));
+			else
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_COLORIZE|MMSFB_BLIT_BLEND_COLORALPHA));
+		}
+		else {
+			if (color.a == 255)
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_NOFX));
+			else
+				setBlittingFlags((MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA));
+		}
+    }
+
+    return true;
+}
+
+
 
 bool MMSFBSurface::setDrawingFlagsByAlpha(unsigned char alpha) {
 

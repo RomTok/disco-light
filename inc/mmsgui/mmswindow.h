@@ -216,6 +216,9 @@ class MMSWindow {
         //!	background image
         MMSFBSurface        *bgimage;
 
+        //! background image set by application
+        bool				bgimage_from_external;
+
         //! border images
         MMSFBSurface        *borderimages[MMSBORDER_IMAGE_NUM_SIZE];
 
@@ -1357,6 +1360,13 @@ class MMSWindow {
         \param refresh		refresh the window after changing the bgimagename?
         */
         void setBgImageName(string bgimagename, bool load = true, bool refresh = true);
+
+        //! Set background image already loaded by the application
+        /*!
+        \param bgimage		pointer to surface or NULL
+        \param refresh		refresh the window after changing?
+        */
+        void setBgImage(MMSFBSurface *bgimage, bool refresh = true);
 
         //! Set the opacity of the window.
         /*!

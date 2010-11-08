@@ -75,6 +75,12 @@ typedef enum {
 //! this is the maximum number of buffers for a surface (backbuffers + 1)
 #define MMSFBSurfaceMaxBuffers		3
 
+//! get access to the current write buffer
+#define MMSFBSURFACE_WRITE_BUFFER(surface) surface->config.surface_buffer->buffers[surface->config.surface_buffer->currbuffer_write]
+
+//! get access to the current read buffer
+#define MMSFBSURFACE_READ_BUFFER(surface) surface->config.surface_buffer->buffers[surface->config.surface_buffer->currbuffer_read]
+
 typedef struct {
 	//! width
     int     sbw;
@@ -220,14 +226,16 @@ class MMSFBSurface {
         void extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes = NULL);
 
         bool printMissingCombination(string method, MMSFBSurface *source = NULL, MMSFBSurfacePlanes *src_planes = NULL,
-									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0);
+									 MMSFBSurfacePixelFormat src_pixelformat = MMSFB_PF_NONE, int src_width = 0, int src_height = 0,
+									 MMSFBBlittingFlags blittingflags = MMSFB_BLIT_NOFX);
 
         bool extendedAccelBlitEx(MMSFBSurface *source,
 								 MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-        						 MMSFBRectangle *src_rect, int x, int y);
-        bool extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y);
+        						 MMSFBRectangle *src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
+        bool extendedAccelBlit(MMSFBSurface *source, MMSFBRectangle *src_rect,
+								  int x, int y, MMSFBBlittingFlags blittingflags);
         bool extendedAccelBlitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-									 MMSFBRectangle *src_rect, int x, int y);
+									 MMSFBRectangle *src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
 
         bool extendedAccelStretchBlitEx(MMSFBSurface *source,
 										MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -322,6 +330,8 @@ class MMSFBSurface {
         MMSFBSurface *getParent();
         MMSFBSurface *getRootParent();
 
+        bool isOpaque();
+
         bool getPixelFormat(MMSFBSurfacePixelFormat *pf);
         bool getSize(int *w, int *h);
         bool getNumberOfBuffers(int *num);
@@ -360,9 +370,11 @@ class MMSFBSurface {
         bool getBlittingFlags(MMSFBBlittingFlags *flags);
         bool blit(MMSFBSurface *source, MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
         bool blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
+						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0,
+						bool opaque = false);
         bool blitBuffer(void *src_ptr, int src_pitch, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
-						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0);
+						MMSFBRectangle *src_rect = NULL, int x = 0, int y = 0,
+						bool opaque = false);
         bool stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect = NULL, MMSFBRectangle *dest_rect = NULL,
 						 MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
         bool stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
@@ -390,6 +402,9 @@ bool cube(MMSFBSurface *front, MMSFBSurface *back,
 
         bool setBlittingFlagsByBrightnessAlphaAndOpacity(
                     unsigned char brightness, unsigned char alpha, unsigned char opacity);
+        bool setBlittingFlagsByBrightnessAlphaAndOpacityAndSource(
+                    unsigned char brightness, unsigned char alpha, unsigned char opacity,
+                    MMSFBSurface *source);
         bool setDrawingFlagsByAlpha(unsigned char alpha);
         bool setDrawingColorAndFlagsByBrightnessAndOpacity(
                     MMSFBColor color, unsigned char brightness, unsigned char opacity);

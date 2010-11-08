@@ -710,111 +710,152 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     else
         cleared = (!((vw->alphachannel==false)&&(vw->opacity==255)));
 
-	// searching for other affected windows and draw parts of it
-    for (unsigned int i=0; i < this->vwins.size(); i++) {
-        VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
-//        MMSFBRegion *myregion = &(aw->region);
-        MMSFBRegion myreg = aw->region;
-        MMSFBRegion *myregion = &myreg;
 
-        // if the window has no opacity then continue
-        if (!aw->opacity)
-            continue;
+//printf("winman: flip windows\n");
 
-        // check if layer surface
-        if (aw->islayersurface)
-            if (!cleared)
-                continue;
+    // two loops for optimized DEPTH TEST
+    // FIRST:  find lowest window which is to blit
+    // SECOND: blit the window stack beginning from lowest window
+	int lowest_win = 0;
+	MMSFBRegion tmpreg = MMSFBRegion(0,0,0,0);
+	for (int depth_test = 1; depth_test >= 0; depth_test--) {
+		// searching for affected windows and draw parts of it (in the second loop)
+		for (unsigned int i = lowest_win; i < this->vwins.size(); i++) {
+			VISIBLE_WINDOWS *aw = &(this->vwins.at(i));
+			MMSFBRegion myreg = aw->region;
+			MMSFBRegion *myregion = &myreg;
 
-        if (!((myregion->x2 < ls_region.x1)||(myregion->y2 < ls_region.y1)
-            ||(myregion->x1 > ls_region.x2)||(myregion->y1 > ls_region.y2))) {
-            // the window is affected
-            // calc source and destination
-            MMSFBRectangle src_rect;
-            int dst_x = ls_region.x1;
-            int dst_y = ls_region.y1;
+			// if the window has no opacity then continue
+			if (!aw->opacity)
+				continue;
 
-            src_rect.x = ls_region.x1 - myregion->x1;
-            if (src_rect.x < 0) {
-                dst_x-= src_rect.x;
-                src_rect.x = 0;
-            }
+			// check if layer surface
+			if (aw->islayersurface)
+				if (!cleared)
+					continue;
 
-            src_rect.y = ls_region.y1 - myregion->y1;
-            if (src_rect.y < 0) {
-                dst_y-= src_rect.y;
-                src_rect.y = 0;
-            }
+			if (!((myregion->x2 < ls_region.x1)||(myregion->y2 < ls_region.y1)
+				||(myregion->x1 > ls_region.x2)||(myregion->y1 > ls_region.y2))) {
+				// the window is affected
+				if (depth_test) {
+					// FIRST loop: DEPTH TEST
+					if (myregion->x1 <= tmpreg.x1 && myregion->y1 <= tmpreg.y1
+							&& myregion->x2 >= tmpreg.x2 && myregion->y2 >= tmpreg.y2) {
+						if ((!aw->alphachannel) || (MMSFBSURFACE_READ_BUFFER(aw->surface).opaque)) {
+							if (aw->opacity == 0xff) {
+								tmpreg = *myregion;
+								lowest_win = i;
+							}
+						}
+					}
+				}
+				else {
+					// SECOND loop: blit affected window
+//printf("winman: flip window %d %d\n", i, MMSFBSURFACE_READ_BUFFER(aw->surface).opaque);
 
-            src_rect.w = myregion->x2 - myregion->x1 + 1 - src_rect.x;
-            if (myregion->x2 > ls_region.x2)
-                src_rect.w-= myregion->x2 - ls_region.x2;
+					// calc source and destination
+					MMSFBRectangle src_rect;
+					int dst_x = ls_region.x1;
+					int dst_y = ls_region.y1;
 
-            src_rect.h = myregion->y2 - myregion->y1 + 1 - src_rect.y;
-            if (myregion->y2 > ls_region.y2)
-                src_rect.h-= myregion->y2 - ls_region.y2;
+					src_rect.x = ls_region.x1 - myregion->x1;
+					if (src_rect.x < 0) {
+						dst_x-= src_rect.x;
+						src_rect.x = 0;
+					}
 
-            if ((aw->vrect.w > 0)&&(aw->vrect.h > 0)) {
-            	// visible rectangle set, so have to adjust source offset
-            	src_rect.x += aw->vrect.x;
-            	src_rect.y += aw->vrect.y;
-            }
+					src_rect.y = ls_region.y1 - myregion->y1;
+					if (src_rect.y < 0) {
+						dst_y-= src_rect.y;
+						src_rect.y = 0;
+					}
 
-            // set the blitting flags and color
-            if ((aw->alphachannel)&&((win_found)||(!this->dst_surface->config.surface_buffer->alphachannel))) {
-            	// the window has an alphachannel
-                if (aw->opacity < 255) {
-                    this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
-                    this->dst_surface->setColor(0, 0, 0, aw->opacity);
-                }
-                else {
-                    this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
-                }
+					src_rect.w = myregion->x2 - myregion->x1 + 1 - src_rect.x;
+					if (myregion->x2 > ls_region.x2)
+						src_rect.w-= myregion->x2 - ls_region.x2;
 
-                // first window?
-                if (!win_found) {
-                	// yes, clear the layer before blitting the first window surface
-                    if (cleared)
-                   		this->dst_surface->clear();
-                	win_found = true;
-                }
-            }
-            else {
-            	// the window has no alphachannel
-                if (aw->opacity < 255) {
-                    this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_COLORALPHA);
-                    this->dst_surface->setColor(0, 0, 0, aw->opacity);
-                }
-                else {
-                    this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
-                }
+					src_rect.h = myregion->y2 - myregion->y1 + 1 - src_rect.y;
+					if (myregion->y2 > ls_region.y2)
+						src_rect.h-= myregion->y2 - ls_region.y2;
 
-                // first window?
-                if (!win_found) {
-                	// yes, clear the layer before blitting the first window surface
-                	// but only, if the first window does not use the whole layer region
-                	// else we do not have to clear the layer region and can save CPU
-                    if (cleared)
-                    	if ((aw->opacity < 255)||((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
-                    	 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2))) {
-                    		this->dst_surface->clear();
-                    	}
+					if ((aw->vrect.w > 0)&&(aw->vrect.h > 0)) {
+						// visible rectangle set, so have to adjust source offset
+						src_rect.x += aw->vrect.x;
+						src_rect.y += aw->vrect.y;
+					}
 
-                	win_found = true;
-                }
-            }
+					// set the blitting flags and color
+					if ((aw->alphachannel)&&((win_found)||(!this->dst_surface->config.surface_buffer->alphachannel))) {
+						// the window has an alphachannel
+						if (!(MMSFBSURFACE_READ_BUFFER(aw->surface).opaque)) {
+							// (semi-)transparent surface buffer
+							if (aw->opacity < 255) {
+								this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
+								this->dst_surface->setColor(0, 0, 0, aw->opacity);
+							}
+							else {
+								this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
+							}
+						}
+						else {
+							// opaque surface buffer, we do not need MMSFB_BLIT_BLEND_ALPHACHANNEL
+							if (aw->opacity < 255) {
+								this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_COLORALPHA);
+								this->dst_surface->setColor(0, 0, 0, aw->opacity);
+							}
+							else {
+								this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
+							}
+						}
 
-            // check if layer surface and blit
-            if (aw->islayersurface) {
-                if (aw->saved_surface) {
-                    this->dst_surface->blit(aw->saved_surface, &src_rect, dst_x, dst_y);
-                }
-            }
-            else {
-				this->dst_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
-            }
-        }
-    }
+						// first window?
+						if (!win_found) {
+							// yes, clear the layer before blitting the first window surface
+							if (cleared)
+								this->dst_surface->clear();
+							win_found = true;
+						}
+					}
+					else {
+						// the window has no alphachannel
+						if (aw->opacity < 255) {
+							this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_COLORALPHA);
+							this->dst_surface->setColor(0, 0, 0, aw->opacity);
+						}
+						else {
+							this->dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_NOFX);
+						}
+
+						// first window?
+						if (!win_found) {
+							// yes, clear the layer before blitting the first window surface
+							// but only, if the first window does not use the whole layer region
+							// else we do not have to clear the layer region and can save CPU
+							if (cleared)
+								if ((aw->opacity < 255)||((dst_x != ls_region.x1) || (dst_y != ls_region.y1)
+								 || (dst_x + src_rect.w <= ls_region.x2) || (dst_y + src_rect.h <= ls_region.y2))) {
+									this->dst_surface->clear();
+								}
+
+							win_found = true;
+						}
+					}
+
+					// check if layer surface and blit
+					if (aw->islayersurface) {
+						if (aw->saved_surface) {
+							this->dst_surface->blit(aw->saved_surface, &src_rect, dst_x, dst_y);
+						}
+					}
+					else {
+						this->dst_surface->blit(aw->surface, &src_rect, dst_x, dst_y);
+					}
+				}
+			}
+		}
+	}
+
+
 
     if (!win_found) {
         // if no window is drawn, check if we have to clear the layer region

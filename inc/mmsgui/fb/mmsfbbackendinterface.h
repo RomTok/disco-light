@@ -124,6 +124,7 @@ private:
 		MMSFBSurface		*source;
 		MMSFBRectangle		src_rect;
 		MMSFBRectangle		dst_rect;
+		MMSFBBlittingFlags	blittingflags;
 	} BEI_STRETCHBLIT;
 
 	typedef struct {
@@ -135,6 +136,7 @@ private:
 		int						src_height;
 		MMSFBRectangle			src_rect;
 		MMSFBRectangle			dst_rect;
+		MMSFBBlittingFlags		blittingflags;
 	} BEI_STRETCHBLITBUFFER;
 
 	typedef struct {
@@ -233,12 +235,12 @@ public:
 	void drawLine(MMSFBSurface *surface, MMSFBRegion &region);
 	void drawRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
 	void drawTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
-	void blit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, int x, int y);
-	void stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+	void blit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
+	void stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect, MMSFBBlittingFlags blittingflags);
 	void blitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-				    int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y);
+				    int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
 	void stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect);
+						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect, MMSFBBlittingFlags blittingflags);
 
 	void createAlphaTexture(unsigned int *texture, unsigned char *buffer, int width, int height);
 	void deleteTexture(unsigned int texture);

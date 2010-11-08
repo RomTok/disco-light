@@ -333,6 +333,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
 				    	bool 		img_premultiplied = true;
 				    	int 		img_mirror_size = 0;
+				    	bool		img_alphachannel = true;
 
 				    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
 				    		switch (attrid) {
@@ -359,6 +360,9 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    			break;
 				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size:
 				    			img_mirror_size = value_int;
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_alphachannel:
+				    			img_alphachannel = (value_int);
 				    			break;
 				    		}
 				    	}
@@ -425,7 +429,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				            im_desc->imagefile = imagefile;
 
 				            if (reload_image < 0) {
-				                /* get the modification time of the file */
+				                // get the modification time of the file
 				                struct stat statbuf;
 				                if (stat(imagefile.c_str(), &statbuf)==0)
 				                    im_desc->mtime = statbuf.st_mtime;
@@ -434,7 +438,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				            }
 
 				            if (reload_image < 0) {
-				                /* create a surface */
+//printf("ImageManager has loaded: '%s'   - %s\n", imagefile.c_str(),(img_alphachannel)?"alpha":"no alpha");
+				                // create a surface
 				                if (!this->layer->createSurface(&(im_desc->suf[0].surface), img_width, img_height, this->pixelformat)) {
 				                    DEBUGMSG("MMSGUI", "cannot create surface for image file '%s'", imagefile.c_str());
 				                    delete im_desc;
@@ -445,7 +450,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 
 								// blit from external buffer to surface
 								im_desc->suf[0].surface->blitBuffer(img_buf, img_pitch, this->pixelformat,
-																	img_width, img_height, NULL, 0, 0);
+																	img_width, img_height, NULL, 0, 0,
+																	!img_alphachannel);
 
 				                // free
 				                delete tafff;
@@ -762,6 +768,8 @@ void MMSImageManager::releaseImage(MMSFBSurface *surface) {
             if (this->images.at(i)->usecount <= 0) {
                 /* this surface is not used anymore */
             	DEBUGMSG("MMSGUI", "ImageManager deletes: '%s'", this->images.at(i)->imagefile.c_str());
+
+//printf("ImageManager deletes: '%s'\n", this->images.at(i)->imagefile.c_str());
 
                 for (int j = 0; j < this->images.at(i)->sufcount; j++)
                     if (this->images.at(i)->suf[j].surface)

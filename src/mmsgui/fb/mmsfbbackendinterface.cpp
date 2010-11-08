@@ -81,8 +81,8 @@
 
 
 
-#define INIT_OGL_BLITTING(surface) \
-		switch (surface->config.blittingflags) { \
+#define INIT_OGL_BLITTING(surface, blittingflags) \
+		switch (blittingflags) { \
 		case MMSFB_BLIT_BLEND_ALPHACHANNEL:	\
 			mmsfbgl.enableBlend(); \
 			mmsfbgl.setTexEnvReplace(GL_RGBA); \
@@ -830,27 +830,29 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 }
 
 void MMSFBBackEndInterface::blit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect,
-								 int x, int y) {
+								 int x, int y, MMSFBBlittingFlags blittingflags) {
 	BEI_STRETCHBLIT req;
-	req.type		= BEI_REQUEST_TYPE_STRETCHBLIT;
-	req.surface		= surface;
-	req.source		= source;
-	req.src_rect	= src_rect;
-	req.dst_rect.x	= x;
-	req.dst_rect.y	= y;
-	req.dst_rect.w	= src_rect.w;
-	req.dst_rect.h	= src_rect.h;
+	req.type			= BEI_REQUEST_TYPE_STRETCHBLIT;
+	req.surface			= surface;
+	req.source			= source;
+	req.src_rect		= src_rect;
+	req.dst_rect.x		= x;
+	req.dst_rect.y		= y;
+	req.dst_rect.w		= src_rect.w;
+	req.dst_rect.h		= src_rect.h;
+	req.blittingflags	= blittingflags;
 	trigger((void*)&req, sizeof(req));
 }
 
 void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect,
-										MMSFBRectangle &dst_rect) {
+										MMSFBRectangle &dst_rect, MMSFBBlittingFlags blittingflags) {
 	BEI_STRETCHBLIT req;
-	req.type	= BEI_REQUEST_TYPE_STRETCHBLIT;
-	req.surface	= surface;
-	req.source	= source;
-	req.src_rect= src_rect;
-	req.dst_rect= dst_rect;
+	req.type			= BEI_REQUEST_TYPE_STRETCHBLIT;
+	req.surface			= surface;
+	req.source			= source;
+	req.src_rect		= src_rect;
+	req.dst_rect		= dst_rect;
+	req.blittingflags	= blittingflags;
 	trigger((void*)&req, sizeof(req));
 }
 
@@ -860,7 +862,7 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 	oglBindSurface(req->surface);
 
 	// setup blitting
-	INIT_OGL_BLITTING(req->surface);
+	INIT_OGL_BLITTING(req->surface, req->blittingflags);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
@@ -898,7 +900,8 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 }
 
 void MMSFBBackEndInterface::blitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									   int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y) {
+									   int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y,
+									   MMSFBBlittingFlags blittingflags) {
 	BEI_STRETCHBLITBUFFER req;
 	req.type			= BEI_REQUEST_TYPE_STRETCHBLITBUFFER;
 	req.surface			= surface;
@@ -911,11 +914,13 @@ void MMSFBBackEndInterface::blitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes
 	req.dst_rect.y		= y;
 	req.dst_rect.w		= src_rect.w;
 	req.dst_rect.h		= src_rect.h;
+	req.blittingflags	= blittingflags;
 	trigger((void*)&req, sizeof(req));
 }
 
 void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											  int src_width, int src_height,MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect) {
+											  int src_width, int src_height,MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect,
+											  MMSFBBlittingFlags blittingflags) {
 	BEI_STRETCHBLITBUFFER req;
 	req.type			= BEI_REQUEST_TYPE_STRETCHBLITBUFFER;
 	req.surface			= surface;
@@ -925,14 +930,32 @@ void MMSFBBackEndInterface::stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfac
 	req.src_height		= src_height;
 	req.src_rect		= src_rect;
 	req.dst_rect		= dst_rect;
+	req.blittingflags	= blittingflags;
 	trigger((void*)&req, sizeof(req));
 }
 
 void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req) {
 #ifdef  __HAVE_OPENGL__
 
-	if ((!req->surface->config.surface_buffer->ogl_fbo_initialized)
-		&&(req->surface->config.blittingflags == MMSFB_BLIT_NOFX)) {
+	// check if we can blit to texture without fbo
+	bool blit2texture = (!req->surface->config.surface_buffer->ogl_fbo_initialized);
+	if (blit2texture) {
+		if (req->blittingflags != MMSFB_BLIT_NOFX) {
+			if (req->blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+				if (!MMSFBSURFACE_WRITE_BUFFER(req->surface).opaque) {
+					// alphachannel blending and opaque flag not set, so we cannot blit to texture directly
+					// note: the opaque flag means, that surface should be opaque AFTER the blit
+					blit2texture = false;
+				}
+			}
+			else {
+				// blitting flags does not allow to blit to texture directly
+				blit2texture = false;
+			}
+		}
+	}
+
+	if (blit2texture) {
 		// FBO and it's texture is not initialized and we only have to COPY the buffer in a texture
 		mmsfbgl.blitBuffer2Texture(req->surface->config.surface_buffer->ogl_tex,
 								   (!req->surface->config.surface_buffer->ogl_tex_initialized),
@@ -948,7 +971,7 @@ void MMSFBBackEndInterface::processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req)
 	oglBindSurface(req->surface);
 
 	// setup blitting
-	INIT_OGL_BLITTING(req->surface);
+	INIT_OGL_BLITTING(req->surface, req->blittingflags);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);

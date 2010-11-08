@@ -87,6 +87,7 @@ MMSWindow::MMSWindow() {
     this->surface = NULL;
 	this->flags = MMSW_NONE;
     this->bgimage = NULL;
+    this->bgimage_from_external = false;
     for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++)
         this->borderimages[i] = NULL;
     bordergeomset = false;
@@ -1888,9 +1889,11 @@ bool MMSWindow::init() {
 	// load images
     string path, name;
 
-    if (!getBgImagePath(path)) path = "";
-    if (!getBgImageName(name)) name = "";
-    this->bgimage = this->im->getImage(path, name);
+    if (!this->bgimage_from_external) {
+		if (!getBgImagePath(path)) path = "";
+		if (!getBgImageName(name)) name = "";
+		this->bgimage = this->im->getImage(path, name);
+    }
 
     if (!getBorderImagePath(path)) path = "";
     for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
@@ -1910,8 +1913,10 @@ bool MMSWindow::release() {
 	}
 
 	// release all images
-    this->im->releaseImage(this->bgimage);
-    this->bgimage = NULL;
+    if (!this->bgimage_from_external) {
+		this->im->releaseImage(this->bgimage);
+		this->bgimage = NULL;
+    }
 
     for (int i=0;i<MMSBORDER_IMAGE_NUM_SIZE;i++) {
 		this->im->releaseImage(this->borderimages[i]);
@@ -1941,27 +1946,43 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
         this->surface->setClip(&clip);
     }
 
-	/* clear all or a part of the surface */
-	if (clear)
-		this->surface->clear();
 
-	/* draw background */
+	// draw background
     MMSFBColor bgcolor;
     getBgColor(bgcolor);
     if (this->bgimage) {
-        /* prepare for blitting */
-   		this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
+    	// clear all or a part of the surface
+    	if (clear) {
+			if (!((bgcolor.a == 255) && (this->bgimage->isOpaque()))) {
+    			this->surface->clear();
+    		}
+    	}
 
-        /* draw background with bgimage */
+    	// prepare for blitting
+   		this->surface->setBlittingFlagsByBrightnessAlphaAndOpacityAndSource(
+								255, (bgcolor.a)?bgcolor.a:255, 255, this->bgimage);
+
+        // draw background with bgimage
         this->surface->stretchBlit(this->bgimage, NULL, &(this->innerGeom));
     }
     else
     if (bgcolor.a) {
-        /* prepare for drawing */
+    	// clear all or a part of the surface
+    	if (clear) {
+    		this->surface->clear();
+    	}
+
+        // prepare for drawing
    		this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, 255);
 
-        /* draw window background */
+        // draw window background
         this->surface->fillRectangle(this->innerGeom.x, this->innerGeom.y, this->innerGeom.w, this->innerGeom.h);
+    }
+    else {
+    	// clear all or a part of the surface
+    	if (clear) {
+    		this->surface->clear();
+    	}
     }
 
 
@@ -5193,33 +5214,55 @@ void MMSWindow::setBgColor(MMSFBColor bgcolor, bool refresh) {
 
 void MMSWindow::setBgImagePath(string bgimagepath, bool load, bool refresh) {
     myWindowClass.setBgImagePath(bgimagepath);
-    if (this->initialized) {
-		if (load) {
-			im->releaseImage(this->bgimage);
-			string path, name;
-			if (!getBgImagePath(path)) path = "";
-			if (!getBgImageName(name)) name = "";
-			this->bgimage = im->getImage(path, name);
+    if (!this->bgimage_from_external) {
+		if (this->initialized) {
+			if (load) {
+				im->releaseImage(this->bgimage);
+				string path, name;
+				if (!getBgImagePath(path)) path = "";
+				if (!getBgImageName(name)) name = "";
+				this->bgimage = im->getImage(path, name);
+			}
+			if (refresh)
+				this->refresh();
 		}
-		if (refresh)
-			this->refresh();
     }
 }
 
 void MMSWindow::setBgImageName(string bgimagename, bool load, bool refresh) {
     myWindowClass.setBgImageName(bgimagename);
-    if (this->initialized) {
-		if (load) {
-			im->releaseImage(this->bgimage);
-			string path, name;
-			if (!getBgImagePath(path)) path = "";
-			if (!getBgImageName(name)) name = "";
-			this->bgimage = im->getImage(path, name);
+    if (!this->bgimage_from_external) {
+		if (this->initialized) {
+			if (load) {
+				im->releaseImage(this->bgimage);
+				string path, name;
+				if (!getBgImagePath(path)) path = "";
+				if (!getBgImageName(name)) name = "";
+				this->bgimage = im->getImage(path, name);
+			}
+			if (refresh)
+				this->refresh();
 		}
-		if (refresh)
-			this->refresh();
     }
 }
+
+
+void MMSWindow::setBgImage(MMSFBSurface *bgimage, bool refresh) {
+    if (!this->bgimage_from_external) {
+		if (this->initialized) {
+			im->releaseImage(this->bgimage);
+			this->bgimage = NULL;
+		}
+    }
+
+    // set external pointer to bgimage
+    this->bgimage = bgimage;
+    this->bgimage_from_external = true;
+
+	if (refresh)
+		this->refresh();
+}
+
 
 void MMSWindow::setOpacity(unsigned int opacity, bool refresh) {
     myWindowClass.setOpacity(opacity);
