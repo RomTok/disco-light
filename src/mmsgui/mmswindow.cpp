@@ -2117,6 +2117,8 @@ void MMSWindow::showBufferedShown() {
         }*/
 	}
 
+//printf("show4-0 - %s\n", name.c_str());
+
     for (unsigned int i = 0; i < childwins.size(); i++) {
 		MMSWindow *w = childwins.at(i).window;
 
@@ -2137,6 +2139,7 @@ void MMSWindow::showBufferedShown() {
 		    	// buffered shown, first time called
 				w->draw();
 				w->draw();
+
 				if (!w->precalcnav) {
 					// init window (e.g. pre-calc navigation ...)
 					w->initnav();
@@ -2144,23 +2147,30 @@ void MMSWindow::showBufferedShown() {
 				}
 
 				if (!w->initialArrowsDrawn) {
-					/* set the arrow widgets */
+					// set the arrow widgets
 					w->initialArrowsDrawn = true;
 					w->switchArrowWidgets();
 				}
 
-				w->parent->flipWindow(w);
+		    	// flip only child windows with own surfaces
+				bool os;
+				w->getOwnSurface(os);
+				if (os) {
+					w->parent->flipWindow(w);
+				}
 
 				if ((w->parent)||((!w->parent)&&(w->window))) {
 					unsigned int opacity;
 					if (!w->getOpacity(opacity)) opacity = 255;
-					MMSFBRectangle rect = w->getGeometry();
 
-					/* set final opacity */
+					// set final opacity
 					w->parent->setChildWindowOpacity(w, opacity);
 				}
 
+				// first time finished
 				w->buffered_shown = false;
+
+				// go recursive to the child windows
 				w->showBufferedShown();
 		    }
 
