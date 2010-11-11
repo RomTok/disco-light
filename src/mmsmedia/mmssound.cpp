@@ -100,6 +100,9 @@ void MMSSound::xineOpen() {
 void MMSSound::startPlaying(string mrl, bool cont) {
 /*    if(!this->stream)
         this->open();*/
+	if(!this->stream) MMSAV::xineOpen(queue_cb, (void*)this);
+
+
     MMSAV::startPlaying(mrl, cont);
 }
 
