@@ -106,6 +106,9 @@ class MMSFBWindowManager {
         bool					usetaff;		// use the taff (image) format?
         MMSTAFF_PF				taffpf;			// pixelformat for the taff converter
 
+        //! set to true if disko is running in OpenGL mode (GL/GLES)
+        bool	ogl_mode;
+
         void lockWM();
         void unlockWM();
 

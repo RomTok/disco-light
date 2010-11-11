@@ -1490,7 +1490,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
     MMSFBSurface    *pw_surface;
     MMSFBRegion       pw_region;
 
-    /* stop parallel processing */
+    // stop parallel processing
     if (!locked)
 //PUP        flipLock.lock();
     	lock();
@@ -1519,7 +1519,13 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
             if (this->childwins.at(i).window == win) {
                 // child window found, flip it
                 if (flipChildSurface) {
-                    win->surface->flip(region);
+					bool os;
+					win->getOwnSurface(os);
+					if (os) {
+						// the child window has an own surface which we have to flip
+						// if the child window has NO own surface, the window will be redrawed by the parent automatically
+						win->surface->flip(region);
+					}
                 }
 
                 // return if parent window is not shown
@@ -2002,14 +2008,13 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 	/* reset the clip */
     this->surface->setClip(NULL);
 
-	/* unlock */
+	// unlock
 //PUP    this->surface->unlock();
     unlock();
 
-	/* draw border */
+	// draw border
     if (!toRedrawOnly)
         drawMyBorder();
-
 }
 
 void MMSWindow::drawMyBorder() {
@@ -3108,7 +3113,7 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
 	    // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown
 	    if (!isShown(true)) {
 	    	DEBUGMSG("MMSGUI", "MMSWindow->refreshFromChild() skipped because window is not shown");
-	        return;
+			return;
 	    }
 	}
 
@@ -3305,14 +3310,14 @@ void MMSWindow::refresh(MMSFBRegion *region) {
 }
 
 
-void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus) {
+void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus, bool refresh) {
 //printf("XXX: setFocusedWidget for window %s %x set = %d, switchfocus = %d\n", name.c_str(), this, set, switchfocus);
 	if (set) {
     	if (switchfocus) {
     		if (this->focusedwidget)
-    			this->focusedwidget->setFocus(false);
+    			this->focusedwidget->setFocus(false, refresh);
     		if (child)
-    			child->setFocus(true);
+    			child->setFocus(true, refresh);
     	}
         this->focusedwidget = child;
         this->firstfocusset = true;
@@ -3321,7 +3326,7 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus) {
         if (child)
             if (child->isFocused()) {
             	if (switchfocus)
-            		child->setFocus(false);
+            		child->setFocus(false, refresh);
                 this->focusedwidget = NULL;
                 this->firstfocusset = false;
             }
@@ -4392,30 +4397,30 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
     bool ret = true;
     bool navigate = false;
 
-//printf("YYY: input to window %s\n", name.c_str());
-
-    if (this->shown == false)
+    if (this->shown == false) {
         return false;
+    }
 
 
         //check childwindows
         if(this->childwins.empty()) {
-            if(onBeforeHandleInput->emit(this,inputevent))
+            if(onBeforeHandleInput->emit(this,inputevent)) {
             	return true;
+            }
         } else {
         	try {
-				if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent))
+				if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent)) {
 					return true;
+				}
         	} catch(std::exception) {
         		return true;
         	}
         }
 
     	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
-    		/* keyboard inputs */
+    		// keyboard inputs
 	        try {
 	            if(this->focusedwidget != NULL) {
-//printf("YYY: input3 to window %s\n", name.c_str());
 	                this->focusedwidget->handleInput(inputevent);
 
 	                switch(inputevent->key) {
@@ -4423,7 +4428,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                    case MMSKEY_CURSOR_LEFT:
 	                    case MMSKEY_CURSOR_RIGHT:
 	                    case MMSKEY_CURSOR_UP:
-	                        /* set the arrow widgets */
+	                        // set the arrow widgets
 	                        switchArrowWidgets();
 
                         default:
@@ -4434,12 +4439,10 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	            }
 	            else
 	            if (this->childwins.size() > this->focusedChildWin) {
-//printf("YYY: input2 to window %s, this->focusedChildWin = %d, %s\n", name.c_str(), this->focusedChildWin, this->childwins.at(this->focusedChildWin).window->name.c_str());
-//printf("YYY: input3 to window %s, this->focusedChildWin = %d, %s %s\n", name.c_str(), this->focusedChildWin, this->childwins.at(this->focusedChildWin).window->name.c_str(), this->childwins.at(1).window->name.c_str());
-	                /* get the focus to my focused child window */
+	                // get the focus to my focused child window
 //	                logger.writeLog("try to execute input on childwindow");
 	                if (!this->childwins.at(this->focusedChildWin).window->handleInput(inputevent)) {
-	                    /* childwin cannot navigate further, so try to find the next childwin */
+	                    // childwin cannot navigate further, so try to find the next childwin
 						bool modal = false;
         				((MMSChildWindow*)this->childwins.at(this->focusedChildWin).window)->getModal(modal);
         				if (!modal)
@@ -4449,7 +4452,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                    return false;
 	                }
 
-	                /* set the arrow widgets */
+	                // set the arrow widgets
 	                switchArrowWidgets();
 
 	                return true;
@@ -4499,7 +4502,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
     	}
     	else
     	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
-    		/* button pressed */
+    		// button pressed
 	        try {
 	            if (this->children.size()) {
 	            	// searching for the right widget to get the focus
@@ -4519,28 +4522,53 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	            		if ((posx >= rect.x)&&(posy >= rect.y)
 	            		  &&(posx < rect.x + rect.w)&&(posy < rect.y + rect.h)) {
 	            			// this is the widget under the pointer
-		            		w->getFocusable(b);
-	            			if ((b)&&(w != this->focusedwidget)) {
-	            				// set focus to this widget
-	            				DEBUGMSG("MMSGUI", "try to change focus");
-	            				setFocusedWidget(w, true, true);
-	            			}
+							string inputmode = "";
+							w->getInputModeEx(inputmode);
+							if (strToUpr(inputmode) != "CLICK") {
+								// e.g. remote control
+								w->getFocusable(b);
+								if ((b)&&(w != this->focusedwidget)) {
+									// set focus to this widget
+									DEBUGMSG("MMSGUI", "try to change focus");
 
-	            			DEBUGMSG("MMSGUI", "try to execute input on widget");
-	            	        this->buttonpress_widget = w;
-	            	        this->buttonpress_widget->handleInput(inputevent);
+									// set focused widget
+									setFocusedWidget(w, true, true, true);
+								}
 
-	                        /* set the arrow widgets */
+								DEBUGMSG("MMSGUI", "try to execute input on widget");
+								this->buttonpress_widget = w;
+								this->buttonpress_widget->handleInput(inputevent);
+							}
+							else {
+								// e.g. touch
+								w->getFocusable(b);
+								if ((b)&&(w != this->focusedwidget)) {
+									// set focus to this widget
+									DEBUGMSG("MMSGUI", "try to change focus");
+
+									// set focused widget
+									// note, that we do not refresh the screen, because widget::handleInput() was
+									// called which will do this task
+									setFocusedWidget(w, true, true, false);
+								}
+
+								DEBUGMSG("MMSGUI", "try to execute input on widget");
+								this->buttonpress_widget = w;
+								this->buttonpress_widget->handleInput(inputevent);
+							}
+
+
+	                        // set the arrow widgets
 	                        switchArrowWidgets();
 
 	    	                return true;
 	            		}
 	            	}
 
-	            	/* no widget found */
+	            	// no widget found
         	        this->buttonpress_widget = NULL;
 
-        	        /* call handle input callback */
+        	        // call handle input callback
 	                onHandleInput->emit(this, inputevent);
 	                return true;
 	                //throw MMSWidgetError(1,"no focusable widget found");
@@ -4626,7 +4654,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 						this->buttonpress_childwin = this->childwins.at(this->focusedChildWin).window;
 						this->childwins.at(this->focusedChildWin).window->handleInput(inputevent);
 
-						/* set the arrow widgets */
+						// set the arrow widgets
 						switchArrowWidgets();
 
 						return true;
@@ -4666,13 +4694,14 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
             	        if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
             	        	this->buttonpress_widget = NULL;
 
-                        /* set the arrow widgets */
+                        // set the arrow widgets
                         switchArrowWidgets();
 
                         return true;
 	            	}
-	            	else
+	            	else {
 	            		return false;
+	            	}
 	            }
 	            else
 	            if (this->childwins.size() > this->focusedChildWin) {
@@ -4689,13 +4718,14 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
             	        if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONRELEASE)
             	        	this->buttonpress_childwin = NULL;
 
-                        /* set the arrow widgets */
+                        // set the arrow widgets
                         switchArrowWidgets();
 
                         return rc;
 	            	}
-	            	else
+	            	else {
 	            		return false;
+	            	}
 	            }
 	            else {
 //	                throw new MMSWidgetError(1,"navigate, buttonrelease");

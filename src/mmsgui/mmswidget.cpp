@@ -1831,7 +1831,7 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     	return;
 
     if (this->rootwindow)
-        this->rootwindow->setFocusedWidget(this, set);
+        this->rootwindow->setFocusedWidget(this, set, false, refresh);
 
     /* the focused flag MUST BE set before all other calls (because of dim and trans functions) */
     this->focused = set;
@@ -1952,6 +1952,7 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
             this->onSelect->emit(this);
 
     if ((set)&&(refresh)) {
+        // start the widget thread for input mode CLICK
     	bool b = false;
     	getFocusable(b);
     	if (b) {
@@ -2035,6 +2036,19 @@ bool MMSWidget::setPressed(bool set, bool refresh) {
     if (refresh)
         this->refresh();
 
+    if ((set)&&(refresh)) {
+        // start the widget thread for input mode CLICK
+    	bool b = false;
+    	getFocusable(b);
+    	if (b) {
+			// focusable widget, start thread which removes the focus after n seconds
+			string inputmode = "";
+			getInputModeEx(inputmode);
+			if (strToUpr(inputmode) == "CLICK")
+				startWidgetThread(150);
+    	}
+    }
+
     // status changed
     return true;
 }
@@ -2115,14 +2129,14 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
-		/* button pressed */
+		// button pressed
 		if (getClickable(b))
 			if (b) {
 				// save last inputevent and rectangle
 				this->da->last_inputevent = *inputevent;
 				this->da->pressed_inputrect = this->geom;
 
-				/* set the pressed status */
+				// set the pressed status
 				if (!isPressed())
 					setPressed(true);
 
