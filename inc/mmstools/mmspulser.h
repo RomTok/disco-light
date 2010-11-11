@@ -324,7 +324,7 @@ class MMSPulser : public MMSThread {
         /*!
         \return real duration in milliseconds
         \note This value will be increased during the animation and has its final state at the
-              of the animation (e.g. in onAfterAnimation callback).
+              end of the animation (e.g. in onAfterAnimation callback).
         */
 		unsigned int getRealDuration();
 

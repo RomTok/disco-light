@@ -4947,11 +4947,12 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
     	// source is an opaque buffer
     	// so remove the BLEND_ALPHACHANNEL flag if set
     	blittingflags = blittingflags & ~MMSFB_BLIT_BLEND_ALPHACHANNEL;
-
     	switch (blittingflags) {
 		case MMSFB_BLIT_NOFX:
 		case MMSFB_BLIT_COLORIZE:
-			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.w) && (y + src.h >= this->config.h)) {
+			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
+			//       because this is the dimension of the real existing buffer
+			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.surface_buffer->sbw) && (y + src.h >= this->config.surface_buffer->sbh)) {
 				// blit writes the whole destination surface
 				// so switch opaque to true
 				MMSFBSURFACE_WRITE_BUFFER(this).opaque = true;
@@ -4972,7 +4973,6 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
     	}
     }
-
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5134,7 +5134,9 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
     	switch (blittingflags) {
 		case MMSFB_BLIT_NOFX:
 		case MMSFB_BLIT_COLORIZE:
-			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.w) && (y + src.h >= this->config.h)) {
+			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
+			//       because this is the dimension of the real existing buffer
+			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.surface_buffer->sbw) && (y + src.h >= this->config.surface_buffer->sbh)) {
 				// blit writes the whole destination surface
 				// so switch opaque to true
 				MMSFBSURFACE_WRITE_BUFFER(this).opaque = true;

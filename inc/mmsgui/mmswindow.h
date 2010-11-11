@@ -504,7 +504,7 @@ class MMSWindow {
         void refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update = NULL, bool check_shown = true);
 
         //! Internal method: Set the focused widget.
-        void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false);
+        void setFocusedWidget(MMSWidget *child, bool set, bool switchfocus = false, bool refresh = true);
 
         //! Internal method: Will be called by MMSInputManager if the window has the input focus.
         bool handleInput(MMSInputEvent *inputevent);

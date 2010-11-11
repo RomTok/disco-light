@@ -114,10 +114,12 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
 
     // get the pixelformat, create a little temp surface
 	this->pixelformat = MMSFB_PF_NONE;
+	this->ogl_mode = false;
 	MMSFBSurface *ts;
     if (this->layer->createSurface(&ts, 8, 1)) {
     	// okay, get the pixelformat from surface
     	ts->getPixelFormat(&this->pixelformat);
+    	this->ogl_mode = (ts->allocated_by == MMSFBSurfaceAllocatedBy_ogl);
     	delete ts;
     }
 
@@ -533,10 +535,22 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     if (!locked)
         lock.lock();
 
+    if (this->ogl_mode) {
+    	// running in OpenGL mode
+    	// note: GLX can only flip the complete screen!!!
+    	//       EGL too, but currently we run EGL with FRONTONLY, so we do not need a layer flip
 #ifdef  __HAVE_GLX__
-	surface = NULL;
-	region = NULL;
+		surface = NULL;
+		region = NULL;
 #endif
+    }
+
+/*
+if (region)
+printf("#1winman: region = %d,%d,%d,%d\n", region->x1, region->y1, region->x2, region->y2);
+else
+printf("#1winman: region = NULL\n");
+*/
 
     /* search for item */
     if (surface) {
@@ -711,7 +725,7 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
         cleared = (!((vw->alphachannel==false)&&(vw->opacity==255)));
 
 
-//printf("winman: flip windows\n");
+//printf("#2winman: flip windows\n");
 
     // two loops for optimized DEPTH TEST
     // FIRST:  find lowest window which is to blit
@@ -751,7 +765,6 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
 				}
 				else {
 					// SECOND loop: blit affected window
-//printf("winman: flip window %d %d\n", i, MMSFBSURFACE_READ_BUFFER(aw->surface).opaque);
 
 					// calc source and destination
 					MMSFBRectangle src_rect;
@@ -783,6 +796,11 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
 						src_rect.x += aw->vrect.x;
 						src_rect.y += aw->vrect.y;
 					}
+/*
+printf("#3winman: flip window id = %d, opaque = %d, src_rect = %d,%d %dx%d, dst = %d,%d\n",
+						i, MMSFBSURFACE_READ_BUFFER(aw->surface).opaque,
+						src_rect.x, src_rect.y, src_rect.w, src_rect.h, dst_x, dst_y);
+*/
 
 					// set the blitting flags and color
 					if ((aw->alphachannel)&&((win_found)||(!this->dst_surface->config.surface_buffer->alphachannel))) {
