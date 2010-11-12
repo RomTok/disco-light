@@ -293,7 +293,9 @@ bool MMSFBFont::getHeight(int *height) {
 #endif
     }
     else {
+    	lock();
     	*height = this->height;
+    	unlock();
     	return true;
     }
     return false;
@@ -307,7 +309,9 @@ bool MMSFBFont::getAscender(int *ascender) {
 	if (this->dfbfont) {
 	}
 	else {
+		lock();
 		*ascender = this->ascender;
+		unlock();
 		return true;
 	}
 	return false;
@@ -321,12 +325,10 @@ bool MMSFBFont::getDescender(int *descender) {
 	if (this->dfbfont) {
 	}
 	else {
+		lock();
 		*descender = this->descender;
+		unlock();
 		return true;
 	}
 	return false;
 }
-
-
-
-
