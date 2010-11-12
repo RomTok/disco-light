@@ -81,6 +81,7 @@ MMSSound::~MMSSound() {
  * Calls MMSAV::open() with the queue_cb callback.
  */
 void MMSSound::xineOpen() {
+
     MMSAV::xineOpen(queue_cb);
 
     // ignore video
@@ -100,8 +101,9 @@ void MMSSound::xineOpen() {
 void MMSSound::startPlaying(string mrl, bool cont) {
 /*    if(!this->stream)
         this->open();*/
+#ifdef __HAVE_XINE__
 	if(!this->stream) MMSAV::xineOpen(queue_cb, (void*)this);
-
+#endif
 
     MMSAV::startPlaying(mrl, cont);
 }
