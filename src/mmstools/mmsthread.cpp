@@ -62,6 +62,7 @@ MMSThread::MMSThread(string identity, int priority, bool detach) {
     this->identity = identity;
     this->priority = priority;
 
+    this->isstarting = false;
     this->isrunning = false;
     this->isdetached = false;
     this->autoDetach = detach;
@@ -77,32 +78,39 @@ void MMSThread::run() {
         	this->detach();
         }
         this->isrunning = true;
+        this->isstarting = false;
 		threadMain();
         this->isrunning = false;
 
 	} catch(MMSError *error) {
         this->isrunning = false;
+        this->isstarting = false;
 	    DEBUGMSG(this->identity.c_str(), "Abort due to: %s", error->getMessage().c_str());
 	}
 }
 
 bool MMSThread::start() {
-	if (this->isrunning)
+	if (isRunning()) {
 		return false;
+	}
+	this->isstarting = true;
 
-	/* initialize the priority */
+	// initialize the priority
     pthread_attr_init(&this->tattr);
     pthread_attr_getschedparam(&tattr, &param);
     param.sched_priority = this->priority;
     pthread_attr_setschedparam(&tattr, &param);
     pthread_attr_setstacksize(&tattr, this->stacksize);
 
-    /* create the new thread */
-    pthread_create(&this->id, &tattr, startmythread, static_cast<void *>(this));
+    // create the new thread
+    if (pthread_create(&this->id, &tattr, startmythread, static_cast<void *>(this)) != 0) {
+    	// failed to start the thread
+    	this->isstarting = false;
+    }
 
     pthread_attr_destroy(&this->tattr);
 
-    return true;
+    return isRunning();
 }
 
 void MMSThread::detach() {
@@ -111,14 +119,16 @@ void MMSThread::detach() {
 }
 
 bool MMSThread::isRunning() {
+	if (this->isstarting) return true;
 	return this->isrunning;
 }
 
 int MMSThread::cancel() {
 	int status;
-	if(this->isrunning)
+	if (isRunning())
 		status = pthread_cancel(this->id);
 	this->isrunning=false;
+	this->isstarting=false;
 	return status;
 
 }

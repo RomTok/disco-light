@@ -58,6 +58,7 @@ class MMSThread {
         pthread_attr_t	tattr;
         sched_param		param;
 		pthread_t 		id;
+		bool			isstarting;
 		bool 			isrunning;
 		bool            isdetached;
 		bool            autoDetach;
