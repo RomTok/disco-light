@@ -162,12 +162,18 @@ void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
 
-MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
+bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
+	if (!glyph) {
+		return false;
+	}
+
     if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
 #endif
     }
     else {
+    	bool ret = false;
+
     	// check if requested character is already loaded
     	std::map<unsigned int, MMSFBFont_Glyph>::iterator it;
     	it = this->charmap.find(character);
@@ -189,50 +195,51 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
 			}
 
 			// setup glyph values
-			this->glyph.buffer	= g->bitmap.buffer;
-			this->glyph.pitch	= g->bitmap.pitch;
-			this->glyph.left	= g->bitmap_left;
-			this->glyph.top		= g->bitmap_top;
-			this->glyph.width	= g->bitmap.width;
-			this->glyph.height	= g->bitmap.rows;
-			this->glyph.advanceX= g->advance.x;
+			glyph->buffer	= g->bitmap.buffer;
+			glyph->pitch	= g->bitmap.pitch;
+			glyph->left		= g->bitmap_left;
+			glyph->top		= g->bitmap_top;
+			glyph->width	= g->bitmap.width;
+			glyph->height	= g->bitmap.rows;
+			glyph->advanceX	= g->advance.x;
 
 			// add glyph to charmap, we use a pitch which is divisible by 4 needed e.g. for OGL textures
 	    	lock();
-			int glyph_pitch = this->glyph.width + ((this->glyph.width % 4)?4 - (this->glyph.width % 4):0);
-			int glyph_size = glyph_pitch * this->glyph.height;
+			int glyph_pitch = glyph->width + ((glyph->width % 4)?4 - (glyph->width % 4):0);
+			int glyph_size = glyph_pitch * glyph->height;
 			if (this->glyphpool + this->glyphpool_size - this->glyphpool_ptr >= glyph_size) {
 				// have free space in glyph pool
-				if (this->glyph.pitch != glyph_pitch) {
+				if (glyph->pitch != glyph_pitch) {
 					// different pitch, copy line per line
 					memset(this->glyphpool_ptr, 0, glyph_size);
-					for (int i = 0; i < this->glyph.height; i++) {
-						memcpy(this->glyphpool_ptr, this->glyph.buffer, this->glyph.width);
-						this->glyph.buffer+=this->glyph.pitch;
+					for (int i = 0; i < glyph->height; i++) {
+						memcpy(this->glyphpool_ptr, glyph->buffer, glyph->width);
+						glyph->buffer+=glyph->pitch;
 						this->glyphpool_ptr+=glyph_pitch;
 					}
-					this->glyph.pitch = glyph_pitch;
+					glyph->pitch = glyph_pitch;
 				}
 				else {
 					// one copy can do it
-					memcpy(this->glyphpool_ptr, this->glyph.buffer, glyph_size);
+					memcpy(this->glyphpool_ptr, glyph->buffer, glyph_size);
 					this->glyphpool_ptr+=glyph_size;
 				}
 
 				// get pointer to data
-				this->glyph.buffer = this->glyphpool_ptr - glyph_size;
+				glyph->buffer = this->glyphpool_ptr - glyph_size;
 
 #ifdef  __HAVE_OPENGL__
 				// if disko is built and initialized for OpenGL, we create a texture for this glyph
 				if (mmsfb->bei) {
-					this->glyph.texture = 0;
-					mmsfb->bei->createAlphaTexture(&this->glyph.texture, this->glyph.buffer,
-													this->glyph.pitch, this->glyph.height);
+					glyph->texture = 0;
+					mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
+													glyph->pitch, glyph->height);
 				}
 #endif
 
 				// add to charmap
-				this->charmap.insert(std::make_pair(character, this->glyph));
+				this->charmap.insert(std::make_pair(character, *glyph));
+				ret = true;
 			}
 			else {
 				// sorry, glyph pool is full
@@ -242,13 +249,14 @@ MMSFBFont_Glyph *MMSFBFont::getGlyph(unsigned int character) {
     	}
     	else {
     		// already loaded
-    		this->glyph = it->second;
+    		*glyph = it->second;
+			ret = true;
     	}
 
-		return &this->glyph;
+		return ret;
     }
 
-    return NULL;
+    return false;
 }
 
 
@@ -271,9 +279,9 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     else {
     	*width = 0;
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
-    		MMSFBFont_Glyph *g = getGlyph(character);
-    		if (!g) break;
-			(*width)+=g->advanceX >> 6;
+    		MMSFBFont_Glyph glyph;
+    		if (!getGlyph(character, &glyph)) break;
+			(*width)+=glyph.advanceX >> 6;
     	} }
     	return true;
     }
@@ -293,9 +301,7 @@ bool MMSFBFont::getHeight(int *height) {
 #endif
     }
     else {
-    	//lock();
     	*height = this->height;
-    	//unlock();
     	return true;
     }
     return false;
@@ -309,9 +315,7 @@ bool MMSFBFont::getAscender(int *ascender) {
 	if (this->dfbfont) {
 	}
 	else {
-		//lock();
 		*ascender = this->ascender;
-		//unlock();
 		return true;
 	}
 	return false;
@@ -325,9 +329,7 @@ bool MMSFBFont::getDescender(int *descender) {
 	if (this->dfbfont) {
 	}
 	else {
-		//lock();
 		*descender = this->descender;
-		//unlock();
 		return true;
 	}
 	return false;

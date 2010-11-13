@@ -108,9 +108,6 @@ class MMSFBFont {
     	//! pointer to next free memory
     	unsigned char *glyphpool_ptr;
 
-    	//! stores the glyph infos for method getGlyph()
-    	MMSFBFont_Glyph glyph;
-
         void lock();
         void unlock();
 
@@ -126,7 +123,7 @@ class MMSFBFont {
         bool getAscender(int *ascender);
         bool getDescender(int *descender);
 
-    	MMSFBFont_Glyph *getGlyph(unsigned int character);
+        bool getGlyph(unsigned int character, MMSFBFont_Glyph *glyph);
 
 	friend class MMSFBSurface;
 };

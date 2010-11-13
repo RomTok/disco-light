@@ -897,19 +897,20 @@ if (!AA) { \
 	int 		  src_w; \
 	int 		  src_h; \
 	unsigned char *src; \
-	MMSFBFont_Glyph *glyph = font->getGlyph(character); \
-	if (glyph) { \
-		src_pitch_pix = glyph->pitch; \
-		src_w         = glyph->width; \
-		src_h         = glyph->height; \
-		src           = glyph->buffer; \
+	MMSFBFont_Glyph glyph; \
+	bool glyph_loaded = font->getGlyph(character, &glyph); \
+	if (glyph_loaded) { \
+		src_pitch_pix = glyph.pitch; \
+		src_w         = glyph.width; \
+		src_h         = glyph.height; \
+		src           = glyph.buffer; \
 	}
 
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
-	if (glyph) { \
-		int dx = x + glyph->left; \
-		int dy = y + DY - glyph->top; \
+	if (glyph_loaded) { \
+		int dx = x + glyph.left; \
+		int dy = y + DY - glyph.top; \
 		if (dx < clipreg.x1) { \
 			src_w -= clipreg.x1 - dx; \
 			src   += clipreg.x1 - dx; \
@@ -927,7 +928,7 @@ if (!AA) { \
 		pt *dst = ((pt *)dst_ptr) + dx + dy * dst_pitch_pix;
 
 //! used for text output
-#define MMSFBSURFACE_BLIT_TEXT_END_RENDER x+=glyph->advanceX >> 6; }
+#define MMSFBSURFACE_BLIT_TEXT_END_RENDER x+=glyph.advanceX >> 6; }
 
 
 

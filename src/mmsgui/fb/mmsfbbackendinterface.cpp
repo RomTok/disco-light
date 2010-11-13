@@ -1088,10 +1088,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(req->surface->config.font, character);
 
 		// start rendering of glyph to destination
-		if (glyph) {
+		if (glyph_loaded) {
 			// calc destination position of the character
-			int dx = req->x + glyph->left;
-			int dy = req->y + DY - glyph->top;
+			int dx = req->x + glyph.left;
+			int dy = req->y + DY - glyph.top;
 
 			// set the clip to ogl
 			MMSFBRectangle crect;
@@ -1112,13 +1112,13 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dy2 = dy + src_h - 1 + yoff;
 
 				// blit glyph texture to the destination
-				mmsfbgl.stretchBliti(glyph->texture,
+				mmsfbgl.stretchBliti(glyph.texture,
 										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
 										dx1, dy1, dx2, dy2);
 			}
 
 			// prepare for next loop
-			req->x+=glyph->advanceX >> 6;
+			req->x+=glyph.advanceX >> 6;
 		}
 	}}
 
