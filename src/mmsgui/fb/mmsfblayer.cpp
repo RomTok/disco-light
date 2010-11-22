@@ -833,7 +833,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			this->impl.h = this->x_window_h;
 			this->impl.x_screen = mmsfb->x_screen;
 #endif
-		} else if(config.pixelformat == MMSFB_PF_RGB32) {
+		} else if(config.pixelformat == MMSFB_PF_RGB32 || config.pixelformat == MMSFB_PF_RGB24) {
 
 			this->x_visual = DefaultVisual(mmsfb->x_display, mmsfb->x_screen);
 			mmsfb->x_depth=DefaultDepth(mmsfb->x_display, mmsfb->x_screen);
