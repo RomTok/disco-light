@@ -2751,6 +2751,18 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 				}
 
 				return false;
+			} else if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
+				if (extendedLock(source, src_planes, this, &dst_planes)) {
+					MMSFBPERF_START_MEASURING;
+						mmsfb_blit_argb_to_rgb24(
+								src_planes, src_height,
+								sx, sy, sw, sh,
+								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+								x, y);
+					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+					extendedUnlock(source, this);
+					return true;
+				}
 			}
 
 			// does not match
