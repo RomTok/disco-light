@@ -718,7 +718,8 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts) {
 	if (start_ts <= end_ts)
 		diff = end_ts - start_ts;
 	else
-		diff = MAX_MTIMESTAMP - end_ts + 1 + start_ts;
+		diff = MAX_MTIMESTAMP - start_ts + 1 + end_ts;
+
 	return diff;
 }
 
