@@ -81,7 +81,10 @@ possible that the animation is running in a separate thread (see start(true)).
 */
 class MMSPulser : public MMSThread {
     private:
-    	//! shows if the animation is running
+		//! helper mutex to perform a safe start
+		MMSMutex	startlock;
+
+		//! shows if the animation is running
     	bool	animRunning;
 
     	//! true if animation thread should stop

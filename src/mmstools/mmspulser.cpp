@@ -358,20 +358,27 @@ void MMSPulser::threadMain() {
 
 bool MMSPulser::start(bool separate_thread, bool wait) {
 	// waiting for the end of the thread
+	this->startlock.lock();
 	while (isRunning()) {
-		if (wait)
+		if (wait) {
 			usleep(10000);
-		else
+		}
+		else {
+			this->startlock.unlock();
 			return false;
+		}
 	}
 
 	if (separate_thread) {
 		// start animation in a separate thread context
-		return MMSThread::start();
+		bool ret = MMSThread::start();
+		this->startlock.unlock();
+		return ret;
 	}
 	else {
 		// start animation in the context of the current thread
 		this->animRunning = true;
+		this->startlock.unlock();
 
 		try {
 
