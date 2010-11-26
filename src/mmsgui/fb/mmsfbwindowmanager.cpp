@@ -147,6 +147,10 @@ bool MMSFBWindowManager::init(MMSFBLayer *layer, bool show_pointer) {
     	this->usetaff = true;
     	this->taffpf = MMSTAFF_PF_ARGB;
     	break;
+    case MMSFB_PF_ABGR:
+    	this->usetaff = true;
+    	this->taffpf = MMSTAFF_PF_ABGR;
+    	break;
     default:
     	break;
     }
@@ -1252,6 +1256,7 @@ void MMSFBWindowManager::setPointerPosition(int pointer_posx, int pointer_posy, 
 			this->pointer_rect.w = 21;
 			this->pointer_rect.h = 21;
 		    if (this->layer->createSurface(&this->pointer_surface, this->pointer_rect.w, this->pointer_rect.h)) {
+		    	this->pointer_surface->clear();
 			    this->pointer_surface->setColor(255,255,255,255);
 			    this->pointer_surface->drawLine(0,this->pointer_rect.h/2,this->pointer_rect.w-1,this->pointer_rect.h/2);
 			    this->pointer_surface->drawLine(this->pointer_rect.w/2,0,this->pointer_rect.w/2,this->pointer_rect.h-1);
@@ -1411,23 +1416,9 @@ bool MMSFBWindowManager::loadPointer() {
 							return false;
 						}
 
-						// copy img_buf to the surface
-						char *suf_ptr;
-						int suf_pitch;
-						this->pointer_surface->lock(MMSFB_LOCK_WRITE, (void**)&suf_ptr, &suf_pitch);
-
-						if (img_pitch == suf_pitch)
-							memcpy(suf_ptr, img_buf, img_pitch * img_height);
-						else {
-							// copy each line
-							char *img_b = (char*)img_buf;
-							for (int i = 0; i < img_height; i++) {
-								memcpy(suf_ptr, img_b, img_pitch);
-								suf_ptr+=suf_pitch;
-								img_b+=img_pitch;
-							}
-						}
-						this->pointer_surface->unlock();
+						// blit from external buffer to surface
+						this->pointer_surface->blitBuffer(img_buf, img_pitch, this->pixelformat,
+															img_width, img_height, NULL, 0, 0);
 
 						// free
 						delete tafff;
