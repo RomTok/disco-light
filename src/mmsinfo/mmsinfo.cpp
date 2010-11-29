@@ -31,7 +31,19 @@
  **************************************************************************/
 
 #include "mmsinfo/mmsinfo.h"
+#include <cstdlib>
 
+/**
+ * Retrieves the installation prefix of disko.
+ *
+ * This is usually set at compile time, but can
+ * be overridden by the environment variable
+ * DISKO_PREFIX.
+ *
+ * @return top-level-directory of disko installation
+ */
 const char *getPrefix() {
-	return DISKO_PREFIX;
+	char *envPrefix = getenv("DISKO_PREFIX");
+
+	return (envPrefix ? envPrefix : DISKO_PREFIX);
 }
