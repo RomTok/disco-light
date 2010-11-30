@@ -511,7 +511,7 @@ void Cmd::executeVersion() {
 	bool havedb = false;
 	printf("Disko the embedded GUI framework\n");
 	printf(" version:       %s\n", DISKO_VERSION_STR);
-	printf(" prefix:        %s\n", DISKO_PREFIX);
+	printf(" prefix:        %s\n", getPrefix());
 	printf(" media support: ");
 #ifdef __HAVE_XINE__
 	printf("xine");
