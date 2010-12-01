@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009      BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2010 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -511,7 +511,7 @@ void Cmd::executeVersion() {
 	bool havedb = false;
 	printf("Disko the embedded GUI framework\n");
 	printf(" version:       %s\n", DISKO_VERSION_STR);
-	printf(" prefix:        %s\n", DISKO_PREFIX);
+	printf(" prefix:        %s\n", getPrefix());
 	printf(" media support: ");
 #ifdef __HAVE_XINE__
 	printf("xine");

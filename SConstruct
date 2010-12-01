@@ -835,7 +835,7 @@ toolList = ""
 for toolDir in diskoTools:
         toolList += 'build/tools/' + toolDir + "/SConscript "
 
-BuildDir('build/libs', 'src', duplicate = 0)
+VariantDir('build/libs', 'src', duplicate = 0)
 SConscript(Split(libList), options = opts)
 
 #######################################################################
@@ -857,6 +857,6 @@ if env['static_lib']:
 #######################################################################
 # Tools                                                               #
 #######################################################################
-BuildDir('build/tools', 'tools', duplicate = 0)
+VariantDir('build/tools', 'tools', duplicate = 0)
 SConscript(Split(toolList), options = opts)
 
