@@ -315,7 +315,7 @@ MMSTranslator *MMSWindowManager::getTranslator() {
 	return &this->translator;
 }
 
-void MMSWindowManager::onTargetLangChanged(int lang) {
+void MMSWindowManager::onTargetLangChanged(MMSLanguage lang) {
 	// the language has changed, inform all windows
     for (unsigned int i = 0; i < this->windows.size(); i++) {
         this->windows.at(i)->targetLangChanged(lang);

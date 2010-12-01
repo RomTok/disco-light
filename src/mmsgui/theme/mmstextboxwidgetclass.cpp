@@ -40,6 +40,8 @@ TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[] = MMSGUI_TEXTBOXWIDGET_ATTR_INIT;
 #define GETATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_##aname].name
 #define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
+#define GETFONTATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
+#define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
 
 MMSTextBoxWidgetClass::MMSTextBoxWidgetClass() {
     unsetAll();
@@ -48,8 +50,8 @@ MMSTextBoxWidgetClass::MMSTextBoxWidgetClass() {
 void MMSTextBoxWidgetClass::unsetAll() {
     this->className = "";
     unsetFontPath();
-    unsetFontName();
     unsetFontSize();
+    unsetFontNames();
     unsetAlignment();
     unsetWrap();
     unsetSplitWords();
@@ -77,21 +79,10 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
 	            setClassName(attrval_str);
 				break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_path:
-	            if (*attrval_str)
-	                setFontPath(attrval_str);
-	            else
-	                setFontPath((path)?*path:"");
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name:
-	            setFontName(attrval_str);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name_cn:
-	            setFontNameCN(attrval_str);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_size:
-	            setFontSize(attrval_int);
-	            break;
+
+			// special macro for font parameters
+			SET_FONT_FROM_TAFF(MMSGUI_TEXTBOXWIDGET_ATTR)
+
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_alignment:
 	            setAlignment(getAlignmentFromString(attrval_str));
 	            break;
@@ -185,31 +176,17 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 
     	startTAFFScan_WITHOUT_ID
     	{
-    		/* check if attrname has correct prefix */
+    		// check if attrname has correct prefix
     		if (pl >= strlen(attrname))
         		continue;
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
-    		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(font_path)) {
-	            if (*attrval_str)
-	                setFontPath(attrval_str);
-	            else
-	                setFontPath((path)?*path:"");
-            }
-            else
-            if (ISATTRNAME(font_name)) {
-	            setFontName(attrval_str);
-            }
-            if (ISATTRNAME(font_name_cn)) {
-	            setFontNameCN(attrval_str);
-            }
-            else
-            if (ISATTRNAME(font_size)) {
-	            setFontSize(attrval_int);
-            }
+    		// okay, correct prefix, check attributes now
+
+            // special macro for font parameters
+            SET_FONT_FROM_TAFF_WITH_PREFIX
             else
             if (ISATTRNAME(alignment)) {
 	            setAlignment(getAlignmentFromString(attrval_str));
@@ -349,40 +326,6 @@ string MMSTextBoxWidgetClass::getFontPath() {
     return this->fontpath;
 }
 
-bool MMSTextBoxWidgetClass::isFontName() {
-    return this->isfontname;
-}
-
-void MMSTextBoxWidgetClass::setFontName(string fontname) {
-    this->fontname = fontname;
-    this->isfontname = true;
-}
-
-void MMSTextBoxWidgetClass::unsetFontName() {
-    this->isfontname = false;
-}
-
-string MMSTextBoxWidgetClass::getFontName() {
-    return this->fontname;
-}
-
-bool MMSTextBoxWidgetClass::isFontNameCN() {
-    return this->isfontname_cn;
-}
-
-void MMSTextBoxWidgetClass::setFontNameCN(string fontname) {
-    this->fontname_cn = fontname;
-    this->isfontname_cn = true;
-}
-
-void MMSTextBoxWidgetClass::unsetFontNameCN() {
-    this->isfontname_cn = false;
-}
-
-string MMSTextBoxWidgetClass::getFontNameCN() {
-    return this->fontname_cn;
-}
-
 bool MMSTextBoxWidgetClass::isFontSize() {
     return this->isfontsize;
 }
@@ -399,6 +342,30 @@ void MMSTextBoxWidgetClass::unsetFontSize() {
 unsigned int MMSTextBoxWidgetClass::getFontSize() {
     return this->fontsize;
 }
+
+
+bool MMSTextBoxWidgetClass::isFontName(MMSLanguage lang) {
+	return this->fonts.isFontName(lang);
+}
+
+void MMSTextBoxWidgetClass::setFontName(string fontname, MMSLanguage lang) {
+	this->fonts.setFontName(fontname, lang);
+}
+
+void MMSTextBoxWidgetClass::unsetFontName(MMSLanguage lang) {
+	this->fonts.unsetFontName(lang);
+}
+
+void MMSTextBoxWidgetClass::unsetFontNames() {
+	this->fonts.unsetFontNames();
+}
+
+string MMSTextBoxWidgetClass::getFontName(MMSLanguage lang) {
+	return this->fonts.getFontName(lang);
+}
+
+
+
 
 bool MMSTextBoxWidgetClass::isAlignment() {
     return this->isalignment;

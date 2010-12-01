@@ -1108,4 +1108,72 @@ typedef enum {
 } MMSSTATE;
 
 
+
+// known languages...........................................................
+
+//! known languages
+typedef enum {
+	//! none
+	MMSLANG_NONE = 0,
+	//! german
+	MMSLANG_DE,
+	//! english
+	MMSLANG_EN,
+	//! denmark
+	MMSLANG_DK,
+	//! spanish
+	MMSLANG_ES,
+	//! finnish
+	MMSLANG_FI,
+	//! french
+	MMSLANG_FR,
+	//! italian
+	MMSLANG_IT,
+	//! dutch
+	MMSLANG_NL,
+	//! norwegian
+	MMSLANG_NO,
+	//! swedish
+	MMSLANG_SE,
+	//! turkish
+	MMSLANG_TR,
+	//! chinese
+	MMSLANG_CN,
+	//! number of languages
+	MMSLANG_SIZE
+} MMSLanguage;
+
+//! language: none
+#define MMSLANG_NONE_STR		""
+//! language: german
+#define MMSLANG_DE_STR			"DE"
+//! language: english
+#define MMSLANG_EN_STR			"EN"
+//! language: denmark
+#define MMSLANG_DK_STR			"DK"
+//! language: spanish
+#define MMSLANG_ES_STR			"ES"
+//! language: finnish
+#define MMSLANG_FI_STR			"FI"
+//! language: french
+#define MMSLANG_FR_STR			"FR"
+//! language: italian
+#define MMSLANG_IT_STR			"IT"
+//! language: dutch
+#define MMSLANG_NL_STR			"NL"
+//! language: norwegian
+#define MMSLANG_NO_STR			"NO"
+//! language: swedish
+#define MMSLANG_SE_STR			"SE"
+//! language: turkish
+#define MMSLANG_TR_STR			"TR"
+//! language: chinese
+#define MMSLANG_CN_STR			"CN"
+
+// conversion routines for languages
+string getMMSLanguageString(MMSLanguage lang);
+MMSLanguage getMMSLanguageFromString(string lang);
+
+
+
 #endif /* MMSTYPES_H_ */

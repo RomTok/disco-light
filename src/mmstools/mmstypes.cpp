@@ -405,3 +405,62 @@ const char *convertMMSKeySymbolToXKeysymString(MMSKeySymbol key) {
 }
 
 
+string getMMSLanguageString(MMSLanguage lang) {
+    if (lang == MMSLANG_DE)
+        return MMSLANG_DE_STR;
+    if (lang == MMSLANG_EN)
+        return MMSLANG_EN_STR;
+    if (lang == MMSLANG_DK)
+        return MMSLANG_DK_STR;
+    if (lang == MMSLANG_ES)
+        return MMSLANG_ES_STR;
+    if (lang == MMSLANG_FI)
+        return MMSLANG_FI_STR;
+    if (lang == MMSLANG_FR)
+        return MMSLANG_FR_STR;
+    if (lang == MMSLANG_IT)
+        return MMSLANG_IT_STR;
+    if (lang == MMSLANG_NL)
+        return MMSLANG_NL_STR;
+    if (lang == MMSLANG_NO)
+        return MMSLANG_NO_STR;
+    if (lang == MMSLANG_SE)
+        return MMSLANG_SE_STR;
+    if (lang == MMSLANG_TR)
+        return MMSLANG_TR_STR;
+    if (lang == MMSLANG_CN)
+        return MMSLANG_CN_STR;
+    return MMSLANG_NONE_STR;
+}
+
+MMSLanguage getMMSLanguageFromString(string lang) {
+	strToUpr(&lang);
+    if (lang == MMSLANG_NONE_STR)
+        return MMSLANG_NONE;
+    if (lang == MMSLANG_DE_STR)
+        return MMSLANG_DE;
+    if (lang == MMSLANG_EN_STR)
+        return MMSLANG_EN;
+    if (lang == MMSLANG_DK_STR)
+        return MMSLANG_DK;
+    if (lang == MMSLANG_ES_STR)
+        return MMSLANG_ES;
+    if (lang == MMSLANG_FI_STR)
+        return MMSLANG_FI;
+    if (lang == MMSLANG_FR_STR)
+        return MMSLANG_FR;
+    if (lang == MMSLANG_IT_STR)
+        return MMSLANG_IT;
+    if (lang == MMSLANG_NL_STR)
+        return MMSLANG_NL;
+    if (lang == MMSLANG_NO_STR)
+        return MMSLANG_NO;
+    if (lang == MMSLANG_SE_STR)
+        return MMSLANG_SE;
+    if (lang == MMSLANG_TR_STR)
+        return MMSLANG_TR;
+    if (lang == MMSLANG_CN_STR)
+        return MMSLANG_CN;
+    return MMSLANG_NONE;
+}
+

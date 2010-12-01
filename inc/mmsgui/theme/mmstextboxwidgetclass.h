@@ -39,10 +39,6 @@
 namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_ATTRDESC \
-		{ "font.path", TAFF_ATTRTYPE_STRING }, \
-		{ "font.name", TAFF_ATTRTYPE_STRING }, \
-		{ "font.name.cn", TAFF_ATTRTYPE_STRING }, \
-		{ "font.size", TAFF_ATTRTYPE_UCHAR }, \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
 		{ "wrap", TAFF_ATTRTYPE_BOOL }, \
 		{ "splitwords", TAFF_ATTRTYPE_BOOL }, \
@@ -62,10 +58,6 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		{ "file.name", TAFF_ATTRTYPE_STRING }
 
 	#define MMSGUI_TEXTBOXWIDGET_ATTR_IDS \
-		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_path, \
-		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name, \
-		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_name_cn, \
-		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_font_size, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_alignment, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_wrap, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS_splitwords, \
@@ -88,6 +80,7 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
 		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_FONT_ATTR_ATTRDESC, \
 		MMSGUI_TEXTBOXWIDGET_ATTR_ATTRDESC, \
 		{ NULL, TAFF_ATTRTYPE_NONE } \
 	}
@@ -96,6 +89,7 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		MMSGUI_BASE_ATTR_IDS,
 		MMSGUI_BORDER_ATTR_IDS,
 		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_FONT_ATTR_IDS,
 		MMSGUI_TEXTBOXWIDGET_ATTR_IDS
 	} ids;
 }
@@ -123,23 +117,14 @@ class MMSTextBoxWidgetClass {
         //! path to the font
         string          fontpath;
 
-        //! is fontname set?
-        bool            isfontname;
-
-        //! name of the font
-        string          fontname;
-
-        //! is fontname set?
-        bool            isfontname_cn;
-
-        //! name of the font
-        string          fontname_cn;
-
         //! is fontsize set?
         bool            isfontsize;
 
         //! size of the font
         unsigned int    fontsize;
+
+        //! language dependent font filenames
+        MMSGUI_FONTS	fonts;
 
         //! is alignment set?
         bool            isalignment;
@@ -245,42 +230,6 @@ class MMSTextBoxWidgetClass {
         */
         string getFontPath();
 
-        //! Check if the fontname is set.
-        bool isFontName();
-
-        //! Set the fontname which is used to draw the text.
-        /*!
-        \param fontname  name of the font
-        */
-        void setFontName(string fontname);
-
-        //! Mark the fontname as not set.
-        void unsetFontName();
-
-        //! Get the fontname which is used to draw the text.
-        /*!
-        \return name of the font
-        */
-        string getFontName();
-
-        //! Check if the fontname_cn is set.
-        bool isFontNameCN();
-
-        //! Set the fontname_cn which is used to draw the text.
-        /*!
-        \param fontname  name of the font
-        */
-        void setFontNameCN(string fontname);
-
-        //! Mark the fontname_cn as not set.
-        void unsetFontNameCN();
-
-        //! Get the fontname_cn which is used to draw the text.
-        /*!
-        \return name of the font
-        */
-        string getFontNameCN();
-
         //! Check if the fontsize is set.
         bool isFontSize();
 
@@ -298,6 +247,36 @@ class MMSTextBoxWidgetClass {
         \return size of the font
         */
         unsigned int getFontSize();
+
+        //! Check if the fontname is set.
+        /*!
+        \param lang  optional language
+        */
+        bool isFontName(MMSLanguage lang = MMSLANG_NONE);
+
+        //! Set the fontname which is used to draw the text.
+        /*!
+        \param fontname  name of the font
+        \param lang      optional language
+        */
+        void setFontName(string fontname, MMSLanguage lang = MMSLANG_NONE);
+
+        //! Mark the fontname as not set.
+        /*!
+        \param lang  optional language
+        */
+        void unsetFontName(MMSLanguage lang = MMSLANG_NONE);
+
+        //! Mark all fontnames as not set.
+        void unsetFontNames();
+
+        //! Get the fontname which is used to draw the text.
+        /*!
+        \param lang  optional language
+        \return name of the font
+        */
+        string getFontName(MMSLanguage lang = MMSLANG_NONE);
+
 
         //! Check if alignment is set.
         bool isAlignment();

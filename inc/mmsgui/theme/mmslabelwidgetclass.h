@@ -39,10 +39,6 @@
 namespace MMSGUI_LABELWIDGET_ATTR {
 
 	#define MMSGUI_LABELWIDGET_ATTR_ATTRDESC \
-		{ "font.path", TAFF_ATTRTYPE_STRING }, \
-		{ "font.name", TAFF_ATTRTYPE_STRING }, \
-		{ "font.name.cn", TAFF_ATTRTYPE_STRING }, \
-		{ "font.size", TAFF_ATTRTYPE_UCHAR }, \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
 		{ "color", TAFF_ATTRTYPE_STRING }, \
 		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
@@ -60,10 +56,6 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		{ "translate", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSGUI_LABELWIDGET_ATTR_IDS \
-		MMSGUI_LABELWIDGET_ATTR_IDS_font_path, \
-		MMSGUI_LABELWIDGET_ATTR_IDS_font_name, \
-		MMSGUI_LABELWIDGET_ATTR_IDS_font_name_cn, \
-		MMSGUI_LABELWIDGET_ATTR_IDS_font_size, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_alignment, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_color, \
 		MMSGUI_LABELWIDGET_ATTR_IDS_color_a, \
@@ -84,6 +76,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_BASE_ATTR_ATTRDESC, \
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
 		MMSGUI_WIDGET_ATTR_ATTRDESC, \
+		MMSGUI_FONT_ATTR_ATTRDESC, \
 		MMSGUI_LABELWIDGET_ATTR_ATTRDESC, \
 		{ NULL, TAFF_ATTRTYPE_NONE } \
 	}
@@ -92,6 +85,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_BASE_ATTR_IDS,
 		MMSGUI_BORDER_ATTR_IDS,
 		MMSGUI_WIDGET_ATTR_IDS,
+		MMSGUI_FONT_ATTR_IDS,
 		MMSGUI_LABELWIDGET_ATTR_IDS
 	} ids;
 }
@@ -119,23 +113,14 @@ class MMSLabelWidgetClass {
         //! path to the font
         string          fontpath;
 
-        //! is fontname set?
-        bool            isfontname;
-
-        //! name of the font
-        string          fontname;
-
-        //! is fontname set?
-        bool            isfontname_cn;
-
-        //! name of the font
-        string          fontname_cn;
-
         //! is fontsize set?
         bool            isfontsize;
 
         //! size of the font
         unsigned int    fontsize;
+
+        //! language dependent font filenames
+        MMSGUI_FONTS	fonts;
 
         //! is alignment set?
         bool            isalignment;
@@ -211,6 +196,7 @@ class MMSLabelWidgetClass {
         */
         string getClassName();
 
+
         //! Check if the fontpath is set.
         bool isFontPath();
 
@@ -229,41 +215,6 @@ class MMSLabelWidgetClass {
         */
         string getFontPath();
 
-        //! Check if the fontname is set.
-        bool isFontName();
-
-        //! Set the fontname which is used to draw the text.
-        /*!
-        \param fontname  name of the font
-        */
-        void setFontName(string fontname);
-
-        //! Mark the fontname as not set.
-        void unsetFontName();
-
-        //! Get the fontname which is used to draw the text.
-        /*!
-        \return name of the font
-        */
-        string getFontName();
-
-        //! Check if the fontname is set.
-        bool isFontNameCN();
-
-        //! Set the fontname which is used to draw the text.
-        /*!
-        \param fontname  name of the font
-        */
-        void setFontNameCN(string fontname);
-
-        //! Mark the fontname as not set.
-        void unsetFontNameCN();
-
-        //! Get the fontname which is used to draw the text.
-        /*!
-        \return name of the font
-        */
-        string getFontNameCN();
 
         //! Check if the fontsize is set.
         bool isFontSize();
@@ -282,6 +233,37 @@ class MMSLabelWidgetClass {
         \return size of the font
         */
         unsigned int getFontSize();
+
+
+        //! Check if the fontname is set.
+        /*!
+        \param lang  optional language
+        */
+        bool isFontName(MMSLanguage lang = MMSLANG_NONE);
+
+        //! Set the fontname which is used to draw the text.
+        /*!
+        \param fontname  name of the font
+        \param lang      optional language
+        */
+        void setFontName(string fontname, MMSLanguage lang = MMSLANG_NONE);
+
+        //! Mark the fontname as not set.
+        /*!
+        \param lang  optional language
+        */
+        void unsetFontName(MMSLanguage lang = MMSLANG_NONE);
+
+        //! Mark all fontnames as not set.
+        void unsetFontNames();
+
+        //! Get the fontname which is used to draw the text.
+        /*!
+        \param lang  optional language
+        \return name of the font
+        */
+        string getFontName(MMSLanguage lang = MMSLANG_NONE);
+
 
         //! Check if alignment is set.
         bool isAlignment();

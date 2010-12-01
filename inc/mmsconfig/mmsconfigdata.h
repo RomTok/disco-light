@@ -145,14 +145,14 @@ class MMSConfigDataGraphics {
 
 class MMSConfigDataLanguage {
 	public:
-		string sourcelang;
-		string defaulttargetlang;
+		MMSLanguage sourcelang;
+		MMSLanguage defaulttargetlang;
 		bool   addtranslations;
 		string languagefiledir;
 
 		MMSConfigDataLanguage() :
-			sourcelang(""),
-			defaulttargetlang(""),
+			sourcelang(MMSLANG_NONE),
+			defaulttargetlang(MMSLANG_NONE),
 			addtranslations(false),
 			languagefiledir("") {}
 };
@@ -230,8 +230,8 @@ class MMSConfigData {
         void setHideApplication(bool hideapplication);
 
         // language section getters
-    	const string getSourceLang();
-    	const string getDefaultTargetLang();
+    	const MMSLanguage getSourceLang();
+    	const MMSLanguage getDefaultTargetLang();
     	const bool	 getAddTranslations();
     	const string getLanguagefileDir();
 

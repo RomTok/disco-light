@@ -56,9 +56,24 @@ class MMSTextBoxWidget : public MMSWidget {
         MMSTextBoxWidgetClass 	*textBoxWidgetClass;
         MMSTextBoxWidgetClass 	myTextBoxWidgetClass;
 
+        //! language in which the text is to be translated
+        MMSLanguage	lang;
+
+        //! loaded font
         MMSFBFont *font;
-        string    current_fontname;
-        string    countrycode;
+
+        //! path to the loaded font file
+        string fontpath;
+
+        //! name of the loaded font file
+        string fontname;
+
+        //! requested size of the font
+        unsigned int fontsize;
+
+        //! have to (re)load font?
+        bool load_font;
+
 
         vector<TEXTBOX_WORDGEOM *> wordgeom;
 
@@ -76,6 +91,9 @@ class MMSTextBoxWidget : public MMSWidget {
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
+        void initLanguage(MMSTextBoxWidget *widget = NULL);
+        void loadFont(MMSTextBoxWidget *widget = NULL);
+
         bool setSurfaceGeometry(unsigned int width = 0, unsigned int height = 0);
 
         bool calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
@@ -88,7 +106,7 @@ class MMSTextBoxWidget : public MMSWidget {
         bool draw(bool *backgroundFilled = NULL);
 
 		//! Internal method: Inform the widget, that the language has changed.
-		void targetLangChanged(int lang);
+		void targetLangChanged(MMSLanguage lang);
 
 		bool loadFile(bool refresh);
 
@@ -104,7 +122,7 @@ class MMSTextBoxWidget : public MMSWidget {
 
         // theme access methods
         string getFontPath();
-        string getFontName();
+        string getFontName(MMSLanguage lang = MMSLANG_NONE);
         unsigned int getFontSize();
         MMSALIGNMENT getAlignment();
         bool getWrap();
@@ -118,8 +136,10 @@ class MMSTextBoxWidget : public MMSWidget {
         string getFileName();
 
 		void setFontPath(string fontpath, bool load = true, bool refresh = true);
+        void setFontName(MMSLanguage lang, string fontname, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
+        void setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setWrap(bool wrap, bool refresh = true);
@@ -131,7 +151,6 @@ class MMSTextBoxWidget : public MMSWidget {
         void setTranslate(bool translate, bool refresh = true);
 		void setFilePath(string filepath, bool load = true, bool refresh = true);
         void setFileName(string filename, bool load = true, bool refresh = true);
-        string getCurrentFontName();
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
 

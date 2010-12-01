@@ -4878,7 +4878,7 @@ void MMSWindow::instantHide() {
 }
 
 
-void MMSWindow::targetLangChanged(int lang, bool refresh) {
+void MMSWindow::targetLangChanged(MMSLanguage lang, bool refresh) {
     // for all child windows
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
     	this->childwins.at(i).window->targetLangChanged(lang, false);

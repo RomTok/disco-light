@@ -49,13 +49,27 @@ class MMSLabelWidget : public MMSWidget {
         MMSLabelWidgetClass *labelWidgetClass;
         MMSLabelWidgetClass myLabelWidgetClass;
 
+        //! language in which the text is to be translated
+        MMSLanguage	lang;
+
+        //! loaded font
         MMSFBFont *font;
-        string    countrycode;
+
+        //! path to the loaded font file
+        string fontpath;
+
+        //! name of the loaded font file
+        string fontname;
+
+        //! requested size of the font
+        unsigned int fontsize;
+
+        //! have to (re)load font?
+        bool load_font;
+
 
         int slide_width;
         int slide_offset;
-
-        string current_fontname;
 
         unsigned int frame_delay;
         unsigned int frame_delay_set;
@@ -70,12 +84,14 @@ class MMSLabelWidget : public MMSWidget {
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
+        void initLanguage(MMSLabelWidget *widget = NULL);
+        void loadFont(MMSLabelWidget *widget = NULL);
         bool init();
         bool release();
         bool draw(bool *backgroundFilled = NULL);
 
         //! Internal method: Inform the widget, that the language has changed.
-		void targetLangChanged(int lang);
+		void targetLangChanged(MMSLanguage lang);
 
     public:
         MMSLabelWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
@@ -86,8 +102,7 @@ class MMSLabelWidget : public MMSWidget {
     public:
         /* theme access methods */
         string getFontPath();
-        string getFontName();
-        string getCurrentFontName();
+        string getFontName(MMSLanguage lang = MMSLANG_NONE);
         unsigned int getFontSize();
         MMSALIGNMENT getAlignment();
         MMSFBColor getColor();
@@ -99,9 +114,10 @@ class MMSLabelWidget : public MMSWidget {
         bool getTranslate();
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
+        void setFontName(MMSLanguage lang, string fontname, bool load = true, bool refresh = true);
         void setFontName(string fontname, bool load = true, bool refresh = true);
-        void setCurrentFontName(string fontname);
         void setFontSize(unsigned int  fontsize, bool load = true, bool refresh = true);
+        void setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setFont(string fontpath, string fontname, unsigned int fontsize, bool load = true, bool refresh = true);
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setColor(MMSFBColor color, bool refresh = true);

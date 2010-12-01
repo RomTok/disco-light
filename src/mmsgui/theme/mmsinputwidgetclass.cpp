@@ -40,6 +40,8 @@ TAFF_ATTRDESC MMSGUI_INPUTWIDGET_ATTR_I[] = MMSGUI_INPUTWIDGET_ATTR_INIT;
 #define GETATTRNAME(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_##aname].name
 #define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
+#define GETFONTATTRNAME(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_INPUTWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
+#define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
 
 MMSInputWidgetClass::MMSInputWidgetClass() {
     unsetAll();
@@ -48,8 +50,8 @@ MMSInputWidgetClass::MMSInputWidgetClass() {
 void MMSInputWidgetClass::unsetAll() {
     this->className = "";
     unsetFontPath();
-    unsetFontName();
     unsetFontSize();
+    unsetFontNames();
     unsetAlignment();
     unsetColor();
     unsetSelColor();
@@ -72,18 +74,10 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
 	            setClassName(attrval_str);
 				break;
-			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_font_path:
-	            if (*attrval_str)
-	                setFontPath(attrval_str);
-	            else
-	                setFontPath((path)?*path:"");
-	            break;
-			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_font_name:
-	            setFontName(attrval_str);
-	            break;
-			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_font_size:
-	            setFontSize(attrval_int);
-	            break;
+
+			// special macro for font parameters
+			SET_FONT_FROM_TAFF(MMSGUI_INPUTWIDGET_ATTR)
+
 			case MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_alignment:
 	            setAlignment(getAlignmentFromString(attrval_str));
 	            break;
@@ -168,28 +162,17 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 
     	startTAFFScan_WITHOUT_ID
     	{
-    		/* check if attrname has correct prefix */
+    		// check if attrname has correct prefix
     		if (pl >= strlen(attrname))
         		continue;
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
-    		/* okay, correct prefix, check attributes now */
-            if (ISATTRNAME(font_path)) {
-	            if (*attrval_str)
-	                setFontPath(attrval_str);
-	            else
-	                setFontPath((path)?*path:"");
-            }
-            else
-            if (ISATTRNAME(font_name)) {
-	            setFontName(attrval_str);
-            }
-            else
-            if (ISATTRNAME(font_size)) {
-	            setFontSize(attrval_int);
-            }
+    		// okay, correct prefix, check attributes now
+
+            // special macro for font parameters
+            SET_FONT_FROM_TAFF_WITH_PREFIX
             else
             if (ISATTRNAME(alignment)) {
 	            setAlignment(getAlignmentFromString(attrval_str));
@@ -315,23 +298,6 @@ string MMSInputWidgetClass::getFontPath() {
     return this->fontpath;
 }
 
-bool MMSInputWidgetClass::isFontName() {
-    return this->isfontname;
-}
-
-void MMSInputWidgetClass::setFontName(string fontname) {
-    this->fontname = fontname;
-    this->isfontname = true;
-}
-
-void MMSInputWidgetClass::unsetFontName() {
-    this->isfontname = false;
-}
-
-string MMSInputWidgetClass::getFontName() {
-    return this->fontname;
-}
-
 bool MMSInputWidgetClass::isFontSize() {
     return this->isfontsize;
 }
@@ -347,6 +313,26 @@ void MMSInputWidgetClass::unsetFontSize() {
 
 unsigned int MMSInputWidgetClass::getFontSize() {
     return this->fontsize;
+}
+
+bool MMSInputWidgetClass::isFontName(MMSLanguage lang) {
+	return this->fonts.isFontName(lang);
+}
+
+void MMSInputWidgetClass::setFontName(string fontname, MMSLanguage lang) {
+	this->fonts.setFontName(fontname, lang);
+}
+
+void MMSInputWidgetClass::unsetFontName(MMSLanguage lang) {
+	this->fonts.unsetFontName(lang);
+}
+
+void MMSInputWidgetClass::unsetFontNames() {
+	this->fonts.unsetFontNames();
+}
+
+string MMSInputWidgetClass::getFontName(MMSLanguage lang) {
+	return this->fonts.getFontName(lang);
 }
 
 bool MMSInputWidgetClass::isAlignment() {

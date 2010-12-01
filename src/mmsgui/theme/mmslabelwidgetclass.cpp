@@ -40,18 +40,18 @@ TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;
 #define GETATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_##aname].name
 #define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
+#define GETFONTATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
+#define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
 
 MMSLabelWidgetClass::MMSLabelWidgetClass() {
     unsetAll();
-    this->fontname_cn = "";
 }
 
 void MMSLabelWidgetClass::unsetAll() {
     this->className = "";
     unsetFontPath();
-    unsetFontName();
-    unsetFontNameCN();
     unsetFontSize();
+    unsetFontNames();
     unsetAlignment();
     unsetColor();
     unsetSelColor();
@@ -76,21 +76,10 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
 	            setClassName(attrval_str);
 				break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_path:
-	            if (*attrval_str)
-	                setFontPath(attrval_str);
-	            else
-	                setFontPath((path)?*path:"");
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_name:
-	            setFontName(attrval_str);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_name_cn:
-	            setFontNameCN(attrval_str);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_font_size:
-	            setFontSize(attrval_int);
-	            break;
+
+			// special macro for font parameters
+			SET_FONT_FROM_TAFF(MMSGUI_LABELWIDGET_ATTR)
+
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_alignment:
 	            setAlignment(getAlignmentFromString(attrval_str));
 	            break;
@@ -183,24 +172,9 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             attrname = &attrname[pl];
 
     		// okay, correct prefix, check attributes now
-            if (ISATTRNAME(font_path)) {
-	            if (*attrval_str)
-	                setFontPath(attrval_str);
-	            else
-	                setFontPath((path)?*path:"");
-            }
-            else
-            if (ISATTRNAME(font_name)) {
-	            setFontName(attrval_str);
-            }
-            else
-            if (ISATTRNAME(font_name_cn)) {
-	            setFontNameCN(attrval_str);
-            }
-            else
-            if (ISATTRNAME(font_size)) {
-	            setFontSize(attrval_int);
-            }
+
+            // special macro for font parameters
+            SET_FONT_FROM_TAFF_WITH_PREFIX
             else
             if (ISATTRNAME(alignment)) {
 	            setAlignment(getAlignmentFromString(attrval_str));
@@ -327,40 +301,6 @@ string MMSLabelWidgetClass::getFontPath() {
     return this->fontpath;
 }
 
-bool MMSLabelWidgetClass::isFontName() {
-    return this->isfontname;
-}
-
-void MMSLabelWidgetClass::setFontName(string fontname) {
-    this->fontname = fontname;
-    this->isfontname = true;
-}
-
-void MMSLabelWidgetClass::unsetFontName() {
-    this->isfontname = false;
-}
-
-string MMSLabelWidgetClass::getFontName() {
-    return this->fontname;
-}
-
-bool MMSLabelWidgetClass::isFontNameCN() {
-    return this->isfontname_cn;
-}
-
-void MMSLabelWidgetClass::setFontNameCN(string fontname) {
-    this->fontname_cn = fontname;
-    this->isfontname_cn = true;
-}
-
-void MMSLabelWidgetClass::unsetFontNameCN() {
-    this->isfontname_cn = false;
-}
-
-string MMSLabelWidgetClass::getFontNameCN() {
-    return this->fontname_cn;
-}
-
 bool MMSLabelWidgetClass::isFontSize() {
     return this->isfontsize;
 }
@@ -377,6 +317,28 @@ void MMSLabelWidgetClass::unsetFontSize() {
 unsigned int MMSLabelWidgetClass::getFontSize() {
     return this->fontsize;
 }
+
+
+bool MMSLabelWidgetClass::isFontName(MMSLanguage lang) {
+	return this->fonts.isFontName(lang);
+}
+
+void MMSLabelWidgetClass::setFontName(string fontname, MMSLanguage lang) {
+	this->fonts.setFontName(fontname, lang);
+}
+
+void MMSLabelWidgetClass::unsetFontName(MMSLanguage lang) {
+	this->fonts.unsetFontName(lang);
+}
+
+void MMSLabelWidgetClass::unsetFontNames() {
+	this->fonts.unsetFontNames();
+}
+
+string MMSLabelWidgetClass::getFontName(MMSLanguage lang) {
+	return this->fonts.getFontName(lang);
+}
+
 
 bool MMSLabelWidgetClass::isAlignment() {
     return this->isalignment;

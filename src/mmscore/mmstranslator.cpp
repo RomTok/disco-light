@@ -38,26 +38,34 @@
 #include <string.h>
 #include <stdexcept>
 
-string MMSTranslator::source = "";
-string MMSTranslator::target = "";
+bool MMSTranslator::firsttime = true;
+MMSLanguage MMSTranslator::sourcelang = MMSLANG_NONE;
+MMSLanguage MMSTranslator::targetlang = MMSLANG_NONE;
 int MMSTranslator::sourceIdx = -1;
 int MMSTranslator::targetIdx = -1;
-MMSTRANSLATION_INDEX MMSTranslator::transIdx;
-MMSTRANSLATION_MAP MMSTranslator::transmap;
-MMSTRANSLATION_FILES MMSTranslator::files;
+MMSTranslator::MMSTRANSLATION_INDEX MMSTranslator::transIdx;
+MMSTranslator::MMSTRANSLATION_MAP MMSTranslator::transmap;
+MMSTranslator::MMSTRANSLATION_FILES MMSTranslator::files;
 
-sigc::signal<void, unsigned int>  MMSTranslator::onTargetLangChanged;
+sigc::signal<void, MMSLanguage>  MMSTranslator::onTargetLangChanged;
 bool MMSTranslator::addtranslations;
 
 MMSTranslator::MMSTranslator() {
-	if(this->source.empty()) {
+	if (this->firsttime) {
 		MMSConfigData config;
-		this->source = config.getSourceLang();
-		this->target = config.getDefaultTargetLang();
+		this->sourcelang = config.getSourceLang();
+		this->targetlang = config.getDefaultTargetLang();
 		this->addtranslations = config.getAddTranslations();
+		this->firsttime = false;
 	}
 
-	if(!this->source.empty() && !this->target.empty())
+/*
+QUESTION: sourcelang not used? why???
+	if (this->sourcelang != MMSLANG_NONE && this->targetlang != MMSLANG_NONE)
+		loadTranslations();
+*/
+
+	if (this->targetlang != MMSLANG_NONE)
 		loadTranslations();
 }
 
@@ -96,15 +104,15 @@ void MMSTranslator::loadTranslations() {
 		processFile((*it2)->name);
 	}
 
-	this->sourceIdx = this->transIdx.find(this->source)->second;
-	this->targetIdx = this->transIdx.find(this->target)->second;
+	this->sourceIdx = this->transIdx.find(this->sourcelang)->second;
+	this->targetIdx = this->transIdx.find(this->targetlang)->second;
 }
 
 void MMSTranslator::addMissing(const string &phrase, const bool completemiss) {
 	if(phrase.empty()) {
 		return;
 	}
-	
+
 	size_t size = this->files.size();
 
 	if(completemiss) {
@@ -160,20 +168,20 @@ void MMSTranslator::translate(const string &source, string &dest) {
 	}
 }
 
-bool MMSTranslator::setTargetLang(const string &countryCode) {
-	MMSTRANSLATION_INDEX::iterator it = this->transIdx.find(countryCode);
-	if(it == this->transIdx.end())
+bool MMSTranslator::setTargetLang(MMSLanguage lang) {
+	MMSTRANSLATION_INDEX::iterator it = this->transIdx.find(lang);
+	if (it == this->transIdx.end())
 		return false;
 
-	this->target = countryCode;
+	this->targetlang = lang;
 	this->targetIdx = it->second;
-	this->onTargetLangChanged.emit(this->targetIdx);
+	this->onTargetLangChanged.emit(this->targetlang);
 
 	return true;
 }
 
-void MMSTranslator::getTargetLang(string &countryCode) {
-	countryCode = this->target;
+MMSLanguage MMSTranslator::getTargetLang() {
+	return this->targetlang;
 }
 
 void MMSTranslator::processFile(const string &file) {
@@ -182,11 +190,12 @@ void MMSTranslator::processFile(const string &file) {
 	string from, to;
 	size_t idx;
 	string countryCode = file.substr(file.find("translation")+12);
+	MMSLanguage lang = getMMSLanguageFromString(strToUpr(countryCode));
 
-	MMSTRANSLATION_INDEX::iterator it = this->transIdx.find(countryCode);
+	MMSTRANSLATION_INDEX::iterator it = this->transIdx.find(lang);
 	if(it == this->transIdx.end()) {
 		idx = this->files.size();
-		this->transIdx[countryCode] = idx;
+		this->transIdx[lang] = idx;
 		this->files.push_back(file);
 		for(MMSTRANSLATION_MAP::iterator it = this->transmap.begin(); it != this->transmap.end(); ++it) {
 			it->second.resize(idx + 1, "");
