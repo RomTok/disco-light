@@ -83,7 +83,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 18, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 19, mmsgui_taff_tagtable };
 
 
 
@@ -679,6 +679,15 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setSlidable(false);
         this->labelWidgetClass.setSlideSpeed(50);
         this->labelWidgetClass.setTranslate(true);
+
+        this->labelWidgetClass.setShadowTopColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setSelShadowTopColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setShadowBottomColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setSelShadowBottomColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setShadowLeftColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setSelShadowLeftColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setShadowRightColor(MMSFBColor(0,0,0,0));
+        this->labelWidgetClass.setSelShadowRightColor(MMSFBColor(0,0,0,0));
     }
 
     /* MMSImageWidget */

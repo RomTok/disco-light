@@ -77,6 +77,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_BORDER_ATTR_ATTRDESC, \
 		MMSGUI_WIDGET_ATTR_ATTRDESC, \
 		MMSGUI_FONT_ATTR_ATTRDESC, \
+		MMSGUI_SHADOW_ATTR_ATTRDESC, \
 		MMSGUI_LABELWIDGET_ATTR_ATTRDESC, \
 		{ NULL, TAFF_ATTRTYPE_NONE } \
 	}
@@ -86,6 +87,7 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 		MMSGUI_BORDER_ATTR_IDS,
 		MMSGUI_WIDGET_ATTR_IDS,
 		MMSGUI_FONT_ATTR_IDS,
+		MMSGUI_SHADOW_ATTR_IDS,
 		MMSGUI_LABELWIDGET_ATTR_IDS
 	} ids;
 }
@@ -163,6 +165,11 @@ class MMSLabelWidgetClass {
 
         //! if true the text will be translated before displayed
         bool          	translate;
+
+
+        //! shadow definitions of the text
+        MMSGUI_SHADOWS	shadows;
+
 
         //! Read and set all attributes from the given TAFF buffer.
         /*!
@@ -393,6 +400,46 @@ class MMSLabelWidgetClass {
         */
         bool getTranslate();
 
+
+
+
+
+        bool isShadowTopColor();
+        void setShadowTopColor(MMSFBColor color);
+        void unsetShadowTopColor();
+        MMSFBColor getShadowTopColor();
+        bool isSelShadowTopColor();
+        void setSelShadowTopColor(MMSFBColor selcolor);
+        void unsetSelShadowTopColor();
+        MMSFBColor getSelShadowTopColor();
+
+
+        bool isShadowBottomColor();
+        void setShadowBottomColor(MMSFBColor color);
+        void unsetShadowBottomColor();
+        MMSFBColor getShadowBottomColor();
+        bool isSelShadowBottomColor();
+        void setSelShadowBottomColor(MMSFBColor selcolor);
+        void unsetSelShadowBottomColor();
+        MMSFBColor getSelShadowBottomColor();
+
+        bool isShadowLeftColor();
+        void setShadowLeftColor(MMSFBColor color);
+        void unsetShadowLeftColor();
+        MMSFBColor getShadowLeftColor();
+        bool isSelShadowLeftColor();
+        void setSelShadowLeftColor(MMSFBColor selcolor);
+        void unsetSelShadowLeftColor();
+        MMSFBColor getSelShadowLeftColor();
+
+        bool isShadowRightColor();
+        void setShadowRightColor(MMSFBColor color);
+        void unsetShadowRightColor();
+        MMSFBColor getShadowRightColor();
+        bool isSelShadowRightColor();
+        void setSelShadowRightColor(MMSFBColor selcolor);
+        void unsetSelShadowRightColor();
+        MMSFBColor getSelShadowRightColor();
 
     // friends
     friend class MMSThemeManager;

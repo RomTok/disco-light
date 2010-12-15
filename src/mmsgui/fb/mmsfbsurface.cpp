@@ -125,7 +125,7 @@ if ((D[0].RGB.g=((298*c-100*d-208*e+128)>>8)&0xffff)>0xff) D[0].RGB.g=0xff;
 if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 */
 
-
+/*
 #ifdef __HAVE_OPENGL__
 
 #define INIT_OGL_DRAWING \
@@ -141,7 +141,7 @@ if ((D[0].RGB.b=((298*c+516*d+128)>>8)&0xffff)>0xff) D[0].RGB.b=0xff;
 		default: glDisable(GL_BLEND); glColor4ub(255, 255, 255, 255); break; }
 
 #endif
-
+*/
 
 
 
@@ -642,6 +642,10 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
         this->config.color.g = 0;
         this->config.color.b = 0;
         this->config.color.a = 0;
+        this->config.shadow_top_color = this->config.color;
+        this->config.shadow_bottom_color = this->config.color;
+        this->config.shadow_left_color = this->config.color;
+        this->config.shadow_right_color = this->config.color;
         this->config.clipped = false;
         this->config.iswinsurface = false;
         this->config.islayersurface = (this->parent && this->parent->isLayerSurface());
@@ -1544,14 +1548,14 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
                             unsigned char b, unsigned char a) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
 
-	    /* set color */
+	    // set color
 #ifdef USE_DFB_SUBSURFACE
 		if ((dfbres=this->dfb_surface->SetColor(this->dfb_surface, r, g, b, a)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFBSurface::SetColor() failed");
@@ -1568,7 +1572,7 @@ bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
 #endif
 	}
 
-    /* save the color */
+    // save the color
 	MMSFBColor *col = &this->config.color;
 	col->r = r;
 	col->g = g;
@@ -1591,11 +1595,27 @@ bool MMSFBSurface::setColor(MMSFBColor &color) {
 
 bool MMSFBSurface::getColor(MMSFBColor *color) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* return the color */
+    // return the color
     *color = this->config.color;
+
+    return true;
+}
+
+bool MMSFBSurface::setShadowColor(MMSFBColor &shadow_top_color, MMSFBColor &shadow_bottom_color,
+								  MMSFBColor &shadow_left_color, MMSFBColor &shadow_right_color) {
+
+	// check if initialized
+    INITCHECK;
+
+    // save the new shadow colors
+    // note: if the alphachannel of a color is 0, the respective shadow is disabled
+    this->config.shadow_top_color = shadow_top_color;
+    this->config.shadow_bottom_color = shadow_bottom_color;
+    this->config.shadow_left_color = shadow_left_color;
+    this->config.shadow_right_color = shadow_right_color;
 
     return true;
 }
@@ -6512,22 +6532,46 @@ bool MMSFBSurface::setDrawingFlagsByAlpha(unsigned char alpha) {
 bool MMSFBSurface::setDrawingColorAndFlagsByBrightnessAndOpacity(
                         MMSFBColor color, unsigned char brightness, unsigned char opacity) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* modulate the brightness into the color */
+    // modulate the brightness into the color
     modulateBrightness(&color, brightness);
 
-    /* modulate the opacity into the color */
+    // modulate the opacity into the color
     modulateOpacity(&color, opacity);
 
-    /* set the color for drawing */
+    // set the color for drawing
     setColor(color.r, color.g, color.b, color.a);
 
-    /* set the drawing flags */
+    // set the drawing flags
     setDrawingFlagsByAlpha(color.a);
 
     return true;
+}
+
+
+bool MMSFBSurface::setDrawingColorAndFlagsByBrightnessAndOpacity(
+                        MMSFBColor color,
+                        MMSFBColor shadow_top_color, MMSFBColor shadow_bottom_color,
+    					MMSFBColor shadow_left_color, MMSFBColor shadow_right_color,
+                        unsigned char brightness, unsigned char opacity) {
+
+	if (!setDrawingColorAndFlagsByBrightnessAndOpacity(color, brightness, opacity))
+		return false;
+
+    // modulate the brightness/opacity into the shadow colors
+    modulateBrightness(&shadow_top_color, brightness);
+    modulateOpacity(&shadow_top_color, opacity);
+    modulateBrightness(&shadow_bottom_color, brightness);
+    modulateOpacity(&shadow_bottom_color, opacity);
+    modulateBrightness(&shadow_left_color, brightness);
+    modulateOpacity(&shadow_left_color, opacity);
+    modulateBrightness(&shadow_right_color, brightness);
+    modulateOpacity(&shadow_right_color, opacity);
+
+    // set the shadow colors
+    return setShadowColor(shadow_top_color, shadow_bottom_color, shadow_left_color, shadow_right_color);
 }
 
 
@@ -6691,6 +6735,64 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 }
 
 
+bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
+
+	bool top	= (this->config.shadow_top_color.a);
+	bool bottom	= (this->config.shadow_bottom_color.a);
+	bool left	= (this->config.shadow_left_color.a);
+	bool right	= (this->config.shadow_right_color.a);
+	bool shadow = (top || bottom || left || right);
+
+	if (shadow) {
+		// drawing color and flags will be temporary changed during the shadow blits
+		MMSFBColor savedcol = this->config.color;
+		MMSFBDrawingFlags saveddf = this->config.drawingflags;
+
+
+		//TODO: for now we assume that this->config.color.a is 0xff!!!
+		//      else we have to blit text and shadow in an temporary buffer with (text with a=0xff)
+		//      and finally blend the result with coloralpha to this destination surface
+
+
+		if (top) {
+			// draw shadow on the top
+			this->config.color = this->config.shadow_top_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x, y-1);
+		}
+		if (bottom) {
+			// draw shadow on the bottom
+			this->config.color = this->config.shadow_bottom_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x, y+1);
+		}
+		if (left) {
+			// draw shadow on the left
+			this->config.color = this->config.shadow_left_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x-1, y);
+		}
+		if (right) {
+			// draw shadow on the right
+			this->config.color = this->config.shadow_right_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x+1, y);
+		}
+
+		// restore drawing color and flags
+		this->config.color = savedcol;
+		this->config.drawingflags = saveddf;
+
+		// final blit
+		return blit_text(text, len, x, y);
+	}
+	else {
+		// blitting text without shadow
+		return blit_text(text, len, x, y);
+	}
+}
+
+
 bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 
     // check if initialized
@@ -6756,7 +6858,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 	else {
 		// draw a string
 		if (!this->is_sub_surface) {
-			blit_text(text, len, x, y);
+			blit_text_with_shadow(text, len, x, y);
 		}
 		else {
 			CLIPSUBSURFACE
@@ -6764,7 +6866,7 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
 			x+=this->sub_surface_xoff;
 			y+=this->sub_surface_yoff;
 
-			blit_text(text, len, x, y);
+			blit_text_with_shadow(text, len, x, y);
 
 			UNCLIPSUBSURFACE
 		}

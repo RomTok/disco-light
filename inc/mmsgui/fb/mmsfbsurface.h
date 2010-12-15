@@ -158,6 +158,14 @@ typedef struct {
     MMSFBFont			*font;
     //! the surface buffer(s)
     MMSFBSurfaceBuffer	*surface_buffer;
+    //! color of the shadow on the top, no shadow is drawn if shadow_top_color.a is set to 0 (default)
+	MMSFBColor  		shadow_top_color;
+    //! color of the shadow on the bottom, no shadow is drawn if shadow_bottom_color.a is set to 0 (default)
+	MMSFBColor  		shadow_bottom_color;
+    //! color of the shadow on the left, no shadow is drawn if shadow_left_color.a is set to 0 (default)
+	MMSFBColor  		shadow_left_color;
+    //! color of the shadow on the right, no shadow is drawn if shadow_right_color.a is set to 0 (default)
+	MMSFBColor  		shadow_right_color;
 } MMSFBSurfaceConfig;
 
 
@@ -254,6 +262,7 @@ class MMSFBSurface {
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
 
         bool blit_text(string &text, int len, int x, int y);
+        bool blit_text_with_shadow(string &text, int len, int x, int y);
 
 
         //! flags which are used when flipping
@@ -354,6 +363,9 @@ class MMSFBSurface {
         bool setColor(MMSFBColor &color);
         bool getColor(MMSFBColor *color);
 
+        bool setShadowColor(MMSFBColor &shadow_top_color, MMSFBColor &shadow_bottom_color,
+							MMSFBColor &shadow_left_color, MMSFBColor &shadow_right_color);
+
         bool setClip(MMSFBRegion *clip);
         bool setClip(int x1, int y1, int x2, int y2);
         bool getClip(MMSFBRegion *clip);
@@ -408,6 +420,11 @@ bool cube(MMSFBSurface *front, MMSFBSurface *back,
         bool setDrawingFlagsByAlpha(unsigned char alpha);
         bool setDrawingColorAndFlagsByBrightnessAndOpacity(
                     MMSFBColor color, unsigned char brightness, unsigned char opacity);
+        bool setDrawingColorAndFlagsByBrightnessAndOpacity(
+                    MMSFBColor color,
+                    MMSFBColor shadow_top_color, MMSFBColor shadow_bottom_color,
+					MMSFBColor shadow_left_color, MMSFBColor shadow_right_color,
+					unsigned char brightness, unsigned char opacity);
 
         bool setFont(MMSFBFont *font);
         bool drawString(string text, int len, int x, int y);

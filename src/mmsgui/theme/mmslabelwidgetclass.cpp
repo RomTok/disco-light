@@ -43,6 +43,9 @@ TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;
 #define GETFONTATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
 #define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
 
+#define GETSHADOWATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
+#define ISSHADOWATTRNAME(aname) (strcmp(attrname, GETSHADOWATTRNAME(aname))==0)
+
 MMSLabelWidgetClass::MMSLabelWidgetClass() {
     unsetAll();
 }
@@ -155,7 +158,10 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_translate:
 	            setTranslate((attrval_int)?true:false);
 	            break;
-			}
+
+			// special macro for shadow parameters
+			SET_SHADOW_FROM_TAFF(MMSGUI_LABELWIDGET_ATTR)
+	        }
 		}
 		endTAFFScan
     }
@@ -265,6 +271,9 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (ISATTRNAME(translate)) {
 	            setTranslate((attrval_int)?true:false);
 			}
+            else
+            // special macro for shadow parameters
+            SET_SHADOW_FROM_TAFF_WITH_PREFIX
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -458,5 +467,151 @@ void MMSLabelWidgetClass::unsetTranslate() {
 
 bool MMSLabelWidgetClass::getTranslate() {
     return this->translate;
+}
+
+
+bool MMSLabelWidgetClass::isShadowTopColor() {
+    return this->shadows.top.iscolor;
+}
+
+void MMSLabelWidgetClass::setShadowTopColor(MMSFBColor color) {
+	this->shadows.top.color = color;
+	this->shadows.top.iscolor = true;
+}
+
+void MMSLabelWidgetClass::unsetShadowTopColor() {
+	this->shadows.top.iscolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getShadowTopColor() {
+    return this->shadows.top.color;
+}
+
+bool MMSLabelWidgetClass::isSelShadowTopColor() {
+    return this->shadows.top.isselcolor;
+}
+
+void MMSLabelWidgetClass::setSelShadowTopColor(MMSFBColor selcolor) {
+	this->shadows.top.selcolor = selcolor;
+	this->shadows.top.isselcolor = true;
+}
+
+void MMSLabelWidgetClass::unsetSelShadowTopColor() {
+	this->shadows.top.isselcolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getSelShadowTopColor() {
+    return this->shadows.top.selcolor;
+}
+
+
+
+
+bool MMSLabelWidgetClass::isShadowBottomColor() {
+    return this->shadows.bottom.iscolor;
+}
+
+void MMSLabelWidgetClass::setShadowBottomColor(MMSFBColor color) {
+	this->shadows.bottom.color = color;
+	this->shadows.bottom.iscolor = true;
+}
+
+void MMSLabelWidgetClass::unsetShadowBottomColor() {
+	this->shadows.bottom.iscolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getShadowBottomColor() {
+    return this->shadows.bottom.color;
+}
+
+bool MMSLabelWidgetClass::isSelShadowBottomColor() {
+    return this->shadows.bottom.isselcolor;
+}
+
+void MMSLabelWidgetClass::setSelShadowBottomColor(MMSFBColor selcolor) {
+	this->shadows.bottom.selcolor = selcolor;
+	this->shadows.bottom.isselcolor = true;
+}
+
+void MMSLabelWidgetClass::unsetSelShadowBottomColor() {
+	this->shadows.bottom.isselcolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getSelShadowBottomColor() {
+    return this->shadows.bottom.selcolor;
+}
+
+
+
+
+
+bool MMSLabelWidgetClass::isShadowLeftColor() {
+    return this->shadows.left.iscolor;
+}
+
+void MMSLabelWidgetClass::setShadowLeftColor(MMSFBColor color) {
+	this->shadows.left.color = color;
+	this->shadows.left.iscolor = true;
+}
+
+void MMSLabelWidgetClass::unsetShadowLeftColor() {
+	this->shadows.left.iscolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getShadowLeftColor() {
+    return this->shadows.left.color;
+}
+
+bool MMSLabelWidgetClass::isSelShadowLeftColor() {
+    return this->shadows.left.isselcolor;
+}
+
+void MMSLabelWidgetClass::setSelShadowLeftColor(MMSFBColor selcolor) {
+	this->shadows.left.selcolor = selcolor;
+	this->shadows.left.isselcolor = true;
+}
+
+void MMSLabelWidgetClass::unsetSelShadowLeftColor() {
+	this->shadows.left.isselcolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getSelShadowLeftColor() {
+    return this->shadows.left.selcolor;
+}
+
+
+
+bool MMSLabelWidgetClass::isShadowRightColor() {
+    return this->shadows.right.iscolor;
+}
+
+void MMSLabelWidgetClass::setShadowRightColor(MMSFBColor color) {
+	this->shadows.right.color = color;
+	this->shadows.right.iscolor = true;
+}
+
+void MMSLabelWidgetClass::unsetShadowRightColor() {
+	this->shadows.right.iscolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getShadowRightColor() {
+    return this->shadows.right.color;
+}
+
+bool MMSLabelWidgetClass::isSelShadowRightColor() {
+    return this->shadows.right.isselcolor;
+}
+
+void MMSLabelWidgetClass::setSelShadowRightColor(MMSFBColor selcolor) {
+	this->shadows.right.selcolor = selcolor;
+	this->shadows.right.isselcolor = true;
+}
+
+void MMSLabelWidgetClass::unsetSelShadowRightColor() {
+	this->shadows.right.isselcolor = false;
+}
+
+MMSFBColor MMSLabelWidgetClass::getSelShadowRightColor() {
+    return this->shadows.right.selcolor;
 }
 
