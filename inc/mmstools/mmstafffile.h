@@ -58,7 +58,9 @@ typedef enum {
 	//! any binary data
 	TAFF_ATTRTYPE_BINDATA,
 	//! valid values: "true", "false", "auto"
-	TAFF_ATTRTYPE_STATE
+	TAFF_ATTRTYPE_STATE,
+	//! valid values: "true", "false", "linear", "log", "log_soft_start", "log_soft_end"
+	TAFF_ATTRTYPE_SEQUENCE_MODE
 } TAFF_ATTRTYPE;
 
 //! Describe a TAFF attribute
@@ -135,8 +137,8 @@ typedef enum {
 //! A data access class for Tagged Attributes File Format (TAFF).
 /*!
 This class is written to generate an simple to parse binary presentation of
-high level markup languages such as XML. For now only the conversion XML to TAFF
-or vice versa and PNG to TAFF is supported.
+high level markup languages such as XML. For now the conversion XML to TAFF
+or vice versa and PNG/JPEG/TIFF to TAFF is supported.
 The user of this class must specify a description of which tags and attributes
 are allowed. Further he specifies the type of an attribute. With this informations
 this class also checks the types and ranges of attributes during the conversion.
@@ -330,6 +332,12 @@ class MMSTaffFile {
         \return pointer to the new MMSTaffFile or NULL in case of errors
         */
         MMSTaffFile *copyCurrentTag();
+
+        //! Determine if the current tag has attributes.
+        /*!
+        \return true if the current tag has at least one attribute
+        */
+        bool  hasAttributes();
 
         //! Get the first attribute of the current tag.
         /*!

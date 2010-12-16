@@ -841,6 +841,39 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 								byte_val = 0;
 						}
 						break;
+					case TAFF_ATTRTYPE_SEQUENCE_MODE: {
+						bool sm_true			= !xmlStrcmp(attrVal, (xmlChar *)"true");
+						bool sm_false			= !xmlStrcmp(attrVal, (xmlChar *)"false");
+						bool sm_linear			= !xmlStrcmp(attrVal, (xmlChar *)"linear");
+						bool sm_log				= !xmlStrcmp(attrVal, (xmlChar *)"log");
+						bool sm_log_soft_start	= !xmlStrcmp(attrVal, (xmlChar *)"log_soft_start");
+						bool sm_log_soft_end	= !xmlStrcmp(attrVal, (xmlChar *)"log_soft_end");
+						badval = (!sm_true && !sm_false && !sm_linear && !sm_log && !sm_log_soft_start && !sm_log_soft_end);
+						if (badval) {
+							validvals = "\"true\", \"false\", \"linear\", \"log\", \"log_soft_start\", \"log_soft_end\"";
+							attr_found = false;
+						}
+						else {
+							byte_val_set = true;
+							if (sm_true)
+								byte_val = 0xff;
+							else
+							if (sm_linear)
+								byte_val = 0x01;
+							else
+							if (sm_log)
+								byte_val = 0x02;
+							else
+							if (sm_log_soft_start)
+								byte_val = 0x03;
+							else
+							if (sm_log_soft_end)
+								byte_val = 0x04;
+							else
+								byte_val = 0;
+						}
+						}
+						break;
 					}
 
 					/* check if the value is blank and i have to ignore it */
@@ -1289,6 +1322,24 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 				else
 					attrval = "false";
 				break;
+			case TAFF_ATTRTYPE_SEQUENCE_MODE:
+				if ((attrval_int & 0xff) == 0x01)
+					attrval = "linear";
+				else
+				if ((attrval_int & 0xff) == 0x02)
+					attrval = "log";
+				else
+				if ((attrval_int & 0xff) == 0x03)
+					attrval = "log_soft_start";
+				else
+				if ((attrval_int & 0xff) == 0x04)
+					attrval = "log_soft_end";
+				else
+				if (attrval_int)
+					attrval = "true";
+				else
+					attrval = "false";
+				break;
 			default:
 				attrval = attrval_str;
 				break;
@@ -1628,6 +1679,14 @@ MMSTaffFile *MMSTaffFile::copyCurrentTag() {
 }
 
 
+bool MMSTaffFile::hasAttributes() {
+	char *value_str;
+	int value_int;
+	char *name;
+	return (getFirstAttribute(&value_str, &value_int, &name) >= 0);
+}
+
+
 int MMSTaffFile::getFirstAttribute(char **value_str, int *value_int, char **name) {
 	if (!this->current_tag_pos)
 		return -1;
@@ -1679,6 +1738,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					case TAFF_ATTRTYPE_UCHAR:
 					case TAFF_ATTRTYPE_UCHAR100:
 					case TAFF_ATTRTYPE_STATE:
+					case TAFF_ATTRTYPE_SEQUENCE_MODE:
 						*value_str = NULL;
 						{	unsigned char v = this->taff_buf[this->taff_buf_pos];
 							*value_int = (int)v; }
