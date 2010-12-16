@@ -48,7 +48,11 @@ typedef enum {
 	//! move selection smooth to the bottom
 	MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN,
 	//! move selection smooth to the top
-	MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP
+	MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP,
+	//! move selection smooth to the left
+	MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT,
+	//! move selection smooth to the right
+	MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT
 } MMSMENUWIDGET_PULSER_MODE;
 
 //! With this class you can display a list of items.
@@ -100,10 +104,12 @@ class MMSMenuWidget : public MMSWidget {
         int 			zoomselshiftx;	/* x-move the unselected items around the selected item */
         int 			zoomselshifty;	/* y-move the unselected items around the selected item */
 
-        bool 			smooth_scrolling;
+        //! smooth scrolling mode
+        MMSSEQUENCEMODE	smooth_scrolling;
         int  			scrolling_offset;
 
-        bool 			smooth_selection;
+        //! smooth selection mode
+        MMSSEQUENCEMODE	smooth_selection;
         int  			selection_offset_x;
         int  			selection_offset_y;
 
@@ -180,6 +186,8 @@ class MMSMenuWidget : public MMSWidget {
         bool onAnimation(MMSPulser *pulser);
         void onAfterAnimation(MMSPulser *pulser);
 
+        void startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double anim_offset);
+
 
         bool scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection);
         bool scrollUpEx(unsigned int count, bool refresh, bool test, bool leave_selection);
@@ -201,7 +209,13 @@ class MMSMenuWidget : public MMSWidget {
         void setItemTemplate(MMSWidget *itemTemplate);
         MMSWidget *getItemTemplate();
 
-        MMSWidget *newItem();
+        //! Create a new menu item and push it at the end of the list.
+        /*!
+        \param itemWidget	if NULL    : the style of the new item is based on the itemTemplate
+							if not NULL: the already allocated widget will be used as the new item and should not deleted
+        \return pointer of the new item widget
+        */
+        MMSWidget *newItem(MMSWidget *widget = NULL);
         void clear();
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
@@ -257,11 +271,11 @@ class MMSMenuWidget : public MMSWidget {
         string getZoomSelHeight();
         string getZoomSelShiftX();
         string getZoomSelShiftY();
-        bool getSmoothScrolling();
+        MMSSEQUENCEMODE getSmoothScrolling();
         string getParentWindow();
         bool getSelImagePath(string &selimagepath);
         bool getSelImageName(string &selimagename);
-        bool getSmoothSelection();
+        MMSSEQUENCEMODE getSmoothSelection();
         unsigned int getSmoothDelay();
 
         void setItemWidth(string itemwidth, bool refresh = true);
@@ -286,11 +300,11 @@ class MMSMenuWidget : public MMSWidget {
         void setZoomSelHeight(string zoomselheight, bool refresh = true);
         void setZoomSelShiftX(string zoomselshiftx, bool refresh = true);
         void setZoomSelShiftY(string zoomselshifty, bool refresh = true);
-        void setSmoothScrolling(bool smoothscrolling);
+        void setSmoothScrolling(MMSSEQUENCEMODE seq_mode);
         void setParentWindow(string parentwindow);
         void setSelImagePath(string selimagepath, bool load = true, bool refresh = true);
         void setSelImageName(string selimagename, bool load = true, bool refresh = true);
-        void setSmoothSelection(bool smoothselection);
+        void setSmoothSelection(MMSSEQUENCEMODE seq_mode);
         void setSmoothDelay(unsigned int smoothdelay);
 
         void updateFromThemeClass(MMSMenuWidgetClass *themeClass);

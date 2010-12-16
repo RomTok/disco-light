@@ -1109,6 +1109,24 @@ typedef enum {
 
 
 
+// Sequence mode ............................................................
+
+//! sequence mode
+typedef enum {
+	//! no sequence
+	MMSSEQUENCEMODE_NONE = 0,
+	//! linear sequence
+	MMSSEQUENCEMODE_LINEAR,
+	//! logarithmical sequence, soft start and stop of the sequence
+	MMSSEQUENCEMODE_LOG,
+	//! logarithmical sequence, soft start
+	MMSSEQUENCEMODE_LOG_SOFT_START,
+	//! logarithmical sequence, soft end
+	MMSSEQUENCEMODE_LOG_SOFT_END
+} MMSSEQUENCEMODE;
+
+
+
 // known languages...........................................................
 
 //! known languages

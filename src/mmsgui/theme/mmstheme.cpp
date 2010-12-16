@@ -83,7 +83,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 19, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 20, mmsgui_taff_tagtable };
 
 
 
@@ -970,11 +970,11 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.setZoomSelHeight("");
         this->menuWidgetClass.setZoomSelShiftX("");
         this->menuWidgetClass.setZoomSelShiftY("");
-        this->menuWidgetClass.setSmoothScrolling(false);
+        this->menuWidgetClass.setSmoothScrolling(MMSSEQUENCEMODE_NONE);
         this->menuWidgetClass.setParentWindow("");
         this->menuWidgetClass.setSelImagePath("");
         this->menuWidgetClass.setSelImageName("");
-        this->menuWidgetClass.setSmoothSelection(false);
+        this->menuWidgetClass.setSmoothSelection(MMSSEQUENCEMODE_NONE);
         this->menuWidgetClass.setSmoothDelay(0);
     }
 
