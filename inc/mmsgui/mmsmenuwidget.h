@@ -37,10 +37,18 @@
 
 //! current mode of the pulser
 typedef enum {
-	//! scroll smooth to the left item
-	MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT = 0,
-	//! scroll smooth to the right item
-	MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT
+	//! scroll smooth to the bottom
+	MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN = 0,
+	//! scroll smooth to the top
+	MMSMENUWIDGET_PULSER_MODE_SCROLL_UP,
+	//! scroll smooth to the left
+	MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT,
+	//! scroll smooth to the right
+	MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT,
+	//! move selection smooth to the bottom
+	MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN,
+	//! move selection smooth to the top
+	MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP
 } MMSMENUWIDGET_PULSER_MODE;
 
 //! With this class you can display a list of items.
@@ -117,7 +125,11 @@ class MMSMenuWidget : public MMSWidget {
         //! current pulser mode
         MMSMENUWIDGET_PULSER_MODE	pulser_mode;
 
-        double		anim_width;
+        //! offset to calculate the animation
+        double		anim_offset;
+
+        //! factor to calculate the animation
+        double		anim_factor;
 
 
 
