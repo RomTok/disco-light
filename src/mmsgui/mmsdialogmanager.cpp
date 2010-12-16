@@ -1158,76 +1158,96 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     		else
     			returntag = false;
 
-    		// check if a <menuitem> is given
+    		// check if a <menuitem/> is given
             if (tid == MMSGUI_TAGTABLE_TAG_MENUITEM)
             {
-	            // create new menu item
-	            MMSWidget *topwidget = menu->newItem();
+				// new menu item
+            	MMSWidget *item = NULL;
 	            haveItems = true;
 
-	            // here we must loop for n widgets
-	            vector<string> wgs;
-	            bool wg_break = false;
-	            while (!wg_break) {
-	            	wg_break = true;
-		            startTAFFScan_WITHOUT_ID
-		            {
-		            	if (memcmp(attrname, "widget.", 7)==0) {
-		                    // search for attributes which are to be set for menu items child widgets
-		                    string widgetName = &attrname[7];
-		                    int pos = (int)widgetName.find(".");
-		                    if (pos > 0) {
-		                        // widget name found
-		                        widgetName = widgetName.substr(0, pos);
+				if (tafff->hasAttributes()) {
+					// menu item has attributes, so we assume that the new item should be created with item template style
+					// create new menu item
+					item = menu->newItem();
 
-		                        // check if i have already processed this widget
-		                        if(find(wgs.begin(), wgs.end(), widgetName) != wgs.end()) {
-		                        	widgetName = "";
-		                        	continue;
-		                        }
-		                        wg_break = false;
-		                        wgs.push_back(widgetName);
+					// here we must loop for n widgets
+					vector<string> wgs;
+					bool wg_break = false;
+					while (!wg_break) {
+						wg_break = true;
+						startTAFFScan_WITHOUT_ID
+						{
+							if (memcmp(attrname, "widget.", 7)==0) {
+								// search for attributes which are to be set for menu items child widgets
+								string widgetName = &attrname[7];
+								int pos = (int)widgetName.find(".");
+								if (pos > 0) {
+									// widget name found
+									widgetName = widgetName.substr(0, pos);
 
-		                        // okay, searching for the widget within the new item
-		                        MMSWidget *widget;
-		                        if (topwidget->getName() == widgetName)
-		                            widget = topwidget;
-		                        else
-		                            widget = topwidget->findWidget(widgetName);
+									// check if i have already processed this widget
+									if(find(wgs.begin(), wgs.end(), widgetName) != wgs.end()) {
+										widgetName = "";
+										continue;
+									}
+									wg_break = false;
+									wgs.push_back(widgetName);
 
-								updateTAFFAttributes(tafff, widget, widgetName);
-		                    }
-		                }
-		            }
-		            endTAFFScan_WITHOUT_ID
-	            }
+									// okay, searching for the widget within the new item
+									MMSWidget *widget;
+									if (item->getName() == widgetName)
+										widget = item;
+									else
+										widget = item->findWidget(widgetName);
 
-	            startTAFFScan_WITHOUT_ID
-	            {
-	            	if (memcmp(attrname, "childwindow", 11)==0) {
-	            		// there is a child window given which represents a sub menu
-	            		menu->setSubMenuName(menu->getSize()-1, attrval_str);
-	            	}
-	            	else
-	            	if (memcmp(attrname, "goback", 6)==0) {
-	            		// if true, this item should be the go-back-item
-	                    //! if the user enters this item, the parent menu (if does exist) will be shown
-	            		if (memcmp(attrval_str, "true", 4)==0)
-	            			menu->setBackItem(menu->getSize()-1);
-	            	}
-	            }
-	            endTAFFScan_WITHOUT_ID
+									updateTAFFAttributes(tafff, widget, widgetName);
+								}
+							}
+						}
+						endTAFFScan_WITHOUT_ID
+					}
 
-	            startTAFFScan
-	            {
-	                switch (attrid) {
-	        		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
-	        			if (*attrval_str)
-	        				topwidget->setName(attrval_str);
-	        			break;
-	        	    }
-	            }
-	            endTAFFScan
+					startTAFFScan_WITHOUT_ID
+					{
+						if (memcmp(attrname, "childwindow", 11)==0) {
+							// there is a child window given which represents a sub menu
+							menu->setSubMenuName(menu->getSize()-1, attrval_str);
+						}
+						else
+						if (memcmp(attrname, "goback", 6)==0) {
+							// if true, this item should be the go-back-item
+							//! if the user enters this item, the parent menu (if does exist) will be shown
+							if (memcmp(attrval_str, "true", 4)==0)
+								menu->setBackItem(menu->getSize()-1);
+						}
+					}
+					endTAFFScan_WITHOUT_ID
+
+					startTAFFScan
+					{
+						switch (attrid) {
+						case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
+							if (*attrval_str)
+								item->setName(attrval_str);
+							break;
+						}
+					}
+					endTAFFScan
+				}
+				else {
+					// menu item has NO attributes, so we try to read a specific item style from the <menuitem/> children
+					// checking for tags within <menuitem/>
+					MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
+
+					// parse the childs from dialog file
+					throughDoc(tafff, tmpWidget, NULL, theme);
+
+					// here we create a new menu item based on disconnected child (if != NULL) or item template style
+					item = menu->newItem(tmpWidget->disconnectChild());
+
+					// delete the temporary container
+					delete tmpWidget;
+				}
             }
             else {
             	// any other widgets given in the menu, we need a temporary widget
