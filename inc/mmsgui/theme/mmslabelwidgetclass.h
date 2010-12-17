@@ -33,7 +33,7 @@
 #ifndef MMSLABELWIDGETCLASS_H_
 #define MMSLABELWIDGETCLASS_H_
 
-#include "mmsgui/theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmstextbaseclass.h"
 
 //! describe attributes for MMSLabelWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_LABELWIDGET_ATTR {
@@ -97,56 +97,18 @@ extern TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[];
 
 //! A data access class for the label widget.
 /*!
-This class is the base for the MMSLabelWidget class.
+This class is the base for the MMSLabelWidget class and is derived from
+MMSTextBaseClass which is the base for all widgets with text output.
 With this data store you have access to all changeable widget attributes.
 It is also one of the base classes for MMSThemeManager and MMSDialogManager
 which are main features of the MMSGUI.
 \note This class will be internally used by class MMSLabelWidget.
 \author Jens Schneider
 */
-class MMSLabelWidgetClass {
+class MMSLabelWidgetClass : public MMSTextBaseClass {
     private:
     	//! name of the theme class
         string          className;
-
-        //! is fontpath set?
-        bool            isfontpath;
-
-        //! path to the font
-        string          fontpath;
-
-        //! is fontsize set?
-        bool            isfontsize;
-
-        //! size of the font
-        unsigned int    fontsize;
-
-        //! language dependent font filenames
-        MMSGUI_FONTS	fonts;
-
-        //! is alignment set?
-        bool            isalignment;
-
-        //! alignment of the text
-        MMSALIGNMENT    alignment;
-
-        //! is color set?
-        bool            iscolor;
-
-        //! color of the text if the widget is not selected
-        MMSFBColor      color;
-
-        //! is selcolor set?
-        bool            isselcolor;
-
-        //! color of the text if the widget is selected
-        MMSFBColor      selcolor;
-
-        //! is text set?
-        bool            istext;
-
-        //! text to draw
-        string          text;
 
         //! is slidable set?
         bool            isslidable;
@@ -165,10 +127,6 @@ class MMSLabelWidgetClass {
 
         //! if true the text will be translated before displayed
         bool          	translate;
-
-
-        //! shadow definitions of the text
-        MMSGUI_SHADOWS	shadows;
 
 
         //! Read and set all attributes from the given TAFF buffer.
@@ -202,147 +160,6 @@ class MMSLabelWidgetClass {
         \return name of the class
         */
         string getClassName();
-
-
-        //! Check if the fontpath is set.
-        bool isFontPath();
-
-        //! Set the fontpath which is used to draw the text.
-        /*!
-        \param fontpath  path to the font
-        */
-        void setFontPath(string fontpath);
-
-        //! Mark the fontpath as not set.
-        void unsetFontPath();
-
-        //! Get the fontpath which is used to draw the text.
-        /*!
-        \return path to the font
-        */
-        string getFontPath();
-
-
-        //! Check if the fontsize is set.
-        bool isFontSize();
-
-        //! Set the fontsize which is used to draw the text.
-        /*!
-        \param fontsize  size of the font
-        */
-        void setFontSize(unsigned int fontsize);
-
-        //! Mark the fontsize as not set.
-        void unsetFontSize();
-
-        //! Get the fontsize which is used to draw the text.
-        /*!
-        \return size of the font
-        */
-        unsigned int getFontSize();
-
-
-        //! Check if the fontname is set.
-        /*!
-        \param lang  optional language
-        */
-        bool isFontName(MMSLanguage lang = MMSLANG_NONE);
-
-        //! Set the fontname which is used to draw the text.
-        /*!
-        \param fontname  name of the font
-        \param lang      optional language
-        */
-        void setFontName(string fontname, MMSLanguage lang = MMSLANG_NONE);
-
-        //! Mark the fontname as not set.
-        /*!
-        \param lang  optional language
-        */
-        void unsetFontName(MMSLanguage lang = MMSLANG_NONE);
-
-        //! Mark all fontnames as not set.
-        void unsetFontNames();
-
-        //! Get the fontname which is used to draw the text.
-        /*!
-        \param lang  optional language
-        \return name of the font
-        */
-        string getFontName(MMSLanguage lang = MMSLANG_NONE);
-
-
-        //! Check if alignment is set.
-        bool isAlignment();
-
-        //! Set the alignment of the text (see MMSALIGNMENT values).
-        /*!
-        \param alignment  text alignment
-        */
-        void setAlignment(MMSALIGNMENT alignment);
-
-        //! Mark the alignment as not set.
-        void unsetAlignment();
-
-        //! Get the alignment of the text (see MMSALIGNMENT values).
-        /*!
-        \return size of the font
-        */
-        MMSALIGNMENT getAlignment();
-
-        //! Check if the color is set. This color will be used for the unselected text.
-        bool isColor();
-
-        //! Set the color which is used to draw the unselected text.
-        /*!
-        \param color  color for unselected text
-        */
-        void setColor(MMSFBColor color);
-
-        //! Mark the color as not set.
-        void unsetColor();
-
-        //! Get the color which is used to draw the unselected text.
-        /*!
-        \return color for unselected text
-        */
-        MMSFBColor getColor();
-
-        //! Check if the color is set. This color will be used for the selected text.
-        bool isSelColor();
-
-        //! Set the color which is used to draw the selected text.
-        /*!
-        \param selcolor  color for selected text
-        */
-        void setSelColor(MMSFBColor selcolor);
-
-        //! Mark the color as not set.
-        void unsetSelColor();
-
-        //! Get the color which is used to draw the selected text.
-        /*!
-        \return color for selected text
-        */
-        MMSFBColor getSelColor();
-
-        //! Check if the text is set.
-        bool isText();
-
-        //! Set the text to be drawn.
-        /*!
-        \param text  any text string
-        */
-        void setText(string text);
-
-        //! Mark the text as not set.
-        void unsetText();
-
-        //! Get the current text.
-        /*!
-        \return text string
-        */
-        string getText();
 
 
         //! Check if the slidable flag is set.
@@ -400,46 +217,6 @@ class MMSLabelWidgetClass {
         */
         bool getTranslate();
 
-
-
-
-
-        bool isShadowTopColor();
-        void setShadowTopColor(MMSFBColor color);
-        void unsetShadowTopColor();
-        MMSFBColor getShadowTopColor();
-        bool isSelShadowTopColor();
-        void setSelShadowTopColor(MMSFBColor selcolor);
-        void unsetSelShadowTopColor();
-        MMSFBColor getSelShadowTopColor();
-
-
-        bool isShadowBottomColor();
-        void setShadowBottomColor(MMSFBColor color);
-        void unsetShadowBottomColor();
-        MMSFBColor getShadowBottomColor();
-        bool isSelShadowBottomColor();
-        void setSelShadowBottomColor(MMSFBColor selcolor);
-        void unsetSelShadowBottomColor();
-        MMSFBColor getSelShadowBottomColor();
-
-        bool isShadowLeftColor();
-        void setShadowLeftColor(MMSFBColor color);
-        void unsetShadowLeftColor();
-        MMSFBColor getShadowLeftColor();
-        bool isSelShadowLeftColor();
-        void setSelShadowLeftColor(MMSFBColor selcolor);
-        void unsetSelShadowLeftColor();
-        MMSFBColor getSelShadowLeftColor();
-
-        bool isShadowRightColor();
-        void setShadowRightColor(MMSFBColor color);
-        void unsetShadowRightColor();
-        MMSFBColor getShadowRightColor();
-        bool isSelShadowRightColor();
-        void setSelShadowRightColor(MMSFBColor selcolor);
-        void unsetSelShadowRightColor();
-        MMSFBColor getSelShadowRightColor();
 
     // friends
     friend class MMSThemeManager;

@@ -1605,7 +1605,9 @@ bool MMSFBSurface::getColor(MMSFBColor *color) {
 }
 
 bool MMSFBSurface::setShadowColor(MMSFBColor &shadow_top_color, MMSFBColor &shadow_bottom_color,
-								  MMSFBColor &shadow_left_color, MMSFBColor &shadow_right_color) {
+								  MMSFBColor &shadow_left_color, MMSFBColor &shadow_right_color,
+								  MMSFBColor &shadow_top_left_color, MMSFBColor &shadow_top_right_color,
+								  MMSFBColor &shadow_bottom_left_color, MMSFBColor &shadow_bottom_right_color) {
 
 	// check if initialized
     INITCHECK;
@@ -1616,6 +1618,10 @@ bool MMSFBSurface::setShadowColor(MMSFBColor &shadow_top_color, MMSFBColor &shad
     this->config.shadow_bottom_color = shadow_bottom_color;
     this->config.shadow_left_color = shadow_left_color;
     this->config.shadow_right_color = shadow_right_color;
+    this->config.shadow_top_left_color = shadow_top_left_color;
+    this->config.shadow_top_right_color = shadow_top_right_color;
+    this->config.shadow_bottom_left_color = shadow_bottom_left_color;
+    this->config.shadow_bottom_right_color = shadow_bottom_right_color;
 
     return true;
 }
@@ -6555,6 +6561,8 @@ bool MMSFBSurface::setDrawingColorAndFlagsByBrightnessAndOpacity(
                         MMSFBColor color,
                         MMSFBColor shadow_top_color, MMSFBColor shadow_bottom_color,
     					MMSFBColor shadow_left_color, MMSFBColor shadow_right_color,
+                        MMSFBColor shadow_top_left_color, MMSFBColor shadow_top_right_color,
+    					MMSFBColor shadow_bottom_left_color, MMSFBColor shadow_bottom_right_color,
                         unsigned char brightness, unsigned char opacity) {
 
 	if (!setDrawingColorAndFlagsByBrightnessAndOpacity(color, brightness, opacity))
@@ -6569,9 +6577,18 @@ bool MMSFBSurface::setDrawingColorAndFlagsByBrightnessAndOpacity(
     modulateOpacity(&shadow_left_color, opacity);
     modulateBrightness(&shadow_right_color, brightness);
     modulateOpacity(&shadow_right_color, opacity);
+    modulateBrightness(&shadow_top_left_color, brightness);
+    modulateOpacity(&shadow_top_left_color, opacity);
+    modulateBrightness(&shadow_top_right_color, brightness);
+    modulateOpacity(&shadow_top_right_color, opacity);
+    modulateBrightness(&shadow_bottom_left_color, brightness);
+    modulateOpacity(&shadow_bottom_left_color, opacity);
+    modulateBrightness(&shadow_bottom_right_color, brightness);
+    modulateOpacity(&shadow_bottom_right_color, opacity);
 
     // set the shadow colors
-    return setShadowColor(shadow_top_color, shadow_bottom_color, shadow_left_color, shadow_right_color);
+    return setShadowColor(shadow_top_color, shadow_bottom_color, shadow_left_color, shadow_right_color,
+						  shadow_top_left_color, shadow_top_right_color, shadow_bottom_left_color, shadow_bottom_right_color);
 }
 
 
@@ -6737,11 +6754,15 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 
 bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
 
-	bool top	= (this->config.shadow_top_color.a);
-	bool bottom	= (this->config.shadow_bottom_color.a);
-	bool left	= (this->config.shadow_left_color.a);
-	bool right	= (this->config.shadow_right_color.a);
-	bool shadow = (top || bottom || left || right);
+	bool top			= (this->config.shadow_top_color.a);
+	bool bottom			= (this->config.shadow_bottom_color.a);
+	bool left			= (this->config.shadow_left_color.a);
+	bool right			= (this->config.shadow_right_color.a);
+	bool top_left		= (this->config.shadow_top_left_color.a);
+	bool top_right		= (this->config.shadow_top_right_color.a);
+	bool bottom_left	= (this->config.shadow_bottom_left_color.a);
+	bool bottom_right	= (this->config.shadow_bottom_right_color.a);
+	bool shadow = (top || bottom || left || right || top_left || top_right || bottom_left || bottom_right);
 
 	if (shadow) {
 		// drawing color and flags will be temporary changed during the shadow blits
@@ -6777,6 +6798,30 @@ bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
 			this->config.color = this->config.shadow_right_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 			blit_text(text, len, x+1, y);
+		}
+		if (top_left) {
+			// draw shadow on the top-left
+			this->config.color = this->config.shadow_top_left_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x-1, y-1);
+		}
+		if (top_right) {
+			// draw shadow on the top-right
+			this->config.color = this->config.shadow_top_right_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x+1, y-1);
+		}
+		if (bottom_left) {
+			// draw shadow on the bottom-left
+			this->config.color = this->config.shadow_bottom_left_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x-1, y+1);
+		}
+		if (bottom_right) {
+			// draw shadow on the bottom-right
+			this->config.color = this->config.shadow_bottom_right_color;
+			this->setDrawingFlagsByAlpha(this->config.color.a);
+			blit_text(text, len, x+1, y+1);
 		}
 
 		// restore drawing color and flags

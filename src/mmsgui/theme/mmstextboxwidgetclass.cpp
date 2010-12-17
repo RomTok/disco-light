@@ -43,24 +43,21 @@ TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[] = MMSGUI_TEXTBOXWIDGET_ATTR_INIT;
 #define GETFONTATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
 #define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
 
+#define GETSHADOWATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
+#define ISSHADOWATTRNAME(aname) (strcmp(attrname, GETSHADOWATTRNAME(aname))==0)
+
 MMSTextBoxWidgetClass::MMSTextBoxWidgetClass() {
     unsetAll();
 }
 
 void MMSTextBoxWidgetClass::unsetAll() {
     this->className = "";
-    unsetFontPath();
-    unsetFontSize();
-    unsetFontNames();
-    unsetAlignment();
     unsetWrap();
     unsetSplitWords();
-    unsetColor();
-    unsetSelColor();
-    unsetText();
     unsetTranslate();
     unsetFilePath();
     unsetFileName();
+    MMSTextBaseClass::unsetAll();
 }
 
 void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
@@ -167,6 +164,9 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_file_name:
 	            setFileName(attrval_str);
 	            break;
+
+			// special macro for shadow parameters
+			SET_SHADOW_FROM_TAFF(MMSGUI_TEXTBOXWIDGET_ATTR)
 			}
 		}
 		endTAFFScan
@@ -288,6 +288,9 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             if (ISATTRNAME(file_name)) {
 	            setFileName(attrval_str);
             }
+            else
+            // special macro for shadow parameters
+            SET_SHADOW_FROM_TAFF_WITH_PREFIX
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -309,80 +312,6 @@ string MMSTextBoxWidgetClass::getClassName() {
     return this->className;
 }
 
-bool MMSTextBoxWidgetClass::isFontPath() {
-    return this->isfontpath;
-}
-
-void MMSTextBoxWidgetClass::setFontPath(string fontpath) {
-    this->fontpath = fontpath;
-    this->isfontpath = true;
-}
-
-void MMSTextBoxWidgetClass::unsetFontPath() {
-    this->isfontpath = false;
-}
-
-string MMSTextBoxWidgetClass::getFontPath() {
-    return this->fontpath;
-}
-
-bool MMSTextBoxWidgetClass::isFontSize() {
-    return this->isfontsize;
-}
-
-void MMSTextBoxWidgetClass::setFontSize(unsigned int fontsize) {
-    this->fontsize = fontsize;
-    this->isfontsize = true;
-}
-
-void MMSTextBoxWidgetClass::unsetFontSize() {
-    this->isfontsize = false;
-}
-
-unsigned int MMSTextBoxWidgetClass::getFontSize() {
-    return this->fontsize;
-}
-
-
-bool MMSTextBoxWidgetClass::isFontName(MMSLanguage lang) {
-	return this->fonts.isFontName(lang);
-}
-
-void MMSTextBoxWidgetClass::setFontName(string fontname, MMSLanguage lang) {
-	this->fonts.setFontName(fontname, lang);
-}
-
-void MMSTextBoxWidgetClass::unsetFontName(MMSLanguage lang) {
-	this->fonts.unsetFontName(lang);
-}
-
-void MMSTextBoxWidgetClass::unsetFontNames() {
-	this->fonts.unsetFontNames();
-}
-
-string MMSTextBoxWidgetClass::getFontName(MMSLanguage lang) {
-	return this->fonts.getFontName(lang);
-}
-
-
-
-
-bool MMSTextBoxWidgetClass::isAlignment() {
-    return this->isalignment;
-}
-
-void MMSTextBoxWidgetClass::setAlignment(MMSALIGNMENT alignment) {
-    this->alignment = alignment;
-    this->isalignment = true;
-}
-
-void MMSTextBoxWidgetClass::unsetAlignment() {
-    this->isalignment = false;
-}
-
-MMSALIGNMENT MMSTextBoxWidgetClass::getAlignment() {
-    return this->alignment;
-}
 
 bool MMSTextBoxWidgetClass::isWrap() {
     return this->iswrap;
@@ -418,60 +347,6 @@ bool MMSTextBoxWidgetClass::getSplitWords() {
     return this->splitwords;
 }
 
-bool MMSTextBoxWidgetClass::isColor() {
-    return this->iscolor;
-}
-
-void MMSTextBoxWidgetClass::setColor(MMSFBColor color) {
-    this->color = color;
-    this->iscolor = true;
-}
-
-void MMSTextBoxWidgetClass::unsetColor() {
-    this->iscolor = false;
-}
-
-MMSFBColor MMSTextBoxWidgetClass::getColor() {
-    return this->color;
-}
-
-bool MMSTextBoxWidgetClass::isSelColor() {
-    return this->isselcolor;
-}
-
-void MMSTextBoxWidgetClass::setSelColor(MMSFBColor selcolor) {
-    this->selcolor = selcolor;
-    this->isselcolor = true;
-}
-
-void MMSTextBoxWidgetClass::unsetSelColor() {
-    this->isselcolor = false;
-}
-
-MMSFBColor MMSTextBoxWidgetClass::getSelColor() {
-    return this->selcolor;
-}
-
-bool MMSTextBoxWidgetClass::isText() {
-    return this->istext;
-}
-
-void MMSTextBoxWidgetClass::setText(string *text) {
-    this->text = *text;
-    this->istext = true;
-}
-
-void MMSTextBoxWidgetClass::setText(string text) {
-    setText(&text);
-}
-
-void MMSTextBoxWidgetClass::unsetText() {
-    this->istext = false;
-}
-
-string MMSTextBoxWidgetClass::getText() {
-    return this->text;
-}
 
 bool MMSTextBoxWidgetClass::isTranslate() {
     return this->istranslate;

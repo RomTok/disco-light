@@ -274,10 +274,14 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                 // prepare for drawing
                 this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(
 									color,
-									(isSelected())?getSelShadowTopColor():getShadowTopColor(),
-									(isSelected())?getSelShadowBottomColor():getShadowBottomColor(),
-									(isSelected())?getSelShadowLeftColor():getShadowLeftColor(),
-									(isSelected())?getSelShadowRightColor():getShadowRightColor(),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP):getShadowColor(MMSPOSITION_TOP),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM):getShadowColor(MMSPOSITION_BOTTOM),
+									(isSelected())?getSelShadowColor(MMSPOSITION_LEFT):getShadowColor(MMSPOSITION_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_RIGHT):getShadowColor(MMSPOSITION_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_LEFT):getShadowColor(MMSPOSITION_TOP_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_RIGHT):getShadowColor(MMSPOSITION_TOP_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_LEFT):getShadowColor(MMSPOSITION_BOTTOM_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_RIGHT):getShadowColor(MMSPOSITION_BOTTOM_RIGHT),
 									getBrightness(), getOpacity());
 
                 // draw the text
@@ -321,6 +325,17 @@ void MMSLabelWidget::targetLangChanged(MMSLanguage lang) {
     else if ((labelWidgetClass)&&(labelWidgetClass->isFontName(lang))) return labelWidgetClass->getFontName(lang); \
     else if ((labelWidgetClass)&&(labelWidgetClass->isFontName(MMSLANG_NONE))) return labelWidgetClass->getFontName(MMSLANG_NONE); \
     else return this->da->theme->labelWidgetClass.getFontName();
+
+#define GETLABELSHADOW(x) \
+    if (this->myLabelWidgetClass.isShadowColor(x)) return myLabelWidgetClass.getShadowColor(x); \
+    else if ((labelWidgetClass)&&(labelWidgetClass->isShadowColor(x))) return labelWidgetClass->getShadowColor(x); \
+    else return this->da->theme->labelWidgetClass.getShadowColor(x);
+
+#define GETLABELSHADOWSEL(x) \
+    if (this->myLabelWidgetClass.isSelShadowColor(x)) return myLabelWidgetClass.getSelShadowColor(x); \
+    else if ((labelWidgetClass)&&(labelWidgetClass->isSelShadowColor(x))) return labelWidgetClass->getSelShadowColor(x); \
+    else return this->da->theme->labelWidgetClass.getSelShadowColor(x);
+
 
 string MMSLabelWidget::getFontPath() {
     GETLABEL(FontPath);
@@ -367,39 +382,12 @@ bool MMSLabelWidget::getTranslate() {
 }
 
 
-MMSFBColor MMSLabelWidget::getShadowTopColor() {
-    GETLABEL(ShadowTopColor);
+MMSFBColor MMSLabelWidget::getShadowColor(MMSPOSITION position) {
+	GETLABELSHADOW(position);
 }
 
-MMSFBColor MMSLabelWidget::getSelShadowTopColor() {
-    GETLABEL(SelShadowTopColor);
-}
-
-
-MMSFBColor MMSLabelWidget::getShadowBottomColor() {
-    GETLABEL(ShadowBottomColor);
-}
-
-MMSFBColor MMSLabelWidget::getSelShadowBottomColor() {
-    GETLABEL(SelShadowBottomColor);
-}
-
-
-MMSFBColor MMSLabelWidget::getShadowLeftColor() {
-    GETLABEL(ShadowLeftColor);
-}
-
-MMSFBColor MMSLabelWidget::getSelShadowLeftColor() {
-    GETLABEL(SelShadowLeftColor);
-}
-
-
-MMSFBColor MMSLabelWidget::getShadowRightColor() {
-    GETLABEL(ShadowRightColor);
-}
-
-MMSFBColor MMSLabelWidget::getSelShadowRightColor() {
-    GETLABEL(SelShadowRightColor);
+MMSFBColor MMSLabelWidget::getSelShadowColor(MMSPOSITION position) {
+	GETLABELSHADOWSEL(position);
 }
 
 
@@ -522,58 +510,18 @@ void MMSLabelWidget::setTranslate(bool translate, bool refresh) {
 
 
 
-
-
-void MMSLabelWidget::setShadowTopColor(MMSFBColor color, bool refresh) {
-    myLabelWidgetClass.setShadowTopColor(color);
+void MMSLabelWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
+    myLabelWidgetClass.setShadowColor(position, color);
     if (refresh)
         this->refresh();
 }
 
-void MMSLabelWidget::setSelShadowTopColor(MMSFBColor selcolor, bool refresh) {
-    myLabelWidgetClass.setSelShadowTopColor(selcolor);
+void MMSLabelWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
+    myLabelWidgetClass.setSelShadowColor(position, selcolor);
     if (refresh)
         this->refresh();
 }
 
-
-void MMSLabelWidget::setShadowBottomColor(MMSFBColor color, bool refresh) {
-    myLabelWidgetClass.setShadowBottomColor(color);
-    if (refresh)
-        this->refresh();
-}
-
-void MMSLabelWidget::setSelShadowBottomColor(MMSFBColor selcolor, bool refresh) {
-    myLabelWidgetClass.setSelShadowBottomColor(selcolor);
-    if (refresh)
-        this->refresh();
-}
-
-
-void MMSLabelWidget::setShadowLeftColor(MMSFBColor color, bool refresh) {
-    myLabelWidgetClass.setShadowLeftColor(color);
-    if (refresh)
-        this->refresh();
-}
-
-void MMSLabelWidget::setSelShadowLeftColor(MMSFBColor selcolor, bool refresh) {
-    myLabelWidgetClass.setSelShadowLeftColor(selcolor);
-    if (refresh)
-        this->refresh();
-}
-
-
-void MMSLabelWidget::setShadowRightColor(MMSFBColor color, bool refresh) {
-    myLabelWidgetClass.setShadowRightColor(color);
-    if (refresh)
-        this->refresh();
-}
-
-void MMSLabelWidget::setSelShadowRightColor(MMSFBColor selcolor, bool refresh) {
-    myLabelWidgetClass.setSelShadowRightColor(selcolor);
-    if (refresh)
-        this->refresh();
-}
 
 
 void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
@@ -600,25 +548,12 @@ void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
     if (themeClass->isTranslate())
         setTranslate(themeClass->getTranslate());
 
-    if (themeClass->isShadowTopColor())
-        setShadowTopColor(themeClass->getShadowTopColor());
-    if (themeClass->isSelShadowTopColor())
-        setSelShadowTopColor(themeClass->getSelShadowTopColor());
-
-    if (themeClass->isShadowBottomColor())
-        setShadowBottomColor(themeClass->getShadowBottomColor());
-    if (themeClass->isSelShadowBottomColor())
-        setSelShadowBottomColor(themeClass->getSelShadowBottomColor());
-
-    if (themeClass->isShadowLeftColor())
-        setShadowLeftColor(themeClass->getShadowLeftColor());
-    if (themeClass->isSelShadowLeftColor())
-        setSelShadowLeftColor(themeClass->getSelShadowLeftColor());
-
-    if (themeClass->isShadowRightColor())
-        setShadowRightColor(themeClass->getShadowRightColor());
-    if (themeClass->isSelShadowRightColor())
-        setSelShadowRightColor(themeClass->getSelShadowRightColor());
+    for (int position = 0; position < MMSPOSITION_SIZE; position++) {
+		if (themeClass->isShadowColor((MMSPOSITION)position))
+			setShadowColor((MMSPOSITION)position, themeClass->getShadowColor((MMSPOSITION)position));
+		if (themeClass->isSelShadowColor((MMSPOSITION)position))
+			setSelShadowColor((MMSPOSITION)position, themeClass->getSelShadowColor((MMSPOSITION)position));
+    }
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

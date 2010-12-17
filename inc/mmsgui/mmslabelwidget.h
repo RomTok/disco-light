@@ -112,15 +112,8 @@ class MMSLabelWidget : public MMSWidget {
         bool getSlidable();
         unsigned char getSlideSpeed();
         bool getTranslate();
-
-        MMSFBColor getShadowTopColor();
-        MMSFBColor getSelShadowTopColor();
-        MMSFBColor getShadowBottomColor();
-        MMSFBColor getSelShadowBottomColor();
-        MMSFBColor getShadowLeftColor();
-        MMSFBColor getSelShadowLeftColor();
-        MMSFBColor getShadowRightColor();
-        MMSFBColor getSelShadowRightColor();
+        MMSFBColor getShadowColor(MMSPOSITION position);
+        MMSFBColor getSelShadowColor(MMSPOSITION position);
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(MMSLanguage lang, string fontname, bool load = true, bool refresh = true);
@@ -135,15 +128,8 @@ class MMSLabelWidget : public MMSWidget {
         void setSlidable(bool slidable);
         void setSlideSpeed(unsigned char slidespeed);
         void setTranslate(bool translate, bool refresh = true);
-
-        void setShadowTopColor(MMSFBColor color, bool refresh = true);
-        void setSelShadowTopColor(MMSFBColor selcolor, bool refresh = true);
-        void setShadowBottomColor(MMSFBColor color, bool refresh = true);
-        void setSelShadowBottomColor(MMSFBColor selcolor, bool refresh = true);
-        void setShadowLeftColor(MMSFBColor color, bool refresh = true);
-        void setSelShadowLeftColor(MMSFBColor selcolor, bool refresh = true);
-        void setShadowRightColor(MMSFBColor color, bool refresh = true);
-        void setSelShadowRightColor(MMSFBColor selcolor, bool refresh = true);
+        void setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh = true);
+        void setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh = true);
 
         void updateFromThemeClass(MMSLabelWidgetClass *themeClass);
 

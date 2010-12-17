@@ -166,6 +166,14 @@ typedef struct {
 	MMSFBColor  		shadow_left_color;
     //! color of the shadow on the right, no shadow is drawn if shadow_right_color.a is set to 0 (default)
 	MMSFBColor  		shadow_right_color;
+    //! color of the shadow on the top-left, no shadow is drawn if shadow_top_left_color.a is set to 0 (default)
+	MMSFBColor  		shadow_top_left_color;
+    //! color of the shadow on the top-right, no shadow is drawn if shadow_top_right_color.a is set to 0 (default)
+	MMSFBColor  		shadow_top_right_color;
+    //! color of the shadow on the bottom-left, no shadow is drawn if shadow_bottom_left_color.a is set to 0 (default)
+	MMSFBColor  		shadow_bottom_left_color;
+    //! color of the shadow on the bottom-right, no shadow is drawn if shadow_bottom_right_color.a is set to 0 (default)
+	MMSFBColor  		shadow_bottom_right_color;
 } MMSFBSurfaceConfig;
 
 
@@ -364,7 +372,9 @@ class MMSFBSurface {
         bool getColor(MMSFBColor *color);
 
         bool setShadowColor(MMSFBColor &shadow_top_color, MMSFBColor &shadow_bottom_color,
-							MMSFBColor &shadow_left_color, MMSFBColor &shadow_right_color);
+							MMSFBColor &shadow_left_color, MMSFBColor &shadow_right_color,
+							MMSFBColor &shadow_top_left_color, MMSFBColor &shadow_top_right_color,
+							MMSFBColor &shadow_bottom_left_color, MMSFBColor &shadow_bottom_right_color);
 
         bool setClip(MMSFBRegion *clip);
         bool setClip(int x1, int y1, int x2, int y2);
@@ -424,6 +434,8 @@ bool cube(MMSFBSurface *front, MMSFBSurface *back,
                     MMSFBColor color,
                     MMSFBColor shadow_top_color, MMSFBColor shadow_bottom_color,
 					MMSFBColor shadow_left_color, MMSFBColor shadow_right_color,
+                    MMSFBColor shadow_top_left_color, MMSFBColor shadow_top_right_color,
+					MMSFBColor shadow_bottom_left_color, MMSFBColor shadow_bottom_right_color,
 					unsigned char brightness, unsigned char opacity);
 
         bool setFont(MMSFBFont *font);

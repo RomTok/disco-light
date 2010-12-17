@@ -515,7 +515,17 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
                 this->surface->setFont(this->font);
 
                 // prepare for drawing
-                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
+                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(
+									color,
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP):getShadowColor(MMSPOSITION_TOP),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM):getShadowColor(MMSPOSITION_BOTTOM),
+									(isSelected())?getSelShadowColor(MMSPOSITION_LEFT):getShadowColor(MMSPOSITION_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_RIGHT):getShadowColor(MMSPOSITION_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_LEFT):getShadowColor(MMSPOSITION_TOP_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_RIGHT):getShadowColor(MMSPOSITION_TOP_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_LEFT):getShadowColor(MMSPOSITION_BOTTOM_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_RIGHT):getShadowColor(MMSPOSITION_BOTTOM_RIGHT),
+									getBrightness(), getOpacity());
 
                 // draw single words into surface
                 for (unsigned int i = 0; i < this->wordgeom.size(); i++)
@@ -611,6 +621,16 @@ bool MMSTextBoxWidget::reloadFile() {
     else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isFontName(MMSLANG_NONE))) return textBoxWidgetClass->getFontName(MMSLANG_NONE); \
     else return this->da->theme->textBoxWidgetClass.getFontName();
 
+#define GETTEXTBOXSHADOW(x) \
+    if (this->myTextBoxWidgetClass.isShadowColor(x)) return myTextBoxWidgetClass.getShadowColor(x); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isShadowColor(x))) return textBoxWidgetClass->getShadowColor(x); \
+    else return this->da->theme->textBoxWidgetClass.getShadowColor(x);
+
+#define GETTEXTBOXSHADOWSEL(x) \
+    if (this->myTextBoxWidgetClass.isSelShadowColor(x)) return myTextBoxWidgetClass.getSelShadowColor(x); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isSelShadowColor(x))) return textBoxWidgetClass->getSelShadowColor(x); \
+    else return this->da->theme->textBoxWidgetClass.getSelShadowColor(x);
+
 string MMSTextBoxWidget::getFontPath() {
     GETTEXTBOX(FontPath);
 }
@@ -661,6 +681,14 @@ string MMSTextBoxWidget::getFilePath() {
 
 string MMSTextBoxWidget::getFileName() {
     GETTEXTBOX(FileName);
+}
+
+MMSFBColor MMSTextBoxWidget::getShadowColor(MMSPOSITION position) {
+	GETTEXTBOXSHADOW(position);
+}
+
+MMSFBColor MMSTextBoxWidget::getSelShadowColor(MMSPOSITION position) {
+	GETTEXTBOXSHADOWSEL(position);
 }
 
 /***********************************************/
@@ -783,6 +811,19 @@ void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
         this->refresh();
 }
 
+void MMSTextBoxWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
+    myTextBoxWidgetClass.setShadowColor(position, color);
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
+    myTextBoxWidgetClass.setSelShadowColor(position, selcolor);
+    if (refresh)
+        this->refresh();
+}
+
+
 void MMSTextBoxWidget::updateFromThemeClass(MMSTextBoxWidgetClass *themeClass) {
     if (themeClass->isFontPath())
         setFontPath(themeClass->getFontPath());
@@ -810,6 +851,13 @@ void MMSTextBoxWidget::updateFromThemeClass(MMSTextBoxWidgetClass *themeClass) {
         setFilePath(themeClass->getFilePath());
     if (themeClass->isFileName())
         setFileName(themeClass->getFileName());
+
+    for (int position = 0; position < MMSPOSITION_SIZE; position++) {
+		if (themeClass->isShadowColor((MMSPOSITION)position))
+			setShadowColor((MMSPOSITION)position, themeClass->getShadowColor((MMSPOSITION)position));
+		if (themeClass->isSelShadowColor((MMSPOSITION)position))
+			setSelShadowColor((MMSPOSITION)position, themeClass->getSelShadowColor((MMSPOSITION)position));
+    }
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

@@ -78,9 +78,43 @@ MMSDIRECTION getDirectionFromString(string inputstr) {
         direction = MMSDIRECTION_UP;
     else if (inputstr == "down")
         direction = MMSDIRECTION_DOWN;
+    else if (inputstr == "up-left")
+        direction = MMSDIRECTION_UP_LEFT;
+    else if (inputstr == "up-right")
+        direction = MMSDIRECTION_UP_RIGHT;
+    else if (inputstr == "down-left")
+        direction = MMSDIRECTION_DOWN_LEFT;
+    else if (inputstr == "down-right")
+        direction = MMSDIRECTION_DOWN_RIGHT;
 
     return direction;
 }
 
+
+
+MMSPOSITION getPositionFromString(string inputstr) {
+    MMSPOSITION position;
+
+    position = MMSPOSITION_NOTSET;
+
+    if (inputstr == "left")
+        position = MMSPOSITION_LEFT;
+    else if (inputstr == "right")
+        position = MMSPOSITION_RIGHT;
+    else if (inputstr == "top")
+        position = MMSPOSITION_TOP;
+    else if (inputstr == "bottom")
+        position = MMSPOSITION_BOTTOM;
+    else if (inputstr == "top-left")
+        position = MMSPOSITION_TOP_LEFT;
+    else if (inputstr == "top-right")
+        position = MMSPOSITION_TOP_RIGHT;
+    else if (inputstr == "bottom-left")
+        position = MMSPOSITION_BOTTOM_LEFT;
+    else if (inputstr == "bottom-right")
+        position = MMSPOSITION_BOTTOM_RIGHT;
+
+    return position;
+}
 
 

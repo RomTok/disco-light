@@ -134,6 +134,8 @@ class MMSTextBoxWidget : public MMSWidget {
         bool getTranslate();
         string getFilePath();
         string getFileName();
+        MMSFBColor getShadowColor(MMSPOSITION position);
+        MMSFBColor getSelShadowColor(MMSPOSITION position);
 
 		void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(MMSLanguage lang, string fontname, bool load = true, bool refresh = true);
@@ -151,6 +153,8 @@ class MMSTextBoxWidget : public MMSWidget {
         void setTranslate(bool translate, bool refresh = true);
 		void setFilePath(string filepath, bool load = true, bool refresh = true);
         void setFileName(string filename, bool load = true, bool refresh = true);
+        void setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh = true);
+        void setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh = true);
 
         void updateFromThemeClass(MMSTextBoxWidgetClass *themeClass);
 

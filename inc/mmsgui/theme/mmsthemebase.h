@@ -76,11 +76,33 @@ typedef enum {
     MMSDIRECTION_LEFT,
     MMSDIRECTION_RIGHT,
     MMSDIRECTION_UP,
-    MMSDIRECTION_DOWN
+    MMSDIRECTION_DOWN,
+    MMSDIRECTION_UP_LEFT,
+    MMSDIRECTION_UP_RIGHT,
+    MMSDIRECTION_DOWN_LEFT,
+    MMSDIRECTION_DOWN_RIGHT,
+    MMSDIRECTION_SIZE
 } MMSDIRECTION;
 
 
 MMSDIRECTION getDirectionFromString(string inputstr);
+
+
+typedef enum {
+    MMSPOSITION_NOTSET=0,
+    MMSPOSITION_LEFT,
+    MMSPOSITION_RIGHT,
+    MMSPOSITION_TOP,
+    MMSPOSITION_BOTTOM,
+    MMSPOSITION_TOP_LEFT,
+    MMSPOSITION_TOP_RIGHT,
+    MMSPOSITION_BOTTOM_LEFT,
+    MMSPOSITION_BOTTOM_RIGHT,
+    MMSPOSITION_SIZE
+} MMSPOSITION;
+
+
+MMSPOSITION getPositionFromString(string inputstr);
 
 
 #define MMSTHEMECLASS_INIT_STRING(x) \
@@ -451,157 +473,6 @@ public:
 };
 
 
-
-
-
-namespace MMSGUI_SHADOW_ATTR {
-
-	#define MMSGUI_SHADOW_ATTR_ATTRDESC \
-		{ "shadow.top.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.bottom.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.right.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.top.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.bottom.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.right.color", TAFF_ATTRTYPE_STRING }
-
-	#define MMSGUI_SHADOW_ATTR_IDS \
-		MMSGUI_SHADOW_ATTR_IDS_shadow_top_color, \
-		MMSGUI_SHADOW_ATTR_IDS_shadow_bottom_color, \
-		MMSGUI_SHADOW_ATTR_IDS_shadow_left_color, \
-		MMSGUI_SHADOW_ATTR_IDS_shadow_right_color, \
-		MMSGUI_SHADOW_ATTR_IDS_selshadow_top_color, \
-		MMSGUI_SHADOW_ATTR_IDS_selshadow_bottom_color, \
-		MMSGUI_SHADOW_ATTR_IDS_selshadow_left_color, \
-		MMSGUI_SHADOW_ATTR_IDS_selshadow_right_color
-
-	#define MMSGUI_SHADOW_ATTR_INIT { \
-		MMSGUI_SHADOW_ATTR_ATTRDESC, \
-		{ NULL, TAFF_ATTRTYPE_NONE } \
-	}
-
-	typedef enum {
-		MMSGUI_SHADOW_ATTR_IDS
-	} ids;
-}
-
-
-#define SET_SHADOW_FROM_TAFF(w) \
-	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_top_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowTopColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_bottom_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowBottomColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowLeftColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowRightColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_top_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowTopColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_bottom_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowBottomColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowLeftColor(color); \
-		break; \
-	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowRightColor(color); \
-		break;
-
-
-#define SET_SHADOW_FROM_TAFF_WITH_PREFIX \
-	if (ISSHADOWATTRNAME(shadow_top_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowTopColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(shadow_bottom_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowBottomColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(shadow_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowLeftColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(shadow_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowRightColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(selshadow_top_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowTopColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(selshadow_bottom_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowBottomColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(selshadow_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowLeftColor(color); \
-	} \
-	else \
-	if (ISSHADOWATTRNAME(selshadow_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowRightColor(color); \
-	}
-
-
-class MMSGUI_SHADOWS {
-public:
-    typedef struct {
-        //! is color set?
-        bool            iscolor;
-
-        //! color of the text if the widget is not selected
-        MMSFBColor      color;
-
-        //! is selcolor set?
-        bool            isselcolor;
-
-        //! color of the text if the widget is selected
-        MMSFBColor      selcolor;
-    } MMSSHADOW;
-
-    MMSSHADOW	top;
-    MMSSHADOW	bottom;
-    MMSSHADOW	left;
-    MMSSHADOW	right;
-
-	//! constructor
-	MMSGUI_SHADOWS() {
-		unsetShadows();
-	}
-
-    //! Mark all shadows as not set.
-    void unsetShadows() {
-        top.iscolor = false;
-        top.isselcolor = false;
-        bottom.iscolor = false;
-        bottom.isselcolor = false;
-        left.iscolor = false;
-        left.isselcolor = false;
-        right.iscolor = false;
-        right.isselcolor = false;
-    }
-};
 
 
 
