@@ -63,19 +63,24 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->imagepath_i_set = false;
     this->selimagepath_i_set = false;
 
+    this->barimagepath_set = false;
+    this->selbarimagepath_set = false;
+
     this->image = NULL;
     this->selimage = NULL;
     this->image_p = NULL;
     this->selimage_p = NULL;
     this->image_i = NULL;
     this->selimage_i = NULL;
+    this->barimage = NULL;
+    this->selbarimage = NULL;
 
     // initialize the callbacks
     this->onSliderIncrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
     this->onSliderDecrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
 
     // create widget base
-    return MMSWidget::create(root, true, false, false, true, true, true, true);
+    return MMSWidget::create(root, true, false, true, true, true, true, true);
 }
 
 MMSWidget *MMSSliderWidget::copyWidget() {
@@ -99,6 +104,8 @@ MMSWidget *MMSSliderWidget::copyWidget() {
     newWidget->selimage_p = NULL;
     newWidget->image_i = NULL;
     newWidget->selimage_i = NULL;
+    newWidget->barimage = NULL;
+    newWidget->selbarimage = NULL;
     if (this->rootwindow) {
         newWidget->image = this->rootwindow->im->getImage(newWidget->getImagePath(), newWidget->getImageName());
         newWidget->selimage = this->rootwindow->im->getImage(newWidget->getSelImagePath(), newWidget->getSelImageName());
@@ -106,6 +113,8 @@ MMSWidget *MMSSliderWidget::copyWidget() {
         newWidget->selimage_p = this->rootwindow->im->getImage(newWidget->getSelImagePath_p(), newWidget->getSelImageName_p());
         newWidget->image_i = this->rootwindow->im->getImage(newWidget->getImagePath_i(), newWidget->getImageName_i());
         newWidget->selimage_i = this->rootwindow->im->getImage(newWidget->getSelImagePath_i(), newWidget->getSelImageName_i());
+        newWidget->barimage = this->rootwindow->im->getImage(newWidget->getBarImagePath(), newWidget->getBarImageName());
+        newWidget->selbarimage = this->rootwindow->im->getImage(newWidget->getSelBarImagePath(), newWidget->getSelBarImageName());
     }
 
     return newWidget;
@@ -123,6 +132,8 @@ bool MMSSliderWidget::init() {
     this->selimage_p = this->rootwindow->im->getImage(getSelImagePath_p(), getSelImageName_p());
     this->image_i = this->rootwindow->im->getImage(getImagePath_i(), getImageName_i());
     this->selimage_i = this->rootwindow->im->getImage(getSelImagePath_i(), getSelImageName_i());
+    this->barimage = this->rootwindow->im->getImage(getBarImagePath(), getBarImageName());
+    this->selbarimage = this->rootwindow->im->getImage(getSelBarImagePath(), getSelBarImageName());
 
     return true;
 }
@@ -145,6 +156,10 @@ bool MMSSliderWidget::release() {
     this->image_i = NULL;
     this->rootwindow->im->releaseImage(this->selimage_i);
     this->selimage_i = NULL;
+    this->rootwindow->im->releaseImage(this->barimage);
+    this->barimage = NULL;
+    this->rootwindow->im->releaseImage(this->selbarimage);
+    this->selbarimage = NULL;
 
     return true;
 }
@@ -177,24 +192,81 @@ void MMSSliderWidget::getImage(MMSFBSurface **suf) {
 	}
 }
 
-void MMSSliderWidget::calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical) {
+void MMSSliderWidget::getBarImage(MMSFBSurface **suf) {
+	// searching for the image
+	*suf = NULL;
+
+	if (isSelected())
+		*suf = this->selbarimage;
+	else
+		*suf = this->barimage;
+}
+
+void MMSSliderWidget::calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical,
+							  MMSFBSurface *barsuf, MMSFBRectangle *src_barGeom, MMSFBRectangle *dst_barGeom) {
     // calculate position of the slider
-	int w, h;
-	suf->getSize(&w, &h);
+	int w = 0, h = 0;
+	if (suf) {
+		// if surface is set we get width and height, else we use zero for width and height (no slider image)
+		suf->getSize(&w, &h);
+	}
+
+	if (barsuf && src_barGeom) {
+		// get the default source bar rectangle
+		src_barGeom->x = 0;
+		src_barGeom->y = 0;
+		barsuf->getSize(&src_barGeom->w, &src_barGeom->h);
+	}
+
+	if (dst_barGeom) *dst_barGeom = *surfaceGeom;
 	if (surfaceGeom->w < w) w = surfaceGeom->w;
 	if (surfaceGeom->h < h) h = surfaceGeom->h;
 	if (surfaceGeom->w - w < surfaceGeom->h - h) {
 		// vertical slider
 		surfaceGeom->y += ((surfaceGeom->h - h) * getPosition()) / 100;
-		w = surfaceGeom->w;
+		if (dst_barGeom) {
+			dst_barGeom->y = surfaceGeom->y + h / 2;
+			dst_barGeom->h = surfaceGeom->h - surfaceGeom->y - h / 2;
+			if (src_barGeom) {
+				// calculate bar source rectangle
+				if (src_barGeom->h == surfaceGeom->h - h / 2) {
+					// bar height fits into the full dst bar geom
+					src_barGeom->y+= src_barGeom->h - dst_barGeom->h;
+					src_barGeom->h = dst_barGeom->h;
+				}
+				else {
+					// have to stretch the bar
+					int	hh = ((src_barGeom->h * dst_barGeom->h * 100) / (surfaceGeom->h - h / 2) + 50) / 100;
+					src_barGeom->y+= src_barGeom->h - hh;
+					src_barGeom->h = hh;
+				}
+			}
+		}
 		surfaceGeom->h = h;
 		*vertical = true;
 	}
 	else {
 		// horizontal slider
 		surfaceGeom->x += ((surfaceGeom->w - w) * getPosition()) / 100;
+		if (dst_barGeom) {
+			dst_barGeom->x = surfaceGeom->x + w / 2;
+			dst_barGeom->w = surfaceGeom->w - surfaceGeom->x - w / 2;
+			if (src_barGeom) {
+				// calculate bar source rectangle
+				if (src_barGeom->w == surfaceGeom->w - w / 2) {
+					// bar width fits into the full dst bar geom
+					src_barGeom->x+= src_barGeom->w - dst_barGeom->w;
+					src_barGeom->w = dst_barGeom->w;
+				}
+				else {
+					// have to stretch the bar
+					int	ww = ((src_barGeom->w * dst_barGeom->w * 100) / (surfaceGeom->w - w / 2) + 50) / 100;
+					src_barGeom->x+= src_barGeom->w - ww;
+					src_barGeom->w = ww;
+				}
+			}
+		}
 		surfaceGeom->w = w;
-		h = surfaceGeom->h;
 		*vertical = false;
 	}
 }
@@ -210,40 +282,86 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
     else
         backgroundFilled = &myBackgroundFilled;
 
-    /* draw widget basics */
+    // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
 
-        /* lock */
+        // lock
         this->surface->lock();
 
-        /* draw my things */
+        // draw my things
         MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
-        // searching for the image
+        // searching for the slider image
         MMSFBSurface *suf = NULL;
         getImage(&suf);
-        if (suf) {
-            // prepare for blitting
-            this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
 
-            // calculate position of the slider
-            bool vertical;
-            calcPos(suf, &surfaceGeom, &vertical);
+		// searching for the barimage
+		MMSFBSurface *barsuf = NULL;
+		getBarImage(&barsuf);
+
+        // calculate position of the slider
+        bool vertical;
+        MMSFBRectangle src_barGeom;
+        MMSFBRectangle dst_barGeom;
+		calcPos(suf, &surfaceGeom, &vertical, barsuf, &src_barGeom, &dst_barGeom);
+
+		if (barsuf) {
+			// blit the bar image, prepare for blitting
+			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
+
+			// blit
+			this->surface->stretchBlit(barsuf, &src_barGeom, &dst_barGeom);
+		}
+
+        if (suf) {
+        	// blit the slider image, prepare for blitting
+            this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
 
             // blit
             this->surface->stretchBlit(suf, NULL, &surfaceGeom);
         }
 
-        /* unlock */
+        // unlock
         this->surface->unlock();
 
-        /* update window surface with an area of surface */
+        // update window surface with an area of surface
         updateWindowSurfaceWithSurface(!*backgroundFilled);
     }
 
-    /* draw widgets debug frame */
+    // draw widgets debug frame
     return MMSWidget::drawDebug();
 }
+
+
+bool MMSSliderWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
+//printf("down = %d\n", count);
+unsigned int pos = getPosition();
+pos++;
+setPosition(pos);
+	return true;
+}
+
+
+bool MMSSliderWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
+//	printf("up = %d\n", count);
+	unsigned int pos = getPosition();
+	if (pos>0) {
+		pos--;
+		setPosition(pos);
+	}
+
+}
+
+
+bool MMSSliderWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
+//printf("right = %d\n",count);
+}
+
+
+bool MMSSliderWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
+//printf("left = %d\n",count);
+}
+
 
 bool MMSSliderWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) {
 	if (changed)
@@ -367,6 +485,23 @@ string MMSSliderWidget::getSelImageName_i() {
 unsigned int MMSSliderWidget::getPosition() {
     GETSLIDER(Position);
 }
+
+string MMSSliderWidget::getBarImagePath() {
+    GETSLIDER(BarImagePath);
+}
+
+string MMSSliderWidget::getBarImageName() {
+    GETSLIDER(BarImageName);
+}
+
+string MMSSliderWidget::getSelBarImagePath() {
+    GETSLIDER(SelBarImagePath);
+}
+
+string MMSSliderWidget::getSelBarImageName() {
+    GETSLIDER(SelBarImageName);
+}
+
 
 /***********************************************/
 /* begin of theme access methods (set methods) */
@@ -589,10 +724,97 @@ void MMSSliderWidget::setSelImage_i(string selimagepath_i, string selimagename_i
 }
 
 void MMSSliderWidget::setPosition(unsigned int pos, bool refresh) {
+	// check range
+	if (pos > 100) {
+		if (getPosition() == 100)
+			return;
+		pos = 100;
+	}
+
+	// update position
     mySliderWidgetClass.setPosition(pos);
     if (refresh)
         this->refresh();
 }
+
+
+
+
+
+void MMSSliderWidget::setBarImagePath(string barimagepath, bool load, bool refresh) {
+    mySliderWidgetClass.setBarImagePath(barimagepath);
+    this->barimagepath_set = true;
+    if (load)
+        if (this->rootwindow) {
+            this->rootwindow->im->releaseImage(this->barimage);
+            this->barimage = this->rootwindow->im->getImage(getBarImagePath(), getBarImageName());
+        }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSSliderWidget::setBarImageName(string barimagename, bool load, bool refresh) {
+	if (!this->barimagepath_set) mySliderWidgetClass.unsetBarImagePath();
+    mySliderWidgetClass.setBarImageName(barimagename);
+    if (load)
+        if (this->rootwindow) {
+            this->rootwindow->im->releaseImage(this->barimage);
+            this->barimage = this->rootwindow->im->getImage(getBarImagePath(), getBarImageName());
+        }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSSliderWidget::setBarImage(string barimagepath, string barimagename, bool load, bool refresh) {
+    mySliderWidgetClass.setBarImagePath(barimagepath);
+    mySliderWidgetClass.setBarImageName(barimagename);
+    if (load)
+        if (this->rootwindow) {
+            this->rootwindow->im->releaseImage(this->barimage);
+            this->barimage = this->rootwindow->im->getImage(getBarImagePath(), getBarImageName());
+        }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSSliderWidget::setSelBarImagePath(string selbarimagepath, bool load, bool refresh) {
+	if (!this->selbarimagepath_set) mySliderWidgetClass.unsetSelBarImagePath();
+    mySliderWidgetClass.setSelBarImagePath(selbarimagepath);
+    this->selbarimagepath_set = true;
+    if (load)
+        if (this->rootwindow) {
+            this->rootwindow->im->releaseImage(this->selbarimage);
+            this->selbarimage = this->rootwindow->im->getImage(getSelBarImagePath(), getSelBarImageName());
+        }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSSliderWidget::setSelBarImageName(string selbarimagename, bool load, bool refresh) {
+    mySliderWidgetClass.setSelBarImageName(selbarimagename);
+    if (load)
+        if (this->rootwindow) {
+            this->rootwindow->im->releaseImage(this->selbarimage);
+            this->selbarimage = this->rootwindow->im->getImage(getSelBarImagePath(), getSelBarImageName());
+        }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSSliderWidget::setSelBarImage(string selbarimagepath, string selbarimagename, bool load, bool refresh) {
+    mySliderWidgetClass.setSelBarImagePath(selbarimagepath);
+    mySliderWidgetClass.setSelBarImageName(selbarimagename);
+    if (load)
+        if (this->rootwindow) {
+            this->rootwindow->im->releaseImage(this->selbarimage);
+            this->selbarimage = this->rootwindow->im->getImage(getSelBarImagePath(), getSelBarImageName());
+        }
+    if (refresh)
+        this->refresh();
+}
+
+
+
 
 void MMSSliderWidget::updateFromThemeClass(MMSSliderWidgetClass *themeClass) {
     if (themeClass->isImagePath())
@@ -621,6 +843,14 @@ void MMSSliderWidget::updateFromThemeClass(MMSSliderWidgetClass *themeClass) {
         setSelImageName_i(themeClass->getSelImageName_i());
     if (themeClass->isPosition())
         setPosition(themeClass->getPosition());
+    if (themeClass->isBarImagePath())
+        setBarImagePath(themeClass->getBarImagePath());
+    if (themeClass->isBarImageName())
+        setBarImageName(themeClass->getBarImageName());
+    if (themeClass->isSelBarImagePath())
+        setSelBarImagePath(themeClass->getSelBarImagePath());
+    if (themeClass->isSelBarImageName())
+        setSelBarImageName(themeClass->getSelBarImageName());
 
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }

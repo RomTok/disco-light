@@ -56,12 +56,18 @@ class MMSSliderWidget : public MMSWidget {
         bool imagepath_i_set;
         bool selimagepath_i_set;
 
+        bool barimagepath_set;
+        bool selbarimagepath_set;
+
         MMSFBSurface    *image;
         MMSFBSurface    *selimage;
         MMSFBSurface    *image_p;
         MMSFBSurface    *selimage_p;
         MMSFBSurface    *image_i;
         MMSFBSurface    *selimage_i;
+
+        MMSFBSurface    *barimage;
+        MMSFBSurface    *selbarimage;
 
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
@@ -76,7 +82,15 @@ class MMSSliderWidget : public MMSWidget {
         MMSWidget *copyWidget();
 
         void getImage(MMSFBSurface **suf);
-        void calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical);
+        void getBarImage(MMSFBSurface **suf);
+        void calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical,
+					 MMSFBSurface *barsuf = NULL, MMSFBRectangle *src_barGeom = NULL, MMSFBRectangle *dst_barGeom = NULL);
+
+        bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        bool scrollRight(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+        bool scrollLeft(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
+
         bool scrollTo(int posx, int posy, bool refresh = true, bool *changed = NULL);
 
         sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator> *onSliderIncrement;
@@ -97,6 +111,10 @@ class MMSSliderWidget : public MMSWidget {
         string getSelImagePath_i();
         string getSelImageName_i();
         unsigned int getPosition();
+        string getBarImagePath();
+        string getBarImageName();
+        string getSelBarImagePath();
+        string getSelBarImageName();
 
         void setImagePath(string imagepath, bool load = true, bool refresh = true);
         void setImageName(string imagename, bool load = true, bool refresh = true);
@@ -117,6 +135,12 @@ class MMSSliderWidget : public MMSWidget {
         void setSelImageName_i(string selimagename_i, bool load = true, bool refresh = true);
         void setSelImage_i(string selimagepath_i, string selimagename_i, bool load = true, bool refresh = true);
         void setPosition(unsigned int pos, bool refresh = true);
+        void setBarImagePath(string barimagepath, bool load = true, bool refresh = true);
+        void setBarImageName(string barimagename, bool load = true, bool refresh = true);
+        void setBarImage(string barimagepath, string barimagename, bool load = true, bool refresh = true);
+        void setSelBarImagePath(string selbarimagepath, bool load = true, bool refresh = true);
+        void setSelBarImageName(string selbarimagename, bool load = true, bool refresh = true);
+        void setSelBarImage(string selbarimagepath, string selbarimagename, bool load = true, bool refresh = true);
 
         void updateFromThemeClass(MMSSliderWidgetClass *themeClass);
 };

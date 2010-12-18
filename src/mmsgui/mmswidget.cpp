@@ -2081,7 +2081,7 @@ void MMSWidget::handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *request
 
 void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	bool b;
-
+printf("MMSWidget::handle input\n");
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
 
@@ -2100,8 +2100,11 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 				for (int ii=0; ii< 15;ii++) scrollDown();
 */
 
+printf("MMSWidget::handle input2\n");
 				if (scrollDown())
 		            return;
+printf("MMSWidget::handle input3\n");
+
 		        break;
 			case MMSKEY_CURSOR_UP:
 		        if (scrollUp())

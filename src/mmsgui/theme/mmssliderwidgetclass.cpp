@@ -60,6 +60,10 @@ void MMSSliderWidgetClass::unsetAll() {
     unsetSelImagePath_i();
     unsetSelImageName_i();
     unsetPosition();
+    unsetBarImagePath();
+    unsetBarImageName();
+    unsetSelBarImagePath();
+    unsetSelBarImageName();
 }
 
 void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
@@ -72,6 +76,8 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
         unsetSelImagePath_p();
         unsetImagePath_i();
         unsetSelImagePath_i();
+        unsetBarImagePath();
+        unsetSelBarImagePath();
     }
 
     if (!prefix) {
@@ -180,6 +186,41 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_position:
 	            setPosition(attrval_int);
 				break;
+
+
+			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_barimage:
+	            if (*attrval_str)
+	                setBarImagePath("");
+	            else
+	                setBarImagePath((path)?*path:"");
+	            setBarImageName(attrval_str);
+				break;
+			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_barimage_path:
+	            if (*attrval_str)
+	                setBarImagePath(attrval_str);
+	            else
+	                setBarImagePath((path)?*path:"");
+				break;
+			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_barimage_name:
+	            setBarImageName(attrval_str);
+				break;
+			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_selbarimage:
+	            if (*attrval_str)
+	                setSelBarImagePath("");
+	            else
+	                setSelBarImagePath((path)?*path:"");
+	            setSelBarImageName(attrval_str);
+				break;
+			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_selbarimage_path:
+	            if (*attrval_str)
+	                setSelBarImagePath(attrval_str);
+	            else
+	                setSelBarImagePath((path)?*path:"");
+				break;
+			case MMSGUI_SLIDERWIDGET_ATTR::MMSGUI_SLIDERWIDGET_ATTR_IDS_selbarimage_name:
+	            setSelBarImageName(attrval_str);
+				break;
+
 			}
 		}
 		endTAFFScan
@@ -314,6 +355,44 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
             if (ISATTRNAME(position)) {
 	            setPosition(attrval_int);
 			}
+            else
+			if (ISATTRNAME(barimage)) {
+				if (*attrval_str)
+					setBarImagePath("");
+				else
+					setBarImagePath((path)?*path:"");
+				setBarImageName(attrval_str);
+			}
+			else
+			if (ISATTRNAME(barimage_path)) {
+				if (*attrval_str)
+					setBarImagePath(attrval_str);
+				else
+					setBarImagePath((path)?*path:"");
+			}
+			else
+			if (ISATTRNAME(barimage_name)) {
+				setBarImageName(attrval_str);
+			}
+			else
+			if (ISATTRNAME(selbarimage)) {
+				if (*attrval_str)
+					setSelBarImagePath("");
+				else
+					setSelBarImagePath((path)?*path:"");
+				setSelBarImageName(attrval_str);
+			}
+			else
+			if (ISATTRNAME(selbarimage_path)) {
+				if (*attrval_str)
+					setSelBarImagePath(attrval_str);
+				else
+					setSelBarImagePath((path)?*path:"");
+			}
+			else
+			if (ISATTRNAME(selbarimage_name)) {
+				setSelBarImageName(attrval_str);
+			}
     	}
     	endTAFFScan_WITHOUT_ID
     }
@@ -332,6 +411,10 @@ void MMSSliderWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pre
 	        setImagePath_i(*path);
 	    if (!isSelImagePath_i())
 	        setSelImagePath_i(*path);
+	    if (!isBarImagePath())
+	        setBarImagePath(*path);
+	    if (!isSelBarImagePath())
+	        setSelBarImagePath(*path);
     }
 }
 
@@ -563,4 +646,77 @@ void MMSSliderWidgetClass::unsetPosition() {
 unsigned int MMSSliderWidgetClass::getPosition() {
     return this->position;
 }
+
+
+
+
+
+bool MMSSliderWidgetClass::isBarImagePath() {
+    return this->isbarimagepath;
+}
+
+void MMSSliderWidgetClass::setBarImagePath(string barimagepath) {
+    this->barimagepath = barimagepath;
+    this->isbarimagepath = true;
+}
+
+void MMSSliderWidgetClass::unsetBarImagePath() {
+    this->isbarimagepath = false;
+}
+
+string MMSSliderWidgetClass::getBarImagePath() {
+    return this->barimagepath;
+}
+
+bool MMSSliderWidgetClass::isBarImageName() {
+    return this->isbarimagename;
+}
+
+void MMSSliderWidgetClass::setBarImageName(string barimagename) {
+    this->barimagename = barimagename;
+    this->isbarimagename = true;
+}
+
+void MMSSliderWidgetClass::unsetBarImageName() {
+    this->isbarimagename = false;
+}
+
+string MMSSliderWidgetClass::getBarImageName() {
+    return this->barimagename;
+}
+
+bool MMSSliderWidgetClass::isSelBarImagePath() {
+    return this->isselbarimagepath;
+}
+
+void MMSSliderWidgetClass::setSelBarImagePath(string selbarimagepath) {
+    this->selbarimagepath = selbarimagepath;
+    this->isselbarimagepath = true;
+}
+
+void MMSSliderWidgetClass::unsetSelBarImagePath() {
+    this->isselbarimagepath = false;
+}
+
+string MMSSliderWidgetClass::getSelBarImagePath() {
+    return this->selbarimagepath;
+}
+
+bool MMSSliderWidgetClass::isSelBarImageName() {
+    return this->isselbarimagename;
+}
+
+void MMSSliderWidgetClass::setSelBarImageName(string selbarimagename) {
+    this->selbarimagename = selbarimagename;
+    this->isselbarimagename = true;
+}
+
+void MMSSliderWidgetClass::unsetSelBarImageName() {
+    this->isselbarimagename = false;
+}
+
+string MMSSliderWidgetClass::getSelBarImageName() {
+    return this->selbarimagename;
+}
+
 
