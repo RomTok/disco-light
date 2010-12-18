@@ -1243,7 +1243,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 					throughDoc(tafff, tmpWidget, NULL, theme);
 
 					// here we create a new menu item based on disconnected child (if != NULL) or item template style
-					item = menu->newItem(tmpWidget->disconnectChild());
+					item = menu->newItem(-1, tmpWidget->disconnectChild());
 
 					// delete the temporary container
 					delete tmpWidget;

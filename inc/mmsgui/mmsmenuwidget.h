@@ -209,13 +209,22 @@ class MMSMenuWidget : public MMSWidget {
         void setItemTemplate(MMSWidget *itemTemplate);
         MMSWidget *getItemTemplate();
 
-        //! Create a new menu item and push it at the end of the list.
+        //! Create a new menu item and push it at a specific position of the list.
         /*!
+        \param item			position of the new item in the list, default -1 means end of list
         \param itemWidget	if NULL    : the style of the new item is based on the itemTemplate
 							if not NULL: the already allocated widget will be used as the new item and should not deleted
         \return pointer of the new item widget
         */
-        MMSWidget *newItem(MMSWidget *widget = NULL);
+        MMSWidget *newItem(int item = -1, MMSWidget *widget = NULL);
+
+        //! Delete a menu item.
+        /*!
+        \param item	 position of the item which is to be deleted
+        */
+        void deleteItem(unsigned int item);
+
+        //! Clear the menu and deletes all items.
         void clear();
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);

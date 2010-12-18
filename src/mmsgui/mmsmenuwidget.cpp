@@ -2496,7 +2496,7 @@ MMSWidget *MMSMenuWidget::getItemTemplate() {
     return this->itemTemplate;
 }
 
-MMSWidget *MMSMenuWidget::newItem(MMSWidget *widget) {
+MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
     MMSMENUITEMINFOS	iteminfo;
 
     if (!widget) {
@@ -2509,12 +2509,32 @@ MMSWidget *MMSMenuWidget::newItem(MMSWidget *widget) {
 
     widget->setParent(this);
     widget->setRootWindow(this->rootwindow);
-    this->children.push_back(widget);
 	iteminfo.name = "";
 	iteminfo.window = NULL;
 	iteminfo.menu = NULL;
 	iteminfo.separator = NULL;
-	this->iteminfos.push_back(iteminfo);
+    if (item > 0) {
+    	if (item > this->children.size())
+    		item = -1;
+    }
+    if (item < 0) {
+    	// push new item at the end of the list
+    	this->children.push_back(widget);
+		this->iteminfos.push_back(iteminfo);
+    }
+    else {
+    	// get currently selected icon
+    	unsigned int sitem = getSelected();
+
+    	// insert at position item
+    	this->children.insert(this->children.begin() + item, widget);
+		this->iteminfos.insert(this->iteminfos.begin() + item, iteminfo);
+
+	    if (item <= sitem) {
+	    	// item before the selected item inserted, so have to change the selection
+			setSelected(sitem + 1, false);
+	    }
+    }
 
     recalculateChildren();
 
@@ -2530,6 +2550,48 @@ MMSWidget *MMSMenuWidget::newItem(MMSWidget *widget) {
 
     return widget;
 }
+
+
+void MMSMenuWidget::deleteItem(unsigned int item) {
+	// check size
+	if (item >= this->children.size())
+		return;
+
+	// get currently selected icon
+	unsigned int sitem = getSelected();
+	if (sitem == this->children.size()-1) {
+		// last item in the list is selected, so move the selection before deletion
+		if (sitem > 0)
+			setSelected(sitem - 1, false);
+	}
+
+	// delete item
+    delete this->children.at(item);
+    this->children.erase(this->children.begin()+item);
+    MMSWidget *w = this->iteminfos.at(item).separator;
+    if (w) delete w;
+    this->iteminfos.erase(this->iteminfos.begin()+item);
+
+    // recalc and refresh
+    recalculateChildren();
+
+    if (item < sitem) {
+    	// item before the selected item was deleted, so have to change the selection
+		setSelected(sitem - 1, false);
+    }
+    else
+    if (item == sitem) {
+    	// selected item was deleted, so we have to select the item at this position
+    	if (sitem < this->children.size())
+    		setSelected(sitem, false);
+    	else
+		if (sitem > 0)
+    		setSelected(sitem - 1, false);
+    }
+
+    this->refresh();
+}
+
 
 void MMSMenuWidget::clear() {
     for(int i = (int)this->children.size() - 1; i >= 0 ; i--) {
