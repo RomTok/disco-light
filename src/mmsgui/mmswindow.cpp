@@ -3314,10 +3314,15 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus, b
 //printf("XXX: setFocusedWidget for window %s %x set = %d, switchfocus = %d\n", name.c_str(), this, set, switchfocus);
 	if (set) {
     	if (switchfocus) {
+ //   		printf(">>> %x, %x\n", this->focusedwidget, child);
     		if (this->focusedwidget)
     			this->focusedwidget->setFocus(false, refresh);
-    		if (child)
-    			child->setFocus(true, refresh);
+    		if (child) {
+                if (!child->isFocused()) { ////////////////////////
+                	child->focused = true; //////////////////////////////
+                	child->setFocus(true, refresh);
+                }
+    		}
     	}
         this->focusedwidget = child;
         this->firstfocusset = true;
@@ -3325,8 +3330,10 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus, b
     else {
         if (child)
             if (child->isFocused()) {
-            	if (switchfocus)
+            	if (switchfocus) {
+                	child->focused = false; ////////////////////////
             		child->setFocus(false, refresh);
+            	}
                 this->focusedwidget = NULL;
                 this->firstfocusset = false;
             }

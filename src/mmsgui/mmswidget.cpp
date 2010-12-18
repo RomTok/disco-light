@@ -1830,8 +1830,12 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     if (!b)
     	return;
 
-    if (this->rootwindow)
-        this->rootwindow->setFocusedWidget(this, set, false, refresh);
+    if (this->rootwindow) {
+//        this->rootwindow->setFocusedWidget(this, set, false, refresh);
+
+//    	printf("call setFocusedWidget(), this = %x, refresh = %d, set = %d\n", this, refresh, set);
+    	this->rootwindow->setFocusedWidget(this, set, true, refresh);
+    }
 
     /* the focused flag MUST BE set before all other calls (because of dim and trans functions) */
     this->focused = set;
