@@ -1822,6 +1822,7 @@ void MMSWidget::setName(string name) {
     this->name = name;
 }
 
+
 void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     /* switch focused on/off if possible */
 	bool b;
@@ -1829,6 +1830,9 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
         return;
     if (!b)
     	return;
+
+    // the focused flag MUST BE set before all other calls (because of dim and trans functions)
+    this->focused = set;
 
     if (this->rootwindow) {
 //        this->rootwindow->setFocusedWidget(this, set, false, refresh);
@@ -1838,7 +1842,7 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     }
 
     /* the focused flag MUST BE set before all other calls (because of dim and trans functions) */
-    this->focused = set;
+//    this->focused = set;
 
     setSelected(set, refresh);
 
