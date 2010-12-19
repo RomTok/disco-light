@@ -75,6 +75,8 @@ bool MMSSliderWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->barimage = NULL;
     this->selbarimage = NULL;
 
+    this->vertical = true;
+
     // initialize the callbacks
     this->onSliderIncrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
     this->onSliderDecrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
@@ -106,6 +108,7 @@ MMSWidget *MMSSliderWidget::copyWidget() {
     newWidget->selimage_i = NULL;
     newWidget->barimage = NULL;
     newWidget->selbarimage = NULL;
+    this->vertical = true;
     if (this->rootwindow) {
         newWidget->image = this->rootwindow->im->getImage(newWidget->getImagePath(), newWidget->getImageName());
         newWidget->selimage = this->rootwindow->im->getImage(newWidget->getSelImagePath(), newWidget->getSelImageName());
@@ -300,10 +303,9 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
 		getBarImage(&barsuf);
 
         // calculate position of the slider
-        bool vertical;
         MMSFBRectangle src_barGeom;
         MMSFBRectangle dst_barGeom;
-		calcPos(suf, &surfaceGeom, &vertical, barsuf, &src_barGeom, &dst_barGeom);
+		calcPos(suf, &surfaceGeom, &this->vertical, barsuf, &src_barGeom, &dst_barGeom);
 
 		if (barsuf) {
 			// blit the bar image, prepare for blitting
@@ -333,40 +335,124 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
 }
 
 
+void MMSSliderWidget::switchArrowWidgets() {
+    // connect arrow widgets
+    loadArrowWidgets();
+
+    // get current pos
+	int pos = (int)getPosition();
+
+	if (this->vertical) {
+		// vertical slider
+	    if (this->da->upArrowWidget)
+			if (pos <= 0)
+				this->da->upArrowWidget->setSelected(false);
+			else
+				this->da->upArrowWidget->setSelected(true);
+
+	    if (this->da->downArrowWidget)
+			if (pos >= 100)
+				this->da->downArrowWidget->setSelected(false);
+			else
+				this->da->downArrowWidget->setSelected(true);
+	}
+	else {
+		// horizontal slider
+	    if (this->da->leftArrowWidget)
+			if (pos <= 0)
+				this->da->leftArrowWidget->setSelected(false);
+			else
+				this->da->leftArrowWidget->setSelected(true);
+
+	    if (this->da->rightArrowWidget)
+			if (pos >= 100)
+				this->da->rightArrowWidget->setSelected(false);
+			else
+				this->da->rightArrowWidget->setSelected(true);
+	}
+}
+
 bool MMSSliderWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
-if (test)
-	return true;
-unsigned int pos = getPosition();
-pos++;
-setPosition(pos);
+	// check for vertical slider
+	if (!this->vertical)
+		return false;
+
+	// check for 100%
+	int pos = (int)getPosition();
+	if (pos >= 100)
+		return false;
+
+	// check for test mode
+	if (test)
+		return true;
+
+	// increase position
+	setPosition(pos+1);
+
 	return true;
 }
 
 
 bool MMSSliderWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
+	// check for vertical slider
+	if (!this->vertical)
+		return false;
+
+	// check for 0%
+	int pos = (int)getPosition();
+	if (pos <= 0)
+		return false;
+
+	// check for test mode
 	if (test)
 		return true;
-	unsigned int pos = getPosition();
-	if (pos>0) {
-		pos--;
-		setPosition(pos);
-	}
+
+	// increase position
+	setPosition(pos-1);
 
 	return true;
 }
 
 
 bool MMSSliderWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
+	// check for horizontal slider
+	if (this->vertical)
+		return false;
+
+	// check for 100%
+	int pos = (int)getPosition();
+	if (pos >= 100)
+		return false;
+
+	// check for test mode
 	if (test)
 		return true;
-return true;
+
+	// increase position
+	setPosition(pos+1);
+
+	return true;
 }
 
 
 bool MMSSliderWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
+	// check for horizontal slider
+	if (this->vertical)
+		return false;
+
+	// check for 0%
+	int pos = (int)getPosition();
+	if (pos <= 0)
+		return false;
+
+	// check for test mode
 	if (test)
 		return true;
-return true;
+
+	// increase position
+	setPosition(pos-1);
+
+	return true;
 }
 
 
@@ -380,10 +466,9 @@ bool MMSSliderWidget::scrollTo(int posx, int posy, bool refresh, bool *changed) 
     if (suf) {
         // calculate position of the slider
         MMSFBRectangle sgeom = getGeometry();
-        bool vertical;
-        calcPos(suf, &sgeom, &vertical);
+        calcPos(suf, &sgeom, &this->vertical);
 
-        if (vertical) {
+        if (this->vertical) {
         	// vertical slider
             if (posy < sgeom.y) {
             	// slider decrement

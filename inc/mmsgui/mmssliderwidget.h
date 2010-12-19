@@ -69,11 +69,14 @@ class MMSSliderWidget : public MMSWidget {
         MMSFBSurface    *barimage;
         MMSFBSurface    *selbarimage;
 
+        bool	vertical;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         bool init();
         bool release();
         bool draw(bool *backgroundFilled = NULL);
+        void switchArrowWidgets();
 
     public:
         MMSSliderWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
