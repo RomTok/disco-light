@@ -334,7 +334,8 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
 
 
 bool MMSSliderWidget::scrollDown(unsigned int count, bool refresh, bool test, bool leave_selection) {
-//printf("down = %d\n", count);
+if (test)
+	return true;
 unsigned int pos = getPosition();
 pos++;
 setPosition(pos);
@@ -343,23 +344,29 @@ setPosition(pos);
 
 
 bool MMSSliderWidget::scrollUp(unsigned int count, bool refresh, bool test, bool leave_selection) {
-//	printf("up = %d\n", count);
+	if (test)
+		return true;
 	unsigned int pos = getPosition();
 	if (pos>0) {
 		pos--;
 		setPosition(pos);
 	}
 
+	return true;
 }
 
 
 bool MMSSliderWidget::scrollRight(unsigned int count, bool refresh, bool test, bool leave_selection) {
-//printf("right = %d\n",count);
+	if (test)
+		return true;
+return true;
 }
 
 
 bool MMSSliderWidget::scrollLeft(unsigned int count, bool refresh, bool test, bool leave_selection) {
-//printf("left = %d\n",count);
+	if (test)
+		return true;
+return true;
 }
 
 
