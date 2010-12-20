@@ -34,12 +34,14 @@
 #include <string.h>
 #include <stdlib.h>
 
-//store attribute descriptions here
+// store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_WIDGET_ATTR_I[] = MMSGUI_WIDGET_ATTR_INIT;
 
-//address attribute names
+// address attribute names
 #define GETATTRNAME(aname) MMSGUI_WIDGET_ATTR_I[MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_##aname].name
-#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_WIDGET_ATTR_I[MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_##aname].type
 
 
 MMSWidgetClass::MMSWidgetClass() {
@@ -93,6 +95,8 @@ MMSWidgetClass::MMSWidgetClass() {
 
     initInputMode();
     initJoinedWidget();
+
+    initActivated();
 }
 
 MMSWidgetClass::~MMSWidgetClass() {
@@ -146,6 +150,8 @@ MMSWidgetClass::~MMSWidgetClass() {
 
     freeInputMode();
     freeJoinedWidget();
+
+    freeActivated();
 }
 
 MMSWidgetClass &MMSWidgetClass::operator=(const MMSWidgetClass &c) {
@@ -261,6 +267,8 @@ void MMSWidgetClass::unsetAll() {
 
     unsetInputMode();
     unsetJoinedWidget();
+
+    unsetActivated();
 }
 
 void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
@@ -622,6 +630,9 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_joined_widget:
 	            setJoinedWidget(attrval_str);
 	            break;
+			case MMSGUI_WIDGET_ATTR::MMSGUI_WIDGET_ATTR_IDS_activated:
+	            setActivated((attrval_int) ? true : false);
+	            break;
 			}
 		}
 		endTAFFScan
@@ -631,14 +642,20 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 
     	startTAFFScan_WITHOUT_ID
     	{
-    		/* check if attrname has correct prefix */
+    		// check if attrname has correct prefix
     		if (pl >= strlen(attrname))
         		continue;
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
-    		/* okay, correct prefix, check attributes now */
+            // special storage for macros
+			bool attrval_str_valid;
+			bool int_val_set;
+			bool byte_val_set;
+			int  *p_int_val = &attrval_int;
+
+    		// okay, correct prefix, check attributes now
             if (ISATTRNAME(bgcolor)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isBgColor()) getBgColor(color);
@@ -1049,6 +1066,10 @@ void MMSWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             else
             if (ISATTRNAME(joined_widget)) {
 	            setJoinedWidget(attrval_str);
+            }
+            else
+            if (ISATTRNAME(activated)) {
+				setActivated((attrval_int) ? true : false);
             }
     	}
     	endTAFFScan_WITHOUT_ID
@@ -2049,5 +2070,30 @@ void MMSWidgetClass::setJoinedWidget(const string &joinedwidget) {
 
 bool MMSWidgetClass::getJoinedWidget(string &joinedwidget) {
 	MMSTHEMECLASS_GET_STRING(joinedwidget);
+}
+
+
+void MMSWidgetClass::initActivated() {
+    MMSTHEMECLASS_INIT_BASIC(activated);
+}
+
+void MMSWidgetClass::freeActivated() {
+    MMSTHEMECLASS_FREE_BASIC(activated);
+}
+
+bool MMSWidgetClass::isActivated() {
+	MMSTHEMECLASS_ISSET(activated);
+}
+
+void MMSWidgetClass::unsetActivated() {
+    MMSTHEMECLASS_UNSET(activated);
+}
+
+void MMSWidgetClass::setActivated(bool activated) {
+	MMSTHEMECLASS_SET_BASIC(activated);
+}
+
+bool MMSWidgetClass::getActivated(bool &activated) {
+	MMSTHEMECLASS_GET_BASIC(activated);
 }
 

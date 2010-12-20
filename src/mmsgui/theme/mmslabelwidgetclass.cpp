@@ -38,13 +38,22 @@ TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;
 
 // address attribute names
 #define GETATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_##aname].name
-#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
-#define GETFONTATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
-#define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_##aname].type
 
-#define GETSHADOWATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
-#define ISSHADOWATTRNAME(aname) (strcmp(attrname, GETSHADOWATTRNAME(aname))==0)
+// address font attribute names
+#define GETFONTATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
+
+// address font attribute types
+#define GETFONTATTRTYPE(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].type
+
+// address shadow attribute names
+#define GETSHADOWATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
+
+// address shadow attribute types
+#define GETSHADOWATTRTYPE(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].type
+
 
 MMSLabelWidgetClass::MMSLabelWidgetClass() {
     unsetAll();
@@ -170,6 +179,12 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
+
+            // special storage for macros
+			bool attrval_str_valid;
+			bool int_val_set;
+			bool byte_val_set;
+			int  *p_int_val = &attrval_int;
 
     		// okay, correct prefix, check attributes now
 

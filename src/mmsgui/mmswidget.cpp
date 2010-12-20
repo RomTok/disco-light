@@ -59,7 +59,6 @@ MMSWidget::MMSWidget() :
 	visible(true),
 	focused(false),
 	selected(false),
-	activated(true),
 	pressed(false),
 	brightness(255),
 	opacity(255),
@@ -1708,7 +1707,7 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
         }
     }
 
-    if (this->activated) {
+    if (isActivated()) {
         if (!this->pressed) {
 	        if (this->selected) {
 	            getSelBgColor(c);
@@ -1987,23 +1986,11 @@ void MMSWidget::unsetFocusableForAllChildren(bool refresh) {
     }
 }
 
-void MMSWidget::setActivated(bool set, bool refresh) {
-    /* switch activated on/off */
-    this->activated = set;
-
-    /* refresh my children */
-	vector<MMSWidget*>::iterator end = children.end();
-	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
-        (*i)->setActivated(set, false);
-    }
-
-    /* refresh widget */
-    if (refresh)
-        this->refresh();
-}
 
 bool MMSWidget::isActivated() {
-    return this->activated;
+	bool activated = true;
+	getActivated(activated);
+	return activated;
 }
 
 bool MMSWidget::setPressed(bool set, bool refresh) {
@@ -2618,6 +2605,9 @@ bool MMSWidget::getJoinedWidget(string &joinedwidget) {
     GETWIDGET(JoinedWidget, joinedwidget);
 }
 
+bool MMSWidget::getActivated(bool &activated) {
+    GETWIDGET(Activated, activated);
+}
 
 
 #define GETBORDER(x,y) \
@@ -3104,6 +3094,26 @@ bool MMSWidget::setJoinedWidget(string joinedwidget) {
     return true;
 }
 
+
+
+bool MMSWidget::setActivated(bool activated, bool refresh) {
+	if (this->da) this->da->myWidgetClass.setActivated(activated);
+
+    // refresh my children
+	vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+        (*i)->setActivated(activated, false);
+    }
+
+    // refresh widget
+    if (refresh)
+        this->refresh();
+
+    return true;
+}
+
+
+
 bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setColor(bordercolor);
@@ -3318,6 +3328,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setInputMode(s);
     if (themeClass->getJoinedWidget(s))
         setJoinedWidget(s);
+    if (themeClass->getActivated(b))
+        setActivated(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))

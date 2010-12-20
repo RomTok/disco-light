@@ -35,6 +35,8 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
+// macro for widget specific setAttributesFromTAFF() implementation
+#define ISSHADOWATTRNAME(aname) ((strcmp(attrname, GETSHADOWATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETSHADOWATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
 
 
 

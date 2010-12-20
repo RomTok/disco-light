@@ -202,6 +202,12 @@ MMSPOSITION getPositionFromString(string inputstr);
 #define endTAFFScan_WITHOUT_ID } }
 
 
+// macro for widget specific setAttributesFromTAFF() implementation
+#define ISATTRNAME(aname) ((strcmp(attrname, GETATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
+
+
+// macro for widget specific setAttributesFromTAFF() implementation
+#define ISFONTATTRNAME(aname) ((strcmp(attrname, GETFONTATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETFONTATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
 
 
 

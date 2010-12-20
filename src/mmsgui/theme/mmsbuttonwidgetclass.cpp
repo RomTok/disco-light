@@ -35,9 +35,11 @@
 //store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_BUTTONWIDGET_ATTR_I[] = MMSGUI_BUTTONWIDGET_ATTR_INIT;
 
-//address attribute names
+// address attribute names
 #define GETATTRNAME(aname) MMSGUI_BUTTONWIDGET_ATTR_I[MMSGUI_BUTTONWIDGET_ATTR::MMSGUI_BUTTONWIDGET_ATTR_IDS_##aname].name
-#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_BUTTONWIDGET_ATTR_I[MMSGUI_BUTTONWIDGET_ATTR::MMSGUI_BUTTONWIDGET_ATTR_IDS_##aname].type
 
 
 MMSButtonWidgetClass::MMSButtonWidgetClass() {

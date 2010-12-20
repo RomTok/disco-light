@@ -36,15 +36,24 @@
 //store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[] = MMSGUI_TEXTBOXWIDGET_ATTR_INIT;
 
-//address attribute names
+// address attribute names
 #define GETATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_##aname].name
-#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
-#define GETFONTATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
-#define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_##aname].type
 
-#define GETSHADOWATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
-#define ISSHADOWATTRNAME(aname) (strcmp(attrname, GETSHADOWATTRNAME(aname))==0)
+// address font attribute names
+#define GETFONTATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
+
+// address font attribute types
+#define GETFONTATTRTYPE(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].type
+
+// address shadow attribute names
+#define GETSHADOWATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
+
+// address shadow attribute types
+#define GETSHADOWATTRTYPE(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].type
+
 
 MMSTextBoxWidgetClass::MMSTextBoxWidgetClass() {
     unsetAll();
@@ -182,6 +191,12 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
+
+            // special storage for macros
+			bool attrval_str_valid;
+			bool int_val_set;
+			bool byte_val_set;
+			int  *p_int_val = &attrval_int;
 
     		// okay, correct prefix, check attributes now
 

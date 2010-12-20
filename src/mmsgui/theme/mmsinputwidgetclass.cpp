@@ -36,12 +36,18 @@
 //store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_INPUTWIDGET_ATTR_I[] = MMSGUI_INPUTWIDGET_ATTR_INIT;
 
-//address attribute names
+// address attribute names
 #define GETATTRNAME(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_##aname].name
-#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
 
-#define GETFONTATTRNAME(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_INPUTWIDGET_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
-#define ISFONTATTRNAME(aname) (strcmp(attrname, GETFONTATTRNAME(aname))==0)
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_INPUTWIDGET_ATTR::MMSGUI_INPUTWIDGET_ATTR_IDS_##aname].type
+
+// address font attribute names
+#define GETFONTATTRNAME(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
+
+// address font attribute types
+#define GETFONTATTRTYPE(aname) MMSGUI_INPUTWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].type
+
 
 MMSInputWidgetClass::MMSInputWidgetClass() {
     unsetAll();
@@ -168,6 +174,12 @@ void MMSInputWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
+
+            // special storage for macros
+			bool attrval_str_valid;
+			bool int_val_set;
+			bool byte_val_set;
+			int  *p_int_val = &attrval_int;
 
     		// okay, correct prefix, check attributes now
 

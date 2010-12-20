@@ -321,11 +321,18 @@ class MMSTaffFile {
         */
         int  getNextTag(bool &eof);
 
-        //! Get the current tag id.
+        //! Get the id of the current tag.
         /*!
+        \param name		optional, with this parameter you can get the name of the current tag
         \return id of the current tag
         */
-        int  getCurrentTag();
+        int  getCurrentTag(const char **name = NULL);
+
+        //! Get the name of the current tag.
+        /*!
+        \return name of the current tag
+        */
+        const char *getCurrentTagName();
 
         //! Copy the complete current tag into a new MMSTaffFile.
         /*!
@@ -372,6 +379,26 @@ class MMSTaffFile {
         \return pointer to null terminated value string or NULL
         */
         char *getAttributeString(int id);
+
+        //! Convert a value given as string into binary format and check ranges.
+        /*!
+        \param attrType  			type of the attribute value string
+        \param attrValStr			attribute value string
+        \param attrValStr_valid		returns if attribute value string is valid
+        \param int_val_set			returns true if the value is an integer (int)
+        \param byte_val_set			returns true if the value is an byte (unsigned char)
+        \param int_val				binary presentation of the value if int_val_set or byte_val_set set to true
+        \param attrname				optional attribute name needed for error messages
+        \param attrid				optional attribute id needed for error messages
+        \param nodename				optional tag name needed for error messages
+        \param nodeline				optional line needed for error messages
+        \return true if conversion was successful
+        \note If method returns true the attrValStr can be invalid anyway (see attrValStr_valid)
+        */
+        bool convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *attrValStr, bool *attrValStr_valid,
+											 bool *int_val_set, bool *byte_val_set, int *int_val,
+											 const char *attrname = NULL, int attrid = -1, const char *nodename = 0, int nodeline = -1);
+
 };
 
 

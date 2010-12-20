@@ -134,6 +134,9 @@ class MMSMenuWidget : public MMSWidget {
         //! offset to calculate the animation
         double		anim_offset;
 
+        //! number of menu items to jump over during the animation
+        int			anim_jumpover;
+
         //! factor to calculate the animation
         double		anim_factor;
 
@@ -186,7 +189,7 @@ class MMSMenuWidget : public MMSWidget {
         bool onAnimation(MMSPulser *pulser);
         void onAfterAnimation(MMSPulser *pulser);
 
-        void startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double anim_offset);
+        void startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double anim_offset, int anim_jumpover);
 
 
         bool scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection);

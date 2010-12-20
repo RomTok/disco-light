@@ -36,9 +36,11 @@
 //store attribute descriptions here
 TAFF_ATTRDESC MMSGUI_PROGRESSBARWIDGET_ATTR_I[] = MMSGUI_PROGRESSBARWIDGET_ATTR_INIT;
 
-//address attribute names
+// address attribute names
 #define GETATTRNAME(aname) MMSGUI_PROGRESSBARWIDGET_ATTR_I[MMSGUI_PROGRESSBARWIDGET_ATTR::MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_##aname].name
-#define ISATTRNAME(aname) (strcmp(attrname, GETATTRNAME(aname))==0)
+
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_PROGRESSBARWIDGET_ATTR_I[MMSGUI_PROGRESSBARWIDGET_ATTR::MMSGUI_PROGRESSBARWIDGET_ATTR_IDS_##aname].type
 
 
 MMSProgressBarWidgetClass::MMSProgressBarWidgetClass() {
@@ -134,14 +136,20 @@ void MMSProgressBarWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string
 
     	startTAFFScan_WITHOUT_ID
     	{
-    		/* check if attrname has correct prefix */
+    		// check if attrname has correct prefix
     		if (pl >= strlen(attrname))
         		continue;
             if (memcmp(attrname, prefix->c_str(), pl)!=0)
             	continue;
             attrname = &attrname[pl];
 
-    		/* okay, correct prefix, check attributes now */
+            // special storage for macros
+			bool attrval_str_valid;
+			bool int_val_set;
+			bool byte_val_set;
+			int  *p_int_val = &attrval_int;
+
+    		// okay, correct prefix, check attributes now
             if (ISATTRNAME(color)) {
 				color.a = color.r = color.g = color.b = 0;
 	            if (isColor()) color = getColor();

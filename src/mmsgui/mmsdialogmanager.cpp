@@ -1195,10 +1195,11 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 
 									// okay, searching for the widget within the new item
 									MMSWidget *widget;
-									if (item->getName() == widgetName)
+									if (item->getName() == widgetName) {
 										widget = item;
-									else
+									}else {
 										widget = item->findWidget(widgetName);
+									}
 
 									updateTAFFAttributes(tafff, widget, widgetName);
 								}

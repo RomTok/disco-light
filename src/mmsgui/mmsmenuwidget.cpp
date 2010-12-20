@@ -1350,15 +1350,19 @@ bool MMSMenuWidget::onAnimation(MMSPulser *pulser) {
 		break;
 	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN:
 		this->selection_offset_y = this->anim_offset + (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_y*= this->anim_jumpover + 1;
 		break;
 	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP:
 		this->selection_offset_y = this->anim_offset - (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_y*= this->anim_jumpover + 1;
 		break;
 	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT:
 		this->selection_offset_x = this->anim_offset - (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_x*= this->anim_jumpover + 1;
 		break;
 	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT:
 		this->selection_offset_x = this->anim_offset + (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_x*= this->anim_jumpover + 1;
 		break;
 	}
 
@@ -1390,7 +1394,7 @@ void MMSMenuWidget::onAfterAnimation(MMSPulser *pulser) {
 }
 
 
-void MMSMenuWidget::startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double anim_offset) {
+void MMSMenuWidget::startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double anim_offset, int anim_jumpover) {
 
 	MMSSEQUENCEMODE	seq_mode;
 
@@ -1409,8 +1413,9 @@ void MMSMenuWidget::startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double
 		break;
 	}
 
-	// save offset
+	// save offset and jump over cnt
 	this->anim_offset = anim_offset;
+	this->anim_jumpover = anim_jumpover;
 
 	// init pulser and start it
 	this->pulser.setStepsPerSecond(MMSMENUWIDGET_ANIM_STEPS_PER_SECOND);
@@ -1537,10 +1542,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
 
-				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
+				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy < this->y)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 					startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN,
-											-(double)(getItemVMargin() * 2 + this->item_h));
+											-(double)(getItemVMargin() * 2 + this->item_h),
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -1550,10 +1557,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
-	            if ((this->smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldy < this->y)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN,
-											(double)(getItemVMargin() * 2 + this->item_h));
+											(double)(getItemVMargin() * 2 + this->item_h),
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -1709,10 +1718,12 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 				selectItem(olditem, false, false);
 
             	// selection animation?
-				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
+				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy > this->y)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 					startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP,
-											getItemVMargin() * 2 + this->item_h);
+											getItemVMargin() * 2 + this->item_h,
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -1722,10 +1733,12 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
-	            if ((this->smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldy > this->y)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_UP,
-											-(double)(getItemVMargin() * 2 + this->item_h));
+											-(double)(getItemVMargin() * 2 + this->item_h),
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -1915,10 +1928,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
-	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
+	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx < this->x)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT,
-											-(double)(getItemHMargin() * 2 + this->item_w));
+											-(double)(getItemHMargin() * 2 + this->item_w),
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -1928,10 +1943,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
-	            if ((this->smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldx < this->x)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT,
-											getItemHMargin() * 2 + this->item_w);
+											getItemHMargin() * 2 + this->item_w,
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -1976,7 +1993,8 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
             if ((this->smooth_scrolling)&&(refresh)) {
 				// do the animation
-            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT, 0);
+				// input: animation mode, animation offset, number of menu items to jump over
+            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT, 0, count - 1);
             }
 
 			/* correct menu with more than one column */
@@ -2097,10 +2115,12 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
-	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
+	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx > this->x)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT,
-											getItemHMargin() * 2 + this->item_w);
+											getItemHMargin() * 2 + this->item_w,
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -2110,10 +2130,12 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
 
-	            if ((this->smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldx > this->x)) {
 					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT,
-											-(double)(getItemHMargin() * 2 + this->item_w));
+											-(double)(getItemHMargin() * 2 + this->item_w),
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -2158,7 +2180,8 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 
             if ((this->smooth_scrolling)&&(refresh)) {
 				// do the animation
-            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT, 0);
+				// input: animation mode, animation offset, number of menu items to jump over
+            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT, 0, count - 1);
             }
 
 
