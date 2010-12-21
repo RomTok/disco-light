@@ -2065,9 +2065,11 @@ bool MMSWindow::show() {
         return false;
     }
 
+
     switch (getType()) {
     case MMSWINDOWTYPE_MAINWINDOW:
         // hide all main and popup windows
+    	// root windows will be hidden during the show animation, see beforeShowAction()
         if (this->windowmanager) {
             this->windowmanager->hideAllPopupWindows(true);
             this->windowmanager->hideAllMainWindows();
@@ -2089,6 +2091,8 @@ bool MMSWindow::show() {
     default:
     	break;
     }
+
+
 
 /*    if (this->action->isRunning())
         this->action->cancelBroadcast.emit(this->getType());

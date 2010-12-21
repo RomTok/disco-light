@@ -1618,47 +1618,59 @@ void MMSWidget::refresh() {
     MMSWindow *myroot = this->rootwindow;
 
     if (!this->geomset) {
+    	// sorry, i have no geometry info
     	return;
     }
 
-    /*if (!this->visible) {
-    	return;
-    }*/
-
-    if (!myroot)
+    if (!myroot) {
+    	// sorry, i have no root window
    		return;
+    }
 
     // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown
     if (!myroot->isShown(true)) {
-    	DEBUGMSG("MMSGUI", "MMSWidget->refresh() skipped because window is not shown");
+    	DEBUGMSG("MMSGUI", "MMSWidget::refresh() skipped because window is not shown");
         return;
     }
 
-    /* lock the window because only one thread can do this at the same time */
-//    myroot->lock();
+    // lock the window because only one thread can do this at the same time
     this->parent_rootwindow->lock();
 
-    if (this->drawable)
-        getMargin(margin);
+    // we have to check if the window is hidden while lock()
+    // this is very important if the windows shares surfaces
+    // else it can be that a widget from a hidden window destroys the current window
+    if (!myroot->isShown(true)) {
+    	DEBUGMSG("MMSGUI", "MMSWidget::refresh() skipped after MMSWindow::lock() because window is not shown anymore");
 
+    	// unlock the window
+        this->parent_rootwindow->unlock();
+        return;
+    }
+
+    if (this->drawable) {
+        getMargin(margin);
+    }
+
+    // region to be updated
     tobeupdated.x = this->geom.x + margin;
     tobeupdated.y = this->geom.y + margin;
     tobeupdated.w = this->geom.w - 2*margin;
     tobeupdated.h = this->geom.h - 2*margin;
 
-
-    /* e.g. for smooth scrolling menus we must recalculate children here */
-    /* so if the widget is a menu and smooth scrolling is enabled, we do the recalculation */
-    if (this->type == MMSWIDGETTYPE_MENU)
+    // e.g. for smooth scrolling menus we must recalculate children here
+    // so if the widget is a menu and smooth scrolling is enabled, we do the recalculation
+    if (this->type == MMSWIDGETTYPE_MENU) {
     	if (((MMSMenuWidget *)this)->getSmoothScrolling())
     		recalculateChildren();
+    }
 
+    // inform the window that the widget want to redraw
    	myroot->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated, false);
 
+   	// reset the states of the arrow widgets
     switchArrowWidgets();
 
-    /* unlock the window */
-//    myroot->unlock();
+    // unlock the window
     this->parent_rootwindow->unlock();
 }
 
