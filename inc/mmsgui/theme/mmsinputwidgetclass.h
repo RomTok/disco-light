@@ -33,19 +33,19 @@
 #ifndef MMSINPUTWIDGETCLASS_H_
 #define MMSINPUTWIDGETCLASS_H_
 
-#include "mmsgui/theme/mmswidgetclass.h"
+#include "mmsgui/theme/mmstextbaseclass.h"
 
 //! describe attributes for MMSInputWidget which are additional to the MMSWidgetClass
 namespace MMSGUI_INPUTWIDGET_ATTR {
 
 	#define MMSGUI_INPUTWIDGET_ATTR_ATTRDESC \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
-		{ "color", TAFF_ATTRTYPE_STRING }, \
+		{ "color", TAFF_ATTRTYPE_COLOR }, \
 		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "selcolor", TAFF_ATTRTYPE_COLOR }, \
 		{ "selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
@@ -87,6 +87,82 @@ namespace MMSGUI_INPUTWIDGET_ATTR {
 }
 
 extern TAFF_ATTRDESC MMSGUI_INPUTWIDGET_ATTR_I[];
+
+
+
+
+
+
+
+
+
+
+
+//////////TEMPORARY
+
+class MMSGUI_FONTS {
+private:
+    typedef struct {
+        //! is fontname set?
+        bool            isfontname;
+
+        //! name of the font
+        string          fontname;
+    } MMSFONTNAME;
+
+    MMSFONTNAME fonts[MMSLANG_SIZE];
+
+public:
+	//! constructor
+	MMSGUI_FONTS() {
+		unsetFontNames();
+	}
+
+    //! Check if the fontname is set.
+    bool isFontName(MMSLanguage lang = MMSLANG_NONE) {
+    	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return false;
+        return this->fonts[lang].isfontname;
+    }
+
+    //! Set the fontname which is used to draw the text.
+    /*!
+    \param fontname  name of the font
+    */
+    void setFontName(string fontname, MMSLanguage lang = MMSLANG_NONE) {
+    	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return;
+    	this->fonts[lang].fontname = fontname;
+    	this->fonts[lang].isfontname = true;
+    }
+
+    //! Mark the fontname as not set.
+    void unsetFontName(MMSLanguage lang = MMSLANG_NONE) {
+    	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return;
+    	this->fonts[lang].isfontname = false;
+    }
+
+    //! Mark all fontnames as not set.
+    void unsetFontNames() {
+    	for (unsigned int i = MMSLANG_NONE; i < MMSLANG_SIZE; i++) {
+    		unsetFontName((MMSLanguage)i);
+    	}
+    }
+
+    //! Get the fontname which is used to draw the text.
+    /*!
+    \return name of the font
+    */
+    string getFontName(MMSLanguage lang = MMSLANG_NONE) {
+    	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return "";
+   		return this->fonts[lang].fontname;
+    }
+
+};
+
+
+
+
+
+
 
 
 //! A data access class for the input widget.

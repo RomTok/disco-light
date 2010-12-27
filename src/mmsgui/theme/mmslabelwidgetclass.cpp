@@ -90,10 +90,7 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            setAlignment(getAlignmentFromString(attrval_str));
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setColor(color);
+	            setColor(MMSFBColor((unsigned int)attrval_int));
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color_a:
 				color.a = color.r = color.g = color.b = 0;
@@ -120,10 +117,7 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 	            setColor(color);
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setSelColor(color);
+	            setSelColor(MMSFBColor((unsigned int)attrval_int));
 	            break;
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_a:
 				color.a = color.r = color.g = color.b = 0;
@@ -196,10 +190,7 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             }
             else
             if (ISATTRNAME(color)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setColor(color);
+	            setColor(MMSFBColor((unsigned int)attrval_int));
             }
             else
             if (ISATTRNAME(color_a)) {
@@ -231,10 +222,7 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             }
             else
             if (ISATTRNAME(selcolor)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setSelColor(color);
+	            setSelColor(MMSFBColor((unsigned int)attrval_int));
             }
             else
             if (ISATTRNAME(selcolor_a)) {

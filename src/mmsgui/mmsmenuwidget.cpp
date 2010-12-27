@@ -376,13 +376,6 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 
 	// draw the items
 	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled);
-
-	// draw my separators
-	for(unsigned int i=0;i<this->iteminfos.size();i++) {
-		MMSWidget *sep = this->iteminfos.at(i).separator;
-		if (sep) sep->drawchildren(false, backgroundFilled);
-	}
-
 }
 
 void MMSMenuWidget::recalculateChildren() {
@@ -433,15 +426,6 @@ void MMSMenuWidget::recalculateChildren() {
 			selected_col = selected_item % cols;
        	}
 
-       	// summary of the separator sizes
-       	int sepsize = 0;
-
-       	// hide all separators
-        for(int i = 0; i < (int)this->iteminfos.size(); i++) {
-   			MMSWidget *sep = this->iteminfos.at(i).separator;
-   			if (sep) sep->setVisible(false, false);
-        }
-
        	/* through all items */
         for(int i = 0; i < (int)this->children.size(); i++) {
             rect.x = item_xx + (i % (int)cols - (int)px) * item_ww;
@@ -452,8 +436,6 @@ void MMSMenuWidget::recalculateChildren() {
             if (cols==1) {
                 if (smooth_scrolling)
                 	rect.y+=scrolling_offset;
-
-            	rect.y+=sepsize;
             }
             else {
                 if (smooth_scrolling)
@@ -594,20 +576,6 @@ void MMSMenuWidget::recalculateChildren() {
 
                 	this->children.at(i)->setGeometry(rect);
 
-                   	if (cols==1) {
-                   		/* if one column, check if i have a separator */
-               			MMSWidget *sep = this->iteminfos.at(i).separator;
-                   		if (sep) {
-                   			MMSFBRectangle seprect;
-                   			seprect.x = 0;
-                   			seprect.y = rect.y + rect.h;
-                   			seprect.w = this->geom.w;
-                		    getPixelFromSizeHint(&seprect.h, sep->sizehint, this->geom.h, this->geom.w);
-                		    sepsize+=seprect.h;
-                		    sep->setGeometry(seprect);
-                            sep->setVisible(true, false);
-                   		}
-                   	}
                 }
 
                 /* switch the visibility */
@@ -2535,7 +2503,6 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 	iteminfo.name = "";
 	iteminfo.window = NULL;
 	iteminfo.menu = NULL;
-	iteminfo.separator = NULL;
     if (item > 0) {
     	if (item > this->children.size())
     		item = -1;
@@ -2591,8 +2558,6 @@ void MMSMenuWidget::deleteItem(unsigned int item) {
 	// delete item
     delete this->children.at(item);
     this->children.erase(this->children.begin()+item);
-    MMSWidget *w = this->iteminfos.at(item).separator;
-    if (w) delete w;
     this->iteminfos.erase(this->iteminfos.begin()+item);
 
     // recalc and refresh
@@ -2620,8 +2585,6 @@ void MMSMenuWidget::clear() {
     for(int i = (int)this->children.size() - 1; i >= 0 ; i--) {
         delete this->children.at(i);
         this->children.erase(this->children.end()-1);
-        MMSWidget *w = this->iteminfos.at(i).separator;
-        if (w) delete w;
         this->iteminfos.erase(this->iteminfos.end()-1);
     }
 
@@ -2816,15 +2779,6 @@ bool MMSMenuWidget::setBackItem(unsigned int item) {
 	return true;
 }
 
-bool MMSMenuWidget::setSeparator(unsigned int item, MMSWidget *widget, bool refresh) {
-	if (item >= this->iteminfos.size()) return false;
-	iteminfos.at(item).separator = widget;
-    widget->setParent(this);
-    widget->setRootWindow(this->rootwindow);
-    if (refresh)
-	    this->refresh();
-	return true;
-}
 
 /***********************************************/
 /* begin of theme access methods (get methods) */

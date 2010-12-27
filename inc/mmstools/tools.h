@@ -97,6 +97,8 @@ string strToUpr(string src);
 
 int hexToInt(const char *in);
 
+string ucharToHex(unsigned char in);
+
 bool getCurrentTimeBuffer(char *dtbuf, char *datebuf=NULL, char *timebuf=NULL,
                           time_t *clock=NULL);
 

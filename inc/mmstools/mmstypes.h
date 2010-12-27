@@ -493,11 +493,34 @@ class MMSFBColor {
 		//! alphachannel
 		unsigned char a;
 
-		MMSFBColor(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 0) {
+		MMSFBColor() {
+			this->r = 0x00;
+			this->g = 0x00;
+			this->b = 0x00;
+			this->a = 0x00;
+		}
+
+		MMSFBColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
 			this->r = r;
 			this->g = g;
 			this->b = b;
 			this->a = a;
+		}
+
+		MMSFBColor(unsigned int argb) {
+			this->b = argb & 0xff;
+			this->g = (argb << 16) >> 24;
+			this->r = (argb << 8)  >> 24;
+			this->a = argb >> 24;
+		}
+
+		unsigned int getARGB() {
+			unsigned int argb;
+			argb = (unsigned int)this->b;
+			argb|= ((unsigned int)this->g) << 8;
+			argb|= ((unsigned int)this->r) << 16;
+			argb|= ((unsigned int)this->a) << 24;
+			return argb;
 		}
 };
 
@@ -516,6 +539,21 @@ The input string has the syntax "#rrggbbaa".
 \note If the function fails, the color is set to "#00000000".
 */
 bool getMMSFBColorFromString(string input, MMSFBColor *color);
+
+
+//! Convert MMSFBColor to a color string.
+/*!
+The output string has the syntax "#rrggbbaa".
+
+    rr - hex value for red
+    gg - hex value for green
+    bb - hex value for blue
+    aa - hex value for alpha channel (value ff means full opaque)
+
+\param color  color to be converted
+\return color string
+*/
+string getMMSFBColorString(MMSFBColor color);
 
 
 // rectangles, regions, etc..................................................

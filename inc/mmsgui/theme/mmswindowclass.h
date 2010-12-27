@@ -44,7 +44,7 @@ namespace MMSGUI_WINDOW_ATTR {
 		{ "dy", TAFF_ATTRTYPE_STRING }, \
 		{ "w", TAFF_ATTRTYPE_STRING }, \
 		{ "h", TAFF_ATTRTYPE_STRING }, \
-		{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "bgcolor", TAFF_ATTRTYPE_COLOR }, \
 		{ "bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \

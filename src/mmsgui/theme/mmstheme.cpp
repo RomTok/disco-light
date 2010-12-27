@@ -74,7 +74,6 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"slider",		MMSGUI_SLIDERWIDGET_ATTR_I		},
 	{	"textbox",		NULL, 	NULL,			MMSGUI_TEXTBOXWIDGET_ATTR_I		},
 	{	"class", 		"type",	"textbox",		MMSGUI_TEXTBOXWIDGET_ATTR_I		},
-	{	"separator",	NULL, 	NULL,			MMSGUI_NONE_ATTR_I				},
 	{	"input", 		NULL, 	NULL,			MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"checkbox",		NULL, 	NULL,			MMSGUI_CHECKBOXWIDGET_ATTR_I	},
@@ -83,7 +82,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 23, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 25, mmsgui_taff_tagtable };
 
 
 

@@ -692,6 +692,7 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 	case TAFF_ATTRTYPE_STRING:
 	case TAFF_ATTRTYPE_BINDATA:
 		break;
+
 	case TAFF_ATTRTYPE_NE_STRING:
 		badval = (!*attrVal);
 		if (badval) {
@@ -699,6 +700,7 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 			check_ok = false;
 		}
 		break;
+
 	case TAFF_ATTRTYPE_BOOL:
 		if (!byte_val_set || !int_val) return false;
 		badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false")));
@@ -714,6 +716,7 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 				*int_val = 0;
 		}
 		break;
+
 	case TAFF_ATTRTYPE_UCHAR:
 	case TAFF_ATTRTYPE_UCHAR100:
 		if (!byte_val_set || !int_val) return false;
@@ -739,6 +742,7 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 			check_ok = false;
 		}
 		break;
+
 	case TAFF_ATTRTYPE_INT:
 		if (!int_val_set || !int_val) return false;
 		char iv[11+1];
@@ -751,6 +755,7 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 			check_ok = false;
 		}
 		break;
+
 	case TAFF_ATTRTYPE_STATE:
 		if (!byte_val_set || !int_val) return false;
 		badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false"))
@@ -770,6 +775,7 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 				*int_val = 0;
 		}
 		break;
+
 	case TAFF_ATTRTYPE_SEQUENCE_MODE: {
 		if (!byte_val_set || !int_val) return false;
 		bool sm_true			= !xmlStrcmp(attrVal, (xmlChar *)"true");
@@ -802,6 +808,20 @@ bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *
 			else
 				*int_val = 0;
 		}
+		}
+		break;
+
+	case TAFF_ATTRTYPE_COLOR:
+		if (!int_val_set || !int_val) return false;
+		MMSFBColor color;
+		badval = (!getMMSFBColorFromString((const char*)attrVal, &color));
+		if (badval) {
+			validvals = "argb values in hex format, syntax: \"#rrggbbaa\"";
+			check_ok = false;
+		}
+		else {
+			*int_val_set = true;
+			*int_val = (int)color.getARGB();
 		}
 		break;
 	}
@@ -1384,6 +1404,9 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 				else
 					attrval = "false";
 				break;
+			case TAFF_ATTRTYPE_COLOR:
+				attrval = getMMSFBColorString(MMSFBColor((unsigned int)attrval_int));
+				break;
 			default:
 				attrval = attrval_str;
 				break;
@@ -1793,6 +1816,7 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 							*value_int = (int)v; }
 						break;
 					case TAFF_ATTRTYPE_INT:
+					case TAFF_ATTRTYPE_COLOR:
 						*value_str = NULL;
 						*value_int = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 						break;

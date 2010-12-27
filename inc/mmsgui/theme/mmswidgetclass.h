@@ -39,32 +39,32 @@
 namespace MMSGUI_WIDGET_ATTR {
 
 	#define MMSGUI_WIDGET_ATTR_ATTRDESC \
-	{ "bgcolor", TAFF_ATTRTYPE_STRING }, \
+	{ "bgcolor", TAFF_ATTRTYPE_COLOR }, \
 	{ "bgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgcolor", TAFF_ATTRTYPE_COLOR }, \
 	{ "selbgcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_p", TAFF_ATTRTYPE_STRING }, \
+	{ "bgcolor_p", TAFF_ATTRTYPE_COLOR }, \
 	{ "bgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_p", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgcolor_p", TAFF_ATTRTYPE_COLOR }, \
 	{ "selbgcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "bgcolor_i", TAFF_ATTRTYPE_STRING }, \
+	{ "bgcolor_i", TAFF_ATTRTYPE_COLOR }, \
 	{ "bgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
 	{ "bgcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
-	{ "selbgcolor_i", TAFF_ATTRTYPE_STRING }, \
+	{ "selbgcolor_i", TAFF_ATTRTYPE_COLOR }, \
 	{ "selbgcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
 	{ "selbgcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \

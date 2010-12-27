@@ -71,7 +71,6 @@ class MMSMenuWidget : public MMSWidget {
     		string			name;
     		class MMSWindow	*window;
     		MMSMenuWidget	*menu;
-    		MMSWidget		*separator;
     	} MMSMENUITEMINFOS;
 
         string          	className;
@@ -253,7 +252,6 @@ class MMSMenuWidget : public MMSWidget {
         bool setSubMenuName(unsigned int item, const char *name);
         bool setSubMenuName(unsigned int item, string &name);
         bool setBackItem(unsigned int item);
-        bool setSeparator(unsigned int item, MMSWidget *widget, bool refresh = true);
 
         sigc::signal<void, MMSWidget*> *onSelectItem;
         sigc::signal<void, MMSWidget*> *onBeforeScroll;

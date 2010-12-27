@@ -1251,23 +1251,16 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 				}
             }
             else {
-            	// any other widgets given in the menu, we need a temporary widget
+            	// any other widgets given in the menu
+            	printf("Warning: Tag <%s/> is not supported within <menu/>.\n", tafff->getCurrentTagName());
+
+            	// we need a temporary widget
                 MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
 
                 // parse the childs from dialog file
             	throughDoc(tafff, tmpWidget, NULL, theme);
 
-            	if (tid == MMSGUI_TAGTABLE_TAG_SEPARATOR) {
-                    // set the separator
-	            	if (menu->getSize() > 0) {
-		                MMSWidget *separator = tmpWidget->disconnectChild();
-		                if (separator) {
-		                	// separator widget(s) set
-		                	separator->setFocusable(false);
-		                	menu->setSeparator(menu->getSize()-1, separator);
-		                }
-	            	}
-            	}
+            	// delete the widget, we cannot use it
                 delete tmpWidget;
             }
     	}

@@ -60,7 +60,9 @@ typedef enum {
 	//! valid values: "true", "false", "auto"
 	TAFF_ATTRTYPE_STATE,
 	//! valid values: "true", "false", "linear", "log", "log_soft_start", "log_soft_end"
-	TAFF_ATTRTYPE_SEQUENCE_MODE
+	TAFF_ATTRTYPE_SEQUENCE_MODE,
+	//! argb values in hex format, syntax: "#rrggbbaa"
+	TAFF_ATTRTYPE_COLOR
 } TAFF_ATTRTYPE;
 
 //! Describe a TAFF attribute

@@ -234,6 +234,7 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
     return MMSFB_PF_NONE;
 }
 
+
 bool getMMSFBColorFromString(string input, MMSFBColor *color) {
 	// check ret ptr
 	if (!color)
@@ -263,6 +264,18 @@ bool getMMSFBColorFromString(string input, MMSFBColor *color) {
 
     return true;
 }
+
+
+string getMMSFBColorString(MMSFBColor color) {
+	string ret = "#";
+	ret+= ucharToHex(color.r);
+	ret+= ucharToHex(color.g);
+	ret+= ucharToHex(color.b);
+	ret+= ucharToHex(color.a);
+	return ret;
+}
+
+
 
 string getMMSFBPointerModeString(MMSFBPointerMode pm) {
     if(pm == MMSFB_PM_FALSE)

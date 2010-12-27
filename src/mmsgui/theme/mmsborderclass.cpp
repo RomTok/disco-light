@@ -120,10 +120,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 		{
 	        switch (attrid) {
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) getColor(color);
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setColor(color);
+	            setColor(MMSFBColor((unsigned int)attrval_int));
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_color_a:
 				color.a = color.r = color.g = color.b = 0;
@@ -150,10 +147,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 	            setColor(color);
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selcolor:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) getSelColor(color);
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setSelColor(color);
+	            setSelColor(MMSFBColor((unsigned int)attrval_int));
 	            break;
 			case MMSGUI_BORDER_ATTR::MMSGUI_BORDER_ATTR_IDS_border_selcolor_a:
 				color.a = color.r = color.g = color.b = 0;
@@ -272,10 +266,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
 
     		// okay, correct prefix, check attributes now
             if (ISATTRNAME(border_color)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) getColor(color);
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setColor(color);
+	            setColor(MMSFBColor((unsigned int)attrval_int));
             }
             else
             if (ISATTRNAME(border_color_a)) {
@@ -307,10 +298,7 @@ void MMSBorderClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, s
             }
             else
             if (ISATTRNAME(border_selcolor)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) getSelColor(color);
-	            if (getMMSFBColorFromString(attrval_str, &color))
-	                setSelColor(color);
+	            setSelColor(MMSFBColor((unsigned int)attrval_int));
             }
             else
             if (ISATTRNAME(border_selcolor_a)) {

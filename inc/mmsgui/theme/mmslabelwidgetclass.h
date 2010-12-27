@@ -40,12 +40,12 @@ namespace MMSGUI_LABELWIDGET_ATTR {
 
 	#define MMSGUI_LABELWIDGET_ATTR_ATTRDESC \
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
-		{ "color", TAFF_ATTRTYPE_STRING }, \
+		{ "color", TAFF_ATTRTYPE_COLOR }, \
 		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "selcolor", TAFF_ATTRTYPE_COLOR }, \
 		{ "selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \

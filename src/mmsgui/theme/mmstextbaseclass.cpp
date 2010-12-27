@@ -45,7 +45,8 @@ void MMSTextBaseClass::unsetAll() {
     unsetColor();
     unsetSelColor();
     unsetText();
-    shadows.unsetShadows();
+    unsetShadowColors();
+    unsetSelShadowColors();
 }
 
 
@@ -85,23 +86,30 @@ unsigned int MMSTextBaseClass::getFontSize() {
 
 
 bool MMSTextBaseClass::isFontName(MMSLanguage lang) {
-	return this->fonts.isFontName(lang);
+	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return false;
+    return this->fontname[lang].isfontname;
 }
 
 void MMSTextBaseClass::setFontName(string fontname, MMSLanguage lang) {
-	this->fonts.setFontName(fontname, lang);
+	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return;
+	this->fontname[lang].fontname = fontname;
+	this->fontname[lang].isfontname = true;
 }
 
 void MMSTextBaseClass::unsetFontName(MMSLanguage lang) {
-	this->fonts.unsetFontName(lang);
+	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return;
+	this->fontname[lang].isfontname = false;
 }
 
 void MMSTextBaseClass::unsetFontNames() {
-	this->fonts.unsetFontNames();
+	for (unsigned int i = MMSLANG_NONE; i < MMSLANG_SIZE; i++) {
+		unsetFontName((MMSLanguage)i);
+	}
 }
 
 string MMSTextBaseClass::getFontName(MMSLanguage lang) {
-	return this->fonts.getFontName(lang);
+	if (lang < MMSLANG_NONE || lang >= MMSLANG_SIZE) return "";
+	return this->fontname[lang].fontname;
 }
 
 
@@ -180,37 +188,49 @@ string MMSTextBaseClass::getText() {
 
 
 bool MMSTextBaseClass::isShadowColor(MMSPOSITION position) {
-    return this->shadows.shadow[position].iscolor;
+    return this->shadow[position].iscolor;
 }
 
 void MMSTextBaseClass::setShadowColor(MMSPOSITION position, MMSFBColor color) {
-	this->shadows.shadow[position].color = color;
-	this->shadows.shadow[position].iscolor = true;
+	this->shadow[position].color = color;
+	this->shadow[position].iscolor = true;
 }
 
 void MMSTextBaseClass::unsetShadowColor(MMSPOSITION position) {
-	this->shadows.shadow[position].iscolor = false;
+	this->shadow[position].iscolor = false;
+}
+
+void MMSTextBaseClass::unsetShadowColors() {
+	for (int i = 0; i < MMSPOSITION_SIZE; i++) {
+		unsetShadowColor((MMSPOSITION)i);
+	}
 }
 
 MMSFBColor MMSTextBaseClass::getShadowColor(MMSPOSITION position) {
-    return this->shadows.shadow[position].color;
+    return this->shadow[position].color;
 }
 
 bool MMSTextBaseClass::isSelShadowColor(MMSPOSITION position) {
-    return this->shadows.shadow[position].isselcolor;
+    return this->shadow[position].isselcolor;
 }
 
 void MMSTextBaseClass::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor) {
-	this->shadows.shadow[position].selcolor = selcolor;
-	this->shadows.shadow[position].isselcolor = true;
+	this->shadow[position].selcolor = selcolor;
+	this->shadow[position].isselcolor = true;
 }
 
 void MMSTextBaseClass::unsetSelShadowColor(MMSPOSITION position) {
-	this->shadows.shadow[position].isselcolor = false;
+	this->shadow[position].isselcolor = false;
+}
+
+void MMSTextBaseClass::unsetSelShadowColors() {
+	for (int i = 0; i < MMSPOSITION_SIZE; i++) {
+		unsetSelShadowColor((MMSPOSITION)i);
+	}
 }
 
 MMSFBColor MMSTextBaseClass::getSelShadowColor(MMSPOSITION position) {
-    return this->shadows.shadow[position].selcolor;
+    return this->shadow[position].selcolor;
 }
 
 

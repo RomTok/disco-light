@@ -42,12 +42,12 @@ namespace MMSGUI_TEXTBOXWIDGET_ATTR {
 		{ "alignment", TAFF_ATTRTYPE_STRING }, \
 		{ "wrap", TAFF_ATTRTYPE_BOOL }, \
 		{ "splitwords", TAFF_ATTRTYPE_BOOL }, \
-		{ "color", TAFF_ATTRTYPE_STRING }, \
+		{ "color", TAFF_ATTRTYPE_COLOR }, \
 		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "color.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "selcolor", TAFF_ATTRTYPE_COLOR }, \
 		{ "selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \

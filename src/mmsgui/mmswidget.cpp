@@ -1627,12 +1627,6 @@ void MMSWidget::refresh() {
    		return;
     }
 
-    // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown
-    if (!myroot->isShown(true)) {
-    	DEBUGMSG("MMSGUI", "MMSWidget::refresh() skipped because window is not shown");
-        return;
-    }
-
     // lock the window because only one thread can do this at the same time
     this->parent_rootwindow->lock();
 
@@ -1640,7 +1634,7 @@ void MMSWidget::refresh() {
     // this is very important if the windows shares surfaces
     // else it can be that a widget from a hidden window destroys the current window
     if (!myroot->isShown(true)) {
-    	DEBUGMSG("MMSGUI", "MMSWidget::refresh() skipped after MMSWindow::lock() because window is not shown anymore");
+    	DEBUGMSG("MMSGUI", "MMSWidget::refresh() skipped after MMSWindow::lock() because window is currently not shown");
 
     	// unlock the window
         this->parent_rootwindow->unlock();

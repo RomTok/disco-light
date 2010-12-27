@@ -35,30 +35,209 @@
 
 #include "mmsgui/theme/mmswidgetclass.h"
 
-// macro for widget specific setAttributesFromTAFF() implementation
+// all definitions around fonts
+///////////////////////////////////////////////////////////////////////////////
+
+//! FONT macro for widget specific setAttributesFromTAFF() implementation
+#define ISFONTATTRNAME(aname) ((strcmp(attrname, GETFONTATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETFONTATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
+
+
+//! XML attributes for fonts
+namespace MMSGUI_FONT_ATTR {
+
+	#define MMSGUI_FONT_ATTR_ATTRDESC \
+		{ "font.path", TAFF_ATTRTYPE_STRING }, \
+		{ "font.size", TAFF_ATTRTYPE_UCHAR }, \
+		{ "font.name", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.de", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.en", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.dk", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.es", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.fi", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.fr", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.it", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.nl", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.no", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.se", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.tr", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.cn", TAFF_ATTRTYPE_STRING }
+
+	#define MMSGUI_FONT_ATTR_IDS \
+		MMSGUI_FONT_ATTR_IDS_font_path, \
+		MMSGUI_FONT_ATTR_IDS_font_size, \
+		MMSGUI_FONT_ATTR_IDS_font_name, \
+		MMSGUI_FONT_ATTR_IDS_font_name_de, \
+		MMSGUI_FONT_ATTR_IDS_font_name_en, \
+		MMSGUI_FONT_ATTR_IDS_font_name_dk, \
+		MMSGUI_FONT_ATTR_IDS_font_name_es, \
+		MMSGUI_FONT_ATTR_IDS_font_name_fi, \
+		MMSGUI_FONT_ATTR_IDS_font_name_fr, \
+		MMSGUI_FONT_ATTR_IDS_font_name_it, \
+		MMSGUI_FONT_ATTR_IDS_font_name_nl, \
+		MMSGUI_FONT_ATTR_IDS_font_name_no, \
+		MMSGUI_FONT_ATTR_IDS_font_name_se, \
+		MMSGUI_FONT_ATTR_IDS_font_name_tr, \
+		MMSGUI_FONT_ATTR_IDS_font_name_cn
+
+	#define MMSGUI_FONT_ATTR_INIT { \
+		MMSGUI_FONT_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_FONT_ATTR_IDS
+	} ids;
+}
+
+
+//! FONT macro for widget specific setAttributesFromTAFF() implementation
+#define SET_FONT_FROM_TAFF(w) \
+	case w::MMSGUI_FONT_ATTR_IDS_font_path: \
+		if (*attrval_str) \
+			setFontPath(attrval_str); \
+		else \
+			setFontPath((path)?*path:""); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_size: \
+		setFontSize(attrval_int); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name: \
+		setFontName(attrval_str); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_de: \
+		setFontName(attrval_str, MMSLANG_DE); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_en: \
+		setFontName(attrval_str, MMSLANG_EN); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_dk: \
+		setFontName(attrval_str, MMSLANG_DK); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_es: \
+		setFontName(attrval_str, MMSLANG_ES); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_fi: \
+		setFontName(attrval_str, MMSLANG_FI); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_fr: \
+		setFontName(attrval_str, MMSLANG_FR); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_it: \
+		setFontName(attrval_str, MMSLANG_IT); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_nl: \
+		setFontName(attrval_str, MMSLANG_NL); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_no: \
+		setFontName(attrval_str, MMSLANG_NO); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_se: \
+		setFontName(attrval_str, MMSLANG_SE); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_tr: \
+		setFontName(attrval_str, MMSLANG_TR); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_cn: \
+		setFontName(attrval_str, MMSLANG_CN); \
+		break;
+
+
+//! FONT macro for widget specific setAttributesFromTAFF() implementation
+#define SET_FONT_FROM_TAFF_WITH_PREFIX \
+	if (ISFONTATTRNAME(font_path)) { \
+		if (*attrval_str) \
+			setFontPath(attrval_str); \
+		else \
+			setFontPath((path)?*path:""); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_size)) { \
+		setFontSize(attrval_int); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name)) { \
+		setFontName(attrval_str); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_de)) { \
+		setFontName(attrval_str, MMSLANG_DE); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_en)) { \
+		setFontName(attrval_str, MMSLANG_EN); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_dk)) { \
+		setFontName(attrval_str, MMSLANG_DK); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_es)) { \
+		setFontName(attrval_str, MMSLANG_ES); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_fi)) { \
+		setFontName(attrval_str, MMSLANG_FI); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_fr)) { \
+		setFontName(attrval_str, MMSLANG_FR); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_it)) { \
+		setFontName(attrval_str, MMSLANG_IT); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_nl)) { \
+		setFontName(attrval_str, MMSLANG_NL); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_no)) { \
+		setFontName(attrval_str, MMSLANG_NO); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_se)) { \
+		setFontName(attrval_str, MMSLANG_SE); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_tr)) { \
+		setFontName(attrval_str, MMSLANG_TR); \
+	} \
+	else \
+	if (ISFONTATTRNAME(font_name_cn)) { \
+		setFontName(attrval_str, MMSLANG_CN); \
+	}
+
+
+
+
+
+// all definitions around shadows
+///////////////////////////////////////////////////////////////////////////////
+
+//! SHADOW macro for widget specific setAttributesFromTAFF() implementation
 #define ISSHADOWATTRNAME(aname) ((strcmp(attrname, GETSHADOWATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETSHADOWATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
 
 
-
+//! XML attributes for shadows
 namespace MMSGUI_SHADOW_ATTR {
 
 	#define MMSGUI_SHADOW_ATTR_ATTRDESC \
-		{ "shadow.top.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.bottom.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.right.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.top-left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.top-right.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.bottom-left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "shadow.bottom-right.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.top.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.bottom.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.right.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.top-left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.top-right.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.bottom-left.color", TAFF_ATTRTYPE_STRING }, \
-		{ "selshadow.bottom-right.color", TAFF_ATTRTYPE_STRING }
+		{ "shadow.top.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.bottom.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.left.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.right.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.top-left.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.top-right.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.bottom-left.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "shadow.bottom-right.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.top.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.bottom.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.left.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.right.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.top-left.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.top-right.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.bottom-left.color", TAFF_ATTRTYPE_COLOR }, \
+		{ "selshadow.bottom-right.color", TAFF_ATTRTYPE_COLOR }
 
 	#define MMSGUI_SHADOW_ATTR_IDS \
 		MMSGUI_SHADOW_ATTR_IDS_shadow_top_color, \
@@ -89,186 +268,123 @@ namespace MMSGUI_SHADOW_ATTR {
 }
 
 
+//! SHADOW macro for widget specific setAttributesFromTAFF() implementation
 #define SET_SHADOW_FROM_TAFF(w) \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_top_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_TOP, color); \
+		setShadowColor(MMSPOSITION_TOP, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_bottom_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_BOTTOM, color); \
+		setShadowColor(MMSPOSITION_BOTTOM, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_LEFT, color); \
+		setShadowColor(MMSPOSITION_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_RIGHT, color); \
+		setShadowColor(MMSPOSITION_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_top_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_TOP_LEFT, color); \
+		setShadowColor(MMSPOSITION_TOP_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_top_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_TOP_RIGHT, color); \
+		setShadowColor(MMSPOSITION_TOP_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_bottom_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_BOTTOM_LEFT, color); \
+		setShadowColor(MMSPOSITION_BOTTOM_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_shadow_bottom_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_BOTTOM_RIGHT, color); \
+		setShadowColor(MMSPOSITION_BOTTOM_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_top_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_TOP, color); \
+		setSelShadowColor(MMSPOSITION_TOP, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_bottom_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_BOTTOM, color); \
+		setSelShadowColor(MMSPOSITION_BOTTOM, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_LEFT, color); \
+		setSelShadowColor(MMSPOSITION_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_RIGHT, color); \
+		setSelShadowColor(MMSPOSITION_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_top_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_TOP_LEFT, color); \
+		setSelShadowColor(MMSPOSITION_TOP_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_top_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_TOP_RIGHT, color); \
+		setSelShadowColor(MMSPOSITION_TOP_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_bottom_left_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_BOTTOM_LEFT, color); \
+		setSelShadowColor(MMSPOSITION_BOTTOM_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 		break; \
 	case w::MMSGUI_SHADOW_ATTR_IDS_selshadow_bottom_right_color: \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_BOTTOM_RIGHT, color); \
+		setSelShadowColor(MMSPOSITION_BOTTOM_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 		break;
 
 
+//! SHADOW macro for widget specific setAttributesFromTAFF() implementation
 #define SET_SHADOW_FROM_TAFF_WITH_PREFIX \
 	if (ISSHADOWATTRNAME(shadow_top_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_TOP, color); \
+		setShadowColor(MMSPOSITION_TOP, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_bottom_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_BOTTOM, color); \
+		setShadowColor(MMSPOSITION_BOTTOM, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_LEFT, color); \
+		setShadowColor(MMSPOSITION_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_RIGHT, color); \
+		setShadowColor(MMSPOSITION_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_top_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_TOP_LEFT, color); \
+		setShadowColor(MMSPOSITION_TOP_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_top_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_TOP_RIGHT, color); \
+		setShadowColor(MMSPOSITION_TOP_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_bottom_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_BOTTOM_LEFT, color); \
+		setShadowColor(MMSPOSITION_BOTTOM_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(shadow_bottom_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setShadowColor(MMSPOSITION_BOTTOM_RIGHT, color); \
+		setShadowColor(MMSPOSITION_BOTTOM_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_top_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_TOP, color); \
+		setSelShadowColor(MMSPOSITION_TOP, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_bottom_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_BOTTOM, color); \
+		setSelShadowColor(MMSPOSITION_BOTTOM, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_LEFT, color); \
+		setSelShadowColor(MMSPOSITION_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_RIGHT, color); \
+		setSelShadowColor(MMSPOSITION_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_top_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_TOP_LEFT, color); \
+		setSelShadowColor(MMSPOSITION_TOP_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_top_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_TOP_RIGHT, color); \
+		setSelShadowColor(MMSPOSITION_TOP_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_bottom_left_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_BOTTOM_LEFT, color); \
+		setSelShadowColor(MMSPOSITION_BOTTOM_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
 	if (ISSHADOWATTRNAME(selshadow_bottom_right_color)) { \
-		if (getMMSFBColorFromString(attrval_str, &color)) \
-			setSelShadowColor(MMSPOSITION_BOTTOM_RIGHT, color); \
+		setSelShadowColor(MMSPOSITION_BOTTOM_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	}
-
-
-class MMSGUI_SHADOWS {
-public:
-    typedef struct {
-        //! is color set?
-        bool            iscolor;
-
-        //! color of the text if the widget is not selected
-        MMSFBColor      color;
-
-        //! is selcolor set?
-        bool            isselcolor;
-
-        //! color of the text if the widget is selected
-        MMSFBColor      selcolor;
-    } MMSSHADOW;
-
-    MMSSHADOW	shadow[MMSPOSITION_SIZE];
-
-	//! constructor
-	MMSGUI_SHADOWS() {
-		unsetShadows();
-	}
-
-    //! Mark all shadows as not set.
-    void unsetShadows() {
-    	for (int i = 0; i < MMSPOSITION_SIZE; i++) {
-            shadow[i].iscolor = false;
-            shadow[i].isselcolor = false;
-    	}
-    }
-};
 
 
 
@@ -293,8 +409,20 @@ class MMSTextBaseClass {
         //! size of the font
         unsigned int    fontsize;
 
+
+        //! describes name of a font
+        typedef struct {
+            //! is fontname set?
+            bool            isfontname;
+
+            //! name of the font
+            string          fontname;
+        } MMSTEXTBASEFONTNAME;
+
         //! language dependent font filenames
-        MMSGUI_FONTS	fonts;
+        MMSTEXTBASEFONTNAME	fontname[MMSLANG_SIZE];
+
+
 
         //! is alignment set?
         bool            isalignment;
@@ -321,8 +449,24 @@ class MMSTextBaseClass {
         string          text;
 
 
-        //! shadow definitions of the text
-        MMSGUI_SHADOWS	shadows;
+
+        //! describes shadow of a text
+        typedef struct {
+            //! is color set?
+            bool            iscolor;
+
+            //! color of the text if the widget is not selected
+            MMSFBColor      color;
+
+            //! is selcolor set?
+            bool            isselcolor;
+
+            //! color of the text if the widget is selected
+            MMSFBColor      selcolor;
+        } MMSTEXTBASESHADOW;
+
+        //! text shadows (eight directions)
+        MMSTEXTBASESHADOW	shadow[MMSPOSITION_SIZE];
 
 
     public:
@@ -484,11 +628,13 @@ class MMSTextBaseClass {
         bool isShadowColor(MMSPOSITION position);
         void setShadowColor(MMSPOSITION position, MMSFBColor color);
         void unsetShadowColor(MMSPOSITION position);
+        void unsetShadowColors();
         MMSFBColor getShadowColor(MMSPOSITION position);
 
         bool isSelShadowColor(MMSPOSITION position);
         void setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor);
         void unsetSelShadowColor(MMSPOSITION position);
+        void unsetSelShadowColors();
         MMSFBColor getSelShadowColor(MMSPOSITION position);
 
 
