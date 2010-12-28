@@ -1268,6 +1268,10 @@ void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
 #endif
 
 
+
+
+#ifdef  __HAVE_GL2__
+
 int numIndices = 0;
 float *vertices;
 float *normals;
@@ -1284,7 +1288,7 @@ unsigned int *indices2;
 
 
 int ii = 0;
-
+#endif
 
 
 void setLight() {
@@ -1787,7 +1791,7 @@ void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
 
 
 
-
+#ifdef __HAVE_OPENGL__
 int MMSFBBackEndInterface::genSphere(int numSlices, float radius, float **vertices, float **normals,
 									 float **texCoords, unsigned int **indices) {
 	int i;
@@ -1862,8 +1866,10 @@ int MMSFBBackEndInterface::genSphere(int numSlices, float radius, float **vertic
 
 	return numIndices;
 }
+#endif
 
 
+#ifdef  __HAVE_GL2__
 
 const float PI2 = 2.0f*3.1415926535;
 // Variables controlling the fineness of the polygonal mesh
@@ -1963,7 +1969,7 @@ glEnd();
 }
 }
 
-
+#endif
 
 
 
