@@ -33,14 +33,11 @@
 #include "mmsgui/fb/mmsfbgl.h"
 #include <stdio.h>
 #include <math.h>
-#include <string.h>
 #include <stdlib.h>
 
 #ifdef __HAVE_OPENGL__
 
 #define INITCHECK if (!this->initialized) return false;
-
-#define MMSFBGL_PI 3.1415926535897932384626433832795f
 
 #define GET_ATTR(name,str) \
 	eglGetConfigAttrib(eglDisplay, eglConfig[i], name, &value); \
@@ -1302,12 +1299,12 @@ void MMSFBGL::enableDepthTest() {
 	ERROR_CHECK_VOID("glDepthMask(GL_TRUE)");
 
 #ifdef __HAVE_GL2__
-	glDepthRange(1,-1);
-	ERROR_CHECK_VOID("glDepthRange(1,-1)");
+	glDepthRange(0, 1);
+	ERROR_CHECK_VOID("glDepthRange(0, 1)");
 #endif
 #ifdef __HAVE_GLES2__
-	glDepthRangef(1,-1);
-	ERROR_CHECK_VOID("glDepthRangef(1,-1)");
+	glDepthRangef(0, 1);
+	ERROR_CHECK_VOID("glDepthRangef(0, 1)");
 #endif
 }
 
@@ -1397,7 +1394,7 @@ void MMSFBGL::matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMa
 }
 
 
-//! creates a projection model view matrix
+//! reset a matrix
 void MMSFBGL::matrixLoadIdentity(MMSFBGLMatrix result) {
     memset(result, 0x0, sizeof(MMSFBGLMatrix));
     result[0][0] = 1.0f;
@@ -1661,6 +1658,12 @@ bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
 
 	INITCHECK;
 
+#ifdef __HAVE_GL2__
+
+	glLoadMatrixf((GLfloat*)matrix);
+
+#endif
+
 #ifdef __HAVE_GLES2__
 
 	if (!this->VSMatrixLoc_initialized) {
@@ -1682,13 +1685,28 @@ bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
 
 #endif
 
-	if (this->current_matrix != matrix) {
-		// change the current matrix
-		memcpy(this->current_matrix, matrix, sizeof(MMSFBGLMatrix));
-	}
-
+	// change the current matrix
+	memcpy(this->current_matrix, matrix, sizeof(MMSFBGLMatrix));
 
 	return true;
+}
+
+
+bool MMSFBGL::scaleCurrentMatrix(GLfloat sx, GLfloat sy, GLfloat sz) {
+
+	INITCHECK;
+
+	scale(this->current_matrix, sx, sy, sz);
+	return setCurrentMatrix(this->current_matrix);
+}
+
+
+bool MMSFBGL::translateCurrentMatrix(GLfloat tx, GLfloat ty, GLfloat tz) {
+
+	INITCHECK;
+
+	translate(this->current_matrix, tx, ty, tz);
+	return setCurrentMatrix(this->current_matrix);
 }
 
 
@@ -1696,20 +1714,13 @@ bool MMSFBGL::rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z
 
 	INITCHECK;
 
-#ifdef __HAVE_GL2__
-	glRotatef(angle, x, y, z);
-	ERROR_CHECK_BOOL("glRotatef()");
-	return true;
-#endif
-
-#ifdef __HAVE_GLES2__
 	rotate(this->current_matrix, angle, x, y, z);
 	return setCurrentMatrix(this->current_matrix);
-#endif
 }
 
 
-bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+
+bool MMSFBGL::getParallelProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
@@ -1725,40 +1736,102 @@ bool MMSFBGL::getModelViewMatrix(MMSFBGLMatrix result, float left, float right, 
 }
 
 
-bool MMSFBGL::setModelViewMatrix(float left, float right, float bottom, float top, float nearZ, float farZ) {
+bool MMSFBGL::getCentralProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
-#ifdef __HAVE_GL2__
-	glMatrixMode(GL_PROJECTION);
-	ERROR_CHECK_BOOL("glMatrixMode(GL_PROJECTION)");
+	// calculate the new matrix
+	MMSFBGLMatrix matrix;
+	matrixLoadIdentity(matrix);
+	frustum(matrix, left, right, bottom, top, nearZ, farZ);
 
-	glLoadIdentity();
-	ERROR_CHECK_BOOL("glLoadIdentity()");
-
-	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
-	ERROR_CHECK_BOOL("glViewport()");
-
-	glOrtho(left, right, bottom, top, nearZ, farZ);
-	ERROR_CHECK_BOOL("glOrtho()");
-
-	glMatrixMode(GL_MODELVIEW);
-	ERROR_CHECK_BOOL("glMatrixMode(GL_MODELVIEW)");
-
-	glLoadIdentity();
-	ERROR_CHECK_BOOL("glLoadIdentity()");
+	// return the matrix to the caller
+	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
 
 	return true;
-#endif
+}
 
-#ifdef __HAVE_GLES2__
+
+bool MMSFBGL::getPerspectiveMatrix(MMSFBGLMatrix result, float fovy, float aspect, float nearZ, float farZ) {
+
+	INITCHECK;
+
+	// calculate the new matrix
+	MMSFBGLMatrix matrix;
+	matrixLoadIdentity(matrix);
+	perspective(matrix, fovy, aspect, nearZ, farZ);
+
+	// return the matrix to the caller
+	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
+
+	return true;
+}
+
+
+
+bool MMSFBGL::setParallelProjection(float left, float right, float bottom, float top, float nearZ, float farZ) {
+
+	INITCHECK;
+
 	// set the model view matrix for the shader
 	MMSFBGLMatrix matrix;
-	getModelViewMatrix(matrix, left, right, bottom, top, nearZ, farZ);
+	getParallelProjectionMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
 	ERROR_CHECK_BOOL("glViewport()");
 	return setCurrentMatrix(matrix);
-#endif
+}
+
+
+bool MMSFBGL::setCentralProjection(float left, float right, float bottom, float top, float nearZ, float farZ) {
+
+	INITCHECK;
+
+	// set the projection matrix for the shader
+	MMSFBGLMatrix matrix;
+	getCentralProjectionMatrix(matrix, left, right, bottom, top, nearZ, farZ);
+	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
+	ERROR_CHECK_BOOL("glViewport()");
+	return setCurrentMatrix(matrix);
+}
+
+
+bool MMSFBGL::setPerspective(float fovy, float aspect, float nearZ, float farZ) {
+
+	INITCHECK;
+
+	// set the perspective (based on projection matrix) for the shader
+	MMSFBGLMatrix matrix;
+	getPerspectiveMatrix(matrix, fovy, aspect, nearZ, farZ);
+	GLfloat w, h;
+	h = tanf(fovy / 360.0f * MMSFBGL_PI) * nearZ;
+	w = h * aspect;
+	glViewport(0, 0, w*2, h*2);
+	ERROR_CHECK_BOOL("glViewport()");
+	return setCurrentMatrix(matrix);
+}
+
+
+bool MMSFBGL::pushCurrentMatrix() {
+
+	INITCHECK;
+
+	// save the current matrix on the matrix stack
+	this->matrix_stack.push(MMSFBGLStackMatrix(this->current_matrix));
+	return true;
+}
+
+bool MMSFBGL::popCurrentMatrix() {
+
+	INITCHECK;
+
+	if (this->matrix_stack.size() > 0) {
+		// restore current matrix from stack
+		this->matrix_stack.top().getMatrix(this->current_matrix);
+		this->matrix_stack.pop();
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -2018,24 +2091,7 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	// setup blitting
 	initBlitting(src_tex);
 
-#ifdef __HAVE_GL2__
-
-	glBegin(GL_QUADS);
-		glTexCoord2f(sx1, sy1);
-			glVertex3f(dx1, dy1, dz1);
-		glTexCoord2f(sx2, sy1);
-			glVertex3f(dx2, dy2, dz2);
-		glTexCoord2f(sx2, sy2);
-			glVertex3f(dx3, dy3, dz3);
-		glTexCoord2f(sx1, sy2);
-			glVertex3f(dx4, dy4, dz4);
-	glEnd();
-	ERROR_CHECK_BOOL("glBegin(GL_QUADS)");
-
-#endif
-
-#ifdef __HAVE_GLES2__
-
+	// setup vertex array and indices
 	GLfloat vVertices[] = { dx1,  dy1, dz1,  // Position 0
 							sx1,  sy1,        // TexCoord 0
 						    dx2, dy2, dz2,  // Position 1
@@ -2048,7 +2104,25 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 
 	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
-	// Load the vertex position
+#ifdef __HAVE_GL2__
+
+	// load the vertex data
+	glEnableClientState(GL_VERTEX_ARRAY);
+	ERROR_CHECK_BOOL("glEnableClientState(GL_VERTEX_ARRAY)");
+	glVertexPointer(3, GL_FLOAT, 5 * sizeof(GLfloat), vVertices);
+	ERROR_CHECK_BOOL("glVertexPointer()");
+
+	// load the texture coordinates
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	ERROR_CHECK_BOOL("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
+	glTexCoordPointer(2, GL_FLOAT, 5 * sizeof(GLfloat), &vVertices[3]);
+	ERROR_CHECK_BOOL("glTexCoordPointer()");
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
+	// load the vertex data
 	glVertexAttribPointer(MMSFBGL_VSV_LOC, 3, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), vVertices );
 	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
@@ -2056,14 +2130,13 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
 	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
 
-	// Load the texture coordinate
+	// load the texture coordinates
 	glVertexAttribPointer(VSTexCoordLoc, 2, GL_FLOAT,
 						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3] );
 	ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,...)");
 
 	glEnableVertexAttribArray(VSTexCoordLoc);
 	ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
-
 
 	// bind the texture unit0
 	glActiveTexture(GL_TEXTURE0);
@@ -2072,10 +2145,11 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	glUniform1i(FSTextureLoc, 0);
 	ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc, 0)");
 
+#endif
+
+	// finally draw the triangles...
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
 	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
-
-#endif
 
 	return true;
 }

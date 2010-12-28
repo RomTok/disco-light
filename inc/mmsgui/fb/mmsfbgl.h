@@ -33,7 +33,11 @@
 #ifndef MMSFBGL_H_
 #define MMSFBGL_H_
 
+#include <stack>
+
 #ifdef __HAVE_OPENGL__
+
+#include <string.h>
 
 #ifdef __HAVE_GL2__
 #include <GL/glew.h>
@@ -52,6 +56,8 @@
 #ifdef __HAVE_EGL__
 #include <EGL/egl.h>
 #endif
+
+#define MMSFBGL_PI 3.1415926535897932384626433832795f
 
 typedef GLfloat MMSFBGLMatrix[4][4];
 
@@ -144,6 +150,21 @@ class MMSFBGL {
     	unsigned char	current_color_b;
     	unsigned char	current_color_a;
 
+    	class MMSFBGLStackMatrix {
+    	public:
+    		MMSFBGLMatrix matrix;
+    		MMSFBGLStackMatrix(MMSFBGLMatrix matrix) {
+    			memcpy(this->matrix, matrix, sizeof(MMSFBGLMatrix));
+    		}
+    		void getMatrix(MMSFBGLMatrix matrix) {
+    			memcpy(matrix, this->matrix, sizeof(MMSFBGLMatrix));
+    		}
+    	};
+
+    	//! matrix stack
+        std::stack<MMSFBGLStackMatrix> matrix_stack;
+
+
     	bool getError(const char* where, int line = __LINE__);
 
     	bool buildShader(MMSFBGL_SHADER_TYPE shader_type, const char *shader_code, GLuint *shader);
@@ -220,10 +241,20 @@ class MMSFBGL {
         bool useShaderProgram4ModulateBlittingFromAlpha();
 
         bool setCurrentMatrix(MMSFBGLMatrix matrix);
+        bool scaleCurrentMatrix(GLfloat sx, GLfloat sy, GLfloat sz);
+        bool translateCurrentMatrix(GLfloat tx, GLfloat ty, GLfloat tz);
         bool rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 
-        bool getModelViewMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-        bool setModelViewMatrix(float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getParallelProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getCentralProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getPerspectiveMatrix(MMSFBGLMatrix result, float fovy, float aspect, float nearZ, float farZ);
+
+        bool setParallelProjection(float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool setCentralProjection(float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool setPerspective(float fovy, float aspect, float nearZ, float farZ);
+
+        bool pushCurrentMatrix();
+        bool popCurrentMatrix();
 
         bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
