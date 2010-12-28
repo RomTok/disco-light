@@ -42,18 +42,6 @@ TAFF_ATTRDESC MMSGUI_LABELWIDGET_ATTR_I[] = MMSGUI_LABELWIDGET_ATTR_INIT;
 // address attribute types
 #define GETATTRTYPE(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_##aname].type
 
-// address font attribute names
-#define GETFONTATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
-
-// address font attribute types
-#define GETFONTATTRTYPE(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].type
-
-// address shadow attribute names
-#define GETSHADOWATTRNAME(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
-
-// address shadow attribute types
-#define GETSHADOWATTRTYPE(aname) MMSGUI_LABELWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].type
-
 
 MMSLabelWidgetClass::MMSLabelWidgetClass() {
     unsetAll();
@@ -86,66 +74,12 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			// special macro for font parameters
 			SET_FONT_FROM_TAFF(MMSGUI_LABELWIDGET_ATTR)
 
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_alignment:
-	            setAlignment(getAlignmentFromString(attrval_str));
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color:
-	            setColor(MMSFBColor((unsigned int)attrval_int));
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color_a:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.a = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color_r:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.r = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color_g:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.g = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_color_b:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.b = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor:
-	            setSelColor(MMSFBColor((unsigned int)attrval_int));
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_a:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.a = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_r:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.r = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_g:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.g = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_selcolor_b:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.b = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_text:
-	            setText(attrval_str);
-	            break;
+			// special macro for shadow parameters
+			SET_SHADOW_FROM_TAFF(MMSGUI_LABELWIDGET_ATTR)
+
+			// special macro for textinfo parameters
+			SET_TEXTINFO_FROM_TAFF(MMSGUI_LABELWIDGET_ATTR)
+
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_slidable:
 	            setSlidable((attrval_int)?true:false);
 	            break;
@@ -155,9 +89,6 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
 			case MMSGUI_LABELWIDGET_ATTR::MMSGUI_LABELWIDGET_ATTR_IDS_translate:
 	            setTranslate((attrval_int)?true:false);
 	            break;
-
-			// special macro for shadow parameters
-			SET_SHADOW_FROM_TAFF(MMSGUI_LABELWIDGET_ATTR)
 	        }
 		}
 		endTAFFScan
@@ -183,80 +114,14 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
     		// okay, correct prefix, check attributes now
 
             // special macro for font parameters
-            SET_FONT_FROM_TAFF_WITH_PREFIX
+            SET_FONT_FROM_TAFF_WITH_PREFIX(MMSGUI_LABELWIDGET_ATTR)
             else
-            if (ISATTRNAME(alignment)) {
-	            setAlignment(getAlignmentFromString(attrval_str));
-            }
+			// special macro for shadow parameters
+			SET_SHADOW_FROM_TAFF_WITH_PREFIX(MMSGUI_LABELWIDGET_ATTR)
             else
-            if (ISATTRNAME(color)) {
-	            setColor(MMSFBColor((unsigned int)attrval_int));
-            }
-            else
-            if (ISATTRNAME(color_a)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.a = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(color_r)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.r = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(color_g)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.g = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(color_b)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.b = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor)) {
-	            setSelColor(MMSFBColor((unsigned int)attrval_int));
-            }
-            else
-            if (ISATTRNAME(selcolor_a)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.a = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor_r)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.r = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor_g)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.g = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor_b)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.b = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(text)) {
-	            setText(attrval_str);
-			}
-            else
+			// special macro for textinfo parameters
+			SET_TEXTINFO_FROM_TAFF_WITH_PREFIX(MMSGUI_LABELWIDGET_ATTR)
+			else
             if (ISATTRNAME(slidable)) {
 	            setSlidable((attrval_int)?true:false);
 			}
@@ -268,9 +133,6 @@ void MMSLabelWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pref
             if (ISATTRNAME(translate)) {
 	            setTranslate((attrval_int)?true:false);
 			}
-            else
-            // special macro for shadow parameters
-            SET_SHADOW_FROM_TAFF_WITH_PREFIX
     	}
     	endTAFFScan_WITHOUT_ID
     }

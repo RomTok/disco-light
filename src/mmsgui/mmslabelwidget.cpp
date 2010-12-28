@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsgui/mmslabelwidget.h"
+#include "mmsgui/mmstextbase.h"
 
 
 MMSLabelWidget::MMSLabelWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
@@ -525,36 +526,19 @@ void MMSLabelWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor
 
 
 void MMSLabelWidget::updateFromThemeClass(MMSLabelWidgetClass *themeClass) {
-    if (themeClass->isFontPath())
-        setFontPath(themeClass->getFontPath());
-    for (unsigned int i = MMSLANG_NONE; i < MMSLANG_SIZE; i++) {
-    	if (themeClass->isFontName((MMSLanguage)i))
-    		setFontName(themeClass->getFontName((MMSLanguage)i), (MMSLanguage)i);
-    }
-    if (themeClass->isFontSize())
-        setFontSize(themeClass->getFontSize());
-    if (themeClass->isAlignment())
-        setAlignment(themeClass->getAlignment());
-    if (themeClass->isColor())
-        setColor(themeClass->getColor());
-    if (themeClass->isSelColor())
-        setSelColor(themeClass->getSelColor());
-    if (themeClass->isText())
-        setText(themeClass->getText());
-    if (themeClass->isSlidable())
+
+	// update widget-specific settings
+	if (themeClass->isSlidable())
         setSlidable(themeClass->getSlidable());
     if (themeClass->isSlideSpeed())
         setSlideSpeed(themeClass->getSlideSpeed());
     if (themeClass->isTranslate())
         setTranslate(themeClass->getTranslate());
 
-    for (int position = 0; position < MMSPOSITION_SIZE; position++) {
-		if (themeClass->isShadowColor((MMSPOSITION)position))
-			setShadowColor((MMSPOSITION)position, themeClass->getShadowColor((MMSPOSITION)position));
-		if (themeClass->isSelShadowColor((MMSPOSITION)position))
-			setSelShadowColor((MMSPOSITION)position, themeClass->getSelShadowColor((MMSPOSITION)position));
-    }
+    // update base text-specific settings
+	MMSTEXTBASE_UPDATE_FROM_THEME_CLASS(this, themeClass);
 
+	// update general widget settings
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }
 

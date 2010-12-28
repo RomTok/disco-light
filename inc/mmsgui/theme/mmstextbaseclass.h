@@ -38,8 +38,14 @@
 // all definitions around fonts
 ///////////////////////////////////////////////////////////////////////////////
 
+//! FONT macro to address font attribute names
+#define GETFONTATTRNAME(w, aname) w##_I[w::MMSGUI_FONT_ATTR_IDS_##aname].name
+
+//! FONT macro to address font attribute types
+#define GETFONTATTRTYPE(w, aname) w##_I[w::MMSGUI_FONT_ATTR_IDS_##aname].type
+
 //! FONT macro for widget specific setAttributesFromTAFF() implementation
-#define ISFONTATTRNAME(aname) ((strcmp(attrname, GETFONTATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETFONTATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
+#define ISFONTATTRNAME(w, aname) ((strcmp(attrname, GETFONTATTRNAME(w, aname))==0)?(tafff->convertString2TaffAttributeType(GETFONTATTRTYPE(w, aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
 
 
 //! XML attributes for fonts
@@ -143,70 +149,69 @@ namespace MMSGUI_FONT_ATTR {
 
 
 //! FONT macro for widget specific setAttributesFromTAFF() implementation
-#define SET_FONT_FROM_TAFF_WITH_PREFIX \
-	if (ISFONTATTRNAME(font_path)) { \
+#define SET_FONT_FROM_TAFF_WITH_PREFIX(w) \
+	if (ISFONTATTRNAME(w, font_path)) { \
 		if (*attrval_str) \
 			setFontPath(attrval_str); \
 		else \
 			setFontPath((path)?*path:""); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_size)) { \
+	if (ISFONTATTRNAME(w, font_size)) { \
 		setFontSize(attrval_int); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name)) { \
+	if (ISFONTATTRNAME(w, font_name)) { \
 		setFontName(attrval_str); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_de)) { \
+	if (ISFONTATTRNAME(w, font_name_de)) { \
 		setFontName(attrval_str, MMSLANG_DE); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_en)) { \
+	if (ISFONTATTRNAME(w, font_name_en)) { \
 		setFontName(attrval_str, MMSLANG_EN); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_dk)) { \
+	if (ISFONTATTRNAME(w, font_name_dk)) { \
 		setFontName(attrval_str, MMSLANG_DK); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_es)) { \
+	if (ISFONTATTRNAME(w, font_name_es)) { \
 		setFontName(attrval_str, MMSLANG_ES); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_fi)) { \
+	if (ISFONTATTRNAME(w, font_name_fi)) { \
 		setFontName(attrval_str, MMSLANG_FI); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_fr)) { \
+	if (ISFONTATTRNAME(w, font_name_fr)) { \
 		setFontName(attrval_str, MMSLANG_FR); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_it)) { \
+	if (ISFONTATTRNAME(w, font_name_it)) { \
 		setFontName(attrval_str, MMSLANG_IT); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_nl)) { \
+	if (ISFONTATTRNAME(w, font_name_nl)) { \
 		setFontName(attrval_str, MMSLANG_NL); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_no)) { \
+	if (ISFONTATTRNAME(w, font_name_no)) { \
 		setFontName(attrval_str, MMSLANG_NO); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_se)) { \
+	if (ISFONTATTRNAME(w, font_name_se)) { \
 		setFontName(attrval_str, MMSLANG_SE); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_tr)) { \
+	if (ISFONTATTRNAME(w, font_name_tr)) { \
 		setFontName(attrval_str, MMSLANG_TR); \
 	} \
 	else \
-	if (ISFONTATTRNAME(font_name_cn)) { \
+	if (ISFONTATTRNAME(w, font_name_cn)) { \
 		setFontName(attrval_str, MMSLANG_CN); \
 	}
-
 
 
 
@@ -214,8 +219,14 @@ namespace MMSGUI_FONT_ATTR {
 // all definitions around shadows
 ///////////////////////////////////////////////////////////////////////////////
 
+//! SHADOW macro to address shadow attribute names
+#define GETSHADOWATTRNAME(w, aname) w##_I[w::MMSGUI_SHADOW_ATTR_IDS_##aname].name
+
+//! SHADOW macro to address shadow attribute types
+#define GETSHADOWATTRTYPE(w, aname) w##_I[w::MMSGUI_SHADOW_ATTR_IDS_##aname].type
+
 //! SHADOW macro for widget specific setAttributesFromTAFF() implementation
-#define ISSHADOWATTRNAME(aname) ((strcmp(attrname, GETSHADOWATTRNAME(aname))==0)?(tafff->convertString2TaffAttributeType(GETSHADOWATTRTYPE(aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
+#define ISSHADOWATTRNAME(w, aname) ((strcmp(attrname, GETSHADOWATTRNAME(w, aname))==0)?(tafff->convertString2TaffAttributeType(GETSHADOWATTRTYPE(w, aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
 
 
 //! XML attributes for shadows
@@ -321,71 +332,268 @@ namespace MMSGUI_SHADOW_ATTR {
 
 
 //! SHADOW macro for widget specific setAttributesFromTAFF() implementation
-#define SET_SHADOW_FROM_TAFF_WITH_PREFIX \
-	if (ISSHADOWATTRNAME(shadow_top_color)) { \
+#define SET_SHADOW_FROM_TAFF_WITH_PREFIX(w) \
+	if (ISSHADOWATTRNAME(w, shadow_top_color)) { \
 		setShadowColor(MMSPOSITION_TOP, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_bottom_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_bottom_color)) { \
 		setShadowColor(MMSPOSITION_BOTTOM, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_left_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_left_color)) { \
 		setShadowColor(MMSPOSITION_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_right_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_right_color)) { \
 		setShadowColor(MMSPOSITION_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_top_left_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_top_left_color)) { \
 		setShadowColor(MMSPOSITION_TOP_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_top_right_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_top_right_color)) { \
 		setShadowColor(MMSPOSITION_TOP_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_bottom_left_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_bottom_left_color)) { \
 		setShadowColor(MMSPOSITION_BOTTOM_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(shadow_bottom_right_color)) { \
+	if (ISSHADOWATTRNAME(w, shadow_bottom_right_color)) { \
 		setShadowColor(MMSPOSITION_BOTTOM_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_top_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_top_color)) { \
 		setSelShadowColor(MMSPOSITION_TOP, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_bottom_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_bottom_color)) { \
 		setSelShadowColor(MMSPOSITION_BOTTOM, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_left_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_left_color)) { \
 		setSelShadowColor(MMSPOSITION_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_right_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_right_color)) { \
 		setSelShadowColor(MMSPOSITION_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_top_left_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_top_left_color)) { \
 		setSelShadowColor(MMSPOSITION_TOP_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_top_right_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_top_right_color)) { \
 		setSelShadowColor(MMSPOSITION_TOP_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_bottom_left_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_bottom_left_color)) { \
 		setSelShadowColor(MMSPOSITION_BOTTOM_LEFT, MMSFBColor((unsigned int)attrval_int)); \
 	} \
 	else \
-	if (ISSHADOWATTRNAME(selshadow_bottom_right_color)) { \
+	if (ISSHADOWATTRNAME(w, selshadow_bottom_right_color)) { \
 		setSelShadowColor(MMSPOSITION_BOTTOM_RIGHT, MMSFBColor((unsigned int)attrval_int)); \
 	}
 
+
+
+
+// all definitions around textinfos
+///////////////////////////////////////////////////////////////////////////////
+
+//! TEXTINFO macro to address textinfo attribute names
+#define GETTEXTINFOATTRNAME(w, aname) w##_I[w::MMSGUI_TEXTINFO_ATTR_IDS_##aname].name
+
+//! TEXTINFO macro to address textinfos attribute types
+#define GETTEXTINFOATTRTYPE(w, aname) w##_I[w::MMSGUI_TEXTINFO_ATTR_IDS_##aname].type
+
+//! TEXTINFO macro for widget specific setAttributesFromTAFF() implementation
+#define ISTEXTINFOATTRNAME(w, aname) ((strcmp(attrname, GETTEXTINFOATTRNAME(w, aname))==0)?(tafff->convertString2TaffAttributeType(GETTEXTINFOATTRTYPE(w, aname), attrval_str, &attrval_str_valid, &int_val_set, &byte_val_set, p_int_val, attrname, attrid, tafff->getCurrentTagName())):(0))
+
+
+//! XML attributes for textinfos
+namespace MMSGUI_TEXTINFO_ATTR {
+
+	#define MMSGUI_TEXTINFO_ATTR_ATTRDESC \
+		{ "alignment", TAFF_ATTRTYPE_STRING }, \
+		{ "color", TAFF_ATTRTYPE_COLOR }, \
+		{ "color.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor", TAFF_ATTRTYPE_COLOR }, \
+		{ "selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "text", TAFF_ATTRTYPE_STRING }
+
+
+	#define MMSGUI_TEXTINFO_ATTR_IDS \
+		MMSGUI_TEXTINFO_ATTR_IDS_alignment, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_a, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_r, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_g, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_b, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_a, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_r, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_g, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_b, \
+		MMSGUI_TEXTINFO_ATTR_IDS_text
+
+	#define MMSGUI_TEXTINFO_ATTR_INIT { \
+		MMSGUI_TEXTINFO_ATTR_ATTRDESC, \
+		{ NULL, TAFF_ATTRTYPE_NONE } \
+	}
+
+	typedef enum {
+		MMSGUI_TEXTINFO_ATTR_IDS
+	} ids;
+}
+
+
+//! TEXTINFO macro for widget specific setAttributesFromTAFF() implementation
+#define SET_TEXTINFO_FROM_TAFF(w) \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_alignment: \
+		setAlignment(getAlignmentFromString(attrval_str)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color: \
+		setColor(MMSFBColor((unsigned int)attrval_int)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_a: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.a = attrval_int; \
+		setColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_r: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.r = attrval_int; \
+		setColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_g: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.g = attrval_int; \
+		setColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_b: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.b = attrval_int; \
+		setColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor: \
+		setSelColor(MMSFBColor((unsigned int)attrval_int)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_a: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.a = attrval_int; \
+		setSelColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_r: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.r = attrval_int; \
+		setSelColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_g: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.g = attrval_int; \
+		setSelColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_b: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.b = attrval_int; \
+		setSelColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_text: \
+		setText(attrval_str); \
+		break;
+
+
+
+//! TEXTINFO macro for widget specific setAttributesFromTAFF() implementation
+#define SET_TEXTINFO_FROM_TAFF_WITH_PREFIX(w) \
+	if (ISTEXTINFOATTRNAME(w, alignment)) { \
+		setAlignment(getAlignmentFromString(attrval_str)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color)) { \
+		setColor(MMSFBColor((unsigned int)attrval_int)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_a)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.a = attrval_int; \
+		setColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_r)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.r = attrval_int; \
+		setColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_g)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.g = attrval_int; \
+		setColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_b)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor()) color = getColor(); \
+		color.b = attrval_int; \
+		setColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor)) { \
+		setSelColor(MMSFBColor((unsigned int)attrval_int)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_a)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.a = attrval_int; \
+		setSelColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_r)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.r = attrval_int; \
+		setSelColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_g)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.g = attrval_int; \
+		setSelColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_b)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor()) color = getSelColor(); \
+		color.b = attrval_int; \
+		setSelColor(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, text)) { \
+		setText(attrval_str); \
+	}
 
 
 

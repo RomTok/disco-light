@@ -42,18 +42,6 @@ TAFF_ATTRDESC MMSGUI_TEXTBOXWIDGET_ATTR_I[] = MMSGUI_TEXTBOXWIDGET_ATTR_INIT;
 // address attribute types
 #define GETATTRTYPE(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_##aname].type
 
-// address font attribute names
-#define GETFONTATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].name
-
-// address font attribute types
-#define GETFONTATTRTYPE(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_FONT_ATTR::MMSGUI_FONT_ATTR_IDS_##aname].type
-
-// address shadow attribute names
-#define GETSHADOWATTRNAME(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].name
-
-// address shadow attribute types
-#define GETSHADOWATTRTYPE(aname) MMSGUI_TEXTBOXWIDGET_ATTR_I[MMSGUI_SHADOW_ATTR::MMSGUI_SHADOW_ATTR_IDS_##aname].type
-
 
 MMSTextBoxWidgetClass::MMSTextBoxWidgetClass() {
     unsetAll();
@@ -89,71 +77,17 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 			// special macro for font parameters
 			SET_FONT_FROM_TAFF(MMSGUI_TEXTBOXWIDGET_ATTR)
 
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_alignment:
-	            setAlignment(getAlignmentFromString(attrval_str));
-	            break;
+			// special macro for shadow parameters
+			SET_SHADOW_FROM_TAFF(MMSGUI_TEXTBOXWIDGET_ATTR)
+
+			// special macro for textinfo parameters
+			SET_TEXTINFO_FROM_TAFF(MMSGUI_TEXTBOXWIDGET_ATTR)
+
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_wrap:
 	            setWrap((attrval_int) ? true : false);
 	            break;
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_splitwords:
 	            setSplitWords((attrval_int) ? true : false);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color:
-	            setColor(MMSFBColor((unsigned int)attrval_int));
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color_a:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.a = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color_r:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.r = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color_g:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.g = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_color_b:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.b = attrval_int;
-	            setColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor:
-	            setSelColor(MMSFBColor((unsigned int)attrval_int));
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_a:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.a = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_r:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.r = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_g:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.g = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_selcolor_b:
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.b = attrval_int;
-	            setSelColor(color);
-	            break;
-			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_text:
-	            setText(attrval_str);
 	            break;
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_translate:
 	            setTranslate((attrval_int)?true:false);
@@ -167,9 +101,6 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
 			case MMSGUI_TEXTBOXWIDGET_ATTR::MMSGUI_TEXTBOXWIDGET_ATTR_IDS_file_name:
 	            setFileName(attrval_str);
 	            break;
-
-			// special macro for shadow parameters
-			SET_SHADOW_FROM_TAFF(MMSGUI_TEXTBOXWIDGET_ATTR)
 			}
 		}
 		endTAFFScan
@@ -195,12 +126,14 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
     		// okay, correct prefix, check attributes now
 
             // special macro for font parameters
-            SET_FONT_FROM_TAFF_WITH_PREFIX
+            SET_FONT_FROM_TAFF_WITH_PREFIX(MMSGUI_TEXTBOXWIDGET_ATTR)
             else
-            if (ISATTRNAME(alignment)) {
-	            setAlignment(getAlignmentFromString(attrval_str));
-            }
+			// special macro for shadow parameters
+			SET_SHADOW_FROM_TAFF_WITH_PREFIX(MMSGUI_TEXTBOXWIDGET_ATTR)
             else
+			// special macro for textinfo parameters
+			SET_TEXTINFO_FROM_TAFF_WITH_PREFIX(MMSGUI_TEXTBOXWIDGET_ATTR)
+			else
             if (ISATTRNAME(wrap)) {
 	            setWrap((attrval_int) ? true : false);
             }
@@ -208,74 +141,6 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             if (ISATTRNAME(splitwords)) {
 	            setSplitWords((attrval_int) ? true : false);
             }
-            else
-            if (ISATTRNAME(color)) {
-	            setColor(MMSFBColor((unsigned int)attrval_int));
-            }
-            else
-            if (ISATTRNAME(color_a)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.a = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(color_r)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.r = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(color_g)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.g = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(color_b)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isColor()) color = getColor();
-	            color.b = attrval_int;
-	            setColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor)) {
-	            setSelColor(MMSFBColor((unsigned int)attrval_int));
-            }
-            else
-            if (ISATTRNAME(selcolor_a)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.a = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor_r)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.r = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor_g)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.g = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(selcolor_b)) {
-				color.a = color.r = color.g = color.b = 0;
-	            if (isSelColor()) color = getSelColor();
-	            color.b = attrval_int;
-	            setSelColor(color);
-            }
-            else
-            if (ISATTRNAME(text)) {
-	            setText(attrval_str);
-			}
             else
             if (ISATTRNAME(translate)) {
 	            setTranslate((attrval_int)?true:false);
@@ -291,9 +156,6 @@ void MMSTextBoxWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *pr
             if (ISATTRNAME(file_name)) {
 	            setFileName(attrval_str);
             }
-            else
-            // special macro for shadow parameters
-            SET_SHADOW_FROM_TAFF_WITH_PREFIX
     	}
     	endTAFFScan_WITHOUT_ID
     }

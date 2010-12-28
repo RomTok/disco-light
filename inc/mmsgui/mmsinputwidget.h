@@ -143,6 +143,8 @@ class MMSInputWidget : public MMSWidget {
         string getText();
         void getText(string &text);
         MMSSTATE getCursorState();
+        MMSFBColor getShadowColor(MMSPOSITION position);
+        MMSFBColor getSelShadowColor(MMSPOSITION position);
 
         void setFontPath(string fontpath, bool load = true, bool refresh = true);
         void setFontName(MMSLanguage lang, string fontname, bool load = true, bool refresh = true);
@@ -155,6 +157,8 @@ class MMSInputWidget : public MMSWidget {
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
         void setText(string text, bool refresh = true, bool reset_cursor = true);
         void setCursorState(MMSSTATE cursor_state, bool refresh = true);
+        void setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh = true);
+        void setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh = true);
 
         void updateFromThemeClass(MMSInputWidgetClass *themeClass);
 

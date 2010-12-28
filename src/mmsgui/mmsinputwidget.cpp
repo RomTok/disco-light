@@ -32,6 +32,7 @@
 
 #include "mmsgui/mmsinputwidget.h"
 #include "mmsgui/mmsinputwidgetthread.h"
+#include "mmsgui/mmstextbase.h"
 
 
 MMSInputWidget::MMSInputWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
@@ -310,7 +311,17 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
             if (color.a) {
                 // prepare for drawing
-                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
+                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(
+									color,
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP):getShadowColor(MMSPOSITION_TOP),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM):getShadowColor(MMSPOSITION_BOTTOM),
+									(isSelected())?getSelShadowColor(MMSPOSITION_LEFT):getShadowColor(MMSPOSITION_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_RIGHT):getShadowColor(MMSPOSITION_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_LEFT):getShadowColor(MMSPOSITION_TOP_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_RIGHT):getShadowColor(MMSPOSITION_TOP_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_LEFT):getShadowColor(MMSPOSITION_BOTTOM_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_RIGHT):getShadowColor(MMSPOSITION_BOTTOM_RIGHT),
+									getBrightness(), getOpacity());
 
                 // draw the text
                 this->surface->drawString(text, -1, x, y);
@@ -682,6 +693,16 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
     else if ((inputWidgetClass)&&(inputWidgetClass->isFontName(MMSLANG_NONE))) return inputWidgetClass->getFontName(MMSLANG_NONE); \
     else return this->da->theme->inputWidgetClass.getFontName();
 
+#define GETINPUTSHADOW(x) \
+    if (this->myInputWidgetClass.isShadowColor(x)) return myInputWidgetClass.getShadowColor(x); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->isShadowColor(x))) return inputWidgetClass->getShadowColor(x); \
+    else return this->da->theme->inputWidgetClass.getShadowColor(x);
+
+#define GETINPUTSHADOWSEL(x) \
+    if (this->myInputWidgetClass.isSelShadowColor(x)) return myInputWidgetClass.getSelShadowColor(x); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->isSelShadowColor(x))) return inputWidgetClass->getSelShadowColor(x); \
+    else return this->da->theme->inputWidgetClass.getSelShadowColor(x);
+
 string MMSInputWidget::getFontPath() {
     GETINPUT(FontPath);
 }
@@ -716,6 +737,14 @@ void MMSInputWidget::getText(string &text) {
 
 MMSSTATE MMSInputWidget::getCursorState() {
     GETINPUT(CursorState);
+}
+
+MMSFBColor MMSInputWidget::getShadowColor(MMSPOSITION position) {
+	GETINPUTSHADOW(position);
+}
+
+MMSFBColor MMSInputWidget::getSelShadowColor(MMSPOSITION position) {
+	GETINPUTSHADOWSEL(position);
 }
 
 /***********************************************/
@@ -810,26 +839,28 @@ void MMSInputWidget::setCursorState(MMSSTATE cursor_state, bool refresh) {
         this->refresh();
 }
 
+void MMSInputWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
+    myInputWidgetClass.setShadowColor(position, color);
+    if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
+    myInputWidgetClass.setSelShadowColor(position, selcolor);
+    if (refresh)
+        this->refresh();
+}
+
 void MMSInputWidget::updateFromThemeClass(MMSInputWidgetClass *themeClass) {
-    if (themeClass->isFontPath())
-        setFontPath(themeClass->getFontPath());
-    for (unsigned int i = MMSLANG_NONE; i < MMSLANG_SIZE; i++) {
-    	if (themeClass->isFontName((MMSLanguage)i))
-    		setFontName(themeClass->getFontName((MMSLanguage)i), (MMSLanguage)i);
-    }
-    if (themeClass->isFontSize())
-        setFontSize(themeClass->getFontSize());
-    if (themeClass->isAlignment())
-        setAlignment(themeClass->getAlignment());
-    if (themeClass->isColor())
-        setColor(themeClass->getColor());
-    if (themeClass->isSelColor())
-        setSelColor(themeClass->getSelColor());
-    if (themeClass->isText())
-        setText(themeClass->getText());
+
+	// update widget-specific settings
     if (themeClass->isCursorState())
         setCursorState(themeClass->getCursorState());
 
+    // update base text-specific settings
+	MMSTEXTBASE_UPDATE_FROM_THEME_CLASS(this, themeClass);
+
+	// update general widget settings
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }
 
