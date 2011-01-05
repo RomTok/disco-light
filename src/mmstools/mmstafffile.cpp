@@ -456,7 +456,13 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	png_set_strip_16(png_ptr);
     }
     png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+    png_set_swap_alpha(png_ptr);
+#else
     png_set_bgr(png_ptr);
+#endif
+
     png_set_interlace_handling(png_ptr);
     if (color_type == PNG_COLOR_TYPE_PALETTE) {
     	// convert palette to rgb data
