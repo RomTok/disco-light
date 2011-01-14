@@ -74,7 +74,6 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"slider",		MMSGUI_SLIDERWIDGET_ATTR_I		},
 	{	"textbox",		NULL, 	NULL,			MMSGUI_TEXTBOXWIDGET_ATTR_I		},
 	{	"class", 		"type",	"textbox",		MMSGUI_TEXTBOXWIDGET_ATTR_I		},
-	{	"separator",	NULL, 	NULL,			MMSGUI_NONE_ATTR_I				},
 	{	"input", 		NULL, 	NULL,			MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"checkbox",		NULL, 	NULL,			MMSGUI_CHECKBOXWIDGET_ATTR_I	},
@@ -83,7 +82,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 17, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 26, mmsgui_taff_tagtable };
 
 
 
@@ -647,6 +646,7 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.widgetClass.setReturnOnScroll(true);
         this->labelWidgetClass.widgetClass.setInputMode("");
         this->labelWidgetClass.widgetClass.setJoinedWidget("");
+        this->labelWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->labelWidgetClass.widgetClass.border.setColor(color);
@@ -662,7 +662,6 @@ MMSTheme::MMSTheme() {
         /* label settings */
         this->labelWidgetClass.setFontPath("./themes/default");
         this->labelWidgetClass.setFontName("decker.ttf");
-        this->labelWidgetClass.setFontNameCN("");
         this->labelWidgetClass.setFontSize(16);
         this->labelWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         MMSFBColor c;
@@ -680,6 +679,11 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setSlidable(false);
         this->labelWidgetClass.setSlideSpeed(50);
         this->labelWidgetClass.setTranslate(true);
+
+        for (int position = 0; position < MMSPOSITION_SIZE; position++) {
+			this->labelWidgetClass.setShadowColor((MMSPOSITION)position, MMSFBColor(0,0,0,0));
+			this->labelWidgetClass.setSelShadowColor((MMSPOSITION)position, MMSFBColor(0,0,0,0));
+        }
     }
 
     /* MMSImageWidget */
@@ -725,6 +729,7 @@ MMSTheme::MMSTheme() {
         this->imageWidgetClass.widgetClass.setReturnOnScroll(true);
         this->imageWidgetClass.widgetClass.setInputMode("");
         this->imageWidgetClass.widgetClass.setJoinedWidget("");
+        this->imageWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->imageWidgetClass.widgetClass.border.setColor(color);
@@ -801,6 +806,7 @@ MMSTheme::MMSTheme() {
         this->buttonWidgetClass.widgetClass.setReturnOnScroll(true);
         this->buttonWidgetClass.widgetClass.setInputMode("");
         this->buttonWidgetClass.widgetClass.setJoinedWidget("");
+        this->buttonWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->buttonWidgetClass.widgetClass.border.setColor(color);
@@ -857,6 +863,7 @@ MMSTheme::MMSTheme() {
         this->progressBarWidgetClass.widgetClass.setReturnOnScroll(true);
         this->progressBarWidgetClass.widgetClass.setInputMode("");
         this->progressBarWidgetClass.widgetClass.setJoinedWidget("");
+        this->progressBarWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->progressBarWidgetClass.widgetClass.border.setColor(color);
@@ -927,6 +934,7 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.widgetClass.setReturnOnScroll(true);
         this->menuWidgetClass.widgetClass.setInputMode("");
         this->menuWidgetClass.widgetClass.setJoinedWidget("");
+        this->menuWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->menuWidgetClass.widgetClass.border.setColor(color);
@@ -962,11 +970,11 @@ MMSTheme::MMSTheme() {
         this->menuWidgetClass.setZoomSelHeight("");
         this->menuWidgetClass.setZoomSelShiftX("");
         this->menuWidgetClass.setZoomSelShiftY("");
-        this->menuWidgetClass.setSmoothScrolling(false);
+        this->menuWidgetClass.setSmoothScrolling(MMSSEQUENCEMODE_NONE);
         this->menuWidgetClass.setParentWindow("");
         this->menuWidgetClass.setSelImagePath("");
         this->menuWidgetClass.setSelImageName("");
-        this->menuWidgetClass.setSmoothSelection(false);
+        this->menuWidgetClass.setSmoothSelection(MMSSEQUENCEMODE_NONE);
         this->menuWidgetClass.setSmoothDelay(0);
     }
 
@@ -1013,6 +1021,7 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.widgetClass.setReturnOnScroll(true);
         this->textBoxWidgetClass.widgetClass.setInputMode("");
         this->textBoxWidgetClass.widgetClass.setJoinedWidget("");
+        this->textBoxWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->textBoxWidgetClass.widgetClass.border.setColor(color);
@@ -1028,7 +1037,6 @@ MMSTheme::MMSTheme() {
         /* textbox settings */
         this->textBoxWidgetClass.setFontPath("./themes/default");
         this->textBoxWidgetClass.setFontName("decker.ttf");
-        this->textBoxWidgetClass.setFontNameCN("");
         this->textBoxWidgetClass.setFontSize(16);
         this->textBoxWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         this->textBoxWidgetClass.setWrap(true);
@@ -1093,6 +1101,7 @@ MMSTheme::MMSTheme() {
         this->arrowWidgetClass.widgetClass.setReturnOnScroll(true);
         this->arrowWidgetClass.widgetClass.setInputMode("");
         this->arrowWidgetClass.widgetClass.setJoinedWidget("");
+        this->arrowWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->arrowWidgetClass.widgetClass.border.setColor(color);
@@ -1164,6 +1173,7 @@ MMSTheme::MMSTheme() {
         this->sliderWidgetClass.widgetClass.setReturnOnScroll(true);
         this->sliderWidgetClass.widgetClass.setInputMode("");
         this->sliderWidgetClass.widgetClass.setJoinedWidget("");
+        this->sliderWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->sliderWidgetClass.widgetClass.border.setColor(color);
@@ -1235,6 +1245,7 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.widgetClass.setReturnOnScroll(true);
         this->inputWidgetClass.widgetClass.setInputMode("");
         this->inputWidgetClass.widgetClass.setJoinedWidget("");
+        this->inputWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->inputWidgetClass.widgetClass.border.setColor(color);
@@ -1311,6 +1322,7 @@ MMSTheme::MMSTheme() {
         this->checkBoxWidgetClass.widgetClass.setReturnOnScroll(true);
         this->checkBoxWidgetClass.widgetClass.setInputMode("");
         this->checkBoxWidgetClass.widgetClass.setJoinedWidget("");
+        this->checkBoxWidgetClass.widgetClass.setActivated(true);
 
         /* base widget border settings */
         this->checkBoxWidgetClass.widgetClass.border.setColor(color);

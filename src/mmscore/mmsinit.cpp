@@ -233,9 +233,10 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
 			DEBUGMSG_OUTSTR("Core", "Fullscreen...................: " + getMMSFBFullScreenModeString(config->getFullScreen()));
 
-			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + config->getSourceLang());
-			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + config->getDefaultTargetLang());
+			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + getMMSLanguageString(config->getSourceLang()));
+			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + getMMSLanguageString(config->getDefaultTargetLang()));
 			DEBUGMSG_OUTSTR("Core", "Add missing translations.....: " + (config->getAddTranslations() ? string("yes") : string("no")));
+			DEBUGMSG_OUTSTR("Core", "Language file directory......: " + config->getLanguagefileDir());
 
 			DEBUGMSG_OUTSTR("Core", "Address for perfmon..........: " + config->getPerfMonAddress());
 			DEBUGMSG_OUTSTR("Core", "Port for perfmon.............: " + iToStr(config->getPerfMonPort()));

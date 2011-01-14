@@ -493,11 +493,34 @@ class MMSFBColor {
 		//! alphachannel
 		unsigned char a;
 
-		MMSFBColor(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 0) {
+		MMSFBColor() {
+			this->r = 0x00;
+			this->g = 0x00;
+			this->b = 0x00;
+			this->a = 0x00;
+		}
+
+		MMSFBColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
 			this->r = r;
 			this->g = g;
 			this->b = b;
 			this->a = a;
+		}
+
+		MMSFBColor(unsigned int argb) {
+			this->b = argb & 0xff;
+			this->g = (argb << 16) >> 24;
+			this->r = (argb << 8)  >> 24;
+			this->a = argb >> 24;
+		}
+
+		unsigned int getARGB() {
+			unsigned int argb;
+			argb = (unsigned int)this->b;
+			argb|= ((unsigned int)this->g) << 8;
+			argb|= ((unsigned int)this->r) << 16;
+			argb|= ((unsigned int)this->a) << 24;
+			return argb;
 		}
 };
 
@@ -516,6 +539,21 @@ The input string has the syntax "#rrggbbaa".
 \note If the function fails, the color is set to "#00000000".
 */
 bool getMMSFBColorFromString(string input, MMSFBColor *color);
+
+
+//! Convert MMSFBColor to a color string.
+/*!
+The output string has the syntax "#rrggbbaa".
+
+    rr - hex value for red
+    gg - hex value for green
+    bb - hex value for blue
+    aa - hex value for alpha channel (value ff means full opaque)
+
+\param color  color to be converted
+\return color string
+*/
+string getMMSFBColorString(MMSFBColor color);
 
 
 // rectangles, regions, etc..................................................
@@ -1106,6 +1144,92 @@ typedef enum {
 	//! auto
 	MMSSTATE_AUTO
 } MMSSTATE;
+
+
+
+// Sequence mode ............................................................
+
+//! sequence mode
+typedef enum {
+	//! no sequence
+	MMSSEQUENCEMODE_NONE = 0,
+	//! linear sequence
+	MMSSEQUENCEMODE_LINEAR,
+	//! logarithmical sequence, soft start and stop of the sequence
+	MMSSEQUENCEMODE_LOG,
+	//! logarithmical sequence, soft start
+	MMSSEQUENCEMODE_LOG_SOFT_START,
+	//! logarithmical sequence, soft end
+	MMSSEQUENCEMODE_LOG_SOFT_END
+} MMSSEQUENCEMODE;
+
+
+
+// known languages...........................................................
+
+//! known languages
+typedef enum {
+	//! none
+	MMSLANG_NONE = 0,
+	//! german
+	MMSLANG_DE,
+	//! english
+	MMSLANG_EN,
+	//! denmark
+	MMSLANG_DK,
+	//! spanish
+	MMSLANG_ES,
+	//! finnish
+	MMSLANG_FI,
+	//! french
+	MMSLANG_FR,
+	//! italian
+	MMSLANG_IT,
+	//! dutch
+	MMSLANG_NL,
+	//! norwegian
+	MMSLANG_NO,
+	//! swedish
+	MMSLANG_SE,
+	//! turkish
+	MMSLANG_TR,
+	//! chinese
+	MMSLANG_CN,
+	//! number of languages
+	MMSLANG_SIZE
+} MMSLanguage;
+
+//! language: none
+#define MMSLANG_NONE_STR		""
+//! language: german
+#define MMSLANG_DE_STR			"DE"
+//! language: english
+#define MMSLANG_EN_STR			"EN"
+//! language: denmark
+#define MMSLANG_DK_STR			"DK"
+//! language: spanish
+#define MMSLANG_ES_STR			"ES"
+//! language: finnish
+#define MMSLANG_FI_STR			"FI"
+//! language: french
+#define MMSLANG_FR_STR			"FR"
+//! language: italian
+#define MMSLANG_IT_STR			"IT"
+//! language: dutch
+#define MMSLANG_NL_STR			"NL"
+//! language: norwegian
+#define MMSLANG_NO_STR			"NO"
+//! language: swedish
+#define MMSLANG_SE_STR			"SE"
+//! language: turkish
+#define MMSLANG_TR_STR			"TR"
+//! language: chinese
+#define MMSLANG_CN_STR			"CN"
+
+// conversion routines for languages
+string getMMSLanguageString(MMSLanguage lang);
+MMSLanguage getMMSLanguageFromString(string lang);
+
 
 
 #endif /* MMSTYPES_H_ */

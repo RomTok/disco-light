@@ -236,9 +236,9 @@ void MMSRcParser::throughLanguage(xmlNode* node) {
     		continue;
 
 	    if(!xmlStrcmp(parname, (const xmlChar *) "sourcelang"))
-	    	this->language.sourcelang = string((const char *)parvalue);
+	    	this->language.sourcelang = getMMSLanguageFromString((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "defaultdestlang"))
-            this->language.defaulttargetlang = string((const char *)parvalue);
+            this->language.defaulttargetlang = getMMSLanguageFromString((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "addtranslations"))
             this->language.addtranslations = strToBool(string((const char *)parvalue));
         else if(!xmlStrcmp(parname, (const xmlChar *) "languagefiledir"))

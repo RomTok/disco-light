@@ -77,7 +77,7 @@ class MMSWindowManager : public IMMSWindowManager {
         void showBackgroundWindow();
 
         //! Internal method: Target Language Changed callback from MMSTranslator.
-        void onTargetLangChanged(int lang);
+        void onTargetLangChanged(MMSLanguage lang);
 
         //! Internal method: Theme Changed callback from MMSThemeManager.
         void onThemeChanged(string themeName, bool fade_in);

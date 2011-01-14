@@ -30,6 +30,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 #include "mmsgui/mmstextboxwidget.h"
+#include "mmsgui/mmstextbase.h"
 #include <cstdlib>
 
 MMSTextBoxWidget::MMSTextBoxWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
@@ -57,7 +58,12 @@ bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme
     if (this->textBoxWidgetClass) this->da->widgetClass = &(this->textBoxWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     // clear
+    initLanguage();
+	this->fontpath = "";
+	this->fontname = "";
+	this->fontsize = 0;
     this->font = NULL;
+    this->load_font = true;
     this->lasttext = "";
     this->surfaceChanged = true;
     this->file = NULL;
@@ -76,9 +82,15 @@ MMSWidget *MMSTextBoxWidget::copyWidget() {
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
     // reload my font
+    initLanguage(newWidget);
+    newWidget->fontpath = "";
+	newWidget->fontname = "";
+	newWidget->fontsize = 0;
     newWidget->font = NULL;
+    newWidget->load_font = true;
     if (this->rootwindow) {
-        newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
+    	// load font
+        loadFont(newWidget);
     }
 
     // reload my file
@@ -86,6 +98,41 @@ MMSWidget *MMSTextBoxWidget::copyWidget() {
    	newWidget->loadFile(false);
 
     return newWidget;
+}
+
+
+void MMSTextBoxWidget::initLanguage(MMSTextBoxWidget *widget) {
+	if (!widget) widget = this;
+
+	widget->lang = (!this->rootwindow)?MMSLANG_NONE:this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+}
+
+void MMSTextBoxWidget::loadFont(MMSTextBoxWidget *widget) {
+	if (!this->load_font) return;
+	if (!widget) widget = this;
+
+	if (this->rootwindow) {
+		// get font parameter
+		widget->lang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+    	string fontpath = widget->getFontPath();
+    	string fontname = widget->getFontName(widget->lang);
+    	unsigned int fontsize = widget->getFontSize();
+
+    	if (fontpath != widget->fontpath || fontname != widget->fontname || fontsize != widget->fontsize || !widget->font) {
+    		// font parameter changed, (re)load it
+			if (widget->font)
+				this->rootwindow->fm->releaseFont(widget->font);
+			widget->fontpath = fontpath;
+			widget->fontname = fontname;
+			widget->fontsize = fontsize;
+			widget->font = this->rootwindow->fm->getFont(widget->fontpath, widget->fontname, widget->fontsize);
+			if (this->font) this->load_font = false;
+    	}
+    	else {
+    		// font parameter not changed, so we do not reload it
+            this->load_font = false;
+    	}
+    }
 }
 
 
@@ -372,18 +419,11 @@ bool MMSTextBoxWidget::init() {
     if (!MMSWidget::init())
         return false;
 
-    rootwindow->windowmanager->getTranslator()->getTargetLang(this->countrycode);
-    if(countrycode=="cn") {
-    	string fontcn = this->textBoxWidgetClass->getFontNameCN();
-    	if(!fontcn.empty()) {
-    		this->current_fontname = fontcn;
-    	}
-    } else {
-    	this->current_fontname = textBoxWidgetClass->getFontName();
-    }
+	// init language
+    initLanguage();
 
     // load font
-    this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
+	loadFont();
 
     // load file
     this->loadFile(false);
@@ -398,7 +438,11 @@ bool MMSTextBoxWidget::release() {
 
     // release my font
     this->rootwindow->fm->releaseFont(this->font);
+    this->fontpath = "";
+    this->fontname = "";
+    this->fontsize = 0;
     this->font = NULL;
+    this->load_font = true;
 
     return true;
 }
@@ -419,58 +463,29 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     else
         backgroundFilled = &myBackgroundFilled;
 
-    // calculate text and surface size
-    if (this->font) {
-        unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
+	// check if we have to (re)load the font
+	loadFont();
 
-        string cc;
-    	if(!this->translated) {
-    	    rootwindow->windowmanager->getTranslator()->getTargetLang(cc);
-    	    if(cc!=countrycode) {
-    	    	//country code changed
-    	    	if(countrycode == "cn") {
-    	    		this->current_fontname = this->textBoxWidgetClass->getFontName();
-					//releasefont
-					if(this->font) {
-						this->rootwindow->fm->releaseFont(this->font);
-					}
-	    			//load font
-					this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
-
-    	    	}
-    	    	countrycode = cc;
-
-    	    	if(countrycode == "cn") {
-    	    		cc = this->textBoxWidgetClass->getFontNameCN();
-    	    		if(!cc.empty()) {
-    	    			this->current_fontname = cc;
-						//releasefont
-						if(this->font) {
-							this->rootwindow->fm->releaseFont(this->font);
-						}
-    	    			//load font
-						this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
-    	    		}
-    	    	}
-    	    }
+	if (!this->translated) {
+		// text changed and have to be translated
+		if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
+			// translate the text
+    		string source;
+    		getText(source);
+    		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
+    	}
+    	else {
+    		// text can not or should not translated
+			getText(this->translated_text);
     	}
 
-        if (!this->translated) {
-        	if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
-				// translate the text
-        		string source;
-        		getText(source);
-        		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
-        	}
-        	else {
-        		// text can not or should not translated
-				getText(this->translated_text);
-        	}
+    	// mark as translated
+    	this->translated = true;
+    }
 
-        	// mark as translated
-        	this->translated = true;
-        }
-
+    if (this->font) {
+        // calculate text and surface size
+        unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
         if (calcWordGeom(this->translated_text, getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
                          &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
             // text has changed, reset something
@@ -484,39 +499,6 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 
         // lock
         this->surface->lock();
-
-    	string cc;
-    	if(!this->translated) {
-    	    rootwindow->windowmanager->getTranslator()->getTargetLang(cc);
-    	    if(cc!=countrycode) {
-    	    	//country code changed
-    	    	if(countrycode == "cn") {
-    	    		this->current_fontname = this->textBoxWidgetClass->getFontName();
-					//releasefont
-					if(this->font) {
-						this->rootwindow->fm->releaseFont(this->font);
-					}
-	    			//load font
-					this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
-
-    	    	}
-    	    	countrycode = cc;
-
-    	    	if(countrycode == "cn") {
-    	    		cc = this->textBoxWidgetClass->getFontNameCN();
-    	    		if(!cc.empty()) {
-    	    			this->current_fontname = cc;
-						//releasefont
-						if(this->font) {
-							this->rootwindow->fm->releaseFont(this->font);
-						}
-    	    			//load font
-						this->font = this->rootwindow->fm->getFont(getFontPath(), getCurrentFontName(), getFontSize());
-    	    		}
-    	    	}
-    	    }
-    	}
-
 
         // draw my things
         if (this->font) {
@@ -534,7 +516,17 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
                 this->surface->setFont(this->font);
 
                 // prepare for drawing
-                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
+                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(
+									color,
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP):getShadowColor(MMSPOSITION_TOP),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM):getShadowColor(MMSPOSITION_BOTTOM),
+									(isSelected())?getSelShadowColor(MMSPOSITION_LEFT):getShadowColor(MMSPOSITION_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_RIGHT):getShadowColor(MMSPOSITION_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_LEFT):getShadowColor(MMSPOSITION_TOP_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_RIGHT):getShadowColor(MMSPOSITION_TOP_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_LEFT):getShadowColor(MMSPOSITION_BOTTOM_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_RIGHT):getShadowColor(MMSPOSITION_BOTTOM_RIGHT),
+									getBrightness(), getOpacity());
 
                 // draw single words into surface
                 for (unsigned int i = 0; i < this->wordgeom.size(); i++)
@@ -562,8 +554,9 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     return MMSWidget::drawDebug();
 }
 
-void MMSTextBoxWidget::targetLangChanged(int lang) {
+void MMSTextBoxWidget::targetLangChanged(MMSLanguage lang) {
     this->translated = false;
+    this->load_font = true;
 }
 
 bool MMSTextBoxWidget::loadFile(bool refresh) {
@@ -607,9 +600,6 @@ bool MMSTextBoxWidget::reloadFile() {
 	return loadFile(true);
 }
 
-string MMSTextBoxWidget::getCurrentFontName() {
-	return this->current_fontname;
-}
 
 /***********************************************/
 /* begin of theme access methods (get methods) */
@@ -625,12 +615,29 @@ string MMSTextBoxWidget::getCurrentFontName() {
     else if ((textBoxWidgetClass)&&(textBoxWidgetClass->is##x())) y=textBoxWidgetClass->get##x(); \
     else y=this->da->theme->textBoxWidgetClass.get##x();
 
+#define GETTEXTBOXFONT(lang) \
+    if (this->myTextBoxWidgetClass.isFontName(lang)) return myTextBoxWidgetClass.getFontName(lang); \
+    else if (this->myTextBoxWidgetClass.isFontName(MMSLANG_NONE)) return myTextBoxWidgetClass.getFontName(MMSLANG_NONE); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isFontName(lang))) return textBoxWidgetClass->getFontName(lang); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isFontName(MMSLANG_NONE))) return textBoxWidgetClass->getFontName(MMSLANG_NONE); \
+    else return this->da->theme->textBoxWidgetClass.getFontName();
+
+#define GETTEXTBOXSHADOW(x) \
+    if (this->myTextBoxWidgetClass.isShadowColor(x)) return myTextBoxWidgetClass.getShadowColor(x); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isShadowColor(x))) return textBoxWidgetClass->getShadowColor(x); \
+    else return this->da->theme->textBoxWidgetClass.getShadowColor(x);
+
+#define GETTEXTBOXSHADOWSEL(x) \
+    if (this->myTextBoxWidgetClass.isSelShadowColor(x)) return myTextBoxWidgetClass.getSelShadowColor(x); \
+    else if ((textBoxWidgetClass)&&(textBoxWidgetClass->isSelShadowColor(x))) return textBoxWidgetClass->getSelShadowColor(x); \
+    else return this->da->theme->textBoxWidgetClass.getSelShadowColor(x);
+
 string MMSTextBoxWidget::getFontPath() {
     GETTEXTBOX(FontPath);
 }
 
-string MMSTextBoxWidget::getFontName() {
-    GETTEXTBOX(FontName);
+string MMSTextBoxWidget::getFontName(MMSLanguage lang) {
+	GETTEXTBOXFONT(lang);
 }
 
 unsigned int MMSTextBoxWidget::getFontSize() {
@@ -677,54 +684,66 @@ string MMSTextBoxWidget::getFileName() {
     GETTEXTBOX(FileName);
 }
 
+MMSFBColor MMSTextBoxWidget::getShadowColor(MMSPOSITION position) {
+	GETTEXTBOXSHADOW(position);
+}
+
+MMSFBColor MMSTextBoxWidget::getSelShadowColor(MMSPOSITION position) {
+	GETTEXTBOXSHADOWSEL(position);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
 void MMSTextBoxWidget::setFontPath(string fontpath, bool load, bool refresh) {
     myTextBoxWidgetClass.setFontPath(fontpath);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setFontName(MMSLanguage lang, string fontname, bool load, bool refresh) {
+    myTextBoxWidgetClass.setFontName(fontname, lang);
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setFontName(string fontname, bool load, bool refresh) {
-    myTextBoxWidgetClass.setFontName(fontname);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
-    if (refresh)
-        this->refresh();
+	setFontName(MMSLANG_NONE, fontname, load, refresh);
 }
 
 void MMSTextBoxWidget::setFontSize(unsigned int fontsize, bool load, bool refresh) {
     myTextBoxWidgetClass.setFontSize(fontsize);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
+    myTextBoxWidgetClass.setFontPath(fontpath);
+    myTextBoxWidgetClass.setFontName(fontname, lang);
+    myTextBoxWidgetClass.setFontSize(fontsize);
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setFont(string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
-    myTextBoxWidgetClass.setFontPath(fontpath);
-    myTextBoxWidgetClass.setFontName(fontname);
-    myTextBoxWidgetClass.setFontSize(fontsize);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
-    if (refresh)
-        this->refresh();
+	setFont(MMSLANG_NONE, fontpath, fontname, fontsize, load, refresh);
 }
 
 void MMSTextBoxWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
@@ -793,25 +812,26 @@ void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
         this->refresh();
 }
 
+void MMSTextBoxWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
+    myTextBoxWidgetClass.setShadowColor(position, color);
+    if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
+    myTextBoxWidgetClass.setSelShadowColor(position, selcolor);
+    if (refresh)
+        this->refresh();
+}
+
+
 void MMSTextBoxWidget::updateFromThemeClass(MMSTextBoxWidgetClass *themeClass) {
-    if (themeClass->isFontPath())
-        setFontPath(themeClass->getFontPath());
-    if (themeClass->isFontName())
-        setFontName(themeClass->getFontName());
-    if (themeClass->isFontSize())
-        setFontSize(themeClass->getFontSize());
-    if (themeClass->isAlignment())
-        setAlignment(themeClass->getAlignment());
+
+	// update widget-specific settings
     if (themeClass->isWrap())
         setWrap(themeClass->getWrap());
     if (themeClass->isSplitWords())
         setSplitWords(themeClass->getSplitWords());
-    if (themeClass->isColor())
-        setColor(themeClass->getColor());
-    if (themeClass->isSelColor())
-        setSelColor(themeClass->getSelColor());
-    if (themeClass->isText())
-        setText(themeClass->getText());
     if (themeClass->isTranslate())
         setTranslate(themeClass->getTranslate());
     if (themeClass->isFilePath())
@@ -819,6 +839,10 @@ void MMSTextBoxWidget::updateFromThemeClass(MMSTextBoxWidgetClass *themeClass) {
     if (themeClass->isFileName())
         setFileName(themeClass->getFileName());
 
+    // update base text-specific settings
+	MMSTEXTBASE_UPDATE_FROM_THEME_CLASS(this, themeClass);
+
+	// update general widget settings
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }
 

@@ -180,18 +180,59 @@ private:
 	//! access to the OpenGL wrapper class
 	MMSFBGL	mmsfbgl;
 
+	//! indicate that the matrix should be reset next time used
 	bool	reset_matrix;
+
+	//! if true the central projection will be used, else parallel projection is used
+	bool	matrix_central_projection;
+
+	//! specify the coordinate for the left vertical clipping plane
 	int		matrix_left;
+
+	//! specify the coordinate for the right vertical clipping plane
 	int		matrix_right;
+
+	//! specify the coordinate for the bottom horizontal clipping plane
 	int		matrix_bottom;
+
+	//! specify the coordinate for the top horizontal clipping plane
 	int		matrix_top;
+
+	//! specify the distance to the nearer depth clipping plane
 	int		matrix_nearZ;
+
+	//! specify the distance to the farther depth clipping plane
 	int		matrix_farZ;
 
-	void oglMatrix(int left, int right, int bottom, int top, int nearZ = 1, int farZ = -1);
+	//! internal: init or update the current matrix
+	void oglMatrix(bool central_projection, int left, int right, int bottom, int top, int nearZ = 0, int farZ = 1);
+
+	//! internal: allocate a new MMSFBSurface which uses OpenGL memory
 	void oglAlloc(MMSFBSurface *surface, bool rbo_required = false);
+
+	//! internal: bind a MMSFBSurface and it's OpenGL handle(s) to the OpenGL context
 	void oglBindSurface(MMSFBSurface *surface);
-	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ);
+
+	//! internal: see oglBindSurface(MMSFBSurface *surface), additionally using nearer and farther depth in conjunction with central_projection flag
+	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ, bool central_projection = false);
+
+
+//!TODO: move code outside this class
+//
+/// \brief Generates geometry for a sphere.  Allocates memory for the vertex data and stores
+///        the results in the arrays.  Generate index list for a TRIANGLE_STRIP
+/// \param numSlices The number of slices in the sphere
+/// \param vertices If not NULL, will contain array of float3 positions
+/// \param normals If not NULL, will contain array of float3 normals
+/// \param texCoords If not NULL, will contain array of float2 texCoords
+/// \param indices If not NULL, will contain the array of indices for the triangle strip
+/// \return The number of indices required for rendering the buffers (the number of indices stored in the indices array
+///         if it is not NULL ) as a GL_TRIANGLE_STRIP
+//
+int genSphere(int numSlices, float radius, float **vertices, float **normals,
+									 float **texCoords, unsigned int **indices);
+
+
 
 #endif
 

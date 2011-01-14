@@ -34,7 +34,8 @@
 #include "mmsgui/mmssliderwidget.h"
 #include <string.h>
 
-#define MMSMENUWIDGET_ANIM_MAX_OFFSET 20
+#define MMSMENUWIDGET_ANIM_MAX_OFFSET 		20
+#define MMSMENUWIDGET_ANIM_STEPS_PER_SECOND	(getSmoothDelay()>=100)?MMSMENUWIDGET_ANIM_MAX_OFFSET * 1000 / getSmoothDelay():MMSMENUWIDGET_ANIM_MAX_OFFSET * 5
 
 MMSMenuWidget::MMSMenuWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget::MMSWidget() {
     // initialize the callbacks
@@ -375,13 +376,6 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 
 	// draw the items
 	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled);
-
-	// draw my separators
-	for(unsigned int i=0;i<this->iteminfos.size();i++) {
-		MMSWidget *sep = this->iteminfos.at(i).separator;
-		if (sep) sep->drawchildren(false, backgroundFilled);
-	}
-
 }
 
 void MMSMenuWidget::recalculateChildren() {
@@ -432,15 +426,6 @@ void MMSMenuWidget::recalculateChildren() {
 			selected_col = selected_item % cols;
        	}
 
-       	// summary of the separator sizes
-       	int sepsize = 0;
-
-       	// hide all separators
-        for(int i = 0; i < (int)this->iteminfos.size(); i++) {
-   			MMSWidget *sep = this->iteminfos.at(i).separator;
-   			if (sep) sep->setVisible(false, false);
-        }
-
        	/* through all items */
         for(int i = 0; i < (int)this->children.size(); i++) {
             rect.x = item_xx + (i % (int)cols - (int)px) * item_ww;
@@ -451,8 +436,6 @@ void MMSMenuWidget::recalculateChildren() {
             if (cols==1) {
                 if (smooth_scrolling)
                 	rect.y+=scrolling_offset;
-
-            	rect.y+=sepsize;
             }
             else {
                 if (smooth_scrolling)
@@ -593,20 +576,6 @@ void MMSMenuWidget::recalculateChildren() {
 
                 	this->children.at(i)->setGeometry(rect);
 
-                   	if (cols==1) {
-                   		/* if one column, check if i have a separator */
-               			MMSWidget *sep = this->iteminfos.at(i).separator;
-                   		if (sep) {
-                   			MMSFBRectangle seprect;
-                   			seprect.x = 0;
-                   			seprect.y = rect.y + rect.h;
-                   			seprect.w = this->geom.w;
-                		    getPixelFromSizeHint(&seprect.h, sep->sizehint, this->geom.h, this->geom.w);
-                		    sepsize+=seprect.h;
-                		    sep->setGeometry(seprect);
-                            sep->setVisible(true, false);
-                   		}
-                   	}
                 }
 
                 /* switch the visibility */
@@ -1304,6 +1273,138 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
 
 
 
+bool MMSMenuWidget::onBeforeAnimation(MMSPulser *pulser) {
+
+	// init animation
+	switch (this->pulser_mode) {
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_UP:
+		this->scrolling_offset = 0;
+		this->anim_factor = getItemVMargin() * 2 + this->item_h;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT:
+		this->scrolling_offset = 0;
+		this->anim_factor = getItemHMargin() * 2 + this->item_w;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN:
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP:
+		this->selection_offset_x = 0;
+		this->selection_offset_y = 0;
+		this->anim_factor = getItemVMargin() * 2 + this->item_h;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT:
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT:
+		this->selection_offset_x = 0;
+		this->selection_offset_y = 0;
+		this->anim_factor = getItemHMargin() * 2 + this->item_w;
+		break;
+	}
+
+	return true;
+}
+
+bool MMSMenuWidget::onAnimation(MMSPulser *pulser) {
+
+	// next offset
+	switch (this->pulser_mode) {
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT:
+		this->scrolling_offset = this->anim_offset - (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_UP:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT:
+		this->scrolling_offset = this->anim_offset + (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN:
+		this->selection_offset_y = this->anim_offset + (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_y*= this->anim_jumpover + 1;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP:
+		this->selection_offset_y = this->anim_offset - (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_y*= this->anim_jumpover + 1;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT:
+		this->selection_offset_x = this->anim_offset - (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_x*= this->anim_jumpover + 1;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT:
+		this->selection_offset_x = this->anim_offset + (int)(((this->anim_factor * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
+		this->selection_offset_x*= this->anim_jumpover + 1;
+		break;
+	}
+
+	// update screen
+	this->refresh();
+
+	return true;
+}
+
+void MMSMenuWidget::onAfterAnimation(MMSPulser *pulser) {
+
+	// reset at the end of the animation
+	switch (this->pulser_mode) {
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_UP:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT:
+		this->scrolling_offset = 0;
+		break;
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN:
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP:
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT:
+	case MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT:
+		this->selection_offset_x = 0;
+		this->selection_offset_y = 0;
+		break;
+	}
+	return;
+}
+
+
+void MMSMenuWidget::startAnimation(MMSMENUWIDGET_PULSER_MODE pulser_mode, double anim_offset, int anim_jumpover) {
+
+	MMSSEQUENCEMODE	seq_mode;
+
+	// get source sequence mode
+	switch (pulser_mode) {
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_UP:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT:
+	case MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT:
+		// smooth scrolling mode
+		seq_mode = this->smooth_scrolling;
+		break;
+	default:
+		// smooth selection mode
+		seq_mode = this->smooth_selection;
+		break;
+	}
+
+	// save offset and jump over cnt
+	this->anim_offset = anim_offset;
+	this->anim_jumpover = anim_jumpover;
+
+	// init pulser and start it
+	this->pulser.setStepsPerSecond(MMSMENUWIDGET_ANIM_STEPS_PER_SECOND);
+	switch (seq_mode) {
+	case MMSSEQUENCEMODE_LOG:
+		this->pulser.setMaxOffset(MMSMENUWIDGET_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START_AND_END);
+		break;
+	case MMSSEQUENCEMODE_LOG_SOFT_START:
+		this->pulser.setMaxOffset(MMSMENUWIDGET_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START);
+		break;
+	case MMSSEQUENCEMODE_LOG_SOFT_END:
+		this->pulser.setMaxOffset(MMSMENUWIDGET_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END);
+		break;
+	default:
+		this->pulser.setMaxOffset(MMSMENUWIDGET_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LINEAR);
+		break;
+	}
+	this->pulser_mode = pulser_mode;
+	this->pulser.start(false);
+}
+
 
 
 bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
@@ -1409,39 +1510,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
 
-				if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
-	            	// selection animation, smooth selection
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs          = (getItemVMargin()*2 + this->item_h) / sloop;
-					selection_offset_x = 0;
-					selection_offset_y =-(getItemVMargin()*2 + this->item_h);
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        selection_offset_y+=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-				        this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offsets
-					selection_offset_x=0;
-					selection_offset_y=0;
+				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy < this->y)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+					startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_DOWN,
+											-(double)(getItemVMargin() * 2 + this->item_h),
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -1451,37 +1525,12 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
-	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy < this->y)) {
-	            	 //scrolling animation, smooth scrolling
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
-					scrolling_offset=soffs * sloop;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-						scrolling_offset-=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-						this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offset
-					scrolling_offset=0;
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldy < this->y)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN,
+											(double)(getItemVMargin() * 2 + this->item_h),
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -1637,39 +1686,12 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 				selectItem(olditem, false, false);
 
             	// selection animation?
-				if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
-	            	// selection animation, smooth selection
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs          = (getItemVMargin()*2 + this->item_h) / sloop;
-					selection_offset_x = 0;
-					selection_offset_y = getItemVMargin()*2 + this->item_h;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        selection_offset_y-=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-				        this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offsets
-					selection_offset_x=0;
-					selection_offset_y=0;
+				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy > this->y)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+					startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_UP,
+											getItemVMargin() * 2 + this->item_h,
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -1679,37 +1701,12 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
-	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldy > this->y)) {
-	            	 //scrolling animation, smooth scrolling
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs = (getItemVMargin()*2 + this->item_h) / sloop;
-					scrolling_offset=-soffs * sloop;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        scrolling_offset+=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-						this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offset
-					scrolling_offset=0;
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldy > this->y)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_UP,
+											-(double)(getItemVMargin() * 2 + this->item_h),
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -1790,35 +1787,6 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
     }
 }
 
-
-bool MMSMenuWidget::onBeforeAnimation(MMSPulser *pulser) {
-	this->scrolling_offset=0;
-	this->anim_width = getItemHMargin() * 2 + this->item_w;
-	return true;
-}
-
-bool MMSMenuWidget::onAnimation(MMSPulser *pulser) {
-
-	// next offset
-	switch (this->pulser_mode) {
-	case MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT:
-		scrolling_offset = (int)(((this->anim_width * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
-		break;
-	case MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT:
-		scrolling_offset = -(int)(((this->anim_width * pulser->getOffset()) / MMSMENUWIDGET_ANIM_MAX_OFFSET) + 0.5);
-		break;
-	}
-
-	// update screen
-	this->refresh();
-
-	return true;
-}
-
-void MMSMenuWidget::onAfterAnimation(MMSPulser *pulser) {
-	this->scrolling_offset=0;
-	return;
-}
 
 bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, bool leave_selection) {
     bool pxChanged = false;
@@ -1928,39 +1896,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
-	            if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
-	            	// selection animation, smooth selection
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs          = (getItemHMargin()*2 + this->item_w) / sloop;
-					selection_offset_x =-(getItemHMargin()*2 + this->item_w);
-					selection_offset_y = 0;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        selection_offset_x+=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-				        this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offsets
-					selection_offset_x=0;
-					selection_offset_y=0;
+	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx < this->x)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT,
+											-(double)(getItemHMargin() * 2 + this->item_w),
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -1970,37 +1911,12 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
-	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx < this->x)) {
-	            	 //scrolling animation, smooth scrolling
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
-					scrolling_offset=soffs * sloop;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        scrolling_offset-=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-				        this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offset
-					scrolling_offset=0;
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldx < this->x)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT,
+											getItemHMargin() * 2 + this->item_w,
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -2043,12 +1959,10 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             // callback
             this->onBeforeScroll->emit(this);
 
-            if ((smooth_scrolling)&&(refresh)) {
-            	// do the animation
-            	this->pulser.setStepsPerSecond(MMSMENUWIDGET_ANIM_MAX_OFFSET * 5);
-				this->pulser.setMaxOffset(MMSMENUWIDGET_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START_AND_END);
-            	this->pulser_mode = MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT;
-            	this->pulser.start(false);
+            if ((this->smooth_scrolling)&&(refresh)) {
+				// do the animation
+				// input: animation mode, animation offset, number of menu items to jump over
+            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT, 0, count - 1);
             }
 
 			/* correct menu with more than one column */
@@ -2169,39 +2083,12 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
 				selectItem(olditem, false, false);
-	            if ((selimage)&&(smooth_selection)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
-	            	// selection animation, smooth selection
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs          = (getItemHMargin()*2 + this->item_w) / sloop;
-					selection_offset_x = getItemHMargin()*2 + this->item_w;
-					selection_offset_y = 0;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        selection_offset_x-=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-				        this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offsets
-					selection_offset_x=0;
-					selection_offset_y=0;
+	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx > this->x)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_LEFT,
+											getItemHMargin() * 2 + this->item_w,
+											count - 1);
 	            }
 
 	        	// switch on new selection
@@ -2211,37 +2098,12 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            /* scrolled, switch focus needs recalculate children */
 	            selectItem(olditem, false, false);
 
-	            if ((smooth_scrolling)&&(refresh)&&(count == 1)&&(oldx > this->x)) {
-	            	// selection animation, smooth scrolling
-					int sloop;
-					MMSMENUWIDGET_GET_SLOOP(sloop);
-					int soffs = (getItemHMargin()*2 + this->item_w) / sloop;
-					scrolling_offset=-soffs * sloop;
-					for (int z = 0; z < sloop - 1; z++) {
-						// this first sleep is needed for continuous scrolling
-						MMSMENUWIDGET_SSLEEP;
-
-						// next offset
-				        scrolling_offset+=soffs;
-
-				        // get start timestamp if needed
-				        MMSMENUWIDGET_GET_SSTART;
-
-				        // update screen
-				        this->refresh();
-
-				        // get end timestamp if needed
-				        MMSMENUWIDGET_GET_SEND;
-					}
-
-					// calc the arithmetic mean?
-					MMSMENUWIDGET_CALC_DELAY;
-
-					// last sleep
-					MMSMENUWIDGET_SSLEEP;
-
-					// reset offset
-					scrolling_offset=0;
+	            if ((this->smooth_scrolling)&&(refresh)&&(oldx > this->x)) {
+					// do the animation
+					// input: animation mode, animation offset, number of menu items to jump over
+	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT,
+											-(double)(getItemHMargin() * 2 + this->item_w),
+											count - 1);
 	            }
 
 	            if (refresh)
@@ -2284,12 +2146,10 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             // callback
             this->onBeforeScroll->emit(this);
 
-            if ((smooth_scrolling)&&(refresh)) {
-            	// do the animation
-            	this->pulser.setStepsPerSecond(MMSMENUWIDGET_ANIM_MAX_OFFSET * 5);
-				this->pulser.setMaxOffset(MMSMENUWIDGET_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_START_AND_END);
-            	this->pulser_mode = MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT;
-            	this->pulser.start(false);
+            if ((this->smooth_scrolling)&&(refresh)) {
+				// do the animation
+				// input: animation mode, animation offset, number of menu items to jump over
+            	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_LEFT, 0, count - 1);
             }
 
 
@@ -2627,23 +2487,44 @@ MMSWidget *MMSMenuWidget::getItemTemplate() {
     return this->itemTemplate;
 }
 
-MMSWidget *MMSMenuWidget::newItem() {
-    MMSWidget 			*widget;
+MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
     MMSMENUITEMINFOS	iteminfo;
 
-    if (!this->itemTemplate)
-        throw new MMSWidgetError(0, "item template not set");
+    if (!widget) {
+    	// no widget given, create widget from template
+		if (!this->itemTemplate)
+			throw new MMSWidgetError(0, "item template not set");
 
-    widget = itemTemplate->copyWidget();
+		widget = itemTemplate->copyWidget();
+    }
 
     widget->setParent(this);
     widget->setRootWindow(this->rootwindow);
-    this->children.push_back(widget);
 	iteminfo.name = "";
 	iteminfo.window = NULL;
 	iteminfo.menu = NULL;
-	iteminfo.separator = NULL;
-	this->iteminfos.push_back(iteminfo);
+    if (item > 0) {
+    	if (item > this->children.size())
+    		item = -1;
+    }
+    if (item < 0) {
+    	// push new item at the end of the list
+    	this->children.push_back(widget);
+		this->iteminfos.push_back(iteminfo);
+    }
+    else {
+    	// get currently selected icon
+    	unsigned int sitem = getSelected();
+
+    	// insert at position item
+    	this->children.insert(this->children.begin() + item, widget);
+		this->iteminfos.insert(this->iteminfos.begin() + item, iteminfo);
+
+	    if (item <= sitem) {
+	    	// item before the selected item inserted, so have to change the selection
+			setSelected(sitem + 1, false);
+	    }
+    }
 
     recalculateChildren();
 
@@ -2660,12 +2541,50 @@ MMSWidget *MMSMenuWidget::newItem() {
     return widget;
 }
 
+
+void MMSMenuWidget::deleteItem(unsigned int item) {
+	// check size
+	if (item >= this->children.size())
+		return;
+
+	// get currently selected icon
+	unsigned int sitem = getSelected();
+	if (sitem == this->children.size()-1) {
+		// last item in the list is selected, so move the selection before deletion
+		if (sitem > 0)
+			setSelected(sitem - 1, false);
+	}
+
+	// delete item
+    delete this->children.at(item);
+    this->children.erase(this->children.begin()+item);
+    this->iteminfos.erase(this->iteminfos.begin()+item);
+
+    // recalc and refresh
+    recalculateChildren();
+
+    if (item < sitem) {
+    	// item before the selected item was deleted, so have to change the selection
+		setSelected(sitem - 1, false);
+    }
+    else
+    if (item == sitem) {
+    	// selected item was deleted, so we have to select the item at this position
+    	if (sitem < this->children.size())
+    		setSelected(sitem, false);
+    	else
+		if (sitem > 0)
+    		setSelected(sitem - 1, false);
+    }
+
+    this->refresh();
+}
+
+
 void MMSMenuWidget::clear() {
     for(int i = (int)this->children.size() - 1; i >= 0 ; i--) {
         delete this->children.at(i);
         this->children.erase(this->children.end()-1);
-        MMSWidget *w = this->iteminfos.at(i).separator;
-        if (w) delete w;
         this->iteminfos.erase(this->iteminfos.end()-1);
     }
 
@@ -2860,15 +2779,6 @@ bool MMSMenuWidget::setBackItem(unsigned int item) {
 	return true;
 }
 
-bool MMSMenuWidget::setSeparator(unsigned int item, MMSWidget *widget, bool refresh) {
-	if (item >= this->iteminfos.size()) return false;
-	iteminfos.at(item).separator = widget;
-    widget->setParent(this);
-    widget->setRootWindow(this->rootwindow);
-    if (refresh)
-	    this->refresh();
-	return true;
-}
 
 /***********************************************/
 /* begin of theme access methods (get methods) */
@@ -2989,7 +2899,7 @@ string MMSMenuWidget::getZoomSelShiftY() {
     GETMENU(ZoomSelShiftY);
 }
 
-bool MMSMenuWidget::getSmoothScrolling() {
+MMSSEQUENCEMODE MMSMenuWidget::getSmoothScrolling() {
     GETMENU(SmoothScrolling);
 }
 
@@ -3005,7 +2915,7 @@ bool MMSMenuWidget::getSelImageName(string &selimagename) {
     GETMENU_X(SelImageName, selimagename);
 }
 
-bool MMSMenuWidget::getSmoothSelection() {
+MMSSEQUENCEMODE MMSMenuWidget::getSmoothSelection() {
     GETMENU(SmoothSelection);
 }
 
@@ -3145,9 +3055,9 @@ void MMSMenuWidget::setZoomSelShiftY(string zoomselshifty, bool refresh) {
         this->refresh();
 }
 
-void MMSMenuWidget::setSmoothScrolling(bool smoothscrolling) {
-    myMenuWidgetClass.setSmoothScrolling(smoothscrolling);
-    this->smooth_scrolling = smoothscrolling;
+void MMSMenuWidget::setSmoothScrolling(MMSSEQUENCEMODE seq_mode) {
+    myMenuWidgetClass.setSmoothScrolling(seq_mode);
+    this->smooth_scrolling = seq_mode;
 }
 
 void MMSMenuWidget::setParentWindow(string parentwindow) {
@@ -3183,9 +3093,9 @@ void MMSMenuWidget::setSelImageName(string selimagename, bool load, bool refresh
         this->refresh();
 }
 
-void MMSMenuWidget::setSmoothSelection(bool smoothselection) {
-    myMenuWidgetClass.setSmoothSelection(smoothselection);
-    this->smooth_selection = smoothselection;
+void MMSMenuWidget::setSmoothSelection(MMSSEQUENCEMODE seq_mode) {
+    myMenuWidgetClass.setSmoothSelection(seq_mode);
+    this->smooth_selection = seq_mode;
 }
 
 void MMSMenuWidget::setSmoothDelay(unsigned int smoothdelay) {

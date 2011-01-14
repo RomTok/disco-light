@@ -58,7 +58,11 @@ typedef enum {
 	//! any binary data
 	TAFF_ATTRTYPE_BINDATA,
 	//! valid values: "true", "false", "auto"
-	TAFF_ATTRTYPE_STATE
+	TAFF_ATTRTYPE_STATE,
+	//! valid values: "true", "false", "linear", "log", "log_soft_start", "log_soft_end"
+	TAFF_ATTRTYPE_SEQUENCE_MODE,
+	//! argb values in hex format, syntax: "#rrggbbaa"
+	TAFF_ATTRTYPE_COLOR
 } TAFF_ATTRTYPE;
 
 //! Describe a TAFF attribute
@@ -135,8 +139,8 @@ typedef enum {
 //! A data access class for Tagged Attributes File Format (TAFF).
 /*!
 This class is written to generate an simple to parse binary presentation of
-high level markup languages such as XML. For now only the conversion XML to TAFF
-or vice versa and PNG to TAFF is supported.
+high level markup languages such as XML. For now the conversion XML to TAFF
+or vice versa and PNG/JPEG/TIFF to TAFF is supported.
 The user of this class must specify a description of which tags and attributes
 are allowed. Further he specifies the type of an attribute. With this informations
 this class also checks the types and ranges of attributes during the conversion.
@@ -319,17 +323,30 @@ class MMSTaffFile {
         */
         int  getNextTag(bool &eof);
 
-        //! Get the current tag id.
+        //! Get the id of the current tag.
         /*!
+        \param name		optional, with this parameter you can get the name of the current tag
         \return id of the current tag
         */
-        int  getCurrentTag();
+        int  getCurrentTag(const char **name = NULL);
+
+        //! Get the name of the current tag.
+        /*!
+        \return name of the current tag
+        */
+        const char *getCurrentTagName();
 
         //! Copy the complete current tag into a new MMSTaffFile.
         /*!
         \return pointer to the new MMSTaffFile or NULL in case of errors
         */
         MMSTaffFile *copyCurrentTag();
+
+        //! Determine if the current tag has attributes.
+        /*!
+        \return true if the current tag has at least one attribute
+        */
+        bool  hasAttributes();
 
         //! Get the first attribute of the current tag.
         /*!
@@ -364,6 +381,26 @@ class MMSTaffFile {
         \return pointer to null terminated value string or NULL
         */
         char *getAttributeString(int id);
+
+        //! Convert a value given as string into binary format and check ranges.
+        /*!
+        \param attrType  			type of the attribute value string
+        \param attrValStr			attribute value string
+        \param attrValStr_valid		returns if attribute value string is valid
+        \param int_val_set			returns true if the value is an integer (int)
+        \param byte_val_set			returns true if the value is an byte (unsigned char)
+        \param int_val				binary presentation of the value if int_val_set or byte_val_set set to true
+        \param attrname				optional attribute name needed for error messages
+        \param attrid				optional attribute id needed for error messages
+        \param nodename				optional tag name needed for error messages
+        \param nodeline				optional line needed for error messages
+        \return true if conversion was successful
+        \note If method returns true the attrValStr can be invalid anyway (see attrValStr_valid)
+        */
+        bool convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *attrValStr, bool *attrValStr_valid,
+											 bool *int_val_set, bool *byte_val_set, int *int_val,
+											 const char *attrname = NULL, int attrid = -1, const char *nodename = 0, int nodeline = -1);
+
 };
 
 

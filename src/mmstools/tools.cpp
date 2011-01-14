@@ -130,6 +130,12 @@ int hexToInt(const char *in) {
     return ret;
 }
 
+string ucharToHex(unsigned char in) {
+	char buf[3];
+	sprintf(buf, "%02x", in);
+	return buf;
+}
+
 string getSimpleTimeString() {
     string timstr;
 

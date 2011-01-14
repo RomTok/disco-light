@@ -30,43 +30,31 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#include "mmsgui/theme/mmsbuttonwidgetclass.h"
+#ifndef MMSTEXTBASE_H_
+#define MMSTEXTBASE_H_
 
-//store attribute descriptions here
-TAFF_ATTRDESC MMSGUI_BUTTONWIDGET_ATTR_I[] = MMSGUI_BUTTONWIDGET_ATTR_INIT;
+#define MMSTEXTBASE_UPDATE_FROM_THEME_CLASS(widget, themeClass) \
+    if (themeClass->isFontPath()) \
+        widget->setFontPath(themeClass->getFontPath()); \
+    for (unsigned int i = MMSLANG_NONE; i < MMSLANG_SIZE; i++) { \
+    	if (themeClass->isFontName((MMSLanguage)i)) \
+    		widget->setFontName(themeClass->getFontName((MMSLanguage)i), (MMSLanguage)i); \
+    } \
+    if (themeClass->isFontSize()) \
+        widget->setFontSize(themeClass->getFontSize()); \
+    for (int position = 0; position < MMSPOSITION_SIZE; position++) { \
+		if (themeClass->isShadowColor((MMSPOSITION)position)) \
+			widget->setShadowColor((MMSPOSITION)position, themeClass->getShadowColor((MMSPOSITION)position)); \
+		if (themeClass->isSelShadowColor((MMSPOSITION)position)) \
+			widget->setSelShadowColor((MMSPOSITION)position, themeClass->getSelShadowColor((MMSPOSITION)position)); \
+    } \
+    if (themeClass->isAlignment()) \
+        widget->setAlignment(themeClass->getAlignment()); \
+    if (themeClass->isColor()) \
+        widget->setColor(themeClass->getColor()); \
+    if (themeClass->isSelColor()) \
+        widget->setSelColor(themeClass->getSelColor()); \
+    if (themeClass->isText()) \
+        widget->setText(themeClass->getText());
 
-// address attribute names
-#define GETATTRNAME(aname) MMSGUI_BUTTONWIDGET_ATTR_I[MMSGUI_BUTTONWIDGET_ATTR::MMSGUI_BUTTONWIDGET_ATTR_IDS_##aname].name
-
-// address attribute types
-#define GETATTRTYPE(aname) MMSGUI_BUTTONWIDGET_ATTR_I[MMSGUI_BUTTONWIDGET_ATTR::MMSGUI_BUTTONWIDGET_ATTR_IDS_##aname].type
-
-
-MMSButtonWidgetClass::MMSButtonWidgetClass() {
-    unsetAll();
-}
-
-void MMSButtonWidgetClass::unsetAll() {
-    this->className = "";
-}
-
-void MMSButtonWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
-	startTAFFScan
-	{
-        switch (attrid) {
-		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
-            setClassName(attrval_str);
-			break;
-		}
-	}
-	endTAFFScan
-}
-
-void MMSButtonWidgetClass::setClassName(string className) {
-    this->className = className;
-}
-
-string MMSButtonWidgetClass::getClassName() {
-    return this->className;
-}
-
+#endif /*MMSTEXTBASE_H_*/

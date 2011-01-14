@@ -32,6 +32,7 @@
 
 #include "mmsgui/mmsinputwidget.h"
 #include "mmsgui/mmsinputwidgetthread.h"
+#include "mmsgui/mmstextbase.h"
 
 
 MMSInputWidget::MMSInputWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
@@ -62,7 +63,12 @@ bool MMSInputWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     if (this->inputWidgetClass) this->da->widgetClass = &(this->inputWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
     // clear
+    initLanguage();
+	this->fontpath = "";
+	this->fontname = "";
+	this->fontsize = 0;
     this->font = NULL;
+    this->load_font = true;
     this->cursor_pos = 0;
 	this->cursor_on = true;
 	this->scroll_x = 0;
@@ -89,12 +95,52 @@ MMSWidget *MMSInputWidget::copyWidget() {
 	this->onBeforeChange = new sigc::signal<bool, MMSWidget*, string, bool, MMSFBRectangle>::accumulated<bool_accumulator>;
 
     // reload my font
+    initLanguage(newWidget);
+    newWidget->fontpath = "";
+	newWidget->fontname = "";
+	newWidget->fontsize = 0;
     newWidget->font = NULL;
+    newWidget->load_font = true;
     if (this->rootwindow) {
-        newWidget->font = this->rootwindow->fm->getFont(newWidget->getFontPath(), newWidget->getFontName(), newWidget->getFontSize());
+    	// load font
+        loadFont(newWidget);
     }
 
     return newWidget;
+}
+
+void MMSInputWidget::initLanguage(MMSInputWidget *widget) {
+	if (!widget) widget = this;
+
+	widget->lang = (!this->rootwindow)?MMSLANG_NONE:this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+}
+
+void MMSInputWidget::loadFont(MMSInputWidget *widget) {
+	if (!this->load_font) return;
+	if (!widget) widget = this;
+
+	if (this->rootwindow) {
+		// get font parameter
+		widget->lang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+    	string fontpath = widget->getFontPath();
+    	string fontname = widget->getFontName(widget->lang);
+    	unsigned int fontsize = widget->getFontSize();
+
+    	if (fontpath != widget->fontpath || fontname != widget->fontname || fontsize != widget->fontsize || !widget->font) {
+    		// font parameter changed, (re)load it
+			if (widget->font)
+				this->rootwindow->fm->releaseFont(widget->font);
+			widget->fontpath = fontpath;
+			widget->fontname = fontname;
+			widget->fontsize = fontsize;
+			widget->font = this->rootwindow->fm->getFont(widget->fontpath, widget->fontname, widget->fontsize);
+			if (this->font) this->load_font = false;
+    	}
+    	else {
+    		// font parameter not changed, so we do not reload it
+            this->load_font = false;
+    	}
+    }
 }
 
 bool MMSInputWidget::init() {
@@ -102,8 +148,11 @@ bool MMSInputWidget::init() {
     if (!MMSWidget::init())
         return false;
 
+	// init language
+    initLanguage();
+
     // load font
-    this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
+	loadFont();
 
     return true;
 }
@@ -115,7 +164,11 @@ bool MMSInputWidget::release() {
 
     // release my font
     this->rootwindow->fm->releaseFont(this->font);
+    this->fontpath = "";
+    this->fontname = "";
+    this->fontsize = 0;
     this->font = NULL;
+    this->load_font = true;
 
     return true;
 }
@@ -139,7 +192,10 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
         int width, height, x, y;
         int cursor_x=0, cursor_w = 4;
 
-        // draw my things
+   		// check if we have to (re)load the font
+   	    loadFont();
+
+   	    // draw my things
         if (this->font) {
             MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
@@ -255,7 +311,17 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
             if (color.a) {
                 // prepare for drawing
-                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
+                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(
+									color,
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP):getShadowColor(MMSPOSITION_TOP),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM):getShadowColor(MMSPOSITION_BOTTOM),
+									(isSelected())?getSelShadowColor(MMSPOSITION_LEFT):getShadowColor(MMSPOSITION_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_RIGHT):getShadowColor(MMSPOSITION_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_LEFT):getShadowColor(MMSPOSITION_TOP_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_TOP_RIGHT):getShadowColor(MMSPOSITION_TOP_RIGHT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_LEFT):getShadowColor(MMSPOSITION_BOTTOM_LEFT),
+									(isSelected())?getSelShadowColor(MMSPOSITION_BOTTOM_RIGHT):getShadowColor(MMSPOSITION_BOTTOM_RIGHT),
+									getBrightness(), getOpacity());
 
                 // draw the text
                 this->surface->drawString(text, -1, x, y);
@@ -620,12 +686,29 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
     else if ((inputWidgetClass)&&(inputWidgetClass->is##x())) y=inputWidgetClass->get##x(); \
     else y=this->da->theme->inputWidgetClass.get##x();
 
+#define GETINPUTFONT(lang) \
+    if (this->myInputWidgetClass.isFontName(lang)) return myInputWidgetClass.getFontName(lang); \
+    else if (this->myInputWidgetClass.isFontName(MMSLANG_NONE)) return myInputWidgetClass.getFontName(MMSLANG_NONE); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->isFontName(lang))) return inputWidgetClass->getFontName(lang); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->isFontName(MMSLANG_NONE))) return inputWidgetClass->getFontName(MMSLANG_NONE); \
+    else return this->da->theme->inputWidgetClass.getFontName();
+
+#define GETINPUTSHADOW(x) \
+    if (this->myInputWidgetClass.isShadowColor(x)) return myInputWidgetClass.getShadowColor(x); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->isShadowColor(x))) return inputWidgetClass->getShadowColor(x); \
+    else return this->da->theme->inputWidgetClass.getShadowColor(x);
+
+#define GETINPUTSHADOWSEL(x) \
+    if (this->myInputWidgetClass.isSelShadowColor(x)) return myInputWidgetClass.getSelShadowColor(x); \
+    else if ((inputWidgetClass)&&(inputWidgetClass->isSelShadowColor(x))) return inputWidgetClass->getSelShadowColor(x); \
+    else return this->da->theme->inputWidgetClass.getSelShadowColor(x);
+
 string MMSInputWidget::getFontPath() {
     GETINPUT(FontPath);
 }
 
-string MMSInputWidget::getFontName() {
-    GETINPUT(FontName);
+string MMSInputWidget::getFontName(MMSLanguage lang) {
+	GETINPUTFONT(lang);
 }
 
 unsigned int MMSInputWidget::getFontSize() {
@@ -656,54 +739,66 @@ MMSSTATE MMSInputWidget::getCursorState() {
     GETINPUT(CursorState);
 }
 
+MMSFBColor MMSInputWidget::getShadowColor(MMSPOSITION position) {
+	GETINPUTSHADOW(position);
+}
+
+MMSFBColor MMSInputWidget::getSelShadowColor(MMSPOSITION position) {
+	GETINPUTSHADOWSEL(position);
+}
+
 /***********************************************/
 /* begin of theme access methods (set methods) */
 /***********************************************/
 
 void MMSInputWidget::setFontPath(string fontpath, bool load, bool refresh) {
     myInputWidgetClass.setFontPath(fontpath);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setFontName(MMSLanguage lang, string fontname, bool load, bool refresh) {
+    myInputWidgetClass.setFontName(fontname, lang);
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
     if (refresh)
         this->refresh();
 }
 
 void MMSInputWidget::setFontName(string fontname, bool load, bool refresh) {
-    myInputWidgetClass.setFontName(fontname);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
-    if (refresh)
-        this->refresh();
+	setFontName(MMSLANG_NONE, fontname, load, refresh);
 }
 
 void MMSInputWidget::setFontSize(unsigned int fontsize, bool load, bool refresh) {
     myInputWidgetClass.setFontSize(fontsize);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
+    if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
+    myInputWidgetClass.setFontPath(fontpath);
+    myInputWidgetClass.setFontName(fontname, lang);
+    myInputWidgetClass.setFontSize(fontsize);
+    if (load) {
+        this->load_font = true;
+    	loadFont();
+    }
     if (refresh)
         this->refresh();
 }
 
 void MMSInputWidget::setFont(string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
-    myInputWidgetClass.setFontPath(fontpath);
-    myInputWidgetClass.setFontName(fontname);
-    myInputWidgetClass.setFontSize(fontsize);
-    if (load)
-        if (this->rootwindow) {
-            this->rootwindow->fm->releaseFont(this->font);
-            this->font = this->rootwindow->fm->getFont(getFontPath(), getFontName(), getFontSize());
-        }
-    if (refresh)
-        this->refresh();
+	setFont(MMSLANG_NONE, fontpath, fontname, fontsize, load, refresh);
 }
 
 void MMSInputWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
@@ -744,24 +839,28 @@ void MMSInputWidget::setCursorState(MMSSTATE cursor_state, bool refresh) {
         this->refresh();
 }
 
+void MMSInputWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
+    myInputWidgetClass.setShadowColor(position, color);
+    if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
+    myInputWidgetClass.setSelShadowColor(position, selcolor);
+    if (refresh)
+        this->refresh();
+}
+
 void MMSInputWidget::updateFromThemeClass(MMSInputWidgetClass *themeClass) {
-    if (themeClass->isFontPath())
-        setFontPath(themeClass->getFontPath());
-    if (themeClass->isFontName())
-        setFontName(themeClass->getFontName());
-    if (themeClass->isFontSize())
-        setFontSize(themeClass->getFontSize());
-    if (themeClass->isAlignment())
-        setAlignment(themeClass->getAlignment());
-    if (themeClass->isColor())
-        setColor(themeClass->getColor());
-    if (themeClass->isSelColor())
-        setSelColor(themeClass->getSelColor());
-    if (themeClass->isText())
-        setText(themeClass->getText());
+
+	// update widget-specific settings
     if (themeClass->isCursorState())
         setCursorState(themeClass->getCursorState());
 
+    // update base text-specific settings
+	MMSTEXTBASE_UPDATE_FROM_THEME_CLASS(this, themeClass);
+
+	// update general widget settings
     MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
 }
 

@@ -456,7 +456,13 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     	png_set_strip_16(png_ptr);
     }
     png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+    png_set_swap_alpha(png_ptr);
+#else
     png_set_bgr(png_ptr);
+#endif
+
     png_set_interlace_handling(png_ptr);
     if (color_type == PNG_COLOR_TYPE_PALETTE) {
     	// convert palette to rgb data
@@ -671,6 +677,188 @@ bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *he
 #endif
 }
 
+
+bool MMSTaffFile::convertString2TaffAttributeType(TAFF_ATTRTYPE attrType, char *attrValStr, bool *attrValStr_valid,
+								bool *int_val_set, bool *byte_val_set, int *int_val,
+								const char *attrname, int attrid, const char *nodename, int nodeline) {
+	xmlChar *attrVal = (xmlChar *)attrValStr;
+	if (!attrValStr) return false;
+	if (!attrValStr_valid) return false;
+	*attrValStr_valid = true;
+	if (int_val_set)  *int_val_set = false;
+	if (byte_val_set) *byte_val_set = false;
+
+	bool check_ok = true;
+
+
+	string validvals = "";
+	bool badval = false;
+	switch (attrType) {
+	case TAFF_ATTRTYPE_NONE:
+	case TAFF_ATTRTYPE_STRING:
+	case TAFF_ATTRTYPE_BINDATA:
+		break;
+
+	case TAFF_ATTRTYPE_NE_STRING:
+		badval = (!*attrVal);
+		if (badval) {
+			validvals = "any characters, but not empty";
+			check_ok = false;
+		}
+		break;
+
+	case TAFF_ATTRTYPE_BOOL:
+		if (!byte_val_set || !int_val) return false;
+		badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false")));
+		if (badval) {
+			validvals = "\"true\", \"false\"";
+			check_ok = false;
+		}
+		else {
+			*byte_val_set = true;
+			if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
+				*int_val = 0xff;
+			else
+				*int_val = 0;
+		}
+		break;
+
+	case TAFF_ATTRTYPE_UCHAR:
+	case TAFF_ATTRTYPE_UCHAR100:
+		if (!byte_val_set || !int_val) return false;
+		badval = ((xmlStrlen(attrVal) < 1)||(xmlStrlen(attrVal) > 3));
+		if (!badval) {
+			char iv[3+1];
+			*int_val = atoi((char*)attrVal);
+			sprintf(iv, "%d", *int_val);
+			badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
+			if (!badval) {
+				if (attrType == TAFF_ATTRTYPE_UCHAR100)
+					badval = (*int_val<0||*int_val>100);
+				else
+					badval = (*int_val<0||*int_val>255);
+			}
+			*byte_val_set = !badval;
+		}
+		if (badval) {
+			if (attrType == TAFF_ATTRTYPE_UCHAR100)
+				validvals = "\"0\"..\"100\"";
+			else
+				validvals = "\"0\"..\"255\"";
+			check_ok = false;
+		}
+		break;
+
+	case TAFF_ATTRTYPE_INT:
+		if (!int_val_set || !int_val) return false;
+		char iv[11+1];
+		*int_val = atoi((char*)attrVal);
+		sprintf(iv, "%d", *int_val);
+		badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
+		*int_val_set = !badval;
+		if (badval) {
+			validvals = "\"-2147483648\"..\"2147483647\"";
+			check_ok = false;
+		}
+		break;
+
+	case TAFF_ATTRTYPE_STATE:
+		if (!byte_val_set || !int_val) return false;
+		badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false"))
+				&&(xmlStrcmp(attrVal, (xmlChar *)"auto")));
+		if (badval) {
+			validvals = "\"true\", \"false\", \"auto\"";
+			check_ok = false;
+		}
+		else {
+			*byte_val_set = true;
+			if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
+				*int_val = 0xff;
+			else
+			if (xmlStrcmp(attrVal, (xmlChar *)"auto")==0)
+				*int_val = 0x01;
+			else
+				*int_val = 0;
+		}
+		break;
+
+	case TAFF_ATTRTYPE_SEQUENCE_MODE: {
+		if (!byte_val_set || !int_val) return false;
+		bool sm_true			= !xmlStrcmp(attrVal, (xmlChar *)"true");
+		bool sm_false			= !xmlStrcmp(attrVal, (xmlChar *)"false");
+		bool sm_linear			= !xmlStrcmp(attrVal, (xmlChar *)"linear");
+		bool sm_log				= !xmlStrcmp(attrVal, (xmlChar *)"log");
+		bool sm_log_soft_start	= !xmlStrcmp(attrVal, (xmlChar *)"log_soft_start");
+		bool sm_log_soft_end	= !xmlStrcmp(attrVal, (xmlChar *)"log_soft_end");
+		badval = (!sm_true && !sm_false && !sm_linear && !sm_log && !sm_log_soft_start && !sm_log_soft_end);
+		if (badval) {
+			validvals = "\"true\", \"false\", \"linear\", \"log\", \"log_soft_start\", \"log_soft_end\"";
+			check_ok = false;
+		}
+		else {
+			*byte_val_set = true;
+			if (sm_true)
+				*int_val = 0xff;
+			else
+			if (sm_linear)
+				*int_val = 0x01;
+			else
+			if (sm_log)
+				*int_val = 0x02;
+			else
+			if (sm_log_soft_start)
+				*int_val = 0x03;
+			else
+			if (sm_log_soft_end)
+				*int_val = 0x04;
+			else
+				*int_val = 0;
+		}
+		}
+		break;
+
+	case TAFF_ATTRTYPE_COLOR:
+		if (!int_val_set || !int_val) return false;
+		MMSFBColor color;
+		badval = (!getMMSFBColorFromString((const char*)attrVal, &color));
+		if (badval) {
+			validvals = "argb values in hex format, syntax: \"#rrggbbaa\"";
+			check_ok = false;
+		}
+		else {
+			*int_val_set = true;
+			*int_val = (int)color.getARGB();
+		}
+		break;
+	}
+
+	// check if the value is blank and i have to ignore it
+	if (this->ignore_blank_values) {
+		if (!*attrVal) {
+			*attrValStr_valid = false;
+			if (int_val_set)  *int_val_set = false;
+			if (byte_val_set) *byte_val_set = false;
+			return true;
+		}
+	}
+
+	if (!check_ok) {
+		printf("Error: Value \"%s\" is invalid for the attribute \"%s\" of tag \"%s\", line %d of file %s\n       valid values: %s\n",
+						attrVal, (attrname)?attrname:"?", (nodename)?nodename:"?", nodeline, external_filename.c_str(), validvals.c_str());
+		*attrValStr_valid = false;
+		if (int_val_set)  *int_val_set = false;
+		if (byte_val_set) *byte_val_set = false;
+		return false;
+	}
+
+	// all right
+	if (this->trace)
+		printf(" Attribute \"%s\" found, ID=%d, value=\"%s\"\n", (attrname)?attrname:"?", attrid, attrVal);
+
+	return true;
+}
+
+
 bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile *taff_file) {
 
 	bool wok = true;
@@ -753,113 +941,27 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 
 				if (attr_found) {
 
-					/* now check the type of the variable */
-					string validvals = "";
-					bool badval = false;
-					bool int_val_set = false;
+					// now check the type of the variable
+					bool attrValStr_valid;
+					bool int_val_set;
+					bool byte_val_set;
 					int	 int_val;
-					bool byte_val_set = false;
-					unsigned char byte_val;
-					switch (attr[attrid].type) {
-					case TAFF_ATTRTYPE_NONE:
-					case TAFF_ATTRTYPE_STRING:
-					case TAFF_ATTRTYPE_BINDATA:
-						break;
-					case TAFF_ATTRTYPE_NE_STRING:
-						badval = (!*attrVal);
-						if (badval) {
-							validvals = "any characters, but not empty";
-							attr_found = false;
-						}
-						break;
-					case TAFF_ATTRTYPE_BOOL:
-						badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false")));
-						if (badval) {
-							validvals = "\"true\", \"false\"";
-							attr_found = false;
-						}
-						else {
-							byte_val_set = true;
-							if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
-								byte_val = 0xff;
-							else
-								byte_val = 0;
-						}
-						break;
-					case TAFF_ATTRTYPE_UCHAR:
-					case TAFF_ATTRTYPE_UCHAR100:
-						badval = ((xmlStrlen(attrVal) < 1)||(xmlStrlen(attrVal) > 3));
-						if (!badval) {
-							char iv[3+1];
-							int_val = atoi((char*)attrVal);
-							sprintf(iv, "%d", int_val);
-							badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
-							if (!badval) {
-								if (attr[attrid].type == TAFF_ATTRTYPE_UCHAR100)
-									badval = (int_val<0||int_val>100);
-								else
-									badval = (int_val<0||int_val>255);
-							}
-							byte_val_set = !badval;
-							if (byte_val_set)
-								byte_val = int_val;
-						}
-						if (badval) {
-							if (attr[attrid].type == TAFF_ATTRTYPE_UCHAR100)
-								validvals = "\"0\"..\"100\"";
-							else
-								validvals = "\"0\"..\"255\"";
-							attr_found = false;
-						}
-						break;
-					case TAFF_ATTRTYPE_INT:
-						char iv[11+1];
-						int_val = atoi((char*)attrVal);
-						sprintf(iv, "%d", int_val);
-						badval = (xmlStrcmp(attrVal, (xmlChar *)iv));
-						int_val_set = !badval;
-						if (badval) {
-							validvals = "\"-2147483648\"..\"2147483647\"";
-							attr_found = false;
-						}
-						break;
-					case TAFF_ATTRTYPE_STATE:
-						badval = ((xmlStrcmp(attrVal, (xmlChar *)"true"))&&(xmlStrcmp(attrVal, (xmlChar *)"false"))
-								&&(xmlStrcmp(attrVal, (xmlChar *)"auto")));
-						if (badval) {
-							validvals = "\"true\", \"false\", \"auto\"";
-							attr_found = false;
-						}
-						else {
-							byte_val_set = true;
-							if (xmlStrcmp(attrVal, (xmlChar *)"true")==0)
-								byte_val = 0xff;
-							else
-							if (xmlStrcmp(attrVal, (xmlChar *)"auto")==0)
-								byte_val = 0x01;
-							else
-								byte_val = 0;
-						}
-						break;
-					}
 
-					/* check if the value is blank and i have to ignore it */
-					if (this->ignore_blank_values)
-						if (!*attrVal)
-							continue;
-
-					if (!attr_found) {
-						printf("Error: Value \"%s\" is invalid for the attribute \"%s\" of tag \"%s\", line %d of file %s\n       valid values: %s\n",
-										attrVal, cur_attr->name, cur_node->name, cur_node->line, external_filename.c_str(), validvals.c_str());
+					if (!convertString2TaffAttributeType(attr[attrid].type, (char *)attrVal, &attrValStr_valid,
+													&int_val_set, &byte_val_set, &int_val,
+													(const char *)cur_attr->name, attrid,
+													(const char *)cur_node->name, cur_node->line)) {
+						// check failed
 						return false;
 					}
 
+					if (!attrValStr_valid && !int_val_set && !byte_val_set) {
+						// no values to process
+						continue;
+					}
 
-					/* all right */
-					if (this->trace)
-						printf(" Attribute \"%s\" found, ID=%d, value=\"%s\"\n", cur_attr->name, attrid, attrVal);
 
-					/* write attribute value */
+					// attribute value is determined, write it now
 					if (taff_file) {
 						if (!int_val_set && !byte_val_set) {
 							/* get the length of the value INCLUDING the 0x00 because of fast read & parse of the TAFF */
@@ -901,6 +1003,7 @@ bool MMSTaffFile::convertXML2TAFF_throughDoc(int depth, void *void_node, MMSFile
 							wb[1]=(unsigned char)attrid;
 							wb[2]=sizeof(char);
 							writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+							unsigned char byte_val = int_val;
 							writeBuffer(taff_file, &byte_val, &ritems, 1, sizeof(char), &wok);
 						}
 					}
@@ -1289,6 +1392,27 @@ bool MMSTaffFile::convertTAFF2XML_throughDoc(int depth, int tagid, MMSFile *exte
 				else
 					attrval = "false";
 				break;
+			case TAFF_ATTRTYPE_SEQUENCE_MODE:
+				if ((attrval_int & 0xff) == 0x01)
+					attrval = "linear";
+				else
+				if ((attrval_int & 0xff) == 0x02)
+					attrval = "log";
+				else
+				if ((attrval_int & 0xff) == 0x03)
+					attrval = "log_soft_start";
+				else
+				if ((attrval_int & 0xff) == 0x04)
+					attrval = "log_soft_end";
+				else
+				if (attrval_int)
+					attrval = "true";
+				else
+					attrval = "false";
+				break;
+			case TAFF_ATTRTYPE_COLOR:
+				attrval = getMMSFBColorString(MMSFBColor((unsigned int)attrval_int));
+				break;
 			default:
 				attrval = attrval_str;
 				break;
@@ -1561,8 +1685,13 @@ int MMSTaffFile::getNextTag(bool &eof) {
 	return this->current_tag;
 }
 
-int MMSTaffFile::getCurrentTag() {
+int MMSTaffFile::getCurrentTag(const char **name) {
+	if (name) *name = this->taff_desc->tagtable[this->current_tag].name;
 	return this->current_tag;
+}
+
+const char *MMSTaffFile::getCurrentTagName() {
+	return this->taff_desc->tagtable[this->current_tag].name;
 }
 
 MMSTaffFile *MMSTaffFile::copyCurrentTag() {
@@ -1628,6 +1757,14 @@ MMSTaffFile *MMSTaffFile::copyCurrentTag() {
 }
 
 
+bool MMSTaffFile::hasAttributes() {
+	char *value_str;
+	int value_int;
+	char *name;
+	return (getFirstAttribute(&value_str, &value_int, &name) >= 0);
+}
+
+
 int MMSTaffFile::getFirstAttribute(char **value_str, int *value_int, char **name) {
 	if (!this->current_tag_pos)
 		return -1;
@@ -1679,11 +1816,13 @@ int MMSTaffFile::getNextAttribute(char **value_str, int *value_int, char **name)
 					case TAFF_ATTRTYPE_UCHAR:
 					case TAFF_ATTRTYPE_UCHAR100:
 					case TAFF_ATTRTYPE_STATE:
+					case TAFF_ATTRTYPE_SEQUENCE_MODE:
 						*value_str = NULL;
 						{	unsigned char v = this->taff_buf[this->taff_buf_pos];
 							*value_int = (int)v; }
 						break;
 					case TAFF_ATTRTYPE_INT:
+					case TAFF_ATTRTYPE_COLOR:
 						*value_str = NULL;
 						*value_int = MMSTAFF_INT32_FROM_UCHAR_STREAM(&this->taff_buf[this->taff_buf_pos]);
 						break;

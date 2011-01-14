@@ -59,7 +59,6 @@ MMSWidget::MMSWidget() :
 	visible(true),
 	focused(false),
 	selected(false),
-	activated(true),
 	pressed(false),
 	brightness(255),
 	opacity(255),
@@ -1619,47 +1618,53 @@ void MMSWidget::refresh() {
     MMSWindow *myroot = this->rootwindow;
 
     if (!this->geomset) {
+    	// sorry, i have no geometry info
     	return;
     }
 
-    /*if (!this->visible) {
-    	return;
-    }*/
-
-    if (!myroot)
+    if (!myroot) {
+    	// sorry, i have no root window
    		return;
+    }
 
-    // it makes sense that we skip all drawing requests here, if this window OR one of its parents are not shown
+    // lock the window because only one thread can do this at the same time
+    this->parent_rootwindow->lock();
+
+    // we have to check if the window is hidden while lock()
+    // this is very important if the windows shares surfaces
+    // else it can be that a widget from a hidden window destroys the current window
     if (!myroot->isShown(true)) {
-    	DEBUGMSG("MMSGUI", "MMSWidget->refresh() skipped because window is not shown");
+    	DEBUGMSG("MMSGUI", "MMSWidget::refresh() skipped after MMSWindow::lock() because window is currently not shown");
+
+    	// unlock the window
+        this->parent_rootwindow->unlock();
         return;
     }
 
-    /* lock the window because only one thread can do this at the same time */
-//    myroot->lock();
-    this->parent_rootwindow->lock();
-
-    if (this->drawable)
+    if (this->drawable) {
         getMargin(margin);
+    }
 
+    // region to be updated
     tobeupdated.x = this->geom.x + margin;
     tobeupdated.y = this->geom.y + margin;
     tobeupdated.w = this->geom.w - 2*margin;
     tobeupdated.h = this->geom.h - 2*margin;
 
-
-    /* e.g. for smooth scrolling menus we must recalculate children here */
-    /* so if the widget is a menu and smooth scrolling is enabled, we do the recalculation */
-    if (this->type == MMSWIDGETTYPE_MENU)
+    // e.g. for smooth scrolling menus we must recalculate children here
+    // so if the widget is a menu and smooth scrolling is enabled, we do the recalculation
+    if (this->type == MMSWIDGETTYPE_MENU) {
     	if (((MMSMenuWidget *)this)->getSmoothScrolling())
     		recalculateChildren();
+    }
 
+    // inform the window that the widget want to redraw
    	myroot->refreshFromChild(this->getDrawableParent(true, true), &tobeupdated, false);
 
+   	// reset the states of the arrow widgets
     switchArrowWidgets();
 
-    /* unlock the window */
-//    myroot->unlock();
+    // unlock the window
     this->parent_rootwindow->unlock();
 }
 
@@ -1708,7 +1713,7 @@ bool MMSWidget::needsParentDraw(bool checkborder) {
         }
     }
 
-    if (this->activated) {
+    if (isActivated()) {
         if (!this->pressed) {
 	        if (this->selected) {
 	            getSelBgColor(c);
@@ -1822,6 +1827,7 @@ void MMSWidget::setName(string name) {
     this->name = name;
 }
 
+
 void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     /* switch focused on/off if possible */
 	bool b;
@@ -1830,11 +1836,18 @@ void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
     if (!b)
     	return;
 
-    if (this->rootwindow)
-        this->rootwindow->setFocusedWidget(this, set, false, refresh);
+    // the focused flag MUST BE set before all other calls (because of dim and trans functions)
+    this->focused = set;
+
+    if (this->rootwindow) {
+//        this->rootwindow->setFocusedWidget(this, set, false, refresh);
+
+//    	printf("call setFocusedWidget(), this = %x, refresh = %d, set = %d\n", this, refresh, set);
+    	this->rootwindow->setFocusedWidget(this, set, true, refresh);
+    }
 
     /* the focused flag MUST BE set before all other calls (because of dim and trans functions) */
-    this->focused = set;
+//    this->focused = set;
 
     setSelected(set, refresh);
 
@@ -1979,23 +1992,11 @@ void MMSWidget::unsetFocusableForAllChildren(bool refresh) {
     }
 }
 
-void MMSWidget::setActivated(bool set, bool refresh) {
-    /* switch activated on/off */
-    this->activated = set;
-
-    /* refresh my children */
-	vector<MMSWidget*>::iterator end = children.end();
-	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
-        (*i)->setActivated(set, false);
-    }
-
-    /* refresh widget */
-    if (refresh)
-        this->refresh();
-}
 
 bool MMSWidget::isActivated() {
-    return this->activated;
+	bool activated = true;
+	getActivated(activated);
+	return activated;
 }
 
 bool MMSWidget::setPressed(bool set, bool refresh) {
@@ -2610,6 +2611,9 @@ bool MMSWidget::getJoinedWidget(string &joinedwidget) {
     GETWIDGET(JoinedWidget, joinedwidget);
 }
 
+bool MMSWidget::getActivated(bool &activated) {
+    GETWIDGET(Activated, activated);
+}
 
 
 #define GETBORDER(x,y) \
@@ -3096,6 +3100,26 @@ bool MMSWidget::setJoinedWidget(string joinedwidget) {
     return true;
 }
 
+
+
+bool MMSWidget::setActivated(bool activated, bool refresh) {
+	if (this->da) this->da->myWidgetClass.setActivated(activated);
+
+    // refresh my children
+	vector<MMSWidget*>::iterator end = children.end();
+	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
+        (*i)->setActivated(activated, false);
+    }
+
+    // refresh widget
+    if (refresh)
+        this->refresh();
+
+    return true;
+}
+
+
+
 bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setColor(bordercolor);
@@ -3310,6 +3334,8 @@ void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
         setInputMode(s);
     if (themeClass->getJoinedWidget(s))
         setJoinedWidget(s);
+    if (themeClass->getActivated(b))
+        setActivated(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c);
     if (themeClass->border.getSelColor(c))

@@ -2065,9 +2065,11 @@ bool MMSWindow::show() {
         return false;
     }
 
+
     switch (getType()) {
     case MMSWINDOWTYPE_MAINWINDOW:
         // hide all main and popup windows
+    	// root windows will be hidden during the show animation, see beforeShowAction()
         if (this->windowmanager) {
             this->windowmanager->hideAllPopupWindows(true);
             this->windowmanager->hideAllMainWindows();
@@ -2089,6 +2091,8 @@ bool MMSWindow::show() {
     default:
     	break;
     }
+
+
 
 /*    if (this->action->isRunning())
         this->action->cancelBroadcast.emit(this->getType());
@@ -3314,10 +3318,17 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus, b
 //printf("XXX: setFocusedWidget for window %s %x set = %d, switchfocus = %d\n", name.c_str(), this, set, switchfocus);
 	if (set) {
     	if (switchfocus) {
-    		if (this->focusedwidget)
-    			this->focusedwidget->setFocus(false, refresh);
-    		if (child)
-    			child->setFocus(true, refresh);
+ //   		printf(">>> %x, %x\n", this->focusedwidget, child);
+    		if (child != this->focusedwidget) {
+				if (this->focusedwidget)
+					this->focusedwidget->setFocus(false, refresh);
+				if (child) {
+					if (!child->isFocused()) { ////////////////////////
+	//                	child->focused = true; //////////////////////////////
+						child->setFocus(true, refresh);
+					}
+				}
+    		}
     	}
         this->focusedwidget = child;
         this->firstfocusset = true;
@@ -3325,8 +3336,10 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus, b
     else {
         if (child)
             if (child->isFocused()) {
-            	if (switchfocus)
+            	if (switchfocus) {
+//                	child->focused = false; ////////////////////////
             		child->setFocus(false, refresh);
+            	}
                 this->focusedwidget = NULL;
                 this->firstfocusset = false;
             }
@@ -4878,7 +4891,7 @@ void MMSWindow::instantHide() {
 }
 
 
-void MMSWindow::targetLangChanged(int lang, bool refresh) {
+void MMSWindow::targetLangChanged(MMSLanguage lang, bool refresh) {
     // for all child windows
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
     	this->childwins.at(i).window->targetLangChanged(lang, false);

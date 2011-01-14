@@ -240,9 +240,6 @@ class MMSWidget {
         //! selected?
         bool selected;
 
-        //! activated?
-        bool activated;
-
         //! button pressed?
         bool pressed;
 
@@ -311,7 +308,6 @@ class MMSWidget {
         bool isSelected();
         void unsetFocusableForAllChildren(bool refresh);
 
-        void setActivated(bool set, bool refresh = true);
         bool isActivated();
 
         bool setPressed(bool set, bool refresh = true);
@@ -469,6 +465,7 @@ class MMSWidget {
         bool	getInputMode(string &inputmode);
         bool 	getInputModeEx(string &inputmode);
         bool	getJoinedWidget(string &joinedwidget);
+        bool 	getActivated(bool &activated);
 
         bool	getBorderColor(MMSFBColor &color);
         bool 	getBorderSelColor(MMSFBColor &selcolor);
@@ -520,6 +517,7 @@ class MMSWidget {
         bool setReturnOnScroll(bool returnonscroll);
         bool setInputMode(string inputmode);
         bool setJoinedWidget(string joinedwidget);
+        bool setActivated(bool activated, bool refresh = true);
 
         bool setBorderColor(MMSFBColor bordercolor, bool refresh = true);
         bool setBorderSelColor(MMSFBColor borderselcolor, bool refresh = true);

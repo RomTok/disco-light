@@ -197,10 +197,7 @@ void MMSWindowClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *path, boo
             setHeight(attrval_str);
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor:
-			color.a = color.r = color.g = color.b = 0;
-            if (isBgColor()) getBgColor(color);
-            if (getMMSFBColorFromString(attrval_str, &color))
-                setBgColor(color);
+            setBgColor(MMSFBColor((unsigned int)attrval_int));
             break;
 		case MMSGUI_WINDOW_ATTR::MMSGUI_WINDOW_ATTR_IDS_bgcolor_a:
 			color.a = color.r = color.g = color.b = 0;

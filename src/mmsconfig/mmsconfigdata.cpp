@@ -276,11 +276,11 @@ void MMSConfigData::setHideApplication(bool hideapplication) {
 }
 
 
-const string MMSConfigData::getSourceLang() {
+const MMSLanguage MMSConfigData::getSourceLang() {
 	return this->language.sourcelang;
 }
 
-const string MMSConfigData::getDefaultTargetLang() {
+const MMSLanguage MMSConfigData::getDefaultTargetLang() {
 	return this->language.defaulttargetlang;
 }
 

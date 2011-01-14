@@ -39,12 +39,12 @@
 namespace MMSGUI_BORDER_ATTR {
 
 	#define MMSGUI_BORDER_ATTR_ATTRDESC \
-		{ "border.color", TAFF_ATTRTYPE_STRING }, \
+		{ "border.color", TAFF_ATTRTYPE_COLOR }, \
 		{ "border.color.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.color.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.color.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.color.b", TAFF_ATTRTYPE_UCHAR }, \
-		{ "border.selcolor", TAFF_ATTRTYPE_STRING }, \
+		{ "border.selcolor", TAFF_ATTRTYPE_COLOR }, \
 		{ "border.selcolor.a", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "border.selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
