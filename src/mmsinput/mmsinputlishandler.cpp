@@ -105,7 +105,7 @@ bool MMSInputLISHandler::checkDevice() {
 		for(int i = KEY_Q; i < KEY_M; i++)
 			if (TSTBIT(i, key_bit))
 				keys++;
-		if(keys > 20) {
+		if(keys > 20 || TSTBIT(KEY_ENTER, key_bit)) {
 			dev->type = MMSINPUTLISHANDLER_DEVTYPE_KEYBOARD;
 		} else {
 			for(int i = KEY_OK; i < KEY_MAX; i++) {

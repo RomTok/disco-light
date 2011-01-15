@@ -789,7 +789,7 @@ if 'install' in BUILD_TARGETS:
 		if(type(ccflag).__name__ == 'str'):
 			disko_pc.write(' ' + ccflag)
 		else:
-			disko_pc.write(' '.join(ccflag))
+			disko_pc.write(' ' + ' '.join(ccflag))
 	disko_pc.write('\n')
 	
 	disko_pc.close()
