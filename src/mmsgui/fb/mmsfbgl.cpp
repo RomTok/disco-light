@@ -790,7 +790,7 @@ bool MMSFBGL::init() {
 	if (initShaders()) {
 
 		// prepare current matrix for shaders
-		matrixLoadIdentity(this->current_matrix);
+		loadIdentityMatrix(this->current_matrix);
 
 		// prepare current color for shaders
 		this->current_color_r = 0;
