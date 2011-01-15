@@ -344,31 +344,35 @@ void MMSSliderWidget::switchArrowWidgets() {
 
 	if (this->vertical) {
 		// vertical slider
-	    if (this->da->upArrowWidget)
+	    if (this->da->upArrowWidget) {
 			if (pos <= 0)
 				this->da->upArrowWidget->setSelected(false);
 			else
 				this->da->upArrowWidget->setSelected(true);
+	    }
 
-	    if (this->da->downArrowWidget)
+	    if (this->da->downArrowWidget) {
 			if (pos >= 100)
 				this->da->downArrowWidget->setSelected(false);
 			else
 				this->da->downArrowWidget->setSelected(true);
+	    }
 	}
 	else {
 		// horizontal slider
-	    if (this->da->leftArrowWidget)
+	    if (this->da->leftArrowWidget) {
 			if (pos <= 0)
 				this->da->leftArrowWidget->setSelected(false);
 			else
 				this->da->leftArrowWidget->setSelected(true);
+	    }
 
-	    if (this->da->rightArrowWidget)
+	    if (this->da->rightArrowWidget) {
 			if (pos >= 100)
 				this->da->rightArrowWidget->setSelected(false);
 			else
 				this->da->rightArrowWidget->setSelected(true);
+	    }
 	}
 }
 
