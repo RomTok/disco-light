@@ -2227,22 +2227,54 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 #ifdef __HAVE_GLES2__
 
-	return false;
+	// load the vertices
+	if (vertices) {
+		glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
+							   GL_FALSE, 0, vertices->buf);
+		ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
+
+		glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+		ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+	}
+	else {
+		glDisableVertexAttribArray(MMSFBGL_VSV_LOC);
+		ERROR_CHECK_BOOL("glDisableVertexAttribArray(MMSFBGL_VSV_LOC)");
+	}
+
+	// load the texture coordinates
+	if (texcoords) {
+		glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
+							   GL_FALSE, 0, texcoords->buf);
+		ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,...)");
+
+		glEnableVertexAttribArray(VSTexCoordLoc);
+		ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
+
+		// bind the texture unit0
+		glActiveTexture(GL_TEXTURE0);
+		ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
+
+		glUniform1i(FSTextureLoc, 0);
+		ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc, 0)");
+	}
+	else {
+		glDisableVertexAttribArray(VSTexCoordLoc);
+		ERROR_CHECK_BOOL("glDisableVertexAttribArray(VSTexCoordLoc)");
+	}
 
 #endif
 
 	// draw elements
 	// note: MMS3D_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
-	GLenum mode;
+	GLenum mode = GL_TRIANGLES;
 	switch (indices->type) {
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
-		mode = GL_TRIANGLES;
-		break;
 	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 		mode = GL_TRIANGLE_STRIP;
 		break;
 	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 		mode = GL_TRIANGLE_FAN;
+		break;
+	default:
 		break;
 	}
 	glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, indices->buf);
