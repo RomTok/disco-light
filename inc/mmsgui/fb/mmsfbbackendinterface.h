@@ -37,6 +37,12 @@
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfbgl.h"
 
+#ifdef __HAVE_GL2__
+
+#define __HAVE_MMS3D__
+
+#endif
+
 class MMSFBBackEndInterface : public MMSThreadServer {
 private:
 	typedef enum {
@@ -55,7 +61,7 @@ private:
 		BEI_REQUEST_TYPE_CREATEALPHATEXTURE,
 		BEI_REQUEST_TYPE_DELETETEXTURE,
 		BEI_REQUEST_TYPE_DRAWSTRING,
-		BEI_REQUEST_TYPE_CUBE
+		BEI_REQUEST_TYPE_RENDERSCENE
 	} BEI_REQUEST_TYPE;
 
 	typedef struct {
@@ -164,16 +170,12 @@ private:
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
 		MMSFBSurface		*surface;
-		MMSFBSurface		*front;
-		MMSFBSurface		*back;
-		MMSFBSurface		*left;
-		MMSFBSurface		*right;
-		MMSFBSurface		*top;
-		MMSFBSurface		*bottom;
-		float				angle_x;
-		float				angle_y;
-		float				angle_z;
-	} BEI_CUBE;
+		MMS3D_VERTEX_ARRAY	**varrays;
+		MMS3D_INDEX_ARRAY	**iarrays;
+		MMS3D_MATERIAL		*materials;
+		MMSFBSurface		**texsurfaces;
+		MMS3D_OBJECT		**objects;
+	} BEI_RENDERSCENE;
 
 #ifdef __HAVE_OPENGL__
 
@@ -216,24 +218,6 @@ private:
 	//! internal: see oglBindSurface(MMSFBSurface *surface), additionally using nearer and farther depth in conjunction with central_projection flag
 	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ, bool central_projection = false);
 
-
-//!TODO: move code outside this class
-//
-/// \brief Generates geometry for a sphere.  Allocates memory for the vertex data and stores
-///        the results in the arrays.  Generate index list for a TRIANGLE_STRIP
-/// \param numSlices The number of slices in the sphere
-/// \param vertices If not NULL, will contain array of float3 positions
-/// \param normals If not NULL, will contain array of float3 normals
-/// \param texCoords If not NULL, will contain array of float2 texCoords
-/// \param indices If not NULL, will contain the array of indices for the triangle strip
-/// \return The number of indices required for rendering the buffers (the number of indices stored in the indices array
-///         if it is not NULL ) as a GL_TRIANGLE_STRIP
-//
-int genSphere(int numSlices, float radius, float **vertices, float **normals,
-									 float **texCoords, unsigned int **indices);
-
-
-
 #endif
 
 
@@ -254,7 +238,7 @@ int genSphere(int numSlices, float radius, float **vertices, float **normals,
 	void processDeleteTexture(BEI_DELETETEXTURE *req);
 	void processDrawString(BEI_DRAWSTRING *req);
 
-	void processCube(BEI_CUBE *req);
+	void processRenderScene(BEI_RENDERSCENE *req);
 
 
 public:
@@ -287,11 +271,12 @@ public:
 	void deleteTexture(unsigned int texture);
 	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);
 
-	void cube(MMSFBSurface *surface,
-				MMSFBSurface *front, MMSFBSurface *back,
-				MMSFBSurface *left, MMSFBSurface *right,
-				MMSFBSurface *top, MMSFBSurface *bottom,
-				float angle_x, float angle_y, float angle_z);
+	void renderScene(MMSFBSurface *surface,
+					 MMS3D_VERTEX_ARRAY	**varrays,
+					 MMS3D_INDEX_ARRAY	**iarrays,
+					 MMS3D_MATERIAL		*materials,
+					 MMSFBSurface		**texsurfaces,
+					 MMS3D_OBJECT		**objects);
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */

@@ -4928,10 +4928,12 @@ bool MMSFBSurface::extendedAccelDrawLine(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBSurface::cube(MMSFBSurface *front, MMSFBSurface *back,
-		MMSFBSurface *left, MMSFBSurface *right,
-		MMSFBSurface *top, MMSFBSurface *bottom,
-		float angle_x, float angle_y, float angle_z) {
+bool MMSFBSurface::renderScene(MMS3D_VERTEX_ARRAY	**varrays,
+							   MMS3D_INDEX_ARRAY	**iarrays,
+							   MMS3D_MATERIAL		*materials,
+							   MMSFBSurface			**textures,
+							   MMS3D_OBJECT			**objects) {
+
     bool 		 ret = false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
@@ -4939,14 +4941,14 @@ bool MMSFBSurface::cube(MMSFBSurface *front, MMSFBSurface *back,
 
 		if (!this->is_sub_surface) {
 
-			mmsfb->bei->cube(this, front, back, left, right, top, bottom, angle_x, angle_y, angle_z);
+			mmsfb->bei->renderScene(this, varrays, iarrays, materials, textures, objects);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			mmsfb->bei->cube(this, front, back, left, right, top, bottom, angle_x, angle_y, angle_z);
+			mmsfb->bei->renderScene(this, varrays, iarrays, materials, textures, objects);
 
 			UNCLIPSUBSURFACE
 

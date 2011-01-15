@@ -30,24 +30,65 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DSCENE_H_
+#define MMS3DSCENE_H_
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+#include "mmsgui/3d/mms3dpolygonmesh.h"
+#include "mmsgui/3d/mms3dobject.h"
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+class MMS3DScene {
+private:
 
-#include "mmsgui/mmswidgets.h"
+	typedef enum {
+		OBJ_NOTSET = -1,
+		OBJ_SIZE = 256
+	} OBJ;
 
-#include "mmsgui/3d/mms3dcylinder.h"
-#include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
+	//! objects
+	MMS3D_OBJECT objbuf[OBJ_SIZE];
+	MMS3D_OBJECT *objects[OBJ_SIZE + 1];
+	int objects_cnt;
 
-#include "mmsgui/additional/mmsguicontrols.h"
+	MMS3DPolygonMesh	mms3dpm;
 
-#endif /*MMSGUI_H_*/
+	//! stores base matrix and matrix operations
+	MMS3DMatrixStack	matrixStack;
+
+	//! children objects
+	vector<MMS3DObject*> children;
+
+private:
+	int newObject(MMS3DObject *object);
+
+	MMS3D_OBJECT *getObject(int object);
+
+	bool getResultMatrix(MMS3DMatrix result);
+
+public:
+
+	MMS3DScene();
+
+	void getMeshArrays(MMS3D_VERTEX_ARRAY ***varrays, MMS3D_INDEX_ARRAY ***iarrays);
+
+	void getObjects(MMS3D_OBJECT ***objects);
+
+	void setBaseMatrix(MMS3DMatrix matrix);
+
+	void reset();
+
+	bool scale(float sx, float sy, float sz);
+
+	bool translate(float tx, float ty, float tz);
+
+	bool rotate(float angle, float x, float y, float z);
+
+	bool genMatrices();
+
+	friend class MMS3DObject;
+	friend class MMS3DRectangle;
+	friend class MMS3DSphere;
+	friend class MMS3DTorus;
+	friend class MMS3DCylinder;
+};
+
+#endif /* MMS3DSCENE_H_ */

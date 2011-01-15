@@ -126,6 +126,7 @@ MMSWindow::MMSWindow() {
     onHide              = new sigc::signal<void, MMSWindow*, bool>;
     onHandleInput       = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
     onBeforeHandleInput = new sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator>;
+    onDraw				= new sigc::signal<bool, MMSFBSurface*, bool>::accumulated<neg_bool_accumulator>;
 
     // initialize the animation callbacks
     this->onBeforeAnimation_connection	= this->pulser.onBeforeAnimation.connect(sigc::mem_fun(this, &MMSWindow::onBeforeAnimation));
@@ -147,7 +148,8 @@ MMSWindow::~MMSWindow() {
     if (onBeforeHide) delete onBeforeHide;
     if (onHide) delete onHide;
     if (onHandleInput) delete onHandleInput;
-    if(onBeforeHandleInput) delete onBeforeHandleInput;
+    if (onBeforeHandleInput) delete onBeforeHandleInput;
+    if (onDraw) delete onDraw;
 
     // disconnect callbacks from pulser
     this->onBeforeAnimation_connection.disconnect();
@@ -1954,56 +1956,58 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
         this->surface->setClip(&clip);
     }
 
+    if (!this->onDraw->emit(this->surface, clear)) {
+    	// nothing drawn by callback(s), so we have to do it
 
-	// draw background
-    MMSFBColor bgcolor;
-    getBgColor(bgcolor);
-    if (this->bgimage) {
-    	// clear all or a part of the surface
-    	if (clear) {
-			if (!((bgcolor.a == 255) && (this->bgimage->isOpaque()))) {
-    			this->surface->clear();
-    		}
-    	}
+		// draw background
+		MMSFBColor bgcolor;
+		getBgColor(bgcolor);
+		if (this->bgimage) {
+			// clear all or a part of the surface
+			if (clear) {
+				if (!((bgcolor.a == 255) && (this->bgimage->isOpaque()))) {
+					this->surface->clear();
+				}
+			}
 
-    	// prepare for blitting
-   		this->surface->setBlittingFlagsByBrightnessAlphaAndOpacityAndSource(
-								255, (bgcolor.a)?bgcolor.a:255, 255, this->bgimage);
+			// prepare for blitting
+			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacityAndSource(
+									255, (bgcolor.a)?bgcolor.a:255, 255, this->bgimage);
 
-        // draw background with bgimage
-        this->surface->stretchBlit(this->bgimage, NULL, &(this->innerGeom));
-    }
-    else
-    if (bgcolor.a) {
-    	// clear all or a part of the surface
-    	if (clear) {
-    		this->surface->clear();
-    	}
-
-        // prepare for drawing
-   		this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, 255);
-
-        // draw window background
-        this->surface->fillRectangle(this->innerGeom.x, this->innerGeom.y, this->innerGeom.w, this->innerGeom.h);
-    }
-    else {
-    	// clear all or a part of the surface
-    	if (clear) {
-    		this->surface->clear();
-    	}
-    }
-
-
-    /* draw children */
-    bool backgroundFilled = true;
-    if(!this->children.empty()) {
-		if (this->draw_setgeom) {
-			this->children.at(0)->setGeometry(this->innerGeom);
-			this->draw_setgeom = false;
+			// draw background with bgimage
+			this->surface->stretchBlit(this->bgimage, NULL, &(this->innerGeom));
 		}
-        this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled);
-    }
+		else
+		if (bgcolor.a) {
+			// clear all or a part of the surface
+			if (clear) {
+				this->surface->clear();
+			}
 
+			// prepare for drawing
+			this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, 255);
+
+			// draw window background
+			this->surface->fillRectangle(this->innerGeom.x, this->innerGeom.y, this->innerGeom.w, this->innerGeom.h);
+		}
+		else {
+			// clear all or a part of the surface
+			if (clear) {
+				this->surface->clear();
+			}
+		}
+
+
+		/* draw children */
+		bool backgroundFilled = true;
+		if(!this->children.empty()) {
+			if (this->draw_setgeom) {
+				this->children.at(0)->setGeometry(this->innerGeom);
+				this->draw_setgeom = false;
+			}
+			this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled);
+		}
+    }
 
 	/* reset the clip */
     this->surface->setClip(NULL);

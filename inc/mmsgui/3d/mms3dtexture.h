@@ -30,24 +30,33 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DTEXTURE_H_
+#define MMS3DTEXTURE_H_
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+#include "mmsgui/fb/mmsfbsurface.h"
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+class MMS3DTexture {
+public:
+	typedef enum {
+		TEX_NOTSET = -1,
+		TEX_SIZE = 100
+	} TEX;
 
-#include "mmsgui/mmswidgets.h"
+private:
 
-#include "mmsgui/3d/mms3dcylinder.h"
-#include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
+	//! textures
+	MMSFBSurface *tex_buffer[TEX_SIZE];
 
-#include "mmsgui/additional/mmsguicontrols.h"
+	//! number of textures
+	int texture_cnt;
 
-#endif /*MMSGUI_H_*/
+public:
+
+	MMS3DTexture();
+
+	void getBuffer(MMSFBSurface ***tex_buffer);
+
+	int genTexture(MMSFBSurface *tex);
+};
+
+#endif /* MMS3DTEXTURE_H_ */

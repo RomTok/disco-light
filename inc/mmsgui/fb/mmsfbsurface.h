@@ -406,10 +406,11 @@ class MMSFBSurface {
 							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 							   MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
 
-bool cube(MMSFBSurface *front, MMSFBSurface *back,
-		MMSFBSurface *left, MMSFBSurface *right,
-		MMSFBSurface *top, MMSFBSurface *bottom,
-		float angle_x, float angle_y, float angle_z);
+        bool renderScene(MMS3D_VERTEX_ARRAY	**varrays,
+						 MMS3D_INDEX_ARRAY	**iarrays,
+						 MMS3D_MATERIAL		*materials,
+						 MMSFBSurface		**textures,
+						 MMS3D_OBJECT		**objects);
 
         bool flip(MMSFBRegion *region = NULL);
         bool refresh();

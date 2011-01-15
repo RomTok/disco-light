@@ -998,6 +998,36 @@ class MMSWindow {
         sigc::signal<bool, MMSWindow*, MMSInputEvent*>::accumulated<neg_bool_accumulator> *onBeforeHandleInput;
 
 
+        //! Set one or more callbacks for the onDraw event.
+        /*!
+        The connected callbacks will be called if the window will be drawn.
+
+        A callback method must be defined like this:
+
+        	bool myclass::mycallbackmethod(MMSFBSurface *surface, bool clear);
+
+        	\param surface		is the pointer to window's surface
+        	\param clear		if true, the callback should clear the surface before drawing
+
+        	\return callback should return true if it has drawn to the surface, else false
+
+        To connect your callback to onDraw do this:
+
+            sigc::connection connection;
+            connection = mywindow->onDraw->connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onDraw BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
+        */
+        sigc::signal<bool, MMSFBSurface*, bool>::accumulated<neg_bool_accumulator> *onDraw;
+
     public:
         /* begin of theme access methods *************************************/
 

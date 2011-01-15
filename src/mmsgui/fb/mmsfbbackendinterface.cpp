@@ -22,7 +22,8 @@
  *   This library is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
- *   Lesser General Public License for more details.                       *
+ *   Lesser General Public Licen
+ *   se for more details.                       *
  *                                                                         *
  *   You should have received a copy of the GNU Lesser General Public      *
  *   License along with this library; if not, write to the                 *
@@ -32,9 +33,6 @@
 
 #include "mmsgui/fb/mmsfbbackendinterface.h"
 #include "mmstools/tools.h"
-
-#include <math.h>
-#include <stdlib.h>
 
 #define BEI_SOURCE_WIDTH	((!req->source->is_sub_surface)?req->source->config.w:req->source->root_parent->config.w)
 #define BEI_SOURCE_HEIGHT	((!req->source->is_sub_surface)?req->source->config.h:req->source->root_parent->config.h)
@@ -281,8 +279,8 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_DRAWSTRING:
 		processDrawString((BEI_DRAWSTRING *)in_data);
 		break;
-	case BEI_REQUEST_TYPE_CUBE:
-		processCube((BEI_CUBE *)in_data);
+	case BEI_REQUEST_TYPE_RENDERSCENE:
+		processRenderScene((BEI_RENDERSCENE *)in_data);
 		break;
 	default:
 		break;
@@ -1138,157 +1136,24 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #endif
 }
 
-void MMSFBBackEndInterface::cube(MMSFBSurface *surface,
-									MMSFBSurface *front, MMSFBSurface *back,
-									MMSFBSurface *left, MMSFBSurface *right,
-									MMSFBSurface *top, MMSFBSurface *bottom,
-									float angle_x, float angle_y, float angle_z) {
-	BEI_CUBE req;
-	req.type		= BEI_REQUEST_TYPE_CUBE;
+void MMSFBBackEndInterface::renderScene(MMSFBSurface *surface,
+										MMS3D_VERTEX_ARRAY	**varrays,
+										MMS3D_INDEX_ARRAY	**iarrays,
+										MMS3D_MATERIAL		*materials,
+										MMSFBSurface		**texsurfaces,
+										MMS3D_OBJECT		**objects) {
+	BEI_RENDERSCENE req;
+	req.type		= BEI_REQUEST_TYPE_RENDERSCENE;
 	req.surface		= surface;
-	req.front		= front;
-	req.back		= back;
-	req.left		= left;
-	req.right		= right;
-	req.top			= top;
-	req.bottom		= bottom;
-	req.angle_x		= angle_x;
-	req.angle_y		= angle_y;
-	req.angle_z		= angle_z;
+	req.varrays		= varrays;
+	req.iarrays		= iarrays;
+	req.materials	= materials;
+	req.texsurfaces	= texsurfaces;
+	req.objects		= objects;
 	trigger((void*)&req, sizeof(req));
 }
 
 
-#ifdef sdsdsd
-void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
-#ifdef  __HAVE_OPENGL__
-
-	// lock destination fbo and bind source texture to it
-	oglBindSurface(req->surface, 0, 600);
-
-	// setup blitting
-	mmsfbgl.disableBlend();
-	mmsfbgl.setTexEnvReplace(GL_RGBA);
-
-	// get subsurface offsets
-	GET_OFFS(req->surface);
-
-
-	MMSFBRectangle dst_rect(0,0,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT);
-
-	// set the clip to ogl
-	MMSFBRectangle crect;
-	if (req->surface->calcClip(dst_rect.x + xoff, dst_rect.y + yoff, dst_rect.w, dst_rect.h, &crect)) {
-		// inside clipping region
-		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-
-		mmsfbgl.enableDepthTest();
-		mmsfbgl.clear(0, 0, 0, 0);
-
-		mmsfbgl.translateCurrentMatrix(0, 0, -200);
-		mmsfbgl.rotateCurrentMatrix(req->angle_x, 1, 0, 0);
-		mmsfbgl.rotateCurrentMatrix(req->angle_y, 0, 1, 0);
-		mmsfbgl.rotateCurrentMatrix(req->angle_z, 0, 0, 1);
-
-		int ddw = 100;
-		int ddh = 100;
-		int ddz = 100;
-
-		// front
-		if (req->front) {
-			MMSFBSurface *surface = req->front;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, -ddh/2, ddz/2,
-									 ddw/2, -ddh/2, ddz/2,
-									 ddw/2, ddh/2, ddz/2,
-									 -ddw/2, ddh/2, ddz/2);
-		}
-
-		// back
-		if (req->back) {
-			MMSFBSurface *surface = req->back;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 ddw/2, -ddh/2, -ddz/2,
-									 -ddw/2, -ddh/2, -ddz/2,
-									 -ddw/2, ddh/2, -ddz/2,
-									 ddw/2, ddh/2, -ddz/2);
-		}
-
-		// left
-		if (req->left) {
-			MMSFBSurface *surface = req->left;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, -ddh/2, -ddz/2,
-									 -ddw/2, -ddh/2, ddz/2,
-									 -ddw/2, ddh/2, ddz/2,
-									 -ddw/2, ddh/2, -ddz/2);
-		}
-
-		// right
-		if (req->right) {
-			MMSFBSurface *surface = req->right;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 ddw/2, -ddh/2, ddz/2,
-									 ddw/2, -ddh/2, -ddz/2,
-									 ddw/2, ddh/2, -ddz/2,
-									 ddw/2, ddh/2, ddz/2);
-		}
-
-		// top
-		if (req->top) {
-			MMSFBSurface *surface = req->top;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, ddh/2, ddz/2,
-									 ddw/2, ddh/2, ddz/2,
-									 ddw/2, ddh/2, -ddz/2,
-									 -ddw/2, ddh/2, -ddz/2);
-		}
-
-		// bottom
-		if (req->bottom) {
-			MMSFBSurface *surface = req->bottom;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, -ddh/2, -ddz/2,
-									 ddw/2, -ddh/2, -ddz/2,
-									 ddw/2, -ddh/2, ddz/2,
-									 -ddw/2, -ddh/2, ddz/2);
-		}
-
-		this->reset_matrix = true;
-
-	}
-#endif
-}
-#endif
-
-
-
-
-#ifdef  __HAVE_GL2__
-
-int numIndices = 0;
-float *vertices;
-float *normals;
-float *texCoords;
-unsigned int *indices;
-GLuint textureId;
-
-int numIndices2 = 0;
-float *vertices2;
-float *normals2;
-float *texCoords2;
-unsigned int *indices2;
-
-
-
-int ii = 0;
-#endif
 
 
 void setLight() {
@@ -1298,485 +1163,136 @@ void setLight() {
 
 	glEnable(GL_LIGHTING);
 
-
 	GLfloat am[] = {0.4,0.4,0.4,1};
 	glLightfv(GL_LIGHT0,GL_AMBIENT,am);
 
-	GLfloat di[] = {0.7,0.7,0.7,1};
+	GLfloat di[] = {0.5,0.5,0.5,1};
 	glLightfv(GL_LIGHT0,GL_DIFFUSE,di);
 
 	GLfloat sp[] = {0.3,0.3,0.3,1};
 	glLightfv(GL_LIGHT0,GL_SPECULAR,sp);
-/*
-	GLfloat lightPos[] = {0.000001,0,0,0 };
-	glLightfv(GL_LIGHT0,GL_POSITION,lightPos);
-
-	GLfloat lightDir[] = {0,0,-1 };
-	glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,lightDir);
-
-	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,180);
-*/
-
-//	GLfloat lightPos[] = {0,0,-900,0 };
-//	GLfloat lightPos[] = {200,0,-200+ii,0 };
-	GLfloat lightPos[] = {200,0,0,0 };
-//	GLfloat lightPos[] = {-1000+ii,-300,1300,0 };
-//	GLfloat lightPos[] = {-1000,1000-ii,ii,0 };
-//	GLfloat lightPos[] = {100,100,-1000,0 };
-//	ii+=100;
-//printf("ii=%d\n",ii);
-	glLightfv(GL_LIGHT0,GL_POSITION,lightPos);
-
-//	GLfloat lightDir[] = {0,0,-1 };
-//	glLightfv(GL_LIGHT0,GL_SPOT_DIRECTION,lightDir);
-
-//	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF,45);
-
-
 
 	glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,0);
+
+	GLfloat lightPos[] = {40000,10000,-100,1 };
+	glLightfv(GL_LIGHT0,GL_POSITION,lightPos);
+
 
 	glEnable(GL_LIGHT0);
 #endif
 }
 
-void setMaterial() {
-#ifdef  __HAVE_GL2__
-
-	// Material nimmt ambientes Licht auf
-	GLfloat am[] = { 0.6,0,0,1};
-	glMaterialfv(GL_FRONT, GL_AMBIENT, am);
-
-	// Material nimmt diffuses Licht auf
-	GLfloat di[] = { 1,0,0,1};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, di);
-
-	// Material gibt Licht ab
-	GLfloat em[] = { 0,0,0,1};
-	glMaterialfv(GL_FRONT, GL_EMISSION, em);
-
-	// Material nimmt Glanzlicht auf
-/*	GLfloat specref[] = { 1,1,1,1};
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
-
-	// specular-light exponent
-	glMateriali(GL_FRONT,GL_SHININESS, 128);*/
-
-#endif
-}
-
-
-void setMaterialx() {
-#ifdef  __HAVE_GL2__
-
-	// Material nimmt ambientes Licht auf
-	GLfloat am[] = { 0,0,0,1};
-	glMaterialfv(GL_FRONT, GL_AMBIENT, am);
-
-	// Material nimmt diffuses Licht auf
-	GLfloat di[] = { 0,0,0,1};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, di);
-
-	// Material gibt Licht ab
-	GLfloat em[] = { 0,0,0,1};
-	glMaterialfv(GL_FRONT, GL_EMISSION, em);
-
-	// Material nimmt Glanzlicht auf
-/*	GLfloat specref[] = { 1,1,1,1};
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
-
-	// specular-light exponent
-	glMateriali(GL_FRONT,GL_SHININESS, 128);*/
-
-#endif
-}
-
-
-void setMaterial2() {
-#ifdef  __HAVE_GL2__
-
-	// Material nimmt ambientes Licht auf
-	GLfloat am[] = { 0.6,0.6,0.6,1};
-	glMaterialfv(GL_FRONT, GL_AMBIENT, am);
-
-	// Material nimmt diffuses Licht auf
-	GLfloat di[] = { 1,1,1,1};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, di);
-
-	// Material gibt Licht ab
-	GLfloat em[] = { 0,0,0,1};
-	glMaterialfv(GL_FRONT, GL_EMISSION, em);
-
-	// Material nimmt Glanzlicht auf
-/*	GLfloat specref[] = { 1,1,1,1};
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
-
-	// specular-light exponent
-	glMateriali(GL_FRONT,GL_SHININESS, 128);*/
-
-#endif
-}
-
-
-void setMaterial3() {
-#ifdef  __HAVE_GL2__
-
-	// Material nimmt ambientes Licht auf
-	GLfloat am[] = { 0.6,0.6,0.0,1};
-	glMaterialfv(GL_FRONT, GL_AMBIENT, am);
-
-	// Material nimmt diffuses Licht auf
-	GLfloat di[] = { 1,1,0,1};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, di);
-
-	// Material gibt Licht ab
-	GLfloat em[] = { 0,0,0,1};
-	glMaterialfv(GL_FRONT, GL_EMISSION, em);
-
-	// Material nimmt Glanzlicht auf
-/*	GLfloat specref[] = { 1,1,1,1};
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
-
-	// specular-light exponent
-	glMateriali(GL_FRONT,GL_SHININESS, 128);*/
-
-#endif
-}
 
 
 
-static void torus(int numc, int numt);
-void drawCylinder(int numMajor, int numMinor, float height, float radius);
-
-void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
+void MMSFBBackEndInterface::processRenderScene(BEI_RENDERSCENE *req) {
 #ifdef  __HAVE_OPENGL__
 
-
 	// lock destination fbo and bind source texture to it
-	oglBindSurface(req->surface, 200, 1700, false);
+	oglBindSurface(req->surface, 200, 1700, true);
+//	oglBindSurface(req->surface);
 
 	// set light
-	mmsfbgl.rotateCurrentMatrix(0, 1, 0, 0);
+/*	mmsfbgl.rotateCurrentMatrix(0, 1, 0, 0);
 	mmsfbgl.rotateCurrentMatrix(-45, 0, 0, 1);
-	mmsfbgl.rotateCurrentMatrix(90, 0, 1, 0);
+	mmsfbgl.rotateCurrentMatrix(90, 0, 1, 0);*/
 	setLight();
 
-	oglBindSurface(req->surface, 200, 1700, true);
+//	oglBindSurface(req->surface, 200, 1700, true);
 
 	// setup blitting
+//	mmsfbgl.enableBlend();
 	mmsfbgl.disableBlend();
 	mmsfbgl.setTexEnvReplace(GL_RGBA);
-
-
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
 
-
-	MMSFBRectangle dst_rect(0,0,BEI_SURFACE_WIDTH,BEI_SURFACE_HEIGHT);
-
 	// set the clip to ogl
 	MMSFBRectangle crect;
-	if (req->surface->calcClip(dst_rect.x + xoff, dst_rect.y + yoff, dst_rect.w, dst_rect.h, &crect)) {
+	if (req->surface->calcClip(0 + xoff, 0 + yoff, req->surface->config.w, req->surface->config.h, &crect)) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
-
+		// clear surface
 		mmsfbgl.enableDepthTest();
 		mmsfbgl.clear(0, 0, 0, 0);
 
+		// draw objects...
+		int cnt = 0;
+		MMS3D_OBJECT *object;
 
+		while ((object = req->objects[cnt])) {
 
+			if (!isMMS3DObjectShown(object) || object->indices < 0) {
+				// skip not shown objects
+				cnt++;
+				continue;
+			}
 
-		// move scene between clipping planes
-		mmsfbgl.translateCurrentMatrix(0, 0, -500);
+			// cull facing, do not draw hidden pixels
+			if (object->cullface) {
+#ifdef  __HAVE_GL2__
+				glFrontFace(GL_CCW);
+				glCullFace(GL_BACK);
+				glEnable(GL_CULL_FACE);
+#endif
+			}
+			else {
+#ifdef  __HAVE_GL2__
+				glDisable(GL_CULL_FACE);
+#endif
+			}
 
-		// save scene's matrix
-		mmsfbgl.pushCurrentMatrix();
+			// set matrix
+			mmsfbgl.setCurrentMatrix(object->matrix);
 
-		// rotate the cube
-		mmsfbgl.rotateCurrentMatrix(req->angle_x, 1, 0, 0);
-		mmsfbgl.rotateCurrentMatrix(req->angle_y, 0, 1, 0);
-		mmsfbgl.rotateCurrentMatrix(req->angle_z, 0, 0, 1);
-
-
-
-
-		int ddw = 100;
-		int ddh = 100;
-		int ddz = 100;
-
-		// front
-		if (req->front) {
-			MMSFBSurface *surface = req->front;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, -ddh/2, ddz/2,
-									 ddw/2, -ddh/2, ddz/2,
-									 ddw/2, ddh/2, ddz/2,
-									 -ddw/2, ddh/2, ddz/2);
-		}
-
-		// back
-		if (req->back) {
-			MMSFBSurface *surface = req->back;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 ddw/2, -ddh/2, -ddz/2,
-									 -ddw/2, -ddh/2, -ddz/2,
-									 -ddw/2, ddh/2, -ddz/2,
-									 ddw/2, ddh/2, -ddz/2);
-		}
-
-		// left
-		if (req->left) {
-			MMSFBSurface *surface = req->left;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, -ddh/2, -ddz/2,
-									 -ddw/2, -ddh/2, ddz/2,
-									 -ddw/2, ddh/2, ddz/2,
-									 -ddw/2, ddh/2, -ddz/2);
-		}
-
-		// right
-		if (req->right) {
-			MMSFBSurface *surface = req->right;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 ddw/2, -ddh/2, ddz/2,
-									 ddw/2, -ddh/2, -ddz/2,
-									 ddw/2, ddh/2, -ddz/2,
-									 ddw/2, ddh/2, ddz/2);
-		}
-
-		// top
-		if (req->top) {
-			MMSFBSurface *surface = req->top;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, ddh/2, ddz/2,
-									 ddw/2, ddh/2, ddz/2,
-									 ddw/2, ddh/2, -ddz/2,
-									 -ddw/2, ddh/2, -ddz/2);
-		}
-
-		// bottom
-		if (req->bottom) {
-			MMSFBSurface *surface = req->bottom;
-			mmsfbgl.stretchBlit3D(surface->config.surface_buffer->ogl_tex,
-									 0, 0, 1, 1,
-									 -ddw/2, -ddh/2, -ddz/2,
-									 ddw/2, -ddh/2, -ddz/2,
-									 ddw/2, -ddh/2, ddz/2,
-									 -ddw/2, -ddh/2, ddz/2);
-		}
-
-
-
-
-		// restore scene's matrix
-		mmsfbgl.popCurrentMatrix();
-
-
-
-
+			// set material
+			if (object->material >= 0) {
 #ifdef  __HAVE_GL2__
 
-		// rotate the object with a radius around the center
-		mmsfbgl.rotateCurrentMatrix(-(req->angle_x-45), 1, 0, 0);
-		mmsfbgl.rotateCurrentMatrix(-req->angle_y, 0, 1, 0);
-		mmsfbgl.rotateCurrentMatrix(-req->angle_z, 0, 0, 1);
-		mmsfbgl.translateCurrentMatrix(0, 0, -200);
+				MMS3D_MATERIAL material = req->materials[object->material];
 
-		// rotate the object
-		mmsfbgl.rotateCurrentMatrix(req->angle_x, 1, 0, 0);
-		mmsfbgl.rotateCurrentMatrix(req->angle_y+180, 0, 1, 0);
-		mmsfbgl.rotateCurrentMatrix(req->angle_z, 0, 0, 1);
+				// material emits light
+				glMaterialfv(GL_FRONT, GL_EMISSION, (float*)&material.s.emission);
 
-		// save object's matrix
-		mmsfbgl.pushCurrentMatrix();
+				// material absorbs ambient light
+				glMaterialfv(GL_FRONT, GL_AMBIENT, (float*)&material.s.ambient);
 
+				// material absorbs diffuse light
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, (float*)&material.s.diffuse);
 
-		if (!numIndices) {
-			// generate sphere
-			numIndices = genSphere(150, 75, &vertices, &normals, &texCoords, &indices);
-			numIndices2 = genSphere(50, 15, &vertices2, &normals2, &texCoords2, &indices2);
-			printf("numIndices = %d\n", numIndices);
-			printf("numIndices2= %d\n", numIndices2);
-//			textureId = CreateSimpleTextureCubemap ();
-//			printf("textureId = %d\n", textureId);
-		}
+				// material absorbs specular light
+				glMaterialfv(GL_FRONT, GL_SPECULAR, (float*)&material.s.specular);
 
-		if (numIndices) {
-			// draw sphere
-
-
-
-			glDisable(GL_TEXTURE_2D);
-
-
-
-			glCullFace ( GL_BACK );
-			glEnable ( GL_CULL_FACE );
-
-
-//////////////////////////////////
-
-
-
-			setMaterial();
-
-
-			// load the vertex data
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, vertices);
-
-			// load the texture coordinates
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, normals);
-
-			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
-
-///////////////////////
-
-			// restore object's matrix
-			mmsfbgl.popCurrentMatrix();
-			mmsfbgl.pushCurrentMatrix();
-
-			mmsfbgl.translateCurrentMatrix(0, -15, 0);
-			mmsfbgl.scaleCurrentMatrix(0.9,0.9,0.9);
-
-			setMaterialx();
-
-			glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
-
-///////////////////////////
-
-			// restore object's matrix
-			mmsfbgl.popCurrentMatrix();
-			mmsfbgl.pushCurrentMatrix();
-
-
-			mmsfbgl.rotateCurrentMatrix(-5, 1, 0, 0);
-			mmsfbgl.translateCurrentMatrix(0, 0, -65);
-
-
-			setMaterial2();
-
-			// load the vertex data
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, vertices2);
-
-			// load the texture coordinates
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, normals2);
-
-			glDrawElements(GL_TRIANGLES, numIndices2, GL_UNSIGNED_INT, indices2);
-
-
-
-
-///////////////////////////
-
-
-			// restore object's matrix
-			mmsfbgl.popCurrentMatrix();
-			mmsfbgl.pushCurrentMatrix();
-
-			mmsfbgl.rotateCurrentMatrix(50, 0, 1, 0);
-			mmsfbgl.rotateCurrentMatrix(-5, 1, 0, 0);
-			mmsfbgl.translateCurrentMatrix(0, 0, -65);
-
-
-			setMaterial2();
-
-			// load the vertex data
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, vertices2);
-
-			// load the texture coordinates
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, normals2);
-
-			glDrawElements(GL_TRIANGLES, numIndices2, GL_UNSIGNED_INT, indices2);
-
-
-///////////////////////////
-
-
-			// restore object's matrix
-			mmsfbgl.popCurrentMatrix();
-			mmsfbgl.pushCurrentMatrix();
-
-
-			mmsfbgl.rotateCurrentMatrix(25, 0, 1, 0);
-			mmsfbgl.translateCurrentMatrix(0, 0, -70);
-			mmsfbgl.rotateCurrentMatrix(30, 1, 0, 0);
-			mmsfbgl.scaleCurrentMatrix(1,2,1);
-
-
-			setMaterial3();
-
-			// load the vertex data
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, vertices2);
-
-			// load the texture coordinates
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, normals2);
-
-			glDrawElements(GL_TRIANGLES, numIndices2, GL_UNSIGNED_INT, indices2);
-
-///////////////////////////
-
-			// restore object's matrix
-			mmsfbgl.popCurrentMatrix();
-			mmsfbgl.pushCurrentMatrix();
-
-
-			mmsfbgl.rotateCurrentMatrix(25, 0, 1, 0);
-			mmsfbgl.translateCurrentMatrix(0, 0, -17);
-			mmsfbgl.rotateCurrentMatrix(-45, 1, 0, 0);
-
-			setMaterial2();
-			torus(30,30);
-
-
-///////////////////////////
-			glDisable ( GL_CULL_FACE );
-			glDisable(GL_TEXTURE_CUBE_MAP);
-
-
-			// restore object's matrix
-			mmsfbgl.popCurrentMatrix();
-			mmsfbgl.pushCurrentMatrix();
-
-			mmsfbgl.rotateCurrentMatrix(115, 0, 1, 0);
-			mmsfbgl.translateCurrentMatrix(0, -70, 0);
-
-			setMaterial3();
-			drawCylinder(2, 16, 80, 30);
-
-///////////////////////////
-
-
-			glDisable ( GL_CULL_FACE );
-			glDisable(GL_TEXTURE_CUBE_MAP);
-
-
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_NORMAL_ARRAY);
-			glDisable(GL_LIGHTING);
-		}
-
-
-		// pop object's matrix from stack
-		mmsfbgl.popCurrentMatrix();
-
+				// specular-light exponent
+				glMaterialf(GL_FRONT, GL_SHININESS, material.s.shininess * 128);
 #endif
+			}
 
+			// bind object's texture
+			if (object->texcoords >= 0 && object->texture >= 0) {
+				mmsfbgl.enableTexture2D(req->texsurfaces[object->texture]->config.surface_buffer->ogl_tex);
+			}
+			else {
+				mmsfbgl.disableTexture2D();
+			}
 
+			// draw object
+			mmsfbgl.drawElements(
+					(object->vertices >= 0) ? req->varrays[object->vertices] : NULL,
+					(object->normals >= 0) ? req->varrays[object->normals] : NULL,
+					(object->texcoords >= 0 && object->texture >= 0) ? req->varrays[object->texcoords] : NULL,
+					(object->indices >= 0) ? req->iarrays[object->indices] : NULL);
+
+			// next object
+			cnt++;
+		}
+
+#ifdef  __HAVE_GL2__
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_LIGHTING);
+#endif
 
 
 		this->reset_matrix = true;
@@ -1784,192 +1300,7 @@ void MMSFBBackEndInterface::processCube(BEI_CUBE *req) {
 	}
 
 
-
-
 #endif
 }
-
-
-
-#ifdef __HAVE_OPENGL__
-int MMSFBBackEndInterface::genSphere(int numSlices, float radius, float **vertices, float **normals,
-									 float **texCoords, unsigned int **indices) {
-	int i;
-	int j;
-	int numParallels = numSlices / 2;
-	int numVertices = ( numParallels + 1 ) * ( numSlices + 1 );
-	int numIndices = numParallels * numSlices * 6;
-	float angleStep = (2.0f * MMSFBGL_PI) / ((float) numSlices);
-
-	// Allocate memory for buffers
-	if ( vertices != NULL )
-	  *vertices = (float *)malloc ( sizeof(float) * 3 * numVertices );
-
-	if ( normals != NULL )
-	  *normals = (float *)malloc ( sizeof(float) * 3 * numVertices );
-
-	if ( texCoords != NULL )
-	  *texCoords = (float *)malloc ( sizeof(float) * 2 * numVertices );
-
-	if ( indices != NULL )
-	  *indices = (unsigned int *)malloc ( sizeof(unsigned int) * numIndices );
-
-	for ( i = 0; i < numParallels + 1; i++ )
-	{
-	  for ( j = 0; j < numSlices + 1; j++ )
-	  {
-		 int vertex = ( i * (numSlices + 1) + j ) * 3;
-
-		 if ( vertices )
-		 {
-			(*vertices)[vertex + 0] = radius * sinf ( angleStep * (float)i ) *
-											   sinf ( angleStep * (float)j );
-			(*vertices)[vertex + 1] = radius * cosf ( angleStep * (float)i );
-			(*vertices)[vertex + 2] = radius * sinf ( angleStep * (float)i ) *
-											   cosf ( angleStep * (float)j );
-		 }
-
-		 if ( normals )
-		 {
-			(*normals)[vertex + 0] = (*vertices)[vertex + 0] / radius;
-			(*normals)[vertex + 1] = (*vertices)[vertex + 1] / radius;
-			(*normals)[vertex + 2] = (*vertices)[vertex + 2] / radius;
-		 }
-
-		 if ( texCoords )
-		 {
-			int texIndex = ( i * (numSlices + 1) + j ) * 2;
-			(*texCoords)[texIndex + 0] = (float) j / (float) numSlices;
-			(*texCoords)[texIndex + 1] = ( 1.0f - (float) i ) / (float) (numParallels - 1 );
-		 }
-	  }
-	}
-
-	// Generate the indices
-	if ( indices != NULL )
-	{
-	  unsigned int *indexBuf = (*indices);
-	  for ( i = 0; i < numParallels ; i++ )
-	  {
-		 for ( j = 0; j < numSlices; j++ )
-		 {
-			*indexBuf++  = i * ( numSlices + 1 ) + j;
-			*indexBuf++ = ( i + 1 ) * ( numSlices + 1 ) + j;
-			*indexBuf++ = ( i + 1 ) * ( numSlices + 1 ) + ( j + 1 );
-
-			*indexBuf++ = i * ( numSlices + 1 ) + j;
-			*indexBuf++ = ( i + 1 ) * ( numSlices + 1 ) + ( j + 1 );
-			*indexBuf++ = i * ( numSlices + 1 ) + ( j + 1 );
-		 }
-	  }
-	}
-
-	return numIndices;
-}
-#endif
-
-
-#ifdef  __HAVE_GL2__
-
-const float PI2 = 2.0f*3.1415926535;
-// Variables controlling the fineness of the polygonal mesh
-int NumWraps = 30;
-int NumPerWrap = 18;
-
-// Variables controlling the size of the torus
-float MajorRadius = 45.0;
-float MinorRadius = 20.0;
-
-/*
- * issue vertex command for segment number j of wrap number i.
- */
-void putVert(int i, int j) {
-	float wrapFrac = (j%NumPerWrap)/(float)NumPerWrap;
-	float phi = PI2*wrapFrac;
-	float theta = PI2*(i%NumWraps+wrapFrac)/(float)NumWraps;
-	float sinphi = sin(phi);
-	float cosphi = cos(phi);
-	float sintheta = sin(theta);
-	float costheta = cos(theta);
-	float y = MinorRadius*sinphi;
-	float r = MajorRadius + MinorRadius*cosphi;
-	float x = sintheta*r;
-	float z = costheta*r;
-	glNormal3f(sintheta*cosphi, sinphi, costheta*cosphi);
-	glVertex3f(x,y,z);
-}
-
-
-static void torus(int numc, int numt)
-{
-/*   int i, j, k;
-   double s, t, x, y, z, twopi;
-
-   twopi = 2 * MMSFBGL_PI;
-   for (i = 0; i < numc; i++) {
-      glBegin(GL_QUAD_STRIP);
-      for (j = 0; j <= numt; j++) {
-         for (k = 1; k >= 0; k--) {
-            s = (i + k) % numc + 0.5;
-            t = j % numt;
-
-            x = (1+.1*cos(s*twopi/numc))*cos(t*twopi/numt);
-            y = (1+.1*cos(s*twopi/numc))*sin(t*twopi/numt);
-            z = .1 * sin(s * twopi / numc);
-            glNormal3f(x, y, z);
-            glVertex3f(x, y, z);
-         }
-      }
-      glEnd();
-   }*/
-
-
-	int QuadMode=0;
-	glBegin( QuadMode==1 ? GL_QUAD_STRIP : GL_TRIANGLE_STRIP );
-
-	int i,j;
-	for (i=0; i<NumWraps; i++ ) {
-		for (j=0; j<NumPerWrap; j++) {
-			putVert(i,j);
-			putVert(i+1,j);
-		}
-	}
-	putVert(0,0);
-	putVert(1,0);
-
-	glEnd();
-}
-
-
-
-void drawCylinder(int numMajor, int numMinor, float height, float radius)
-{
-double majorStep = height / numMajor;
-double minorStep = 2.0 * M_PI / numMinor;
-int i, j;
-
-for (i = 0; i < numMajor; ++i) {
-GLfloat z0 = 0.5 * height - i * majorStep;
-GLfloat z1 = z0 - majorStep;
-
-glBegin(GL_TRIANGLE_STRIP);
-for (j = 0; j <= numMinor; ++j) {
-double a = j * minorStep;
-GLfloat x = radius * cos(a);
-GLfloat y = radius * sin(a);
-glNormal3f(x / radius, y / radius, 0.0);
-glTexCoord2f(j / (GLfloat) numMinor, i / (GLfloat) numMajor);
-glVertex3f(x, y, z0);
-
-glNormal3f(x / radius, y / radius, 0.0);
-glTexCoord2f(j / (GLfloat) numMinor, (i + 1) / (GLfloat) numMajor);
-glVertex3f(x, y, z1);
-}
-glEnd();
-}
-}
-
-#endif
-
 
 

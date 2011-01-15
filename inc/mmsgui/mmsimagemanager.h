@@ -75,7 +75,7 @@ class MMSImageManager {
         bool loadGIF(string file, MMSIM_DESC *desc);
 
     public:
-        MMSImageManager(MMSFBLayer *layer);
+        MMSImageManager(MMSFBLayer *layer = NULL);
         ~MMSImageManager();
         MMSFBSurface *getImage(const string &path, const string &filename, MMSIM_DESC_SUF **surfdesc = NULL,
         					   int mirror_size = 0, bool gen_taff = true);

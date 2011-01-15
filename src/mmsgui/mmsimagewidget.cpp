@@ -376,15 +376,6 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeo
     }
 }
 
-#ifdef  __HAVE_OPENGL__
-
-float angle_x = 45;
-float angle_y = 0;
-float angle_z = 0;
-
-#endif
-
-
 
 bool MMSImageWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
@@ -401,21 +392,6 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 
     /* draw widget basics */
     if (MMSWidget::draw(backgroundFilled)) {
-
-#ifdef  __HAVE_OPENGL__
-    	if (getName() == "ogl_cube") {
-    		MMSFBSurface *front = (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
-    		MMSFBSurface *back = this->da->selbgimage;
-    		MMSFBSurface *left = this->da->bgimage_i;
-    		MMSFBSurface *right = this->da->selbgimage_i;
-    		MMSFBSurface *top = this->da->bgimage_p;
-    		MMSFBSurface *bottom = this->da->selbgimage_p;
-    		this->surface->cube(front, back, left, right, top, bottom, angle_x, angle_y, angle_z);
-    	}
-    	else {
-#else
-   		{
-#endif
         /* draw my things */
         MMSFBRectangle surfaceGeom;
 
@@ -518,7 +494,6 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 	            this->surface->stretchBlit(suf2, NULL, &surfaceGeom);
 	        }
 		}
-    	}
 
         /* update window surface with an area of surface */
         updateWindowSurfaceWithSurface(!*backgroundFilled);
@@ -1084,27 +1059,6 @@ void MMSImageWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
 }
 
 void MMSImageWidget::setMirrorSize(unsigned int mirrorsize, bool refresh) {
-
-#ifdef  __HAVE_OPENGL__
-	if (getName() == "ogl_cube") {
-		if (mirrorsize < 100000) {
-			// angle_x
-			angle_x = (float)mirrorsize / 100;
-		}
-		else
-		if (mirrorsize < 200000) {
-			// angle_y
-			angle_y = (float)(mirrorsize % 100000) / 100;
-		}
-		else
-		if (mirrorsize < 300000) {
-			// angle_z
-			angle_z = (float)(mirrorsize % 200000) / 100;
-		}
-		return;
-	}
-#endif
-
     myImageWidgetClass.setMirrorSize(mirrorsize);
     if (refresh)
         this->refresh();

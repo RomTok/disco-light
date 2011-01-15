@@ -30,24 +30,94 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DMATERIAL_H_
+#define MMS3DMATERIAL_H_
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+#include "mmstools/mmstypes.h"
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+class MMS3DMaterial {
+public:
 
-#include "mmsgui/mmswidgets.h"
+	//! indices to the materials
+	typedef enum {
+		// index range 0..255 for user defined materials
+		MAT_NOTSET = -1,
+		MAT_MAX_USER_DEFINED = 255,
 
-#include "mmsgui/3d/mms3dcylinder.h"
-#include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
+		// basic colors
+		MAT_BLACK,
+		MAT_RED,
+		MAT_GREEN,
+		MAT_BLUE,
+		MAT_YELLOW,
+		MAT_CYAN,
+		MAT_MAGENTA,
+		MAT_WHITE,
 
-#include "mmsgui/additional/mmsguicontrols.h"
+		// gemstone / glass
+		MAT_JADE,
+		MAT_JADE_LUCENT,
+		MAT_OBSIDIAN,
+		MAT_OBSIDIAN_LUCENT,
+		MAT_PEARL,
+		MAT_PEARL_LUCENT,
+		MAT_RUBY,
+		MAT_RUBY_LUCENT,
+		MAT_EMERALD,
+		MAT_EMERALD_LUCENT,
+		MAT_TURQUOISE,
+		MAT_TURQUOISE_LUCENT,
 
-#endif /*MMSGUI_H_*/
+		// synthetic
+		MAT_BLACK_PLASTIC,
+		MAT_RED_PLASTIC,
+		MAT_GREEN_PLASTIC,
+		MAT_BLUE_PLASTIC,
+		MAT_YELLOW_PLASTIC,
+		MAT_CYAN_PLASTIC,
+		MAT_MAGENTA_PLASTIC,
+		MAT_WHITE_PLASTIC,
+		MAT_BLACK_RUBBER,
+		MAT_RED_RUBBER,
+		MAT_GREEN_RUBBER,
+		MAT_BLUE_RUBBER,
+		MAT_YELLOW_RUBBER,
+		MAT_CYAN_RUBBER,
+		MAT_MAGENTA_RUBBER,
+		MAT_WHITE_RUBBER,
+
+		// metal
+		MAT_BRONZE,
+		MAT_BRONZE_POLISHED,
+		MAT_CHROME,
+		MAT_GOLD,
+		MAT_GOLD_POLISHED,
+		MAT_COPPER,
+		MAT_COPPER_POLISHED,
+		MAT_BRASS,
+		MAT_SILVER,
+		MAT_SILVER_POLISHED,
+		MAT_TIN,
+
+		// size needed for the buffer allocation
+		MAT_SIZE
+	} MAT;
+
+private:
+
+	//! materials
+	static MMS3D_MATERIAL mat_buffer[MAT_SIZE];
+
+	//! number of user defined materials
+	static int material_cnt;
+
+public:
+
+	MMS3DMaterial();
+
+	void getBuffer(MMS3D_MATERIAL **mat_buffer);
+
+	int genMaterial(MMSFBColor emission, MMSFBColor ambient, MMSFBColor diffuse, MMSFBColor specular, unsigned char shininess);
+};
+
+#endif /* MMS3DMATERIAL_H_ */

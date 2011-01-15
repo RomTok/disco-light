@@ -30,24 +30,25 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#include "mmsgui/3d/mms3dtexture.h"
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+MMS3DTexture::MMS3DTexture() {
+	this->texture_cnt = 0;
+}
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+void MMS3DTexture::getBuffer(MMSFBSurface ***tex_buffer) {
+	*tex_buffer = this->tex_buffer;
+}
 
-#include "mmsgui/mmswidgets.h"
+int MMS3DTexture::genTexture(MMSFBSurface *tex) {
+	if (this->texture_cnt >= TEX_SIZE) {
+		// buffer is full
+		return TEX_NOTSET;
+	}
 
-#include "mmsgui/3d/mms3dcylinder.h"
-#include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
+	// set it
+	tex_buffer[this->texture_cnt] = tex;
+	this->texture_cnt++;
+	return this->texture_cnt - 1;
+}
 
-#include "mmsgui/additional/mmsguicontrols.h"
-
-#endif /*MMSGUI_H_*/

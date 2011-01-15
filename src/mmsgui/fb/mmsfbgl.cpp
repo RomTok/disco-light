@@ -995,6 +995,55 @@ bool MMSFBGL::initSubTexture2D(GLuint tex, void *buffer, GLenum buffer_format, i
 	return true;
 }
 
+bool MMSFBGL::enableTexture2D(GLuint tex) {
+
+#ifdef __HAVE_GL2__
+	// enabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
+	glEnable(GL_TEXTURE_2D);
+	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
+#endif
+
+	// bind source texture
+	bindTexture2D(tex);
+
+#ifdef __HAVE_GLES2__
+
+	if (!this->FSTextureLoc_initialized) {
+		// get the location of source texture uniform variable within the fragment shader
+		this->FSTextureLoc = -1;
+		if (this->po_current) {
+			this->FSTextureLoc = glGetUniformLocation(this->po_current, "FSTexture");
+			ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"FSTexture\")");
+
+			this->FSTextureLoc_initialized = true;
+		}
+	}
+
+	if (!this->VSTexCoordLoc_initialized) {
+		// get the location of texture coordinates attribute variable within the vertex shader
+		this->VSTexCoordLoc = -1;
+		if (this->po_current) {
+			this->VSTexCoordLoc = glGetAttribLocation(this->po_current, "VSTexCoord");
+			ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"VSTexCoord\")");
+
+			this->VSTexCoordLoc_initialized = true;
+		}
+	}
+
+#endif
+
+	return true;
+}
+
+
+void MMSFBGL::disableTexture2D() {
+#ifdef __HAVE_GL2__
+	// disabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
+	glDisable(GL_TEXTURE_2D);
+	ERROR_CHECK_VOID("glDisable(GL_TEXTURE_2D)");
+#endif
+}
+
 
 bool MMSFBGL::genFrameBuffer(GLuint *fbo) {
 
@@ -1248,6 +1297,7 @@ bool MMSFBGL::bindFrameBuffer(GLuint fbo) {
 	disableScissor();
 	disableDepthTest();
 	disableTexture2D();
+	disableArrays();
 
 	return true;
 }
@@ -1316,15 +1366,6 @@ void MMSFBGL::disableDepthTest() {
 	ERROR_CHECK_VOID("glDepthMask(GL_FALSE)");
 }
 
-void MMSFBGL::disableTexture2D() {
-#ifdef __HAVE_GL2__
-	// disabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
-	glDisable(GL_TEXTURE_2D);
-	ERROR_CHECK_VOID("glDisable(GL_TEXTURE_2D)");
-#endif
-}
-
-
 void MMSFBGL::setDrawingMode() {
 #ifdef __HAVE_GLES2__
 	useShaderProgram4Drawing();
@@ -1364,181 +1405,21 @@ void MMSFBGL::setTexEnvModulate(GLenum format) {
 }
 
 
+void MMSFBGL::disableArrays() {
+#ifdef  __HAVE_GL2__
+	glDisableClientState(GL_VERTEX_ARRAY);
+	ERROR_CHECK_VOID("glDisableClientState(GL_VERTEX_ARRAY)");
 
+	glDisableClientState(GL_NORMAL_ARRAY);
+	ERROR_CHECK_VOID("glDisableClientState(GL_NORMAL_ARRAY)");
 
-void MMSFBGL::matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB) {
-    MMSFBGLMatrix    tmp;
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	ERROR_CHECK_VOID("glDisableClientState(GL_TEXTURE_COORD_ARRAY)");
 
-	for (int i = 0; i < 4; i++) {
-		tmp[i][0] =	(srcA[i][0] * srcB[0][0]) +
-					(srcA[i][1] * srcB[1][0]) +
-					(srcA[i][2] * srcB[2][0]) +
-					(srcA[i][3] * srcB[3][0]);
-
-		tmp[i][1] =	(srcA[i][0] * srcB[0][1]) +
-					(srcA[i][1] * srcB[1][1]) +
-					(srcA[i][2] * srcB[2][1]) +
-					(srcA[i][3] * srcB[3][1]);
-
-		tmp[i][2] =	(srcA[i][0] * srcB[0][2]) +
-					(srcA[i][1] * srcB[1][2]) +
-					(srcA[i][2] * srcB[2][2]) +
-					(srcA[i][3] * srcB[3][2]);
-
-		tmp[i][3] =	(srcA[i][0] * srcB[0][3]) +
-					(srcA[i][1] * srcB[1][3]) +
-					(srcA[i][2] * srcB[2][3]) +
-					(srcA[i][3] * srcB[3][3]);
-	}
-    memcpy(result, tmp, sizeof(MMSFBGLMatrix));
+	glDisableClientState(GL_INDEX_ARRAY);
+	ERROR_CHECK_VOID("glDisableClientState(GL_INDEX_ARRAY)");
+#endif
 }
-
-
-//! reset a matrix
-void MMSFBGL::matrixLoadIdentity(MMSFBGLMatrix result) {
-    memset(result, 0x0, sizeof(MMSFBGLMatrix));
-    result[0][0] = 1.0f;
-    result[1][1] = 1.0f;
-    result[2][2] = 1.0f;
-    result[3][3] = 1.0f;
-}
-
-
-void MMSFBGL::scale(MMSFBGLMatrix result, GLfloat sx, GLfloat sy, GLfloat sz) {
-    result[0][0] *= sx;
-    result[0][1] *= sx;
-    result[0][2] *= sx;
-    result[0][3] *= sx;
-
-    result[1][0] *= sy;
-    result[1][1] *= sy;
-    result[1][2] *= sy;
-    result[1][3] *= sy;
-
-    result[2][0] *= sz;
-    result[2][1] *= sz;
-    result[2][2] *= sz;
-    result[2][3] *= sz;
-}
-
-
-void MMSFBGL::translate(MMSFBGLMatrix result, GLfloat tx, GLfloat ty, GLfloat tz) {
-    result[3][0] += (result[0][0] * tx + result[1][0] * ty + result[2][0] * tz);
-    result[3][1] += (result[0][1] * tx + result[1][1] * ty + result[2][1] * tz);
-    result[3][2] += (result[0][2] * tx + result[1][2] * ty + result[2][2] * tz);
-    result[3][3] += (result[0][3] * tx + result[1][3] * ty + result[2][3] * tz);
-}
-
-
-void MMSFBGL::rotate(MMSFBGLMatrix result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
-   GLfloat sinAngle, cosAngle;
-   GLfloat mag = sqrtf(x * x + y * y + z * z);
-
-   sinAngle = sinf (angle * MMSFBGL_PI / 180.0f);
-   cosAngle = cosf (angle * MMSFBGL_PI / 180.0f);
-   if (mag > 0.0f) {
-      GLfloat xx, yy, zz, xy, yz, zx, xs, ys, zs;
-      GLfloat oneMinusCos;
-      MMSFBGLMatrix rotMat;
-
-      x /= mag;
-      y /= mag;
-      z /= mag;
-
-      xx = x * x;
-      yy = y * y;
-      zz = z * z;
-      xy = x * y;
-      yz = y * z;
-      zx = z * x;
-      xs = x * sinAngle;
-      ys = y * sinAngle;
-      zs = z * sinAngle;
-      oneMinusCos = 1.0f - cosAngle;
-
-      rotMat[0][0] = (oneMinusCos * xx) + cosAngle;
-      rotMat[0][1] = (oneMinusCos * xy) - zs;
-      rotMat[0][2] = (oneMinusCos * zx) + ys;
-      rotMat[0][3] = 0.0f;
-
-      rotMat[1][0] = (oneMinusCos * xy) + zs;
-      rotMat[1][1] = (oneMinusCos * yy) + cosAngle;
-      rotMat[1][2] = (oneMinusCos * yz) - xs;
-      rotMat[1][3] = 0.0f;
-
-      rotMat[2][0] = (oneMinusCos * zx) - ys;
-      rotMat[2][1] = (oneMinusCos * yz) + xs;
-      rotMat[2][2] = (oneMinusCos * zz) + cosAngle;
-      rotMat[2][3] = 0.0f;
-
-      rotMat[3][0] = 0.0f;
-      rotMat[3][1] = 0.0f;
-      rotMat[3][2] = 0.0f;
-      rotMat[3][3] = 1.0f;
-
-      matrixMultiply(result, rotMat, result);
-   }
-}
-
-
-void MMSFBGL::frustum(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
-    float	deltaX = right - left;
-    float	deltaY = top - bottom;
-    float	deltaZ = farZ - nearZ;
-
-    if ( (nearZ <= 0.0f) || (farZ <= 0.0f) ||
-         (deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f) )
-         return;
-
-    MMSFBGLMatrix frust;
-    frust[0][0] = 2.0f * nearZ / deltaX;
-    frust[0][1] = frust[0][2] = frust[0][3] = 0.0f;
-
-    frust[1][1] = 2.0f * nearZ / deltaY;
-    frust[1][0] = frust[1][2] = frust[1][3] = 0.0f;
-
-    frust[2][0] = (right + left) / deltaX;
-    frust[2][1] = (top + bottom) / deltaY;
-    frust[2][2] = -(nearZ + farZ) / deltaZ;
-    frust[2][3] = -1.0f;
-
-    frust[3][2] = -2.0f * nearZ * farZ / deltaZ;
-    frust[3][0] = frust[3][1] = frust[3][3] = 0.0f;
-
-    matrixMultiply(result, frust, result);
-}
-
-
-void MMSFBGL::perspective(MMSFBGLMatrix result, float fovy, float aspect, float nearZ, float farZ) {
-   GLfloat frustumW, frustumH;
-
-   frustumH = tanf(fovy / 360.0f * MMSFBGL_PI) * nearZ;
-   frustumW = frustumH * aspect;
-
-   frustum(result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ);
-}
-
-void MMSFBGL::ortho(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
-    float       deltaX = right - left;
-    float       deltaY = top - bottom;
-    float       deltaZ = farZ - nearZ;
-
-    if ((deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f))
-        return;
-
-    MMSFBGLMatrix ortho;
-    matrixLoadIdentity(ortho);
-    ortho[0][0] = 2.0f / deltaX;
-    ortho[3][0] = -(right + left) / deltaX;
-    ortho[1][1] = 2.0f / deltaY;
-    ortho[3][1] = -(top + bottom) / deltaY;
-    ortho[2][2] = -2.0f / deltaZ;
-    ortho[3][2] = -(nearZ + farZ) / deltaZ;
-
-    matrixMultiply(result, ortho, result);
-}
-
-
 
 
 bool MMSFBGL::useShaderProgram4Drawing() {
@@ -1654,7 +1535,7 @@ bool MMSFBGL::useShaderProgram4ModulateBlittingFromAlpha() {
 }
 
 
-bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
+bool MMSFBGL::setCurrentMatrix(MMS3DMatrix matrix) {
 
 	INITCHECK;
 
@@ -1686,7 +1567,17 @@ bool MMSFBGL::setCurrentMatrix(MMSFBGLMatrix matrix) {
 #endif
 
 	// change the current matrix
-	memcpy(this->current_matrix, matrix, sizeof(MMSFBGLMatrix));
+	copyMatrix(this->current_matrix, matrix);
+
+	return true;
+}
+
+
+bool MMSFBGL::getCurrentMatrix(MMS3DMatrix matrix) {
+
+	INITCHECK;
+
+	copyMatrix(matrix, this->current_matrix);
 
 	return true;
 }
@@ -1696,7 +1587,7 @@ bool MMSFBGL::scaleCurrentMatrix(GLfloat sx, GLfloat sy, GLfloat sz) {
 
 	INITCHECK;
 
-	scale(this->current_matrix, sx, sy, sz);
+	scaleMatrix(this->current_matrix, sx, sy, sz);
 	return setCurrentMatrix(this->current_matrix);
 }
 
@@ -1705,7 +1596,7 @@ bool MMSFBGL::translateCurrentMatrix(GLfloat tx, GLfloat ty, GLfloat tz) {
 
 	INITCHECK;
 
-	translate(this->current_matrix, tx, ty, tz);
+	translateMatrix(this->current_matrix, tx, ty, tz);
 	return setCurrentMatrix(this->current_matrix);
 }
 
@@ -1714,55 +1605,55 @@ bool MMSFBGL::rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z
 
 	INITCHECK;
 
-	rotate(this->current_matrix, angle, x, y, z);
+	rotateMatrix(this->current_matrix, angle, x, y, z);
 	return setCurrentMatrix(this->current_matrix);
 }
 
 
 
-bool MMSFBGL::getParallelProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+bool MMSFBGL::getParallelProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
-	MMSFBGLMatrix matrix;
-	matrixLoadIdentity(matrix);
-	ortho(matrix, left, right, bottom, top, nearZ, farZ);
+	MMS3DMatrix matrix;
+	loadIdentityMatrix(matrix);
+	orthoMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 
 	// return the matrix to the caller
-	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
+	copyMatrix(result, matrix);
 
 	return true;
 }
 
 
-bool MMSFBGL::getCentralProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+bool MMSFBGL::getCentralProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
-	MMSFBGLMatrix matrix;
-	matrixLoadIdentity(matrix);
-	frustum(matrix, left, right, bottom, top, nearZ, farZ);
+	MMS3DMatrix matrix;
+	loadIdentityMatrix(matrix);
+	frustumMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 
 	// return the matrix to the caller
-	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
+	copyMatrix(result, matrix);
 
 	return true;
 }
 
 
-bool MMSFBGL::getPerspectiveMatrix(MMSFBGLMatrix result, float fovy, float aspect, float nearZ, float farZ) {
+bool MMSFBGL::getPerspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
-	MMSFBGLMatrix matrix;
-	matrixLoadIdentity(matrix);
-	perspective(matrix, fovy, aspect, nearZ, farZ);
+	MMS3DMatrix matrix;
+	loadIdentityMatrix(matrix);
+	perspectiveMatrix(matrix, fovy, aspect, nearZ, farZ);
 
 	// return the matrix to the caller
-	memcpy(result, matrix, sizeof(MMSFBGLMatrix));
+	copyMatrix(result, matrix);
 
 	return true;
 }
@@ -1774,7 +1665,7 @@ bool MMSFBGL::setParallelProjection(float left, float right, float bottom, float
 	INITCHECK;
 
 	// set the model view matrix for the shader
-	MMSFBGLMatrix matrix;
+	MMS3DMatrix matrix;
 	getParallelProjectionMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
 	ERROR_CHECK_BOOL("glViewport()");
@@ -1787,7 +1678,7 @@ bool MMSFBGL::setCentralProjection(float left, float right, float bottom, float 
 	INITCHECK;
 
 	// set the projection matrix for the shader
-	MMSFBGLMatrix matrix;
+	MMS3DMatrix matrix;
 	getCentralProjectionMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
 	ERROR_CHECK_BOOL("glViewport()");
@@ -1800,10 +1691,10 @@ bool MMSFBGL::setPerspective(float fovy, float aspect, float nearZ, float farZ) 
 	INITCHECK;
 
 	// set the perspective (based on projection matrix) for the shader
-	MMSFBGLMatrix matrix;
+	MMS3DMatrix matrix;
 	getPerspectiveMatrix(matrix, fovy, aspect, nearZ, farZ);
 	GLfloat w, h;
-	h = tanf(fovy / 360.0f * MMSFBGL_PI) * nearZ;
+	h = tanf(fovy / 360.0f * MMS3D_PI) * nearZ;
 	w = h * aspect;
 	glViewport(0, 0, w*2, h*2);
 	ERROR_CHECK_BOOL("glViewport()");
@@ -1826,8 +1717,10 @@ bool MMSFBGL::popCurrentMatrix() {
 
 	if (this->matrix_stack.size() > 0) {
 		// restore current matrix from stack
-		this->matrix_stack.top().getMatrix(this->current_matrix);
+		MMS3DMatrix matrix;
+		this->matrix_stack.top().getMatrix(matrix);
 		this->matrix_stack.pop();
+		setCurrentMatrix(matrix);
 		return true;
 	}
 
@@ -2039,47 +1932,6 @@ bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBGL::initBlitting(GLuint src_tex) {
-
-#ifdef __HAVE_GL2__
-	// enabling GL_TEXTURE_2D only useful for the fixed-function pipeline (not for own shaders)
-	glEnable(GL_TEXTURE_2D);
-	ERROR_CHECK_BOOL("glEnable(GL_TEXTURE_2D)");
-#endif
-
-	// bind source texture
-	bindTexture2D(src_tex);
-
-#ifdef __HAVE_GLES2__
-
-	if (!this->FSTextureLoc_initialized) {
-		// get the location of source texture uniform variable within the fragment shader
-		this->FSTextureLoc = -1;
-		if (this->po_current) {
-			this->FSTextureLoc = glGetUniformLocation(this->po_current, "FSTexture");
-			ERROR_CHECK_BOOL("glGetUniformLocation(this->po_current, \"FSTexture\")");
-
-			this->FSTextureLoc_initialized = true;
-		}
-	}
-
-	if (!this->VSTexCoordLoc_initialized) {
-		// get the location of texture coordinates attribute variable within the vertex shader
-		this->VSTexCoordLoc = -1;
-		if (this->po_current) {
-			this->VSTexCoordLoc = glGetAttribLocation(this->po_current, "VSTexCoord");
-			ERROR_CHECK_BOOL("glGetAttribLocation(this->po_current, \"VSTexCoord\")");
-
-			this->VSTexCoordLoc_initialized = true;
-		}
-	}
-
-#endif
-
-	return true;
-}
-
-
 bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
 								  float dx1, float dy1, float dz1,
 								  float dx2, float dy2, float dz2,
@@ -2089,7 +1941,7 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	INITCHECK;
 
 	// setup blitting
-	initBlitting(src_tex);
+	enableTexture2D(src_tex);
 
 	// setup vertex array and indices
 	GLfloat vVertices[] = { dx1,  dy1, dz1,  // Position 0
@@ -2163,7 +2015,7 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	INITCHECK;
 
 	// setup blitting
-	initBlitting(src_tex);
+	enableTexture2D(src_tex);
 
 #ifdef __HAVE_GL2__
 
@@ -2330,6 +2182,87 @@ bool MMSFBGL::blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int
 		return initSubTexture2D(dst_tex, buffer, GL_RGBA, sw, sh, 0, 0);
 	}
 }
+
+
+bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals, MMS3D_VERTEX_ARRAY *texcoords,
+						   MMS3D_INDEX_ARRAY *indices) {
+
+	INITCHECK;
+
+	if (!vertices || !indices) {
+		// minimum parameters are vertices and indices
+		return false;
+	}
+
+#ifdef __HAVE_GL2__
+
+	// load the vertices
+	if (vertices) {
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(vertices->eSize, GL_FLOAT, 0, vertices->buf);
+	}
+	else {
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	// load the normals
+	if (normals) {
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glNormalPointer(GL_FLOAT, 0, normals->buf);
+	}
+	else {
+		glDisableClientState(GL_NORMAL_ARRAY);
+	}
+
+	// load the texture coordinates
+	if (texcoords) {
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(texcoords->eSize, GL_FLOAT, 0, texcoords->buf);
+	}
+	else {
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
+	return false;
+
+#endif
+
+	// draw elements
+	// note: MMS3D_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
+	GLenum mode;
+	switch (indices->type) {
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+		mode = GL_TRIANGLES;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		mode = GL_TRIANGLE_STRIP;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		mode = GL_TRIANGLE_FAN;
+		break;
+	}
+	glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, indices->buf);
+
+	// print errors
+	switch (indices->type) {
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+		ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_STRIP,...)");
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
+		break;
+	}
+
+	return true;
+}
+
 
 
 #endif

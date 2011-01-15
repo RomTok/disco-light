@@ -30,24 +30,21 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
-
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
-
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
-
-#include "mmsgui/mmswidgets.h"
-
-#include "mmsgui/3d/mms3dcylinder.h"
 #include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
 
-#include "mmsgui/additional/mmsguicontrols.h"
+MMS3DRectangle::MMS3DRectangle(MMS3DScene *scene,
+								int material, int texture,
+								float width, float height) : MMS3DObject(scene, material, texture) {
 
-#endif /*MMSGUI_H_*/
+	// get access to object's structure
+	if (this->obj_id < 0) return;
+	MMS3D_OBJECT *obj = this->scene->getObject(this->obj_id);
+
+	// generate mesh
+	this->scene->mms3dpm.genRectangle(width, height,
+										&obj->vertices,
+										&obj->normals,
+										(obj->texture != MMS3DTexture::TEX_NOTSET)?&obj->texcoords:NULL,
+										&obj->indices);
+}
+

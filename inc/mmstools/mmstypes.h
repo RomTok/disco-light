@@ -624,112 +624,7 @@ class MMSFBTriangle {
 		}
 };
 
-//! describes a 3D point
-class MMS3DPoint {
-	private:
-		//! x
-		double x;
-		//! y
-		double y;
-		//! z
-		double z;
 
-	public:
-		MMS3DPoint(double x = 0, double y = 0, double z = 0) {
-			set(x, y, z);
-		}
-
-		bool operator==(MMS3DPoint &p) {
-			return ((this->x == p.x) && (this->y == p.y) && (this->z == p.z));
-		}
-
-		bool operator!=(MMS3DPoint &p) {
-			return ((this->x != p.x) || (this->y != p.y) || (this->z != p.z));
-		}
-
-		void set(double x = 0, double y = 0, double z = 0) {
-			this->x = x;
-			this->y = y;
-			this->z = z;
-		}
-
-		void get(double &x, double &y, double &z) {
-			x = this->x;
-			y = this->y;
-			z = this->z;
-		}
-
-	friend class MMS3DObject;
-	friend class MMS3DSpace;
-};
-
-// describes a 3D region
-class MMS3DRegion {
-	private:
-		//! x1
-		double x1;
-		//! y1
-		double y1;
-		//! z1
-		double z1;
-
-		//! x2
-		double x2;
-		//! y2
-		double y2;
-		//! z2
-		double z2;
-
-		//! x center
-		double x_center;
-		//! y center
-		double y_center;
-		//! z center
-		double z_center;
-
-	public:
-		MMS3DRegion(double x1 = 0, double y1 = 0, double z1 = 0,
-						 double x2 = 0, double y2 = 0, double z2 = 0) {
-			set(x1, y1, z1, x2, y2, z2);
-		}
-
-		bool operator==(MMS3DRegion &r) {
-			return ((this->x1 == r.x1) && (this->y1 == r.y1) && (this->z1 == r.z1)
-				 && (this->x2 == r.x2) && (this->y2 == r.y2) && (this->z2 == r.z2));
-		}
-
-		bool operator!=(MMS3DRegion &r) {
-			return ((this->x1 != r.x1) || (this->y1 != r.y1) || (this->z1 != r.z1)
-				 || (this->x2 != r.x2) || (this->y2 != r.y2) || (this->z2 != r.z2));
-		}
-
-		void set(double x1 = 0, double y1 = 0, double z1 = 0,
-				 double x2 = 0, double y2 = 0, double z2 = 0) {
-			this->x1 = x1;
-			this->y1 = y1;
-			this->z1 = z1;
-			this->x2 = x2;
-			this->y2 = y2;
-			this->z2 = z2;
-
-			this->x_center = (this->x1 + this->x2) / 2;
-			this->y_center = (this->y1 + this->y2) / 2;
-			this->z_center = (this->z1 + this->z2) / 2;
-		}
-
-		void get(double &x1, double &y1, double &z1,
-				 double &x2, double &y2, double &z2) {
-			x1 = this->x1;
-			y1 = this->y1;
-			z1 = this->z1;
-			x2 = this->x2;
-			y2 = this->y2;
-			z2 = this->z2;
-		}
-
-	friend class MMS3DObject;
-	friend class MMS3DSpace;
-};
 
 
 // pointer mode..............................................................
@@ -1229,6 +1124,118 @@ typedef enum {
 // conversion routines for languages
 string getMMSLanguageString(MMSLanguage lang);
 MMSLanguage getMMSLanguageFromString(string lang);
+
+
+
+
+
+
+
+
+
+
+typedef struct {
+	float	*buf;
+	int		eSize;
+	int		eNum;
+} MMS3D_VERTEX_ARRAY;
+
+typedef enum {
+	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES = 0,
+	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP,
+	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN
+} MMS3D_INDEX_ARRAY_TYPE;
+
+typedef struct {
+	MMS3D_INDEX_ARRAY_TYPE	type;
+	unsigned int			*buf;
+	int						eNum;
+} MMS3D_INDEX_ARRAY;
+
+
+typedef struct {
+	float r;
+	float g;
+	float b;
+	float a;
+} MMS3D_RGBA;
+
+typedef struct {
+	MMS3D_RGBA	emission;
+	MMS3D_RGBA	ambient;
+	MMS3D_RGBA	diffuse;
+	MMS3D_RGBA	specular;
+	float		shininess;
+} MMS3D_MATERIAL_S;
+
+typedef float MMS3D_MATERIAL_A[17];
+
+typedef union {
+	//! structure access
+	MMS3D_MATERIAL_S	s;
+	//! array access
+	MMS3D_MATERIAL_A	a;
+} MMS3D_MATERIAL;
+
+
+
+
+
+
+#define MMS3D_PI 3.1415926535897932384626433832795f
+
+typedef float MMS3DMatrix[4][4];
+
+void multiplyMatrix(MMS3DMatrix result, MMS3DMatrix srcA, MMS3DMatrix srcB);
+void copyMatrix(MMS3DMatrix result, MMS3DMatrix src);
+bool equalMatrix(MMS3DMatrix result, MMS3DMatrix src);
+void loadIdentityMatrix(MMS3DMatrix result);
+void scaleMatrix(MMS3DMatrix result, float sx, float sy, float sz);
+void translateMatrix(MMS3DMatrix result, float tx, float ty, float tz);
+void rotateMatrix(MMS3DMatrix result, float angle, float x, float y, float z);
+void frustumMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+void perspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ);
+void orthoMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+
+
+//! decribes a 3D object which can be rendered
+typedef struct _bei_object {
+	//! parent of object or NULL
+	_bei_object *parent;
+
+	//! index to available vertices, else negative
+	int		vertices;
+
+	//! index to available normals, else negative
+	int		normals;
+
+	//! index to available texture coordinates, else negative
+	int		texcoords;
+
+	//! index to available indices, else negative
+	int		indices;
+
+	//! index to available material, else negative
+	int		material;
+
+	//! index to available texture, else negative
+	int		texture;
+
+	//! object is shown?
+	bool	shown;
+
+	//! cull face?
+	bool	cullface;
+
+	//! matrix of the object
+	MMS3DMatrix 	matrix;
+} MMS3D_OBJECT;
+
+
+bool isMMS3DObjectShown(MMS3D_OBJECT *object);
+
+
+
 
 
 

@@ -36,9 +36,15 @@
 #include <string.h>
 #include "mmsgui/mmsimagemanager.h"
 #include "mmsgui/mmsgifloader.h"
+#include "mmsgui/mmsfbmanager.h"
 
 
 MMSImageManager::MMSImageManager(MMSFBLayer *layer) {
+	if (!layer) {
+		// use default layer
+		layer = mmsfbmanager.getGraphicsLayer();
+	}
+
 	// save layer
 	this->layer = layer;
 

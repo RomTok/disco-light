@@ -30,24 +30,64 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DMATRIXSTACK_H_
+#define MMS3DMATRIXSTACK_H_
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+#include "mmstools/mmstypes.h"
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+class MMS3DMatrixStack {
+private:
+	//! matrix operations
+	typedef enum {
+		MOP_SCALE = 0,
+		MOP_TRANSLATE,
+		MOP_ROTATE
+	} MOP;
 
-#include "mmsgui/mmswidgets.h"
+	//! matrix stack item
+	typedef struct {
+		MOP		mop;
+		float	params[4];
+	} MSI;
 
-#include "mmsgui/3d/mms3dcylinder.h"
-#include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
+	//! size of the stack
+	#define MS_SIZE	50
 
-#include "mmsgui/additional/mmsguicontrols.h"
+	//! stack
+	MSI ms[MS_SIZE];
 
-#endif /*MMSGUI_H_*/
+	//! number of items in the stack
+	int ms_cnt;
+
+	//! base matrix (matrix before stack operations)
+	MMS3DMatrix base_matrix;
+
+	//! is base matrix set?
+	bool base_matrix_set;
+
+	//! result matrix (matrix after stack operations)
+	MMS3DMatrix result_matrix;
+
+	//! is result matrix set?
+	bool result_matrix_set;
+
+
+	bool add(MOP mop, float p0, float p1, float p2, float p3);
+
+public:
+	MMS3DMatrixStack();
+
+	void clear();
+
+	void setBaseMatrix(MMS3DMatrix base_matrix);
+
+	bool getResultMatrix(MMS3DMatrix result_matrix);
+
+	bool scale(float sx, float sy, float sz);
+
+	bool translate(float tx, float ty, float tz);
+
+	bool rotate(float angle, float x, float y, float z);
+};
+
+#endif /* MMS3DMATRIXSTACK_H_ */

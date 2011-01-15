@@ -33,6 +33,7 @@
 #ifndef MMSFBGL_H_
 #define MMSFBGL_H_
 
+#include "mmstools/mmstypes.h"
 #include <stack>
 
 #ifdef __HAVE_OPENGL__
@@ -56,10 +57,6 @@
 #ifdef __HAVE_EGL__
 #include <EGL/egl.h>
 #endif
-
-#define MMSFBGL_PI 3.1415926535897932384626433832795f
-
-typedef GLfloat MMSFBGLMatrix[4][4];
 
 //! Wrapper class for all supported Open GL versions.
 /*!
@@ -142,7 +139,7 @@ class MMSFBGL {
     	bool VSTexCoordLoc_initialized;
 
     	//! current matrix
-    	MMSFBGLMatrix	current_matrix;
+    	MMS3DMatrix	current_matrix;
 
     	//! current color
     	unsigned char	current_color_r;
@@ -152,12 +149,12 @@ class MMSFBGL {
 
     	class MMSFBGLStackMatrix {
     	public:
-    		MMSFBGLMatrix matrix;
-    		MMSFBGLStackMatrix(MMSFBGLMatrix matrix) {
-    			memcpy(this->matrix, matrix, sizeof(MMSFBGLMatrix));
+    		MMS3DMatrix matrix;
+    		MMSFBGLStackMatrix(MMS3DMatrix matrix) {
+    			memcpy(this->matrix, matrix, sizeof(MMS3DMatrix));
     		}
-    		void getMatrix(MMSFBGLMatrix matrix) {
-    			memcpy(matrix, this->matrix, sizeof(MMSFBGLMatrix));
+    		void getMatrix(MMS3DMatrix matrix) {
+    			memcpy(matrix, this->matrix, sizeof(MMS3DMatrix));
     		}
     	};
 
@@ -179,8 +176,6 @@ class MMSFBGL {
     	void deleteShaders();
         bool initShaders();
 
-        bool initBlitting(GLuint src_tex);
-
     public:
         MMSFBGL();
         ~MMSFBGL();
@@ -199,6 +194,8 @@ class MMSFBGL {
         bool bindTexture2D(GLuint tex);
         bool initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh);
         bool initSubTexture2D(GLuint tex, void *buffer, GLenum buffer_format, int sw, int sh, int dx, int dy);
+        bool enableTexture2D(GLuint tex);
+        void disableTexture2D();
 
         bool genFrameBuffer(GLuint *fbo);
         bool deleteFrameBuffer(GLuint fbo);
@@ -220,19 +217,10 @@ class MMSFBGL {
         void disableBlend();
         void enableDepthTest();
         void disableDepthTest();
-        void disableTexture2D();
 		void setDrawingMode();
 		void setTexEnvReplace(GLenum format);
 		void setTexEnvModulate(GLenum format);
-
-        void matrixMultiply(MMSFBGLMatrix result, MMSFBGLMatrix srcA, MMSFBGLMatrix srcB);
-        void matrixLoadIdentity(MMSFBGLMatrix result);
-        void scale(MMSFBGLMatrix result, GLfloat sx, GLfloat sy, GLfloat sz);
-        void translate(MMSFBGLMatrix result, GLfloat tx, GLfloat ty, GLfloat tz);
-        void rotate(MMSFBGLMatrix result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
-        void frustum(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-        void perspective(MMSFBGLMatrix result, float fovy, float aspect, float nearZ, float farZ);
-        void ortho(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+		void disableArrays();
 
         bool useShaderProgram4Drawing();
         bool useShaderProgram4Blitting();
@@ -240,14 +228,15 @@ class MMSFBGL {
         bool useShaderProgram4BlittingFromAlpha();
         bool useShaderProgram4ModulateBlittingFromAlpha();
 
-        bool setCurrentMatrix(MMSFBGLMatrix matrix);
+        bool setCurrentMatrix(MMS3DMatrix matrix);
+        bool getCurrentMatrix(MMS3DMatrix matrix);
         bool scaleCurrentMatrix(GLfloat sx, GLfloat sy, GLfloat sz);
         bool translateCurrentMatrix(GLfloat tx, GLfloat ty, GLfloat tz);
         bool rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 
-        bool getParallelProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-        bool getCentralProjectionMatrix(MMSFBGLMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-        bool getPerspectiveMatrix(MMSFBGLMatrix result, float fovy, float aspect, float nearZ, float farZ);
+        bool getParallelProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getCentralProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getPerspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ);
 
         bool setParallelProjection(float left, float right, float bottom, float top, float nearZ, float farZ);
         bool setCentralProjection(float left, float right, float bottom, float top, float nearZ, float farZ);
@@ -291,6 +280,9 @@ class MMSFBGL {
 										   int dx1, int dy1, int dx2, int dy2);
 
         bool blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int sw, int sh);
+
+        bool drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals, MMS3D_VERTEX_ARRAY *texcoords,
+						  MMS3D_INDEX_ARRAY *indices);
 };
 
 #endif

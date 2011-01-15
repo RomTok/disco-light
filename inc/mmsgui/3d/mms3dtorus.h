@@ -30,24 +30,20 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSGUI_H_
-#define MMSGUI_H_
+#ifndef MMS3DTORUS_H_
+#define MMS3DTORUS_H_
 
-#include "mmsgui/mmsimagemanager.h"
-#include "mmsgui/theme/mmstheme.h"
-#include "mmsgui/theme/mmsthememanager.h"
+#include "mmsgui/3d/mms3dscene.h"
+#include "mmsgui/3d/mms3dmaterial.h"
+#include "mmsgui/3d/mms3dtexture.h"
 
-#include "mmsgui/mmswindows.h"
-#include "mmsgui/mmsdialogmanager.h"
-#include "mmsgui/mmswindowmanager.h"
+class MMS3DTorus : public MMS3DObject {
+private:
 
-#include "mmsgui/mmswidgets.h"
+public:
+	MMS3DTorus(MMS3DScene *scene,
+					int material = MMS3DMaterial::MAT_WHITE, int texture = MMS3DTexture::TEX_NOTSET,
+					int numwraps = 32, int numperwrap = 16, float majorradius = 1, float minorradius = 0.33);
+};
 
-#include "mmsgui/3d/mms3dcylinder.h"
-#include "mmsgui/3d/mms3drectangle.h"
-#include "mmsgui/3d/mms3dsphere.h"
-#include "mmsgui/3d/mms3dtorus.h"
-
-#include "mmsgui/additional/mmsguicontrols.h"
-
-#endif /*MMSGUI_H_*/
+#endif /* MMS3DTORUS_H_ */

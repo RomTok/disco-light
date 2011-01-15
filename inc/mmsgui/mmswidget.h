@@ -65,7 +65,7 @@ typedef enum {
     MMSWIDGETTYPE_TEXTBOX,
     //! A MMSArrowWidget cannot get the focus but can be selected.
     MMSWIDGETTYPE_ARROW,
-    //! A MMSSliderWidget cannot get the focus but can be selected.
+    //! A MMSSliderWidget cannot get the focus per default. You can switch the focusable state to true. So the widget can process e.g. the arrow keys.
     MMSWIDGETTYPE_SLIDER,
     //! A MMSInputWidget can get the focus and therefore can process inputs. You can display and edit one line of text.
     MMSWIDGETTYPE_INPUT,
