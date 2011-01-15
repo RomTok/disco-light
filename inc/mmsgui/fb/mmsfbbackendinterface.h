@@ -37,7 +37,7 @@
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfbgl.h"
 
-#ifdef __HAVE_GL2__
+#ifdef __HAVE_OPENGL__
 
 #define __HAVE_MMS3D__
 
