@@ -189,7 +189,7 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
     // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
-        int width, height, x, y;
+        int width, height, x, y = 0;
         int cursor_x=0, cursor_w = 4;
 
    		// check if we have to (re)load the font
