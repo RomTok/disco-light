@@ -418,7 +418,7 @@ void MMSMenuWidget::recalculateChildren() {
         int menu_yy = this->virtualGeom.y + this->virtualGeom.h - item_h - item_vmargin;
 
         /* calc some help values if the selected item should zoomed in */
-        int selected_item, rows_before, rows_after, selected_col;
+        int selected_item = 0, rows_before = 0, rows_after = 0, selected_col = 0;
        	if (this->zoomsel) {
 			selected_item = getSelected();
 			rows_before = (selected_item / cols) * cols;
@@ -1413,9 +1413,6 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
     int oldy;
     unsigned int cols;
     int fixedpos;
-	unsigned int start_ts;
-	unsigned int end_ts;
-	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -1616,9 +1613,6 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
     int oldy;
     unsigned int cols;
     int fixedpos;
-	unsigned int start_ts;
-	unsigned int end_ts;
-	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -1794,9 +1788,6 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
     int oldy=0;
     unsigned int cols;
     int fixedpos;
-	unsigned int start_ts;
-	unsigned int end_ts;
-	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -2019,9 +2010,6 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
     int oldx;
     unsigned int cols;
     int fixedpos;
-	unsigned int start_ts;
-	unsigned int end_ts;
-	unsigned int fd_sum = 0;
 
     /* check something */
     if (count==0 || children.empty())
@@ -2504,7 +2492,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 	iteminfo.window = NULL;
 	iteminfo.menu = NULL;
     if (item > 0) {
-    	if (item > this->children.size())
+    	if (item > (int)this->children.size())
     		item = -1;
     }
     if (item < 0) {
@@ -2520,7 +2508,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
     	this->children.insert(this->children.begin() + item, widget);
 		this->iteminfos.insert(this->iteminfos.begin() + item, iteminfo);
 
-	    if (item <= sitem) {
+	    if (item <= (int)sitem) {
 	    	// item before the selected item inserted, so have to change the selection
 			setSelected(sitem + 1, false);
 	    }
