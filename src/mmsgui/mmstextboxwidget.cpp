@@ -149,7 +149,7 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
                               unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
                               bool wrap, bool splitwords, MMSALIGNMENT alignment) {
     int fontHeight, blankWidth;
-    unsigned int x, y;
+    unsigned int x = 0, y = 0;
 
     // init
     *realWidth = startWidth;
