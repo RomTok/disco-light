@@ -5674,6 +5674,31 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 
 
+
+class MMSFBDevPanDisplay : public MMSThreadServer {
+private:
+	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
+		if (in_data_len >> 8)
+			mmsfb->mmsfbdev->waitForVSync();
+		mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff);
+	}
+
+public:
+	MMSFBDevPanDisplay(int queue_size = 1000) : MMSThreadServer(queue_size, "MMSFBDevPanDisplay", false) {
+	}
+
+	void panDisplay(int buffer_id, bool vsync) {
+		if (vsync)
+			trigger(NULL, buffer_id + 0x100);
+		else
+			trigger(NULL, buffer_id);
+	}
+};
+
+
+MMSFBDevPanDisplay *pd = NULL;
+
+
 bool MMSFBSurface::flip(MMSFBRegion *region) {
 
     // check if initialized
@@ -5839,12 +5864,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 	else {
 		// flip my own surfaces
 		MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
-#ifdef __HAVE_FBDEV__
-		if ((sb->numbuffers > 1) && ((!sb->mmsfbdev_surface) || (sb->mmsfbdev_surface != this))) {
-			// backbuffer in video memory, so we do not have to flip here
-#else
 		if (sb->numbuffers > 1) {
-#endif
 			// flip is only needed, if we have at least one backbuffer
 			if (!this->is_sub_surface) {
 				// not a subsurface
@@ -5856,6 +5876,20 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					sb->currbuffer_write++;
 					if (sb->currbuffer_write >= sb->numbuffers)
 						sb->currbuffer_write = 0;
+
+					if (sb->mmsfbdev_surface == this) {
+						if (sb->numbuffers > 2) {
+							if (!pd) {
+								pd = new MMSFBDevPanDisplay();
+								pd->start();
+							}
+							pd->panDisplay(sb->currbuffer_read, true);
+						}
+						else {
+							mmsfb->mmsfbdev->waitForVSync();
+							mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
+						}
+					}
 				}
 				else {
 					MMSFBRectangle src_rect;
@@ -5874,6 +5908,20 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						sb->currbuffer_write++;
 						if (sb->currbuffer_write >= sb->numbuffers)
 							sb->currbuffer_write = 0;
+
+						if (sb->mmsfbdev_surface == this) {
+							if (sb->numbuffers > 2) {
+								if (!pd) {
+									pd = new MMSFBDevPanDisplay();
+									pd->start();
+								}
+								pd->panDisplay(sb->currbuffer_read, true);
+							}
+							else {
+								mmsfb->mmsfbdev->waitForVSync();
+								mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
+							}
+						}
 					}
 					else {
 						// blit region from write to read buffer of the same MMSFBSurface
@@ -5928,20 +5976,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 #ifdef __HAVE_FBDEV__
 		if (sb->mmsfbdev_surface) {
-			if (sb->mmsfbdev_surface == this) {
-				// this surface is the front and backbuffer in video memory of the layer
-				// flip my buffers without blitting
-				sb->currbuffer_read++;
-				if (sb->currbuffer_read >= sb->numbuffers)
-					sb->currbuffer_read = 0;
-				sb->currbuffer_write++;
-				if (sb->currbuffer_write >= sb->numbuffers)
-					sb->currbuffer_write = 0;
-
-				// do hardware panning
-				mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read, sb->buffers[0].ptr);
-			}
-			else {
+			if (sb->mmsfbdev_surface != this) {
 				// this surface is the backbuffer in system memory of the layer
 
 				// sync

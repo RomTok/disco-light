@@ -34,13 +34,20 @@
 #include <cstdlib>
 #include <cstdio>
 
-MMSThreadServer::MMSThreadServer(int queue_size, string identity) : MMSThread(identity) {
+MMSThreadServer::MMSThreadServer(int queue_size, string identity, bool blocking) : MMSThread(identity) {
 	// allocate and setup the queue
-	this->queue_size = queue_size;
+	if (queue_size < 100)
+		this->queue_size = 100;
+	else
+		this->queue_size = queue_size;
 	this->queue = (MMSTS_QUEUE_ITEM**)malloc(this->queue_size * sizeof(MMSTS_QUEUE_ITEM*));
 	this->queue_rp = 0;
 	this->queue_wp = 0;
 	this->buffer_full = false;
+
+	// in non-blocking mode the caller of trigger() will get control directly after triggering
+	// and do not wait until server has finished processData()
+	this->blocking = blocking;
 
 	// init the mutex and cond variable for the server thread
 	pthread_mutex_init(&this->mutex, NULL);
@@ -76,13 +83,21 @@ void MMSThreadServer::threadMain() {
 				this->buffer_full = false;
 				if (!item) continue;
 
-				// now calling the worker routine for data processing
-				processData(item->in_data, item->in_data_len, item->out_data, item->out_data_len);
+				if (this->blocking) {
+					// blocking mode, now calling the worker routine for data processing
+					processData(item->in_data, item->in_data_len, item->out_data, item->out_data_len);
+				}
 
 				// handshake with the client thread
 				pthread_mutex_lock(&item->mutex);
 				pthread_cond_signal(&item->cond);
 				pthread_mutex_unlock(&item->mutex);
+
+				if (!this->blocking) {
+					// non-blocking mode, now calling the worker routine for data processing
+					// processing data in parallel to the caller thread of trigger()
+					processData(item->in_data, item->in_data_len, item->out_data, item->out_data_len);
+				}
 			}
 		}
 	}
@@ -103,7 +118,6 @@ bool MMSThreadServer::trigger(void *in_data, int in_data_len, void **out_data, i
 
 	// lock the server mutex and push the new item at the end of the queue
 	pthread_mutex_lock(&this->mutex);
-	int saved_rp = this->queue_rp;
 	this->queue[this->queue_wp] = &item;
 	this->queue_wp++;
 	if (this->queue_wp >= this->queue_size)

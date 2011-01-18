@@ -81,12 +81,23 @@ class MMSThreadServer : public MMSThread {
 		//! mutex for conditional handling (server side)
 		pthread_mutex_t	mutex;
 
+		//! in non-blocking mode the caller of trigger() will get control directly after triggering
+		//! and do not wait until server has finished processData()
+		bool blocking;
+
 		//! server thread
 		void threadMain();
 
 	public:
 		//! constructor
-		MMSThreadServer(int queue_size = 1000, string identity = "MMSThreadServer");
+        /*!
+        \param queue_size	maximum items in the queue
+        \param identity		identity of the server thread used for logging etc.
+        \param blocking		blocking or non-blocking mode, see trigger()
+        \note In non-blocking mode the caller of trigger() will get control directly after triggering
+              and do not wait until server has finished processData().
+        */
+		MMSThreadServer(int queue_size = 1000, string identity = "MMSThreadServer", bool blocking = true);
 
 		//! destructor
 		~MMSThreadServer();
@@ -105,8 +116,11 @@ class MMSThreadServer : public MMSThread {
 		//! Trigger a new event to the server.
         /*!
         This method sends data (in_data) from the caller (client) thread to the
-        server thread. Afterwards the caller of this method will be blocked and is
-        waiting for the answer from the server.
+        server thread.
+        If MMSThreadServer runs in blocking mode (see constructor), the caller
+        of trigger() will be blocked and is waiting for the answer from the server.
+        If MMSThreadServer runs in non-blocking mode, the caller of trigger() will
+        get control immediately after triggering the event to the server thread.
         \param in_data		pointer to data to put to the server
         \param in_data_len	length of in_data
         \param out_data		address of a pointer to receive data from the server
@@ -115,6 +129,7 @@ class MMSThreadServer : public MMSThread {
         \note If server's queue is full, the caller is blocked until enough space in the queue.
         \note The handling of out_data and out_data_len is dependend on the implementation
               of the processData() method which is done in classes derived from MMSThreadServer.
+        \note If MMSThreadServer runs in non-blocking mode, out_data and out_data_len are not supported.
         */
 		bool trigger(void *in_data, int in_data_len, void **out_data = NULL, int *out_data_len = NULL);
 };

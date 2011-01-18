@@ -154,6 +154,8 @@ class MMSFB {
     friend class MMSFBFont;
     friend class MMSInputX11Handler;
     friend class MMSInputLISHandler;
+
+    friend class MMSFBDevPanDisplay;
 };
 
 /* access to global mmsfb */
