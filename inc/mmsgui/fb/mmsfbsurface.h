@@ -34,6 +34,7 @@
 #define MMSFBSURFACE_H_
 
 #include "mmstools/mmslogger.h"
+#include "mmstools/mmsthreadserver.h"
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
 #include "mmsgui/fb/mmsfbconv.h"
@@ -194,6 +195,11 @@ class MMSFBSurface {
 		class MMSFBPerf *mmsfbperf;
 #endif
 
+#ifdef __HAVE_FBDEV__
+	    //! separate thread used for display panning
+	    MMSThreadServer		*fbdev_ts;
+#endif
+
 		//! which system has allocated the memory?
 		MMSFBSurfaceAllocatedBy	allocated_by;
 
@@ -306,6 +312,10 @@ class MMSFBSurface {
 
         void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool pthread_lock);
         void unlock(bool pthread_unlock);
+
+
+        void processSwapDisplay(void *in_data, int in_data_len, void **out_data, int *out_data_len);
+        void swapDisplay(bool vsync);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);

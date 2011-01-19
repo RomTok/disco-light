@@ -103,6 +103,10 @@ void MMSThreadServer::threadMain() {
 	}
 }
 
+void MMSThreadServer::processData(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
+	this->onProcessData.emit(in_data, in_data_len, out_data, out_data_len);
+}
+
 bool MMSThreadServer::trigger(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
 	// create new queue item and put data to it
 	MMSTS_QUEUE_ITEM item;

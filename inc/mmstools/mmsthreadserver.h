@@ -110,8 +110,16 @@ class MMSThreadServer : public MMSThread {
         */
 		bool start();
 
-		//! will be called in the server loop
-		virtual void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len) = 0;
+		//! Process a new event from the client.
+		/*
+		This method will be called in the server loop.
+		A derived class should overwrite this method with own code which should run in the server context.
+        \param in_data		pointer to data to put to the server
+        \param in_data_len	length of in_data
+        \param out_data		address of a pointer to receive data from the server
+        \param out_data_len	address of a integer to get the length of out_data
+		*/
+		virtual void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len);
 
 		//! Trigger a new event to the server.
         /*!
@@ -132,6 +140,37 @@ class MMSThreadServer : public MMSThread {
         \note If MMSThreadServer runs in non-blocking mode, out_data and out_data_len are not supported.
         */
 		bool trigger(void *in_data, int in_data_len, void **out_data = NULL, int *out_data_len = NULL);
+
+        //! Set one or more callbacks for the onProcessData event.
+        /*!
+        The connected callbacks will be called from MMSThreadServer::processData() and will be run
+        within the context of server thread.
+
+        A callback method must be defined like this:
+
+        	void myclass::mycallbackmethod(void *in_data, int in_data_len, void **out_data, int *out_data_len);
+
+        	\param in_data		pointer to data to put to the server
+       		\param in_data_len	length of in_data
+        	\param out_data		address of a pointer to receive data from the server
+       		\param out_data_len	address of a integer to get the length of out_data
+
+        To connect your callback to onProcessData do this:
+
+            sigc::connection connection;
+            connection = mythreadserver->onProcessData.connect(sigc::mem_fun(myobject,&myclass::mycallbackmethod));
+
+        To disconnect your callback do this:
+
+            connection.disconnect();
+
+        Please note:
+
+            You HAVE TO disconnect myobject from onProcessData BEFORE myobject will be deleted!!!
+            Else an abnormal program termination can occur.
+            You HAVE TO call the disconnect() method of sigc::connection explicitly. The destructor will NOT do this!!!
+        */
+        sigc::signal<void, void *, int, void **, int *> onProcessData;
 };
 
 #endif /*MMSTHREADSERVER_H_*/

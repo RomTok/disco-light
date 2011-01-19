@@ -583,6 +583,10 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 	this->mmsfbperf = new MMSFBPerf();
 #endif
 
+#ifdef __HAVE_FBDEV__
+	this->fbdev_ts = NULL;
+#endif
+
 	this->allocated_by = allocated_by;
 	this->initialized = true;
 
@@ -5673,30 +5677,54 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 }
 
 
+void MMSFBSurface::processSwapDisplay(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
+	if (in_data_len >> 8) {
+		// vsync
+		mmsfb->mmsfbdev->waitForVSync();
+	}
 
+	// swap display
+	mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff);
+}
 
-class MMSFBDevPanDisplay : public MMSThreadServer {
-private:
-	void processData(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
-		if (in_data_len >> 8)
+void MMSFBSurface::swapDisplay(bool vsync) {
+#ifdef __HAVE_FBDEV__
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+
+	if (sb->mmsfbdev_surface != this)
+		return;
+
+	// surface is the fb layer surface
+	if (sb->numbuffers > 2) {
+		// more than two buffers (e.g. TRIPLE buffering), so we should use non-blocked panning
+		if (!this->fbdev_ts) {
+			// init thread server for display panning
+			this->fbdev_ts = new MMSThreadServer(100, "MMSThreadServer4MMSFBSurface", false);
+			this->fbdev_ts->onProcessData.connect(sigc::mem_fun(this,&MMSFBSurface::processSwapDisplay));
+			this->fbdev_ts->start();
+		}
+
+		// hard disable vsync
+		// reason: difference between current and next buffer is minimal and both buffers are not the next write buffer
+		// TODO: this can be hw dependent, then we have to change the code
+		vsync = false;
+
+		// trigger panning and return immediately
+		this->fbdev_ts->trigger(NULL, sb->currbuffer_read | ((vsync)?0x100:0));
+	}
+	else
+	if (sb->numbuffers == 2) {
+		// two buffers (BACKVIDEO)
+		if (vsync) {
+			// vsync
 			mmsfb->mmsfbdev->waitForVSync();
-		mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff);
+		}
+
+		// swap display
+		mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
 	}
-
-public:
-	MMSFBDevPanDisplay(int queue_size = 1000) : MMSThreadServer(queue_size, "MMSFBDevPanDisplay", false) {
-	}
-
-	void panDisplay(int buffer_id, bool vsync) {
-		if (vsync)
-			trigger(NULL, buffer_id + 0x100);
-		else
-			trigger(NULL, buffer_id);
-	}
-};
-
-
-MMSFBDevPanDisplay *pd = NULL;
+#endif
+}
 
 
 bool MMSFBSurface::flip(MMSFBRegion *region) {
@@ -5878,17 +5906,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						sb->currbuffer_write = 0;
 
 					if (sb->mmsfbdev_surface == this) {
-						if (sb->numbuffers > 2) {
-							if (!pd) {
-								pd = new MMSFBDevPanDisplay();
-								pd->start();
-							}
-							pd->panDisplay(sb->currbuffer_read, true);
-						}
-						else {
-							mmsfb->mmsfbdev->waitForVSync();
-							mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
-						}
+						// surface is the fb layer surface, so we have to swap the display
+						swapDisplay(true);
 					}
 				}
 				else {
@@ -5910,17 +5929,8 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 							sb->currbuffer_write = 0;
 
 						if (sb->mmsfbdev_surface == this) {
-							if (sb->numbuffers > 2) {
-								if (!pd) {
-									pd = new MMSFBDevPanDisplay();
-									pd->start();
-								}
-								pd->panDisplay(sb->currbuffer_read, true);
-							}
-							else {
-								mmsfb->mmsfbdev->waitForVSync();
-								mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
-							}
+							// surface is the fb layer surface, so we have to swap the display
+							swapDisplay(true);
 						}
 					}
 					else {
@@ -5977,7 +5987,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #ifdef __HAVE_FBDEV__
 		if (sb->mmsfbdev_surface) {
 			if (sb->mmsfbdev_surface != this) {
-				// this surface is the backbuffer in system memory of the layer
+				// this surface is the backbuffer in system memory of the layer (BACKSYSTEM buffer mode)
 
 				// sync
 				mmsfb->mmsfbdev->waitForVSync();
