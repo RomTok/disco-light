@@ -5678,13 +5678,15 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 
 void MMSFBSurface::processSwapDisplay(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
+	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
+
 	if (in_data_len >> 8) {
 		// vsync
 		mmsfb->mmsfbdev->waitForVSync();
 	}
 
 	// swap display
-	mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff);
+	mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff, sb->buffers[0].ptr);
 }
 
 void MMSFBSurface::swapDisplay(bool vsync) {
@@ -5721,7 +5723,7 @@ void MMSFBSurface::swapDisplay(bool vsync) {
 		}
 
 		// swap display
-		mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read);
+		mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read, sb->buffers[0].ptr);
 	}
 #endif
 }
@@ -5993,7 +5995,19 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				mmsfb->mmsfbdev->waitForVSync();
 
 				// put the image to the framebuffer
-				sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
+				if (!region) {
+					// full
+					sb->mmsfbdev_surface->blit(this, NULL, 0, 0);
+				}
+				else {
+					// a few lines
+					MMSFBRectangle rect;
+					rect.x = 0;
+					rect.y = region->y1;
+					rect.w = this->config.w;
+					rect.h = region->y2 - region->y1 + 1;
+					sb->mmsfbdev_surface->blit(this, &rect, rect.x, rect.y);
+				}
 			}
 		}
 		else {
