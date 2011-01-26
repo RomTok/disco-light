@@ -53,6 +53,7 @@ class MMSFBDevOmap : public MMSFBDev {
     	MMSFBDevOmapLayer	osd1;
     	MMSFBDevOmapLayer	*primary;
 
+    	bool openDevice(int id);
 
         bool onGenFBPixelFormatDev(MMSFBSurfacePixelFormat pf, unsigned int *nonstd_format, MMSFBPixelDef *pixeldef);
         bool onDisableDev(int fd, string device_file);
