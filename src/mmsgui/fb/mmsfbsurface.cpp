@@ -5678,6 +5678,7 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 
 void MMSFBSurface::processSwapDisplay(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
+#ifdef __HAVE_FBDEV__
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 
 	if (in_data_len >> 8) {
@@ -5687,6 +5688,7 @@ void MMSFBSurface::processSwapDisplay(void *in_data, int in_data_len, void **out
 
 	// swap display
 	mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff, sb->buffers[0].ptr);
+#endif
 }
 
 void MMSFBSurface::swapDisplay(bool vsync) {
@@ -5907,10 +5909,12 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					if (sb->currbuffer_write >= sb->numbuffers)
 						sb->currbuffer_write = 0;
 
+#ifdef __HAVE_FBDEV__
 					if (sb->mmsfbdev_surface == this) {
 						// surface is the fb layer surface, so we have to swap the display
 						swapDisplay(true);
 					}
+#endif
 				}
 				else {
 					MMSFBRectangle src_rect;
@@ -5930,10 +5934,12 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						if (sb->currbuffer_write >= sb->numbuffers)
 							sb->currbuffer_write = 0;
 
+#ifdef __HAVE_FBDEV__
 						if (sb->mmsfbdev_surface == this) {
 							// surface is the fb layer surface, so we have to swap the display
 							swapDisplay(true);
 						}
+#endif
 					}
 					else {
 						// blit region from write to read buffer of the same MMSFBSurface
