@@ -188,15 +188,23 @@ typedef unsigned int MMSFBLockFlags;
 string MMSFB_ErrorString(const int rc, const string msg);
 void MMSFB_SetError(const int rc, const string msg);
 
+typedef struct {
+	int bits;
+	int red_length;
+	int red_offset;
+	int green_length;
+	int green_offset;
+	int blue_length;
+	int blue_offset;
+	int transp_length;
+	int transp_offset;
+} MMSFBPixelDef;
+
 // pixelformat helpers
 bool isAlphaPixelFormat(MMSFBSurfacePixelFormat pf);
 bool isIndexedPixelFormat(MMSFBSurfacePixelFormat pf);
 bool isRGBPixelFormat(MMSFBSurfacePixelFormat pf);
-int getBitsPerPixel(MMSFBSurfacePixelFormat pf,
-					int *red_length = NULL, int *red_offset = NULL,
-					int *green_length = NULL, int *green_offset = NULL,
-					int *blue_length = NULL, int *blue_offset = NULL,
-					int *transp_length = NULL, int *transp_offset = NULL);
+void getBitsPerPixel(MMSFBSurfacePixelFormat pf, MMSFBPixelDef *pixeldef);
 
 #ifdef  __HAVE_DIRECTFB__
 // dfb specific routines

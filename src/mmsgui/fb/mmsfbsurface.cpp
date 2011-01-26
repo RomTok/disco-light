@@ -7346,7 +7346,9 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 			break;
 		default: {
 				// all other formats
-				int bits_pp = getBitsPerPixel(this->config.surface_buffer->pixelformat);
+				MMSFBPixelDef pixeldef;
+				getBitsPerPixel(this->config.surface_buffer->pixelformat, &pixeldef);
+				int bits_pp = pixeldef.bits;
 				int bytes_pp = bits_pp / 8;
 				unsigned char *buf = sbuf + x * bytes_pp + y * pitch;
 				D2FCB_ADDSTR1("\n* byte-by-byte ****************************************************************");
