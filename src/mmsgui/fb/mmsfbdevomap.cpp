@@ -505,13 +505,15 @@ bool MMSFBDevOmap::onDisableDev(int fd, string device_file) {
 }
 
 bool MMSFBDevOmap::onActivateDev(int fd, string device_file, struct fb_var_screeninfo *var_screeninfo,
-							     int width, int height, MMSFBSurfacePixelFormat pixelformat) {
-	if (ioctl(fd, FBIOPUT_VSCREENINFO, var_screeninfo) < 0) {
-		printf("MMSFBDevOmap: could not switch to mode %dx%d, pixelformat %s (%d bits, nonstd %d), %s\n",
-				width, height, getMMSFBPixelFormatString(pixelformat).c_str(),
-				var_screeninfo->bits_per_pixel, var_screeninfo->nonstd,
-				device_file.c_str());
-		return false;
+							     int width, int height, MMSFBSurfacePixelFormat pixelformat, bool switch_mode) {
+	if (switch_mode) {
+		if (ioctl(fd, FBIOPUT_VSCREENINFO, var_screeninfo) < 0) {
+			printf("MMSFBDevOmap: could not switch to mode %dx%d, pixelformat %s (%d bits, nonstd %d), %s\n",
+					width, height, getMMSFBPixelFormatString(pixelformat).c_str(),
+					var_screeninfo->bits_per_pixel, var_screeninfo->nonstd,
+					device_file.c_str());
+			return false;
+		}
 	}
 
 	// enable alpha blending

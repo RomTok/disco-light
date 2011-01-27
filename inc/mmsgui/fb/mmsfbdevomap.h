@@ -58,7 +58,7 @@ class MMSFBDevOmap : public MMSFBDev {
         bool onGenFBPixelFormatDev(MMSFBSurfacePixelFormat pf, unsigned int *nonstd_format, MMSFBPixelDef *pixeldef);
         bool onDisableDev(int fd, string device_file);
         bool onActivateDev(int fd, string device_file, struct fb_var_screeninfo *var_screeninfo,
-						   int width, int height, MMSFBSurfacePixelFormat pixelformat);
+						   int width, int height, MMSFBSurfacePixelFormat pixelformat, bool switch_mode);
 
     public:
         MMSFBDevOmap();

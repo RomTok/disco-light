@@ -117,7 +117,7 @@ class MMSFBDev {
         void genFBPixelFormat(MMSFBSurfacePixelFormat pf, unsigned int *nonstd_format, MMSFBPixelDef *pixeldef);
         void disable(int fd, string device_file);
         bool activate(int fd, string device_file, struct fb_var_screeninfo *var_screeninfo,
-        			  int width, int height, MMSFBSurfacePixelFormat pixelformat);
+        			  int width, int height, MMSFBSurfacePixelFormat pixelformat, bool switch_mode = true);
 
     public:
         MMSFBDev();
@@ -148,7 +148,7 @@ class MMSFBDev {
 
         sigc::signal<bool, MMSFBSurfacePixelFormat, unsigned int*, MMSFBPixelDef*>::accumulated<neg_bool_accumulator> onGenFBPixelFormat;
         sigc::signal<bool, int, string>::accumulated<neg_bool_accumulator> onDisable;
-        sigc::signal<bool, int, string, fb_var_screeninfo *, int, int, MMSFBSurfacePixelFormat>::accumulated<neg_bool_accumulator> onActivate;
+        sigc::signal<bool, int, string, fb_var_screeninfo *, int, int, MMSFBSurfacePixelFormat, bool>::accumulated<neg_bool_accumulator> onActivate;
 
     private:
         typedef struct {
