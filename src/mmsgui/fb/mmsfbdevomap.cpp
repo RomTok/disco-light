@@ -264,25 +264,6 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 			// save the buffers
 			memcpy(this->layers[layer_id].buffers, this->osd0.fbdev->layers[0].buffers, sizeof(this->osd0.fbdev->layers[0].buffers));
 
-			// clear layer
-			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			switch (pixelformat) {
-			case MMSFB_PF_ARGB:
-				mmsfb_fillrectangle_argb(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				break;
-			case MMSFB_PF_RGB32:
-				mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				break;
-			case MMSFB_PF_RGB16:
-				mmsfb_fillrectangle_rgb16(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				break;
-			default:
-				break;
-			}
-
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
 
@@ -315,17 +296,6 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 			// save the buffers
 			memcpy(this->layers[layer_id].buffers, this->vid.fbdev->layers[0].buffers, sizeof(this->vid.fbdev->layers[0].buffers));
-
-			// clear layer
-			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			switch (pixelformat) {
-				case MMSFB_PF_I420:
-					mmsfb_fillrectangle_i420(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-					break;
-				default:
-					break;
-			}
 
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
@@ -360,21 +330,6 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 
 			// save the buffers
 			memcpy(this->layers[layer_id].buffers, this->osd1.fbdev->layers[0].buffers, sizeof(this->osd1.fbdev->layers[0].buffers));
-
-			// clear layer
-			MMSFBColor color(0x00, 0x00, 0x00, 0xff);
-			switch (pixelformat) {
-			case MMSFB_PF_ARGB:
-				mmsfb_fillrectangle_argb(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-										 0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				break;
-			case MMSFB_PF_RGB32:
-				mmsfb_fillrectangle_rgb32(&(this->layers[layer_id].buffers[0]), this->layers[layer_id].height,
-										  0, 0, this->layers[layer_id].width, this->layers[layer_id].height, color);
-				break;
-			default:
-				break;
-			}
 
 			// layer is initialized
 			this->layers[layer_id].isinitialized = true;
