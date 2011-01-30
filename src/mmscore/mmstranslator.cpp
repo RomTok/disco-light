@@ -104,7 +104,7 @@ void MMSTranslator::loadTranslations() {
 		processFile((*it2)->name);
 	}
 
-	this->sourceIdx = this->transIdx.find(this->sourcelang)->second;
+//	this->sourceIdx = this->transIdx.find(this->sourcelang)->second;
 	this->targetIdx = this->transIdx.find(this->targetlang)->second;
 }
 
