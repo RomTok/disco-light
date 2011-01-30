@@ -88,10 +88,24 @@ class MMSImageWidget : public MMSWidget {
 
         class MMSImageWidgetThread  *imageThread;
 
+        //! current foreground values set?
+        bool			current_fgset;
+
+        //! current foreground image
+        MMSFBSurface	*current_fgimage;
+
+        //! current foreground image2
+        MMSFBSurface	*current_fgimage2;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         bool init();
         bool release();
+
+        void getForeground(MMSFBSurface	**image, MMSFBSurface **image2);
+        bool enableRefresh(bool enable = true);
+        bool checkRefreshStatus();
+
         bool draw(bool *backgroundFilled = NULL);
 
         void loadMyImage(string path, string filename, MMSFBSurface **surface, MMSIM_DESC_SUF **surfdesc,

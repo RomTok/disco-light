@@ -89,6 +89,12 @@ class MMSTextBoxWidget : public MMSWidget {
         //! used to load text from a file
         MMSFile *file;
 
+        //! current foreground values set?
+        bool			current_fgset;
+
+        //! current foreground color
+        MMSFBColor		current_fgcolor;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void initLanguage(MMSTextBoxWidget *widget = NULL);
@@ -103,6 +109,11 @@ class MMSTextBoxWidget : public MMSWidget {
 
         bool init();
         bool release();
+
+        void getForeground(MMSFBColor *color);
+        bool enableRefresh(bool enable = true);
+        bool checkRefreshStatus();
+
         bool draw(bool *backgroundFilled = NULL);
 
 		//! Internal method: Inform the widget, that the language has changed.

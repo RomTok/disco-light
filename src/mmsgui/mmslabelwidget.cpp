@@ -69,6 +69,7 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->frame_delay_set = false;
     this->labelThread = NULL;
     this->translated = false;
+	this->current_fgset = false;
 
     return MMSWidget::create(root, true, false, false, true, false, false, false);
 }
@@ -174,6 +175,46 @@ bool MMSLabelWidget::release() {
     return true;
 }
 
+void MMSLabelWidget::getForeground(MMSFBColor *color) {
+	color->a = 0;
+
+	if (isSelected()) {
+        *color = getSelColor();
+	}
+    else {
+        *color = getColor();
+    }
+}
+
+bool MMSLabelWidget::enableRefresh(bool enable) {
+	if (!MMSWidget::enableRefresh(enable)) return false;
+
+	// mark foreground as not set
+	this->current_fgset = false;
+
+	return true;
+}
+
+bool MMSLabelWidget::checkRefreshStatus() {
+	if (MMSWidget::checkRefreshStatus()) return true;
+
+	if (this->current_fgset) {
+		// current foreground initialized
+		MMSFBColor color;
+		getForeground(&color);
+
+		if (color == this->current_fgcolor) {
+			// foreground color not changed, so we do not enable refreshing
+			return false;
+		}
+	}
+
+	// (re-)enable refreshing
+	enableRefresh();
+
+	return true;
+}
+
 bool MMSLabelWidget::draw(bool *backgroundFilled) {
     int width, height, x, y;
     bool myBackgroundFilled = false;
@@ -265,11 +306,11 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
                     break;
             }
 
+            // get color
             MMSFBColor color;
-            if (isSelected())
-                color = getSelColor();
-            else
-                color = getColor();
+            getForeground(&color);
+            this->current_fgcolor   = color;
+            this->current_fgset     = true;
 
             if (color.a) {
                 // prepare for drawing
@@ -402,6 +443,10 @@ void MMSLabelWidget::setFontPath(string fontpath, bool load, bool refresh) {
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -412,6 +457,10 @@ void MMSLabelWidget::setFontName(MMSLanguage lang, string fontname, bool load, b
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -426,6 +475,10 @@ void MMSLabelWidget::setFontSize(unsigned int fontsize, bool load, bool refresh)
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -438,6 +491,10 @@ void MMSLabelWidget::setFont(MMSLanguage lang, string fontpath, string fontname,
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -448,25 +505,41 @@ void MMSLabelWidget::setFont(string fontpath, string fontname, unsigned int font
 
 void MMSLabelWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     myLabelWidgetClass.setAlignment(alignment);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSLabelWidget::setColor(MMSFBColor color, bool refresh) {
     myLabelWidgetClass.setColor(color);
-    if (refresh)
+
+	// refresh required?
+	enableRefresh((color != this->current_fgcolor));
+
+	if (refresh)
         this->refresh();
 }
 
 void MMSLabelWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myLabelWidgetClass.setSelColor(selcolor);
-    if (refresh)
+
+	// refresh required?
+	enableRefresh((selcolor != this->current_fgcolor));
+
+	if (refresh)
         this->refresh();
 }
 
 void MMSLabelWidget::setText(string text, bool refresh) {
     myLabelWidgetClass.setText(text);
     this->translated = false;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -492,7 +565,11 @@ void MMSLabelWidget::setSlidable(bool slidable) {
         if (labelThread)
             labelThread->stop();
     	this->slide_offset = 0;
-    	this->refresh();
+
+        // refresh is required
+        enableRefresh();
+
+        this->refresh();
     }
 }
 
@@ -505,6 +582,10 @@ void MMSLabelWidget::setSlideSpeed(unsigned char slidespeed) {
 void MMSLabelWidget::setTranslate(bool translate, bool refresh) {
     myLabelWidgetClass.setTranslate(translate);
     this->translated = false;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -513,12 +594,20 @@ void MMSLabelWidget::setTranslate(bool translate, bool refresh) {
 
 void MMSLabelWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
     myLabelWidgetClass.setShadowColor(position, color);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSLabelWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
     myLabelWidgetClass.setSelShadowColor(position, selcolor);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }

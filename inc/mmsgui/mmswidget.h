@@ -253,6 +253,21 @@ class MMSWidget {
         bool has_own_surface;
 
 
+        //! if skip refresh is true, refresh() method will not work
+        bool			skip_refresh;
+
+        //! current background values set?
+        bool			current_bgset;
+
+        //! current background color
+        MMSFBColor		current_bgcolor;
+
+        //! current background image
+        MMSFBSurface	*current_bgimage;
+
+
+
+
         bool loadArrowWidgets();
         virtual void switchArrowWidgets();
 
@@ -261,6 +276,18 @@ class MMSWidget {
 
         virtual bool init();
         virtual bool release();
+
+
+        //! Internal method: get the color or/and image of widget's background dependent on the current state
+        void getBackground(MMSFBColor *color, MMSFBSurface **image);
+
+        //! Internal method: (re-)enable refresh status
+        virtual bool enableRefresh(bool enable = true);
+
+        //! Internal method: check drawn background against new background and (re-)enable refresh status if needed
+        virtual bool checkRefreshStatus();
+
+
         virtual bool draw(bool *backgroundFilled = NULL);
         void drawMyBorder();
         bool drawDebug();

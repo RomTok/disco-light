@@ -1939,7 +1939,6 @@ bool MMSWindow::release() {
 
 
 void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear) {
-
 	// init window (e.g. load images, fonts, ...)
 	init();
 
@@ -4844,10 +4843,15 @@ void MMSWindow::setWindowManager(IMMSWindowManager *wm) {
     }
 }
 
-bool MMSWindow::isShown(bool checkparents) {
+bool MMSWindow::isShown(bool checkparents, bool checkopacity) {
 	if (!this->shown) return false;
 	if (this->buffered_shown) return false;
-	if ((checkparents)&&(this->parent)) return this->parent->isShown(true);
+	if (checkopacity) {
+		unsigned int opacity;
+		this->getOpacity(opacity);
+		if (!opacity) return false;
+	}
+	if ((checkparents)&&(this->parent)) return this->parent->isShown(true, checkopacity);
 	return true;
 }
 

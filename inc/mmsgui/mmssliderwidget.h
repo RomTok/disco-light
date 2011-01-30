@@ -71,10 +71,29 @@ class MMSSliderWidget : public MMSWidget {
 
         bool	vertical;
 
+        //! current foreground values set?
+        bool			current_fgset;
+
+        //! current foreground image
+        MMSFBSurface	*current_fgimage;
+
+        //! current foreground bar image
+        MMSFBSurface	*current_fgbarimage;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         bool init();
         bool release();
+
+        void getImage(MMSFBSurface **suf);
+        void getBarImage(MMSFBSurface **suf);
+        void calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical,
+					 MMSFBSurface *barsuf = NULL, MMSFBRectangle *src_barGeom = NULL, MMSFBRectangle *dst_barGeom = NULL);
+
+        void getForeground(MMSFBSurface	**image, MMSFBSurface **barimage);
+        bool enableRefresh(bool enable = true);
+        bool checkRefreshStatus();
+
         bool draw(bool *backgroundFilled = NULL);
         void switchArrowWidgets();
 
@@ -83,11 +102,6 @@ class MMSSliderWidget : public MMSWidget {
         ~MMSSliderWidget();
 
         MMSWidget *copyWidget();
-
-        void getImage(MMSFBSurface **suf);
-        void getBarImage(MMSFBSurface **suf);
-        void calcPos(MMSFBSurface *suf, MMSFBRectangle *surfaceGeom, bool *vertical,
-					 MMSFBSurface *barsuf = NULL, MMSFBRectangle *src_barGeom = NULL, MMSFBRectangle *dst_barGeom = NULL);
 
         bool scrollDown(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);
         bool scrollUp(unsigned int count = 1, bool refresh = true, bool test = false, bool leave_selection = false);

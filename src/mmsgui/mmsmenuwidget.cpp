@@ -176,25 +176,25 @@ bool MMSMenuWidget::draw(bool *backgroundFilled) {
     else
         backgroundFilled = &myBackgroundFilled;
 
-    /* lock */
+    // lock
     this->surface->lock();
 
-    /* draw widget basics */
+    // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
-        /* update window surface with an area of surface */
+        // update window surface with an area of surface
         updateWindowSurfaceWithSurface(!*backgroundFilled);
     }
 
-    /* unlock */
+    // unlock
     this->surface->unlock();
 
-    /* draw widgets debug frame */
+    // draw widgets debug frame
     return MMSWidget::drawDebug();
 }
 
 
 void MMSMenuWidget::add(MMSWidget *widget) {
-    /* no widget to be added here, see newItem() */
+    // no widget to be added here, see newItem()
 }
 
 
@@ -1243,9 +1243,15 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
       return;
 
     item->setSelected(set, refresh);
-    if (refreshall) this->refresh();
-    if (set)
+    if (refreshall) {
+        // refresh is required
+        enableRefresh();
+
+        this->refresh();
+    }
+    if (set) {
         this->onSelectItem->emit(item);
+    }
 }
 
 
@@ -1334,7 +1340,10 @@ bool MMSMenuWidget::onAnimation(MMSPulser *pulser) {
 		break;
 	}
 
-	// update screen
+    // refresh is required
+    enableRefresh();
+
+    // update screen
 	this->refresh();
 
 	return true;
@@ -1549,7 +1558,10 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	        // recalculate scroll position
             this->py++;
 
-	        if (refresh) {
+            // refresh is required
+            enableRefresh();
+
+            if (refresh) {
                 recalculateChildren();
                 this->refresh();
             }
@@ -1722,7 +1734,10 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	        // recalculate scroll position
             this->py--;
 
-	        if (refresh) {
+            // refresh is required
+            enableRefresh();
+
+            if (refresh) {
                 recalculateChildren();
                 this->refresh();
             }
@@ -1929,7 +1944,10 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	        // recalculate scroll position
             this->px++;
 
-	        if (refresh) {
+            // refresh is required
+            enableRefresh();
+
+            if (refresh) {
                 recalculateChildren();
                 this->refresh();
             }
@@ -2113,7 +2131,10 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	        // recalculate scroll position
             this->px--;
 
-	        if (refresh) {
+            // refresh is required
+            enableRefresh();
+
+            if (refresh) {
                 recalculateChildren();
                 this->refresh();
             }
@@ -2516,8 +2537,12 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 
     recalculateChildren();
 
-    if (widget->isVisible())
-	    this->refresh();
+    if (widget->isVisible()) {
+        // refresh is required
+        enableRefresh();
+
+        this->refresh();
+    }
 
 //    if (isFocused())
 //        if (this->children.size()==1)
@@ -2565,6 +2590,9 @@ void MMSMenuWidget::deleteItem(unsigned int item) {
     		setSelected(sitem - 1, false);
     }
 
+    // refresh is required
+    enableRefresh();
+
     this->refresh();
 }
 
@@ -2584,6 +2612,9 @@ void MMSMenuWidget::clear() {
     this->firstSelection = false;
 
     recalculateChildren();
+
+    // refresh is required
+    enableRefresh();
 
     this->refresh();
 }
@@ -2917,42 +2948,70 @@ unsigned int MMSMenuWidget::getSmoothDelay() {
 
 void MMSMenuWidget::setItemWidth(string itemwidth, bool refresh) {
     myMenuWidgetClass.setItemWidth(itemwidth);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setItemHeight(string itemheight, bool refresh) {
     myMenuWidgetClass.setItemHeight(itemheight);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setItemHMargin(unsigned int itemhmargin, bool refresh) {
     myMenuWidgetClass.setItemHMargin(itemhmargin);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setItemVMargin(unsigned int itemvmargin, bool refresh) {
     myMenuWidgetClass.setItemVMargin(itemvmargin);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setCols(unsigned int cols, bool refresh) {
     myMenuWidgetClass.setCols(cols);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setDimItems(unsigned int dimitems, bool refresh) {
     myMenuWidgetClass.setDimItems(dimitems);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setFixedPos(int fixedpos, bool refresh) {
     myMenuWidgetClass.setFixedPos(fixedpos);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -2967,78 +3026,130 @@ void MMSMenuWidget::setVLoop(bool vloop) {
 
 void MMSMenuWidget::setTransItems(unsigned int transitems, bool refresh) {
     myMenuWidgetClass.setTransItems(transitems);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setDimTop(unsigned int dimtop, bool refresh) {
     myMenuWidgetClass.setDimTop(dimtop);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setDimBottom(unsigned int dimbottom, bool refresh) {
     myMenuWidgetClass.setDimBottom(dimbottom);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setDimLeft(unsigned int dimleft, bool refresh) {
     myMenuWidgetClass.setDimLeft(dimleft);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setDimRight(unsigned int dimright, bool refresh) {
     myMenuWidgetClass.setDimRight(dimright);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setTransTop(unsigned int transtop, bool refresh) {
     myMenuWidgetClass.setTransTop(transtop);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setTransBottom(unsigned int transbottom, bool refresh) {
     myMenuWidgetClass.setTransBottom(transbottom);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setTransLeft(unsigned int transleft, bool refresh) {
     myMenuWidgetClass.setTransLeft(transleft);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setTransRight(unsigned int transright, bool refresh) {
     myMenuWidgetClass.setTransRight(transright);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setZoomSelWidth(string zoomselwidth, bool refresh) {
     myMenuWidgetClass.setZoomSelWidth(zoomselwidth);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setZoomSelHeight(string zoomselheight, bool refresh) {
     myMenuWidgetClass.setZoomSelHeight(zoomselheight);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setZoomSelShiftX(string zoomselshiftx, bool refresh) {
     myMenuWidgetClass.setZoomSelShiftX(zoomselshiftx);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSMenuWidget::setZoomSelShiftY(string zoomselshifty, bool refresh) {
     myMenuWidgetClass.setZoomSelShiftY(zoomselshifty);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -3063,6 +3174,11 @@ void MMSMenuWidget::setSelImagePath(string selimagepath, bool load, bool refresh
             if (!getSelImageName(name)) name = "";
             this->selimage = this->rootwindow->im->getImage(path, name);
         }
+
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -3077,6 +3193,11 @@ void MMSMenuWidget::setSelImageName(string selimagename, bool load, bool refresh
             if (!getSelImageName(name)) name = "";
             this->selimage = this->rootwindow->im->getImage(path, name);
         }
+
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }

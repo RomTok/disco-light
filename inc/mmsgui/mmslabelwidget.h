@@ -82,12 +82,23 @@ class MMSLabelWidget : public MMSWidget {
         //! if true the translated_text is valid
         bool translated;
 
+        //! current foreground values set?
+        bool			current_fgset;
+
+        //! current foreground color
+        MMSFBColor		current_fgcolor;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void initLanguage(MMSLabelWidget *widget = NULL);
         void loadFont(MMSLabelWidget *widget = NULL);
         bool init();
         bool release();
+
+        void getForeground(MMSFBColor *color);
+        bool enableRefresh(bool enable = true);
+        bool checkRefreshStatus();
+
         bool draw(bool *backgroundFilled = NULL);
 
         //! Internal method: Inform the widget, that the language has changed.

@@ -75,10 +75,16 @@ MMSWidget::MMSWidget() :
 	surfaceGeom(MMSFBRectangle(0,0,0,0)),
 	parent(NULL),
 	geom(MMSFBRectangle(0,0,0,0)),
-	innerGeom(MMSFBRectangle(0,0,0,0)) {
+	innerGeom(MMSFBRectangle(0,0,0,0)),
+	skip_refresh(false) {
+
+
+    this->current_bgset = false;
 
 	MMSIdFactory factory;
     this->id = factory.getId();
+
+
 }
 
 MMSWidget::~MMSWidget() {
@@ -240,7 +246,10 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 
     if (drawable) {
-		// reload my images
+    	// reset skip refresh flag
+        this->skip_refresh = false;
+
+        // reload my images
 		newWidget->da->bgimage = NULL;
 		newWidget->da->selbgimage = NULL;
 		newWidget->da->bgimage_p = NULL;
@@ -739,6 +748,9 @@ bool MMSWidget::setScrollPos(int posX, int posY, bool refresh, bool test) {
         this->da->scrollPosX = posX;
         this->da->scrollPosY = posY;
 
+    	// refresh is required
+    	enableRefresh();
+
         if (refresh)
             this->refresh();
     }
@@ -1188,9 +1200,100 @@ if (!this->has_own_surface) {
 }
 #endif
 
+
+
+
+void MMSWidget::getBackground(MMSFBColor *color, MMSFBSurface **image) {
+	color->a = 0;
+	*image = NULL;
+
+	if (this->drawable) {
+		if (isActivated()) {
+			if (isSelected()) {
+				getSelBgColor(*color);
+				*image = this->da->selbgimage;
+			}
+			else {
+				getBgColor(*color);
+				*image = this->da->bgimage;
+			}
+			if (isPressed()) {
+				MMSFBColor mycol;
+				if (isSelected()) {
+					getSelBgColor_p(mycol);
+					if (mycol.a>0) *color=mycol;
+					if (this->da->selbgimage_p)
+						*image = this->da->selbgimage_p;
+				}
+				else {
+					getBgColor_p(mycol);
+					if (mycol.a>0) *color=mycol;
+					if (this->da->bgimage_p)
+						*image = this->da->bgimage_p;
+				}
+			}
+		}
+		else {
+			if (isSelected()) {
+				getSelBgColor_i(*color);
+				*image = this->da->selbgimage_i;
+			}
+			else {
+				getBgColor_i(*color);
+				*image = this->da->bgimage_i;
+			}
+		}
+	}
+}
+
+
+bool MMSWidget::enableRefresh(bool enable) {
+	// do not disable refresh
+	if (!enable) return false;
+
+	// (re-)enable refresh
+	this->skip_refresh = false;
+	this->current_bgset = false;
+
+	// go recursive to parents
+	if (this->parent)
+		return this->parent->enableRefresh();
+
+	return true;
+}
+
+
+bool MMSWidget::checkRefreshStatus() {
+
+	if (!this->skip_refresh) {
+		// there is no need to check, because refreshing is enabled
+		return true;
+	}
+
+	if (this->current_bgset) {
+		// current background initialized
+		MMSFBColor color;
+		MMSFBSurface *image;
+		getBackground(&color, &image);
+
+		if (color == this->current_bgcolor && image == this->current_bgimage) {
+			// background color and image not changed, so we do not enable refreshing
+			return false;
+		}
+	}
+
+	// (re-)enable refreshing
+	enableRefresh();
+
+	return true;
+}
+
+
 bool MMSWidget::draw(bool *backgroundFilled) {
     bool         myBackgroundFilled = false;
     bool         retry = false;
+
+//printf("   MMSWidget::draw()\n");
 
     if (!this->initialized) {
         // init widget (e.g. load images, fonts, ...)
@@ -1212,50 +1315,20 @@ bool MMSWidget::draw(bool *backgroundFilled) {
     if (this->surface) this->surface->lock();
     this->windowSurface->lock();
 
-    /* draw background */
-    do {
-        /* searching for the background color or image */
-        MMSFBColor col;
-        MMSFBSurface *suf = NULL;
-        col.a = 0;
 
-        if (this->drawable) {
-            if (isActivated()) {
-                if (isSelected()) {
-                    getSelBgColor(col);
-                    suf = this->da->selbgimage;
-                }
-                else {
-                    getBgColor(col);
-                    suf = this->da->bgimage;
-                }
-            	if (isPressed()) {
-                    MMSFBColor mycol;
-                    if (isSelected()) {
-                        getSelBgColor_p(mycol);
-                        if (mycol.a>0) col=mycol;
-                        if (this->da->selbgimage_p)
-                        	suf = this->da->selbgimage_p;
-                    }
-                    else {
-                        getBgColor_p(mycol);
-                        if (mycol.a>0) col=mycol;
-                        if (this->da->bgimage_p)
-                        	suf = this->da->bgimage_p;
-                    }
-            	}
-            }
-            else {
-                if (isSelected()) {
-                    getSelBgColor_i(col);
-                    suf = this->da->selbgimage_i;
-                }
-                else {
-                    getBgColor_i(col);
-                    suf = this->da->bgimage_i;
-                }
-            }
-        }
+    // mark refresh as skipped for the next time
+    this->skip_refresh = true;
+
+
+    // draw background
+    do {
+        // searching for the background color or image
+        MMSFBColor col;
+        MMSFBSurface *suf;
+        getBackground(&col, &suf);
+        this->current_bgcolor   = col;
+        this->current_bgimage   = suf;
+        this->current_bgset     = true;
 
         if (suf) {
             if ((*backgroundFilled)||(retry)||(!this->has_own_surface)) {
@@ -1617,6 +1690,8 @@ void MMSWidget::refresh() {
     unsigned int margin = 0;
     MMSWindow *myroot = this->rootwindow;
 
+//printf("   MMSWidget::refresh() - %s\n", name.c_str());
+
     if (!this->geomset) {
     	// sorry, i have no geometry info
     	return;
@@ -1627,7 +1702,12 @@ void MMSWidget::refresh() {
    		return;
     }
 
-    // lock the window because only one thread can do this at the same time
+	if (this->skip_refresh) {
+		printf("   MMSWidget::refresh() - %s <<< skipped\n", name.c_str());
+		return;
+	}
+
+	// lock the window because only one thread can do this at the same time
     this->parent_rootwindow->lock();
 
     // we have to check if the window is hidden while lock()
@@ -1900,6 +1980,7 @@ void MMSWidget::getJoinedWigdets(MMSWidget **caller_stack) {
 	}
 }
 
+
 bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) {
 	if (changed)
 		*changed = false;
@@ -1917,9 +1998,9 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
 		}
 	}
 
-    /* check if selected status already set */
+    // check if selected status already set
     if (this->selected == set) {
-        /* refresh my children */
+        // refresh my children
     	if (canSelectChildren()) {
         	bool rf = false;
         	vector<MMSWidget*>::iterator end = children.end();
@@ -1935,19 +2016,24 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
         return false;
     }
 
-    /* get flags */
+    // get flags
     bool selectable;
     if (!getSelectable(selectable))
     	selectable = false;
     bool canselchildren = canSelectChildren();
 
-    /* switch selected on/off if possible */
+    // switch selected on/off if possible
     if (selectable) {
         this->selected=set;
     	if (changed) *changed = true;
     }
 
-    /* refresh my children */
+
+    // check if the presentation has changed
+	checkRefreshStatus();
+
+
+	// refresh my children
     if (canselchildren) {
     	vector<MMSWidget*>::iterator end = children.end();
     	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
@@ -1955,11 +2041,11 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
     	}
     }
 
-    /* refresh widget */
+    // refresh widget
     if (((selectable)||(canselchildren))&&(refresh))
     	this->refresh();
 
-    /* emit select signal */
+    // emit select signal
     if (selectable)
         if (set)
             this->onSelect->emit(this);
@@ -2000,7 +2086,6 @@ bool MMSWidget::isActivated() {
 }
 
 bool MMSWidget::setPressed(bool set, bool refresh) {
-
     // check if pressed status already set
     if (this->pressed == set) {
         // refresh my children
@@ -2024,6 +2109,11 @@ bool MMSWidget::setPressed(bool set, bool refresh) {
 
     // switch pressed on/off
     this->pressed = set;
+
+
+    // check if the presentation has changed
+	checkRefreshStatus();
+
 
     // refresh my children
 	if (canSelectChildren()) {
@@ -2318,7 +2408,11 @@ void MMSWidget::setVisible(bool visible, bool refresh) {
     for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
     	(*i)->setVisible(this->visible, false);
     }
-    if (refresh)
+
+	// refresh is required
+	enableRefresh();
+
+	if (refresh)
         this->refresh();
 }
 
@@ -2332,6 +2426,9 @@ void MMSWidget::setBrightness(unsigned char brightness, bool refresh) {
 	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
 		(*i)->setBrightness(brightness, false);
 	}
+
+	// refresh is required
+	enableRefresh();
 
     if (refresh)
         this->refresh();
@@ -2347,6 +2444,9 @@ void MMSWidget::setOpacity(unsigned char opacity, bool refresh) {
 	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
 		(*i)->setOpacity(opacity, false);
 	}
+
+    // refresh is required
+    enableRefresh();
 
     if (refresh)
         this->refresh();
@@ -2673,240 +2773,342 @@ bool MMSWidget::getBorderRCorners(bool &rcorners) {
 bool MMSWidget::setBgColor(MMSFBColor bgcolor, bool refresh) {
 	if (!this->da) return false;
 	this->da->myWidgetClass.setBgColor(bgcolor);
+
+	// refresh required?
+	enableRefresh((bgcolor != this->current_bgcolor));
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgColor(MMSFBColor selbgcolor, bool refresh) {
 	if (!this->da) return false;
 	this->da->myWidgetClass.setSelBgColor(selbgcolor);
+
+	// refresh required?
+	enableRefresh((selbgcolor != this->current_bgcolor));
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgColor_p(MMSFBColor bgcolor_p, bool refresh) {
 	if (!this->da) return false;
 	this->da->myWidgetClass.setBgColor_p(bgcolor_p);
+
+	// refresh required?
+	enableRefresh((bgcolor_p != this->current_bgcolor));
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgColor_p(selbgcolor_p);
+
+	// refresh required?
+	enableRefresh((selbgcolor_p != this->current_bgcolor));
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgColor_i(MMSFBColor bgcolor_i, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgColor_i(bgcolor_i);
+
+	// refresh required?
+	enableRefresh((bgcolor_i != this->current_bgcolor));
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgColor_i(selbgcolor_i);
+
+	// refresh required?
+	enableRefresh((selbgcolor_i != this->current_bgcolor));
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgImagePath(string bgimagepath, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgImagePath(bgimagepath);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->da->bgimage);
+			// refresh required?
+			enableRefresh((this->da->bgimage == this->current_bgimage));
+
+			this->rootwindow->im->releaseImage(this->da->bgimage);
             string path, name;
             if (!getBgImagePath(path)) path = "";
             if (!getBgImageName(name)) name = "";
             this->da->bgimage = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgImageName(string bgimagename, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgImageName(bgimagename);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->bgimage == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->bgimage);
             string path, name;
             if (!getBgImagePath(path)) path = "";
             if (!getBgImageName(name)) name = "";
             this->da->bgimage = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgImagePath(string selbgimagepath, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgImagePath(selbgimagepath);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->selbgimage == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->selbgimage);
             string path, name;
             if (!getSelBgImagePath(path)) path = "";
             if (!getSelBgImageName(name)) name = "";
             this->da->selbgimage = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgImageName(string selbgimagename, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgImageName(selbgimagename);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->selbgimage == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->selbgimage);
             string path, name;
             if (!getSelBgImagePath(path)) path = "";
             if (!getSelBgImageName(name)) name = "";
             this->da->selbgimage = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgImagePath_p(string bgimagepath_p, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgImagePath_p(bgimagepath_p);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->bgimage_p == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->bgimage_p);
             string path, name;
             if (!getBgImagePath_p(path)) path = "";
             if (!getBgImageName_p(name)) name = "";
             this->da->bgimage_p = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgImageName_p(string bgimagename_p, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgImageName_p(bgimagename_p);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->bgimage_p == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->bgimage_p);
             string path, name;
             if (!getBgImagePath_p(path)) path = "";
             if (!getBgImageName_p(name)) name = "";
             this->da->bgimage_p = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgImagePath_p(string selbgimagepath_p, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgImagePath_p(selbgimagepath_p);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->selbgimage_p == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->selbgimage_p);
             string path, name;
             if (!getSelBgImagePath_p(path)) path = "";
             if (!getSelBgImageName_p(name)) name = "";
             this->da->selbgimage_p = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgImageName_p(string selbgimagename_p, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgImageName_p(selbgimagename_p);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->selbgimage_p == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->selbgimage_p);
             string path, name;
             if (!getSelBgImagePath_p(path)) path = "";
             if (!getSelBgImageName_p(name)) name = "";
             this->da->selbgimage_p = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgImagePath_i(string bgimagepath_i, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgImagePath_i(bgimagepath_i);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->bgimage_i == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->bgimage_i);
             string path, name;
             if (!getBgImagePath_i(path)) path = "";
             if (!getBgImageName_i(name)) name = "";
             this->da->bgimage_i = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBgImageName_i(string bgimagename_i, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setBgImageName_i(bgimagename_i);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->bgimage_i == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->bgimage_i);
             string path, name;
             if (!getBgImagePath_i(path)) path = "";
             if (!getBgImageName_i(name)) name = "";
             this->da->bgimage_i = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgImagePath_i(string selbgimagepath_i, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgImagePath_i(selbgimagepath_i);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->selbgimage_i == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->selbgimage_i);
             string path, name;
             if (!getSelBgImagePath_i(path)) path = "";
             if (!getSelBgImageName_i(name)) name = "";
             this->da->selbgimage_i = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setSelBgImageName_i(string selbgimagename_i, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setSelBgImageName_i(selbgimagename_i);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->da->selbgimage_i == this->current_bgimage));
+
             this->rootwindow->im->releaseImage(this->da->selbgimage_i);
             string path, name;
             if (!getSelBgImagePath_i(path)) path = "";
             if (!getSelBgImageName_i(name)) name = "";
             this->da->selbgimage_i = this->rootwindow->im->getImage(path, name);
         }
+    }
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -2915,6 +3117,9 @@ bool MMSWidget::setMargin(unsigned int margin, bool refresh) {
     this->da->myWidgetClass.setMargin(margin);
 
     setInnerGeometry();
+
+    // refresh is required
+    enableRefresh();
 
     if (refresh)
         this->refresh();
@@ -2947,8 +3152,13 @@ bool MMSWidget::setUpArrow(string uparrow, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setUpArrow(uparrow);
     this->da->upArrowWidget = NULL;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -2956,8 +3166,13 @@ bool MMSWidget::setDownArrow(string downarrow, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setDownArrow(downarrow);
     this->da->downArrowWidget = NULL;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -2965,8 +3180,13 @@ bool MMSWidget::setLeftArrow(string leftarrow, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setLeftArrow(leftarrow);
     this->da->leftArrowWidget = NULL;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -2974,8 +3194,13 @@ bool MMSWidget::setRightArrow(string rightarrow, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.setRightArrow(rightarrow);
     this->da->rightArrowWidget = NULL;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3051,8 +3276,13 @@ bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
 	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
 		(*i)->setBlend(blend, false);
 	}
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3062,8 +3292,13 @@ bool MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
 	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
 		(*i)->setBlendFactor(blendfactor, false);
 	}
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3111,6 +3346,9 @@ bool MMSWidget::setActivated(bool activated, bool refresh) {
         (*i)->setActivated(activated, false);
     }
 
+    // check if the presentation has changed
+	checkRefreshStatus();
+
     // refresh widget
     if (refresh)
         this->refresh();
@@ -3123,23 +3361,33 @@ bool MMSWidget::setActivated(bool activated, bool refresh) {
 bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setColor(bordercolor);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBorderSelColor(MMSFBColor borderselcolor, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setSelColor(borderselcolor);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBorderImagePath(string borderimagepath, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setImagePath(borderimagepath);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
             string path, name;
             if (!getBorderImagePath(path)) path = "";
@@ -3149,8 +3397,14 @@ bool MMSWidget::setBorderImagePath(string borderimagepath, bool load, bool refre
 	            this->da->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
+    }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3160,7 +3414,7 @@ bool MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, stri
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setImageNames(imagename_1, imagename_2, imagename_3, imagename_4,
                                        imagename_5, imagename_6, imagename_7, imagename_8);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
             string path, name;
             if (!getBorderImagePath(path)) path = "";
@@ -3170,15 +3424,21 @@ bool MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, stri
 	            this->da->borderimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
+    }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
 bool MMSWidget::setBorderSelImagePath(string borderselimagepath, bool load, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setSelImagePath(borderselimagepath);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
             string path, name;
             if (!getBorderSelImagePath(path)) path = "";
@@ -3188,8 +3448,14 @@ bool MMSWidget::setBorderSelImagePath(string borderselimagepath, bool load, bool
 	            this->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
+    }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3199,7 +3465,7 @@ bool MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagenam
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setSelImageNames(selimagename_1, selimagename_2, selimagename_3, selimagename_4,
                                           selimagename_5, selimagename_6, selimagename_7, selimagename_8);
-    if (load)
+    if (load) {
         if (this->rootwindow) {
             string path, name;
             if (!getBorderSelImagePath(path)) path = "";
@@ -3210,8 +3476,14 @@ bool MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagenam
 	            this->da->borderselimages[i] = this->rootwindow->im->getImage(path, name);
             }
         }
+    }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3221,8 +3493,12 @@ bool MMSWidget::setBorderThickness(unsigned int borderthickness, bool refresh) {
 
     setInnerGeometry();
 
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3232,8 +3508,12 @@ bool MMSWidget::setBorderMargin(unsigned int bordermargin, bool refresh) {
 
     setInnerGeometry();
 
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 
@@ -3241,8 +3521,12 @@ bool MMSWidget::setBorderRCorners(bool borderrcorners, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setRCorners(borderrcorners);
 
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
+
     return true;
 }
 

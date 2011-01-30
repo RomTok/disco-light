@@ -522,6 +522,15 @@ class MMSFBColor {
 			argb|= ((unsigned int)this->a) << 24;
 			return argb;
 		}
+
+		bool operator==(const MMSFBColor &c) {
+			return (this->r == c.r && this->g == c.g && this->b == c.b && this->a == c.a);
+		}
+
+		bool operator!=(const MMSFBColor &c) {
+			return (this->r != c.r || this->g != c.g || this->b != c.b || this->a != c.a);
+		}
+
 };
 
 //! Convert a color string into MMSFBColor.

@@ -123,6 +123,9 @@ void MMSLabelWidgetThread::doIt() {
             if (!this->label->frame_delay_set)
             	start_ts = getMTimeStamp();
 
+            // refresh is required
+            this->label->enableRefresh();
+
             // update screen
             this->label->refresh();
 

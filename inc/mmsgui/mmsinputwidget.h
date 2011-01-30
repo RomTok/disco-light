@@ -72,6 +72,12 @@ class MMSInputWidget : public MMSWidget {
 
         class MMSInputWidgetThread	*iwt;
 
+        //! current foreground values set?
+        bool			current_fgset;
+
+        //! current foreground color
+        MMSFBColor		current_fgcolor;
+
         bool create(MMSWindow *root, string className, MMSTheme *theme);
 
         void initLanguage(MMSInputWidget *widget = NULL);
@@ -81,6 +87,11 @@ class MMSInputWidget : public MMSWidget {
 
         bool init();
         bool release();
+
+        void getForeground(MMSFBColor *color);
+        bool enableRefresh(bool enable = true);
+        bool checkRefreshStatus();
+
         bool draw(bool *backgroundFilled = NULL);
         void drawCursor(bool cursor_on);
 

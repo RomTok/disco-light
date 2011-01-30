@@ -106,6 +106,7 @@ bool MMSImageWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     	delete imageThread;
     }
     imageThread = NULL;
+	this->current_fgset = false;
 
     // create widget base
     return MMSWidget::create(root, true, false, false, true, true, true, true);
@@ -376,6 +377,76 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeo
     }
 }
 
+void MMSImageWidget::getForeground(MMSFBSurface **image, MMSFBSurface **image2) {
+	*image = NULL;
+	*image2= NULL;
+
+    if (isActivated()) {
+
+        if (isSelected()) {
+        	*image = (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
+        	*image2= (this->image)?this->image_suf[image_curr_index].surface:NULL;
+        }
+        else {
+        	*image = (this->image)?this->image_suf[image_curr_index].surface:NULL;
+        	*image2= (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
+        }
+        if (isPressed()) {
+            if (isSelected()) {
+            	if (this->selimage_p)
+            		*image = this->selimage_p_suf[selimage_p_curr_index].surface;
+            	if (this->image_p)
+            		*image2= this->image_p_suf[image_p_curr_index].surface;
+            }
+            else {
+            	if (this->image_p)
+            		*image = this->image_p_suf[image_p_curr_index].surface;
+            	if (this->selimage_p)
+            		*image2= this->selimage_p_suf[selimage_p_curr_index].surface;
+            }
+        }
+    }
+    else {
+        if (isSelected()) {
+        	*image = (this->selimage_i)?this->selimage_i_suf[selimage_i_curr_index].surface:NULL;
+        	*image2= (this->image_i)?this->image_i_suf[image_i_curr_index].surface:NULL;
+        }
+        else {
+        	*image = (this->image_i)?this->image_i_suf[image_i_curr_index].surface:NULL;
+        	*image2= (this->selimage_i)?this->selimage_i_suf[selimage_i_curr_index].surface:NULL;
+        }
+    }
+}
+
+bool MMSImageWidget::enableRefresh(bool enable) {
+	if (!MMSWidget::enableRefresh(enable)) return false;
+
+	// mark foreground as not set
+	this->current_fgset = false;
+
+	return true;
+}
+
+bool MMSImageWidget::checkRefreshStatus() {
+	if (MMSWidget::checkRefreshStatus()) return true;
+
+	if (this->current_fgset) {
+		// current foreground initialized
+		MMSFBSurface *image, *image2;
+		getForeground(&image, &image2);
+
+		if (image == this->current_fgimage && image2 == this->current_fgimage2) {
+			// foreground images not changed, so we do not enable refreshing
+			return false;
+		}
+	}
+
+	// (re-)enable refreshing
+	enableRefresh();
+
+	return true;
+}
+
 
 bool MMSImageWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
@@ -399,45 +470,12 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
         unsigned int blend;
         getBlend(blend);
 
-        /* searching for the image */
-        MMSFBSurface *suf = NULL;
-        MMSFBSurface *suf2= NULL;
-
-        if (isActivated()) {
-
-            if (isSelected()) {
-                suf = (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
-                suf2= (this->image)?this->image_suf[image_curr_index].surface:NULL;
-            }
-            else {
-                suf = (this->image)?this->image_suf[image_curr_index].surface:NULL;
-                suf2= (this->selimage)?this->selimage_suf[selimage_curr_index].surface:NULL;
-            }
-	        if (isPressed()) {
-                if (isSelected()) {
-                	if (this->selimage_p)
-                		suf = this->selimage_p_suf[selimage_p_curr_index].surface;
-                	if (this->image_p)
-                		suf2= this->image_p_suf[image_p_curr_index].surface;
-                }
-                else {
-                	if (this->image_p)
-                		suf = this->image_p_suf[image_p_curr_index].surface;
-                	if (this->selimage_p)
-                		suf2= this->selimage_p_suf[selimage_p_curr_index].surface;
-                }
-            }
-        }
-        else {
-            if (isSelected()) {
-                suf = (this->selimage_i)?this->selimage_i_suf[selimage_i_curr_index].surface:NULL;
-                suf2= (this->image_i)?this->image_i_suf[image_i_curr_index].surface:NULL;
-            }
-            else {
-                suf = (this->image_i)?this->image_i_suf[image_i_curr_index].surface:NULL;
-                suf2= (this->selimage_i)?this->selimage_i_suf[selimage_i_curr_index].surface:NULL;
-            }
-        }
+        // get images
+        MMSFBSurface *suf, *suf2;
+        getForeground(&suf, &suf2);
+        this->current_fgimage   = suf;
+        this->current_fgimage2  = suf2;
+        this->current_fgset     = true;
 
 		if (!blend) {
 			/* blend not set */
@@ -675,6 +713,9 @@ void MMSImageWidget::setImagePath(string imagepath, bool load, bool refresh) {
     this->imagepath_set = true;
     if (load)
         if (this->rootwindow) {
+			// refresh required?
+			enableRefresh((this->image == this->current_fgimage || this->image == this->current_fgimage2));
+
             this->rootwindow->im->releaseImage(this->image);
             this->image = NULL;
             image_loaded = false;
@@ -695,7 +736,10 @@ void MMSImageWidget::setImageName(string imagename, bool load, bool refresh) {
     myImageWidgetClass.setImageName(imagename);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image);
+			// refresh required?
+			enableRefresh((this->image == this->current_fgimage || this->image == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image);
             this->image = NULL;
             image_loaded = false;
             bool b;
@@ -715,7 +759,10 @@ void MMSImageWidget::setImage(string imagepath, string imagename, bool load, boo
     myImageWidgetClass.setImageName(imagename);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image);
+			// refresh required?
+			enableRefresh((this->image == this->current_fgimage || this->image == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image);
             this->image = NULL;
             image_loaded = false;
             bool b;
@@ -735,7 +782,10 @@ void MMSImageWidget::setSelImagePath(string selimagepath, bool load, bool refres
     this->selimagepath_set = true;
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage);
+			// refresh required?
+			enableRefresh((this->selimage == this->current_fgimage || this->selimage == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage);
             this->selimage = NULL;
             selimage_loaded = false;
             bool b;
@@ -755,7 +805,10 @@ void MMSImageWidget::setSelImageName(string selimagename, bool load, bool refres
     myImageWidgetClass.setSelImageName(selimagename);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage);
+			// refresh required?
+			enableRefresh((this->selimage == this->current_fgimage || this->selimage == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage);
             this->selimage = NULL;
             selimage_loaded = false;
             bool b;
@@ -775,7 +828,10 @@ void MMSImageWidget::setSelImage(string selimagepath, string selimagename, bool 
     myImageWidgetClass.setSelImageName(selimagename);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage);
+			// refresh required?
+			enableRefresh((this->selimage == this->current_fgimage || this->selimage == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage);
             this->selimage = NULL;
             selimage_loaded = false;
             bool b;
@@ -797,7 +853,10 @@ void MMSImageWidget::setImagePath_p(string imagepath_p, bool load, bool refresh)
     this->imagepath_p_set = true;
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image_p);
+			// refresh required?
+			enableRefresh((this->image_p == this->current_fgimage || this->image_p == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image_p);
             this->image_p = NULL;
             image_p_loaded = false;
             bool b;
@@ -817,7 +876,10 @@ void MMSImageWidget::setImageName_p(string imagename_p, bool load, bool refresh)
     myImageWidgetClass.setImageName_p(imagename_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image_p);
+			// refresh required?
+			enableRefresh((this->image_p == this->current_fgimage || this->image_p == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image_p);
             this->image_p = NULL;
             image_p_loaded = false;
             bool b;
@@ -837,7 +899,10 @@ void MMSImageWidget::setImage_p(string imagepath_p, string imagename_p, bool loa
     myImageWidgetClass.setImageName_p(imagename_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image_p);
+			// refresh required?
+			enableRefresh((this->image_p == this->current_fgimage || this->image_p == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image_p);
             this->image_p = NULL;
             image_p_loaded = false;
             bool b;
@@ -857,7 +922,10 @@ void MMSImageWidget::setSelImagePath_p(string selimagepath_p, bool load, bool re
     this->selimagepath_p_set = true;
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage_p);
+			// refresh required?
+			enableRefresh((this->selimage_p == this->current_fgimage || this->selimage_p == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage_p);
             this->selimage_p = NULL;
             selimage_p_loaded = false;
             bool b;
@@ -877,7 +945,10 @@ void MMSImageWidget::setSelImageName_p(string selimagename_p, bool load, bool re
     myImageWidgetClass.setSelImageName_p(selimagename_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage_p);
+			// refresh required?
+			enableRefresh((this->selimage_p == this->current_fgimage || this->selimage_p == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage_p);
             this->selimage_p = NULL;
             selimage_p_loaded = false;
             bool b;
@@ -897,7 +968,10 @@ void MMSImageWidget::setSelImage_p(string selimagepath_p, string selimagename_p,
     myImageWidgetClass.setSelImageName_p(selimagename_p);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage_p);
+			// refresh required?
+			enableRefresh((this->selimage_p == this->current_fgimage || this->selimage_p == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage_p);
             this->selimage_p = NULL;
             selimage_p_loaded = false;
             bool b;
@@ -919,7 +993,10 @@ void MMSImageWidget::setImagePath_i(string imagepath_i, bool load, bool refresh)
     this->imagepath_i_set = true;
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image_i);
+			// refresh required?
+			enableRefresh((this->image_i == this->current_fgimage || this->image_i == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image_i);
             this->image_i = NULL;
             image_i_loaded = false;
             bool b;
@@ -939,7 +1016,10 @@ void MMSImageWidget::setImageName_i(string imagename_i, bool load, bool refresh)
     myImageWidgetClass.setImageName_i(imagename_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image_i);
+			// refresh required?
+			enableRefresh((this->image_i == this->current_fgimage || this->image_i == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image_i);
             this->image_i = NULL;
             image_i_loaded = false;
             bool b;
@@ -959,7 +1039,10 @@ void MMSImageWidget::setImage_i(string imagepath_i, string imagename_i, bool loa
     myImageWidgetClass.setImageName_i(imagename_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->image_i);
+			// refresh required?
+			enableRefresh((this->image_i == this->current_fgimage || this->image_i == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->image_i);
             this->image_i = NULL;
             image_i_loaded = false;
             bool b;
@@ -979,7 +1062,10 @@ void MMSImageWidget::setSelImagePath_i(string selimagepath_i, bool load, bool re
     this->selimagepath_i_set = true;
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage_i);
+			// refresh required?
+			enableRefresh((this->selimage_i == this->current_fgimage || this->selimage_i == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage_i);
             this->selimage_i = NULL;
             selimage_i_loaded = false;
             bool b;
@@ -999,7 +1085,10 @@ void MMSImageWidget::setSelImageName_i(string selimagename_i, bool load, bool re
     myImageWidgetClass.setSelImageName_i(selimagename_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage_i);
+			// refresh required?
+			enableRefresh((this->selimage_i == this->current_fgimage || this->selimage_i == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage_i);
             this->selimage_i = NULL;
             selimage_i_loaded = false;
             bool b;
@@ -1019,7 +1108,10 @@ void MMSImageWidget::setSelImage_i(string selimagepath_i, string selimagename_i,
     myImageWidgetClass.setSelImageName_i(selimagename_i);
     if (load)
         if (this->rootwindow) {
-            this->rootwindow->im->releaseImage(this->selimage_i);
+			// refresh required?
+			enableRefresh((this->selimage_i == this->current_fgimage || this->selimage_i == this->current_fgimage2));
+
+			this->rootwindow->im->releaseImage(this->selimage_i);
             this->selimage_i = NULL;
             selimage_i_loaded = false;
             bool b;
@@ -1036,36 +1128,60 @@ void MMSImageWidget::setSelImage_i(string selimagepath_i, string selimagename_i,
 
 void MMSImageWidget::setUseRatio(bool useratio, bool refresh) {
     myImageWidgetClass.setUseRatio(useratio);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSImageWidget::setFitWidth(bool fitwidth, bool refresh) {
     myImageWidgetClass.setFitWidth(fitwidth);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSImageWidget::setFitHeight(bool fitheight, bool refresh) {
     myImageWidgetClass.setFitHeight(fitheight);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSImageWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     myImageWidgetClass.setAlignment(alignment);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSImageWidget::setMirrorSize(unsigned int mirrorsize, bool refresh) {
     myImageWidgetClass.setMirrorSize(mirrorsize);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSImageWidget::setGenTaff(bool gentaff, bool refresh) {
     myImageWidgetClass.setGenTaff(gentaff);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }

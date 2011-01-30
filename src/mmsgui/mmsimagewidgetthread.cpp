@@ -246,11 +246,15 @@ void MMSImageWidgetThread::doIt() {
             }
         }
 
-        /* refresh the widget */
-        if (changed)
-            this->image->refresh();
+        // refresh the widget
+        if (changed) {
+            // refresh is required
+        	this->image->enableRefresh();
 
-        /* sleep */
+            this->image->refresh();
+        }
+
+        // sleep
         if (delaytime > 0)
             wait(delaytime*1000);
         else

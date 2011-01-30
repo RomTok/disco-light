@@ -67,6 +67,7 @@ bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme
     this->lasttext = "";
     this->surfaceChanged = true;
     this->file = NULL;
+	this->current_fgset = false;
 
     return MMSWidget::create(root, true, false, true, true, false, false, true);
 }
@@ -447,6 +448,46 @@ bool MMSTextBoxWidget::release() {
     return true;
 }
 
+void MMSTextBoxWidget::getForeground(MMSFBColor *color) {
+	color->a = 0;
+
+	if (isSelected()) {
+        *color = getSelColor();
+	}
+    else {
+        *color = getColor();
+    }
+}
+
+bool MMSTextBoxWidget::enableRefresh(bool enable) {
+	if (!MMSWidget::enableRefresh(enable)) return false;
+
+	// mark foreground as not set
+	this->current_fgset = false;
+
+	return true;
+}
+
+bool MMSTextBoxWidget::checkRefreshStatus() {
+	if (MMSWidget::checkRefreshStatus()) return true;
+
+	if (this->current_fgset) {
+		// current foreground initialized
+		MMSFBColor color;
+		getForeground(&color);
+
+		if (color == this->current_fgcolor) {
+			// foreground color not changed, so we do not enable refreshing
+			return false;
+		}
+	}
+
+	// (re-)enable refreshing
+	enableRefresh();
+
+	return true;
+}
+
 bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
 
@@ -504,12 +545,11 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         if (this->font) {
         	MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
+            // get color
             MMSFBColor color;
-
-            if (isSelected())
-                color = getSelColor();
-            else
-                color = getColor();
+            getForeground(&color);
+            this->current_fgcolor   = color;
+            this->current_fgset     = true;
 
             if (color.a) {
                 // set the font
@@ -702,6 +742,10 @@ void MMSTextBoxWidget::setFontPath(string fontpath, bool load, bool refresh) {
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -712,6 +756,10 @@ void MMSTextBoxWidget::setFontName(MMSLanguage lang, string fontname, bool load,
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -726,6 +774,10 @@ void MMSTextBoxWidget::setFontSize(unsigned int fontsize, bool load, bool refres
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -738,6 +790,10 @@ void MMSTextBoxWidget::setFont(MMSLanguage lang, string fontpath, string fontnam
         this->load_font = true;
     	loadFont();
     }
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -748,31 +804,51 @@ void MMSTextBoxWidget::setFont(string fontpath, string fontname, unsigned int fo
 
 void MMSTextBoxWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     myTextBoxWidgetClass.setAlignment(alignment);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setWrap(bool wrap, bool refresh) {
     myTextBoxWidgetClass.setWrap(wrap);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setSplitWords(bool splitwords, bool refresh) {
     myTextBoxWidgetClass.setSplitWords(splitwords);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setColor(MMSFBColor color, bool refresh) {
     myTextBoxWidgetClass.setColor(color);
-    if (refresh)
+
+	// refresh required?
+	enableRefresh((color != this->current_fgcolor));
+
+	if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
     myTextBoxWidgetClass.setSelColor(selcolor);
-    if (refresh)
+
+	// refresh required?
+	enableRefresh((selcolor != this->current_fgcolor));
+
+	if (refresh)
         this->refresh();
 }
 
@@ -781,6 +857,10 @@ void MMSTextBoxWidget::setText(string *text, bool refresh) {
     this->translated = false;
     this->da->scrollPosX=0;
     this->da->scrollPosY=0;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -792,6 +872,10 @@ void MMSTextBoxWidget::setText(string text, bool refresh) {
 void MMSTextBoxWidget::setTranslate(bool translate, bool refresh) {
     myTextBoxWidgetClass.setTranslate(translate);
     this->translated = false;
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -800,6 +884,10 @@ void MMSTextBoxWidget::setFilePath(string filepath, bool load, bool refresh) {
     myTextBoxWidgetClass.setFilePath(filepath);
     if (load)
     	loadFile(false);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
@@ -808,18 +896,30 @@ void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
     myTextBoxWidgetClass.setFileName(filename);
     if (load)
     	loadFile(false);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
     myTextBoxWidgetClass.setShadowColor(position, color);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
 
 void MMSTextBoxWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
     myTextBoxWidgetClass.setSelShadowColor(position, selcolor);
+
+    // refresh is required
+    enableRefresh();
+
     if (refresh)
         this->refresh();
 }
