@@ -172,7 +172,7 @@ class MMSMenuWidget : public MMSWidget {
 
         bool getConfig(bool *firstTime = NULL);
 
-        void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
+        void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL, MMSFBRectangle *rect2update = NULL);
         void recalculateChildren();
 
         void initParentWindow(void);

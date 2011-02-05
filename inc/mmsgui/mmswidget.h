@@ -411,7 +411,7 @@ class MMSWidget {
         sigc::signal<void, MMSWidget*, int, int, int, int> *onClick;
 
     protected:
-        virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL);
+        virtual void drawchildren(bool toRedrawOnly = false, bool *backgroundFilled = NULL, MMSFBRectangle *rect2update = NULL);
         virtual void setRootWindow(MMSWindow *root, MMSWindow *parentroot = NULL);
         virtual void recalculateChildren();
         virtual void handleInput(MMSInputEvent *inputevent);

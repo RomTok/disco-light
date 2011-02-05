@@ -691,7 +691,7 @@ class MMSWindow {
         \param checkopacity		if true the opacity of window(s) will be check too
         \return true, if the window is shown
         */
-        bool isShown(bool checkparents = false, bool checkopacity = true);
+        bool isShown(bool checkparents = false, bool checkopacity = false);
 
         //! Is the hide action running?
         /*!

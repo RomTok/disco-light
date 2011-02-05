@@ -1293,7 +1293,7 @@ bool MMSWidget::draw(bool *backgroundFilled) {
     bool         myBackgroundFilled = false;
     bool         retry = false;
 
-//printf("   MMSWidget::draw()\n");
+//printf("   MMSWidget::draw() - %s - window = %s\n", name.c_str(), rootwindow->name.c_str());
 
     if (!this->initialized) {
         // init widget (e.g. load images, fonts, ...)
@@ -1585,7 +1585,7 @@ bool MMSWidget::drawDebug() {
     return true;
 }
 
-void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
+void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSFBRectangle *rect2update) {
 
     if ((toRedrawOnly) && (this->toRedraw==false) && (this->redrawChildren==false))
         return;
@@ -1597,13 +1597,28 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
     if (!backgroundFilled)
         backgroundFilled = &myBackgroundFilled;
 
-    if ((!toRedrawOnly)||(this->toRedraw))
+    if ((!toRedrawOnly)||(this->toRedraw)) {
     	this->draw(backgroundFilled);
+    }
 
+    // draw widget's children
     if ((!toRedrawOnly)||(this->toRedraw)||(this->redrawChildren)) {
     	vector<MMSWidget *>::iterator end = this->children.end();
     	for(vector<MMSWidget *>::iterator i = this->children.begin(); i != end; ++i) {
-    		(*i)->drawchildren(toRedrawOnly, backgroundFilled);
+    		MMSWidget *w = *i;
+    		if (!rect2update) {
+    			// no rect given
+        		w->drawchildren(toRedrawOnly, backgroundFilled, rect2update);
+    		}
+    		else {
+    			// check if widget is inside the given rect
+				if ((w->geom.x + w->geom.w > rect2update->x)
+				  &&(w->geom.x < rect2update->x + rect2update->w)
+				  &&(w->geom.y + w->geom.h > rect2update->y)
+				  &&(w->geom.y < rect2update->y + rect2update->h)) {
+					w->drawchildren(toRedrawOnly, backgroundFilled, rect2update);
+				}
+    		}
     	}
 
     	drawMyBorder();

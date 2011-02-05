@@ -346,7 +346,7 @@ bool MMSMenuWidget::getConfig(bool *firstTime) {
 
 
 
-void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
+void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSFBRectangle *rect2update) {
 
     if ((toRedrawOnly) && (this->toRedraw==false) && (this->redrawChildren==false))
         return;
@@ -375,7 +375,7 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled) {
 	}
 
 	// draw the items
-	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled);
+	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled, rect2update);
 }
 
 void MMSMenuWidget::recalculateChildren() {
@@ -1243,6 +1243,7 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
       return;
 
     item->setSelected(set, refresh);
+
     if (refreshall) {
         // refresh is required
         enableRefresh();
@@ -1514,7 +1515,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, false);
+				selectItem(olditem, false, refresh);
 
 				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy < this->y)) {
 					// do the animation
@@ -1525,7 +1526,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            }
 
 	        	// switch on new selection
-				selectItem(item, true, false, refresh);
+				selectItem(item, true, refresh);
 	        }
 	        else {
 	            // scrolled, switch focus needs recalculate children
@@ -1689,7 +1690,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, false);
+				selectItem(olditem, false, refresh);
 
             	// selection animation?
 				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy > this->y)) {
@@ -1701,7 +1702,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            }
 
 	        	// switch on new selection
-				selectItem(item, true, false, refresh);
+				selectItem(item, true, refresh);
 	        }
 	        else {
 	            // scrolled, switch focus needs recalculate children
@@ -1901,8 +1902,9 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, false);
-	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx < this->x)) {
+				selectItem(olditem, false, refresh);
+
+				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx < this->x)) {
 					// do the animation
 					// input: animation mode, animation offset, number of menu items to jump over
 	            	startAnimation(MMSMENUWIDGET_PULSER_MODE_MOVESEL_RIGHT,
@@ -1911,7 +1913,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            }
 
 	        	// switch on new selection
-				selectItem(item, true, false, refresh);
+				selectItem(item, true, refresh);
 	        }
 	        else {
 	            // scrolled, switch focus needs recalculate children
@@ -2088,7 +2090,8 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, false);
+				selectItem(olditem, false, refresh);
+
 	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx > this->x)) {
 					// do the animation
 					// input: animation mode, animation offset, number of menu items to jump over
@@ -2098,7 +2101,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            }
 
 	        	// switch on new selection
-				selectItem(item, true, false, refresh);
+				selectItem(item, true, refresh);
 			}
 	        else {
 	            /* scrolled, switch focus needs recalculate children */

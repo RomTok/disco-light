@@ -1209,15 +1209,10 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         		// for this we support the opacity attribute and the stretch feature
 
         		// check if we have to do the "special blit"
-        		bool special_blit = cw->window->stretchmode;
+				// "special blit" means that we have to call draw() for the window and it's childwindows
+        		bool special_blit = false;
 
-        		///////////////////////////////
-        		// always special_blit=true
-        		// performance probs???
-        		special_blit = true;
-        		///////////////////////////////
-
-        		if ((!special_blit) && (cw->opacity < 255)) {
+        		if (cw->opacity < 255) {
         			// opacity calculation requested
         			// check if at least one child window with opacity > 0 does exists
 					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
@@ -1227,6 +1222,18 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 						}
 					}
         		}
+        		else
+				if (cw->window->stretchmode) {
+        			// should be stretched
+        			// check if at least one child window with opacity > 0 does exists
+					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
+						if (cw->window->childwins.at(c).opacity) {
+							special_blit = true;
+							break;
+						}
+					}
+        		}
+
         		if ((!special_blit) && (cw->special_blit)) {
         			// currently special blit is not requested
         			// but the blit beforehand has "destroy" the window surface
@@ -1270,6 +1277,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 						// normal blit if stretch mode is off
 //DO WE NEED THE OFFSET???
 //						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+
 						dst_surface->blit(cw->window->surface, &src_rect, dst_x, dst_y);
 					}
 					else {
@@ -1623,6 +1631,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
     // lock
 //PUP    pw_surface->lock();
     lock();
+
 
 	// draw all affected child windows
     drawChildWindows(pw_surface, &pw_region);
@@ -1996,7 +2005,6 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 			}
 		}
 
-
 		/* draw children */
 		bool backgroundFilled = true;
 		if(!this->children.empty()) {
@@ -2004,7 +2012,7 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 				this->children.at(0)->setGeometry(this->innerGeom);
 				this->draw_setgeom = false;
 			}
-			this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled);
+			this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled, rect2update);
 		}
     }
 
@@ -3253,7 +3261,7 @@ void MMSWindow::refreshFromChild(MMSWidget *child, MMSFBRectangle *rect2update, 
         }
     }
 
-    // flip region
+	// flip region
     if (!this->parent)
         flipWindow(this, &region, MMSFB_FLIP_ONSYNC);
     else {
