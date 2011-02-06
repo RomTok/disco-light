@@ -435,7 +435,7 @@ class MMSWindow {
 
         //! Internal method: Draw me.
         virtual void draw(bool toRedrawOnly = false, MMSFBRectangle *rect2update = NULL,
-        				  bool clear = true);
+        				  bool clear = true, unsigned char opacity = 255);
 
 
 		//! tbd
@@ -446,7 +446,7 @@ class MMSWindow {
 
 
         //! Internal method: Draw my border.
-        void drawMyBorder();
+        void drawMyBorder(unsigned char opacity = 255);
 
         //! Internal method: Focus one widget/child window for the first time.
         bool setFirstFocus(bool cw = false);
