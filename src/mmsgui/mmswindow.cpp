@@ -1367,11 +1367,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         	}
 			else {
 				// no own surface
-        		// for this we DO NOT support the opacity attribute and the stretch feature!!!
-        		if (cw->opacity < 255) {
-        			printf("DISKO: Cannot use the opacity %d of window '%s' which has no own surface!\n",
-        					cw->opacity, cw->window->name.c_str());
-        		}
+        		// for this we DO NOT support the stretch feature!!!
         		if (cw->window->stretchmode) {
         			printf("DISKO: Cannot stretch the window '%s' which has no own surface!\n",
         					cw->window->name.c_str());
@@ -1382,12 +1378,12 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 				if ((src_rect.w == r.w)||(src_rect.h == r.h)) {
 					// draw all (e.g. border)
 					// note: drawing proceeds on the surface of parent window
-					cw->window->draw(false, &src_rect, false);
+					cw->window->draw(false, &src_rect, false, cw->opacity);
 				}
 				else {
 					// minimal draw
 					// note: drawing proceeds on the surface of parent window
-					cw->window->draw(true, &src_rect, false);
+					cw->window->draw(true, &src_rect, false, cw->opacity);
 				}
 
 				// draw the children of this child, let child windows draw to the surface of my parent
@@ -1979,7 +1975,7 @@ bool MMSWindow::release() {
 }
 
 
-void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear) {
+void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear, unsigned char opacity) {
 	// init window (e.g. load images, fonts, ...)
 	init();
 
@@ -2005,14 +2001,14 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 		if (this->bgimage) {
 			// clear all or a part of the surface
 			if (clear) {
-				if (!((bgcolor.a == 255) && (this->bgimage->isOpaque()))) {
+				if ((bgcolor.a && bgcolor.a != 255) || opacity != 255 || !this->bgimage->isOpaque()) {
 					this->surface->clear();
 				}
 			}
 
 			// prepare for blitting
 			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacityAndSource(
-									255, (bgcolor.a)?bgcolor.a:255, 255, this->bgimage);
+									255, (bgcolor.a)?bgcolor.a:255, opacity, this->bgimage);
 
 			// draw background with bgimage
 			this->surface->stretchBlit(this->bgimage, NULL, &(this->innerGeom));
@@ -2021,11 +2017,13 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 		if (bgcolor.a) {
 			// clear all or a part of the surface
 			if (clear) {
-				this->surface->clear();
+				if (bgcolor.a != 255 || opacity != 255) {
+					this->surface->clear();
+				}
 			}
 
 			// prepare for drawing
-			this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, 255);
+			this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(bgcolor, 255, opacity);
 
 			// draw window background
 			this->surface->fillRectangle(this->innerGeom.x, this->innerGeom.y, this->innerGeom.w, this->innerGeom.h);
@@ -2037,9 +2035,14 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 			}
 		}
 
-		/* draw children */
+		// draw children
 		bool backgroundFilled = true;
 		if(!this->children.empty()) {
+    		if (opacity != 255) {
+    			printf("DISKO: Window %s drawn with opacity %d, but widgets will be drawn with full opacity!\n",
+    					name.c_str(), opacity);
+    		}
+
 			if (this->draw_setgeom) {
 				this->children.at(0)->setGeometry(this->innerGeom);
 				this->draw_setgeom = false;
@@ -2048,7 +2051,7 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 		}
     }
 
-	/* reset the clip */
+	// reset the clip
     this->surface->setClip(NULL);
 
 	// unlock
@@ -2057,10 +2060,10 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear)
 
 	// draw border
     if (!toRedrawOnly)
-        drawMyBorder();
+        drawMyBorder(opacity);
 }
 
-void MMSWindow::drawMyBorder() {
+void MMSWindow::drawMyBorder(unsigned char opacity) {
 	unsigned int borderThickness;
 	if (!getBorderThickness(borderThickness))
 		borderThickness = 0;
@@ -2072,7 +2075,7 @@ void MMSWindow::drawMyBorder() {
 	getBorderColor(c);
     drawBorder(borderThickness, borderRCorners, this->borderimages,
                this->bordergeom, &(this->bordergeomset), this->surface,
-               0, 0, this->geom.w, this->geom.h, c, this->im, 255, 255);
+               0, 0, this->geom.w, this->geom.h, c, this->im, 255, opacity);
 }
 
 
