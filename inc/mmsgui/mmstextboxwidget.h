@@ -39,7 +39,7 @@
 //! With this class you can display text with more than one line.
 /*!
 The textbox is focusable. So the user can scroll in it.
-Line breaks will be done with the normal linefeed (\n (0x0a)).
+Line breaks will be done with the normal line feed (\n (0x0a)). Specify &#10; as line feed within XML.
 If you want to display only one line of static text, you should use the MMSLabel widget.
 \author Jens Schneider
 */
