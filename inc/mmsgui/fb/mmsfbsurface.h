@@ -456,6 +456,7 @@ class MMSFBSurface {
         void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes);
         void unlock();
 
+        unsigned int getNumberOfSubSurfaces();
         MMSFBSurface *getSubSurface(MMSFBRectangle *rect);
         bool setSubSurface(MMSFBRectangle *rect);
         bool setSubSurface(MMSFBRegion *region);

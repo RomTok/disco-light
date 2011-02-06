@@ -7185,6 +7185,10 @@ void MMSFBSurface::unlock() {
 	unlock(true);
 }
 
+unsigned int MMSFBSurface::getNumberOfSubSurfaces() {
+	return this->children.size();
+}
+
 MMSFBSurface *MMSFBSurface::getSubSurface(MMSFBRectangle *rect) {
 #ifdef  __HAVE_DIRECTFB__
 	IDirectFBSurface *subsuf = NULL;

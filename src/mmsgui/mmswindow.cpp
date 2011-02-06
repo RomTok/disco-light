@@ -1151,6 +1151,8 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         pw_region = *region;
     }
 
+//printf("   MMSWindow::drawChildWindows() - %s, %d,%d,%d,%d\n", name.c_str(),pw_region.x1,pw_region.y1,pw_region.x2,pw_region.y2);
+
     // draw all affected child windows
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
         CHILDWINS *cw = &(this->childwins.at(i));
@@ -1212,11 +1214,12 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 				// "special blit" means that we have to call draw() for the window and it's childwindows
         		bool special_blit = false;
 
-        		if (cw->opacity < 255) {
+				if (cw->opacity < 255) {
         			// opacity calculation requested
         			// check if at least one child window with opacity > 0 does exists
 					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
 						if (cw->window->childwins.at(c).opacity) {
+							// childwindow is shown
 							special_blit = true;
 							break;
 						}
@@ -1228,16 +1231,35 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         			// check if at least one child window with opacity > 0 does exists
 					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
 						if (cw->window->childwins.at(c).opacity) {
+							// childwindow is shown
 							special_blit = true;
 							break;
 						}
 					}
         		}
 
+				if (!special_blit) {
+					// now we have to find childwindows with own_surface="false"
+					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
+						if (cw->window->childwins.at(c).opacity) {
+							// childwindow is shown
+				            bool os = true;
+				            cw->window->childwins.at(c).window->getOwnSurface(os);
+				            if (!os) {
+								// childwindow has no own surface
+								special_blit = true;
+								break;
+				            }
+						}
+					}
+				}
+
         		if ((!special_blit) && (cw->special_blit)) {
         			// currently special blit is not requested
         			// but the blit beforehand has "destroy" the window surface
-        			// so we have to redraw the window, note: draw() has to clear the window surface!
+        			// so we have to redraw the window
+					// note: drawing proceeds on the surface of parent window
+        			// note: draw() has to clear the window surface!
    					cw->window->draw(false, &src_rect, true);
         		}
         		cw->special_blit = special_blit;
@@ -1248,7 +1270,9 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
                 	// then we MUST draw the window stack if the child windows to the surface of this window
                 	// afterwards we MUST blit/stretch the result to the dst_surface
 
-            		// direct draw, note: draw() has to clear the window surface!
+            		// direct draw
+					// note: drawing proceeds on the surface of parent window
+                	// note: draw() has to clear the window surface!
    					cw->window->draw(false, &src_rect, true);
 
     				// draw the children of this child, let child windows draw to my surface
@@ -1311,13 +1335,19 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 					// blit window front buffer to destination surface
 					if (!cw->window->stretchmode) {
 						// normal blit if stretch mode is off
-						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+//						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
+						dst_surface->blit(cw->window->surface, &src_rect, dst_x, dst_y);
 					}
 					else {
 						// stretch the window to the parent surface
-						MMSFBRectangle dr = MMSFBRectangle(
+/*						MMSFBRectangle dr = MMSFBRectangle(
 												dst_x + offsX,
 												dst_y + offsY,
+												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
+												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));*/
+						MMSFBRectangle dr = MMSFBRectangle(
+												dst_x,
+												dst_y,
 												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
 												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
 						dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
@@ -1351,10 +1381,12 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 				MMSFBRectangle r = cw->window->geom;
 				if ((src_rect.w == r.w)||(src_rect.h == r.h)) {
 					// draw all (e.g. border)
+					// note: drawing proceeds on the surface of parent window
 					cw->window->draw(false, &src_rect, false);
 				}
 				else {
 					// minimal draw
+					// note: drawing proceeds on the surface of parent window
 					cw->window->draw(true, &src_rect, false);
 				}
 
@@ -3314,10 +3346,12 @@ void MMSWindow::refresh(MMSFBRegion *region) {
     }
 
     // make it visible
-    if (!this->parent)
+    if (!this->parent) {
         flipWindow(this, region);
-    else
+    }
+    else {
         this->parent->flipWindow(this, region);
+    }
 
     // unlock drawing
 //PUP    this->drawLock.unlock();
