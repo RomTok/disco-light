@@ -114,7 +114,7 @@ void MMSLabelWidgetThread::doIt() {
             }
         }
 
-        /* refresh the widget */
+        // refresh the widget
         if (changed) {
             unsigned int start_ts;
             unsigned int end_ts;

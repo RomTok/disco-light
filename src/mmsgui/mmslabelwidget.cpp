@@ -91,7 +91,13 @@ MMSWidget *MMSLabelWidget::copyWidget() {
 	newWidget->fontsize = 0;
     newWidget->font = NULL;
     newWidget->load_font = true;
+    newWidget->slide_width = 0;
+    newWidget->slide_offset = 0;
+    newWidget->frame_delay = 100;
+    newWidget->frame_delay_set = false;
     newWidget->labelThread = NULL;
+    newWidget->translated = false;
+    newWidget->current_fgset = false;
     if (this->rootwindow) {
     	// load font
         loadFont(newWidget);
@@ -216,7 +222,7 @@ bool MMSLabelWidget::checkRefreshStatus() {
 }
 
 bool MMSLabelWidget::draw(bool *backgroundFilled) {
-    int width, height, x, y;
+    int width = 0, height = 0, x, y;
     bool myBackgroundFilled = false;
 
     if (backgroundFilled) {
