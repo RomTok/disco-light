@@ -1242,6 +1242,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 
 					// parse the childs from dialog file
 					throughDoc(tafff, tmpWidget, NULL, theme);
+					returntag = true;
 
 					// here we create a new menu item based on disconnected child (if != NULL) or item template style
 					item = menu->newItem(-1, tmpWidget->disconnectChild());
@@ -1259,6 +1260,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 
                 // parse the childs from dialog file
             	throughDoc(tafff, tmpWidget, NULL, theme);
+            	returntag = true;
 
             	// delete the widget, we cannot use it
                 delete tmpWidget;
