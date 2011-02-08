@@ -264,6 +264,10 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     // check if initialized
     INITCHECK;
 
+    // reset width
+    if (!width) return false;
+	*width = 0;
+
 	// get the length of the string
 	if (len < 0) len = text.size();
 	if (!len) return true;
@@ -277,7 +281,6 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
 #endif
     }
     else {
-    	*width = 0;
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
     		MMSFBFont_Glyph glyph;
     		if (!getGlyph(character, &glyph)) break;
