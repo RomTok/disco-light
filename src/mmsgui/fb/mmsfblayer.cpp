@@ -1300,7 +1300,7 @@ bool MMSFBLayer::setLevel(int level) {
     return false;
 }
 
-bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
+bool MMSFBLayer::getSurface(MMSFBSurface **surface, bool clear) {
 
 	// check if initialized
     INITCHECK;
@@ -1309,7 +1309,14 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
         // i have already a surface
         *surface = this->surface;
         DEBUGMSG("MMSGUI", "have already a surface");
-        return true;
+
+        if (clear) {
+    		// clear the display
+			this->surface->clear();
+			this->surface->flip();
+    	}
+
+    	return true;
     }
 
     // reset surface pointer
@@ -1451,33 +1458,14 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface) {
     this->surface = *surface;
 
     if (this->surface) {
-/*    	printf("---------\n");
-    	sleep(1);
-    	printf("---------\n");
-    	sleep(1);
-*/
     	// mark this surface as a layer surface
     	this->surface->setLayerSurface();
 
-/*   	printf("---------\n");
-    	sleep(1);
-*/
-		// clear all surface buffers
-    	int bufnum = 0;
-    	this->surface->getNumberOfBuffers(&bufnum);
-/*printf("dddd %d\n", bufnum);
-sleep(2);*/
-    	this->surface->clear();
-/*printf("clear finished\n");
-sleep(2);*/
-		this->surface->flip();
-/*printf("flip finished\n");
-sleep(2);*/
-    	while (bufnum > 1) {
+    	if (clear) {
+    		// clear the display
 			this->surface->clear();
 			this->surface->flip();
-			bufnum--;
-		}
+    	}
 
 	    // initialize the flip flags for the layer surface
 	    this->surface->setFlipFlags(this->flipflags);

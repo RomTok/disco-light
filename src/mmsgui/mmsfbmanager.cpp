@@ -47,23 +47,27 @@ void mmsfbmanager_onexit(int num, void *arg) {
 }
 
 MMSFBManager::MMSFBManager() {
-    /* init me */
+    // init me
     this->graphicslayer = NULL;
     this->videolayer = NULL;
-    this->videolayerid = -1;
     this->graphicslayerid = -1;
+    this->videolayerid = -1;
     this->layercount = 0;
 }
 
 MMSFBManager::~MMSFBManager() {
 }
 
-bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_icon_name) {
+bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_icon_name, bool virtual_console) {
 	int myargc=argc;
 	char *myargv[255];
 	int i;
 
-    this->layercount=1;
+	// save virtual console state
+	this->virtual_console = virtual_console;
+
+	// per default we have one layer
+    this->layercount = 1;
 
 	for(i=0;i<argc;i++)
 		myargv[i]=strdup(argv[i]);
@@ -97,17 +101,17 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	}
 
     DEBUGMSG("MMSGUI", "get video layer");
-    if (!mmsfb->getLayer(videolayer_conf.id, &this->videolayer, videolayer_conf.outputtype))
+    if (!mmsfb->getLayer(videolayer_conf.id, &this->videolayer, videolayer_conf.outputtype, this->virtual_console))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
-    if(videolayer_conf.id == graphicslayer_conf.id) {
+    if (videolayer_conf.id == graphicslayer_conf.id) {
     	DEBUGMSG("MMSGUI", "video layer and graphics layer are the same");
         this->graphicslayer = this->videolayer;
     }
     else {
         this->layercount++;
         DEBUGMSG("MMSGUI", "get graphics layer");
-        if (!mmsfb->getLayer(graphicslayer_conf.id, &this->graphicslayer, graphicslayer_conf.outputtype))
+        if (!mmsfb->getLayer(graphicslayer_conf.id, &this->graphicslayer, graphicslayer_conf.outputtype, false))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
@@ -219,10 +223,12 @@ void MMSFBManager::applySettings() {
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
-        if (config.getBackend() == MMSFB_BE_X11) {
+#ifdef  __HAVE_DIRECTFB__
+    	if (config.getBackend() == MMSFB_BE_X11) {
 			//give a little time to window routines
 			usleep(300000);
         }
+#endif
 
         // use both layers
         DEBUGMSG("MMSGUI", "configure video layer");
@@ -259,7 +265,7 @@ void MMSFBManager::applySettings() {
     // set global surface attributes
     string buffermode = graphicslayer_conf.buffermode;
     MMSFBSurface *gls;
-    if (this->graphicslayer->getSurface(&gls)) {
+    if (this->graphicslayer->getSurface(&gls, this->virtual_console)) {
     	// set the static extended accel flag
 		gls->setExtendedAcceleration(config.getExtendedAccel());
 

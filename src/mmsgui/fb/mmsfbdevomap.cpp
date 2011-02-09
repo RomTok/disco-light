@@ -67,7 +67,7 @@ bool MMSFBDevOmap::openDevice(int id) {
 	// new device
 	MMSFBDev *fbdev = new MMSFBDev();
 
-	if ((fbdev) && (!fbdev->openDevice(dev, (!this->osd0.fbdev && !this->vid.fbdev && !this->osd1.fbdev) ? -1 : -2))) {
+	if ((fbdev) && (!fbdev->openDevice(dev, (!this->osd0.fbdev && !this->vid.fbdev && !this->osd1.fbdev) ? this->console : MMSFBDEV_NO_CONSOLE))) {
 		// delete uninitialized fbdev object
 		delete fbdev;
 		return false;
@@ -85,8 +85,10 @@ bool MMSFBDevOmap::openDevice(int id) {
 			strcpy(this->osd0.device, dev);
 			this->osd0.width = 0;
 			this->primary = &this->osd0;
-			// disable device
-			this->osd0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
+			if (this->console != MMSFBDEV_NO_CONSOLE) {
+				// disable device
+				this->osd0.fbdev->initLayer(0, 0, 0, MMSFB_PF_NONE, 0);
+			}
 			break;
 		case 1:
 			this->vid.fbdev = fbdev;
@@ -124,6 +126,7 @@ bool MMSFBDevOmap::openDevice(char *device_file, int console) {
 	closeDevice();
 
 	// we do not initialize the devices here, but dynamically within testLayer() / initLayer()
+	this->console = console;
 	this->isinitialized = true;
 	return true;
 }

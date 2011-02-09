@@ -159,7 +159,7 @@ class MMSFBLayer {
 							  MMSFBSurfacePixelFormat window_pixelformat=MMSFB_PF_NONE, MMSFBSurfacePixelFormat surface_pixelformat=MMSFB_PF_NONE);
         bool setOpacity(unsigned char opacity);
         bool setLevel(int level);
-        bool getSurface(MMSFBSurface **surface);
+        bool getSurface(MMSFBSurface **surface, bool clear = false);
 
         bool setFlipFlags(MMSFBFlipFlags flags);
 

@@ -39,6 +39,12 @@
 #include "mmsgui/fb/fb.h"
 #include <termios.h>
 
+//! openDevice() console parameter, use free virtual console
+#define MMSFBDEV_QUERY_CONSOLE	-1
+
+//! openDevice() console parameter, do not open a virtual console
+#define MMSFBDEV_NO_CONSOLE		-2
+
 // added missing ioctl
 #ifndef FBIO_WAITFORVSYNC
 #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, u_int32_t)
@@ -123,7 +129,7 @@ class MMSFBDev {
         MMSFBDev();
         virtual ~MMSFBDev();
 
-        virtual bool openDevice(char *device_file = NULL, int console = -1);
+        virtual bool openDevice(char *device_file = NULL, int console = MMSFBDEV_QUERY_CONSOLE);
         virtual void closeDevice();
         bool isInitialized();
 
@@ -170,7 +176,7 @@ class MMSFBDev {
 
         VT	vt;
 
-        bool vtOpen(int console = -1);
+        bool vtOpen(int console = MMSFBDEV_QUERY_CONSOLE);
         void vtClose();
         virtual bool vtGetFd(int *fd);
 

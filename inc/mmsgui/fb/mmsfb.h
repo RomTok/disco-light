@@ -133,7 +133,7 @@ class MMSFB {
         bool lock();
         bool unlock();
 
-        bool getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype);
+        bool getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, bool virtual_console);
 
         void *getX11Window();
         void *getX11Display();

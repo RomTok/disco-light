@@ -56,7 +56,7 @@ class MMSFBDevDavinci : public MMSFBDev {
         MMSFBDevDavinci();
         virtual ~MMSFBDevDavinci();
 
-        bool openDevice(char *device_file = NULL, int console = -1);
+        bool openDevice(char *device_file = NULL, int console = MMSFBDEV_QUERY_CONSOLE);
         void closeDevice();
 
         bool waitForVSync();

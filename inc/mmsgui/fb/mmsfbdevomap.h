@@ -48,6 +48,7 @@ class MMSFBDevOmap : public MMSFBDev {
         	int						backbuffer;
     	} MMSFBDevOmapLayer;
 
+    	int	console;
     	MMSFBDevOmapLayer	osd0;
     	MMSFBDevOmapLayer	vid;
     	MMSFBDevOmapLayer	osd1;
@@ -64,7 +65,7 @@ class MMSFBDevOmap : public MMSFBDev {
         MMSFBDevOmap();
         virtual ~MMSFBDevOmap();
 
-        bool openDevice(char *device_file = NULL, int console = -1);
+        bool openDevice(char *device_file = NULL, int console = MMSFBDEV_QUERY_CONSOLE);
         void closeDevice();
 
         bool waitForVSync();

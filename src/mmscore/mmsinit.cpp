@@ -264,16 +264,18 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
             // set static MMSWidget inputmode
         	MMSWidget_inputmode = config->getInputMode();
 
-            mmsfbmanager.init(argc, argv, appl_name, appl_icon_name);
+			// init the fbmanager, check if virtual console should be opened
+            mmsfbmanager.init(argc, argv, appl_name, appl_icon_name, (!(flags & MMSINIT_NO_CONSOLE)));
             mmsfbmanager.applySettings();
 
-            if (flags & MMSINIT_THEMEMANAGER) {
+			if (flags & MMSINIT_THEMEMANAGER) {
 				DEBUGMSG("Core", "starting theme manager");
 				themeManager = new MMSThemeManager(config->getData(),config->getTheme());
             }
 
             if(flags & MMSINIT_WINDOWMANAGER) {
                 DEBUGMSG("Core", "starting window manager");
+
                 windowmanager = new MMSWindowManager(config->getVRect());
     	        if(!windowmanager) {
     	        	DEBUGMSG("Core", "couldn't create windowmanager.");
@@ -293,10 +295,13 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
     	        	DEBUGMSG("Core", "couldn't create background window.");
     	        	return false;
     	        }
+
     	        DEBUGMSG("Core", "setting windowmanager for background window");
     	        rootwin->setWindowManager((IMMSWindowManager*)windowmanager);
+
     	        DEBUGMSG("Core", "setting window as background window");
     	        windowmanager->setBackgroundWindow(rootwin);
+
     	        DEBUGMSG("Core", "windowmanager initialization done");
             }
             if(flags  & MMSINIT_INPUTS) {

@@ -231,7 +231,7 @@ bool MMSFB::unlock() {
 	return true;
 }
 
-bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype) {
+bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, bool virtual_console) {
 
 	// check if initialized
     INITCHECK;
@@ -311,7 +311,7 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype) {
 			}
 
 			if (this->mmsfbdev) {
-				if (!this->mmsfbdev->openDevice()) {
+				if (!this->mmsfbdev->openDevice(NULL, (virtual_console) ? MMSFBDEV_QUERY_CONSOLE : MMSFBDEV_NO_CONSOLE)) {
 					MMSFB_SetError(0, "MMSFBDEV device cannot be opened");
 					return false;
 				}
