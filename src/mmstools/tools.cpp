@@ -733,3 +733,62 @@ int64_t timespecDiff(struct timespec *timeA, struct timespec *timeB) {
   return ((timeA->tv_sec * 1000000000) + timeA->tv_nsec) -
            ((timeB->tv_sec * 1000000000) + timeB->tv_nsec);
 }
+
+
+
+
+
+void rotateUCharBuffer180(unsigned char *buffer, int pitch, int w, int h) {
+	for (int y = 0; y < (h + 1) / 2; y++) {
+		unsigned char tmp;
+		unsigned char *ptr1 = &buffer[y * pitch];
+		unsigned char *ptr2 = &buffer[(h - 1 - y) * pitch];
+		bool sameline = (ptr1 == ptr2);
+		ptr2+= w - 1;
+		for (int x = 0; x < ((!sameline) ? w : w / 2); x++) {
+			tmp = *ptr2;
+			*ptr2 = *ptr1;
+			*ptr1 = tmp;
+			ptr1++;
+			ptr2--;
+		}
+	}
+}
+
+void rotateUShortIntBuffer180(unsigned short int *buffer, int pitch, int w, int h) {
+	for (int y = 0; y < (h + 1) / 2; y++) {
+		unsigned short int tmp;
+		unsigned short int *ptr1 = (unsigned short int *)&((unsigned char *)buffer)[y * pitch];
+		unsigned short int *ptr2 = (unsigned short int *)&((unsigned char *)buffer)[(h - 1 - y) * pitch];
+		bool sameline = (ptr1 == ptr2);
+		ptr2+= w - 1;
+		for (int x = 0; x < ((!sameline) ? w : w / 2); x++) {
+			tmp = *ptr2;
+			*ptr2 = *ptr1;
+			*ptr1 = tmp;
+			ptr1++;
+			ptr2--;
+		}
+	}
+}
+
+void rotateUIntBuffer180(unsigned int *buffer, int pitch, int w, int h) {
+	for (int y = 0; y < (h + 1) / 2; y++) {
+		unsigned int tmp;
+		unsigned int *ptr1 = (unsigned int *)&((unsigned char *)buffer)[y * pitch];
+		unsigned int *ptr2 = (unsigned int *)&((unsigned char *)buffer)[(h - 1 - y) * pitch];
+		bool sameline = (ptr1 == ptr2);
+		ptr2+= w - 1;
+		for (int x = 0; x < ((!sameline) ? w : w / 2); x++) {
+			tmp = *ptr2;
+			*ptr2 = *ptr1;
+			*ptr1 = tmp;
+			ptr1++;
+			ptr2--;
+		}
+	}
+}
+
+
+
+

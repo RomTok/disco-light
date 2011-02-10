@@ -423,6 +423,7 @@ class MMSFBSurface {
 						 MMS3D_OBJECT		**objects);
 
         bool flip(MMSFBRegion *region = NULL);
+        bool flip(int x1, int y1, int x2, int y2);
         bool refresh();
 
         bool createCopy(MMSFBSurface **dstsurface, int w = 0, int h = 0,

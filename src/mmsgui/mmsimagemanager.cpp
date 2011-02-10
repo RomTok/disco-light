@@ -277,6 +277,12 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 	    				// set mirror size
 	    				tafff->setMirrorEffect(mirror_size);
 
+#ifndef ROTATE_180
+	    				tafff->rotate180(false);
+#else
+	    				tafff->rotate180(true);
+#endif
+
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
 	    					// conversion failed
@@ -310,6 +316,12 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         				// set special attributes like mirror effect
     					tafff->setMirrorEffect(mirror_size);
 
+#ifndef ROTATE_180
+	    				tafff->rotate180(false);
+#else
+	    				tafff->rotate180(true);
+#endif
+
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
 	    					// conversion failed
@@ -340,6 +352,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	bool 		img_premultiplied = true;
 				    	int 		img_mirror_size = 0;
 				    	bool		img_alphachannel = true;
+				    	bool		img_rotate_180 = false;
 
 				    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
 				    		switch (attrid) {
@@ -369,6 +382,9 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    			break;
 				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_alphachannel:
 				    			img_alphachannel = (value_int);
+				    			break;
+				    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_rotate_180:
+				    			img_rotate_180 = (value_int);
 				    			break;
 				    		}
 				    	}
@@ -428,6 +444,35 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 							else
 								retry = false;
 						}
+#ifndef ROTATE_180
+						else
+						if (img_rotate_180) {
+				    		DEBUGOUT("ImageManager, taff image is rotated by 180 degree, but not requested\n");
+				    		if (!retry) {
+				    			// reset rotation
+				    			DEBUGOUT("ImageManager, reset rotation\n");
+				    			retry = true;
+				    			delete tafff;
+				    			continue;
+				    		}
+				    		else
+				    			retry = false;
+						}
+#else
+						else
+						if (!img_rotate_180) {
+				    		DEBUGOUT("ImageManager, taff image is NOT rotated by 180 degree, but requested\n");
+				    		if (!retry) {
+				    			// retry with rotation
+				    			DEBUGOUT("ImageManager, rotate 180 degree\n");
+				    			retry = true;
+				    			delete tafff;
+				    			continue;
+				    		}
+				    		else
+				    			retry = false;
+						}
+#endif
 						else
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	// successfully read

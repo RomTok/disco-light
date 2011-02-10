@@ -79,6 +79,9 @@ extern "C" {
 
 
 
+//#define ROTATE_180
+
+
 
 /* switch between window managers */
 //#define USE_DFB_WINMAN

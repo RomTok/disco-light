@@ -75,6 +75,7 @@ MMSTaffFile::MMSTaffFile(string taff_filename, TAFF_DESCRIPTION *taff_desc,
 	this->destination_pixelformat = MMSTAFF_PF_ARGB;
 	this->destination_premultiplied = true;
 	this->mirror_size = 0;
+	this->rotate_180 = false;
 	this->correct_version = false;
 	this->current_tag = -1;
 	this->current_tag_pos = 0;
@@ -173,6 +174,11 @@ bool MMSTaffFile::postprocessImage(void **buf, int *width, int *height, int *pit
     	// set new values
     	*height = (*height) + this->mirror_size;
     	*size = (*pitch) * (*height);
+    }
+
+    if (this->rotate_180) {
+    	// rotate the image by 180 degree
+    	rotateUIntBuffer180((unsigned int*)*buf, *pitch, *width, *height);
     }
 
     // have to convert the pixelformat?
@@ -521,7 +527,7 @@ bool MMSTaffFile::readPNG(const char *filename, void **buf, int *width, int *hei
     // at this point we have ARGB (MMSTAFF_PF_ARGB) pixels ********
     // so check now if i have to convert it
 
-    // create mirror and convert to target pixelformat
+    // create mirror, rotate and convert to target pixelformat
     return postprocessImage(buf, width, height, pitch, size, alphachannel);
 #else
     return false;
@@ -620,7 +626,7 @@ bool MMSTaffFile::readJPEG(const char *filename, void **buf, int *width, int *he
 	jpeg_destroy_decompress(&cinfo);
 	fclose(fp);
 
-    /* create mirror and convert to target pixelformat */
+    /* create mirror, rotate and convert to target pixelformat */
     return postprocessImage(buf, width, height, pitch, size, alphachannel);
 #else
     return false;
@@ -670,7 +676,7 @@ bool MMSTaffFile::readTIFF(const char *filename, void **buf, int *width, int *he
 	//_TIFFfree(*buf);
 	TIFFClose(tiff);
 
-    /* create mirror and convert to target pixelformat */
+    /* create mirror, rotate and convert to target pixelformat */
     return postprocessImage(buf, width, height, pitch, size, alphachannel);
 #else
     return false;
@@ -1291,6 +1297,14 @@ bool MMSTaffFile::convertIMAGE2TAFF() {
 		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
 		writeBuffer(taff_file, &imgAlphaChannel, &ritems, 1, sizeof(bool), &wok);
 
+		// write attributes: rotate_180
+		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
+		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_rotate_180;
+		wb[2]=sizeof(bool);
+		writeBuffer(taff_file, wb, &ritems, 1, 3, &wok);
+		bool rot = (this->rotate_180);
+		writeBuffer(taff_file, &rot, &ritems, 1, sizeof(bool), &wok);
+
 		// write attributes: data
 		wb[0]=MMSTAFF_TAGTABLE_TYPE_ATTR;
 		wb[1]=MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_data;
@@ -1623,6 +1637,10 @@ void MMSTaffFile::setMirrorEffect(int size) {
 	this->mirror_size = size;
 }
 
+void MMSTaffFile::rotate180(bool rotate_180) {
+	this->rotate_180 = rotate_180;
+}
+
 int MMSTaffFile::getFirstTag() {
 	this->taff_buf_pos = sizeof(this->taff_desc->type) + sizeof(this->taff_desc->version);
 	this->current_tag = -1;
@@ -1880,6 +1898,6 @@ TAFF_TAGTABLE mmstaff_image_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 3, mmstaff_image_taff_tagtable };
+TAFF_DESCRIPTION mmstaff_image_taff_description = { "mmstaff_image", 4, mmstaff_image_taff_tagtable };
 
 

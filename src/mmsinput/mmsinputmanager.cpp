@@ -63,6 +63,26 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		/* check crtl+c and exit */
 		if((inputevent->key==MMSKEY_SMALL_C)&&(this->lastkey==MMSKEY_CONTROL))
 			exit(1);
+/*
+#ifdef ROTATE_180
+		switch (inputevent->key) {
+		case MMSKEY_CURSOR_LEFT:
+			inputevent->key = MMSKEY_CURSOR_RIGHT;
+			break;
+		case MMSKEY_CURSOR_RIGHT:
+			inputevent->key = MMSKEY_CURSOR_LEFT;
+			break;
+		case MMSKEY_CURSOR_UP:
+			inputevent->key = MMSKEY_CURSOR_DOWN;
+			break;
+		case MMSKEY_CURSOR_DOWN:
+			inputevent->key = MMSKEY_CURSOR_UP;
+			break;
+		default:
+			break;
+		}
+#endif
+*/
 
 		this->lastkey = inputevent->key;
 
@@ -207,7 +227,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			inputevent->dy = 0;
 
 			window->handleInput(inputevent);
-			memset(inputevent, 0, sizeof(MMSInputEvent));		
+			memset(inputevent, 0, sizeof(MMSInputEvent));
 		}
 	}
 	else
@@ -234,7 +254,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				if(inputevent->posx < 0 || inputevent->posy<0) {
 					inputevent->absx = this->oldx;
 					inputevent->absy = this->oldy;
-				} 
+				}
 				inputevent->absx = inputevent->posx;
 				inputevent->absy = inputevent->posy;
 				inputevent->posx-= rect.x;
@@ -324,7 +344,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			}
 
 			if(this->oldx == inputevent->absx && this->oldy == inputevent->absy) {
-			
+
 				memset(inputevent, 0, sizeof(MMSInputEvent));
 				return;
 			}

@@ -158,4 +158,11 @@ unsigned int getMDiff(unsigned int start_ts, unsigned int end_ts);
 
 int64_t timespecDiff(struct timespec *timeA, struct timespec *timeB);
 
+
+
+void rotateUCharBuffer180(unsigned char *buffer, int pitch, int w, int h);
+void rotateUShortIntBuffer180(unsigned short int *buffer, int pitch, int w, int h);
+void rotateUIntBuffer180(unsigned int *buffer, int pitch, int w, int h);
+
+
 #endif /*TOOLS_H_*/

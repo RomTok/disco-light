@@ -162,6 +162,7 @@ void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
 
+
 bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 	if (!glyph) {
 		return false;
@@ -227,6 +228,11 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 
 				// get pointer to data
 				glyph->buffer = this->glyphpool_ptr - glyph_size;
+
+#ifdef ROTATE_180
+				rotateUCharBuffer180(glyph->buffer, glyph->pitch, glyph->width, glyph->height);
+#endif
+
 
 #ifdef  __HAVE_OPENGL__
 				// if disko is built and initialized for OpenGL, we create a texture for this glyph

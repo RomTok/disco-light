@@ -886,9 +886,9 @@ if (!AA) { \
 
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_INIT(pw) \
-	int DY = 0;   font->getHeight(&DY); \
+	int FH = 0;   font->getHeight(&FH); \
 	int desc = 0; font->getDescender(&desc); \
-	DY -= desc + 1; \
+	int DY = FH - (desc + 1); \
 	int dst_pitch_pix = dst_pitch >> pw;
 
 //! used for text output
@@ -905,6 +905,11 @@ if (!AA) { \
 		src_h         = glyph.height; \
 		src           = glyph.buffer; \
 	}
+
+
+
+
+#ifndef ROTATE_180
 
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
@@ -930,6 +935,88 @@ if (!AA) { \
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_END_RENDER x+=glyph.advanceX >> 6; }
 
+
+#define ROTATE_180_REGION(SURFACE, REGION)
+#define ROTATE_180_RECT_SINGLE(SURFACE, X, Y, W, H)
+#define ROTATE_180_RECT_SINGLEX(WIDTH, HEIGHT, X, Y, W, H)
+
+
+#else
+
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
+	if (glyph_loaded) { \
+		x-=glyph.advanceX >> 6; \
+		int dx = x + glyph.left; \
+		int dy = y - FH + DY - glyph.top; \
+		if (dx < clipreg.x1) { \
+			src_w -= clipreg.x1 - dx; \
+			src   += clipreg.x1 - dx; \
+			dx     = clipreg.x1; } \
+		if (dx + src_w - 1 > clipreg.x2) src_w = clipreg.x2 - dx + 1; \
+		if (dy < clipreg.y1) { \
+			src_h -= clipreg.y1 - dy; \
+			src   +=(clipreg.y1 - dy) * src_pitch_pix; \
+			dy     = clipreg.y1; } \
+		if (dy + src_h - 1 > clipreg.y2) src_h = clipreg.y2 - dy + 1; \
+		unsigned char *src_end = src + src_h * src_pitch_pix; \
+		unsigned char *line_end = src + src_w; \
+		int src_pitch_pix_diff = src_pitch_pix - src_w; \
+		int dst_pitch_pix_diff = dst_pitch_pix - src_w; \
+		pt *dst = ((pt *)dst_ptr) + dx + dy * dst_pitch_pix;
+
+//! used for text output
+#define MMSFBSURFACE_BLIT_TEXT_END_RENDER }
+
+
+/*
+#define ROTATE_180_REGION(region) \
+	if (region) { \
+		int tmp; \
+		tmp = region->x2; region->x2 = this->config.w - region->x1 - 1; region->x1 = this->config.w - tmp - 1; \
+		tmp = region->y2; region->y2 = this->config.h - region->y1 - 1; region->y1 = this->config.h - tmp - 1; \
+	}
+
+*/
+
+/*
+#define ROTATE_180_RECT(SURFACE, RECT) \
+	if (RECT) { \
+		(RECT)->x = (SURFACE)->config.w - (RECT)->x - (RECT)->w; \
+		(RECT)->y = (SURFACE)->config.h - (RECT)->y - (RECT)->h; \
+	}
+*/
+
+/*#define ROTATE_180_RECT_SOURCE(SOURCE, RECT) \
+	if ((SOURCE) && (RECT)) { \
+		(RECT)->x = SOURCE->config.w - (RECT)->x - (RECT)->w; \
+		(RECT)->y = SOURCE->config.h - (RECT)->y - (RECT)->h; \
+	}*/
+
+
+#define ROTATE_180_REGION(SURFACE, REGION) \
+	if (REGION) { \
+		int tmp; \
+		tmp = (REGION)->x2; \
+		(REGION)->x2 = ((!(SURFACE)->root_parent)?(SURFACE)->config.w:(SURFACE)->root_parent->config.w) - (REGION)->x1 - 1; \
+		(REGION)->x1 = ((!(SURFACE)->root_parent)?(SURFACE)->config.w:(SURFACE)->root_parent->config.w) - tmp - 1; \
+		tmp = (REGION)->y2; \
+		(REGION)->y2 = ((!(SURFACE)->root_parent)?(SURFACE)->config.h:(SURFACE)->root_parent->config.h) - (REGION)->y1 - 1; \
+		(REGION)->y1 = ((!(SURFACE)->root_parent)?(SURFACE)->config.h:(SURFACE)->root_parent->config.h) - tmp - 1; \
+	}
+
+
+#define ROTATE_180_RECT_SINGLE(SURFACE, X, Y, W, H) \
+	X = ((!(SURFACE)->root_parent)?(SURFACE)->config.w:(SURFACE)->root_parent->config.w) - X - (W); \
+	Y = ((!(SURFACE)->root_parent)?(SURFACE)->config.h:(SURFACE)->root_parent->config.h) - Y - (H);
+
+#define ROTATE_180_RECT_SINGLEX(WIDTH, HEIGHT, X, Y, W, H) \
+	X = WIDTH - X - (W); \
+	Y = HEIGHT - Y - (H);
+
+
+#endif
 
 
 

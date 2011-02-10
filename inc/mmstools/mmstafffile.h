@@ -188,6 +188,9 @@ class MMSTaffFile {
 		//! size of the mirror in pixel
 		int mirror_size;
 
+		//! rotate by 180 degree?
+		bool rotate_180;
+
 		//! is the TAFF buffer loaded?
 		bool	loaded;
 
@@ -203,7 +206,7 @@ class MMSTaffFile {
         //! Internal method: Writes a buffer to a file.
         bool writeBuffer(MMSFile *file, void *ptr, size_t *ritems, size_t size, size_t nitems, bool *write_status = NULL);
 
-        //! Internal method: Create mirror effect and convert to target pixelformat.
+        //! Internal method: Create mirror effect, rotate and convert to target pixelformat.
         bool postprocessImage(void **buf, int *width, int *height, int *pitch,
 								 int *size, bool *alphachannel);
 
@@ -304,11 +307,14 @@ class MMSTaffFile {
         */
         void setDestinationPixelFormat(MMSTAFF_PF pixelformat = MMSTAFF_PF_ARGB, bool premultiplied = true);
 
-        //! Set the mirror effect.
+        //! Set the mirror effect (type MMSTAFF_EXTERNAL_TYPE_IMAGE).
         /*!
         \param size	size of the mirror effect in pixel
         */
         void setMirrorEffect(int size);
+
+        //! Rotate the image by 180 degree (type MMSTAFF_EXTERNAL_TYPE_IMAGE).
+        void rotate180(bool rotate_180);
 
         //! Get the first tag id.
         /*!
@@ -415,7 +421,8 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		{ "pixelformat", TAFF_ATTRTYPE_INT }, \
 		{ "premultiplied", TAFF_ATTRTYPE_BOOL }, \
 		{ "mirror_size", TAFF_ATTRTYPE_INT }, \
-		{ "alphachannel", TAFF_ATTRTYPE_BOOL }
+		{ "alphachannel", TAFF_ATTRTYPE_BOOL }, \
+		{ "rotate_180", TAFF_ATTRTYPE_BOOL }
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_width, \
@@ -426,7 +433,8 @@ namespace MMSTAFF_IMAGE_RAWIMAGE_ATTR {
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied, \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size, \
-		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_alphachannel
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_alphachannel, \
+		MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_rotate_180
 
 	#define MMSTAFF_IMAGE_RAWIMAGE_ATTR_INIT { \
 		MMSTAFF_IMAGE_RAWIMAGE_ATTR_ATTRDESC, \
