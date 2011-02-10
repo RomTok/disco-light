@@ -908,7 +908,6 @@ if (!AA) { \
 
 
 
-
 #ifndef ROTATE_180
 
 //! used for text output
@@ -943,13 +942,11 @@ if (!AA) { \
 
 #else
 
-
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_START_RENDER(pt) \
 	if (glyph_loaded) { \
-		x-=glyph.advanceX >> 6; \
-		int dx = x + glyph.left; \
-		int dy = y - FH + DY - glyph.top; \
+		int dx = x - glyph.left - glyph.width + 1; \
+		int dy = y - (DY - glyph.top) - glyph.height + 1; \
 		if (dx < clipreg.x1) { \
 			src_w -= clipreg.x1 - dx; \
 			src   += clipreg.x1 - dx; \
@@ -967,7 +964,7 @@ if (!AA) { \
 		pt *dst = ((pt *)dst_ptr) + dx + dy * dst_pitch_pix;
 
 //! used for text output
-#define MMSFBSURFACE_BLIT_TEXT_END_RENDER }
+#define MMSFBSURFACE_BLIT_TEXT_END_RENDER x-=glyph.advanceX >> 6; }
 
 
 /*
