@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbperf.h"
+#include <stdio.h>
+#include <sys/time.h>
+
 
 // static variables
 bool MMSFBPerf::initialized	= false;
