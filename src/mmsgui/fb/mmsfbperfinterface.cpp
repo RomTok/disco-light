@@ -33,6 +33,8 @@
 #include "mmsgui/fb/mmsfbperf.h"
 #include "mmsgui/fb/mmsfbperfinterface.h"
 
+#include <stdio.h>
+
 MMSFBPerfInterface::MMSFBPerfInterface(class MMSFBPerf *mmsfbperf) : MMSServerInterface("MMSFBPerfInterface") {
 	this->mmsfbperf = mmsfbperf;
 }
