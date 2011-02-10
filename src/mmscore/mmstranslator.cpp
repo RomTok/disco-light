@@ -166,6 +166,16 @@ void MMSTranslator::translate(const string &source, string &dest) {
 			dest = source;
 		}
 	}
+
+	size_t lookHere = 0;
+    size_t foundHere;
+    string from = "\\n";
+    string to = "\n";
+    while((foundHere = dest.find(from, lookHere)) != string::npos) {
+		dest.replace(foundHere, from.size(), to);
+		lookHere = foundHere + to.size();
+    }
+
 }
 
 bool MMSTranslator::setTargetLang(MMSLanguage lang) {
