@@ -38,8 +38,7 @@
 //! This class is the base class for all threads which works as a server.
 /*!
 This class includes the base functionality e.g. the handshake between server and client threads.
-This class cannot be constructed because processData() method is virtual and has to be
-programmed in a derived class.
+You can use the onProcessData() callback if you do not want to derive your own class from MMSThreadServer.
 \author Jens Schneider
 */
 class MMSThreadServer : public MMSThread {
@@ -95,7 +94,7 @@ class MMSThreadServer : public MMSThread {
         \param identity		identity of the server thread used for logging etc.
         \param blocking		blocking or non-blocking mode, see trigger()
         \note In non-blocking mode the caller of trigger() will get control directly after triggering
-              and do not wait until server has finished processData().
+              and do not wait until server has finished processData() of the previous trigger() call.
         */
 		MMSThreadServer(int queue_size = 1000, string identity = "MMSThreadServer", bool blocking = true);
 
@@ -128,7 +127,8 @@ class MMSThreadServer : public MMSThread {
         If MMSThreadServer runs in blocking mode (see constructor), the caller
         of trigger() will be blocked and is waiting for the answer from the server.
         If MMSThreadServer runs in non-blocking mode, the caller of trigger() will
-        get control immediately after triggering the event to the server thread.
+        get control immediately and do not wait until server has finished processData()
+        of the previous trigger() call.
         \param in_data		pointer to data to put to the server
         \param in_data_len	length of in_data
         \param out_data		address of a pointer to receive data from the server
