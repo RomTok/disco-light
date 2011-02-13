@@ -277,11 +277,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 	    				// set mirror size
 	    				tafff->setMirrorEffect(mirror_size);
 
-#ifndef ROTATE_180
-	    				tafff->rotate180(false);
-#else
-	    				tafff->rotate180(true);
-#endif
+	    				// rotate image by 180°?
+	    				tafff->rotate180(MMSFBBase_rotate180);
 
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
@@ -316,11 +313,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
         				// set special attributes like mirror effect
     					tafff->setMirrorEffect(mirror_size);
 
-#ifndef ROTATE_180
-	    				tafff->rotate180(false);
-#else
-	    				tafff->rotate180(true);
-#endif
+	    				// rotate image by 180°?
+	    				tafff->rotate180(MMSFBBase_rotate180);
 
 	    				// convert it
 	    				if (!tafff->convertExternal2TAFF()) {
@@ -444,10 +438,9 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 							else
 								retry = false;
 						}
-#ifndef ROTATE_180
 						else
-						if (img_rotate_180) {
-				    		DEBUGOUT("ImageManager, taff image is rotated by 180 degree, but not requested\n");
+						if (img_rotate_180 && !MMSFBBase_rotate180) {
+				    		DEBUGOUT("ImageManager, taff image is rotated by 180 degree, but NOT requested\n");
 				    		if (!retry) {
 				    			// reset rotation
 				    			DEBUGOUT("ImageManager, reset rotation\n");
@@ -458,9 +451,8 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    		else
 				    			retry = false;
 						}
-#else
 						else
-						if (!img_rotate_180) {
+						if (!img_rotate_180 && MMSFBBase_rotate180) {
 				    		DEBUGOUT("ImageManager, taff image is NOT rotated by 180 degree, but requested\n");
 				    		if (!retry) {
 				    			// retry with rotation
@@ -472,7 +464,6 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    		else
 				    			retry = false;
 						}
-#endif
 						else
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	// successfully read

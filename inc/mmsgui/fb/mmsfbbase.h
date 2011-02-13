@@ -79,16 +79,15 @@ extern "C" {
 
 
 
-//#define ROTATE_180
-
-
-
-/* switch between window managers */
+// switch between window managers
 //#define USE_DFB_WINMAN
 #define USE_MMSFB_WINMAN
 
-/* access to the last error text */
+// access to the last error text
 extern string MMSFB_LastErrorString;
+
+// screen should be rotated by 180°?
+extern bool MMSFBBase_rotate180;
 
 
 

@@ -122,6 +122,7 @@ class MMSConfigDataGraphics {
 	    bool   					extendedaccel;
 	    string 					allocmethod;
 	    MMSFBFullScreenMode		fullscreen;
+	    int						rotatescreen;
 	    bool					hideapplication;
 		bool					touchSwapX;					/**< swap x axis (maximum value becomes minimum) */
 		bool					touchSwapY;					/**< swap y axis (maximum value becomes minimum) */
@@ -137,6 +138,7 @@ class MMSConfigDataGraphics {
    		    extendedaccel(true),							// use lowlevel disko routines for faster pixel manipulation
    		    allocmethod(""),								// the current alloc method
    		    fullscreen(MMSFB_FSM_FALSE),					// x11 fullscreen?, default no
+   		    rotatescreen(0),								// rotate screen by X degree, default 0
    		    hideapplication(false),
    		    touchSwapX(false),
    		    touchSwapY(false),
@@ -218,6 +220,7 @@ class MMSConfigData {
         const bool   getExtendedAccel();
         const string getAllocMethod();
         const MMSFBFullScreenMode   getFullScreen();
+        const int getRotateScreen();
         const bool   getHideApplication();
         const bool   getTouchSwapX();
         const bool   getTouchSwapY();
@@ -227,6 +230,7 @@ class MMSConfigData {
         void setVideoLayer(MMSConfigDataLayer layer);
         void setGraphicsLayer(MMSConfigDataLayer layer);
         void setFullScreen(MMSFBFullScreenMode fsm);
+        void setRotateScreen(int rs);
         void setHideApplication(bool hideapplication);
 
         // language section getters

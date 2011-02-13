@@ -758,6 +758,11 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				string val = string((const char *)parvalue);
 				if ((this->graphics.fullscreen = getMMSFBFullScreenModeFromString(strToUpr(val))) == MMSFB_FSM_NONE)
 					WRONG_VALUE(parname, val, MMSFB_FSM_VALID_VALUES, "");
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "rotatescreen")) {
+				string val = string((const char *)parvalue);
+				this->graphics.rotatescreen = strToInt(val);
+				if (this->graphics.rotatescreen != 0 && this->graphics.rotatescreen != 180)
+					WRONG_VALUE(parname, val, "0, 180", "");
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "hideapplication")) {
 				this->graphics.hideapplication = strToBool(string((const char *)parvalue));
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchSwapX")) {

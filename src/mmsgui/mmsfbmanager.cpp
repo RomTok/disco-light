@@ -88,6 +88,10 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	}
 #endif
 
+	if (this->config.getRotateScreen() == 180) {
+		// set rotate by 180° flag
+		MMSFBBase_rotate180 = true;
+	}
 
 	// get layer settings from config
 	MMSConfigDataLayer videolayer_conf = this->config.getVideoLayer();

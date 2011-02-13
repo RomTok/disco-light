@@ -232,6 +232,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			DEBUGMSG_OUTSTR("Core", "Alloc Method.................: " + config->getAllocMethod());
 
 			DEBUGMSG_OUTSTR("Core", "Fullscreen...................: " + getMMSFBFullScreenModeString(config->getFullScreen()));
+			DEBUGMSG_OUTSTR("Core", "Rotate screen................: " + iToStr(config->getRotateScreen()) + "°");
 
 			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + getMMSLanguageString(config->getSourceLang()));
 			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + getMMSLanguageString(config->getDefaultTargetLang()));

@@ -34,8 +34,12 @@
 #include "mmstools/tools.h"
 #include <string.h>
 
-/* stores the last error text */
+// stores the last error text
 string MMSFB_LastErrorString;
+
+// screen should be rotated by 180°?
+bool MMSFBBase_rotate180 = false;
+
 
 string MMSFB_ErrorString(const int rc, const string msg) {
     if (rc)

@@ -241,6 +241,10 @@ const MMSFBFullScreenMode MMSConfigData::getFullScreen() {
 	return this->graphics.fullscreen;
 }
 
+const int MMSConfigData::getRotateScreen() {
+	return this->graphics.rotatescreen;
+}
+
 const bool   MMSConfigData::getHideApplication() {
 	return this->graphics.hideapplication;
 }
@@ -269,6 +273,10 @@ void MMSConfigData::setGraphicsLayer(MMSConfigDataLayer layer) {
 
 void MMSConfigData::setFullScreen(MMSFBFullScreenMode fsm) {
 	this->graphics.fullscreen = fsm;
+}
+
+void MMSConfigData::setRotateScreen(int rs) {
+	this->graphics.rotatescreen = rs;
 }
 
 void MMSConfigData::setHideApplication(bool hideapplication) {
