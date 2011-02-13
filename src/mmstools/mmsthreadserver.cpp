@@ -75,38 +75,44 @@ void MMSThreadServer::threadMain() {
 	// server loop
 	while (1) {
 		if (pthread_cond_wait(&this->cond, &this->mutex) == 0) {
-			// signal from a client thread received, processing next item in the queue
-			MMSTS_QUEUE_ITEM *item = this->queue[this->queue_rp];
-			this->queue[this->queue_rp] = NULL;
-			this->queue_rp++;
-			if (this->queue_rp >= this->queue_size)
-				this->queue_rp = 0;
-			this->buffer_full = false;
-			if (!item) continue;
+			// signal from a client thread received
+			while (this->queue_rp != this->queue_wp) {
+				// processing next item in the queue
+				MMSTS_QUEUE_ITEM *item = this->queue[this->queue_rp];
+				if (item) {
+					if (this->blocking) {
+						// blocking mode, now calling the worker routine for data processing
+						processData(item->in_data, item->in_data_len, item->out_data, item->out_data_len);
 
-			if (this->blocking) {
-				// blocking mode, now calling the worker routine for data processing
-				processData(item->in_data, item->in_data_len, item->out_data, item->out_data_len);
+						// handshake with the client thread
+						pthread_mutex_lock(&item->mutex);
+						pthread_cond_signal(&item->cond);
+						pthread_mutex_unlock(&item->mutex);
+					}
+					else {
+						// non-blocking mode, processing data in parallel to the caller thread of trigger()
+						void *in_data		= item->in_data;
+						int in_data_len		= item->in_data_len;
+						void **out_data		= item->out_data;
+						int *out_data_len	= item->out_data_len;
 
-				// handshake with the client thread
-				pthread_mutex_lock(&item->mutex);
-				pthread_cond_signal(&item->cond);
-				pthread_mutex_unlock(&item->mutex);
-			}
-			else {
-				// non-blocking mode, processing data in parallel to the caller thread of trigger()
-				void *in_data		= item->in_data;
-				int in_data_len		= item->in_data_len;
-				void **out_data		= item->out_data;
-				int *out_data_len	= item->out_data_len;
+						// handshake with the client thread
+						pthread_mutex_lock(&item->mutex);
+						pthread_cond_signal(&item->cond);
+						pthread_mutex_unlock(&item->mutex);
 
-				// handshake with the client thread
-				pthread_mutex_lock(&item->mutex);
-				pthread_cond_signal(&item->cond);
-				pthread_mutex_unlock(&item->mutex);
+						// now calling the worker routine for data processing
+						processData(in_data, in_data_len, out_data, out_data_len);
+					}
+				}
 
-				// now calling the worker routine for data processing
-				processData(in_data, in_data_len, out_data, out_data_len);
+				// remove item from queue
+				this->queue[this->queue_rp] = NULL;
+				if (this->queue_rp + 1 < this->queue_size)
+					this->queue_rp++;
+				else
+					this->queue_rp = 0;
+				this->buffer_full = false;
 			}
 		}
 	}
