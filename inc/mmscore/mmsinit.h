@@ -65,6 +65,8 @@ typedef int MMSINIT_FLAGS;
 #define MMSINIT_SILENT 			0x00000100
 //! no virtual console will be opened and screen will not cleared during startup
 #define MMSINIT_NO_CONSOLE		0x00000200
+//! disko should trigger an pan event to frame buffer driver every time current read buffer has changed (e.g. due to flipping regions)
+#define MMSINIT_FLIP_FLUSH		0x00000400
 
 bool mmsInit(MMSINIT_FLAGS flags, int argc = 0, char *argv[] = NULL, string configfile = "",
 			 string appl_name = "Disko Application", string appl_icon_name = "Disko Application",

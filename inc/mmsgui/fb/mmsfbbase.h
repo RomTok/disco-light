@@ -137,6 +137,8 @@ typedef unsigned int MMSFBFlipFlags;
 #define MMSFB_FLIP_ONSYNC				0x00000002
 //! surface flip flag: WAIT and ONSYNC
 #define MMSFB_FLIP_WAITFORSYNC			0x00000004
+//! surface flip flag: send pan event to fbdev every time the display buffer has changed
+#define MMSFB_FLIP_FLUSH				0x00000008
 
 
 //! surface lock flags

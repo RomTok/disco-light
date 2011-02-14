@@ -266,7 +266,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         	MMSWidget_inputmode = config->getInputMode();
 
 			// init the fbmanager, check if virtual console should be opened
-            mmsfbmanager.init(argc, argv, appl_name, appl_icon_name, (!(flags & MMSINIT_NO_CONSOLE)));
+            mmsfbmanager.init(argc, argv, appl_name, appl_icon_name,
+								(!(flags & MMSINIT_NO_CONSOLE)), (flags & MMSINIT_FLIP_FLUSH));
             mmsfbmanager.applySettings();
 
 			if (flags & MMSINIT_THEMEMANAGER) {

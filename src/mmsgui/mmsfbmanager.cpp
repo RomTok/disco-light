@@ -58,7 +58,8 @@ MMSFBManager::MMSFBManager() {
 MMSFBManager::~MMSFBManager() {
 }
 
-bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_icon_name, bool virtual_console) {
+bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_icon_name,
+						bool virtual_console, bool flip_flush) {
 	int myargc=argc;
 	char *myargv[255];
 	int i;
@@ -111,6 +112,11 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
     if (videolayer_conf.id == graphicslayer_conf.id) {
     	DEBUGMSG("MMSGUI", "video layer and graphics layer are the same");
         this->graphicslayer = this->videolayer;
+
+        if (!flip_flush)
+        	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
+        else
+        	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC | MMSFB_FLIP_FLUSH);
     }
     else {
         this->layercount++;
@@ -118,13 +124,16 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
         if (!mmsfb->getLayer(graphicslayer_conf.id, &this->graphicslayer, graphicslayer_conf.outputtype, false))
             throw new MMSFBManagerError(0, MMSFB_LastErrorString);
 
-    	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
-    }
+        if (!flip_flush)
+        	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
+        else
+        	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC | MMSFB_FLIP_FLUSH);
 
-	if (videolayer_conf.outputtype == MMSFB_OT_MATROXFB)
-    	this->videolayer->setFlipFlags(MMSFB_FLIP_WAITFORSYNC);
-    else
-    	this->videolayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
+    	if (videolayer_conf.outputtype == MMSFB_OT_MATROXFB)
+        	this->videolayer->setFlipFlags(MMSFB_FLIP_WAITFORSYNC);
+        else
+        	this->videolayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
+    }
 
     if (!this->graphicslayer->getID(&this->graphicslayerid))
         throw new MMSFBManagerError(0, MMSFB_LastErrorString);

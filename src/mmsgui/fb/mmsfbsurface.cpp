@@ -6243,6 +6243,17 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						this->surface_invert_lock = false;
 
 						this->config.blittingflags = savedbf;
+
+#ifdef __HAVE_FBDEV__
+						if (sb->mmsfbdev_surface == this) {
+							// surface is the fb layer surface
+							// there is no need to swapDisplay() because current read buffer (currbuffer_read) has NOT changed
+							if (this->flipflags & MMSFB_FLIP_FLUSH) {
+								// BUT: MMSFB_FLIP_FLUSH tells us, that we have to trigger an pan event to frame buffer driver
+								swapDisplay(true);
+							}
+						}
+#endif
 					}
 				}
 			}
