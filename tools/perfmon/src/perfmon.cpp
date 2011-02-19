@@ -33,20 +33,80 @@
 #include <cstring>
 #include "mms.h"
 
+void help() {
+	printf("\nPerformance Monitor\n\n");
+	printf("parameter:\n\n");
+	printf("--reset    if used, statistic infos will be reset\n");
+	printf("\nexamples:\n\n");
+	printf("perfmon\n\n");
+	printf("perfmon --disko:config=./etc/diskorc.xml\n\n");
+	printf("perfmon --reset\n\n");
+	printf("perfmon --disko:config=./etc/diskorc.xml --reset\n\n");
+}
+
+bool getparams(int argc, char *argv[], bool &reset) {
+
+	reset = false;
+
+    //check if --reset is given per commandline
+    for (int i = 1; i < argc; i++) {
+    	if (strcmp(argv[i], "--reset")==0) {
+    		// yes
+    		reset = true;
+    	}
+    	else
+		if (memcmp(argv[i], "--disko", 7)!=0) {
+			printf("Error: unknown parameter %s\n", argv[i]);
+			return false;
+		}
+    }
+
+	return true;
+}
+
 int main(int argc, char *argv[]) {
+	bool reset;
 
-	// init disko in silent mode
-	if (mmsInit(MMSINIT_SILENT)) {
-		MMSConfigData config;
-
-		MMSTCPClient *tcl = new MMSTCPClient(config.getPerfMonAddress(), config.getPerfMonPort());
-		string ret;
-		tcl->sendAndReceive("in", &ret);
-		printf(ret.c_str());
-
+	// get cmd parameters
+	if (!getparams(argc, argv, reset)) {
+		help();
+		return 1;
 	}
 
-	return 0;
+	// init disko in silent mode
+	if (mmsInit(MMSINIT_SILENT, argc, argv)) {
+		MMSConfigData config;
+
+		// init tcp client instance
+		MMSTCPClient *tcl = new MMSTCPClient(config.getPerfMonAddress(), config.getPerfMonPort());
+
+		// build command
+		string cmd;
+		if (!reset)
+			cmd = "GET_STATINFO RESET(FALSE)";
+		else
+			cmd = "GET_STATINFO RESET(TRUE)";
+
+		// send command and receive answer
+		string ret;
+		tcl->sendAndReceive(cmd, &ret);
+		if (!ret.empty()) {
+			// success
+			printf(ret.c_str());
+		}
+		else {
+			// command failed
+			printf("Error: command '%s' failed\n", cmd.c_str());
+			return 3;
+		}
+
+		// free tcp client instance
+		delete tcl;
+
+		return 0;
+	}
+
+	return 2;
 }
 
 

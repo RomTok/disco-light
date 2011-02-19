@@ -6343,12 +6343,13 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)) {
 //TODO: change the ifdef, what to do if XRenderComposite not available?
 #ifdef __HAVE_XV__
+
+							MMSFBPERF_START_MEASURING;
+
 							//put image to layer pixmap
 							XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
 										  0, 0, dx, dy,
 										  layer->config.w, layer->config.h, False);
-
-
 
 							double scale = (double)layer->x_window_w / layer->config.w;
 
@@ -6374,15 +6375,27 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 								   0, 0,
 								   0, 0,
 								   layer->x_window_w, layer->x_window_h);
+
+							//XFlush(mmsfb->x_display);
+							XSync(mmsfb->x_display, False);
+
+							MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(this, layer->config.w, layer->config.h);
+
 #endif
 						} else {
+
+							MMSFBPERF_START_MEASURING;
+
 							XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 										  0, 0, dx, dy,
 										  this->config.w, this->config.h, False);
+
+							//XFlush(mmsfb->x_display);
+							XSync(mmsfb->x_display, False);
+
+							MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(this, this->config.w, this->config.h);
 						}
 					}
-					//XFlush(mmsfb->x_display);
-					XSync(mmsfb->x_display, False);
 				}
 				else {
 					// put only a region
@@ -6405,11 +6418,15 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 //TODO: change the ifdef, what to do if XRenderComposite not available?
 #ifdef __HAVE_XV__
 
+								MMSFBPERF_START_MEASURING;
+
+								int ww = myreg.x2 - myreg.x1 + 1;
+								int hh = myreg.y2 - myreg.y1 + 1;
+
+								//put image to layer pixmap
 								XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
 											 myreg.x1, myreg.y1, myreg.x1 + dx, myreg.y1 + dy,
-											 myreg.x2 - myreg.x1 + 1, myreg.y2 - myreg.y1 + 1, False);
-
-
+											 ww, hh, False);
 
 								double scale = (double)layer->x_window_w / layer->config.w; // We'll scale the window to 50% of its original size
 
@@ -6434,15 +6451,28 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 									   0, 0,
 									   0, 0,
 									   layer->x_window_w, layer->x_window_h);
+
+
+								//XFlush(mmsfb->x_display);
+								XSync(mmsfb->x_display, False);
+
+								MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(this, ww, hh);
+
 #endif
 							} else {
+
+								MMSFBPERF_START_MEASURING;
+
 								XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 										  0, 0, dx, dy,
 										  this->config.w, this->config.h, False);
+
+								//XFlush(mmsfb->x_display);
+								XSync(mmsfb->x_display, False);
+
+								MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(this, this->config.w, this->config.h);
 							}
 						}
-						//XFlush(mmsfb->x_display);
-						XSync(mmsfb->x_display, False);
 					}
 				}
 				XUnlockDisplay(mmsfb->x_display);
@@ -6501,29 +6531,51 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				calcAspectRatio(mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, mmsfb->display_w, mmsfb->display_h, dest,
 								(mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO), true);
 
+				MMSFBPERF_START_MEASURING;
+
 				//printf("do vputimage\n");
 				// put image
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  dest.x, dest.y, dest.w, dest.h, False);
 
-			} else if(mmsfb->resized) {
+				//XFlush(mmsfb->x_display);
+				XSync(mmsfb->x_display, False);
+
+				MMSFBPERF_STOP_MEASURING_XVSHMPUTIMAGE(this, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, dest.w, dest.h);
+			}
+			else if (mmsfb->resized) {
+
+				MMSFBPERF_START_MEASURING;
+
 				//printf("stretch to %d:%d\n",mmsfb->target_window_w, mmsfb->target_window_h);
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->target_window_w, mmsfb->target_window_h, False);
-			}else{
+
+				//XFlush(mmsfb->x_display);
+				XSync(mmsfb->x_display, False);
+
+				MMSFBPERF_STOP_MEASURING_XVSHMPUTIMAGE(this, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, mmsfb->target_window_w, mmsfb->target_window_h);
+			}
+			else {
 				/*printf("do vputimage2\n");
 				printf("layer: %x, this: %x\n", layer, this);
 				printf("sb->xv_image: %x\n", sb->xv_image[sb->currbuffer_read]);
 */
+
+				MMSFBPERF_START_MEASURING;
+
 				XvShmPutImage(mmsfb->x_display, mmsfb->xv_port, layer->x_window, layer->x_gc, sb->xv_image[sb->currbuffer_read],
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h,
 							  0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, False);
 
+				//XFlush(mmsfb->x_display);
+				XSync(mmsfb->x_display, False);
+
+				MMSFBPERF_STOP_MEASURING_XVSHMPUTIMAGE(this, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h);
 			}
-			//XFlush(mmsfb->x_display);
-			XSync(mmsfb->x_display, False);
+
 			XUnlockDisplay(mmsfb->x_display);
 			mmsfb->xlock.unlock();
 		}

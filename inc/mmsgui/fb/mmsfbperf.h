@@ -73,6 +73,14 @@
 	if (mmsfbperf) mmsfbperf->stopMeasuringStretchBlit( \
 					&perf_stime, surface, src_pixelformat, sw, sh, dw, dh); }
 
+#define MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(surface, sw, sh) \
+	if (mmsfbperf) mmsfbperf->stopMeasuringXShmPutImage( \
+					&perf_stime, surface, sw, sh); }
+
+#define MMSFBPERF_STOP_MEASURING_XVSHMPUTIMAGE(surface, sw, sh, dw, dh) \
+	if (mmsfbperf) mmsfbperf->stopMeasuringXvShmPutImage( \
+					&perf_stime, surface, sw, sh, dw, dh); }
+
 #else
 
 #define MMSFBPERF_START_MEASURING
@@ -81,6 +89,8 @@
 #define MMSFBPERF_STOP_MEASURING_DRAWSTRING(surface, clipreg, text, len, x, y)
 #define MMSFBPERF_STOP_MEASURING_BLIT(surface, src_pixelformat, sw, sh)
 #define MMSFBPERF_STOP_MEASURING_STRETCHBLIT(surface, source, sw, sh, dw, dh)
+#define MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(surface, sw, sh)
+#define MMSFBPERF_STOP_MEASURING_XVSHMPUTIMAGE(surface, sw, sh, dw, dh)
 
 #endif
 
@@ -121,7 +131,19 @@ private:
 	//! statistic for stretchblit routines
 	static MMSFBPERF_MEASURING_LIST stretchblit;
 
-	int getPerfVals(MMSFBPERF_MEASURING_LIST *mlist, const char *prefix, char *retbuf, int retbuf_size);
+	//! statistic for xshmputimage routines
+	static MMSFBPERF_MEASURING_LIST xshmputimage;
+
+	//! statistic for xvshmputimage routines
+	static MMSFBPERF_MEASURING_LIST xvshmputimage;
+
+	//! reset statistic infos
+	void reset();
+
+	void addMeasuringVals(MMSFBPERF_MEASURING_VALS *summary, MMSFBPERF_MEASURING_VALS *add_sum);
+
+	int getPerfVals(MMSFBPERF_MEASURING_LIST *mlist, const char *prefix, char *retbuf, int retbuf_size,
+					MMSFBPERF_MEASURING_VALS *summary);
 
 	void stopMeasuring(struct timeval *perf_stime, MMSFBPERF_MEASURING_VALS *mvals,
 					   int sw, int sh, int dw = 0, int dh = 0);
@@ -150,6 +172,14 @@ public:
 								  MMSFBSurface *surface,
 								  MMSFBSurfacePixelFormat src_pixelformat,
 								  int sw, int sh, int dw, int dh);
+
+	void stopMeasuringXShmPutImage(struct timeval *perf_stime,
+									MMSFBSurface *surface,
+									int sw, int sh);
+
+	void stopMeasuringXvShmPutImage(struct timeval *perf_stime,
+									MMSFBSurface *surface,
+									int sw, int sh, int dw, int dh);
 
     friend class MMSFBPerfInterface;
 };

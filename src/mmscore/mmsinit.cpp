@@ -109,7 +109,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 				config_avail = true;
 		    } catch (MMSRcParserError *ex) {
 	        	// config file not found
-		    	DEBUGOUT("configfile not found\n");
+	        	DEBUGMSG_OUTSTR("Core", "could not read config, try --disko:config=./etc/diskorc.xml");
 		    }
         } else {
         	// searching for diskorc.xml
@@ -124,7 +124,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 					rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 		        } catch (MMSRcParserError *ex) {
 		        	// config file not found
-			    	DEBUGOUT("configfile not found\n");
+		        	DEBUGMSG_OUTSTR("Core", "could not read config, try --disko:config=./etc/diskorc.xml");
 		        }
 		    }
         }

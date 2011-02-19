@@ -39,6 +39,9 @@ class MMSFBPerfInterface : public MMSServerInterface {
 	private:
 		class MMSFBPerf *mmsfbperf;
 
+		void printHeader(char **rb, const char *title = NULL);
+		void printSummary(char **rb, MMSFBPERF_MEASURING_VALS &summary);
+
 	public:
 		MMSFBPerfInterface(class MMSFBPerf *mmsfbperf);
 		~MMSFBPerfInterface();
