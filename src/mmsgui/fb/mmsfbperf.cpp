@@ -37,6 +37,8 @@
 
 // static variables
 bool MMSFBPerf::initialized	= false;
+MMSMutex MMSFBPerf::lockme;
+struct timeval MMSFBPerf::start_time;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::fillrect;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::drawline;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::drawstring;
@@ -44,6 +46,8 @@ MMSFBPERF_MEASURING_LIST MMSFBPerf::blit;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::stretchblit;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::xshmputimage;
 MMSFBPERF_MEASURING_LIST MMSFBPerf::xvshmputimage;
+MMSFBPERF_MEASURING_LIST MMSFBPerf::vsync;
+MMSFBPERF_MEASURING_LIST MMSFBPerf::swapdisplay;
 
 
 MMSFBPerf::MMSFBPerf() {
@@ -57,8 +61,17 @@ MMSFBPerf::MMSFBPerf() {
 MMSFBPerf::~MMSFBPerf() {
 }
 
+void MMSFBPerf::lock() {
+	lockme.lock();
+}
+
+void MMSFBPerf::unlock() {
+	lockme.unlock();
+}
+
 void MMSFBPerf::reset() {
 	// reset statistic infos
+	lock();
 	memset(this->fillrect, 0, sizeof(this->fillrect));
 	memset(this->drawline, 0, sizeof(this->drawline));
 	memset(this->drawstring, 0, sizeof(this->drawstring));
@@ -66,23 +79,44 @@ void MMSFBPerf::reset() {
 	memset(this->stretchblit, 0, sizeof(this->stretchblit));
 	memset(this->xshmputimage, 0, sizeof(this->xshmputimage));
 	memset(this->xvshmputimage, 0, sizeof(this->xvshmputimage));
+	memset(this->vsync, 0, sizeof(this->vsync));
+	memset(this->swapdisplay, 0, sizeof(this->swapdisplay));
+	gettimeofday(&this->start_time, NULL);
+	unlock();
+}
+
+unsigned int MMSFBPerf::getDuration() {
+	struct timeval end_time;
+	gettimeofday(&end_time, NULL);
+
+	unsigned int ms = (end_time.tv_sec - this->start_time.tv_sec) * 1000;
+	if (end_time.tv_usec >= this->start_time.tv_usec)
+		ms+= (end_time.tv_usec - this->start_time.tv_usec) / 1000;
+	else
+		ms-= (this->start_time.tv_usec - end_time.tv_usec) / 1000;
+	if (ms == 0) ms = 1;
+
+	return ms;
 }
 
 void MMSFBPerf::addMeasuringVals(MMSFBPERF_MEASURING_VALS *summary, MMSFBPERF_MEASURING_VALS *add_sum) {
 	// add sum
-	summary->calls   += add_sum->calls;
-	summary->mpixels += add_sum->mpixels;
-	summary->rpixels += add_sum->rpixels;
-	summary->usecs   += add_sum->usecs;
+	summary->calls+= add_sum->calls;
+	summary->usecs+= add_sum->usecs;
 
-	// re-calculate m/r pixels
-	summary->mpixels+= summary->rpixels / 1000000;
-	summary->rpixels%= 1000000;
+	if (add_sum->mpixels > 0 && add_sum->rpixels > 0) {
+		// re-calculate m/r pixels
+		summary->mpixels+= add_sum->mpixels;	lock();
 
-	// calculate MPPS
-	summary->mpps = summary->mpixels * 1000;
-	if (summary->usecs > 1000) summary->mpps/= summary->usecs / 1000;
-	if (summary->usecs > 0) summary->mpps+= summary->rpixels / summary->usecs;
+		summary->rpixels+= add_sum->rpixels;
+		summary->mpixels+= summary->rpixels / 1000000;
+		summary->rpixels%= 1000000;
+
+		// re-calculate mpps
+		summary->mpps = summary->mpixels * 1000;
+		if (summary->usecs > 1000) summary->mpps/= summary->usecs / 1000;
+		if (summary->usecs > 0) summary->mpps+= summary->rpixels / summary->usecs;
+	}
 }
 
 int MMSFBPerf::getPerfVals(MMSFBPERF_MEASURING_LIST *mlist, const char *prefix, char *retbuf, int retbuf_size,
@@ -90,61 +124,66 @@ int MMSFBPerf::getPerfVals(MMSFBPERF_MEASURING_LIST *mlist, const char *prefix, 
 	char *retbuf_start=retbuf;
 	char *retbuf_end = retbuf + retbuf_size;
 
-	for (unsigned int pf_cnt = 0; pf_cnt < MMSFB_PF_CNT; pf_cnt++) {
-		for (unsigned int src_pf_cnt = 0; src_pf_cnt < MMSFB_PF_CNT; src_pf_cnt++) {
-			for (unsigned int flags_cnt = 0; flags_cnt < MMSFBPERF_MAXFLAGS; flags_cnt++) {
-				// get access to the infos and check if used
-				MMSFBPERF_MEASURING_VALS *mv = &(*mlist)[pf_cnt][src_pf_cnt][flags_cnt];
-				if (!mv->usecs) {
-					// unused combination
-					continue;
-				}
+	for (unsigned int buftype = 0; buftype < 2; buftype++) {
+		for (unsigned int pf_cnt = 0; pf_cnt < MMSFB_PF_CNT; pf_cnt++) {
+			for (unsigned int src_pf_cnt = 0; src_pf_cnt < MMSFB_PF_CNT; src_pf_cnt++) {
+				for (unsigned int flags_cnt = 0; flags_cnt < MMSFBPERF_MAXFLAGS; flags_cnt++) {
+					// get access to the infos and check if used
+					MMSFBPERF_MEASURING_VALS *mv = &(*mlist)[buftype][pf_cnt][src_pf_cnt][flags_cnt];
+					if (!mv->usecs) {
+						// unused combination
+						continue;
+					}
 
-				if (summary) {
-					// add current measuring values to summary
-					addMeasuringVals(summary, mv);
-				}
+					if (summary) {
+						// add current measuring values to summary
+						addMeasuringVals(summary, mv);
+					}
 
-				// fill the info line
-				char buf[256];
-				int cnt;
-				memset(buf, ' ', sizeof(buf));
+					// fill the info line
+					char buf[256];
+					int cnt;
+					memset(buf, ' ', sizeof(buf));
 
-				cnt = sprintf(&buf[0],   "%s", prefix);
-				buf[0 + cnt]   = ' ';
+					cnt = sprintf(&buf[0],   "%s", prefix);
+					buf[0 + cnt]   = ' ';
 
-				cnt = sprintf(&buf[14],  "%s", getMMSFBPixelFormatString((MMSFBSurfacePixelFormat)pf_cnt).c_str());
-				buf[14 + cnt]   = ' ';
+					cnt = sprintf(&buf[14],  "%c", (buftype)?'X':'O');
+					buf[14 + cnt]   = ' ';
 
-				cnt = sprintf(&buf[23],  "%s", getMMSFBPixelFormatString((MMSFBSurfacePixelFormat)src_pf_cnt).c_str());
-				buf[23 + cnt]   = ' ';
+					cnt = sprintf(&buf[16],  "%s", getMMSFBPixelFormatString((MMSFBSurfacePixelFormat)pf_cnt).c_str());
+					buf[16 + cnt]   = ' ';
 
-				cnt = sprintf(&buf[32],  "%05x", flags_cnt);
-				buf[32 + cnt]   = ' ';
+					cnt = sprintf(&buf[25],  "%s", getMMSFBPixelFormatString((MMSFBSurfacePixelFormat)src_pf_cnt).c_str());
+					buf[25 + cnt]   = ' ';
 
-				cnt = sprintf(&buf[38],  "%d", mv->calls);
-				buf[38 + cnt]   = ' ';
+					cnt = sprintf(&buf[34],  "%05x", flags_cnt);
+					buf[34 + cnt]   = ' ';
 
-				cnt = sprintf(&buf[45],  "%d.%03d", mv->mpixels, mv->rpixels / 1000);
-				buf[45 + cnt]  = ' ';
+					cnt = sprintf(&buf[40],  "%d", mv->calls);
+					buf[40 + cnt]   = ' ';
 
-				cnt = sprintf(&buf[55],  "%d", mv->usecs);
-				buf[55 + cnt]  = ' ';
+					cnt = sprintf(&buf[47],  "%d.%03d", mv->mpixels, mv->rpixels / 1000);
+					buf[47 + cnt]  = ' ';
 
-				cnt = sprintf(&buf[67],  "%d", mv->mpps);
-				cnt+=67;
+					cnt = sprintf(&buf[57],  "%d", mv->usecs);
+					buf[57 + cnt]  = ' ';
 
-				// print it to retbuf
-				if (retbuf + cnt + 1 <= retbuf_end) {
-					memcpy(retbuf, buf, cnt);
-					retbuf+=cnt;
-					*retbuf = '\n';
-					retbuf++;
-					*retbuf = 0;
-				}
-				else {
-					// retbuf is full
-					return -1;
+					cnt = sprintf(&buf[69],  "%d", mv->mpps);
+					cnt+=69;
+
+					// print it to retbuf
+					if (retbuf + cnt + 1 <= retbuf_end) {
+						memcpy(retbuf, buf, cnt);
+						retbuf+=cnt;
+						*retbuf = '\n';
+						retbuf++;
+						*retbuf = 0;
+					}
+					else {
+						// retbuf is full
+						return -1;
+					}
 				}
 			}
 		}
@@ -159,6 +198,8 @@ void MMSFBPerf::stopMeasuring(struct timeval *perf_stime, MMSFBPERF_MEASURING_VA
 	// get stop time
 	struct timeval perf_etime;
 	gettimeofday(&perf_etime, NULL);
+
+	lock();
 
 	// count calls
 	mvals->calls++;
@@ -183,6 +224,8 @@ void MMSFBPerf::stopMeasuring(struct timeval *perf_stime, MMSFBPERF_MEASURING_VA
 
 	// calculate mpps (mega pixel per second)
 	mvals->mpps= (mvals->mpixels * 1000000 + mvals->rpixels) / mvals->usecs;
+
+	unlock();
 }
 
 void MMSFBPerf::startMeasuring(struct timeval *perf_stime) {
@@ -196,8 +239,9 @@ void MMSFBPerf::stopMeasuringFillRectangle(struct timeval *perf_stime,
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
 	MMSFBDrawingFlags drawingflags = surface->config.drawingflags;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if ((pixelformat < MMSFB_PF_CNT) && (drawingflags < MMSFBPERF_MAXFLAGS))
-		stopMeasuring(perf_stime, &this->fillrect[pixelformat][MMSFB_PF_NONE][drawingflags], w, h);
+		stopMeasuring(perf_stime, &this->fillrect[buftype][pixelformat][MMSFB_PF_NONE][drawingflags], w, h);
 }
 
 void MMSFBPerf::stopMeasuringDrawLine(struct timeval *perf_stime,
@@ -206,8 +250,9 @@ void MMSFBPerf::stopMeasuringDrawLine(struct timeval *perf_stime,
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
 	MMSFBDrawingFlags drawingflags = surface->config.drawingflags;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if ((pixelformat < MMSFB_PF_CNT) && (drawingflags < MMSFBPERF_MAXFLAGS))
-		stopMeasuring(perf_stime, &this->drawline[pixelformat][MMSFB_PF_NONE][drawingflags], pixels, 1);
+		stopMeasuring(perf_stime, &this->drawline[buftype][pixelformat][MMSFB_PF_NONE][drawingflags], pixels, 1);
 }
 
 void MMSFBPerf::stopMeasuringDrawString(struct timeval *perf_stime,
@@ -216,8 +261,9 @@ void MMSFBPerf::stopMeasuringDrawString(struct timeval *perf_stime,
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
 	MMSFBDrawingFlags drawingflags = surface->config.drawingflags;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if ((pixelformat < MMSFB_PF_CNT) && (drawingflags < MMSFBPERF_MAXFLAGS))
-		stopMeasuring(perf_stime, &this->drawstring[pixelformat][MMSFB_PF_NONE][drawingflags], w, h);
+		stopMeasuring(perf_stime, &this->drawstring[buftype][pixelformat][MMSFB_PF_NONE][drawingflags], w, h);
 }
 
 void MMSFBPerf::stopMeasuringBlit(struct timeval *perf_stime,
@@ -228,8 +274,9 @@ void MMSFBPerf::stopMeasuringBlit(struct timeval *perf_stime,
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
 	MMSFBBlittingFlags blittingflags = surface->config.blittingflags;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if ((pixelformat < MMSFB_PF_CNT) && (src_pixelformat < MMSFB_PF_CNT) && (blittingflags < MMSFBPERF_MAXFLAGS))
-		stopMeasuring(perf_stime, &this->blit[pixelformat][src_pixelformat][blittingflags], sw, sh);
+		stopMeasuring(perf_stime, &this->blit[buftype][pixelformat][src_pixelformat][blittingflags], sw, sh);
 }
 
 void MMSFBPerf::stopMeasuringStretchBlit(struct timeval *perf_stime,
@@ -240,8 +287,9 @@ void MMSFBPerf::stopMeasuringStretchBlit(struct timeval *perf_stime,
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
 	MMSFBBlittingFlags blittingflags = surface->config.blittingflags;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if ((pixelformat < MMSFB_PF_CNT) && (src_pixelformat < MMSFB_PF_CNT) && (blittingflags < MMSFBPERF_MAXFLAGS))
-		stopMeasuring(perf_stime, &this->stretchblit[pixelformat][src_pixelformat][blittingflags], sw, sh, dw, dh);
+		stopMeasuring(perf_stime, &this->stretchblit[buftype][pixelformat][src_pixelformat][blittingflags], sw, sh, dw, dh);
 }
 
 void MMSFBPerf::stopMeasuringXShmPutImage(struct timeval *perf_stime,
@@ -250,8 +298,9 @@ void MMSFBPerf::stopMeasuringXShmPutImage(struct timeval *perf_stime,
 
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if (pixelformat < MMSFB_PF_CNT)
-		stopMeasuring(perf_stime, &this->xshmputimage[pixelformat][pixelformat][MMSFB_BLIT_NOFX], sw, sh);
+		stopMeasuring(perf_stime, &this->xshmputimage[buftype][pixelformat][pixelformat][MMSFB_BLIT_NOFX], sw, sh);
 }
 
 void MMSFBPerf::stopMeasuringXvShmPutImage(struct timeval *perf_stime,
@@ -260,7 +309,28 @@ void MMSFBPerf::stopMeasuringXvShmPutImage(struct timeval *perf_stime,
 
 	// stop measuring for specified pixelformat and flags
 	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
 	if (pixelformat < MMSFB_PF_CNT)
-		stopMeasuring(perf_stime, &this->xvshmputimage[pixelformat][pixelformat][MMSFB_BLIT_NOFX], sw, sh, dw, dh);
+		stopMeasuring(perf_stime, &this->xvshmputimage[buftype][pixelformat][pixelformat][MMSFB_BLIT_NOFX], sw, sh, dw, dh);
+}
+
+void MMSFBPerf::stopMeasuringVSync(struct timeval *perf_stime,
+									MMSFBSurface *surface) {
+
+	// stop measuring for specified pixelformat and flags
+	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
+	if (pixelformat < MMSFB_PF_CNT)
+		stopMeasuring(perf_stime, &this->vsync[buftype][pixelformat][MMSFB_PF_NONE][MMSFB_BLIT_NOFX]);
+}
+
+void MMSFBPerf::stopMeasuringSwapDisplay(struct timeval *perf_stime,
+											MMSFBSurface *surface) {
+
+	// stop measuring for specified pixelformat and flags
+	MMSFBSurfacePixelFormat pixelformat = surface->config.surface_buffer->pixelformat;
+	unsigned int buftype = (!surface->config.surface_buffer->buffers[0].hwbuffer && !surface->config.surface_buffer->external_buffer)?0:1;
+	if (pixelformat < MMSFB_PF_CNT)
+		stopMeasuring(perf_stime, &this->swapdisplay[buftype][pixelformat][MMSFB_PF_NONE][MMSFB_BLIT_NOFX]);
 }
 

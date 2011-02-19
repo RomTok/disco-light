@@ -45,15 +45,15 @@ MMSFBPerfInterface::~MMSFBPerfInterface() {
 void MMSFBPerfInterface::printHeader(char **rb, const char *title) {
 	(*rb)+= sprintf(*rb, "\n");
 	if (title) (*rb)+= sprintf(*rb, "%s\n\n", title);
-	(*rb)+= sprintf(*rb, "Function      Dest PF  Src PF   Flags Calls  MegaPix   MicroSecs   MP Per Sec\n");
-	(*rb)+= sprintf(*rb, "-----------------------------------------------------------------------------\n");
+	(*rb)+= sprintf(*rb, "Function      T Dest PF  Src PF   Flags Calls  MegaPix   MicroSecs   MP Per Sec\n");
+	(*rb)+= sprintf(*rb, "-------------------------------------------------------------------------------\n");
 }
 
 void MMSFBPerfInterface::printSummary(char **rb, MMSFBPERF_MEASURING_VALS &summary) {
 
 	if (summary.usecs) {
 		// list above is not empty
-		(*rb)+= sprintf(*rb, "-----------------------------------------------------------------------------\n");
+		(*rb)+= sprintf(*rb, "-------------------------------------------------------------------------------\n");
 	}
 
 	// build summary
@@ -63,17 +63,17 @@ void MMSFBPerfInterface::printSummary(char **rb, MMSFBPERF_MEASURING_VALS &summa
 	cnt = sprintf(&(*rb)[0],  "Summary");
 	(*rb)[0 + cnt]   = ' ';
 
-	cnt = sprintf(&(*rb)[38],  "%d", summary.calls);
-	(*rb)[38 + cnt]   = ' ';
+	cnt = sprintf(&(*rb)[40],  "%d", summary.calls);
+	(*rb)[40 + cnt]   = ' ';
 
-	cnt = sprintf(&(*rb)[45],  "%d.%03d", summary.mpixels, summary.rpixels / 1000);
-	(*rb)[45 + cnt]  = ' ';
+	cnt = sprintf(&(*rb)[47],  "%d.%03d", summary.mpixels, summary.rpixels / 1000);
+	(*rb)[47 + cnt]  = ' ';
 
-	cnt = sprintf(&(*rb)[55],  "%d", summary.usecs);
-	(*rb)[55 + cnt]  = ' ';
+	cnt = sprintf(&(*rb)[57],  "%d", summary.usecs);
+	(*rb)[57 + cnt]  = ' ';
 
-	cnt = sprintf(&(*rb)[67],  "%d", summary.mpps);
-	(*rb)+= 67 + cnt;
+	cnt = sprintf(&(*rb)[69],  "%d", summary.mpps);
+	(*rb)+= 69 + cnt;
 
 	(*rb)+= sprintf((*rb), "\n");
 }
@@ -92,6 +92,8 @@ bool MMSFBPerfInterface::processRequest(string *request, string *answer) {
 			// reset perf values?
 			reset = true;
 		}
+
+		this->mmsfbperf->lock();
 
 		// char buffer to return
 		char retbuf[65536];
@@ -117,6 +119,8 @@ bool MMSFBPerfInterface::processRequest(string *request, string *answer) {
 		sum_backend.calls = sum_backend.mpixels = sum_backend.rpixels = sum_backend.usecs = sum_backend.mpps = 0;
 		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->xshmputimage,  "XSHMPUTIMAGE", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf), &sum_backend);
 		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->xvshmputimage, "XVSHMPUTIMAGE", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf), &sum_backend);
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->vsync,         "VSYNC", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf), &sum_backend);
+		rb+= this->mmsfbperf->getPerfVals(&this->mmsfbperf->swapdisplay,   "SWAPDISPLAY", rb, sizeof(retbuf) - (unsigned int)(rb - retbuf), &sum_backend);
 		printSummary(&rb, sum_backend);
 
 		rb+= sprintf(rb, "\n\nREPORT: OVER ALL SUMMARY\n\n");
@@ -125,14 +129,18 @@ bool MMSFBPerfInterface::processRequest(string *request, string *answer) {
 		this->mmsfbperf->addMeasuringVals(&sum, &sum_drawing);
 		this->mmsfbperf->addMeasuringVals(&sum, &sum_blitting);
 		this->mmsfbperf->addMeasuringVals(&sum, &sum_backend);
-		rb+= sprintf(rb, "        MegaPix    = %u.%u\n", sum.mpixels, sum.rpixels / 1000);
-		rb+= sprintf(rb, "        MicroSecs  = %u\n", sum.usecs);
-		rb+= sprintf(rb, "        MP Per Sec = %u\n", sum.mpps);
+		rb+= sprintf(rb, "        MegaPix       = %u.%u\n", sum.mpixels, sum.rpixels / 1000);
+		rb+= sprintf(rb, "        MP Per Sec    = %u\n", sum.mpps);
+		rb+= sprintf(rb, "        Consumed time = %d.%03ds\n", sum.usecs / 1000000, (sum.usecs % 1000000) / 1000);
+		unsigned int dur = this->mmsfbperf->getDuration();
+		rb+= sprintf(rb, "        Duration      = %d.%ds\n", dur / 1000, dur % 1000);
 
 		// finalize
 		rb+= sprintf(rb, "\n");
 
 		*answer = retbuf;
+
+		this->mmsfbperf->unlock();
 
 		// reset statistic values?
 		if (reset) {

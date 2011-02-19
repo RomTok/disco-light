@@ -81,6 +81,14 @@
 	if (mmsfbperf) mmsfbperf->stopMeasuringXvShmPutImage( \
 					&perf_stime, surface, sw, sh, dw, dh); }
 
+#define MMSFBPERF_STOP_MEASURING_VSYNC(surface) \
+	if (mmsfbperf) mmsfbperf->stopMeasuringVSync( \
+					&perf_stime, surface); }
+
+#define MMSFBPERF_STOP_MEASURING_SWAPDISPLAY(surface) \
+	if (mmsfbperf) mmsfbperf->stopMeasuringSwapDisplay( \
+					&perf_stime, surface); }
+
 #else
 
 #define MMSFBPERF_START_MEASURING
@@ -91,6 +99,8 @@
 #define MMSFBPERF_STOP_MEASURING_STRETCHBLIT(surface, source, sw, sh, dw, dh)
 #define MMSFBPERF_STOP_MEASURING_XSHMPUTIMAGE(surface, sw, sh)
 #define MMSFBPERF_STOP_MEASURING_XVSHMPUTIMAGE(surface, sw, sh, dw, dh)
+#define MMSFBPERF_STOP_MEASURING_VSYNC(surface)
+#define MMSFBPERF_STOP_MEASURING_SWAPDISPLAY(surface)
 
 #endif
 
@@ -108,13 +118,19 @@ typedef struct {
 	unsigned int mpps;
 } MMSFBPERF_MEASURING_VALS;
 
-typedef MMSFBPERF_MEASURING_VALS MMSFBPERF_MEASURING_LIST[MMSFB_PF_CNT][MMSFB_PF_CNT][MMSFBPERF_MAXFLAGS];
+typedef MMSFBPERF_MEASURING_VALS MMSFBPERF_MEASURING_LIST[2][MMSFB_PF_CNT][MMSFB_PF_CNT][MMSFBPERF_MAXFLAGS];
 
 class MMSFBPerf {
 private:
 
 	//! already initialized?
 	static bool initialized;
+
+	//! make it thread-safe
+	static MMSMutex lockme;
+
+	//! start of measuring
+	static struct timeval start_time;
 
 	//! statistic for fill rectangle routines
 	static MMSFBPERF_MEASURING_LIST fillrect;
@@ -137,8 +153,19 @@ private:
 	//! statistic for xvshmputimage routines
 	static MMSFBPERF_MEASURING_LIST xvshmputimage;
 
+	//! statistic for vsync routines
+	static MMSFBPERF_MEASURING_LIST vsync;
+
+	//! statistic for swapdisplay routines
+	static MMSFBPERF_MEASURING_LIST swapdisplay;
+
+	void lock();
+	void unlock();
+
 	//! reset statistic infos
 	void reset();
+
+	unsigned int getDuration();
 
 	void addMeasuringVals(MMSFBPERF_MEASURING_VALS *summary, MMSFBPERF_MEASURING_VALS *add_sum);
 
@@ -146,7 +173,7 @@ private:
 					MMSFBPERF_MEASURING_VALS *summary);
 
 	void stopMeasuring(struct timeval *perf_stime, MMSFBPERF_MEASURING_VALS *mvals,
-					   int sw, int sh, int dw = 0, int dh = 0);
+					   int sw = 0, int sh = 0, int dw = 0, int dh = 0);
 
 public:
 	MMSFBPerf();
@@ -180,6 +207,12 @@ public:
 	void stopMeasuringXvShmPutImage(struct timeval *perf_stime,
 									MMSFBSurface *surface,
 									int sw, int sh, int dw, int dh);
+
+	void stopMeasuringVSync(struct timeval *perf_stime,
+							MMSFBSurface *surface);
+
+	void stopMeasuringSwapDisplay(struct timeval *perf_stime,
+									MMSFBSurface *surface);
 
     friend class MMSFBPerfInterface;
 };

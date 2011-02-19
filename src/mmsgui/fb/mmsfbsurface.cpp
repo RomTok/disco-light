@@ -5970,12 +5970,20 @@ void MMSFBSurface::processSwapDisplay(void *in_data, int in_data_len, void **out
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 
 	if (in_data_len >> 8) {
+		MMSFBPERF_START_MEASURING;
+
 		// vsync
 		mmsfb->mmsfbdev->waitForVSync();
+
+		MMSFBPERF_STOP_MEASURING_VSYNC(sb->mmsfbdev_surface);
 	}
+
+	MMSFBPERF_START_MEASURING;
 
 	// swap display
 	mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff, sb->buffers[0].ptr);
+
+	MMSFBPERF_STOP_MEASURING_SWAPDISPLAY(sb->mmsfbdev_surface);
 #endif
 }
 
@@ -6008,12 +6016,20 @@ void MMSFBSurface::swapDisplay(bool vsync) {
 	if (sb->numbuffers == 2) {
 		// two buffers (BACKVIDEO)
 		if (vsync) {
+			MMSFBPERF_START_MEASURING;
+
 			// vsync
 			mmsfb->mmsfbdev->waitForVSync();
+
+			MMSFBPERF_STOP_MEASURING_VSYNC(sb->mmsfbdev_surface);
 		}
+
+		MMSFBPERF_START_MEASURING;
 
 		// swap display
 		mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read, sb->buffers[0].ptr);
+
+		MMSFBPERF_STOP_MEASURING_SWAPDISPLAY(sb->mmsfbdev_surface);
 	}
 #endif
 }
@@ -6300,8 +6316,12 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			if (sb->mmsfbdev_surface != this) {
 				// this surface is the backbuffer in system memory of the layer (BACKSYSTEM buffer mode)
 
+				MMSFBPERF_START_MEASURING;
+
 				// sync
 				mmsfb->mmsfbdev->waitForVSync();
+
+				MMSFBPERF_STOP_MEASURING_VSYNC(sb->mmsfbdev_surface);
 
 				// put the image to the framebuffer
 				if (!region) {
