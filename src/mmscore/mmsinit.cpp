@@ -37,9 +37,11 @@ extern "C" {
 #include "mmscore/mmsinit.h"
 #include "mms.h"
 
-
 #ifdef __ENABLE_PERFMON__
-static MMSFBPerf *mmsfbperf = NULL;
+#include "mmscore/mmsperf.h"
+#include "mmscore/mmsperfinterface.h"
+
+static MMSPerf *mmsperf = NULL;
 #endif
 
 static MMSPluginManager             *pluginmanager      = NULL;
@@ -253,10 +255,10 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
 #ifdef __ENABLE_PERFMON__
 			// init mmsfb performance data collector
-			mmsfbperf = new MMSFBPerf();
+			mmsperf = new MMSPerf();
 
 			// init mmsfb performance data interface
-			MMSTCPServer *server = new MMSTCPServer(new MMSFBPerfInterface(mmsfbperf),
+			MMSTCPServer *server = new MMSTCPServer(new MMSPerfInterface(mmsperf),
 													config->getPerfMonAddress(), config->getPerfMonPort(),
 													"MMSTCPServer4Perfmon");
 			server->start();

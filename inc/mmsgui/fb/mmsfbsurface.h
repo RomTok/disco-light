@@ -192,7 +192,7 @@ class MMSFBSurface {
 
 #ifdef __ENABLE_PERFMON__
 		//! mmsfb performance collector
-		class MMSFBPerf *mmsfbperf;
+		class MMSPerf *mmsperf;
 #endif
 
 #ifdef __HAVE_FBDEV__
@@ -479,7 +479,7 @@ class MMSFBSurface {
     friend class MMSFBSurfaceManager;
     friend class MMSFBWindowManager;
     friend class MMSFBBackEndInterface;
-    friend class MMSFBPerf;
+    friend class MMSPerf;
 };
 
 bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,

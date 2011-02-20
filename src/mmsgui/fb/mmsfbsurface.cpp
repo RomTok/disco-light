@@ -33,7 +33,11 @@
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
-#include "mmsgui/fb/mmsfbperf.h"
+
+#ifdef __ENABLE_PERFMON__
+#include "mmscore/mmsperf.h"
+#endif
+
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -484,8 +488,8 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by) {
 MMSFBSurface::~MMSFBSurface() {
 
 #ifdef __ENABLE_PERFMON__
-	if (this->mmsfbperf)
-		delete this->mmsfbperf;
+	if (this->mmsperf)
+		delete this->mmsperf;
 #endif
 
     if (!mmsfb->isInitialized()) return;
@@ -519,7 +523,7 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 						MMSFBRectangle *sub_surface_rect) {
     // init me
 #ifdef __ENABLE_PERFMON__
-	this->mmsfbperf = new MMSFBPerf();
+	this->mmsperf = new MMSPerf();
 #endif
 
 #ifdef __HAVE_FBDEV__
