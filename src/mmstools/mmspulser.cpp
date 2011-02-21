@@ -43,7 +43,7 @@ MMSPulser::MMSPulser() : MMSThread("MMSPulser") {
 
 	// set attributes
 	setStepsPerSecond(25);
-	setMaxCPUUsage(75);
+	setMaxCPUUsage(100);
 	setMaxFrameRate(25);
 	setMaxOffset(0);
 	setDuration(0);
