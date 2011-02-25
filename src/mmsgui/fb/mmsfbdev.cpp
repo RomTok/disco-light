@@ -713,10 +713,11 @@ bool MMSFBDev::setMode(int width, int height, MMSFBSurfacePixelFormat pixelforma
 	genFBPixelFormat(pixelformat, &nonstd_format, &pixeldef);
 
 	// check if mode is already set
-    if (!backbuffer && !nonstd_format) {
-    	// do it only if no back buffer requested
+    if (!nonstd_format) {
+    	// do it only if a std format is requested
 		if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
-			&& (pixeldef.bits == (int)this->var_screeninfo.bits_per_pixel) && (this->layers[0].pixelformat == pixelformat)) {
+			&& (pixeldef.bits == (int)this->var_screeninfo.bits_per_pixel) && (this->layers[0].pixelformat == pixelformat)
+			&& (!backbuffer || (this->var_screeninfo.yres_virtual >= this->var_screeninfo.yres * (backbuffer+1)))) {
 			// mode already set, no switch required
 			printf("MMSFBDev: using preset mode %dx%d, pixelformat %s (%d bits), %s\n",
 					width, height, getMMSFBPixelFormatString(pixelformat).c_str(), pixeldef.bits,
