@@ -269,8 +269,8 @@ class MMSFBSurface {
 											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 											MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
 
-        bool extendedAccelFillRectangleEx(int x, int y, int w, int h);
-        bool extendedAccelFillRectangle(int x, int y, int w, int h);
+        bool extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags);
+        bool extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags);
 
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);

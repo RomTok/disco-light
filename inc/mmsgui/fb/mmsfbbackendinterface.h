@@ -98,6 +98,7 @@ private:
 		BEI_REQUEST_TYPE	type;
 		MMSFBSurface		*surface;
 		MMSFBRectangle		rect;
+		MMSFBDrawingFlags	drawingflags;
 	} BEI_FILLRECTANGLE;
 
 	typedef struct {
@@ -255,7 +256,7 @@ public:
 	void alloc(MMSFBSurface *surface);
 	void free(MMSFBSurface *surface);
 	void clear(MMSFBSurface *surface, MMSFBColor &color);
-	void fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
+	void fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect, MMSFBDrawingFlags drawingflags);
 	void fillTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
 	void drawLine(MMSFBSurface *surface, MMSFBRegion &region);
 	void drawRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);

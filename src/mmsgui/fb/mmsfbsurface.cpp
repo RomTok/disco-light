@@ -1400,11 +1400,13 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
     // check if initialized
     INITCHECK;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
-
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
-	    DFBResult   dfbres;
+
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+		MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+
+		DFBResult   dfbres;
 	    D_DEBUG_AT( MMS_Surface, "clear( argb %02x %02x %02x %02x ) <- %dx%d\n",
 	                a, r, g, b, this->config.surface_buffer->sbw, this->config.surface_buffer->sbh );
 	    MMSFB_TRACE();
@@ -1444,7 +1446,11 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 	else
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
-		if (!this->is_sub_surface) {
+
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+		MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+
+	    if (!this->is_sub_surface) {
 
 			MMSFBColor color = MMSFBColor(r, g, b, a);
 			mmsfb->bei->clear(this, color);
@@ -1473,16 +1479,7 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 		MMSFBDrawingFlags saveddf = this->config.drawingflags;
 		this->config.drawingflags = MMSFB_DRAW_SRC_PREMULTIPLY;
 
-		if (!this->is_sub_surface) {
-			ret = extendedAccelFillRectangle(0, 0, this->config.w, this->config.h);
-		}
-		else {
-			CLIPSUBSURFACE
-
-			ret = extendedAccelFillRectangle(this->sub_surface_xoff, this->sub_surface_yoff, this->config.w, this->config.h);
-
-			UNCLIPSUBSURFACE
-		}
+		ret = fillRectangle(0, 0, this->config.w, this->config.h);
 
 		*col = savedcol;
 		this->config.drawingflags = saveddf;
@@ -1680,7 +1677,17 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
     // check if initialized
     INITCHECK;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+	// check if we can use fill rectangle
+	if (x1 == x2) {
+		return fillRectangle(x1, y1, 1, y2-y1+1);
+	}
+	else
+	if (y1 == y2) {
+		return fillRectangle(x1, y1, x2-x1+1, 1);
+	}
+
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1777,7 +1784,8 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
     if (w < 1 || h < 1)
     	return false;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
@@ -1827,7 +1835,13 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     // check if initialized
     INITCHECK;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    if (this->config.color.a == 0x00) {
+    	// fill color is full transparent
+    	if (this->config.drawingflags & MMSFB_DRAW_BLEND) {
+    		// nothing to draw
+    		return true;
+    	}
+    }
 
     if ((w <= 0) || (h <= 0)) {
     	// use full surface
@@ -1836,6 +1850,99 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	w = this->config.w;
     	h = this->config.h;
     }
+
+    // check clipping region and calculate final rectangle
+    MMSFBRectangle crect;
+	if (!this->is_sub_surface) {
+	    if (!calcClip(x, y, w, h, &crect)) {
+	    	// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
+	    	return true;
+	    }
+	}
+	else {
+		CLIPSUBSURFACE
+		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, w, h, &crect)) {
+			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
+			return true;
+		}
+		UNCLIPSUBSURFACE
+	}
+
+    // save opaque/transparent states
+    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
+
+    // set new opaque state and get drawing flags for it
+    MMSFBDrawingFlags drawingflags = this->config.drawingflags;
+    switch (this->config.color.a) {
+    case 0x00:
+    	// fill color is full transparent
+    	switch (drawingflags) {
+		case MMSFB_DRAW_NOFX:
+		case MMSFB_DRAW_SRC_PREMULTIPLY:
+			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
+			//       because this is the dimension of the real existing buffer
+			if    ((crect.x <= 0) && (crect.y <= 0)
+				&& (crect.x + crect.w >= this->config.surface_buffer->sbw)
+				&& (crect.y + crect.h >= this->config.surface_buffer->sbh)) {
+				// fill writes the whole destination surface
+				MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= true;
+			}
+			else {
+				// let transparent state unchanged
+				MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+			}
+			break;
+		default:
+			// after drawing surface is not opaque and not transparent
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+			MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			break;
+		}
+    	break;
+
+	case 0xff:
+		// fill color is opaque
+		// so remove the DRAW_BLEND flag if set
+		drawingflags = drawingflags & ~MMSFB_DRAW_BLEND;
+		switch (drawingflags) {
+		case MMSFB_DRAW_NOFX:
+		case MMSFB_DRAW_SRC_PREMULTIPLY:
+			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
+			//       because this is the dimension of the real existing buffer
+			if    ((crect.x <= 0) && (crect.y <= 0)
+				&& (crect.x + crect.w >= this->config.surface_buffer->sbw)
+				&& (crect.y + crect.h >= this->config.surface_buffer->sbh)) {
+				// fill writes the whole destination surface
+				MMSFBSURFACE_WRITE_BUFFER(this).opaque		= true;
+				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			}
+			else {
+				// let opaque state unchanged
+				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			}
+			break;
+		default:
+			// after drawing surface is not opaque and not transparent
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+			MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			break;
+		}
+		break;
+
+    default:
+    	// fill color is semi-transparent
+    	if (!(drawingflags & MMSFB_DRAW_BLEND)) {
+			// after drawing surface is not opaque
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    	}
+
+    	// after drawing surface is not transparent
+		MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+    	break;
+    }
+
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1847,7 +1954,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 
 	    /* fill rectangle */
 		if (!this->is_sub_surface) {
-			if (!extendedAccelFillRectangle(x, y, w, h))
+			if (!extendedAccelFillRectangle(crect.x, crect.y, crect.w, crect.h, this->config.drawingflags))
 				if ((dfbres=this->dfb_surface->FillRectangle(this->dfb_surface, x, y, w, h)) != DFB_OK) {
 					MMSFB_SetError(dfbres, "IDirectFBSurface::FillRectangle() failed");
 					return false;
@@ -1859,13 +1966,10 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 #ifndef USE_DFB_SUBSURFACE
 			CLIPSUBSURFACE
 
-			x+=this->sub_surface_xoff;
-			y+=this->sub_surface_yoff;
-
 			SETSUBSURFACE_DRAWINGFLAGS;
 #endif
 
-			if (extendedAccelFillRectangle(x, y, w, h))
+			if (extendedAccelFillRectangle(crect.x, crect.y, crect.w, crect.h, this->config.drawingflags))
 				ret = true;
 			else
 				if (this->dfb_surface->FillRectangle(this->dfb_surface, x, y, w, h) == DFB_OK)
@@ -1881,41 +1985,18 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 	}
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
-		if (!this->is_sub_surface) {
-
-			MMSFBRectangle rect = MMSFBRectangle(x, y, w, h);
-			mmsfb->bei->fillRectangle(this, rect);
-
-			ret = true;
-		}
-		else {
-			CLIPSUBSURFACE
-
-			MMSFBRectangle rect = MMSFBRectangle(x, y, w, h);
-			mmsfb->bei->fillRectangle(this, rect);
-
-			UNCLIPSUBSURFACE
-
-			ret = true;
-		}
+		mmsfb->bei->fillRectangle(this, crect, drawingflags);
+		ret = true;
 #endif
 	}
 	else {
+		ret = extendedAccelFillRectangle(crect.x, crect.y, crect.w, crect.h, drawingflags);
+	}
 
-		if (!this->is_sub_surface) {
-			ret = extendedAccelFillRectangle(x, y, w, h);
-		}
-		else {
-			CLIPSUBSURFACE
-
-			x+=this->sub_surface_xoff;
-			y+=this->sub_surface_yoff;
-
-			ret = extendedAccelFillRectangle(x, y, w, h);
-
-			UNCLIPSUBSURFACE
-		}
-
+	if (!ret) {
+		// restore opaque/transparent states
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
+	    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 	}
 
     return ret;
@@ -1929,7 +2010,8 @@ bool MMSFBSurface::drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
     // check if initialized
     INITCHECK;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
@@ -1969,7 +2051,8 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
     // check if initialized
     INITCHECK;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -2048,7 +2131,8 @@ bool MMSFBSurface::drawCircle(int x, int y, int radius, int start_octant, int en
     /* check if initialized */
     INITCHECK;
 
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
     /* draw circle */
     if (end_octant < start_octant) end_octant = start_octant;
@@ -2194,9 +2278,8 @@ void MMSFBSurface::extendedUnlock(MMSFBSurface *src, MMSFBSurface *dst, MMSFBSur
 		}
 		else {
 			// dst_planes not given, reset the special flags
-			MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
-//			sb->buffers[sb->currbuffer_write].opaque = false;
-			sb->buffers[sb->currbuffer_write].transparent = false;
+//			MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+			MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 		}
 		dst->unlock(false);
 	}
@@ -4639,7 +4722,7 @@ bool MMSFBSurface::extendedAccelStretchBlitBuffer(MMSFBSurfacePlanes *src_planes
 
 
 
-bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
+bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags) {
 
 	// a few help and clipping values
 	MMSFBSurfacePlanes dst_planes;
@@ -4647,71 +4730,11 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	int sy = y;
 	int sw = w;
 	int sh = h;
-	MMSFBRegion clipreg;
 	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
-
-
-#ifndef USE_DFB_SUBSURFACE
-	if (!this->is_sub_surface) {
-#endif
-		// normal surface or dfb subsurface
-		if (!this->config.clipped) {
-			clipreg.x1 = 0;
-			clipreg.y1 = 0;
-			clipreg.x2 = this->config.w - 1;
-			clipreg.y2 = this->config.h - 1;
-		}
-		else
-			clipreg = this->config.clip;
-#ifndef USE_DFB_SUBSURFACE
-	}
-	else {
-		// subsurface
-		if (!this->root_parent->config.clipped) {
-			clipreg.x1 = 0;
-			clipreg.y1 = 0;
-			clipreg.x2 = this->root_parent->config.w - 1;
-			clipreg.y2 = this->root_parent->config.h - 1;
-		}
-		else
-			clipreg = this->root_parent->config.clip;
-	}
-#endif
-
-	if (x < clipreg.x1) {
-		// left outside
-		sx+= clipreg.x1 - x;
-		sw-= clipreg.x1 - x;
-		if (sw <= 0)
-			return true;
-		x = clipreg.x1;
-	}
-	else
-	if (x > clipreg.x2)
-		// right outside
-		return true;
-	if (y < clipreg.y1) {
-		// top outside
-		sy+= clipreg.y1 - y;
-		sh-= clipreg.y1 - y;
-		if (sh <= 0)
-			return true;
-		y = clipreg.y1;
-	}
-	else
-	if (y > clipreg.y2)
-		// bottom outside
-		return true;
-	if (x + sw - 1 > clipreg.x2)
-		// to width
-		sw = clipreg.x2 - x + 1;
-	if (y + sh - 1 > clipreg.y2)
-		// to height
-		sh = clipreg.y2 - y + 1;
 
 	// calculate the color
 	MMSFBColor color = this->config.color;
-	if (this->config.drawingflags & (MMSFBDrawingFlags)MMSFB_DRAW_SRC_PREMULTIPLY) {
+	if (drawingflags & (MMSFBDrawingFlags)MMSFB_DRAW_SRC_PREMULTIPLY) {
 		// pre-multiplication needed
 		if (color.a != 0xff) {
 			color.r = ((color.a+1) * color.r) >> 8;
@@ -4724,8 +4747,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 	switch (this->config.surface_buffer->pixelformat) {
 	case MMSFB_PF_ARGB:
 		// destination is ARGB
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4741,8 +4764,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			return false;
 		}
 		else
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4763,8 +4786,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_AYUV:
 		// destination is AYUV
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4780,8 +4803,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			return false;
 		}
 		else
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4802,8 +4825,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_RGB32:
 		// destination is RGB32
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4824,8 +4847,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_RGB24:
 		// destination is RGB24
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4846,8 +4869,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_RGB16:
 		// destination is RGB16 (RGB565)
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4864,8 +4887,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			return false;
 		}
 		else
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4887,8 +4910,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_YV12:
 		// destination is YV12
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4909,8 +4932,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_I420:
 		// destination is I420
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4931,8 +4954,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_YUY2:
 		// destination is YUY2
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4953,8 +4976,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_ARGB3565:
 		// destination is ARGB3565
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4975,8 +4998,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_ARGB4444:
 		// destination is ARGB4444
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -4993,8 +5016,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 			return false;
 		}
 		else
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -5016,8 +5039,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_BGR24:
 		// destination is BGR24
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -5038,8 +5061,8 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 
 	case MMSFB_PF_BGR555:
 		// destination is BGR555
-		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
-			| (this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
 			if (extendedLock(NULL, NULL, this, &dst_planes)) {
 				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
@@ -5068,13 +5091,13 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h) {
 }
 
 
-bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
+bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags) {
 
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
-	if (!extendedAccelFillRectangleEx(x, y, w, h))
+	if (!extendedAccelFillRectangleEx(x, y, w, h, drawingflags))
 		return printMissingCombination("extendedAccelFillRectangle()");
 	else
 		return true;
@@ -5084,13 +5107,6 @@ bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h) {
 
 
 bool MMSFBSurface::extendedAccelDrawLineEx(int x1, int y1, int x2, int y2) {
-
-	// check if we can use fill rectangle
-	if (x1 == x2)
-		return extendedAccelFillRectangle(x1, y1, 1, y2-y1+1);
-	else
-	if (y1 == y2)
-		return extendedAccelFillRectangle(x1, y1, x2-x1+1, 1);
 
 	// a few help and clipping values
 	MMSFBSurfacePlanes dst_planes;
@@ -5260,7 +5276,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
     MMSFBRectangle src;
     bool 		 ret = false;
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
     if (src_rect) {
@@ -5272,7 +5288,6 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
          src.w = source->config.w;
          src.h = source->config.h;
     }
-
 
     // save the opaque state
     bool opaque_saved = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
@@ -5327,7 +5342,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 
 	    // blit
 		if (!this->is_sub_surface) {
-			if (!extendedAccelBlit(source, &src, x, y))
+			if (!extendedAccelBlit(source, &src, x, y, this->config.blittingflags))
 				if ((dfbres=this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y)) != DFB_OK) {
 #ifndef USE_DFB_SUBSURFACE
 					// reset source rectangle
@@ -5354,7 +5369,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 			SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 
-			if (extendedAccelBlit(source, &src, x, y))
+			if (extendedAccelBlit(source, &src, x, y, this->config.blittingflags))
 				ret = true;
 			else
 				if (this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, x, y) == DFB_OK)
@@ -5615,7 +5630,8 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 
 
     //TODO: this reset is to be improved...
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
@@ -5900,7 +5916,8 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
 
 
     //TODO: this reset is to be improved...
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
@@ -6255,8 +6272,11 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
 
 						this->surface_invert_lock = true;
+
 						if (MMSFBSURFACE_READ_BUFFER(this).opaque)
 							MMSFBSURFACE_READ_BUFFER(this).opaque = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+						if (MMSFBSURFACE_READ_BUFFER(this).transparent)
+							MMSFBSURFACE_READ_BUFFER(this).transparent = MMSFBSURFACE_WRITE_BUFFER(this).transparent;
 
 						this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y, MMSFB_BLIT_NOFX);
 
@@ -6302,8 +6322,11 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 				this->config.blittingflags = (MMSFBBlittingFlags)MMSFB_BLIT_NOFX;
 
 				this->surface_invert_lock = true;
+
 				if (MMSFBSURFACE_READ_BUFFER(this).opaque)
 					MMSFBSURFACE_READ_BUFFER(this).opaque = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+				if (MMSFBSURFACE_READ_BUFFER(this).transparent)
+					MMSFBSURFACE_READ_BUFFER(this).transparent = MMSFBSURFACE_WRITE_BUFFER(this).transparent;
 
 				this->extendedAccelBlit(this, &src_rect, src_rect.x, src_rect.y, MMSFB_BLIT_NOFX);
 

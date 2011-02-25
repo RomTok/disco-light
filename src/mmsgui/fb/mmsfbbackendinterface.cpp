@@ -67,18 +67,17 @@
 	else mmsfbgl.setScissor(X, BEI_SURFACE_HEIGHT - (H) - (Y), W, H);
 
 
-#define INIT_OGL_DRAWING(surface) { \
-			switch (surface->config.drawingflags) { \
-			case MMSFB_DRAW_BLEND: \
-				mmsfbgl.enableBlend(); \
-				mmsfbgl.setDrawingMode(); \
-				break; \
-			default: \
-				mmsfbgl.disableBlend(); \
-				mmsfbgl.setDrawingMode(); \
-				break; } \
-			mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
-
+#define INIT_OGL_DRAWING(surface, drawingflags) { \
+		switch (drawingflags) { \
+		case MMSFB_DRAW_BLEND: \
+			mmsfbgl.enableBlend(); \
+			mmsfbgl.setDrawingMode(); \
+			break; \
+		default: \
+			mmsfbgl.disableBlend(); \
+			mmsfbgl.setDrawingMode(); \
+			break; } \
+		mmsfbgl.setColor(surface->config.color.r, surface->config.color.g, surface->config.color.b, surface->config.color.a); }
 
 
 
@@ -597,11 +596,12 @@ void MMSFBBackEndInterface::processClear(BEI_CLEAR *req) {
 #endif
 }
 
-void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect) {
+void MMSFBBackEndInterface::fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect, MMSFBDrawingFlags drawingflags) {
 	BEI_FILLRECTANGLE req;
-	req.type	= BEI_REQUEST_TYPE_FILLRECTANGLE;
-	req.surface	= surface;
-	req.rect	= rect;
+	req.type		= BEI_REQUEST_TYPE_FILLRECTANGLE;
+	req.surface		= surface;
+	req.rect		= rect;
+	req.drawingflags= drawingflags;
 	trigger((void*)&req, sizeof(req));
 }
 
@@ -611,23 +611,16 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 	oglBindSurface(req->surface);
 
 	// setup drawing
-	INIT_OGL_DRAWING(req->surface);
+	INIT_OGL_DRAWING(req->surface, req->drawingflags);
 
-	// get subsurface offsets
-	GET_OFFS(req->surface);
+	// set ogl clip
+	OGL_SCISSOR(req->surface, req->rect.x, req->rect.y, req->rect.w, req->rect.h);
 
-	// set the clip to ogl
-	MMSFBRectangle crect;
-	if (req->surface->calcClip(req->rect.x + xoff, req->rect.y + yoff, req->rect.w, req->rect.h, &crect)) {
-		// inside clipping region
-		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-
-		// fill rectangle
-		OGL_FILL_RECTANGLE(req->rect.x						+ xoff,
-						   req->rect.y						+ yoff,
-						   req->rect.x + req->rect.w - 1	+ xoff,
-						   req->rect.y + req->rect.h - 1	+ yoff);
-	}
+	// fill rectangle
+	OGL_FILL_RECTANGLE(req->rect.x,
+					   req->rect.y,
+					   req->rect.x + req->rect.w - 1,
+					   req->rect.y + req->rect.h - 1);
 #endif
 }
 
@@ -647,7 +640,7 @@ void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 	glDisable(GL_TEXTURE_2D);
 
 	// setup drawing
-	INIT_OGL_DRAWING(req->surface);
+	INIT_OGL_DRAWING(req->surface, req->surface->config.drawingflags);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
@@ -709,7 +702,7 @@ void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 			req->surface->config.color.r,req->surface->config.color.g,req->surface->config.color.b,req->surface->config.color.a);
 */
 	// setup drawing
-	INIT_OGL_DRAWING(req->surface);
+	INIT_OGL_DRAWING(req->surface, req->surface->config.drawingflags);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
@@ -762,7 +755,7 @@ void MMSFBBackEndInterface::processDrawRectangle(BEI_DRAWRECTANGLE *req) {
 	oglBindSurface(req->surface);
 
 	// setup drawing
-	INIT_OGL_DRAWING(req->surface);
+	INIT_OGL_DRAWING(req->surface, req->surface->config.drawingflags);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
@@ -798,7 +791,7 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 	glDisable(GL_TEXTURE_2D);
 
 	// setup drawing
-	INIT_OGL_DRAWING(req->surface);
+	INIT_OGL_DRAWING(req->surface, req->surface->config.drawingflags);
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
