@@ -1335,19 +1335,13 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 					// blit window front buffer to destination surface
 					if (!cw->window->stretchmode) {
 						// normal blit if stretch mode is off
-//						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
-						dst_surface->blit(cw->window->surface, &src_rect, dst_x, dst_y);
+						dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
 					}
 					else {
 						// stretch the window to the parent surface
-/*						MMSFBRectangle dr = MMSFBRectangle(
+						MMSFBRectangle dr = MMSFBRectangle(
 												dst_x + offsX,
 												dst_y + offsY,
-												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
-												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));*/
-						MMSFBRectangle dr = MMSFBRectangle(
-												dst_x,
-												dst_y,
 												MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
 												MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
 						dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
@@ -1400,126 +1394,6 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         }
     }
 }
-
-
-#ifdef ddd
-
-void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region, int offsX, int offsY) {
-    MMSFBRegion       pw_region;
-
-    if (region == NULL) {
-        // complete surface
-        pw_region.x1 = 0;
-        pw_region.y1 = 0;
-        pw_region.x2 = this->geom.w - 1;
-        pw_region.y2 = this->geom.h - 1;
-    }
-    else {
-        // only a region
-        pw_region = *region;
-    }
-
-    /* draw all affected child windows */
-    for (unsigned int i = 0; i < this->childwins.size(); i++) {
-        CHILDWINS *cw = &(this->childwins.at(i));
-        MMSFBRegion *myregion = &(cw->region);
-
-        // window pointer set?
-        if (!cw->window)
-        	continue;
-
-        /* if the window has no opacity then continue */
-        if (!cw->opacity)
-            continue;
-
-        if (!((myregion->x2 < pw_region.x1)||(myregion->y2 < pw_region.y1)
-            ||(myregion->x1 > pw_region.x2)||(myregion->y1 > pw_region.y2))) {
-
-            /* the window is affected */
-            /* calc source and destination */
-            MMSFBRectangle src_rect;
-            int dst_x = pw_region.x1;
-            int dst_y = pw_region.y1;
-
-            src_rect.x = pw_region.x1 - myregion->x1;
-            if (src_rect.x < 0) {
-                dst_x-= src_rect.x;
-                src_rect.x = 0;
-            }
-
-            src_rect.y = pw_region.y1 - myregion->y1;
-            if (src_rect.y < 0) {
-                dst_y-= src_rect.y;
-                src_rect.y = 0;
-            }
-
-            src_rect.w = myregion->x2 - myregion->x1 + 1 - src_rect.x;
-            if (myregion->x2 > pw_region.x2)
-                src_rect.w-= myregion->x2 - pw_region.x2;
-
-            src_rect.h = myregion->y2 - myregion->y1 + 1 - src_rect.y;
-            if (myregion->y2 > pw_region.y2)
-                src_rect.h-= myregion->y2 - pw_region.y2;
-
-			if (cw->window->stretchmode) {
-				src_rect.x = MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(src_rect.x, cw->window);
-				src_rect.y = MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(src_rect.y, cw->window);
-				src_rect.w = MMSFBWINDOW_CALC_STRETCH_WIDTH_REV(src_rect.w , cw->window);
-				src_rect.h = MMSFBWINDOW_CALC_STRETCH_HEIGHT_REV(src_rect.h, cw->window);
-			}
-
-            bool os;
-            cw->window->getOwnSurface(os);
-        	if (os) {
-                /* set the blitting flags and color */
-                if (cw->opacity < 255) {
-                    dst_surface->setBlittingFlags((MMSFBBlittingFlags) (MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA));
-                    dst_surface->setColor(0, 0, 0, cw->opacity);
-                }
-                else
-                    dst_surface->setBlittingFlags((MMSFBBlittingFlags) MMSFB_BLIT_BLEND_ALPHACHANNEL);
-
-                // blit window front buffer to destination surface
-                if (!cw->window->stretchmode) {
-                	// normal blit if stretch mode is off
-                	dst_surface->blit(cw->window->surface, &src_rect, dst_x + offsX, dst_y + offsY);
-                }
-                else {
-                	// stretch the window to the parent surface
-					MMSFBRectangle dr = MMSFBRectangle(
-											dst_x + offsX,
-											dst_y + offsY,
-											MMSFBWINDOW_CALC_STRETCH_WIDTH(src_rect.w, cw->window),
-											MMSFBWINDOW_CALC_STRETCH_HEIGHT(src_rect.h, cw->window));
-					dst_surface->stretchBlit(cw->window->surface, &src_rect, &dr);
-                }
-        	}
-        	else {
-        		/* no own surface -> direct draw */
-				MMSFBRectangle r = cw->window->geom;
-				if ((src_rect.w == r.w)||(src_rect.h == r.h)) {
-					/* draw all (e.g. border) */
-					cw->window->draw(false, &src_rect, false);
-				}
-				else {
-					/* minimal draw */
-					cw->window->draw(true, &src_rect, false);
-				}
-        	}
-
-            /* draw the children of this child */
-            MMSFBRegion reg;
-            reg.x1 = src_rect.x;
-            reg.y1 = src_rect.y;
-            reg.x2 = src_rect.x + src_rect.w - 1;
-            reg.y2 = src_rect.y + src_rect.h - 1;
-            if(cw->window)
-            	cw->window->drawChildWindows(dst_surface, &reg, dst_x + offsX - reg.x1, dst_y + offsY - reg.y1);*/
-        }
-    }
-}
-
-#endif
 
 
 
