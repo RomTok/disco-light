@@ -1828,52 +1828,35 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
     return ret;
 }
 
+bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
+									  MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags) {
 
-bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
-    bool		ret = false;
-
-    // check if initialized
-    INITCHECK;
-
-    if (this->config.color.a == 0x00) {
+	if (this->config.color.a == 0x00) {
     	// fill color is full transparent
     	if (this->config.drawingflags & MMSFB_DRAW_BLEND) {
     		// nothing to draw
-    		return true;
+    		return false;
     	}
     }
 
-    if ((w <= 0) || (h <= 0)) {
-    	// use full surface
-    	x = 0;
-    	y = 0;
-    	w = this->config.w;
-    	h = this->config.h;
-    }
-
     // check clipping region and calculate final rectangle
-    MMSFBRectangle crect;
 	if (!this->is_sub_surface) {
 	    if (!calcClip(x, y, w, h, &crect)) {
 	    	// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
-	    	return true;
+	    	return false;
 	    }
 	}
 	else {
 		CLIPSUBSURFACE
 		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, w, h, &crect)) {
 			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
-			return true;
+			return false;
 		}
 		UNCLIPSUBSURFACE
 	}
 
-    // save opaque/transparent states
-    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
-    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
-
-    // set new opaque state and get drawing flags for it
-    MMSFBDrawingFlags drawingflags = this->config.drawingflags;
+    // set new opaque/transparent status and get drawing flags for it
+    drawingflags = this->config.drawingflags;
     switch (this->config.color.a) {
     case 0x00:
     	// fill color is full transparent
@@ -1890,7 +1873,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= true;
 			}
 			else {
-				// let transparent state unchanged
+				// let transparent status unchanged
 				MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
 			}
 			break;
@@ -1919,7 +1902,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 			}
 			else {
-				// let opaque state unchanged
+				// let opaque status unchanged
 				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 			}
 			break;
@@ -1943,6 +1926,34 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	break;
     }
 
+    return true;
+}
+
+bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
+    bool		ret = false;
+
+    // check if initialized
+    INITCHECK;
+
+    if ((w <= 0) || (h <= 0)) {
+    	// use full surface
+    	x = 0;
+    	y = 0;
+    	w = this->config.w;
+    	h = this->config.h;
+    }
+
+    // save opaque/transparent status
+    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
+
+    // get final rectangle and new opaque/transparent status
+    MMSFBRectangle crect;
+    MMSFBDrawingFlags drawingflags;
+    if (!checkDrawingStatus(x, y, w, h, crect, drawingflags)) {
+    	// nothing to draw
+    	return true;
+    }
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1994,7 +2005,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
 	}
 
 	if (!ret) {
-		// restore opaque/transparent states
+		// restore opaque/transparent status
 	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
 	    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 	}
@@ -5272,6 +5283,86 @@ bool MMSFBSurface::renderScene(MMS3D_VERTEX_ARRAY	**varrays,
 	return ret;
 }
 
+
+
+bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MMSFBRectangle *src_rect, int x, int y,
+									   MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags) {
+
+	if (src_transparent) {
+    	// source is full transparent
+    	if (this->config.blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL) {
+    		// nothing to draw
+    		return false;
+    	}
+    }
+
+    // check clipping region and calculate final rectangle
+	if (!this->is_sub_surface) {
+	    if (!calcClip(x, y, src_rect->w, src_rect->h, &crect)) {
+	    	// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
+	    	return false;
+	    }
+	}
+	else {
+		CLIPSUBSURFACE
+		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, src_rect->w, src_rect->h, &crect)) {
+			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
+			return false;
+		}
+		UNCLIPSUBSURFACE
+	}
+
+    // set new opaque/transparent status and get blitting flags for it
+    blittingflags = this->config.blittingflags;
+    if (src_opaque) {
+    	// source is an opaque buffer
+    	// so remove the BLEND_ALPHACHANNEL flag if set
+    	blittingflags = blittingflags & ~MMSFB_BLIT_BLEND_ALPHACHANNEL;
+    	switch (blittingflags) {
+		case MMSFB_BLIT_NOFX:
+		case MMSFB_BLIT_COLORIZE:
+			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
+			//       because this is the dimension of the real existing buffer
+			if    ((crect.x <= 0) && (crect.y <= 0)
+				&& (crect.x + crect.w >= this->config.surface_buffer->sbw)
+				&& (crect.y + crect.h >= this->config.surface_buffer->sbh)) {
+				// blit writes the whole destination surface
+				MMSFBSURFACE_WRITE_BUFFER(this).opaque		= true;
+				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			}
+			else {
+				// let opaque status unchanged
+				MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			}
+			break;
+		default:
+			// after blitting surface is not opaque and not transparent
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
+			MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+			break;
+		}
+    }
+    else {
+    	// source is semi-transparent
+    	if (!(blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+			// after the blitting surface is not opaque
+			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
+    	}
+
+    	// after blitting surface is not transparent
+		MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+    }
+
+    return true;
+}
+
+bool MMSFBSurface::checkBlittingStatus(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y,
+									   MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags) {
+	return checkBlittingStatus(MMSFBSURFACE_READ_BUFFER(source).opaque, MMSFBSURFACE_READ_BUFFER(source).transparent,
+								src_rect, x, y, crect, blittingflags);
+}
+
+
 bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y) {
     MMSFBRectangle src;
     bool 		 ret = false;
@@ -5289,41 +5380,37 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
          src.h = source->config.h;
     }
 
-    // save the opaque state
-    bool opaque_saved = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    // save opaque/transparent status
+    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
 
-    // set new opaque state and get blitting flags for it
-    MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
-    if (MMSFBSURFACE_READ_BUFFER(source).opaque) {
-    	// source is an opaque buffer
-    	// so remove the BLEND_ALPHACHANNEL flag if set
-    	blittingflags = blittingflags & ~MMSFB_BLIT_BLEND_ALPHACHANNEL;
-    	switch (blittingflags) {
-		case MMSFB_BLIT_NOFX:
-		case MMSFB_BLIT_COLORIZE:
-			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
-			//       because this is the dimension of the real existing buffer
-			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.surface_buffer->sbw) && (y + src.h >= this->config.surface_buffer->sbh)) {
-				// blit writes the whole destination surface
-				// so switch opaque to true
-				MMSFBSURFACE_WRITE_BUFFER(this).opaque = true;
-			}
-			else {
-				// let opaque state unchanged
-			}
-			break;
-		default:
-			// after the blitting surface is not opaque
-			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
-			break;
+    // get final rectangle and new opaque/transparent status
+    MMSFBRectangle crect;
+    MMSFBBlittingFlags blittingflags;
+    if (!checkBlittingStatus(source, &src, x, y, crect, blittingflags)) {
+    	// nothing to draw
+    	return true;
+    }
+
+	if (this->allocated_by != MMSFBSurfaceAllocatedBy_dfb) {
+		//TODO: implement changes for dfb too
+
+		// prepare source rectangle
+		if (source->is_sub_surface) {
+			src.x+=source->sub_surface_xoff;
+			src.y+=source->sub_surface_yoff;
 		}
-    }
-    else {
-    	if (!(blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-			// after the blitting surface is not opaque
-			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
-    	}
-    }
+		if (this->is_sub_surface) {
+			src.x+= crect.x - this->sub_surface_xoff - x;
+			src.y+= crect.y - this->sub_surface_yoff - y;
+		}
+		else {
+			src.x+= crect.x - x;
+			src.y+= crect.y - y;
+		}
+		src.w = crect.w;
+		src.h = crect.h;
+	}
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5382,71 +5469,23 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 #endif
 
 		}
-
-#ifndef USE_DFB_SUBSURFACE
-		// reset source rectangle
-		if (source->is_sub_surface) {
-			src.x-=source->sub_surface_xoff;
-			src.y-=source->sub_surface_yoff;
-		}
-#endif
-
 #endif
 	}
 	else
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
-
-		if (!this->is_sub_surface) {
-
-			mmsfb->bei->blit(this, source, src, x, y, blittingflags);
-
-			ret = true;
-		}
-		else {
-			CLIPSUBSURFACE
-
-			mmsfb->bei->blit(this, source, src, x, y, blittingflags);
-
-			UNCLIPSUBSURFACE
-
-			ret = true;
-		}
+		mmsfb->bei->blit(this, source, src, crect.x, crect.y, blittingflags);
+		ret = true;
 #endif
 	}
 	else {
-
-		// prepare source rectangle
-		if (source->is_sub_surface) {
-			src.x+=source->sub_surface_xoff;
-			src.y+=source->sub_surface_yoff;
-		}
-
-		// blit
-		if (!this->is_sub_surface) {
-			ret = extendedAccelBlit(source, &src, x, y, blittingflags);
-		}
-		else {
-			CLIPSUBSURFACE
-
-			x+=this->sub_surface_xoff;
-			y+=this->sub_surface_yoff;
-
-			ret = extendedAccelBlit(source, &src, x, y, blittingflags);
-
-			UNCLIPSUBSURFACE
-		}
-
-		// reset source rectangle
-		if (source->is_sub_surface) {
-			src.x-=source->sub_surface_xoff;
-			src.y-=source->sub_surface_yoff;
-		}
+		ret = extendedAccelBlit(source, &src, crect.x, crect.y, blittingflags);
 	}
 
 	if (!ret) {
-		// restore the opaque state
-	    MMSFBSURFACE_WRITE_BUFFER(this).opaque = opaque_saved;
+		// restore opaque/transparent status
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
+	    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 	}
 
     return ret;
@@ -5472,43 +5511,17 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
     // check if initialized
     INITCHECK;
 
-    // save the opaque state
-    bool opaque_saved = MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    // save opaque/transparent status
+    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
 
-    // set new opaque state and get blitting flags for it
-    MMSFBBlittingFlags blittingflags = this->config.blittingflags & ~MMSFB_BLIT_ANTIALIASING;
-    if (opaque) {
-    	// caller puts an opaque buffer to this surface
-    	// so remove the BLEND_ALPHACHANNEL flag if set
-    	blittingflags = blittingflags & ~MMSFB_BLIT_BLEND_ALPHACHANNEL;
-
-    	switch (blittingflags) {
-		case MMSFB_BLIT_NOFX:
-		case MMSFB_BLIT_COLORIZE:
-			// note: we use this->config.surface_buffer->sbw and this->config.surface_buffer->sbh
-			//       because this is the dimension of the real existing buffer
-			if ((x <= 0) && (y <= 0) && (x + src.w >= this->config.surface_buffer->sbw) && (y + src.h >= this->config.surface_buffer->sbh)) {
-				// blit writes the whole destination surface
-				// so switch opaque to true
-				MMSFBSURFACE_WRITE_BUFFER(this).opaque = true;
-			}
-			else {
-				// let opaque state unchanged
-			}
-			break;
-		default:
-			// after the blitting surface is not opaque
-			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
-			break;
-		}
+    // get final rectangle and new opaque/transparent status
+    MMSFBRectangle crect;
+    MMSFBBlittingFlags blittingflags;
+    if (!checkBlittingStatus(opaque, false, &src, x, y, crect, blittingflags)) {
+    	// nothing to draw
+    	return true;
     }
-    else {
-    	if (!(blittingflags & MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-			// after the blitting surface is not opaque
-			MMSFBSURFACE_WRITE_BUFFER(this).opaque = false;
-    	}
-    }
-
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5560,8 +5573,9 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
 
 
 	if (!ret) {
-		// restore the opaque state
-	    MMSFBSURFACE_WRITE_BUFFER(this).opaque = opaque_saved;
+		// restore opaque/transparent status
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
+	    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 	}
 
 

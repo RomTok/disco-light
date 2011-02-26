@@ -263,6 +263,9 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_DRAWTRIANGLE:
 		processDrawTriangle((BEI_DRAWTRIANGLE *)in_data);
 		break;
+	case BEI_REQUEST_TYPE_BLIT:
+		processBlit((BEI_BLIT *)in_data);
+		break;
 	case BEI_REQUEST_TYPE_STRETCHBLIT:
 		processStretchBlit((BEI_STRETCHBLIT *)in_data);
 		break;
@@ -835,17 +838,39 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 
 void MMSFBBackEndInterface::blit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect,
 								 int x, int y, MMSFBBlittingFlags blittingflags) {
-	BEI_STRETCHBLIT req;
-	req.type			= BEI_REQUEST_TYPE_STRETCHBLIT;
+	BEI_BLIT req;
+	req.type			= BEI_REQUEST_TYPE_BLIT;
 	req.surface			= surface;
 	req.source			= source;
 	req.src_rect		= src_rect;
-	req.dst_rect.x		= x;
-	req.dst_rect.y		= y;
-	req.dst_rect.w		= src_rect.w;
-	req.dst_rect.h		= src_rect.h;
+	req.x				= x;
+	req.y				= y;
 	req.blittingflags	= blittingflags;
 	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processBlit(BEI_BLIT *req) {
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and bind source texture to it
+	oglBindSurface(req->surface);
+
+	// setup blitting
+	INIT_OGL_BLITTING(req->surface, req->blittingflags);
+
+	// set ogl clip
+	OGL_SCISSOR(req->surface, req->x, req->y, req->src_rect.w, req->src_rect.h);
+
+	if (req->source->config.surface_buffer->ogl_tex_initialized) {
+		// blit source texture to the destination
+		mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
+					req->src_rect.x, req->src_rect.y, req->src_rect.x + req->src_rect.w - 1, req->src_rect.y + req->src_rect.h - 1,
+					req->source->config.w, req->source->config.h,
+					req->x, req->y, req->x + req->src_rect.w - 1, req->y + req->src_rect.h - 1);
+	}
+	else {
+		printf("skip blitting from texture which is not initialized\n");
+	}
+#endif
 }
 
 void MMSFBBackEndInterface::stretchBlit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect,

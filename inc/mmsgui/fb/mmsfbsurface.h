@@ -242,6 +242,13 @@ class MMSFBSurface {
         bool setWinSurface(bool iswinsurface = true);
         bool setLayerSurface(bool islayersurface = true);
 
+        bool checkDrawingStatus(int x, int y, int w, int h,
+								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags);
+        bool checkBlittingStatus(bool src_opaque, bool src_transparent, MMSFBRectangle *src_rect, int x, int y,
+        						 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
+        bool checkBlittingStatus(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y,
+								 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
+
 
         bool extendedLock(MMSFBSurface *src, MMSFBSurfacePlanes *src_planes,
         				  MMSFBSurface *dst, MMSFBSurfacePlanes *dst_planes);

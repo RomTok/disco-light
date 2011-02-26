@@ -56,6 +56,7 @@ private:
 		BEI_REQUEST_TYPE_DRAWLINE,
 		BEI_REQUEST_TYPE_DRAWRECTANGLE,
 		BEI_REQUEST_TYPE_DRAWTRIANGLE,
+		BEI_REQUEST_TYPE_BLIT,
 		BEI_REQUEST_TYPE_STRETCHBLIT,
 		BEI_REQUEST_TYPE_STRETCHBLITBUFFER,
 		BEI_REQUEST_TYPE_CREATEALPHATEXTURE,
@@ -124,6 +125,16 @@ private:
 		MMSFBSurface		*surface;
 		MMSFBTriangle		triangle;
 	} BEI_DRAWTRIANGLE;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		MMSFBSurface		*surface;
+		MMSFBSurface		*source;
+		MMSFBRectangle		src_rect;
+		int					x;
+		int					y;
+		MMSFBBlittingFlags	blittingflags;
+	} BEI_BLIT;
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
@@ -233,6 +244,7 @@ private:
 	void processDrawLine(BEI_DRAWLINE *req);
 	void processDrawRectangle(BEI_DRAWRECTANGLE *req);
 	void processDrawTriangle(BEI_DRAWTRIANGLE *req);
+	void processBlit(BEI_BLIT *req);
 	void processStretchBlit(BEI_STRETCHBLIT *req);
 	void processStretchBlitBuffer(BEI_STRETCHBLITBUFFER *req);
 	void processCreateAlphaTexture(BEI_CREATEALPHATEXTURE *req);
