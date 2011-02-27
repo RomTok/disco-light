@@ -1847,12 +1847,14 @@ bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
 	    }
 	}
 	else {
+		bool outside = false;
 		CLIPSUBSURFACE
 		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, w, h, &crect)) {
 			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
-			return false;
+			outside = true;
 		}
 		UNCLIPSUBSURFACE
+		if (outside) return false;
 	}
 
     // set new opaque/transparent status and get drawing flags for it
@@ -5304,12 +5306,14 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
 	    }
 	}
 	else {
+		bool outside = false;
 		CLIPSUBSURFACE
 		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, src_rect->w, src_rect->h, &crect)) {
 			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
-			return false;
+			outside = true;
 		}
 		UNCLIPSUBSURFACE
+		if (outside) return false;
 	}
 
     // set new opaque/transparent status and get blitting flags for it
