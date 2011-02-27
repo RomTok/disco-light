@@ -1242,6 +1242,13 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
     if(!item)
       return;
 
+    if (selimage) {
+    	// we have an selection image, so we have to enable refresh for specified item
+    	if (!item->checkRefreshStatus()) {
+    		item->enableRefresh(true);
+    	}
+    }
+
     item->setSelected(set, refresh);
 
     if (refreshall) {
