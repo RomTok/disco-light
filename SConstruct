@@ -785,8 +785,13 @@ if 'install' in BUILD_TARGETS:
 	disko_pc.write('Libs.private: ' + disko_pc_libs_private + '\n')
 	disko_pc.write('Cflags: -I${includedir}/ ')
 
+	skip=0
 	for ccflag in env['CCFLAGS']:
-		if(type(ccflag).__name__ == 'str'):
+		if ccflag == '-isystem':
+			skip = 1
+		elif skip == 1:
+			skip = 0
+		elif(type(ccflag).__name__ == 'str'):
 			disko_pc.write(' ' + ccflag)
 		else:
 			disko_pc.write(' ' + ' '.join(ccflag))
