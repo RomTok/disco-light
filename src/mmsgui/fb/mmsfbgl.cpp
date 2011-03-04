@@ -1327,11 +1327,11 @@ bool MMSFBGL::disableScissor() {
 }
 
 
-void MMSFBGL::enableBlend() {
+void MMSFBGL::enableBlend(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha) {
 	glEnable(GL_BLEND);
 	ERROR_CHECK_VOID("glEnable(GL_BLEND)");
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	ERROR_CHECK_VOID("glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)");
+	glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+	ERROR_CHECK_VOID("glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha)");
 }
 
 
@@ -1341,12 +1341,20 @@ void MMSFBGL::disableBlend() {
 }
 
 
-void MMSFBGL::enableDepthTest() {
+void MMSFBGL::enableDepthTest(bool readonly) {
 	glEnable(GL_DEPTH_TEST);
 	ERROR_CHECK_VOID("glEnable(GL_DEPTH_TEST)");
 
-	glDepthMask(GL_TRUE);
-	ERROR_CHECK_VOID("glDepthMask(GL_TRUE)");
+	if (!readonly) {
+		// enable opengl to write into the depth buffer
+		glDepthMask(GL_TRUE);
+		ERROR_CHECK_VOID("glDepthMask(GL_TRUE)");
+	}
+	else {
+		// write operations to depth buffer are not allowed
+		glDepthMask(GL_FALSE);
+		ERROR_CHECK_VOID("glDepthMask(GL_FALSE)");
+	}
 
 #ifdef __HAVE_GL2__
 	glDepthRange(0, 1);

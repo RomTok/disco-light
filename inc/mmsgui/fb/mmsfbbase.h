@@ -145,13 +145,20 @@ typedef unsigned int MMSFBFlipFlags;
 typedef unsigned int MMSFBLockFlags;
 
 //! surface lock flag: none
-#define MMSFB_LOCK_NONE					0x00000000
+#define MMSFB_LOCK_NONE				0x00000000
 //! surface lock flag: read access
-#define MMSFB_LOCK_READ					0x00000001
+#define MMSFB_LOCK_READ				0x00000001
 //! surface lock flag: write access
 #define MMSFB_LOCK_WRITE				0x00000002
 
 
+//! surface merging mode
+typedef enum {
+	//! surface merging mode: anaglyph red-cyan (red channel from first, green and blue channels from second source surface)
+	MMSFB_MM_ANAGLYPH_RED_CYAN = 0,
+	//! surface merging mode: line interleaved (even lines from first, odd lines from second source surface)
+	MMSFB_MM_LINE_INTERLEAVED
+} MMSFBMergingMode;
 
 
 

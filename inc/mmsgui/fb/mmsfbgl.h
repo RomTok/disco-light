@@ -213,9 +213,10 @@ class MMSFBGL {
     	bool setScissor(GLint x, GLint y, GLsizei width, GLsizei height);
     	bool disableScissor();
 
-        void enableBlend();
+        void enableBlend(GLenum srcRGB = GL_SRC_ALPHA, GLenum dstRGB = GL_ONE_MINUS_SRC_ALPHA,
+						  GLenum srcAlpha = GL_ONE, GLenum dstAlpha = GL_ONE_MINUS_SRC_ALPHA);
         void disableBlend();
-        void enableDepthTest();
+        void enableDepthTest(bool readonly = false);
         void disableDepthTest();
 		void setDrawingMode();
 		void setTexEnvReplace(GLenum format);
@@ -245,7 +246,7 @@ class MMSFBGL {
         bool pushCurrentMatrix();
         bool popCurrentMatrix();
 
-        bool clear(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+        bool clear(unsigned char r = 0x00, unsigned char g = 0x00, unsigned char b = 0x00, unsigned char a = 0x00);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
         bool drawRectangle2D(float x1, float y1, float x2, float y2);

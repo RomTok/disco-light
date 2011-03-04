@@ -132,6 +132,8 @@ typedef struct {
 	bool ogl_tex_initialized;
 	//! RBO initialized?
 	bool ogl_rbo_initialized;
+	//! content of depth buffer changed?
+	bool ogl_unchanged_depth_buffer;
 #endif
 } MMSFBSurfaceBuffer;
 
@@ -428,6 +430,8 @@ class MMSFBSurface {
 						 MMS3D_MATERIAL		*materials,
 						 MMSFBSurface		**textures,
 						 MMS3D_OBJECT		**objects);
+
+        bool merge(MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMergingMode mergingmode);
 
         bool flip(MMSFBRegion *region = NULL);
         bool flip(int x1, int y1, int x2, int y2);

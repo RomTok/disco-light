@@ -635,6 +635,7 @@ void MMSFBSurface::createSurfaceBuffer() {
 	sb->ogl_fbo_initialized = false;
 	sb->ogl_tex_initialized = false;
 	sb->ogl_rbo_initialized = false;
+	sb->ogl_unchanged_depth_buffer = false;
 #endif
 }
 
@@ -5274,6 +5275,35 @@ bool MMSFBSurface::renderScene(MMS3D_VERTEX_ARRAY	**varrays,
 			CLIPSUBSURFACE
 
 			mmsfb->bei->renderScene(this, varrays, iarrays, materials, textures, objects);
+
+			UNCLIPSUBSURFACE
+
+			ret = true;
+		}
+#endif
+	}
+
+	return ret;
+}
+
+
+bool MMSFBSurface::merge(MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMergingMode mergingmode) {
+
+    bool 		 ret = false;
+
+	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+
+		if (!this->is_sub_surface) {
+
+			mmsfb->bei->merge(this, source1, source2, mergingmode);
+
+			ret = true;
+		}
+		else {
+			CLIPSUBSURFACE
+
+			mmsfb->bei->merge(this, source1, source2, mergingmode);
 
 			UNCLIPSUBSURFACE
 

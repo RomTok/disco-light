@@ -123,6 +123,27 @@
 			break; }
 
 
+#define ENABLE_OGL_DEPTHTEST(surface, readonly) \
+		if (!readonly && surface->config.surface_buffer) \
+			if (!surface->is_sub_surface) \
+				surface->config.surface_buffer->ogl_unchanged_depth_buffer = false; \
+			else \
+				surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer = surface->config.surface_buffer->ogl_unchanged_depth_buffer = false; \
+		mmsfbgl.enableDepthTest(readonly);
+
+
+#define DISABLE_OGL_DEPTHTEST(surface, mark_as_unchanged) \
+		if (mark_as_unchanged && surface->config.surface_buffer) \
+			if (!surface->is_sub_surface) \
+				surface->config.surface_buffer->ogl_unchanged_depth_buffer = true; \
+			else \
+				surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer = surface->config.surface_buffer->ogl_unchanged_depth_buffer = true; \
+		mmsfbgl.disableDepthTest();
+
+
+#define IS_OGL_DEPTH_BUFFER_UNCHANGED(surface) \
+		((!surface->is_sub_surface && surface->config.surface_buffer && surface->config.surface_buffer->ogl_unchanged_depth_buffer) \
+		||(surface->is_sub_surface && surface->root_parent->config.surface_buffer && surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer))
 
 
 #ifdef __HAVE_GL2__
@@ -283,6 +304,9 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 		break;
 	case BEI_REQUEST_TYPE_RENDERSCENE:
 		processRenderScene((BEI_RENDERSCENE *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_MERGE:
+		processMerge((BEI_MERGE *)in_data);
 		break;
 	default:
 		break;
@@ -1233,8 +1257,8 @@ void MMSFBBackEndInterface::processRenderScene(BEI_RENDERSCENE *req) {
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
 		// clear surface
-		mmsfbgl.enableDepthTest();
-		mmsfbgl.clear(0, 0, 0, 0);
+		ENABLE_OGL_DEPTHTEST(req->surface, false);
+		mmsfbgl.clear();
 
 		// draw objects...
 		int cnt = 0;
@@ -1318,6 +1342,120 @@ void MMSFBBackEndInterface::processRenderScene(BEI_RENDERSCENE *req) {
 	}
 
 
+#endif
+}
+
+
+
+void MMSFBBackEndInterface::merge(MMSFBSurface *surface, MMSFBSurface *source1, MMSFBSurface *source2,
+									   MMSFBMergingMode mergingmode) {
+	BEI_MERGE req;
+	req.type		= BEI_REQUEST_TYPE_MERGE;
+	req.surface		= surface;
+	req.source1		= source1;
+	req.source2		= source2;
+	req.mergingmode	= mergingmode;
+	trigger((void*)&req, sizeof(req));
+}
+
+
+void MMSFBBackEndInterface::processMerge(BEI_MERGE *req) {
+#ifdef  __HAVE_OPENGL__
+	// lock destination fbo and bind source texture to it
+	oglBindSurface(req->surface);
+
+	// get destination subsurface offset
+	GET_OFFS(req->surface);
+
+	// merging the two source surfaces
+	for (int i = 0; i < 2; i++) {
+		// setup blitting
+		switch (req->mergingmode) {
+		case MMSFB_MM_ANAGLYPH_RED_CYAN:
+			if (!i) {
+				// red channel from first source surface
+				mmsfbgl.disableBlend();
+				mmsfbgl.setTexEnvModulate(GL_RGBA);
+				mmsfbgl.setColor(0xff, 0x00, 0x00, 0xff);
+			}
+			else {
+				// green and blue channels (cyan) from second source surface
+				mmsfbgl.enableBlend(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+				mmsfbgl.setTexEnvModulate(GL_RGBA);
+				mmsfbgl.setColor(0x00, 0xff, 0xff, 0xff);
+			}
+			break;
+
+		case MMSFB_MM_LINE_INTERLEAVED:
+			if (!i) {
+				// even lines from first source surface
+				mmsfbgl.disableBlend();
+				mmsfbgl.setTexEnvReplace(GL_RGBA);
+
+				if (IS_OGL_DEPTH_BUFFER_UNCHANGED(req->surface)) {
+					// depth buffer has not changed, so we do not have to re-build it
+					mmsfbgl.disableDepthTest();
+				}
+				else {
+					// we have to build an interleaved depth buffer needed for blitting of the second source surface
+					ENABLE_OGL_DEPTHTEST(req->surface, false);
+					mmsfbgl.clear();
+					mmsfbgl.setColor(0xff,0xff,0xff,0xff);
+					for (int i = 0; i < req->surface->config.h; i+=2) {
+						mmsfbgl.fillRectangle2D(0, (float)i, (float)req->surface->config.w - 0.1f, (float)i+0.9);
+					}
+
+					// we mark the depth buffer as "unchanged", so we can save
+					// a lot of GPU time next time processMerge() is called
+					DISABLE_OGL_DEPTHTEST(req->surface, true);
+				}
+			}
+			else {
+				// odd lines from second source surface
+				mmsfbgl.disableBlend();
+				mmsfbgl.setTexEnvReplace(GL_RGBA);
+
+				// we enable the depth test in "readonly" mode, so we leave the depth buffer unchanged
+				ENABLE_OGL_DEPTHTEST(req->surface, true);
+			}
+			break;
+		}
+
+		// get source surface
+		MMSFBSurface *source = (!i)?req->source1:req->source2;
+
+		// get source subsurface offset
+		GET_OFFS_SRC(source);
+
+		// set the clip to ogl
+		MMSFBRectangle crect;
+		if (req->surface->calcClip(0 + xoff, 0 + yoff, req->surface->config.w, req->surface->config.h, &crect)) {
+			// inside clipping region
+			OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
+
+			// get source region
+			int sx1 = 0 + src_xoff;
+			int sy1 = 0 + src_yoff;
+			int sx2 = 0 + source->config.w - 1 + src_xoff;
+			int sy2 = 0 + source->config.h - 1 + src_yoff;
+
+			// get destination region
+			int dx1 = 0 + xoff;
+			int dy1 = 0 + yoff;
+			int dx2 = 0 + req->surface->config.w - 1 + xoff;
+			int dy2 = 0 + req->surface->config.h - 1 + yoff;
+
+			if (source->config.surface_buffer->ogl_tex_initialized) {
+				// blit source texture to the destination
+				mmsfbgl.stretchBliti(source->config.surface_buffer->ogl_tex,
+							sx1, sy1, sx2, sy2, source->config.w, source->config.h,
+							dx1, dy1, dx2, dy2);
+			}
+			else {
+				printf("skip blitting from texture which is not initialized\n");
+			}
+		}
+	}
 #endif
 }
 

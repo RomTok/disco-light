@@ -62,7 +62,8 @@ private:
 		BEI_REQUEST_TYPE_CREATEALPHATEXTURE,
 		BEI_REQUEST_TYPE_DELETETEXTURE,
 		BEI_REQUEST_TYPE_DRAWSTRING,
-		BEI_REQUEST_TYPE_RENDERSCENE
+		BEI_REQUEST_TYPE_RENDERSCENE,
+		BEI_REQUEST_TYPE_MERGE
 	} BEI_REQUEST_TYPE;
 
 	typedef struct {
@@ -189,6 +190,14 @@ private:
 		MMS3D_OBJECT		**objects;
 	} BEI_RENDERSCENE;
 
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		MMSFBSurface		*surface;
+		MMSFBSurface		*source1;
+		MMSFBSurface		*source2;
+		MMSFBMergingMode	mergingmode;
+	} BEI_MERGE;
+
 #ifdef __HAVE_OPENGL__
 
 	//! access to the OpenGL wrapper class
@@ -252,6 +261,7 @@ private:
 	void processDrawString(BEI_DRAWSTRING *req);
 
 	void processRenderScene(BEI_RENDERSCENE *req);
+	void processMerge(BEI_MERGE *req);
 
 
 public:
@@ -290,6 +300,8 @@ public:
 					 MMS3D_MATERIAL		*materials,
 					 MMSFBSurface		**texsurfaces,
 					 MMS3D_OBJECT		**objects);
+
+	void merge(MMSFBSurface *surface, MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMergingMode mergingmode);
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */
