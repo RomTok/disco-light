@@ -181,6 +181,8 @@ class MMSMenuWidget : public MMSWidget {
         void switchArrowWidgets();
         void setSliders();
 
+        bool setSelected(unsigned int item, bool refresh, bool *changed, bool joined);
+
         void selectItem(MMSWidget *item, bool set, bool refresh = true, bool refreshall = false);
 
 
@@ -231,7 +233,7 @@ class MMSMenuWidget : public MMSWidget {
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
 
-        bool setSelected(unsigned int item, bool refresh = true, bool *changed = NULL, bool joined = false);
+        bool setSelected(bool set, bool refresh = true);
         unsigned int getSelected();
 
         MMSWidget *getItem(unsigned int item);

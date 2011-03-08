@@ -2450,12 +2450,12 @@ bool MMSMenuWidget::scrollTo(int posx, int posy, bool refresh, bool *changed, MM
 			switch (mode) {
 			case MMSWIDGET_SCROLL_MODE_SETSELECTED:
 				// that's the right menu item, scroll smooth to the position
-				setSelected(i, refresh, changed);
+				setSelected(i, refresh, changed, false);
 				break;
 			case MMSWIDGET_SCROLL_MODE_SETSELECTED | MMSWIDGET_SCROLL_MODE_RMPRESSED:
 				// that's the right menu item, scroll smooth to the position
 				this->children.at(i)->setPressed(false, false);
-				setSelected(i, refresh, changed);
+				setSelected(i, refresh, changed, false);
 				break;
 			case MMSWIDGET_SCROLL_MODE_SETPRESSED:
 				// that's the right menu item, set pressed status
@@ -2760,6 +2760,10 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed, 
 		*changed = c;
 
     return true;
+}
+
+bool MMSMenuWidget::setSelected(bool set, bool refresh) {
+	return setSelected(set, refresh, NULL, false);
 }
 
 unsigned int MMSMenuWidget::getSelected() {

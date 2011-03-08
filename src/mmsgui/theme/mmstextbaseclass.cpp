@@ -44,6 +44,10 @@ void MMSTextBaseClass::unsetAll() {
     unsetAlignment();
     unsetColor();
     unsetSelColor();
+    unsetColor_p();
+    unsetSelColor_p();
+    unsetColor_i();
+    unsetSelColor_i();
     unsetText();
     unsetShadowColors();
     unsetSelShadowColors();
@@ -163,6 +167,78 @@ void MMSTextBaseClass::unsetSelColor() {
 MMSFBColor MMSTextBaseClass::getSelColor() {
     return this->selcolor;
 }
+
+
+bool MMSTextBaseClass::isColor_p() {
+    return this->iscolor_p;
+}
+
+void MMSTextBaseClass::setColor_p(MMSFBColor color_p) {
+    this->color_p = color_p;
+    this->iscolor_p = true;
+}
+
+void MMSTextBaseClass::unsetColor_p() {
+    this->iscolor_p = false;
+}
+
+MMSFBColor MMSTextBaseClass::getColor_p() {
+    return this->color_p;
+}
+
+bool MMSTextBaseClass::isSelColor_p() {
+    return this->isselcolor_p;
+}
+
+void MMSTextBaseClass::setSelColor_p(MMSFBColor selcolor_p) {
+    this->selcolor_p = selcolor_p;
+    this->isselcolor_p = true;
+}
+
+void MMSTextBaseClass::unsetSelColor_p() {
+    this->isselcolor_p = false;
+}
+
+MMSFBColor MMSTextBaseClass::getSelColor_p() {
+    return this->selcolor_p;
+}
+
+
+bool MMSTextBaseClass::isColor_i() {
+    return this->iscolor_i;
+}
+
+void MMSTextBaseClass::setColor_i(MMSFBColor color_i) {
+    this->color_i = color_i;
+    this->iscolor_i = true;
+}
+
+void MMSTextBaseClass::unsetColor_i() {
+    this->iscolor_i = false;
+}
+
+MMSFBColor MMSTextBaseClass::getColor_i() {
+    return this->color_i;
+}
+
+bool MMSTextBaseClass::isSelColor_i() {
+    return this->isselcolor_i;
+}
+
+void MMSTextBaseClass::setSelColor_i(MMSFBColor selcolor_i) {
+    this->selcolor_i = selcolor_i;
+    this->isselcolor_i = true;
+}
+
+void MMSTextBaseClass::unsetSelColor_i() {
+    this->isselcolor_i = false;
+}
+
+MMSFBColor MMSTextBaseClass::getSelColor_i() {
+    return this->selcolor_i;
+}
+
+
 
 bool MMSTextBaseClass::isText() {
     return this->istext;

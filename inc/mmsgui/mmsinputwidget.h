@@ -151,6 +151,10 @@ class MMSInputWidget : public MMSWidget {
         MMSALIGNMENT getAlignment();
         MMSFBColor getColor();
         MMSFBColor getSelColor();
+        MMSFBColor getColor_p();
+        MMSFBColor getSelColor_p();
+        MMSFBColor getColor_i();
+        MMSFBColor getSelColor_i();
         string getText();
         void getText(string &text);
         MMSSTATE getCursorState();
@@ -166,6 +170,10 @@ class MMSInputWidget : public MMSWidget {
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
+        void setColor_p(MMSFBColor color_p, bool refresh = true);
+        void setSelColor_p(MMSFBColor selcolor_p, bool refresh = true);
+        void setColor_i(MMSFBColor color_i, bool refresh = true);
+        void setSelColor_i(MMSFBColor selcolor_i, bool refresh = true);
         void setText(string text, bool refresh = true, bool reset_cursor = true);
         void setCursorState(MMSSTATE cursor_state, bool refresh = true);
         void setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh = true);

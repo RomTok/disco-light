@@ -428,6 +428,26 @@ namespace MMSGUI_TEXTINFO_ATTR {
 		{ "selcolor.r", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.g", TAFF_ATTRTYPE_UCHAR }, \
 		{ "selcolor.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_p", TAFF_ATTRTYPE_COLOR }, \
+		{ "color_p.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_p.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_p.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_p.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_p", TAFF_ATTRTYPE_COLOR }, \
+		{ "selcolor_p.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_p.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_p.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_p.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_i", TAFF_ATTRTYPE_COLOR }, \
+		{ "color_i.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_i.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_i.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "color_i.b", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_i", TAFF_ATTRTYPE_COLOR }, \
+		{ "selcolor_i.a", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_i.r", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_i.g", TAFF_ATTRTYPE_UCHAR }, \
+		{ "selcolor_i.b", TAFF_ATTRTYPE_UCHAR }, \
 		{ "text", TAFF_ATTRTYPE_STRING }
 
 
@@ -443,6 +463,26 @@ namespace MMSGUI_TEXTINFO_ATTR {
 		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_r, \
 		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_g, \
 		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_b, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_p, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_p_a, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_p_r, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_p_g, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_p_b, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_a, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_r, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_g, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_b, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_i, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_i_a, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_i_r, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_i_g, \
+		MMSGUI_TEXTINFO_ATTR_IDS_color_i_b, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_a, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_r, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_g, \
+		MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_b, \
 		MMSGUI_TEXTINFO_ATTR_IDS_text
 
 	#define MMSGUI_TEXTINFO_ATTR_INIT { \
@@ -514,6 +554,114 @@ namespace MMSGUI_TEXTINFO_ATTR {
 		if (isSelColor()) color = getSelColor(); \
 		color.b = attrval_int; \
 		setSelColor(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_p: \
+		setColor_p(MMSFBColor((unsigned int)attrval_int)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_p_a: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.a = attrval_int; \
+		setColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_p_r: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.r = attrval_int; \
+		setColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_p_g: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.g = attrval_int; \
+		setColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_p_b: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.b = attrval_int; \
+		setColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p: \
+		setSelColor_p(MMSFBColor((unsigned int)attrval_int)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_a: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.a = attrval_int; \
+		setSelColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_r: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.r = attrval_int; \
+		setSelColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_g: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.g = attrval_int; \
+		setSelColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_p_b: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.b = attrval_int; \
+		setSelColor_p(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_i: \
+		setColor_i(MMSFBColor((unsigned int)attrval_int)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_i_a: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.a = attrval_int; \
+		setColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_i_r: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.r = attrval_int; \
+		setColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_i_g: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.g = attrval_int; \
+		setColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_color_i_b: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.b = attrval_int; \
+		setColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i: \
+		setSelColor_i(MMSFBColor((unsigned int)attrval_int)); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_a: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.a = attrval_int; \
+		setSelColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_r: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.r = attrval_int; \
+		setSelColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_g: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.g = attrval_int; \
+		setSelColor_i(color); \
+		break; \
+	case w::MMSGUI_TEXTINFO_ATTR_IDS_selcolor_i_b: \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.b = attrval_int; \
+		setSelColor_i(color); \
 		break; \
 	case w::MMSGUI_TEXTINFO_ATTR_IDS_text: \
 		setText(attrval_str); \
@@ -591,6 +739,134 @@ namespace MMSGUI_TEXTINFO_ATTR {
 		setSelColor(color); \
 	} \
 	else \
+	if (ISTEXTINFOATTRNAME(w, color_p)) { \
+		setColor_p(MMSFBColor((unsigned int)attrval_int)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_p_a)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.a = attrval_int; \
+		setColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_p_r)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.r = attrval_int; \
+		setColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_p_g)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.g = attrval_int; \
+		setColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_p_b)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_p()) color = getColor_p(); \
+		color.b = attrval_int; \
+		setColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_p)) { \
+		setSelColor_p(MMSFBColor((unsigned int)attrval_int)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_p_a)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.a = attrval_int; \
+		setSelColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_p_r)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.r = attrval_int; \
+		setSelColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_p_g)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.g = attrval_int; \
+		setSelColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_p_b)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_p()) color = getSelColor_p(); \
+		color.b = attrval_int; \
+		setSelColor_p(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_i)) { \
+		setColor_i(MMSFBColor((unsigned int)attrval_int)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_i_a)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.a = attrval_int; \
+		setColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_i_r)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.r = attrval_int; \
+		setColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_i_g)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.g = attrval_int; \
+		setColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, color_i_b)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isColor_i()) color = getColor_i(); \
+		color.b = attrval_int; \
+		setColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_i)) { \
+		setSelColor_i(MMSFBColor((unsigned int)attrval_int)); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_i_a)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.a = attrval_int; \
+		setSelColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_i_r)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.r = attrval_int; \
+		setSelColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_i_g)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.g = attrval_int; \
+		setSelColor_i(color); \
+	} \
+	else \
+	if (ISTEXTINFOATTRNAME(w, selcolor_i_b)) { \
+		color.a = color.r = color.g = color.b = 0; \
+		if (isSelColor_i()) color = getSelColor_i(); \
+		color.b = attrval_int; \
+		setSelColor_i(color); \
+	} \
+	else \
 	if (ISTEXTINFOATTRNAME(w, text)) { \
 		setText(attrval_str); \
 	}
@@ -649,6 +925,33 @@ class MMSTextBaseClass {
 
         //! color of the text if the widget is selected
         MMSFBColor      selcolor;
+
+
+        //! is color_p set?
+        bool            iscolor_p;
+
+        //! color of the text if the widget is not selected but pressed
+        MMSFBColor      color_p;
+
+        //! is selcolor_p set?
+        bool            isselcolor_p;
+
+        //! color of the text if the widget is selected and pressed
+        MMSFBColor      selcolor_p;
+
+
+        //! is color_i set?
+        bool            iscolor_i;
+
+        //! color of the text if the widget is not selected and disabled
+        MMSFBColor      color_i;
+
+        //! is selcolor_i set?
+        bool            isselcolor_i;
+
+        //! color of the text if the widget is selected and disabled
+        MMSFBColor      selcolor_i;
+
 
         //! is text set?
         bool            istext;
@@ -806,6 +1109,82 @@ class MMSTextBaseClass {
         \return color for selected text
         */
         MMSFBColor getSelColor();
+
+
+        //! Check if the color_p is set. This color will be used for the unselected, pressed text.
+        bool isColor_p();
+
+        //! Set the color which is used to draw the unselected, pressed text.
+        /*!
+        \param color_p  color for unselected, pressed text
+        */
+        void setColor_p(MMSFBColor color_p);
+
+        //! Mark the color_p as not set.
+        void unsetColor_p();
+
+        //! Get the color which is used to draw the unselected, pressed text.
+        /*!
+        \return color for unselected, pressed text
+        */
+        MMSFBColor getColor_p();
+
+        //! Check if the color is set. This color will be used for the selected, pressed text.
+        bool isSelColor_p();
+
+        //! Set the color which is used to draw the selected, pressed text.
+        /*!
+        \param selcolor_p  color for selected, pressed text
+        */
+        void setSelColor_p(MMSFBColor selcolor_p);
+
+        //! Mark the color_p as not set.
+        void unsetSelColor_p();
+
+        //! Get the color which is used to draw the selected, pressed text.
+        /*!
+        \return color for selected, pressed text
+        */
+        MMSFBColor getSelColor_p();
+
+
+
+        //! Check if the color_i is set. This color will be used for the unselected, inactive text.
+        bool isColor_i();
+
+        //! Set the color which is used to draw the unselected, inactive text.
+        /*!
+        \param color_i  color for unselected, inactive text
+        */
+        void setColor_i(MMSFBColor color_i);
+
+        //! Mark the color_i as not set.
+        void unsetColor_i();
+
+        //! Get the color which is used to draw the unselected, inactive text.
+        /*!
+        \return color for unselected, inactive text
+        */
+        MMSFBColor getColor_i();
+
+        //! Check if the color is set. This color will be used for the selected, inactive text.
+        bool isSelColor_i();
+
+        //! Set the color which is used to draw the selected, inactive text.
+        /*!
+        \param selcolor_i  color for selected, inactive text
+        */
+        void setSelColor_i(MMSFBColor selcolor_i);
+
+        //! Mark the color_i as not set.
+        void unsetSelColor_i();
+
+        //! Get the color which is used to draw the selected, inactive text.
+        /*!
+        \return color for selected, inactive text
+        */
+        MMSFBColor getSelColor_i();
+
 
         //! Check if the text is set.
         bool isText();

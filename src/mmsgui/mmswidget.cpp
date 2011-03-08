@@ -2002,6 +2002,7 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
 
 	if (!joined) {
 		if ((this->da)&&(this->da->joinedWidget)) {
+			// widget joined to another, we have to switch the status of all widgets which are joined
 			MMSWidget *caller_stack[16] = {0};
 			caller_stack[0] = this;
 			this->da->joinedWidget->getJoinedWigdets(caller_stack);
@@ -2081,6 +2082,10 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
     return true;
 }
 
+bool MMSWidget::setSelected(bool set, bool refresh) {
+	return setSelected(set, refresh, NULL, false);
+}
+
 bool MMSWidget::isSelected() {
     return this->selected;
 }
@@ -2100,8 +2105,23 @@ bool MMSWidget::isActivated() {
 	return activated;
 }
 
-bool MMSWidget::setPressed(bool set, bool refresh) {
-    // check if pressed status already set
+bool MMSWidget::setPressed(bool set, bool refresh, bool joined) {
+
+	if (!joined) {
+		if ((this->da)&&(this->da->joinedWidget)) {
+			// widget joined to another, we have to switch the status of all widgets which are joined
+			MMSWidget *caller_stack[16] = {0};
+			caller_stack[0] = this;
+			this->da->joinedWidget->getJoinedWigdets(caller_stack);
+			int i = 16;
+			while (i-- > 1) {
+				if (caller_stack[i])
+					caller_stack[i]->setPressed(set, refresh, true);
+			}
+		}
+	}
+
+	// check if pressed status already set
     if (this->pressed == set) {
         // refresh my children
     	if (canSelectChildren()) {
@@ -2157,6 +2177,10 @@ bool MMSWidget::setPressed(bool set, bool refresh) {
 
     // status changed
     return true;
+}
+
+bool MMSWidget::setPressed(bool set, bool refresh) {
+	return setPressed(set, refresh, false);
 }
 
 bool MMSWidget::isPressed() {
