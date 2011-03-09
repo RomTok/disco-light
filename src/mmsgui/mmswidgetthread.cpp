@@ -31,7 +31,7 @@
  **************************************************************************/
 
 #include "mmsgui/mmswidgetthread.h"
-
+int ggg=0;
 MMSWidgetThread::MMSWidgetThread(MMSWidget *widget) {
 	this->widget = widget;
 	this->delay = 0;
@@ -62,6 +62,6 @@ void MMSWidgetThread::threadMain() {
 
 void MMSWidgetThread::start(int delay) {
 	this->delay = delay;
-	MMSThread::start();
+//	MMSThread::start();
 }
 
