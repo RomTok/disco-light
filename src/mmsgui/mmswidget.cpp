@@ -2213,23 +2213,25 @@ void MMSWidget::handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *request
 
 void MMSWidget::resetPressed() {
 	// reset the pressed status
-	if (isPressed()) {
-		string inputmode = "";
-		getInputModeEx(inputmode);
-		if (strToUpr(inputmode) == "CLICK") {
-			// input mode click
+	string inputmode = "";
+	getInputModeEx(inputmode);
+	if (strToUpr(inputmode) == "CLICK") {
+		// input mode click
+		if (isPressed())
 			setPressed(false, false);
-			bool b = false;
-			this->getFocusable(b);
-			if (b)
-				this->setFocus(false);
-			else
-				this->setSelected(false);
-		}
-		else {
-			// normal processing, remove pressed state
+
+		// we have to remove the selection
+		bool b = false;
+		this->getFocusable(b);
+		if (b)
+			this->setFocus(false);
+		else
+			this->setSelected(false);
+	}
+	else {
+		// normal processing, remove pressed state
+		if (isPressed())
 			setPressed(false);
-		}
 	}
 }
 
@@ -2368,7 +2370,8 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	    			}
 	    			else {
 		    			// no, reset the pressed status
-	    				resetPressed();
+	    				if (isPressed())
+	    					setPressed(false);
 
 						// no, scroll to the position if possible and remove the pressed status
 						scrollTo(this->da->last_inputevent.posx, this->da->last_inputevent.posy, true, NULL,
