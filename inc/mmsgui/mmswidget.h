@@ -297,6 +297,10 @@ class MMSWidget {
         //! Internal method: Inform the widget, that the theme has changed.
 		void themeChanged(string &themeName);
 
+
+        virtual bool setSelected(bool set, bool refresh, bool *changed, bool joined);
+        virtual bool setPressed(bool set, bool refresh, bool joined);
+
     public:
         MMSWidget();
         virtual ~MMSWidget();
@@ -331,7 +335,7 @@ class MMSWidget {
 
         virtual void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
         bool isFocused();
-        virtual bool setSelected(bool set, bool refresh = true, bool *changed = NULL, bool joined = false);
+        bool setSelected(bool set, bool refresh = true);
         bool isSelected();
         void unsetFocusableForAllChildren(bool refresh);
 

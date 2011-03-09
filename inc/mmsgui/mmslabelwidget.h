@@ -118,6 +118,10 @@ class MMSLabelWidget : public MMSWidget {
         MMSALIGNMENT getAlignment();
         MMSFBColor getColor();
         MMSFBColor getSelColor();
+        MMSFBColor getColor_p();
+        MMSFBColor getSelColor_p();
+        MMSFBColor getColor_i();
+        MMSFBColor getSelColor_i();
         string getText();
         void getText(string &text);
         bool getSlidable();
@@ -135,6 +139,10 @@ class MMSLabelWidget : public MMSWidget {
         void setAlignment(MMSALIGNMENT alignment, bool refresh = true);
         void setColor(MMSFBColor color, bool refresh = true);
         void setSelColor(MMSFBColor selcolor, bool refresh = true);
+        void setColor_p(MMSFBColor color_p, bool refresh = true);
+        void setSelColor_p(MMSFBColor selcolor_p, bool refresh = true);
+        void setColor_i(MMSFBColor color_i, bool refresh = true);
+        void setSelColor_i(MMSFBColor selcolor_i, bool refresh = true);
         void setText(string text, bool refresh = true);
         void setSlidable(bool slidable);
         void setSlideSpeed(unsigned char slidespeed);

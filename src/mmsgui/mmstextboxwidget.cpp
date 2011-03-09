@@ -451,12 +451,33 @@ bool MMSTextBoxWidget::release() {
 void MMSTextBoxWidget::getForeground(MMSFBColor *color) {
 	color->a = 0;
 
-	if (isSelected()) {
-        *color = getSelColor();
+	if (isActivated()) {
+		if (isSelected()) {
+	        *color = getSelColor();
+		}
+		else {
+	        *color = getColor();
+		}
+		if (isPressed()) {
+			MMSFBColor mycol;
+			if (isSelected()) {
+		        mycol = getSelColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+			else {
+		        mycol = getColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+		}
 	}
-    else {
-        *color = getColor();
-    }
+	else {
+		if (isSelected()) {
+	        *color = getSelColor_i();
+		}
+		else {
+	        *color = getColor_i();
+		}
+	}
 }
 
 bool MMSTextBoxWidget::enableRefresh(bool enable) {
@@ -704,6 +725,22 @@ MMSFBColor MMSTextBoxWidget::getSelColor() {
     GETTEXTBOX(SelColor);
 }
 
+MMSFBColor MMSTextBoxWidget::getColor_p() {
+    GETTEXTBOX(Color_p);
+}
+
+MMSFBColor MMSTextBoxWidget::getSelColor_p() {
+    GETTEXTBOX(SelColor_p);
+}
+
+MMSFBColor MMSTextBoxWidget::getColor_i() {
+    GETTEXTBOX(Color_i);
+}
+
+MMSFBColor MMSTextBoxWidget::getSelColor_i() {
+    GETTEXTBOX(SelColor_i);
+}
+
 string MMSTextBoxWidget::getText() {
     GETTEXTBOX(Text);
 }
@@ -847,6 +884,46 @@ void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setColor_p(MMSFBColor color_p, bool refresh) {
+    myTextBoxWidgetClass.setColor_p(color_p);
+
+	// refresh required?
+	enableRefresh((color_p != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
+    myTextBoxWidgetClass.setSelColor_p(selcolor_p);
+
+	// refresh required?
+	enableRefresh((selcolor_p != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setColor_i(MMSFBColor color_i, bool refresh) {
+    myTextBoxWidgetClass.setColor_i(color_i);
+
+	// refresh required?
+	enableRefresh((color_i != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSTextBoxWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
+    myTextBoxWidgetClass.setSelColor_i(selcolor_i);
+
+	// refresh required?
+	enableRefresh((selcolor_i != this->current_fgcolor));
 
 	if (refresh)
         this->refresh();

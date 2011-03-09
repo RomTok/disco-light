@@ -54,7 +54,15 @@
         widget->setColor(themeClass->getColor()); \
     if (themeClass->isSelColor()) \
         widget->setSelColor(themeClass->getSelColor()); \
-    if (themeClass->isText()) \
+    if (themeClass->isColor_p()) \
+        widget->setColor_p(themeClass->getColor_p()); \
+    if (themeClass->isSelColor_p()) \
+        widget->setSelColor_p(themeClass->getSelColor_p()); \
+	if (themeClass->isColor_i()) \
+		widget->setColor_i(themeClass->getColor_i()); \
+	if (themeClass->isSelColor_i()) \
+		widget->setSelColor_i(themeClass->getSelColor_i()); \
+	if (themeClass->isText()) \
         widget->setText(themeClass->getText());
 
 #endif /*MMSTEXTBASE_H_*/

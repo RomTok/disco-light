@@ -178,12 +178,33 @@ bool MMSInputWidget::release() {
 void MMSInputWidget::getForeground(MMSFBColor *color) {
 	color->a = 0;
 
-	if (isSelected()) {
-        *color = getSelColor();
+	if (isActivated()) {
+		if (isSelected()) {
+	        *color = getSelColor();
+		}
+		else {
+	        *color = getColor();
+		}
+		if (isPressed()) {
+			MMSFBColor mycol;
+			if (isSelected()) {
+		        mycol = getSelColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+			else {
+		        mycol = getColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+		}
 	}
-    else {
-        *color = getColor();
-    }
+	else {
+		if (isSelected()) {
+	        *color = getSelColor_i();
+		}
+		else {
+	        *color = getColor_i();
+		}
+	}
 }
 
 bool MMSInputWidget::enableRefresh(bool enable) {
@@ -775,6 +796,22 @@ MMSFBColor MMSInputWidget::getSelColor() {
     GETINPUT(SelColor);
 }
 
+MMSFBColor MMSInputWidget::getColor_p() {
+    GETINPUT(Color_p);
+}
+
+MMSFBColor MMSInputWidget::getSelColor_p() {
+    GETINPUT(SelColor_p);
+}
+
+MMSFBColor MMSInputWidget::getColor_i() {
+    GETINPUT(Color_i);
+}
+
+MMSFBColor MMSInputWidget::getSelColor_i() {
+    GETINPUT(SelColor_i);
+}
+
 string MMSInputWidget::getText() {
     GETINPUT(Text);
 }
@@ -890,6 +927,46 @@ void MMSInputWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setColor_p(MMSFBColor color_p, bool refresh) {
+    myInputWidgetClass.setColor_p(color_p);
+
+	// refresh required?
+	enableRefresh((color_p != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
+    myInputWidgetClass.setSelColor_p(selcolor_p);
+
+	// refresh required?
+	enableRefresh((selcolor_p != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setColor_i(MMSFBColor color_i, bool refresh) {
+    myInputWidgetClass.setColor_i(color_i);
+
+	// refresh required?
+	enableRefresh((color_i != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSInputWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
+    myInputWidgetClass.setSelColor_i(selcolor_i);
+
+	// refresh required?
+	enableRefresh((selcolor_i != this->current_fgcolor));
 
 	if (refresh)
         this->refresh();

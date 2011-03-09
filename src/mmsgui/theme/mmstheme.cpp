@@ -82,7 +82,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 26, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 27, mmsgui_taff_tagtable };
 
 
 
@@ -664,17 +664,12 @@ MMSTheme::MMSTheme() {
         this->labelWidgetClass.setFontName("decker.ttf");
         this->labelWidgetClass.setFontSize(16);
         this->labelWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
-        MMSFBColor c;
-        c.a = 255;
-        c.r = 192;
-        c.g = 192;
-        c.b = 192;
-        this->labelWidgetClass.setColor(c);
-        c.a = 255;
-        c.r = 255;
-        c.g = 255;
-        c.b = 255;
-        this->labelWidgetClass.setSelColor(c);
+        this->labelWidgetClass.setColor(MMSFBColor(0xc0, 0xc0, 0xc0, 0xff));
+        this->labelWidgetClass.setSelColor(MMSFBColor(0xff, 0xff, 0xff, 0xff));
+        this->labelWidgetClass.setColor_p(MMSFBColor());
+        this->labelWidgetClass.setSelColor_p(MMSFBColor());
+        this->labelWidgetClass.setColor_i(MMSFBColor(0x80, 0x80, 0x80, 0xff));
+        this->labelWidgetClass.setSelColor_i(MMSFBColor(0xbf, 0xbf, 0xbf, 0xff));
         this->labelWidgetClass.setText("");
         this->labelWidgetClass.setSlidable(false);
         this->labelWidgetClass.setSlideSpeed(50);
@@ -1041,17 +1036,12 @@ MMSTheme::MMSTheme() {
         this->textBoxWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
         this->textBoxWidgetClass.setWrap(true);
         this->textBoxWidgetClass.setSplitWords(true);
-        MMSFBColor c;
-        c.a = 255;
-        c.r = 192;
-        c.g = 192;
-        c.b = 192;
-        this->textBoxWidgetClass.setColor(c);
-        c.a = 255;
-        c.r = 255;
-        c.g = 255;
-        c.b = 255;
-        this->textBoxWidgetClass.setSelColor(c);
+        this->textBoxWidgetClass.setColor(MMSFBColor(0xc0, 0xc0, 0xc0, 0xff));
+        this->textBoxWidgetClass.setSelColor(MMSFBColor(0xff, 0xff, 0xff, 0xff));
+        this->textBoxWidgetClass.setColor_p(MMSFBColor());
+        this->textBoxWidgetClass.setSelColor_p(MMSFBColor());
+        this->textBoxWidgetClass.setColor_i(MMSFBColor(0x80, 0x80, 0x80, 0xff));
+        this->textBoxWidgetClass.setSelColor_i(MMSFBColor(0xbf, 0xbf, 0xbf, 0xff));
         this->textBoxWidgetClass.setText("");
         this->textBoxWidgetClass.setTranslate(true);
         this->textBoxWidgetClass.setFilePath("");
@@ -1263,17 +1253,12 @@ MMSTheme::MMSTheme() {
         this->inputWidgetClass.setFontName("decker.ttf");
         this->inputWidgetClass.setFontSize(16);
         this->inputWidgetClass.setAlignment(MMSALIGNMENT_CENTER);
-        MMSFBColor c;
-        c.a = 255;
-        c.r = 192;
-        c.g = 192;
-        c.b = 192;
-        this->inputWidgetClass.setColor(c);
-        c.a = 255;
-        c.r = 255;
-        c.g = 255;
-        c.b = 255;
-        this->inputWidgetClass.setSelColor(c);
+        this->inputWidgetClass.setColor(MMSFBColor(0xc0, 0xc0, 0xc0, 0xff));
+        this->inputWidgetClass.setSelColor(MMSFBColor(0xff, 0xff, 0xff, 0xff));
+        this->inputWidgetClass.setColor_p(MMSFBColor());
+        this->inputWidgetClass.setSelColor_p(MMSFBColor());
+        this->inputWidgetClass.setColor_i(MMSFBColor(0x80, 0x80, 0x80, 0xff));
+        this->inputWidgetClass.setSelColor_i(MMSFBColor(0xbf, 0xbf, 0xbf, 0xff));
         this->inputWidgetClass.setText("");
         this->inputWidgetClass.setCursorState(MMSSTATE_AUTO);
     }

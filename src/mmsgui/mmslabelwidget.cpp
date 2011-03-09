@@ -184,12 +184,33 @@ bool MMSLabelWidget::release() {
 void MMSLabelWidget::getForeground(MMSFBColor *color) {
 	color->a = 0;
 
-	if (isSelected()) {
-        *color = getSelColor();
+	if (isActivated()) {
+		if (isSelected()) {
+	        *color = getSelColor();
+		}
+		else {
+	        *color = getColor();
+		}
+		if (isPressed()) {
+			MMSFBColor mycol;
+			if (isSelected()) {
+		        mycol = getSelColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+			else {
+		        mycol = getColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+		}
 	}
-    else {
-        *color = getColor();
-    }
+	else {
+		if (isSelected()) {
+	        *color = getSelColor_i();
+		}
+		else {
+	        *color = getColor_i();
+		}
+	}
 }
 
 bool MMSLabelWidget::enableRefresh(bool enable) {
@@ -409,6 +430,22 @@ MMSFBColor MMSLabelWidget::getSelColor() {
     GETLABEL(SelColor);
 }
 
+MMSFBColor MMSLabelWidget::getColor_p() {
+    GETLABEL(Color_p);
+}
+
+MMSFBColor MMSLabelWidget::getSelColor_p() {
+    GETLABEL(SelColor_p);
+}
+
+MMSFBColor MMSLabelWidget::getColor_i() {
+    GETLABEL(Color_i);
+}
+
+MMSFBColor MMSLabelWidget::getSelColor_i() {
+    GETLABEL(SelColor_i);
+}
+
 string MMSLabelWidget::getText() {
     GETLABEL(Text);
 }
@@ -534,6 +571,46 @@ void MMSLabelWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSLabelWidget::setColor_p(MMSFBColor color_p, bool refresh) {
+    myLabelWidgetClass.setColor_p(color_p);
+
+	// refresh required?
+	enableRefresh((color_p != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSLabelWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
+    myLabelWidgetClass.setSelColor_p(selcolor_p);
+
+	// refresh required?
+	enableRefresh((selcolor_p != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSLabelWidget::setColor_i(MMSFBColor color_i, bool refresh) {
+    myLabelWidgetClass.setColor_i(color_i);
+
+	// refresh required?
+	enableRefresh((color_i != this->current_fgcolor));
+
+	if (refresh)
+        this->refresh();
+}
+
+void MMSLabelWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
+    myLabelWidgetClass.setSelColor_i(selcolor_i);
+
+	// refresh required?
+	enableRefresh((selcolor_i != this->current_fgcolor));
 
 	if (refresh)
         this->refresh();
