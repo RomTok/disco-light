@@ -2209,6 +2209,33 @@ void MMSWidget::handleNavigation(DFBInputDeviceKeySymbol key, MMSWidget *request
 }
 #endif
 
+
+
+void MMSWidget::resetPressed() {
+	// reset the pressed status
+	string inputmode = "";
+	getInputModeEx(inputmode);
+	if (strToUpr(inputmode) == "CLICK") {
+		// input mode click
+		if (isPressed())
+			setPressed(false, false);
+
+		// we have to remove the selection
+		bool b = false;
+		this->getFocusable(b);
+		if (b)
+			this->setFocus(false);
+		else
+			this->setSelected(false);
+	}
+	else {
+		// normal processing, remove pressed state
+		if (isPressed())
+			setPressed(false);
+	}
+}
+
+
 void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	bool b;
 
@@ -2286,8 +2313,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	    		if (this->da->last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
 
 	    			// reset the pressed status
-    				if (isPressed())
-    					setPressed(false);
+	    			resetPressed();
 
 					// check if the pointer is within widget
 					if   ((inputevent->posx >= this->da->pressed_inputrect.x)&&(inputevent->posy >= this->da->pressed_inputrect.y)
@@ -2300,12 +2326,6 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 						// fire the onclick callback
 						this->onClick->emit(this, inputevent->posx - this->geom.x, inputevent->posy - this->geom.y,
 											this->geom.w, this->geom.h);
-
-						// start thread which removes the focus after n seconds
-/*						string inputmode = "";
-						getInputModeEx(inputmode);
-						if (strToUpr(inputmode) == "CLICK")
-							startWidgetThread(500);*/
 
 						if (changed) {
 							// check if have to emit onReturn
@@ -2324,8 +2344,7 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	    		}
 
 	    		// reset the pressed status
-				if (isPressed())
-					setPressed(false);
+	    		resetPressed();
 
 	    		// save last inputevent
 	    		this->da->last_inputevent = *inputevent;

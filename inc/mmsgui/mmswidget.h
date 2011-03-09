@@ -301,6 +301,8 @@ class MMSWidget {
         virtual bool setSelected(bool set, bool refresh, bool *changed, bool joined);
         virtual bool setPressed(bool set, bool refresh, bool joined);
 
+        void resetPressed();
+
     public:
         MMSWidget();
         virtual ~MMSWidget();

@@ -3244,13 +3244,12 @@ void MMSWindow::setFocusedWidget(MMSWidget *child, bool set, bool switchfocus, b
     		if (child != this->focusedwidget) {
 				if (this->focusedwidget)
 					this->focusedwidget->setFocus(false, refresh);
-				if (child) {
-					if (!child->isFocused()) { ////////////////////////
-	//                	child->focused = true; //////////////////////////////
-						child->setFocus(true, refresh);
-					}
-				}
     		}
+			if (child) {
+				if (!child->isFocused()) {
+					child->setFocus(true, refresh);
+				}
+			}
     	}
         this->focusedwidget = child;
         this->firstfocusset = true;
@@ -4477,9 +4476,11 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 							else {
 								// e.g. touch
 								w->getFocusable(b);
-								if ((b)&&(w != this->focusedwidget)) {
-									// set focus to this widget
-									DEBUGMSG("MMSGUI", "try to change focus");
+								if (b) {
+									if (w != this->focusedwidget) {
+										// set focus to this widget
+										DEBUGMSG("MMSGUI", "try to change focus");
+									}
 
 									// set focused widget
 									// note, that we do not refresh the screen, because widget::handleInput() was
