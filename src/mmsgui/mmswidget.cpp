@@ -2173,7 +2173,7 @@ void MMSWidget::resetPressed() {
 	if (strToUpr(inputmode) == "CLICK") {
 		// input mode click
 		if (isPressed())
-			setPressed(false, false);
+			setPressed(false);
 
 		// we have to remove the selection
 		bool b = false;
@@ -2266,7 +2266,6 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
         if (getClickable(b))
         	if (b) {
 	    		if (this->da->last_inputevent.type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
-
 	    			// reset the pressed status
 	    			resetPressed();
 
