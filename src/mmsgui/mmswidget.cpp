@@ -31,7 +31,6 @@
  **************************************************************************/
 
 #include "mmsgui/mmswidget.h"
-#include "mmsgui/mmswidgetthread.h"
 #include "mmsgui/mmsborder.h"
 #include "mmsgui/mmsmenuwidget.h"
 #include "mmsgui/mmssliderwidget.h"
@@ -89,12 +88,6 @@ MMSWidget::MMSWidget() :
 
 MMSWidget::~MMSWidget() {
 
-	if (this->da) {
-		// delete widget thread
-		if (this->da->widgetthread)
-			delete this->da->widgetthread;
-	}
-
 	// delete the callbacks
     if (onSelect) delete onSelect;
     if (onFocus)  delete onFocus;
@@ -130,12 +123,9 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
                        bool canhavechildren, bool canselectchildren, bool clickable) {
     bool		b;
 
-//    logger.writeLog("Create MMSWidget");
-
 	if (drawable) {
 		// init attributes for drawable widgets
 		// we assume, that this->da will be allocated by the caller!!!
-		this->da->widgetthread = NULL;
 	    this->da->bgimage = NULL;
 	    this->da->selbgimage = NULL;
 	    this->da->bgimage_p = NULL;
@@ -1628,15 +1618,6 @@ void MMSWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSFBRec
 
 }
 
-void MMSWidget::startWidgetThread(int delay) {
-	if (this->da) {
-		if (!this->da->widgetthread)
-			this->da->widgetthread = new MMSWidgetThread(this);
-		if (this->da->widgetthread)
-			this->da->widgetthread->start(delay);
-	}
-}
-
 void MMSWidget::themeChanged(string &themeName) {
 	if (!isDrawable())
 		return;
@@ -2066,19 +2047,6 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
         if (set)
             this->onSelect->emit(this);
 
-    if ((set)&&(refresh)) {
-        // start the widget thread for input mode CLICK
-    	bool b = false;
-    	getFocusable(b);
-    	if (b) {
-			// focusable widget, start thread which removes the focus after n seconds
-			string inputmode = "";
-			getInputModeEx(inputmode);
-			if (strToUpr(inputmode) == "CLICK")
-				startWidgetThread(150);
-    	}
-    }
-
     return true;
 }
 
@@ -2161,19 +2129,6 @@ bool MMSWidget::setPressed(bool set, bool refresh, bool joined) {
     // refresh widget
     if (refresh)
         this->refresh();
-
-    if ((set)&&(refresh)) {
-        // start the widget thread for input mode CLICK
-    	bool b = false;
-    	getFocusable(b);
-    	if (b) {
-			// focusable widget, start thread which removes the focus after n seconds
-			string inputmode = "";
-			getInputModeEx(inputmode);
-			if (strToUpr(inputmode) == "CLICK")
-				startWidgetThread(150);
-    	}
-    }
 
     // status changed
     return true;
