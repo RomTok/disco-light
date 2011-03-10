@@ -26,7 +26,7 @@ SetOption('implicit_cache', 1)
 # Version                                                             #
 #######################################################################
 packageVersionMajor = 1
-packageVersionMinor = 7
+packageVersionMinor = 8
 packageVersionMicro = 0
 packageVersionRC    = ''
 
