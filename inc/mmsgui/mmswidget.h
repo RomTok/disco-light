@@ -111,9 +111,6 @@ class MMSWidget {
             //! settings from widget which overides settings from theme and defaults from code
             MMSWidgetClass      myWidgetClass;
 
-            //! pointer to a widget thread if needed
-            class MMSWidgetThread *widgetthread;
-
             //! background image used for unselected state
             MMSFBSurface        *bgimage;
             //! background image used for selected state
@@ -291,8 +288,6 @@ class MMSWidget {
         virtual bool draw(bool *backgroundFilled = NULL);
         void drawMyBorder();
         bool drawDebug();
-
-        void startWidgetThread(int delay);
 
         //! Internal method: Inform the widget, that the theme has changed.
 		void themeChanged(string &themeName);
