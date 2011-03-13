@@ -1522,7 +1522,7 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, refresh);
+				selectItem(olditem, false, true);
 
 				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy < this->y)) {
 					// do the animation
@@ -1697,7 +1697,7 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, refresh);
+				selectItem(olditem, false, true);
 
             	// selection animation?
 				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldy > this->y)) {
@@ -1830,8 +1830,16 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                /* really nothing to scroll? */
 	                if (getHLoop()) {
 	                    /* I should not give up the focus */
-	                    if (this->x)
-	                        return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                    if (this->x) {
+							if (children.size() <= cols) {
+								return scrollLeftEx(this->x, refresh, test, leave_selection);
+							}
+							else {
+								if (!scrollLeftEx(this->x, false, test, leave_selection))
+									return false;
+								return scrollUpEx(1, refresh, test, leave_selection);
+							}
+	                    }
 	                    else
 	                        return true;
 	                }
@@ -1851,8 +1859,9 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                /* really nothing to scroll? */
 	                if (getHLoop()) {
 	                    /* I should not give up the focus */
-	                    if (this->x)
+	                    if (this->x) {
 	                        return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                    }
 	                    else
 	                        return true;
 	                }
@@ -1865,8 +1874,16 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            /* really nothing to scroll? */
 	            if (getHLoop()) {
 	                /* I should not give up the focus */
-	                if (this->x)
-	                    return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                if (this->x) {
+						if (children.size() <= cols) {
+							return scrollLeftEx(this->x, refresh, test, leave_selection);
+						}
+						else {
+							if (!scrollLeftEx(this->x, false, test, leave_selection))
+								return false;
+							return scrollDownEx(1, refresh, test, leave_selection);
+						}
+	                }
 	                else
 	                    return true;
 	            }
@@ -1909,7 +1926,7 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, refresh);
+				selectItem(olditem, false, true);
 
 				if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx < this->x)) {
 					// do the animation
@@ -2059,8 +2076,19 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	                    columns = cols;
 	                else
 	                    columns = this->children.size();
-	                if ((int)columns - (int)this->x > 1)
-	                    return scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
+	                if ((int)columns - (int)this->x > 1) {
+						if (children.size() <= cols) {
+							return scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
+						}
+						else {
+							if (!scrollRightEx(columns - this->x - 1, false, test, leave_selection))
+								return false;
+							if (this->y > 0)
+								return scrollUpEx(1, refresh, test, leave_selection);
+							else
+								return scrollDownEx((children.size() - cols) / cols, refresh, test, leave_selection);
+						}
+	                }
 	                else
 	                    return true;
 	            }
@@ -2097,7 +2125,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
-				selectItem(olditem, false, refresh);
+				selectItem(olditem, false, true);
 
 	            if ((selimage)&&(this->smooth_selection)&&(refresh)&&(oldx > this->x)) {
 					// do the animation
@@ -2356,7 +2384,6 @@ bool MMSMenuWidget::scrollRight(unsigned int count, bool refresh, bool test, boo
 		}
 		}*/
 	////
-
 
 
 	if ((!test)&&(smooth_scrolling)&&(refresh)) {
