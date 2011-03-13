@@ -208,37 +208,6 @@ if env['use_sse']:
 	else:
 		env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
-# pixelformats
-if len(env['pixelformats']) == len(pf):
-	env['CCFLAGS'].extend(['-D__HAVE_PF_ALL__'])
-else:
-	if 'argb' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB__'])
-	if 'airgb' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_AiRGB__'])
-	if 'argb4444' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB4444__'])
-	if 'argb3565' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB3565__'])
-	if 'rgb16' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_RGB16__'])
-	if 'rgb24' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_RGB24__'])
-	if 'rgb32' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_RGB32__'])
-	if 'bgr24' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_BGR24__'])
-	if 'bgr555' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_BGR555__'])
-	if 'ayuv' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_AYUV__'])
-	if 'yv12' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_YV12__'])
-	if 'i420' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_I420__'])
-	if 'yuy2' in env['pixelformats']:
-		env['CCFLAGS'].extend(['-D__HAVE_PF_YUY2__'])
-
 # use environment variables to override defaults
 if os.environ.has_key('CXX'):
 	env['CXX'] = [os.environ['CXX'].split()] 
@@ -419,7 +388,7 @@ def printSummary():
 
 	if len(env['pixelformats']) == len(pf):
 		print 'Pixelformats        : all'
-	else:
+	elif len(env['pixelformats']) > 0:
 		print 'Pixelformats        : %s' % ', '.join(conf.env['pixelformats'])
 
 	print 'Database backends   : %s'   % ', '.join(conf.env['database'])
@@ -610,8 +579,41 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		Exit(1)
 	
 	
-	# checks required if building mmsmedia
+	# pixelformats (no effect when using OpenGL or OpenGL ES
+	if len(conf.env['graphics_outputtype']) == 1 and ('gl2' in conf.env['graphics_outputtype'] or 'gles2' in conf.env['graphics_outputtype']):
+		conf.env['pixelformats'][:] = [];
 
+	if len(env['pixelformats']) == len(pf):
+		env['CCFLAGS'].extend(['-D__HAVE_PF_ALL__'])
+	else:
+		if 'argb' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB__'])
+		if 'airgb' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_AiRGB__'])
+		if 'argb4444' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB4444__'])
+		if 'argb3565' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB3565__'])
+		if 'rgb16' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_RGB16__'])
+		if 'rgb24' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_RGB24__'])
+		if 'rgb32' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_RGB32__'])
+		if 'bgr24' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_BGR24__'])
+		if 'bgr555' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_BGR555__'])
+		if 'ayuv' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_AYUV__'])
+		if 'yv12' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_YV12__'])
+		if 'i420' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_I420__'])
+		if 'yuy2' in env['pixelformats']:
+			env['CCFLAGS'].extend(['-D__HAVE_PF_YUY2__'])
+
+	# checks required if building mmsmedia
 	if('xine' in env['media']):
 		xine_str = 'libxine'
 		if('x11' in env['graphics_backend']):
