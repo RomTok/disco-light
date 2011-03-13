@@ -210,7 +210,7 @@ if env['use_sse']:
 
 # pixelformats
 if len(env['pixelformats']) == len(pf):
-	env['CCFLAGS'].extend(['-D__HAVE_PF_ALL'])
+	env['CCFLAGS'].extend(['-D__HAVE_PF_ALL__'])
 else:
 	if 'argb' in env['pixelformats']:
 		env['CCFLAGS'].extend(['-D__HAVE_PF_ARGB__'])
