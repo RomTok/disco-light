@@ -83,7 +83,7 @@ def PathIsDirCreateNone(key, value, env):
 # Command line options                                                #
 #######################################################################
 be = ['dfb', 'fbdev', 'x11']
-ot = ['stdfb', 'matroxfb', 'viafb', 'omapfb', 'davincifb', 'xshm', 'xvshm', 'ogl2', 'ogles']
+ot = ['stdfb', 'matroxfb', 'viafb', 'omapfb', 'davincifb', 'xshm', 'xvshm', 'gl2', 'gles2']
 pf = ['argb', 'airgb', 'argb4444', 'argb3565', 'rgb16', 'rgb24', 'rgb32', 'bgr24', 'bgr555', 'ayuv', 'yv12', 'i420', 'yuy2']
 
 if sconsVersion < (0,98,1):
@@ -309,8 +309,8 @@ def checkOptions(context):
 		print '  \'scons graphics_backend=all\'\n'
 		Exit(1)
 
-	checkOutputtypes(['x11'],   ['xshm', 'xvshm', 'ogl2'])
-	checkOutputtypes(['fbdev'], ['ogles'])
+	checkOutputtypes(['x11'],   ['xshm', 'xvshm', 'gl2'])
+	checkOutputtypes(['fbdev'], ['gles2'])
 	checkOutputtypes(['dfb'],   ['viafb'])
 	checkOutputtypes(['fbdev', 'dfb'], ['stdfb', 'matroxfb', 'davincifb', 'omapfb'])
 	
@@ -416,7 +416,12 @@ def printSummary():
 	print 'Destdir:            : %s'   % conf.env['destdir']
 	print 'Graphic backends    : %s'   % ', '.join(conf.env['graphics_backend'])
 	print 'Graphic outputtypes : %s' % ', '.join(conf.env['graphics_outputtype'])
-	print 'Pixelformats        : %s' % ', '.join(conf.env['pixelformats'])
+
+	if len(env['pixelformats']) == len(pf):
+		print 'Pixelformats        : all'
+	else:
+		print 'Pixelformats        : %s' % ', '.join(conf.env['pixelformats'])
+
 	print 'Database backends   : %s'   % ', '.join(conf.env['database'])
 	if(conf.env['media']):
 		print 'Media backends      : %s' % ', '.join(conf.env['media'])
@@ -561,12 +566,12 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
 	# checks for building OpenGL ES 2.0 backend
-	if('ogles' in env['graphics_outputtype']):
+	if('gles2' in env['graphics_outputtype']):
 		if conf.CheckLibWithHeader(['GLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
 		else:
-			conf.env['graphics_outputtype'].remove('ogles')
+			conf.env['graphics_outputtype'].remove('gles2')
 		if conf.CheckLibWithHeader(['EGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
 
@@ -583,7 +588,7 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 					conf.env['CCFLAGS'].extend(['-D__HAVE_XCOMPOSITE__', '-D__HAVE_XV__'])
 
 		# checks for OpenGL and X11 backend
-		if 'ogl2' in conf.env['graphics_outputtype']:
+		if 'gl2' in conf.env['graphics_outputtype']:
 			if conf.CheckLib('GLEW', 'glGenFramebuffersEXT'):
 				conf.env['LIBS'].append('GLEW')
 				if conf.checkSimpleLib(['gl'],   'GL/gl.h'):
@@ -594,14 +599,14 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 					if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
 						conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
 			else:
-				conf.env['graphics_outputtype'].remove('ogl2')
+				conf.env['graphics_outputtype'].remove('gl2')
 	
-	# check if OpenGL 2.0 and OpenGL ES are both activated
-	if 'ogl2' and 'ogles' in conf.env['graphics_outputtype']:
-		print '\nOpenGL 2.0 and OpenGL ES support is mutually exclusive.' 
+	# check if OpenGL 2.0 and OpenGL ES 2.0 are both activated
+	if 'gl2' and 'gles2' in conf.env['graphics_outputtype']:
+		print '\nOpenGL 2.0 and OpenGL ES 2.0 support is mutually exclusive.' 
 		print 'You have to choose between one of them by using:'
-		print '  \'scons graphics_outputtype=ogl2\' or'
-		print '  \'scons graphics_outputtype=ogles\''
+		print '  \'scons graphics_outputtype=gl2\' or'
+		print '  \'scons graphics_outputtype=gles2\''
 		Exit(1)
 	
 	
@@ -761,10 +766,10 @@ if 'install' in BUILD_TARGETS:
 	if env.has_key('libdl'):
 		disko_pc_libs_private += ' -ldl'
 
-	if 'dfb' in env['graphics']:
+	if 'dfb' in env['graphics_backend']:
 		disko_pc_requires += ', directfb'
 	 
-	if 'x11' in env['graphics']:
+	if 'x11' in env['graphics_backend']:
 		disko_pc_requires += ', x11, xv, xxf86vm, xcomposite, xrender'
 		if '-D__HAVE_OPENGL__' in env['CCFLAGS']:
 			disko_pc_requires += ', gl, glu'
@@ -781,7 +786,7 @@ if 'install' in BUILD_TARGETS:
 			disko_pc_libs += ' -lmmsmedia'
 		
 		if 'xine' in env['media']:
-			if('x11' in env['graphics']):
+			if('x11' in env['graphics_backend']):
 				disko_pc_requires += ', libxine >= 1.1.15'
 			else:
 				disko_pc_requires += ', libxine'
