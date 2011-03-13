@@ -2567,8 +2567,9 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 		this->iteminfos.insert(this->iteminfos.begin() + item, iteminfo);
 
 	    if (item <= (int)sitem) {
+//printf("pppp %d\n", sitem + 1);
 	    	// item before the selected item inserted, so have to change the selection
-			setSelected(sitem + 1, false);
+			setSelected(sitem + 1, false, NULL, false);
 	    }
     }
 
@@ -2576,7 +2577,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 
     if (widget->isVisible()) {
         // refresh is required
-        enableRefresh();
+    	enableRefresh();
 
         this->refresh();
     }
@@ -2602,7 +2603,7 @@ void MMSMenuWidget::deleteItem(unsigned int item) {
 	if (sitem == this->children.size()-1) {
 		// last item in the list is selected, so move the selection before deletion
 		if (sitem > 0)
-			setSelected(sitem - 1, false);
+			setSelected(sitem - 1, false, NULL, false);
 	}
 
 	// delete item
@@ -2615,16 +2616,16 @@ void MMSMenuWidget::deleteItem(unsigned int item) {
 
     if (item < sitem) {
     	// item before the selected item was deleted, so have to change the selection
-		setSelected(sitem - 1, false);
+		setSelected(sitem - 1, false, NULL, false);
     }
     else
     if (item == sitem) {
     	// selected item was deleted, so we have to select the item at this position
     	if (sitem < this->children.size())
-    		setSelected(sitem, false);
+    		setSelected(sitem, false, NULL, false);
     	else
 		if (sitem > 0)
-    		setSelected(sitem - 1, false);
+    		setSelected(sitem - 1, false, NULL, false);
     }
 
     // refresh is required
@@ -2706,12 +2707,13 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed, 
 	bool c = false;
 	if (changed)
 		*changed = c;
-
+//printf("eeeeeeeeee %d\n",item);
     if (!getConfig())
         return false;
 
     if (item >= children.size())
         return false;
+//printf("e2eeeeeeee %d\n",item);
 
     if (!this->firstSelection) {
         if (item == 0)
