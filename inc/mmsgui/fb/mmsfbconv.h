@@ -36,6 +36,83 @@
 #include "mmsgui/fb/mmsfbbase.h"
 #include "mmsgui/fb/mmsfbfont.h"
 
+// check which pixelformats we should support
+#ifndef __HAVE_PF_ALL__
+#ifndef __HAVE_PF_ARGB__
+#ifndef __HAVE_PF_AiRGB__
+#ifndef __HAVE_PF_ARGB4444__
+#ifndef __HAVE_PF_ARGB3565__
+#ifndef __HAVE_PF_RGB16__
+#ifndef __HAVE_PF_RGB24__
+#ifndef __HAVE_PF_RGB32__
+#ifndef __HAVE_PF_BGR24__
+#ifndef __HAVE_PF_BGR555__
+#ifndef __HAVE_PF_AYUV__
+#ifndef __HAVE_PF_YV12__
+#ifndef __HAVE_PF_I420__
+#ifndef __HAVE_PF_YUY2__
+// no pixelformats defined
+#ifndef __HAVE_PF_NONE__
+#define __HAVE_PF_NONE__
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+#ifdef __HAVE_PF_ALL__
+// all pixelformats requested, enable all
+#ifndef __HAVE_PF_ARGB__
+#define __HAVE_PF_ARGB__
+#endif
+#ifndef __HAVE_PF_AiRGB__
+#define __HAVE_PF_AiRGB__
+#endif
+#ifndef __HAVE_PF_ARGB4444__
+#define __HAVE_PF_ARGB4444__
+#endif
+#ifndef __HAVE_PF_ARGB3565__
+#define __HAVE_PF_ARGB3565__
+#endif
+#ifndef __HAVE_PF_RGB16__
+#define __HAVE_PF_RGB16__
+#endif
+#ifndef __HAVE_PF_RGB24__
+#define __HAVE_PF_RGB24__
+#endif
+#ifndef __HAVE_PF_RGB32__
+#define __HAVE_PF_RGB32__
+#endif
+#ifndef __HAVE_PF_BGR24__
+#define __HAVE_PF_BGR24__
+#endif
+#ifndef __HAVE_PF_BGR555__
+#define __HAVE_PF_BGR555__
+#endif
+#ifndef __HAVE_PF_AYUV__
+#define __HAVE_PF_AYUV__
+#endif
+#ifndef __HAVE_PF_YV12__
+#define __HAVE_PF_YV12__
+#endif
+#ifndef __HAVE_PF_I420__
+#define __HAVE_PF_I420__
+#endif
+#ifndef __HAVE_PF_YUY2__
+#define __HAVE_PF_YUY2__
+#endif
+#endif
+
 //#define MMSFB_CONV_RGB2Y(r,g,b) ((((66*r+129*g+25*b+128)>>8)+16) & 0xff)
 //#define MMSFB_CONV_RGB2U(r,g,b) ((((-38*r-74*g+112*b+128)>>8)+128) & 0xff)
 //#define MMSFB_CONV_RGB2V(r,g,b) ((((112*r-94*g-18*b+128)>>8)+128) & 0xff)
