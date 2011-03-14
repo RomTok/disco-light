@@ -75,6 +75,9 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->da->baseWidgetClass = &(this->da->theme->menuWidgetClass.widgetClass);
     if (this->menuWidgetClass) this->da->widgetClass = &(this->menuWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
+    this->TID = 0;
+    this->Lock_cnt = 0;
+
     this->selimage = NULL;
     this->itemTemplate = NULL;
 
@@ -164,6 +167,44 @@ bool MMSMenuWidget::release() {
 
     return true;
 }
+
+
+void MMSMenuWidget::lock() {
+
+    if (this->Lock.trylock() == 0) {
+        // I have got the lock the first time
+    	this->TID = pthread_self();
+    	this->Lock_cnt = 1;
+    }
+    else {
+        if ((this->TID == pthread_self())&&(this->Lock_cnt > 0)) {
+            // I am the thread which has already locked this menu
+        	this->Lock_cnt++;
+        }
+        else {
+            // another thread has already locked this menu, waiting for...
+        	this->Lock.lock();
+        	this->TID = pthread_self();
+        	this->Lock_cnt = 1;
+        }
+    }
+}
+
+void MMSMenuWidget::unlock() {
+
+	if (this->TID != pthread_self())
+        return;
+
+    if (this->Lock_cnt==0)
+    	return;
+
+    this->Lock_cnt--;
+
+    if (this->Lock_cnt == 0)
+    	this->Lock.unlock();
+}
+
+
 
 bool MMSMenuWidget::draw(bool *backgroundFilled) {
 
@@ -354,6 +395,9 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSF
     if (!this->visible)
         return;
 
+    // lock me
+    lock();
+
     if (this->selimage) {
 		// draw the selection image behind the items
 		MMSWidget *w = getSelectedItem();
@@ -376,6 +420,9 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSF
 
 	// draw the items
 	MMSWidget::drawchildren(toRedrawOnly, backgroundFilled, rect2update);
+
+    // unlock me
+    unlock();
 }
 
 void MMSMenuWidget::recalculateChildren() {
@@ -395,6 +442,9 @@ void MMSMenuWidget::recalculateChildren() {
 
     if (!getConfig(&firstTime))
         return;
+
+    // lock me
+    lock();
 
     /* get values */
     item_hmargin = getItemHMargin();
@@ -587,8 +637,6 @@ void MMSMenuWidget::recalculateChildren() {
     			selected_col+=cols;
 
         }
-
-        return;
     }
     else {
         /* menu with fixed selection */
@@ -1019,9 +1067,12 @@ void MMSMenuWidget::recalculateChildren() {
                 }
             }
         }
-
-        return;
     }
+
+    // unlock me
+    unlock();
+
+    return;
 }
 
 void MMSMenuWidget::initParentWindow(void) {
@@ -1216,6 +1267,9 @@ bool MMSMenuWidget::switchBackToParentMenu(MMSDIRECTION direction, bool closeall
 void MMSMenuWidget::setSliders() {
     MMSSliderWidget *s;
 
+    // lock me
+    lock();
+
     /* get columns */
     unsigned int cols = getCols();
 
@@ -1235,12 +1289,18 @@ void MMSMenuWidget::setSliders() {
             pos = (this->x * 100) / size;
     	s->setPosition(pos);
     }
+
+    // unlock me
+    unlock();
 }
 
 void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool refreshall) {
 
     if(!item)
       return;
+
+    // lock me
+    lock();
 
     if (selimage) {
     	// we have an selection image, so we have to enable refresh for specified item
@@ -1260,6 +1320,9 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
     if (set) {
         this->onSelectItem->emit(item);
     }
+
+    // unlock me
+    unlock();
 }
 
 
@@ -1288,6 +1351,9 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
 
 
 bool MMSMenuWidget::onBeforeAnimation(MMSPulser *pulser) {
+
+    // lock me
+    lock();
 
 	// init animation
 	switch (this->pulser_mode) {
@@ -1375,6 +1441,10 @@ void MMSMenuWidget::onAfterAnimation(MMSPulser *pulser) {
 		this->selection_offset_y = 0;
 		break;
 	}
+
+    // unlock me
+    unlock();
+
 	return;
 }
 
@@ -1431,42 +1501,59 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
     unsigned int cols;
     int fixedpos;
 
-    /* check something */
-    if (count==0 || children.empty())
+    // check something
+    if (count==0 || children.empty()) {
         return false;
+    }
 
-    /* get settings */
+    // lock me
+    lock();
+
+    // get settings
     cols = getCols();
     fixedpos = getFixedPos();
 
-    /* test for deactivated items */
+    // test for deactivated items
     while((this->x + (this->y + count) * cols) < children.size()) {
         if(children.at(this->x + (this->y + count) * cols)->isActivated()) break;
         count++;
     }
 
-    /* normal menu or fixed selection? */
+    // normal menu or fixed selection?
     if (fixedpos < 0) {
-        /* normal menu */
+        // normal menu
         if (!leave_selection) {
         	// we have to change the selected menu item!!!
 	        if (this->x + (this->y + count) * cols >= children.size()) {
 	            if (this->x == 0) {
-	                /* really nothing to scroll? */
+	                // really nothing to scroll?
 	                if (getVLoop()) {
-	                    /* I should not give up the focus */
-	                    if (this->y)
-	                        return scrollUpEx(this->y, refresh, test, leave_selection);
-	                    else
-	                        return true;
+	                    // I should not give up the focus
+	                    if (this->y) {
+	                        bool ret = scrollUpEx(this->y, refresh, test, leave_selection);
+
+	                        // unlock me
+	                        unlock();
+
+	                        return ret;
+	                    }
+	                    else {
+	                        // unlock me
+	                        unlock();
+
+	                    	return true;
+	                    }
 	                }
-	                /* nothing to scroll */
+
+	                // nothing to scroll, unlock me
+	                unlock();
+
 	                return false;
 	            }
 
 	            for (int i = (int)this->x - 1; i >= 0; i--)
 	                if (i + (this->y + count) * cols < children.size()) {
-	                    /* save old and set new x selection */
+	                    // save old and set new x selection
 	                    oldx = this->x;
 	                    if (!test)
 	                        this->x = i;
@@ -1474,22 +1561,39 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	                }
 
 	            if (!oldx) {
-	                /* really nothing to scroll? */
+	                // really nothing to scroll?
 	                if (getVLoop()) {
-	                    /* I should not give up the focus */
-	                    if (this->y)
-	                        return scrollUpEx(this->y, refresh, test, leave_selection);
-	                    else
-	                        return true;
+	                    // I should not give up the focus
+	                    if (this->y) {
+	                        bool ret = scrollUpEx(this->y, refresh, test, leave_selection);
+
+	                        // unlock me
+	                        unlock();
+
+	                        return ret;
+	                    }
+	                    else {
+	                        // unlock me
+	                        unlock();
+
+	                    	return true;
+	                    }
 	                }
-	                /* nothing to scroll */
+
+	                // nothing to scroll, unlock me
+	                unlock();
+
 	                return false;
 	            }
 	        }
 
-	        /* in test mode we can say that we can scroll */
-	        if (test)
+	        // in test mode we can say that we can scroll
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
             // callback
             this->onBeforeScroll->emit(this);
@@ -1516,9 +1620,11 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	            }
 	        }
 
-	        /* get access to widgets */
-	        MMSWidget *olditem = children.at(((oldx)?oldx:this->x) + oldy * cols);
-	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	        // get access to widgets
+			unsigned int olditem_index = ((oldx)?oldx:this->x) + oldy * cols;
+			unsigned int item_index = this->x + this->y * cols;
+	        MMSWidget *olditem = (olditem_index < children.size()) ? children.at(olditem_index) : NULL;
+	        MMSWidget *item    = (item_index    < children.size()) ? children.at(item_index)    : NULL;
 
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
@@ -1555,13 +1661,20 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
         }
         else {
         	// we have to leave the selected menu item asis!!!
-            if (this->x + (this->py + this->v_items + count - 1) * cols >= children.size())
-                // nothing to scroll
+            if (this->x + (this->py + this->v_items + count - 1) * cols >= children.size()) {
+                // nothing to scroll, unlock me
+                unlock();
+
                 return false;
+            }
 
 	        // in test mode we can say that we can scroll
-	        if (test)
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
 	        // recalculate scroll position
             this->py++;
@@ -1575,41 +1688,48 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
             }
         }
 
-        /* set the sliders */
+        // set the sliders
         setSliders();
+
+        // unlock me
+        unlock();
 
         return true;
     }
     else {
-        /* menu with fixed selection */
+        // menu with fixed selection
         if (cols == 1) {
-            /* in test mode we can say that we can scroll */
-            if (test)
+            // in test mode we can say that we can scroll
+            if (test) {
+                // unlock me
+                unlock();
+
                 return true;
+            }
 
             // callback
             this->onBeforeScroll->emit(this);
 
-            /* correct menu with one column */
+            // correct menu with one column
             count%=children.size();
 
-            /* save old and set new y selection */
+            // save old and set new y selection
             oldy = this->y;
             this->y+=count;
 
             if (this->y >= (int)children.size()) {
-                /* go back to begin of the list (round robin) */
+                // go back to begin of the list (round robin)
                 this->y = this->y - children.size();
             }
 
-            /* recalculate scroll position */
+            // recalculate scroll position
             this->py = this->y;
 
-            /* get access to widgets */
-            MMSWidget *olditem = children.at(oldy);
-            MMSWidget *item    = children.at(this->y);
+	        // get access to widgets
+	        MMSWidget *olditem = (oldy    < children.size()) ? children.at(oldy)    : NULL;
+	        MMSWidget *item    = (this->y < children.size()) ? children.at(this->y) : NULL;
 
-            /* switch focus and recalculate children */
+            // switch focus and recalculate children
             selectItem(olditem, false, false);
 
             if (refresh)
@@ -1617,14 +1737,22 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
             selectItem(item, true, false, refresh);
 
-            /* set the sliders */
+            // set the sliders
             setSliders();
+
+            // unlock me
+            unlock();
 
             return true;
         }
-        else
-            /* menu with more than one column cannot be scrolled down in fixed selection mode */
+        else {
+            // menu with more than one column cannot be scrolled down in fixed selection mode
+
+        	// unlock me
+            unlock();
+
             return false;
+        }
     }
 }
 
@@ -1634,43 +1762,64 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
     unsigned int cols;
     int fixedpos;
 
-    /* check something */
-    if (count==0 || children.empty())
+    // check something
+    if (count==0 || children.empty()) {
         return false;
+    }
 
-    /* get settings */
+    // lock me
+    lock();
+
+    // get settings
     cols = getCols();
     fixedpos = getFixedPos();
 
-    /* test for deactivated items */
+    // test for deactivated items
     while(int(this->x + (this->y - count) * cols) > 0) {
         if(children.at(this->x + (this->y - count) * cols)->isActivated()) break;
         count++;
     }
 
-    /* normal menu or fixed selection? */
+    // normal menu or fixed selection?
     if (fixedpos < 0) {
-        /* normal menu */
+        // normal menu
         if (!leave_selection) {
         	// we have to change the selected menu item!!!
 	        if (this->y < (int)count) {
-	            /* really nothing to scroll? */
+	            // really nothing to scroll?
 	            if (getVLoop()) {
-	                /* I should not give up the focus */
+	                // I should not give up the focus
 	                unsigned int lines = this->children.size() /* / cols */;
-	                /* if (this->children.size() % cols > 0) lines++; */
-	                if ((int)lines - (int)this->y > 1)
-	                    return scrollDownEx(lines - this->y - 1, refresh, test, leave_selection);
-	                else
+	                // if (this->children.size() % cols > 0) lines++;
+	                if ((int)lines - (int)this->y > 1) {
+	                    bool ret = scrollDownEx(lines - this->y - 1, refresh, test, leave_selection);
+
+	                    // unlock me
+	                    unlock();
+
+	                    return ret;
+	                }
+	                else {
+	                    // unlock me
+	                    unlock();
+
 	                    return true;
+	                }
 	            }
-	            /* nothing to scroll */
+
+	            // nothing to scroll, unlock me
+	            unlock();
+
 	            return false;
 	        }
 
-	        /* in test mode we can say that we can scroll */
-	        if (test)
+	        // in test mode we can say that we can scroll
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
             // callback
             this->onBeforeScroll->emit(this);
@@ -1691,9 +1840,11 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	            pyChanged = true;
 	        }
 
-	        /* get access to widgets */
-	        MMSWidget *olditem = children.at(this->x + oldy * cols);
-	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	        // get access to widgets
+			unsigned int olditem_index = this->x + oldy * cols;
+			unsigned int item_index = this->x + this->y * cols;
+	        MMSWidget *olditem = (olditem_index < children.size()) ? children.at(olditem_index) : NULL;
+	        MMSWidget *item    = (item_index    < children.size()) ? children.at(item_index)    : NULL;
 
 	        if (!pyChanged) {
 	            // not scrolled, switch focus between visible children
@@ -1731,13 +1882,20 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
         }
         else {
         	// we have to leave the selected menu item asis!!!
-            if (this->py < (int)count)
-                // nothing to scroll
+            if (this->py < (int)count) {
+                // nothing to scroll, unlock me
+                unlock();
+
                 return false;
+            }
 
 	        // in test mode we can say that we can scroll
-	        if (test)
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
 	        // recalculate scroll position
             this->py--;
@@ -1751,41 +1909,48 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
             }
         }
 
-        /* set the sliders */
+        // set the sliders
         setSliders();
+
+        // unlock me
+        unlock();
 
         return true;
     }
     else {
-        /* menu with fixed selection */
+        // menu with fixed selection
         if (cols == 1) {
-            /* in test mode we can say that we can scroll */
-            if (test)
+            // in test mode we can say that we can scroll
+            if (test) {
+                // unlock me
+                unlock();
+
                 return true;
+            }
 
             // callback
             this->onBeforeScroll->emit(this);
 
-            /* correct menu with one column */
+            // correct menu with one column
             count%=children.size();
 
-            /* save old and set new y selection */
+            // save old and set new y selection
             oldy = this->y;
             this->y-=count;
 
             if ((int)this->y < 0) {
-                /* go back to end of the list (round robin) */
+                // go back to end of the list (round robin)
                 this->y = children.size() + (int)this->y;
             }
 
-            /* recalculate scroll position */
+            // recalculate scroll position
             this->py = this->y;
 
-            /* get access to widgets */
-            MMSWidget *olditem = children.at(oldy);
-            MMSWidget *item    = children.at(this->y);
+	        // get access to widgets
+	        MMSWidget *olditem = (oldy    < children.size()) ? children.at(oldy)    : NULL;
+	        MMSWidget *item    = (this->y < children.size()) ? children.at(this->y) : NULL;
 
-            /* switch focus and recalculate children */
+            // switch focus and recalculate children
             selectItem(olditem, false, false);
 
             if (refresh)
@@ -1793,14 +1958,22 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 
             selectItem(item, true, false, refresh);
 
-            /* set the sliders */
+            // set the sliders
             setSliders();
+
+            // unlock me
+            unlock();
 
             return true;
         }
-        else
-            /* menu with more than one column cannot be scrolled up in fixed selection mode */
+        else {
+            // menu with more than one column cannot be scrolled up in fixed selection mode
+
+            // unlock me
+            unlock();
+
             return false;
+        }
     }
 }
 
@@ -1812,38 +1985,63 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
     unsigned int cols;
     int fixedpos;
 
-    /* check something */
-    if (count==0 || children.empty())
+    // check something
+    if (count==0 || children.empty()) {
         return false;
+    }
 
-    /* get settings */
+    // lock me
+    lock();
+
+    // get settings
     cols = getCols();
     fixedpos = getFixedPos();
 
-    /* normal menu or fixed selection? */
+    // normal menu or fixed selection?
     if (fixedpos < 0) {
-        /* normal menu */
+        // normal menu
         if (!leave_selection) {
         	// we have to change the selected menu item!!!
 	        if (this->x + count + this->y * cols >= children.size()) {
 	            if ((this->x + count >= cols) || (this->y == 0)) {
-	                /* really nothing to scroll? */
+	                // really nothing to scroll?
 	                if (getHLoop()) {
-	                    /* I should not give up the focus */
+	                    // I should not give up the focus
 	                    if (this->x) {
 							if (children.size() <= cols) {
-								return scrollLeftEx(this->x, refresh, test, leave_selection);
+								bool ret = scrollLeftEx(this->x, refresh, test, leave_selection);
+
+								// unlock me
+							    unlock();
+
+							    return ret;
 							}
 							else {
-								if (!scrollLeftEx(this->x, false, test, leave_selection))
-									return false;
-								return scrollUpEx(1, refresh, test, leave_selection);
+								if (!scrollLeftEx(this->x, false, test, leave_selection)) {
+								    // unlock me
+								    unlock();
+
+								    return false;
+								}
+								bool ret = scrollUpEx(1, refresh, test, leave_selection);
+
+							    // unlock me
+							    unlock();
+
+							    return ret;
 							}
 	                    }
-	                    else
+	                    else {
+	                        // unlock me
+	                        unlock();
+
 	                        return true;
+	                    }
 	                }
-	                /* nothing to scroll */
+
+	                // nothing to scroll, unlock me
+	                unlock();
+
 	                return false;
 	            }
 
@@ -1856,53 +2054,90 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                }
 
 	            if (!oldy) {
-	                /* really nothing to scroll? */
+	                // really nothing to scroll?
 	                if (getHLoop()) {
-	                    /* I should not give up the focus */
+	                    // I should not give up the focus
 	                    if (this->x) {
-	                        return scrollLeftEx(this->x, refresh, test, leave_selection);
+	                        bool ret = scrollLeftEx(this->x, refresh, test, leave_selection);
+
+	                        // unlock me
+	                        unlock();
+
+	                        return ret;
 	                    }
-	                    else
+	                    else {
+	                        // unlock me
+	                        unlock();
+
 	                        return true;
+	                    }
 	                }
-	                /* nothing to scroll */
+
+	                // nothing to scroll, unlock me
+	                unlock();
+
 	                return false;
 	            }
 	        }
 	        else
 	        if (this->x + count >= cols) {
-	            /* really nothing to scroll? */
+	            // really nothing to scroll?
 	            if (getHLoop()) {
-	                /* I should not give up the focus */
+	                // I should not give up the focus
 	                if (this->x) {
 						if (children.size() <= cols) {
-							return scrollLeftEx(this->x, refresh, test, leave_selection);
+							bool ret = scrollLeftEx(this->x, refresh, test, leave_selection);
+
+							// unlock me
+						    unlock();
+
+						    return ret;
 						}
 						else {
-							if (!scrollLeftEx(this->x, false, test, leave_selection))
-								return false;
-							return scrollDownEx(1, refresh, test, leave_selection);
+							if (!scrollLeftEx(this->x, false, test, leave_selection)) {
+							    // unlock me
+							    unlock();
+
+							    return false;
+							}
+							bool ret = scrollDownEx(1, refresh, test, leave_selection);
+
+						    // unlock me
+						    unlock();
+
+						    return ret;
 						}
 	                }
-	                else
+	                else {
+	                    // unlock me
+	                    unlock();
+
 	                    return true;
+	                }
 	            }
-	            /* nothing to scroll */
+
+	            // nothing to scroll, unlock me
+	            unlock();
+
 	            return false;
 	        }
 
-	        /* in test mode we can say that we can scroll */
-	        if (test)
+	        // in test mode we can say that we can scroll
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
             // callback
             this->onBeforeScroll->emit(this);
 
-            /* save old and set new x selection */
+            // save old and set new x selection
 	        oldx = this->x;
 	        this->x+=count;
 
-	        /* recalculate scroll position */
+	        // recalculate scroll position
 	        int xpx = this->x - this->px;
 	        if (xpx >= this->h_items) {
 	            this->px = this->x - this->h_items + 1;
@@ -1920,9 +2155,11 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	            }
 	        }
 
-	        /* get access to widgets */
-	        MMSWidget *olditem = children.at(oldx + ((oldy)?oldy:this->y) * cols);
-	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	        // get access to widgets
+			unsigned int olditem_index = oldx + ((oldy)?oldy:this->y) * cols;
+			unsigned int item_index = this->x + this->y * cols;
+	        MMSWidget *olditem = (olditem_index < children.size()) ? children.at(olditem_index) : NULL;
+	        MMSWidget *item    = (item_index    < children.size()) ? children.at(item_index)    : NULL;
 
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
@@ -1959,13 +2196,20 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
         }
         else {
         	// we have to leave the selected menu item asis!!!
-	        if (this->px + this->h_items + count - 1 >= ((cols<=children.size())?cols:children.size()))
-                // nothing to scroll
-                return false;
+	        if (this->px + this->h_items + count - 1 >= ((cols<=children.size())?cols:children.size())) {
+                // nothing to scroll, unlock me
+	            unlock();
+
+	            return false;
+	        }
 
 	        // in test mode we can say that we can scroll
-	        if (test)
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
 	        // recalculate scroll position
             this->px++;
@@ -1979,17 +2223,24 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             }
         }
 
-        /* set the sliders */
+        // set the sliders
         setSliders();
+
+        // unlock me
+        unlock();
 
         return true;
     }
     else {
-        /* menu with fixed selection */
+        // menu with fixed selection
         if (cols > 1) {
             // in test mode we can say that we can scroll
-            if (test)
+            if (test) {
+                // unlock me
+                unlock();
+
                 return true;
+            }
 
             // callback
             this->onBeforeScroll->emit(this);
@@ -2000,37 +2251,37 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             	startAnimation(MMSMENUWIDGET_PULSER_MODE_SCROLL_RIGHT, 0, count - 1);
             }
 
-			/* correct menu with more than one column */
+			// correct menu with more than one column
             count%=cols;
 
-            /* save old and set new x selection */
+            // save old and set new x selection
             oldx = this->x;
             this->x+=count;
 
             if (this->x >= (int)cols) {
-                /* go back to begin of the first row (round robin) */
+                // go back to begin of the first row (round robin)
                 this->x = this->x - cols;
             }
 
             if (this->x >= (int)children.size()) {
-                /* go back to begin of the list (round robin) */
+                // go back to begin of the list (round robin)
                 this->x = this->x - children.size();
             }
 
-            /* recalculate scroll position */
+            // recalculate scroll position
             this->px = this->x;
 
-            /* get access to widgets */
-            MMSWidget *olditem = children.at(oldx);
-            MMSWidget *item    = children.at(this->x);
+	        // get access to widgets
+	        MMSWidget *olditem = (oldx    < children.size()) ? children.at(oldx)    : NULL;
+	        MMSWidget *item    = (this->x < children.size()) ? children.at(this->x) : NULL;
 
             if ((smooth_scrolling)&&(refresh)) {
-            	/* reset the blend value */
+            	// reset the blend value
             	olditem->setBlend(0, false);
             	item->setBlend(0, false);
             }
 
-            /* switch focus and recalculate children */
+            // switch focus and recalculate children
             selectItem(olditem, false, false);
 
             if (refresh)
@@ -2038,14 +2289,22 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 
             selectItem(item, true, false, refresh);
 
-            /* set the sliders */
+            // set the sliders
             setSliders();
+
+            // unlock me
+            unlock();
 
             return true;
         }
-        else
-            /* menu with only one column cannot be scrolled right in fixed selection mode */
+        else {
+            // menu with only one column cannot be scrolled right in fixed selection mode
+
+            // unlock me
+            unlock();
+
             return false;
+        }
     }
 }
 
@@ -2055,22 +2314,26 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
     unsigned int cols;
     int fixedpos;
 
-    /* check something */
-    if (count==0 || children.empty())
+    // check something
+    if (count==0 || children.empty()) {
         return false;
+    }
 
-    /* get settings */
+    // lock me
+    lock();
+
+    // get settings
     cols = getCols();
     fixedpos = getFixedPos();
 
-    /* normal menu or fixed selection? */
+    // normal menu or fixed selection?
     if (fixedpos < 0) {
-        /* normal menu */
+        // normal menu
         if (!leave_selection) {
 	        if (this->x < (int)count) {
-	            /* really nothing to scroll? */
+	            // really nothing to scroll?
 	            if (getHLoop()) {
-	                /* I should not give up the focus */
+	                // I should not give up the focus
 	                unsigned int columns;
 	                if (cols < this->children.size())
 	                    columns = cols;
@@ -2078,36 +2341,68 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	                    columns = this->children.size();
 	                if ((int)columns - (int)this->x > 1) {
 						if (children.size() <= cols) {
-							return scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
+							bool ret = scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
+
+						    // unlock me
+						    unlock();
+
+						    return ret;
 						}
 						else {
-							if (!scrollRightEx(columns - this->x - 1, false, test, leave_selection))
-								return false;
-							if (this->y > 0)
-								return scrollUpEx(1, refresh, test, leave_selection);
-							else
-								return scrollDownEx((children.size() - cols) / cols, refresh, test, leave_selection);
+							if (!scrollRightEx(columns - this->x - 1, false, test, leave_selection)) {
+							    // unlock me
+							    unlock();
+
+							    return false;
+							}
+							if (this->y > 0) {
+								bool ret = scrollUpEx(1, refresh, test, leave_selection);
+
+							    // unlock me
+							    unlock();
+
+							    return ret;
+							}
+							else {
+								bool ret = scrollDownEx((children.size() - cols) / cols, refresh, test, leave_selection);
+
+							    // unlock me
+							    unlock();
+
+							    return ret;
+							}
 						}
 	                }
-	                else
+	                else {
+	                    // unlock me
+	                    unlock();
+
 	                    return true;
+	                }
 	            }
-	            /* nothing to scroll */
+
+	            // nothing to scroll, unlock me
+	            unlock();
+
 	            return false;
 	        }
 
-	        /* in test mode we can say that we can scroll */
-	        if (test)
+	        // in test mode we can say that we can scroll
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
             // callback
             this->onBeforeScroll->emit(this);
 
-            /* save old and set new x selection */
+            // save old and set new x selection
 	        oldx = this->x;
 	        this->x-=count;
 
-	        /* recalculate scroll position */
+	        // recalculate scroll position
 	        int xpx = this->x - this->px;
 	        if (xpx < 0) {
 	            this->px = this->x;
@@ -2119,9 +2414,11 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	            pxChanged = true;
 	        }
 
-	        /* get access to widgets */
-	        MMSWidget *olditem = children.at(oldx + this->y * cols);
-	        MMSWidget *item    = children.at(this->x + this->y * cols);
+	        // get access to widgets
+			unsigned int olditem_index = oldx + this->y * cols;
+			unsigned int item_index = this->x + this->y * cols;
+	        MMSWidget *olditem = (olditem_index < children.size()) ? children.at(olditem_index) : NULL;
+	        MMSWidget *item    = (item_index    < children.size()) ? children.at(item_index)    : NULL;
 
 	        if (!pxChanged) {
 	            // not scrolled, switch focus between visible children
@@ -2139,7 +2436,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 				selectItem(item, true, refresh);
 			}
 	        else {
-	            /* scrolled, switch focus needs recalculate children */
+	            // scrolled, switch focus needs recalculate children
 	            selectItem(olditem, false, false);
 
 	            if ((this->smooth_scrolling)&&(refresh)&&(oldx > this->x)) {
@@ -2158,13 +2455,20 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
         }
         else {
         	// we have to leave the selected menu item asis!!!
-            if (this->px < (int)count)
-                // nothing to scroll
+            if (this->px < (int)count) {
+                // nothing to scroll, unlock me
+                unlock();
+
                 return false;
+            }
 
 	        // in test mode we can say that we can scroll
-	        if (test)
+	        if (test) {
+	            // unlock me
+	            unlock();
+
 	            return true;
+	        }
 
 	        // recalculate scroll position
             this->px--;
@@ -2178,17 +2482,24 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             }
         }
 
-        /* set the sliders */
+        // set the sliders
         setSliders();
+
+        // unlock me
+        unlock();
 
         return true;
     }
     else {
-        /* menu with fixed selection */
+        // menu with fixed selection
         if (cols > 1) {
             // in test mode we can say that we can scroll
-            if (test)
+            if (test) {
+                // unlock me
+                unlock();
+
                 return true;
+            }
 
             // callback
             this->onBeforeScroll->emit(this);
@@ -2200,29 +2511,29 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             }
 
 
-			/* correct menu with more than one column */
+			// correct menu with more than one column
             count%=cols;
 
-            /* save old and set new x selection */
+            // save old and set new x selection
             oldx = this->x;
             this->x-=count;
 
             if ((int)this->x < 0) {
-                /* go back to end of the first row (round robin) */
+                // go back to end of the first row (round robin)
                 this->x = (int)cols + (int)this->x;
 
                 if (this->x >= (int)children.size()) {
-                    /* go back to begin of the list (round robin) */
+                    // go back to begin of the list (round robin)
                     this->x = children.size() - (cols - this->x);
                 }
             }
 
-            /* recalculate scroll position */
+            // recalculate scroll position
             this->px = this->x;
 
-            /* get access to widgets */
-            MMSWidget *olditem = children.at(oldx);
-            MMSWidget *item    = children.at(this->x);
+	        // get access to widgets
+	        MMSWidget *olditem = (oldx    < children.size()) ? children.at(oldx)    : NULL;
+	        MMSWidget *item    = (this->x < children.size()) ? children.at(this->x) : NULL;
 
             if ((smooth_scrolling)&&(refresh)) {
             	/* reset the blend value */
@@ -2230,7 +2541,7 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             	item->setBlend(0, false);
             }
 
-            /* switch focus and recalculate children */
+            // switch focus and recalculate children
             selectItem(olditem, false, false);
 
             if (refresh)
@@ -2238,14 +2549,22 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 
             selectItem(item, true, false, refresh);
 
-            /* set the sliders */
+            // set the sliders
             setSliders();
+
+            // unlock me
+            unlock();
 
             return true;
         }
-        else
-            /* menu with only one column cannot be scrolled right in fixed selection mode */
+        else {
+            // menu with only one column cannot be scrolled right in fixed selection mode
+
+        	// unlock me
+            unlock();
+
             return false;
+        }
     }
 }
 
@@ -2544,6 +2863,9 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 		widget = itemTemplate->copyWidget();
     }
 
+    // lock me
+    lock();
+
     widget->setParent(this);
     widget->setRootWindow(this->rootwindow);
 	iteminfo.name = "";
@@ -2567,9 +2889,8 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
 		this->iteminfos.insert(this->iteminfos.begin() + item, iteminfo);
 
 	    if (item <= (int)sitem) {
-//printf("pppp %d\n", sitem + 1);
 	    	// item before the selected item inserted, so have to change the selection
-			setSelected(sitem + 1, false, NULL, false);
+			setSelected(sitem + 1, false);
 	    }
     }
 
@@ -2582,29 +2903,28 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
         this->refresh();
     }
 
-//    if (isFocused())
-//        if (this->children.size()==1)
-            /* first item inserted */
-//            this->children.at(0)->setSelected(true, false);
-
-  //              setSelected(0);
+    // unlock me
+    unlock();
 
     return widget;
 }
 
 
 void MMSMenuWidget::deleteItem(unsigned int item) {
-	// check size
-	if (item >= this->children.size())
+
+    // lock me
+    lock();
+
+    // check size
+	if (item >= this->children.size()) {
+	    // unlock me
+	    unlock();
+
 		return;
+	}
 
 	// get currently selected icon
 	unsigned int sitem = getSelected();
-	if (sitem == this->children.size()-1) {
-		// last item in the list is selected, so move the selection before deletion
-		if (sitem > 0)
-			setSelected(sitem - 1, false, NULL, false);
-	}
 
 	// delete item
     delete this->children.at(item);
@@ -2616,26 +2936,32 @@ void MMSMenuWidget::deleteItem(unsigned int item) {
 
     if (item < sitem) {
     	// item before the selected item was deleted, so have to change the selection
-		setSelected(sitem - 1, false, NULL, false);
+		setSelected(sitem - 1, false);
     }
     else
     if (item == sitem) {
     	// selected item was deleted, so we have to select the item at this position
     	if (sitem < this->children.size())
-    		setSelected(sitem, false, NULL, false);
+    		setSelected(sitem, false);
     	else
 		if (sitem > 0)
-    		setSelected(sitem - 1, false, NULL, false);
+    		setSelected(sitem - 1, false);
     }
 
     // refresh is required
     enableRefresh();
 
     this->refresh();
+
+    // unlock me
+    unlock();
 }
 
 
 void MMSMenuWidget::clear() {
+    // lock me
+    lock();
+
     for(int i = (int)this->children.size() - 1; i >= 0 ; i--) {
         delete this->children.at(i);
         this->children.erase(this->children.end()-1);
@@ -2655,6 +2981,9 @@ void MMSMenuWidget::clear() {
     enableRefresh();
 
     this->refresh();
+
+    // unlock me
+    unlock();
 }
 
 void MMSMenuWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
@@ -2707,13 +3036,12 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed, 
 	bool c = false;
 	if (changed)
 		*changed = c;
-//printf("eeeeeeeeee %d\n",item);
+
     if (!getConfig())
         return false;
 
     if (item >= children.size())
         return false;
-//printf("e2eeeeeeee %d\n",item);
 
     if (!this->firstSelection) {
         if (item == 0)
@@ -2791,8 +3119,8 @@ bool MMSMenuWidget::setSelected(unsigned int item, bool refresh, bool *changed, 
     return true;
 }
 
-bool MMSMenuWidget::setSelected(bool set, bool refresh) {
-	return setSelected(set, refresh, NULL, false);
+bool MMSMenuWidget::setSelected(unsigned int item, bool refresh) {
+	return setSelected(item, refresh, NULL, false);
 }
 
 unsigned int MMSMenuWidget::getSelected() {

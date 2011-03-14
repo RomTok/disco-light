@@ -77,6 +77,14 @@ class MMSMenuWidget : public MMSWidget {
         MMSMenuWidgetClass  *menuWidgetClass;
         MMSMenuWidgetClass  myMenuWidgetClass;
 
+        //! to make it thread-safe
+        MMSMutex  				Lock;
+        //! save the id of the thread which has locked the menu
+        unsigned long       	TID;
+        //! count the number of times the thread has call lock()
+        int       				Lock_cnt;
+
+
         MMSFBSurface    *selimage;
         MMSWidget       *itemTemplate;
 
@@ -164,6 +172,9 @@ class MMSMenuWidget : public MMSWidget {
 
         bool init();
         bool release();
+        void lock();
+        void unlock();
+
         bool draw(bool *backgroundFilled = NULL);
 
         void add(MMSWidget *widget);
@@ -233,7 +244,7 @@ class MMSMenuWidget : public MMSWidget {
 
         void setFocus(bool set, bool refresh = true, MMSInputEvent *inputevent = NULL);
 
-        bool setSelected(bool set, bool refresh = true);
+        bool setSelected(unsigned int item, bool refresh = true);
         unsigned int getSelected();
 
         MMSWidget *getItem(unsigned int item);
