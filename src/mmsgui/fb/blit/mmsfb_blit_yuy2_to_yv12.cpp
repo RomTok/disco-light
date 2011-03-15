@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_YUY2__
+#ifdef __HAVE_PF_YV12__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -253,5 +257,5 @@ void mmsfb_blit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_height, int
 	}
 }
 
-
-
+#endif
+#endif

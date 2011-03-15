@@ -2402,831 +2402,6 @@ bool MMSFBSurface::printMissingCombination(string method, MMSFBSurface *source, 
 
 
 
-bool MMSFBSurface::blitARGBtoARGB_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									   int src_width, int src_height, int sx, int sy, int sw, int sh,
-									   int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_argb_to_argb(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_argb(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoARGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-												   int src_width, int src_height, int sx, int sy, int sw, int sh,
-												   int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_coloralpha_argb_to_argb(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y,
-					this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-
-bool MMSFBSurface::blitARGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_AiRGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_airgb(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-
-bool MMSFBSurface::blitARGBtoRGB32_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_argb_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB32_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-													int src_width, int src_height, int sx, int sy, int sw, int sh,
-													int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_coloralpha_argb_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y,
-					this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											  int src_width, int src_height, int sx, int sy, int sw, int sh,
-											  int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_coloralpha_argb_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y,
-					this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB16_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB16__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_argb_to_rgb16(src_planes, src_height,
-									 sx, sy, sw, sh,
-									 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-									 x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB16__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_rgb16(src_planes, src_height,
-										   sx, sy, sw, sh,
-										   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-										   x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoARGB3565_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										   int src_width, int src_height, int sx, int sy, int sw, int sh,
-										   int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_ARGB3565__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_argb_to_argb3565(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoARGB3565_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											int src_width, int src_height, int sx, int sy, int sw, int sh,
-											int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_ARGB3565__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_argb3565(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-
-bool MMSFBSurface::blitARGBtoYV12_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									   int src_width, int src_height, int sx, int sy, int sw, int sh,
-									   int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_YV12__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_argb_to_yv12(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoYV12_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_YV12__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_yv12(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoYV12_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-												   int src_width, int src_height, int sx, int sy, int sw, int sh,
-												   int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_YV12__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_coloralpha_argb_to_yv12(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y,
-					this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB24_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB24__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_argb_to_rgb24(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoRGB24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_RGB24__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_rgb24(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoBGR24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_BGR24__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_bgr24(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoBGR24_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-													int src_width, int src_height, int sx, int sy, int sw, int sh,
-													int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_BGR24__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_coloralpha_argb_to_bgr24(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y,
-					this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitARGBtoBGR555_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										  int src_width, int src_height, int sx, int sy, int sw, int sh,
-										  int x, int y) {
-#ifdef __HAVE_PF_ARGB__
-#ifdef __HAVE_PF_BGR555__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_argb_to_bgr555(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitRGB32toRGB32_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_rgb32_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitRGB32toRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											   int src_width, int src_height, int sx, int sy, int sw, int sh,
-											   int x, int y) {
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_coloralpha_rgb32_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y,
-					this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitRGB16toRGB16_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_RGB16__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_rgb16_to_rgb16(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitRGB16toARGB_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y) {
-#ifdef __HAVE_PF_RGB16__
-#ifdef __HAVE_PF_ARGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_rgb16_to_argb(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitRGB16toRGB32_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_RGB16__
-#ifdef __HAVE_PF_RGB32__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_rgb16_to_rgb32(
-					src_planes, src_height,
-					sx, sy, sw, sh,
-					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-					x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitAiRGBtoAiRGB_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_AiRGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_airgb_to_airgb(src_planes, src_height,
-									  sx, sy, sw, sh,
-									  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-									  x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitAiRGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										  int src_width, int src_height, int sx, int sy, int sw, int sh,
-										  int x, int y) {
-#ifdef __HAVE_PF_AiRGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_airgb_to_airgb(src_planes, src_height,
-											sx, sy, sw, sh,
-											(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitAiRGBtoAiRGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-													 int src_width, int src_height, int sx, int sy, int sw, int sh,
-													 int x, int y) {
-#ifdef __HAVE_PF_AiRGB__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_coloralpha_airgb_to_airgb(src_planes, src_height,
-													   sx, sy, sw, sh,
-													   (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-													   x, y,
-													   this->config.color.a);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitAiRGBtoRGB16_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y) {
-#ifdef __HAVE_PF_AiRGB__
-#ifdef __HAVE_PF_RGB16__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_airgb_to_rgb16(src_planes, src_height,
-									  sx, sy, sw, sh,
-									  (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-									  x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
-bool MMSFBSurface::blitAiRGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										  int src_width, int src_height, int sx, int sy, int sw, int sh,
-										  int x, int y) {
-#ifdef __HAVE_PF_AiRGB__
-#ifdef __HAVE_PF_RGB16__
-	MMSFBSurfacePlanes dst_planes;
-
-	if (extendedLock(source, src_planes, this, &dst_planes)) {
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		MMSFBPERF_START_MEASURING;
-			mmsfb_blit_blend_airgb_to_rgb16(src_planes, src_height,
-											sx, sy, sw, sh,
-											(unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-											x, y);
-		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-		extendedUnlock(source, this);
-		return true;
-	}
-#endif
-#endif
-
-	return false;
-}
-
 bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 									   MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
 									   MMSFBRectangle *src_rect, int x, int y, MMSFBBlittingFlags blittingflags) {
@@ -3331,30 +2506,31 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 	// checking pixelformats...
 	switch (src_pixelformat) {
+#ifdef __HAVE_PF_ARGB__
 	case MMSFB_PF_ARGB:
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				return blitARGBtoARGB_NOFX(source, src_planes, src_pixelformat,
-										   src_width, src_height, sx, sy, sw, sh,
-										   x, y);
+				return blitARGBtoARGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoARGB_BLEND(source, src_planes, src_pixelformat,
-											src_width, src_height, sx, sy, sw, sh,
-											x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				return blitARGBtoARGB_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
-													   src_width, src_height, sx, sy, sw, sh,
-													   x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3366,8 +2542,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoAiRGB_BLEND(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3378,32 +2554,32 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				return blitARGBtoRGB32_NOFX(source, src_planes, src_pixelformat,
-											src_width, src_height, sx, sy, sw, sh,
-											x, y);
+				return blitARGBtoRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoRGB32_BLEND(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				return blitARGBtoRGB32_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
-													    src_width, src_height, sx, sy, sw, sh,
-													    x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with coloralpha
 				return blitARGBtoRGB32_COLORALPHA(source, src_planes, src_pixelformat,
-												  src_width, src_height, sx, sy, sw, sh,
-												  x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3414,16 +2590,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB16 (RGB565)
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				return blitARGBtoRGB16_NOFX(source, src_planes, src_pixelformat,
-											src_width, src_height, sx, sy, sw, sh,
-											x, y);
+				return blitARGBtoRGB16(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoRGB16_BLEND(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3435,15 +2611,15 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			switch (blittingflags) {
 			case MMSFB_BLIT_NOFX:
 				// convert without alpha channel
-				return blitARGBtoARGB3565_NOFX(source, src_planes, src_pixelformat,
-											   src_width, src_height, sx, sy, sw, sh,
-											   x, y);
+				return blitARGBtoARGB3565(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 
 			case MMSFB_BLIT_BLEND_ALPHACHANNEL:
 				// blitting with alpha channel
 				return blitARGBtoARGB3565_BLEND(source, src_planes, src_pixelformat,
-												src_width, src_height, sx, sy, sw, sh,
-												x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3454,24 +2630,24 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				return blitARGBtoYV12_NOFX(source, src_planes, src_pixelformat,
-										   src_width, src_height, sx, sy, sw, sh,
-										   x, y);
+				return blitARGBtoYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoYV12_BLEND(source, src_planes, src_pixelformat,
-											src_width, src_height, sx, sy, sw, sh,
-											x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				return blitARGBtoYV12_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
-													   src_width, src_height, sx, sy, sw, sh,
-													   x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3482,16 +2658,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB24
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				return blitARGBtoRGB24_NOFX(source, src_planes, src_pixelformat,
-											src_width, src_height, sx, sy, sw, sh,
-											x, y);
+				return blitARGBtoRGB24(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoRGB24_BLEND(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3503,16 +2679,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoBGR24_BLEND(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				return blitARGBtoBGR24_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
-														src_width, src_height, sx, sy, sw, sh,
-														x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3524,8 +2700,8 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitARGBtoBGR555_BLEND(source, src_planes, src_pixelformat,
-											  src_width, src_height, sx, sy, sw, sh,
-											  x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3534,7 +2710,9 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB32__
 	case MMSFB_PF_RGB32:
 		// source is RGB32
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
@@ -3542,16 +2720,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// blitting without alpha channel
-				return blitRGB32toRGB32_NOFX(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+				return blitRGB32toRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA)) {
 				// blitting with coloralpha
 				return blitRGB32toRGB32_COLORALPHA(source, src_planes, src_pixelformat,
-												   src_width, src_height, sx, sy, sw, sh,
-												   x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3560,7 +2738,9 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB16__
 	case MMSFB_PF_RGB16:
 		// source is RGB16 (RGB565)
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
@@ -3568,9 +2748,9 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// blitting without alpha channel
-				return blitRGB16toRGB16_NOFX(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+				return blitRGB16toRGB16(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3582,9 +2762,9 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// blitting without alpha channel
-				return blitRGB16toARGB_NOFX(source, src_planes, src_pixelformat,
-											src_width, src_height, sx, sy, sw, sh,
-											x, y);
+				return blitRGB16toARGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3595,9 +2775,9 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				return blitRGB16toRGB32_NOFX(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+				return blitRGB16toRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3606,31 +2786,33 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_AiRGB__
 	case MMSFB_PF_AiRGB:
 		// source is AiRGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				return blitAiRGBtoAiRGB_NOFX(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+				return blitAiRGBtoAiRGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitAiRGBtoAiRGB_BLEND(source, src_planes, src_pixelformat,
-											  src_width, src_height, sx, sy, sw, sh,
-											  x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				return blitAiRGBtoAiRGB_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
-														 src_width, src_height, sx, sy, sw, sh,
-														 x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3641,16 +2823,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB16 (RGB565)
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				return blitAiRGBtoRGB16_NOFX(source, src_planes, src_pixelformat,
-											 src_width, src_height, sx, sy, sw, sh,
-											 x, y);
+				return blitAiRGBtoRGB16(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
 				return blitAiRGBtoRGB16_BLEND(source, src_planes, src_pixelformat,
-											  src_width, src_height, sx, sy, sw, sh,
-											  x, y);
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3659,71 +2841,33 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_AYUV__
 	case MMSFB_PF_AYUV:
 		// source is AYUV
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_ayuv_to_ayuv(src_planes, src_height,
-												sx, sy, sw, sh,
-												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoAYUV(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_ayuv_to_ayuv(src_planes, src_height,
-													  sx, sy, sw, sh,
-													  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-													  x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoAYUV_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(src_planes, src_height,
-																 sx, sy, sw, sh,
-																 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-																 x, y,
-																 this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoAYUV_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3734,42 +2878,16 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB16 (RGB565)
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// convert without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_ayuv_to_rgb16(src_planes, src_height,
-												 sx, sy, sw, sh,
-												 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												 x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoRGB16(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_ayuv_to_rgb16(src_planes, src_height,
-													   sx, sy, sw, sh,
-													   (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-													   x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoRGB16_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3780,44 +2898,17 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_ayuv_to_yv12(src_planes, src_height,
-													  sx, sy, sw, sh,
-													  (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-													  x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoYV12_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_coloralpha_ayuv_to_yv12(src_planes, src_height,
-																 sx, sy, sw, sh,
-																 (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-																 x, y,
-																 this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitAYUVtoYV12_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3826,29 +2917,19 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_YV12__
 	case MMSFB_PF_YV12:
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_yv12_to_yv12(src_planes, src_height,
-												sx, sy, sw, sh,
-												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// blitting without alpha channel
+				return blitYV12toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3859,22 +2940,10 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_yv12_to_rgb32(src_planes, src_height,
-												 sx, sy, sw, sh,
-												 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												 x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// convert without alpha channel
+				return blitYV12toRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3883,29 +2952,19 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_I420__
 	case MMSFB_PF_I420:
 		// source is I420
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_I420) {
 			// destination is I420
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_i420_to_i420(src_planes, src_height,
-												sx, sy, sw, sh,
-												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// blitting without alpha channel
+				return blitI420toI420(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3916,23 +2975,10 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_i420_to_yv12(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// convert without alpha channel
+				return blitI420toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3941,30 +2987,19 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_YUY2__
 	case MMSFB_PF_YUY2:
 		// source is YUY2
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YUY2) {
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_yuy2_to_yuy2(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// blitting without alpha channel
+				return blitYUY2toYUY2(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -3975,23 +3010,10 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_yuy2_to_yv12(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// convert without alpha channel
+				return blitYUY2toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4000,28 +3022,32 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB24__
 	case MMSFB_PF_RGB24:
 		// source is RGB24
+		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
+			// destination is RGB24
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+				// blitting without alpha channel
+				return blitRGB24toRGB24(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
+			}
+
+			// does not match
+			return false;
+		}
+		else
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_rgb24_to_argb(src_planes, src_height,
-												sx, sy, sw, sh,
-												&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// convert without alpha channel
+				return blitRGB24toARGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4032,48 +3058,10 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_rgb24_to_rgb32(src_planes, src_height,
-												  sx, sy, sw, sh,
-												  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												  x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
-			}
-
-			// does not match
-			return false;
-		}
-		else
-		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB24) {
-			// destination is RGB24
-			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
-				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
-												  sx, sy, sw, sh,
-												  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-												  x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// convert without alpha channel
+				return blitRGB24toRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4084,23 +3072,10 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is YV12
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_rgb24_to_yv12(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// convert without alpha channel
+				return blitRGB24toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4109,52 +3084,26 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_BGR24__
 	case MMSFB_PF_BGR24:
 		// source is BGR24
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR24) {
 			// destination is BGR24
 			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
 				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_bgr24_to_bgr24(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				// blitting without alpha channel
+				return blitBGR24toBGR24(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_COLORALPHA)) {
 				// blitting with coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_coloralpha_bgr24_to_bgr24(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitBGR24toBGR24_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4163,29 +3112,18 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_ARGB3565__
 	case MMSFB_PF_ARGB3565:
 		// source is ARGB3565
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB3565) {
 			// destination is ARGB3565
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_argb3565_to_argb3565(src_planes, src_height,
-														sx, sy, sw, sh,
-														&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-														x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitARGB3565toARGB3565(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4194,74 +3132,33 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_ARGB4444__
 	case MMSFB_PF_ARGB4444:
 		// source is ARGB4444
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB4444) {
 			// destination is ARGB4444
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_argb4444_to_argb4444(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitARGB4444toARGB4444(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_argb4444_to_argb4444(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitARGB4444toARGB4444_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitARGB4444toARGB4444_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4272,46 +3169,17 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_argb4444_to_rgb32(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitARGB4444toRGB32_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_coloralpha_argb4444_to_rgb32(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return blitARGB4444toRGB32_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4320,51 +3188,19 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_BGR555__
 	case MMSFB_PF_BGR555:
 		// source is BGR555
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_BGR555) {
 			// destination is BGR555
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
-				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_bgr555_to_bgr555(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
-			}
-			else
-			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
-				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_blit_blend_argb_to_bgr555(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								x, y);
-					MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+			if 	  ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX)
+				|| (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
+				// blitting without alpha channel
+				return blitBGR555toBGR555(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										x, y);
 			}
 
 			// does not match
@@ -4373,6 +3209,7 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
 	default:
 		// does not match
@@ -4564,74 +3401,34 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 	// checking pixelformats...
 	switch (src_pixelformat) {
+#ifdef __HAVE_PF_ARGB__
 	case MMSFB_PF_ARGB:
 		// source is ARGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_argb_to_argb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitARGBtoARGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_argb_to_argb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitARGBtoARGB_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_coloralpha_argb_to_argb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitARGBtoARGB_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4642,23 +3439,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_argb_to_rgb32(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitARGBtoRGB32_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4667,31 +3451,19 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB32__
 	case MMSFB_PF_RGB32:
 		// source is RGB32
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB32) {
 			// destination is RGB32
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_rgb32_to_rgb32(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitRGB32toRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4700,31 +3472,19 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB24__
 	case MMSFB_PF_RGB24:
 		// source is RGB24
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB) {
 			// destination is ARGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_rgb24_to_argb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitRGB24toARGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4735,24 +3495,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			// destination is RGB32
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_rgb24_to_rgb32(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitRGB24toRGB32(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4761,75 +3507,36 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_AiRGB__
 	case MMSFB_PF_AiRGB:
 		// source is AiRGB
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AiRGB) {
 			// destination is AiRGB
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_airgb_to_airgb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitAiRGBtoAiRGB(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_airgb_to_airgb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitAiRGBtoAiRGB_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitAiRGBtoAiRGB_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4838,75 +3545,36 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_AYUV__
 	case MMSFB_PF_AYUV:
 		// source is AYUV
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_AYUV) {
 			// destination is AYUV
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_NOFX) {
 				// blitting without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_ayuv_to_ayuv(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitAYUVtoAYUV(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_ayuv_to_ayuv(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitAYUVtoAYUV_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_coloralpha_ayuv_to_ayuv(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitAYUVtoAYUV_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4915,7 +3583,9 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_YV12__
 	case MMSFB_PF_YV12:
 		// source is YV12
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
@@ -4923,24 +3593,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_yv12_to_yv12(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return stretchBlitYV12toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4949,7 +3605,9 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_I420__
 	case MMSFB_PF_I420:
 		// source is I420
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
@@ -4957,24 +3615,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_i420_to_yv12(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return stretchBlitI420toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -4983,7 +3627,9 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_YUY2__
 	case MMSFB_PF_YUY2:
 		// source is YUY2
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_YV12) {
@@ -4991,24 +3637,10 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 			if   ((blittingflags == MMSFB_BLIT_NOFX)
 				||(blittingflags == MMSFB_BLIT_BLEND_ALPHACHANNEL)) {
 				// stretch without alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_yuy2_to_yv12(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-					return true;
-				}
-
-				return false;
+				return stretchBlitYUY2toYV12(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -5017,53 +3649,28 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_ARGB4444__
 	case MMSFB_PF_ARGB4444:
 		// source is ARGB4444
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_ARGB4444) {
 			// destination is ARGB4444
 			if (blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_ALPHACHANNEL) {
 				// blitting with alpha channel
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_argb4444_to_argb4444(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitARGB4444toARGB4444_BLEND(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 			else
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_blend_coloralpha_argb4444_to_argb4444(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								this->config.color.a);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				return stretchBlitARGB4444toARGB4444_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -5072,31 +3679,20 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB16__
 	case MMSFB_PF_RGB16:
 		// source is RGB16
 		if (this->config.surface_buffer->pixelformat == MMSFB_PF_RGB16) {
 			// destination is RGB16
 			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_NOFX))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL))) {
-				if (extendedLock(source, src_planes, this, &dst_planes)) {
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					MMSFBPERF_START_MEASURING;
-						mmsfb_stretchblit_rgb16_to_rgb16(
-								src_planes, src_height,
-								sx, sy, sw, sh,
-								&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
-								dx, dy, dw, dh,
-								antialiasing);
-					MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
-					MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
-					MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
-					extendedUnlock(source, this);
-
-					return true;
-				}
-				return false;
+				// blitting without alpha channel
+				return stretchBlitRGB16toRGB16(source, src_planes, src_pixelformat,
+										src_width, src_height, sx, sy, sw, sh,
+										dx, dy, dw, dh,
+										antialiasing);
 			}
 
 			// does not match
@@ -5105,6 +3701,8 @@ bool MMSFBSurface::extendedAccelStretchBlitEx(MMSFBSurface *source,
 
 		// does not match
 		return false;
+#endif
+
     default:
     	break;
 	}
@@ -5173,341 +3771,185 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSF
 
 	// checking pixelformats...
 	switch (this->config.surface_buffer->pixelformat) {
+#ifdef __HAVE_PF_ARGB__
 	case MMSFB_PF_ARGB:
 		// destination is ARGB
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_argb(&dst_planes, dst_height,
-											 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this, &dst_planes);
-				return true;
-			}
-
-			return false;
+			return fillRectangleARGB(dst_height, sx, sy, sw, sh, color);
 		}
 		else
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_blend_argb(&dst_planes, dst_height,
-												   sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this, &dst_planes);
-				return true;
-			}
-
-			return false;
+			return fillRectangleARGB_BLEND(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_AYUV__
 	case MMSFB_PF_AYUV:
 		// destination is AYUV
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_ayuv(&dst_planes, dst_height,
-											 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleAYUV(dst_height, sx, sy, sw, sh, color);
 		}
 		else
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_blend_ayuv(&dst_planes, dst_height,
-												   sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleAYUV_BLEND(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB32__
 	case MMSFB_PF_RGB32:
 		// destination is RGB32
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_rgb32(&dst_planes, dst_height,
-											  sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleRGB32(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB24__
 	case MMSFB_PF_RGB24:
 		// destination is RGB24
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_rgb24(&dst_planes, dst_height,
-											  sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleRGB24(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_RGB16__
 	case MMSFB_PF_RGB16:
 		// destination is RGB16 (RGB565)
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_rgb16(
-							&dst_planes, dst_height,
-							sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleRGB16(dst_height, sx, sy, sw, sh, color);
 		}
 		else
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_blend_rgb16(
-							&dst_planes, dst_height,
-							sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleRGB16_BLEND(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_YV12__
 	case MMSFB_PF_YV12:
 		// destination is YV12
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_yv12(&dst_planes, dst_height,
-											 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleYV12(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_I420__
 	case MMSFB_PF_I420:
 		// destination is I420
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_i420(&dst_planes, dst_height,
-											 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleI420(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_YUY2__
 	case MMSFB_PF_YUY2:
 		// destination is YUY2
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_yuy2(&dst_planes, dst_height,
-											 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleYUY2(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_ARGB3565__
 	case MMSFB_PF_ARGB3565:
 		// destination is ARGB3565
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_argb3565(&dst_planes, dst_height,
-												 sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleARGB3565(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_ARGB4444__
 	case MMSFB_PF_ARGB4444:
 		// destination is ARGB4444
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_argb4444(
-							&dst_planes, dst_height,
-							sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleARGB4444(dst_height, sx, sy, sw, sh, color);
 		}
 		else
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing with alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_blend_argb4444(
-							&dst_planes, dst_height,
-							sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleARGB4444_BLEND(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_BGR24__
 	case MMSFB_PF_BGR24:
 		// destination is BGR24
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_bgr24(&dst_planes, dst_height,
-											  sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleBGR24(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
+#ifdef __HAVE_PF_BGR555__
 	case MMSFB_PF_BGR555:
 		// destination is BGR555
 		if   ((drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
 			| (drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
 			// drawing without alpha channel
-			if (extendedLock(NULL, NULL, this, &dst_planes)) {
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				MMSFBPERF_START_MEASURING;
-					mmsfb_fillrectangle_bgr555(&dst_planes, dst_height,
-											   sx, sy, sw, sh, color);
-				MMSFBPERF_STOP_MEASURING_FILLRECT(this, sw, sh);
-				MMSFB_ROTATE_180_RECT(this, sx, sy, sw, sh);
-				extendedUnlock(NULL, this);
-				return true;
-			}
-
-			return false;
+			return fillRectangleBGR555(dst_height, sx, sy, sw, sh, color);
 		}
 
 		// does not match
 		return false;
+#endif
 
 	default:
 		// does not match
@@ -8479,5 +6921,2389 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 	}
 
 	return (*cs);
+}
+
+
+
+
+
+bool MMSFBSurface::blitARGBtoARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoARGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_argb_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::blitARGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_airgb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::blitARGBtoRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB32_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_argb_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_coloralpha_argb_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb_to_rgb16(src_planes, src_height,
+									 sx, sy, sw, sh,
+									 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									 x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_rgb16(src_planes, src_height,
+										   sx, sy, sw, sh,
+										   &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										   x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoARGB3565(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_ARGB3565__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb_to_argb3565(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoARGB3565_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_ARGB3565__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_argb3565(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::blitARGBtoYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoYV12_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoYV12_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_argb_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB24(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb_to_rgb24(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoRGB24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_rgb24(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoBGR24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_BGR24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_bgr24(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoBGR24_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_BGR24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_argb_to_bgr24(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGBtoBGR555_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_BGR555__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb_to_bgr555(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB32toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb32_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB32toRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_coloralpha_rgb32_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB16toRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb16_to_rgb16(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB16toARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB16__
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb16_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB16toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB16__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb16_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAiRGBtoAiRGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_airgb_to_airgb(src_planes, src_height,
+									  sx, sy, sw, sh,
+									  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									  x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAiRGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_airgb_to_airgb(src_planes, src_height,
+											sx, sy, sw, sh,
+											(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAiRGBtoAiRGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_airgb_to_airgb(src_planes, src_height,
+													   sx, sy, sw, sh,
+													   (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													   x, y,
+													   this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAiRGBtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AiRGB__
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_airgb_to_rgb16(src_planes, src_height,
+									  sx, sy, sw, sh,
+									  (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									  x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAiRGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AiRGB__
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_airgb_to_rgb16(src_planes, src_height,
+											sx, sy, sw, sh,
+											(unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoAYUV(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_ayuv_to_ayuv(src_planes, src_height,
+									sx, sy, sw, sh,
+									&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoAYUV_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_ayuv_to_ayuv(src_planes, src_height,
+										  sx, sy, sw, sh,
+										  (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										  x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoAYUV_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_ayuv_to_ayuv(src_planes, src_height,
+													 sx, sy, sw, sh,
+													 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													 x, y,
+													 this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_ayuv_to_rgb16(src_planes, src_height,
+									 sx, sy, sw, sh,
+									 (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									 x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_ayuv_to_rgb16(src_planes, src_height,
+										   sx, sy, sw, sh,
+										   (unsigned short int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										   x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoYV12_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_ayuv_to_yv12(src_planes, src_height,
+										  sx, sy, sw, sh,
+										  (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+										  x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitAYUVtoYV12_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_AYUV__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_ayuv_to_yv12(src_planes, src_height,
+													 sx, sy, sw, sh,
+													 (unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+													 x, y,
+													 this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitYV12toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_yv12_to_yv12(src_planes, src_height,
+									sx, sy, sw, sh,
+									&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitYV12toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_YV12__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_yv12_to_rgb32(src_planes, src_height,
+									 sx, sy, sw, sh,
+									 (unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									 x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitI420toI420(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_I420__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_i420_to_i420(src_planes, src_height,
+									sx, sy, sw, sh,
+									&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitI420toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_I420__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_i420_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitYUY2toYUY2(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_YUY2__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_yuy2_to_yuy2(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitYUY2toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_YUY2__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_yuy2_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB24toRGB24(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb24_to_rgb24(src_planes, src_height,
+									  sx, sy, sw, sh,
+									  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									  x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB24toARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb24_to_argb(src_planes, src_height,
+									sx, sy, sw, sh,
+									&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB24toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb24_to_rgb32(src_planes, src_height,
+									  sx, sy, sw, sh,
+									  &dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+									  x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitRGB24toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_rgb24_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned char *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitBGR24toBGR24(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_BGR24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_bgr24_to_bgr24(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitBGR24toBGR24_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_BGR24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_coloralpha_bgr24_to_bgr24(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGB3565toARGB3565(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB3565__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb3565_to_argb3565(src_planes, src_height,
+											sx, sy, sw, sh,
+											&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+											x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGB4444toARGB4444(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_argb4444_to_argb4444(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGB4444toARGB4444_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb4444_to_argb4444(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGB4444toARGB4444_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_argb4444_to_argb4444(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGB4444toRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB4444__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_argb4444_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitARGB4444toRGB32_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_ARGB4444__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_blend_coloralpha_argb4444_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::blitBGR555toBGR555(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int x, int y) {
+#ifdef __HAVE_PF_BGR555__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_blit_bgr555_to_bgr555(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					x, y);
+		MMSFBPERF_STOP_MEASURING_BLIT(this, src_pixelformat, sw, sh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, x, y, sw, sh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+
+
+bool MMSFBSurface::stretchBlitARGBtoARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_argb_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::stretchBlitARGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_argb_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitARGBtoARGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_coloralpha_argb_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitARGBtoRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_argb_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitRGB32toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_rgb32_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitRGB24toARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_rgb24_to_argb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitRGB24toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_rgb24_to_rgb32(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::stretchBlitAiRGBtoAiRGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_airgb_to_airgb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitAiRGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_airgb_to_airgb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitAiRGBtoAiRGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_AiRGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitAYUVtoAYUV(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_ayuv_to_ayuv(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitAYUVtoAYUV_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_ayuv_to_ayuv(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitAYUVtoAYUV_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_coloralpha_ayuv_to_ayuv(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					(unsigned int *)dst_planes.ptr, dst_planes.pitch, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitYV12toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_yv12_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitI420toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_I420__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_i420_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitYUY2toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_YUY2__
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_yuy2_to_yv12(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+		return true;
+	}
+#endif
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::stretchBlitARGB4444toARGB4444_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_argb4444_to_argb4444(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::stretchBlitARGB4444toARGB4444_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_blend_coloralpha_argb4444_to_argb4444(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					this->config.color.a);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::stretchBlitRGB16toRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+									int src_width, int src_height, int sx, int sy, int sw, int sh,
+									int dx, int dy, int dw, int dh,
+									bool antialiasing) {
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(source, src_planes, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_stretchblit_rgb16_to_rgb16(
+					src_planes, src_height,
+					sx, sy, sw, sh,
+					&dst_planes, (!this->root_parent)?this->config.h:this->root_parent->config.h,
+					dx, dy, dw, dh,
+					antialiasing);
+		MMSFBPERF_STOP_MEASURING_STRETCHBLIT(this, src_pixelformat, sw, sh, dw, dh);
+		MMSFB_ROTATE_180_RECT_WH(src_width, src_height, sx, sy, sw, sh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(source, this);
+
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+
+bool MMSFBSurface::fillRectangleARGB(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_argb(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this, &dst_planes);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleARGB_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_ARGB__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_blend_argb(&dst_planes, dst_height,
+										   dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this, &dst_planes);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleAYUV(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_ayuv(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleAYUV_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_AYUV__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_blend_ayuv(&dst_planes, dst_height,
+										   dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleRGB32(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_RGB32__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_rgb32(&dst_planes, dst_height,
+									  dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleRGB24(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_RGB24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_rgb24(&dst_planes, dst_height,
+									  dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleRGB16(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_rgb16(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this, &dst_planes);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleRGB16_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_RGB16__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_blend_rgb16(&dst_planes, dst_height,
+										   dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this, &dst_planes);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleYV12(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_YV12__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_yv12(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleI420(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_I420__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_i420(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleYUY2(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_YUY2__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_yuy2(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleARGB3565(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_ARGB3565__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_argb3565(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleARGB4444(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_argb4444(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleARGB4444_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_ARGB4444__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_blend_argb4444(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleBGR24(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_BGR24__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_bgr24(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color) {
+#ifdef __HAVE_PF_BGR555__
+	MMSFBSurfacePlanes dst_planes;
+
+	if (extendedLock(NULL, NULL, this, &dst_planes)) {
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		MMSFBPERF_START_MEASURING;
+			mmsfb_fillrectangle_bgr555(&dst_planes, dst_height,
+									 dx, dy, dw, dh, color);
+		MMSFBPERF_STOP_MEASURING_FILLRECT(this, dw, dh);
+		MMSFB_ROTATE_180_RECT(this, dx, dy, dw, dh);
+		extendedUnlock(NULL, this);
+		return true;
+	}
+#endif
+
+	return false;
 }
 

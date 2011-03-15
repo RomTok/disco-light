@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_ARGB__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -183,4 +186,4 @@ void mmsfb_stretchblit_blend_coloralpha_argb_to_argb(MMSFBSurfacePlanes *src_pla
 	}
 }
 
-
+#endif

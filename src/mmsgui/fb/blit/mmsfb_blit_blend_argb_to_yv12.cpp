@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_YV12__
+
 #include "mmstools/mmstools.h"
 
 
@@ -1083,4 +1087,5 @@ void mmsfb_blit_blend_argb_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 
 }
 
-
+#endif
+#endif

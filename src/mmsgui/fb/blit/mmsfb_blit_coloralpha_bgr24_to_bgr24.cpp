@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_BGR24__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_coloralpha_bgr24_to_bgr24(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -152,3 +155,4 @@ void mmsfb_blit_coloralpha_bgr24_to_bgr24(MMSFBSurfacePlanes *src_planes, int sr
 	}
 }
 
+#endif

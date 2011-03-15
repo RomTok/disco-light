@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_ARGB4444__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_fillrectangle_blend_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_height,
@@ -145,4 +148,4 @@ void mmsfb_fillrectangle_blend_argb4444(MMSFBSurfacePlanes *dst_planes, int dst_
 	}
 }
 
-
+#endif

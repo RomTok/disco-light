@@ -261,111 +261,6 @@ class MMSFBSurface {
 									 MMSFBBlittingFlags blittingflags = MMSFB_BLIT_NOFX);
 
 
-        bool blitARGBtoARGB_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								 int src_width, int src_height, int sx, int sy, int sw, int sh,
-								 int x, int y);
-        bool blitARGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								  int src_width, int src_height, int sx, int sy, int sw, int sh,
-								  int x, int y);
-        bool blitARGBtoARGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											 int src_width, int src_height, int sx, int sy, int sw, int sh,
-											 int x, int y);
-
-        bool blitARGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-
-        bool blitARGBtoRGB32_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								  int src_width, int src_height, int sx, int sy, int sw, int sh,
-								  int x, int y);
-        bool blitARGBtoRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-        bool blitARGBtoRGB32_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											  int src_width, int src_height, int sx, int sy, int sw, int sh,
-											  int x, int y);
-        bool blitARGBtoRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										int src_width, int src_height, int sx, int sy, int sw, int sh,
-										int x, int y);
-
-        bool blitARGBtoRGB16_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								  int src_width, int src_height, int sx, int sy, int sw, int sh,
-								  int x, int y);
-        bool blitARGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-
-        bool blitARGBtoARGB3565_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									 int src_width, int src_height, int sx, int sy, int sw, int sh,
-									 int x, int y);
-        bool blitARGBtoARGB3565_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									  int src_width, int src_height, int sx, int sy, int sw, int sh,
-									  int x, int y);
-
-        bool blitARGBtoYV12_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								 int src_width, int src_height, int sx, int sy, int sw, int sh,
-								 int x, int y);
-        bool blitARGBtoYV12_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								  int src_width, int src_height, int sx, int sy, int sw, int sh,
-								  int x, int y);
-        bool blitARGBtoYV12_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											 int src_width, int src_height, int sx, int sy, int sw, int sh,
-											 int x, int y);
-
-        bool blitARGBtoRGB24_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								  int src_width, int src_height, int sx, int sy, int sw, int sh,
-								  int x, int y);
-        bool blitARGBtoRGB24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-
-        bool blitARGBtoBGR24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-        bool blitARGBtoBGR24_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											  int src_width, int src_height, int sx, int sy, int sw, int sh,
-											  int x, int y);
-
-        bool blitARGBtoBGR555_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									int src_width, int src_height, int sx, int sy, int sw, int sh,
-									int x, int y);
-
-        bool blitRGB32toRGB32_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-        bool blitRGB32toRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-										 int src_width, int src_height, int sx, int sy, int sw, int sh,
-										 int x, int y);
-
-        bool blitRGB16toRGB16_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-
-        bool blitRGB16toARGB_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								  int src_width, int src_height, int sx, int sy, int sw, int sh,
-								  int x, int y);
-
-        bool blitRGB16toRGB32_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-
-        bool blitAiRGBtoAiRGB_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-        bool blitAiRGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									int src_width, int src_height, int sx, int sy, int sw, int sh,
-									int x, int y);
-        bool blitAiRGBtoAiRGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-											   int src_width, int src_height, int sx, int sy, int sw, int sh,
-											   int x, int y);
-
-        bool blitAiRGBtoRGB16_NOFX(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-								   int src_width, int src_height, int sx, int sy, int sw, int sh,
-								   int x, int y);
-        bool blitAiRGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
-									int src_width, int src_height, int sx, int sy, int sw, int sh,
-									int x, int y);
-
         bool extendedAccelBlitEx(MMSFBSurface *source,
 								 MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat, int src_width, int src_height,
         						 MMSFBRectangle *src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
@@ -597,6 +492,327 @@ class MMSFBSurface {
     friend class MMSFBWindowManager;
     friend class MMSFBBackEndInterface;
     friend class MMSPerf;
+
+    private:
+
+        bool blitARGBtoARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoARGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoRGB32_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoARGB3565(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoARGB3565_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoYV12_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoYV12_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoRGB24(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoRGB24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoBGR24_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGBtoBGR24_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGBtoBGR555_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB32toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitRGB32toRGB32_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB16toRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB16toARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB16toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitAiRGBtoAiRGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAiRGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAiRGBtoAiRGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitAiRGBtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAiRGBtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitAYUVtoAYUV(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAYUVtoAYUV_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAYUVtoAYUV_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitAYUVtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAYUVtoRGB16_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitAYUVtoYV12_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitAYUVtoYV12_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitYV12toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitYV12toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitI420toI420(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitI420toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitYUY2toYUY2(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitYUY2toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB24toRGB24(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB24toARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB24toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitRGB24toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitBGR24toBGR24(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitBGR24toBGR24_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGB3565toARGB3565(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGB4444toARGB4444(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGB4444toARGB4444_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGB4444toARGB4444_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitARGB4444toRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+        bool blitARGB4444toRGB32_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+        bool blitBGR555toBGR555(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
+
+
+        bool stretchBlitARGBtoARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitARGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitARGBtoARGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitARGBtoRGB32_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitRGB32toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitRGB24toARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitRGB24toRGB32(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitAiRGBtoAiRGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitAiRGBtoAiRGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitAiRGBtoAiRGB_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitAYUVtoAYUV(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitAYUVtoAYUV_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitAYUVtoAYUV_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitYV12toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitI420toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitYUY2toYV12(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitARGB4444toARGB4444_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+        bool stretchBlitARGB4444toARGB4444_BLEND_COLORALPHA(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+        bool stretchBlitRGB16toRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int dx, int dy, int dw, int dh,
+								bool antialiasing);
+
+
+        bool fillRectangleARGB(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+        bool fillRectangleARGB_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleAYUV(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+        bool fillRectangleAYUV_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleRGB32(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleRGB24(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleRGB16(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+        bool fillRectangleRGB16_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleYV12(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleI420(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleYUY2(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleARGB3565(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleARGB4444(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+        bool fillRectangleARGB4444_BLEND(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleBGR24(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
+
+        bool fillRectangleBGR555(int dst_height, int dx, int dy, int dw, int dh, MMSFBColor &color);
 };
 
 bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,

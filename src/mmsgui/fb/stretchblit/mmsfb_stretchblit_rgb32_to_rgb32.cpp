@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_RGB32__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -48,4 +51,4 @@ void mmsfb_stretchblit_rgb32_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_he
 								   dst_planes, dst_height, dx, dy, dw, dh, antialiasing);
 }
 
-
+#endif

@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_AiRGB__
+#ifdef __HAVE_PF_RGB16__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
@@ -47,3 +51,5 @@ void mmsfb_blit_airgb_to_rgb16(MMSFBExternalSurfaceBuffer *extbuf, int src_heigh
 							 dst, dst_pitch, dst_height, dx, dy);
 }
 
+#endif
+#endif

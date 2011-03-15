@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_ARGB3565__
+
 #include "mmstools/mmstools.h"
 
 #define MMSFB_BLIT_BLEND_ARGB_TO_ARGB3565(src, dst, dst_a, alpha)		\
@@ -201,3 +205,5 @@ void mmsfb_blit_blend_argb_to_argb3565(MMSFBSurfacePlanes *src_planes, int src_h
 	}
 }
 
+#endif
+#endif

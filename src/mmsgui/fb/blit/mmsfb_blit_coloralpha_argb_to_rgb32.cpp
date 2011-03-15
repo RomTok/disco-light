@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_ARGB__
+#ifdef __HAVE_PF_RGB32__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -146,4 +150,5 @@ void mmsfb_blit_coloralpha_argb_to_rgb32(MMSFBSurfacePlanes *src_planes, int src
 	}
 }
 
-
+#endif
+#endif

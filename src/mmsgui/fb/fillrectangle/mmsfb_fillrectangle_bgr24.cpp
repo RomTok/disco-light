@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_BGR24__
+
 #include "mmstools/mmstools.h"
 #include <string.h>
 
@@ -72,3 +75,4 @@ void mmsfb_fillrectangle_bgr24(MMSFBSurfacePlanes *dst_planes, int dst_height,
 	}
 }
 
+#endif
