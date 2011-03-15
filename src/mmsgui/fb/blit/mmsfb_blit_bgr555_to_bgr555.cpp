@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_BGR555__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_bgr555_to_bgr555(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -47,3 +50,4 @@ void mmsfb_blit_bgr555_to_bgr555(MMSFBSurfacePlanes *src_planes, int src_height,
 					 dst_planes, dst_height, dx, dy);
 }
 
+#endif

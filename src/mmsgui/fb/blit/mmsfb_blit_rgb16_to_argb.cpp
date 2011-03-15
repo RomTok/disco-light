@@ -30,8 +30,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#include <cstring>
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_RGB16__
+#ifdef __HAVE_PF_ARGB__
+
+#include <cstring>
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_rgb16_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, int sx, int sy, int sw, int sh,
@@ -90,4 +94,5 @@ void mmsfb_blit_rgb16_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, in
 	}
 }
 
-
+#endif
+#endif

@@ -30,8 +30,11 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#include <cstring>
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_YV12__
+
+#include <cstring>
 #include "mmstools/mmstools.h"
 
 void mmsfb_fillrectangle_yv12(MMSFBSurfacePlanes *dst_planes, int dst_height,
@@ -488,3 +491,4 @@ void mmsfb_fillrectangle_yv12(MMSFBSurfacePlanes *dst_planes, int dst_height,
 	}
 }
 
+#endif

@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_AYUV__
+#ifdef __HAVE_PF_YV12__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_blend_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
@@ -503,5 +507,5 @@ void mmsfb_blit_blend_ayuv_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_h
 	}
 }
 
-
-
+#endif
+#endif

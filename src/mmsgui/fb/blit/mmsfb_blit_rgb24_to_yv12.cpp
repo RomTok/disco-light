@@ -29,7 +29,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
+
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_YV12__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
@@ -471,4 +476,5 @@ void mmsfb_blit_rgb24_to_yv12(MMSFBExternalSurfaceBuffer *extbuf, int src_height
 	}
 }
 
-
+#endif
+#endif

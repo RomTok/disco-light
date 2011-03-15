@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_AiRGB__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
@@ -175,4 +178,4 @@ void mmsfb_stretchblit_blend_coloralpha_airgb_to_airgb(MMSFBExternalSurfaceBuffe
 	}
 }
 
-
+#endif

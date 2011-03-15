@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_RGB24__
+#ifdef __HAVE_PF_ARGB__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_stretchblit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
@@ -70,3 +74,5 @@ void mmsfb_stretchblit_rgb24_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src
 						   dst, dst_pitch, dst_pitch_pix, dst_height, dx, dy, dw, dh);
 }
 
+#endif
+#endif

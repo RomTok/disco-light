@@ -31,6 +31,10 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_YUY2__
+#ifdef __HAVE_PF_YV12__
+
 #include "mmsgui/fb/mmsfbsurface.h"
 #include "mmstools/mmstools.h"
 
@@ -309,3 +313,5 @@ void mmsfb_stretchblit_yuy2_to_yv12(MMSFBSurfacePlanes *src_planes, int src_heig
 	}
 }
 
+#endif
+#endif

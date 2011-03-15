@@ -113,6 +113,19 @@
 #endif
 #endif
 
+// always enable ARGB format which is basically needed
+#ifndef __HAVE_PF_ARGB__
+#define __HAVE_PF_ARGB__
+#endif
+
+// enable also YV12 if I420 format is requested
+#ifdef __HAVE_PF_I420__
+#ifndef __HAVE_PF_YV12__
+#define __HAVE_PF_YV12__
+#endif
+#endif
+
+
 //#define MMSFB_CONV_RGB2Y(r,g,b) ((((66*r+129*g+25*b+128)>>8)+16) & 0xff)
 //#define MMSFB_CONV_RGB2U(r,g,b) ((((-38*r-74*g+112*b+128)>>8)+128) & 0xff)
 //#define MMSFB_CONV_RGB2V(r,g,b) ((((112*r-94*g-18*b+128)>>8)+128) & 0xff)

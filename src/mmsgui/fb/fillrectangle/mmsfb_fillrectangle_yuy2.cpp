@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbconv.h"
+
+#ifdef __HAVE_PF_YUY2__
+
 #include "mmstools/mmstools.h"
 
 void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
@@ -110,4 +113,4 @@ void mmsfb_fillrectangle_yuy2(MMSFBSurfacePlanes *dst_planes, int dst_height,
 	}
 }
 
-
+#endif
