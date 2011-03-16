@@ -876,7 +876,7 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 			WRONG_VALUE("videolayer.id", iToStr(this->graphics.videolayer.id), "0, 1", "-> this depends on backend=\"X11\", outputtype=\"X11/XVSHM\"");
 		}
 		if ((this->graphics.videolayer.id == 1) && (this->graphics.videolayer.outputtype != MMSFB_OT_XVSHM)) {
-			WRONG_VALUE("videolayer.outputtype", iToStr(this->graphics.videolayer.outputtype), "XVSHM", "-> this depends on backend=\"X11\", videolayer.id=\"1\"");
+			WRONG_VALUE("videolayer.outputtype", getMMSFBOutputTypeString(this->graphics.videolayer.outputtype), "XVSHM", "-> this depends on backend=\"X11\", videolayer.id=\"1\"");
 		}
 		if (this->graphics.graphicslayer.id != 0) {
 			WRONG_VALUE("graphicslayer.id", iToStr(this->graphics.graphicslayer.id), "0", "-> this depends on backend=\"X11\", outputtype=\"X11/XSHM/XVSHM/OGL\"");
