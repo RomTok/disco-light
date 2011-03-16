@@ -103,6 +103,23 @@ string strToUpr(string src) {
     return s;
 }
 
+string *strToLwr(string *src) {
+    for(string::iterator i=src->begin(); i!= src->end(); i++) {
+
+    	if((*i >= 'A') && (*i <= 'Z'))
+            (*i)+=32;
+    }
+
+    return src;
+}
+
+string strToLwr(string src) {
+    string s;
+    s=src;
+    strToLwr(&s);
+    return s;
+}
+
 int hexToInt(const char *in) {
     int ret=0;
 
