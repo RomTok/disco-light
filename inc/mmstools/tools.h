@@ -95,6 +95,10 @@ string *strToUpr(string *src);
 
 string strToUpr(string src);
 
+string *strToLwr(string *src);
+
+string strToLwr(string src);
+
 int hexToInt(const char *in);
 
 string ucharToHex(unsigned char in);
