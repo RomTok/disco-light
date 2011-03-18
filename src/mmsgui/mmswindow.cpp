@@ -1368,17 +1368,8 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         		}
 
         		// direct draw
-				MMSFBRectangle r = cw->window->geom;
-				if ((src_rect.w == r.w)||(src_rect.h == r.h)) {
-					// draw all (e.g. border)
-					// note: drawing proceeds on the surface of parent window
-					cw->window->draw(false, &src_rect, false, cw->opacity);
-				}
-				else {
-					// minimal draw
-					// note: drawing proceeds on the surface of parent window
-					cw->window->draw(true, &src_rect, false, cw->opacity);
-				}
+				// note: drawing proceeds on the surface of parent window
+				cw->window->draw(false, &src_rect, false, cw->opacity);
 
 				// draw the children of this child, let child windows draw to the surface of my parent
 				MMSFBRegion reg;
