@@ -32,8 +32,8 @@
 
 #include "mmsgui/theme/mmstheme.h"
 
-/* initialize the theme object which stores the global theme */
-MMSTheme *globalTheme = new MMSTheme();
+// mmsInit() will initialize the theme object which stores the global theme
+MMSTheme *globalTheme = NULL;
 
 
 TAFF_ATTRDESC MMSGUI_MMSDIALOG_ATTR_I[]			= MMSGUI_MMSDIALOG_ATTR_INIT;
@@ -82,7 +82,7 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
 
-TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 27, mmsgui_taff_tagtable };
+TAFF_DESCRIPTION mmsgui_taff_description = { "mmsgui", 28, mmsgui_taff_tagtable };
 
 
 
@@ -411,7 +411,7 @@ MMSCheckBoxWidgetClass* MMSTheme::getCheckBoxWidgetClass(string className) {
 }
 
 
-MMSTheme::MMSTheme() {
+MMSTheme::MMSTheme(bool initial_load) {
 
     /* initialize the theme with default values */
     MMSFBColor color;
@@ -452,6 +452,7 @@ MMSTheme::MMSTheme() {
         this->mainWindowClass.windowClass.setAlwaysOnTop(false);
         this->mainWindowClass.windowClass.setFocusable(true);
         this->mainWindowClass.windowClass.setBackBuffer(false);
+        this->mainWindowClass.windowClass.setInitialLoad(initial_load);
 
         /* base window border settings */
         this->mainWindowClass.windowClass.border.setColor(color);
@@ -497,6 +498,7 @@ MMSTheme::MMSTheme() {
         this->popupWindowClass.windowClass.setAlwaysOnTop(false);
         this->popupWindowClass.windowClass.setFocusable(false);
         this->popupWindowClass.windowClass.setBackBuffer(false);
+        this->popupWindowClass.windowClass.setInitialLoad(initial_load);
 
         /* base window border settings */
         this->popupWindowClass.windowClass.border.setColor(color);
@@ -545,6 +547,7 @@ MMSTheme::MMSTheme() {
         this->rootWindowClass.windowClass.setAlwaysOnTop(false);
         this->rootWindowClass.windowClass.setFocusable(true);
         this->rootWindowClass.windowClass.setBackBuffer(false);
+        this->rootWindowClass.windowClass.setInitialLoad(initial_load);
 
         /* base window border settings */
         this->rootWindowClass.windowClass.border.setColor(color);
@@ -590,6 +593,7 @@ MMSTheme::MMSTheme() {
         this->childWindowClass.windowClass.setAlwaysOnTop(false);
         this->childWindowClass.windowClass.setFocusable(true);
         this->childWindowClass.windowClass.setBackBuffer(false);
+        this->childWindowClass.windowClass.setInitialLoad(initial_load);
 
         /* base window border settings */
         this->childWindowClass.windowClass.border.setColor(color);

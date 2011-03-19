@@ -1267,6 +1267,15 @@ class MMSWindow {
         */
         bool getBackBuffer(bool &backbuffer);
 
+    	//! Detect if the window is loading images, fonts etc. during initialization.
+        /*!
+        \param initialload	returns the initial load flag
+        \return true, if value is successfully returned
+        \note Per default initial load is false. That means that the window and it's widgets
+              will load images, fonts etc. during the first show().
+        */
+        bool getInitialLoad(bool &initialload);
+
         //! Get the color of the window border.
         /*!
         \param color	returns the border color
@@ -1552,6 +1561,12 @@ class MMSWindow {
         \param backbuffer	if true, the window surface has a front and a backbuffer
         */
         void setBackBuffer(bool backbuffer);
+
+        //! Set the initial load flag of the window.
+        /*!
+        \param initialload	if true, the window is loading images, fonts etc. during initialization
+        */
+        void setInitialLoad(bool initialload);
 
         //! Set the color of the window border.
         /*!

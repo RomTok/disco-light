@@ -249,6 +249,10 @@ const bool   MMSConfigData::getHideApplication() {
 	return this->graphics.hideapplication;
 }
 
+const bool   MMSConfigData::getInitialLoad() {
+	return this->graphics.initialload;
+}
+
 const bool   MMSConfigData::getTouchSwapX() {
 	return this->graphics.touchSwapX;
 }
@@ -281,6 +285,10 @@ void MMSConfigData::setRotateScreen(int rs) {
 
 void MMSConfigData::setHideApplication(bool hideapplication) {
 	this->graphics.hideapplication = hideapplication;
+}
+
+void MMSConfigData::setInitialLoad(bool initialload) {
+	this->graphics.initialload = initialload;
 }
 
 

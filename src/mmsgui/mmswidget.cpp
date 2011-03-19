@@ -824,8 +824,14 @@ void MMSWidget::updateWindowSurfaceWithSurface(bool useAlphaChannel) {
 }
 
 bool MMSWidget::init() {
+	// we can't initialize if no root window set
     if (!this->rootwindow)
         return false;
+
+	if (this->initialized) {
+		// already initialized
+		return true;
+	}
 
     if ((drawable) && (this->da)) {
     	// load images
@@ -891,6 +897,8 @@ bool MMSWidget::init() {
         if (!getJoinedWidget(name)) name = "";
         this->da->joinedWidget = this->rootwindow->findWidget(name);
     }
+
+    this->initialized = true;
     return true;
 }
 
@@ -939,257 +947,6 @@ bool MMSWidget::release() {
 
     return true;
 }
-
-#ifdef OLDDRAW
-bool MMSWidget(bool *backgroundFilled) {
-    bool         myBackgroundFilled = false;
-    bool         retry = false;
-
-    if (!this->initialized) {
-        /* init widget (e.g. load images, fonts, ...) */
-        init();
-        this->initialized = true;
-    }
-
-    if (backgroundFilled)
-        *backgroundFilled = false;
-    else
-        backgroundFilled = &myBackgroundFilled;
-
-    if ((!this->geomset)||(!this->visible))
-        return false;
-
-#ifdef __PUPTRACE__
-    DEBUGOUT("draw widget = %s ***************************\n", getName().c_str());
-#endif
-
-    /* lock */
-    if (this->surface) this->surface->lock();
-    this->windowSurface->lock();
-/*
-if (!this->has_own_surface) {
-//	if (this->surface) this->surface->clear(0xff,0,0,0xff);
-	*backgroundFilled = true;
-	if (this->surface) this->surface->unlock();
-	this->windowSurface->unlock();
-	return true;
-}
-*/
-    /* draw background */
-    do {
-        /* searching for the background color or image */
-        MMSFBColor col;
-        MMSFBSurface *suf = NULL;
-        col.a = 0;
-
-        if (this->drawable) {
-            if (isActivated()) {
-                if (isSelected()) {
-                    getSelBgColor(col);
-                    suf = this->selbgimage;
-                }
-                else {
-                    getBgColor(col);
-                    suf = this->bgimage;
-                }
-            }
-            else {
-                if (isSelected()) {
-                    getSelBgColor_i(col);
-                    suf = this->selbgimage_i;
-                }
-                else {
-                    getBgColor_i(col);
-                    suf = this->bgimage_i;
-                }
-            }
-        }
-
-        if (suf) {
-            if ((*backgroundFilled)||(retry)||(!this->has_own_surface)) {
-                /* prepare for blitting */
-                this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, (col.a)?col.a:255, opacity);
-
-                /* fill background */
-                surface->stretchBlit(suf, NULL, &surfaceGeom);
-                *backgroundFilled = true;
-
-                /* go out of the loop */
-                break;
-            }
-            else
-                /* the color has an alpha value and I need a background before drawing the image */
-                retry = true;
-        }
-        else
-        if (col.a) {
-            if ((*backgroundFilled)||(retry)||(!this->has_own_surface)||((col.a==255)&&(opacity==255))) {
-                /* prepare for drawing */
-                this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(col, brightness, opacity);
-
-                /* fill background */
-                this->surface->fillRectangle(surfaceGeom.x, surfaceGeom.y, surfaceGeom.w, surfaceGeom.h);
-                *backgroundFilled = true;
-
-                /* go out of the loop */
-                break;
-            }
-            else
-                /* the color has an alpha value and I need a background for it */
-                retry = true;
-        }
-        else {
-            if ((*backgroundFilled)||(!this->has_own_surface))
-                /* go out of the loop */
-                break;
-            else
-                /* no color, no image, I need to search for a background */
-                retry = true;
-        }
-
-        /* if not filled then */
-        if (!*backgroundFilled) {
-            /* searching for the next parent widget */
-            MMSWidget *widget = NULL;
-            vector<MMSWidget*> wlist;
-            if (this->parent)
-                widget = this->parent->getDrawableParent(false, false, false, &wlist);
-
-            /* the widget found can be to far away from this widget */
-            /* if wlist is filled, i can search for a better parent which has already a own surface */
-            for (int i=0; i < wlist.size(); i++) {
-                MMSWidget *w = wlist.at(i);
-                if ((w->drawable)&&(w->geomset)&&(w->visible)) {
-                    widget = w;
-                    break;
-                }
-            }
-
-            /* clear it (complete transparent) */
-            if (this->drawable) {
-                /* my own surface */
-                this->surface->clear();
-            }
-            else {
-                /* working direct on the window surface */
-                MMSFBRegion clip;
-                clip.x1 = innerGeom.x;
-                clip.y1 = innerGeom.y;
-                clip.x2 = innerGeom.x + innerGeom.w - 1;
-                clip.y2 = innerGeom.y + innerGeom.h - 1;
-
-#ifdef MMSGUI_STDOUT_TRACE
-                DEBUGOUT("-----%u: widget setclip (%x)\n", pthread_self(), this->windowSurface);
-#endif
-
-                this->windowSurface->setClip(&clip);
-                this->windowSurface->clear();
-            }
-
-            if (widget) {
-                /* drawable parent found, calculate rectangle to copy */
-                MMSFBRectangle srcrect = widget->getVisibleSurfaceArea();
-                srcrect.x+= this->innerGeom.x - widget->innerGeom.x;
-                srcrect.y+= this->innerGeom.y - widget->innerGeom.y;
-                srcrect.w = this->innerGeom.w;
-                srcrect.h = this->innerGeom.h;
-
-                if (this->drawable) {
-                    /* copy background from parent */
-#ifdef __PUPTRACE__
-                	DEBUGOUT("copy from widget, w = %s -> w = %s\n", widget->getName().c_str(), this->getName().c_str());
-#endif
-                	this->surface->setBlittingFlags((MMSFBSurfaceBlittingFlags)(DSBLIT_NOFX));
-                    this->surface->blit(widget->surface, &srcrect, 0, 0);
-                }
-                else {
-                    /* this is for example <hbox> or <vbox> which has no own drawing */
-                    this->windowSurface->setBlittingFlags((MMSFBSurfaceBlittingFlags)(DSBLIT_NOFX));
-                    this->windowSurface->blit(widget->surface, &srcrect, innerGeom.x, innerGeom.y);
-                }
-            }
-            else {
-                /* no parent found, use background from window */
-                if (this->rootwindow) {
-                    MMSFBColor bgcolor;
-                    this->rootwindow->getBgColor(bgcolor);
-                    if (!this->rootwindow->bgimage) {
-                        /* draw background with window bgcolor */
-                        if (bgcolor.a) {
-                            if (this->drawable) {
-                                /* clear surface */
-                                this->surface->clear(bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
-                            }
-                            else {
-                                /* this is for example <hbox> or <vbox> which has no own drawing */
-                                this->windowSurface->clear(bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
-                            }
-                        }
-                    }
-                    else {
-                        /* draw background with a part of window bgimage */
-                        MMSFBRectangle src, dst;
-                        int sw, sh;
-#ifdef __PUPTRACE__
-                        DEBUGOUT("copy from window, win=%s -> w=%s\n", this->rootwindow->getName().c_str(), this->getName().c_str());
-#endif
-
-                        /* get width and height of windows background image */
-                        this->rootwindow->bgimage->getSize(&sw, &sh);
-
-                        /* calculate with window width and height */
-                        int f1 = (this->rootwindow->innerGeom.w * 10000) / sw;
-                        int f2 = (this->rootwindow->innerGeom.h * 10000) / sh;
-
-                        /* calculate the source rectangle */
-                        src.x = (5000 + 10000 *(this->innerGeom.x - this->rootwindow->innerGeom.x)) / f1;
-                        src.w = (5000 + 10000 * this->innerGeom.w) / f1;
-                        src.y = (5000 + 10000 *(this->innerGeom.y - this->rootwindow->innerGeom.y)) / f2;
-                        src.h = (5000 + 10000 * this->innerGeom.h) / f2;
-
-                        if (this->drawable) {
-                            /* the destination rectangle */
-                            dst.x = 0;
-                            dst.w = this->innerGeom.w;
-                            dst.y = 0;
-                            dst.h = this->innerGeom.h;
-
-                            /* copy background from window's bgimage */
-                            this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
-                            this->surface->stretchBlit(this->rootwindow->bgimage, &src, &dst);
-                        }
-                        else {
-                            /* the destination rectangle */
-                            dst.x = this->innerGeom.x;
-                            dst.w = this->innerGeom.w;
-                            dst.y = this->innerGeom.y;
-                            dst.h = this->innerGeom.h;
-
-                            /* this is for example <hbox> or <vbox> which has no own drawing */
-                            this->windowSurface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
-                            this->windowSurface->stretchBlit(this->rootwindow->bgimage, &src, &dst);
-                        }
-                    }
-                }
-            }
-
-            if (!this->drawable) {
-                /* reset the clip */
-                this->windowSurface->setClip(NULL);
-            }
-
-            *backgroundFilled = true;
-        }
-    } while (retry);
-
-    /* unlock */
-    if (this->surface) this->surface->unlock();
-    this->windowSurface->unlock();
-
-    return true;
-}
-#endif
-
 
 
 
@@ -1285,11 +1042,9 @@ bool MMSWidget::draw(bool *backgroundFilled) {
 
 //printf("   MMSWidget::draw() - %s - window = %s\n", name.c_str(), rootwindow->name.c_str());
 
-    if (!this->initialized) {
-        // init widget (e.g. load images, fonts, ...)
-        init();
-        this->initialized = true;
-    }
+
+    // init widget (e.g. load images, fonts, ...)
+    init();
 
     if (backgroundFilled) {
     	if (this->has_own_surface)
@@ -1866,8 +1621,16 @@ void MMSWidget::setRootWindow(MMSWindow *root, MMSWindow *parentroot) {
         		this->parent_rootwindow = this->rootwindow->getParent(true);
         }
 
+        // get window surface and add widget to window
         this->windowSurface = this->rootwindow->getSurface();
-        rootwindow->add(this);
+        this->rootwindow->add(this);
+
+        bool initial_load = false;
+        this->rootwindow->getInitialLoad(initial_load);
+        if (initial_load) {
+			// init widget (e.g. load images, fonts, ...)
+			init();
+        }
     }
 
     // set root window to all children

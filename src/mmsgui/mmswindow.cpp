@@ -338,6 +338,13 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     if (this->windowmanager)
         resize();
 
+    bool initial_load = false;
+    getInitialLoad(initial_load);
+    if (initial_load) {
+		// init window (e.g. load images, fonts, ...)
+		init();
+    }
+
     return true;
 }
 
@@ -5090,6 +5097,10 @@ bool MMSWindow::getBackBuffer(bool &backbuffer) {
     GETWINDOW(BackBuffer, backbuffer);
 }
 
+bool MMSWindow::getInitialLoad(bool &initialload) {
+    GETWINDOW(InitialLoad, initialload);
+}
+
 
 #define GETBORDER(x,y) \
     if (this->myWindowClass.border.is##x()) return myWindowClass.border.get##x(y); \
@@ -5374,6 +5385,10 @@ void MMSWindow::setBackBuffer(bool backbuffer) {
     myWindowClass.setBackBuffer(backbuffer);
 }
 
+void MMSWindow::setInitialLoad(bool initialload) {
+    myWindowClass.setInitialLoad(initialload);
+}
+
 void MMSWindow::setBorderColor(MMSFBColor color, bool refresh) {
     myWindowClass.border.setColor(color);
     if (refresh)
@@ -5506,6 +5521,8 @@ void MMSWindow::updateFromThemeClass(MMSWindowClass *themeClass) {
         setFocusable(b);
 	if (themeClass->getBackBuffer(b))
         setBackBuffer(b);
+	if (themeClass->getInitialLoad(b))
+        setInitialLoad(b);
     if (themeClass->border.getColor(c))
         setBorderColor(c, false);
     if (themeClass->border.getImagePath(s))

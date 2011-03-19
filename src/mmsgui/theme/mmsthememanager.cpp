@@ -32,6 +32,7 @@
 
 #include "mmsgui/theme/mmsthememanager.h"
 #include "mmsinfo/mmsinfo.h"
+#include "mmsconfig/mmsconfigdata.h"
 
 #define INITCHECK if (!this->initialized) throw new MMSThemeManagerError(1, "MMSThemeManager is not initialized!");
 
@@ -176,7 +177,8 @@ MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
     }
 
 	// load new theme
-	MMSTheme *theme = new MMSTheme();
+	MMSConfigData config;
+	MMSTheme *theme = new MMSTheme(config.getInitialLoad());
 	loadLocalTheme(theme, path, themeName);
 
 	// add theme to list
