@@ -236,6 +236,16 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			DEBUGMSG_OUTSTR("Core", "Fullscreen...................: " + getMMSFBFullScreenModeString(config->getFullScreen()));
 			DEBUGMSG_OUTSTR("Core", "Rotate screen................: " + iToStr(config->getRotateScreen()) + "°");
 
+			if (config->getHideApplication())
+				DEBUGMSG_OUTSTR("Core", "Hide application.............: yes");
+			else
+				DEBUGMSG_OUTSTR("Core", "Hide application.............: no");
+
+			if (config->getInitialLoad())
+				DEBUGMSG_OUTSTR("Core", "Initial load.................: yes");
+			else
+				DEBUGMSG_OUTSTR("Core", "Initial load.................: no");
+
 			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + getMMSLanguageString(config->getSourceLang()));
 			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + getMMSLanguageString(config->getDefaultTargetLang()));
 			DEBUGMSG_OUTSTR("Core", "Add missing translations.....: " + (config->getAddTranslations() ? string("yes") : string("no")));
@@ -266,6 +276,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
             // set static MMSWidget inputmode
         	MMSWidget_inputmode = config->getInputMode();
+
+        	// initialize the theme object which stores the global theme
+        	globalTheme = new MMSTheme(config->getInitialLoad());
 
 			// init the fbmanager, check if virtual console should be opened
             mmsfbmanager.init(argc, argv, appl_name, appl_icon_name,

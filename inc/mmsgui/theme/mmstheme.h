@@ -186,7 +186,7 @@ class MMSTheme {
         MMSInputWidgetClass*        getInputWidgetClass(string className = "");
         MMSCheckBoxWidgetClass*     getCheckBoxWidgetClass(string className = "");
 
-        MMSTheme();
+        MMSTheme(bool initial_load);
         ~MMSTheme();
 
         void setTheme(string path, string themeName);

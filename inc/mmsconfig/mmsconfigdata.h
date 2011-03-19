@@ -124,6 +124,7 @@ class MMSConfigDataGraphics {
 	    MMSFBFullScreenMode		fullscreen;
 	    int						rotatescreen;
 	    bool					hideapplication;
+	    bool					initialload;
 		bool					touchSwapX;					/**< swap x axis (maximum value becomes minimum) */
 		bool					touchSwapY;					/**< swap y axis (maximum value becomes minimum) */
 		bool					touchSwapXY;				/**< swap x and y axis (x axis events are handled as y axis and vice versa) */
@@ -140,6 +141,7 @@ class MMSConfigDataGraphics {
    		    fullscreen(MMSFB_FSM_FALSE),					// x11 fullscreen?, default no
    		    rotatescreen(0),								// rotate screen by X degree, default 0
    		    hideapplication(false),
+   		    initialload(false),
    		    touchSwapX(false),
    		    touchSwapY(false),
    		    touchSwapXY(false) {}
@@ -222,6 +224,7 @@ class MMSConfigData {
         const MMSFBFullScreenMode   getFullScreen();
         const int getRotateScreen();
         const bool   getHideApplication();
+        const bool   getInitialLoad();
         const bool   getTouchSwapX();
         const bool   getTouchSwapY();
         const bool   getTouchSwapXY();
@@ -232,6 +235,7 @@ class MMSConfigData {
         void setFullScreen(MMSFBFullScreenMode fsm);
         void setRotateScreen(int rs);
         void setHideApplication(bool hideapplication);
+        void setInitialLoad(bool initialload);
 
         // language section getters
     	const MMSLanguage getSourceLang();
