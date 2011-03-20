@@ -68,6 +68,8 @@ class IMMSWindowManager {
         virtual MMSTranslator *getTranslator() = 0;
 
         virtual MMSThemeManager *getThemeManager() = 0;
+
+        virtual void printStack() = 0;
 };
 
 #endif /*IMMSWINDOWMANAGER_H_*/

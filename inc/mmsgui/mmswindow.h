@@ -1029,6 +1029,15 @@ class MMSWindow {
         */
         sigc::signal<bool, MMSFBSurface*, bool>::accumulated<neg_bool_accumulator> *onDraw;
 
+
+
+
+
+
+
+
+        unsigned int printStack(char *buffer, int space = 0);
+
     public:
         /* begin of theme access methods *************************************/
 

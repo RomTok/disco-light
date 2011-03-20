@@ -117,6 +117,8 @@ class MMSWindowManager : public IMMSWindowManager {
         MMSTranslator *getTranslator();
 
         MMSThemeManager *getThemeManager();
+
+        void printStack();
 };
 
 #endif /*MMSWINDOWMANAGER_H_*/

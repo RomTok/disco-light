@@ -4963,6 +4963,60 @@ void MMSWindow::setNavigateLeftWindow(MMSWindow *leftWindow) {
 
 
 
+unsigned int MMSWindow::printStack(char *buffer, int space) {
+	char *ptr = buffer + space;
+	int cnt;
+
+	// name of window
+	if (!this->name.empty())
+		cnt = sprintf(ptr, "%s", this->name.c_str());
+	else
+		cnt = sprintf(ptr, "<noname>");
+	if (cnt > 32) cnt = 32;
+	ptr[cnt] = ' ';
+	ptr+=33;
+
+	// shown state
+	if (this->isShown()) {
+		if (!this->isShown(true, true))
+			cnt = sprintf(ptr, "STATE=shown");
+		else
+			cnt = sprintf(ptr, "STATE=visible");
+	}
+	else {
+		cnt = sprintf(ptr, "STATE=hidden");
+	}
+	ptr[cnt] = ' ';
+	ptr+=14;
+
+	// opacity
+	unsigned int opacity;
+	getOpacity(opacity);
+	cnt = sprintf(ptr, "OPACITY=%02x", opacity);
+	ptr[cnt] = ' ';
+	ptr+=11;
+
+	// opacity
+	bool ownsurface;
+	getOwnSurface(ownsurface);
+	cnt = sprintf(ptr, "OWN_SURFACE=%s", (ownsurface)?"true":"false");
+	ptr[cnt] = ' ';
+	ptr+=18;
+
+	// line feed
+	cnt = sprintf(ptr, "\n");
+	ptr[cnt] = ' ';
+	ptr+= cnt;
+
+	// through child windows, from top to bottom
+	for (unsigned int i = this->childwins.size(); i > 0; i--) {
+		ptr += this->childwins.at(i-1).window->printStack(ptr, space + 1);
+	}
+
+	return (unsigned int)(ptr - buffer);
+}
+
+
 /***********************************************/
 /* begin of theme access methods (get methods) */
 /***********************************************/
