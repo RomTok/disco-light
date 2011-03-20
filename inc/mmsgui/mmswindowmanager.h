@@ -118,7 +118,7 @@ class MMSWindowManager : public IMMSWindowManager {
 
         MMSThemeManager *getThemeManager();
 
-        void printStack();
+        unsigned int printStack(char *buffer = NULL);
 };
 
 #endif /*MMSWINDOWMANAGER_H_*/
