@@ -69,7 +69,7 @@ class IMMSWindowManager {
 
         virtual MMSThemeManager *getThemeManager() = 0;
 
-        virtual void printStack() = 0;
+        virtual unsigned int printStack(char *buffer = NULL) = 0;
 };
 
 #endif /*IMMSWINDOWMANAGER_H_*/
