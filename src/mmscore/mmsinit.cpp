@@ -37,7 +37,7 @@ extern "C" {
 #include "mmscore/mmsinit.h"
 #include "mms.h"
 
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 #include "mmscore/mmsperf.h"
 #include "mmscore/mmsperfinterface.h"
 
@@ -251,8 +251,8 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			DEBUGMSG_OUTSTR("Core", "Add missing translations.....: " + (config->getAddTranslations() ? string("yes") : string("no")));
 			DEBUGMSG_OUTSTR("Core", "Language file directory......: " + config->getLanguagefileDir());
 
-			DEBUGMSG_OUTSTR("Core", "Address for perfmon..........: " + config->getPerfMonAddress());
-			DEBUGMSG_OUTSTR("Core", "Port for perfmon.............: " + iToStr(config->getPerfMonPort()));
+			DEBUGMSG_OUTSTR("Core", "Activity monitor address.....: " + config->getActMonAddress());
+			DEBUGMSG_OUTSTR("Core", "Activity monitor port........: " + iToStr(config->getActMonPort()));
 
 			printf("----------------------------------------------------------------------\n");
 
@@ -263,13 +263,13 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
             DEBUGMSG("Core", "initialize frame buffer");
 
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 			// init mmsfb performance data collector
 			mmsperf = new MMSPerf();
 
 			// init mmsfb performance data interface
 			MMSTCPServer *server = new MMSTCPServer(new MMSPerfInterface(mmsperf),
-													config->getPerfMonAddress(), config->getPerfMonPort(),
+													config->getActMonAddress(), config->getActMonPort(),
 													"MMSTCPServer4Perfmon");
 			server->start();
 #endif

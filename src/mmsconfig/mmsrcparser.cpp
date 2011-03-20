@@ -202,10 +202,10 @@ void MMSRcParser::throughGlobal(xmlNode* node) {
             this->global.shutdowncmd = string((const char *)parvalue);
         else if(!xmlStrcmp(parname, (const xmlChar *) "inputmode"))
             this->global.inputmode = string((const char *)parvalue);
-        else if(!xmlStrcmp(parname, (const xmlChar *) "perfmonaddress"))
-            this->global.perfmonaddress = string((const char *)parvalue);
-        else if(!xmlStrcmp(parname, (const xmlChar *) "perfmonport"))
-        	this->global.perfmonport = atoi((const char*)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "actmonaddress"))
+            this->global.actmonaddress = string((const char *)parvalue);
+        else if(!xmlStrcmp(parname, (const xmlChar *) "actmonport"))
+        	this->global.actmonport = atoi((const char*)parvalue);
 		else
 			printf("RcParser: ignoring parameter '%s' in tag <global/>\n", parname);
 
