@@ -396,3 +396,16 @@ void MMSWindowManager::onThemeChanged(string themeName, bool fade_in) {
     }
 }
 
+void MMSWindowManager::printStack() {
+	char buffer[50*1024];
+	memset((void*)buffer, ' ', sizeof(buffer));
+	char *ptr = buffer;
+
+	for (unsigned int i = 0; i < this->windows.size(); i++) {
+		ptr += this->windows.at(i)->printStack(ptr);
+	}
+
+	*ptr = 0;
+	printf(buffer);
+}
+
