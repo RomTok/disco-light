@@ -111,7 +111,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('enable_sip',          'Build with mmssip support', False),
 	BoolOption('enable_curl',         'Build with curl support', True),
 	BoolOption('enable_mail',         'Build with email support', False),
-	BoolOption('enable_perfmon',      'Build performance monitor', False),
+	BoolOption('enable_actmon',       'Build activity monitor', False),
 	BoolOption('enable_tools',        'Build disko tools', False),
 	BoolOption('static_lib',          'Create statically linked library', False),
 	BoolOption('big_lib',             'Create one big shared library', True))
@@ -140,7 +140,7 @@ else:
 	BoolVariable('enable_sip',          'Build with mmssip support', False),
 	BoolVariable('enable_curl',         'Build with curl support', True),
 	BoolVariable('enable_mail',         'Build with email support', False),
-	BoolVariable('enable_perfmon',      'Build performance monitor', False),
+	BoolVariable('enable_actmon',       'Build activity monitor', False),
 	BoolVariable('enable_tools',        'Build disko tools', False),
 	BoolVariable('static_lib', 	        'Create statically linked library', False),
     BoolVariable('big_lib',             'Create one big shared library', True))
@@ -251,8 +251,8 @@ diskoTools = []
 if env['enable_tools']:	
 	diskoTools = ["taff","diskoappctrl"]
 
-if env['enable_perfmon']:	
-	diskoTools.extend(["perfmon"])
+if env['enable_actmon']:	
+	diskoTools.extend(["actmon"])
 
 #######################################################################
 # Helper functions                                                    #
@@ -422,10 +422,10 @@ def printSummary():
 		print 'E-Mail support      : yes'
 	else:
 		print 'E-Mail support      : no'
-	if(conf.env['enable_perfmon']):
-		print 'Building perfmon    : yes'
+	if(conf.env['enable_actmon']):
+		print 'Building actmon     : yes'
 	else:
-		print 'Building perfmon    : no'
+		print 'Building actmon     : no'
 	if(conf.env['enable_tools']):
 		print 'Building tools      : yes\n'
 	else:
@@ -570,7 +570,7 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 			else:
 				conf.env['graphics_outputtype'].remove('gl2')
 	
-	# check if OpenGL 2.0 and OpenGL ES 2.0 are both activated
+	# check if OpenGL 2.0 and OpenGL ES are both activated
 	if 'gl2' and 'gles2' in conf.env['graphics_outputtype']:
 		print '\nOpenGL 2.0 and OpenGL ES 2.0 support is mutually exclusive.' 
 		print 'You have to choose between one of them by using:'
@@ -713,9 +713,9 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		conf.checkSimpleLib(['libswscale'], 'libswscale/swscale.h')
 		conf.env['CCFLAGS'].extend(['-D__HAVE_SWSCALE__']) 
 
-	# checks required if building performance monitor
-	if(env['enable_perfmon']):
-		conf.env['CCFLAGS'].extend(['-D__ENABLE_PERFMON__'])
+	# checks required if building activity monitor
+	if(env['enable_actmon']):
+		conf.env['CCFLAGS'].extend(['-D__ENABLE_ACTMON__'])
 
 	env2 = conf.Finish()
 	if env2:
@@ -857,7 +857,7 @@ if 'install' in BUILD_TARGETS:
 #######################################################################
 env['TOP_DIR'] = os.getcwd()
 env.Decider('MD5-timestamp')
-if(env['enable_tools'] or env['enable_perfmon']):
+if(env['enable_tools'] or env['enable_actmon']):
 	all = env.Alias('all', ['lib', 'bin'])
 else:
 	all = env.Alias('all', ['lib'])

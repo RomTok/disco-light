@@ -192,7 +192,7 @@ class MMSFBSurface {
 		IDirectFBSurface	*dfb_surface;
 #endif
 
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 		//! mmsfb performance collector
 		class MMSPerf *mmsperf;
 #endif

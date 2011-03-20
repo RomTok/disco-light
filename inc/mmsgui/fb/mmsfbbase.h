@@ -244,7 +244,7 @@ void calcAspectRatio(int sw, int sh, int dw, int dh, MMSFBRectangle &dest, bool 
 
 
 
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 
 #define MMSFBPERF_START_MEASURING { \
 	struct timeval perf_stime; \

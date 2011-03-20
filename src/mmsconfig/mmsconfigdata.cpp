@@ -140,12 +140,12 @@ const string MMSConfigData::getInputMode() {
 	return this->global.inputmode;
 }
 
-const string MMSConfigData::getPerfMonAddress() {
-	return this->global.perfmonaddress;
+const string MMSConfigData::getActMonAddress() {
+	return this->global.actmonaddress;
 }
 
-const unsigned int MMSConfigData::getPerfMonPort() {
-	return this->global.perfmonport;
+const unsigned int MMSConfigData::getActMonPort() {
+	return this->global.actmonport;
 }
 
 /* db section getters */

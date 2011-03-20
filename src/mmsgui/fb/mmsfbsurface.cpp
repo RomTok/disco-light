@@ -34,7 +34,7 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 #include "mmscore/mmsperf.h"
 #endif
 
@@ -487,7 +487,7 @@ MMSFBSurface::MMSFBSurface(int w, int h, MMSFBSurfaceAllocatedBy allocated_by) {
 
 MMSFBSurface::~MMSFBSurface() {
 
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 	if (this->mmsperf)
 		delete this->mmsperf;
 #endif
@@ -522,7 +522,7 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 	        		    MMSFBSurface *parent,
 						MMSFBRectangle *sub_surface_rect) {
     // init me
-#ifdef __ENABLE_PERFMON__
+#ifdef __ENABLE_ACTMON__
 	this->mmsperf = new MMSPerf();
 #endif
 

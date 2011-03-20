@@ -34,14 +34,14 @@
 #include "mms.h"
 
 void help() {
-	printf("\nPerformance Monitor\n\n");
+	printf("\nActivity Monitor\n\n");
 	printf("parameter:\n\n");
 	printf("--reset    if used, statistic infos will be reset\n");
 	printf("\nexamples:\n\n");
-	printf("perfmon\n\n");
-	printf("perfmon --disko:config=./etc/diskorc.xml\n\n");
-	printf("perfmon --reset\n\n");
-	printf("perfmon --disko:config=./etc/diskorc.xml --reset\n\n");
+	printf("actmon\n\n");
+	printf("actmon --disko:config=./etc/diskorc.xml\n\n");
+	printf("actmon --reset\n\n");
+	printf("actmon --disko:config=./etc/diskorc.xml --reset\n\n");
 }
 
 bool getparams(int argc, char *argv[], bool &reset) {
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 		MMSConfigData config;
 
 		// init tcp client instance
-		MMSTCPClient *tcl = new MMSTCPClient(config.getPerfMonAddress(), config.getPerfMonPort());
+		MMSTCPClient *tcl = new MMSTCPClient(config.getActMonAddress(), config.getActMonPort());
 
 		// build command
 		string cmd;

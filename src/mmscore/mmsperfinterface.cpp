@@ -81,7 +81,7 @@ void MMSPerfInterface::printSummary(char **rb, MMSFBPERF_MEASURING_VALS &summary
 bool MMSPerfInterface::processRequest(string *request, string *answer) {
 
 	if (!this->mmsfbperf) {
-		printf("DISKO: MMSPerf not initialized, disko compiled with enable_perfmon=yes?\n");
+		printf("DISKO: MMSPerf not initialized, disko compiled with enable_actmon=yes?\n");
 		return false;
 	}
 
