@@ -5594,7 +5594,7 @@ bool MMSFBSurface::refresh() {
 				XLockDisplay(mmsfb->x_display);
 				int dx = 0;
 				int dy = 0;
-				if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+/*				if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 					dx = (mmsfb->display_w - this->config.w) >> 1;
 					dy = (mmsfb->display_h - this->config.h) >> 1;
 				}
@@ -5602,11 +5602,47 @@ bool MMSFBSurface::refresh() {
 				XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
+*/
 
+                if (mmsfb->fullscreen == MMSFB_FSM_TRUE) {
+                        // put image to layer pixmap
+                        XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
+                                                  0, 0, dx, dy,
+                                                  layer->config.w, layer->config.h, False);
 
+                        double scale = (double)layer->x_window_w / layer->config.w;
 
+                        // Scaling matrix
+                        XTransform xform = {{
+                                { XDoubleToFixed( 1 ), XDoubleToFixed( 0 ), XDoubleToFixed(     0 ) },
+                                { XDoubleToFixed( 0 ), XDoubleToFixed( 1 ), XDoubleToFixed(     0 ) },
+                                { XDoubleToFixed( 0 ), XDoubleToFixed( 0 ), XDoubleToFixed( scale ) }
+                        }};
 
+                        XRenderSetPictureTransform( mmsfb->x_display, layer->x_pixmap_pict, &xform );
+                        XRenderSetPictureFilter( mmsfb->x_display, layer->x_pixmap_pict, FilterBilinear, 0, 0 );
 
+                        //put render image, copy the pixmap content using XRender
+                        XRenderComposite(mmsfb->x_display,
+                                   PictOpSrc,
+                                   layer->x_pixmap_pict,
+                                   None,
+                                   layer->x_window_pict,
+                                   0, 0,
+                                   0, 0,
+                                   0, 0,
+                                   layer->x_window_w, layer->x_window_h);
+
+                } else {
+                        if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+                                dx = (mmsfb->display_w - this->config.w) >> 1;
+                                dy = (mmsfb->display_h - this->config.h) >> 1;
+                        }
+
+                        XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
+                                                  0, 0, dx, dy,
+                                                  this->config.w, this->config.h, False);
+                }
 
 				//XFlush(mmsfb->x_display);
 				XSync(mmsfb->x_display, False);

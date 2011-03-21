@@ -1187,6 +1187,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 #endif
 	    }
 
+        mmsfb->x_windows[this->config.id] = this->x_window;
 
 		if(this->config.id == 0) {
 			mmsfb->input_window = this->x_window;
