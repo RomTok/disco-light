@@ -356,6 +356,23 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
     return true;
 }
 
+
+bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
+
+	// check if initialized
+    INITCHECK;
+
+    if (this->layer[id]) {
+        // i have already the layer
+        *layer = this->layer[id];
+        return true;
+    }
+
+    // layer is not initialized!!!
+    return false;
+}
+
+
 void *MMSFB::getX11Window() {
     if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__

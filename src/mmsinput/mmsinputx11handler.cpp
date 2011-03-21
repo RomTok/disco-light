@@ -249,9 +249,9 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
 			return;
     	}
     	if(event.type==ButtonRelease) {
-		//discard all buttons but the left
-			if(event.xbutton.button != 1)
-				return;
+		//discard all buttons but the left */
+		if(event.xbutton.button != 1)
+			return;
     		inputevent->type = MMSINPUTEVENTTYPE_BUTTONRELEASE;
 			if (mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 				inputevent->posx = (int)((double)((double)event.xbutton.x / (double)mmsfb->display_w ) * mmsfb->x11_win_rect.w);
@@ -293,33 +293,40 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     	if(event.type==Expose) {
     		mmsfb->refresh();
     	}
+    	if(event.type == MapNotify) {
+    		/*
+    		for(int i=0; ;i++) {
+    			if(mmsfb->x_windows[i]==0)
+    				break;
+    			else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
+    				XLowerWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+    				XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+    				XRaiseWindow(mmsfb->x_display, mmsfb->input_window);
+    				printf("mapping layer %d\n", i);
+    				XSync(mmsfb->x_display,False);
+    			}
+    		}*/
+    	}
+    	if(event.type == UnmapNotify) {
+    		for(int i=0; ;i++) {
+    			if(mmsfb->x_windows[i]==0)
+    				break;
+    			else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
+    				//fill layer window with default root
+    				MMSFBLayer *layer ;
+    				mmsfb->getLayer(i, &layer);
+    				X11_IMPL *impl = (X11_IMPL *)layer->getImplementation();
+					XLockDisplay(mmsfb->x_display);
+					XPutImage(mmsfb->x_display, mmsfb->x_windows[i], impl->x_gc, mmsfb->rootimage, 0,0, 0, 0, mmsfb->display_w,
+							  mmsfb->display_h);
 
-        if(event.type == MapNotify) {
-                for(int i=0; ;i++  ) {
-                        if(mmsfb->x_windows[i]==0)
-                                break;
-                        else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
-                        	XLowerWindow(mmsfb->x_display, mmsfb->x_windows[i]);
-                        	XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
-                        	XRaiseWindow(mmsfb->x_display, mmsfb->input_window);
-							printf("mapping layer %d\n", i);
-							XSync(mmsfb->x_display,False);
-                        }
-                }
-        }
-
-        if(event.type == UnmapNotify) {
-                for(int i=0; ;i++  ) {
-                        if(mmsfb->x_windows[i]==0)
-                                break;
-                        else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
-                                XUnmapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
-                                printf("unmapping layer %d\n", i);
-                                XSync(mmsfb->x_display,False);
-                        }
-                }
-        }
-
+    				//XUnmapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+    				printf("unmapping layer %d\n", i);
+    				XSync(mmsfb->x_display,False);
+					XUnlockDisplay(mmsfb->x_display);
+    			}
+    		}
+    	}
 
     }
 
@@ -328,5 +335,3 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
 #endif
 
 }
-
-
