@@ -1193,7 +1193,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			XStoreName(mmsfb->x_display, this->x_window, mmsfb->applname.c_str());
 			XSetIconName(mmsfb->x_display, this->x_window, mmsfb->appliconname.c_str());
 			XClassHint clhi;
-			clhi.res_name=(char*)"disko";
+			clhi.res_name=(basename((char *)mmsfb->bin.c_str()));
+//			clhi.res_name=(char*)"disko";
 			clhi.res_class=(char*)"disko";
 			XSetClassHint(mmsfb->x_display, this->x_window,&clhi);
 			if(!mmsfb->hidden) {

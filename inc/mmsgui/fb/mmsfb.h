@@ -64,6 +64,10 @@ class MMSFB {
         string			 appliconname;
         bool			 hidden;
         MMSFBPointerMode pointer;
+
+        //! name of binary
+        string           bin;
+
     	//! is initialized?
     	bool initialized;
 
