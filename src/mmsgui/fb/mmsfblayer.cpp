@@ -690,7 +690,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 					x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask /*|CWOverrideRedirect*/ | CWColormap;
 					//x_window_attr.override_redirect = True;
 
-					this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), 0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, 32,
+					this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), mmsfb->x11_win_rect.x, mmsfb->x11_win_rect.y, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, 32,
 												   InputOutput, this->x_visual, x_window_mask, &x_window_attr);
 					this->x_window_w = mmsfb->x11_win_rect.w;
 					this->x_window_h = mmsfb->x11_win_rect.h;
@@ -863,7 +863,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 				x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask /*|CWOverrideRedirect*/ | CWColormap;
 				//x_window_attr.override_redirect = True;
 
-				this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), 0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, mmsfb->x_depth,
+				this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), mmsfb->x11_win_rect.x, mmsfb->x11_win_rect.y, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, mmsfb->x_depth,
 											   InputOutput, this->x_visual, x_window_mask, &x_window_attr);
 				this->x_window_w = mmsfb->x11_win_rect.w;
 				this->x_window_h = mmsfb->x11_win_rect.h;
@@ -1157,7 +1157,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		    } else {
 				x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ; //|CWOverrideRedirect;
 				//x_window_attr.override_redirect = True;
-				this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), 0, 0, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, CopyFromParent,
+				this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), mmsfb->x11_win_rect.x, mmsfb->x11_win_rect.y, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, CopyFromParent,
 											   InputOutput, this->x_visual, x_window_mask, &x_window_attr);
 
 		    }
