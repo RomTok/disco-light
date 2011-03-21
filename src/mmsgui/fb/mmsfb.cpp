@@ -494,20 +494,36 @@ bool MMSFB::resizeWindow() {
 
 void MMSFB::realignLayer() {
 #ifdef __HAVE_XLIB__
+	static bool first = true;
+
+	if(first==false)
+		return;
+
+	first=false;
 	for(int i=0; ;i++) {
 		if(mmsfb->x_windows[i]==0)
 			break;
 		else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
+			XLockDisplay(mmsfb->x_display);
 			XLowerWindow(mmsfb->x_display, mmsfb->x_windows[i]);
 			XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display,False);
+			X11_IMPL *impl = (X11_IMPL *)mmsfb->layer[i]->getImplementation();
+
+			XPutImage(mmsfb->x_display, mmsfb->x_windows[i], impl->x_gc, mmsfb->rootimage, 0,0, 0, 0, mmsfb->display_w,
+					  mmsfb->display_h);
+
+			//XUnmapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+			//printf("unmapping layer %d\n", i);
+			XSync(mmsfb->x_display,False);
+
 			XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
-			XFlush(mmsfb->x_display);
-			XSync(mmsfb->x_display,False);
 			XRaiseWindow(mmsfb->x_display, mmsfb->input_window);
-			printf("mapping layer %d\n", i);
+
+			//printf("mapping layer %d\n", i);
 			XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display,False);
+			XUnlockDisplay(mmsfb->x_display);
 		}
 	}
 #endif
