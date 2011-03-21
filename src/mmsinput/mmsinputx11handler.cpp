@@ -299,8 +299,8 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
                         if(mmsfb->x_windows[i]==0)
                                 break;
                         else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
-                                XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
                                 XRaiseWindow(mmsfb->x_display, mmsfb->input_window);
+                                XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
                                 printf("mapping layer %d\n", i);
                                 XSync(mmsfb->x_display,False);
                         }
