@@ -1150,6 +1150,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 				this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), 0, 0, mmsfb->display_w, mmsfb->display_h, 0, CopyFromParent,
 											   InputOutput, this->x_visual, x_window_mask, &x_window_attr);
 
+				this->x_window_w = mmsfb->display_w;
+				this->x_window_h = mmsfb->display_h;
 				Atom the_atom = XInternAtom(mmsfb->x_display, "_NET_WM_WINDOW_TYPE_SPLASH", False);
 				XChangeProperty(mmsfb->x_display, this->x_window,XInternAtom(mmsfb->x_display, "_NET_WM_WINDOW_TYPE", False), XInternAtom(mmsfb->x_display, "ATOM[]/32", False), 32, PropModePrepend, (unsigned char*) &the_atom,1);
 
@@ -1157,6 +1159,8 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		    } else {
 				x_window_mask = CWBackPixel | CWBorderPixel |  CWEventMask ; //|CWOverrideRedirect;
 				//x_window_attr.override_redirect = True;
+				this->x_window_w = mmsfb->x11_win_rect.w;
+				this->x_window_h = mmsfb->x11_win_rect.h;
 				this->x_window = XCreateWindow(mmsfb->x_display, DefaultRootWindow(mmsfb->x_display), mmsfb->x11_win_rect.x, mmsfb->x11_win_rect.y, mmsfb->x11_win_rect.w, mmsfb->x11_win_rect.h, 0, CopyFromParent,
 											   InputOutput, this->x_visual, x_window_mask, &x_window_attr);
 
