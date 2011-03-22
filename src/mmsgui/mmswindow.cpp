@@ -119,6 +119,8 @@ MMSWindow::MMSWindow() {
 
     this->always_on_top_index = 0;
 
+    this->need_redraw = false;
+
     // initialize the callbacks
     onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
     onAfterShow         = new sigc::signal<void, MMSWindow*, bool>;
@@ -1158,7 +1160,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         pw_region = *region;
     }
 
-//printf("   MMSWindow::drawChildWindows() - %s, %d,%d,%d,%d\n", name.c_str(),pw_region.x1,pw_region.y1,pw_region.x2,pw_region.y2);
+//printf("   *MMSWindow::drawChildWindows() - %s, %d,%d,%d,%d\n", name.c_str(),pw_region.x1,pw_region.y1,pw_region.x2,pw_region.y2);
 
     // draw all affected child windows
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
@@ -1219,31 +1221,34 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 
         		// check if we have to do the "special blit"
 				// "special blit" means that we have to call draw() for the window and it's childwindows
-        		bool special_blit = false;
+        		// origin is the need_redraw flag which is set for example by targetLangChanged()
+        		bool special_blit = cw->window->need_redraw;
 
-				if (cw->opacity < 255) {
-        			// opacity calculation requested
-        			// check if at least one child window with opacity > 0 does exists
-					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
-						if (cw->window->childwins.at(c).opacity) {
-							// childwindow is shown
-							special_blit = true;
-							break;
+				if (!special_blit) {
+					if (cw->opacity < 255) {
+						// opacity calculation requested
+						// check if at least one child window with opacity > 0 does exists
+						for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
+							if (cw->window->childwins.at(c).opacity) {
+								// childwindow is shown
+								special_blit = true;
+								break;
+							}
 						}
 					}
-        		}
-        		else
-				if (cw->window->stretchmode) {
-        			// should be stretched
-        			// check if at least one child window with opacity > 0 does exists
-					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
-						if (cw->window->childwins.at(c).opacity) {
-							// childwindow is shown
-							special_blit = true;
-							break;
+					else
+					if (cw->window->stretchmode) {
+						// should be stretched
+						// check if at least one child window with opacity > 0 does exists
+						for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
+							if (cw->window->childwins.at(c).opacity) {
+								// childwindow is shown
+								special_blit = true;
+								break;
+							}
 						}
 					}
-        		}
+				}
 
 				if (!special_blit) {
 					// now we have to find childwindows with own_surface="false"
@@ -1404,7 +1409,6 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
     if (!locked)
 //PUP        flipLock.lock();
     	lock();
-
 
     if (!win) win = this;
     if (win->getType()!=MMSWINDOWTYPE_CHILDWINDOW) {
@@ -1848,6 +1852,10 @@ bool MMSWindow::release() {
 
 
 void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear, unsigned char opacity) {
+
+	// reset "need redraw" flag
+    this->need_redraw = false;
+
 	// init window (e.g. load images, fonts, ...)
 	init();
 
@@ -4836,9 +4844,14 @@ void MMSWindow::targetLangChanged(MMSLanguage lang, bool refresh) {
         	break;
         }
 
+    // window needs to be redrawn
+    // this is especially required for child windows with own_surface="true"
+    this->need_redraw = true;
+
     // refresh it
-    if (refresh)
+    if (refresh) {
     	this->refresh();
+    }
 }
 
 void MMSWindow::themeChanged(string &themeName, bool refresh) {

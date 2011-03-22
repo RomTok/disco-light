@@ -376,6 +376,7 @@ class MMSWindow {
 		int 			anim_move_step;
 
 
+		bool			need_redraw;
 
 
         //! Internal method: Creates the window.
