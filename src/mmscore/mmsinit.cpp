@@ -236,16 +236,18 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			DEBUGMSG_OUTSTR("Core", "Fullscreen...................: " + getMMSFBFullScreenModeString(config->getFullScreen()));
 			DEBUGMSG_OUTSTR("Core", "Rotate screen................: " + iToStr(config->getRotateScreen()) + "°");
 
-			if (config->getHideApplication())
+			if (config->getHideApplication()) {
 				DEBUGMSG_OUTSTR("Core", "Hide application.............: yes");
-			else
+			} else {
 				DEBUGMSG_OUTSTR("Core", "Hide application.............: no");
+			}
 
-			if (config->getInitialLoad())
+			if (config->getInitialLoad()) {
 				DEBUGMSG_OUTSTR("Core", "Initial load.................: yes");
-			else
+			} else {
 				DEBUGMSG_OUTSTR("Core", "Initial load.................: no");
-
+			}
+			
 			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + getMMSLanguageString(config->getSourceLang()));
 			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + getMMSLanguageString(config->getDefaultTargetLang()));
 			DEBUGMSG_OUTSTR("Core", "Add missing translations.....: " + (config->getAddTranslations() ? string("yes") : string("no")));
@@ -256,8 +258,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
 			printf("----------------------------------------------------------------------\n");
 
-			if (!appl_name.empty())
+			if (!appl_name.empty()) {
 				DEBUGMSG_OUTSTR("Core", "Starting " + appl_name + "...");
+			}
         }
 
         if((flags & MMSINIT_WINDOWMANAGER)||(flags & MMSINIT_GRAPHICS)) {
