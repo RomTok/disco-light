@@ -42,10 +42,10 @@
 
 MMS_CREATEERROR(MMSImportPluginError);
 
-
 class MMSImportPluginHandler {
     private:
         bool 				loaded;
+        bool				initialized;
         MMSPluginData 		plugindata;
         IMMSImportPlugin	*plugin;
         MMSShlHandler 		*handler;

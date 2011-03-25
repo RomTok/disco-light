@@ -34,6 +34,7 @@
 
 MMSBackendPluginHandler::MMSBackendPluginHandler(MMSPluginData plugindata, bool autoload, IMMSBackendPlugin *_plugin) :
 	loaded(false),
+	initialized(false),
 	plugindata(plugindata),
 	plugin(_plugin),
 	handler(NULL),
@@ -52,24 +53,33 @@ MMSBackendPluginHandler::~MMSBackendPluginHandler() {
 }
 
 void MMSBackendPluginHandler::invokeInitialize(void *data) {
-    if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+    if (!this->loaded)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+    if (this->initialized)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is already initialized");
+
     this->calllock.lock();
-    this->plugin->initialize(this->plugindata, this->switcher);
+    this->initialized = this->plugin->initialize(this->plugindata, this->switcher);
     this->calllock.unlock();
 }
 
 void MMSBackendPluginHandler::invokeOnEvent(IMMSEvent event) {
-    if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+    if (!this->loaded)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+    if (!this->initialized)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not initialized");
+
     this->calllock.lock();
     this->plugin->onEvent(event);
     this->calllock.unlock();
 }
 
 void MMSBackendPluginHandler::invokeShutdown(void *data) {
-    if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+    if (!this->loaded)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+    if (!this->initialized)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not initialized");
+
     this->calllock.lock();
     this->plugin->shutdown();
     this->calllock.unlock();
@@ -77,30 +87,34 @@ void MMSBackendPluginHandler::invokeShutdown(void *data) {
 
 
 void MMSBackendPluginHandler::load() {
-    NEWBACKENDPLUGIN_PROC newproc;
+    if (this->loaded)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is already loaded");
 
-    if (this->loaded == true)
-        throw new MMSBackendPluginHandlerError(0,"OSD Plugin " + this->plugindata.getName() + " is already loaded");
     this->handler = new MMSShlHandler(this->plugindata.getFilename());
     this->handler->open();
-    newproc = (NEWBACKENDPLUGIN_PROC)this->handler->getFunction("newBackendPlugin");
+    NEWBACKENDPLUGIN_PROC newproc = (NEWBACKENDPLUGIN_PROC)this->handler->getFunction("newBackendPlugin");
     this->plugin = newproc();
+
     if(this->plugin)
     	this->loaded = true;
 }
 
 void MMSBackendPluginHandler::unload() {
-    if (this->loaded == false)
-        throw new MMSBackendPluginHandlerError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
-   if(this->plugin) {
-	   delete this->plugin;
-	   this->plugin = NULL;
-   }
-   if(this->handler) {
-	   delete this->handler;
-	   this->handler = NULL;
-   }
-   this->loaded = false;
+    if (!this->loaded)
+        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+
+    if(this->plugin) {
+		delete this->plugin;
+		this->plugin = NULL;
+    }
+
+    if(this->handler) {
+		delete this->handler;
+		this->handler = NULL;
+    }
+
+    this->loaded = false;
+	this->initialized = false;
 }
 
 void MMSBackendPluginHandler::setPluginData(MMSPluginData plugindata) {

@@ -40,10 +40,10 @@
 
 MMS_CREATEERROR(MMSCentralPluginError);
 
-
 class MMSCentralPluginHandler {
     private:
         bool 				loaded;
+        bool				initialized;
         MMSPluginData 		plugindata;
         IMMSCentralPlugin 	*plugin;
         MMSShlHandler 		*handler;
