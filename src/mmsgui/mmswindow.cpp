@@ -901,15 +901,24 @@ void MMSWindow::setName(string name) {
 MMSWindow* MMSWindow::findWindow(string name) {
     MMSWindow *window;
 
-    if (name=="")
-        return NULL;
+    if (name=="") {
+		// empty name, return last child
+    	if (childwins.size() > 0)
+    		return childwins.at(childwins.size()-1).window;
+   		return NULL;
+    }
 
-    /* first, my own childwins */
+	if (name == this->name) {
+		// it's me
+		return this;
+	}
+
+    // first, my own childwins
     for (unsigned int i = 0; i < childwins.size(); i++)
         if (childwins.at(i).window->getName() == name)
             return childwins.at(i).window;
 
-    /* second, call search method of my childwins */
+    // second, call search method of my childwins
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((window = childwins.at(i).window->findWindow(name)))
             return window;
@@ -4341,7 +4350,6 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
         return false;
     }
 
-
         //check childwindows
         if(this->childwins.empty()) {
             if(onBeforeHandleInput->emit(this,inputevent)) {
@@ -4878,15 +4886,19 @@ void MMSWindow::themeChanged(string &themeName, bool refresh) {
 MMSWidget* MMSWindow::findWidget(string name) {
     MMSWidget *widget;
 
-	if (name=="")
-	    return NULL;
-
-    /* for all child windows */
+    // for all child windows
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((widget = childwins.at(i).window->findWidget(name)))
             return widget;
 
-    /* for my own children (widgets) */
+	if (name=="") {
+		// empty name, return last child
+		if (children.size() > 0)
+			return children.at(children.size()-1);
+	    return NULL;
+	}
+
+    // for my own children (widgets)
     for (unsigned int i = 0; i < children.size(); i++)
         if (children.at(i)->getName() == name)
             return children.at(i);

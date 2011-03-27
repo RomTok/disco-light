@@ -645,7 +645,6 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
 
 string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
     MMSTemplateClass    themeClass, *templateClass = NULL;
-    MMSHBoxWidget       *hbox;
     string              name = "";
     string              size = "";
     MMSTaffFile        	*tf;
@@ -672,11 +671,8 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
     }
 
     if (!templateClass) {
-    	// template could not be loaded, create empty hbox container as placeholder
-        hbox = new MMSHBoxWidget(rootWindow);
-
         // parse the children from dialog's template tag
-    	throughDoc(tafff, hbox, rootWindow, theme);
+    	throughDoc(tafff, currentWidget, rootWindow, theme);
 
     	return "";
     }
@@ -712,37 +708,55 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
     }
     endTAFFScan_WITHOUT_ID
 
-    // create new hbox as container for the template
-    hbox = new MMSHBoxWidget(rootWindow);
+	// parse the children from templateClass
+	throughDoc(tf, currentWidget, rootWindow, theme);
 
-    // add to widget vector if named
-    if(!name.empty()) {
-        hbox->setName(name);
-        insertNamedWidget(hbox);
-    }
+	// get the last window of root window
+	MMSWindow *newWindow = (!currentWidget)?rootWindow->findWindow(""):NULL;
 
-	if(!size.empty())
-	    hbox->setSizeHint(size);
+    if (!newWindow) {
+		// get the last widget of currentWidget
+		MMSWidget *newWidget = currentWidget->findWidget("");
 
-    if (currentWidget)
-        currentWidget->add(hbox);
-    else
-        rootWindow->add(hbox);
+		if (newWidget) {
+		    // add to widget vector if named
+		    if (!name.empty()) {
+		    	newWidget->setName(name);
+		        insertNamedWidget(newWidget);
+		    }
 
-    // parse the children from templateClass
-    throughDoc(tf, hbox, rootWindow, theme);
+			if (!size.empty()) {
+				newWidget->setSizeHint(size);
+			}
 
-    // for each child widget which is named by attribute
-    vector<string>::iterator i;
-    vector<string>::iterator end = widgetNames.end();
-    for (i = widgetNames.begin(); i != end; ++i) {
-        updateTAFFAttributes(tafff, hbox->findWidget(*i), *i);
-    }
+			// for each child widget which is named by attribute
+			vector<string>::iterator i;
+			vector<string>::iterator end = widgetNames.end();
+			for (i = widgetNames.begin(); i != end; ++i) {
+				updateTAFFAttributes(tafff, newWidget->findWidget(*i), *i);
+			}
+		}
+		else {
+			throw new MMSDialogManagerError(1, "template error, no widget");
+		}
+	}
+	else {
+	    if (!name.empty()) {
+	    	newWindow->setName(name);
+	    }
 
-    // parse the children from dialog's template tag
-	throughDoc(tafff, hbox, rootWindow, theme);
+		// for each child widget which is named by attribute
+		vector<string>::iterator i;
+		vector<string>::iterator end = widgetNames.end();
+		for (i = widgetNames.begin(); i != end; ++i) {
+			updateTAFFAttributes(tafff, newWindow->findWidget(*i), *i);
+		}
+	}
 
-    // return the name of the widget
+	// parse the children from dialog's template tag
+	throughDoc(tafff, currentWidget, rootWindow, theme);
+
+	// return the name of the widget
     return name;
 }
 

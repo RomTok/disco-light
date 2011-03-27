@@ -313,11 +313,19 @@ MMSWidget* MMSWidget::disconnectChild(unsigned int atpos) {
 MMSWidget* MMSWidget::findWidget(string name) {
 	MMSWidget *widget;
 
-	if(name.empty()) {
-		return NULL;
+	if (name=="") {
+		// empty name, return last child
+		if (children.size() > 0)
+			return children.at(children.size()-1);
+	    return NULL;
 	}
 
-	/* first, my own children */
+	if (name == this->name) {
+		// it's me
+		return this;
+	}
+
+	// first, my own children
 	vector<MMSWidget*>::iterator end = children.end();
 	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
 		if((*i)->getName() == name) {
@@ -325,7 +333,7 @@ MMSWidget* MMSWidget::findWidget(string name) {
 		}
 	}
 
-	/* second, call search method of my children */
+	// second, call search method of my children
 	for(vector<MMSWidget*>::iterator i = children.begin(); i != end; ++i) {
 		if((widget = (*i)->findWidget(name))) {
 			return widget;

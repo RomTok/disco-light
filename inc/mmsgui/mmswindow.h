@@ -562,6 +562,7 @@ class MMSWindow {
         /*!
         \param name		name of the window
         \return pointer to the MMSWindow object or NULL
+        \note if name is empty, the last window will be returned
         */
         MMSWindow* findWindow(string name);
 
@@ -713,6 +714,7 @@ class MMSWindow {
         /*!
         \param name		name of the widget
         \return pointer to the widget which was found or NULL
+        \note if name is empty, the last widget will be returned
         */
         MMSWidget* findWidget(string name);
 
