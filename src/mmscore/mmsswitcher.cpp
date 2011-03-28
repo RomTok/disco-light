@@ -429,7 +429,13 @@ void MMSSwitcher::onReturn(MMSWidget *widget) {
 }
 
 void MMSSwitcher::show() {
-    this->window->show();
+	MMSConfigData config;
+	int firstplugin = atoi(config.getFirstPlugin().c_str());
+	if(firstplugin > 0) {
+		this->switchToPluginEx(firstplugin);
+	} else {
+		this->window->show();
+	}
 }
 
 void MMSSwitcher::hide() {
