@@ -75,9 +75,6 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->da->baseWidgetClass = &(this->da->theme->menuWidgetClass.widgetClass);
     if (this->menuWidgetClass) this->da->widgetClass = &(this->menuWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
-    this->TID = 0;
-    this->Lock_cnt = 0;
-
     this->selimage = NULL;
     this->itemTemplate = NULL;
 
@@ -170,38 +167,13 @@ bool MMSMenuWidget::release() {
 
 
 void MMSMenuWidget::lock() {
-
-    if (this->Lock.trylock() == 0) {
-        // I have got the lock the first time
-    	this->TID = pthread_self();
-    	this->Lock_cnt = 1;
-    }
-    else {
-        if ((this->TID == pthread_self())&&(this->Lock_cnt > 0)) {
-            // I am the thread which has already locked this menu
-        	this->Lock_cnt++;
-        }
-        else {
-            // another thread has already locked this menu, waiting for...
-        	this->Lock.lock();
-        	this->TID = pthread_self();
-        	this->Lock_cnt = 1;
-        }
-    }
+	if (this->surface)
+		this->surface->lock();
 }
 
 void MMSMenuWidget::unlock() {
-
-	if (this->TID != pthread_self())
-        return;
-
-    if (this->Lock_cnt==0)
-    	return;
-
-    this->Lock_cnt--;
-
-    if (this->Lock_cnt == 0)
-    	this->Lock.unlock();
+	if (this->surface)
+		this->surface->unlock();
 }
 
 

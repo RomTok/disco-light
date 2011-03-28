@@ -77,13 +77,6 @@ class MMSMenuWidget : public MMSWidget {
         MMSMenuWidgetClass  *menuWidgetClass;
         MMSMenuWidgetClass  myMenuWidgetClass;
 
-        //! to make it thread-safe
-        MMSMutex  				Lock;
-        //! save the id of the thread which has locked the menu
-        unsigned long       	TID;
-        //! count the number of times the thread has call lock()
-        int       				Lock_cnt;
-
 
         MMSFBSurface    *selimage;
         MMSWidget       *itemTemplate;
