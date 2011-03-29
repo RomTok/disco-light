@@ -712,11 +712,11 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 	throughDoc(tf, currentWidget, rootWindow, theme);
 
 	// get the last window of root window
-	MMSWindow *newWindow = (!currentWidget)?rootWindow->findWindow(""):NULL;
+	MMSWindow *newWindow = (!currentWidget)?rootWindow->getLastWindow():NULL;
 
     if (!newWindow) {
 		// get the last widget of currentWidget
-		MMSWidget *newWidget = currentWidget->findWidget("");
+		MMSWidget *newWidget = currentWidget->getLastWidget();
 
 		if (newWidget) {
 		    // add to widget vector if named

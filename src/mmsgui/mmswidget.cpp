@@ -313,10 +313,8 @@ MMSWidget* MMSWidget::disconnectChild(unsigned int atpos) {
 MMSWidget* MMSWidget::findWidget(string name) {
 	MMSWidget *widget;
 
-	if (name=="") {
-		// empty name, return last child
-		if (children.size() > 0)
-			return children.at(children.size()-1);
+	if (name == "") {
+		// empty name
 	    return NULL;
 	}
 
@@ -362,6 +360,12 @@ MMSWidget* MMSWidget::findWidgetType(MMSWIDGETTYPE type) {
 	}
 
     return NULL;
+}
+
+MMSWidget* MMSWidget::getLastWidget() {
+	if (this->children.size() > 0)
+		return this->children.at(this->children.size()-1);
+	return NULL;
 }
 
 MMSWidget* MMSWidget::operator[](string name) {

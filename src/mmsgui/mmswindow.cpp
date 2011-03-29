@@ -904,10 +904,8 @@ void MMSWindow::setName(string name) {
 MMSWindow* MMSWindow::findWindow(string name) {
     MMSWindow *window;
 
-    if (name=="") {
-		// empty name, return last child
-    	if (childwins.size() > 0)
-    		return childwins.at(childwins.size()-1).window;
+    if (name == "") {
+		// empty name
    		return NULL;
     }
 
@@ -927,6 +925,12 @@ MMSWindow* MMSWindow::findWindow(string name) {
             return window;
 
     return NULL;
+}
+
+MMSWindow* MMSWindow::getLastWindow() {
+	if (this->childwins.size() > 0)
+		return this->childwins.at(this->childwins.size()-1).window;
+	return NULL;
 }
 
 bool MMSWindow::addChildWindow(MMSWindow *childwin) {
@@ -4902,17 +4906,15 @@ void MMSWindow::themeChanged(string &themeName, bool refresh) {
 MMSWidget* MMSWindow::findWidget(string name) {
     MMSWidget *widget;
 
+	if (name == "") {
+		// empty name
+	    return NULL;
+	}
+
     // for all child windows
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((widget = childwins.at(i).window->findWidget(name)))
             return widget;
-
-	if (name=="") {
-		// empty name, return last child
-		if (children.size() > 0)
-			return children.at(children.size()-1);
-	    return NULL;
-	}
 
     // for my own children (widgets)
     for (unsigned int i = 0; i < children.size(); i++)
