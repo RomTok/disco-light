@@ -40,6 +40,9 @@
 #include <fcntl.h>
 
 
+#include "mmscore/mmsinit.h"
+
+
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
@@ -3940,7 +3943,7 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
 
 void MMSWindow::setFocus() {
 
-//printf("setFocus %s\n", name.c_str());
+//printf("MMSWindow::setFocus %08x, %s\n", this, name.c_str());
 
     // i do only work for child windows
     if (!this->parent) return;
@@ -3992,8 +3995,8 @@ void MMSWindow::setFocus() {
 		raiseToTop();
 }
 
-bool MMSWindow::getFocus() {
-	/* check if i am a child window */
+bool MMSWindow::getFocus(bool checkparents) {
+	// check if i am a child window
 	if (!this->parent) {
     	if (windowmanager->getToplevelWindow() == this)
     		return true;
@@ -4001,7 +4004,7 @@ bool MMSWindow::getFocus() {
     		return false;
 	}
 
-    /* search me */
+    // search me
     int me = -1;
     for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
         if (this->parent->childwins.at(i).window == this) {
@@ -4009,12 +4012,16 @@ bool MMSWindow::getFocus() {
             break;
         }
 
-    /* i have found me within my parents list */
+    // i have found me within my parents list
     if (me < 0) return false;
 
-    /* i am the currently focused child window? */
-    if ((int)this->parent->focusedChildWin == me)
-    	return true;
+    // i am the currently focused child window?
+    if ((int)this->parent->focusedChildWin == me) {
+    	if (checkparents)
+    		return this->parent->getFocus(checkparents);
+    	else
+    		return true;
+    }
     else
     	return false;
 }
@@ -4350,6 +4357,11 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
         return false;
     }
 
+/*
+    printf("111111111111111111111> %08x %s\n", this, name.c_str());
+    getWindowManager()->printStack();
+    printf("111111111111111111111<\n");
+*/
         //check childwindows
         if(this->childwins.empty()) {
             if(onBeforeHandleInput->emit(this,inputevent)) {
@@ -4364,7 +4376,11 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
         		return true;
         	}
         }
-
+/*
+	printf("22222222222222222>\n");
+    getWindowManager()->printStack();
+    printf("22222222222222222<\n");
+*/
     	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
     		// keyboard inputs
 	        try {
@@ -4997,19 +5013,35 @@ unsigned int MMSWindow::printStack(char *buffer, int space) {
 		cnt = sprintf(ptr, "%s", this->name.c_str());
 	else
 		cnt = sprintf(ptr, "<noname>");
-	if (cnt > 32) cnt = 32;
+	if (cnt > 32 - space) cnt = 32 - space;
 	ptr[cnt] = ' ';
-	ptr+=33;
+	ptr+=33 - space;
 
-	// shown state
+	// this ptr
+	cnt = sprintf(ptr, "%08x", this);
+	ptr[cnt] = ' ';
+	ptr+=9;
+
+	// shown/focused state
 	if (this->isShown()) {
-		if (!this->isShown(true, true))
-			cnt = sprintf(ptr, "STATE=shown");
-		else
-			cnt = sprintf(ptr, "STATE=visible");
+		if (!this->isShown(true, true)) {
+			if (!this->getFocus(true))
+				cnt = sprintf(ptr, "shown");
+			else
+				cnt = sprintf(ptr, "shown/focus");
+		}
+		else {
+			if (!this->getFocus(true))
+				cnt = sprintf(ptr, "visible");
+			else
+				cnt = sprintf(ptr, "visible/focus");
+		}
 	}
 	else {
-		cnt = sprintf(ptr, "STATE=hidden");
+		if (!this->getFocus(true))
+			cnt = sprintf(ptr, "hidden");
+		else
+			cnt = sprintf(ptr, "hidden/focus");
 	}
 	ptr[cnt] = ' ';
 	ptr+=14;
@@ -5017,16 +5049,16 @@ unsigned int MMSWindow::printStack(char *buffer, int space) {
 	// opacity
 	unsigned int opacity;
 	getOpacity(opacity);
-	cnt = sprintf(ptr, "OPACITY=%02x", opacity);
+	cnt = sprintf(ptr, "%02x", opacity);
 	ptr[cnt] = ' ';
-	ptr+=11;
+	ptr+=8;
 
 	// opacity
 	bool ownsurface;
 	getOwnSurface(ownsurface);
-	cnt = sprintf(ptr, "OWN_SURFACE=%s", (ownsurface)?"true":"false");
+	cnt = sprintf(ptr, "%s", (ownsurface)?"true":"false");
 	ptr[cnt] = ' ';
-	ptr+=18;
+	ptr+=12;
 
 	// line feed
 	cnt = sprintf(ptr, "\n");

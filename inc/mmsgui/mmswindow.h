@@ -706,9 +706,10 @@ class MMSWindow {
 
         //! Is the window focused?
         /*!
+        \param checkparents		if true the parent(s) will be check too
         \return true, if the window is focused
         */
-        bool getFocus();
+        bool getFocus(bool checkparents = false);
 
         //! Find a widget with a given name.
         /*!
