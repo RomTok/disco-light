@@ -101,10 +101,12 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
 
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
-    memset(this->x_windows, 0, sizeof(Window) * MMSFBLAYER_MAXNUM);
 
+#ifdef __HAVE_XLIB__
+    memset(this->x_windows, 0, sizeof(Window) * MMSFBLAYER_MAXNUM);
     // basic information mainly needed by X11 initialization
     this->x11_win_rect = x11_win_rect;
+#endif
 
     // which backend should i use?
 	this->backend = backend;
