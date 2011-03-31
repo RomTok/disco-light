@@ -60,9 +60,12 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
 
+#ifdef __ENABLE_DEBUG__
 		/* check crtl+c and exit */
 		if((inputevent->key==MMSKEY_SMALL_C)&&(this->lastkey==MMSKEY_CONTROL))
 			exit(1);
+#endif
+
 /*
 #ifdef ROTATE_180
 		switch (inputevent->key) {
