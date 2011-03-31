@@ -117,7 +117,11 @@ void MMSPopupWindow::setDuration(unsigned int duration) {
     myPopupWindowClass.setDuration(duration);
     
     /* restart timer if already running */
-	this->timer->restart();
+	if(duration == 0) {
+		this->timer->stop();
+	} else {
+		this->timer->restart();
+	}
 }
 
 void MMSPopupWindow::updateFromThemeClass(MMSPopupWindowClass *themeClass) {
