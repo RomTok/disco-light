@@ -247,7 +247,13 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 			} else {
 				DEBUGMSG_OUTSTR("Core", "Initial load.................: no");
 			}
-			
+
+			if (config->getDebugFrames()) {
+				DEBUGMSG_OUTSTR("Core", "Draw debug frames............: yes");
+			} else {
+				DEBUGMSG_OUTSTR("Core", "Draw debug frames............: no");
+			}
+
 			DEBUGMSG_OUTSTR("Core", "Sourcelanguage...............: " + getMMSLanguageString(config->getSourceLang()));
 			DEBUGMSG_OUTSTR("Core", "Targetlanguage...............: " + getMMSLanguageString(config->getDefaultTargetLang()));
 			DEBUGMSG_OUTSTR("Core", "Add missing translations.....: " + (config->getAddTranslations() ? string("yes") : string("no")));
@@ -281,7 +287,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
         	MMSWidget_inputmode = config->getInputMode();
 
         	// initialize the theme object which stores the global theme
-        	globalTheme = new MMSTheme(config->getInitialLoad());
+        	globalTheme = new MMSTheme(config->getInitialLoad(), config->getDebugFrames());
 
 			// init the fbmanager, check if virtual console should be opened
             mmsfbmanager.init(argc, argv, appl_name, appl_icon_name,
