@@ -178,7 +178,7 @@ MMSTheme *MMSThemeManager::loadLocalTheme(string path, string themeName) {
 
 	// load new theme
 	MMSConfigData config;
-	MMSTheme *theme = new MMSTheme(config.getInitialLoad());
+	MMSTheme *theme = new MMSTheme(config.getInitialLoad(), config.getDebugFrames());
 	loadLocalTheme(theme, path, themeName);
 
 	// add theme to list

@@ -767,6 +767,8 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 				this->graphics.hideapplication = strToBool(string((const char *)parvalue));
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "initialload")) {
 				this->graphics.initialload = strToBool(string((const char *)parvalue));
+			} else if(!xmlStrcmp(parname, (const xmlChar *) "debugframes")) {
+				this->graphics.debugframes = strToBool(string((const char *)parvalue));
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchSwapX")) {
 				this->graphics.touchSwapX = strToBool(string((const char *)parvalue));
 			} else if(!xmlStrcmp(parname, (const xmlChar *) "touchSwapY")) {

@@ -411,7 +411,7 @@ MMSCheckBoxWidgetClass* MMSTheme::getCheckBoxWidgetClass(string className) {
 }
 
 
-MMSTheme::MMSTheme(bool initial_load) {
+MMSTheme::MMSTheme(bool initial_load, bool debug) {
 
     /* initialize the theme with default values */
     MMSFBColor color;
@@ -434,7 +434,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->mainWindowClass.windowClass.setOpacity(255);
         this->mainWindowClass.windowClass.setFadeIn(false);
         this->mainWindowClass.windowClass.setFadeOut(false);
-        this->mainWindowClass.windowClass.setDebug(false);
+        this->mainWindowClass.windowClass.setDebug(debug);
         this->mainWindowClass.windowClass.setMargin(0);
         this->mainWindowClass.windowClass.setUpArrow("");
         this->mainWindowClass.windowClass.setDownArrow("");
@@ -480,7 +480,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->popupWindowClass.windowClass.setOpacity(255);
         this->popupWindowClass.windowClass.setFadeIn(false);
         this->popupWindowClass.windowClass.setFadeOut(false);
-        this->popupWindowClass.windowClass.setDebug(false);
+        this->popupWindowClass.windowClass.setDebug(debug);
         this->popupWindowClass.windowClass.setMargin(0);
         this->popupWindowClass.windowClass.setUpArrow("");
         this->popupWindowClass.windowClass.setDownArrow("");
@@ -529,7 +529,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->rootWindowClass.windowClass.setOpacity(255);
         this->rootWindowClass.windowClass.setFadeIn(false);
         this->rootWindowClass.windowClass.setFadeOut(false);
-        this->rootWindowClass.windowClass.setDebug(false);
+        this->rootWindowClass.windowClass.setDebug(debug);
         this->rootWindowClass.windowClass.setMargin(0);
         this->rootWindowClass.windowClass.setUpArrow("");
         this->rootWindowClass.windowClass.setDownArrow("");
@@ -575,7 +575,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->childWindowClass.windowClass.setOpacity(255);
         this->childWindowClass.windowClass.setFadeIn(false);
         this->childWindowClass.windowClass.setFadeOut(false);
-        this->childWindowClass.windowClass.setDebug(false);
+        this->childWindowClass.windowClass.setDebug(debug);
         this->childWindowClass.windowClass.setMargin(0);
         this->childWindowClass.windowClass.setUpArrow("");
         this->childWindowClass.windowClass.setDownArrow("");
