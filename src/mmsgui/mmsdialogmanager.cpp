@@ -647,6 +647,7 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
     MMSTemplateClass    themeClass, *templateClass = NULL;
     string              name = "";
     string              size = "";
+    bool				show = false;
     MMSTaffFile        	*tf;
     vector<string>      widgetNames;
 
@@ -687,6 +688,9 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_size:
 	        size = attrval_str;
 			break;
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_show:
+	        show = (attrval_int)?true:false;
+			break;
         }
     }
     endTAFFScan
@@ -719,13 +723,14 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 		MMSWidget *newWidget = currentWidget->getLastWidget();
 
 		if (newWidget) {
-		    // add to widget vector if named
 		    if (!name.empty()) {
+		    	// add to widget vector if named
 		    	newWidget->setName(name);
 		        insertNamedWidget(newWidget);
 		    }
 
 			if (!size.empty()) {
+			    // set size within parent widget
 				newWidget->setSizeHint(size);
 			}
 
@@ -742,7 +747,13 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 	}
 	else {
 	    if (!name.empty()) {
+	    	// set name of window
 	    	newWindow->setName(name);
+	    }
+
+    	if (show) {
+	    	// show window
+    		newWindow->show();
 	    }
 
 		// for each child widget which is named by attribute
