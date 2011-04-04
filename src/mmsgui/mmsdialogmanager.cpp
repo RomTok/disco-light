@@ -720,7 +720,7 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 
     if (!newWindow) {
 		// get the last widget of currentWidget
-		MMSWidget *newWidget = currentWidget->getLastWidget();
+		MMSWidget *newWidget = (!currentWidget)?((*rootWindow)[""]):currentWidget->getLastWidget();
 
 		if (newWidget) {
 		    if (!name.empty()) {

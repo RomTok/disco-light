@@ -4966,8 +4966,14 @@ MMSWidget* MMSWindow::findWidgetAndType(string name, MMSWIDGETTYPE type) {
 MMSWidget* MMSWindow::operator[](string name) {
     MMSWidget *widget;
 
+    if (name.empty()) {
+    	if (children.size() > 0)
+    		return children.at(0);
+    }
+
     if ((widget = findWidget(name)))
         return widget;
+
     throw MMSWidgetError(1, "widget " + name + " not found");
 }
 
