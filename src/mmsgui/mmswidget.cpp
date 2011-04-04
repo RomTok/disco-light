@@ -1466,7 +1466,7 @@ void MMSWidget::refresh() {
     }
 
 	if (this->skip_refresh) {
-		printf("   MMSWidget::refresh() - %s <<< skipped\n", name.c_str());
+//		printf("   MMSWidget::refresh() - %s <<< skipped\n", name.c_str());
 		return;
 	}
 
