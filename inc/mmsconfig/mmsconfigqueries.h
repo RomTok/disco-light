@@ -60,7 +60,7 @@
         + "Active='" + Active + "',"                        \
         + "PluginDescription='" + Description + "', " +      \
         + "CategoryID='" + CategoryID + "', " +      \
-        + "Orderpos='" + Orderpos + "' " +      \
+        + "Orderpos='" + Orderpos + "', " +      \
         + "Version='" + Version + "' " + \
         "where ID = '" + ID + "'"
 
