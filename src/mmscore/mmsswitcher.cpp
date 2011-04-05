@@ -526,6 +526,10 @@ bool MMSSwitcher::switchToPluginEx(int toplugin) {
     if (toplugin >= 0) {
     	try {
             MMSPluginData *data = &this->plugins[toplugin]->plugindata;
+            if(!data) {
+            	DEBUGMSG("Switcher", "Plugin with ID = %d not found", toplugin);
+            	return false;
+            }
 
             if(data->getType()->getName() == "OSD_PLUGIN") {
                 MMSOSDPluginHandler *handler = this->pluginmanager->getOSDPluginHandler(data->getId());
