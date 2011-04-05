@@ -113,6 +113,14 @@ void MMSOSDPluginHandler::invokeShow(void *data) {
     this->calllock.unlock();
 }
 
+bool MMSOSDPluginHandler::isLoaded() {
+	return this->loaded;
+}
+
+bool MMSOSDPluginHandler::isInitialized() {
+	return this->initialized;
+}
+
 void MMSOSDPluginHandler::load() {
     if (this->loaded)
         throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is already loaded");

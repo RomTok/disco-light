@@ -63,6 +63,7 @@ class MMSOSDPluginHandler {
         ~MMSOSDPluginHandler();
 
         bool isLoaded();
+        bool isInitialized();
         void load();
         void unload();
         MMSPluginData getPluginData();

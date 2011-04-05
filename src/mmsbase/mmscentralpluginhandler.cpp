@@ -113,6 +113,14 @@ void MMSCentralPluginHandler::invokeShow(void *data) {
     this->calllock.unlock();
 }
 
+bool MMSCentralPluginHandler::isLoaded() {
+	return this->loaded;
+}
+
+bool MMSCentralPluginHandler::isInitialized() {
+	return this->initialized;
+}
+
 void MMSCentralPluginHandler::load() {
     if (this->loaded)
         throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is already loaded");

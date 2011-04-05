@@ -95,6 +95,14 @@ void MMSImportPluginHandler::invokeCleanUp(void *data) {
     this->calllock.unlock();
 }
 
+bool MMSImportPluginHandler::isLoaded() {
+	return this->loaded;
+}
+
+bool MMSImportPluginHandler::isInitialized() {
+	return this->initialized;
+}
+
 void MMSImportPluginHandler::load() {
     if (this->loaded)
         throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is already loaded");

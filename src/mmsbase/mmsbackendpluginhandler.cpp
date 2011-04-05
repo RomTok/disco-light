@@ -85,6 +85,13 @@ void MMSBackendPluginHandler::invokeShutdown(void *data) {
     this->calllock.unlock();
 }
 
+bool MMSBackendPluginHandler::isLoaded() {
+	return this->loaded;
+}
+
+bool MMSBackendPluginHandler::isInitialized() {
+	return this->initialized;
+}
 
 void MMSBackendPluginHandler::load() {
     if (this->loaded)

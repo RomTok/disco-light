@@ -62,6 +62,7 @@ class MMSCentralPluginHandler {
         ~MMSCentralPluginHandler();
 
         bool isLoaded();
+        bool isInitialized();
         void load();
         void unload();
         MMSPluginData getPluginData();

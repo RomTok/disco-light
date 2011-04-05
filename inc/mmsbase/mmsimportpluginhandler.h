@@ -63,6 +63,7 @@ class MMSImportPluginHandler {
         ~MMSImportPluginHandler();
 
         bool isLoaded();
+        bool isInitialized();
         void load();
         void unload();
         MMSPluginData getPluginData();

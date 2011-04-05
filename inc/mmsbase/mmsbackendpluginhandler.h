@@ -65,6 +65,7 @@ class MMSBackendPluginHandler {
         ~MMSBackendPluginHandler();
 
         bool isLoaded();
+        bool isInitialized();
         void load();
         void unload();
         MMSPluginData getPluginData();
