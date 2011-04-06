@@ -466,3 +466,14 @@ MMSFBLayer *getGraphicsLayer() {
 	return mmsfbmanager.getGraphicsLayer();
 }
 
+void showBackgroundWindow() {
+	// show the background window if it is hidden
+	IMMSWindowManager *wm = getWindowManager();
+	if (wm) {
+		MMSWindow *win = wm->getBackgroundWindow();
+		if (win) {
+			win->show();
+			win->waitUntilShown();
+		}
+	}
+}
