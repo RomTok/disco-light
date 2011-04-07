@@ -180,7 +180,7 @@ MMSInputX11Handler::MMSInputX11Handler(MMS_INPUT_DEVICE device) {
 	lastmotion = 0;
 
 #else
-	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
+	throw MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
 #endif
 }
 
@@ -331,7 +331,7 @@ void MMSInputX11Handler::grabEvents(MMSInputEvent *inputevent) {
     }
 
 #else
-	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
+	throw MMSError(0,(string)typeid(this).name() + " is empty. compile X11 support!");
 #endif
 
 }

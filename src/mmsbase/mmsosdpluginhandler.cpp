@@ -54,9 +54,9 @@ MMSOSDPluginHandler::~MMSOSDPluginHandler() {
 
 void MMSOSDPluginHandler::invokeInitialize(void *data) {
     if (!this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
     if (this->initialized)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is already initialized");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is already initialized");
 
     this->calllock.lock();
     this->initialized = this->plugin->initialize(this->plugindata, this->switcher);
@@ -65,9 +65,9 @@ void MMSOSDPluginHandler::invokeInitialize(void *data) {
 
 void MMSOSDPluginHandler::invokeOnEvent(IMMSEvent event) {
     if (!this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->onEvent(event);
@@ -76,9 +76,9 @@ void MMSOSDPluginHandler::invokeOnEvent(IMMSEvent event) {
 
 void MMSOSDPluginHandler::invokeShutdown(void *data) {
     if (!this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->shutdown();
@@ -87,28 +87,28 @@ void MMSOSDPluginHandler::invokeShutdown(void *data) {
 
 void MMSOSDPluginHandler::invokeShowPreview(void *data) {
     if (!this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     if (!this->plugin->showPreview(data)) {
         this->calllock.unlock();
-        throw new MMSOSDPluginError(1,"OSD Plugin " + this->plugindata.getName() + " has nothing to display (showPreview())");
+        throw MMSOSDPluginError(1,"OSD Plugin " + this->plugindata.getName() + " has nothing to display (showPreview())");
     }
     this->calllock.unlock();
 }
 
 void MMSOSDPluginHandler::invokeShow(void *data) {
     if (!this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     if (!this->plugin->show(data)) {
         this->calllock.unlock();
-        throw new MMSOSDPluginError(1,"OSD Plugin " + this->plugindata.getName() + " has nothing to display (show())");
+        throw MMSOSDPluginError(1,"OSD Plugin " + this->plugindata.getName() + " has nothing to display (show())");
     }
     this->calllock.unlock();
 }
@@ -123,7 +123,7 @@ bool MMSOSDPluginHandler::isInitialized() {
 
 void MMSOSDPluginHandler::load() {
     if (this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is already loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is already loaded");
 
     this->handler = new MMSShlHandler(this->plugindata.getFilename());
     this->handler->open();
@@ -136,7 +136,7 @@ void MMSOSDPluginHandler::load() {
 
 void MMSOSDPluginHandler::unload() {
     if (!this->loaded)
-        throw new MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSOSDPluginError(0,"OSD Plugin " + this->plugindata.getName() + " is not loaded");
 
 	if(this->plugin) {
 		delete this->plugin;

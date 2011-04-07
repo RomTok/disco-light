@@ -107,10 +107,10 @@ void MMSDVD::checkDevice(const string device) {
 				hc.dvd_dev = xine_config_register_string(xine, "input.dvd_device", "/dev/dvd", "device used as dvd drive", NULL, 0, NULL, NULL);
 				result = xine_health_check(&hc, CHECK_DVDROM);
 				if(result->status != XINE_HEALTH_CHECK_OK)
-					throw new MMSDVDError(0, "No DVD Device found at " + device + " and /dev/dvd");
+					throw MMSDVDError(0, "No DVD Device found at " + device + " and /dev/dvd");
 			}
 			else
-				throw new MMSDVDError(0, "No DVD Device found at /dev/dvd");
+				throw MMSDVDError(0, "No DVD Device found at /dev/dvd");
 		}
 
 		this->device = d;

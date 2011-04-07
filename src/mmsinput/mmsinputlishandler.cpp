@@ -59,7 +59,7 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) :
 }
 #else
 MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
-	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
+	throw MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
 }
 #endif
 
@@ -231,7 +231,7 @@ void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
 	if (this->ie_read_pos >= MMSINPUTLISHANDLER_EVENT_BUFFER_SIZE)
 		this->ie_read_pos = 0;
 #else
-	throw new MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
+	throw MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
 #endif
 }
 

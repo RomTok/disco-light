@@ -1690,7 +1690,7 @@ void MMSWindow::getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows) {
 
 				/* get all the states (my own and all children) */
 				fWin->getArrowWidgetStatus(setarrows);
-        	} catch (std::exception) {
+        	} catch (std::exception&) {
 				return;
         	}
 
@@ -3849,7 +3849,7 @@ void MMSWindow::removeChildWinFocus() {
                 if(fWin->children.at(i)->isFocused()) {
 					try {
 						childwins.at(this->focusedChildWin).focusedWidget = i;
-					} catch (std::exception) {
+					} catch (std::exception&) {
 					}
                     fWin->children.at(i)->setFocus(false);
 
@@ -4376,7 +4376,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 				if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent)) {
 					return true;
 				}
-        	} catch(std::exception) {
+        	} catch(std::exception&) {
         		return true;
         	}
         }
@@ -4430,7 +4430,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                 navigate=true;
 	            }
 
-	        } catch (MMSWidgetError err) {
+	        } catch (MMSWidgetError &err) {
 	        	if(err.getCode() == 1) {
 	        		printf("missed navigation exception 1\n");
 	        		navigate=true;
@@ -4635,7 +4635,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                navigate=true;
 	            }
 
-	        } catch (MMSWidgetError err) {
+	        } catch (MMSWidgetError &err) {
 				if(err.getCode() == 1) {
 					printf("missed navigation exception 2\n");
 					navigate=true;
@@ -4698,7 +4698,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	            	}
 	            }
 	            else {
-//	                throw new MMSWidgetError(1,"navigate, buttonrelease");
+//	                throw MMSWidgetError(1,"navigate, buttonrelease");
 
 					// window without widgets and childwindows, e.g. video/flash windows
 
@@ -4706,7 +4706,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 					return onHandleInput->emit(this, inputevent);
 	            }
 
-	        } catch (MMSWidgetError err) {
+	        } catch (MMSWidgetError &err) {
 	            if(err.getCode() == 1) {
 	                /* test if navigation must be done */
 	                ret = true;

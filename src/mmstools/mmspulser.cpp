@@ -406,8 +406,8 @@ bool MMSPulser::start(bool separate_thread, bool wait) {
 			// do the animation
 			threadMain();
 
-		} catch(MMSError *error) {
-		    DEBUGMSG(this->identity.c_str(), "Abort due to: %s", error->getMessage().c_str());
+		} catch(MMSError &error) {
+		    DEBUGMSG(this->identity.c_str(), "Abort due to: " + error.getMessage());
 		}
 
 		this->animRunning = false;

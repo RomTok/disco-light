@@ -124,11 +124,11 @@ void MMSMail::send() {
 	}
 	catch (vmime::exception& e)
 	{
-		throw new MMSError(0, e.what());
+		throw MMSError(0, e.what());
 	}
 	catch (std::exception& e)
 	{
-		throw new MMSError(0, e.what());
+		throw MMSError(0, e.what());
 	}
 }
 #endif

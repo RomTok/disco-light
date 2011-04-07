@@ -54,7 +54,7 @@
  */
 MMSDBFreeTDS::MMSDBFreeTDS(DataSource *_datasource) : IMMSDB(_datasource) {
 	if(!this->datasource)
-		throw new MMSError(0, "Cannot instantiate MMSDBFreeTDS without datasource");
+		throw MMSError(0, "Cannot instantiate MMSDBFreeTDS without datasource");
 }
 
 /**

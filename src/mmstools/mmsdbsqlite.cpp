@@ -52,7 +52,7 @@
  */
 MMSDBSQLite::MMSDBSQLite(DataSource *_datasource) : IMMSDB(_datasource) {
 	if(!this->datasource)
-		throw new MMSError(0, "Cannot instantiate MMSDBSQLite without datasource");
+		throw MMSError(0, "Cannot instantiate MMSDBSQLite without datasource");
 };
 
 /**
@@ -150,7 +150,7 @@ void MMSDBSQLite::connect() {
        this->disconnect();
        string err = sqlite3_errmsg(dbhandle);
        sqlite3_close(this->dbhandle);
-       throw new MMSError(rc, err);
+       throw MMSError(rc, err);
    }
 
    connected = true;

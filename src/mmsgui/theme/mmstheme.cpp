@@ -245,7 +245,7 @@ void MMSTheme::addSimpleHSliderClass(MMSSIMPLESLIDERH_THEME *simpleHSliderClass,
     /* add to hash lookup table */
     pair<SIMPLEHSLIDERCLASSMAP::iterator, bool> p = simpleHSliderClassMap.insert(pair<const char*, MMSSIMPLESLIDERH_THEME*>(name.c_str(), (MMSSIMPLESLIDERH_THEME*)simpleHSliderClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleHSliderClasses.push_back(simpleHSliderClass);
 }
@@ -254,7 +254,7 @@ void MMSTheme::addSimpleVSliderClass(MMSSIMPLESLIDERV_THEME *simpleVSliderClass,
     /* add to hash lookup table */
     pair<SIMPLEVSLIDERCLASSMAP::iterator, bool> p = simpleVSliderClassMap.insert(pair<const char*, MMSSIMPLESLIDERV_THEME*>(name.c_str(), (MMSSIMPLESLIDERV_THEME*)simpleVSliderClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleVSliderClasses.push_back(simpleVSliderClass);
 }
@@ -263,7 +263,7 @@ void MMSTheme::addSimpleHMenuClass(MMSSIMPLEHMENU_THEME *simpleHMenuClass, const
     /* add to hash lookup table */
     pair<SIMPLEHMENUCLASSMAP::iterator, bool> p = simpleHMenuClassMap.insert(pair<const char*, MMSSIMPLEHMENU_THEME*>(name.c_str(), (MMSSIMPLEHMENU_THEME*)simpleHMenuClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleHMenuClasses.push_back(simpleHMenuClass);
 }
@@ -272,7 +272,7 @@ void MMSTheme::addSimpleVMenuClass(MMSSIMPLEVMENU_THEME *simpleVMenuClass, const
     /* add to hash lookup table */
     pair<SIMPLEVMENUCLASSMAP::iterator, bool> p = simpleVMenuClassMap.insert(pair<const char*, MMSSIMPLEVMENU_THEME*>(name.c_str(), (MMSSIMPLEVMENU_THEME*)simpleVMenuClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleVMenuClasses.push_back(simpleVMenuClass);
 }
@@ -283,7 +283,7 @@ void MMSTheme::addTextboxClass(MMSTEXTBOX_THEME *textboxClass, const string name
     /* add to hash lookup table */
     pair<TEXTBOXCLASSMAP::iterator, bool> p = textboxClassMap.insert(pair<const char*, MMSTEXTBOX_THEME*>(name.c_str(), (MMSTEXTBOX_THEME*)textboxClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     textboxClasses.push_back(textboxClass);
 }

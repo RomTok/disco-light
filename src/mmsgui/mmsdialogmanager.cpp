@@ -89,7 +89,7 @@ MMSWidget* MMSDialogManager::operator[](string name) {
 
     if ((widget = findWidget(name)))
         return widget;
-    throw new MMSDialogManagerError(1, "widget " + name + " not found");
+    throw MMSDialogManagerError(1, "widget " + name + " not found");
 }
 
 
@@ -114,25 +114,25 @@ MMSWindow* MMSDialogManager::loadDialog(string filename, MMSTheme *theme) {
     //check for file
     if(!file_exist(filename))
         if(!file_exist(tafffilename))
-        	throw new MMSDialogManagerError(1, "dialog file (" + filename + ") not found");
+        	throw MMSDialogManagerError(1, "dialog file (" + filename + ") not found");
 
     // open the taff file
 	MMSTaffFile *tafff = new MMSTaffFile(tafffilename, &mmsgui_taff_description,
 										 filename, MMSTAFF_EXTERNAL_TYPE_XML);
 
 	if (!tafff)
-        throw new MMSDialogManagerError(1, "could not load dialog file " + filename);
+        throw MMSDialogManagerError(1, "could not load dialog file " + filename);
 
 	if (!tafff->isLoaded()) {
 		delete tafff;
-        throw new MMSDialogManagerError(1, "could not load dialog file " + filename);
+        throw MMSDialogManagerError(1, "could not load dialog file " + filename);
 	}
 
 	// get root tag
 	int tagid = tafff->getFirstTag();
 	if (tagid < 0) {
 		delete tafff;
-        throw new MMSDialogManagerError(1, "invalid taff file " + tafffilename);
+        throw MMSDialogManagerError(1, "invalid taff file " + tafffilename);
 	}
 
 	// check if the correct tag
@@ -163,25 +163,25 @@ MMSChildWindow* MMSDialogManager::loadChildDialog(string filename, MMSTheme *the
     //check for file
     if(!file_exist(filename))
         if(!file_exist(tafffilename))
-        	throw new MMSDialogManagerError(1, "dialog file (" + filename + ") not found");
+        	throw MMSDialogManagerError(1, "dialog file (" + filename + ") not found");
 
     // open the taff file
 	MMSTaffFile *tafff = new MMSTaffFile(tafffilename, &mmsgui_taff_description,
 										 filename, MMSTAFF_EXTERNAL_TYPE_XML);
 
 	if (!tafff)
-        throw new MMSDialogManagerError(1, "could not load dialog file " + filename);
+        throw MMSDialogManagerError(1, "could not load dialog file " + filename);
 
 	if (!tafff->isLoaded()) {
 		delete tafff;
-        throw new MMSDialogManagerError(1, "could not load dialog file " + filename);
+        throw MMSDialogManagerError(1, "could not load dialog file " + filename);
 	}
 
 	// get root tag
 	int tagid = tafff->getFirstTag();
 	if (tagid < 0) {
 		delete tafff;
-        throw new MMSDialogManagerError(1, "invalid taff file " + tafffilename);
+        throw MMSDialogManagerError(1, "invalid taff file " + tafffilename);
 	}
 
 	// check if the correct tag
@@ -291,7 +291,7 @@ void MMSDialogManager::throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, 
                 if(!widgetName.empty()) {
                     // search for duplicate names for the same parent
                     if(find(widgetNames.begin(), widgetNames.end(), widgetName) != widgetNames.end()) {
-                        throw new MMSDialogManagerError(1, "duplicate widget name: " + widgetName);
+                        throw MMSDialogManagerError(1, "duplicate widget name: " + widgetName);
                     }
                     widgetNames.push_back(widgetName);
                 }
@@ -312,7 +312,7 @@ void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
     string             name = "", dx = "", dy = "", width = "", height = "";
 
     if(this->rootWindow)
-        throw new MMSDialogManagerError(1, "found nested windows, new mainwindow rejected");
+        throw MMSDialogManagerError(1, "found nested windows, new mainwindow rejected");
 
     // get themepath
     string themePath = (theme ? theme->getThemePath() : globalTheme->getThemePath());
@@ -323,19 +323,19 @@ void MMSDialogManager::getMainWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
+            throw MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
 
     if (themeClass.windowClass.getDy(dy))
         if (getPixelFromSizeHint(NULL, dy, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
+            throw MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
 
     if (themeClass.windowClass.getWidth(width))
         if (getPixelFromSizeHint(NULL, width, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window width '" + width + "'");
+            throw MMSDialogManagerError(1, "invalid window width '" + width + "'");
 
     if (themeClass.windowClass.getHeight(height))
         if (getPixelFromSizeHint(NULL, height, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window height '" + height + "'");
+            throw MMSDialogManagerError(1, "invalid window height '" + height + "'");
 
     bool os;
     bool *osp = NULL;
@@ -393,7 +393,7 @@ void MMSDialogManager::getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme)
     string              name = "", dx = "", dy = "", width = "", height = "";
 
     if(this->rootWindow)
-        throw new MMSDialogManagerError(1, "found nested windows, new popupwindow rejected");
+        throw MMSDialogManagerError(1, "found nested windows, new popupwindow rejected");
 
     // get themepath
     string themePath = (theme ? theme->getThemePath() : globalTheme->getThemePath());
@@ -404,19 +404,19 @@ void MMSDialogManager::getPopupWindowValues(MMSTaffFile *tafff, MMSTheme *theme)
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
+            throw MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
 
     if (themeClass.windowClass.getDy(dy))
         if (getPixelFromSizeHint(NULL, dy, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
+            throw MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
 
     if (themeClass.windowClass.getWidth(width))
         if (getPixelFromSizeHint(NULL, width, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window width '" + width + "'");
+            throw MMSDialogManagerError(1, "invalid window width '" + width + "'");
 
     if (themeClass.windowClass.getHeight(height))
         if (getPixelFromSizeHint(NULL, height, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window height '" + height + "'");
+            throw MMSDialogManagerError(1, "invalid window height '" + height + "'");
 
     bool os;
     bool *osp = NULL;
@@ -475,7 +475,7 @@ void MMSDialogManager::getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
     string             name = "", dx = "", dy = "", width = "", height = "";
 
     if(this->rootWindow)
-        throw new MMSDialogManagerError(1, "found nested windows, new rootwindow rejected");
+        throw MMSDialogManagerError(1, "found nested windows, new rootwindow rejected");
 
     // get themepath
     string themePath = (theme ? theme->getThemePath() : globalTheme->getThemePath());
@@ -486,19 +486,19 @@ void MMSDialogManager::getRootWindowValues(MMSTaffFile *tafff, MMSTheme *theme) 
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
+            throw MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
 
     if (themeClass.windowClass.getDy(dy))
         if (getPixelFromSizeHint(NULL, dy, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
+            throw MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
 
     if (themeClass.windowClass.getWidth(width))
         if (getPixelFromSizeHint(NULL, width, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window width '" + width + "'");
+            throw MMSDialogManagerError(1, "invalid window width '" + width + "'");
 
     if (themeClass.windowClass.getHeight(height))
         if (getPixelFromSizeHint(NULL, height, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window height '" + height + "'");
+            throw MMSDialogManagerError(1, "invalid window height '" + height + "'");
 
     bool os;
     bool *osp = NULL;
@@ -557,7 +557,7 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
     bool                show = false;
 
     if(!rootWindow)
-        throw new MMSDialogManagerError(1, "no parent window found, new childwindow rejected");
+        throw MMSDialogManagerError(1, "no parent window found, new childwindow rejected");
 
     // get themepath
     string themePath = (theme ? theme->getThemePath() : globalTheme->getThemePath());
@@ -568,19 +568,19 @@ void MMSDialogManager::getChildWindowValues(MMSTaffFile *tafff, MMSWindow *rootW
 
     if (themeClass.windowClass.getDx(dx))
         if (getPixelFromSizeHint(NULL, dx, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
+            throw MMSDialogManagerError(1, "invalid window dx '" + dx + "'");
 
     if (themeClass.windowClass.getDy(dy))
         if (getPixelFromSizeHint(NULL, dy, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
+            throw MMSDialogManagerError(1, "invalid window dy '" + dy + "'");
 
     if (themeClass.windowClass.getWidth(width))
         if (getPixelFromSizeHint(NULL, width, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window width '" + width + "'");
+            throw MMSDialogManagerError(1, "invalid window width '" + width + "'");
 
     if (themeClass.windowClass.getHeight(height))
         if (getPixelFromSizeHint(NULL, height, 10000, 0) == false)
-            throw new MMSDialogManagerError(1, "invalid window height '" + height + "'");
+            throw MMSDialogManagerError(1, "invalid window height '" + height + "'");
 
     bool os;
     bool *osp = NULL;
@@ -742,7 +742,7 @@ string MMSDialogManager::getTemplateValues(MMSTaffFile *tafff, MMSWidget *curren
 			}
 		}
 		else {
-			throw new MMSDialogManagerError(1, "template error, no widget");
+			throw MMSDialogManagerError(1, "template error, no widget");
 		}
 	}
 	else {
@@ -895,7 +895,7 @@ string MMSDialogManager::getLabelValues(MMSTaffFile *tafff, MMSWidget *currentWi
 
     if(!size.empty()) {
         if (!label->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -953,7 +953,7 @@ string MMSDialogManager::getButtonValues(MMSTaffFile *tafff, MMSWidget *currentW
 
     if(!size.empty()) {
         if (!button->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1009,7 +1009,7 @@ string MMSDialogManager::getImageValues(MMSTaffFile *tafff, MMSWidget *currentWi
 
     if(!size.empty()) {
         if (!image->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1066,7 +1066,7 @@ string MMSDialogManager::getProgressBarValues(MMSTaffFile *tafff, MMSWidget *cur
 
     if(!size.empty()) {
         if (!pBar->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1124,7 +1124,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 
     if(!size.empty()) {
         if (!menu->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1343,7 +1343,7 @@ string MMSDialogManager::getTextBoxValues(MMSTaffFile *tafff, MMSWidget *current
 
     if(!size.empty()) {
         if (!textbox->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1399,7 +1399,7 @@ string MMSDialogManager::getArrowValues(MMSTaffFile *tafff, MMSWidget *currentWi
 
     if(!size.empty()) {
         if (!arrow->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1455,7 +1455,7 @@ string MMSDialogManager::getSliderValues(MMSTaffFile *tafff, MMSWidget *currentW
 
     if(!size.empty()) {
         if (!slider->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1511,7 +1511,7 @@ string MMSDialogManager::getInputValues(MMSTaffFile *tafff, MMSWidget *currentWi
 
     if(!size.empty()) {
         if (!input->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)
@@ -1568,7 +1568,7 @@ string MMSDialogManager::getCheckBoxValues(MMSTaffFile *tafff, MMSWidget *curren
 
     if(!size.empty()) {
         if (!checkbox->setSizeHint(size))
-            throw new MMSDialogManagerError(1, "invalid widget size '" + size + "'");
+            throw MMSDialogManagerError(1, "invalid widget size '" + size + "'");
     }
 
     if (currentWidget)

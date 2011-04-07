@@ -94,7 +94,7 @@ void MMSTranslator::loadTranslations() {
 				processFile(filename);
 			}
 		}
-	} catch (MMSError *err) {
+	} catch (MMSError &err) {
 		DEBUGMSG("MMSTranslator", "No plugins database found for translation.");
 	}
 

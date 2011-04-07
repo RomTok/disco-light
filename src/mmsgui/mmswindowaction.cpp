@@ -67,8 +67,8 @@ void MMSWindowAction::threadMain() {
     	this->stopaction = false;
     	this->action = MMSWACTION_NONE;
 
-    } catch(MMSError *error) {
-    	DEBUGMSG("MMSGUI", "Error: %s", error->getMessage().c_str());
+    } catch(MMSError &error) {
+    	DEBUGMSG("MMSGUI", "Error: " + error.getMessage());
     }
 }
 

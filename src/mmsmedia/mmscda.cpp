@@ -96,7 +96,7 @@ void MMSCDA::checkDevice(const string device) {
 		hc.cdrom_dev = xine_config_register_string(xine, "input.cdrom_dev", d.c_str(), "device used as cdrom drive", NULL, 0, NULL, NULL);
 		result = xine_health_check(&hc, CHECK_CDROM);
 		if(result->status != XINE_HEALTH_CHECK_OK) {
-				throw new MMSCDAError(0, "No DVD Device found at " + d);
+				throw MMSCDAError(0, "No DVD Device found at " + d);
 		}
 
 		this->device = d;
