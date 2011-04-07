@@ -119,6 +119,38 @@ MMSWIDGETTYPE MMSWidget::getType() {
 	return this->type;
 }
 
+string MMSWidget::getTypeString() {
+	switch (this->type) {
+	case MMSWIDGETTYPE_HBOX:
+		return "hbox";
+	case MMSWIDGETTYPE_VBOX:
+		return "vbox";
+	case MMSWIDGETTYPE_BUTTON:
+		return "button";
+	case MMSWIDGETTYPE_IMAGE:
+		return "image";
+	case MMSWIDGETTYPE_LABEL:
+		return "label";
+	case MMSWIDGETTYPE_MENU:
+		return "menu";
+	case MMSWIDGETTYPE_PROGRESSBAR:
+		return "progressbar";
+	case MMSWIDGETTYPE_TEXTBOX:
+		return "textbox";
+	case MMSWIDGETTYPE_ARROW:
+		return "arrow";
+	case MMSWIDGETTYPE_SLIDER:
+		return "slider";
+	case MMSWIDGETTYPE_INPUT:
+		return "input";
+	case MMSWIDGETTYPE_CHECKBOX:
+		return "checkbox";
+	case MMSWIDGETTYPE_GAP:
+		return "gap";
+	}
+	return "";
+}
+
 bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, bool focusable, bool selectable,
                        bool canhavechildren, bool canselectchildren, bool clickable) {
     bool		b;
@@ -181,15 +213,17 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
     this->drawable = drawable;
     this->needsparentdraw = needsparentdraw;
     this->focusable_initial = focusable;
-    if (!this->focusable_initial)
+    if (!this->focusable_initial) {
         if (getFocusable(b))
 			if (b)
 				setFocusable(false, false);
+    }
     this->selectable_initial = selectable;
-    if (!this->selectable_initial)
+    if (!this->selectable_initial) {
         if (getSelectable(b))
 			if (b)
 				setSelectable(false, false);
+    }
     this->canhavechildren = canhavechildren;
     this->canselectchildren = canselectchildren;
     this->clickable_initial = clickable;
@@ -1970,9 +2004,9 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	bool b;
 
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
-		/* keyboard inputs */
+		// keyboard inputs
 
-		/* save last inputevent */
+		// save last inputevent
 		this->da->last_inputevent = *inputevent;
 
 		switch (inputevent->key) {
@@ -1990,28 +2024,32 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 				if (scrollDown())
 		            return;
 		        break;
+
 			case MMSKEY_CURSOR_UP:
 		        if (scrollUp())
 		            return;
 		        break;
+
 			case MMSKEY_CURSOR_RIGHT:
 		        if (scrollRight())
 		            return;
 		        break;
+
 			case MMSKEY_CURSOR_LEFT:
 		        if (scrollLeft())
 		            return;
 		        break;
+
 			case MMSKEY_RETURN:
 			case MMSKEY_ZOOM:
-		        if (getFocusable(b))
-		        	if (b) {
-		        		if (callOnReturn()) this->onReturn->emit(this);
-			            return;
-			        }
+				// emit onReturn signal
+				if (emitOnReturnCallback()) {
+					return;
+				}
 		        break;
-                default:
-                        break;
+
+			default:
+				break;
 		}
 	}
 	else
@@ -2063,11 +2101,8 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 							if (r) changed = false;
 						}
 						if (!changed && st_ok) {
-		    		        if (getFocusable(b, false))
-		    		        	if (b) {
-									// emit the onReturn
-									if (callOnReturn()) this->onReturn->emit(this);
-		    		        	}
+							// emit onReturn signal
+							emitOnReturnCallback();
 						}
 					}
 	    		}
@@ -2114,6 +2149,44 @@ void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 
     throw MMSWidgetError(1,"input not handled");
 }
+
+
+bool MMSWidget::callOnReturn() {
+	return true;
+}
+
+bool MMSWidget::emitOnReturnCallback() {
+	// callback initialized?
+	if (!this->onReturn) return false;
+
+	// is there any callback connected?
+	if (this->onReturn->empty()) return false;
+
+	// should i call onReturn?
+	if (callOnReturn()) {
+		// check if widget is focusable
+		bool b;
+		if (getFocusable(b, false)) {
+			if (b) {
+				// emit...
+				this->onReturn->emit(this);
+				return true;
+			}
+		}
+
+		// not focusable, cannot emit onReturn signal
+		printf("Widget \"%s\" (%s) is not focusable, cannot emit onReturn signal!\n",
+				this->name.c_str(), this->getTypeString().c_str());
+
+		return false;
+	}
+	else {
+		// onReturn callback disabled
+		return false;
+	}
+}
+
+
 
 
 /*void MMSWidget::registerInput(DFBInputDeviceKeySymbol key, GUIINPUTCALLBACK cb) {
@@ -2915,12 +2988,21 @@ bool MMSWidget::setMargin(unsigned int margin, bool refresh) {
 
 bool MMSWidget::setFocusable(bool focusable, bool refresh) {
 	if (!this->da) return false;
-    if (this->focusable_initial) {
+
+	if (this->focusable_initial) {
         if ((!focusable)&&(isFocused()))
             setFocus(false, refresh);
         this->da->myWidgetClass.setFocusable(focusable);
         return true;
     }
+	else {
+		// widget can never be focused
+		if (!focusable) {
+			// set focusable to false if set to true by theme definition
+			this->da->myWidgetClass.setFocusable(focusable);
+	        return true;
+		}
+	}
     return false;
 }
 

@@ -302,6 +302,7 @@ class MMSWidget {
         MMSWidget();
         virtual ~MMSWidget();
         MMSWIDGETTYPE getType();
+        string getTypeString();
 
         void copyWidget(MMSWidget *newWidget);
         virtual MMSWidget *copyWidget() = 0;
@@ -418,7 +419,8 @@ class MMSWidget {
         virtual void recalculateChildren();
         virtual void handleInput(MMSInputEvent *inputevent);
 
-        virtual bool callOnReturn() { return true; }
+        virtual bool callOnReturn();
+        bool emitOnReturnCallback();
 
         bool geomset;
 
