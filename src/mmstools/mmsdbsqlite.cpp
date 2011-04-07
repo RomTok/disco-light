@@ -199,7 +199,7 @@ int MMSDBSQLite::query(string statement, MMSRecordSet *rs) {
     {
         message = string(errmsg) + string(" [query was: ") + statement + string("]");
         sqlite3_free(errmsg);
-        throw(new MMSError(rc, message));
+        throw MMSError(rc, message);
     }
 
     //rewind
