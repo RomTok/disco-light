@@ -53,9 +53,9 @@ MMSImportPluginHandler::~MMSImportPluginHandler() {
 
 void MMSImportPluginHandler::invokeInitialize(void *data) {
     if (!this->loaded)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
     if (this->initialized)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is already initialized");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is already initialized");
 
     this->calllock.lock();
     this->initialized = this->plugin->initialize(this->plugindata);
@@ -64,9 +64,9 @@ void MMSImportPluginHandler::invokeInitialize(void *data) {
 
 void MMSImportPluginHandler::invokeExecute(void *data) {
     if (!this->loaded)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->execute();
@@ -75,9 +75,9 @@ void MMSImportPluginHandler::invokeExecute(void *data) {
 
 void MMSImportPluginHandler::invokeShutdown(void *data) {
     if (!this->loaded)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->shutdown();
@@ -86,9 +86,9 @@ void MMSImportPluginHandler::invokeShutdown(void *data) {
 
 void MMSImportPluginHandler::invokeCleanUp(void *data) {
     if (!this->loaded)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->cleanUp();
@@ -105,7 +105,7 @@ bool MMSImportPluginHandler::isInitialized() {
 
 void MMSImportPluginHandler::load() {
     if (this->loaded)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is already loaded");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is already loaded");
 
     this->handler = new MMSShlHandler(this->plugindata.getFilename());
     this->handler->open();
@@ -118,7 +118,7 @@ void MMSImportPluginHandler::load() {
 
 void MMSImportPluginHandler::unload() {
     if (!this->loaded)
-        throw new MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSImportPluginError(0,"Import Plugin " + this->plugindata.getName() + " is not loaded");
 
     if(this->plugin) {
  	   delete this->plugin;

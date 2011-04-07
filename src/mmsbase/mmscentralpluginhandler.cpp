@@ -54,9 +54,9 @@ MMSCentralPluginHandler::~MMSCentralPluginHandler() {
 
 void MMSCentralPluginHandler::invokeInitialize(void *data) {
     if (!this->loaded)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
     if (this->initialized)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is already initialized");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is already initialized");
 
     this->calllock.lock();
     this->initialized = this->plugin->initialize(this->plugindata, this->switcher);
@@ -65,9 +65,9 @@ void MMSCentralPluginHandler::invokeInitialize(void *data) {
 
 void MMSCentralPluginHandler::invokeOnEvent(IMMSEvent event) {
     if (!this->loaded)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->onEvent(event);
@@ -76,9 +76,9 @@ void MMSCentralPluginHandler::invokeOnEvent(IMMSEvent event) {
 
 void MMSCentralPluginHandler::invokeShutdown(void *data) {
     if (!this->loaded)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->shutdown();
@@ -87,28 +87,28 @@ void MMSCentralPluginHandler::invokeShutdown(void *data) {
 
 void MMSCentralPluginHandler::invokeShowPreview(void *data) {
     if (!this->loaded)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     if (!this->plugin->showPreview(data)) {
         this->calllock.unlock();
-    	throw new MMSCentralPluginError(1,"Central Plugin " + this->plugindata.getName() + " has nothing to display (showPreview())");
+    	throw MMSCentralPluginError(1,"Central Plugin " + this->plugindata.getName() + " has nothing to display (showPreview())");
     }
     this->calllock.unlock();
 }
 
 void MMSCentralPluginHandler::invokeShow(void *data) {
     if (!this->loaded)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     if (!this->plugin->show(data)) {
         this->calllock.unlock();
-        throw new MMSCentralPluginError(1,"Central Plugin " + this->plugindata.getName() + " has nothing to display (show())");
+        throw MMSCentralPluginError(1,"Central Plugin " + this->plugindata.getName() + " has nothing to display (show())");
 	}
     this->calllock.unlock();
 }
@@ -123,7 +123,7 @@ bool MMSCentralPluginHandler::isInitialized() {
 
 void MMSCentralPluginHandler::load() {
     if (this->loaded)
-        throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is already loaded");
+        throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is already loaded");
 
     this->handler = new MMSShlHandler(this->plugindata.getFilename());
     this->handler->open();
@@ -136,7 +136,7 @@ void MMSCentralPluginHandler::load() {
 
 void MMSCentralPluginHandler::unload() {
 	if (!this->loaded)
-		throw new MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
+		throw MMSCentralPluginError(0,"Central Plugin " + this->plugindata.getName() + " is not loaded");
 
     if (this->plugin) {
  	   delete this->plugin;

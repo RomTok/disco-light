@@ -2798,13 +2798,13 @@ void MMSMenuWidget::setItemTemplate(MMSWidget *itemTemplate) {
 	bool b;
 
 	if (!itemTemplate)
-        throw new MMSWidgetError(0, "item template not set");
+        throw MMSWidgetError(0, "item template not set");
 
     /* we need menu items which can be selected */
     if (!itemTemplate->getSelectable(b))
-        throw new MMSWidgetError(0, "widget cannot be selected");
+        throw MMSWidgetError(0, "widget cannot be selected");
     if (!b)
-    	throw new MMSWidgetError(0, "widget cannot be selected");
+    	throw MMSWidgetError(0, "widget cannot be selected");
 
     /* we need menu items which can be selected and we must switch focusable off */
     if (itemTemplate->getFocusable(b))
@@ -2815,7 +2815,7 @@ void MMSMenuWidget::setItemTemplate(MMSWidget *itemTemplate) {
 
     /* item template can be set once only */
     if (this->itemTemplate)
-        throw new MMSWidgetError(0, "item template can be set once only");
+        throw MMSWidgetError(0, "item template can be set once only");
 
     this->itemTemplate = itemTemplate;
 }
@@ -2830,7 +2830,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
     if (!widget) {
     	// no widget given, create widget from template
 		if (!this->itemTemplate)
-			throw new MMSWidgetError(0, "item template not set");
+			throw MMSWidgetError(0, "item template not set");
 
 		widget = itemTemplate->copyWidget();
     }

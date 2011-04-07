@@ -54,9 +54,9 @@ MMSBackendPluginHandler::~MMSBackendPluginHandler() {
 
 void MMSBackendPluginHandler::invokeInitialize(void *data) {
     if (!this->loaded)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
     if (this->initialized)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is already initialized");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is already initialized");
 
     this->calllock.lock();
     this->initialized = this->plugin->initialize(this->plugindata, this->switcher);
@@ -65,9 +65,9 @@ void MMSBackendPluginHandler::invokeInitialize(void *data) {
 
 void MMSBackendPluginHandler::invokeOnEvent(IMMSEvent event) {
     if (!this->loaded)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->onEvent(event);
@@ -76,9 +76,9 @@ void MMSBackendPluginHandler::invokeOnEvent(IMMSEvent event) {
 
 void MMSBackendPluginHandler::invokeShutdown(void *data) {
     if (!this->loaded)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
     if (!this->initialized)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not initialized");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not initialized");
 
     this->calllock.lock();
     this->plugin->shutdown();
@@ -95,7 +95,7 @@ bool MMSBackendPluginHandler::isInitialized() {
 
 void MMSBackendPluginHandler::load() {
     if (this->loaded)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is already loaded");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is already loaded");
 
     this->handler = new MMSShlHandler(this->plugindata.getFilename());
     this->handler->open();
@@ -108,7 +108,7 @@ void MMSBackendPluginHandler::load() {
 
 void MMSBackendPluginHandler::unload() {
     if (!this->loaded)
-        throw new MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
+        throw MMSBackendPluginError(0,"Backend Plugin " + this->plugindata.getName() + " is not loaded");
 
     if(this->plugin) {
 		delete this->plugin;

@@ -109,7 +109,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 				rcparser.parseFile(configfile);
 				rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 				config_avail = true;
-		    } catch (MMSRcParserError *ex) {
+		    } catch (MMSRcParserError &ex) {
 	        	// config file not found
 	        	DEBUGMSG_OUTSTR("Core", "could not read config, try --disko:config=./etc/diskorc.xml");
 		    }
@@ -119,12 +119,12 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 		        rcparser.parseFile("./etc/diskorc.xml");
 		        rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
 				config_avail = true;
-		    } catch (MMSRcParserError *ex) {
+		    } catch (MMSRcParserError &ex) {
 		    	// next try
 		        try {
 					rcparser.parseFile("/etc/diskorc.xml");
 					rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics, &rcLanguage);
-		        } catch (MMSRcParserError *ex) {
+		        } catch (MMSRcParserError &ex) {
 		        	// config file not found
 		        	DEBUGMSG_OUTSTR("Core", "could not read config, try --disko:config=./etc/diskorc.xml");
 		        }
@@ -402,10 +402,9 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
     	atexit(on_exit);
 
-    } catch(MMSError *error) {
-        DEBUGMSG("Core", "Abort due to: " + error->getMessage());
-        fprintf(stderr, "Error initializing disko: %s\n", error->getMessage().c_str());
-        delete error;
+    } catch(MMSError &error) {
+        DEBUGMSG("Core", "Abort due to: " + error.getMessage());
+        fprintf(stderr, "Error initializing disko: %s\n", error.getMessage().c_str());
         return false;
     }
 

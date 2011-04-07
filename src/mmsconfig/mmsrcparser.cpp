@@ -35,7 +35,7 @@
 #include "mmstools/tools.h"
 #include "diskoversion.h"
 
-#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw new MMSRcParserError(1, "wrong value '" + string(parvalue) + "' for parameter '" + string((const char *)parname) + "'\n valid value(s): " + validvals + "\n " + addmsg);
+#define WRONG_VALUE(parname, parvalue, validvals, addmsg) throw MMSRcParserError(1, "wrong value '" + string(parvalue) + "' for parameter '" + string((const char *)parname) + "'\n valid value(s): " + validvals + "\n " + addmsg);
 
 
 MMSRcParser::MMSRcParser() {
@@ -61,7 +61,7 @@ void MMSRcParser::parseFile(string filename) {
 #endif
 
 		if(parser == NULL) {
-			throw new MMSRcParserError(1,"Could not parse file:" + filename);
+			throw MMSRcParserError(1,"Could not parse file:" + filename);
 		}
 
 		if(parser) {
@@ -70,7 +70,7 @@ void MMSRcParser::parseFile(string filename) {
 	  		if(xmlStrcmp(pNode->name, (const xmlChar *) "mmsrc")) {
 		  		if(xmlStrcmp(pNode->name, (const xmlChar *) "diskorc")) {
 					std::cout << "invalid configuration file (" << filename << ") - does not contain mmsrc root node" << std::endl;
-					throw new MMSRcParserError(1, "invalid file");
+					throw MMSRcParserError(1, "invalid file");
 		  		}
 	  		}
 	      	this->throughFile(pNode);
@@ -93,10 +93,10 @@ void MMSRcParser::parseFile(string filename) {
     	    xmlFreeDoc(parser);
 		}
 	}
-	catch(MMSError *error)
+	catch(MMSError &error)
 	{
-		std::cout << "RcParser exception: " << error->getMessage() << std::endl;
-		throw new MMSRcParserError(1,error->getMessage());
+		std::cout << "RcParser exception: " << error.getMessage() << std::endl;
+		throw MMSRcParserError(1, error.getMessage());
 	}
 
 }
@@ -140,7 +140,7 @@ void MMSRcParser::checkVersion(xmlNode* node) {
 
 	if(!version) {
 		std::cout << "Configuration file misses version entity!" << std::endl;
-		throw new MMSRcParserError(1, "missing version");
+		throw MMSRcParserError(1, "missing version");
 	}
 
 	// sep version
@@ -153,7 +153,7 @@ void MMSRcParser::checkVersion(xmlNode* node) {
 	if ((mav > DISKO_MAJOR_VERSION )||(miv > DISKO_MINOR_VERSION)) {
 		std::cout << "Version of configuration file does not match!" << std::endl;
 		xmlFree(version);
-		throw new MMSRcParserError(1, "version mismatch");
+		throw MMSRcParserError(1, "version mismatch");
 	}
 
 	xmlFree(version);
@@ -264,7 +264,7 @@ void MMSRcParser::throughDBSettings(xmlNode* node) {
 		db = &this->datadb;
 	}
 	else {
-		throw new MMSRcParserError(1, "unknown database type (" + string((const char*)type) + ")");
+		throw MMSRcParserError(1, "unknown database type (" + string((const char*)type) + ")");
 	}
 
 	xmlFree(type);

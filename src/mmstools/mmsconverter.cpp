@@ -48,7 +48,7 @@ MMSConverter::MMSConverter(string codepage) {
 		if(newtrans !=(iconv_t)(-1)) {
 			trans.insert(make_pair(codepage, newtrans));
 		}else {
-			throw new MMSConverterError(0,"cannot create translation descriptor");
+			throw MMSConverterError(0,"cannot create translation descriptor");
 		}
 	}
 
@@ -84,7 +84,7 @@ string MMSConverter::convert(string frompage, string buffer) {
 		return retline;
 	} else {
 			mutex.unlock();
-			throw new MMSConverterError(0,"have no translation descriptor");
+			throw MMSConverterError(0,"have no translation descriptor");
 	}
 	mutex.unlock();
 	return "";
