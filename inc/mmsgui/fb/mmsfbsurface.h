@@ -246,9 +246,9 @@ class MMSFBSurface {
 
         bool checkDrawingStatus(int x, int y, int w, int h,
 								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags);
-        bool checkBlittingStatus(bool src_opaque, bool src_transparent, MMSFBRectangle *src_rect, int x, int y,
+        bool checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
         						 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
-        bool checkBlittingStatus(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y,
+        bool checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
 								 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
 
 

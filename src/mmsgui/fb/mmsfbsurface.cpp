@@ -4173,7 +4173,7 @@ bool MMSFBSurface::merge(MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMerg
 
 
 
-bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MMSFBRectangle *src_rect, int x, int y,
+bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
 									   MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags) {
 
 	if (src_transparent) {
@@ -4186,7 +4186,7 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
 
     // check clipping region and calculate final rectangle
 	if (!this->is_sub_surface) {
-	    if (!calcClip(x, y, src_rect->w, src_rect->h, &crect)) {
+	    if (!calcClip(x, y, w, h, &crect)) {
 	    	// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
 	    	return false;
 	    }
@@ -4194,7 +4194,7 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
 	else {
 		bool outside = false;
 		CLIPSUBSURFACE
-		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, src_rect->w, src_rect->h, &crect)) {
+		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, w, h, &crect)) {
 			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
 			outside = true;
 		}
@@ -4246,10 +4246,10 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
     return true;
 }
 
-bool MMSFBSurface::checkBlittingStatus(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y,
+bool MMSFBSurface::checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
 									   MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags) {
 	return checkBlittingStatus(MMSFBSURFACE_READ_BUFFER(source).opaque, MMSFBSURFACE_READ_BUFFER(source).transparent,
-								src_rect, x, y, crect, blittingflags);
+								x, y, w, h, crect, blittingflags);
 }
 
 
@@ -4277,7 +4277,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
     // get final rectangle and new opaque/transparent status
     MMSFBRectangle crect;
     MMSFBBlittingFlags blittingflags;
-    if (!checkBlittingStatus(source, &src, x, y, crect, blittingflags)) {
+    if (!checkBlittingStatus(source, x, y, src.w, src.h, crect, blittingflags)) {
     	// nothing to draw
     	return true;
     }
@@ -4408,7 +4408,7 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
     // get final rectangle and new opaque/transparent status
     MMSFBRectangle crect;
     MMSFBBlittingFlags blittingflags;
-    if (!checkBlittingStatus(opaque, false, &src, x, y, crect, blittingflags)) {
+    if (!checkBlittingStatus(opaque, false, x, y, src.w, src.h, crect, blittingflags)) {
     	// nothing to draw
     	return true;
     }
@@ -4533,9 +4533,20 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     INITCHECK;
 
 
-    //TODO: this reset is to be improved...
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
-    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+    // save opaque/transparent status
+    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
+
+    // get final rectangle and new opaque/transparent status
+    MMSFBRectangle crect;
+    MMSFBBlittingFlags blittingflags;
+    if (!checkBlittingStatus(source, dst.x, dst.y, dst.w, dst.h, crect, blittingflags)) {
+    	// nothing to draw
+    	return true;
+    }
+
+    //TODO: use crect for the following code...
+
 
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
@@ -4757,6 +4768,12 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 			src.x-=source->sub_surface_xoff;
 			src.y-=source->sub_surface_yoff;
 		}
+	}
+
+	if (!ret) {
+		// restore opaque/transparent status
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
+	    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 	}
 
     return ret;
