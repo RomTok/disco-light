@@ -213,7 +213,7 @@ int MMSDBMySQL::query(string statement, MMSRecordSet *rs) {
 
     if(!this->connected) {
     	message = "Query called but no connection established." + string(" [query was: ") + statement + string("]");
-        throw(new MMSError(0, message));
+        throw MMSError(0, message);
     }
 
     if(mysql_query(&this->dbhandle, statement.c_str()) != 0) {
@@ -264,7 +264,7 @@ int MMSDBMySQL::query(string statement) {
 
     if(!this->connected) {
     	message = "Query called but no connection established." + string(" [query was: ") + statement + string("]");
-        throw(new MMSError(0, message));
+        throw MMSError(0, message);
     }
 
     if(mysql_query(&this->dbhandle, statement.c_str()) != 0) {
@@ -294,7 +294,7 @@ int MMSDBMySQL::getLastInsertedID() {
 	int ret = 0;
 
     if(!this->connected)
-        throw(new MMSError(0, "No connection established. Cannot fetch last inserted id."));
+        throw MMSError(0, "No connection established. Cannot fetch last inserted id.");
 
     if(mysql_query(&this->dbhandle, "SELECT LAST_INSERT_ID();") != 0) {
         string message = mysql_error(&this->dbhandle) + string(" [query was: SELECT LAST_INSERT_ID();]");
