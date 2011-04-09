@@ -1622,6 +1622,9 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 		clear_req->real_region.y2+= this->sub_surface_yoff;
 	}
 
+//TODO: remove it
+finClear();
+
 	// all right
 	unlock();
 	return true;
