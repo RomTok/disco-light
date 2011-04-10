@@ -1622,9 +1622,6 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 		clear_req->real_region.y2+= this->sub_surface_yoff;
 	}
 
-//TODO: remove it
-finClear();
-
 	// all right
 	unlock();
 	return true;
@@ -2092,6 +2089,10 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	h = this->config.h;
     }
 
+	// finalize previous clear
+    // note: this is very important to do it here, because doClear() calls fillRectangle() too
+	finClear();
+
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
     bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
@@ -2103,9 +2104,6 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	// nothing to draw
     	return true;
     }
-
-	// finalize previous clear
-	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -4577,7 +4575,7 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
     }
 
 	// finalize previous clear
-	finClear();
+    finClear((MMSFBSURFACE_WRITE_BUFFER(this).opaque) ? &crect: NULL);
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
