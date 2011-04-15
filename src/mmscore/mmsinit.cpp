@@ -435,7 +435,6 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
 
     /* send event that everything is initialized */
     if(masterevent) {
-		printf("sending event\n");
 		MMSEvent *initializedEvent = new MMSEvent("MMSINIT.initialized");
 		initializedEvent->send();
 	}
