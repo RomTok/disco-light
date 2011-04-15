@@ -399,7 +399,6 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
         }
 
-
     	atexit(on_exit);
 
     } catch(MMSError &error) {
@@ -433,6 +432,13 @@ bool registerSwitcher(IMMSSwitcher *switcher) {
         DEBUGMSG("Core", "initialize Central Plugins...");
         pluginmanager->initializeCentralPlugins();
     }
+
+    /* send event that everything is initialized */
+    if(masterevent) {
+		printf("sending event\n");
+		MMSEvent *initializedEvent = new MMSEvent("MMSINIT.initialized");
+		initializedEvent->send();
+	}
 
     return true;
 }
