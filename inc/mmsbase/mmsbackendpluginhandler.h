@@ -41,9 +41,12 @@
 #include "mmsbase/interfaces/immsbackendplugin.h"
 #include "mmsbase/interfaces/immsevent.h"
 
+MMS_CREATEERROR(MMSBackendPluginError);
+
 class MMSBackendPluginHandler {
     private:
         bool 				loaded;
+        bool				initialized;
         MMSPluginData 		plugindata;
         IMMSBackendPlugin 	*plugin;
         MMSShlHandler 		*handler;
@@ -62,6 +65,7 @@ class MMSBackendPluginHandler {
         ~MMSBackendPluginHandler();
 
         bool isLoaded();
+        bool isInitialized();
         void load();
         void unload();
         MMSPluginData getPluginData();
@@ -73,5 +77,4 @@ class MMSBackendPluginHandler {
 
 };
 
-MMS_CREATEERROR(MMSBackendPluginHandlerError);
 #endif /*MMSBACKENDPLUGINHANDLER_H_*/

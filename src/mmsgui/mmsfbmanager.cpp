@@ -102,12 +102,12 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
     if (!mmsfb->init(myargc, myargv, config.getBackend(), graphicslayer_conf.rect,
 					 ea, config.getFullScreen(), config.getPointer(), appl_name, appl_icon_name, config.getHideApplication())) {
 	    DEBUGMSG("MMSGUI", "init mmsfb failed!");
-        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+        throw MMSFBManagerError(0, MMSFB_LastErrorString);
 	}
 
     DEBUGMSG("MMSGUI", "get video layer");
     if (!mmsfb->getLayer(videolayer_conf.id, &this->videolayer, videolayer_conf.outputtype, this->virtual_console))
-        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+        throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (videolayer_conf.id == graphicslayer_conf.id) {
     	DEBUGMSG("MMSGUI", "video layer and graphics layer are the same");
@@ -122,7 +122,7 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
         this->layercount++;
         DEBUGMSG("MMSGUI", "get graphics layer");
         if (!mmsfb->getLayer(graphicslayer_conf.id, &this->graphicslayer, graphicslayer_conf.outputtype, false))
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+            throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
         if (!flip_flush)
         	this->graphicslayer->setFlipFlags(MMSFB_FLIP_ONSYNC);
@@ -136,10 +136,10 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
     }
 
     if (!this->graphicslayer->getID(&this->graphicslayerid))
-        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+        throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (!this->videolayer->getID(&this->videolayerid))
-        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+        throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
     /* set on exit handler */
     on_exit(mmsfbmanager_onexit, this);
@@ -224,7 +224,7 @@ void MMSFBManager::applySettings() {
 	// set exclusive access to the graphics layer
 	DEBUGMSG("MMSGUI", "set exclusive access");
 	if (!this->graphicslayer->setExclusiveAccess())
-        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+        throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
 	DEBUGMSG("MMSGUI", "set configuration");
     if(!this->graphicslayer->setConfiguration(graphicslayer_conf.rect.w, graphicslayer_conf.rect.h,
@@ -233,7 +233,7 @@ void MMSFBManager::applySettings() {
 											   graphicslayer_conf.options,
                                                window_pixelformat,
                                                surface_pixelformat))
-        throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+        throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
     if (this->videolayerid != this->graphicslayerid) {
 #ifdef  __HAVE_DIRECTFB__
@@ -249,7 +249,7 @@ void MMSFBManager::applySettings() {
         DEBUGMSG("MMSGUI", "set exclusive access");
         // set exclusive access to the video layer
         if (!this->videolayer->setExclusiveAccess())
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+            throw MMSFBManagerError(0, MMSFB_LastErrorString);
 
     	DEBUGMSG("MMSGUI", "set configuration");
         // set video layer's config
@@ -257,7 +257,7 @@ void MMSFBManager::applySettings() {
 												videolayer_conf.pixelformat,
 												videolayer_conf.buffermode,
 												videolayer_conf.options))
-            throw new MMSFBManagerError(0, MMSFB_LastErrorString);
+            throw MMSFBManagerError(0, MMSFB_LastErrorString);
 		//this->videolayer->dfblayer->SetFieldParity(this->videolayer->dfblayer,0);
 
         // set the full opacity of the graphics layer

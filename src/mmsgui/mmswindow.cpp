@@ -40,6 +40,9 @@
 #include <fcntl.h>
 
 
+#include "mmscore/mmsinit.h"
+
+
 /* static variables */
 IMMSWindowManager 	*MMSWindow::windowmanager = NULL;
 
@@ -118,6 +121,8 @@ MMSWindow::MMSWindow() {
     this->stretchDown = 0;
 
     this->always_on_top_index = 0;
+
+    this->need_redraw = false;
 
     // initialize the callbacks
     onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
@@ -899,20 +904,33 @@ void MMSWindow::setName(string name) {
 MMSWindow* MMSWindow::findWindow(string name) {
     MMSWindow *window;
 
-    if (name=="")
-        return NULL;
+    if (name == "") {
+		// empty name
+   		return NULL;
+    }
 
-    /* first, my own childwins */
+	if (name == this->name) {
+		// it's me
+		return this;
+	}
+
+    // first, my own childwins
     for (unsigned int i = 0; i < childwins.size(); i++)
         if (childwins.at(i).window->getName() == name)
             return childwins.at(i).window;
 
-    /* second, call search method of my childwins */
+    // second, call search method of my childwins
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((window = childwins.at(i).window->findWindow(name)))
             return window;
 
     return NULL;
+}
+
+MMSWindow* MMSWindow::getLastWindow() {
+	if (this->childwins.size() > 0)
+		return this->childwins.at(this->childwins.size()-1).window;
+	return NULL;
 }
 
 bool MMSWindow::addChildWindow(MMSWindow *childwin) {
@@ -1158,7 +1176,7 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
         pw_region = *region;
     }
 
-//printf("   MMSWindow::drawChildWindows() - %s, %d,%d,%d,%d\n", name.c_str(),pw_region.x1,pw_region.y1,pw_region.x2,pw_region.y2);
+//printf("   *MMSWindow::drawChildWindows() - %s, %d,%d,%d,%d\n", name.c_str(),pw_region.x1,pw_region.y1,pw_region.x2,pw_region.y2);
 
     // draw all affected child windows
     for (unsigned int i = 0; i < this->childwins.size(); i++) {
@@ -1219,31 +1237,34 @@ void MMSWindow::drawChildWindows(MMSFBSurface *dst_surface, MMSFBRegion *region,
 
         		// check if we have to do the "special blit"
 				// "special blit" means that we have to call draw() for the window and it's childwindows
-        		bool special_blit = false;
+        		// origin is the need_redraw flag which is set for example by targetLangChanged()
+        		bool special_blit = cw->window->need_redraw;
 
-				if (cw->opacity < 255) {
-        			// opacity calculation requested
-        			// check if at least one child window with opacity > 0 does exists
-					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
-						if (cw->window->childwins.at(c).opacity) {
-							// childwindow is shown
-							special_blit = true;
-							break;
+				if (!special_blit) {
+					if (cw->opacity < 255) {
+						// opacity calculation requested
+						// check if at least one child window with opacity > 0 does exists
+						for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
+							if (cw->window->childwins.at(c).opacity) {
+								// childwindow is shown
+								special_blit = true;
+								break;
+							}
 						}
 					}
-        		}
-        		else
-				if (cw->window->stretchmode) {
-        			// should be stretched
-        			// check if at least one child window with opacity > 0 does exists
-					for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
-						if (cw->window->childwins.at(c).opacity) {
-							// childwindow is shown
-							special_blit = true;
-							break;
+					else
+					if (cw->window->stretchmode) {
+						// should be stretched
+						// check if at least one child window with opacity > 0 does exists
+						for (unsigned int c = 0; c < cw->window->childwins.size(); c++) {
+							if (cw->window->childwins.at(c).opacity) {
+								// childwindow is shown
+								special_blit = true;
+								break;
+							}
 						}
 					}
-        		}
+				}
 
 				if (!special_blit) {
 					// now we have to find childwindows with own_surface="false"
@@ -1404,7 +1425,6 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
     if (!locked)
 //PUP        flipLock.lock();
     	lock();
-
 
     if (!win) win = this;
     if (win->getType()!=MMSWINDOWTYPE_CHILDWINDOW) {
@@ -1670,7 +1690,7 @@ void MMSWindow::getArrowWidgetStatus(ARROW_WIDGET_STATUS *setarrows) {
 
 				/* get all the states (my own and all children) */
 				fWin->getArrowWidgetStatus(setarrows);
-        	} catch (std::exception) {
+        	} catch (std::exception&) {
 				return;
         	}
 
@@ -1848,6 +1868,10 @@ bool MMSWindow::release() {
 
 
 void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear, unsigned char opacity) {
+
+	// reset "need redraw" flag
+    this->need_redraw = false;
+
 	// init window (e.g. load images, fonts, ...)
 	init();
 
@@ -3825,7 +3849,7 @@ void MMSWindow::removeChildWinFocus() {
                 if(fWin->children.at(i)->isFocused()) {
 					try {
 						childwins.at(this->focusedChildWin).focusedWidget = i;
-					} catch (std::exception) {
+					} catch (std::exception&) {
 					}
                     fWin->children.at(i)->setFocus(false);
 
@@ -3923,7 +3947,7 @@ bool MMSWindow::restoreChildWinFocus(MMSInputEvent *inputevent) {
 
 void MMSWindow::setFocus() {
 
-//printf("setFocus %s\n", name.c_str());
+//printf("MMSWindow::setFocus %08x, %s\n", this, name.c_str());
 
     // i do only work for child windows
     if (!this->parent) return;
@@ -3975,8 +3999,8 @@ void MMSWindow::setFocus() {
 		raiseToTop();
 }
 
-bool MMSWindow::getFocus() {
-	/* check if i am a child window */
+bool MMSWindow::getFocus(bool checkparents) {
+	// check if i am a child window
 	if (!this->parent) {
     	if (windowmanager->getToplevelWindow() == this)
     		return true;
@@ -3984,7 +4008,7 @@ bool MMSWindow::getFocus() {
     		return false;
 	}
 
-    /* search me */
+    // search me
     int me = -1;
     for (unsigned int i = 0; i < this->parent->childwins.size(); i++)
         if (this->parent->childwins.at(i).window == this) {
@@ -3992,12 +4016,16 @@ bool MMSWindow::getFocus() {
             break;
         }
 
-    /* i have found me within my parents list */
+    // i have found me within my parents list
     if (me < 0) return false;
 
-    /* i am the currently focused child window? */
-    if ((int)this->parent->focusedChildWin == me)
-    	return true;
+    // i am the currently focused child window?
+    if ((int)this->parent->focusedChildWin == me) {
+    	if (checkparents)
+    		return this->parent->getFocus(checkparents);
+    	else
+    		return true;
+    }
     else
     	return false;
 }
@@ -4333,7 +4361,11 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
         return false;
     }
 
-
+/*
+    printf("111111111111111111111> %08x %s\n", this, name.c_str());
+    getWindowManager()->printStack();
+    printf("111111111111111111111<\n");
+*/
         //check childwindows
         if(this->childwins.empty()) {
             if(onBeforeHandleInput->emit(this,inputevent)) {
@@ -4344,11 +4376,15 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 				if(onBeforeHandleInput->emit(this->childwins.at(this->focusedChildWin).window,inputevent)) {
 					return true;
 				}
-        	} catch(std::exception) {
+        	} catch(std::exception&) {
         		return true;
         	}
         }
-
+/*
+	printf("22222222222222222>\n");
+    getWindowManager()->printStack();
+    printf("22222222222222222<\n");
+*/
     	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
     		// keyboard inputs
 	        try {
@@ -4394,7 +4430,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                 navigate=true;
 	            }
 
-	        } catch (MMSWidgetError err) {
+	        } catch (MMSWidgetError &err) {
 	        	if(err.getCode() == 1) {
 	        		printf("missed navigation exception 1\n");
 	        		navigate=true;
@@ -4599,7 +4635,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                navigate=true;
 	            }
 
-	        } catch (MMSWidgetError err) {
+	        } catch (MMSWidgetError &err) {
 				if(err.getCode() == 1) {
 					printf("missed navigation exception 2\n");
 					navigate=true;
@@ -4662,7 +4698,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	            	}
 	            }
 	            else {
-//	                throw new MMSWidgetError(1,"navigate, buttonrelease");
+//	                throw MMSWidgetError(1,"navigate, buttonrelease");
 
 					// window without widgets and childwindows, e.g. video/flash windows
 
@@ -4670,7 +4706,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 					return onHandleInput->emit(this, inputevent);
 	            }
 
-	        } catch (MMSWidgetError err) {
+	        } catch (MMSWidgetError &err) {
 	            if(err.getCode() == 1) {
 	                /* test if navigation must be done */
 	                ret = true;
@@ -4836,9 +4872,14 @@ void MMSWindow::targetLangChanged(MMSLanguage lang, bool refresh) {
         	break;
         }
 
+    // window needs to be redrawn
+    // this is especially required for child windows with own_surface="true"
+    this->need_redraw = true;
+
     // refresh it
-    if (refresh)
+    if (refresh) {
     	this->refresh();
+    }
 }
 
 void MMSWindow::themeChanged(string &themeName, bool refresh) {
@@ -4865,15 +4906,17 @@ void MMSWindow::themeChanged(string &themeName, bool refresh) {
 MMSWidget* MMSWindow::findWidget(string name) {
     MMSWidget *widget;
 
-	if (name=="")
+	if (name == "") {
+		// empty name
 	    return NULL;
+	}
 
-    /* for all child windows */
+    // for all child windows
     for (unsigned int i = 0; i < childwins.size(); i++)
         if ((widget = childwins.at(i).window->findWidget(name)))
             return widget;
 
-    /* for my own children (widgets) */
+    // for my own children (widgets)
     for (unsigned int i = 0; i < children.size(); i++)
         if (children.at(i)->getName() == name)
             return children.at(i);
@@ -4923,8 +4966,14 @@ MMSWidget* MMSWindow::findWidgetAndType(string name, MMSWIDGETTYPE type) {
 MMSWidget* MMSWindow::operator[](string name) {
     MMSWidget *widget;
 
+    if (name.empty()) {
+    	if (children.size() > 0)
+    		return children.at(0);
+    }
+
     if ((widget = findWidget(name)))
         return widget;
+
     throw MMSWidgetError(1, "widget " + name + " not found");
 }
 
@@ -4972,19 +5021,35 @@ unsigned int MMSWindow::printStack(char *buffer, int space) {
 		cnt = sprintf(ptr, "%s", this->name.c_str());
 	else
 		cnt = sprintf(ptr, "<noname>");
-	if (cnt > 32) cnt = 32;
+	if (cnt > 32 - space) cnt = 32 - space;
 	ptr[cnt] = ' ';
-	ptr+=33;
+	ptr+=33 - space;
 
-	// shown state
+	// this ptr
+	cnt = sprintf(ptr, "%08x", this);
+	ptr[cnt] = ' ';
+	ptr+=9;
+
+	// shown/focused state
 	if (this->isShown()) {
-		if (!this->isShown(true, true))
-			cnt = sprintf(ptr, "STATE=shown");
-		else
-			cnt = sprintf(ptr, "STATE=visible");
+		if (!this->isShown(true, true)) {
+			if (!this->getFocus(true))
+				cnt = sprintf(ptr, "shown");
+			else
+				cnt = sprintf(ptr, "shown/focus");
+		}
+		else {
+			if (!this->getFocus(true))
+				cnt = sprintf(ptr, "visible");
+			else
+				cnt = sprintf(ptr, "visible/focus");
+		}
 	}
 	else {
-		cnt = sprintf(ptr, "STATE=hidden");
+		if (!this->getFocus(true))
+			cnt = sprintf(ptr, "hidden");
+		else
+			cnt = sprintf(ptr, "hidden/focus");
 	}
 	ptr[cnt] = ' ';
 	ptr+=14;
@@ -4992,16 +5057,16 @@ unsigned int MMSWindow::printStack(char *buffer, int space) {
 	// opacity
 	unsigned int opacity;
 	getOpacity(opacity);
-	cnt = sprintf(ptr, "OPACITY=%02x", opacity);
+	cnt = sprintf(ptr, "%02x", opacity);
 	ptr[cnt] = ' ';
-	ptr+=11;
+	ptr+=8;
 
 	// opacity
 	bool ownsurface;
 	getOwnSurface(ownsurface);
-	cnt = sprintf(ptr, "OWN_SURFACE=%s", (ownsurface)?"true":"false");
+	cnt = sprintf(ptr, "%s", (ownsurface)?"true":"false");
 	ptr[cnt] = ' ';
-	ptr+=18;
+	ptr+=12;
 
 	// line feed
 	cnt = sprintf(ptr, "\n");

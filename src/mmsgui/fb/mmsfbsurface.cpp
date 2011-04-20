@@ -542,6 +542,8 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
     this->TID = 0;
     this->Lock_cnt = 0;
 
+    this->clear_request.set = false;
+
     // init subsurface
     this->parent = parent;
     this->root_parent =  NULL;
@@ -1394,12 +1396,17 @@ bool MMSFBSurface::calcClip(int x, int y, int w, int h, MMSFBRectangle *crect) {
 	return true;
 }
 
-bool MMSFBSurface::clear(unsigned char r, unsigned char g,
-                         unsigned char b, unsigned char a) {
+bool MMSFBSurface::doClear(unsigned char r, unsigned char g,
+                           unsigned char b, unsigned char a) {
     bool ret = false;
 
     // check if initialized
     INITCHECK;
+/*
+MMSFBRegion clip;
+getClip(&clip);
+printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x2, clip.y2, r,g,b,a);
+*/
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -1488,6 +1495,136 @@ bool MMSFBSurface::clear(unsigned char r, unsigned char g,
 
 
     return ret;
+}
+
+
+void MMSFBSurface::finClear(MMSFBRectangle *check_rect) {
+
+	// block other threads
+	lock();
+
+	CLEAR_REQUEST *clear_req = &this->clear_request;
+	if (this->is_sub_surface) clear_req = &this->root_parent->clear_request;
+
+	if (!clear_req->set) {
+		unlock();
+		return;
+	}
+
+	clear_req->set = false;
+
+//printf("finClear\n");
+
+
+	if (check_rect) {
+		// we have to check if clear request can be skipped
+//printf(">>>>>finClear rect %d,%d,%d,%d\n", check_rect->x, check_rect->y, check_rect->w, check_rect->h);
+		if (this->is_sub_surface) {
+//			check_rect->x+=sub_surface_xoff;
+//			check_rect->y+=sub_surface_yoff;
+		}
+//printf(">>X>>finClear rect %d,%d,%d,%d\n", check_rect->x, check_rect->y, check_rect->w, check_rect->h);
+
+		if (check_rect->x <= clear_req->real_region.x1 &&
+			check_rect->y <= clear_req->real_region.y1 &&
+			check_rect->x + check_rect->w - 1 >= clear_req->real_region.x2 &&
+			check_rect->y + check_rect->h - 1 >= clear_req->real_region.y2) {
+			// skip clear request
+//printf(">>>>>finClear rect %d,%d,%d,%d  >>> skipped\n", check_rect->x, check_rect->y, check_rect->w, check_rect->h);
+
+			unlock();
+			return;
+		}
+	}
+
+	// we have to clear, set clip
+	MMSFBRegion clip;
+	bool clipped = clear_req->surface->config.clipped;
+	if (clipped) {
+		clear_req->surface->getClip(&clip);
+		if (clear_req->clipped)
+			clear_req->surface->setClip(&clear_req->clip);
+		else
+			clear_req->surface->setClip(NULL);
+	}
+	else {
+		if (clear_req->clipped)
+			clear_req->surface->setClip(&clear_req->clip);
+	}
+
+	// do it
+	clear_req->surface->doClear(clear_req->color.r,
+								clear_req->color.g,
+								clear_req->color.b,
+								clear_req->color.a);
+
+	// reset clip
+	if (clipped) {
+		clear_req->surface->setClip(&clip);
+	}
+	else {
+		if (clear_req->clipped)
+			clear_req->surface->setClip(NULL);
+	}
+
+	unlock();
+}
+
+bool MMSFBSurface::clear(unsigned char r, unsigned char g,
+                         unsigned char b, unsigned char a) {
+
+	// check if initialized
+    INITCHECK;
+/*
+MMSFBRegion clip;
+getClip(&clip);
+printf("clear with clip %d,%d,%d,%d (%d,%d,%d,%d)  dest opaque = %d\n", clip.x1, clip.y1, clip.x2, clip.y2, r,g,b,a,MMSFBSURFACE_WRITE_BUFFER(this).opaque);
+printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_yoff, clip.x2+sub_surface_xoff, clip.y2+sub_surface_yoff);
+*/
+
+    // block other threads
+    lock();
+
+	// get access to previous clear request
+	CLEAR_REQUEST *clear_req = &this->clear_request;
+	if (this->is_sub_surface) clear_req = &this->root_parent->clear_request;
+
+	if (clear_req->set) {
+		// finalize previous clear
+		if (r != clear_req->color.r || g != clear_req->color.g || b != clear_req->color.b || a != clear_req->color.a) {
+			// we cannot skip previous clear, because requested color is different
+			finClear();
+		}
+		else {
+			// it can be possible to skip previous clear
+			// so we have to put affected rectangle to finClear() method, preparing the decision
+			MMSFBRegion clip;
+			getClip(&clip);
+			MMSFBRectangle rect = MMSFBRectangle(clip.x1, clip.y1, clip.x1 + clip.x2 + 1, clip.y1 + clip.y2 + 1);
+			finClear(&rect);
+		}
+	}
+
+	// save clear request
+	clear_req->set = true;
+	clear_req->surface = this;
+	clear_req->clipped = this->config.clipped;
+	if (clear_req->clipped)
+		getClip(&clear_req->clip);
+	clear_req->color = MMSFBColor(r, g, b, a);
+
+	// get affected region on the real existing surface buffer
+	clear_req->real_region = (clear_req->clipped) ? clear_req->clip : MMSFBRegion(0, 0, this->config.w-1, this->config.h-1);
+	if (this->is_sub_surface) {
+		clear_req->real_region.x1+= this->sub_surface_xoff;
+		clear_req->real_region.y1+= this->sub_surface_yoff;
+		clear_req->real_region.x2+= this->sub_surface_xoff;
+		clear_req->real_region.y2+= this->sub_surface_yoff;
+	}
+
+	// all right
+	unlock();
+	return true;
 }
 
 bool MMSFBSurface::setColor(unsigned char r, unsigned char g,
@@ -1690,6 +1827,9 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
 	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
+	// finalize previous clear
+	finClear();
+
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
 	    DFBResult   dfbres;
@@ -1787,6 +1927,9 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
 
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
 	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+
+	// finalize previous clear
+	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
@@ -1946,6 +2089,10 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	h = this->config.h;
     }
 
+	// finalize previous clear
+    // note: this is very important to do it here, because doClear() calls fillRectangle() too
+	finClear();
+
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
     bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
@@ -2027,6 +2174,9 @@ bool MMSFBSurface::drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
 	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
+	// finalize previous clear
+	finClear();
+
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
 		if (!this->is_sub_surface) {
@@ -2067,6 +2217,9 @@ bool MMSFBSurface::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) 
 
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
 	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+
+	// finalize previous clear
+	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -2147,6 +2300,9 @@ bool MMSFBSurface::drawCircle(int x, int y, int radius, int start_octant, int en
 
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
 	MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+
+	// finalize previous clear
+	finClear();
 
     /* draw circle */
     if (end_octant < start_octant) end_octant = start_octant;
@@ -4173,7 +4329,7 @@ bool MMSFBSurface::merge(MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMerg
 
 
 
-bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MMSFBRectangle *src_rect, int x, int y,
+bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
 									   MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags) {
 
 	if (src_transparent) {
@@ -4186,7 +4342,7 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
 
     // check clipping region and calculate final rectangle
 	if (!this->is_sub_surface) {
-	    if (!calcClip(x, y, src_rect->w, src_rect->h, &crect)) {
+	    if (!calcClip(x, y, w, h, &crect)) {
 	    	// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
 	    	return false;
 	    }
@@ -4194,7 +4350,7 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
 	else {
 		bool outside = false;
 		CLIPSUBSURFACE
-		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, src_rect->w, src_rect->h, &crect)) {
+		if (!calcClip(x + this->sub_surface_xoff, y + this->sub_surface_yoff, w, h, &crect)) {
 			// rectangle described with x, y, w, h is outside of the surface or clipping rectangle
 			outside = true;
 		}
@@ -4246,10 +4402,10 @@ bool MMSFBSurface::checkBlittingStatus(bool src_opaque, bool src_transparent, MM
     return true;
 }
 
-bool MMSFBSurface::checkBlittingStatus(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y,
+bool MMSFBSurface::checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
 									   MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags) {
 	return checkBlittingStatus(MMSFBSURFACE_READ_BUFFER(source).opaque, MMSFBSURFACE_READ_BUFFER(source).transparent,
-								src_rect, x, y, crect, blittingflags);
+								x, y, w, h, crect, blittingflags);
 }
 
 
@@ -4277,10 +4433,15 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
     // get final rectangle and new opaque/transparent status
     MMSFBRectangle crect;
     MMSFBBlittingFlags blittingflags;
-    if (!checkBlittingStatus(source, &src, x, y, crect, blittingflags)) {
+    if (!checkBlittingStatus(source, x, y, src.w, src.h, crect, blittingflags)) {
     	// nothing to draw
     	return true;
     }
+
+//printf(" blit to %d,%d,%d,%d    dest opaque = %d, %d\n", crect.x, crect.y, crect.w, crect.h,MMSFBSURFACE_WRITE_BUFFER(this).opaque,opaque_saved);
+
+	// finalize previous clear
+	finClear((MMSFBSURFACE_WRITE_BUFFER(this).opaque) ? &crect: NULL);
 
 	if (this->allocated_by != MMSFBSurfaceAllocatedBy_dfb) {
 		//TODO: implement changes for dfb too
@@ -4408,10 +4569,13 @@ bool MMSFBSurface::blitBuffer(MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelF
     // get final rectangle and new opaque/transparent status
     MMSFBRectangle crect;
     MMSFBBlittingFlags blittingflags;
-    if (!checkBlittingStatus(opaque, false, &src, x, y, crect, blittingflags)) {
+    if (!checkBlittingStatus(opaque, false, x, y, src.w, src.h, crect, blittingflags)) {
     	// nothing to draw
     	return true;
     }
+
+	// finalize previous clear
+    finClear((MMSFBSURFACE_WRITE_BUFFER(this).opaque) ? &crect: NULL);
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -4533,10 +4697,26 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     INITCHECK;
 
 
-    //TODO: this reset is to be improved...
-    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
-    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+    // save opaque/transparent status
+    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
 
+    // get final rectangle and new opaque/transparent status
+    MMSFBRectangle crect;
+    MMSFBBlittingFlags blittingflags;
+    if (!checkBlittingStatus(source, dst.x, dst.y, dst.w, dst.h, crect, blittingflags)) {
+    	// nothing to draw
+    	return true;
+    }
+
+//printf(" stretch to %d,%d,%d,%d\n", crect.x, crect.y, crect.w, crect.h);
+
+
+	// finalize previous clear
+	finClear((MMSFBSURFACE_WRITE_BUFFER(this).opaque) ? &crect: NULL);
+
+    //TODO: use crect for the following code...
+	//...
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -4759,6 +4939,12 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 		}
 	}
 
+	if (!ret) {
+		// restore opaque/transparent status
+	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
+	    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
+	}
+
     return ret;
 }
 
@@ -4823,6 +5009,8 @@ bool MMSFBSurface::stretchBlitBuffer(MMSFBExternalSurfaceBuffer *extbuf, MMSFBSu
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
     MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
 
+	// finalize previous clear
+	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -4964,6 +5152,9 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
     // check if initialized
     INITCHECK;
+
+	// finalize previous clear
+	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5576,8 +5767,11 @@ bool MMSFBSurface::flip(int x1, int y1, int x2, int y2) {
 
 
 bool MMSFBSurface::refresh() {
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+
+	// finalize previous clear
+	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -5594,7 +5788,7 @@ bool MMSFBSurface::refresh() {
 				XLockDisplay(mmsfb->x_display);
 				int dx = 0;
 				int dy = 0;
-				if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+/*				if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
 					dx = (mmsfb->display_w - this->config.w) >> 1;
 					dy = (mmsfb->display_h - this->config.h) >> 1;
 				}
@@ -5602,11 +5796,47 @@ bool MMSFBSurface::refresh() {
 				XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
 							  0, 0, dx, dy,
 							  this->config.w, this->config.h, False);
+*/
 
+                if (mmsfb->fullscreen == MMSFB_FSM_TRUE) {
+                        // put image to layer pixmap
+                        XShmPutImage(mmsfb->x_display, layer->pixmap, layer->x_gc, sb->x_image[sb->currbuffer_read],
+                                                  0, 0, dx, dy,
+                                                  layer->config.w, layer->config.h, False);
 
+                        double scale = (double)layer->x_window_w / layer->config.w;
 
+                        // Scaling matrix
+                        XTransform xform = {{
+                                { XDoubleToFixed( 1 ), XDoubleToFixed( 0 ), XDoubleToFixed(     0 ) },
+                                { XDoubleToFixed( 0 ), XDoubleToFixed( 1 ), XDoubleToFixed(     0 ) },
+                                { XDoubleToFixed( 0 ), XDoubleToFixed( 0 ), XDoubleToFixed( scale ) }
+                        }};
 
+                        XRenderSetPictureTransform( mmsfb->x_display, layer->x_pixmap_pict, &xform );
+                        XRenderSetPictureFilter( mmsfb->x_display, layer->x_pixmap_pict, FilterBilinear, 0, 0 );
 
+                        //put render image, copy the pixmap content using XRender
+                        XRenderComposite(mmsfb->x_display,
+                                   PictOpSrc,
+                                   layer->x_pixmap_pict,
+                                   None,
+                                   layer->x_window_pict,
+                                   0, 0,
+                                   0, 0,
+                                   0, 0,
+                                   layer->x_window_w, layer->x_window_h);
+
+                } else {
+                        if (mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO) {
+                                dx = (mmsfb->display_w - this->config.w) >> 1;
+                                dy = (mmsfb->display_h - this->config.h) >> 1;
+                        }
+
+                        XShmPutImage(mmsfb->x_display, layer->x_window, layer->x_gc, sb->x_image[sb->currbuffer_read],
+                                                  0, 0, dx, dy,
+                                                  this->config.w, this->config.h, False);
+                }
 
 				//XFlush(mmsfb->x_display);
 				XSync(mmsfb->x_display, False);
@@ -5661,8 +5891,11 @@ bool MMSFBSurface::refresh() {
 bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
                               bool copycontent, bool withbackbuffer, MMSFBSurfacePixelFormat pixelformat) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
+
+	// finalize previous clear
+	finClear();
 
     if (this->is_sub_surface)
     	return false;
@@ -5672,7 +5905,7 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
     if (!w) w = config.w;
     if (!h) h = config.h;
 
-    /* create new surface */
+    // create new surface
     if (!mmsfb->createSurface(dstsurface, w, h, (pixelformat==MMSFB_PF_NONE)?this->config.surface_buffer->pixelformat:pixelformat,
                              (withbackbuffer)?this->config.surface_buffer->backbuffer:0,this->config.surface_buffer->systemonly)) {
         if (*dstsurface)
@@ -5682,7 +5915,7 @@ bool MMSFBSurface::createCopy(MMSFBSurface **dstsurface, int w, int h,
     }
 
     if (copycontent) {
-        /* copy the content */
+        // copy the content
         MMSFBRectangle dstrect;
         dstrect.x = 0;
         dstrect.y = 0;
@@ -5705,6 +5938,9 @@ bool MMSFBSurface::resize(int w, int h) {
     int old_w, old_h;
     if (!getSize(&old_w, &old_h)) return false;
     if ((old_w == w) && (old_h == h)) return true;
+
+	// finalize previous clear
+	finClear();
 
     if (!this->is_sub_surface) {
         // normal surface
@@ -6244,6 +6480,9 @@ bool MMSFBSurface::drawString(string text, int len, int x, int y) {
     // check if initialized
     INITCHECK;
 
+	// finalize previous clear
+	finClear();
+
     if (!this->config.font)
     	return false;
 
@@ -6532,6 +6771,9 @@ MMSFBSurface *MMSFBSurface::getSubSurface(MMSFBRectangle *rect) {
     // check if initialized
     INITCHECK;
 
+	// finalize previous clear
+	finClear();
+
 #ifdef USE_DFB_SUBSURFACE
     // get a sub surface
     DFBResult dfbres;
@@ -6564,10 +6806,13 @@ MMSFBSurface *MMSFBSurface::getSubSurface(MMSFBRectangle *rect) {
 
 bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
 
-	/* check if initialized */
+	// check if initialized
     INITCHECK;
 
-    /* only sub surfaces can be moved */
+	// finalize previous clear
+	finClear();
+
+    // only sub surfaces can be moved
     if (!this->is_sub_surface)
 		return false;
 
@@ -6659,6 +6904,9 @@ bool MMSFBSurface::dump2fcb(bool (*fcb)(char *, int, void *, int *), void *argp,
 		h = this->config.h - y;
 	if ((x + w > this->config.w)||(y + h > this->config.h))
 		return false;
+
+	// finalize previous clear
+	finClear();
 
 	// set buffer
 	char ob[65536];

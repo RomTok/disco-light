@@ -75,9 +75,6 @@ bool MMSMenuWidget::create(MMSWindow *root, string className, MMSTheme *theme) {
     this->da->baseWidgetClass = &(this->da->theme->menuWidgetClass.widgetClass);
     if (this->menuWidgetClass) this->da->widgetClass = &(this->menuWidgetClass->widgetClass); else this->da->widgetClass = NULL;
 
-    this->TID = 0;
-    this->Lock_cnt = 0;
-
     this->selimage = NULL;
     this->itemTemplate = NULL;
 
@@ -170,38 +167,13 @@ bool MMSMenuWidget::release() {
 
 
 void MMSMenuWidget::lock() {
-
-    if (this->Lock.trylock() == 0) {
-        // I have got the lock the first time
-    	this->TID = pthread_self();
-    	this->Lock_cnt = 1;
-    }
-    else {
-        if ((this->TID == pthread_self())&&(this->Lock_cnt > 0)) {
-            // I am the thread which has already locked this menu
-        	this->Lock_cnt++;
-        }
-        else {
-            // another thread has already locked this menu, waiting for...
-        	this->Lock.lock();
-        	this->TID = pthread_self();
-        	this->Lock_cnt = 1;
-        }
-    }
+	if (this->surface)
+		this->surface->lock();
 }
 
 void MMSMenuWidget::unlock() {
-
-	if (this->TID != pthread_self())
-        return;
-
-    if (this->Lock_cnt==0)
-    	return;
-
-    this->Lock_cnt--;
-
-    if (this->Lock_cnt == 0)
-    	this->Lock.unlock();
+	if (this->surface)
+		this->surface->unlock();
 }
 
 
@@ -2826,13 +2798,13 @@ void MMSMenuWidget::setItemTemplate(MMSWidget *itemTemplate) {
 	bool b;
 
 	if (!itemTemplate)
-        throw new MMSWidgetError(0, "item template not set");
+        throw MMSWidgetError(0, "item template not set");
 
     /* we need menu items which can be selected */
     if (!itemTemplate->getSelectable(b))
-        throw new MMSWidgetError(0, "widget cannot be selected");
+        throw MMSWidgetError(0, "widget cannot be selected");
     if (!b)
-    	throw new MMSWidgetError(0, "widget cannot be selected");
+    	throw MMSWidgetError(0, "widget cannot be selected");
 
     /* we need menu items which can be selected and we must switch focusable off */
     if (itemTemplate->getFocusable(b))
@@ -2843,7 +2815,7 @@ void MMSMenuWidget::setItemTemplate(MMSWidget *itemTemplate) {
 
     /* item template can be set once only */
     if (this->itemTemplate)
-        throw new MMSWidgetError(0, "item template can be set once only");
+        throw MMSWidgetError(0, "item template can be set once only");
 
     this->itemTemplate = itemTemplate;
 }
@@ -2858,7 +2830,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
     if (!widget) {
     	// no widget given, create widget from template
 		if (!this->itemTemplate)
-			throw new MMSWidgetError(0, "item template not set");
+			throw MMSWidgetError(0, "item template not set");
 
 		widget = itemTemplate->copyWidget();
     }

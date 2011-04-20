@@ -215,8 +215,8 @@ int main(int argc, char *argv[]) {
         cmd->handleRequest();
         exit(0);
 
-    } catch(MMSError *err) {
-        printf("\nAn internal error occured: %s\n",err->getMessage().c_str());
+    } catch(MMSError &err) {
+        printf("\nAn internal error occured: %s\n",err.getMessage().c_str());
     }
 
 }

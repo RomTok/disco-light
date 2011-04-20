@@ -245,7 +245,7 @@ void MMSTheme::addSimpleHSliderClass(MMSSIMPLESLIDERH_THEME *simpleHSliderClass,
     /* add to hash lookup table */
     pair<SIMPLEHSLIDERCLASSMAP::iterator, bool> p = simpleHSliderClassMap.insert(pair<const char*, MMSSIMPLESLIDERH_THEME*>(name.c_str(), (MMSSIMPLESLIDERH_THEME*)simpleHSliderClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleHSliderClasses.push_back(simpleHSliderClass);
 }
@@ -254,7 +254,7 @@ void MMSTheme::addSimpleVSliderClass(MMSSIMPLESLIDERV_THEME *simpleVSliderClass,
     /* add to hash lookup table */
     pair<SIMPLEVSLIDERCLASSMAP::iterator, bool> p = simpleVSliderClassMap.insert(pair<const char*, MMSSIMPLESLIDERV_THEME*>(name.c_str(), (MMSSIMPLESLIDERV_THEME*)simpleVSliderClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleVSliderClasses.push_back(simpleVSliderClass);
 }
@@ -263,7 +263,7 @@ void MMSTheme::addSimpleHMenuClass(MMSSIMPLEHMENU_THEME *simpleHMenuClass, const
     /* add to hash lookup table */
     pair<SIMPLEHMENUCLASSMAP::iterator, bool> p = simpleHMenuClassMap.insert(pair<const char*, MMSSIMPLEHMENU_THEME*>(name.c_str(), (MMSSIMPLEHMENU_THEME*)simpleHMenuClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleHMenuClasses.push_back(simpleHMenuClass);
 }
@@ -272,7 +272,7 @@ void MMSTheme::addSimpleVMenuClass(MMSSIMPLEVMENU_THEME *simpleVMenuClass, const
     /* add to hash lookup table */
     pair<SIMPLEVMENUCLASSMAP::iterator, bool> p = simpleVMenuClassMap.insert(pair<const char*, MMSSIMPLEVMENU_THEME*>(name.c_str(), (MMSSIMPLEVMENU_THEME*)simpleVMenuClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     simpleVMenuClasses.push_back(simpleVMenuClass);
 }
@@ -283,7 +283,7 @@ void MMSTheme::addTextboxClass(MMSTEXTBOX_THEME *textboxClass, const string name
     /* add to hash lookup table */
     pair<TEXTBOXCLASSMAP::iterator, bool> p = textboxClassMap.insert(pair<const char*, MMSTEXTBOX_THEME*>(name.c_str(), (MMSTEXTBOX_THEME*)textboxClass));
     if(!p.second)
-        throw new MMSThemeError(1, "duplicate class name: " + name);
+        throw MMSThemeError(1, "duplicate class name: " + name);
 
     textboxClasses.push_back(textboxClass);
 }
@@ -411,7 +411,7 @@ MMSCheckBoxWidgetClass* MMSTheme::getCheckBoxWidgetClass(string className) {
 }
 
 
-MMSTheme::MMSTheme(bool initial_load) {
+MMSTheme::MMSTheme(bool initial_load, bool debug) {
 
     /* initialize the theme with default values */
     MMSFBColor color;
@@ -434,7 +434,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->mainWindowClass.windowClass.setOpacity(255);
         this->mainWindowClass.windowClass.setFadeIn(false);
         this->mainWindowClass.windowClass.setFadeOut(false);
-        this->mainWindowClass.windowClass.setDebug(false);
+        this->mainWindowClass.windowClass.setDebug(debug);
         this->mainWindowClass.windowClass.setMargin(0);
         this->mainWindowClass.windowClass.setUpArrow("");
         this->mainWindowClass.windowClass.setDownArrow("");
@@ -480,7 +480,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->popupWindowClass.windowClass.setOpacity(255);
         this->popupWindowClass.windowClass.setFadeIn(false);
         this->popupWindowClass.windowClass.setFadeOut(false);
-        this->popupWindowClass.windowClass.setDebug(false);
+        this->popupWindowClass.windowClass.setDebug(debug);
         this->popupWindowClass.windowClass.setMargin(0);
         this->popupWindowClass.windowClass.setUpArrow("");
         this->popupWindowClass.windowClass.setDownArrow("");
@@ -529,7 +529,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->rootWindowClass.windowClass.setOpacity(255);
         this->rootWindowClass.windowClass.setFadeIn(false);
         this->rootWindowClass.windowClass.setFadeOut(false);
-        this->rootWindowClass.windowClass.setDebug(false);
+        this->rootWindowClass.windowClass.setDebug(debug);
         this->rootWindowClass.windowClass.setMargin(0);
         this->rootWindowClass.windowClass.setUpArrow("");
         this->rootWindowClass.windowClass.setDownArrow("");
@@ -575,7 +575,7 @@ MMSTheme::MMSTheme(bool initial_load) {
         this->childWindowClass.windowClass.setOpacity(255);
         this->childWindowClass.windowClass.setFadeIn(false);
         this->childWindowClass.windowClass.setFadeOut(false);
-        this->childWindowClass.windowClass.setDebug(false);
+        this->childWindowClass.windowClass.setDebug(debug);
         this->childWindowClass.windowClass.setMargin(0);
         this->childWindowClass.windowClass.setUpArrow("");
         this->childWindowClass.windowClass.setDownArrow("");

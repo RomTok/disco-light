@@ -60,8 +60,8 @@ MMSTimer::~MMSTimer() {
 		this->action = QUIT;
 		pthread_cond_signal(&cond);
 		pthread_mutex_unlock(&mutex);
+		join();
 	}
-	join();
 
 	pthread_cond_destroy(&this->cond);
 	pthread_mutex_destroy(&this->mutex);

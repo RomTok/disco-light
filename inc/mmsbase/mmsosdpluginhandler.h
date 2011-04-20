@@ -41,10 +41,10 @@
 
 MMS_CREATEERROR(MMSOSDPluginError);
 
-
 class MMSOSDPluginHandler {
     private:
         bool 			loaded;
+        bool			initialized;
         MMSPluginData 	plugindata;
         IMMSOSDPlugin 	*plugin;
         MMSShlHandler 	*handler;
@@ -63,6 +63,7 @@ class MMSOSDPluginHandler {
         ~MMSOSDPluginHandler();
 
         bool isLoaded();
+        bool isInitialized();
         void load();
         void unload();
         MMSPluginData getPluginData();

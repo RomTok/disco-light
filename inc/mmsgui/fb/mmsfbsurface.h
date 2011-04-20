@@ -246,9 +246,9 @@ class MMSFBSurface {
 
         bool checkDrawingStatus(int x, int y, int w, int h,
 								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags);
-        bool checkBlittingStatus(bool src_opaque, bool src_transparent, MMSFBRectangle *src_rect, int x, int y,
+        bool checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
         						 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
-        bool checkBlittingStatus(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, int y,
+        bool checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
 								 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
 
 
@@ -315,6 +315,17 @@ class MMSFBSurface {
         vector<MMSFBSurface *>  children;
 
 
+        typedef struct {
+        	bool			set;
+        	bool			clipped;
+        	MMSFBSurface	*surface;
+        	MMSFBRegion 	clip;
+        	MMSFBColor		color;
+        	MMSFBRegion		real_region;
+        } CLEAR_REQUEST;
+
+        CLEAR_REQUEST	clear_request;
+
 
         void init(MMSFBSurfaceAllocatedBy allocated_by, MMSFBSurface *parent,
 				  MMSFBRectangle *sub_surface_rect);
@@ -326,6 +337,10 @@ class MMSFBSurface {
 
         void processSwapDisplay(void *in_data, int in_data_len, void **out_data, int *out_data_len);
         void swapDisplay(bool vsync);
+
+        bool doClear(unsigned char r = 0, unsigned char g = 0,
+                     unsigned char b = 0, unsigned char a = 0);
+        void finClear(MMSFBRectangle *check_rect = NULL);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);

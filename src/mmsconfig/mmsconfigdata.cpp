@@ -253,6 +253,10 @@ const bool   MMSConfigData::getInitialLoad() {
 	return this->graphics.initialload;
 }
 
+const bool   MMSConfigData::getDebugFrames() {
+	return this->graphics.debugframes;
+}
+
 const bool   MMSConfigData::getTouchSwapX() {
 	return this->graphics.touchSwapX;
 }
@@ -289,6 +293,10 @@ void MMSConfigData::setHideApplication(bool hideapplication) {
 
 void MMSConfigData::setInitialLoad(bool initialload) {
 	this->graphics.initialload = initialload;
+}
+
+void MMSConfigData::setDebugFrames(bool debugframes) {
+	this->graphics.debugframes = debugframes;
 }
 
 

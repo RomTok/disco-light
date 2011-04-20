@@ -98,13 +98,13 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
 
         /* load switcher dialog */
         this->window = (MMSMainWindow*)dm.loadDialog(config.getData() + "/themes/" + config.getTheme() + "/switcher.xml");
-        if(!this->window) throw new MMSError(0, "Error loading switchers root window");
+        if(!this->window) throw MMSError(0, "Error loading switchers root window");
 
         /* get access to the menu bar */
         this->menuBar = (MMSChildWindow *)this->window->findWindow(SWITCHER_MENUBAR);
-        if(!this->menuBar) throw new MMSError(0, "Error loading switchers menuBar childwindow");
+        if(!this->menuBar) throw MMSError(0, "Error loading switchers menuBar childwindow");
         this->menu    = dynamic_cast<MMSMenuWidget*>(this->menuBar->findWidget(SWITCHER_MENU));
-        if(!this->menu) throw new MMSError(0, "Error loading switchers menu");
+        if(!this->menu) throw MMSError(0, "Error loading switchers menu");
 
         /* get access to the static menu bar */
         this->menuBar_static = (MMSChildWindow *)this->window->findWindow(SWITCHER_MENUBAR_STATIC);
@@ -142,11 +142,9 @@ MMSSwitcher::MMSSwitcher(MMSPluginData *plugindata) :
         this->switcherThread = new MMSSwitcherThread(this, NULL, NULL, NULL, NULL);
         this->switcherThread->start();
 
-    } catch(MMSError *error) {
-        DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
-        string msg = error->getMessage();
-        delete error;
-        throw new MMSError(0, msg);
+    } catch(MMSError &error) {
+        DEBUGMSG("Switcher", "Abort due to: " + error.getMessage());
+        throw error;
     }
 }
 
@@ -423,13 +421,19 @@ void MMSSwitcher::onReturn(MMSWidget *widget) {
             handler->invokeShow(NULL);
         }
 
-    } catch(MMSError *error) {
-        DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
+    } catch(MMSError &error) {
+        DEBUGMSG("Switcher", "Abort due to: " + error.getMessage());
     }
 }
 
 void MMSSwitcher::show() {
-    this->window->show();
+	MMSConfigData config;
+	int firstplugin = atoi(config.getFirstPlugin().c_str());
+	if(firstplugin > 0) {
+		this->switchToPluginEx(firstplugin);
+	} else {
+		this->window->show();
+	}
 }
 
 void MMSSwitcher::hide() {
@@ -439,14 +443,7 @@ void MMSSwitcher::hide() {
 MMSChildWindow* MMSSwitcher::loadPreviewDialog(string filename, MMSTheme *theme, int id) {
     MMSChildWindow *win;
 
-     try {
-         win = this->dm.loadChildDialog(filename, theme);
-     }
-     catch(MMSError *error) {
-         string msg = error->getMessage();
-         delete error;
-         throw MMSError(0, msg);
-    }
+	win = this->dm.loadChildDialog(filename, theme);
 
     if(win) {
     	// save the window pointer
@@ -520,6 +517,10 @@ bool MMSSwitcher::switchToPluginEx(int toplugin) {
     if (toplugin >= 0) {
     	try {
             MMSPluginData *data = &this->plugins[toplugin]->plugindata;
+            if(!data) {
+            	DEBUGMSG("Switcher", "Plugin with ID = %d not found", toplugin);
+            	return false;
+            }
 
             if(data->getType()->getName() == "OSD_PLUGIN") {
                 MMSOSDPluginHandler *handler = this->pluginmanager->getOSDPluginHandler(data->getId());
@@ -531,8 +532,8 @@ bool MMSSwitcher::switchToPluginEx(int toplugin) {
             }
 
             return true;
-	    } catch(MMSError *error) {
-	      	DEBUGMSG("Switcher", "Abort due to: " + error->getMessage());
+	    } catch(MMSError &error) {
+	      	DEBUGMSG("Switcher", "Abort due to: " + error.getMessage());
 	    }
     }
 
@@ -583,18 +584,7 @@ bool MMSSwitcher::revertToLastPlugin() {
 }
 
 MMSChildWindow* MMSSwitcher::loadChildWindow(string filename, MMSTheme *theme) {
-	MMSChildWindow *win=NULL;
-
-	 try {
-		 win = this->dm.loadChildDialog(filename, theme);
-	 }
-	 catch(MMSError *error) {
-		 string msg = error->getMessage();
-		 delete error;
-		 throw MMSError(0, msg);
-	}
-
-	return win;
+	return this->dm.loadChildDialog(filename, theme);
 }
 
 void MMSSwitcher::refresh()

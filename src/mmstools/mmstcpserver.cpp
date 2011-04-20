@@ -142,6 +142,7 @@ void MMSTCPServer::threadMain() {
 			WRITE_MSGI("check st_size");
 			// call next server thread
 			if (this->st_size<=0) {
+				shutdown(new_s, 2);
 				close(new_s);
 				continue;
 			}
@@ -157,12 +158,12 @@ void MMSTCPServer::threadMain() {
 		}
 		else
 		if (FD_ISSET(this->s, &writefds)) {
-			DEBUGOUT ("WRITEFDS\n");
+			//DEBUGOUT ("WRITEFDS\n");
 			return;
 		}
 		else
 		if (FD_ISSET(this->s, &errorfds)) {
-			DEBUGOUT ("ERRORFDS\n");
+			//DEBUGOUT ("ERRORFDS\n");
 			return;
 		}
 		else {

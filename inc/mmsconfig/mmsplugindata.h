@@ -65,6 +65,7 @@ class MMSPluginData {
         MMSImportPropertyData       *importProperties;
         MMSPluginCategoryData       *category;
         int							orderpos;
+        string						version;
 
         void    setId(int id);
 
@@ -122,6 +123,9 @@ class MMSPluginData {
 
         int		getOrderpos();
         void    setOrderpos(int orderpos);
+
+        string	getVersion();
+        void	setVersion(string version);
 };
 
 #endif /*MMSPLUGINDATA_H_*/

@@ -56,7 +56,7 @@ void MMSShlHandler::close() {
         dlclose(this->handle);
         this->isloaded = false;
     } else {
-        throw new MMSShlError(0,"shared library " + this->name + " is not loaded");
+        throw MMSShlError(0,"shared library " + this->name + " is not loaded");
     }
 #endif
 }
@@ -67,13 +67,13 @@ void MMSShlHandler::open() {
 #else
 
     if(this->isloaded) {
-        throw new MMSShlError(0,"shared library " + this->name + " is alread loaded");
+        throw MMSShlError(0,"shared library " + this->name + " is alread loaded");
     }
     else {
         this->handle = dlopen(this->name.c_str(),RTLD_NOW);
 
         if(this->handle == NULL)
-            throw new MMSShlError(0,"shared library " + this->name + " cannot be loaded: " + dlerror());
+            throw MMSShlError(0,"shared library " + this->name + " cannot be loaded: " + dlerror());
 
         this->isloaded = true;
     }
@@ -108,9 +108,9 @@ void *MMSShlHandler::getFunction(string name) {
     if(this->isloaded) {
         ret = dlsym(this->handle,name.c_str());
         if(ret == NULL)
-            throw new MMSShlError(0,"symbol " + name + " cannot be retrieved: " + dlerror());
+            throw MMSShlError(0,"symbol " + name + " cannot be retrieved: " + dlerror());
     } else {
-        throw new MMSShlError(0,"shared library " + this->name + " is not loaded");
+        throw MMSShlError(0,"shared library " + this->name + " is not loaded");
     }
 
     return ret;

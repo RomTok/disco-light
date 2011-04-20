@@ -402,6 +402,15 @@ unsigned int MMSWindowManager::printStack(char *buffer) {
 		memset((void*)buffer, ' ', sizeof(buffer));
 		char *ptr = buffer;
 
+		// print header
+		int cnt;
+		cnt = sprintf(ptr, "NAME                             THIS     STATE         OPACITY OWN_SURFACE\n");
+		ptr[cnt] = ' ';
+		ptr+= cnt;
+		cnt = sprintf(ptr, "---------------------------------------------------------------------------\n");
+		ptr[cnt] = ' ';
+		ptr+= cnt;
+
 		for (unsigned int i = 0; i < this->windows.size(); i++) {
 			ptr += this->windows.at(i)->printStack(ptr);
 		}
@@ -412,6 +421,15 @@ unsigned int MMSWindowManager::printStack(char *buffer) {
 	}
 	else {
 		char *ptr = buffer;
+
+		// print header
+		int cnt;
+		cnt = sprintf(ptr, "NAME                             THIS     STATE         OPACITY OWN_SURFACE\n");
+		ptr[cnt] = ' ';
+		ptr+= cnt;
+		cnt = sprintf(ptr, "---------------------------------------------------------------------------\n");
+		ptr[cnt] = ' ';
+		ptr+= cnt;
 
 		for (unsigned int i = 0; i < this->windows.size(); i++) {
 			ptr += this->windows.at(i)->printStack(ptr);

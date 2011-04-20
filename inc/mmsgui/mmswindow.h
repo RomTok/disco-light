@@ -376,6 +376,7 @@ class MMSWindow {
 		int 			anim_move_step;
 
 
+		bool			need_redraw;
 
 
         //! Internal method: Creates the window.
@@ -564,6 +565,12 @@ class MMSWindow {
         */
         MMSWindow* findWindow(string name);
 
+        //! Return last window in the stack.
+        /*!
+        \return pointer to the MMSWindow object or NULL
+        */
+        MMSWindow* getLastWindow();
+
         //! Makes a window visible.
         /*!
         \return true if the show action successfully started
@@ -704,9 +711,10 @@ class MMSWindow {
 
         //! Is the window focused?
         /*!
+        \param checkparents		if true the parent(s) will be check too
         \return true, if the window is focused
         */
-        bool getFocus();
+        bool getFocus(bool checkparents = false);
 
         //! Find a widget with a given name.
         /*!

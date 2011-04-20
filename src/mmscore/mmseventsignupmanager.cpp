@@ -73,7 +73,7 @@ vector<MMSPluginData *> MMSEventSignupManager::getReceiverPlugins(_IMMSEvent *ev
         subscriptions.clear();
     }
     if(mydata.empty())
-        throw new MMSEventSignupManagerError(0,"no subscriptions found");
+        throw MMSEventSignupManagerError(0,"no subscriptions found");
 
     return mydata;
 }
@@ -99,7 +99,7 @@ vector<sigc::signal<void, _IMMSEvent*> *> MMSEventSignupManager::getReceiverSign
         subscriptions.clear();
     }
     if(mysignals.empty())
-        throw new MMSEventSignupManagerError(0,"no subscriptions found");
+        throw MMSEventSignupManagerError(0,"no subscriptions found");
 
     return mysignals;
 

@@ -105,10 +105,10 @@ void MMSThread::run() {
 		// mark thread as stopped
         this->running = false;
 
-	} catch(MMSError *error) {
+	} catch(MMSError &error) {
         this->running = false;
         this->starting = false;
-	    DEBUGMSG(this->identity.c_str(), "Abort due to: %s", error->getMessage().c_str());
+	    DEBUGMSG(this->identity.c_str(), "Abort due to: " + error.getMessage());
 	}
 }
 

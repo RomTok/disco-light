@@ -125,6 +125,7 @@ class MMSConfigDataGraphics {
 	    int						rotatescreen;
 	    bool					hideapplication;
 	    bool					initialload;
+	    bool					debugframes;
 		bool					touchSwapX;					/**< swap x axis (maximum value becomes minimum) */
 		bool					touchSwapY;					/**< swap y axis (maximum value becomes minimum) */
 		bool					touchSwapXY;				/**< swap x and y axis (x axis events are handled as y axis and vice versa) */
@@ -142,6 +143,7 @@ class MMSConfigDataGraphics {
    		    rotatescreen(0),								// rotate screen by X degree, default 0
    		    hideapplication(false),
    		    initialload(false),
+   		    debugframes(false),
    		    touchSwapX(false),
    		    touchSwapY(false),
    		    touchSwapXY(false) {}
@@ -225,6 +227,7 @@ class MMSConfigData {
         const int getRotateScreen();
         const bool   getHideApplication();
         const bool   getInitialLoad();
+        const bool   getDebugFrames();
         const bool   getTouchSwapX();
         const bool   getTouchSwapY();
         const bool   getTouchSwapXY();
@@ -236,6 +239,7 @@ class MMSConfigData {
         void setRotateScreen(int rs);
         void setHideApplication(bool hideapplication);
         void setInitialLoad(bool initialload);
+        void setDebugFrames(bool debugframes);
 
         // language section getters
     	const MMSLanguage getSourceLang();

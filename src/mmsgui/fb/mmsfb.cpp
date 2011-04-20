@@ -94,6 +94,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
     // save arguments
     this->argc = argc;
     this->argv = argv;
+    this->bin = argv[0];
     this->appliconname = appl_icon_name;
     this->applname = appl_name;
     this->fullscreen = fullscreen;
@@ -101,8 +102,11 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
     // init layer pointers
     memset(this->layer, 0, sizeof(MMSFBLayer *) * MMSFBLAYER_MAXNUM);
 
+#ifdef __HAVE_XLIB__
+    memset(this->x_windows, 0, sizeof(Window) * MMSFBLAYER_MAXNUM);
     // basic information mainly needed by X11 initialization
     this->x11_win_rect = x11_win_rect;
+#endif
 
     // which backend should i use?
 	this->backend = backend;
@@ -354,6 +358,23 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
     return true;
 }
 
+
+bool MMSFB::getLayer(int id, MMSFBLayer **layer) {
+
+	// check if initialized
+    INITCHECK;
+
+    if (this->layer[id]) {
+        // i have already the layer
+        *layer = this->layer[id];
+        return true;
+    }
+
+    // layer is not initialized!!!
+    return false;
+}
+
+
 void *MMSFB::getX11Window() {
     if (this->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -492,20 +513,36 @@ bool MMSFB::resizeWindow() {
 
 void MMSFB::realignLayer() {
 #ifdef __HAVE_XLIB__
+	static bool first = true;
+
+	if(first==false)
+		return;
+
+	first=false;
 	for(int i=0; ;i++) {
 		if(mmsfb->x_windows[i]==0)
 			break;
 		else if(mmsfb->x_windows[i]!=mmsfb->input_window) {
+			XLockDisplay(mmsfb->x_display);
 			XLowerWindow(mmsfb->x_display, mmsfb->x_windows[i]);
 			XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display,False);
+			X11_IMPL *impl = (X11_IMPL *)mmsfb->layer[i]->getImplementation();
+
+			XPutImage(mmsfb->x_display, mmsfb->x_windows[i], impl->x_gc, mmsfb->rootimage, 0,0, 0, 0, mmsfb->display_w,
+					  mmsfb->display_h);
+
+			//XUnmapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
+			//printf("unmapping layer %d\n", i);
+			XSync(mmsfb->x_display,False);
+
 			XMapWindow(mmsfb->x_display, mmsfb->x_windows[i]);
-			XFlush(mmsfb->x_display);
-			XSync(mmsfb->x_display,False);
 			XRaiseWindow(mmsfb->x_display, mmsfb->input_window);
-			printf("mapping layer %d\n", i);
+
+			//printf("mapping layer %d\n", i);
 			XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display,False);
+			XUnlockDisplay(mmsfb->x_display);
 		}
 	}
 #endif

@@ -478,7 +478,7 @@ void Cmd::prepareDb() {
     	rcparser.parseFile(cmdline["config"]);
 	    rcparser.getMMSRc(&rcGlobal, &rcConfigDB, &rcDataDB, &rcGraphics,&rcLanguage);
 
-    } catch (MMSRcParserError *ex) {
+    } catch (MMSRcParserError &ex) {
     	char error[1024];
     	sprintf(error,"cannot read configuration file @[1m%s@[0m.",configfile.c_str());
         cons.printError(error);
@@ -498,9 +498,8 @@ void Cmd::prepareDb() {
                                            config.getConfigDBPort(),
                                            config.getConfigDBUser(),
                                            config.getConfigDBPassword());
-    } catch(MMSError *ex) {
+    } catch(MMSError &ex) {
     	cons.printText("cannot get data source.");
-    	delete ex;
     }
 
 }

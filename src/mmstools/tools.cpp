@@ -634,7 +634,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     if(!strlen(logfile))
     	fp = stderr;
 	else if((fp=fopen(logfile, "a+"))==NULL)
-		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
+		throw MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);
@@ -667,7 +667,7 @@ void writeDebugMessage(const char *identity, const char *filename, const int lin
     if(!strlen(logfile))
     	fp = stderr;
 	else if((fp=fopen(logfile, "a+"))==NULL)
-		throw new MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
+		throw MMSError(errno, "Can't open logfile [" + string(strerror(errno)) + "]");
 
 	gettimeofday(&tv, NULL);
     getCurrentTimeBuffer(NULL, NULL, timebuf, NULL);

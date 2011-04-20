@@ -98,4 +98,8 @@ MMSFBLayer *getVideoLayer();
 */
 MMSFBLayer *getGraphicsLayer();
 
+//! show the background window
+void showBackgroundWindow();
+
+
 #endif /*MMSINIT_H_*/

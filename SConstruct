@@ -26,9 +26,9 @@ SetOption('implicit_cache', 1)
 # Version                                                             #
 #######################################################################
 packageVersionMajor = 1
-packageVersionMinor = 8
+packageVersionMinor = 9
 packageVersionMicro = 0
-packageVersionRC    = ''
+packageVersionRC    = '-dev'
 
 # Package information
 packageName        = 'disko'

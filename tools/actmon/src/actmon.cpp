@@ -30,82 +30,83 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#include "mmsgui/mmswindowaction.h"
+#include <cstring>
+#include "mms.h"
 
-MMSWindowAction::MMSWindowAction(class MMSWindow* destination) : MMSThread("MMSWindowAction") {
-	this->window = destination;
-	this->id = idFactory.getId();
-	this->action = MMSWACTION_NONE;
-	this->stopaction = false;
-	this->cancelBroadcast.connect(sigc::mem_fun(this,&MMSWindowAction::onCancelBroadcast));
+void help() {
+	printf("\nActivity Monitor\n\n");
+	printf("parameter:\n\n");
+	printf("--reset    if used, statistic infos will be reset\n");
+	printf("\nexamples:\n\n");
+	printf("actmon\n\n");
+	printf("actmon --disko:config=./etc/diskorc.xml\n\n");
+	printf("actmon --reset\n\n");
+	printf("actmon --disko:config=./etc/diskorc.xml --reset\n\n");
 }
 
-MMSWindowAction::~MMSWindowAction() {
-}
+bool getparams(int argc, char *argv[], bool &reset) {
 
-int hideCnt = 0;
+	reset = false;
 
-void MMSWindowAction::threadMain() {
-
-    try {
-
-    	this->stopaction = false;
-
-    	switch(this->action) {
-    		case MMSWACTION_SHOW:
-                while (hideCnt) msleep(100);
-//    			this->window->showAction(&(this->stopaction));
-    			break;
-    		case MMSWACTION_HIDE:
-                hideCnt++;
-//    			this->window->hideAction(&(this->stopaction));
-                hideCnt--;
-    			break;
-    		default:
-    			break;
+    //check if --reset is given per commandline
+    for (int i = 1; i < argc; i++) {
+    	if (strcmp(argv[i], "--reset")==0) {
+    		// yes
+    		reset = true;
     	}
-    	this->stopaction = false;
-    	this->action = MMSWACTION_NONE;
-
-    } catch(MMSError &error) {
-    	DEBUGMSG("MMSGUI", "Error: " + error.getMessage());
-    }
-}
-
-
-void MMSWindowAction::cancelCleanup() {
-	this->window->instantHide();
-}
-
-void MMSWindowAction::onCancelBroadcast(int type) {
-	if (this->isRunning()) {
-        if (this->action == MMSWACTION_HIDE) {
-            while (this->isRunning()) msleep(100);
-            return;
-        }
-
-		this->stopaction = true;
-		int i = 0;
-		while (this->stopaction) {
-			msleep(100);
-			i++;
-			if (i > 20) this->cancel();
+    	else
+		if (memcmp(argv[i], "--disko", 7)!=0) {
+			printf("Error: unknown parameter %s\n", argv[i]);
+			return false;
 		}
-		if (!this->stopaction) {
-//			this->window->hideAction(&(this->stopaction));
-        }
-		else
-			this->stopaction = false;
+    }
+
+	return true;
+}
+
+int main(int argc, char *argv[]) {
+	bool reset;
+
+	// get cmd parameters
+	if (!getparams(argc, argv, reset)) {
+		help();
+		return 1;
 	}
+
+	// init disko in silent mode
+	if (mmsInit(MMSINIT_SILENT, argc, argv)) {
+		MMSConfigData config;
+
+		// init tcp client instance
+		MMSTCPClient *tcl = new MMSTCPClient(config.getActMonAddress(), config.getActMonPort());
+
+		// build command
+		string cmd;
+		if (!reset)
+			cmd = "GET_STATINFO RESET(FALSE)";
+		else
+			cmd = "GET_STATINFO RESET(TRUE)";
+
+		// send command and receive answer
+		string ret;
+		tcl->sendAndReceive(cmd, &ret);
+		if (!ret.empty()) {
+			// success
+			printf(ret.c_str());
+		}
+		else {
+			// command failed
+			printf("Error: command '%s' failed\n", cmd.c_str());
+			return 3;
+		}
+
+		// free tcp client instance
+		delete tcl;
+
+		return 0;
+	}
+
+	return 2;
 }
 
-void MMSWindowAction::setAction(MMSWACTION action) {
-	this->action=action;
-}
-
-MMSWACTION MMSWindowAction::getAction() {
-	return this->action;
-}
-
-sigc::signal<void,int> MMSWindowAction::cancelBroadcast;
 
