@@ -224,7 +224,12 @@ void MMSTranslator::processFile(const string &file) {
 			if(f != this->transmap.end()) {
 				//already have the source
 				DEBUGMSG("MMSTranslator", "insert: '%s'", from.c_str());
-				f->second.at(idx) = to;
+				try {
+					f->second.at(idx) = to;
+				} catch(std::exception &ex) {
+					f->second.resize(idx + 1, "");
+					f->second.at(idx) = to;
+				}
 			} else {
 				DEBUGMSG("MMSTranslator", "fresh insert: '%s'", from.c_str());
 				vector<string> trans(idx + 1);
