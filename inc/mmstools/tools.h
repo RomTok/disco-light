@@ -169,4 +169,9 @@ void rotateUShortIntBuffer180(unsigned short int *buffer, int pitch, int w, int 
 void rotateUIntBuffer180(unsigned int *buffer, int pitch, int w, int h);
 
 
+#ifdef __HAVE_BACKTRACE__
+void print_trace(char *prefix);
+#endif
+
+
 #endif /*TOOLS_H_*/

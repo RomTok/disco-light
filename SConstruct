@@ -378,6 +378,22 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 		Exit(1)
 
 	return False
+
+def checkBacktrace(context):
+	backtrace_test = """
+	#include <execinfo.h>
+	int main(int argc, char **argv) {
+			void *array[1];
+			backtrace(array, 1);
+			backtrace_symbols(array, 1);
+			return 0;
+	}	
+	"""
+
+	context.Message('Checking for backtrace_symbols()... ')
+	result = context.TryLink(backtrace_test, '.c')
+	context.Result(result)
+	return result
 		
 def printSummary():
 	print '\n********************* Summary *********************\n'
@@ -471,7 +487,8 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
                                      'checkGstDiskoVideosink' : checkGstDiskoVideosink,
                                      'checkConf' : checkConf,
                                      'checkPKG' : checkPKG,
-                                     'checkSimpleLib' : checkSimpleLib},
+                                     'checkSimpleLib' : checkSimpleLib,
+                                     'checkBacktrace' : checkBacktrace},
                      conf_dir = 'build/.sconf_temp',
                      log_file = 'build/.config.log',
                      clean = False,
@@ -716,6 +733,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 	# checks required if building activity monitor
 	if(env['enable_actmon']):
 		conf.env['CCFLAGS'].extend(['-D__ENABLE_ACTMON__'])
+
+	# check for backtrace_symbols() support
+	if conf.checkBacktrace():
+		conf.env['CCFLAGS'].extend(['-D__HAVE_BACKTRACE__'])
 
 	env2 = conf.Finish()
 	if env2:

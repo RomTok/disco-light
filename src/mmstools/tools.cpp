@@ -40,6 +40,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#ifdef __HAVE_BACKTRACE__
+#include <execinfo.h>
+#endif
 
 /* Once-only initialisation of the key */
 static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;
@@ -806,6 +809,22 @@ void rotateUIntBuffer180(unsigned int *buffer, int pitch, int w, int h) {
 	}
 }
 
+#ifdef __HAVE_BACKTRACE__
+void print_trace(char *prefix) {
+	void 	*array[10];
+	size_t 	size;
+	char 	**strings;
+	size_t 	i;
 
+	size 	= backtrace(array, 10);
+	strings = backtrace_symbols(array, size);
 
+	fprintf(stderr, "******************* %s ****************\n", prefix);
+
+	for(i = 2; i < size; i++)
+	  fprintf(stderr, "%s\n", strings[i]);
+
+	free(strings);
+}
+#endif
 
