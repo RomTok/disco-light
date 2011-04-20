@@ -985,6 +985,11 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
     			// normal stack position, decrease the index for "always on top" windows
     			this->always_on_top_index--;
     		}
+
+    		int childwinsize = this->childwins.size()-1;
+			if ((this->focusedChildWin > childwinsize) && (childwinsize >= 0))
+				this->focusedChildWin = childwinsize;
+
             unlock();
     		return true;
     	}
