@@ -618,6 +618,9 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 void MMSTextBoxWidget::targetLangChanged(MMSLanguage lang) {
     this->translated = false;
     this->load_font = true;
+
+    /* fix: recalculate already showed text, too */
+	this->surfaceChanged = true;
 }
 
 bool MMSTextBoxWidget::loadFile(bool refresh) {
