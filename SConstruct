@@ -111,6 +111,7 @@ if sconsVersion < (0,98,1):
 	BoolOption('enable_sip',          'Build with mmssip support', False),
 	BoolOption('enable_curl',         'Build with curl support', True),
 	BoolOption('enable_mail',         'Build with email support', False),
+	BoolOption('enable_fribidi',      'Build with fribidi support', False),
 	BoolOption('enable_actmon',       'Build activity monitor', False),
 	BoolOption('enable_tools',        'Build disko tools', False),
 	BoolOption('static_lib',          'Create statically linked library', False),
@@ -140,6 +141,7 @@ else:
 	BoolVariable('enable_sip',          'Build with mmssip support', False),
 	BoolVariable('enable_curl',         'Build with curl support', True),
 	BoolVariable('enable_mail',         'Build with email support', False),
+	BoolVariable('enable_fribidi',      'Build with fribidi support', False),
 	BoolVariable('enable_actmon',       'Build activity monitor', False),
 	BoolVariable('enable_tools',        'Build disko tools', False),
 	BoolVariable('static_lib', 	        'Create statically linked library', False),
@@ -438,6 +440,10 @@ def printSummary():
 		print 'E-Mail support      : yes'
 	else:
 		print 'E-Mail support      : no'
+	if(conf.env['enable_fribidi']):
+		print 'FriBidi support     : yes'
+	else:
+		print 'FriBidi support     : no'
 	if(conf.env['enable_actmon']):
 		print 'Building actmon     : yes'
 	else:
@@ -725,6 +731,11 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		conf.checkSimpleLib(['vmime'], 'vmime.h')
 		conf.env['CCFLAGS'].extend(['-D__HAVE_VMIME__'])
 
+	# checks required if building with fribidi support
+	if(env['enable_fribidi']):
+		conf.checkSimpleLib(['fribidi'], 'fribidi.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_FRIBIDI__'])
+
 	# checks required if building with swscale support
 	if(env['enable_swscale']):
 		conf.checkSimpleLib(['libswscale'], 'libswscale/swscale.h')
@@ -831,6 +842,9 @@ if 'install' in BUILD_TARGETS:
 		
 	if env['enable_mail']:
 		disko_pc_requires += ', vmime'
+		
+	if env['enable_fribidi']:
+		disko_pc_requires += ', fribidi'
 		
 	if env['enable_crypt']:
 		disko_pc_requires += ', openssl'

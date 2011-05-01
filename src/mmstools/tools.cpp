@@ -43,6 +43,9 @@
 #ifdef __HAVE_BACKTRACE__
 #include <execinfo.h>
 #endif
+#ifdef __HAVE_FRIBIDI__
+#include <fribidi/fribidi.h>
+#endif
 
 /* Once-only initialisation of the key */
 static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;
@@ -827,4 +830,64 @@ void print_trace(char *prefix) {
 	free(strings);
 }
 #endif
+
+
+
+bool convBidiString(const string &in_str, string &out_str) {
+#ifdef __HAVE_FRIBIDI__
+	bool ret = false;
+	const char *char_set = "UTF-8";
+	FriBidiCharSet char_set_num;
+
+	// get charset and init
+	if (!(char_set_num = fribidi_parse_charset((char *)char_set))) {
+		printf("DISKO: FriBidi error, unrecognized character set '%s'\n", char_set);
+		return false;
+	}
+	fribidi_set_mirroring(true);
+	fribidi_set_reorder_nsm(false);
+
+	// check input length
+	FriBidiStrIndex len = in_str.length();
+	if (len <= 0) {
+		out_str = "";
+		return true;
+	}
+
+	// allocate temp buffers
+	int memsize = sizeof(FriBidiChar) * (len + 1);
+	FriBidiChar *logical = (FriBidiChar *)malloc(memsize);
+	FriBidiChar *visual  = (FriBidiChar *)malloc(memsize);
+	char        *ostr    = (char *)malloc(memsize);
+
+	if (logical && visual && ostr) {
+		// convert input string into FriBidiChar buffer
+		len = fribidi_charset_to_unicode(char_set_num, (char *)in_str.c_str(), len, logical);
+
+		// create a bidi visual string
+		FriBidiCharType base = FRIBIDI_TYPE_ON;
+		if ((ret = fribidi_log2vis(logical, len, &base, visual, NULL, NULL, NULL))) {
+			// convert it back to output string
+			FriBidiStrIndex new_len = fribidi_unicode_to_charset(char_set_num, visual, len, ostr);
+			if (new_len <= 0) {
+				printf("DISKO: FriBidi error, fribidi_unicode_to_charset() failed\n");
+				ret = false;
+			}
+			else {
+				out_str = ostr;
+			}
+		}
+	}
+
+	// free temp buffers
+	if (logical) free(logical);
+	if (visual)  free(visual);
+	if (ostr)    free(ostr);
+
+	return ret;
+#else
+	// no bidi conversion lib
+	return false;
+#endif
+}
 

@@ -174,4 +174,14 @@ void print_trace(char *prefix);
 #endif
 
 
+//! Convert a bidirectional string.
+/*!
+\param in_str	source string (UTF-8)
+\param out_str	destination string (UTF-8)
+\return true if successfully converted
+\note in_str and out_str can be the same
+*/
+bool convBidiString(const string &in_str, string &out_str);
+
+
 #endif /*TOOLS_H_*/
