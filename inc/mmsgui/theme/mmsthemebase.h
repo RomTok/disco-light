@@ -70,6 +70,7 @@ typedef enum {
 
 
 MMSALIGNMENT getAlignmentFromString(string inputstr);
+MMSALIGNMENT swapAlignmentHorizontal(MMSALIGNMENT alignment);
 
 typedef enum {
     MMSDIRECTION_NOTSET=0,

@@ -65,6 +65,25 @@ MMSALIGNMENT getAlignmentFromString(string inputstr) {
     return alignment;
 }
 
+MMSALIGNMENT swapAlignmentHorizontal(MMSALIGNMENT alignment) {
+	switch (alignment) {
+	case MMSALIGNMENT_LEFT:
+		return MMSALIGNMENT_RIGHT;
+	case MMSALIGNMENT_RIGHT:
+		return MMSALIGNMENT_LEFT;
+	case MMSALIGNMENT_TOP_LEFT:
+		return MMSALIGNMENT_TOP_RIGHT;
+	case MMSALIGNMENT_TOP_RIGHT:
+		return MMSALIGNMENT_TOP_LEFT;
+	case MMSALIGNMENT_BOTTOM_LEFT:
+		return MMSALIGNMENT_BOTTOM_RIGHT;
+	case MMSALIGNMENT_BOTTOM_RIGHT:
+		return MMSALIGNMENT_BOTTOM_LEFT;
+	default:
+		return alignment;
+	}
+}
+
 MMSDIRECTION getDirectionFromString(string inputstr) {
     MMSDIRECTION direction;
 

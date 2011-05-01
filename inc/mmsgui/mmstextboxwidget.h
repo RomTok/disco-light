@@ -86,6 +86,9 @@ class MMSTextBoxWidget : public MMSWidget {
         //! if true the translated_text is valid
         bool translated;
 
+        //! swap left-right alignment
+        bool swap_left_right;
+
         //! used to load text from a file
         MMSFile *file;
 

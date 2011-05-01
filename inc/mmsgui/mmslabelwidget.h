@@ -82,6 +82,9 @@ class MMSLabelWidget : public MMSWidget {
         //! if true the translated_text is valid
         bool translated;
 
+        //! swap left-right alignment
+        bool swap_left_right;
+
         //! current foreground values set?
         bool			current_fgset;
 

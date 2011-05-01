@@ -66,6 +66,8 @@ bool MMSTextBoxWidget::create(MMSWindow *root, string className, MMSTheme *theme
     this->load_font = true;
     this->lasttext = "";
     this->surfaceChanged = true;
+    this->translated = false;
+    this->swap_left_right = false;
     this->file = NULL;
 	this->current_fgset = false;
 
@@ -93,6 +95,9 @@ MMSWidget *MMSTextBoxWidget::copyWidget() {
     	// load font
         loadFont(newWidget);
     }
+
+    newWidget->translated = false;
+    newWidget->swap_left_right = false;
 
     // reload my file
     newWidget->file = NULL;
@@ -128,6 +133,9 @@ void MMSTextBoxWidget::loadFont(MMSTextBoxWidget *widget) {
 			widget->fontsize = fontsize;
 			widget->font = this->rootwindow->fm->getFont(widget->fontpath, widget->fontname, widget->fontsize);
 			if (this->font) this->load_font = false;
+
+			// reset last displayed text, so calcWordGeom() can do recalculation
+			this->lasttext = "";
     	}
     	else {
     		// font parameter not changed, so we do not reload it
@@ -541,6 +549,18 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 			getText(this->translated_text);
     	}
 
+		// reset swap flag
+		this->swap_left_right = false;
+
+		// language specific conversions
+		MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+		if (targetlang == MMSLANG_IL) {
+			if (convBidiString(this->translated_text, this->translated_text)) {
+				// bidirectional conversion successful, swap alignment horizontal
+				this->swap_left_right = true;
+			}
+		}
+
     	// mark as translated
     	this->translated = true;
     }
@@ -549,7 +569,8 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         // calculate text and surface size
         unsigned int realWidth, realHeight, scrollDX, scrollDY, lines, paragraphs;
         if (calcWordGeom(this->translated_text, getInnerGeometry().w, getInnerGeometry().h, &realWidth, &realHeight, &scrollDX, &scrollDY,
-                         &lines, &paragraphs, getWrap(), getSplitWords(), getAlignment())) {
+                         &lines, &paragraphs, getWrap(), getSplitWords(),
+                         (!this->swap_left_right) ? getAlignment() : swapAlignmentHorizontal(getAlignment()))) {
             // text has changed, reset something
         	setScrollSize(scrollDX, scrollDY);
           	setSurfaceGeometry(realWidth, realHeight);
@@ -618,9 +639,6 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 void MMSTextBoxWidget::targetLangChanged(MMSLanguage lang) {
     this->translated = false;
     this->load_font = true;
-
-    /* fix: recalculate already showed text, too */
-	this->surfaceChanged = true;
 }
 
 bool MMSTextBoxWidget::loadFile(bool refresh) {

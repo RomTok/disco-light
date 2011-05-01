@@ -69,6 +69,7 @@ bool MMSLabelWidget::create(MMSWindow *root, string className, MMSTheme *theme) 
     this->frame_delay_set = false;
     this->labelThread = NULL;
     this->translated = false;
+    this->swap_left_right = false;
 	this->current_fgset = false;
 
     return MMSWidget::create(root, true, false, false, true, false, false, false);
@@ -97,6 +98,7 @@ MMSWidget *MMSLabelWidget::copyWidget() {
     newWidget->frame_delay_set = false;
     newWidget->labelThread = NULL;
     newWidget->translated = false;
+    newWidget->swap_left_right = false;
     newWidget->current_fgset = false;
     if (this->rootwindow) {
     	// load font
@@ -279,7 +281,19 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 					getText(this->translated_text);
             	}
 
-            	// mark as translated
+        		// reset swap flag
+        		this->swap_left_right = false;
+
+        		// language specific conversions
+        		MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+        		if (targetlang == MMSLANG_IL) {
+        			if (convBidiString(this->translated_text, this->translated_text)) {
+        				// bidirectional conversion successful, swap alignment horizontal
+        				this->swap_left_right = true;
+        			}
+        		}
+
+        		// mark as translated
             	this->translated = true;
             }
 
@@ -290,7 +304,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
             // save the width of the text
             this->slide_width = width;
 
-            switch (getAlignment()) {
+            switch ((!this->swap_left_right) ? getAlignment() : swapAlignmentHorizontal(getAlignment())) {
                 case MMSALIGNMENT_LEFT:
                     x = surfaceGeom.x;
                     y = ((surfaceGeom.h - height) / 2) + surfaceGeom.y;
