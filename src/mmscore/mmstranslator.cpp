@@ -87,18 +87,17 @@ void MMSTranslator::loadTranslations() {
 		vector<MMSPluginData *> data = service.getAllPlugins();
 
 		for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
-			MMSFileSearch search((*it)->getPath(),"translation.??",false);
+			MMSFileSearch search((*it)->getPath(), "translation.??", true);
 			MMSFILEENTRY_LIST ret =  search.execute();
 			for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
-				string filename = (*it)->getPath() + "/" + basename((*it2)->name.c_str());
-				processFile(filename);
+				processFile((*it2)->name);
 			}
 		}
 	} catch (MMSError &err) {
 		DEBUGMSG("MMSTranslator", "No plugins database found for translation.");
 	}
 
-	MMSFileSearch search(config.getLanguagefileDir(),"translation.??",false);
+	MMSFileSearch search(config.getLanguagefileDir(), "translation.??", false);
 	MMSFILEENTRY_LIST ret =  search.execute();
 	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
 		processFile((*it2)->name);
