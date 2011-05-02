@@ -42,13 +42,13 @@ bool MMSVBoxWidget::create(MMSWindow *root) {
 }
 
 MMSWidget *MMSVBoxWidget::copyWidget() {
-    /* create widget */
+    // create widget
     MMSVBoxWidget *newWidget = new MMSVBoxWidget(this->rootwindow);
 
-    /* copy widget */
+    // copy widget
     *newWidget = *this;
 
-    /* copy base widget */
+    // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
     return newWidget;
@@ -63,82 +63,62 @@ void MMSVBoxWidget::add(MMSWidget *widget) {
 }
 
 void MMSVBoxWidget::recalculateChildren() {
-    unsigned int nexty;
-    unsigned int safechildren;
-    unsigned int lastsafechild;
-    unsigned int safepix;
 
-    /* check something */
+    // check something
     if(this->children.empty())
         return;
 
     if(this->geomset == false)
         return;
 
-	safepix = this->geom.h;
-	safechildren = 0;
+    MMSFBRectangle rect;
+    int safechildren  = 0;
+    int lastsafechild = -1;
+    int safepix       = this->geom.h;
 
-	/* first pass get and apply size hints */
-    nexty = this->geom.y;
+    // first pass: get size hints
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        MMSFBRectangle rect;
-
         string sizehint = children.at(i)->getSizeHint();
 
 		if (sizehint == "") {
-			/* have no sizehint */
-			children.at(i)->setGeomSet(false);
+            // have no sizehint
 			safechildren++;
             lastsafechild = i;
 		}
 		else {
-		    /* calculate max heigth */
-		    getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
-		    safepix -= rect.h;
-            if ((safepix < 0)||((int)rect.h < 0))
-                throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels), sizehint "+ sizehint);
-
-		    rect.w = this->geom.w;
-		    rect.x = this->geom.x;
-            rect.y = nexty;
-
-            /* set childs geometry */
-		    this->children.at(i)->setGeometry(rect);
-
-            /* next position */
-            nexty+= rect.h;
+			// calculate width based on sizehint
+	        getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
+            safepix -= rect.h;
+            if ((safepix < 0)||((int)rect.h < 0)) {
+                throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
+            }
 		}
     }
 
-	/* every child has a geometry */
-	if (safechildren == 0)
-		return;
-    unsigned int safe_h = safepix / safechildren;
-
-	/* second pass calculate rest */
-    nexty = this->geom.y;
+    // second pass: calculate geometry of all children
+    int nexty = this->geom.y;
+    int safe_h = (safechildren) ? safepix / safechildren : 0;
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        MMSFBRectangle rect;
+        string sizehint = children.at(i)->getSizeHint();
 
-		if(this->children.at(i)->isGeomSet()==false) {
-			/* calculate complete geometry, max heigth */
-	        rect.h = safe_h;
+		if (sizehint == "") {
+            // calculate width based on remaining space
+            rect.h = safe_h;
             if (i == lastsafechild)
                 rect.h+= safepix % safechildren;
-	        rect.w = this->geom.w;
-	        rect.x = this->geom.x;
-            rect.y = nexty;
-		}
-		else {
-			/* adjust y position */
-            rect = children.at(i)->getGeometry();
-            rect.y = nexty;
-		}
+     	}
+     	else {
+            // calculate width based on sizehint
+	        getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
+     	}
 
-        /* set childs geometry */
+        // set geometry of child widget
+        rect.y = nexty;
+     	rect.x = this->geom.x;
+        rect.w = this->geom.w;
         this->children.at(i)->setGeometry(rect);
 
-        /* next position */
+        // next position
         nexty+= rect.h;
     }
 }
