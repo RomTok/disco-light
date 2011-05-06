@@ -198,6 +198,34 @@ class MMSWidget {
         //! size of the widget
     	string	sizehint;
 
+string	min_width;
+int		min_width_pix;
+string	min_height;
+int		min_height_pix;
+string	max_width;
+int		max_width_pix;
+string	max_height;
+int		max_height_pix;
+
+bool minmax_set;
+
+int content_width;
+int content_height;
+int content_width_child;
+int content_height_child;
+
+bool getContentSize(int *content_width, int *content_height);
+bool setContentSize(int content_width, int content_height);
+virtual void setContentSizeFromChild();
+
+bool content_size_initialized;
+
+void initContentSize();
+virtual void initContentSizeEx();
+
+
+
+
     	//! optional & application specific pointer to any data
     	void *bindata;
 
@@ -354,8 +382,20 @@ class MMSWidget {
 
         void setBinData(void *data);
         void *getBinData();
-        bool setSizeHint(string &hint);
         string getSizeHint();
+        bool setSizeHint(string &hint);
+        string getMinWidth();
+        int getMinWidthPix();
+        bool setMinWidth(string &min_width);
+        string getMinHeight();
+        int getMinHeightPix();
+        bool setMinHeight(string &min_height);
+        string getMaxWidth();
+        int getMaxWidthPix();
+        bool setMaxWidth(string &max_width);
+        string getMaxHeight();
+        int getMaxHeightPix();
+        bool setMaxHeight(string &max_height);
         bool isGeomSet();
         void setGeomSet(bool set);
 

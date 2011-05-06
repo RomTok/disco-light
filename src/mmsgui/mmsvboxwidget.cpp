@@ -76,41 +76,62 @@ void MMSVBoxWidget::recalculateChildren() {
     int lastsafechild = -1;
     int safepix       = this->geom.h;
 
-    // first pass: get size hints
+    // first pass: determine safepix which will divided between widgets with no content size and no size hint
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        string sizehint = children.at(i)->getSizeHint();
+    	int content_width;
+    	int content_height;
+    	if (!children.at(i)->getContentSize(&content_width, &content_height)) {
+    		// size of content not set, use sizehint
+			string sizehint = children.at(i)->getSizeHint();
 
-		if (sizehint == "") {
-            // have no sizehint
-			safechildren++;
-            lastsafechild = i;
-		}
-		else {
-			// calculate width based on sizehint
-	        getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
-            safepix -= rect.h;
-            if ((safepix < 0)||((int)rect.h < 0)) {
-                throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
-            }
-		}
+			if (sizehint == "") {
+				// have no sizehint
+				safechildren++;
+				lastsafechild = i;
+			}
+			else {
+				// calculate width based on sizehint
+				getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
+				safepix -= rect.h;
+				if ((safepix < 0)||((int)rect.h < 0)) {
+					throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
+				}
+			}
+    	}
+    	else {
+    		// use content height
+			safepix-= content_height;
+			if (safepix < 0) {
+				throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
+			}
+    	}
     }
 
     // second pass: calculate geometry of all children
     int nexty = this->geom.y;
     int safe_h = (safechildren) ? safepix / safechildren : 0;
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        string sizehint = children.at(i)->getSizeHint();
+    	int content_width;
+    	int content_height;
+    	if (!children.at(i)->getContentSize(&content_width, &content_height)) {
+    		// size of content not set, use sizehint
+			string sizehint = children.at(i)->getSizeHint();
 
-		if (sizehint == "") {
-            // calculate width based on remaining space
-            rect.h = safe_h;
-            if (i == lastsafechild)
-                rect.h+= safepix % safechildren;
-     	}
-     	else {
-            // calculate width based on sizehint
-	        getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
-     	}
+			if (sizehint == "") {
+				// calculate height based on remaining space
+				rect.h = safe_h;
+				if (i == lastsafechild)
+					rect.h+= safepix % safechildren;
+			}
+			else {
+				// calculate height based on sizehint
+				getPixelFromSizeHint(&rect.h, sizehint, this->geom.h, this->geom.w);
+			}
+    	}
+    	else {
+    		// use content height
+    		rect.h = content_height;
+    	}
 
         // set geometry of child widget
         rect.y = nexty;
@@ -122,3 +143,47 @@ void MMSVBoxWidget::recalculateChildren() {
         nexty+= rect.h;
     }
 }
+
+void MMSVBoxWidget::setContentSizeFromChild() {
+	if (!this->minmax_set) {
+		return;
+	}
+
+	if (!this->parent)
+		return;
+
+	int mycw = 0;
+	int mych = 0;
+
+    for(unsigned int i = 0; i < this->children.size(); i++) {
+
+    	int content_width;
+    	int content_height;
+    	if (!children.at(i)->getContentSize(&content_width, &content_height)) {
+    		// size of content not set, use sizehint
+			string sizehint = children.at(i)->getSizeHint();
+
+			if (sizehint == "") {
+				// have no sizehint
+				content_height = 1;
+			}
+			else {
+				// calculate height based on sizehint
+				getPixelFromSizeHint(&content_height, sizehint, this->geom.h, this->geom.w);
+			}
+    	}
+    	else {
+    		if (mycw < content_width)
+    			mycw = content_width;
+    	}
+
+    	mych+= content_height;
+    }
+
+    if (mycw > 0 && mych > 0) {
+		this->content_width_child = mycw;
+		this->content_height_child = mych;
+		this->parent->setContentSizeFromChild();
+    }
+}
+

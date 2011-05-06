@@ -244,8 +244,103 @@ bool MMSLabelWidget::checkRefreshStatus() {
 	return true;
 }
 
+bool MMSLabelWidget::prepareText(int *width, int *height, bool recalc) {
+	// check if we have to (re)load the font
+	loadFont();
+
+    if (!this->font)
+    	return false;
+
+	// font available, use it for this surface
+	this->surface->setFont(this->font);
+
+	if (!this->translated) {
+		// text changed and have to be translated
+		if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
+			// translate text
+			string source;
+			getText(source);
+			this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
+		}
+		else {
+			// text can not or should not translated
+			getText(this->translated_text);
+		}
+
+		// reset swap flag
+		this->swap_left_right = false;
+
+		// language specific conversions
+		MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+		if (targetlang == MMSLANG_IL) {
+			if (convBidiString(this->translated_text, this->translated_text)) {
+				// bidirectional conversion successful, swap alignment horizontal
+				this->swap_left_right = true;
+			}
+		}
+
+		// mark as translated
+		this->translated = true;
+	}
+
+	// get width and height of the string to be drawn
+	int realWidth, realHeight;
+	this->font->getStringWidth(this->translated_text, -1, &realWidth);
+	this->font->getHeight(&realHeight);
+
+	if (!this->minmax_set) {
+		if (width)  *width = realWidth;
+		if (height) *height = realHeight;
+	}
+	else {
+		if (recalc) {
+			// calculate dynamic label size
+
+			// get maximum width and height of the label
+			int maxWidth = getMaxWidthPix();
+			if (maxWidth <= 0) maxWidth = getInnerGeometry().w;
+			int maxHeight = getMaxHeightPix();
+			if (maxHeight <= 0) maxHeight = getInnerGeometry().h;
+
+			// get minimum width and height of the label
+			int minWidth = getMinWidthPix();
+			int minHeight = getMinHeightPix();
+
+			if (width)  {
+				if (realWidth < minWidth)
+					*width = minWidth;
+				else
+				if (realWidth > maxWidth)
+					*width = maxWidth;
+				else
+					*width = realWidth;
+
+				if (*width <= 0) *width = 1;
+			}
+
+			if (height) {
+				if (realHeight < minHeight)
+					*height = minHeight;
+				else
+				if (realHeight > maxHeight)
+					*height = maxHeight;
+				else
+					*height = realHeight;
+
+				if (*height <= 0) *height = 1;
+			}
+		}
+		else {
+			if (width)  *width = realWidth;
+			if (height) *height = realHeight;
+		}
+	}
+
+	return true;
+}
+
 bool MMSLabelWidget::draw(bool *backgroundFilled) {
-    int width = 0, height = 0, x, y;
+    int width, height, x, y;
     bool myBackgroundFilled = false;
 
     if (backgroundFilled) {
@@ -260,46 +355,10 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 
     // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
-   		// check if we have to (re)load the font
-   	    loadFont();
-
-		// draw my things
-        if (this->font) {
+    	// draw my things
+    	if (prepareText(&width, &height)) {
+    		// text is translated and font is set
             MMSFBRectangle surfaceGeom = getSurfaceGeometry();
-
-            this->surface->setFont(this->font);
-
-            if (!this->translated) {
-            	if ((this->rootwindow)&&(this->rootwindow->windowmanager)&&(getTranslate())) {
-					// translate the text
-            		string source;
-            		getText(source);
-            		this->rootwindow->windowmanager->getTranslator()->translate(source, this->translated_text);
-            	}
-            	else {
-            		// text can not or should not translated
-					getText(this->translated_text);
-            	}
-
-        		// reset swap flag
-        		this->swap_left_right = false;
-
-        		// language specific conversions
-        		MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
-        		if (targetlang == MMSLANG_IL) {
-        			if (convBidiString(this->translated_text, this->translated_text)) {
-        				// bidirectional conversion successful, swap alignment horizontal
-        				this->swap_left_right = true;
-        			}
-        		}
-
-        		// mark as translated
-            	this->translated = true;
-            }
-
-            // get width and height of the string to be drawn
-            this->font->getStringWidth(this->translated_text, -1, &width);
-            this->font->getHeight(&height);
 
             // save the width of the text
             this->slide_width = width;
@@ -630,12 +689,36 @@ void MMSLabelWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
         this->refresh();
 }
 
+
+void MMSLabelWidget::calcContentSize() {
+	if (!this->content_size_initialized)
+		return;
+
+	if (!this->minmax_set) {
+		return;
+	}
+
+	initContentSizeEx();
+
+}
+
+void MMSLabelWidget::initContentSizeEx() {
+	int width, height;
+
+	if (prepareText(&width, &height, true)) {
+    	// text is translated and font is set
+        setContentSize(width, height);
+	}
+}
+
 void MMSLabelWidget::setText(string text, bool refresh) {
     myLabelWidgetClass.setText(text);
     this->translated = false;
 
     // refresh is required
     enableRefresh();
+
+    calcContentSize();
 
     if (refresh)
         this->refresh();

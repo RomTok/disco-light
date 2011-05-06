@@ -108,7 +108,8 @@ class MMSTextBoxWidget : public MMSWidget {
         bool calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
                           unsigned int *realWidth, unsigned int *realHeight,
                           unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
-                          bool wrap = true, bool splitwords = true, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER);
+                          bool wrap = true, bool splitwords = true, MMSALIGNMENT alignment = MMSALIGNMENT_CENTER,
+                          unsigned int *minWidth = NULL, unsigned int *minHeight = NULL, bool force_recalc = false);
 
         bool init();
         bool release();
@@ -129,6 +130,10 @@ class MMSTextBoxWidget : public MMSWidget {
         ~MMSTextBoxWidget();
 
         MMSWidget *copyWidget();
+
+bool prepareText(int *width, int *height, bool recalc = false);
+void calcContentSize();
+void initContentSizeEx();
 
     public:
 		//! reload the file and display it in the textbox

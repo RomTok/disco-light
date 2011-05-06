@@ -45,6 +45,15 @@ MMSWidget::MMSWidget() :
 	initialized(false),
 	name(""),
 	sizehint(""),
+	min_width(""),
+	min_width_pix(0),
+	min_height(""),
+	min_height_pix(0),
+	max_width(""),
+	max_width_pix(0),
+	max_height(""),
+	max_height_pix(0),
+	minmax_set(false),
 	bindata(NULL),
 	rootwindow(NULL),
 	parent_rootwindow(NULL),
@@ -84,7 +93,87 @@ MMSWidget::MMSWidget() :
     this->id = factory.getId();
 
 
+this->content_width = 0;
+this->content_height = 0;
+this->content_width_child = 0;
+this->content_height_child = 0;
+this->content_size_initialized = false;
 }
+
+
+bool MMSWidget::getContentSize(int *content_width, int *content_height) {
+	if (!this->minmax_set) {
+		return false;
+	}
+
+	if (this->content_width <= 0 || this->content_height <= 0) {
+		if (this->content_width_child <= 0 || this->content_height_child <= 0)
+			return false;
+
+		*content_width = this->content_width_child;
+		*content_height = this->content_height_child;
+
+		return true;
+	}
+
+	*content_width = this->content_width;
+	*content_height = this->content_height;
+
+	return true;
+}
+
+bool MMSWidget::setContentSize(int content_width, int content_height) {
+	if (!this->minmax_set) {
+		return false;
+	}
+
+	if (!this->parent)
+		return false;
+
+	this->content_width = content_width;
+	this->content_height = content_height;
+	this->parent->setContentSizeFromChild();
+	return true;
+}
+
+void MMSWidget::setContentSizeFromChild() {
+	if (!this->minmax_set) {
+		return;
+	}
+
+	if (!this->parent)
+		return;
+
+	int content_width;
+	int content_height;
+	if (children.at(0)->getContentSize(&content_width, &content_height)) {
+		this->content_width_child = content_width;
+		this->content_height_child = content_height;
+		this->parent->setContentSizeFromChild();
+	}
+}
+
+
+void MMSWidget::initContentSize() {
+	if (this->content_size_initialized)
+		return;
+
+	if (this->minmax_set) {
+		initContentSizeEx();
+	}
+
+	this->content_size_initialized = true;
+
+	for (int i=0; i < children.size(); i++) {
+		children.at(i)->initContentSize();
+	}
+}
+
+void MMSWidget::initContentSizeEx() {
+
+}
+
+
 
 MMSWidget::~MMSWidget() {
 
@@ -237,6 +326,12 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
         this->windowSurface = this->rootwindow->getSurface();
     }
     this->sizehint.clear();
+    this->min_width.clear();
+    this->min_height.clear();
+    this->max_width.clear();
+    this->max_height.clear();
+    this->minmax_set = false;
+
     this->geomset=false;
 
 
@@ -532,7 +627,6 @@ MMSFBRectangle MMSWidget::getInnerGeometry() {
 void MMSWidget::setGeometry(MMSFBRectangle geom) {
     MMSFBRectangle oldgeom;
     bool dimChanged = true;
-
 
     if (this->geomset) {
         /* dimension has changed? */
@@ -2220,6 +2314,94 @@ bool MMSWidget::setSizeHint(string &hint) {
         return false;
 }
 
+string MMSWidget::getMinWidth() {
+    return this->min_width;
+}
+
+int MMSWidget::getMinWidthPix() {
+    return this->min_width_pix;
+}
+
+bool MMSWidget::setMinWidth(string &min_width) {
+	int pix, base_pix = 10000;
+	if (this->rootwindow) base_pix = this->rootwindow->geom.w;
+
+	if (getPixelFromSizeHint(&pix, min_width, base_pix, 0)) {
+        this->min_width = min_width;
+        this->min_width_pix = pix;
+        this->minmax_set = true;
+        return true;
+    }
+    else
+        return false;
+}
+
+string MMSWidget::getMinHeight() {
+    return this->min_height;
+}
+
+int MMSWidget::getMinHeightPix() {
+    return this->min_height_pix;
+}
+
+bool MMSWidget::setMinHeight(string &min_height) {
+	int pix, base_pix = 10000;
+	if (this->rootwindow) base_pix = this->rootwindow->geom.h;
+
+	if (getPixelFromSizeHint(&pix, min_height, base_pix, 0)) {
+        this->min_height = min_height;
+        this->min_height_pix = pix;
+        this->minmax_set = true;
+        return true;
+    }
+    else
+        return false;
+}
+
+string MMSWidget::getMaxWidth() {
+    return this->max_width;
+}
+
+int MMSWidget::getMaxWidthPix() {
+    return this->max_width_pix;
+}
+
+bool MMSWidget::setMaxWidth(string &max_width) {
+	int pix, base_pix = 10000;
+	if (this->rootwindow) base_pix = this->rootwindow->geom.w;
+
+	if (getPixelFromSizeHint(&pix, max_width, base_pix, 0)) {
+        this->max_width = max_width;
+        this->max_width_pix = pix;
+        this->minmax_set = true;
+        return true;
+    }
+    else
+        return false;
+}
+
+string MMSWidget::getMaxHeight() {
+    return this->max_height;
+}
+
+int MMSWidget::getMaxHeightPix() {
+    return this->max_height_pix;
+}
+
+bool MMSWidget::setMaxHeight(string &max_height) {
+	int pix, base_pix = 10000;
+	if (this->rootwindow) base_pix = this->rootwindow->geom.h;
+
+	if (getPixelFromSizeHint(&pix, max_height, base_pix, 0)) {
+        this->max_height = max_height;
+        this->max_height_pix = pix;
+        this->minmax_set = true;
+        return true;
+    }
+    else
+        return false;
+}
+
 bool MMSWidget::isGeomSet() {
     return this->geomset;
 }
@@ -3225,8 +3407,6 @@ bool MMSWidget::setActivated(bool activated, bool refresh) {
     return true;
 }
 
-
-
 bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
 	if (!this->da) return false;
     this->da->myWidgetClass.border.setColor(bordercolor);
@@ -3400,7 +3580,7 @@ bool MMSWidget::setBorderRCorners(bool borderrcorners, bool refresh) {
 }
 
 void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
-
+if (this->type==MMSWIDGETTYPE_VBOX) printf("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ\n");
 	bool 			b;
 	MMSFBColor		c;
 	string 			s;

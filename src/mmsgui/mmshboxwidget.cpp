@@ -76,49 +76,114 @@ void MMSHBoxWidget::recalculateChildren() {
     int lastsafechild = -1;
     int safepix       = this->geom.w;
 
-    // first pass: get size hints
+    // first pass: determine safepix which will divided between widgets with no content size and no size hint
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        string sizehint = children.at(i)->getSizeHint();
+    	int content_width;
+    	int content_height;
+    	if (!children.at(i)->getContentSize(&content_width, &content_height)) {
+    		// size of content not set, use sizehint
+			string sizehint = children.at(i)->getSizeHint();
 
-		if (sizehint == "") {
-            // have no sizehint
-			safechildren++;
-            lastsafechild = i;
-		}
-		else {
-			// calculate width based on sizehint
-	        getPixelFromSizeHint(&rect.w, sizehint, this->geom.w, this->geom.h);
-            safepix -= rect.w;
-            if ((safepix < 0)||((int)rect.w < 0)) {
-                throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
-            }
-		}
+			if (sizehint == "") {
+				// have no sizehint
+				safechildren++;
+				lastsafechild = i;
+			}
+			else {
+				// calculate width based on sizehint
+				getPixelFromSizeHint(&rect.w, sizehint, this->geom.w, this->geom.h);
+				safepix-= rect.w;
+				if ((safepix < 0)||((int)rect.w < 0)) {
+					throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
+				}
+			}
+    	}
+    	else {
+    		// use content width
+			safepix-= content_width;
+			if (safepix < 0) {
+				throw MMSWidgetError(0,"cannot calculate geometry (not enough free pixels)");
+			}
+    	}
     }
 
     // second pass: calculate geometry of all children
     int nextx = this->geom.x;
     int safe_w = (safechildren) ? safepix / safechildren : 0;
     for(unsigned int i = 0; i < this->children.size(); i++) {
-        string sizehint = children.at(i)->getSizeHint();
+    	int content_width;
+    	int content_height;
+    	if (!children.at(i)->getContentSize(&content_width, &content_height)) {
+    		// size of content not set, use sizehint
+			string sizehint = children.at(i)->getSizeHint();
 
-		if (sizehint == "") {
-            // calculate width based on remaining space
-            rect.w = safe_w;
-            if (i == lastsafechild)
-                rect.w+= safepix % safechildren;
-     	}
-     	else {
-            // calculate width based on sizehint
-	        getPixelFromSizeHint(&rect.w, sizehint, this->geom.w, this->geom.h);
-     	}
+			if (sizehint == "") {
+				// calculate width based on remaining space
+				rect.w = safe_w;
+				if (i == lastsafechild)
+					rect.w+= safepix % safechildren;
+			}
+			else {
+				// calculate width based on sizehint
+				getPixelFromSizeHint(&rect.w, sizehint, this->geom.w, this->geom.h);
+			}
+    	}
+    	else {
+    		// use content width
+    		rect.w = content_width;
+    	}
 
-        // set geometry of child widget
-        rect.x = nextx;
-     	rect.y = this->geom.y;
-        rect.h = this->geom.h;
-        this->children.at(i)->setGeometry(rect);
+		// set geometry of child widget
+		rect.x = nextx;
+		rect.y = this->geom.y;
+		rect.h = this->geom.h;
+		this->children.at(i)->setGeometry(rect);
 
-        // next position
-        nextx+= rect.w;
+		// next position
+		nextx+= rect.w;
     }
 }
+
+void MMSHBoxWidget::setContentSizeFromChild() {
+	if (!this->minmax_set) {
+		return;
+	}
+
+	if (!this->parent)
+		return;
+
+	int mycw = 0;
+	int mych = 0;
+
+    for(unsigned int i = 0; i < this->children.size(); i++) {
+
+    	int content_width;
+    	int content_height;
+    	if (!children.at(i)->getContentSize(&content_width, &content_height)) {
+    		// size of content not set, use sizehint
+			string sizehint = children.at(i)->getSizeHint();
+
+			if (sizehint == "") {
+				// have no sizehint
+				content_width = 1;
+			}
+			else {
+				// calculate width based on sizehint
+				getPixelFromSizeHint(&content_width, sizehint, this->geom.w, this->geom.h);
+			}
+    	}
+    	else {
+    		if (mych < content_height)
+    			mych = content_height;
+    	}
+
+    	mycw+= content_width;
+    }
+
+    if (mycw > 0 && mych > 0) {
+		this->content_width_child = mycw;
+		this->content_height_child = mych;
+		this->parent->setContentSizeFromChild();
+    }
+}
+

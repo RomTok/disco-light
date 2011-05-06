@@ -1945,7 +1945,17 @@ void MMSWindow::draw(bool toRedrawOnly, MMSFBRectangle *rect2update, bool clear,
     		}
 
 			if (this->draw_setgeom) {
+//printf(">>>>>>>>>>>>>>>AAAAAAAAAAAAAA>>>>>>>>>>>>>>>\n");
+
+				if (!this->children.at(0)->content_size_initialized) {
+					// first time, init content size an geometry
+					this->children.at(0)->setGeometry(this->innerGeom);
+					this->children.at(0)->initContentSize();
+				}
+
 				this->children.at(0)->setGeometry(this->innerGeom);
+
+//printf("<<<<<<<<<<<<<<<AAAAAAAAAAAAAA>>>>>>>>>>>>>>>\n");
 				this->draw_setgeom = false;
 			}
 			this->children.at(0)->drawchildren(toRedrawOnly, &backgroundFilled, rect2update);

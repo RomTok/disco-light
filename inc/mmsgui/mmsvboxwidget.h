@@ -49,6 +49,8 @@ class MMSVBoxWidget : public MMSWidget {
 
         bool create(MMSWindow *root);
 
+void setContentSizeFromChild();
+
     public:
         MMSVBoxWidget(MMSWindow *root);
 

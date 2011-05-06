@@ -113,6 +113,10 @@ class MMSLabelWidget : public MMSWidget {
 
         MMSWidget *copyWidget();
 
+bool prepareText(int *width, int *height, bool recalc = false);
+void calcContentSize();
+void initContentSizeEx();
+
     public:
         /* theme access methods */
         string getFontPath();
