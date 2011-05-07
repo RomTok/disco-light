@@ -1064,7 +1064,9 @@ void MMSTextBoxWidget::calcContentSize() {
 void MMSTextBoxWidget::initContentSizeEx() {
 	int width, height;
 
+//	printf(">before prepareText\n");
 	if (prepareText(&width, &height, true)) {
+//		printf(">>setContentize %d, %d\n", width, height);
     	// text is translated and font is set
         setContentSize(width, height);
 	}
@@ -1079,8 +1081,73 @@ void MMSTextBoxWidget::setText(string *text, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+///TEST
+/*    bool sss = false;
+    MMSWindow *toplevel = NULL;
+    if (name=="mytextbox") {
+		if (this->rootwindow->isShown(true)) {
+			toplevel = this->rootwindow->getParent(true);
+			if (toplevel) {
+				toplevel->hide();
+				toplevel->waitUntilHidden();
+			}
+			else {
+				this->rootwindow->hide();
+				this->rootwindow->waitUntilHidden();
+			}
+			sleep(1);
+			sss=true;
+		}
+    }
+*/
+
+
+/////////
+//TODO: what to do if content size is not changed
+
+    if (!this->rootwindow) return;
+	if (this->minmax_set) {
+		// widget with dynamic geometry
+		if (!this->content_size_initialized) return;
+
+		// recalculate content size
+		initContentSizeEx();
+
+		// we have to refresh whole window, because widget geometry has to be recalculated
+		if (this->rootwindow->isShown(true)) {
+			// window is visible, refresh window directly
+			this->rootwindow->refresh();
+		}
+		else {
+			// window is currently not visible, give it a recalculation hint used for next draw()
+			this->rootwindow->draw_setgeom = true;
+		}
+	}
+	else {
+		// widget with fixed geometry
+		if (refresh) {
+			// refresh widget, only a part of window will be refresh
+			this->refresh();
+		}
+	}
+////////
+
+
+///TEST
+/*
+    if (name=="mytextbox") {
+    	if (sss) {
+			if (toplevel) {
+				toplevel->show();
+				toplevel->waitUntilShown();
+			}
+			else {
+				this->rootwindow->show();
+				this->rootwindow->waitUntilShown();
+			}
+    	}
+    }
+*/
 }
 
 void MMSTextBoxWidget::setText(string text, bool refresh) {
