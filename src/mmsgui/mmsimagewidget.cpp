@@ -727,8 +727,8 @@ void MMSImageWidget::setImagePath(string imagepath, bool load, bool refresh) {
                 image_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setImageName(string imagename, bool load, bool refresh) {
@@ -750,8 +750,8 @@ void MMSImageWidget::setImageName(string imagename, bool load, bool refresh) {
                 image_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setImage(string imagepath, string imagename, bool load, bool refresh) {
@@ -773,8 +773,8 @@ void MMSImageWidget::setImage(string imagepath, string imagename, bool load, boo
                 image_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImagePath(string selimagepath, bool load, bool refresh) {
@@ -796,8 +796,8 @@ void MMSImageWidget::setSelImagePath(string selimagepath, bool load, bool refres
                 selimage_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImageName(string selimagename, bool load, bool refresh) {
@@ -819,8 +819,8 @@ void MMSImageWidget::setSelImageName(string selimagename, bool load, bool refres
                 selimage_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImage(string selimagepath, string selimagename, bool load, bool refresh) {
@@ -842,8 +842,8 @@ void MMSImageWidget::setSelImage(string selimagepath, string selimagename, bool 
                 selimage_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 
@@ -867,8 +867,8 @@ void MMSImageWidget::setImagePath_p(string imagepath_p, bool load, bool refresh)
                 image_p_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setImageName_p(string imagename_p, bool load, bool refresh) {
@@ -890,8 +890,8 @@ void MMSImageWidget::setImageName_p(string imagename_p, bool load, bool refresh)
                 image_p_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setImage_p(string imagepath_p, string imagename_p, bool load, bool refresh) {
@@ -913,8 +913,8 @@ void MMSImageWidget::setImage_p(string imagepath_p, string imagename_p, bool loa
                 image_p_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImagePath_p(string selimagepath_p, bool load, bool refresh) {
@@ -936,8 +936,8 @@ void MMSImageWidget::setSelImagePath_p(string selimagepath_p, bool load, bool re
                 selimage_p_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImageName_p(string selimagename_p, bool load, bool refresh) {
@@ -959,8 +959,8 @@ void MMSImageWidget::setSelImageName_p(string selimagename_p, bool load, bool re
                 selimage_p_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImage_p(string selimagepath_p, string selimagename_p, bool load, bool refresh) {
@@ -982,8 +982,8 @@ void MMSImageWidget::setSelImage_p(string selimagepath_p, string selimagename_p,
                 selimage_p_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 
@@ -1007,8 +1007,8 @@ void MMSImageWidget::setImagePath_i(string imagepath_i, bool load, bool refresh)
                 image_i_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setImageName_i(string imagename_i, bool load, bool refresh) {
@@ -1030,8 +1030,8 @@ void MMSImageWidget::setImageName_i(string imagename_i, bool load, bool refresh)
                 image_i_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setImage_i(string imagepath_i, string imagename_i, bool load, bool refresh) {
@@ -1053,8 +1053,8 @@ void MMSImageWidget::setImage_i(string imagepath_i, string imagename_i, bool loa
                 image_i_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImagePath_i(string selimagepath_i, bool load, bool refresh) {
@@ -1076,8 +1076,8 @@ void MMSImageWidget::setSelImagePath_i(string selimagepath_i, bool load, bool re
                 selimage_i_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImageName_i(string selimagename_i, bool load, bool refresh) {
@@ -1099,8 +1099,8 @@ void MMSImageWidget::setSelImageName_i(string selimagename_i, bool load, bool re
                 selimage_i_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setSelImage_i(string selimagepath_i, string selimagename_i, bool load, bool refresh) {
@@ -1122,8 +1122,8 @@ void MMSImageWidget::setSelImage_i(string selimagepath_i, string selimagename_i,
                 selimage_i_loaded = true;
             }
         }
-    if (refresh)
-        this->refresh();
+
+    this->refresh(refresh);
 }
 
 void MMSImageWidget::setUseRatio(bool useratio, bool refresh) {
@@ -1132,8 +1132,7 @@ void MMSImageWidget::setUseRatio(bool useratio, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setFitWidth(bool fitwidth, bool refresh) {
@@ -1142,8 +1141,7 @@ void MMSImageWidget::setFitWidth(bool fitwidth, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setFitHeight(bool fitheight, bool refresh) {
@@ -1152,8 +1150,7 @@ void MMSImageWidget::setFitHeight(bool fitheight, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
@@ -1162,8 +1159,7 @@ void MMSImageWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setMirrorSize(unsigned int mirrorsize, bool refresh) {
@@ -1172,8 +1168,7 @@ void MMSImageWidget::setMirrorSize(unsigned int mirrorsize, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::setGenTaff(bool gentaff, bool refresh) {
@@ -1182,8 +1177,7 @@ void MMSImageWidget::setGenTaff(bool gentaff, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSImageWidget::updateFromThemeClass(MMSImageWidgetClass *themeClass) {

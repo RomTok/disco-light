@@ -563,8 +563,7 @@ void MMSLabelWidget::setFontPath(string fontpath, bool load, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setFontName(MMSLanguage lang, string fontname, bool load, bool refresh) {
@@ -577,8 +576,7 @@ void MMSLabelWidget::setFontName(MMSLanguage lang, string fontname, bool load, b
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setFontName(string fontname, bool load, bool refresh) {
@@ -595,8 +593,7 @@ void MMSLabelWidget::setFontSize(unsigned int fontsize, bool load, bool refresh)
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
@@ -611,8 +608,7 @@ void MMSLabelWidget::setFont(MMSLanguage lang, string fontpath, string fontname,
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setFont(string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
@@ -625,8 +621,7 @@ void MMSLabelWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setColor(MMSFBColor color, bool refresh) {
@@ -635,8 +630,7 @@ void MMSLabelWidget::setColor(MMSFBColor color, bool refresh) {
 	// refresh required?
 	enableRefresh((color != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
@@ -645,8 +639,7 @@ void MMSLabelWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setColor_p(MMSFBColor color_p, bool refresh) {
@@ -655,8 +648,7 @@ void MMSLabelWidget::setColor_p(MMSFBColor color_p, bool refresh) {
 	// refresh required?
 	enableRefresh((color_p != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
@@ -665,8 +657,7 @@ void MMSLabelWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor_p != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setColor_i(MMSFBColor color_i, bool refresh) {
@@ -675,8 +666,7 @@ void MMSLabelWidget::setColor_i(MMSFBColor color_i, bool refresh) {
 	// refresh required?
 	enableRefresh((color_i != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
@@ -685,8 +675,7 @@ void MMSLabelWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor_i != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 
@@ -720,8 +709,7 @@ void MMSLabelWidget::setText(string text, bool refresh) {
 
     calcContentSize();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setSlidable(bool slidable) {
@@ -766,8 +754,7 @@ void MMSLabelWidget::setTranslate(bool translate, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 
@@ -778,8 +765,7 @@ void MMSLabelWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSLabelWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
@@ -788,8 +774,7 @@ void MMSLabelWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 

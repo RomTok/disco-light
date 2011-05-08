@@ -1576,7 +1576,7 @@ MMSWidget *MMSWidget::getDrawableParent(bool mark2Redraw, bool markChildren2Redr
     return NULL;
 }
 
-void MMSWidget::refresh() {
+void MMSWidget::refresh(bool required) {
     MMSFBRectangle tobeupdated;
     unsigned int margin = 0;
     MMSWindow *myroot = this->rootwindow;
@@ -1593,12 +1593,42 @@ void MMSWidget::refresh() {
    		return;
     }
 
+    if (this->minmax_set) {
+		// widget with dynamic geometry
+		if (!this->content_size_initialized) return;
+
+		// recalculate content size
+		initContentSizeEx();
+
+		//TODO: what to do if content size is not changed
+		//...
+
+		// we have to refresh whole window, because widget geometry has to be recalculated
+		if (this->rootwindow->isShown(true)) {
+			// window is visible, refresh window directly
+			this->rootwindow->refresh();
+		}
+		else {
+			// window is currently not visible, give it a recalculation hint used for next draw()
+			this->rootwindow->draw_setgeom = true;
+		}
+
+		return;
+	}
+	else {
+		// widget with fixed geometry
+		if (!required) {
+			// refresh not required
+			return;
+		}
+	}
+
 	if (this->skip_refresh) {
 //		printf("   MMSWidget::refresh() - %s <<< skipped\n", name.c_str());
 		return;
 	}
 
-	// lock the window because only one thread can do this at the same time
+	// refresh widget, only a part of window will be refreshed
     this->parent_rootwindow->lock();
 
     // we have to check if the window is hidden while lock()
@@ -2030,8 +2060,7 @@ bool MMSWidget::setPressed(bool set, bool refresh, bool joined) {
 	}
 
     // refresh widget
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     // status changed
     return true;
@@ -2454,8 +2483,7 @@ void MMSWidget::setVisible(bool visible, bool refresh) {
 	// refresh is required
 	enableRefresh();
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 unsigned char MMSWidget::getBrightness() {
@@ -2472,8 +2500,7 @@ void MMSWidget::setBrightness(unsigned char brightness, bool refresh) {
 	// refresh is required
 	enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 unsigned char MMSWidget::getOpacity() {
@@ -2490,8 +2517,7 @@ void MMSWidget::setOpacity(unsigned char opacity, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 
@@ -2819,8 +2845,7 @@ bool MMSWidget::setBgColor(MMSFBColor bgcolor, bool refresh) {
 	// refresh required?
 	enableRefresh((bgcolor != this->current_bgcolor));
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2832,8 +2857,7 @@ bool MMSWidget::setSelBgColor(MMSFBColor selbgcolor, bool refresh) {
 	// refresh required?
 	enableRefresh((selbgcolor != this->current_bgcolor));
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2845,8 +2869,7 @@ bool MMSWidget::setBgColor_p(MMSFBColor bgcolor_p, bool refresh) {
 	// refresh required?
 	enableRefresh((bgcolor_p != this->current_bgcolor));
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2858,8 +2881,7 @@ bool MMSWidget::setSelBgColor_p(MMSFBColor selbgcolor_p, bool refresh) {
 	// refresh required?
 	enableRefresh((selbgcolor_p != this->current_bgcolor));
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2871,8 +2893,7 @@ bool MMSWidget::setBgColor_i(MMSFBColor bgcolor_i, bool refresh) {
 	// refresh required?
 	enableRefresh((bgcolor_i != this->current_bgcolor));
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2884,8 +2905,7 @@ bool MMSWidget::setSelBgColor_i(MMSFBColor selbgcolor_i, bool refresh) {
 	// refresh required?
 	enableRefresh((selbgcolor_i != this->current_bgcolor));
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2906,8 +2926,7 @@ bool MMSWidget::setBgImagePath(string bgimagepath, bool load, bool refresh) {
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2928,8 +2947,7 @@ bool MMSWidget::setBgImageName(string bgimagename, bool load, bool refresh) {
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2950,8 +2968,7 @@ bool MMSWidget::setSelBgImagePath(string selbgimagepath, bool load, bool refresh
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2972,8 +2989,7 @@ bool MMSWidget::setSelBgImageName(string selbgimagename, bool load, bool refresh
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -2994,8 +3010,7 @@ bool MMSWidget::setBgImagePath_p(string bgimagepath_p, bool load, bool refresh) 
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3016,8 +3031,7 @@ bool MMSWidget::setBgImageName_p(string bgimagename_p, bool load, bool refresh) 
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3038,8 +3052,7 @@ bool MMSWidget::setSelBgImagePath_p(string selbgimagepath_p, bool load, bool ref
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3060,8 +3073,7 @@ bool MMSWidget::setSelBgImageName_p(string selbgimagename_p, bool load, bool ref
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3082,8 +3094,7 @@ bool MMSWidget::setBgImagePath_i(string bgimagepath_i, bool load, bool refresh) 
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3104,8 +3115,7 @@ bool MMSWidget::setBgImageName_i(string bgimagename_i, bool load, bool refresh) 
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3126,8 +3136,7 @@ bool MMSWidget::setSelBgImagePath_i(string selbgimagepath_i, bool load, bool ref
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3148,8 +3157,7 @@ bool MMSWidget::setSelBgImageName_i(string selbgimagename_i, bool load, bool ref
         }
     }
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3163,9 +3171,9 @@ bool MMSWidget::setMargin(unsigned int margin, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
-    return true;
+	this->refresh(refresh);
+
+	return true;
 }
 
 bool MMSWidget::setFocusable(bool focusable, bool refresh) {
@@ -3207,8 +3215,7 @@ bool MMSWidget::setUpArrow(string uparrow, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3221,8 +3228,7 @@ bool MMSWidget::setDownArrow(string downarrow, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3235,8 +3241,7 @@ bool MMSWidget::setLeftArrow(string leftarrow, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3249,8 +3254,7 @@ bool MMSWidget::setRightArrow(string rightarrow, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3331,8 +3335,7 @@ bool MMSWidget::setBlend(unsigned int blend, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3347,8 +3350,7 @@ bool MMSWidget::setBlendFactor(double blendfactor, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3401,8 +3403,7 @@ bool MMSWidget::setActivated(bool activated, bool refresh) {
 	checkRefreshStatus();
 
     // refresh widget
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3414,8 +3415,7 @@ bool MMSWidget::setBorderColor(MMSFBColor bordercolor, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3427,8 +3427,7 @@ bool MMSWidget::setBorderSelColor(MMSFBColor borderselcolor, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3451,8 +3450,7 @@ bool MMSWidget::setBorderImagePath(string borderimagepath, bool load, bool refre
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3478,8 +3476,7 @@ bool MMSWidget::setBorderImageNames(string imagename_1, string imagename_2, stri
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3502,8 +3499,7 @@ bool MMSWidget::setBorderSelImagePath(string borderselimagepath, bool load, bool
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3530,8 +3526,7 @@ bool MMSWidget::setBorderSelImageNames(string selimagename_1, string selimagenam
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3545,8 +3540,7 @@ bool MMSWidget::setBorderThickness(unsigned int borderthickness, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3560,8 +3554,7 @@ bool MMSWidget::setBorderMargin(unsigned int bordermargin, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
@@ -3573,14 +3566,12 @@ bool MMSWidget::setBorderRCorners(bool borderrcorners, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 
     return true;
 }
 
 void MMSWidget::updateFromThemeClass(MMSWidgetClass *themeClass) {
-if (this->type==MMSWIDGETTYPE_VBOX) printf("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ\n");
 	bool 			b;
 	MMSFBColor		c;
 	string 			s;

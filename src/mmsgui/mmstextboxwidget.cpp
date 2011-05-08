@@ -903,8 +903,7 @@ void MMSTextBoxWidget::setFontPath(string fontpath, bool load, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setFontName(MMSLanguage lang, string fontname, bool load, bool refresh) {
@@ -917,8 +916,7 @@ void MMSTextBoxWidget::setFontName(MMSLanguage lang, string fontname, bool load,
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setFontName(string fontname, bool load, bool refresh) {
@@ -935,8 +933,7 @@ void MMSTextBoxWidget::setFontSize(unsigned int fontsize, bool load, bool refres
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
@@ -951,8 +948,7 @@ void MMSTextBoxWidget::setFont(MMSLanguage lang, string fontpath, string fontnam
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setFont(string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
@@ -965,8 +961,7 @@ void MMSTextBoxWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setWrap(bool wrap, bool refresh) {
@@ -975,8 +970,7 @@ void MMSTextBoxWidget::setWrap(bool wrap, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setSplitWords(bool splitwords, bool refresh) {
@@ -985,8 +979,7 @@ void MMSTextBoxWidget::setSplitWords(bool splitwords, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setColor(MMSFBColor color, bool refresh) {
@@ -995,8 +988,7 @@ void MMSTextBoxWidget::setColor(MMSFBColor color, bool refresh) {
 	// refresh required?
 	enableRefresh((color != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
@@ -1005,8 +997,7 @@ void MMSTextBoxWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setColor_p(MMSFBColor color_p, bool refresh) {
@@ -1015,8 +1006,7 @@ void MMSTextBoxWidget::setColor_p(MMSFBColor color_p, bool refresh) {
 	// refresh required?
 	enableRefresh((color_p != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
@@ -1025,8 +1015,7 @@ void MMSTextBoxWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor_p != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setColor_i(MMSFBColor color_i, bool refresh) {
@@ -1035,8 +1024,7 @@ void MMSTextBoxWidget::setColor_i(MMSFBColor color_i, bool refresh) {
 	// refresh required?
 	enableRefresh((color_i != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
@@ -1045,8 +1033,7 @@ void MMSTextBoxWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor_i != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::calcContentSize() {
@@ -1081,73 +1068,7 @@ void MMSTextBoxWidget::setText(string *text, bool refresh) {
     // refresh is required
     enableRefresh();
 
-///TEST
-/*    bool sss = false;
-    MMSWindow *toplevel = NULL;
-    if (name=="mytextbox") {
-		if (this->rootwindow->isShown(true)) {
-			toplevel = this->rootwindow->getParent(true);
-			if (toplevel) {
-				toplevel->hide();
-				toplevel->waitUntilHidden();
-			}
-			else {
-				this->rootwindow->hide();
-				this->rootwindow->waitUntilHidden();
-			}
-			sleep(1);
-			sss=true;
-		}
-    }
-*/
-
-
-/////////
-//TODO: what to do if content size is not changed
-
-    if (!this->rootwindow) return;
-	if (this->minmax_set) {
-		// widget with dynamic geometry
-		if (!this->content_size_initialized) return;
-
-		// recalculate content size
-		initContentSizeEx();
-
-		// we have to refresh whole window, because widget geometry has to be recalculated
-		if (this->rootwindow->isShown(true)) {
-			// window is visible, refresh window directly
-			this->rootwindow->refresh();
-		}
-		else {
-			// window is currently not visible, give it a recalculation hint used for next draw()
-			this->rootwindow->draw_setgeom = true;
-		}
-	}
-	else {
-		// widget with fixed geometry
-		if (refresh) {
-			// refresh widget, only a part of window will be refresh
-			this->refresh();
-		}
-	}
-////////
-
-
-///TEST
-/*
-    if (name=="mytextbox") {
-    	if (sss) {
-			if (toplevel) {
-				toplevel->show();
-				toplevel->waitUntilShown();
-			}
-			else {
-				this->rootwindow->show();
-				this->rootwindow->waitUntilShown();
-			}
-    	}
-    }
-*/
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setText(string text, bool refresh) {
@@ -1161,8 +1082,7 @@ void MMSTextBoxWidget::setTranslate(bool translate, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setFilePath(string filepath, bool load, bool refresh) {
@@ -1173,8 +1093,7 @@ void MMSTextBoxWidget::setFilePath(string filepath, bool load, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
@@ -1185,8 +1104,7 @@ void MMSTextBoxWidget::setFileName(string filename, bool load, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
@@ -1195,8 +1113,7 @@ void MMSTextBoxWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bo
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSTextBoxWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
@@ -1205,8 +1122,7 @@ void MMSTextBoxWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcol
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 

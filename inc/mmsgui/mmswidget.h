@@ -492,7 +492,7 @@ virtual void initContentSizeEx();
         MMSFBRectangle innerGeom;
 
     public:
-    	void refresh();
+    	void refresh(bool required = true);
 
         /* theme access methods */
         bool 	getBgColor(MMSFBColor &bgcolor);

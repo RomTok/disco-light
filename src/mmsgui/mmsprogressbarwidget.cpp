@@ -200,8 +200,7 @@ void MMSProgressBarWidget::setColor(MMSFBColor color, bool refresh) {
 	// refresh required?
 	enableRefresh((color != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSProgressBarWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
@@ -210,8 +209,7 @@ void MMSProgressBarWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSProgressBarWidget::setProgress(unsigned int progress, bool refresh) {
@@ -222,8 +220,7 @@ void MMSProgressBarWidget::setProgress(unsigned int progress, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 

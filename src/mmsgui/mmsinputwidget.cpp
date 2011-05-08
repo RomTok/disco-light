@@ -448,8 +448,7 @@ void MMSInputWidget::setCursorPos(int cursor_pos, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-		this->refresh();
+	this->refresh(refresh);
 }
 
 bool MMSInputWidget::addTextAfterCursorPos(string text, bool refresh) {
@@ -846,8 +845,7 @@ void MMSInputWidget::setFontPath(string fontpath, bool load, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setFontName(MMSLanguage lang, string fontname, bool load, bool refresh) {
@@ -860,8 +858,7 @@ void MMSInputWidget::setFontName(MMSLanguage lang, string fontname, bool load, b
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setFontName(string fontname, bool load, bool refresh) {
@@ -878,8 +875,7 @@ void MMSInputWidget::setFontSize(unsigned int fontsize, bool load, bool refresh)
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setFont(MMSLanguage lang, string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
@@ -894,8 +890,7 @@ void MMSInputWidget::setFont(MMSLanguage lang, string fontpath, string fontname,
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setFont(string fontpath, string fontname, unsigned int fontsize, bool load, bool refresh) {
@@ -908,8 +903,7 @@ void MMSInputWidget::setAlignment(MMSALIGNMENT alignment, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setColor(MMSFBColor color, bool refresh) {
@@ -918,8 +912,7 @@ void MMSInputWidget::setColor(MMSFBColor color, bool refresh) {
 	// refresh required?
 	enableRefresh((color != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
@@ -928,8 +921,7 @@ void MMSInputWidget::setSelColor(MMSFBColor selcolor, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setColor_p(MMSFBColor color_p, bool refresh) {
@@ -938,8 +930,7 @@ void MMSInputWidget::setColor_p(MMSFBColor color_p, bool refresh) {
 	// refresh required?
 	enableRefresh((color_p != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
@@ -948,8 +939,7 @@ void MMSInputWidget::setSelColor_p(MMSFBColor selcolor_p, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor_p != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setColor_i(MMSFBColor color_i, bool refresh) {
@@ -958,8 +948,7 @@ void MMSInputWidget::setColor_i(MMSFBColor color_i, bool refresh) {
 	// refresh required?
 	enableRefresh((color_i != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
@@ -968,8 +957,7 @@ void MMSInputWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
 	// refresh required?
 	enableRefresh((selcolor_i != this->current_fgcolor));
 
-	if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setText(string text, bool refresh, bool reset_cursor) {
@@ -985,8 +973,7 @@ void MMSInputWidget::setText(string text, bool refresh, bool reset_cursor) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setCursorState(MMSSTATE cursor_state, bool refresh) {
@@ -995,8 +982,7 @@ void MMSInputWidget::setCursorState(MMSSTATE cursor_state, bool refresh) {
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool refresh) {
@@ -1005,8 +991,7 @@ void MMSInputWidget::setShadowColor(MMSPOSITION position, MMSFBColor color, bool
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor, bool refresh) {
@@ -1015,8 +1000,7 @@ void MMSInputWidget::setSelShadowColor(MMSPOSITION position, MMSFBColor selcolor
     // refresh is required
     enableRefresh();
 
-    if (refresh)
-        this->refresh();
+	this->refresh(refresh);
 }
 
 void MMSInputWidget::updateFromThemeClass(MMSInputWidgetClass *themeClass) {
