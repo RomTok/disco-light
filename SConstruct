@@ -211,12 +211,12 @@ if env['use_sse']:
 		env['CCFLAGS'].extend(['-msse2', '-mfpmath=sse', '-D__HAVE_SSE__'])
 
 # use environment variables to override defaults
+if os.environ.has_key('CC'):
+	env['CC'] = [os.environ['CC'].split()]
 if os.environ.has_key('CXX'):
 	env['CXX'] = [os.environ['CXX'].split()] 
 if os.environ.has_key('CXXFLAGS'):
 	env['CCFLAGS'].extend(os.environ['CXXFLAGS'].split())
-if os.environ.has_key('LD'):
-	env['LINK'] = [os.environ['LD'].split()]
 if os.environ.has_key('LDFLAGS'):
 	env['LINKFLAGS'].extend(os.environ['LDFLAGS'].split())
 if os.environ.has_key('PKG_CONFIG'):
