@@ -3244,7 +3244,7 @@ void MMSWindow::refresh(MMSFBRegion *region) {
     lock();
 
     // draw window
-    this->draw_setgeom = true;
+    setWidgetGeometryOnNextDraw();
     if (region) {
     	// draw a region
 		MMSFBRectangle rect2update;
@@ -4867,6 +4867,10 @@ void MMSWindow::instantHide() {
 	}
 }
 
+
+void MMSWindow::setWidgetGeometryOnNextDraw() {
+	this->draw_setgeom = true;
+}
 
 void MMSWindow::targetLangChanged(MMSLanguage lang, bool refresh) {
     // for all child windows

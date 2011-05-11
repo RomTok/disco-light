@@ -153,6 +153,7 @@ bool MMSTextBoxWidget::setSurfaceGeometry(unsigned int width, unsigned int heigh
    	return false;
 }
 
+
 bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsigned int startHeight,
                               unsigned int *realWidth, unsigned int *realHeight,
                               unsigned int *scrollDX, unsigned int *scrollDY, unsigned int *lines, unsigned int *paragraphs,
@@ -470,67 +471,6 @@ bool MMSTextBoxWidget::release() {
     return true;
 }
 
-void MMSTextBoxWidget::getForeground(MMSFBColor *color) {
-	color->a = 0;
-
-	if (isActivated()) {
-		if (isSelected()) {
-	        *color = getSelColor();
-		}
-		else {
-	        *color = getColor();
-		}
-		if (isPressed()) {
-			MMSFBColor mycol;
-			if (isSelected()) {
-		        mycol = getSelColor_p();
-				if (mycol.a>0) *color=mycol;
-			}
-			else {
-		        mycol = getColor_p();
-				if (mycol.a>0) *color=mycol;
-			}
-		}
-	}
-	else {
-		if (isSelected()) {
-	        *color = getSelColor_i();
-		}
-		else {
-	        *color = getColor_i();
-		}
-	}
-}
-
-bool MMSTextBoxWidget::enableRefresh(bool enable) {
-	if (!MMSWidget::enableRefresh(enable)) return false;
-
-	// mark foreground as not set
-	this->current_fgset = false;
-
-	return true;
-}
-
-bool MMSTextBoxWidget::checkRefreshStatus() {
-	if (MMSWidget::checkRefreshStatus()) return true;
-
-	if (this->current_fgset) {
-		// current foreground initialized
-		MMSFBColor color;
-		getForeground(&color);
-
-		if (color == this->current_fgcolor) {
-			// foreground color not changed, so we do not enable refreshing
-			return false;
-		}
-	}
-
-	// (re-)enable refreshing
-	enableRefresh();
-
-	return true;
-}
-
 
 bool MMSTextBoxWidget::prepareText(int *width, int *height, bool recalc) {
 	// check if we have to (re)load the font
@@ -661,6 +601,79 @@ bool MMSTextBoxWidget::prepareText(int *width, int *height, bool recalc) {
 	return true;
 }
 
+
+void MMSTextBoxWidget::calcContentSize() {
+	int width, height;
+
+	if (prepareText(&width, &height, true)) {
+    	// text is translated and font is set
+        setContentSize(width, height);
+	}
+}
+
+
+void MMSTextBoxWidget::getForeground(MMSFBColor *color) {
+	color->a = 0;
+
+	if (isActivated()) {
+		if (isSelected()) {
+	        *color = getSelColor();
+		}
+		else {
+	        *color = getColor();
+		}
+		if (isPressed()) {
+			MMSFBColor mycol;
+			if (isSelected()) {
+		        mycol = getSelColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+			else {
+		        mycol = getColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+		}
+	}
+	else {
+		if (isSelected()) {
+	        *color = getSelColor_i();
+		}
+		else {
+	        *color = getColor_i();
+		}
+	}
+}
+
+bool MMSTextBoxWidget::enableRefresh(bool enable) {
+	if (!MMSWidget::enableRefresh(enable)) return false;
+
+	// mark foreground as not set
+	this->current_fgset = false;
+
+	return true;
+}
+
+bool MMSTextBoxWidget::checkRefreshStatus() {
+	if (MMSWidget::checkRefreshStatus()) return true;
+
+	if (this->current_fgset) {
+		// current foreground initialized
+		MMSFBColor color;
+		getForeground(&color);
+
+		if (color == this->current_fgcolor) {
+			// foreground color not changed, so we do not enable refreshing
+			return false;
+		}
+	}
+
+	// (re-)enable refreshing
+	enableRefresh();
+
+	return true;
+}
+
+
 bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
 
@@ -738,6 +751,10 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
 void MMSTextBoxWidget::targetLangChanged(MMSLanguage lang) {
     this->translated = false;
     this->load_font = true;
+
+    // recalculate content size for dynamic widgets, because new language can result in new widget size
+    // note: DO NOT REFRESH at this point
+    recalcContentSize(false);
 }
 
 bool MMSTextBoxWidget::loadFile(bool refresh) {
@@ -1036,28 +1053,6 @@ void MMSTextBoxWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
 	this->refresh(refresh);
 }
 
-void MMSTextBoxWidget::calcContentSize() {
-	if (!this->content_size_initialized)
-		return;
-
-	if (!this->minmax_set) {
-		return;
-	}
-
-	initContentSizeEx();
-
-}
-
-void MMSTextBoxWidget::initContentSizeEx() {
-	int width, height;
-
-//	printf(">before prepareText\n");
-	if (prepareText(&width, &height, true)) {
-//		printf(">>setContentize %d, %d\n", width, height);
-    	// text is translated and font is set
-        setContentSize(width, height);
-	}
-}
 
 void MMSTextBoxWidget::setText(string *text, bool refresh) {
     myTextBoxWidgetClass.setText(text);

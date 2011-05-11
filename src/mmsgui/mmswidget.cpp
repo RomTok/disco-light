@@ -54,6 +54,11 @@ MMSWidget::MMSWidget() :
 	max_height(""),
 	max_height_pix(0),
 	minmax_set(false),
+	content_size_initialized(false),
+	content_width(0),
+	content_height(0),
+	content_width_child(0),
+	content_height_child(0),
 	bindata(NULL),
 	rootwindow(NULL),
 	parent_rootwindow(NULL),
@@ -91,88 +96,7 @@ MMSWidget::MMSWidget() :
 
 	MMSIdFactory factory;
     this->id = factory.getId();
-
-
-this->content_width = 0;
-this->content_height = 0;
-this->content_width_child = 0;
-this->content_height_child = 0;
-this->content_size_initialized = false;
 }
-
-
-bool MMSWidget::getContentSize(int *content_width, int *content_height) {
-	if (!this->minmax_set) {
-		return false;
-	}
-
-	if (this->content_width <= 0 || this->content_height <= 0) {
-		if (this->content_width_child <= 0 || this->content_height_child <= 0)
-			return false;
-
-		*content_width = this->content_width_child;
-		*content_height = this->content_height_child;
-
-		return true;
-	}
-
-	*content_width = this->content_width;
-	*content_height = this->content_height;
-
-	return true;
-}
-
-bool MMSWidget::setContentSize(int content_width, int content_height) {
-	if (!this->minmax_set) {
-		return false;
-	}
-
-	if (!this->parent)
-		return false;
-
-	this->content_width = content_width;
-	this->content_height = content_height;
-	this->parent->setContentSizeFromChild();
-	return true;
-}
-
-void MMSWidget::setContentSizeFromChild() {
-	if (!this->minmax_set) {
-		return;
-	}
-
-	if (!this->parent)
-		return;
-
-	int content_width;
-	int content_height;
-	if (children.at(0)->getContentSize(&content_width, &content_height)) {
-		this->content_width_child = content_width;
-		this->content_height_child = content_height;
-		this->parent->setContentSizeFromChild();
-	}
-}
-
-
-void MMSWidget::initContentSize() {
-	if (this->content_size_initialized)
-		return;
-
-	if (this->minmax_set) {
-		initContentSizeEx();
-	}
-
-	this->content_size_initialized = true;
-
-	for (int i=0; i < children.size(); i++) {
-		children.at(i)->initContentSize();
-	}
-}
-
-void MMSWidget::initContentSizeEx() {
-
-}
-
 
 
 MMSWidget::~MMSWidget() {
@@ -1090,6 +1014,121 @@ bool MMSWidget::release() {
 
 
 
+bool MMSWidget::setContentSize(int content_width, int content_height) {
+	if (!this->minmax_set) {
+		return false;
+	}
+
+	if (!this->parent)
+		return false;
+
+	this->content_width = content_width;
+	this->content_height = content_height;
+	this->parent->setContentSizeFromChildren();
+	return true;
+}
+
+
+void MMSWidget::setContentSizeFromChildren() {
+	if (!this->minmax_set) {
+		return;
+	}
+
+	if (!this->parent)
+		return;
+
+	int content_width;
+	int content_height;
+	if (children.at(0)->getContentSize(&content_width, &content_height)) {
+		this->content_width_child = content_width;
+		this->content_height_child = content_height;
+		this->parent->setContentSizeFromChildren();
+	}
+}
+
+
+bool MMSWidget::getContentSize(int *content_width, int *content_height) {
+	if (!this->minmax_set) {
+		return false;
+	}
+
+	if (this->content_width <= 0 || this->content_height <= 0) {
+		if (this->content_width_child <= 0 || this->content_height_child <= 0)
+			return false;
+
+		*content_width = this->content_width_child;
+		*content_height = this->content_height_child;
+
+		return true;
+	}
+
+	*content_width = this->content_width;
+	*content_height = this->content_height;
+
+	return true;
+}
+
+
+void MMSWidget::initContentSize() {
+	if (this->content_size_initialized) {
+		// already initialized
+		return;
+	}
+
+	if (this->minmax_set) {
+		// widget should calculate and set it's content size
+		calcContentSize();
+	}
+
+	this->content_size_initialized = true;
+
+	// for all my children
+	for (int i=0; i < children.size(); i++) {
+		children.at(i)->initContentSize();
+	}
+}
+
+void MMSWidget::calcContentSize() {
+	// empty method, have to override by specific widget class
+}
+
+
+bool MMSWidget::recalcContentSize(bool refresh) {
+	if (!this->minmax_set || !this->content_size_initialized) return false;
+
+	// get size of old content
+	int old_cwidth = -1;
+	int old_cheight = -1;
+	getContentSize(&old_cwidth, &old_cheight);
+
+	// widget should calculate and set it's new content size
+	calcContentSize();
+
+	// get size of new content
+	int new_cwidth = -1;
+	int new_cheight = -1;
+	getContentSize(&new_cwidth, &new_cheight);
+
+	if (old_cwidth == new_cwidth && old_cheight == new_cheight) {
+		// size of content has not changed
+		return false;
+	}
+
+	// give window a recalculation hint used for next draw()
+	this->rootwindow->setWidgetGeometryOnNextDraw();
+
+	if (refresh) {
+		// we have to refresh whole window, because widget geometry has to be recalculated
+		if (this->rootwindow->isShown(true)) {
+			// refresh is only required for visible windows
+			this->rootwindow->refresh();
+		}
+	}
+
+	return true;
+}
+
+
 void MMSWidget::getBackground(MMSFBColor *color, MMSFBSurface **image) {
 	color->a = 0;
 	*image = NULL;
@@ -1593,34 +1632,16 @@ void MMSWidget::refresh(bool required) {
    		return;
     }
 
-    if (this->minmax_set) {
-		// widget with dynamic geometry
-		if (!this->content_size_initialized) return;
-
-		// recalculate content size
-		initContentSizeEx();
-
-		//TODO: what to do if content size is not changed
-		//...
-
-		// we have to refresh whole window, because widget geometry has to be recalculated
-		if (this->rootwindow->isShown(true)) {
-			// window is visible, refresh window directly
-			this->rootwindow->refresh();
-		}
-		else {
-			// window is currently not visible, give it a recalculation hint used for next draw()
-			this->rootwindow->draw_setgeom = true;
-		}
-
+	// recalculate content size for dynamic widgets
+	if (recalcContentSize()) {
+		// content size has changed and window refreshed
 		return;
 	}
-	else {
-		// widget with fixed geometry
-		if (!required) {
-			// refresh not required
-			return;
-		}
+
+	// widget with fixed geometry or geometry has not changed
+	if (!required) {
+		// refresh not required
+		return;
 	}
 
 	if (this->skip_refresh) {

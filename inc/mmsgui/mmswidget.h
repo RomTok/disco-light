@@ -198,31 +198,47 @@ class MMSWidget {
         //! size of the widget
     	string	sizehint;
 
-string	min_width;
-int		min_width_pix;
-string	min_height;
-int		min_height_pix;
-string	max_width;
-int		max_width_pix;
-string	max_height;
-int		max_height_pix;
+    	//! if true, at least one of min/max values set and widget is marked as a dynamic widget
+    	bool	minmax_set;
 
-bool minmax_set;
+    	//! dynamic widget: minimum width
+    	string	min_width;
 
-int content_width;
-int content_height;
-int content_width_child;
-int content_height_child;
+    	//! dynamic widget: minimum width in pixel
+    	int		min_width_pix;
 
-bool getContentSize(int *content_width, int *content_height);
-bool setContentSize(int content_width, int content_height);
-virtual void setContentSizeFromChild();
+    	//! dynamic widget: minimum height
+    	string	min_height;
 
-bool content_size_initialized;
+    	//! dynamic widget: minimum height in pixel
+    	int		min_height_pix;
 
-void initContentSize();
-virtual void initContentSizeEx();
+    	//! dynamic widget: maximum width
+    	string	max_width;
 
+    	//! dynamic widget: maximum width in pixel
+    	int		max_width_pix;
+
+    	//! dynamic widget: maximum height
+    	string	max_height;
+
+    	//! dynamic widget: maximum height in pixel
+    	int		max_height_pix;
+
+    	//! dynamic widget: first initialization of content width/height is done
+    	bool 	content_size_initialized;
+
+    	//! dynamic widget: width of content in pixel
+    	int content_width;
+
+    	//! dynamic widget: height of content in pixel
+    	int content_height;
+
+    	//! dynamic widget: width of the content of a child in pixel
+    	int content_width_child;
+
+    	//! dynamic widget: height of the content of a child in pixel
+    	int content_height_child;
 
 
 
@@ -301,6 +317,26 @@ virtual void initContentSizeEx();
 
         virtual bool init();
         virtual bool release();
+
+
+        //! Internal method: Set width and height of the content.
+        bool setContentSize(int content_width, int content_height);
+
+        //! Internal method: Can be overridden by a specific widget which calculate it's own size from children.
+        virtual void setContentSizeFromChildren();
+
+        //! Internal method: Get width and height of the content, return false if content size is not set.
+        bool getContentSize(int *content_width, int *content_height);
+
+        //! Internal method: First setup of the content size, called during initialization of a window.
+        void initContentSize();
+
+        //! Internal method: Should be overridden by widgets which have a dynamic size based on content.
+        virtual void calcContentSize();
+
+        //! Internal method: Recalculate content size and refresh window if requested.
+        bool recalcContentSize(bool refresh = true);
+
 
 
         //! Internal method: get the color or/and image of widget's background dependent on the current state

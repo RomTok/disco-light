@@ -519,6 +519,9 @@ class MMSWindow {
         //! Internal method: Hide the window without animation.
 		void instantHide();
 
+        //! Internal method: Give window a recalculation hint used for next draw().
+		void setWidgetGeometryOnNextDraw();
+
         //! Internal method: Inform the window, that the language has changed.
         void targetLangChanged(MMSLanguage lang, bool refresh = true);
 

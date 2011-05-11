@@ -98,6 +98,9 @@ class MMSLabelWidget : public MMSWidget {
         bool init();
         bool release();
 
+        bool prepareText(int *width, int *height, bool recalc = false);
+        void calcContentSize();
+
         void getForeground(MMSFBColor *color);
         bool enableRefresh(bool enable = true);
         bool checkRefreshStatus();
@@ -112,10 +115,6 @@ class MMSLabelWidget : public MMSWidget {
         ~MMSLabelWidget();
 
         MMSWidget *copyWidget();
-
-bool prepareText(int *width, int *height, bool recalc = false);
-void calcContentSize();
-void initContentSizeEx();
 
     public:
         /* theme access methods */

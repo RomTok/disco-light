@@ -45,11 +45,15 @@ The hbox widget cannot be focused and displays nothing.
 */
 class MMSHBoxWidget : public MMSWidget {
     private:
-        void recalculateChildren();
-
         bool create(MMSWindow *root);
 
-void setContentSizeFromChild();
+        void calcSize(int *num_spacers, int *last_spacer,
+    			      int *required_pix, int *remain_pix, int *avail_pix, int *fixed_pix, int *dyn_pix, int *min_dyn_pix,
+    			      float dyn_reduce_factor);
+
+    	void recalculateChildren();
+
+        void setContentSizeFromChildren();
 
     public:
         MMSHBoxWidget(MMSWindow *root);

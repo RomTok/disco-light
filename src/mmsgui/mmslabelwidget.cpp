@@ -183,66 +183,6 @@ bool MMSLabelWidget::release() {
     return true;
 }
 
-void MMSLabelWidget::getForeground(MMSFBColor *color) {
-	color->a = 0;
-
-	if (isActivated()) {
-		if (isSelected()) {
-	        *color = getSelColor();
-		}
-		else {
-	        *color = getColor();
-		}
-		if (isPressed()) {
-			MMSFBColor mycol;
-			if (isSelected()) {
-		        mycol = getSelColor_p();
-				if (mycol.a>0) *color=mycol;
-			}
-			else {
-		        mycol = getColor_p();
-				if (mycol.a>0) *color=mycol;
-			}
-		}
-	}
-	else {
-		if (isSelected()) {
-	        *color = getSelColor_i();
-		}
-		else {
-	        *color = getColor_i();
-		}
-	}
-}
-
-bool MMSLabelWidget::enableRefresh(bool enable) {
-	if (!MMSWidget::enableRefresh(enable)) return false;
-
-	// mark foreground as not set
-	this->current_fgset = false;
-
-	return true;
-}
-
-bool MMSLabelWidget::checkRefreshStatus() {
-	if (MMSWidget::checkRefreshStatus()) return true;
-
-	if (this->current_fgset) {
-		// current foreground initialized
-		MMSFBColor color;
-		getForeground(&color);
-
-		if (color == this->current_fgcolor) {
-			// foreground color not changed, so we do not enable refreshing
-			return false;
-		}
-	}
-
-	// (re-)enable refreshing
-	enableRefresh();
-
-	return true;
-}
 
 bool MMSLabelWidget::prepareText(int *width, int *height, bool recalc) {
 	// check if we have to (re)load the font
@@ -338,6 +278,79 @@ bool MMSLabelWidget::prepareText(int *width, int *height, bool recalc) {
 
 	return true;
 }
+
+
+void MMSLabelWidget::calcContentSize() {
+	int width, height;
+
+	if (prepareText(&width, &height, true)) {
+    	// text is translated and font is set
+        setContentSize(width, height);
+	}
+}
+
+
+void MMSLabelWidget::getForeground(MMSFBColor *color) {
+	color->a = 0;
+
+	if (isActivated()) {
+		if (isSelected()) {
+	        *color = getSelColor();
+		}
+		else {
+	        *color = getColor();
+		}
+		if (isPressed()) {
+			MMSFBColor mycol;
+			if (isSelected()) {
+		        mycol = getSelColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+			else {
+		        mycol = getColor_p();
+				if (mycol.a>0) *color=mycol;
+			}
+		}
+	}
+	else {
+		if (isSelected()) {
+	        *color = getSelColor_i();
+		}
+		else {
+	        *color = getColor_i();
+		}
+	}
+}
+
+bool MMSLabelWidget::enableRefresh(bool enable) {
+	if (!MMSWidget::enableRefresh(enable)) return false;
+
+	// mark foreground as not set
+	this->current_fgset = false;
+
+	return true;
+}
+
+bool MMSLabelWidget::checkRefreshStatus() {
+	if (MMSWidget::checkRefreshStatus()) return true;
+
+	if (this->current_fgset) {
+		// current foreground initialized
+		MMSFBColor color;
+		getForeground(&color);
+
+		if (color == this->current_fgcolor) {
+			// foreground color not changed, so we do not enable refreshing
+			return false;
+		}
+	}
+
+	// (re-)enable refreshing
+	enableRefresh();
+
+	return true;
+}
+
 
 bool MMSLabelWidget::draw(bool *backgroundFilled) {
     int width, height, x, y;
@@ -445,6 +458,10 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 void MMSLabelWidget::targetLangChanged(MMSLanguage lang) {
     this->translated = false;
     this->load_font = true;
+
+    // recalculate content size for dynamic widgets, because new language can result in new widget size
+    // note: DO NOT REFRESH at this point
+    recalcContentSize(false);
 }
 
 /***********************************************/
@@ -679,35 +696,12 @@ void MMSLabelWidget::setSelColor_i(MMSFBColor selcolor_i, bool refresh) {
 }
 
 
-void MMSLabelWidget::calcContentSize() {
-	if (!this->content_size_initialized)
-		return;
-
-	if (!this->minmax_set) {
-		return;
-	}
-
-	initContentSizeEx();
-
-}
-
-void MMSLabelWidget::initContentSizeEx() {
-	int width, height;
-
-	if (prepareText(&width, &height, true)) {
-    	// text is translated and font is set
-        setContentSize(width, height);
-	}
-}
-
 void MMSLabelWidget::setText(string text, bool refresh) {
     myLabelWidgetClass.setText(text);
     this->translated = false;
 
     // refresh is required
     enableRefresh();
-
-    calcContentSize();
 
 	this->refresh(refresh);
 }

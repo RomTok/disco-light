@@ -114,6 +114,9 @@ class MMSTextBoxWidget : public MMSWidget {
         bool init();
         bool release();
 
+        bool prepareText(int *width, int *height, bool recalc = false);
+        void calcContentSize();
+
         void getForeground(MMSFBColor *color);
         bool enableRefresh(bool enable = true);
         bool checkRefreshStatus();
@@ -130,10 +133,6 @@ class MMSTextBoxWidget : public MMSWidget {
         ~MMSTextBoxWidget();
 
         MMSWidget *copyWidget();
-
-bool prepareText(int *width, int *height, bool recalc = false);
-void calcContentSize();
-void initContentSizeEx();
 
     public:
 		//! reload the file and display it in the textbox
