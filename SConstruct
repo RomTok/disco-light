@@ -594,7 +594,7 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 				conf.env['graphics_outputtype'].remove('gl2')
 	
 	# check if OpenGL 2.0 and OpenGL ES are both activated
-	if 'gl2' and 'gles2' in conf.env['graphics_outputtype']:
+	if 'gl2' in conf.env['graphics_outputtype'] and 'gles2' in conf.env['graphics_outputtype']:
 		print '\nOpenGL 2.0 and OpenGL ES 2.0 support is mutually exclusive.' 
 		print 'You have to choose between one of them by using:'
 		print '  \'scons graphics_outputtype=gl2\' or'
