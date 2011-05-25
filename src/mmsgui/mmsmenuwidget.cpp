@@ -190,7 +190,7 @@ bool MMSMenuWidget::draw(bool *backgroundFilled) {
         backgroundFilled = &myBackgroundFilled;
 
     // lock
-    this->surface->lock();
+    lock();
 
     // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
@@ -199,7 +199,7 @@ bool MMSMenuWidget::draw(bool *backgroundFilled) {
     }
 
     // unlock
-    this->surface->unlock();
+    unlock();
 
     // draw widgets debug frame
     return MMSWidget::drawDebug();
@@ -1323,10 +1323,6 @@ void MMSMenuWidget::selectItem(MMSWidget *item, bool set, bool refresh, bool ref
 
 
 bool MMSMenuWidget::onBeforeAnimation(MMSPulser *pulser) {
-
-    // lock me
-    lock();
-
 	// init animation
 	switch (this->pulser_mode) {
 	case MMSMENUWIDGET_PULSER_MODE_SCROLL_DOWN:
@@ -1414,9 +1410,6 @@ void MMSMenuWidget::onAfterAnimation(MMSPulser *pulser) {
 		break;
 	}
 
-    // unlock me
-    unlock();
-
 	return;
 }
 
@@ -1478,9 +1471,6 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
         return false;
     }
 
-    // lock me
-    lock();
-
     // get settings
     cols = getCols();
     fixedpos = getFixedPos();
@@ -1502,23 +1492,10 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	                if (getVLoop()) {
 	                    // I should not give up the focus
 	                    if (this->y) {
-	                        bool ret = scrollUpEx(this->y, refresh, test, leave_selection);
-
-	                        // unlock me
-	                        unlock();
-
-	                        return ret;
+	                        return scrollUpEx(this->y, refresh, test, leave_selection);
 	                    }
-	                    else {
-	                        // unlock me
-	                        unlock();
-
-	                    	return true;
-	                    }
+						return true;
 	                }
-
-	                // nothing to scroll, unlock me
-	                unlock();
 
 	                return false;
 	            }
@@ -1537,23 +1514,10 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 	                if (getVLoop()) {
 	                    // I should not give up the focus
 	                    if (this->y) {
-	                        bool ret = scrollUpEx(this->y, refresh, test, leave_selection);
-
-	                        // unlock me
-	                        unlock();
-
-	                        return ret;
+	                        return scrollUpEx(this->y, refresh, test, leave_selection);
 	                    }
-	                    else {
-	                        // unlock me
-	                        unlock();
-
-	                    	return true;
-	                    }
+						return true;
 	                }
-
-	                // nothing to scroll, unlock me
-	                unlock();
 
 	                return false;
 	            }
@@ -1561,9 +1525,6 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -1634,17 +1595,11 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
         else {
         	// we have to leave the selected menu item asis!!!
             if (this->x + (this->py + this->v_items + count - 1) * cols >= children.size()) {
-                // nothing to scroll, unlock me
-                unlock();
-
                 return false;
             }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -1663,9 +1618,6 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
         // set the sliders
         setSliders();
 
-        // unlock me
-        unlock();
-
         return true;
     }
     else {
@@ -1673,9 +1625,6 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
         if (cols == 1) {
             // in test mode we can say that we can scroll
             if (test) {
-                // unlock me
-                unlock();
-
                 return true;
             }
 
@@ -1712,17 +1661,10 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
             // set the sliders
             setSliders();
 
-            // unlock me
-            unlock();
-
             return true;
         }
         else {
             // menu with more than one column cannot be scrolled down in fixed selection mode
-
-        	// unlock me
-            unlock();
-
             return false;
         }
     }
@@ -1738,9 +1680,6 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
     if (count==0 || children.empty()) {
         return false;
     }
-
-    // lock me
-    lock();
 
     // get settings
     cols = getCols();
@@ -1764,32 +1703,16 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
 	                unsigned int lines = this->children.size() /* / cols */;
 	                // if (this->children.size() % cols > 0) lines++;
 	                if ((int)lines - (int)this->y > 1) {
-	                    bool ret = scrollDownEx(lines - this->y - 1, refresh, test, leave_selection);
-
-	                    // unlock me
-	                    unlock();
-
-	                    return ret;
+	                    return scrollDownEx(lines - this->y - 1, refresh, test, leave_selection);
 	                }
-	                else {
-	                    // unlock me
-	                    unlock();
-
-	                    return true;
-	                }
+					return true;
 	            }
-
-	            // nothing to scroll, unlock me
-	            unlock();
 
 	            return false;
 	        }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -1855,17 +1778,11 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
         else {
         	// we have to leave the selected menu item asis!!!
             if (this->py < (int)count) {
-                // nothing to scroll, unlock me
-                unlock();
-
                 return false;
             }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -1884,9 +1801,6 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
         // set the sliders
         setSliders();
 
-        // unlock me
-        unlock();
-
         return true;
     }
     else {
@@ -1894,9 +1808,6 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
         if (cols == 1) {
             // in test mode we can say that we can scroll
             if (test) {
-                // unlock me
-                unlock();
-
                 return true;
             }
 
@@ -1933,17 +1844,10 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
             // set the sliders
             setSliders();
 
-            // unlock me
-            unlock();
-
             return true;
         }
         else {
             // menu with more than one column cannot be scrolled up in fixed selection mode
-
-            // unlock me
-            unlock();
-
             return false;
         }
     }
@@ -1962,9 +1866,6 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
         return false;
     }
 
-    // lock me
-    lock();
-
     // get settings
     cols = getCols();
     fixedpos = getFixedPos();
@@ -1981,38 +1882,19 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                    // I should not give up the focus
 	                    if (this->x) {
 							if (children.size() <= cols) {
-								bool ret = scrollLeftEx(this->x, refresh, test, leave_selection);
-
-								// unlock me
-							    unlock();
-
-							    return ret;
+								return scrollLeftEx(this->x, refresh, test, leave_selection);
 							}
 							else {
 								if (!scrollLeftEx(this->x, false, test, leave_selection)) {
-								    // unlock me
-								    unlock();
-
 								    return false;
 								}
-								bool ret = scrollUpEx(1, refresh, test, leave_selection);
-
-							    // unlock me
-							    unlock();
-
-							    return ret;
+								return scrollUpEx(1, refresh, test, leave_selection);
 							}
 	                    }
 	                    else {
-	                        // unlock me
-	                        unlock();
-
 	                        return true;
 	                    }
 	                }
-
-	                // nothing to scroll, unlock me
-	                unlock();
 
 	                return false;
 	            }
@@ -2030,23 +1912,10 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                if (getHLoop()) {
 	                    // I should not give up the focus
 	                    if (this->x) {
-	                        bool ret = scrollLeftEx(this->x, refresh, test, leave_selection);
-
-	                        // unlock me
-	                        unlock();
-
-	                        return ret;
+	                        return scrollLeftEx(this->x, refresh, test, leave_selection);
 	                    }
-	                    else {
-	                        // unlock me
-	                        unlock();
-
-	                        return true;
-	                    }
+						return true;
 	                }
-
-	                // nothing to scroll, unlock me
-	                unlock();
 
 	                return false;
 	            }
@@ -2058,47 +1927,25 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
 	                // I should not give up the focus
 	                if (this->x) {
 						if (children.size() <= cols) {
-							bool ret = scrollLeftEx(this->x, refresh, test, leave_selection);
-
-							// unlock me
-						    unlock();
-
-						    return ret;
+							return scrollLeftEx(this->x, refresh, test, leave_selection);
 						}
 						else {
 							if (!scrollLeftEx(this->x, false, test, leave_selection)) {
-							    // unlock me
-							    unlock();
-
 							    return false;
 							}
-							bool ret = scrollDownEx(1, refresh, test, leave_selection);
-
-						    // unlock me
-						    unlock();
-
-						    return ret;
+							return scrollDownEx(1, refresh, test, leave_selection);
 						}
 	                }
 	                else {
-	                    // unlock me
-	                    unlock();
-
 	                    return true;
 	                }
 	            }
-
-	            // nothing to scroll, unlock me
-	            unlock();
 
 	            return false;
 	        }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -2169,17 +2016,11 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
         else {
         	// we have to leave the selected menu item asis!!!
 	        if (this->px + this->h_items + count - 1 >= ((cols<=children.size())?cols:children.size())) {
-                // nothing to scroll, unlock me
-	            unlock();
-
 	            return false;
 	        }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -2198,9 +2039,6 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
         // set the sliders
         setSliders();
 
-        // unlock me
-        unlock();
-
         return true;
     }
     else {
@@ -2208,9 +2046,6 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
         if (cols > 1) {
             // in test mode we can say that we can scroll
             if (test) {
-                // unlock me
-                unlock();
-
                 return true;
             }
 
@@ -2264,17 +2099,10 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             // set the sliders
             setSliders();
 
-            // unlock me
-            unlock();
-
             return true;
         }
         else {
             // menu with only one column cannot be scrolled right in fixed selection mode
-
-            // unlock me
-            unlock();
-
             return false;
         }
     }
@@ -2290,9 +2118,6 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
     if (count==0 || children.empty()) {
         return false;
     }
-
-    // lock me
-    lock();
 
     // get settings
     cols = getCols();
@@ -2313,57 +2138,30 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
 	                    columns = this->children.size();
 	                if ((int)columns - (int)this->x > 1) {
 						if (children.size() <= cols) {
-							bool ret = scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
-
-						    // unlock me
-						    unlock();
-
-						    return ret;
+							return scrollRightEx(columns - this->x - 1, refresh, test, leave_selection);
 						}
 						else {
 							if (!scrollRightEx(columns - this->x - 1, false, test, leave_selection)) {
-							    // unlock me
-							    unlock();
-
 							    return false;
 							}
 							if (this->y > 0) {
-								bool ret = scrollUpEx(1, refresh, test, leave_selection);
-
-							    // unlock me
-							    unlock();
-
-							    return ret;
+								return scrollUpEx(1, refresh, test, leave_selection);
 							}
 							else {
-								bool ret = scrollDownEx((children.size() - cols) / cols, refresh, test, leave_selection);
-
-							    // unlock me
-							    unlock();
-
-							    return ret;
+								return scrollDownEx((children.size() - cols) / cols, refresh, test, leave_selection);
 							}
 						}
 	                }
 	                else {
-	                    // unlock me
-	                    unlock();
-
 	                    return true;
 	                }
 	            }
-
-	            // nothing to scroll, unlock me
-	            unlock();
 
 	            return false;
 	        }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -2428,17 +2226,11 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
         else {
         	// we have to leave the selected menu item asis!!!
             if (this->px < (int)count) {
-                // nothing to scroll, unlock me
-                unlock();
-
                 return false;
             }
 
 	        // in test mode we can say that we can scroll
 	        if (test) {
-	            // unlock me
-	            unlock();
-
 	            return true;
 	        }
 
@@ -2457,9 +2249,6 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
         // set the sliders
         setSliders();
 
-        // unlock me
-        unlock();
-
         return true;
     }
     else {
@@ -2467,9 +2256,6 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
         if (cols > 1) {
             // in test mode we can say that we can scroll
             if (test) {
-                // unlock me
-                unlock();
-
                 return true;
             }
 
@@ -2524,17 +2310,10 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             // set the sliders
             setSliders();
 
-            // unlock me
-            unlock();
-
             return true;
         }
         else {
             // menu with only one column cannot be scrolled right in fixed selection mode
-
-        	// unlock me
-            unlock();
-
             return false;
         }
     }
