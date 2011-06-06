@@ -190,7 +190,10 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
 bool MMSFB::release() {
 #ifdef __HAVE_OPENGL__
 	// stop backend interface server
-	if (this->bei) delete this->bei;
+	if (this->bei) {
+		delete this->bei;
+		this->bei = NULL;
+	}
 #endif
 
     if (this->backend == MMSFB_BE_DFB) {
