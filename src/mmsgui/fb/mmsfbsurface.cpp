@@ -857,7 +857,7 @@ void MMSFBSurface::initPlanePointers(MMSFBSurfacePlanes *planes, int height) {
     	planes->ptr2 = ((unsigned char *)planes->ptr) + planes->pitch * height;
     	planes->pitch2 = planes->pitch / 4;
     	planes->ptr3 = NULL;
-    	planes->pitch3 = NULL;
+    	planes->pitch3 = 0;
     	break;
     default:
     	break;
@@ -4785,7 +4785,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 					dfbres=((IDirectFBSurface *)tempsuf->getDFBSurface())->StretchBlit((IDirectFBSurface *)tempsuf->getDFBSurface(), (IDirectFBSurface *)source->getDFBSurface(), (DFBRectangle*)&src, (DFBRectangle*)&temp);
 					if (dfbres == DFB_OK) {
 						if (!this->is_sub_surface) {
-							if (extendedAccelBlit(tempsuf, &temp, dst.x, dst.y)) {
+							if (extendedAccelBlit(tempsuf, &temp, dst.x, dst.y, this->config.blittingflags)) {
 								blit_done = true;
 								ret = true;
 							}
@@ -4806,7 +4806,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 							SETSUBSURFACE_BLITTINGFLAGS;
 #endif
 
-							if (!extendedAccelBlit(tempsuf, &temp, dst.x, dst.y))
+							if (!extendedAccelBlit(tempsuf, &temp, dst.x, dst.y, this->config.blittingflags))
 								this->dfb_surface->Blit(this->dfb_surface, (IDirectFBSurface *)tempsuf->getDFBSurface(), (DFBRectangle*)&temp, dst.x, dst.y);
 
 #ifndef USE_DFB_SUBSURFACE
@@ -7121,7 +7121,7 @@ bool MMSFBSurface::dump2file(string filename, MMSFBSurfaceDumpMode dumpmode) {
 
 bool dump_fcb(char *buf, int len, void *argp, int *argi) {
 	buf[len] = 0;
-	printf(buf);
+	printf("%s", buf);
 	return true;
 }
 

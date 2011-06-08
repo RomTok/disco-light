@@ -73,13 +73,6 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	for(i=0;i<argc;i++)
 		myargv[i]=strdup(argv[i]);
 
-#ifdef  __HAVE_DIRECTFB__
-	if(config.getOutputType() == MMSFB_OT_X11) {
-		myargv[myargc]=strdup("--dfb:system=x11");
-		myargc++;
-	}
-#endif
-
     DEBUGMSG("MMSGUI", "init mmsfb");
     bool ea = config.getExtendedAccel();
 #ifdef  __HAVE_DIRECTFB__
@@ -97,6 +90,15 @@ bool MMSFBManager::init(int argc, char **argv, string appl_name, string appl_ico
 	// get layer settings from config
 	MMSConfigDataLayer videolayer_conf = this->config.getVideoLayer();
 	MMSConfigDataLayer graphicslayer_conf = this->config.getGraphicsLayer();
+
+#ifdef  __HAVE_DIRECTFB__
+	if(videolayer_conf.outputtype == MMSFB_OT_X11) {
+		myargv[myargc++] = strdup("--dfb:system=x11");
+		char mode[24];
+		snprintf(mode, 24, "--dfb:mode=%dx%d", graphicslayer_conf.rect.w, graphicslayer_conf.rect.h);
+		myargv[myargc++] = strdup(mode);
+	}
+#endif
 
 	// init the MMSFB class
     if (!mmsfb->init(myargc, myargv, config.getBackend(), graphicslayer_conf.rect,
