@@ -160,8 +160,12 @@ void MMSTranslator::translate(const string &source, string &dest) {
 			addMissing(source, true);
 		}
 	} else {
-		dest = it->second.at(this->targetIdx);
-		if(dest.empty()) {
+		if(it->second.size() > this->targetIdx) {
+			dest = it->second.at(this->targetIdx);
+			if(dest.empty()) {
+				dest = source;
+			}
+		} else {
 			dest = source;
 		}
 	}
