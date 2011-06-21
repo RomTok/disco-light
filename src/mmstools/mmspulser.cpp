@@ -205,8 +205,6 @@ void MMSPulser::calcCurve(double &offset, double &offset_curve) {
 }
 
 void MMSPulser::threadMain() {
-	// reset all values
-	reset();
 
 	// call connected onBeforeAnimation callbacks
     if (!this->onBeforeAnimation.emit(this)) {
@@ -390,6 +388,9 @@ bool MMSPulser::start(bool separate_thread, bool wait) {
 		}
 	}
 
+	// reset all values
+	reset();
+
 	if (separate_thread) {
 		// start animation in a separate thread context
 		bool ret = MMSThread::start();
@@ -428,7 +429,9 @@ bool MMSPulser::isRunning() {
 }
 
 void MMSPulser::stop() {
+	this->startlock.lock();
 	this->cancel = true;
+	this->startlock.unlock();
 }
 
 bool MMSPulser::setStepsPerSecond(int steps_per_second) {
