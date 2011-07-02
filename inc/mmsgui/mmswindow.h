@@ -40,6 +40,7 @@
 #include "mmsgui/mmsfbmanager.h"
 #include "mmsgui/interfaces/immswindowmanager.h"
 #include "mmstools/mmsmutex.h"
+#include "mmstools/mmspulser.h"
 
 // support old renamed methods
 #define searchForWindow		findWindow

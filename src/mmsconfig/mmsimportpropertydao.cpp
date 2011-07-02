@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsconfig/mmsimportpropertydao.h"
+#include "mmstools/tools.h"
 #include <stdlib.h>
 
 MMSImportPropertyDAO::MMSImportPropertyDAO(IMMSDB *connection) {

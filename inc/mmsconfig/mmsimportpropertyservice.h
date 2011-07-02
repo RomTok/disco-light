@@ -33,7 +33,6 @@
 #ifndef MMSIMPORTPROPERTYSERVICE_H_
 #define MMSIMPORTPROPERTYSERVICE_H_
 
-#include "mmstools/base.h"
 #include "mmsconfig/mmsplugindata.h"
 #include "mmsconfig/mmsimportpropertydata.h"
 #include "mmstools/interfaces/immsdb.h"

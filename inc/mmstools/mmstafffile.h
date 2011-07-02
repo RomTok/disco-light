@@ -33,7 +33,6 @@
 #ifndef MMSTAFFFILE_H_
 #define MMSTAFFFILE_H_
 
-#include "mmstools/base.h"
 #include "mmstools/mmsfile.h"
 
 //! TAFF Eyecatcher

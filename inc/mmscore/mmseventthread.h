@@ -33,7 +33,9 @@
 #ifndef MMSEVENTTHREAD_H_
 #define MMSEVENTTHREAD_H_
 
-#include "mmsbase/mmsbase.h"
+#include "mmsbase/mmsosdpluginhandler.h"
+#include "mmsbase/mmscentralpluginhandler.h"
+#include "mmsbase/mmsbackendpluginhandler.h"
 
 class MMSEventThread : public MMSThread {
     private:

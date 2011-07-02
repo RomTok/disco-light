@@ -33,7 +33,9 @@
 #include "mmscore/mmstranslator.h"
 #include "mmsconfig/mmsconfigdata.h"
 #include "mmsconfig/mmspluginservice.h"
+#include "mmstools/tools.h"
 #include "mmstools/mmsfile.h"
+#include "mmstools/mmsfilesearch.h"
 
 #include <string.h>
 #include <stdexcept>

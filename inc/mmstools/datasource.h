@@ -33,7 +33,9 @@
 #ifndef DATASOURCE_H_
 #define DATASOURCE_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
 
 class DataSource {
 

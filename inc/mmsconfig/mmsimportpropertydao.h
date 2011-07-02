@@ -33,7 +33,8 @@
 #ifndef MMSIMPORTPROPERTYDAO_H_
 #define MMSIMPORTPROPERTYDAO_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/mmserror.h"
+#include "mmstools/interfaces/immsdb.h"
 #include "mmsconfig/mmsimportpropertydata.h"
 #include "mmsconfig/mmsplugindata.h"
 

@@ -33,12 +33,13 @@
 #ifndef MMSCONVERTER_H_
 #define MMSCONVERTER_H_
 
-#include "mmstools/base.h"
 #include "mmstools/mmserror.h"
-#include "mmstools/mmslogger.h"
 #include "mmstools/mmsmutex.h"
 
+extern "C" {
 #include <iconv.h>
+}
+
 #include <map>
 
 class MMSConverter {

@@ -33,9 +33,7 @@
 #ifndef MMSIMPORTSCHEDULER_H_
 #define MMSIMPORTSCHEDULER_H_
 
-#include "mmsbase/interfaces/immsimportscheduler.h"
-#include "mmsbase/mmsbase.h"
-#include "mmsconfig/mmsconfig.h"
+#include "mmsconfig/mmsimportpropertyservice.h"
 #include "mmscore/mmspluginmanager.h"
 
 typedef struct {

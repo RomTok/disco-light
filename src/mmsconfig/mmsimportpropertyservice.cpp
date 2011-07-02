@@ -32,6 +32,7 @@
 
 #include "mmsconfig/mmsimportpropertyservice.h"
 #include "mmstools/interfaces/immsdb.h"
+#include "mmstools/mmsdbconnmgr.h"
 #include "mmsconfig/mmsimportpropertydao.h"
 
 MMSImportPropertyService::MMSImportPropertyService(DataSource *datasource) :

@@ -33,7 +33,9 @@
 #ifndef MMSPLUGINCATEGORYDATA_H_
 #define MMSPLUGINCATEGORYDATA_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
 
 class MMSPluginCategoryData {
 

@@ -46,10 +46,7 @@
 
 #ifdef __ENABLE_SQLITE__
 
-#include "mmstools/base.h"
 #include "mmstools/mmserror.h"
-#include "mmstools/mmsrecordset.h"
-#include "mmstools/datasource.h"
 #include "mmstools/interfaces/immsdb.h"
 
 #include <sqlite3.h>

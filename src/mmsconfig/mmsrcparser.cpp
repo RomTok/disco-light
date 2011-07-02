@@ -30,6 +30,10 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
+using namespace std;
+
+#include <iostream>
+
 #include <cstring>
 #include "mmsconfig/mmsrcparser.h"
 #include "mmstools/tools.h"

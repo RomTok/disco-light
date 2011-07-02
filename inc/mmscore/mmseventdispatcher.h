@@ -33,7 +33,6 @@
 #ifndef MMSEVENTDISPATCHER_H_
 #define MMSEVENTDISPATCHER_H_
 
-#include "mmsbase/mmsbase.h"
 #include "mmsbase/interfaces/immseventdispatcher.h"
 #include "mmscore/mmspluginmanager.h"
 #include "mmscore/mmseventsignupmanager.h"

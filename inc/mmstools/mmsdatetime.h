@@ -33,8 +33,13 @@
 #ifndef MMSDATETIME_H_
 #define MMSDATETIME_H_
 
+using namespace std;
+
+#include <string>
+
+extern "C" {
 #include <sys/time.h>
-#include "mmstools/base.h"
+}
 
 class MMSDateTime {
 	private:

@@ -33,14 +33,17 @@
 #ifndef TOOLS_H_
 #define TOOLS_H_
 
-#include "mmstools/base.h"
-#include "mmstools/mmserror.h"
 #include "mmstools/mmstypes.h"
+
+#include <vector>
+
+extern "C" {
 #include <stdarg.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <sys/types.h>
+}
 
 #ifdef __ENABLE_LOG__
 #define DEBUGMSG(ident, msg...) writeDebugMessage(ident, __FILE__, __LINE__, msg)

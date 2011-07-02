@@ -33,7 +33,6 @@
 #ifndef MMSEVENTSIGNUP_H_
 #define MMSEVENTSIGNUP_H_
 
-#include "mmsbase/interfaces/immseventsignup.h"
 #include "mmsbase/interfaces/immseventsignupmanager.h"
 #include "mmsconfig/mmsplugindata.h"
 #include "mmstools/mmserror.h"

@@ -34,7 +34,7 @@
 #define MMSCONFIGDATA_H_
 
 #include "mmstools/mmstypes.h"
-#include "mmstools/mmstools.h"
+#include "mmstools/mmsdbconnmgr.h"
 
 using namespace std;
 

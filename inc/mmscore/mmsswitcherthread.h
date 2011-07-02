@@ -33,7 +33,8 @@
 #ifndef MMSSWITCHERTHREAD_H_
 #define MMSSWITCHERTHREAD_H_
 
-#include "mms.h"
+#include "mmstools/mmsmutex.h"
+#include "mmsgui/mmswidgets.h"
 
 class MMSSwitcher;
 

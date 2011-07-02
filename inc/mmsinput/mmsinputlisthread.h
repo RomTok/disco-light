@@ -33,7 +33,6 @@
 #ifndef MMSINPUTLISTHREAD_H_
 #define MMSINPUTLISTHREAD_H_
 
-#include "mmstools/mmstools.h"
 #include "mmsinput/mmsinputlishandler.h"
 #include <linux/keyboard.h>
 #include <fcntl.h>

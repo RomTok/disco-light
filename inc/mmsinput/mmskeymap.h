@@ -30,17 +30,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-/*
- * mmsinputkeys.h
- *
- *  Created on: 27.10.2008
- *      Author: sxs
- */
-
 #ifndef MMSKEYMAP_H_
 #define MMSKEYMAP_H_
 
 #include "mmstools/mmstypes.h"
+
+#include <map>
 
 class MMSKeyMap {
 	private:

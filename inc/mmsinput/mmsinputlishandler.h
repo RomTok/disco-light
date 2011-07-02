@@ -34,7 +34,6 @@
 #define MMSINPUTLISHANDLER_H_
 
 #include "mmsgui/mmsguitools.h"
-#include "mmsbase/mmsbase.h"
 #include "mmsinput/mmsinputhandler.h"
 
 //! maximum number of linux input devices

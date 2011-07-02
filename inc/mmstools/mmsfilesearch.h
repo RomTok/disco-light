@@ -33,10 +33,10 @@
 #ifndef MMSFILESEARCH_H_
 #define MMSFILESEARCH_H_
 
-#include "mmstools/base.h"
 #include "mmstools/mmserror.h"
 
 #include <list>
+#include <vector>
 #include <sys/types.h>
 #include <dirent.h>
 

@@ -33,7 +33,6 @@
 #ifndef MMSIMPORTPLUGINHANDLER_H_
 #define MMSIMPORTPLUGINHANDLER_H_
 
-#include "mmstools/base.h"
 #include "mmstools/mmserror.h"
 #include "mmstools/mmsshlhandler.h"
 #include "mmstools/mmsmutex.h"

@@ -33,7 +33,9 @@
 #ifndef MMSTCPCLIENT_H_
 #define MMSTCPCLIENT_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
 
 class MMSTCPClient {
 	private:

@@ -115,7 +115,7 @@ class MMSImageWidget : public MMSWidget {
 
     public:
         MMSImageWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
-        ~MMSImageWidget();
+        virtual ~MMSImageWidget();
 
         MMSWidget *copyWidget();
 

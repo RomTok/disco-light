@@ -33,12 +33,17 @@
 #ifndef MMSFILETRANSFER_H_
 #define MMSFILETRANSFER_H_
 #ifdef __HAVE_CURL__
-#include "mmstools/base.h"
 
+using namespace std;
+
+#include <string>
+#include <sigc++/sigc++.h>
+
+extern "C" {
 #include <curl/curl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sigc++/sigc++.h>
+}
 
 /** Specifies a structure for file operations */
 typedef struct {

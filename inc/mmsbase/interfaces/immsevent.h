@@ -32,7 +32,9 @@
 
 #ifndef IMMSEVENT_H_
 #define IMMSEVENT_H_
-#include "mmstools/base.h"
+
+using namespace std;
+
 #include "mmstools/mmshandle.h"
 
 class _IMMSEvent {

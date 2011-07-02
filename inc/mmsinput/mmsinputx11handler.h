@@ -40,8 +40,8 @@
 #ifndef MMSINPUTX11HANDLER_H_
 #define MMSINPUTX11HANDLER_H_
 
+#include "mmsconfig/mmsconfigdata.h"
 #include "mmsgui/mmsguitools.h"
-#include "mmsbase/mmsbase.h"
 #include "mmsinput/mmsinputhandler.h"
 
 

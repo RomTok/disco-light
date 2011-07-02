@@ -33,8 +33,6 @@
 #ifndef MMSIMPORTPROPERTYDATA_H_
 #define MMSIMPORTPROPERTYDATA_H_
 
-#include "mmstools/base.h"
-
 class MMSImportPropertyData {
     friend class MMSImportPropertyDAO;
     private:

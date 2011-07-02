@@ -33,11 +33,12 @@
 #ifndef MMSSWITCHER_H_
 #define MMSSWITCHER_H_
 
-#include <mmsbase/interfaces/immsswitcher.h>
-#include <mmscore/mmspluginmanager.h>
-#include <mmscore/mmsswitcherthread.h>
-#include <mmsinput/mmsinput.h>
-#include <mmsgui/mmsgui.h>
+#include "mmsbase/interfaces/immsswitcher.h"
+#include "mmscore/mmspluginmanager.h"
+#include "mmscore/mmsswitcherthread.h"
+#include "mmsinput/mmsinput.h"
+#include "mmsgui/mmsdialogmanager.h"
+#include "mmsgui/mmsmainwindow.h"
 
 typedef struct {
     MMSPluginData 				plugindata;

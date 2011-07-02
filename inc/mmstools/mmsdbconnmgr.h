@@ -33,7 +33,6 @@
 #ifndef MMSDBCONNMGR_H_
 #define MMSDBCONNMGR_H_
 
-#include "mmstools/datasource.h"
 #include "mmstools/interfaces/immsdb.h"
 
 #define DBMS_SQLITE3	"SQLITE3"

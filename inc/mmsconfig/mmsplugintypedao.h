@@ -33,8 +33,6 @@
 #ifndef MMSPLUGINTYPEDAO_H_
 #define MMSPLUGINTYPEDAO_H_
 
-#include "mmstools/base.h"
-#include "mmstools/tools.h"
 #include "mmstools/mmserror.h"
 #include "mmsconfig/mmsplugintypedata.h"
 #include "mmstools/interfaces/immsdb.h"

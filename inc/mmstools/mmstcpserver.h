@@ -35,6 +35,8 @@
 
 #include "mmstools/mmstcpserverthread.h"
 
+#include <vector>
+
 class MMSTCPServer : public MMSThread {
 	private:
 		vector<MMSTCPServerThread *> 	sthreads;

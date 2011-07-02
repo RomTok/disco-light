@@ -33,8 +33,6 @@
 #ifndef MMSPLUGINCATEGORYDAO_H_
 #define MMSPLUGINCATEGORYDAO_H_
 
-#include "mmstools/base.h"
-#include "mmstools/tools.h"
 #include "mmstools/mmserror.h"
 #include "mmsconfig/mmsplugincategorydata.h"
 #include "mmstools/interfaces/immsdb.h"

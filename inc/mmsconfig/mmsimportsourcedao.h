@@ -33,7 +33,7 @@
 #ifndef MMSIMPORTSOURCEDAO_H_
 #define MMSIMPORTSOURCEDAO_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/interfaces/immsdb.h"
 #include "mmsconfig/mmsimportsourcedata.h"
 #include "mmsconfig/mmsplugindata.h"
 

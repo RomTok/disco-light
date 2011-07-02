@@ -33,7 +33,9 @@
 #ifndef MMSLOGBACKEND_H_
 #define MMSLOGBACKEND_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
 
 class MMSLogBackend
 {

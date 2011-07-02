@@ -32,7 +32,7 @@
 
 #include "mmsinput/mmsinputlishandler.h"
 #include "mmsinput/mmsinputlisthread.h"
-#include "mmsgui/fb/mmsfb.h"
+#include "mmsconfig/mmsconfigdata.h"
 #include <cstring>
 #include <typeinfo>
 #include <sys/ioctl.h>

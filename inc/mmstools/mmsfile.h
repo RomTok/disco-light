@@ -33,8 +33,6 @@
 #ifndef MMSFILE_H_
 #define MMSFILE_H_
 
-#include "mmstools/base.h"
-
 #ifdef __HAVE_CURL__
 #include <curl/curl.h>
 #endif

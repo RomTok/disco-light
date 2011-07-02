@@ -32,6 +32,7 @@
 
 #include "mmstools/mmspulser.h"
 #include "mmstools/tools.h"
+#include "mmstools/mmserror.h"
 #include <math.h>
 
 MMSPulser::MMSPulser() : MMSThread("MMSPulser") {

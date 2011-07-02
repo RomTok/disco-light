@@ -33,9 +33,6 @@
 #ifndef MMSPLUGINDAO_H_
 #define MMSPLUGINDAO_H_
 
-#include "mmstools/base.h"
-#include "mmstools/tools.h"
-#include "mmstools/mmserror.h"
 #include "mmsconfig/mmsplugindata.h"
 #include "mmstools/interfaces/immsdb.h"
 

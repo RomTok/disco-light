@@ -33,7 +33,8 @@
 #ifndef MMSXMLSERVERINTERFACE_H_
 #define MMSXMLSERVERINTERFACE_H_
 
-#include "mmstools/mmstools.h"
+#include "mmstools/mmsserverinterface.h"
+
 #include <libxml/xmlreader.h>
 #include <libxml/parser.h>
 
@@ -46,7 +47,7 @@ class MMSXMLServerInterface : public MMSServerInterface {
 
 	public:
 		MMSXMLServerInterface();
-		~MMSXMLServerInterface();
+		virtual ~MMSXMLServerInterface();
 		virtual bool processRequest(string *request, string *answer);
 		bool funcSendEvent(xmlNodePtr node, string *answer);
 };

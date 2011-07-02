@@ -33,7 +33,6 @@
 #ifndef MMSOSDPLUGINHANDLER_H_
 #define MMSOSDPLUGINHANDLER_H_
 
-#include "mmstools/base.h"
 #include "mmstools/mmserror.h"
 #include "mmstools/mmsshlhandler.h"
 #include "mmsconfig/mmsplugindata.h"

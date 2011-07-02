@@ -34,7 +34,6 @@
 #define MMSMUSICINTERFACE_H_
 
 #include "mmsbase/interfaces/immsmusicmanager.h"
-#include <sigc++/sigc++.h>
 
 class MMSMusicInterface {
 	private:

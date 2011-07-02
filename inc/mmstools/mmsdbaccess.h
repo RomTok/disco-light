@@ -33,7 +33,6 @@
 #ifndef MMSDBACCESS_H
 #define MMSDBACCESS_H
 
-#include "mmstools/mmsrecordset.h"
 #include "mmstools/mmsdbconnmgr.h"
 
 typedef struct {

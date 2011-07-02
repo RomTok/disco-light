@@ -33,13 +33,10 @@
 #ifndef MMSBACKENDPLUGINHANDLER_H_
 #define MMSBACKENDPLUGINHANDLER_H_
 
-#include "mmstools/base.h"
 #include "mmstools/mmserror.h"
-#include "mmstools/mmsshlhandler.h"
-#include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsplugindata.h"
 #include "mmsbase/interfaces/immsbackendplugin.h"
-#include "mmsbase/interfaces/immsevent.h"
+#include "mmstools/mmsshlhandler.h"
 
 MMS_CREATEERROR(MMSBackendPluginError);
 

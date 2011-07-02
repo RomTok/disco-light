@@ -32,6 +32,8 @@
 
 #include "mmsconfig/mmsimportsourceservice.h"
 #include "mmsconfig/mmsimportsourcedao.h"
+#include "mmstools/mmsdbconnmgr.h"
+#include "mmstools/tools.h"
 
 MMSImportSourceService::MMSImportSourceService(DataSource *datasource) :
     dbconn(NULL) {

@@ -33,7 +33,6 @@
 #ifndef IMMSIMPORTPLUGIN_H_
 #define IMMSIMPORTPLUGIN_H_
 
-#include "mmstools/mmserror.h"
 #include "mmsconfig/mmsplugindata.h"
 
 class IMMSImportPlugin {

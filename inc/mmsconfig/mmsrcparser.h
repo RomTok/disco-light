@@ -30,14 +30,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSMORPHINERCPARSER_H_
-#define MMSMORPHINERCPARSER_H_
+#ifndef MMSRCPARSER_H_
+#define MMSRCPARSER_H_
 
-#include "mmstools/mmstools.h"
 #include "mmsconfig/mmsconfigdata.h"
+#include "mmstools/mmserror.h"
 #include <libxml/parser.h>
-#include <libxml/tree.h>
-
 
 class MMSRcParser {
 	private:
@@ -92,4 +90,4 @@ class MMSRcParser {
 
 MMS_CREATEERROR(MMSRcParserError);
 
-#endif /*MMSMORPHINERCPARSER_H_*/
+#endif /*MMSRCPARSER_H_*/

@@ -36,6 +36,7 @@
 
 #include "mmsbase/mmsxmlserverinterface.h"
 #include "mmsbase/mmsevent.h"
+#include "mmstools/tools.h"
 
 MMSXMLServerInterface::MMSXMLServerInterface() : MMSServerInterface("MMSXMLServerInterface") {
     LIBXML_TEST_VERSION;

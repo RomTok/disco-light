@@ -34,11 +34,8 @@
 #define MMSPLUGINPARAMETERPARSER_H_
 
 
-#include "mmstools/mmstools.h"
-#include "mmsconfig/mmsconfigdata.h"
+#include "mmstools/mmserror.h"
 #include "mmsconfig/mmsplugindata.h"
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 
 #define MMSPLUGINPARAMETERPARSER_ERROR_NOPARAMETERS 1
 

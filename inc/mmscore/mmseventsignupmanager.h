@@ -35,10 +35,7 @@
 
 #include "mmsbase/interfaces/immseventsignupmanager.h"
 #include "mmsbase/mmseventsignup.h"
-#include "mmsbase/mmsevent.h"
 #include "mmsconfig/mmsplugindata.h"
-#include "mmstools/mmserror.h"
-#include "mmstools/mmslogger.h"
 #include "mmstools/mmsmutex.h"
 
 MMS_CREATEERROR(MMSEventSignupManagerError);

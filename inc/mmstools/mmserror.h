@@ -33,7 +33,9 @@
 #ifndef MMSERROR_H_
 #define MMSERROR_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
 
 class MMSError {
     private:

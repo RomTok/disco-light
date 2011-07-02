@@ -35,6 +35,8 @@
 
 #include "mmstools/mmsthread.h"
 
+#include <sigc++/sigc++.h>
+
 //! This class is the base class for all threads which works as a server.
 /*!
 This class includes the base functionality e.g. the handshake between server and client threads.

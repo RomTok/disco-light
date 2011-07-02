@@ -35,6 +35,8 @@
 
 #include "mmsgui/3d/mms3dmatrixstack.h"
 
+#include <vector>
+
 class MMS3DObject {
 private:
 	//! scene in which the object is drawn

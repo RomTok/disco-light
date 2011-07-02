@@ -191,6 +191,7 @@ void MMSFBManager::applySettings() {
 			// so switch all indexed pixelformats to ARGB
 			window_pixelformat = MMSFB_PF_ARGB;
 		}
+		break;
 	}
 
 	// get the surface pixelformat
@@ -221,6 +222,7 @@ void MMSFBManager::applySettings() {
 			// so switch all indexed pixelformats to ARGB
 			surface_pixelformat = MMSFB_PF_ARGB;
 		}
+		break;
 	}
 
 	// set exclusive access to the graphics layer

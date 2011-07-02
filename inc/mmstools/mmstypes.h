@@ -33,7 +33,10 @@
 #ifndef MMSTYPES_H_
 #define MMSTYPES_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <sigc++/sigc++.h>
+#include <string>
 
 // sigc++ accumulators.......................................................
 

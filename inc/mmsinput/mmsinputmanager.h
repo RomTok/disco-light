@@ -33,8 +33,6 @@
 #ifndef MMSINPUTMANAGER_
 #define MMSINPUTMANAGER_
 
-#include "mmstools/mmstools.h"
-#include "mmsinput/mmsinputhandler.h"
 #include "mmsinput/mmsinputthread.h"
 #include "mmsgui/interfaces/immswindowmanager.h"
 #include "mmsinput/mmsinputmapper.h"

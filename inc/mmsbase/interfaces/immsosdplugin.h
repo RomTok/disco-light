@@ -33,7 +33,6 @@
 #ifndef IMMSOSDPLUGIN_H_
 #define IMMSOSDPLUGIN_H_
 
-#include "mmstools/mmserror.h"
 #include "mmsconfig/mmsplugindata.h"
 #include "mmsbase/interfaces/immsevent.h"
 #include "mmsbase/interfaces/immsswitcher.h"

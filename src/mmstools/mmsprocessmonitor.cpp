@@ -38,6 +38,7 @@
  */
 
 #include "mmstools/mmsprocessmonitor.h"
+#include "mmstools/tools.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>

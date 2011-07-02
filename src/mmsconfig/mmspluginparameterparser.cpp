@@ -31,6 +31,9 @@
  **************************************************************************/
 
 #include "mmsconfig/mmspluginparameterparser.h"
+#include "mmstools/tools.h"
+
+#include <libxml/parser.h>
 
 MMSPluginParameterParser::MMSPluginParameterParser() {
 }

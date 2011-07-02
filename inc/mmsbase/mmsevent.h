@@ -33,8 +33,6 @@
 #ifndef MMSEVENT_H_
 #define MMSEVENT_H_
 
-#include "mmstools/base.h"
-#include "mmsbase/interfaces/immsevent.h"
 #include "mmsbase/interfaces/immseventdispatcher.h"
 #include <map>
 

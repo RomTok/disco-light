@@ -33,7 +33,10 @@
 #ifndef MMSPROPERTYDATA_H_
 #define MMSPROPERTYDATA_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
+#include <vector>
 
 #define MMSPROPERTYTYPE_STRING  "string"
 #define MMSPROPERTYTYPE_INTEGER "integer"

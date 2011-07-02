@@ -33,7 +33,9 @@
 #ifndef IMMSMUSICMANAGER_H_
 #define IMMSMUSICMANAGER_H_
 
-#include "mmstools/base.h"
+using namespace std;
+
+#include <string>
 #include <vector>
 #include <sigc++/sigc++.h>
 

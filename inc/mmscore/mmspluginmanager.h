@@ -33,7 +33,11 @@
 #ifndef MMSPLUGINMANAGER_H_
 #define MMSPLUGINMANAGER_H_
 
-#include "mmsbase/mmsbase.h"
+#include "mmsbase/mmsosdpluginhandler.h"
+#include "mmsbase/mmscentralpluginhandler.h"
+#include "mmsbase/mmsimportpluginhandler.h"
+#include "mmsbase/mmsbackendpluginhandler.h"
+#include "mmsconfig/mmspluginservice.h"
 
 MMS_CREATEERROR(MMSPluginManagerError);
 

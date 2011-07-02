@@ -33,7 +33,6 @@
 #ifndef MMSINPUTTHREAD_H_
 #define MMSINPUTTHREAD_H_
 
-#include "mmstools/mmstools.h"
 #include "mmsconfig/mmsconfigdata.h"
 #include "mmsinput/mmsinputhandler.h"
 

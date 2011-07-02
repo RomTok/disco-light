@@ -33,7 +33,6 @@
 #ifndef MMSPLUGINDATA_H_
 #define MMSPLUGINDATA_H_
 
-#include "mmstools/base.h"
 #include "mmsconfig/mmspropertydata.h"
 #include "mmsconfig/mmsplugincategorydata.h"
 #include "mmsconfig/mmsplugintypedata.h"

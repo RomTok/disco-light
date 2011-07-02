@@ -33,12 +33,10 @@
 #ifndef MMSPLUGINSERVICE_H_
 #define MMSPLUGINSERVICE_H_
 
-#include "mmstools/mmstools.h"
 #include "mmsconfig/mmsplugindata.h"
 #include "mmsconfig/mmspropertydata.h"
 #include "mmsconfig/mmsplugintypedata.h"
-#include "mmsconfig/mmsplugincategorydao.h"
-#include "mmsconfig/mmsplugintypedao.h"
+#include "mmstools/interfaces/immsdb.h"
 
 typedef std::map<string, MMSPropertyData *> MMSPROPERTYDATA_MAP;
 

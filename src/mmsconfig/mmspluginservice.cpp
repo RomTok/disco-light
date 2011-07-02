@@ -31,10 +31,13 @@
  **************************************************************************/
 
 #include "mmsconfig/mmspluginservice.h"
-#include "mmstools/interfaces/immsdb.h"
+#include "mmstools/mmsdbconnmgr.h"
+#include "mmstools/tools.h"
 #include "mmsconfig/mmsplugindao.h"
 #include "mmsconfig/mmspluginpropertydao.h"
 #include "mmsconfig/mmsimportpropertydao.h"
+#include "mmsconfig/mmsplugincategorydao.h"
+#include "mmsconfig/mmsplugintypedao.h"
 
 MMSPluginService::MMSPluginService(DataSource *datasource) :
     dbconn(NULL) {
