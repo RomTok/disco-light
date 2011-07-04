@@ -249,38 +249,42 @@ void MMSWindowManager::removeWindowFromToplevel(MMSWindow *window) {
     	return;
 
 	if (window->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
+		MMSWindow *firstMainWindow = NULL;
 		// a popup window will be hidden, so try to find an active
 		// popup or main window to get the toplevel status
-		for(unsigned int i = 0; i < windows.size(); i++) {
-			if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
-				if (windows.at(i) != window && windows.at(i)->isShown()) {
-					// set active popup window as toplevel
-					this->toplevel = windows.at(i);
+		for(vector<MMSWindow*>::iterator i = this->windows.begin(); i != this->windows.end(); ++i) {
+			bool focusable;
+			MMSWINDOWTYPE type = (*i)->getType();
+			if(
+				((*i) != window) &&
+				((*i)->isShown()) &&
+				(*i)->getFocusable(focusable) &&
+				focusable
+			) {
+				if(type == MMSWINDOWTYPE_POPUPWINDOW) {
+					this->toplevel = *i;
 					return;
+				} else if(!firstMainWindow && (type == MMSWINDOWTYPE_MAINWINDOW)) {
+					firstMainWindow = *i;
 				}
 			}
 		}
-		for(unsigned int i = 0; i < windows.size(); i++) {
-			if (windows.at(i)->getType() == MMSWINDOWTYPE_MAINWINDOW) {
-				if (windows.at(i)->isShown()) {
-					// set active main window as toplevel
-					this->toplevel = windows.at(i);
-					return;
-				}
-			}
+		if(firstMainWindow) {
+			this->toplevel = firstMainWindow;
+			return;
 		}
 	}
 
 	if ((window->getType() == MMSWINDOWTYPE_MAINWINDOW) || (window->getType() == MMSWINDOWTYPE_POPUPWINDOW)) {
 		// a main or popup window will be hidden, so try to find an active
 		// root window to get the toplevel status
-		for(unsigned int i = 0; i < windows.size(); i++) {
-			if (windows.at(i)->getType() == MMSWINDOWTYPE_ROOTWINDOW) {
-				if (windows.at(i)->isShown()) {
-					// set active root window as toplevel
-					this->toplevel = windows.at(i);
+		for(vector<MMSWindow*>::iterator i = this->windows.begin(); i != this->windows.end(); ++i) {
+			if(
+				((*i)->getType() == MMSWINDOWTYPE_ROOTWINDOW) &&
+				((*i)->isShown())
+			) {
+					this->toplevel = *i;
 					return;
-				}
 			}
 		}
 	}
