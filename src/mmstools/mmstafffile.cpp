@@ -38,6 +38,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <cstring>
+#include <iostream>
 
 #ifdef __HAVE_PNG__
 #include <png.h>
