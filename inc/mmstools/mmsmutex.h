@@ -36,13 +36,24 @@
 #include <unistd.h>
 #include <pthread.h>
 
+template <class LOCK>
+class MMSAutoLock {
+    public:
+        MMSAutoLock(LOCK &l) : m(l) { m.lock();}
+        ~MMSAutoLock() { m.unlock();}
+
+    private:
+        LOCK &m;
+};
+
+
 class MMSMutex {
 	private:
 		pthread_mutex_t mutex;
 	    pthread_mutexattr_t mutex_attr;
 
 	public:
-		MMSMutex();
+		MMSMutex(int attr = PTHREAD_MUTEX_ERRORCHECK);
 		~MMSMutex();
 		int lock();
 		int unlock();
