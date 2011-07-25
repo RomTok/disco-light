@@ -75,13 +75,26 @@ const string MMSConfigData::getInputMap() {
 }
 
 const string MMSConfigData::getPrefix() {
-    if(this->global.prefix != "")
+    if(!this->global.prefix.empty())
         return this->global.prefix;
 
     FILE *stream;
     char prefix[1024];
     memset(prefix,0,1024);
 
+    /* check prefix from disko.pc */
+    stream = popen("pkg-config --variable=prefix disko","r");
+    if(stream!=NULL) {
+        if(fgets(prefix,1024,stream)!=NULL) {
+            prefix[strlen(prefix)-1]='/';
+            fclose(stream);
+            this->global.prefix = prefix;
+            return this->global.prefix;
+        }
+
+    }
+
+    /* check prefix from mmstools.pc (big_lib = n) */
     stream = popen("pkg-config --variable=prefix mmstools","r");
     if(stream!=NULL) {
         if(fgets(prefix,1024,stream)!=NULL) {
@@ -93,7 +106,8 @@ const string MMSConfigData::getPrefix() {
 
     }
 
-    stream = fopen("./bin/mmscmd.bin","r");
+    /* check if there is the diskoappctrl tool installed */
+    stream = fopen("./bin/diskoappctrl","r");
     if(stream != NULL) {
         sprintf(prefix,"./");
         fclose(stream);
