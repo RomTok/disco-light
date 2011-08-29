@@ -33,6 +33,7 @@
 #include "mmstools/tools.h"
 #include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsconfigdata.h"
+#include "mmstools/mmserror.h"
 #ifdef __HAVE_WORDEXP__
 #include <wordexp.h>
 #endif
