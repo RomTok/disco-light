@@ -42,9 +42,22 @@ void MMSInputWidgetThread::threadMain() {
 
 	sleep(1);
 	while (1) {
+		// lock mmsfb to ensure single thread access to mmsgui
+		mmsfb->lock();
    		this->inputwidget->drawCursor(true);
+
+   		// unlock mmsfb to enable other threads to
+   		// update the screen between frames
+		mmsfb->unlock();
     	usleep(1000000);
+
+    	// lock mmsfb to ensure single thread access to mmsgui
+		mmsfb->lock();
    		this->inputwidget->drawCursor(false);
+
+   		// unlock mmsfb to enable other threads to
+   		// update the screen between frames
+   		mmsfb->unlock();
     	usleep(500000);
     }
 }
