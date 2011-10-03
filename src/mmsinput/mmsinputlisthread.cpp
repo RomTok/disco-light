@@ -902,8 +902,6 @@ bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEv
 
 			pressed = 0xff;
 		} else {
-//TODO: we discuss to return false in case AXISMOTION should not emitted
-return false;
 			inputevent->posx = x;
 			inputevent->posy = y;
 			inputevent->type = MMSINPUTEVENTTYPE_AXISMOTION;
