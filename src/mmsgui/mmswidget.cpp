@@ -117,15 +117,18 @@ MMSWidget::~MMSWidget() {
     }
 
     // remove me from root window list
-    if (this->rootwindow)
+    if (this->rootwindow) {
         this->rootwindow->remove(this);
+    }
 
-    if(this->surface)
+    if(this->surface) {
         delete this->surface;
+    }
 
     // delete attributes which are set for drawable widgets
-    if (this->da)
+    if (this->da) {
     	delete this->da;
+    }
 }
 
 MMSWIDGETTYPE MMSWidget::getType() {
@@ -205,14 +208,14 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 
 	    this->da->joinedWidget = NULL;
 
-	    if(!onSelect) {
+	    if(!onSelect && selectable) {
 	    	onSelect = new sigc::signal<void, MMSWidget*>;
 	    }
-	    if(!onFocus)
+	    if(!onFocus && focusable)
 	    	onFocus  = new sigc::signal<void, MMSWidget*, bool>;
-	    if(!onReturn)
+	    if(!onReturn && selectable)
 	    	onReturn = new sigc::signal<void, MMSWidget*>;
-	    if(!onClick)
+	    if(!onClick && clickable)
 	    	onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
 	}
 	else {
@@ -267,30 +270,60 @@ bool MMSWidget::create(MMSWindow *root, bool drawable, bool needsparentdraw, boo
 }
 
 void MMSWidget::copyWidget(MMSWidget *newWidget) {
-    /* get new id */
-    MMSIdFactory factory;
-    newWidget->id = factory.getId();
 
-    /* copy my children */
+	/* copy my basic attributes */
+	newWidget->initialized = this->initialized;
+	newWidget->name = this->name;
+	newWidget->sizehint = this->sizehint;
+	newWidget->bindata=NULL;
+    newWidget->rootwindow = this->rootwindow;
+    newWidget->parent_rootwindow = this->parent_rootwindow;
+    newWidget->drawable = this->drawable;
+    newWidget->needsparentdraw = this->needsparentdraw;
+    newWidget->focusable_initial = this->focusable_initial;
+    newWidget->selectable_initial = this->selectable_initial;
+    newWidget->clickable_initial = this->clickable_initial;
+    newWidget->canhavechildren = this->canhavechildren;
+    newWidget->canselectchildren = this->canselectchildren;
+    newWidget->visible = this->visible;
+    newWidget->focused = false;
+    newWidget->selected = false;
+    newWidget->pressed = false;
+    newWidget->brightness = this->brightness;
+    newWidget->opacity = this->opacity;
+    newWidget->has_own_surface = this->has_own_surface;
+    newWidget->skip_refresh = false;
+    newWidget->current_bgset = this->current_bgset;
+    newWidget->current_bgcolor = this->current_bgcolor;
+    newWidget->current_bgimage = this->current_bgimage;
+    newWidget->geomset = this->geomset;
+    newWidget->toRedraw = this->toRedraw;
+    newWidget->redrawChildren = this->redrawChildren;
+
+    newWidget->windowSurface = this->windowSurface;
+
+    // todo: really assign surface pointer in copy?
+    newWidget->surface = this->surface;
+
+    newWidget->surfaceGeom = this->surfaceGeom;
+
+    newWidget->parent = this->parent;
+    newWidget->children = this->children;
+
+    newWidget->geom = this->geom;
+    newWidget->innerGeom = this->innerGeom;
+
+	/* copy my children */
     unsigned int size = children.size();
     for (unsigned int i = 0; i < size; i++)
         newWidget->children.at(i) = children.at(i)->copyWidget();
 
     if (drawable) {
     	// copy attributes for drawable widgets
-    	newWidget->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
     	*(newWidget->da) = *(this->da);
     }
 
-    /* initialize the callbacks */
-    onSelect = new sigc::signal<void, MMSWidget*>;
-    onFocus  = new sigc::signal<void, MMSWidget*, bool>;
-    onReturn = new sigc::signal<void, MMSWidget*>;
-    onClick  = new sigc::signal<void, MMSWidget*, int, int, int, int>;
-
     if (drawable) {
-    	// reset skip refresh flag
-        this->skip_refresh = false;
 
         // reload my images
 		newWidget->da->bgimage = NULL;

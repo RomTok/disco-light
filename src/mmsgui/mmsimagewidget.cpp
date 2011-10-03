@@ -155,8 +155,46 @@ MMSWidget *MMSImageWidget::copyWidget() {
     /* create widget */
     MMSImageWidget *newWidget = new MMSImageWidget(this->rootwindow, className);
 
-    /* copy widget */
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->imageWidgetClass = this->imageWidgetClass;
+    newWidget->myImageWidgetClass = this->myImageWidgetClass;
+
+    newWidget->imagepath_set = this->imagepath_set;
+    newWidget->selimagepath_set = this->selimagepath_set;
+
+    newWidget->imagepath_p_set = this->imagepath_p_set;
+    newWidget->selimagepath_p_set = this->selimagepath_p_set;
+
+    newWidget->imagepath_i_set = this->imagepath_i_set;
+    newWidget->selimagepath_i_set = this->selimagepath_i_set;
+
+    newWidget->image_suf = this->image_suf;
+    newWidget->image_curr_index = this->image_curr_index;
+    newWidget->selimage_suf = this->selimage_suf;
+    newWidget->selimage_curr_index = this->selimage_curr_index;
+
+    newWidget->image_p_suf = this->image_p_suf;
+    newWidget->image_p_curr_index = this->image_p_curr_index;
+    newWidget->selimage_p_suf = this->selimage_p_suf;
+    newWidget->selimage_p_curr_index = this->selimage_p_curr_index;
+
+    newWidget->image_i_suf = this->image_i_suf;
+    newWidget->image_i_curr_index = this->image_i_curr_index;
+    newWidget->selimage_i_suf = this->selimage_i_suf;
+    newWidget->selimage_i_curr_index = this->selimage_i_curr_index;
+
+    newWidget->image_loaded = this->image_loaded;
+    newWidget->image_p_loaded = this->image_p_loaded;
+    newWidget->image_i_loaded = this->image_i_loaded;
+    newWidget->selimage_loaded = this->selimage_loaded;
+    newWidget->selimage_p_loaded = this->selimage_p_loaded;
+    newWidget->selimage_i_loaded = this->selimage_i_loaded;
+
+    newWidget->imageThread = this->imageThread;
+
+    newWidget->current_fgset = this->current_fgset;
+    newWidget->current_fgimage = this->current_fgimage;
+    newWidget->current_fgimage2 = this->current_fgimage2;
 
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
@@ -450,6 +488,9 @@ bool MMSImageWidget::checkRefreshStatus() {
 
 bool MMSImageWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
+
+    if(!surface)
+    	return false;
 
     if (backgroundFilled) {
     	if (this->has_own_surface)

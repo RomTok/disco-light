@@ -45,9 +45,6 @@ MMSWidget *MMSGapWidget::copyWidget() {
     // create widget
     MMSGapWidget *newWidget = new MMSGapWidget(this->rootwindow);
 
-    // copy widget
-    *newWidget = *this;
-
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 

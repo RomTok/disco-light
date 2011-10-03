@@ -45,9 +45,6 @@ MMSWidget *MMSVBoxWidget::copyWidget() {
     // create widget
     MMSVBoxWidget *newWidget = new MMSVBoxWidget(this->rootwindow);
 
-    // copy widget
-    *newWidget = *this;
-
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
@@ -164,8 +161,11 @@ void MMSVBoxWidget::recalculateChildren() {
 			continue;
     	}
     	else {
+    		printf("VBOX: cannot calculate geometry (not enough free pixels)\n");
+    		return;
     		// fixed content of box does not fit into it
-    		throw MMSWidgetError(0,"VBOX: cannot calculate geometry (not enough free pixels)");
+    		//do not throw exception as this will left surface locks behind
+    		//throw MMSWidgetError(0,"VBOX: cannot calculate geometry (not enough free pixels)");
     	}
     }
 

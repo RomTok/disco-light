@@ -45,9 +45,6 @@ MMSWidget *MMSHBoxWidget::copyWidget() {
     // create widget
     MMSHBoxWidget *newWidget = new MMSHBoxWidget(this->rootwindow);
 
-    // copy widget
-    *newWidget = *this;
-
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);
 
@@ -164,7 +161,10 @@ void MMSHBoxWidget::recalculateChildren() {
     	}
     	else {
     		// fixed content of box does not fit into it
-    		throw MMSWidgetError(0,"HBOX: cannot calculate geometry (not enough free pixels)");
+    		printf("HBOX: cannot calculate geometry (not enough free pixels)\n");
+    		return;
+    		//do not throw exception as this will left surface locks behind
+    		//throw MMSWidgetError(0,"HBOX: cannot calculate geometry (not enough free pixels)");
     	}
     }
 

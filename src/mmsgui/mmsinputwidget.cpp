@@ -87,8 +87,21 @@ MMSWidget *MMSInputWidget::copyWidget() {
     // create widget
     MMSInputWidget *newWidget = new MMSInputWidget(this->rootwindow, className);
 
-    // copy widget
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->inputWidgetClass = this->inputWidgetClass;
+    newWidget->myInputWidgetClass = this->myInputWidgetClass;
+
+    newWidget->lang = this->lang;
+
+    newWidget->cursor_pos = this->cursor_pos;
+    newWidget->cursor_on = this->cursor_on;
+    newWidget->scroll_x = this->scroll_x;
+    newWidget->cursor_rect = this->cursor_rect;
+
+    newWidget->iwt = this->iwt;
+
+    newWidget->current_fgset = this->current_fgset;
+    newWidget->current_fgcolor = this->current_fgcolor;
 
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);

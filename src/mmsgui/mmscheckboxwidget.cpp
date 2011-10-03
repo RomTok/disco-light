@@ -93,8 +93,13 @@ MMSWidget *MMSCheckBoxWidget::copyWidget() {
     /* create widget */
     MMSCheckBoxWidget *newWidget = new MMSCheckBoxWidget(this->rootwindow, className);
 
-    /* copy widget */
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->checkBoxWidgetClass = this->checkBoxWidgetClass;
+    newWidget->myCheckBoxWidgetClass = this->myCheckBoxWidgetClass;
+
+    newWidget->current_checked_bgset = this->current_checked_bgset;
+    newWidget->current_checked_bgcolor = this->current_checked_bgcolor;
+    newWidget->current_checked_bgimage = this->current_checked_bgimage;
 
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);

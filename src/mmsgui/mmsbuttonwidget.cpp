@@ -44,7 +44,7 @@ bool MMSButtonWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     this->className = className;
 
     // init attributes for drawable widgets
-	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
+    this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
     if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
     this->buttonWidgetClass = this->da->theme->getButtonWidgetClass(className);
     this->da->baseWidgetClass = &(this->da->theme->buttonWidgetClass.widgetClass);
@@ -57,8 +57,11 @@ MMSWidget *MMSButtonWidget::copyWidget() {
     /* create widget */
     MMSButtonWidget *newWidget = new MMSButtonWidget(this->rootwindow, className);
 
-    /* copy widget */
-    *newWidget = *this;
+    //copy _only_!!!!!!!! my attributes
+
+    newWidget->className = this->className;
+    newWidget->buttonWidgetClass = this->buttonWidgetClass;
+    newWidget->myButtonWidgetClass = this->myButtonWidgetClass;
 
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);

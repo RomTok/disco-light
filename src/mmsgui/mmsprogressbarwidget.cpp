@@ -52,15 +52,19 @@ bool MMSProgressBarWidget::create(MMSWindow *root, string className, MMSTheme *t
 
 	this->current_fgset = false;
 
-    return MMSWidget::create(root, true, false, false, true, true, true, false);
+    return MMSWidget::create(root, true, false, false, true, true, true, true);
 }
 
 MMSWidget *MMSProgressBarWidget::copyWidget() {
     // create widget
     MMSProgressBarWidget *newWidget = new MMSProgressBarWidget(this->rootwindow, className);
 
-    // copy widget
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->progressBarWidgetClass = this->progressBarWidgetClass;
+    newWidget->myProgressBarWidgetClass = this->myProgressBarWidgetClass;
+
+    newWidget->current_fgcolor = this->current_fgcolor;
+    newWidget->current_fgset = this->current_fgset;
 
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);

@@ -78,8 +78,17 @@ MMSWidget *MMSTextBoxWidget::copyWidget() {
     // create widget
     MMSTextBoxWidget *newWidget = new MMSTextBoxWidget(this->rootwindow, className);
 
-    // copy widget
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->textBoxWidgetClass = this->textBoxWidgetClass;
+    newWidget->myTextBoxWidgetClass = this->myTextBoxWidgetClass;
+
+    newWidget->lang = this->lang;
+    newWidget->wordgeom = this->wordgeom;
+    newWidget->lasttext = this->lasttext;
+    newWidget->surfaceChanged = this->surfaceChanged;
+    newWidget->translated_text = this->translated_text;
+    newWidget->current_fgset = this->current_fgset;
+    newWidget->current_fgcolor = this->current_fgcolor;
 
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);

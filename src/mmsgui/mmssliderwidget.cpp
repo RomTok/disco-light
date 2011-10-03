@@ -90,15 +90,28 @@ MMSWidget *MMSSliderWidget::copyWidget() {
     /* create widget */
     MMSSliderWidget *newWidget = new MMSSliderWidget(this->rootwindow, className);
 
-    /* copy widget */
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->sliderWidgetClass = this->sliderWidgetClass;
+    newWidget->mySliderWidgetClass = this->mySliderWidgetClass;
+
+    newWidget->imagepath_set = this->imagepath_set;
+    newWidget->selimagepath_set = this->selimagepath_set;
+
+    newWidget->imagepath_p_set = this->imagepath_p_set;
+    newWidget->selimagepath_p_set = this->selimagepath_p_set;
+
+    newWidget->imagepath_i_set = this->imagepath_i_set;
+    newWidget->selimagepath_i_set = this->selimagepath_i_set;
+
+    newWidget->barimagepath_set = this->barimagepath_set;
+    newWidget->selbarimagepath_set = this->selbarimagepath_set;
+
+    newWidget->current_fgset = this->current_fgset;
+    newWidget->current_fgimage = this->current_fgimage;
+    newWidget->current_fgbarimage = this->current_fgbarimage;
 
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
-
-    /* initialize the callbacks */
-    this->onSliderIncrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
-    this->onSliderDecrement = new sigc::signal<bool, MMSWidget*>::accumulated<neg_bool_accumulator>;
 
     /* reload my images */
     newWidget->image = NULL;

@@ -79,8 +79,13 @@ MMSWidget *MMSLabelWidget::copyWidget() {
     // create widget
     MMSLabelWidget *newWidget = new MMSLabelWidget(this->rootwindow, className);
 
-    // copy widget
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->labelWidgetClass = this->labelWidgetClass;
+    newWidget->myLabelWidgetClass = this->myLabelWidgetClass;
+
+    newWidget->lang = this->lang;
+    newWidget->translated_text = this->translated_text;
+    newWidget->current_fgcolor = this->current_fgcolor;
 
     // copy base widget
     MMSWidget::copyWidget((MMSWidget*)newWidget);

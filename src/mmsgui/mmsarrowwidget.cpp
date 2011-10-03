@@ -60,8 +60,12 @@ MMSWidget *MMSArrowWidget::copyWidget() {
     /* create widget */
     MMSArrowWidget *newWidget = new MMSArrowWidget(this->rootwindow, className);
 
-    /* copy widget */
-    *newWidget = *this;
+    newWidget->className = this->className;
+    newWidget->arrowWidgetClass = this->arrowWidgetClass;
+    newWidget->myArrowWidgetClass = this->myArrowWidgetClass;
+    newWidget->last_pressed = this->last_pressed;
+    newWidget->current_fgset = this->current_fgset;
+    newWidget->current_fgcolor = this->current_fgcolor;
 
     /* copy base widget */
     MMSWidget::copyWidget((MMSWidget*)newWidget);
