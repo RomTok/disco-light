@@ -57,6 +57,9 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 	this->mutex.lock();
 
+	//lock mmsfb to ensure inputs are not interrupted by other threads
+	mmsfb->lock();
+
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		/* keyboard inputs */
 
@@ -119,6 +122,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				window->handleInput(inputevent);
 				memset(inputevent, 0, sizeof(MMSInputEvent));
 				this->mutex.unlock();
+				mmsfb->unlock();
 				return;
 			}
 		}
@@ -143,6 +147,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 						subscriptions.at(i)->callback.emit(subscriptions.at(i));
 						// stop it only one key per subscription
 						DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
+						mmsfb->unlock();
 						this->mutex.unlock();
 						return;
 					}
@@ -206,6 +211,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				DEBUGMSG("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED, NOT OVER THE WINDOW");
 				MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED, NOT OVER THE WINDOW");
 
+				mmsfb->unlock();
 				this->mutex.unlock();
 				memset(inputevent, 0, sizeof(MMSInputEvent));
 				return;
@@ -271,6 +277,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				if (window->handleInput(inputevent)) {
 					this->buttonpress_window = NULL;
 					memset(inputevent, 0, sizeof(MMSInputEvent));
+					mmsfb->unlock();
 					this->mutex.unlock();
 					return;
 				}
@@ -301,6 +308,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 						// stop it only one key per subscription
 						DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
 						memset(inputevent, 0, sizeof(MMSInputEvent));
+						mmsfb->unlock();
 						this->mutex.unlock();
 						return;
 					}
@@ -330,6 +338,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			if ((inputevent->posx - rect.x < 0)||(inputevent->posy - rect.y < 0)
 					||(inputevent->posx - rect.x - rect.w >= 0)||(inputevent->posy - rect.y - rect.h >= 0)) {
 				/* pointer is not over the window */
+				mmsfb->unlock();
 				this->mutex.unlock();
 				return;
 			}
@@ -349,6 +358,8 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			if(this->oldx == inputevent->absx && this->oldy == inputevent->absy) {
 
 				memset(inputevent, 0, sizeof(MMSInputEvent));
+				mmsfb->unlock();
+				this->mutex.unlock();
 				return;
 			}
 			//printf("oldx = %d\n", this->oldx);
@@ -362,6 +373,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		}
 	}
 
+	mmsfb->unlock();
 	this->mutex.unlock();
 }
 
