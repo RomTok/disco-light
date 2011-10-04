@@ -303,7 +303,7 @@ void MMSWidget::copyWidget(MMSWidget *newWidget) {
     newWidget->windowSurface = this->windowSurface;
 
     // todo: really assign surface pointer in copy?
-    newWidget->surface = this->surface;
+    newWidget->surface = NULL;
 
     newWidget->surfaceGeom = this->surfaceGeom;
 
