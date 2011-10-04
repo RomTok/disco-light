@@ -1258,6 +1258,9 @@ bool MMSWidget::draw(bool *backgroundFilled) {
     // init widget (e.g. load images, fonts, ...)
     init();
 
+    if(!surface)
+    	return false;
+
     if (backgroundFilled) {
     	if (this->has_own_surface)
     		*backgroundFilled = false;

@@ -692,6 +692,9 @@ bool MMSTextBoxWidget::draw(bool *backgroundFilled) {
         this->initialized = true;
     }
 
+    if(!surface)
+    	return false;
+
     if (backgroundFilled) {
     	if (this->has_own_surface)
     		*backgroundFilled = false;

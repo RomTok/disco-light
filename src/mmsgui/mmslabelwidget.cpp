@@ -361,6 +361,9 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
     int width, height, x, y;
     bool myBackgroundFilled = false;
 
+    if(!surface)
+    	return false;
+
     if (backgroundFilled) {
     	if (this->has_own_surface)
     		*backgroundFilled = false;

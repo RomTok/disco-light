@@ -132,6 +132,9 @@ bool MMSArrowWidget::checkRefreshStatus() {
 bool MMSArrowWidget::draw(bool *backgroundFilled) {
     bool myBackgroundFilled = false;
 
+    if(!surface)
+    	return false;
+
     if (backgroundFilled) {
     	if (this->has_own_surface)
     		*backgroundFilled = false;
