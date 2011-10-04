@@ -5973,6 +5973,10 @@ bool MMSFBSurface::resize(int w, int h) {
 			this->config.surface_buffer = dstsurface->config.surface_buffer;
 			dstsurface->config.surface_buffer = sb;
 
+			// set size to new size
+			this->config.w = w;
+			this->config.h = h;
+
 			// load the new configuration
 			this->getConfiguration();
 		}
