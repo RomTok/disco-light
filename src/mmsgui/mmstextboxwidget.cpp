@@ -157,6 +157,9 @@ void MMSTextBoxWidget::loadFont(MMSTextBoxWidget *widget) {
 bool MMSTextBoxWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
    	if (MMSWidget::setSurfaceGeometry(width, height)) {
    	    this->surfaceChanged = true;
+
+   	    // set font for new surface
+   	    this->surface->setFont(this->font);
    	    return true;
    	}
    	return false;
