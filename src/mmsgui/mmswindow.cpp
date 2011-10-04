@@ -2396,36 +2396,58 @@ bool MMSWindow::stretch(double left, double up, double right, double down) {
 }
 
 bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
+	bool rc = false;
+	mmsfb->lock();
 	switch (this->pulser_mode) {
 	case MMSWINDOW_PULSER_MODE_SHOW:
-		return beforeShowAction(pulser);
+		rc = beforeShowAction(pulser);
+		mmsfb->unlock();
+		return rc
 	case MMSWINDOW_PULSER_MODE_HIDE:
-		return beforeHideAction(pulser);
+		rc = beforeHideAction(pulser);
+		mmsfb->unlock();
+		return rc
 	}
+
+	mmsfb->unlock();
+
 	return false;
 }
 
 bool MMSWindow::onAnimation(MMSPulser *pulser) {
+	mmsfb->lock();
+	bool rc = false;
 	switch (this->pulser_mode) {
 	case MMSWINDOW_PULSER_MODE_SHOW:
-		return showAction(pulser);
+		rc = showAction(pulser);
+		mmsfb->unlock();
+		return rc;
 	case MMSWINDOW_PULSER_MODE_HIDE:
-		return hideAction(pulser);
+		rc = hideAction(pulser);
+		mmsfb->unlock();
+		return rc;
 	}
+	mmsfb->unlock();
 	return false;
 }
 
 void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
+	bool rc = false;
+	mmsfb->lock();
+
 	switch (this->pulser_mode) {
 	case MMSWINDOW_PULSER_MODE_SHOW:
-		return afterShowAction(pulser);
+		rc = afterShowAction(pulser);
+		break;
 	case MMSWINDOW_PULSER_MODE_HIDE:
-		return afterHideAction(pulser);
+		rc = afterHideAction(pulser);
+		break;
 	}
+
+	mmsfb->unlock();
 }
 
 bool MMSWindow::beforeShowAction(MMSPulser *pulser) {
-
 	if(shown==true) {
 		// call onAfterShow callback with already shown flag
 		this->onAfterShow->emit(this, true);
