@@ -2402,11 +2402,11 @@ bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
 	case MMSWINDOW_PULSER_MODE_SHOW:
 		rc = beforeShowAction(pulser);
 		mmsfb->unlock();
-		return rc
+		return rc;
 	case MMSWINDOW_PULSER_MODE_HIDE:
 		rc = beforeHideAction(pulser);
 		mmsfb->unlock();
-		return rc
+		return rc;
 	}
 
 	mmsfb->unlock();
@@ -2432,15 +2432,14 @@ bool MMSWindow::onAnimation(MMSPulser *pulser) {
 }
 
 void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
-	bool rc = false;
 	mmsfb->lock();
 
 	switch (this->pulser_mode) {
 	case MMSWINDOW_PULSER_MODE_SHOW:
-		rc = afterShowAction(pulser);
+		afterShowAction(pulser);
 		break;
 	case MMSWINDOW_PULSER_MODE_HIDE:
-		rc = afterHideAction(pulser);
+		afterHideAction(pulser);
 		break;
 	}
 
