@@ -2062,7 +2062,7 @@ bool MMSWindow::show() {
 	this->pulser.setStepsPerSecond(MMSWINDOW_ANIM_MAX_OFFSET * 4);
 	this->pulser.setMaxOffset(MMSWINDOW_ANIM_MAX_OFFSET, MMSPULSER_SEQ_LOG_SOFT_END, MMSWINDOW_ANIM_MAX_OFFSET / 2);
 	this->pulser_mode = MMSWINDOW_PULSER_MODE_SHOW;
-	this->pulser.start(true, true);
+	this->pulser.start(false, true);
 
 
     ////////////
@@ -3047,13 +3047,27 @@ bool MMSWindow::hideAction(bool *stopaction) {
 }*/
 
 void MMSWindow::waitUntilShown() {
+	//ensure that a show action can take place
+	bool rc = mmsfb->unlock();
+
 	while ((!isShown())||(willshow))
 		msleep(10);
+
+	//ensure that a show action can take place
+	if(rc)
+		mmsfb->lock();
 }
 
 void MMSWindow::waitUntilHidden() {
+	//ensure that a show action can take place
+	bool rc = mmsfb->unlock();
+
 	while ((isShown())||(willhide))
 		msleep(10);
+
+	//ensure that a show action can take place
+	if(rc)
+		mmsfb->lock();
 }
 
 void MMSWindow::add(MMSWidget *child) {

@@ -234,8 +234,10 @@ bool MMSFB::lock() {
 }
 
 bool MMSFB::unlock() {
-	this->Lock.unlock();
-	return true;
+	if(this->Lock.unlock() == 0)
+		return true;
+	else
+		return false;
 }
 
 bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, bool virtual_console) {
