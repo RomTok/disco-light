@@ -141,8 +141,13 @@ MMSWindow::MMSWindow() {
 
 MMSWindow::~MMSWindow() {
 	// wait until show/hide actions are finished
+	bool rc = mmsfb->unlock();
+
 	while(this->action->getAction() != MMSWACTION_NONE)
 		msleep(100);
+
+	if(rc)
+		mmsfb->lock();
 
 	// hide the window if shown
 	instantHide();
@@ -1992,7 +1997,8 @@ void MMSWindow::drawMyBorder(unsigned char opacity) {
 
 bool MMSWindow::show() {
 
-    // the window will be hidden in a few seconds (hideAction thread is running), wait for it
+	bool rc = mmsfb->unlock();
+	// the window will be hidden in a few seconds (hideAction thread is running), wait for it
     while (this->willhide)
         msleep(100);
 
@@ -2011,6 +2017,9 @@ bool MMSWindow::show() {
         }
         break;
     }
+
+    if(rc)
+    	mmsfb->lock();
 
     // start the show process
     this->willshow = true;
@@ -2850,7 +2859,8 @@ void MMSWindow::afterHideAction(MMSPulser *pulser) {
 }
 
 bool MMSWindow::hide(bool goback, bool wait) {
-
+	//give the other threads a chance to do their part
+	bool rc = mmsfb->unlock();
     /* the window will be shown in a few seconds (showAction thread is running), wait for it */
     while (this->willshow)
         msleep(100);
@@ -2867,7 +2877,11 @@ bool MMSWindow::hide(bool goback, bool wait) {
         break;
     }
 
-    /* starting hide process */
+	//back to locking if applicable
+	if(rc)
+		mmsfb->unlock();
+
+	/* starting hide process */
     this->willhide = true;
 
     /* call onBeforeHide callback */
