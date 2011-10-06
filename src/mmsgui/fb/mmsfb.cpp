@@ -94,7 +94,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
     // save arguments
     this->argc = argc;
     this->argv = argv;
-    this->bin = argv[0];
+    this->bin = (argv ? argv[0] : "");
     this->appliconname = appl_icon_name;
     this->applname = appl_name;
     this->fullscreen = fullscreen;
