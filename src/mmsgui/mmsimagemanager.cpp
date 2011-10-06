@@ -230,7 +230,7 @@ MMSFBSurface *MMSImageManager::getImage(const string &path, const string &filena
 /*
 struct  timeval tv;
 gettimeofday(&tv, NULL);
-DEBUGOUT("start > %d\n", tv.tv_usec);
+DEBUGMSG("start > %d\n", tv.tv_usec);
 */
 
 
@@ -245,7 +245,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
     		do {
     			if (retry) {
 	    			retry = false;
-	    			DEBUGOUT("ImageManager, retry\n");
+	    			DEBUGMSG("ImageManager, retry\n");
 
     				// have to convert taff with special destination pixelformat
 	    			if (gen_taff) {
@@ -263,7 +263,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 	    			if (tafff) {
         				// set external file and requested pixelformat
 	    				tafff->setExternal(imagefile, MMSTAFF_EXTERNAL_TYPE_IMAGE);
-	    				DEBUGOUT("ImageManager, taffpf = %d\n", taffpf);
+	    				DEBUGMSG("ImageManager, taffpf = %d\n", taffpf);
 
 	    				if (config.getGraphicsLayer().outputtype == MMSFB_OT_OGL) {
 							// for ogl we don't need premultiplied images
@@ -384,11 +384,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 
 				    	if (img_pixelformat != taffpf) {
-				    		DEBUGOUT("ImageManager, taffpf = %d\n", (int)taffpf);
+				    		DEBUGMSG("ImageManager, taffpf = %d\n", (int)taffpf);
 				    		// the image from the file has not the same pixelformat as the surface
 				    		if (!retry) {
 				    			// retry with surface pixelformat
-				    			DEBUGOUT("ImageManager, request new pixf\n");
+				    			DEBUGMSG("ImageManager, request new pixf\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -398,11 +398,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 				    	else
 				    	if (img_mirror_size != mirror_size) {
-				    		DEBUGOUT("ImageManager, mirror_size = %d\n", (int)mirror_size);
+				    		DEBUGMSG("ImageManager, mirror_size = %d\n", (int)mirror_size);
 				    		// the image from the file has not the same mirror_size
 				    		if (!retry) {
 				    			// retry with given mirror_size
-				    			DEBUGOUT("ImageManager, request new mirror_size\n");
+				    			DEBUGMSG("ImageManager, request new mirror_size\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -412,11 +412,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 				    	}
 				    	else
 						if (img_premultiplied && (config.getGraphicsLayer().outputtype == MMSFB_OT_OGL)) {
-							DEBUGOUT("ImageManager, premultiplied image\n");
+							DEBUGMSG("ImageManager, premultiplied image\n");
 							// for ogl we don't need premultiplied images
 							if (!retry) {
 								// retry without pre-multiplication
-								DEBUGOUT("ImageManager, retry without pre-multiplication\n");
+								DEBUGMSG("ImageManager, retry without pre-multiplication\n");
 								retry = true;
 								delete tafff;
 								continue;
@@ -426,11 +426,11 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 						}
 						else
 						if (!img_premultiplied && (config.getGraphicsLayer().outputtype != MMSFB_OT_OGL)) {
-							DEBUGOUT("ImageManager, image not premultiplied\n");
+							DEBUGMSG("ImageManager, image not premultiplied\n");
 							// we use premultiplied images
 							if (!retry) {
 								// retry with pre-multiplication
-								DEBUGOUT("ImageManager, retry with pre-multiplication\n");
+								DEBUGMSG("ImageManager, retry with pre-multiplication\n");
 								retry = true;
 								delete tafff;
 								continue;
@@ -440,10 +440,10 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 						}
 						else
 						if (img_rotate_180 && !MMSFBBase_rotate180) {
-				    		DEBUGOUT("ImageManager, taff image is rotated by 180 degree, but NOT requested\n");
+							DEBUGMSG("ImageManager, taff image is rotated by 180 degree, but NOT requested\n");
 				    		if (!retry) {
 				    			// reset rotation
-				    			DEBUGOUT("ImageManager, reset rotation\n");
+				    			DEBUGMSG("ImageManager, reset rotation\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -453,10 +453,10 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 						}
 						else
 						if (!img_rotate_180 && MMSFBBase_rotate180) {
-				    		DEBUGOUT("ImageManager, taff image is NOT rotated by 180 degree, but requested\n");
+				    		DEBUGMSG("ImageManager, taff image is NOT rotated by 180 degree, but requested\n");
 				    		if (!retry) {
 				    			// retry with rotation
-				    			DEBUGOUT("ImageManager, rotate 180 degree\n");
+				    			DEBUGMSG("ImageManager, rotate 180 degree\n");
 				    			retry = true;
 				    			delete tafff;
 				    			continue;
@@ -467,7 +467,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 						else
 				    	if ((img_width)&&(img_height)&&(img_pitch)&&(img_size)&&(img_buf)) {
 				        	// successfully read
-//				    		DEBUGOUT("ImageManager, use pixf = %d\n", (int)taffpf);
+//				    		DEBUGMSG("ImageManager, use pixf = %d\n", (int)taffpf);
 				            im_desc->imagefile = imagefile;
 
 				            if (reload_image < 0) {
@@ -654,7 +654,7 @@ DEBUGOUT("start > %d\n", tv.tv_usec);
 
 /*
 gettimeofday(&tv, NULL);
-DEBUGOUT("end < %d\n", tv.tv_usec);
+DEBUGMSG("end < %d\n", tv.tv_usec);
 */
 
             DEBUGMSG("MMSGUI", "ImageManager has loaded: '%s'", imagefile.c_str());
