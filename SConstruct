@@ -349,37 +349,45 @@ def checkConf(context, name):
 	return False
 
 def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
+	context.Message('Checking for %s... ' % ', '.join(liblist))
+
 	for lib in liblist:
-		context.Message('Checking for %s... ' % lib)
 		ret = checkPKG(context, lib)
 		if ret:
-			context.Result(True)
-			return True
+			liblist.remove(lib)
+		else:
+			break;
 
+	if ret:
+		context.Result(True)
+		return True
+
+	for lib in liblist:
 		ret = checkConf(context, lib)
 		if ret:
-			context.Result(True)
-			return True
-
-		# redirect stdout to suppress messages from built in checks
-		sys.stdout = open('/dev/null', 'a')
-		if len(header):
-			ret = conf.CheckLibWithHeader(liblist, header, lang)
+			liblist.remove(lib)
 		else:
-			ret = conf.CheckLib(lib)
-		sys.stdout.close()
-		sys.stdout = sys.__stdout__
-		if ret:
-			context.Result(True)
-			return True
+			break;
 
-	context.Result(False)
+	if ret:
+		context.Result(True)
+		return True
 
-	if required:
-		print 'required lib %s not found' % lib
+	# redirect stdout to suppress messages from built in checks
+	sys.stdout = open('/dev/null', 'a')
+	if len(header):
+		ret = conf.CheckLibWithHeader(lib, header, lang)
+	else:
+		ret = conf.CheckLib(lib)
+	sys.stdout.close()
+	sys.stdout = sys.__stdout__
+
+	if required and not ret:
+		print 'required lib(s) %s not found' % ' or '.join(liblist)
 		Exit(1)
 
-	return False
+	context.Result(ret)
+	return ret
 
 def checkBacktrace(context):
 	backtrace_test = """
@@ -521,23 +529,17 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 	if('png' in env['images']):
 		if conf.checkSimpleLib(['libpng'], ['png.h'], required = 0):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
-		elif conf.CheckLibWithHeader(['libpng'], ['png.h'], 'c++'):
-			conf.env['CCFLAGS'].extend(['-D__HAVE_PNG__'])
 		else:
 			conf.env['images'].remove('png')
 
 	if('jpeg' in env['images']):
 		if conf.checkSimpleLib(['libjpeg'], ['cstdio', 'jpeglib.h'], required = 0):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
-		elif conf.CheckLibWithHeader(['libjpeg'], ['cstdio', 'jpeglib.h'], 'c++'):
-			conf.env['CCFLAGS'].extend(['-D__HAVE_JPEG__'])
 		else:
 			conf.env['images'].remove('jpeg')
 
 	if('tiff' in env['images']):
 		if conf.checkSimpleLib(['libtiff'], ['tiffio.h'], required = 0):
-			conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
-		elif conf.CheckLibWithHeader(['libtiff'], ['tiffio.h'], 'c++'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_TIFF__'])
 		else:
 			conf.env['images'].remove('tiff')
@@ -569,14 +571,13 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 
 	# checks required if building X11 backend
 	if('x11' in env['graphics_backend']):
-		conf.checkSimpleLib(['x11'],	   'X11/Xlib.h')
-		conf.checkSimpleLib(['xxf86vm'],   'X11/extensions/xf86vmode.h')
+		conf.checkSimpleLib(['x11', 'xext', 'xxf86vm'],   ['X11/Xlib.h', 'X11/extensions/XShm.h', 'X11/extensions/xf86vmode.h'])
 		conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
 		# TODO: actually XV doesn't depend on XRender/XComposite, but for now it won't compile without it
-		if conf.checkSimpleLib(['xv'], 'X11/extensions/Xvlib.h', 0):
-			if conf.checkSimpleLib(['xrender'], 'X11/extensions/Xrender.h', 0):
+		if conf.checkSimpleLib(['xv'], ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], required = 0):
+			if conf.checkSimpleLib(['xrender'], 'X11/extensions/Xrender.h', required = 0):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_XRENDER__'])
-				if conf.checkSimpleLib(['xcomposite'], 'X11/extensions/Xcomposite.h', 0):
+				if conf.checkSimpleLib(['xcomposite'], 'X11/extensions/Xcomposite.h', required = 0):
 					conf.env['CCFLAGS'].extend(['-D__HAVE_XCOMPOSITE__', '-D__HAVE_XV__'])
 
 		# checks for OpenGL and X11 backend
