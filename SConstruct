@@ -573,12 +573,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 	if('x11' in env['graphics_backend']):
 		conf.checkSimpleLib(['x11', 'xext', 'xrender', 'xcomposite', 'xxf86vm'],   ['X11/Xlib.h', 'X11/extensions/XShm.h', 'X11/extensions/Xrender.h', 'X11/extensions/Xcomposite.h', 'X11/extensions/xf86vmode.h'])
 		conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
-		# TODO: actually XV doesn't depend on XRender/XComposite, but for now it won't compile without it
 		if conf.checkSimpleLib(['xv'], ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], required = 0):
-			if conf.checkSimpleLib(['xrender'], 'X11/extensions/Xrender.h', required = 0):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_XRENDER__'])
-				if conf.checkSimpleLib(['xcomposite'], 'X11/extensions/Xcomposite.h', required = 0):
-					conf.env['CCFLAGS'].extend(['-D__HAVE_XCOMPOSITE__', '-D__HAVE_XV__'])
+			conf.env['CCFLAGS'].extend(['-D__HAVE_XV__'])
+		else:
+			conf.env['graphics_outputtype'].remove('xvshm')
 
 		# checks for OpenGL and X11 backend
 		if 'gl2' in conf.env['graphics_outputtype']:
@@ -805,7 +803,9 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', directfb'
 	 
 	if 'x11' in env['graphics_backend']:
-		disko_pc_requires += ', x11, xv, xxf86vm, xcomposite, xrender'
+		disko_pc_requires += ', x11, xxf86vm, xcomposite, xrender'
+		if '-D__HAVE_XV__' in env['CCFLAGS']:
+			disko_pc_requires += ', xv'
 		if '-D__HAVE_OPENGL__' in env['CCFLAGS']:
 			disko_pc_requires += ', gl, glu'
 	
