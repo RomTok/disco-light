@@ -50,6 +50,6 @@ class MMSError {
 };
 
 /* macro which defines a new error type */
-#define MMS_CREATEERROR(error)  class error : public MMSError { public: error(int code, string message) : MMSError(code,message) {};};
+#define MMS_CREATEERROR(error)  class error : public MMSError { public: error(int code, string message) : MMSError(code,message) {};}
 
 #endif /*MMSERROR_H_*/
