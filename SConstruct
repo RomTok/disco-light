@@ -571,7 +571,7 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 
 	# checks required if building X11 backend
 	if('x11' in env['graphics_backend']):
-		conf.checkSimpleLib(['x11', 'xext', 'xxf86vm'],   ['X11/Xlib.h', 'X11/extensions/XShm.h', 'X11/extensions/xf86vmode.h'])
+		conf.checkSimpleLib(['x11', 'xext', 'xrender', 'xcomposite', 'xxf86vm'],   ['X11/Xlib.h', 'X11/extensions/XShm.h', 'X11/extensions/Xrender.h', 'X11/extensions/Xcomposite.h', 'X11/extensions/xf86vmode.h'])
 		conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
 		# TODO: actually XV doesn't depend on XRender/XComposite, but for now it won't compile without it
 		if conf.checkSimpleLib(['xv'], ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], required = 0):
