@@ -162,7 +162,7 @@ void MMSHBoxWidget::recalculateChildren() {
     	else {
     		// fixed content of box does not fit into it
     		if (!this->getName().empty())
-    			printf("HBOX (%s): cannot calculate geometry (not enough free pixels)\n", this->getName());
+    			printf("HBOX (%s): cannot calculate geometry (not enough free pixels)\n", this->getName().c_str());
     		else
     			printf("HBOX: cannot calculate geometry (not enough free pixels)\n");
     		return;

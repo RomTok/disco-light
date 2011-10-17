@@ -162,7 +162,7 @@ void MMSVBoxWidget::recalculateChildren() {
     	}
     	else {
     		if (!this->getName().empty())
-    			printf("VBOX (%s): cannot calculate geometry (not enough free pixels)\n", this->getName());
+    			printf("VBOX (%s): cannot calculate geometry (not enough free pixels)\n", this->getName().c_str());
     		else
     			printf("VBOX: cannot calculate geometry (not enough free pixels)\n");
     		return;
