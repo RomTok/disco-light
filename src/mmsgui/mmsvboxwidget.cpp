@@ -161,7 +161,10 @@ void MMSVBoxWidget::recalculateChildren() {
 			continue;
     	}
     	else {
-    		printf("VBOX: cannot calculate geometry (not enough free pixels)\n");
+    		if (!this->getName().empty())
+    			printf("VBOX (%s): cannot calculate geometry (not enough free pixels)\n", this->getName());
+    		else
+    			printf("VBOX: cannot calculate geometry (not enough free pixels)\n");
     		return;
     		// fixed content of box does not fit into it
     		//do not throw exception as this will left surface locks behind
