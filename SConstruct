@@ -351,7 +351,7 @@ def checkConf(context, name):
 def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 	context.Message('Checking for %s... ' % ', '.join(liblist))
 
-	for lib in liblist:
+	for lib in liblist[:]:
 		ret = checkPKG(context, lib)
 		if ret:
 			liblist.remove(lib)
@@ -362,7 +362,7 @@ def checkSimpleLib(context, liblist, header = '', lang = 'c++', required = 1):
 		context.Result(True)
 		return True
 
-	for lib in liblist:
+	for lib in liblist[:]:
 		ret = checkConf(context, lib)
 		if ret:
 			liblist.remove(lib)
