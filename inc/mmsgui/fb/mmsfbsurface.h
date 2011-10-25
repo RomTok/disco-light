@@ -611,9 +611,13 @@ class MMSFBSurface {
 								int src_width, int src_height, int sx, int sy, int sw, int sh,
 								int x, int y);
 
+        bool blitAiRGBtoARGB(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
+								int src_width, int src_height, int sx, int sy, int sw, int sh,
+								int x, int y);
         bool blitAiRGBtoARGB_BLEND(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
 								int src_width, int src_height, int sx, int sy, int sw, int sh,
 								int x, int y);
+
         bool blitAiRGBtoRGB16(MMSFBSurface *source, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
 								int src_width, int src_height, int sx, int sy, int sw, int sh,
 								int x, int y);

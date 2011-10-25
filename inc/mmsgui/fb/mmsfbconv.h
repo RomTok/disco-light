@@ -1144,6 +1144,14 @@ void mmsfb_blit_rgb32_to_argb(MMSFBSurfacePlanes *src_planes, int src_height, in
 		   MMSFBSurfacePlanes *dst_planes, int dst_height, int dx, int dy);
 
 
+//! Blit AiRGB to ARGB.
+/*!
+\author Matthias Hardt
+*/
+void mmsfb_blit_airgb_to_argb(MMSFBExternalSurfaceBuffer *extbuf, int src_height, int sx, int sy, int sw, int sh,
+	    						unsigned int *dst, int dst_pitch, int dst_height, int dx, int dy);
+
+
 //! Blit with alpha blending ARGB to ARGB.
 /*!
 \author Jens Schneider
