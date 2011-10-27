@@ -29,35 +29,54 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
+#ifndef MMSCANVASWIDGET_H_
+#define MMSCANVASWIDGET_H_
 
-#ifndef MMSWIDGETS_H_
-#define MMSWIDGETS_H_
+#include "mmsgui/mmswidget.h"
 
-#include "mmsgui/mmshboxwidget.h"
-#include "mmsgui/mmsvboxwidget.h"
-#include "mmsgui/mmsbuttonwidget.h"
-#include "mmsgui/mmslabelwidget.h"
-#include "mmsgui/mmsimagewidget.h"
-#include "mmsgui/mmsarrowwidget.h"
-#include "mmsgui/mmsprogressbarwidget.h"
-#include "mmsgui/mmsmenuwidget.h"
-#include "mmsgui/mmstextboxwidget.h"
-#include "mmsgui/mmssliderwidget.h"
-#include "mmsgui/mmsinputwidget.h"
-#include "mmsgui/mmscheckboxwidget.h"
-#include "mmsgui/mmsgapwidget.h"
-#include "mmsgui/mmscanvaswidget.h"
+//! With this class you get a canvas that can be the base for custom widgets that can integrate  into the gui
+/*!
+\author Stefan Schwarzer
+*/
+class MMSCanvasWidget : public MMSWidget {
+    private:
+        string          		className;
+        MMSCanvasWidgetClass  	*canvasWidgetClass;
+        MMSCanvasWidgetClass 	myCanvasWidgetClass;
+        bool current_fgset;
 
-// for compatibility reasons map old widget class names to the new names
-#define MMSHBox 		MMSHBoxWidget
-#define MMSVBox 		MMSVBoxWidget
-#define MMSButton 		MMSButtonWidget
-#define MMSLabel 		MMSLabelWidget
-#define MMSImage 		MMSImageWidget
-#define MMSArrow 		MMSArrowWidget
-#define MMSProgressBar	MMSProgressBarWidget
-#define MMSMenu 		MMSMenuWidget
-#define MMSTextBox 		MMSTextBoxWidget
-#define MMSSlider 		MMSSliderWidget
+        bool create(MMSWindow *root, string className, MMSTheme *theme);
+        bool init();
+        bool release();
+        bool draw(bool *backgroundFilled = NULL);
+        void handleInput(MMSInputEvent *inputevent);
 
-#endif /*MMSWIDGETS_H_*/
+    protected:
+        string attributes;
+        map<string, string> attributemap;
+        bool enableRefresh(bool enable = true);
+        bool checkRefreshStatus();
+    public:
+        MMSCanvasWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
+        virtual ~MMSCanvasWidget();
+
+        virtual bool drawingFunc(MMSFBSurface *surf, MMSFBRectangle surfaceGeom, bool *backgroundFilled = NULL) = 0;
+        virtual bool createFunc() = 0;
+        virtual bool initFunc() = 0;
+        virtual bool releaseFunc() = 0;
+        virtual bool handleInputFunc(MMSInputEvent *inputevent) = 0;
+
+        MMSWidget *copyWidget();
+
+    public:
+        /* theme access methods */
+        void updateFromThemeClass(MMSCanvasWidgetClass *themeClass);
+
+
+	friend class MMSThemeManager;
+	friend class MMSDialogManager;
+};
+
+
+
+#endif /* MMSCANVASWIDGET_H_ */

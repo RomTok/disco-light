@@ -1895,7 +1895,7 @@ void MMSWidget::setName(string name) {
 
 
 void MMSWidget::setFocus(bool set, bool refresh, MMSInputEvent *inputevent) {
-    /* switch focused on/off if possible */
+	/* switch focused on/off if possible */
 	bool b;
     if (!getFocusable(b))
         return;
@@ -2182,7 +2182,6 @@ void MMSWidget::resetPressed() {
 
 void MMSWidget::handleInput(MMSInputEvent *inputevent) {
 	bool b;
-
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYPRESS) {
 		// keyboard inputs
 

@@ -78,6 +78,8 @@ TAFF_TAGTABLE mmsgui_taff_tagtable[] = {
 	{	"class", 		"type",	"input",		MMSGUI_INPUTWIDGET_ATTR_I		},
 	{	"checkbox",		NULL, 	NULL,			MMSGUI_CHECKBOXWIDGET_ATTR_I	},
 	{	"class", 		"type",	"checkbox",		MMSGUI_CHECKBOXWIDGET_ATTR_I	},
+	{	"canvas",		NULL, 	NULL,			MMSGUI_CANVASWIDGET_ATTR_I		},
+	{	"class", 		"type",	"canvas",		MMSGUI_CANVASWIDGET_ATTR_I	    },
 	{	"gap",			NULL, 	NULL,			MMSGUI_BASE_ATTR_I				},
 	{	NULL, 			NULL, 	NULL,			NULL							}
 };
@@ -157,6 +159,17 @@ bool MMSTheme::addImageWidgetClass(MMSImageWidgetClass *themeClass) {
     imageWidgetClasses.push_back(themeClass);
     return true;
 }
+
+bool MMSTheme::addCanvasWidgetClass(MMSCanvasWidgetClass *themeClass) {
+    string className = themeClass->getClassName();
+    if (className == "") return false;
+    for (unsigned int i = 0; i < canvasWidgetClasses.size(); i++)
+        if (canvasWidgetClasses.at(i)->getClassName() == className)
+            return false;
+    canvasWidgetClasses.push_back(themeClass);
+    return true;
+}
+
 
 bool MMSTheme::addButtonWidgetClass(MMSButtonWidgetClass *themeClass) {
     string className = themeClass->getClassName();
@@ -342,6 +355,16 @@ MMSImageWidgetClass* MMSTheme::getImageWidgetClass(string className) {
     for (unsigned int i = 0; i < imageWidgetClasses.size(); i++)
         if (imageWidgetClasses.at(i)->getClassName() == className)
             return imageWidgetClasses.at(i);
+    return NULL;
+}
+
+MMSCanvasWidgetClass* MMSTheme::getCanvasWidgetClass(string className) {
+    if (className=="") return NULL;
+    for (unsigned int i = 0; i < canvasWidgetClasses.size(); i++) {
+        if (canvasWidgetClasses.at(i)->getClassName() == className) {
+            return canvasWidgetClasses.at(i);
+        }
+    }
     return NULL;
 }
 

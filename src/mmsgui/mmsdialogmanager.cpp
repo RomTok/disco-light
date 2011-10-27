@@ -336,6 +336,9 @@ void MMSDialogManager::throughDoc(MMSTaffFile *tafff, MMSWidget *currentWidget, 
         		case MMSGUI_TAGTABLE_TAG_GAPWIDGET:
                     widgetName = getGapValues(tafff, currentWidget, rootWindow, theme);
                     break;
+                case MMSGUI_TAGTABLE_TAG_CANVASWIDGET:
+        	        widgetName = getCanvasValues(tafff, currentWidget, rootWindow, theme);
+                    break;
         		}
 
                 if(!widgetName.empty()) {
@@ -952,6 +955,64 @@ string MMSDialogManager::getButtonValues(MMSTaffFile *tafff, MMSWidget *currentW
         rootWindow->add(button);
 
     throughDoc(tafff, button, rootWindow, theme);
+
+    // return the name of the widget
+    return name;
+}
+
+string MMSDialogManager::getCanvasValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
+    MMSCanvasWidgetClass  themeClass;
+    MMSCanvasWidget *canvas;
+    string name, size, min_width, min_height, max_width, max_height, factoryname;
+
+    // get themepath
+    string themePath = (theme ? theme->getThemePath() : globalTheme->getThemePath());
+
+    // read settings from dialog
+    themeClass.widgetClass.border.setAttributesFromTAFF(tafff, NULL, &themePath);
+    themeClass.widgetClass.setAttributesFromTAFF(tafff,  NULL, &themePath);
+    themeClass.setAttributesFromTAFF(tafff, NULL, &themePath);
+
+
+    themeClass.widgetClass.getFactoryName(factoryname);
+    // create new canvas from factory with theme class
+    if(factoryname.empty()) {
+		throw MMSDialogManagerError(1, "canvas without factoryname is not allowed!");
+    }
+    MMS_CANVAS_MAP::iterator it = this->canvasFactoryList.find(factoryname);
+
+    if(it == this->canvasFactoryList.end()) {
+		throw MMSDialogManagerError(1, "canvas with factoryname = '" + factoryname + "' is not registered!");
+    }
+
+	canvas = it->second(rootWindow, themeClass.getClassName(), theme);
+
+	// apply settings from dialog
+    canvas->updateFromThemeClass(canvas->canvasWidgetClass);
+
+    // apply settings from dialog
+    canvas->updateFromThemeClass(&themeClass);
+
+    // search for attributes which are only supported within dialog
+    startTAFFScan
+    {
+        switch (attrid) {
+        // read widget attributes from TAFF which are not defined in theme classes
+        READ_DM_SPECIFIC_WIDGET_ATTRIBUTES(name, size, min_width, min_height, max_width, max_height);
+	    }
+    }
+    endTAFFScan
+
+	// set widget attributes which are not defined in theme classes
+	SET_DM_SPECIFIC_WIDGET_ATTRIBUTES(canvas, name, size, min_width, min_height, max_width, max_height);
+
+
+    if (currentWidget)
+        currentWidget->add(canvas);
+    else
+        rootWindow->add(canvas);
+
+    throughDoc(tafff, canvas, rootWindow, theme);
 
     // return the name of the widget
     return name;
@@ -1605,8 +1666,31 @@ void MMSDialogManager::updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widge
                 // apply settings from node
                 ((MMSCheckBoxWidget*)widget)->updateFromThemeClass(&themeCls);
             }
+        case MMSWIDGETTYPE_CANVAS:
+            {
+                // read attributes from node
+                MMSCanvasWidgetClass themeCls;
+                themeCls.widgetClass.border.setAttributesFromTAFF(tafff, &prefix);
+                themeCls.widgetClass.setAttributesFromTAFF(tafff, &prefix);
+                themeCls.setAttributesFromTAFF(tafff, &prefix);
+                // apply settings from node
+                ((MMSCanvasWidget*)widget)->updateFromThemeClass(&themeCls);
+            }
             break;
         case MMSWIDGETTYPE_GAP:
             break;
     }
+}
+
+
+MMS_CANVAS_MAP MMSDialogManager::canvasFactoryList;
+
+
+void MMSDialogManager::registerCanvas(string name, MMS_CANVAS_CONSTRUCTOR constructor) {
+	MMS_CANVAS_MAP::iterator it = this->canvasFactoryList.find(name);
+	if(it != this->canvasFactoryList.end()) {
+		throw MMSDialogManagerError(1, "a canvas mit name '" + name  + "' already registered");
+	}
+
+	this->canvasFactoryList.insert(std::make_pair(name, constructor));
 }

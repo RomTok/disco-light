@@ -30,34 +30,65 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMSWIDGETS_H_
-#define MMSWIDGETS_H_
+#include "mmsgui/theme/mmscanvaswidgetclass.h"
+#include <string.h>
 
-#include "mmsgui/mmshboxwidget.h"
-#include "mmsgui/mmsvboxwidget.h"
-#include "mmsgui/mmsbuttonwidget.h"
-#include "mmsgui/mmslabelwidget.h"
-#include "mmsgui/mmsimagewidget.h"
-#include "mmsgui/mmsarrowwidget.h"
-#include "mmsgui/mmsprogressbarwidget.h"
-#include "mmsgui/mmsmenuwidget.h"
-#include "mmsgui/mmstextboxwidget.h"
-#include "mmsgui/mmssliderwidget.h"
-#include "mmsgui/mmsinputwidget.h"
-#include "mmsgui/mmscheckboxwidget.h"
-#include "mmsgui/mmsgapwidget.h"
-#include "mmsgui/mmscanvaswidget.h"
+//store attribute descriptions here
+TAFF_ATTRDESC MMSGUI_CANVASWIDGET_ATTR_I[] = MMSGUI_CANVASWIDGET_ATTR_INIT;
 
-// for compatibility reasons map old widget class names to the new names
-#define MMSHBox 		MMSHBoxWidget
-#define MMSVBox 		MMSVBoxWidget
-#define MMSButton 		MMSButtonWidget
-#define MMSLabel 		MMSLabelWidget
-#define MMSImage 		MMSImageWidget
-#define MMSArrow 		MMSArrowWidget
-#define MMSProgressBar	MMSProgressBarWidget
-#define MMSMenu 		MMSMenuWidget
-#define MMSTextBox 		MMSTextBoxWidget
-#define MMSSlider 		MMSSliderWidget
+// address attribute names
+#define GETATTRNAME(aname) MMSGUI_CANVASWIDGET_ATTR_I[MMSGUI_CANVASWIDGET_ATTR::MMSGUI_CANVASWIDGET_ATTR_IDS_##aname].name
 
-#endif /*MMSWIDGETS_H_*/
+// address attribute types
+#define GETATTRTYPE(aname) MMSGUI_CANVASWIDGET_ATTR_I[MMSGUI_CANVASWIDGET_ATTR::MMSGUI_CANVASWIDGET_ATTR_IDS_##aname].type
+
+
+MMSCanvasWidgetClass::MMSCanvasWidgetClass() {
+    unsetAll();
+}
+
+void MMSCanvasWidgetClass::unsetAll() {
+    this->className = "";
+    isattributes = false;
+}
+
+void MMSCanvasWidgetClass::setAttributesFromTAFF(MMSTaffFile *tafff, string *prefix, string *path, bool reset_paths) {
+	startTAFFScan
+	{
+        switch (attrid) {
+		case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_class:
+            setClassName(attrval_str);
+			break;
+		case MMSGUI_CANVASWIDGET_ATTR::MMSGUI_CANVASWIDGET_ATTR_IDS_attributes:
+            setAttributes(attrval_str);
+			break;
+		}
+	}
+	endTAFFScan
+}
+
+void MMSCanvasWidgetClass::setClassName(string className) {
+    this->className = className;
+}
+
+string MMSCanvasWidgetClass::getClassName() {
+    return this->className;
+}
+
+bool MMSCanvasWidgetClass::isAttributes() {
+	return this->isattributes;
+}
+
+void MMSCanvasWidgetClass::setAttributes(string attributes) {
+	this->isattributes = true;
+	this->attributes = attributes;
+}
+
+void MMSCanvasWidgetClass::unsetAttributes() {
+	this->attributes = "";
+	this->isattributes = false;
+}
+
+string MMSCanvasWidgetClass::getAttributes() {
+	return this->attributes;
+}

@@ -67,6 +67,7 @@ class MMSThemeManager {
         void getChildWindowValues(MMSTaffFile *tafff, MMSChildWindowClass *themeClass, MMSTheme *theme);
         void getLabelWidgetValues(MMSTaffFile *tafff, MMSLabelWidgetClass *themeClass, MMSTheme *theme);
         void getImageWidgetValues(MMSTaffFile *tafff, MMSImageWidgetClass *themeClass, MMSTheme *theme);
+        void getCanvasWidgetValues(MMSTaffFile *tafff, MMSCanvasWidgetClass *themeClass, MMSTheme *theme);
         void getButtonWidgetValues(MMSTaffFile *tafff, MMSButtonWidgetClass *themeClass, MMSTheme *theme);
         void getProgressBarWidgetValues(MMSTaffFile *tafff, MMSProgressBarWidgetClass *themeClass, MMSTheme *theme);
         void getSliderWidgetValues(MMSTaffFile *tafff, MMSSliderWidgetClass *themeClass, MMSTheme *theme);
@@ -83,6 +84,7 @@ class MMSThemeManager {
         void getChildWindowClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getLabelWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getImageWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
+        void getCanvasWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getButtonWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getProgressBarWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);
         void getSliderWidgetClassValues(MMSTaffFile *tafff, MMSTheme *theme, string className);

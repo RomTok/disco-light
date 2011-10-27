@@ -72,7 +72,10 @@ typedef enum {
     //! A MMSCheckBoxWidget can get the focus and therefore can process inputs. You can display an on/off switch.
     MMSWIDGETTYPE_CHECKBOX,
 	//! A MMSGapWidget is a spacer. It cannot have any children.
-    MMSWIDGETTYPE_GAP
+    MMSWIDGETTYPE_GAP,
+	//! A MMSCanvasWidget is a canvas that enables to add custom widgets to dialogs.
+    MMSWIDGETTYPE_CANVAS,
+
 } MMSWIDGETTYPE;
 
 
@@ -657,6 +660,7 @@ class MMSWidget {
     friend class MMSInputWidget;
     friend class MMSCheckBoxWidget;
     friend class MMSGapWidget;
+    friend class MMSCanvasWidget;
 };
 
 #include "mmswindow.h"

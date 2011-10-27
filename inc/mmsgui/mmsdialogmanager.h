@@ -35,9 +35,15 @@
 
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
+#include "mmsgui/mmscanvaswidget.h"
 
 // support old renamed methods
 #define searchForWidget findWidget
+
+typedef MMSCanvasWidget *(*MMS_CANVAS_CONSTRUCTOR)(MMSWindow *, string, MMSTheme *);
+
+typedef map<string, MMS_CANVAS_CONSTRUCTOR> MMS_CANVAS_MAP;
+
 
 //! With this class you can load dialog files written in disko's XML syntax.
 /*!
@@ -86,6 +92,7 @@ class MMSDialogManager {
         string getHBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getLabelValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getButtonValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        string getCanvasValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getImageValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getProgressBarValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
@@ -97,6 +104,8 @@ class MMSDialogManager {
         string getGapValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
 
         void updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widget, string &widgetName);
+
+        static MMS_CANVAS_MAP canvasFactoryList;
 
     public:
         MMSDialogManager(bool leave_window = false);
@@ -110,6 +119,7 @@ class MMSDialogManager {
         MMSWindow* getWindow();
 
         MMSDescriptionClass getDescription();
+        void registerCanvas(string name, MMS_CANVAS_CONSTRUCTOR);
 };
 
 MMS_CREATEERROR(MMSDialogManagerError);
