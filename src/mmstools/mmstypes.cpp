@@ -187,7 +187,7 @@ MMSFBSurfacePixelFormat getMMSFBPixelFormatFromString(string pf) {
         return MMSFB_PF_I420;
     if(pf == MMSFB_PF_YV12_STR)
         return MMSFB_PF_YV12;
-    if(pf == MMSFB_PF_AiRGB_STR)
+    if(pf == strToUpr(MMSFB_PF_AiRGB_STR))
         return MMSFB_PF_AiRGB;
     if(pf == MMSFB_PF_A1_STR)
         return MMSFB_PF_A1;
