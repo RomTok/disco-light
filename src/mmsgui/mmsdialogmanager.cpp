@@ -1682,10 +1682,6 @@ void MMSDialogManager::updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widge
     }
 }
 
-
-MMS_CANVAS_MAP MMSDialogManager::canvasFactoryList;
-
-
 void MMSDialogManager::registerCanvas(string name, MMS_CANVAS_CONSTRUCTOR constructor) {
 	MMS_CANVAS_MAP::iterator it = this->canvasFactoryList.find(name);
 	if(it != this->canvasFactoryList.end()) {

@@ -105,7 +105,7 @@ class MMSDialogManager {
 
         void updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widget, string &widgetName);
 
-        static MMS_CANVAS_MAP canvasFactoryList;
+        MMS_CANVAS_MAP canvasFactoryList;
 
     public:
         MMSDialogManager(bool leave_window = false);
