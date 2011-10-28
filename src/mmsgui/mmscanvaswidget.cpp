@@ -6,10 +6,12 @@
  */
 
 #include "mmsgui/mmscanvaswidget.h"
+#include <iostream>
+#include <sstream>
 
 
 MMSCanvasWidget::MMSCanvasWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
-    this->attributes="";
+
 	create(root,className, theme);
 }
 
@@ -22,8 +24,14 @@ MMSWidget *MMSCanvasWidget::copyWidget() {
 }
 
 void MMSCanvasWidget::updateFromThemeClass(MMSCanvasWidgetClass *themeClass) {
-	if(themeClass->isAttributes()) {
-		this->attributes = themeClass->getAttributes();
+
+	if(!themeClass)
+		return;
+
+	if( themeClass->isAttributes()) {
+		this->setAttributes(themeClass->getAttributes());
+
+
 	}
 
 	MMSWidget::updateFromThemeClass(&(themeClass->widgetClass));
@@ -104,4 +112,29 @@ bool MMSCanvasWidget::checkRefreshStatus() {
 void MMSCanvasWidget::handleInput(MMSInputEvent *inputevent) {
 	if(!handleInputFunc(inputevent))
 		throw MMSWidgetError(1,"input not handled");
+}
+
+void MMSCanvasWidget::setAttributes(string attr) {
+	std::stringstream ss(attr);
+	std::string item, item2;
+
+	while(std::getline(ss,item, ';')) {
+	std::stringstream ss2(item);
+		std::string key = "";
+		std::string val = "";
+		while(std::getline(ss2,item2, ':')) {
+				//trim result
+				trim(item2);
+			if(key.empty())
+				key = item2;
+			else
+				val = item2;
+		}
+		if(!key.empty())
+			attributemap.insert(std::make_pair(key,val));
+	}
+}
+
+MMSFontManager *MMSCanvasWidget::getFontManager() {
+	return this->rootwindow->fm;
 }

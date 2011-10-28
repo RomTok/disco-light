@@ -34,6 +34,7 @@
 
 #include "mmsgui/mmswidget.h"
 
+
 //! With this class you get a canvas that can be the base for custom widgets that can integrate  into the gui
 /*!
 \author Stefan Schwarzer
@@ -52,10 +53,13 @@ class MMSCanvasWidget : public MMSWidget {
         void handleInput(MMSInputEvent *inputevent);
 
     protected:
+        typedef map<string, string> ATTRIBUTE_MAP;
         string attributes;
-        map<string, string> attributemap;
+        ATTRIBUTE_MAP attributemap;
         bool enableRefresh(bool enable = true);
         bool checkRefreshStatus();
+        MMSFontManager *getFontManager();
+
     public:
         MMSCanvasWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         virtual ~MMSCanvasWidget();
@@ -69,6 +73,11 @@ class MMSCanvasWidget : public MMSWidget {
         MMSWidget *copyWidget();
 
     public:
+        void setAttributes(string &attr);
+        void setAttributes(string attr);
+
+
+
         /* theme access methods */
         void updateFromThemeClass(MMSCanvasWidgetClass *themeClass);
 

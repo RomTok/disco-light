@@ -337,6 +337,11 @@ int strToInt(string s) {
 	return atoi(s.c_str());
 }
 
+unsigned int strToUInt(string s){
+	return (unsigned int)atoi(s.c_str());
+}
+
+
 string iToStr(int i) {
     char mychar[24];
     string mystr;

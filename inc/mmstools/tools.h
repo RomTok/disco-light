@@ -122,6 +122,8 @@ void writeMessage(const char *ctrl,...);
 
 int strToInt(string s);
 
+unsigned int strToUInt(string s);
+
 string iToStr(int i);
 
 string fToStr(double i);

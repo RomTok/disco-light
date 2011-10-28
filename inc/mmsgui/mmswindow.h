@@ -1674,6 +1674,7 @@ class MMSWindow {
     friend class MMSSliderWidget;
     friend class MMSInputWidget;
     friend class MMSCheckBoxWidget;
+    friend class MMSCanvasWidget;
 };
 
 #endif /*MMSWINDOW_H_*/
