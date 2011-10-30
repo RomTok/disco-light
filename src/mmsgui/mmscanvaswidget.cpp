@@ -76,6 +76,7 @@ bool MMSCanvasWidget::release() {
 
 bool MMSCanvasWidget::draw(bool *backgroundFilled) {
 
+	canvasSurface = this->surface;
 
 	if (MMSWidget::draw(backgroundFilled)) {
     	drawingFunc(this->surface, this->surfaceGeom, backgroundFilled);
