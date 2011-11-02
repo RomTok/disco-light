@@ -144,30 +144,32 @@ bool MMSProgressBarWidget::draw(bool *backgroundFilled) {
 
     // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
+    	/* if progress is 0, fillRectangle uses the whole surface, however nothing more is needed */
+    	if(getProgress() > 0) {
+			// lock
+			this->surface->lock();
 
-        // lock
-        this->surface->lock();
+			// draw my things
+			MMSFBRectangle surfaceGeom = getSurfaceGeometry();
 
-        // draw my things
-        MMSFBRectangle surfaceGeom = getSurfaceGeometry();
+			// get color
+			MMSFBColor color;
+			getForeground(&color);
+			this->current_fgcolor   = color;
+			this->current_fgset     = true;
 
-        // get color
-        MMSFBColor color;
-        getForeground(&color);
-        this->current_fgcolor   = color;
-        this->current_fgset     = true;
+			if (color.a) {
+				// prepare for drawing
+				this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
 
-        if (color.a) {
-            // prepare for drawing
-            this->surface->setDrawingColorAndFlagsByBrightnessAndOpacity(color, getBrightness(), getOpacity());
+				// fill the rectangle
+				this->surface->fillRectangle(surfaceGeom.x, surfaceGeom.y,
+											(int)((double)getProgress() / (double)100 * (double)surfaceGeom.w), surfaceGeom.h);
+			}
 
-            // fill the rectangle
-            this->surface->fillRectangle(surfaceGeom.x, surfaceGeom.y,
-                                        (int)((double)getProgress() / (double)100 * (double)surfaceGeom.w), surfaceGeom.h);
-        }
-
-        // unlock
-        this->surface->unlock();
+			// unlock
+			this->surface->unlock();
+    	}
 
         // update window surface with an area of surface
         updateWindowSurfaceWithSurface(!*backgroundFilled);
