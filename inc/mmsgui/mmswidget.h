@@ -189,8 +189,6 @@ class MMSWidget {
         //! save attributes for drawable widgets
         MMSWIDGET_DRAWABLE_ATTRIBUTES	*da;
 
-        //! is widget initialized?
-        bool	initialized;
 
         //! id of the widget
         int		id;
@@ -502,6 +500,9 @@ class MMSWidget {
         bool emitOnReturnCallback();
 
         bool geomset;
+
+        //! is widget initialized?
+        bool	initialized;
 
 
         bool toRedraw;

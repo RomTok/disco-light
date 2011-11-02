@@ -20,6 +20,7 @@ MMSCanvasWidget::~MMSCanvasWidget() {
 }
 
 MMSWidget *MMSCanvasWidget::copyWidget() {
+	printf("copywidget called....\n");
 	return NULL;
 }
 
@@ -59,11 +60,11 @@ bool MMSCanvasWidget::create(MMSWindow *root, string className, MMSTheme *theme)
 
 bool MMSCanvasWidget::init() {
     // init widget basics
+
+    initFunc();
+
     if (!MMSWidget::init())
         return false;
-
-
-    return initFunc();
 }
 
 bool MMSCanvasWidget::release() {
@@ -138,4 +139,9 @@ void MMSCanvasWidget::setAttributes(string attr) {
 
 MMSFontManager *MMSCanvasWidget::getFontManager() {
 	return this->rootwindow->fm;
+}
+
+void MMSCanvasWidget::checkInit() {
+	if(!initialized)
+		this->init();
 }
