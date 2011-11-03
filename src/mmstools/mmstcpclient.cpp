@@ -199,7 +199,6 @@ bool MMSTCPClient::sendAndReceive(string rbuf, string *abuf) {
 	}
 
 
-	printf("send string '%s'\n", rbuf.c_str());
 	WRITE_MSG("MMSTCPClient", "send string");
 	if (sendString(rbuf)) {
 		WRITE_MSG("MMSTCPClient", "receive string");
