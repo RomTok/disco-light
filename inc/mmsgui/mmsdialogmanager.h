@@ -40,9 +40,6 @@
 // support old renamed methods
 #define searchForWidget findWidget
 
-typedef MMSCanvasWidget *(*MMS_CANVAS_CONSTRUCTOR)(MMSWindow *, string, MMSTheme *);
-
-typedef map<string, MMS_CANVAS_CONSTRUCTOR> MMS_CANVAS_MAP;
 
 
 //! With this class you can load dialog files written in disko's XML syntax.
@@ -105,8 +102,6 @@ class MMSDialogManager {
 
         void updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widget, string &widgetName);
 
-        MMS_CANVAS_MAP canvasFactoryList;
-
     public:
         MMSDialogManager(bool leave_window = false);
         MMSDialogManager(MMSWindow *rootWindow);
@@ -119,7 +114,6 @@ class MMSDialogManager {
         MMSWindow* getWindow();
 
         MMSDescriptionClass getDescription();
-        void registerCanvas(string name, MMS_CANVAS_CONSTRUCTOR);
 };
 
 MMS_CREATEERROR(MMSDialogManagerError);

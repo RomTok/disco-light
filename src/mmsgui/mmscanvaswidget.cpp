@@ -6,12 +6,12 @@
  */
 
 #include "mmsgui/mmscanvaswidget.h"
+#include "mmsgui/mmscanvasfactory.h"
 #include <iostream>
 #include <sstream>
 
 
 MMSCanvasWidget::MMSCanvasWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
-
 	create(root,className, theme);
 }
 
@@ -20,8 +20,25 @@ MMSCanvasWidget::~MMSCanvasWidget() {
 }
 
 MMSWidget *MMSCanvasWidget::copyWidget() {
-	printf("copywidget called....\n");
-	return NULL;
+    // create widget
+	MMSCanvasFactory factory;
+    MMSCanvasWidget *newWidget = factory.constructCanvas(factoryname.c_str(), rootwindow, className, this->da->theme);
+
+    newWidget->className = this->className;
+    newWidget->canvasWidgetClass = this->canvasWidgetClass;
+    newWidget->myCanvasWidgetClass = this->myCanvasWidgetClass;
+
+    newWidget->attributes = this->attributes;
+    newWidget->attributemap = this->attributemap;
+    newWidget->canvastheme = this->canvastheme;
+
+    // copy base widget
+    MMSWidget::copyWidget((MMSWidget*)newWidget);
+
+    // call canvas method
+    this->copyFunc((MMSWidget *)newWidget);
+
+	return newWidget;
 }
 
 void MMSCanvasWidget::updateFromThemeClass(MMSCanvasWidgetClass *themeClass) {
@@ -45,6 +62,7 @@ bool MMSCanvasWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     // init attributes for drawable widgets
 	this->da = new MMSWIDGET_DRAWABLE_ATTRIBUTES;
     if (theme) this->da->theme = theme; else this->da->theme = globalTheme;
+    this->canvastheme = this->da->theme;
     this->canvasWidgetClass = this->da->theme->getCanvasWidgetClass(className);
     this->da->baseWidgetClass = &(this->da->theme->canvasWidgetClass.widgetClass);
     if (this->canvasWidgetClass) this->da->widgetClass = &(this->canvasWidgetClass->widgetClass); else this->da->widgetClass = NULL;
@@ -52,9 +70,8 @@ bool MMSCanvasWidget::create(MMSWindow *root, string className, MMSTheme *theme)
     // clear
 	this->current_fgset = false;
 
-
     // create widget base
-	return MMSWidget::create(root, true, false, true, true, false, false, true);
+	return MMSWidget::create(root, true, true, true, true, true, true, true);
 
 }
 
@@ -65,6 +82,7 @@ bool MMSCanvasWidget::init() {
 
     if (!MMSWidget::init())
         return false;
+    return true;
 }
 
 bool MMSCanvasWidget::release() {

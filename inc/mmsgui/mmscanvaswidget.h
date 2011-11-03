@@ -60,6 +60,8 @@ class MMSCanvasWidget : public MMSWidget {
         bool checkRefreshStatus();
         MMSFontManager *getFontManager();
         MMSFBSurface *canvasSurface;
+        string factoryname;
+        MMSTheme *canvastheme;
 
         void checkInit();
 
@@ -71,6 +73,7 @@ class MMSCanvasWidget : public MMSWidget {
         virtual bool createFunc() = 0;
         virtual bool initFunc() = 0;
         virtual bool releaseFunc() = 0;
+        virtual bool copyFunc(MMSWidget *wid) = 0;
         virtual bool handleInputFunc(MMSInputEvent *inputevent) = 0;
 
         MMSWidget *copyWidget();

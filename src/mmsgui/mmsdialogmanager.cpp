@@ -33,6 +33,7 @@
 #include "mmsgui/mmsdialogmanager.h"
 #include "mmsgui/mmswindows.h"
 #include "mmsgui/mmswidgets.h"
+#include "mmsgui/mmscanvasfactory.h"
 #include "mmsgui/theme/mmsthememanager.h"
 #include <string.h>
 #include <algorithm>
@@ -979,13 +980,13 @@ string MMSDialogManager::getCanvasValues(MMSTaffFile *tafff, MMSWidget *currentW
     if(factoryname.empty()) {
 		throw MMSDialogManagerError(1, "canvas without factoryname is not allowed!");
     }
-    MMS_CANVAS_MAP::iterator it = this->canvasFactoryList.find(factoryname);
 
-    if(it == this->canvasFactoryList.end()) {
+    MMSCanvasFactory factory;
+	canvas = factory.constructCanvas(factoryname.c_str(), rootWindow, themeClass.getClassName(), theme);
+
+	if(!canvas) {
 		throw MMSDialogManagerError(1, "canvas with factoryname = '" + factoryname + "' is not registered!");
-    }
-
-	canvas = it->second(rootWindow, themeClass.getClassName(), theme);
+	}
 
 	// apply settings from dialog
     canvas->updateFromThemeClass(canvas->canvasWidgetClass);
@@ -1682,11 +1683,3 @@ void MMSDialogManager::updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widge
     }
 }
 
-void MMSDialogManager::registerCanvas(string name, MMS_CANVAS_CONSTRUCTOR constructor) {
-	MMS_CANVAS_MAP::iterator it = this->canvasFactoryList.find(name);
-	if(it != this->canvasFactoryList.end()) {
-		throw MMSDialogManagerError(1, "a canvas mit name '" + name  + "' already registered");
-	}
-
-	this->canvasFactoryList.insert(std::make_pair(name, constructor));
-}
