@@ -2681,14 +2681,14 @@ bool MMSFBSurface::extendedAccelBlitEx(MMSFBSurface *source,
 										x, y);
 			}
 			else
-			if   ((blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
+			if   ((blittingflags == (MMSFBBlittingFlags)MMSFB_BLIT_BLEND_COLORALPHA)
+				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA))
 				||(blittingflags == (MMSFBBlittingFlags)(MMSFB_BLIT_BLEND_ALPHACHANNEL|MMSFB_BLIT_BLEND_COLORALPHA|MMSFB_BLIT_SRC_PREMULTCOLOR))) {
 				// blitting with alpha channel and coloralpha
 				return blitARGBtoARGB_BLEND_COLORALPHA(source, src_planes, src_pixelformat,
 										src_width, src_height, sx, sy, sw, sh,
 										x, y);
 			}
-
 			// does not match
 			return false;
 		}
