@@ -36,6 +36,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <cerrno>
+#include <stdlib.h>
 
 MMSTCPClient::MMSTCPClient(string host, unsigned int port) {
     this->host = host;
@@ -96,7 +97,8 @@ bool MMSTCPClient::disconnectFromServer() {
 }
 
 bool MMSTCPClient::sendString(string rbuf) {
-	char 	mybuf[128000+1];
+	//char 	mybuf[128000+1];
+	char 	*mybuf = (char *)malloc(rbuf.size() +1);
 	int		len, from;
 
 	if (!isConnected()) {
@@ -114,11 +116,13 @@ bool MMSTCPClient::sendString(string rbuf) {
 	} while (len>0);
 	send(this->s, "\0", 1, 0);
 	WRITE_MSG("MMSTCPClient", "sent %d bytes", from + 1);
+
+	free(mybuf);
 	return true;
 }
 
 bool MMSTCPClient::receiveString(string *abuf) {
-	char 	mybuf[128000+1];
+	char 	*mybuf = (char *)malloc(128000 +1);
 	int		len;
 
 	if (!isConnected()) return false;
@@ -132,7 +136,7 @@ bool MMSTCPClient::receiveString(string *abuf) {
 			(*abuf)+= mybuf;
 		}
 	} while ((len>0)&&(mybuf[len-1]!=0));
-
+	free(mybuf);
 	return true;
 }
 
@@ -194,6 +198,8 @@ bool MMSTCPClient::sendAndReceive(string rbuf, string *abuf) {
 		return false;
 	}
 
+
+	printf("send string '%s'\n", rbuf.c_str());
 	WRITE_MSG("MMSTCPClient", "send string");
 	if (sendString(rbuf)) {
 		WRITE_MSG("MMSTCPClient", "receive string");
