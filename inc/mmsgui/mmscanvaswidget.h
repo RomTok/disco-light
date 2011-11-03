@@ -61,6 +61,8 @@ class MMSCanvasWidget : public MMSWidget {
         MMSFontManager *getFontManager();
         MMSFBSurface *canvasSurface;
 
+        void checkInit();
+
     public:
         MMSCanvasWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         virtual ~MMSCanvasWidget();
