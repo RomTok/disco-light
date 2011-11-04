@@ -164,3 +164,7 @@ void MMSCanvasWidget::checkInit() {
 	if(!initialized)
 		this->init();
 }
+
+MMSImageManager *MMSCanvasWidget::getImageManager() {
+	return this->rootwindow->im;
+}
