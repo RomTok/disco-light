@@ -472,6 +472,19 @@ void MMSLabelWidget::targetLangChanged(MMSLanguage lang) {
     recalcContentSize(false);
 }
 
+
+int MMSLabelWidget::getStringWidth(const char *text) {
+	int realWidth = 0;
+
+	loadFont();
+	if(text)
+		this->font->getStringWidth(text, -1, &realWidth);
+	else
+		this->font->getStringWidth(this->translated_text, -1, &realWidth);
+
+	return realWidth;
+}
+
 /***********************************************/
 /* begin of theme access methods (get methods) */
 /***********************************************/

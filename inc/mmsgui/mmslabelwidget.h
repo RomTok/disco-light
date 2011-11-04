@@ -116,6 +116,8 @@ class MMSLabelWidget : public MMSWidget {
 
         MMSWidget *copyWidget();
 
+        int getStringWidth(const char *text = NULL);
+
     public:
         /* theme access methods */
         string getFontPath();

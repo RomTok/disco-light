@@ -13,6 +13,7 @@
 
 MMSCanvasWidget::MMSCanvasWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
 	create(root,className, theme);
+	this->initialized = false;
 }
 
 MMSCanvasWidget::~MMSCanvasWidget() {
