@@ -194,7 +194,8 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 				g = NULL;
 				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + this->filename);
 			}
-
+			if(!g)
+				return false;
 			// setup glyph values
 			glyph->buffer	= g->bitmap.buffer;
 			glyph->pitch	= g->bitmap.pitch;
