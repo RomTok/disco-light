@@ -109,7 +109,7 @@ bool MMSXMLClientInterface::funcSendEvent(string heading, map<string, string> *p
 	else {
 	  rbuf +=">";
 	  for (map<string, string>::iterator iter = params->begin(); iter != params->end(); iter++) {
-	    rbuf += "<param "+iter->first+"=\""+iter->second+"\" />";
+	    rbuf += "<param "+iter->first+"=\""+XMLencode(iter->second)+"\" />";
 	  }
 	  rbuf += "</func>";
 	}
