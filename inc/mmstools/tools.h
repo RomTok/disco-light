@@ -188,5 +188,6 @@ void print_trace(char *prefix);
 */
 bool convBidiString(const string &in_str, string &out_str);
 
+string XMLencode( const string &Source );
 
 #endif /*TOOLS_H_*/

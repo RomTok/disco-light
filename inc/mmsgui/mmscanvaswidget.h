@@ -59,6 +59,7 @@ class MMSCanvasWidget : public MMSWidget {
         bool enableRefresh(bool enable = true);
         bool checkRefreshStatus();
         MMSFontManager *getFontManager();
+        MMSImageManager *getImageManager();
         MMSFBSurface *canvasSurface;
         string factoryname;
         MMSTheme *canvastheme;

@@ -897,3 +897,25 @@ bool convBidiString(const string &in_str, string &out_str) {
 #endif
 }
 
+string XMLencode( const string &source ) {
+    string dest;
+
+    for( string::const_iterator iter = source.begin(); iter!=source.end(); iter++ )
+    {
+         unsigned char c = (unsigned char)*iter;
+
+         switch( c )
+         {
+             case '&': dest += "&amp;"; break;
+             case '<': dest += "&lt;"; break;
+             case '>': dest += "&gt;"; break;
+             case '"': dest += "&quot;"; break;
+             case '\'': dest += "&apos;"; break;
+
+             default:
+            	  dest += c;
+         }
+    }
+
+    return dest;
+}
