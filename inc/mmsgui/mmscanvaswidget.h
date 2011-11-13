@@ -71,11 +71,11 @@ class MMSCanvasWidget : public MMSWidget {
         virtual ~MMSCanvasWidget();
 
         virtual bool drawingFunc(MMSFBSurface *surf, MMSFBRectangle surfaceGeom, bool *backgroundFilled = NULL) = 0;
-        virtual bool createFunc() = 0;
-        virtual bool initFunc() = 0;
-        virtual bool releaseFunc() = 0;
-        virtual bool copyFunc(MMSWidget *wid) = 0;
-        virtual bool handleInputFunc(MMSInputEvent *inputevent) = 0;
+        virtual bool createFunc() { return false; };
+        virtual bool initFunc() { return false; };
+        virtual bool releaseFunc() { return false; };
+        virtual bool copyFunc(MMSWidget *wid) { return false; };
+        virtual bool handleInputFunc(MMSInputEvent *inputevent) { return false; };
 
         MMSWidget *copyWidget();
 
