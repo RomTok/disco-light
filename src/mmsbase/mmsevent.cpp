@@ -62,11 +62,13 @@ void MMSEvent::clear() {
 }
 
 void MMSEvent::send() {
-    this->dispatcher->raise(this);
+    if(this->dispatcher)
+    	this->dispatcher->raise(this);
 }
 
 void MMSEvent::sendTo(int pluginid) {
-    this->dispatcher->raise(this,pluginid);
+    if(this->dispatcher)
+    	this->dispatcher->raise(this,pluginid);
 }
 
 void MMSEvent::setDispatcher(IMMSEventDispatcher *dispatcher) {
