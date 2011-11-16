@@ -69,14 +69,16 @@ class MMSFBFont {
         //! to make it thread-safe
         MMSMutex  	Lock;
 
-    	//! pointer to the directfb font
+#ifdef __HAVE_DIRECTFB__
+        //! pointer to the directfb font
     	void 		*dfbfont;
+#endif
 
     	//! static pointer to the freetype library
         static void *ft_library;
 
         //! pointer to the loaded freetype face
-        void 		*ft_face;
+        void	*ft_face;
 
         //! font file
         string 	filename;
@@ -107,6 +109,9 @@ class MMSFBFont {
 
     	//! pointer to next free memory
     	unsigned char *glyphpool_ptr;
+
+    	//! reference counter for final release of freetype library
+    	static unsigned int numReferences;
 
         void lock();
         void unlock();

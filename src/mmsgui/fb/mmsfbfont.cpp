@@ -38,23 +38,29 @@
 
 // static variables
 void *MMSFBFont::ft_library = NULL;
+unsigned int MMSFBFont::numReferences = 0;
 
 #define INITCHECK  if(!this->isInitialized()){MMSFB_SetError(0,"MMSFBFont is not initialized");return false;}
 
-MMSFBFont::MMSFBFont(string filename, int w, int h) {
-	this->initialized 	= false;
-	this->dfbfont 		= NULL;
-	this->ft_library 	= NULL;
-	this->ft_face 		= NULL;
-	this->filename 		= filename;
-	this->w 			= w;
-	this->h 			= h;
-	this->glyphpool_size= 0;
-	this->glyphpool 	= NULL;
-	this->glyphpool_ptr = NULL;
+MMSFBFont::MMSFBFont(string filename, int w, int h) :
+	initialized(false),
+#ifdef __HAVE_DIRECTFB__
+	dfbfont(NULL),
+#endif
+	ft_face(NULL),
+	filename(filename),
+	w(w),
+	h(h),
+	ascender(0),
+	descender(0),
+	height(0),
+	glyphpool(NULL),
+	glyphpool_size(0),
+	glyphpool_ptr(NULL)	{
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
+
 		// create the dfb font
 		DFBResult   		dfbres;
 		DFBFontDescription 	desc;
@@ -78,12 +84,15 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) {
     	if (!ft_library) {
     		if (FT_Init_FreeType((FT_Library*)&this->ft_library)) {
     			MMSFB_SetError(0, "FT_Init_FreeType() failed");
+    			this->ft_library = NULL;
     			return;
 			}
 		}
 
+    	this->numReferences++;
+
     	// load the face
-    	if (FT_New_Face((FT_Library)ft_library, this->filename.c_str(), 0, (FT_Face*)&this->ft_face)) {
+    	if (FT_New_Face((FT_Library)this->ft_library, this->filename.c_str(), 0, (FT_Face*)&this->ft_face)) {
     		this->ft_face = NULL;
 			MMSFB_SetError(0, "FT_New_Face(" + this->filename + ") failed");
 			return;
@@ -147,6 +156,19 @@ MMSFBFont::~MMSFBFont() {
 	// delete the glyphpool
 	if (this->glyphpool) {
 		free (this->glyphpool);
+	}
+
+	this->numReferences--;
+
+	if(mmsfb->backend != MMSFB_BE_DFB) {
+		if(this->ft_face) {
+			FT_Done_Face((FT_Face)this->ft_face);
+		}
+
+		if(this->ft_library && this->numReferences == 0) {
+			FT_Done_FreeType((FT_Library)this->ft_library);
+			this->ft_library = NULL;
+		}
 	}
 }
 
@@ -280,14 +302,14 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
 	if (!len) return true;
 
     // get the width of the whole string
-    if (this->dfbfont) {
 #ifdef  __HAVE_DIRECTFB__
+    if (this->dfbfont) {
 		if (((IDirectFBFont*)this->dfbfont)->GetStringWidth((IDirectFBFont*)this->dfbfont, text.c_str(), len, width) != DFB_OK)
 			return false;
 		return true;
+    } else
 #endif
-    }
-    else {
+    {
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
     		MMSFBFont_Glyph glyph;
     		if (!getGlyph(character, &glyph)) break;
@@ -303,14 +325,14 @@ bool MMSFBFont::getHeight(int *height) {
     INITCHECK;
 
     // get the height of the font
-	if (this->dfbfont) {
 #ifdef  __HAVE_DIRECTFB__
+	if (this->dfbfont) {
 		if (((IDirectFBFont*)this->dfbfont)->GetHeight((IDirectFBFont*)this->dfbfont, height) != DFB_OK)
 			return false;
 		return true;
+    } else
 #endif
-    }
-    else {
+	{
     	*height = this->height;
     	return true;
     }
@@ -322,9 +344,11 @@ bool MMSFBFont::getAscender(int *ascender) {
     INITCHECK;
 
     // get the ascender of the font
-	if (this->dfbfont) {
-	}
-	else {
+#ifdef __HAVE_DIRECTFB__
+    if (this->dfbfont) {
+	} else
+#endif
+	{
 		*ascender = this->ascender;
 		return true;
 	}
@@ -336,9 +360,12 @@ bool MMSFBFont::getDescender(int *descender) {
     INITCHECK;
 
     // get the ascender of the font
-	if (this->dfbfont) {
+#ifdef __HAVE_DIRECTFB__
+    if (this->dfbfont) {
 	}
-	else {
+	else
+#endif
+	{
 		*descender = this->descender;
 		return true;
 	}

@@ -37,10 +37,14 @@ MMSFontManager::MMSFontManager() {
 
 MMSFontManager::~MMSFontManager() {
     /* free all fonts */
-    for (unsigned int i = 0; i < this->fonts.size(); i++) {
-    	if (this->fonts.at(i).font)
-    		delete this->fonts.at(i).font;
-    }
+	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
+		if(it->font) {
+			delete it->font;
+			break;
+		}
+	}
+
+	this->fonts.clear();
 }
 
 MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int size) {
@@ -87,6 +91,16 @@ void MMSFontManager::releaseFont(string path, string filename, unsigned int size
 }
 
 void MMSFontManager::releaseFont(MMSFBFont *font) {
-    /*TODO*/
+    if(font) {
+    	this->lock.lock();
+    	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
+    		if(it->font == font) {
+    			this->fonts.erase(it);
+    			break;
+    		}
+    	}
+    	delete font;
+    	this->lock.unlock();
+    }
 }
 
