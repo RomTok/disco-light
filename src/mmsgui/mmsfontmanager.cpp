@@ -67,7 +67,7 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
 
     /* search within fonts list */
 	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
-		if(it->fontfile == fontfile) {
+		if((it->fontfile == fontfile) && (it->size == size)) {
 			it->refcnt++;
 			this->lock.unlock();
 			return it->font;
