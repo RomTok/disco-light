@@ -96,10 +96,10 @@ void MMSFontManager::releaseFont(MMSFBFont *font) {
     	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
     		if(it->font == font) {
     			this->fonts.erase(it);
+    	    	delete font;
     			break;
     		}
     	}
-    	delete font;
     	this->lock.unlock();
     }
 }

@@ -142,6 +142,7 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 }
 
 MMSFBFont::~MMSFBFont() {
+	lock();
 
 #ifdef  __HAVE_OPENGL__
 	// if disko is built and initialized for OpenGL, we have to delete glyph textures
@@ -152,6 +153,8 @@ MMSFBFont::~MMSFBFont() {
 	    }
 	}
 #endif
+
+	this->charmap.clear();
 
 	// delete the glyphpool
 	if (this->glyphpool) {
@@ -170,6 +173,8 @@ MMSFBFont::~MMSFBFont() {
 			this->ft_library = NULL;
 		}
 	}
+
+	unlock();
 }
 
 bool MMSFBFont::isInitialized() {
@@ -195,7 +200,13 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 #endif
     }
     else {
+    	if(!this->ft_face) {
+    		return false;
+    	}
+
     	bool ret = false;
+
+    	lock();
 
     	// check if requested character is already loaded
     	std::map<unsigned int, MMSFBFont_Glyph>::iterator it;
@@ -203,21 +214,30 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
     	if (it == this->charmap.end()) {
     		// no, have to load it
 			FT_GlyphSlotRec *g = NULL;
-			if (!FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER))
+
+			if (!FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) {
 				g = ((FT_Face)this->ft_face)->glyph;
-			else
+			} else {
 				MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
-			if (!((g)&&(g->format != ft_glyph_format_bitmap)))
+			}
+
+			if (!((g)&&(g->format != ft_glyph_format_bitmap))) {
 				if (FT_Render_Glyph(g, ft_render_mode_normal)) {
 					g = NULL;
 					MMSFB_SetError(0, "FT_Render_Glyph() failed for " + this->filename);
 				}
+			}
+
 			if (!((g)&&(g->bitmap.pixel_mode == ft_pixel_mode_grays))) {
 				g = NULL;
 				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + this->filename);
 			}
-			if(!g)
+
+			if(!g) {
+				unlock();
 				return false;
+			}
+
 			// setup glyph values
 			glyph->buffer	= g->bitmap.buffer;
 			glyph->pitch	= g->bitmap.pitch;
@@ -228,7 +248,6 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			glyph->advanceX	= g->advance.x;
 
 			// add glyph to charmap, we use a pitch which is divisible by 4 needed e.g. for OGL textures
-	    	lock();
 			int glyph_pitch = glyph->width + ((glyph->width % 4)?4 - (glyph->width % 4):0);
 			int glyph_size = glyph_pitch * glyph->height;
 			if (this->glyphpool + this->glyphpool_size - this->glyphpool_ptr >= glyph_size) {
@@ -274,7 +293,6 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 				// sorry, glyph pool is full
 				MMSFB_SetError(0, "no free space in glyph pool (" + iToStr(this->charmap.size()) + " glyphs stored) for " + this->filename);
 			}
-	    	unlock();
     	}
     	else {
     		// already loaded
@@ -282,7 +300,9 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			ret = true;
     	}
 
-		return ret;
+    	unlock();
+
+    	return ret;
     }
 
     return false;
