@@ -97,6 +97,19 @@ MMSPluginData::~MMSPluginData() {
 	this->properties.clear();
 }
 
+void MMSPluginData::clear() {
+	for(vector<MMSPropertyData *>::iterator it = this->properties.begin(); it != this->properties.end();it++) {
+		if ((*it))
+			delete (*it);
+	}
+	this->properties.clear();
+
+	if (this->category)
+		delete this->category;
+	if (this->type)
+		delete this->type;
+}
+
 int MMSPluginData::getId() {
     return this->id;
 }

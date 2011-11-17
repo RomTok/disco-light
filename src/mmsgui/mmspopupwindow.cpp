@@ -46,6 +46,9 @@ MMSPopupWindow::MMSPopupWindow(string className, string w, string h, MMSALIGNMEN
 
 MMSPopupWindow::~MMSPopupWindow() {
 	this->timeOut_connection.disconnect();
+	if (this->timer) {
+		delete this->timer;
+	}
 }
 
 bool MMSPopupWindow::create(string className, string dx, string dy, string w, string h, MMSALIGNMENT alignment,

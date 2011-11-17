@@ -93,8 +93,18 @@ void MMSTranslator::loadTranslations() {
 			MMSFILEENTRY_LIST ret =  search.execute();
 			for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
 				processFile((*it2)->name);
+				// clean
+				delete (*it2);
 			}
+			ret.clear();
 		}
+		// clean
+		for(vector<MMSPluginData *>::iterator it = data.begin();it!=data.end();it++) {
+			(*it)->clear();
+			delete (*it);
+		}
+		data.clear();
+
 	} catch (MMSError &err) {
 		DEBUGMSG("MMSTranslator", "No plugins database found for translation.");
 	}
@@ -103,7 +113,10 @@ void MMSTranslator::loadTranslations() {
 	MMSFILEENTRY_LIST ret =  search.execute();
 	for(MMSFILEENTRY_LIST::iterator it2 = ret.begin(); it2 != ret.end();it2++) {
 		processFile((*it2)->name);
+		// clean
+		delete (*it2);
 	}
+	ret.clear();
 
 //	this->sourceIdx = this->transIdx.find(this->sourcelang)->second;
 	this->targetIdx = this->transIdx.find(this->targetlang)->second;

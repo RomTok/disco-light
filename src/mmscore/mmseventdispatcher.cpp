@@ -114,6 +114,8 @@ void MMSEventDispatcher::raise(_IMMSEvent *event, int id) {
         //get rid of the allocated plugindata
         for(vector<MMSPluginData *>::iterator it = plugins.begin(); it != plugins.end(); ++it)
         	delete *it;
+
+        plugins.clear();
     }
 }
 
