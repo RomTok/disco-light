@@ -37,6 +37,7 @@
 #include FT_GLYPH_H
 
 // static variables
+pthread_mutex_t	globalLock = PTHREAD_MUTEX_INITIALIZER;
 void *MMSFBFont::ft_library = NULL;
 unsigned int MMSFBFont::numReferences = 0;
 
@@ -81,15 +82,18 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
     }
     else {
 		// init freetype library
+		pthread_mutex_lock(&globalLock);
     	if (!ft_library) {
     		if (FT_Init_FreeType((FT_Library*)&this->ft_library)) {
     			MMSFB_SetError(0, "FT_Init_FreeType() failed");
     			this->ft_library = NULL;
+				pthread_mutex_unlock(&globalLock);
     			return;
 			}
 		}
 
     	this->numReferences++;
+		pthread_mutex_unlock(&globalLock);
 
     	// load the face
     	if (FT_New_Face((FT_Library)this->ft_library, this->filename.c_str(), 0, (FT_Face*)&this->ft_face)) {
@@ -161,20 +165,24 @@ MMSFBFont::~MMSFBFont() {
 		free (this->glyphpool);
 	}
 
-	this->numReferences--;
-
 	if(mmsfb->backend != MMSFB_BE_DFB) {
 		if(this->ft_face) {
 			FT_Done_Face((FT_Face)this->ft_face);
 		}
+	}
 
+	unlock();
+	
+	pthread_mutex_lock(&globalLock);
+	this->numReferences--;
+
+	if(mmsfb->backend != MMSFB_BE_DFB) {
 		if(this->ft_library && this->numReferences == 0) {
 			FT_Done_FreeType((FT_Library)this->ft_library);
 			this->ft_library = NULL;
 		}
 	}
-
-	unlock();
+	pthread_mutex_unlock(&globalLock);
 }
 
 bool MMSFBFont::isInitialized() {

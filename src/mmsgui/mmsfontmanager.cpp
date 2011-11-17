@@ -52,23 +52,27 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
     MMSFM_DESC      fm_desc;
 
     /* build filename */
-    fontfile = path;
-    if (fontfile != "") fontfile+= "/";
-    fontfile += filename;
-    if (fontfile == "")
-        return NULL;
+    if((path.empty() && filename.empty()) || size == 0) {
+		return NULL;
+	}
+    
+    if(path.empty()) {
+		fontfile = filename;
+	} else {
+		fontfile = path +"/" + filename;
+	}
 
     // lock threads
     this->lock.lock();
 
     /* search within fonts list */
-    for (unsigned int i = 0; i < this->fonts.size(); i++) {
-        if (this->fonts.at(i).fontfile == fontfile)
-            if (this->fonts.at(i).size == size) {
-                this->lock.unlock();
-                return this->fonts.at(i).font;
-            }
-    }
+	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
+		if(it->fontfile == fontfile) {
+			it->refcnt++;
+			this->lock.unlock();
+			return it->font;
+		}
+	}
 
     /* load font */
     fm_desc.font = NULL;
@@ -79,6 +83,7 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
     }
     fm_desc.fontfile = fontfile;
     fm_desc.size = size;
+    fm_desc.refcnt = 0;
 
     /* add to fonts list and return the font */
     this->fonts.push_back(fm_desc);
@@ -95,8 +100,10 @@ void MMSFontManager::releaseFont(MMSFBFont *font) {
     	this->lock.lock();
     	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
     		if(it->font == font) {
-    			this->fonts.erase(it);
-    	    	delete font;
+				if(--it->refcnt == 0) {
+					this->fonts.erase(it);
+					delete font;
+				}
     			break;
     		}
     	}

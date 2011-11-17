@@ -38,6 +38,7 @@
 typedef struct {
     string          fontfile;
     unsigned int    size;
+    unsigned int	refcnt;
     MMSFBFont   	*font;
 } MMSFM_DESC;
 
@@ -46,6 +47,7 @@ class MMSFontManager {
         vector<MMSFM_DESC>  fonts;
 
         MMSMutex  			lock;
+        unsigned int		numReferences;
 
     public:
         MMSFontManager();
