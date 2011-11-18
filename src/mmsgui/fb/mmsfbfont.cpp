@@ -245,7 +245,6 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			if(mmsfb->bei && (g->bitmap.pitch & 3)) {
 				glyph->pitch = (g->bitmap.pitch & ~3) + 4;
 				glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
-				printf("----> MAH: %d - %d\n", g->bitmap.pitch, glyph->pitch);
 				unsigned char *src = g->bitmap.buffer;
 				unsigned char *dst = glyph->buffer;
 				for(int i = 0; i < glyph->height; i++) {
