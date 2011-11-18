@@ -83,12 +83,6 @@ class MMSFBFont {
         //! font file
         string 	filename;
 
-        //! input width
-    	int		w;
-
-    	//! input height
-    	int 	h;
-
     	//! ascender
     	int 	ascender;
 
@@ -100,15 +94,6 @@ class MMSFBFont {
 
     	//! maps a character id to a already loaded glyph (see glyphpool)
     	std::map<unsigned int, MMSFBFont_Glyph> charmap;
-
-    	//! glyph pool
-    	unsigned char *glyphpool;
-
-    	//! size of glyph pool
-    	unsigned int glyphpool_size;
-
-    	//! pointer to next free memory
-    	unsigned char *glyphpool_ptr;
 
     	//! reference counter for final release of freetype library
     	static unsigned int numReferences;

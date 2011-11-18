@@ -50,14 +50,9 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 #endif
 	ft_face(NULL),
 	filename(filename),
-	w(w),
-	h(h),
 	ascender(0),
 	descender(0),
-	height(0),
-	glyphpool(NULL),
-	glyphpool_size(0),
-	glyphpool_ptr(NULL)	{
+	height(0) {
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -65,13 +60,13 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 		// create the dfb font
 		DFBResult   		dfbres;
 		DFBFontDescription 	desc;
-		if (this->w > 0) {
+		if (w > 0) {
 			desc.flags = DFDESC_WIDTH;
-			desc.width = this->w;
+			desc.width = w;
 		}
-		if (this->h > 0) {
+		if (h > 0) {
 			desc.flags = DFDESC_HEIGHT;
-			desc.height = this->h;
+			desc.height = h;
 		}
 		if ((dfbres=mmsfb->dfb->CreateFont(mmsfb->dfb, this->filename.c_str(), &desc, (IDirectFBFont**)&this->dfbfont)) != DFB_OK) {
 			MMSFB_SetError(dfbres, "IDirectFB::CreateFont(" + this->filename + ") failed");
@@ -125,6 +120,7 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			MMSFB_SetError(0, "FT_Load_Glyph('0') for " + this->filename + " failed");
 			return;
     	}
+
     	if (((FT_Face)this->ft_face)->glyph->format != ft_glyph_format_bitmap) {
     		FT_Done_Face((FT_Face)this->ft_face);
     		this->ft_face = NULL;
@@ -136,11 +132,6 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender >> 6);
     	this->height = this->ascender + this->descender + 1;
 
-    	// allocate my glyph pool, currently fixed size of 100000 byte should be enough for up to 150 glyphs
-    	this->glyphpool_size = 100000;
-    	this->glyphpool = (unsigned char *)malloc(this->glyphpool_size);
-    	this->glyphpool_ptr = this->glyphpool;
-
     	this->initialized = true;
     }
 }
@@ -148,22 +139,18 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 MMSFBFont::~MMSFBFont() {
 	lock();
 
+	for(std::map<unsigned int, MMSFBFont_Glyph>::iterator it = this->charmap.begin();
+			it != this->charmap.end(); ++it) {
+		if(it->second.buffer)
+			free(it->second.buffer);
+
 #ifdef  __HAVE_OPENGL__
-	// if disko is built and initialized for OpenGL, we have to delete glyph textures
-	if (mmsfb->bei) {
-	    for (std::map<unsigned int, MMSFBFont_Glyph>::iterator it = this->charmap.begin(); it != this->charmap.end(); it++) {
-	    	MMSFBFont_Glyph glyph = it->second;
-	    	mmsfb->bei->deleteTexture(glyph.texture);
-	    }
-	}
+		if(mmsfb->bei)
+			mmsfb->bei->deleteTexture(it->second.texture);
 #endif
 
-	this->charmap.clear();
-
-	// delete the glyphpool
-	if (this->glyphpool) {
-		free (this->glyphpool);
 	}
+	this->charmap.clear();
 
 	if(mmsfb->backend != MMSFB_BE_DFB) {
 		if(this->ft_face) {
@@ -247,7 +234,6 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			}
 
 			// setup glyph values
-			glyph->buffer	= g->bitmap.buffer;
 			glyph->pitch	= g->bitmap.pitch;
 			glyph->left		= g->bitmap_left;
 			glyph->top		= g->bitmap_top;
@@ -255,52 +241,48 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			glyph->height	= g->bitmap.rows;
 			glyph->advanceX	= g->advance.x;
 
-			// add glyph to charmap, we use a pitch which is divisible by 4 needed e.g. for OGL textures
-			int glyph_pitch = glyph->width + ((glyph->width % 4)?4 - (glyph->width % 4):0);
-			int glyph_size = glyph_pitch * glyph->height;
-			if (this->glyphpool + this->glyphpool_size - this->glyphpool_ptr >= glyph_size) {
-				// have free space in glyph pool
-				if (glyph->pitch != glyph_pitch) {
-					// different pitch, copy line per line
-					memset(this->glyphpool_ptr, 0, glyph_size);
-					for (int i = 0; i < glyph->height; i++) {
-						memcpy(this->glyphpool_ptr, glyph->buffer, glyph->width);
-						glyph->buffer+=glyph->pitch;
-						this->glyphpool_ptr+=glyph_pitch;
+#ifdef  __HAVE_OPENGL__
+			if(mmsfb->bei) {
+				// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
+				int glyph_pitch = glyph->width + (glyph->width % 4);//((glyph->width % 4)?4 - (glyph->width % 4):0);
+				int glyph_size = glyph_pitch * glyph->height;
+				glyph->buffer = (unsigned char*)calloc(1, glyph_size);
+				if(glyph_pitch != glyph->pitch) {
+					unsigned char *src = g->bitmap.buffer;
+					unsigned char *dst = glyph->buffer;
+					for(int i = 0; i < glyph->height; i++) {
+						memcpy(dst, src, glyph->pitch);
+						src += glyph->pitch;
+						dst += glyph_pitch;
 					}
 					glyph->pitch = glyph_pitch;
+				} else {
+					memcpy(glyph->buffer, g->bitmap.buffer, glyph_size);
 				}
-				else {
-					// one copy can do it
-					memcpy(this->glyphpool_ptr, glyph->buffer, glyph_size);
-					this->glyphpool_ptr+=glyph_size;
-				}
+			} else
+#endif
+			{
+				glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
+				memcpy(glyph->buffer, g->bitmap.buffer, glyph->pitch * glyph->height);
+			}
 
-				// get pointer to data
-				glyph->buffer = this->glyphpool_ptr - glyph_size;
-
-				if (MMSFBBase_rotate180) {
-					// rotate glyph by 180°
-					rotateUCharBuffer180(glyph->buffer, glyph->pitch, glyph->width, glyph->height);
-				}
+			if (MMSFBBase_rotate180) {
+				// rotate glyph by 180°
+				rotateUCharBuffer180(glyph->buffer, glyph->pitch, glyph->width, glyph->height);
+			}
 
 #ifdef  __HAVE_OPENGL__
-				// if disko is built and initialized for OpenGL, we create a texture for this glyph
-				if (mmsfb->bei) {
-					glyph->texture = 0;
-					mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
-													glyph->pitch, glyph->height);
-				}
+			// if disko is built and initialized for OpenGL, we create a texture for this glyph
+			if (mmsfb->bei) {
+				glyph->texture = 0;
+				mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
+												glyph->pitch, glyph->height);
+			}
 #endif
 
-				// add to charmap
-				this->charmap.insert(std::make_pair(character, *glyph));
-				ret = true;
-			}
-			else {
-				// sorry, glyph pool is full
-				MMSFB_SetError(0, "no free space in glyph pool (" + iToStr(this->charmap.size()) + " glyphs stored) for " + this->filename);
-			}
+			// add to charmap
+			this->charmap.insert(std::make_pair(character, *glyph));
+			ret = true;
     	}
     	else {
     		// already loaded
