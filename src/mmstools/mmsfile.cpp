@@ -1089,18 +1089,22 @@ bool MMSFile::getLine(char **ptr) {
 bool MMSFile::getLine(string &line) {
     int slen;
     char *ptr = NULL;
-    if (getStringEx(&ptr))
-        if (*ptr)
-            if (ptr) {
+    int ret = false;
+
+    if (getStringEx(&ptr)) {
+        if (ptr) {
+            if (*ptr) {
                 slen=strlen(ptr);
                 if ((ptr)[slen-1]=='\n')
                     (ptr)[slen-1]=0;
                 line = ptr;
-				free(ptr);
-                return true;
+                ret = true;
             }
+			free(ptr);
+        }
+    }
 
-    return false;
+    return ret;
 }
 
 bool MMSFile::getChar(char *ptr) {
