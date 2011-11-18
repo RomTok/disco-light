@@ -234,7 +234,6 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			}
 
 			// setup glyph values
-			glyph->pitch	= g->bitmap.pitch;
 			glyph->left		= g->bitmap_left;
 			glyph->top		= g->bitmap_top;
 			glyph->width	= g->bitmap.width;
@@ -242,26 +241,22 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			glyph->advanceX	= g->advance.x;
 
 #ifdef  __HAVE_OPENGL__
-			if(mmsfb->bei) {
-				// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
-				int glyph_pitch = glyph->width + (glyph->width % 4);//((glyph->width % 4)?4 - (glyph->width % 4):0);
-				int glyph_size = glyph_pitch * glyph->height;
-				glyph->buffer = (unsigned char*)calloc(1, glyph_size);
-				if(glyph_pitch != glyph->pitch) {
-					unsigned char *src = g->bitmap.buffer;
-					unsigned char *dst = glyph->buffer;
-					for(int i = 0; i < glyph->height; i++) {
-						memcpy(dst, src, glyph->pitch);
-						src += glyph->pitch;
-						dst += glyph_pitch;
-					}
-					glyph->pitch = glyph_pitch;
-				} else {
-					memcpy(glyph->buffer, g->bitmap.buffer, glyph_size);
+			// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
+			if(mmsfb->bei && (g->bitmap.pitch & 3)) {
+				glyph->pitch = (g->bitmap.pitch & ~3) + 4;
+				glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
+				printf("----> MAH: %d - %d\n", g->bitmap.pitch, glyph->pitch);
+				unsigned char *src = g->bitmap.buffer;
+				unsigned char *dst = glyph->buffer;
+				for(int i = 0; i < glyph->height; i++) {
+					memcpy(dst, src, glyph->pitch);
+					src += g->bitmap.pitch;
+					dst += glyph->pitch;
 				}
 			} else
 #endif
 			{
+				glyph->pitch  = g->bitmap.pitch;
 				glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
 				memcpy(glyph->buffer, g->bitmap.buffer, glyph->pitch * glyph->height);
 			}
