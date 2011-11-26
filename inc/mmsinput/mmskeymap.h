@@ -43,7 +43,7 @@ class MMSKeyMap {
 		static std::map<std::string,MMSKeySymbol> namemap;
 
 	public:
-		MMSKeyMap();
+		MMSKeyMap() {};
 		MMSKeySymbol operator[](const char*);
 		MMSKeySymbol operator[](std::string &);
 		std::string  &operator[](MMSKeySymbol);
