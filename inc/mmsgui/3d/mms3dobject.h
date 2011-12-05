@@ -88,6 +88,7 @@ public:
 	friend class MMS3DSphere;
 	friend class MMS3DTorus;
 	friend class MMS3DCylinder;
+	friend class MMS3DPrimitives;
 };
 
 #endif /* MMS3DOBJECT_H_ */

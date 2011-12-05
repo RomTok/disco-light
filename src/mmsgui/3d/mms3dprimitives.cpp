@@ -30,69 +30,22 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-#ifndef MMS3DSCENE_H_
-#define MMS3DSCENE_H_
+#include "mmsgui/3d/mms3dprimitives.h"
 
-#include "mmsgui/3d/mms3dpolygonmesh.h"
-#include "mmsgui/3d/mms3dobject.h"
+MMS3DPrimitives::MMS3DPrimitives(MMS3DScene *scene,
+									  string id,
+									  int material, int texture) : MMS3DObject(scene, material, texture) {
 
-class MMS3DScene {
-private:
+	// get access to object's structure
+	if (this->obj_id < 0) return;
+	MMS3D_OBJECT *obj = this->scene->getObject(this->obj_id);
 
-	typedef enum {
-		OBJ_NOTSET = -1,
-		OBJ_SIZE = 256
-	} OBJ;
+	// get mesh
+	// primitives are stored with scene->setPrimitives()
+	this->scene->mms3dpm.getPrimitives(id,
+										&obj->vertices,
+										&obj->normals,
+										(obj->texture != MMS3DTexture::TEX_NOTSET)?&obj->texcoords:NULL,
+										&obj->indices);
+}
 
-	//! objects
-	MMS3D_OBJECT objbuf[OBJ_SIZE];
-	MMS3D_OBJECT *objects[OBJ_SIZE + 1];
-	int objects_cnt;
-
-	MMS3DPolygonMesh	mms3dpm;
-
-	//! stores base matrix and matrix operations
-	MMS3DMatrixStack	matrixStack;
-
-	//! children objects
-	vector<MMS3DObject*> children;
-
-private:
-	int newObject(MMS3DObject *object);
-
-	MMS3D_OBJECT *getObject(int object);
-
-	bool getResultMatrix(MMS3DMatrix result);
-
-public:
-
-	MMS3DScene();
-
-	bool setPrimitives(string id, MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
-					   MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices);
-
-	void getMeshArrays(MMS3D_VERTEX_ARRAY ***varrays, MMS3D_INDEX_ARRAY ***iarrays);
-
-	void getObjects(MMS3D_OBJECT ***objects);
-
-	void setBaseMatrix(MMS3DMatrix matrix);
-
-	void reset();
-
-	bool scale(float sx, float sy, float sz);
-
-	bool translate(float tx, float ty, float tz);
-
-	bool rotate(float angle, float x, float y, float z);
-
-	bool genMatrices();
-
-	friend class MMS3DObject;
-	friend class MMS3DRectangle;
-	friend class MMS3DSphere;
-	friend class MMS3DTorus;
-	friend class MMS3DCylinder;
-	friend class MMS3DPrimitives;
-};
-
-#endif /* MMS3DSCENE_H_ */

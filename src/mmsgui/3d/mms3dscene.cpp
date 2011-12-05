@@ -74,6 +74,11 @@ bool MMS3DScene::getResultMatrix(MMS3DMatrix result) {
 	return this->matrixStack.getResultMatrix(result);
 }
 
+bool MMS3DScene::setPrimitives(string id, MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
+							   MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices) {
+	return mms3dpm.setPrimitives(id, vertices, normals, texcoords, indices);
+}
+
 void MMS3DScene::getMeshArrays(MMS3D_VERTEX_ARRAY ***varrays, MMS3D_INDEX_ARRAY ***iarrays) {
 	mms3dpm.getArrays(varrays, iarrays);
 }

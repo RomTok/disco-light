@@ -43,6 +43,7 @@
 
 #include "mmsgui/mmswidgets.h"
 
+#include "mmsgui/3d/mms3dprimitives.h"
 #include "mmsgui/3d/mms3dcylinder.h"
 #include "mmsgui/3d/mms3drectangle.h"
 #include "mmsgui/3d/mms3dsphere.h"

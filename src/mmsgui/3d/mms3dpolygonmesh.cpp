@@ -374,23 +374,22 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	}
 }
 
-
-int MMS3DPolygonMesh::findPMItem(MMS3DPM_TYPE type, float identifier[4], int *vertices, int *normals, int *texcoords, int *indices) {
+int MMS3DPolygonMesh::findPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier, int *vertices, int *normals, int *texcoords, int *indices) {
 	for (int i = 0; i < this->pm_items_cnt; i++) {
 		MMS3DPM_ITEM *item = &this->pm_items[i];
 
 		if (item->type != type)
-			continue;
+				continue;
 		if (memcmp(item->identifier, identifier, sizeof(identifier)))
-			continue;
+				continue;
 		if (vertices && item->vertices < 0)
-			continue;
+				continue;
 		if (normals && item->normals < 0)
-			continue;
+				continue;
 		if (texcoords && item->texcoords < 0)
-			continue;
+				continue;
 		if (indices && item->indices < 0)
-			continue;
+				continue;
 
 		// successfully found, return buffer indices
 		if (vertices) *vertices  = item->vertices;
@@ -404,7 +403,7 @@ int MMS3DPolygonMesh::findPMItem(MMS3DPM_TYPE type, float identifier[4], int *ve
 	return -1;
 }
 
-int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, float identifier[4], int *vertices, int *normals, int *texcoords, int *indices) {
+int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier, int *vertices, int *normals, int *texcoords, int *indices) {
 	if (this->pm_items_cnt >= MMS3DPM_ITEM_MAX) {
 		// no more space
 		return -1;
@@ -488,15 +487,119 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, float identifier[4], int *ver
 	return this->pm_items_cnt - 1;
 }
 
+int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier,
+								MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
+								MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices) {
+	if (this->pm_items_cnt >= MMS3DPM_ITEM_MAX) {
+		// no more space
+		return -1;
+	}
 
+	// get new item
+	MMS3DPM_ITEM *item = &this->pm_items[this->pm_items_cnt];
+	this->pm_items_cnt++;
+	item->type = type;
+	memcpy(item->identifier, identifier, sizeof(identifier));
+
+	// get new indices for the new item
+	if (vertices) {
+		item->vertices = this->varrays_cnt;
+		this->varrays[item->vertices] = &this->vabuf[this->varrays_cnt];
+		this->varrays_cnt++;
+		this->varrays[this->varrays_cnt] = NULL;
+	}
+	else {
+		item->vertices = -1;
+	}
+	if (normals) {
+		item->normals = this->varrays_cnt;
+		this->varrays[item->normals] = &this->vabuf[this->varrays_cnt];
+		this->varrays_cnt++;
+		this->varrays[this->varrays_cnt] = NULL;
+	}
+	else {
+		item->normals = -1;
+	}
+	if (texcoords) {
+		item->texcoords = varrays_cnt;
+		varrays[item->texcoords] = &this->vabuf[this->varrays_cnt];
+		varrays_cnt++;
+		varrays[varrays_cnt] = NULL;
+	}
+	else {
+		item->texcoords = -1;
+	}
+	if (indices) {
+		item->indices = this->iarrays_cnt;
+		this->iarrays[item->indices] = &this->iabuf[this->iarrays_cnt];
+		this->iarrays_cnt++;
+		this->iarrays[this->iarrays_cnt] = NULL;
+	}
+	else {
+		item->indices = -1;
+	}
+
+	// copy buffers
+	if (item->vertices >= 0) {
+		*(this->varrays[item->vertices]) = *vertices;
+		this->varrays[item->vertices]->buf = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+		memcpy(this->varrays[item->vertices]->buf, vertices->buf, sizeof(float) * vertices->eSize * vertices->eNum);
+	}
+	if (item->normals >= 0) {
+		*(this->varrays[item->normals]) = *normals;
+		this->varrays[item->normals]->buf = (float *)malloc(sizeof(float) * normals->eSize * normals->eNum);
+		memcpy(this->varrays[item->normals]->buf, normals->buf, sizeof(float) * normals->eSize * normals->eNum);
+	}
+	if (item->texcoords >= 0) {
+		*(this->varrays[item->texcoords]) = *texcoords;
+		this->varrays[item->texcoords]->buf = (float *)malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
+		memcpy(this->varrays[item->texcoords]->buf, texcoords->buf, sizeof(float) * texcoords->eSize * texcoords->eNum);
+	}
+	if (item->indices >= 0) {
+		*(this->iarrays[item->indices]) = *indices;
+		this->iarrays[item->indices]->buf = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		memcpy(this->iarrays[item->indices]->buf, indices->buf, sizeof(unsigned int) * indices->eNum);
+	}
+
+	return this->pm_items_cnt - 1;
+}
 
 void MMS3DPolygonMesh::getArrays(MMS3D_VERTEX_ARRAY ***varrays, MMS3D_INDEX_ARRAY ***iarrays) {
 	*varrays = this->varrays;
 	*iarrays = this->iarrays;
 }
 
-bool MMS3DPolygonMesh::genRectangle(float width, float height, int *vertices, int	*normals, int *texcoords, int *indices) {
-	float identifier[4] = {width, height, 0, 0};
+bool MMS3DPolygonMesh::setPrimitives(string id, MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
+									 MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices) {
+	MMS3DPM_MESHID identifier;
+	memset(&identifier[0], 0, sizeof(identifier));
+	int len = id.size();
+	if (len >= sizeof(identifier))
+		len = sizeof(identifier) - 1;
+	memcpy(&identifier[0], id.c_str(), len);
+
+	if (findPMItem(MMS3DPM_TYPE_PRIMITIVES, identifier, NULL, NULL, NULL, NULL) < 0) {
+		// primitives mesh does not exist, generate it
+		return (newPMItem(MMS3DPM_TYPE_PRIMITIVES, identifier, vertices, normals, texcoords, indices) >= 0);
+	}
+
+	// duplicate key
+	return false;
+}
+
+bool MMS3DPolygonMesh::getPrimitives(string id, int *vertices, int *normals, int *texcoords, int *indices) {
+	MMS3DPM_MESHID identifier;
+	memset(&identifier[0], 0, sizeof(identifier));
+	int len = id.size();
+	if (len >= sizeof(identifier))
+		len = sizeof(identifier) - 1;
+	memcpy(&identifier[0], id.c_str(), len);
+
+	return (findPMItem(MMS3DPM_TYPE_PRIMITIVES, identifier, vertices, normals, texcoords, indices) >= 0);
+}
+
+bool MMS3DPolygonMesh::genRectangle(float width, float height, int *vertices, int *normals, int *texcoords, int *indices) {
+	MMS3DPM_MESHID identifier = {width, height, 0, 0, 0, 0, 0, 0};
 	if (findPMItem(MMS3DPM_TYPE_RECTANGLE, identifier, vertices, normals, texcoords, indices) < 0) {
 		// rectangle mesh does not exist, generate it
 		return (newPMItem(MMS3DPM_TYPE_RECTANGLE, identifier, vertices, normals, texcoords, indices) >= 0);
@@ -504,8 +607,8 @@ bool MMS3DPolygonMesh::genRectangle(float width, float height, int *vertices, in
 	return true;
 }
 
-bool MMS3DPolygonMesh::genSphere(int numSlices, float radius, int	*vertices, int *normals, int *texcoords, int *indices) {
-	float identifier[4] = {numSlices, radius, 0, 0};
+bool MMS3DPolygonMesh::genSphere(int numSlices, float radius, int *vertices, int *normals, int *texcoords, int *indices) {
+	MMS3DPM_MESHID identifier = {numSlices, radius, 0, 0, 0, 0, 0, 0};
 	if (findPMItem(MMS3DPM_TYPE_SPHERE, identifier, vertices, normals, texcoords, indices) < 0) {
 		// sphere mesh does not exist, generate it
 		return (newPMItem(MMS3DPM_TYPE_SPHERE, identifier, vertices, normals, texcoords, indices) >= 0);
@@ -514,8 +617,8 @@ bool MMS3DPolygonMesh::genSphere(int numSlices, float radius, int	*vertices, int
 }
 
 bool MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius, float minorradius,
-				int *vertices, int *normals, int *texcoords, int *indices) {
-	float identifier[4] = {numwraps, numperwrap, majorradius, minorradius};
+								int *vertices, int *normals, int *texcoords, int *indices) {
+	MMS3DPM_MESHID identifier = {numwraps, numperwrap, majorradius, minorradius, 0, 0, 0, 0};
 	if (findPMItem(MMS3DPM_TYPE_TORUS, identifier, vertices, normals, texcoords, indices) < 0) {
 		// torus mesh does not exist, generate it
 		return (newPMItem(MMS3DPM_TYPE_TORUS, identifier, vertices, normals, texcoords, indices) >= 0);
@@ -524,8 +627,8 @@ bool MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 }
 
 bool MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
-					int *vertices, int *normals, int *texcoords, int *indices) {
-	float identifier[4] = {numSlices, height, radius, 0};
+								   int *vertices, int *normals, int *texcoords, int *indices) {
+	MMS3DPM_MESHID identifier = {numSlices, height, radius, 0, 0, 0, 0, 0};
 	if (findPMItem(MMS3DPM_TYPE_CYLINDER, identifier, vertices, normals, texcoords, indices) < 0) {
 		// cylinder mesh does not exist, generate it
 		return (newPMItem(MMS3DPM_TYPE_CYLINDER, identifier, vertices, normals, texcoords, indices) >= 0);
