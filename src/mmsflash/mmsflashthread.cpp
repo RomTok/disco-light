@@ -51,9 +51,9 @@ void MMSFlashThread::threadMain() {
 		this->flash->player(this->stop);
 }
 
-void MMSFlashThread::start(void) {
+bool MMSFlashThread::start(void) {
 	this->started = false;
-	MMSThread::start();
+	return MMSThread::start();
 }
 
 bool MMSFlashThread::isStarted(void) {

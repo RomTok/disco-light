@@ -63,7 +63,7 @@ class MMSFlashThread : public MMSThread {
         MMSFlashThread(MMSFlash *flash, MMSFLASHTHREAD_MODE mode, string identity = "MMSFlashThread");
 
         //! start the thread
-        void start(void);
+        bool start();
 
         //! is the thread started
         bool isStarted(void);
