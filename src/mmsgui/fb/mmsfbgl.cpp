@@ -1884,6 +1884,19 @@ bool MMSFBGL::fillTriangle2D(float x1, float y1, float x2, float y2, float x3, f
 
 	INITCHECK;
 
+#ifdef __HAVE_GL2__
+
+	glBegin(GL_POLYGON);
+	glVertex2f(x1, y1);
+	glVertex2f(x2, y2);
+	glVertex2f(x3, y3);
+	glEnd();
+	ERROR_CHECK_BOOL("glBegin(GL_POLYGON)");
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x1,y1,x2,y2,x3,y3};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
@@ -1895,6 +1908,8 @@ bool MMSFBGL::fillTriangle2D(float x1, float y1, float x2, float y2, float x3, f
 	// draw it
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
+
+#endif
 
 	return true;
 }
