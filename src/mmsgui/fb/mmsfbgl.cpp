@@ -2026,6 +2026,9 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
 	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 
+	// cleanup
+	disableTexture2D();
+
 	return true;
 }
 
@@ -2097,6 +2100,9 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 
 #endif
+
+	// cleanup
+	disableTexture2D();
 
 	return true;
 }
