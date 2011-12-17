@@ -176,6 +176,12 @@ class MMSFBGL {
     	void deleteShaders();
         bool initShaders();
 
+        bool useShaderProgram4Drawing();
+        bool useShaderProgram4Blitting();
+        bool useShaderProgram4ModulateBlitting();
+        bool useShaderProgram4BlittingFromAlpha();
+        bool useShaderProgram4ModulateBlittingFromAlpha();
+
     public:
         MMSFBGL();
         ~MMSFBGL();
@@ -222,12 +228,6 @@ class MMSFBGL {
 		void setTexEnvReplace(GLenum format);
 		void setTexEnvModulate(GLenum format);
 		void disableArrays();
-
-        bool useShaderProgram4Drawing();
-        bool useShaderProgram4Blitting();
-        bool useShaderProgram4ModulateBlitting();
-        bool useShaderProgram4BlittingFromAlpha();
-        bool useShaderProgram4ModulateBlittingFromAlpha();
 
         bool setCurrentMatrix(MMS3DMatrix matrix);
         bool getCurrentMatrix(MMS3DMatrix matrix);
