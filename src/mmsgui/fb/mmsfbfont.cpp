@@ -121,10 +121,10 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			return;
     	}
 
-    	if (((FT_Face)this->ft_face)->glyph->format != ft_glyph_format_bitmap) {
+    	if (((FT_Face)this->ft_face)->glyph->format != FT_GLYPH_FORMAT_BITMAP) {
     		FT_Done_Face((FT_Face)this->ft_face);
     		this->ft_face = NULL;
-			MMSFB_SetError(0, "Glyph format is not ft_glyph_format_bitmap for " + this->filename);
+			MMSFB_SetError(0, "Glyph format is not FT_GLYPH_FORMAT_BITMAP for " + this->filename);
 			return;
     	}
 
@@ -159,7 +159,7 @@ MMSFBFont::~MMSFBFont() {
 	}
 
 	unlock();
-	
+
 	pthread_mutex_lock(&globalLock);
 	this->numReferences--;
 
@@ -210,22 +210,23 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
     		// no, have to load it
 			FT_GlyphSlotRec *g = NULL;
 
-			if (!FT_Load_Glyph((FT_Face)this->ft_face, FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) {
+			if (!FT_Load_Glyph((FT_Face)this->ft_face,
+								FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) {
 				g = ((FT_Face)this->ft_face)->glyph;
 			} else {
 				MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
 			}
 
-			if (!((g)&&(g->format != ft_glyph_format_bitmap))) {
-				if (FT_Render_Glyph(g, ft_render_mode_normal)) {
+			if (!((g)&&(g->format != FT_GLYPH_FORMAT_BITMAP))) {
+				if (FT_Render_Glyph(g, FT_RENDER_MODE_NORMAL)) {
 					g = NULL;
 					MMSFB_SetError(0, "FT_Render_Glyph() failed for " + this->filename);
 				}
 			}
 
-			if (!((g)&&(g->bitmap.pixel_mode == ft_pixel_mode_grays))) {
+			if (!((g)&&(g->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY))) {
 				g = NULL;
-				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != ft_pixel_mode_grays for " + this->filename);
+				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY for " + this->filename);
 			}
 
 			if(!g) {
@@ -271,6 +272,19 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 				glyph->texture = 0;
 				mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
 												glyph->pitch, glyph->height);
+
+/*				printf("genFontTexture for %d\n", character);
+				glGenTextures(1, &glyph->texture);
+			    glBindTexture(GL_TEXTURE_2D, glyph->texture);
+				glTexImage2D(GL_TEXTURE_2D,
+				 	0,
+				 	GL_ALPHA,
+				 	glyph->pitch,
+				 	glyph->height,
+				 	0,
+				 	GL_ALPHA,
+				 	GL_UNSIGNED_BYTE,
+				 	glyph->buffer);*/
 			}
 #endif
 
