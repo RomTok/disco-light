@@ -2036,7 +2036,7 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 
 
 bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float sy2,
-										   float dx1, float dy1, float dx2, float dy2) {
+										  float dx1, float dy1, float dx2, float dy2) {
 
 	INITCHECK;
 
@@ -2061,21 +2061,21 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 #ifdef __HAVE_GLES2__
 
-	GLfloat vVertices[] = { dx1,  dy1, 0.0f,  // Position 0
-							sx1,  sy1,        // TexCoord 0
-						    dx2, dy1, 0.0f,  // Position 1
-							sx2,  sy1,        // TexCoord 1
-							dx2, dy2, 0.0f,  // Position 2
-							sx2,  sy2,        // TexCoord 2
-							dx1,  dy2, 0.0f,  // Position 3
-							sx1,  sy2         // TexCoord 3
+	GLfloat vVertices[] = { dx1, dy1,	// Position 0
+							sx1, sy1,	// TexCoord 0
+						    dx2, dy1,	// Position 1
+							sx2, sy1,	// TexCoord 1
+							dx2, dy2,	// Position 2
+							sx2, sy2,	// TexCoord 2
+							dx1, dy2,	// Position 3
+							sx1, sy2	// TexCoord 3
 						 };
 
-	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+	GLbyte indices[] = { 0, 1, 2, 0, 2, 3 };
 
 	// Load the vertex position
-	glVertexAttribPointer (MMSFBGL_VSV_LOC, 3, GL_FLOAT,
-						   GL_FALSE, 5 * sizeof(GLfloat), vVertices );
+	glVertexAttribPointer (MMSFBGL_VSV_LOC, 2, GL_FLOAT,
+						   GL_FALSE, 4 * sizeof(GLfloat), vVertices );
 	ERROR_CHECK_BOOL("glVertexAttribPointer (MMSFBGL_VSV_LOC,...)");
 
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
@@ -2083,7 +2083,7 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 
 	// Load the texture coordinate
 	glVertexAttribPointer(VSTexCoordLoc, 2, GL_FLOAT,
-						   GL_FALSE, 5 * sizeof(GLfloat), &vVertices[3]);
+						   GL_FALSE, 4 * sizeof(GLfloat), &vVertices[2]);
 	ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,...");
 
 	glEnableVertexAttribArray(VSTexCoordLoc);
@@ -2096,7 +2096,7 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	glUniform1i(FSTextureLoc, 0);
 	ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc,...)");
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 
 #endif
