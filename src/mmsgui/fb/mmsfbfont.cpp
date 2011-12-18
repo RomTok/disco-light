@@ -184,6 +184,52 @@ void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
 
+void showGlyphAttributes(FT_GlyphSlot glyph) {
+	FT_Glyph_Metrics *metrics = &glyph->metrics;
+    FT_Bitmap  *bitmap = &glyph->bitmap;
+	FT_Outline *outline = &glyph->outline;
+
+	printf("glyph***\n");
+
+	printf("format = %d\n", glyph->format);
+
+	printf("metrics***\n");
+	printf("  width        = %d, %.02f\n", metrics->width, (float)metrics->width / 64);
+	printf("  height       = %d, %.02f\n", metrics->height, (float)metrics->height / 64);
+	printf("  horiBearingX = %d, %.02f\n", metrics->horiBearingX, (float)metrics->horiBearingX / 64);
+	printf("  horiBearingY = %d, %.02f\n", metrics->horiBearingY, (float)metrics->horiBearingY / 64);
+	printf("  horiAdvance  = %d, %.02f\n", metrics->horiAdvance, (float)metrics->horiAdvance / 64);
+	printf("  vertBearingX = %d, %.02f\n", metrics->vertBearingX, (float)metrics->vertBearingX / 64);
+	printf("  vertBearingY = %d, %.02f\n", metrics->vertBearingY, (float)metrics->vertBearingY / 64);
+	printf("  vertAdvance  = %d, %.02f\n", metrics->vertAdvance, (float)metrics->vertAdvance / 64);
+	printf("***metrics\n");
+
+	printf("advance.x    = %d, %.02f\n", glyph->advance.x, (float)glyph->advance.x / 64);
+	printf("advance.y    = %d, %.02f\n", glyph->advance.y, (float)glyph->advance.y / 64);
+
+	printf("bitmap***\n");
+	printf("  pitch  = %d\n", bitmap->pitch);
+	printf("  width  = %d\n", bitmap->width);
+	printf("  height = %d\n", bitmap->rows);
+	printf("***bitmap\n");
+	printf("bitmap_left = %d\n", glyph->bitmap_left);
+	printf("bitmap_top  = %d\n", glyph->bitmap_top);
+
+	printf("outline***\n");
+	printf("  n_contours = %d\n", outline->n_contours);
+	printf("  n_points   = %d\n", outline->n_points);
+	for (int i = 0; i < outline->n_points; i++) {
+		printf("    %d, %d\n   >%.02f, %.02f\n", outline->points[i].x, outline->points[i].y,
+											  (float)outline->points[i].x / 64, (float)outline->points[i].y / 64);
+	}
+	printf("  flags = %d\n", outline->flags);
+	printf("***outline\n");
+
+	printf("lsb_delta    = %d\n", glyph->lsb_delta);
+	printf("rsb_delta    = %d\n", glyph->rsb_delta);
+
+	printf("***glyph\n");
+}
 
 bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 	if (!glyph) {
@@ -216,6 +262,9 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			} else {
 				MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
 			}
+
+//showGlyphAttributes(g);
+
 
 			if (!((g)&&(g->format != FT_GLYPH_FORMAT_BITMAP))) {
 				if (FT_Render_Glyph(g, FT_RENDER_MODE_NORMAL)) {
