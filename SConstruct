@@ -564,10 +564,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		if conf.CheckLibWithHeader(['GLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
+			if conf.CheckLibWithHeader(['GLU'], 'GL/glu.h', 'c++', 'gluNewTess();'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
 			if conf.CheckLibWithHeader(['EGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
-			if conf.CheckLibWithHeader(['GLU'],  'GL/glu.h', 'c++', 'gluNewTess();'):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
 		else:
 			conf.env['graphics_outputtype'].remove('gles2')
 
@@ -582,14 +582,16 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 
 		# checks for OpenGL and X11 backend
 		if 'gl2' in conf.env['graphics_outputtype']:
-			if conf.checkSimpleLib(['gl', 'glew'],  ['GL/gl.h', 'GL/glew.h']):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
-				if conf.CheckLib('GL', 'glBlendEquation'):
-					conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])	
-				if conf.checkSimpleLib(['glu'],  'GL/glu.h'):
-					conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
-				if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
-					conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
+			if conf.checkSimpleLib(['gl'], 'GL/gl.h'):
+				if conf.CheckLib('GLEW', 'glGenFramebuffersEXT'):
+					conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
+					conf.env['LIBS'].append('GLEW')
+					if conf.CheckLib('GL', 'glBlendEquation'):
+						conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])	
+					if conf.checkSimpleLib(['glu'], 'GL/glu.h'):
+						conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
+					if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
+						conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
 		else:
 			conf.env['graphics_outputtype'].remove('gl2')
 	
