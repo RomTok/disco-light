@@ -35,25 +35,38 @@
 
 #include "mmsgui/fb/mmsfbbase.h"
 
+#ifdef __HAVE_GLU__
+#define MMSFBFONT_GLYPH_MAX_MESHES	32
+#endif
+
 //! descibes a loaded glyph
 typedef struct {
-	//! pointer to data
+	//! pointer to bitmap data
 	unsigned char	*buffer;
-	//! pitch in byte of one row in the buffer
+	//! pitch in byte of one row in the bitmap buffer
 	int 			pitch;
 	//! x-offset
 	int				left;
 	//! y-offset
 	int				top;
-	//! width in pixel of the glyph bitmap
+	//! width in pixel of the glyph
 	int 			width;
-	//! height in pixel of the glyph bitmap
+	//! height in pixel of the glyph
 	int 			height;
 	//! width in pixel of the whole character
 	int				advanceX;
-#ifdef  __HAVE_OPENGL__
-	//! OpenGL texture for this glyph
+#ifdef __HAVE_OPENGL__
+#ifndef __HAVE_GLU__
+	//! OpenGL texture for this glyph, we use bitmaps from freetype
+	//! note: text rendering based on textures needs a lot of memory and is not the fastest way
 	unsigned int	texture;
+#else
+	//! OpenGL primitives for this glyph, we convert outlines from freetype using GLU tesselator
+	//! note: text rendering based on primitives can be more than two times faster
+	MMS3D_VERTEX_ARRAY  vertices[MMSFBFONT_GLYPH_MAX_MESHES];
+	MMS3D_INDEX_ARRAY   indices[MMSFBFONT_GLYPH_MAX_MESHES];
+	unsigned int		meshes;
+#endif
 #endif
 } MMSFBFont_Glyph;
 
@@ -100,6 +113,9 @@ class MMSFBFont {
 
         void lock();
         void unlock();
+
+        void *loadFTGlyph(unsigned int character);
+        bool setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph);
 
     public:
         MMSFBFont(string filename, int w, int h);
