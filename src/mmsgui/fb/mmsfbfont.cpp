@@ -148,8 +148,10 @@ MMSFBFont::~MMSFBFont() {
 
 #ifdef  __HAVE_OPENGL__
 #ifndef __HAVE_GLU__
-		if(mmsfb->bei)
+		if (mmsfb->bei)
 			mmsfb->bei->deleteTexture(it->second.texture);
+#else
+		//TODO: freeing primitives memory
 #endif
 #endif
 
@@ -187,7 +189,7 @@ void MMSFBFont::lock() {
 void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
-
+/*
 void showGlyphAttributes(FT_GlyphSlot glyph) {
 	FT_Glyph_Metrics *metrics = &glyph->metrics;
     FT_Bitmap  *bitmap = &glyph->bitmap;
@@ -234,7 +236,7 @@ void showGlyphAttributes(FT_GlyphSlot glyph) {
 
 	printf("***glyph\n");
 }
-
+*/
 
 void *MMSFBFont::loadFTGlyph(unsigned int character) {
 	FT_GlyphSlot g = NULL;
@@ -413,7 +415,7 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
 		// prepare access to vertices and indices of glyph
 		if (glyph->meshes >= MMSFBFONT_GLYPH_MAX_MESHES) {
-			printf("MMSFBFONT_GLYPH_MAX_MESHES reached\n");
+			printf("MMSFBFONT_GLYPH_MAX_MESHES reached, %d needed\n", ftglyph->getMeshCount());
 			break;
 		}
 		MMS3D_INDEX_ARRAY  *indices  = &glyph->indices[glyph->meshes];
