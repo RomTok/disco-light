@@ -33,6 +33,8 @@
 #include "mmsgui/fb/mmsfbfont.h"
 #include "mmsgui/fb/mmsfb.h"
 
+#include "mmsgui/ft/mmsfttesselator.h"
+
 #include <ft2build.h>
 #include FT_GLYPH_H
 
@@ -128,8 +130,8 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			return;
     	}
 
-    	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender >> 6;
-    	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender >> 6);
+    	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender / 64;
+    	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender / 64);
     	this->height = this->ascender + this->descender + 1;
 
     	this->initialized = true;
@@ -145,8 +147,12 @@ MMSFBFont::~MMSFBFont() {
 			free(it->second.buffer);
 
 #ifdef  __HAVE_OPENGL__
-		if(mmsfb->bei)
+#ifndef __HAVE_GLU__
+		if (mmsfb->bei)
 			mmsfb->bei->deleteTexture(it->second.texture);
+#else
+		//TODO: freeing primitives memory
+#endif
 #endif
 
 	}
@@ -183,7 +189,7 @@ void MMSFBFont::lock() {
 void MMSFBFont::unlock() {
 	this->Lock.unlock();
 }
-
+/*
 void showGlyphAttributes(FT_GlyphSlot glyph) {
 	FT_Glyph_Metrics *metrics = &glyph->metrics;
     FT_Bitmap  *bitmap = &glyph->bitmap;
@@ -230,6 +236,241 @@ void showGlyphAttributes(FT_GlyphSlot glyph) {
 
 	printf("***glyph\n");
 }
+*/
+
+void *MMSFBFont::loadFTGlyph(unsigned int character) {
+	FT_GlyphSlot g = NULL;
+
+	// load glyph but do NOT render a bitmap
+	if (!FT_Load_Glyph((FT_Face)this->ft_face,
+		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_DEFAULT)) {
+		g = ((FT_Face)this->ft_face)->glyph;
+	} else {
+		MMSFB_SetError(0, "FT_Load_Glyph(,,FT_LOAD_DEFAULT) failed for " + this->filename);
+	}
+
+/*TEST CODE
+	if (!FT_Load_Glyph((FT_Face)this->ft_face,
+		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) {
+		g = ((FT_Face)this->ft_face)->glyph;
+	} else {
+		MMSFB_SetError(0, "FT_Load_Glyph(,,FT_LOAD_RENDER) failed for " + this->filename);
+	}
+	showGlyphAttributes(g);
+	exit(0);
+*/
+
+	if (g) {
+#ifdef __HAVE_OPENGL__
+		if (!mmsfb->bei) {
+#else
+		if (1) {
+#endif
+			// OpenGL is not initialized, we need a bitmap from freetype
+			if (g->format != FT_GLYPH_FORMAT_BITMAP) {
+				if (FT_Render_Glyph(g, FT_RENDER_MODE_NORMAL)) {
+					// failed to load glyph
+					MMSFB_SetError(0, "FT_Render_Glyph(,FT_RENDER_MODE_NORMAL) failed for " + this->filename);
+					return NULL;
+				}
+			}
+
+			if (g->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY) {
+				// failed to load glyph
+				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY for " + this->filename);
+				return NULL;
+			}
+		}
+		else {
+#ifndef __HAVE_GLU__
+			// OpenGL is initialized but GLU is missing, we need a bitmap from freetype
+			if (g->format != FT_GLYPH_FORMAT_BITMAP) {
+				if (FT_Render_Glyph(g, FT_RENDER_MODE_NORMAL)) {
+					// failed to load glyph
+					MMSFB_SetError(0, "FT_Render_Glyph(,FT_RENDER_MODE_NORMAL) failed for " + this->filename);
+					return NULL;
+				}
+			}
+
+			if (g->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY) {
+				// failed to load glyph
+				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY for " + this->filename);
+				return NULL;
+			}
+#endif
+		}
+
+		// successfully loaded
+		return g;
+	}
+	else {
+		// failed to load glyph
+		return NULL;
+	}
+}
+
+
+bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
+	if (!ftg || !glyph) return false;
+	FT_GlyphSlot g = (FT_GlyphSlot)ftg;
+
+#ifdef __HAVE_OPENGL__
+	if (!mmsfb->bei) {
+#else
+	if (1) {
+#endif
+		// OpenGL is not initialized, setup glyph for software rendering
+		glyph->left		= g->bitmap_left;
+		glyph->top		= g->bitmap_top;
+		glyph->width	= g->bitmap.width;
+		glyph->height	= g->bitmap.rows;
+		glyph->advanceX	= g->advance.x / 64;
+		glyph->pitch	= g->bitmap.pitch;
+		glyph->buffer	= (unsigned char*)calloc(1, glyph->pitch * glyph->height);
+		memcpy(glyph->buffer, g->bitmap.buffer, glyph->pitch * glyph->height);
+
+		if (MMSFBBase_rotate180) {
+			// rotate glyph by 180°
+			rotateUCharBuffer180(glyph->buffer, glyph->pitch, glyph->width, glyph->height);
+		}
+
+		return true;
+	}
+
+#ifndef __HAVE_GLU__
+#ifdef  __HAVE_OPENGL__
+	// OpenGL is initialized but GLU is missing, we need a bitmap from freetype
+	glyph->left		= g->bitmap_left;
+	glyph->top		= g->bitmap_top;
+	glyph->width	= g->bitmap.width;
+	glyph->height	= g->bitmap.rows;
+	glyph->advanceX	= g->advance.x / 64;
+
+	// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
+	if(mmsfb->bei && (g->bitmap.pitch & 3)) {
+		glyph->pitch = (g->bitmap.pitch & ~3) + 4;
+		glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
+		unsigned char *src = g->bitmap.buffer;
+		unsigned char *dst = glyph->buffer;
+		for(int i = 0; i < glyph->height; i++) {
+			memcpy(dst, src, glyph->pitch);
+			src += g->bitmap.pitch;
+			dst += glyph->pitch;
+		}
+	}
+	else {
+		glyph->pitch  = g->bitmap.pitch;
+		glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
+		memcpy(glyph->buffer, g->bitmap.buffer, glyph->pitch * glyph->height);
+	}
+
+	if (MMSFBBase_rotate180) {
+		// rotate glyph by 180°
+		rotateUCharBuffer180(glyph->buffer, glyph->pitch, glyph->width, glyph->height);
+	}
+
+	// create a texture for this glyph
+	glyph->texture = 0;
+	mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
+							glyph->pitch, glyph->height);
+/*TODO: createAlphaTexture() can block the application
+	glGenTextures(1, &glyph->texture);
+	glBindTexture(GL_TEXTURE_2D, glyph->texture);
+	glTexImage2D(GL_TEXTURE_2D,
+		0,
+		GL_ALPHA,
+		glyph->pitch,
+		glyph->height,
+		0,
+		GL_ALPHA,
+		GL_UNSIGNED_BYTE,
+		glyph->buffer);
+*/
+	return true;
+#endif
+
+#else
+	// OpenGL is initialized and GLU is available, we create meshes based on freetype outlines
+	MMSFTTesselator *ftv = new MMSFTTesselator(g);
+    ftv->generateGlyph();
+    const MMSFTGlyph *ftglyph = ftv->getGlyph();
+    if (!ftglyph) {
+	    // glyph not generated
+		MMSFB_SetError(0, "MMSFTTesselator::generateGlyph() failed");
+		delete ftv;
+		return false;
+    }
+
+    // init glyph
+    glyph->buffer	= NULL;
+    glyph->pitch	= 0;
+	glyph->left		= g->metrics.horiBearingX / 64;
+	glyph->top		= g->metrics.horiBearingY / 64;
+	glyph->width	= g->metrics.width / 64;
+	glyph->height	= g->metrics.height / 64;
+	glyph->advanceX	= g->advance.x / 64;
+    glyph->meshes	= 0;
+
+    // for all meshes
+	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
+		// prepare access to vertices and indices of glyph
+		if (glyph->meshes >= MMSFBFONT_GLYPH_MAX_MESHES) {
+			printf("MMSFBFONT_GLYPH_MAX_MESHES reached, %d needed\n", ftglyph->getMeshCount());
+			break;
+		}
+		MMS3D_INDEX_ARRAY  *indices  = &glyph->indices[glyph->meshes];
+		MMS3D_VERTEX_ARRAY *vertices = &glyph->vertices[glyph->meshes];
+
+		// get access to polygon data
+		const MMSFTMesh *ftmesh = ftglyph->getMesh(m);
+		if (!ftmesh) continue;
+
+		// prepare indices
+		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+		switch (ftmesh->getMeshType()) {
+		case GL_TRIANGLES:
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+			break;
+		case GL_TRIANGLE_STRIP:
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+			break;
+		case GL_TRIANGLE_FAN:
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN;
+			break;
+		default:
+			// unsupported type
+			printf("MMSFBFont: unsupported mesh type %u\n", ftmesh->getMeshType());
+			delete ftv;
+			return false;
+		}
+		indices->eNum = ftmesh->getVertexCount();
+		indices->buf  = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+
+		// prepare vertices
+		vertices->eSize = 2;
+		vertices->eNum  = indices->eNum;
+		vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+
+		// for all vertices in the polygon
+		for (unsigned int v = 0; v < indices->eNum; v++) {
+			const MMSFTVertex &vertex = ftmesh->getVertex(v);
+			vertices->buf[v * vertices->eSize + 0] = (vertex.X() - g->metrics.horiBearingX) / 64;
+			vertices->buf[v * vertices->eSize + 1] = (g->metrics.horiBearingY - vertex.Y()) / 64;
+			indices->buf[v] = v;
+		}
+
+		// next mesh
+		glyph->meshes++;
+	}
+
+    // all is successfully done
+	delete ftv;
+	return true;
+
+#endif
+
+	return false;
+}
 
 bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 	if (!glyph) {
@@ -254,88 +495,19 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
     	it = this->charmap.find(character);
     	if (it == this->charmap.end()) {
     		// no, have to load it
-			FT_GlyphSlotRec *g = NULL;
-
-			if (!FT_Load_Glyph((FT_Face)this->ft_face,
-								FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) {
-				g = ((FT_Face)this->ft_face)->glyph;
-			} else {
-				MMSFB_SetError(0, "FT_Load_Glyph() failed for " + this->filename);
-			}
-
-//showGlyphAttributes(g);
-
-
-			if (!((g)&&(g->format != FT_GLYPH_FORMAT_BITMAP))) {
-				if (FT_Render_Glyph(g, FT_RENDER_MODE_NORMAL)) {
-					g = NULL;
-					MMSFB_SetError(0, "FT_Render_Glyph() failed for " + this->filename);
-				}
-			}
-
-			if (!((g)&&(g->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY))) {
-				g = NULL;
-				MMSFB_SetError(0, "glyph->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY for " + this->filename);
-			}
-
-			if(!g) {
+			FT_GlyphSlot g;
+			if (!(g = (FT_GlyphSlot)loadFTGlyph(character))) {
+				// failed to load glyph
 				unlock();
 				return false;
 			}
 
 			// setup glyph values
-			glyph->left		= g->bitmap_left;
-			glyph->top		= g->bitmap_top;
-			glyph->width	= g->bitmap.width;
-			glyph->height	= g->bitmap.rows;
-			glyph->advanceX	= g->advance.x;
-
-#ifdef  __HAVE_OPENGL__
-			// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
-			if(mmsfb->bei && (g->bitmap.pitch & 3)) {
-				glyph->pitch = (g->bitmap.pitch & ~3) + 4;
-				glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
-				unsigned char *src = g->bitmap.buffer;
-				unsigned char *dst = glyph->buffer;
-				for(int i = 0; i < glyph->height; i++) {
-					memcpy(dst, src, glyph->pitch);
-					src += g->bitmap.pitch;
-					dst += glyph->pitch;
-				}
-			} else
-#endif
-			{
-				glyph->pitch  = g->bitmap.pitch;
-				glyph->buffer = (unsigned char*)calloc(1, glyph->pitch * glyph->height);
-				memcpy(glyph->buffer, g->bitmap.buffer, glyph->pitch * glyph->height);
+			if (!setupFTGlyph(g, glyph)) {
+				// failed to setup glyph
+				unlock();
+				return false;
 			}
-
-			if (MMSFBBase_rotate180) {
-				// rotate glyph by 180°
-				rotateUCharBuffer180(glyph->buffer, glyph->pitch, glyph->width, glyph->height);
-			}
-
-#ifdef  __HAVE_OPENGL__
-			// if disko is built and initialized for OpenGL, we create a texture for this glyph
-			if (mmsfb->bei) {
-				glyph->texture = 0;
-				mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
-												glyph->pitch, glyph->height);
-
-/*				printf("genFontTexture for %d\n", character);
-				glGenTextures(1, &glyph->texture);
-			    glBindTexture(GL_TEXTURE_2D, glyph->texture);
-				glTexImage2D(GL_TEXTURE_2D,
-				 	0,
-				 	GL_ALPHA,
-				 	glyph->pitch,
-				 	glyph->height,
-				 	0,
-				 	GL_ALPHA,
-				 	GL_UNSIGNED_BYTE,
-				 	glyph->buffer);*/
-			}
-#endif
 
 			// add to charmap
 			this->charmap.insert(std::make_pair(character, *glyph));
@@ -380,7 +552,7 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
     		MMSFBFont_Glyph glyph;
     		if (!getGlyph(character, &glyph)) break;
-			(*width)+=glyph.advanceX >> 6;
+			(*width)+=glyph.advanceX;
     	} }
     	return true;
     }

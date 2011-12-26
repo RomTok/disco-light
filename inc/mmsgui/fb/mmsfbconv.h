@@ -1026,9 +1026,9 @@ if (!AA) { \
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_END_RENDER \
 	if (!MMSFBBase_rotate180) \
-		x+=glyph.advanceX >> 6; \
+		x+=glyph.advanceX; \
 	else \
-		x-=glyph.advanceX >> 6;	}
+		x-=glyph.advanceX;	}
 
 
 //! calculate region if screen is rotated by 180°

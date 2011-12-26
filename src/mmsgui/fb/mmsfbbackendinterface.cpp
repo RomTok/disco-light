@@ -1114,7 +1114,8 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 	// lock destination fbo and bind source texture to it
 	oglBindSurface(req->surface);
 
-	// setup blitting
+#ifndef __HAVE_GLU__
+	// setup texture blitting
 	mmsfbgl.enableBlend();
 	if (req->surface->config.color.a == 0xff)
 		mmsfbgl.setTexEnvReplace(GL_ALPHA);
@@ -1124,6 +1125,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 					req->surface->config.color.g,
 					req->surface->config.color.b,
 					req->surface->config.color.a);
+#else
+	// setup drawing
+	INIT_OGL_DRAWING(req->surface, req->surface->config.drawingflags);
+#endif
 
 	// get subsurface offsets
 	GET_OFFS(req->surface);
@@ -1164,14 +1169,34 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dx2 = dx + src_w - 1 + xoff;
 				int dy2 = dy + src_h - 1 + yoff;
 
+#ifndef __HAVE_GLU__
 				// blit glyph texture to the destination
 				mmsfbgl.stretchBliti(glyph.texture,
 										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
 										dx1, dy1, dx2, dy2);
+#else
+/*				mmsfbgl.setColor(0,0xff,0,0xff);
+				mmsfbgl.fillRectangle2Di(dx1, dy1, dx2, dy2);
+				mmsfbgl.setColor(req->surface->config.color.r,
+								req->surface->config.color.g,
+								req->surface->config.color.b,
+								req->surface->config.color.a);
+*/
+				mmsfbgl.pushCurrentMatrix();
+
+				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
+
+				// draw primitives
+				for (unsigned int m = 0; m < glyph.meshes; m++) {
+					mmsfbgl.drawElements(&glyph.vertices[m], NULL, NULL, &glyph.indices[m]);
+				}
+
+				mmsfbgl.popCurrentMatrix();
+#endif
 			}
 
 			// prepare for next loop
-			req->x+=glyph.advanceX >> 6;
+			req->x+=glyph.advanceX;
 		}
 	}}
 
