@@ -47,7 +47,6 @@
 
 #ifdef __HAVE_GLX__
 #include <GL/glx.h>
-#include <GL/glu.h>
 #endif
 
 #ifdef __HAVE_GLES2__
