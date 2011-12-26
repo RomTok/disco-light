@@ -38,30 +38,34 @@
 
 #ifdef __HAVE_GLU__
 #include <GL/glu.h>
-#endif
 
-
+// GLU_TESS_BEGIN_DATA callback
 void gluTBeginData(GLenum type, MMSFTGlyph *glyph) {
 	glyph->tessBegin(type);
 }
 
+// GLU_TESS_VERTEX_DATA callback
 void gluTVertexData(void *data, MMSFTGlyph *glyph) {
     double* vertex = static_cast<double*>(data);
     glyph->tessVertex(vertex[0], vertex[1], vertex[2]);
 }
 
+// GLU_TESS_COMBINE_DATA callback
 void gluTCombineData(double coords[3], void *vertex_data[4], GLfloat weight[4], void **outData, MMSFTGlyph *glyph) {
     const double *vertex = static_cast<const double*>(coords);
     *outData = const_cast<double*>(glyph->tessCombine(vertex[0], vertex[1], vertex[2]));
 }
 
+// GLU_TESS_END_DATA callback
 void gluTEndData(MMSFTGlyph *glyph) {
 	glyph->tessEnd();
 }
 
+// GLU_TESS_ERROR_DATA callback
 void gluTErrorData(GLenum errCode, MMSFTGlyph *glyph) {
     glyph->tessError(errCode);
 }
+#endif
 
 
 MMSFTTesselator::MMSFTTesselator(const FT_GlyphSlot glyph) {
@@ -170,6 +174,7 @@ void MMSFTTesselator::processContours() {
 
 
 bool MMSFTTesselator::generateGlyph(double zNormal, int outsetType, float outsetSize) {
+#ifdef __HAVE_GLU__
 	// new glyph
 	if (this->glyph) delete this->glyph;
 	this->glyph = new MMSFTGlyph();
@@ -239,6 +244,9 @@ bool MMSFTTesselator::generateGlyph(double zNormal, int outsetType, float outset
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 const MMSFTGlyph* const MMSFTTesselator::getGlyph() const {
