@@ -62,8 +62,8 @@ class MMSFTGlyph {
 
         unsigned int getErrorCode() const;
 
-        size_t getMeshCount() const;
-        const MMSFTMesh* const getMesh(size_t index) const;
+        unsigned int getMeshCount() const;
+        const MMSFTMesh* const getMesh(unsigned int index) const;
 };
 
 #endif /* MMSFTGLYPH_H_ */

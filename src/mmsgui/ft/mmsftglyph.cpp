@@ -38,7 +38,7 @@ MMSFTGlyph::MMSFTGlyph() : currentMesh(NULL), err(0) {
 
 
 MMSFTGlyph::~MMSFTGlyph() {
-    for(size_t m = 0; m < this->meshList.size(); m++) {
+    for(unsigned int m = 0; m < this->meshList.size(); m++) {
         delete this->meshList[m];
     }
     this->meshList.clear();
@@ -76,12 +76,12 @@ unsigned int MMSFTGlyph::getErrorCode() const {
 }
 
 
-size_t MMSFTGlyph::getMeshCount() const {
+unsigned int MMSFTGlyph::getMeshCount() const {
 	return this->meshList.size();
 }
 
 
-const MMSFTMesh* const MMSFTGlyph::getMesh(size_t index) const {
+const MMSFTMesh* const MMSFTGlyph::getMesh(unsigned int index) const {
     return (index < this->meshList.size()) ? this->meshList[index] : NULL;
 }
 

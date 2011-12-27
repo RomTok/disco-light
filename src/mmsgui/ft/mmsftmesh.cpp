@@ -45,7 +45,7 @@ void MMSFTMesh::addVertex(const double x, const double y, const double z) {
 	this->vertices.push_back(MMSFTVertex(x, y, z));
 }
 
-size_t MMSFTMesh::getVertexCount() const {
+unsigned int MMSFTMesh::getVertexCount() const {
 	return this->vertices.size();
 }
 

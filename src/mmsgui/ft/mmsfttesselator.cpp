@@ -86,7 +86,7 @@ MMSFTTesselator::MMSFTTesselator(const FT_GlyphSlot glyph) {
 
 
 MMSFTTesselator::~MMSFTTesselator() {
-    for (size_t c = 0; c < this->ftContourCount; c++) {
+    for (unsigned int c = 0; c < this->ftContourCount; c++) {
         delete contourList[c];
     }
     delete [] contourList;
@@ -123,7 +123,7 @@ void MMSFTTesselator::processContours() {
         // 1. Find the leftmost point.
         MMSFTVertex leftmost(65536.0, 0.0);
 
-        for (size_t n = 0; n < c1->getVertexCount(); n++) {
+        for (unsigned int n = 0; n < c1->getVertexCount(); n++) {
             MMSFTVertex p = c1->Vertex(n);
             if(p.X() < leftmost.X())
             {
@@ -140,7 +140,7 @@ void MMSFTTesselator::processContours() {
 
             MMSFTContour *c2 = contourList[j];
 
-            for (size_t n = 0; n < c2->getVertexCount(); n++) {
+            for (unsigned int n = 0; n < c2->getVertexCount(); n++) {
                 MMSFTVertex p1 = c2->Vertex(n);
                 MMSFTVertex p2 = c2->Vertex((n + 1) % c2->getVertexCount());
 
@@ -200,7 +200,7 @@ bool MMSFTTesselator::generateGlyph(double zNormal, int outsetType, float outset
     gluTessNormal(tobj, 0.0f, 0.0f, zNormal);
     gluTessBeginPolygon(tobj, this->glyph);
 
-	for (size_t c = 0; c < this->ftContourCount; c++) {
+	for (unsigned int c = 0; c < this->ftContourCount; c++) {
 		switch(outsetType) {
 			case 1:
 				contourList[c]->buildFrontOutset(outsetSize);
@@ -212,7 +212,7 @@ bool MMSFTTesselator::generateGlyph(double zNormal, int outsetType, float outset
 
 		gluTessBeginContour(tobj);
 
-		for (size_t p = 0; p < contour->getVertexCount(); ++p) {
+		for (unsigned int p = 0; p < contour->getVertexCount(); ++p) {
 			const double* d;
 			switch(outsetType) {
 				case 1:

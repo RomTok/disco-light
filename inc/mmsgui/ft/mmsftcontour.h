@@ -68,23 +68,23 @@ class MMSFTContour {
             backVertexList.clear();
         }
 
-        const MMSFTVertex &Vertex(size_t index) const { return vertexList[index]; }
+        const MMSFTVertex &Vertex(unsigned int index) const { return vertexList[index]; }
 
-        const MMSFTVertex &Outset(size_t index) const { return outsetVertexList[index]; }
+        const MMSFTVertex &Outset(unsigned int index) const { return outsetVertexList[index]; }
 
-        const MMSFTVertex &FrontVertex(size_t index) const {
+        const MMSFTVertex &FrontVertex(unsigned int index) const {
             if(frontVertexList.size() == 0)
                 return Vertex(index);
             return frontVertexList[index];
         }
 
-        const MMSFTVertex& BackVertex(size_t index) const {
+        const MMSFTVertex& BackVertex(unsigned int index) const {
             if(backVertexList.size() == 0)
                 return Vertex(index);
              return backVertexList[index];
         }
 
-        size_t getVertexCount() const { return vertexList.size(); }
+        unsigned int getVertexCount() const { return vertexList.size(); }
 
         void setParity(int parity);
 

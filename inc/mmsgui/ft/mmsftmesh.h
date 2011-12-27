@@ -47,7 +47,7 @@ class MMSFTMesh {
         MMSFTMesh(unsigned int m);
         ~MMSFTMesh();
         void addVertex(const double x, const double y, const double z);
-        size_t getVertexCount() const;
+        unsigned int getVertexCount() const;
         const MMSFTVertex &getVertex(unsigned int index) const;
         unsigned int getMeshType() const;
 };

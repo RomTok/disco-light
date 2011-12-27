@@ -124,15 +124,13 @@ MMSFTVertex MMSFTContour::ComputeOutsetVertex(MMSFTVertex A, MMSFTVertex B, MMSF
 
 
 void MMSFTContour::setParity(int parity) {
-    size_t size = getVertexCount();
+    unsigned int size = getVertexCount();
     MMSFTVertex vOutset;
 
-    if(((parity & 1) && clockwise) || (!(parity & 1) && !clockwise))
-    {
+    if(((parity & 1) && clockwise) || (!(parity & 1) && !clockwise)) {
         // Contour orientation is wrong! We must reverse all points.
         // FIXME: could it be worth writing FTVector::reverse() for this?
-        for(size_t i = 0; i < size / 2; i++)
-        {
+        for(unsigned int i = 0; i < size / 2; i++) {
             MMSFTVertex tmp = vertexList[i];
             vertexList[i] = vertexList[size - 1 - i];
             vertexList[size - 1 -i] = tmp;
@@ -141,9 +139,8 @@ void MMSFTContour::setParity(int parity) {
         clockwise = !clockwise;
     }
 
-    for(size_t i = 0; i < size; i++)
-    {
-        size_t prev, cur, next;
+    for(unsigned int i = 0; i < size; i++) {
+        unsigned int prev, cur, next;
 
         prev = (i + size - 1) % size;
         cur = i;
@@ -163,8 +160,7 @@ MMSFTContour::MMSFTContour(FT_Vector* contour, char* tags, unsigned int n) {
 
     // See http://freetype.sourceforge.net/freetype2/docs/glyphs/glyphs-6.html
     // for a full description of FreeType tags.
-    for(unsigned int i = 0; i < n; i++)
-    {
+    for(unsigned int i = 0; i < n; i++) {
         prev = cur;
         cur = next;
         next = MMSFTVertex(contour[(i + 1) % n]);
@@ -178,36 +174,32 @@ MMSFTContour::MMSFTContour(FT_Vector* contour, char* tags, unsigned int n) {
         angle += t;
 
         // Only process point tags we know.
-        if(n < 2 || FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_On)
-        {
+        if (n < 2 || FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_On) {
             AddVertex(cur);
         }
-        else if(FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_Conic)
-        {
+        else
+        if (FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_Conic) {
             MMSFTVertex prev2 = prev, next2 = next;
 
             // Previous point is either the real previous point (an "on"
             // point), or the midpoint between the current one and the
             // previous "conic off" point.
-            if(FT_CURVE_TAG(tags[(i - 1 + n) % n]) == FT_Curve_Tag_Conic)
-            {
+            if (FT_CURVE_TAG(tags[(i - 1 + n) % n]) == FT_Curve_Tag_Conic) {
                 prev2 = (cur + prev) * 0.5;
                 AddVertex(prev2);
             }
 
             // Next point is either the real next point or the midpoint.
-            if(FT_CURVE_TAG(tags[(i + 1) % n]) == FT_Curve_Tag_Conic)
-            {
+            if(FT_CURVE_TAG(tags[(i + 1) % n]) == FT_Curve_Tag_Conic) {
                 next2 = (cur + next) * 0.5;
             }
 
             evaluateQuadraticCurve(prev2, cur, next2);
         }
-        else if(FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_Cubic
-                 && FT_CURVE_TAG(tags[(i + 1) % n]) == FT_Curve_Tag_Cubic)
-        {
-            evaluateCubicCurve(prev, cur, next,
-                               MMSFTVertex(contour[(i + 2) % n]));
+        else
+        if (FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_Cubic
+          &&FT_CURVE_TAG(tags[(i + 1) % n]) == FT_Curve_Tag_Cubic) {
+            evaluateCubicCurve(prev, cur, next, MMSFTVertex(contour[(i + 2) % n]));
         }
     }
 
@@ -218,14 +210,14 @@ MMSFTContour::MMSFTContour(FT_Vector* contour, char* tags, unsigned int n) {
 
 
 void MMSFTContour::buildFrontOutset(double outset) {
-	for (size_t i = 0; i < getVertexCount(); i++) {
+	for (unsigned int i = 0; i < getVertexCount(); i++) {
 		AddFrontVertex(Vertex(i) + Outset(i) * outset);
 	}
 }
 
 
 void MMSFTContour::buildBackOutset(double outset) {
-	for (size_t i = 0; i < getVertexCount(); i++) {
+	for (unsigned int i = 0; i < getVertexCount(); i++) {
 		AddBackVertex(Vertex(i) + Outset(i) * outset);
 	}
 }
