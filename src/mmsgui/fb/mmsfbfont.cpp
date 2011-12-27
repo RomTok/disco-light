@@ -402,20 +402,42 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
     }
 
     // init glyph
-    glyph->buffer	= NULL;
-    glyph->pitch	= 0;
-	glyph->left		= g->metrics.horiBearingX / 64;
-	glyph->top		= g->metrics.horiBearingY / 64;
-	glyph->width	= g->metrics.width / 64;
-	glyph->height	= g->metrics.height / 64;
-	glyph->advanceX	= g->advance.x / 64;
-    glyph->meshes	= 0;
+    glyph->buffer		= NULL;
+    glyph->pitch		= 0;
+	glyph->left			= g->metrics.horiBearingX / 64;
+	glyph->top			= g->metrics.horiBearingY / 64;
+	glyph->width		= g->metrics.width / 64;
+	glyph->height		= g->metrics.height / 64;
+	glyph->advanceX		= g->advance.x / 64;
+    glyph->max_meshes	= 0;
+    glyph->meshes		= 0;
+
+    // count max meshes
+	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
+		if (!ftglyph->getMesh(m)) continue;
+		glyph->max_meshes++;
+		if (glyph->max_meshes >= MMSFBFONT_GLYPH_MAX_MESHES) {
+			printf("MMSFBFONT_GLYPH_MAX_MESHES(%u) reached, %u needed\n", MMSFBFONT_GLYPH_MAX_MESHES, ftglyph->getMeshCount());
+		}
+	}
+
+	if (!glyph->max_meshes) {
+		// no meshes available
+		MMSFB_SetError(0, "no meshes available");
+		delete ftv;
+		return false;
+	}
+
+    // allocate base buffer for vertices and indices
+	// we do not need to clear because all fields will be set separately
+	glyph->indices = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * glyph->max_meshes);
+	glyph->vertices = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * glyph->max_meshes);
 
     // for all meshes
 	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
 		// prepare access to vertices and indices of glyph
-		if (glyph->meshes >= MMSFBFONT_GLYPH_MAX_MESHES) {
-			printf("MMSFBFONT_GLYPH_MAX_MESHES reached, %d needed\n", ftglyph->getMeshCount());
+		if (glyph->meshes >= glyph->max_meshes) {
+			printf("glyph->max_meshes(%u) reached\n", glyph->max_meshes);
 			break;
 		}
 		MMS3D_INDEX_ARRAY  *indices  = &glyph->indices[glyph->meshes];
@@ -452,7 +474,7 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 		vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
 		// for all vertices in the polygon
-		for (unsigned int v = 0; v < indices->eNum; v++) {
+		for (unsigned int v = 0; v < (unsigned int)indices->eNum; v++) {
 			const MMSFTVertex &vertex = ftmesh->getVertex(v);
 			vertices->buf[v * vertices->eSize + 0] = (vertex.X() - g->metrics.horiBearingX) / 64;
 			vertices->buf[v * vertices->eSize + 1] = (g->metrics.horiBearingY - vertex.Y()) / 64;

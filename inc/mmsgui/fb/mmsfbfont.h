@@ -36,7 +36,7 @@
 #include "mmsgui/fb/mmsfbbase.h"
 
 #ifdef __HAVE_GLU__
-#define MMSFBFONT_GLYPH_MAX_MESHES	48
+#define MMSFBFONT_GLYPH_MAX_MESHES	512
 #endif
 
 //! descibes a loaded glyph
@@ -63,10 +63,13 @@ typedef struct {
 #else
 	//! OpenGL primitives for this glyph, we convert outlines from freetype using GLU tesselator
 	//! note: text rendering based on primitives can be more than two times faster
-	//TODO: dyn alloc arrays to save memory
-	MMS3D_VERTEX_ARRAY  vertices[MMSFBFONT_GLYPH_MAX_MESHES];
-	MMS3D_INDEX_ARRAY   indices[MMSFBFONT_GLYPH_MAX_MESHES];
-	unsigned int		meshes;
+	MMS3D_INDEX_ARRAY   *indices;
+	//! vertex data
+	MMS3D_VERTEX_ARRAY  *vertices;
+	//! maximum number of meshes
+	unsigned short int	max_meshes;
+	//! meshes which are initialized
+	unsigned short int	meshes;
 #endif
 #endif
 } MMSFBFont_Glyph;
