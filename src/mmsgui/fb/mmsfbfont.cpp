@@ -141,17 +141,32 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 MMSFBFont::~MMSFBFont() {
 	lock();
 
-	for(std::map<unsigned int, MMSFBFont_Glyph>::iterator it = this->charmap.begin();
+	for (std::map<unsigned int, MMSFBFont_Glyph>::iterator it = this->charmap.begin();
 			it != this->charmap.end(); ++it) {
-		if(it->second.buffer)
-			free(it->second.buffer);
+
+		MMSFBFont_Glyph *glyph = &it->second;
+
+		if (glyph->buffer)
+			free(glyph->buffer);
 
 #ifdef  __HAVE_OPENGL__
 #ifndef __HAVE_GLU__
+		// release texture
 		if (mmsfb->bei)
-			mmsfb->bei->deleteTexture(it->second.texture);
+			if (glyph->texture)
+				mmsfb->bei->deleteTexture(glyph->texture);
 #else
-		//TODO: freeing primitives memory
+		// release mesh memory
+		for (unsigned int m = 0; m < glyph->meshes; m++) {
+			MMS3D_INDEX_ARRAY  *indices  = &glyph->indices[m];
+			MMS3D_VERTEX_ARRAY *vertices = &glyph->vertices[m];
+			if (indices->buf)
+				free(indices->buf);
+			if (vertices->buf)
+				free(vertices->buf);
+		}
+		free(glyph->indices);
+		free(glyph->vertices);
 #endif
 #endif
 
@@ -476,14 +491,23 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 		// for all vertices in the polygon
 		for (unsigned int v = 0; v < (unsigned int)indices->eNum; v++) {
 			const MMSFTVertex &vertex = ftmesh->getVertex(v);
-			vertices->buf[v * vertices->eSize + 0] = (vertex.X() - g->metrics.horiBearingX) / 64;
-			vertices->buf[v * vertices->eSize + 1] = (g->metrics.horiBearingY - vertex.Y()) / 64;
+			vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
+			vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+
+//			vertices->buf[v * vertices->eSize + 0] = vertices->buf[v * vertices->eSize + 0] * 20;
+//			vertices->buf[v * vertices->eSize + 1] = vertices->buf[v * vertices->eSize + 1] * 20;
+
 			indices->buf[v] = v;
 		}
 
 		// next mesh
 		glyph->meshes++;
 	}
+
+/*glyph->left*=20;
+glyph->width*=20;
+glyph->height*=20;
+glyph->advanceX*=20;*/
 
     // all is successfully done
 	delete ftv;
