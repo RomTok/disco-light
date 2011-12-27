@@ -564,10 +564,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv):
 		if conf.CheckLibWithHeader(['GLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_OPENGL__'])
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
-			if conf.CheckLibWithHeader(['GLU'], 'GL/glu.h', 'c++', 'gluNewTess();'):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
 			if conf.CheckLibWithHeader(['EGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
+			if conf.CheckLibWithHeader(['GLU'],  'GL/glu.h', 'c++', 'gluNewTess();'):
+				conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
 		else:
 			conf.env['graphics_outputtype'].remove('gles2')
 
