@@ -1185,6 +1185,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				mmsfbgl.pushCurrentMatrix();
 
 				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
+//				mmsfbgl.scaleCurrentMatrix(0.001, 0.001, 0);
 
 				// draw primitives
 				for (unsigned int m = 0; m < glyph.meshes; m++) {

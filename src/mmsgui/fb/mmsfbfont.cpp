@@ -493,6 +493,10 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 			const MMSFTVertex &vertex = ftmesh->getVertex(v);
 			vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
 			vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+//			vertices->buf[v * vertices->eSize + 0] = ((float)(vertex.X() - g->metrics.horiBearingX) * 1000) / 64;
+//			vertices->buf[v * vertices->eSize + 1] = ((float)(g->metrics.horiBearingY - vertex.Y()) * 1000) / 64;
+
+//			printf("%02f, %f\n", vertices->buf[v * vertices->eSize + 0], vertices->buf[v * vertices->eSize + 1]);
 
 //			vertices->buf[v * vertices->eSize + 0] = vertices->buf[v * vertices->eSize + 0] * 20;
 //			vertices->buf[v * vertices->eSize + 1] = vertices->buf[v * vertices->eSize + 1] * 20;
