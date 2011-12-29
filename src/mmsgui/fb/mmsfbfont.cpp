@@ -258,7 +258,12 @@ void *MMSFBFont::loadFTGlyph(unsigned int character) {
 
 	// load glyph but do NOT render a bitmap
 	if (!FT_Load_Glyph((FT_Face)this->ft_face,
-		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_DEFAULT)) {
+		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_DEFAULT | FT_LOAD_FORCE_AUTOHINT
+//		| FT_LOAD_TARGET_LIGHT
+//		| FT_LOAD_TARGET_MONO
+//		| FT_LOAD_TARGET_LCD
+//		| FT_LOAD_TARGET_LCD_V
+		)) {
 		g = ((FT_Face)this->ft_face)->glyph;
 	} else {
 		MMSFB_SetError(0, "FT_Load_Glyph(,,FT_LOAD_DEFAULT) failed for " + this->filename);
@@ -266,7 +271,7 @@ void *MMSFBFont::loadFTGlyph(unsigned int character) {
 
 /*TEST CODE
 	if (!FT_Load_Glyph((FT_Face)this->ft_face,
-		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER)) {
+		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT)) {
 		g = ((FT_Face)this->ft_face)->glyph;
 	} else {
 		MMSFB_SetError(0, "FT_Load_Glyph(,,FT_LOAD_RENDER) failed for " + this->filename);
@@ -426,6 +431,14 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 	glyph->advanceX		= g->advance.x / 64;
     glyph->max_meshes	= 0;
     glyph->meshes		= 0;
+    glyph->indices		= NULL;
+    glyph->vertices		= NULL;
+
+	if (!ftglyph->getMeshCount()) {
+		// no meshes available, but o.k. (e.g. space char)
+		delete ftv;
+		return true;
+	}
 
     // count max meshes
 	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
