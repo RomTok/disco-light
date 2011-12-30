@@ -49,7 +49,7 @@ class MMSFTTesselator {
 		MMSFTContour **contourList;
 
 		//! number of contours reported by freetype
-		short ftContourCount;
+		unsigned int contourCount;
 
 		//! flag indicating the tesselation rule for the glyph
 		int contourFlag;
@@ -64,6 +64,9 @@ class MMSFTTesselator {
 
         bool generateGlyph(double zNormal = 1.0f, int outsetType = 0, float outsetSize = 0.0f);
         const MMSFTGlyph* const getGlyph() const;
+
+        unsigned int getContourCount();
+        MMSFTContour *getContour(unsigned int index);
 };
 
 #endif  /* __MMSFTTESSELATOR__ */

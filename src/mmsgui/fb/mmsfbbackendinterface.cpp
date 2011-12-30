@@ -1185,25 +1185,26 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				mmsfbgl.pushCurrentMatrix();
 
 				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
-//				mmsfbgl.scaleCurrentMatrix(0.001, 0.001, 0);
 
-				// draw primitives
+/*
+mmsfbgl.setColor(0,0xff,0,0xff);
+
+				// draw primitives: glyph outline
+				for (unsigned int m = 0; m < glyph.outline_lines; m++) {
+					mmsfbgl.drawElements(&glyph.outline_vertices[m], NULL, NULL, &glyph.outline_indices[m]);
+				}
+
+mmsfbgl.setColor(req->surface->config.color.r,
+				req->surface->config.color.g,
+				req->surface->config.color.b,
+				req->surface->config.color.a);
+*/
+
+				// draw primitives: glyph meshes
 				for (unsigned int m = 0; m < glyph.meshes; m++) {
 					mmsfbgl.drawElements(&glyph.vertices[m], NULL, NULL, &glyph.indices[m]);
 				}
-/*
-float vbuf[8] = {0.5,0.5, 9.5,0.5, 9.5,9.5, 0.5,9.5};
-MMS3D_VERTEX_ARRAY vertices;
-vertices.eSize=2;
-vertices.eNum=4;
-vertices.buf = vbuf;
 
-MMS3D_INDEX_ARRAY indices;
-indices.type=MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
-indices.eNum=0;
-indices.buf=NULL;
-mmsfbgl.drawElements(&vertices, NULL, NULL, &indices);
-*/
 				mmsfbgl.popCurrentMatrix();
 #endif
 			}

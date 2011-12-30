@@ -70,6 +70,13 @@ typedef struct {
 	unsigned short int	max_meshes;
 	//! meshes which are initialized
 	unsigned short int	meshes;
+
+
+	MMS3D_INDEX_ARRAY   *outline_indices;
+	MMS3D_VERTEX_ARRAY  *outline_vertices;
+	unsigned short int	outline_max_lines;
+	unsigned short int	outline_lines;
+
 #endif
 #endif
 } MMSFBFont_Glyph;

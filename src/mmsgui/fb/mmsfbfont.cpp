@@ -157,16 +157,41 @@ MMSFBFont::~MMSFBFont() {
 				mmsfb->bei->deleteTexture(glyph->texture);
 #else
 		// release mesh memory
-		for (unsigned int m = 0; m < glyph->meshes; m++) {
-			MMS3D_INDEX_ARRAY  *indices  = &glyph->indices[m];
-			MMS3D_VERTEX_ARRAY *vertices = &glyph->vertices[m];
-			if (indices->buf)
-				free(indices->buf);
-			if (vertices->buf)
-				free(vertices->buf);
+		if (glyph->indices) {
+			for (unsigned int m = 0; m < glyph->meshes; m++) {
+				MMS3D_INDEX_ARRAY *indices = &glyph->indices[m];
+				if (indices->buf)
+					free(indices->buf);
+			}
+			free(glyph->indices);
 		}
-		free(glyph->indices);
-		free(glyph->vertices);
+		if (glyph->vertices) {
+			for (unsigned int m = 0; m < glyph->meshes; m++) {
+				MMS3D_VERTEX_ARRAY *vertices = &glyph->vertices[m];
+				if (vertices->buf)
+					free(vertices->buf);
+			}
+			free(glyph->vertices);
+		}
+
+		// release outline memory
+		if (glyph->outline_indices) {
+			for (unsigned int l = 0; l < glyph->outline_lines; l++) {
+				MMS3D_INDEX_ARRAY *indices = &glyph->outline_indices[l];
+				if (indices->buf)
+					free(indices->buf);
+			}
+			free(glyph->outline_indices);
+		}
+		if (glyph->outline_vertices) {
+			for (unsigned int m = 0; m < glyph->outline_lines; m++) {
+				MMS3D_VERTEX_ARRAY *vertices = &glyph->outline_vertices[m];
+				if (vertices->buf)
+					free(vertices->buf);
+			}
+			free(glyph->outline_vertices);
+		}
+
 #endif
 #endif
 
@@ -421,18 +446,26 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 		return false;
     }
 
-    // init glyph
-    glyph->buffer		= NULL;
-    glyph->pitch		= 0;
-	glyph->left			= g->metrics.horiBearingX / 64;
-	glyph->top			= g->metrics.horiBearingY / 64;
-	glyph->width		= g->metrics.width / 64;
-	glyph->height		= g->metrics.height / 64;
-	glyph->advanceX		= g->advance.x / 64;
-    glyph->max_meshes	= 0;
+    // init glyph basics
+    glyph->buffer	= NULL;
+    glyph->pitch	= 0;
+	glyph->left		= g->metrics.horiBearingX / 64;
+	glyph->top		= g->metrics.horiBearingY / 64;
+	glyph->width	= g->metrics.width / 64;
+	glyph->height	= g->metrics.height / 64;
+	glyph->advanceX	= g->advance.x / 64;
+
+	// init glyph mesh description
+	glyph->max_meshes	= 0;
     glyph->meshes		= 0;
     glyph->indices		= NULL;
     glyph->vertices		= NULL;
+
+    // init glyph outline description
+    glyph->outline_max_lines= 0;
+    glyph->outline_lines	= 0;
+    glyph->outline_indices	= NULL;
+    glyph->outline_vertices	= NULL;
 
 	if (!ftglyph->getMeshCount()) {
 		// no meshes available, but o.k. (e.g. space char)
@@ -524,6 +557,60 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 glyph->width*=20;
 glyph->height*=20;
 glyph->advanceX*=20;*/
+
+
+	if (ftv->getContourCount() > 0) {
+		// add outline primitives
+		glyph->outline_max_lines = ftv->getContourCount();
+
+	    // allocate base buffer for vertices and indices
+		// we do not need to clear because all fields will be set separately
+		glyph->outline_indices = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * glyph->outline_max_lines);
+		glyph->outline_vertices = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * glyph->outline_max_lines);
+
+	    // for all contours (outlines)
+		for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
+			// prepare access to vertices and indices of glyph
+			if (glyph->outline_lines >= glyph->outline_max_lines) {
+				printf("glyph->outline_max_lines(%u) reached\n", glyph->outline_max_lines);
+				break;
+			}
+			MMS3D_INDEX_ARRAY  *indices  = &glyph->outline_indices[glyph->outline_lines];
+			MMS3D_VERTEX_ARRAY *vertices = &glyph->outline_vertices[glyph->outline_lines];
+
+			// get access to contour data
+			const MMSFTContour *ftcontour = ftv->getContour(c);
+			if (!ftcontour) continue;
+			FT_Vector *outlineVertexList;
+	        char *outlineVertexTags;
+	        unsigned int outlineNumVertices;
+	        outlineNumVertices = ftcontour->getOutlineVertices(&outlineVertexList, &outlineVertexTags);
+
+			// prepare indices
+			// note: no need to allocate index buffer, because vertices are correctly sorted
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+			indices->eNum = 0;
+			indices->buf  = NULL;
+
+			// prepare vertices
+			vertices->eSize = 2;
+			vertices->eNum  = outlineNumVertices;
+			vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+
+			for (unsigned int v = 0; v < outlineNumVertices; v++) {
+				FT_Vector *vertex = &outlineVertexList[v];
+//				vertices->buf[v * vertices->eSize + 0] = (float)((vertex->x+32) - g->metrics.horiBearingX) / 64;
+//				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - (vertex->y-32)) / 64;
+				vertices->buf[v * vertices->eSize + 0] = (float)(vertex->x - g->metrics.horiBearingX) / 64;
+				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex->y) / 64;
+			}
+
+			// next outline
+			glyph->outline_lines++;
+		}
+	}
+
+
 
     // all is successfully done
 	delete ftv;

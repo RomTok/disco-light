@@ -35,6 +35,77 @@
 
 static const unsigned int BEZIER_STEPS = 5;
 
+MMSFTContour::MMSFTContour(FT_Vector *outlineVertexList, char *outlineVertexTags, unsigned int outlineNumVertices) {
+
+	// save input from freetype
+	this->outlineVertexList = outlineVertexList;
+	this->outlineVertexTags = outlineVertexTags;
+	this->outlineNumVertices= outlineNumVertices;
+
+	MMSFTVertex prev, cur(outlineVertexList[(outlineNumVertices - 1) % outlineNumVertices]), next(outlineVertexList[0]);
+    MMSFTVertex a, b = next - cur;
+    double olddir, dir = atan2((next - cur).Y(), (next - cur).X());
+    double angle = 0.0;
+
+    // See http://freetype.sourceforge.net/freetype2/docs/glyphs/glyphs-6.html
+    // for a full description of FreeType tags.
+    for(unsigned int i = 0; i < outlineNumVertices; i++) {
+        prev = cur;
+        cur = next;
+        next = MMSFTVertex(outlineVertexList[(i + 1) % outlineNumVertices]);
+        olddir = dir;
+        dir = atan2((next - cur).Y(), (next - cur).X());
+
+        // Compute our path's new direction.
+        double t = dir - olddir;
+        if(t < -M_PI) t += 2 * M_PI;
+        if(t > M_PI) t -= 2 * M_PI;
+        angle += t;
+
+        // Only process point tags we know.
+        if (outlineNumVertices < 2 || FT_CURVE_TAG(outlineVertexTags[i]) == FT_Curve_Tag_On) {
+            AddVertex(cur);
+        }
+        else
+        if (FT_CURVE_TAG(outlineVertexTags[i]) == FT_Curve_Tag_Conic) {
+            MMSFTVertex prev2 = prev, next2 = next;
+//printf("FT_Curve_Tag_Conic\n");
+            // Previous point is either the real previous point (an "on"
+            // point), or the midpoint between the current one and the
+            // previous "conic off" point.
+            if (FT_CURVE_TAG(outlineVertexTags[(i - 1 + outlineNumVertices) % outlineNumVertices]) == FT_Curve_Tag_Conic) {
+                prev2 = (cur + prev) * 0.5;
+                AddVertex(prev2);
+            }
+
+            // Next point is either the real next point or the midpoint.
+            if(FT_CURVE_TAG(outlineVertexTags[(i + 1) % outlineNumVertices]) == FT_Curve_Tag_Conic) {
+                next2 = (cur + next) * 0.5;
+            }
+
+            evaluateQuadraticCurve(prev2, cur, next2);
+        }
+        else
+        if (FT_CURVE_TAG(outlineVertexTags[i]) == FT_Curve_Tag_Cubic
+          &&FT_CURVE_TAG(outlineVertexTags[(i + 1) % outlineNumVertices]) == FT_Curve_Tag_Cubic) {
+//printf("FT_Curve_Tag_Cubic\n");
+            evaluateCubicCurve(prev, cur, next, MMSFTVertex(outlineVertexList[(i + 2) % outlineNumVertices]));
+        }
+    }
+
+    // If final angle is positive (+2PI), it's an anti-clockwise contour,
+    // otherwise (-2PI) it's clockwise.
+    clockwise = (angle < 0.0);
+}
+
+
+MMSFTContour::~MMSFTContour() {
+    this->vertexList.clear();
+    this->outsetVertexList.clear();
+    this->frontVertexList.clear();
+    this->backVertexList.clear();
+}
+
 
 void MMSFTContour::AddVertex(MMSFTVertex vertex) {
     if(vertexList.empty() || (vertex != vertexList[vertexList.size() - 1] && vertex != vertexList[0])) {
@@ -152,63 +223,6 @@ void MMSFTContour::setParity(int parity) {
 }
 
 
-MMSFTContour::MMSFTContour(FT_Vector* contour, char* tags, unsigned int n) {
-    MMSFTVertex prev, cur(contour[(n - 1) % n]), next(contour[0]);
-    MMSFTVertex a, b = next - cur;
-    double olddir, dir = atan2((next - cur).Y(), (next - cur).X());
-    double angle = 0.0;
-
-    // See http://freetype.sourceforge.net/freetype2/docs/glyphs/glyphs-6.html
-    // for a full description of FreeType tags.
-    for(unsigned int i = 0; i < n; i++) {
-        prev = cur;
-        cur = next;
-        next = MMSFTVertex(contour[(i + 1) % n]);
-        olddir = dir;
-        dir = atan2((next - cur).Y(), (next - cur).X());
-
-        // Compute our path's new direction.
-        double t = dir - olddir;
-        if(t < -M_PI) t += 2 * M_PI;
-        if(t > M_PI) t -= 2 * M_PI;
-        angle += t;
-
-        // Only process point tags we know.
-        if (n < 2 || FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_On) {
-            AddVertex(cur);
-        }
-        else
-        if (FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_Conic) {
-            MMSFTVertex prev2 = prev, next2 = next;
-
-            // Previous point is either the real previous point (an "on"
-            // point), or the midpoint between the current one and the
-            // previous "conic off" point.
-            if (FT_CURVE_TAG(tags[(i - 1 + n) % n]) == FT_Curve_Tag_Conic) {
-                prev2 = (cur + prev) * 0.5;
-                AddVertex(prev2);
-            }
-
-            // Next point is either the real next point or the midpoint.
-            if(FT_CURVE_TAG(tags[(i + 1) % n]) == FT_Curve_Tag_Conic) {
-                next2 = (cur + next) * 0.5;
-            }
-
-            evaluateQuadraticCurve(prev2, cur, next2);
-        }
-        else
-        if (FT_CURVE_TAG(tags[i]) == FT_Curve_Tag_Cubic
-          &&FT_CURVE_TAG(tags[(i + 1) % n]) == FT_Curve_Tag_Cubic) {
-            evaluateCubicCurve(prev, cur, next, MMSFTVertex(contour[(i + 2) % n]));
-        }
-    }
-
-    // If final angle is positive (+2PI), it's an anti-clockwise contour,
-    // otherwise (-2PI) it's clockwise.
-    clockwise = (angle < 0.0);
-}
-
-
 void MMSFTContour::buildFrontOutset(double outset) {
 	for (unsigned int i = 0; i < getVertexCount(); i++) {
 		AddFrontVertex(Vertex(i) + Outset(i) * outset);
@@ -222,3 +236,9 @@ void MMSFTContour::buildBackOutset(double outset) {
 	}
 }
 
+
+unsigned int MMSFTContour::getOutlineVertices(FT_Vector **outlineVertexList, char **outlineVertexTags) const {
+	*outlineVertexList = this->outlineVertexList;
+    *outlineVertexTags = this->outlineVertexTags;
+    return this->outlineNumVertices;
+}

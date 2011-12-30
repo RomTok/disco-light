@@ -38,6 +38,15 @@
 //! container of vertices that describe a vector font outline
 class MMSFTContour {
     private:
+    	//! freetype: outline vertex list
+        FT_Vector	*outlineVertexList;
+
+        //! freetype: outline vertex tags
+        char		*outlineVertexTags;
+
+        //! freetype: number of outline vertices
+        unsigned int outlineNumVertices;
+
         MMSFTVertexVector vertexList;
         MMSFTVertexVector outsetVertexList;
         MMSFTVertexVector frontVertexList;
@@ -59,14 +68,8 @@ class MMSFTContour {
         inline MMSFTVertex ComputeOutsetVertex(MMSFTVertex a, MMSFTVertex b, MMSFTVertex c);
 
 	public:
-        MMSFTContour(FT_Vector *contour, char *vertexTags, unsigned int numberOfVertexs);
-
-        ~MMSFTContour() {
-            vertexList.clear();
-            outsetVertexList.clear();
-            frontVertexList.clear();
-            backVertexList.clear();
-        }
+        MMSFTContour(FT_Vector *outlineVertexList, char *outlineVertexTags, unsigned int outlineNumVertices);
+        ~MMSFTContour();
 
         const MMSFTVertex &Vertex(unsigned int index) const { return vertexList[index]; }
 
@@ -91,6 +94,9 @@ class MMSFTContour {
         // FIXME: should probably go away
         void buildFrontOutset(double outset);
         void buildBackOutset(double outset);
+
+        unsigned int getOutlineVertices(FT_Vector **outlineVertexList, char	**outlineVertexTags) const;
+
 };
 
 #endif /* __MMSFTCONTOUR__ */

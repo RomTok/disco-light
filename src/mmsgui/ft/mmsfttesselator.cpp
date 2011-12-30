@@ -71,25 +71,25 @@ void gluTErrorData(GLenum errCode, MMSFTGlyph *glyph) {
 MMSFTTesselator::MMSFTTesselator(const FT_GlyphSlot glyph) {
     this->glyph = NULL;
     this->contourList = NULL;
-    this->ftContourCount = 0;
+    this->contourCount = 0;
 
 	if (!glyph) return;
 
-	outline = glyph->outline;
+	this->outline = glyph->outline;
 
-	ftContourCount = outline.n_contours;
-	contourList = NULL;
-	contourFlag = outline.flags;
+	this->contourCount= outline.n_contours;
+	this->contourList = NULL;
+	this->contourFlag = outline.flags;
 
 	processContours();
 }
 
 
 MMSFTTesselator::~MMSFTTesselator() {
-    for (unsigned int c = 0; c < this->ftContourCount; c++) {
-        delete contourList[c];
+    for (unsigned int c = 0; c < this->contourCount; c++) {
+        delete this->contourList[c];
     }
-    delete [] contourList;
+    delete [] this->contourList;
     delete this->glyph;
 }
 
@@ -99,9 +99,9 @@ void MMSFTTesselator::processContours() {
     int startIndex = 0;
     int endIndex = 0;
 
-    contourList = new MMSFTContour*[ftContourCount];
+    this->contourList = new MMSFTContour*[this->contourCount];
 
-    for (int i = 0; i < ftContourCount; i++) {
+    for (unsigned int i = 0; i < this->contourCount; i++) {
         FT_Vector* pointList = &outline.points[startIndex];
         char* tagList = &outline.tags[startIndex];
 
@@ -117,8 +117,8 @@ void MMSFTTesselator::processContours() {
 
     // Compute each contour's parity.
     // FIXME: see if FT_Outline_Get_Orientation can do it for us.
-    for (int i = 0; i < ftContourCount; i++) {
-        MMSFTContour *c1 = contourList[i];
+    for (unsigned int i = 0; i < this->contourCount; i++) {
+        MMSFTContour *c1 = this->contourList[i];
 
         // 1. Find the leftmost point.
         MMSFTVertex leftmost(65536.0, 0.0);
@@ -135,10 +135,10 @@ void MMSFTTesselator::processContours() {
         // the left.
         int parity = 0;
 
-        for (int j = 0; j < ftContourCount; j++) {
+        for (unsigned int j = 0; j < this->contourCount; j++) {
             if (j == i) continue;
 
-            MMSFTContour *c2 = contourList[j];
+            MMSFTContour *c2 = this->contourList[j];
 
             for (unsigned int n = 0; n < c2->getVertexCount(); n++) {
                 MMSFTVertex p1 = c2->Vertex(n);
@@ -200,7 +200,7 @@ bool MMSFTTesselator::generateGlyph(double zNormal, int outsetType, float outset
     gluTessNormal(tobj, 0.0f, 0.0f, zNormal);
     gluTessBeginPolygon(tobj, this->glyph);
 
-	for (unsigned int c = 0; c < this->ftContourCount; c++) {
+	for (unsigned int c = 0; c < this->contourCount; c++) {
 		switch(outsetType) {
 			case 1:
 				contourList[c]->buildFrontOutset(outsetSize);
@@ -212,7 +212,7 @@ bool MMSFTTesselator::generateGlyph(double zNormal, int outsetType, float outset
 
 		gluTessBeginContour(tobj);
 
-		for (unsigned int p = 0; p < contour->getVertexCount(); ++p) {
+		for (unsigned int p = 0; p < contour->getVertexCount(); p++) {
 			const double* d;
 			switch(outsetType) {
 				case 1:
@@ -253,3 +253,12 @@ const MMSFTGlyph* const MMSFTTesselator::getGlyph() const {
 	return this->glyph;
 }
 
+unsigned int MMSFTTesselator::getContourCount() {
+	return this->contourCount;
+}
+
+MMSFTContour *MMSFTTesselator::getContour(unsigned int index) {
+	if (!this->contourList) return NULL;
+	if (index >= this->contourCount) return NULL;
+	return this->contourList[index];
+}
