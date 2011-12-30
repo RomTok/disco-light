@@ -2306,19 +2306,40 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	default:
 		break;
 	}
-	glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, indices->buf);
 
-	// print errors
-	switch (indices->type) {
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
-		ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
-		break;
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
-		ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_STRIP,...)");
-		break;
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
-		ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
-		break;
+	if (indices->eNum && indices->buf) {
+		// we have indices
+		glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, indices->buf);
+
+		// print errors
+		switch (indices->type) {
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
+			break;
+		}
+	}
+	else {
+		// indices not available, we assume that we can access buffers without indices
+		glDrawArrays(mode, 0, vertices->eNum);
+
+		// print errors
+		switch (indices->type) {
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
+			break;
+		}
 	}
 
 	return true;
