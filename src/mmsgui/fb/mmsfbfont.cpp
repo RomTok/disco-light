@@ -476,6 +476,7 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 		if (!ftmesh) continue;
 
 		// prepare indices
+		// note: no need to allocate index buffer, because vertices are correctly sorted
 		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
 		switch (ftmesh->getMeshType()) {
 		case GL_TRIANGLES:
@@ -493,16 +494,16 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 			delete ftv;
 			return false;
 		}
-		indices->eNum = ftmesh->getVertexCount();
-		indices->buf  = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		indices->eNum = 0;
+		indices->buf  = NULL;
 
 		// prepare vertices
 		vertices->eSize = 2;
-		vertices->eNum  = indices->eNum;
+		vertices->eNum  = ftmesh->getVertexCount();
 		vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
 		// for all vertices in the polygon
-		for (unsigned int v = 0; v < (unsigned int)indices->eNum; v++) {
+		for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
 			const MMSFTVertex &vertex = ftmesh->getVertex(v);
 			vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
 			vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
@@ -513,8 +514,6 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 
 //			vertices->buf[v * vertices->eSize + 0] = vertices->buf[v * vertices->eSize + 0] * 20;
 //			vertices->buf[v * vertices->eSize + 1] = vertices->buf[v * vertices->eSize + 1] * 20;
-
-			indices->buf[v] = v;
 		}
 
 		// next mesh
