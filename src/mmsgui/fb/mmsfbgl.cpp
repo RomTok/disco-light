@@ -2303,6 +2303,15 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 		mode = GL_TRIANGLE_FAN;
 		break;
+	case MMS3D_INDEX_ARRAY_TYPE_LINES:
+		mode = GL_LINES;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+		mode = GL_LINE_STRIP;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+		mode = GL_LINE_LOOP;
+		break;
 	default:
 		break;
 	}
@@ -2322,6 +2331,15 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
 			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+			ERROR_CHECK_BOOL("glDrawElements(GL_LINES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_LOOP,...)");
+			break;
 		}
 	}
 	else {
@@ -2338,6 +2356,15 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 			break;
 		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_LINES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_LOOP,...)");
 			break;
 		}
 	}

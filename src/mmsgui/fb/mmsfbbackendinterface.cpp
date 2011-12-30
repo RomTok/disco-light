@@ -1191,7 +1191,19 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				for (unsigned int m = 0; m < glyph.meshes; m++) {
 					mmsfbgl.drawElements(&glyph.vertices[m], NULL, NULL, &glyph.indices[m]);
 				}
+/*
+float vbuf[8] = {0.5,0.5, 9.5,0.5, 9.5,9.5, 0.5,9.5};
+MMS3D_VERTEX_ARRAY vertices;
+vertices.eSize=2;
+vertices.eNum=4;
+vertices.buf = vbuf;
 
+MMS3D_INDEX_ARRAY indices;
+indices.type=MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+indices.eNum=0;
+indices.buf=NULL;
+mmsfbgl.drawElements(&vertices, NULL, NULL, &indices);
+*/
 				mmsfbgl.popCurrentMatrix();
 #endif
 			}
