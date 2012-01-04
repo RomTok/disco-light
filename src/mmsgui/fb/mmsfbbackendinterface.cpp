@@ -1179,10 +1179,15 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
 
-				mmsfbgl.setColor(req->surface->config.color.r >> 1,
+/*				mmsfbgl.setColor(req->surface->config.color.r >> 1,
 								 req->surface->config.color.g >> 1,
 								 req->surface->config.color.b >> 1,
-								 req->surface->config.color.a);
+								 req->surface->config.color.a);*/
+				mmsfbgl.setColor(req->surface->config.color.r,
+								 req->surface->config.color.g,
+								 req->surface->config.color.b,
+								 req->surface->config.color.a >> 1);
+				mmsfbgl.enableBlend();
 //mmsfbgl.setColor(0xff,0x00,0x00,0xff);
 
 				// draw primitives: glyph outline
@@ -1195,6 +1200,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 								req->surface->config.color.b,
 								req->surface->config.color.a);
 
+				mmsfbgl.disableBlend();
 
 				// draw primitives: glyph meshes
 				for (unsigned int m = 0; m < glyph.meshes; m++) {
