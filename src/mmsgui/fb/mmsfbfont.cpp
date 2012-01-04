@@ -38,6 +38,8 @@
 #include <ft2build.h>
 #include FT_GLYPH_H
 
+#include <math.h>
+
 // static variables
 pthread_mutex_t	globalLock = PTHREAD_MUTEX_INITIALIZER;
 void *MMSFBFont::ft_library = NULL;
@@ -132,6 +134,23 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 
     	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender / 64;
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender / 64);
+
+/*
+printf("this->ascender = %d (%d), this->descender = %d\n", this->ascender, ((FT_Face)this->ft_face)->size->metrics.ascender, this->descender);
+printf("real ascender = %d, descender = %d, height = %d\n", ((FT_Face)this->ft_face)->ascender/64, ((FT_Face)this->ft_face)->descender/64, ((FT_Face)this->ft_face)->height/64);
+printf("bbox.xMin = %d %d\n", ((FT_Face)this->ft_face)->bbox.xMin, ((FT_Face)this->ft_face)->bbox.xMin / 64);
+printf("bbox.xMax = %d %d\n", ((FT_Face)this->ft_face)->bbox.xMax, ((FT_Face)this->ft_face)->bbox.xMax / 64);
+printf("bbox.yMin = %d %d\n", ((FT_Face)this->ft_face)->bbox.yMin, ((FT_Face)this->ft_face)->bbox.yMin / 64);
+printf("bbox.yMax = %d %d\n", ((FT_Face)this->ft_face)->bbox.yMax, ((FT_Face)this->ft_face)->bbox.yMax / 64);
+printf("units_per_EM = %d\n", ((FT_Face)this->ft_face)->units_per_EM);
+*/
+
+/*		if (((FT_Face)this->ft_face)->units_per_EM == 1000) {
+			// try to correct freetypes ascender and descender if units_per_EM==1000
+			this->ascender = (this->ascender * 1170) / 1000;
+			this->descender= (this->descender* 1170) / 1000;
+		}*/
+
     	this->height = this->ascender + this->descender + 1;
 
     	this->initialized = true;
@@ -283,7 +302,8 @@ void *MMSFBFont::loadFTGlyph(unsigned int character) {
 
 	// load glyph but do NOT render a bitmap
 	if (!FT_Load_Glyph((FT_Face)this->ft_face,
-		FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_DEFAULT | FT_LOAD_FORCE_AUTOHINT
+			FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_DEFAULT
+//			FT_Get_Char_Index((FT_Face)this->ft_face, (FT_ULong)character), FT_LOAD_DEFAULT | FT_LOAD_FORCE_AUTOHINT
 //		| FT_LOAD_TARGET_LIGHT
 //		| FT_LOAD_TARGET_MONO
 //		| FT_LOAD_TARGET_LCD
@@ -293,6 +313,65 @@ void *MMSFBFont::loadFTGlyph(unsigned int character) {
 	} else {
 		MMSFB_SetError(0, "FT_Load_Glyph(,,FT_LOAD_DEFAULT) failed for " + this->filename);
 	}
+/*
+DejaVuSans.ttf
+this->ascender = 62, this->descender = 16
+real ascender = 29, descender = -7, height = 37
+FH=79
+DY=62
+
+left 4 width 45 advanceX 52 top 61 height 62 fonth 79 - 0
+metrics***
+  width        = 2880, 45.00
+  height       = 3904, 61.00
+  horiBearingX = 256, 4.00
+  horiBearingY = 3840, 60.00
+  horiAdvance  = 3392, 53.00
+  vertBearingX = -1408, -22.00
+  vertBearingY = 128, 2.00
+  vertAdvance  = 4224, 66.00
+***metrics
+advance.x    = 3392, 53.00
+advance.y    = 0, 0.00
+bitmap***
+  pitch  = 45
+  width  = 45
+  height = 61
+***bitmap
+bitmap_left = 4
+bitmap_top  = 60
+lsb_delta    = -19
+rsb_delta    = 19
+
+FreeSansBold.ttf
+this->ascender = 53, this->descender = 14
+real ascender = 12, descender = -3, height = 17
+FH=68
+DY=53
+
+left 2 width 47 advanceX 51 top 61 height 63 fonth 68 - 0
+metrics***
+  width        = 2944, 46.00
+  height       = 3968, 62.00
+  horiBearingX = 192, 3.00
+  horiBearingY = 3840, 60.00
+  horiAdvance  = 3264, 51.00
+  vertBearingX = -1472, -23.00
+  vertBearingY = 64, 1.00
+  vertAdvance  = 4224, 66.00
+***metrics
+advance.x    = 3264, 51.00
+advance.y    = 0, 0.00
+bitmap***
+  pitch  = 46
+  width  = 46
+  height = 62
+***bitmap
+bitmap_left = 3
+bitmap_top  = 60
+lsb_delta    = -23
+rsb_delta    = -24
+ */
 
 /*TEST CODE
 	if (!FT_Load_Glyph((FT_Face)this->ft_face,
@@ -391,6 +470,11 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 	glyph->height	= g->bitmap.rows;
 	glyph->advanceX	= g->advance.x / 64;
 
+	/*
+	printf("left %d width %d advanceX %d top %d height %d fonth %d - %d\n",
+			glyph->left, glyph->width, glyph->advanceX, glyph->top, glyph->height, this->height, g->advance.y / 64);
+	*/
+
 	// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
 	if(mmsfb->bei && (g->bitmap.pitch & 3)) {
 		glyph->pitch = (g->bitmap.pitch & ~3) + 4;
@@ -435,6 +519,9 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 #endif
 
 #else
+
+bool with_outline = true;
+
 	// OpenGL is initialized and GLU is available, we create meshes based on freetype outlines
 	MMSFTTesselator *ftv = new MMSFTTesselator(g);
     ftv->generateGlyph();
@@ -454,6 +541,11 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 	glyph->width	= g->metrics.width / 64;
 	glyph->height	= g->metrics.height / 64;
 	glyph->advanceX	= g->advance.x / 64;
+
+	/*
+	printf("left %d width %d advanceX %d top %d height %d fonth %d - %d\n",
+			glyph->left, glyph->width, glyph->advanceX, glyph->top, glyph->height, this->height, g->advance.y / 64);
+	*/
 
 	// init glyph mesh description
 	glyph->max_meshes	= 0;
@@ -540,25 +632,59 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 			const MMSFTVertex &vertex = ftmesh->getVertex(v);
 			vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
 			vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
-//			vertices->buf[v * vertices->eSize + 0] = ((float)(vertex.X() - g->metrics.horiBearingX) * 1000) / 64;
-//			vertices->buf[v * vertices->eSize + 1] = ((float)(g->metrics.horiBearingY - vertex.Y()) * 1000) / 64;
-
-//			printf("%02f, %f\n", vertices->buf[v * vertices->eSize + 0], vertices->buf[v * vertices->eSize + 1]);
-
-//			vertices->buf[v * vertices->eSize + 0] = vertices->buf[v * vertices->eSize + 0] * 20;
-//			vertices->buf[v * vertices->eSize + 1] = vertices->buf[v * vertices->eSize + 1] * 20;
 		}
 
 		// next mesh
 		glyph->meshes++;
 	}
 
-/*glyph->left*=20;
-glyph->width*=20;
-glyph->height*=20;
-glyph->advanceX*=20;*/
+	if (with_outline && ftv->getContourCount() > 0) {
+		// add outline primitives
+		glyph->outline_max_lines = ftv->getContourCount();
+
+	    // allocate base buffer for vertices and indices
+		// we do not need to clear because all fields will be set separately
+		glyph->outline_indices = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * glyph->outline_max_lines);
+		glyph->outline_vertices = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * glyph->outline_max_lines);
+
+	    // for all contours (outlines)
+		for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
+			// prepare access to vertices and indices of glyph
+			if (glyph->outline_lines >= glyph->outline_max_lines) {
+				printf("glyph->outline_max_lines(%u) reached\n", glyph->outline_max_lines);
+				break;
+			}
+			MMS3D_INDEX_ARRAY  *indices  = &glyph->outline_indices[glyph->outline_lines];
+			MMS3D_VERTEX_ARRAY *vertices = &glyph->outline_vertices[glyph->outline_lines];
+
+			// get access to contour data
+			const MMSFTContour *ftcontour = ftv->getContour(c);
+			if (!ftcontour) continue;
+
+			// prepare indices
+			// note: no need to allocate index buffer, because vertices are correctly sorted
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+			indices->eNum = 0;
+			indices->buf  = NULL;
+
+			// prepare vertices
+			vertices->eSize = 2;
+			vertices->eNum  = ftcontour->getVertexCount();
+			vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+
+			for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
+				const MMSFTVertex &vertex = ftcontour->Vertex(v);
+				vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
+				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+			}
+
+			// next outline
+			glyph->outline_lines++;
+		}
+	}
 
 
+#ifdef sdsds // mit dreiecken zieht strom!!!
 	if (ftv->getContourCount() > 0) {
 		// add outline primitives
 		glyph->outline_max_lines = ftv->getContourCount();
@@ -581,36 +707,64 @@ glyph->advanceX*=20;*/
 			// get access to contour data
 			const MMSFTContour *ftcontour = ftv->getContour(c);
 			if (!ftcontour) continue;
-			FT_Vector *outlineVertexList;
-	        char *outlineVertexTags;
-	        unsigned int outlineNumVertices;
-	        outlineNumVertices = ftcontour->getOutlineVertices(&outlineVertexList, &outlineVertexTags);
 
 			// prepare indices
 			// note: no need to allocate index buffer, because vertices are correctly sorted
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
 			indices->eNum = 0;
 			indices->buf  = NULL;
 
 			// prepare vertices
 			vertices->eSize = 2;
-			vertices->eNum  = outlineNumVertices;
+			vertices->eNum  = ftcontour->getVertexCount() * 6;
 			vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
-			for (unsigned int v = 0; v < outlineNumVertices; v++) {
-				FT_Vector *vertex = &outlineVertexList[v];
-//				vertices->buf[v * vertices->eSize + 0] = (float)((vertex->x+32) - g->metrics.horiBearingX) / 64;
-//				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - (vertex->y-32)) / 64;
-				vertices->buf[v * vertices->eSize + 0] = (float)(vertex->x - g->metrics.horiBearingX) / 64;
-				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex->y) / 64;
+			for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
+				const MMSFTVertex &vertex1 = ftcontour->Vertex(v);
+				const MMSFTVertex &outset1 = ftcontour->Outset(v);
+				const MMSFTVertex &vertex2 = ftcontour->Vertex((v+1 < ftcontour->getVertexCount()) ? v+1 : 0);
+				const MMSFTVertex &outset2 = ftcontour->Outset((v+1 < ftcontour->getVertexCount()) ? v+1 : 0);
+
+				unsigned int diffx = abs((vertex2.X() + outset2.X()) - (vertex1.X() + outset1.X()));
+				unsigned int diffy = abs((vertex2.Y() + outset2.Y()) - (vertex1.Y() + outset1.Y()));
+
+				unsigned int ggg=2;
+
+				if (diffx >= diffy) {
+					vertices->buf[v*6 * vertices->eSize + 0] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 1] = (float)(64+g->metrics.horiBearingY - (vertex1.Y() + outset1.Y()/ggg)) / 64;
+					vertices->buf[v*6 * vertices->eSize + 2] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 3] = (float)(64+g->metrics.horiBearingY - vertex1.Y()) / 64;
+					vertices->buf[v*6 * vertices->eSize + 4] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 5] = (float)(64+g->metrics.horiBearingY - vertex2.Y()) / 64;
+					vertices->buf[v*6 * vertices->eSize + 6] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 7] = (float)(64+g->metrics.horiBearingY - (vertex1.Y() + outset1.Y()/ggg)) / 64;
+					vertices->buf[v*6 * vertices->eSize + 8] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 9] = (float)(64+g->metrics.horiBearingY - (vertex2.Y() + outset2.Y()/ggg)) / 64;
+					vertices->buf[v*6 * vertices->eSize +10] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize +11] = (float)(64+g->metrics.horiBearingY - vertex2.Y()) / 64;
+				}
+				else {
+					vertices->buf[v*6 * vertices->eSize + 0] = (float)(64+vertex1.X() - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 1] = (float)(64+g->metrics.horiBearingY - vertex1.Y() + outset1.Y()/ggg) / 64;
+					vertices->buf[v*6 * vertices->eSize + 2] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 3] = (float)(64+g->metrics.horiBearingY - vertex1.Y() + outset1.Y()/ggg) / 64;
+					vertices->buf[v*6 * vertices->eSize + 4] = (float)(64+vertex2.X() - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 5] = (float)(64+g->metrics.horiBearingY - vertex2.Y() + outset2.Y()/ggg) / 64;
+					vertices->buf[v*6 * vertices->eSize + 6] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 7] = (float)(64+g->metrics.horiBearingY - vertex1.Y() + outset1.Y()/ggg) / 64;
+					vertices->buf[v*6 * vertices->eSize + 8] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize + 9] = (float)(64+g->metrics.horiBearingY - vertex2.Y() + outset2.Y()/ggg) / 64;
+					vertices->buf[v*6 * vertices->eSize +10] = (float)(64+vertex2.X() - g->metrics.horiBearingX) / 64;
+					vertices->buf[v*6 * vertices->eSize +11] = (float)(64+g->metrics.horiBearingY - vertex2.Y() + outset2.Y()) / 64;
+				}
 			}
 
 			// next outline
 			glyph->outline_lines++;
 		}
 	}
-
-
+#endif
 
     // all is successfully done
 	delete ftv;

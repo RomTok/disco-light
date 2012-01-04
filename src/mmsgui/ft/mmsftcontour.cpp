@@ -37,11 +37,6 @@ static const unsigned int BEZIER_STEPS = 5;
 
 MMSFTContour::MMSFTContour(FT_Vector *outlineVertexList, char *outlineVertexTags, unsigned int outlineNumVertices) {
 
-	// save input from freetype
-	this->outlineVertexList = outlineVertexList;
-	this->outlineVertexTags = outlineVertexTags;
-	this->outlineNumVertices= outlineNumVertices;
-
 	MMSFTVertex prev, cur(outlineVertexList[(outlineNumVertices - 1) % outlineNumVertices]), next(outlineVertexList[0]);
     MMSFTVertex a, b = next - cur;
     double olddir, dir = atan2((next - cur).Y(), (next - cur).X());
@@ -236,9 +231,3 @@ void MMSFTContour::buildBackOutset(double outset) {
 	}
 }
 
-
-unsigned int MMSFTContour::getOutlineVertices(FT_Vector **outlineVertexList, char **outlineVertexTags) const {
-	*outlineVertexList = this->outlineVertexList;
-    *outlineVertexTags = this->outlineVertexTags;
-    return this->outlineNumVertices;
-}

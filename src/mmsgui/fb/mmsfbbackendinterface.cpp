@@ -1175,30 +1175,26 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
 										dx1, dy1, dx2, dy2);
 #else
-/*				mmsfbgl.setColor(0,0xff,0,0xff);
-				mmsfbgl.fillRectangle2Di(dx1, dy1, dx2, dy2);
-				mmsfbgl.setColor(req->surface->config.color.r,
-								req->surface->config.color.g,
-								req->surface->config.color.b,
-								req->surface->config.color.a);
-*/
 				mmsfbgl.pushCurrentMatrix();
 
 				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
 
-/*
-mmsfbgl.setColor(0,0xff,0,0xff);
+				mmsfbgl.setColor(req->surface->config.color.r >> 1,
+								 req->surface->config.color.g >> 1,
+								 req->surface->config.color.b >> 1,
+								 req->surface->config.color.a);
+//mmsfbgl.setColor(0xff,0x00,0x00,0xff);
 
 				// draw primitives: glyph outline
 				for (unsigned int m = 0; m < glyph.outline_lines; m++) {
 					mmsfbgl.drawElements(&glyph.outline_vertices[m], NULL, NULL, &glyph.outline_indices[m]);
 				}
 
-mmsfbgl.setColor(req->surface->config.color.r,
-				req->surface->config.color.g,
-				req->surface->config.color.b,
-				req->surface->config.color.a);
-*/
+				mmsfbgl.setColor(req->surface->config.color.r,
+								req->surface->config.color.g,
+								req->surface->config.color.b,
+								req->surface->config.color.a);
+
 
 				// draw primitives: glyph meshes
 				for (unsigned int m = 0; m < glyph.meshes; m++) {
