@@ -1133,29 +1133,29 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 	// get subsurface offsets
 	GET_OFFS(req->surface);
 
-	// get vertical font settings
-	int DY = 0, desc = 0;
-	req->surface->config.font->getHeight(&DY);
-	req->surface->config.font->getDescender(&desc);
-	DY -= desc + 1;
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(0 + xoff, 0 + yoff, req->surface->config.w, req->surface->config.h, &crect)) {
+		// inside clipping region
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
-	// for all characters
-	MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {
+		// get vertical font settings
+		int DY = 0, desc = 0;
+		req->surface->config.font->getHeight(&DY);
+		req->surface->config.font->getDescender(&desc);
+		DY -= desc + 1;
 
-		// load the glyph
-		MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(req->surface->config.font, character);
+		// for all characters
+		MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {
 
-		// start rendering of glyph to destination
-		if (glyph_loaded) {
-			// calc destination position of the character
-			int dx = req->x + glyph.left;
-			int dy = req->y + DY - glyph.top;
+			// load the glyph
+			MMSFBSURFACE_BLIT_TEXT_LOAD_GLYPH(req->surface->config.font, character);
 
-			// set the clip to ogl
-			MMSFBRectangle crect;
-			if (req->surface->calcClip(dx + xoff, dy + yoff, src_w, src_h, &crect)) {
-				// inside clipping region
-				OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
+			// start rendering of glyph to destination
+			if (glyph_loaded) {
+				// calc destination position of the character
+				int dx = req->x + glyph.left;
+				int dy = req->y + DY - glyph.top;
 
 				// get source region
 				int sx1 = 0;
@@ -1179,28 +1179,26 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
 
-/*				mmsfbgl.setColor(req->surface->config.color.r >> 1,
-								 req->surface->config.color.g >> 1,
-								 req->surface->config.color.b >> 1,
-								 req->surface->config.color.a);*/
-				mmsfbgl.setColor(req->surface->config.color.r,
-								 req->surface->config.color.g,
-								 req->surface->config.color.b,
-								 req->surface->config.color.a >> 1);
-				mmsfbgl.enableBlend();
-//mmsfbgl.setColor(0xff,0x00,0x00,0xff);
+				if (glyph.outline_lines) {
+					// draw glyph outline
+					mmsfbgl.enableBlend();
+					mmsfbgl.setColor(req->surface->config.color.r,
+									 req->surface->config.color.g,
+									 req->surface->config.color.b,
+									 req->surface->config.color.a >> 1);
 
-				// draw primitives: glyph outline
-				for (unsigned int m = 0; m < glyph.outline_lines; m++) {
-					mmsfbgl.drawElements(&glyph.outline_vertices[m], NULL, NULL, &glyph.outline_indices[m]);
+					// draw primitives: glyph outline
+					for (unsigned int m = 0; m < glyph.outline_lines; m++) {
+						mmsfbgl.drawElements(&glyph.outline_vertices[m], NULL, NULL, &glyph.outline_indices[m]);
+					}
+
+					// reset drawing flags and color
+					mmsfbgl.disableBlend();
+					mmsfbgl.setColor(req->surface->config.color.r,
+									 req->surface->config.color.g,
+									 req->surface->config.color.b,
+									 req->surface->config.color.a);
 				}
-
-				mmsfbgl.setColor(req->surface->config.color.r,
-								req->surface->config.color.g,
-								req->surface->config.color.b,
-								req->surface->config.color.a);
-
-				mmsfbgl.disableBlend();
 
 				// draw primitives: glyph meshes
 				for (unsigned int m = 0; m < glyph.meshes; m++) {
@@ -1209,12 +1207,12 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 				mmsfbgl.popCurrentMatrix();
 #endif
-			}
 
-			// prepare for next loop
-			req->x+=glyph.advanceX;
-		}
-	}}
+				// prepare for next loop
+				req->x+=glyph.advanceX;
+			}
+		}}
+	}
 
 #endif
 }
