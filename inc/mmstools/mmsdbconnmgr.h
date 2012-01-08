@@ -35,17 +35,41 @@
 
 #include "mmstools/interfaces/immsdb.h"
 
-#define DBMS_SQLITE3	"SQLITE3"
-#define DBMS_FREETDS	"FREETDS"
-#define DBMS_MYSQL 		"MYSQL"
+/**
+ * @file mmsdbconnmgr.h
+ *
+ * Header file for MMSDBConnMgr class.
+ *
+ * @ingroup mmstools
+ */
 
+#define DBMS_SQLITE3	"SQLITE3"	/**< Use sqlite3 as database management system. */
+#define DBMS_FREETDS	"FREETDS"	/**< Use freetds as database management system. */
+#define DBMS_MYSQL 		"MYSQL"		/**< Use mysql as database management system.   */
+
+/**
+ * Database connection manager class.
+ *
+ * This is the base class to connect to a configured database.
+ */
 class MMSDBConnMgr {
-       private:
-               DataSource *datasource;
-       public:
-    	   MMSDBConnMgr(DataSource *datasource);
+	public:
+		/**
+		 * Constructor for database connection managers.
+		 *
+		 * @param	datasource	DataSource object, containing database settings
+		 */
+		MMSDBConnMgr(DataSource *datasource);
 
-    	   IMMSDB *getConnection();
+		/**
+		 * Retrieve an interface to a database connection.
+		 *
+		 * @returns	database connection interface
+		 */
+		IMMSDB *getConnection();
+
+	private:
+		DataSource *datasource;		/**< Contains database settings. */
 };
 
 #endif /*MMSDBCONNMGR_H_*/

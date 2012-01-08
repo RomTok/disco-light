@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2011 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -42,27 +42,33 @@
 #include "mmstools/mmsdbfreetds.h"
 #endif
 
-MMSDBConnMgr::MMSDBConnMgr(DataSource *datasource) {
-	this->datasource = datasource;
+/**
+ * @file mmsdbconnmgr.cpp
+ *
+ * Implementation of MMSDBConnMgr class.
+ *
+ * @ingroup mmstools
+ */
+
+MMSDBConnMgr::MMSDBConnMgr(DataSource *datasource) :
+	datasource(datasource) {
 }
 
 IMMSDB *MMSDBConnMgr::getConnection() {
-	#ifdef __ENABLE_SQLITE__
-		if((datasource->getDBMS()==DBMS_SQLITE3) || datasource->getDBMS()=="")
-			return new MMSDBSQLite(datasource);
-	#endif
+#ifdef __ENABLE_SQLITE__
+	if(datasource->getDBMS().empty() || (datasource->getDBMS()==DBMS_SQLITE3))
+		return new MMSDBSQLite(datasource);
+#endif
 
-	#ifdef __ENABLE_MYSQL__
-		if(datasource->getDBMS()==DBMS_MYSQL)
-			return new MMSDBMySQL(datasource);
-	#endif
+#ifdef __ENABLE_MYSQL__
+	if(datasource->getDBMS()==DBMS_MYSQL)
+		return new MMSDBMySQL(datasource);
+#endif
 
-	#ifdef __ENABLE_FREETDS__
-		if(datasource->getDBMS()==DBMS_FREETDS)
-			return new MMSDBFreeTDS(datasource);
-	#endif
+#ifdef __ENABLE_FREETDS__
+	if(datasource->getDBMS()==DBMS_FREETDS)
+		return new MMSDBFreeTDS(datasource);
+#endif
 
 	return NULL;
-
 }
-

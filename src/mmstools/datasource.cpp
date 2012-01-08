@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2011 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -32,6 +32,14 @@
 
 #include "mmstools/datasource.h"
 
+/**
+ * @file datasource.cpp
+ *
+ * Implementation of DataSource class.
+ *
+ * @ingroup mmstools
+ */
+
 DataSource::DataSource(const string _dbms,
     		           const string _dbName,
     			       const string _address,
@@ -44,7 +52,6 @@ DataSource::DataSource(const string _dbms,
     dbName(_dbName),
     user(_user),
     password(_password) {
-
 }
 
 DataSource::DataSource(const DataSource& d) :
@@ -59,7 +66,6 @@ DataSource::DataSource(const DataSource& d) :
 DataSource::~DataSource() {
 
 }
-
 
 void DataSource::setDBMS(const string dbms) {
     this->dbms = dbms;
