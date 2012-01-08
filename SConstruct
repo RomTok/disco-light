@@ -911,8 +911,11 @@ Clean('lib', 'disko.pc')
 #######################################################################
 #  Documentation                                                      #
 #######################################################################
-doxygenBuilder = Builder(action = 'doxygen $SOURCE')
-env.Append(BUILDERS = { 'DoxygenDoc' : doxygenBuilder })
+if env.Detect('doxygen'):
+	doxygenBuilder = Builder(action = 'doxygen $SOURCE')
+else:
+	doxygenBuilder = Builder(action = '@echo "***Error: Please install doxygen to build documentation"')
+env.Append(BUILDERS = { 'DoxygenDoc' : doxygenBuilder })	
 doxygenDocPath = '(doc)'
 env.DoxygenDoc(doxygenDocPath, 'doc/conf/disko.conf')
 env.Alias('doc', doxygenDocPath)
