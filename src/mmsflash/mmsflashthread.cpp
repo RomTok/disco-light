@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2011 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -51,9 +51,9 @@ void MMSFlashThread::threadMain() {
 		this->flash->player(this->stop);
 }
 
-void MMSFlashThread::start(void) {
+bool MMSFlashThread::start(void) {
 	this->started = false;
-	MMSThread::start();
+	return MMSThread::start();
 }
 
 bool MMSFlashThread::isStarted(void) {
