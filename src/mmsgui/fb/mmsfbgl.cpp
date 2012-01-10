@@ -1967,17 +1967,15 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 	enableTexture2D(src_tex);
 
 	// setup vertex array and indices
-	GLfloat vVertices[] = { dx1,  dy1, dz1,  // Position 0
-							sx1,  sy1,        // TexCoord 0
-						    dx2, dy2, dz2,  // Position 1
-							sx2,  sy1,        // TexCoord 1
-							dx3, dy3, dz3,  // Position 2
-							sx2,  sy2,        // TexCoord 2
-							dx4,  dy4, dz4,  // Position 3
-							sx1,  sy2         // TexCoord 3
+	GLfloat vVertices[] = { dx1,  dy1, dz1,	// Position 0
+							sx1,  sy1,		// TexCoord 0
+						    dx2, dy2, dz2,	// Position 1
+							sx2,  sy1,		// TexCoord 1
+							dx3, dy3, dz3,	// Position 2
+							sx2,  sy2,		// TexCoord 2
+							dx4,  dy4, dz4,	// Position 3
+							sx1,  sy2		// TexCoord 3
 						 };
-
-	GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
 #ifdef __HAVE_GL2__
 
@@ -2023,8 +2021,8 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 #endif
 
 	// finally draw the triangles...
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
-	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
 
 	// cleanup
 	disableTexture2D();
@@ -2071,8 +2069,6 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 							sx1, sy2	// TexCoord 3
 						 };
 
-	GLbyte indices[] = { 0, 1, 2, 0, 2, 3 };
-
 	// Load the vertex position
 	glVertexAttribPointer (MMSFBGL_VSV_LOC, 2, GL_FLOAT,
 						   GL_FALSE, 4 * sizeof(GLfloat), vVertices );
@@ -2096,8 +2092,9 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 	glUniform1i(FSTextureLoc, 0);
 	ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc,...)");
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
-	ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
+	// finally draw the triangles...
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
 
 #endif
 
