@@ -1145,6 +1145,14 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 		req->surface->config.font->getDescender(&desc);
 		DY -= desc + 1;
 
+#ifdef __HAVE_GLU__
+		// save and scale current matrix
+		mmsfbgl.pushCurrentMatrix();
+//		mmsfbgl.scaleCurrentMatrix(1, 1, 1);
+		int dx1_save = 0;
+		int dy1_save = 0;
+#endif
+
 		// for all characters
 		MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {
 
@@ -1175,9 +1183,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
 										dx1, dy1, dx2, dy2);
 #else
-				mmsfbgl.pushCurrentMatrix();
-
-				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
+				// move to correct position
+				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
+				dx1_save = dx1;
+				dy1_save = dy1;
 
 				if (glyph.outline_lines) {
 					// draw glyph outline
@@ -1204,14 +1213,17 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				for (unsigned int m = 0; m < glyph.meshes; m++) {
 					mmsfbgl.drawElements(&glyph.vertices[m], NULL, NULL, &glyph.indices[m]);
 				}
-
-				mmsfbgl.popCurrentMatrix();
 #endif
 
 				// prepare for next loop
 				req->x+=glyph.advanceX;
 			}
 		}}
+
+#ifdef __HAVE_GLU__
+		// restore matrix
+		mmsfbgl.popCurrentMatrix();
+#endif
 	}
 
 #endif
