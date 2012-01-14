@@ -109,7 +109,36 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			return;
     	}
 
-    	// set the font size
+    	// check requested width and height
+    	if (w < 0) w = 0;
+    	if (h < 0) h = 0;
+
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+        // we create base meshes and scale up/down to glyph's destination size
+    	int rw = w;
+    	int rh = h;
+    	if (rw && rh) {
+    		float ratio = (float)rw / (float)rh;
+        	h = 100;
+        	w = h * ratio;
+        	if (w == h) w = 0;
+            this->scale_coeff = (float)rh / (float)h;
+    	}
+    	else
+		if (rh) {
+			w = 0;
+	    	h = 100;
+	        this->scale_coeff = (float)rh / (float)h;
+		}
+		else {
+			w = 100;
+	    	h = 0;
+	        this->scale_coeff = (float)rw / (float)w;
+		}
+//    	printf("coeff = %f\n", this->scale_coeff);
+#endif
+
+        // set the font size
     	if (FT_Set_Char_Size((FT_Face)this->ft_face, w << 6, h << 6, 0, 0)) {
     		FT_Done_Face((FT_Face)this->ft_face);
     		this->ft_face = NULL;
@@ -132,26 +161,21 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			return;
     	}
 
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+    	this->ascender = (int)(((float)((FT_Face)this->ft_face)->size->metrics.ascender * this->scale_coeff + 32) / 64);
+    	this->descender = (int)(((float)abs(((FT_Face)this->ft_face)->size->metrics.descender) * this->scale_coeff + 32) / 64);
+#else
     	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender / 64;
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender / 64);
-
-/*
-printf("this->ascender = %d (%d), this->descender = %d\n", this->ascender, ((FT_Face)this->ft_face)->size->metrics.ascender, this->descender);
-printf("real ascender = %d, descender = %d, height = %d\n", ((FT_Face)this->ft_face)->ascender/64, ((FT_Face)this->ft_face)->descender/64, ((FT_Face)this->ft_face)->height/64);
-printf("bbox.xMin = %d %d\n", ((FT_Face)this->ft_face)->bbox.xMin, ((FT_Face)this->ft_face)->bbox.xMin / 64);
-printf("bbox.xMax = %d %d\n", ((FT_Face)this->ft_face)->bbox.xMax, ((FT_Face)this->ft_face)->bbox.xMax / 64);
-printf("bbox.yMin = %d %d\n", ((FT_Face)this->ft_face)->bbox.yMin, ((FT_Face)this->ft_face)->bbox.yMin / 64);
-printf("bbox.yMax = %d %d\n", ((FT_Face)this->ft_face)->bbox.yMax, ((FT_Face)this->ft_face)->bbox.yMax / 64);
-printf("units_per_EM = %d\n", ((FT_Face)this->ft_face)->units_per_EM);
-*/
-
-/*		if (((FT_Face)this->ft_face)->units_per_EM == 1000) {
-			// try to correct freetypes ascender and descender if units_per_EM==1000
-			this->ascender = (this->ascender * 1170) / 1000;
-			this->descender= (this->descender* 1170) / 1000;
-		}*/
+#endif
 
     	this->height = this->ascender + this->descender + 1;
+
+/*
+printf("asc = %d\n", this->ascender);
+printf("des = %d\n", this->descender);
+printf("height = %d\n", this->height);
+*/
 
     	this->initialized = true;
     }
@@ -176,41 +200,12 @@ MMSFBFont::~MMSFBFont() {
 				mmsfb->bei->deleteTexture(glyph->texture);
 #else
 		// release mesh memory
-		if (glyph->indices) {
-			for (unsigned int m = 0; m < glyph->meshes; m++) {
-				MMS3D_INDEX_ARRAY *indices = &glyph->indices[m];
-				if (indices->buf)
-					free(indices->buf);
-			}
-			free(glyph->indices);
-		}
-		if (glyph->vertices) {
-			for (unsigned int m = 0; m < glyph->meshes; m++) {
-				MMS3D_VERTEX_ARRAY *vertices = &glyph->vertices[m];
-				if (vertices->buf)
-					free(vertices->buf);
-			}
-			free(glyph->vertices);
-		}
+		if (glyph->meshes)
+			delete glyph->meshes;
 
 		// release outline memory
-		if (glyph->outline_indices) {
-			for (unsigned int l = 0; l < glyph->outline_lines; l++) {
-				MMS3D_INDEX_ARRAY *indices = &glyph->outline_indices[l];
-				if (indices->buf)
-					free(indices->buf);
-			}
-			free(glyph->outline_indices);
-		}
-		if (glyph->outline_vertices) {
-			for (unsigned int m = 0; m < glyph->outline_lines; m++) {
-				MMS3D_VERTEX_ARRAY *vertices = &glyph->outline_vertices[m];
-				if (vertices->buf)
-					free(vertices->buf);
-			}
-			free(glyph->outline_vertices);
-		}
-
+		if (glyph->outline)
+			delete glyph->outline;
 #endif
 #endif
 
@@ -313,65 +308,6 @@ void *MMSFBFont::loadFTGlyph(unsigned int character) {
 	} else {
 		MMSFB_SetError(0, "FT_Load_Glyph(,,FT_LOAD_DEFAULT) failed for " + this->filename);
 	}
-/*
-DejaVuSans.ttf
-this->ascender = 62, this->descender = 16
-real ascender = 29, descender = -7, height = 37
-FH=79
-DY=62
-
-left 4 width 45 advanceX 52 top 61 height 62 fonth 79 - 0
-metrics***
-  width        = 2880, 45.00
-  height       = 3904, 61.00
-  horiBearingX = 256, 4.00
-  horiBearingY = 3840, 60.00
-  horiAdvance  = 3392, 53.00
-  vertBearingX = -1408, -22.00
-  vertBearingY = 128, 2.00
-  vertAdvance  = 4224, 66.00
-***metrics
-advance.x    = 3392, 53.00
-advance.y    = 0, 0.00
-bitmap***
-  pitch  = 45
-  width  = 45
-  height = 61
-***bitmap
-bitmap_left = 4
-bitmap_top  = 60
-lsb_delta    = -19
-rsb_delta    = 19
-
-FreeSansBold.ttf
-this->ascender = 53, this->descender = 14
-real ascender = 12, descender = -3, height = 17
-FH=68
-DY=53
-
-left 2 width 47 advanceX 51 top 61 height 63 fonth 68 - 0
-metrics***
-  width        = 2944, 46.00
-  height       = 3968, 62.00
-  horiBearingX = 192, 3.00
-  horiBearingY = 3840, 60.00
-  horiAdvance  = 3264, 51.00
-  vertBearingX = -1472, -23.00
-  vertBearingY = 64, 1.00
-  vertAdvance  = 4224, 66.00
-***metrics
-advance.x    = 3264, 51.00
-advance.y    = 0, 0.00
-bitmap***
-  pitch  = 46
-  width  = 46
-  height = 62
-***bitmap
-bitmap_left = 3
-bitmap_top  = 60
-lsb_delta    = -23
-rsb_delta    = -24
- */
 
 /*TEST CODE
 	if (!FT_Load_Glyph((FT_Face)this->ft_face,
@@ -434,9 +370,11 @@ rsb_delta    = -24
 }
 
 
-bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
+bool MMSFBFont::setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph *glyph) {
 	if (!ftg || !glyph) return false;
 	FT_GlyphSlot g = (FT_GlyphSlot)ftg;
+
+	glyph->character = character;
 
 #ifdef __HAVE_OPENGL__
 	if (!mmsfb->bei) {
@@ -520,169 +458,218 @@ bool MMSFBFont::setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph) {
 
 #else
 
+	// OpenGL is initialized and GLU is available, we create meshes based on freetype outlines
+
 bool with_outline = true;
 
-	// OpenGL is initialized and GLU is available, we create meshes based on freetype outlines
-	MMSFTTesselator *ftv = new MMSFTTesselator(g);
-    ftv->generateGlyph();
-    const MMSFTGlyph *ftglyph = ftv->getGlyph();
-    if (!ftglyph) {
-	    // glyph not generated
-		MMSFB_SetError(0, "MMSFTTesselator::generateGlyph() failed");
-		delete ftv;
-		return false;
-    }
-
-    // init glyph basics
-    glyph->buffer	= NULL;
-    glyph->pitch	= 0;
-	glyph->left		= g->metrics.horiBearingX / 64;
-	glyph->top		= g->metrics.horiBearingY / 64;
-	glyph->width	= g->metrics.width / 64;
-	glyph->height	= g->metrics.height / 64;
-	glyph->advanceX	= g->advance.x / 64;
+	// init glyph basics
+	glyph->buffer	= NULL;
+	glyph->pitch	= 0;
+	glyph->left		= (float)g->metrics.horiBearingX * this->scale_coeff;
+	if (glyph->left>= 0) glyph->left = (glyph->left + 32) / 64; else glyph->left = (glyph->left - 32) / 64;
+	glyph->top		= (float)g->metrics.horiBearingY * this->scale_coeff;
+	if (glyph->top >= 0) glyph->top = (glyph->top + 32) / 64; else glyph->top = (glyph->top - 32) / 64;
+	glyph->width	= ((float)g->metrics.width * this->scale_coeff + 32) / 64;
+	glyph->height	= ((float)g->metrics.height * this->scale_coeff + 32) / 64;
+	glyph->advanceX	= ((float)g->advance.x * this->scale_coeff + 32) / 64;
 
 	/*
 	printf("left %d width %d advanceX %d top %d height %d fonth %d - %d\n",
 			glyph->left, glyph->width, glyph->advanceX, glyph->top, glyph->height, this->height, g->advance.y / 64);
 	*/
 
-	// init glyph mesh description
-	glyph->max_meshes	= 0;
-    glyph->meshes		= 0;
-    glyph->indices		= NULL;
-    glyph->vertices		= NULL;
+	// init glyph mesh and outline description
+	glyph->meshes = NULL;
+	glyph->outline = NULL;
 
-    // init glyph outline description
-    glyph->outline_max_lines= 0;
-    glyph->outline_lines	= 0;
-    glyph->outline_indices	= NULL;
-    glyph->outline_vertices	= NULL;
+	// my mesh id
+	string my_mesh_id = iToStr(glyph->character) + "_mesh_" + this->filename;
+	printf("huhu my_mesh_id = %s\n", my_mesh_id.c_str());
+	glyph->meshes = new MMSFBBuffer(my_mesh_id);
 
-	if (!ftglyph->getMeshCount()) {
-		// no meshes available, but o.k. (e.g. space char)
-		delete ftv;
-		return true;
+	if (!with_outline) {
+		// without outline
+		if (glyph->meshes->isInitialized()) {
+			// meshes already initialized
+			printf("huhu meshes already initialized\n");
+			return true;
+		}
 	}
+	else {
+		// my outline id
+		string my_outline_id = iToStr(glyph->character) + "_outline_" + this->filename;
+		printf("huhu my_outline_id = %s\n", my_outline_id.c_str());
+		glyph->outline = new MMSFBBuffer(my_outline_id);
 
-    // count max meshes
-	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
-		if (!ftglyph->getMesh(m)) continue;
-		glyph->max_meshes++;
-		if (glyph->max_meshes >= MMSFBFONT_GLYPH_MAX_MESHES) {
-			printf("MMSFBFONT_GLYPH_MAX_MESHES(%u) reached, %u needed\n", MMSFBFONT_GLYPH_MAX_MESHES, ftglyph->getMeshCount());
+		if (glyph->meshes->isInitialized() && glyph->outline->isInitialized()) {
+			// meshes and outline already initialized
+			printf("huhu meshes and outline already initialized\n");
+			return true;
 		}
 	}
 
-	if (!glyph->max_meshes) {
-		// no meshes available
-		MMSFB_SetError(0, "no meshes available");
-		delete ftv;
-		return false;
-	}
+	// init tesselator
+	MMSFTTesselator *ftv = new MMSFTTesselator(g);
 
-    // allocate base buffer for vertices and indices
-	// we do not need to clear because all fields will be set separately
-	glyph->indices = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * glyph->max_meshes);
-	glyph->vertices = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * glyph->max_meshes);
+	if (!glyph->meshes->isInitialized()) {
+		printf("huhu have to generate meshes\n");
 
-    // for all meshes
-	for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
-		// prepare access to vertices and indices of glyph
-		if (glyph->meshes >= glyph->max_meshes) {
-			printf("glyph->max_meshes(%u) reached\n", glyph->max_meshes);
-			break;
-		}
-		MMS3D_INDEX_ARRAY  *indices  = &glyph->indices[glyph->meshes];
-		MMS3D_VERTEX_ARRAY *vertices = &glyph->vertices[glyph->meshes];
-
-		// get access to polygon data
-		const MMSFTMesh *ftmesh = ftglyph->getMesh(m);
-		if (!ftmesh) continue;
-
-		// prepare indices
-		// note: no need to allocate index buffer, because vertices are correctly sorted
-		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
-		switch (ftmesh->getMeshType()) {
-		case GL_TRIANGLES:
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
-			break;
-		case GL_TRIANGLE_STRIP:
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
-			break;
-		case GL_TRIANGLE_FAN:
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN;
-			break;
-		default:
-			// unsupported type
-			printf("MMSFBFont: unsupported mesh type %u\n", ftmesh->getMeshType());
+		ftv->generateGlyph();
+		const MMSFTGlyph *ftglyph = ftv->getGlyph();
+		if (!ftglyph) {
+			// glyph not generated
+			MMSFB_SetError(0, "MMSFTTesselator::generateGlyph() failed");
 			delete ftv;
 			return false;
 		}
-		indices->eNum = 0;
-		indices->buf  = NULL;
 
-		// prepare vertices
-		vertices->eSize = 2;
-		vertices->eNum  = ftmesh->getVertexCount();
-		vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
-
-		// for all vertices in the polygon
-		for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
-			const MMSFTVertex &vertex = ftmesh->getVertex(v);
-			vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
-			vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+		if (!ftglyph->getMeshCount()) {
+			// no meshes available, but o.k. (e.g. space char)
+			delete ftv;
+			return true;
 		}
 
-		// next mesh
-		glyph->meshes++;
-	}
+		// count max meshes
+		unsigned short int max_meshes = 0;
+		for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
+			if (!ftglyph->getMesh(m)) continue;
+			max_meshes++;
+			if (max_meshes >= MMSFBFONT_GLYPH_MAX_MESHES) {
+				printf("MMSFBFONT_GLYPH_MAX_MESHES(%u) reached, %u needed\n", MMSFBFONT_GLYPH_MAX_MESHES, ftglyph->getMeshCount());
+			}
+		}
 
-	if (with_outline && ftv->getContourCount() > 0) {
-		// add outline primitives
-		glyph->outline_max_lines = ftv->getContourCount();
+		if (!max_meshes) {
+			// no meshes available
+			MMSFB_SetError(0, "no meshes available");
+			delete ftv;
+			return false;
+		}
 
-	    // allocate base buffer for vertices and indices
+		// allocate base buffer for vertices and indices
 		// we do not need to clear because all fields will be set separately
-		glyph->outline_indices = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * glyph->outline_max_lines);
-		glyph->outline_vertices = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * glyph->outline_max_lines);
+		MMSFBBuffer::INDEX_BUFFER index_buffer;
+		MMSFBBuffer::VERTEX_BUFFER vertex_buffer;
+		index_buffer.num_arrays = 0;
+		index_buffer.max_arrays = max_meshes;
+		index_buffer.arrays = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * index_buffer.max_arrays);
+		vertex_buffer.num_arrays = 0;
+		vertex_buffer.max_arrays = max_meshes;
+		vertex_buffer.arrays = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * vertex_buffer.max_arrays);
 
-	    // for all contours (outlines)
-		for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
+		// for all meshes
+		for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
 			// prepare access to vertices and indices of glyph
-			if (glyph->outline_lines >= glyph->outline_max_lines) {
-				printf("glyph->outline_max_lines(%u) reached\n", glyph->outline_max_lines);
+			if (index_buffer.num_arrays >= max_meshes) {
+				printf("max_meshes(%u) reached\n", max_meshes);
 				break;
 			}
-			MMS3D_INDEX_ARRAY  *indices  = &glyph->outline_indices[glyph->outline_lines];
-			MMS3D_VERTEX_ARRAY *vertices = &glyph->outline_vertices[glyph->outline_lines];
+			MMS3D_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
+			MMS3D_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
 
-			// get access to contour data
-			const MMSFTContour *ftcontour = ftv->getContour(c);
-			if (!ftcontour) continue;
+			// get access to polygon data
+			const MMSFTMesh *ftmesh = ftglyph->getMesh(m);
+			if (!ftmesh) continue;
 
 			// prepare indices
 			// note: no need to allocate index buffer, because vertices are correctly sorted
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+			switch (ftmesh->getMeshType()) {
+			case GL_TRIANGLES:
+				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+				break;
+			case GL_TRIANGLE_STRIP:
+				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+				break;
+			case GL_TRIANGLE_FAN:
+				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN;
+				break;
+			default:
+				// unsupported type
+				printf("MMSFBFont: unsupported mesh type %u\n", ftmesh->getMeshType());
+				delete ftv;
+				return false;
+			}
 			indices->eNum = 0;
 			indices->buf  = NULL;
 
 			// prepare vertices
 			vertices->eSize = 2;
-			vertices->eNum  = ftcontour->getVertexCount();
+			vertices->eNum  = ftmesh->getVertexCount();
 			vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
-			for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
-				const MMSFTVertex &vertex = ftcontour->Vertex(v);
+			// for all vertices in the polygon
+			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
+				const MMSFTVertex &vertex = ftmesh->getVertex(v);
 				vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
 				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
 			}
 
-			// next outline
-			glyph->outline_lines++;
+			// next mesh
+			index_buffer.num_arrays++;
+			vertex_buffer.num_arrays++;
 		}
+
+		glyph->meshes->initBuffer(index_buffer, vertex_buffer);
 	}
 
+	if (with_outline && ftv->getContourCount() > 0) {
+		if (!glyph->outline->isInitialized()) {
+			printf("huhu have to generate outline\n");
+
+			// add outline primitives
+			unsigned short int max_outlines = ftv->getContourCount();
+
+			// allocate base buffer for vertices and indices
+			// we do not need to clear because all fields will be set separately
+			MMSFBBuffer::INDEX_BUFFER index_buffer;
+			MMSFBBuffer::VERTEX_BUFFER vertex_buffer;
+			index_buffer.num_arrays = 0;
+			index_buffer.max_arrays = max_outlines;
+			index_buffer.arrays = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * index_buffer.max_arrays);
+			vertex_buffer.num_arrays = 0;
+			vertex_buffer.max_arrays = max_outlines;
+			vertex_buffer.arrays = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * vertex_buffer.max_arrays);
+
+			// for all contours (outlines)
+			for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
+				// prepare access to vertices and indices of glyph
+				if (index_buffer.num_arrays >= max_outlines) {
+					printf("max_outlines(%u) reached\n", max_outlines);
+					break;
+				}
+				MMS3D_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
+				MMS3D_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
+
+				// get access to contour data
+				const MMSFTContour *ftcontour = ftv->getContour(c);
+				if (!ftcontour) continue;
+
+				// prepare indices
+				// note: no need to allocate index buffer, because vertices are correctly sorted
+				indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+				indices->eNum = 0;
+				indices->buf  = NULL;
+
+				// prepare vertices
+				vertices->eSize = 2;
+				vertices->eNum  = ftcontour->getVertexCount();
+				vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+
+				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
+					const MMSFTVertex &vertex = ftcontour->Vertex(v);
+					vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
+					vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+				}
+
+				// next outline
+				index_buffer.num_arrays++;
+				vertex_buffer.num_arrays++;
+			}
+
+			glyph->outline->initBuffer(index_buffer, vertex_buffer);
+		}
+	}
 
 #ifdef sdsds // mit dreiecken zieht strom!!!
 	if (ftv->getContourCount() > 0) {
@@ -806,7 +793,7 @@ bool MMSFBFont::getGlyph(unsigned int character, MMSFBFont_Glyph *glyph) {
 			}
 
 			// setup glyph values
-			if (!setupFTGlyph(g, glyph)) {
+			if (!setupFTGlyph(character, g, glyph)) {
 				// failed to setup glyph
 				unlock();
 				return false;
@@ -901,7 +888,7 @@ bool MMSFBFont::getDescender(int *descender) {
     // check if initialized
     INITCHECK;
 
-    // get the ascender of the font
+    // get the descender of the font
 #ifdef __HAVE_DIRECTFB__
     if (this->dfbfont) {
 	}
@@ -912,4 +899,16 @@ bool MMSFBFont::getDescender(int *descender) {
 		return true;
 	}
 	return false;
+}
+
+bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
+    // check if initialized
+    INITCHECK;
+
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+	*scale_coeff = this->scale_coeff;
+	return true;
+#else
+	return false;
+#endif
 }

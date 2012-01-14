@@ -1139,19 +1139,21 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
 
+#ifdef __HAVE_GLU__
+		// save and scale current matrix
+		mmsfbgl.pushCurrentMatrix();
+		float scale_coeff = 1.0f;
+		if (req->surface->config.font->getScaleCoeff(&scale_coeff))
+			mmsfbgl.scaleCurrentMatrix(scale_coeff, scale_coeff, 1);
+		int dx1_save = 0;
+		int dy1_save = 0;
+#endif
+
 		// get vertical font settings
 		int DY = 0, desc = 0;
 		req->surface->config.font->getHeight(&DY);
 		req->surface->config.font->getDescender(&desc);
 		DY -= desc + 1;
-
-#ifdef __HAVE_GLU__
-		// save and scale current matrix
-		mmsfbgl.pushCurrentMatrix();
-//		mmsfbgl.scaleCurrentMatrix(1, 1, 1);
-		int dx1_save = 0;
-		int dy1_save = 0;
-#endif
 
 		// for all characters
 		MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {
@@ -1165,12 +1167,6 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dx = req->x + glyph.left;
 				int dy = req->y + DY - glyph.top;
 
-				// get source region
-				int sx1 = 0;
-				int sy1 = 0;
-				int sx2 = src_w - 1;
-				int sy2 = src_h - 1;
-
 				// get destination region
 				int dx1 = dx + xoff;
 				int dy1 = dy + yoff;
@@ -1178,45 +1174,60 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dy2 = dy + src_h - 1 + yoff;
 
 #ifndef __HAVE_GLU__
+				// get source region
+				int sx1 = 0;
+				int sy1 = 0;
+				int sx2 = src_w - 1;
+				int sy2 = src_h - 1;
+
 				// blit glyph texture to the destination
 				mmsfbgl.stretchBliti(glyph.texture,
 										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
 										dx1, dy1, dx2, dy2);
 #else
 				// move to correct position
+				dx1 = ((float)dx1 + 0.5f) / scale_coeff;
+				dy1 = ((float)dy1 + 0.5f) / scale_coeff;
 				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
 				dx1_save = dx1;
 				dy1_save = dy1;
 
-				if (glyph.outline_lines) {
-					// draw glyph outline
-					mmsfbgl.enableBlend();
-					mmsfbgl.setColor(req->surface->config.color.r,
-									 req->surface->config.color.g,
-									 req->surface->config.color.b,
-									 req->surface->config.color.a >> 1);
+				MMSFBBuffer::INDEX_BUFFER *index_buffer;
+				MMSFBBuffer::VERTEX_BUFFER *vertex_buffer;
 
-					// draw primitives: glyph outline
-					for (unsigned int m = 0; m < glyph.outline_lines; m++) {
-						mmsfbgl.drawElements(&glyph.outline_vertices[m], NULL, NULL, &glyph.outline_indices[m]);
+				if (glyph.outline && glyph.outline->getBuffer(&index_buffer, &vertex_buffer)) {
+					if (index_buffer->num_arrays) {
+						// draw glyph outline
+						mmsfbgl.enableBlend();
+						mmsfbgl.setColor(req->surface->config.color.r,
+										 req->surface->config.color.g,
+										 req->surface->config.color.b,
+										 req->surface->config.color.a >> 1);
+
+						// draw primitives: glyph outline
+						for (unsigned int m = 0; m < index_buffer->num_arrays; m++) {
+							mmsfbgl.drawElements(&vertex_buffer->arrays[m], NULL, NULL, &index_buffer->arrays[m]);
+						}
+
+						// reset drawing flags and color
+						mmsfbgl.disableBlend();
+						mmsfbgl.setColor(req->surface->config.color.r,
+										 req->surface->config.color.g,
+										 req->surface->config.color.b,
+										 req->surface->config.color.a);
 					}
-
-					// reset drawing flags and color
-					mmsfbgl.disableBlend();
-					mmsfbgl.setColor(req->surface->config.color.r,
-									 req->surface->config.color.g,
-									 req->surface->config.color.b,
-									 req->surface->config.color.a);
 				}
 
-				// draw primitives: glyph meshes
-				for (unsigned int m = 0; m < glyph.meshes; m++) {
-					mmsfbgl.drawElements(&glyph.vertices[m], NULL, NULL, &glyph.indices[m]);
+				if (glyph.meshes && glyph.meshes->getBuffer(&index_buffer, &vertex_buffer)) {
+					// draw primitives: glyph meshes
+					for (unsigned int m = 0; m < index_buffer->num_arrays; m++) {
+						mmsfbgl.drawElements(&vertex_buffer->arrays[m], NULL, NULL, &index_buffer->arrays[m]);
+					}
 				}
 #endif
 
 				// prepare for next loop
-				req->x+=glyph.advanceX;
+				req->x+= glyph.advanceX;
 			}
 		}}
 

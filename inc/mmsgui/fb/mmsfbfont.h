@@ -34,6 +34,7 @@
 #define MMSFBFONT_H_
 
 #include "mmsgui/fb/mmsfbbase.h"
+#include "mmsgui/fb/mmsfbbuffer.h"
 
 #ifdef __HAVE_GLU__
 #define MMSFBFONT_GLYPH_MAX_MESHES	512
@@ -41,6 +42,8 @@
 
 //! descibes a loaded glyph
 typedef struct {
+	//! character code
+	unsigned int	character;
 	//! pointer to bitmap data
 	unsigned char	*buffer;
 	//! pitch in byte of one row in the bitmap buffer
@@ -63,20 +66,8 @@ typedef struct {
 #else
 	//! OpenGL primitives for this glyph, we convert outlines from freetype using GLU tesselator
 	//! note: text rendering based on primitives can be more than two times faster
-	MMS3D_INDEX_ARRAY   *indices;
-	//! vertex data
-	MMS3D_VERTEX_ARRAY  *vertices;
-	//! maximum number of meshes
-	unsigned short int	max_meshes;
-	//! meshes which are initialized
-	unsigned short int	meshes;
-
-
-	MMS3D_INDEX_ARRAY   *outline_indices;
-	MMS3D_VERTEX_ARRAY  *outline_vertices;
-	unsigned short int	outline_max_lines;
-	unsigned short int	outline_lines;
-
+	MMSFBBuffer	*meshes;
+	MMSFBBuffer	*outline;
 #endif
 #endif
 } MMSFBFont_Glyph;
@@ -107,6 +98,11 @@ class MMSFBFont {
         //! font file
         string 	filename;
 
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+        //! scale coefficient
+        float	scale_coeff;
+#endif
+
     	//! ascender
     	int 	ascender;
 
@@ -126,7 +122,7 @@ class MMSFBFont {
         void unlock();
 
         void *loadFTGlyph(unsigned int character);
-        bool setupFTGlyph(void *ftg, MMSFBFont_Glyph *glyph);
+        bool setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph *glyph);
 
     public:
         MMSFBFont(string filename, int w, int h);
@@ -139,6 +135,8 @@ class MMSFBFont {
 
         bool getAscender(int *ascender);
         bool getDescender(int *descender);
+
+        bool getScaleCoeff(float *scale_coeff);
 
         bool getGlyph(unsigned int character, MMSFBFont_Glyph *glyph);
 
