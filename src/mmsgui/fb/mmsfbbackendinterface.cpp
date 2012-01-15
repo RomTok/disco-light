@@ -916,6 +916,26 @@ void MMSFBBackEndInterface::processBlit(BEI_BLIT *req) {
 			printf("skip blitting from texture which is not initialized\n");
 		}
 	}
+
+
+
+/*	// set ogl clip
+	OGL_SCISSOR(req->surface, req->x, req->y, req->src_rect.w, req->src_rect.h);
+printf("src: %d,%d,%d,%d %d,%d\n", req->src_rect.x, req->src_rect.y, req->src_rect.w, req->src_rect.h,req->source->config.w, req->source->config.h);
+
+//((!surface->is_sub_surface && surface->config.surface_buffer && surface->config.surface_buffer->ogl_unchanged_depth_buffer) \
+//||(surface->is_sub_surface && surface->root_parent->config.surface_buffer && surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer))
+
+	if (req->source->config.surface_buffer->ogl_tex_initialized) {
+		// blit source texture to the destination
+		mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
+					req->src_rect.x, req->src_rect.y, req->src_rect.x + req->src_rect.w - 1, req->src_rect.y + req->src_rect.h - 1,
+					req->source->config.w, req->source->config.h,
+					req->x, req->y, req->x + req->src_rect.w - 1, req->y + req->src_rect.h - 1);
+	}
+	else {
+		printf("skip blitting from texture which is not initialized\n");
+	}*/
 #endif
 }
 
