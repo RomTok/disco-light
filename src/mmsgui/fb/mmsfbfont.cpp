@@ -849,7 +849,13 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     	MMSFBFONT_GET_UNICODE_CHAR(text, len) {
     		MMSFBFont_Glyph glyph;
     		if (!getGlyph(character, &glyph)) break;
-			(*width)+=glyph.advanceX;
+
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+    	// have to calculate advanceX because of scale coefficient
+    	(*width)+= (int)((float)glyph.advanceX * this->scale_coeff + 0.5f);
+#else
+		(*width)+= glyph.advanceX;
+#endif
     	} }
     	return true;
     }
@@ -869,7 +875,14 @@ bool MMSFBFont::getHeight(int *height) {
     } else
 #endif
 	{
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+    	// have to calculate height because of scale coefficient
+		int asc = (int)((float)this->ascender * this->scale_coeff + 0.5f);
+		int des = (int)((float)this->descender * this->scale_coeff + 0.5f);
+		*height = asc + des + 1;
+#else
     	*height = this->height;
+#endif
     	return true;
     }
     return false;
@@ -885,7 +898,12 @@ bool MMSFBFont::getAscender(int *ascender) {
 	} else
 #endif
 	{
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+    	// have to calculate ascender because of scale coefficient
+		*ascender = (int)((float)this->ascender * this->scale_coeff + 0.5f);
+#else
 		*ascender = this->ascender;
+#endif
 		return true;
 	}
 	return false;
@@ -902,7 +920,12 @@ bool MMSFBFont::getDescender(int *descender) {
 	else
 #endif
 	{
+#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+    	// have to calculate descender because of scale coefficient
+		*descender = (int)((float)this->descender * this->scale_coeff + 0.5f);
+#else
 		*descender = this->descender;
+#endif
 		return true;
 	}
 	return false;

@@ -1198,10 +1198,12 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #endif
 
 		// get vertical font settings
-		int DY = 0, desc = 0;
-		req->surface->config.font->getHeight(&DY);
-		req->surface->config.font->getDescender(&desc);
-		DY -= desc + 1;
+		int DY = 0;//, desc = 0;
+//		req->surface->config.font->getHeight(&DY);
+//		req->surface->config.font->getDescender(&desc);
+//		DY -= desc + 1;
+		DY = req->surface->config.font->height;
+		DY -= req->surface->config.font->descender + 1;
 
 		// for all characters
 		MMSFBFONT_GET_UNICODE_CHAR(req->text, req->len) {

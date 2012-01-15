@@ -140,7 +140,8 @@ class MMSFBFont {
 
         bool getGlyph(unsigned int character, MMSFBFont_Glyph *glyph);
 
-	friend class MMSFBSurface;
+    	friend class MMSFBSurface;
+    	friend class MMSFBBackEndInterface;
 };
 
 #define MMSFBFONT_GET_UNICODE_CHAR(text, len) \
