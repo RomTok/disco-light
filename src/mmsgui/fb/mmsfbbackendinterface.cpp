@@ -1212,8 +1212,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 			// start rendering of glyph to destination
 			if (glyph_loaded) {
 				// calc destination position of the character
+/*				int dx = req->x + glyph.left;
+				int dy = req->y + DY - glyph.top;*/
 				int dx = req->x + glyph.left;
-				int dy = req->y + DY - glyph.top;
+				int dy = (float)req->y / scale_coeff + DY - glyph.top;
 
 				// get destination region
 				int dx1 = dx + xoff;
@@ -1234,8 +1236,8 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 										dx1, dy1, dx2, dy2);
 #else
 				// move to correct position
-				dx1 = ((float)dx1 + 0.5f) / scale_coeff;
-				dy1 = ((float)dy1 + 0.5f) / scale_coeff;
+/*				dx1 = ((float)dx1 + 0.5f) / scale_coeff;
+				dy1 = ((float)dy1 + 0.5f) / scale_coeff;*/
 				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
 				dx1_save = dx1;
 				dy1_save = dy1;

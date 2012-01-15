@@ -161,13 +161,13 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			return;
     	}
 
-#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
+/*#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
     	this->ascender = (int)(((float)((FT_Face)this->ft_face)->size->metrics.ascender * this->scale_coeff + 32) / 64);
     	this->descender = (int)(((float)abs(((FT_Face)this->ft_face)->size->metrics.descender) * this->scale_coeff + 32) / 64);
-#else
+#else*/
     	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender / 64;
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender / 64);
-#endif
+//#endif
 
     	this->height = this->ascender + this->descender + 1;
 
@@ -465,13 +465,20 @@ bool with_outline = true;
 	// init glyph basics
 	glyph->buffer	= NULL;
 	glyph->pitch	= 0;
-	glyph->left		= (float)g->metrics.horiBearingX * this->scale_coeff;
+/*	glyph->left		= (float)g->metrics.horiBearingX * this->scale_coeff;
 	if (glyph->left>= 0) glyph->left = (glyph->left + 32) / 64; else glyph->left = (glyph->left - 32) / 64;
 	glyph->top		= (float)g->metrics.horiBearingY * this->scale_coeff;
 	if (glyph->top >= 0) glyph->top = (glyph->top + 32) / 64; else glyph->top = (glyph->top - 32) / 64;
 	glyph->width	= ((float)g->metrics.width * this->scale_coeff + 32) / 64;
 	glyph->height	= ((float)g->metrics.height * this->scale_coeff + 32) / 64;
 	glyph->advanceX	= ((float)g->advance.x * this->scale_coeff + 32) / 64;
+*/
+
+	glyph->left		= g->metrics.horiBearingX / 64;
+	glyph->top		= g->metrics.horiBearingY / 64;
+	glyph->width	= g->metrics.width / 64;
+	glyph->height	= g->metrics.height / 64;
+	glyph->advanceX	= g->advance.x / 64;
 
 	/*
 	printf("left %d width %d advanceX %d top %d height %d fonth %d - %d\n",
