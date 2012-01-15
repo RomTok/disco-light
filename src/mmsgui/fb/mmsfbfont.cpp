@@ -484,26 +484,26 @@ bool with_outline = true;
 
 	// my mesh id
 	string my_mesh_id = iToStr(glyph->character) + "_mesh_" + this->filename;
-	printf("huhu my_mesh_id = %s\n", my_mesh_id.c_str());
+//	printf("MMSFBFont: my_mesh_id = %s\n", my_mesh_id.c_str());
 	glyph->meshes = new MMSFBBuffer(my_mesh_id);
 
 	if (!with_outline) {
 		// without outline
 		if (glyph->meshes->isInitialized()) {
 			// meshes already initialized
-			printf("huhu meshes already initialized\n");
+//			printf("MMSFBFont: meshes already initialized\n");
 			return true;
 		}
 	}
 	else {
 		// my outline id
 		string my_outline_id = iToStr(glyph->character) + "_outline_" + this->filename;
-		printf("huhu my_outline_id = %s\n", my_outline_id.c_str());
+//		printf("MMSFBFont: my_outline_id = %s\n", my_outline_id.c_str());
 		glyph->outline = new MMSFBBuffer(my_outline_id);
 
 		if (glyph->meshes->isInitialized() && glyph->outline->isInitialized()) {
 			// meshes and outline already initialized
-			printf("huhu meshes and outline already initialized\n");
+//			printf("MMSFBFont: meshes and outline already initialized\n");
 			return true;
 		}
 	}
@@ -512,7 +512,7 @@ bool with_outline = true;
 	MMSFTTesselator *ftv = new MMSFTTesselator(g);
 
 	if (!glyph->meshes->isInitialized()) {
-		printf("huhu have to generate meshes\n");
+//		printf("MMSFBFont: have to generate meshes\n");
 
 		ftv->generateGlyph();
 		const MMSFTGlyph *ftglyph = ftv->getGlyph();
@@ -615,7 +615,7 @@ bool with_outline = true;
 
 	if (with_outline && ftv->getContourCount() > 0) {
 		if (!glyph->outline->isInitialized()) {
-			printf("huhu have to generate outline\n");
+//			printf("MMSFBFont: have to generate outline\n");
 
 			// add outline primitives
 			unsigned short int max_outlines = ftv->getContourCount();
