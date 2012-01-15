@@ -4471,8 +4471,10 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
 	// finalize previous clear
 	finClear((MMSFBSURFACE_WRITE_BUFFER(this).opaque) ? &crect: NULL);
 
-	if (this->allocated_by != MMSFBSurfaceAllocatedBy_dfb) {
+	if (this->allocated_by != MMSFBSurfaceAllocatedBy_dfb
+	  &&this->allocated_by != MMSFBSurfaceAllocatedBy_ogl) {
 		//TODO: implement changes for dfb too
+		//TODO: building lot for ogl too
 
 		// prepare source rectangle
 		if (source->is_sub_surface) {

@@ -50,12 +50,15 @@
 			yoff = surface->sub_surface_yoff; }
 
 #define GET_OFFS_SRC(surface) \
-		int src_xoff = 0; int src_yoff = 0; \
+		int src_xoff = 0; \
+		int src_yoff = 0; \
+		int src_rootw = surface->config.w; \
+		int src_rooth = surface->config.h; \
 		if (surface->is_sub_surface) { \
 			src_xoff = surface->sub_surface_xoff; \
-			src_yoff = surface->sub_surface_yoff; }
-
-
+			src_yoff = surface->sub_surface_yoff; \
+			src_rootw = surface->root_parent->config.w; \
+			src_rooth = surface->root_parent->config.h; }
 
 
 
@@ -881,18 +884,37 @@ void MMSFBBackEndInterface::processBlit(BEI_BLIT *req) {
 	// setup blitting
 	INIT_OGL_BLITTING(req->surface, req->blittingflags);
 
-	// set ogl clip
-	OGL_SCISSOR(req->surface, req->x, req->y, req->src_rect.w, req->src_rect.h);
+	// get subsurface offsets
+	GET_OFFS(req->surface);
+	GET_OFFS_SRC(req->source);
 
-	if (req->source->config.surface_buffer->ogl_tex_initialized) {
-		// blit source texture to the destination
-		mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
-					req->src_rect.x, req->src_rect.y, req->src_rect.x + req->src_rect.w - 1, req->src_rect.y + req->src_rect.h - 1,
-					req->source->config.w, req->source->config.h,
-					req->x, req->y, req->x + req->src_rect.w - 1, req->y + req->src_rect.h - 1);
-	}
-	else {
-		printf("skip blitting from texture which is not initialized\n");
+	// set the clip to ogl
+	MMSFBRectangle crect;
+	if (req->surface->calcClip(req->x + xoff, req->y + yoff, req->src_rect.w, req->src_rect.h, &crect)) {
+		// inside clipping region
+		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
+
+		// get source region
+		int sx1 = req->src_rect.x + src_xoff;
+		int sy1 = req->src_rect.y + src_yoff;
+		int sx2 = req->src_rect.x + req->src_rect.w - 1 + src_xoff;
+		int sy2 = req->src_rect.y + req->src_rect.h - 1 + src_yoff;
+
+		// get destination region
+		int dx1 = req->x + xoff;
+		int dy1 = req->y + yoff;
+		int dx2 = req->x + req->src_rect.w - 1 + xoff;
+		int dy2 = req->y + req->src_rect.h - 1 + yoff;
+
+		if (req->source->config.surface_buffer->ogl_tex_initialized) {
+			// blit source texture to the destination
+			mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
+						sx1, sy1, sx2, sy2, src_rootw, src_rooth,
+						dx1, dy1, dx2, dy2);
+		}
+		else {
+			printf("skip blitting from texture which is not initialized\n");
+		}
 	}
 #endif
 }
@@ -942,7 +964,7 @@ void MMSFBBackEndInterface::processStretchBlit(BEI_STRETCHBLIT *req) {
 		if (req->source->config.surface_buffer->ogl_tex_initialized) {
 			// blit source texture to the destination
 			mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
-						sx1, sy1, sx2, sy2, req->source->config.w, req->source->config.h,
+						sx1, sy1, sx2, sy2, src_rootw, src_rooth,
 						dx1, dy1, dx2, dy2);
 		}
 		else {
