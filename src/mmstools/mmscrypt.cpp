@@ -31,6 +31,15 @@
  **************************************************************************/
 
 #ifdef __HAVE_MMSCRYPT__
+
+/**
+ * @file mmscrypt.cpp
+ *
+ * Implementation of MMSCrypt class.
+ *
+ * @ingroup mmstools
+ */
+
 #include <errno.h>
 #include <string.h>
 #include <openssl/rand.h>
@@ -39,16 +48,6 @@
 #include "mmstools/mmscrypt.h"
 #include "mmstools/mmsfile.h"
 
-/**
- * Creates an SSL key that will be saved in the given file.
- *
- * @param	keyfile		save encrypted key to this file
- * @return  unencrypted key (NULL if error occured)
- *
- * @note	The memory for the returned key has to be freed.
- *
- * @see		MMSCrypt::getUserKey()
-*/
 unsigned char* MMSCrypt::createUserKey(string keyfile) {
     MMSFile        *file;
     unsigned char  *userKey, *userKeyEnc;
@@ -73,20 +72,6 @@ unsigned char* MMSCrypt::createUserKey(string keyfile) {
     return userKey;
 }
 
-/**
- * Returns an SSL key that was stored in the given file.
- * If the file doesn't exist, a new key will be generated
- * and saved.
- *
- * @param	keyfile		read encrypted key from this file
- * @return  unencrypted key (NULL if error occured)
- *
- * @note	The memory for the returned key has to be freed.
- *
- * @see		MMSCrypt::createUserKey()
- *
- * @exception MMSCryptError File could not be opened.
-*/
 unsigned char* MMSCrypt::getUserKey(string keyfile) {
     unsigned char *userKey, *userKeyEnc;
     MMSFile       *file;
