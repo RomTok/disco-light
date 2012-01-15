@@ -887,7 +887,7 @@ void MMSFBBackEndInterface::processBlit(BEI_BLIT *req) {
 	// get subsurface offsets
 	GET_OFFS(req->surface);
 	GET_OFFS_SRC(req->source);
-
+/*
 	// set the clip to ogl
 	MMSFBRectangle crect;
 	if (req->surface->calcClip(req->x + xoff, req->y + yoff, req->src_rect.w, req->src_rect.h, &crect)) {
@@ -916,26 +916,32 @@ void MMSFBBackEndInterface::processBlit(BEI_BLIT *req) {
 			printf("skip blitting from texture which is not initialized\n");
 		}
 	}
+*/
 
 
-
-/*	// set ogl clip
+	// set ogl clip
 	OGL_SCISSOR(req->surface, req->x, req->y, req->src_rect.w, req->src_rect.h);
-printf("src: %d,%d,%d,%d %d,%d\n", req->src_rect.x, req->src_rect.y, req->src_rect.w, req->src_rect.h,req->source->config.w, req->source->config.h);
+//printf("src: %d,%d,%d,%d %d,%d\n", req->src_rect.x, req->src_rect.y, req->src_rect.w, req->src_rect.h,req->source->config.w, req->source->config.h);
 
 //((!surface->is_sub_surface && surface->config.surface_buffer && surface->config.surface_buffer->ogl_unchanged_depth_buffer) \
 //||(surface->is_sub_surface && surface->root_parent->config.surface_buffer && surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer))
 
 	if (req->source->config.surface_buffer->ogl_tex_initialized) {
 		// blit source texture to the destination
+//printf("blit: %d,%d,%d,%d %d,%d %d,%d,%d,%d\n",
+//		req->src_rect.x, req->src_rect.y, req->src_rect.x + req->src_rect.w - 1, req->src_rect.y + req->src_rect.h - 1,
+//		src_rootw, src_rooth,
+//		req->x, req->y, req->x + req->src_rect.w - 1, req->y + req->src_rect.h - 1);
+
+
 		mmsfbgl.stretchBliti(req->source->config.surface_buffer->ogl_tex,
 					req->src_rect.x, req->src_rect.y, req->src_rect.x + req->src_rect.w - 1, req->src_rect.y + req->src_rect.h - 1,
-					req->source->config.w, req->source->config.h,
+					src_rootw, src_rooth,
 					req->x, req->y, req->x + req->src_rect.w - 1, req->y + req->src_rect.h - 1);
 	}
 	else {
 		printf("skip blitting from texture which is not initialized\n");
-	}*/
+	}
 #endif
 }
 
