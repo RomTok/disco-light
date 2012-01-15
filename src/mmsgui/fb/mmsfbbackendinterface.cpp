@@ -1216,14 +1216,17 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				// calc destination position of the character
 /*				int dx = req->x + glyph.left;
 				int dy = req->y + DY - glyph.top;*/
+//				int dx = req->x + glyph.left;
+//				int dx = req->x + glyph.left;
+//				int dx = (float)req->x / scale_coeff + glyph.left;
 				int dx = req->x + glyph.left;
 				int dy = (float)req->y / scale_coeff + DY - glyph.top;
 
 				// get destination region
-				int dx1 = dx + xoff;
-				int dy1 = dy + yoff;
-				int dx2 = dx + src_w - 1 + xoff;
-				int dy2 = dy + src_h - 1 + yoff;
+				int dx1 = dx + (int)((float)xoff / scale_coeff + 0.5f);
+				int dy1 = dy + (int)((float)yoff / scale_coeff + 0.5f);
+				int dx2 = dx + src_w - 1 + (int)((float)xoff / scale_coeff + 0.5f);
+				int dy2 = dy + src_h - 1 + (int)((float)yoff / scale_coeff + 0.5f);
 
 #ifndef __HAVE_GLU__
 				// get source region
@@ -1240,7 +1243,11 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				// move to correct position
 /*				dx1 = ((float)dx1 + 0.5f) / scale_coeff;
 				dy1 = ((float)dy1 + 0.5f) / scale_coeff;*/
-				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
+mmsfbgl.pushCurrentMatrix();
+				mmsfbgl.translateCurrentMatrix(dx1, dy1, 0);
+//mmsfbgl.scaleCurrentMatrix(scale_coeff, scale_coeff, 1);
+
+//				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
 				dx1_save = dx1;
 				dy1_save = dy1;
 
@@ -1276,6 +1283,8 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 						mmsfbgl.drawElements(&vertex_buffer->arrays[m], NULL, NULL, &index_buffer->arrays[m]);
 					}
 				}
+mmsfbgl.popCurrentMatrix();
+
 #endif
 
 				// prepare for next loop
