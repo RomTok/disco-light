@@ -114,28 +114,30 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
     	if (h < 0) h = 0;
 
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-        // we create base meshes and scale up/down to glyph's destination size
-    	int rw = w;
-    	int rh = h;
-    	if (rw && rh) {
-    		float ratio = (float)rw / (float)rh;
-        	h = 100;
-        	w = h * ratio;
-        	if (w == h) w = 0;
-            this->scale_coeff = (float)rh / (float)h;
-    	}
-    	else
-		if (rh) {
-			w = 0;
-	    	h = 100;
-	        this->scale_coeff = (float)rh / (float)h;
+		if (mmsfb->bei) {
+			// we create base meshes and scale up/down to glyph's destination size
+			int rw = w;
+			int rh = h;
+			if (rw && rh) {
+				float ratio = (float)rw / (float)rh;
+				h = 100;
+				w = h * ratio;
+				if (w == h) w = 0;
+				this->scale_coeff = (float)rh / (float)h;
+			}
+			else
+			if (rh) {
+				w = 0;
+				h = 100;
+				this->scale_coeff = (float)rh / (float)h;
+			}
+			else {
+				w = 100;
+				h = 0;
+				this->scale_coeff = (float)rw / (float)w;
+			}
+//    		printf("coeff = %f\n", this->scale_coeff);
 		}
-		else {
-			w = 100;
-	    	h = 0;
-	        this->scale_coeff = (float)rw / (float)w;
-		}
-//    	printf("coeff = %f\n", this->scale_coeff);
 #endif
 
         // set the font size
@@ -851,11 +853,13 @@ bool MMSFBFont::getStringWidth(string text, int len, int *width) {
     		if (!getGlyph(character, &glyph)) break;
 
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-    	// have to calculate advanceX because of scale coefficient
-    	(*width)+= (int)((float)glyph.advanceX * this->scale_coeff + 0.5f);
-#else
-		(*width)+= glyph.advanceX;
+			if (mmsfb->bei) {
+				// have to calculate advanceX because of scale coefficient
+				(*width)+= (int)((float)glyph.advanceX * this->scale_coeff + 0.5f);
+			}
+			else
 #endif
+				(*width)+= glyph.advanceX;
     	} }
     	return true;
     }
@@ -876,13 +880,16 @@ bool MMSFBFont::getHeight(int *height) {
 #endif
 	{
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-    	// have to calculate height because of scale coefficient
-		int asc = (int)((float)this->ascender * this->scale_coeff + 0.5f);
-		int des = (int)((float)this->descender * this->scale_coeff + 0.5f);
-		*height = asc + des + 1;
-#else
-    	*height = this->height;
+		if (mmsfb->bei) {
+			// have to calculate height because of scale coefficient
+			int asc = (int)((float)this->ascender * this->scale_coeff + 0.5f);
+			int des = (int)((float)this->descender * this->scale_coeff + 0.5f);
+			*height = asc + des + 1;
+		}
+		else
 #endif
+			*height = this->height;
+
     	return true;
     }
     return false;
@@ -899,11 +906,14 @@ bool MMSFBFont::getAscender(int *ascender) {
 #endif
 	{
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-    	// have to calculate ascender because of scale coefficient
-		*ascender = (int)((float)this->ascender * this->scale_coeff + 0.5f);
-#else
-		*ascender = this->ascender;
+		if (mmsfb->bei) {
+			// have to calculate ascender because of scale coefficient
+			*ascender = (int)((float)this->ascender * this->scale_coeff + 0.5f);
+		}
+		else
 #endif
+			*ascender = this->ascender;
+
 		return true;
 	}
 	return false;
@@ -921,11 +931,14 @@ bool MMSFBFont::getDescender(int *descender) {
 #endif
 	{
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-    	// have to calculate descender because of scale coefficient
-		*descender = (int)((float)this->descender * this->scale_coeff + 0.5f);
-#else
-		*descender = this->descender;
+		if (mmsfb->bei) {
+			// have to calculate descender because of scale coefficient
+			*descender = (int)((float)this->descender * this->scale_coeff + 0.5f);
+		}
+		else
 #endif
+			*descender = this->descender;
+
 		return true;
 	}
 	return false;
@@ -936,9 +949,11 @@ bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
     INITCHECK;
 
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-	*scale_coeff = this->scale_coeff;
-	return true;
-#else
-	return false;
+	if (mmsfb->bei) {
+		*scale_coeff = this->scale_coeff;
+		return true;
+	}
 #endif
+
+	return false;
 }
