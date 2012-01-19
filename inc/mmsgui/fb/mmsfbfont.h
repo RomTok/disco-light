@@ -62,7 +62,7 @@ typedef struct {
 #ifndef __HAVE_GLU__
 	//! OpenGL texture for this glyph, we use bitmaps from freetype
 	//! note: text rendering based on textures needs a lot of memory and is not the fastest way
-	unsigned int	texture;
+	GLuint	texture;
 #else
 	//! OpenGL primitives for this glyph, we convert outlines from freetype using GLU tesselator
 	//! note: text rendering based on primitives can be more than two times faster

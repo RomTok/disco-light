@@ -239,6 +239,10 @@ private:
 	//! internal: see oglBindSurface(MMSFBSurface *surface), additionally using nearer and farther depth in conjunction with central_projection flag
 	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ, bool central_projection = false);
 
+	//! internal: draw arrays of OpenGL primitives
+	void oglDrawBuffer(MMSFBBuffer::INDEX_BUFFER *index_buffer,
+					   MMSFBBuffer::VERTEX_BUFFER *vertex_buffer);
+
 #endif
 
 

@@ -194,6 +194,13 @@ class MMSFBGL {
     	bool getResolution(int *w, int *h);
     	bool swap();
 
+        bool genBuffer(GLuint *buf);
+        bool deleteBuffer(GLuint buf);
+        bool bindBuffer(GLenum target, GLuint buf);
+        bool initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data);
+        bool enableVertexBuffer(GLuint buf);
+        void disableVertexBuffer();
+
         bool genTexture(GLuint *tex);
         bool deleteTexture(GLuint tex);
         bool bindTexture2D(GLuint tex);

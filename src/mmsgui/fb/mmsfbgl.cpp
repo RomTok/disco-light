@@ -875,6 +875,84 @@ bool MMSFBGL::swap() {
 }
 
 
+bool MMSFBGL::genBuffer(GLuint *buf) {
+
+	INITCHECK;
+
+	// generate a unique buffer id
+	glGenBuffers(1, buf);
+	ERROR_CHECK_BOOL("glGenBuffers()");
+
+    return true;
+}
+
+bool MMSFBGL::deleteBuffer(GLuint buf) {
+
+	INITCHECK;
+
+	if (buf) {
+		// finishing all operations
+		glFinish();
+		ERROR_CHECK_BOOL("glFinish()");
+
+		// detach buffers
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		ERROR_CHECK_BOOL("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+
+		// now it's safe to delete the buffer
+		glDeleteBuffers(1, &buf);
+		ERROR_CHECK_BOOL("glDeleteBuffers()");
+	}
+
+	return true;
+}
+
+bool MMSFBGL::bindBuffer(GLenum target, GLuint buf) {
+
+	INITCHECK;
+
+	// flush all queued commands to the OpenGL server
+	// but do NOT wait until all queued commands are finished by the OpenGL server
+	glFlush();
+	ERROR_CHECK_BOOL("glFlush()");
+
+	// activate buffer
+    glBindBuffer(target, buf);
+	ERROR_CHECK_BOOL("glBindBuffer()");
+
+    return true;
+}
+
+bool MMSFBGL::initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data) {
+
+	INITCHECK;
+
+	// activate buffer
+	bindBuffer(GL_ARRAY_BUFFER, buf);
+
+    // initializing buffer
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	ERROR_CHECK_BOOL("glBufferData(GL_ARRAY_BUFFER,...)");
+
+	return true;
+}
+
+bool MMSFBGL::enableVertexBuffer(GLuint buf) {
+
+	// bind source texture
+	bindBuffer(GL_ARRAY_BUFFER, buf);
+
+	return true;
+}
+
+void MMSFBGL::disableVertexBuffer() {
+
+	// detach buffer
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+}
 
 bool MMSFBGL::genTexture(GLuint *tex) {
 
@@ -911,7 +989,7 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		ERROR_CHECK_BOOL("glBindTexture(GL_TEXTURE_2D, 0)");
 
-		// now is safe to delete the texture
+		// now it's safe to delete the texture
 		glDeleteTextures(1, &tex);
 		ERROR_CHECK_BOOL("glDeleteTextures()");
 

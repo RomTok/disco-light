@@ -35,6 +35,7 @@
 
 #include "mmstools/base.h"
 #include "mmstools/mmstypes.h"
+#include "mmsgui/fb/mmsfbgl.h"
 #include <stdlib.h>
 
 class MMSFBBuffer {
@@ -86,8 +87,20 @@ class MMSFBBuffer {
 				//! vertex data
 				VERTEX_BUFFER	vertex_buffer;
 
+#ifdef __HAVE_OPENGL__
+				//! OpenGL's buffer object which contains indices
+				GLuint	index_bo;
 
-				BUFFER() : initialized(false), use_count(1), type(BUFFER_TYPE_NOTSET) {}
+				//! OpenGL's buffer object which contains vertices
+				GLuint	vertex_bo;
+#endif
+
+				BUFFER() : initialized(false), use_count(1), type(BUFFER_TYPE_NOTSET) {
+#ifdef __HAVE_OPENGL__
+					this->index_bo = 0;
+					this->vertex_bo = 0;
+#endif
+				}
 				~BUFFER() {
 					switch (this->type) {
 					case BUFFER_TYPE_INDEX_VERTEX:

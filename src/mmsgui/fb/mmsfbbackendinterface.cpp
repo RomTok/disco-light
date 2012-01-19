@@ -540,7 +540,14 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 	}
 }
 
+void MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::INDEX_BUFFER *index_buffer,
+										  MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
+	if (!index_buffer || !vertex_buffer) return;
 
+	for (unsigned int i = 0; i < index_buffer->num_arrays; i++) {
+		mmsfbgl.drawElements(&vertex_buffer->arrays[i], NULL, NULL, &index_buffer->arrays[i]);
+	}
+}
 
 #endif
 
@@ -1156,6 +1163,7 @@ void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int 
 	trigger((void*)&req, sizeof(req));
 }
 
+
 void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #ifdef  __HAVE_OPENGL__
 
@@ -1263,9 +1271,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 										 req->surface->config.color.a >> 1);
 
 						// draw primitives: glyph outline
-						for (unsigned int m = 0; m < index_buffer->num_arrays; m++) {
-							mmsfbgl.drawElements(&vertex_buffer->arrays[m], NULL, NULL, &index_buffer->arrays[m]);
-						}
+						oglDrawBuffer(index_buffer, vertex_buffer);
 
 						// reset drawing flags and color
 						mmsfbgl.disableBlend();
@@ -1278,9 +1284,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 
 				if (glyph.meshes && glyph.meshes->getBuffer(&index_buffer, &vertex_buffer)) {
 					// draw primitives: glyph meshes
-					for (unsigned int m = 0; m < index_buffer->num_arrays; m++) {
-						mmsfbgl.drawElements(&vertex_buffer->arrays[m], NULL, NULL, &index_buffer->arrays[m]);
-					}
+					oglDrawBuffer(index_buffer, vertex_buffer);
 				}
 
 #endif
