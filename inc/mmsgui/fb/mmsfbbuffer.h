@@ -60,7 +60,6 @@ class MMSFBBuffer {
 			unsigned short int	num_arrays;
 		} VERTEX_BUFFER;
 
-    private:
     	//! buffer types
     	typedef enum {
     		//! buffer not initialized
@@ -119,7 +118,16 @@ class MMSFBBuffer {
 						break;
 					}
 				}
+				bool getBuffers(MMSFBBuffer::INDEX_BUFFER **index_buffer, MMSFBBuffer::VERTEX_BUFFER **vertex_buffer) {
+					if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;
+					if (index_buffer) *index_buffer = &this->index_buffer;
+					if (vertex_buffer) *vertex_buffer = &this->vertex_buffer;
+					return true;
+				}
+
     	};
+
+	private:
 
     	//! defines mapping between external ID of buffer and content
 		typedef std::map<std::string, MMSFBBuffer::BUFFER*> BUFFER_INDEX;
@@ -138,7 +146,7 @@ class MMSFBBuffer {
         ~MMSFBBuffer();
         bool isInitialized();
         bool initBuffer(INDEX_BUFFER index_buffer, VERTEX_BUFFER vertex_buffer);
-        bool getBuffer(INDEX_BUFFER **index_buffer, VERTEX_BUFFER **vertex_buffer);
+        bool getBuffer(MMSFBBuffer::BUFFER **buffer);
 };
 
 #endif /* MMSFBBUFFER_H_ */

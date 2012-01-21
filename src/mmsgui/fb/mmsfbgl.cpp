@@ -99,6 +99,35 @@ MMSFBGL::~MMSFBGL() {
 
 //////////////////////////////
 
+void MMSFBGL::printImplementationInformation() {
+	GLint int_params[32];
+
+	printf("\nOpenGL Implementation Information:\n");
+	printf("----------------------------------------------------------------------\n");
+	printf("Vendor                              : %s\n", glGetString(GL_VENDOR));
+	printf("Renderer                            : %s\n", glGetString(GL_RENDERER));
+	printf("Version                             : %s\n", glGetString(GL_VERSION));
+	printf("Version of Shading Language         : %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, int_params);
+	printf("GL_NUM_COMPRESSED_TEXTURE_FORMATS   : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, int_params);
+	printf("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, int_params);
+	printf("GL_MAX_CUBE_MAP_TEXTURE_SIZE        : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, int_params);
+	printf("GL_MAX_TEXTURE_IMAGE_UNITS          : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, int_params);
+	printf("GL_MAX_TEXTURE_SIZE                 : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, int_params);
+	printf("GL_MAX_VERTEX_ATTRIBS               : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, int_params);
+	printf("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS   : %d\n", int_params[0]);
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, int_params);
+	printf("GL_MAX_VIEWPORT_DIMS                : %dx%d\n", int_params[0], int_params[1]);
+
+	printf("Extensions...\n%s\n", glGetString(GL_EXTENSIONS));
+	printf("----------------------------------------------------------------------\n\n");
+}
 
 bool MMSFBGL::getError(const char* where, int line) {
 #ifdef __HAVE_OPENGL__
@@ -499,7 +528,6 @@ void MMSFBGL::deleteShaders() {
 #endif
 }
 
-
 #ifdef __HAVE_XLIB__
 bool MMSFBGL::init(Display *x_display, int x_screen, Window x_window, int w, int h) {
 
@@ -508,14 +536,15 @@ bool MMSFBGL::init(Display *x_display, int x_screen, Window x_window, int w, int
 		return false;
 	}
 
-	printf("initializing...\n");
-
 #ifdef __HAVE_EGL__
 	//TODO: implement EGL for XLIB
 	return false;
 #endif
 
 #ifdef __HAVE_GLX__
+
+	printf("\nInitializing GLX:\n");
+	printf("----------------------------------------------------------------------\n");
 
 	this->x_display = x_display;
 	this->x_window = x_window;
@@ -583,6 +612,9 @@ bool MMSFBGL::init(Display *x_display, int x_screen, Window x_window, int w, int
 	this->screen_width = w;
 	this->screen_height = h;
 	printf("SCREEN WIDTH = %d, HEIGHT = %d\n", this->screen_width, this->screen_height);
+	printf("----------------------------------------------------------------------\n");
+
+	printImplementationInformation();
 
 	return true;
 
@@ -600,9 +632,11 @@ bool MMSFBGL::init() {
 		return false;
 	}
 
-	printf("initializing...\n");
-
 #ifdef __HAVE_EGL__
+
+	printf("\nInitializing EGL:\n");
+	printf("----------------------------------------------------------------------\n");
+
 	/*
 		Step 1 - Get the default display.
 		EGL uses the concept of a "display" which in most environments
@@ -784,7 +818,9 @@ bool MMSFBGL::init() {
 	this->screen_width = wh[2];
 	this->screen_height = wh[3];
 	printf("SCREEN WIDTH = %d, HEIGHT = %d\n", this->screen_width, this->screen_height);
+	printf("----------------------------------------------------------------------\n");
 
+	printImplementationInformation();
 
 	// init fragment and vertex shaders
 	if (initShaders()) {
@@ -904,51 +940,82 @@ bool MMSFBGL::deleteBuffer(GLuint buf) {
 		// now it's safe to delete the buffer
 		glDeleteBuffers(1, &buf);
 		ERROR_CHECK_BOOL("glDeleteBuffers()");
+
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool MMSFBGL::bindBuffer(GLenum target, GLuint buf) {
 
 	INITCHECK;
 
-	// flush all queued commands to the OpenGL server
-	// but do NOT wait until all queued commands are finished by the OpenGL server
-	glFlush();
-	ERROR_CHECK_BOOL("glFlush()");
+	if (buf) {
+		// flush all queued commands to the OpenGL server
+		// but do NOT wait until all queued commands are finished by the OpenGL server
+		glFlush();
+		ERROR_CHECK_BOOL("glFlush()");
 
-	// activate buffer
-    glBindBuffer(target, buf);
-	ERROR_CHECK_BOOL("glBindBuffer()");
+		// activate buffer
+		glBindBuffer(target, buf);
+		ERROR_CHECK_BOOL("glBindBuffer()");
 
-    return true;
+		return true;
+	}
+
+	return false;
 }
 
 bool MMSFBGL::initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data) {
 
 	INITCHECK;
 
-	// activate buffer
-	bindBuffer(GL_ARRAY_BUFFER, buf);
+	if (buf) {
+		// activate buffer
+		bindBuffer(GL_ARRAY_BUFFER, buf);
 
-    // initializing buffer
-	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-	ERROR_CHECK_BOOL("glBufferData(GL_ARRAY_BUFFER,...)");
+		// initializing buffer
+		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		ERROR_CHECK_BOOL("glBufferData(GL_ARRAY_BUFFER,...)");
 
-	return true;
+		return true;
+	}
+
+	return false;
+}
+
+bool MMSFBGL::initVertexSubBuffer(GLuint buf, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
+
+	INITCHECK;
+
+	if (buf) {
+		// activate buffer
+		bindBuffer(GL_ARRAY_BUFFER, buf);
+
+		// initializing a part of buffer
+		glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+		ERROR_CHECK_BOOL("glBufferSubData(GL_ARRAY_BUFFER,...)");
+
+		return true;
+	}
+
+	return false;
 }
 
 bool MMSFBGL::enableVertexBuffer(GLuint buf) {
 
-	// bind source texture
-	bindBuffer(GL_ARRAY_BUFFER, buf);
+	if (buf) {
+		// bind source texture
+		bindBuffer(GL_ARRAY_BUFFER, buf);
 
-	return true;
+		return true;
+	}
+
+	return false;
 }
 
 void MMSFBGL::disableVertexBuffer() {
-
 	// detach buffer
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER, 0)");
@@ -995,59 +1062,69 @@ bool MMSFBGL::deleteTexture(GLuint tex) {
 
 		// switch back to the saved fbo
 		bindFrameBuffer(fbo);
+
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool MMSFBGL::bindTexture2D(GLuint tex) {
 
 	INITCHECK;
 
-	// flush all queued commands to the OpenGL server
-	// but do NOT wait until all queued commands are finished by the OpenGL server
-	glFlush();
-	ERROR_CHECK_BOOL("glFlush()");
+	if (tex) {
+		// flush all queued commands to the OpenGL server
+		// but do NOT wait until all queued commands are finished by the OpenGL server
+		glFlush();
+		ERROR_CHECK_BOOL("glFlush()");
 
-	// activate texture
-    glBindTexture(GL_TEXTURE_2D, tex);
-	ERROR_CHECK_BOOL("glBindTexture(GL_TEXTURE_2D, tex)");
+		// activate texture
+		glBindTexture(GL_TEXTURE_2D, tex);
+		ERROR_CHECK_BOOL("glBindTexture(GL_TEXTURE_2D, tex)");
 
-    // set min and max filter
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)");
+		// set min and max filter
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)");
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)");
 
-    // the texture wraps over at the edges (repeat)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)");
+		// the texture wraps over at the edges (repeat)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)");
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		ERROR_CHECK_BOOL("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)");
 
-    return true;
+		return true;
+	}
+
+	return false;
 }
 
 bool MMSFBGL::initTexture2D(GLuint tex, GLenum texture_format, void *buffer, GLenum buffer_format, int sw, int sh) {
 
 	INITCHECK;
 
-	// activate texture
-	bindTexture2D(tex);
+	if (tex) {
+		// activate texture
+		bindTexture2D(tex);
 
-    // initializing texture from buffer
-	glTexImage2D(GL_TEXTURE_2D,
-	 	0,
-	 	texture_format,
-	 	sw,
-	 	sh,
-	 	0,
-	 	buffer_format,
-	 	GL_UNSIGNED_BYTE,
-	 	buffer);
-	ERROR_CHECK_BOOL("glTexImage2D(GL_TEXTURE_2D,...)");
+		// initializing texture from buffer
+		glTexImage2D(GL_TEXTURE_2D,
+			0,
+			texture_format,
+			sw,
+			sh,
+			0,
+			buffer_format,
+			GL_UNSIGNED_BYTE,
+			buffer);
+		ERROR_CHECK_BOOL("glTexImage2D(GL_TEXTURE_2D,...)");
 
-	return true;
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -1055,22 +1132,26 @@ bool MMSFBGL::initSubTexture2D(GLuint tex, void *buffer, GLenum buffer_format, i
 
 	INITCHECK;
 
-	// activate texture
-	bindTexture2D(tex);
+	if (tex) {
+		// activate texture
+		bindTexture2D(tex);
 
-	// overwrite existing texture memory
-	glTexSubImage2D(GL_TEXTURE_2D,
-					0,
-					dx,
-					dy,
-					sw,
-					sh,
-					buffer_format,
-					GL_UNSIGNED_BYTE,
-					buffer);
-	ERROR_CHECK_BOOL("glTexSubImage2D(GL_TEXTURE_2D,...)");
+		// overwrite existing texture memory
+		glTexSubImage2D(GL_TEXTURE_2D,
+						0,
+						dx,
+						dy,
+						sw,
+						sh,
+						buffer_format,
+						GL_UNSIGNED_BYTE,
+						buffer);
+		ERROR_CHECK_BOOL("glTexSubImage2D(GL_TEXTURE_2D,...)");
 
-	return true;
+		return true;
+	}
+
+	return false;
 }
 
 bool MMSFBGL::enableTexture2D(GLuint tex) {

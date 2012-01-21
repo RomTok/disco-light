@@ -540,13 +540,37 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 	}
 }
 
-void MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::INDEX_BUFFER *index_buffer,
+bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
+										  MMSFBBuffer::INDEX_BUFFER *index_buffer,
 										  MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
-	if (!index_buffer || !vertex_buffer) return;
+	if (!buffer) return false;
 
-	for (unsigned int i = 0; i < index_buffer->num_arrays; i++) {
-		mmsfbgl.drawElements(&vertex_buffer->arrays[i], NULL, NULL, &index_buffer->arrays[i]);
+	if (!index_buffer || !vertex_buffer) {
+		// get access to index and vertex buffer
+		if (!buffer->getBuffers(&index_buffer, &vertex_buffer)) return false;
 	}
+
+	// check if we have index and vertex buffer
+	if (!index_buffer || !vertex_buffer) return false;
+
+	if (buffer->index_bo && buffer->vertex_bo) {
+		// index and vertex buffer objects are available
+	}
+	else
+	if (buffer->vertex_bo) {
+		// vertex buffer object is available
+	}
+	else {
+		// no buffers in GPU memory, so try to allocate new buffer object(s)
+
+
+		// failed to allocate buffer objects, so we have to put indices/vertices over the bus to GPU
+		for (unsigned int i = 0; i < index_buffer->num_arrays; i++) {
+			mmsfbgl.drawElements(&vertex_buffer->arrays[i], NULL, NULL, &index_buffer->arrays[i]);
+		}
+	}
+
+	return true;
 }
 
 #endif
@@ -930,7 +954,7 @@ void MMSFBBackEndInterface::processBlit(BEI_BLIT *req) {
 	OGL_SCISSOR(req->surface, req->x, req->y, req->src_rect.w, req->src_rect.h);
 //printf("src: %d,%d,%d,%d %d,%d\n", req->src_rect.x, req->src_rect.y, req->src_rect.w, req->src_rect.h,req->source->config.w, req->source->config.h);
 
-//((!surface->is_sub_surface && surface->config.surface_buffer && surface->config.surface_buffer->ogl_unchanged_depth_buffer) \
+//((!surface->is_sub_surface && surface->config.surface_buffer && surface->config.surface_buffer->ogl_unchanged_depth_buffer)
 //||(surface->is_sub_surface && surface->root_parent->config.surface_buffer && surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer))
 
 	if (req->source->config.surface_buffer->ogl_tex_initialized) {
@@ -1258,35 +1282,33 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				dx1_save = dx1;
 				dy1_save = dy1;
 
-				MMSFBBuffer::INDEX_BUFFER *index_buffer;
-				MMSFBBuffer::VERTEX_BUFFER *vertex_buffer;
+				MMSFBBuffer::BUFFER *buffer;
 
-				if (glyph.outline && glyph.outline->getBuffer(&index_buffer, &vertex_buffer)) {
-					if (index_buffer->num_arrays) {
+				if (glyph.outline && glyph.outline->getBuffer(&buffer)) {
+					MMSFBBuffer::INDEX_BUFFER *index_buffer;
+					MMSFBBuffer::VERTEX_BUFFER *vertex_buffer;
+					if (buffer->getBuffers(&index_buffer, &vertex_buffer)) {
 						// draw glyph outline
-						mmsfbgl.enableBlend();
-						mmsfbgl.setColor(req->surface->config.color.r,
-										 req->surface->config.color.g,
-										 req->surface->config.color.b,
-										 req->surface->config.color.a >> 1);
+						if (index_buffer->num_arrays) {
+							// setup special drawing flags
+							mmsfbgl.enableBlend();
+							MMSFBColor *color = &req->surface->config.color;
+							mmsfbgl.setColor(color->r, color->g, color->b, color->a >> 1);
 
-						// draw primitives: glyph outline
-						oglDrawBuffer(index_buffer, vertex_buffer);
+							// draw primitives: glyph outline
+							oglDrawBuffer(buffer, index_buffer, vertex_buffer);
 
-						// reset drawing flags and color
-						mmsfbgl.disableBlend();
-						mmsfbgl.setColor(req->surface->config.color.r,
-										 req->surface->config.color.g,
-										 req->surface->config.color.b,
-										 req->surface->config.color.a);
+							// reset drawing flags and color
+							mmsfbgl.disableBlend();
+							mmsfbgl.setColor(color->r, color->g, color->b, color->a);
+						}
 					}
 				}
 
-				if (glyph.meshes && glyph.meshes->getBuffer(&index_buffer, &vertex_buffer)) {
+				if (glyph.meshes && glyph.meshes->getBuffer(&buffer)) {
 					// draw primitives: glyph meshes
-					oglDrawBuffer(index_buffer, vertex_buffer);
+					oglDrawBuffer(buffer);
 				}
-
 #endif
 
 				// prepare for next loop

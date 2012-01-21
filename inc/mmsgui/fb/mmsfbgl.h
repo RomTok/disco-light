@@ -160,6 +160,7 @@ class MMSFBGL {
     	//! matrix stack
         std::stack<MMSFBGLStackMatrix> matrix_stack;
 
+        void printImplementationInformation();
 
     	bool getError(const char* where, int line = __LINE__);
 
@@ -198,6 +199,7 @@ class MMSFBGL {
         bool deleteBuffer(GLuint buf);
         bool bindBuffer(GLenum target, GLuint buf);
         bool initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data);
+        bool initVertexSubBuffer(GLuint buf, GLintptr offset, GLsizeiptr size, const GLvoid *data);
         bool enableVertexBuffer(GLuint buf);
         void disableVertexBuffer();
 

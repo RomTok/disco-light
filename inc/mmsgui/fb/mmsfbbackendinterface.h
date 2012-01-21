@@ -240,8 +240,9 @@ private:
 	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ, bool central_projection = false);
 
 	//! internal: draw arrays of OpenGL primitives
-	void oglDrawBuffer(MMSFBBuffer::INDEX_BUFFER *index_buffer,
-					   MMSFBBuffer::VERTEX_BUFFER *vertex_buffer);
+	bool oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
+					   MMSFBBuffer::INDEX_BUFFER *index_buffer = NULL,
+					   MMSFBBuffer::VERTEX_BUFFER *vertex_buffer = NULL);
 
 #endif
 

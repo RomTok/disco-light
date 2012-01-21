@@ -80,11 +80,9 @@ bool MMSFBBuffer::initBuffer(INDEX_BUFFER index_buffer, VERTEX_BUFFER vertex_buf
 	return false;
 }
 
-bool MMSFBBuffer::getBuffer(INDEX_BUFFER **index_buffer, VERTEX_BUFFER **vertex_buffer) {
+bool MMSFBBuffer::getBuffer(MMSFBBuffer::BUFFER **buffer) {
 	if (!isInitialized()) return false;
-	if (this->buffer->type != BUFFER_TYPE_INDEX_VERTEX) return false;
-	*index_buffer = &this->buffer->index_buffer;
-	*vertex_buffer = &this->buffer->vertex_buffer;
+	if (buffer) *buffer = this->buffer;
 	return true;
 }
 
