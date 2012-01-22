@@ -967,7 +967,7 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint buf) {
 	return false;
 }
 
-bool MMSFBGL::initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data) {
+bool MMSFBGL::initVertexBuffer(GLuint buf, unsigned int size, const GLvoid *data) {
 
 	INITCHECK;
 
@@ -985,7 +985,7 @@ bool MMSFBGL::initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data) 
 	return false;
 }
 
-bool MMSFBGL::initVertexSubBuffer(GLuint buf, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
+bool MMSFBGL::initVertexSubBuffer(GLuint buf, unsigned int offset, unsigned int size, const GLvoid *data) {
 
 	INITCHECK;
 
@@ -2528,6 +2528,135 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	return true;
 }
 
+bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *normals, MMS3D_VERTEX_BUFFER *texcoords,
+						   MMS3D_INDEX_BUFFER *indices) {
+	INITCHECK;
+
+	if (!vertices || !indices) {
+		// minimum parameters are vertices and indices
+		return false;
+	}
+
+#ifdef __HAVE_GL2__
+
+	// bind the vertices
+	if (vertices && vertices->bo) {
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glBindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+		glVertexPointer(vertices->eSize, GL_FLOAT, 0, (const GLvoid*)vertices->offs);
+	}
+	else {
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
+	// bind the vertices
+	if (vertices && vertices->bo) {
+		glBindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+		glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
+							   GL_FALSE, 0, (const GLvoid*)vertices->offs);
+		ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
+
+		glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+		ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+	}
+	else {
+		glDisableVertexAttribArray(MMSFBGL_VSV_LOC);
+		ERROR_CHECK_BOOL("glDisableVertexAttribArray(MMSFBGL_VSV_LOC)");
+	}
+
+#endif
+
+	// bind the indices
+	if (indices && indices->bo) {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->bo);
+	}
+	else {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	// draw elements
+	// note: MMS3D_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
+	GLenum mode = GL_TRIANGLES;
+	switch (indices->type) {
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		mode = GL_TRIANGLE_STRIP;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		mode = GL_TRIANGLE_FAN;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_LINES:
+		mode = GL_LINES;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+		mode = GL_LINE_STRIP;
+		break;
+	case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+		mode = GL_LINE_LOOP;
+		break;
+	default:
+		break;
+	}
+
+
+	if (indices->eNum && indices->bo) {
+		// we have indices
+		glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, NULL);
+
+		// print errors
+		switch (indices->type) {
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+			ERROR_CHECK_BOOL("glDrawElements(GL_LINES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_LOOP,...)");
+			break;
+		}
+	}
+	else {
+		// indices not available, we assume that we can access buffers without indices
+		glDrawArrays(mode, 0, vertices->eNum);
+
+		// print errors
+		switch (indices->type) {
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_LINES,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_STRIP,...)");
+			break;
+		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_LOOP,...)");
+			break;
+		}
+	}
+
+	return true;
+}
 
 
 #endif

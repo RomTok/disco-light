@@ -68,6 +68,26 @@ class MMSFBBuffer {
     		BUFFER_TYPE_INDEX_VERTEX
     	} BUFFER_TYPE;
 
+		//! contains a OpenGL index buffer object with additional description
+		typedef struct {
+			//! OpenGL's buffer object
+			unsigned int		bo;
+			//! index data description
+			MMS3D_INDEX_BUFFER	*buffers;
+			//! number of buffers
+			unsigned short int	num_buffers;
+		} INDEX_BUFFER_OBJECT;
+
+		//! contains a OpenGL vertex buffer object with additional description
+		typedef struct {
+			//! OpenGL's buffer object
+			unsigned int		bo;
+			//! vertex data description
+			MMS3D_VERTEX_BUFFER	*buffers;
+			//! number of buffers
+			unsigned short int	num_buffers;
+		} VERTEX_BUFFER_OBJECT;
+
     	//! buffer description
     	class BUFFER {
 			public:
@@ -88,16 +108,20 @@ class MMSFBBuffer {
 
 #ifdef __HAVE_OPENGL__
 				//! OpenGL's buffer object which contains indices
-				GLuint	index_bo;
+				INDEX_BUFFER_OBJECT		index_bo;
 
 				//! OpenGL's buffer object which contains vertices
-				GLuint	vertex_bo;
+				VERTEX_BUFFER_OBJECT	vertex_bo;
 #endif
 
 				BUFFER() : initialized(false), use_count(1), type(BUFFER_TYPE_NOTSET) {
 #ifdef __HAVE_OPENGL__
-					this->index_bo = 0;
-					this->vertex_bo = 0;
+					this->index_bo.bo = 0;
+					this->index_bo.buffers = NULL;
+					this->index_bo.num_buffers = 0;
+					this->vertex_bo.bo = 0;
+					this->vertex_bo.buffers = NULL;
+					this->vertex_bo.num_buffers = 0;
 #endif
 				}
 				~BUFFER() {
@@ -124,7 +148,14 @@ class MMSFBBuffer {
 					if (vertex_buffer) *vertex_buffer = &this->vertex_buffer;
 					return true;
 				}
-
+#ifdef __HAVE_OPENGL__
+				bool getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **index_bo, MMSFBBuffer::VERTEX_BUFFER_OBJECT **vertex_bo) {
+					if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;
+					if (index_bo) *index_bo = &this->index_bo;
+					if (vertex_bo) *vertex_bo = &this->vertex_bo;
+					return true;
+				}
+#endif
     	};
 
 	private:

@@ -198,8 +198,8 @@ class MMSFBGL {
         bool genBuffer(GLuint *buf);
         bool deleteBuffer(GLuint buf);
         bool bindBuffer(GLenum target, GLuint buf);
-        bool initVertexBuffer(GLuint buf, GLsizeiptr size, const GLvoid *data);
-        bool initVertexSubBuffer(GLuint buf, GLintptr offset, GLsizeiptr size, const GLvoid *data);
+        bool initVertexBuffer(GLuint buf, unsigned int size, const GLvoid *data = NULL);
+        bool initVertexSubBuffer(GLuint buf, unsigned int offset, unsigned int size, const GLvoid *data);
         bool enableVertexBuffer(GLuint buf);
         void disableVertexBuffer();
 
@@ -292,6 +292,9 @@ class MMSFBGL {
 
         bool drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals, MMS3D_VERTEX_ARRAY *texcoords,
 						  MMS3D_INDEX_ARRAY *indices);
+
+        bool drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *normals, MMS3D_VERTEX_BUFFER *texcoords,
+						  MMS3D_INDEX_BUFFER *indices);
 };
 
 #endif

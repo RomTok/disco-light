@@ -540,6 +540,98 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 	}
 }
 
+bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer) {
+
+	if (!index_bo || !index_buffer) return false;
+
+	// prepare index buffer object
+	index_bo->num_buffers = index_buffer->num_arrays;
+	if (index_bo->num_buffers == 0) {
+		// no buffers, mark buffer object as failed to allocate
+		index_bo->bo = 0;
+		index_bo->buffers = NULL;
+		index_bo->num_buffers = 0xffff;
+		return false;
+	}
+	index_bo->buffers = (MMS3D_INDEX_BUFFER *)malloc(sizeof(MMS3D_INDEX_BUFFER) * index_bo->num_buffers);
+	if (!index_bo->buffers) return false;
+
+	// calculate size of whole new buffer object and setup several buffers
+	unsigned int size = 0;
+	for (unsigned int i = 0; i < index_bo->num_buffers; i++) {
+		MMS3D_INDEX_ARRAY *array = &index_buffer->arrays[i];
+		index_bo->buffers[i].bo   = 0;
+		index_bo->buffers[i].offs = size;
+		index_bo->buffers[i].type = array->type;
+		index_bo->buffers[i].eNum = array->eNum;
+		size+= sizeof(unsigned int) * array->eNum;
+	}
+
+
+
+	return true;
+}
+
+bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::VERTEX_BUFFER_OBJECT *vertex_bo, MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
+
+	if (!vertex_bo || !vertex_buffer) return false;
+
+	// prepare vertex buffer object
+	vertex_bo->num_buffers = vertex_buffer->num_arrays;
+	if (vertex_bo->num_buffers == 0) {
+		// no buffers, mark buffer object as failed to allocate
+		vertex_bo->bo = 0;
+		vertex_bo->buffers = NULL;
+		vertex_bo->num_buffers = 0xffff;
+		return false;
+	}
+	vertex_bo->buffers = (MMS3D_VERTEX_BUFFER *)malloc(sizeof(MMS3D_VERTEX_BUFFER) * vertex_bo->num_buffers);
+	if (!vertex_bo->buffers) return false;
+
+	// calculate size of whole new buffer object and setup several buffers
+	unsigned int size = 0;
+	for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
+		MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
+		vertex_bo->buffers[i].bo   = 0;
+		vertex_bo->buffers[i].offs = size;
+		vertex_bo->buffers[i].eSize= array->eSize;
+		vertex_bo->buffers[i].eNum = array->eNum;
+		size+= sizeof(float) * array->eSize * array->eNum;
+	}
+
+	// generate new buffer object
+	if (!mmsfbgl.genBuffer(&vertex_bo->bo)) {
+		// failed
+		::free(vertex_bo->buffers);
+		return false;
+	}
+
+	// allocate GPU buffer
+	if (!mmsfbgl.initVertexBuffer(vertex_bo->bo, size)) {
+		// failed
+		mmsfbgl.deleteBuffer(vertex_bo->bo);
+		vertex_bo->bo = 0;
+		::free(vertex_bo->buffers);
+		return false;
+	}
+
+	// fill GPU buffer
+	for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
+		MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
+		unsigned int size = sizeof(float) * array->eSize * array->eNum;
+		vertex_bo->buffers[i].bo = vertex_bo->bo;
+		if (!mmsfbgl.initVertexSubBuffer(vertex_bo->buffers[i].bo, vertex_bo->buffers[i].offs, size, array->buf)) {
+			// failed
+			mmsfbgl.deleteBuffer(vertex_bo->bo);
+			vertex_bo->bo = 0;
+			::free(vertex_bo->buffers);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
 										  MMSFBBuffer::INDEX_BUFFER *index_buffer,
 										  MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
@@ -553,24 +645,42 @@ bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
 	// check if we have index and vertex buffer
 	if (!index_buffer || !vertex_buffer) return false;
 
-	if (buffer->index_bo && buffer->vertex_bo) {
-		// index and vertex buffer objects are available
-	}
-	else
-	if (buffer->vertex_bo) {
-		// vertex buffer object is available
-	}
-	else {
+	// check num_buffers instead of buf because we try to init buffer object only once
+	if (!buffer->vertex_bo.num_buffers) {
 		// no buffers in GPU memory, so try to allocate new buffer object(s)
-
-
-		// failed to allocate buffer objects, so we have to put indices/vertices over the bus to GPU
-		for (unsigned int i = 0; i < index_buffer->num_arrays; i++) {
-			mmsfbgl.drawElements(&vertex_buffer->arrays[i], NULL, NULL, &index_buffer->arrays[i]);
+		if (!oglInitIndexBuffer(&buffer->index_bo, index_buffer)) {
+			// failed to allocate buffer object
+			buffer->index_bo.bo = 0;
+			buffer->vertex_bo.bo = 0;
+		}
+		else
+		if (!oglInitVertexBuffer(&buffer->vertex_bo, vertex_buffer)) {
+			// failed to allocate buffer object
+			buffer->vertex_bo.bo = 0;
 		}
 	}
 
-	return true;
+	if (buffer->index_bo.bo && buffer->vertex_bo.bo) {
+		// index and vertex buffer objects are available
+		return true;
+	}
+	else
+	if (buffer->vertex_bo.bo) {
+		// vertex buffer object is available
+		for (unsigned int i = 0; i < buffer->vertex_bo.num_buffers; i++) {
+			mmsfbgl.drawElements(&buffer->vertex_bo.buffers[i], NULL, NULL, &buffer->index_bo.buffers[i]);
+		}
+		return true;
+	}
+	else {
+		// buffer objects not available, so we have to put indices/vertices over the bus to GPU
+		for (unsigned int i = 0; i < index_buffer->num_arrays; i++) {
+			mmsfbgl.drawElements(&vertex_buffer->arrays[i], NULL, NULL, &index_buffer->arrays[i]);
+		}
+		return true;
+	}
+
+	return false;
 }
 
 #endif

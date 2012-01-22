@@ -1149,13 +1149,29 @@ MMSLanguage getMMSLanguageFromString(string lang);
 
 
 
-
+//! vertex array
 typedef struct {
+	//! array of floats
 	float	*buf;
+	//! number of floats per vertex
 	int		eSize;
+	//! number of vertices
 	int		eNum;
 } MMS3D_VERTEX_ARRAY;
 
+//! vertex buffer
+typedef struct {
+	//! id of buffer object
+	unsigned int bo;
+	//! offset into the buffer object's data store where data replacement will begin
+	unsigned int offs;
+	//! number of floats per vertex
+	int		eSize;
+	//! number of vertices
+	int		eNum;
+} MMS3D_VERTEX_BUFFER;
+
+//! element type
 typedef enum {
 	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES = 0,
 	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP,
@@ -1165,12 +1181,27 @@ typedef enum {
 	MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP
 } MMS3D_INDEX_ARRAY_TYPE;
 
+//! index array
 typedef struct {
+	//! element type
 	MMS3D_INDEX_ARRAY_TYPE	type;
-	unsigned int			*buf;
-	int						eNum;
+	//! array of unsigned ints
+	unsigned int	*buf;
+	//! number of indices
+	int				eNum;
 } MMS3D_INDEX_ARRAY;
 
+//! index buffer
+typedef struct {
+	//! element type
+	MMS3D_INDEX_ARRAY_TYPE	type;
+	//! id of buffer object
+	unsigned int	bo;
+	//! offset into the buffer object's data store where data replacement will begin
+	unsigned int	offs;
+	//! number of indices
+	int				eNum;
+} MMS3D_INDEX_BUFFER;
 
 typedef struct {
 	float r;
