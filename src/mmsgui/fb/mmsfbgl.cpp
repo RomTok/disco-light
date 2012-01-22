@@ -2653,6 +2653,12 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_LOOP,...)");
 			break;
 		}
+
+
+if (vertices && vertices->bo) {
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 	}
 
 	return true;
