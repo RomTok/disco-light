@@ -541,7 +541,7 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 }
 
 bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer) {
-
+return false;
 	if (!index_bo || !index_buffer) return false;
 
 	// prepare index buffer object
@@ -646,7 +646,7 @@ bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
 	if (!index_buffer || !vertex_buffer) return false;
 
 	// check num_buffers instead of buf because we try to init buffer object only once
-	if (!buffer->vertex_bo.num_buffers) {
+	if (!buffer->index_bo.num_buffers) {
 		// no buffers in GPU memory, so try to allocate new buffer object(s)
 		if (!oglInitIndexBuffer(&buffer->index_bo, index_buffer)) {
 			// failed to allocate buffer object
