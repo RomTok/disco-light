@@ -93,7 +93,14 @@ class MMSFBGL {
     	int screen_width;
     	int screen_height;
 
+    	//! frame buffer object which is currently bound
     	GLuint bound_fbo;
+
+    	//! vertex buffer object which is currently bound
+    	GLuint bound_vbo;
+
+    	//! index buffer object which is currently bound
+    	GLuint bound_ibo;
 
     	//! program handle to the fragment and vertex shader used for drawing primitives
     	GLuint po_draw;
@@ -195,12 +202,12 @@ class MMSFBGL {
     	bool getResolution(int *w, int *h);
     	bool swap();
 
-        bool genBuffer(GLuint *buf);
-        bool deleteBuffer(GLuint buf);
-        bool bindBuffer(GLenum target, GLuint buf);
-        bool initVertexBuffer(GLuint buf, unsigned int size, const GLvoid *data = NULL);
-        bool initVertexSubBuffer(GLuint buf, unsigned int offset, unsigned int size, const GLvoid *data);
-        bool enableVertexBuffer(GLuint buf);
+        bool genBuffer(GLuint *bo);
+        bool deleteBuffer(GLuint bo);
+        bool bindBuffer(GLenum target, GLuint bo);
+        bool initVertexBuffer(GLuint vbo, unsigned int size, const GLvoid *data = NULL);
+        bool initVertexSubBuffer(GLuint vbo, unsigned int offset, unsigned int size, const GLvoid *data);
+        bool enableVertexBuffer(GLuint vbo);
         void disableVertexBuffer();
 
         bool genTexture(GLuint *tex);

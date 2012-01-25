@@ -61,6 +61,10 @@ MMSFBGL::MMSFBGL() {
 
 	// default framebuffer object is always 0, so set bound_fbo to 0
 	this->bound_fbo = 0;
+
+	// no vertex/index buffer object is currently bound
+	this->bound_vbo = 0;
+	this->bound_ibo = 0;
 }
 
 MMSFBGL::~MMSFBGL() {
@@ -911,34 +915,32 @@ bool MMSFBGL::swap() {
 }
 
 
-bool MMSFBGL::genBuffer(GLuint *buf) {
+bool MMSFBGL::genBuffer(GLuint *bo) {
 
 	INITCHECK;
 
 	// generate a unique buffer id
-	glGenBuffers(1, buf);
+	glGenBuffers(1, bo);
 	ERROR_CHECK_BOOL("glGenBuffers()");
 
     return true;
 }
 
-bool MMSFBGL::deleteBuffer(GLuint buf) {
+bool MMSFBGL::deleteBuffer(GLuint bo) {
 
 	INITCHECK;
 
-	if (buf) {
+	if (bo) {
 		// finishing all operations
 		glFinish();
 		ERROR_CHECK_BOOL("glFinish()");
 
 		// detach buffers
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		ERROR_CHECK_BOOL("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+		bindBuffer(GL_ARRAY_BUFFER, 0);
+		bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		// now it's safe to delete the buffer
-		glDeleteBuffers(1, &buf);
+		glDeleteBuffers(1, &bo);
 		ERROR_CHECK_BOOL("glDeleteBuffers()");
 
 		return true;
@@ -947,33 +949,53 @@ bool MMSFBGL::deleteBuffer(GLuint buf) {
 	return false;
 }
 
-bool MMSFBGL::bindBuffer(GLenum target, GLuint buf) {
+bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 
 	INITCHECK;
 
-	if (buf) {
-		// flush all queued commands to the OpenGL server
-		// but do NOT wait until all queued commands are finished by the OpenGL server
-		glFlush();
-		ERROR_CHECK_BOOL("glFlush()");
+	switch (target) {
+	case GL_ARRAY_BUFFER:
+		if (this->bound_vbo != bo) {
+			// going to change the vertex buffer object
+			this->bound_vbo = bo;
 
-		// activate buffer
-		glBindBuffer(target, buf);
-		ERROR_CHECK_BOOL("glBindBuffer()");
+			// flush all queued commands to the OpenGL server
+			// but do NOT wait until all queued commands are finished by the OpenGL server
+//			glFlush();
+//			ERROR_CHECK_BOOL("glFlush()");
 
+			// activate buffer
+			glBindBuffer(target, this->bound_vbo);
+			ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER...)");
+		}
 		return true;
-	}
+	case GL_ELEMENT_ARRAY_BUFFER:
+		if (this->bound_ibo != bo) {
+			// going to change the index buffer object
+			this->bound_ibo = bo;
 
-	return false;
+			// flush all queued commands to the OpenGL server
+			// but do NOT wait until all queued commands are finished by the OpenGL server
+//			glFlush();
+//			ERROR_CHECK_BOOL("glFlush()");
+
+			// activate buffer
+			glBindBuffer(target, this->bound_ibo);
+			ERROR_CHECK_BOOL("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,...)");
+		}
+		return true;
+	default:
+		return false;
+	}
 }
 
-bool MMSFBGL::initVertexBuffer(GLuint buf, unsigned int size, const GLvoid *data) {
+bool MMSFBGL::initVertexBuffer(GLuint vbo, unsigned int size, const GLvoid *data) {
 
 	INITCHECK;
 
-	if (buf) {
+	if (vbo) {
 		// activate buffer
-		bindBuffer(GL_ARRAY_BUFFER, buf);
+		bindBuffer(GL_ARRAY_BUFFER, vbo);
 
 		// initializing buffer
 		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
@@ -985,13 +1007,13 @@ bool MMSFBGL::initVertexBuffer(GLuint buf, unsigned int size, const GLvoid *data
 	return false;
 }
 
-bool MMSFBGL::initVertexSubBuffer(GLuint buf, unsigned int offset, unsigned int size, const GLvoid *data) {
+bool MMSFBGL::initVertexSubBuffer(GLuint vbo, unsigned int offset, unsigned int size, const GLvoid *data) {
 
 	INITCHECK;
 
-	if (buf) {
+	if (vbo) {
 		// activate buffer
-		bindBuffer(GL_ARRAY_BUFFER, buf);
+		bindBuffer(GL_ARRAY_BUFFER, vbo);
 
 		// initializing a part of buffer
 		glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
@@ -1003,12 +1025,11 @@ bool MMSFBGL::initVertexSubBuffer(GLuint buf, unsigned int offset, unsigned int 
 	return false;
 }
 
-bool MMSFBGL::enableVertexBuffer(GLuint buf) {
+bool MMSFBGL::enableVertexBuffer(GLuint vbo) {
 
-	if (buf) {
+	if (vbo) {
 		// bind source texture
-		bindBuffer(GL_ARRAY_BUFFER, buf);
-
+		bindBuffer(GL_ARRAY_BUFFER, vbo);
 		return true;
 	}
 
@@ -1016,9 +1037,8 @@ bool MMSFBGL::enableVertexBuffer(GLuint buf) {
 }
 
 void MMSFBGL::disableVertexBuffer() {
-	// detach buffer
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+	// detach current buffer
+	bindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 bool MMSFBGL::genTexture(GLuint *tex) {
@@ -1974,6 +1994,8 @@ bool MMSFBGL::drawRectangle2D(float x1, float y1, float x2, float y2) {
 
 	INITCHECK;
 
+	disableVertexBuffer();
+
 #ifdef __HAVE_GL2__
 
 	glBegin(GL_LINE_STRIP);
@@ -2024,6 +2046,8 @@ bool MMSFBGL::fillTriangle(float x1, float y1, float z1,
 
 	INITCHECK;
 
+	disableVertexBuffer();
+
 	// configure generic vertex attribute array
 	GLfloat vertices[] = {x1,y1,z1,x2,y2,z2,x3,y3,z3};
 	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
@@ -2042,6 +2066,8 @@ bool MMSFBGL::fillTriangle(float x1, float y1, float z1,
 bool MMSFBGL::fillTriangle2D(float x1, float y1, float x2, float y2, float x3, float y3) {
 
 	INITCHECK;
+
+	disableVertexBuffer();
 
 #ifdef __HAVE_GL2__
 
@@ -2078,6 +2104,8 @@ bool MMSFBGL::fillTriangle2D(float x1, float y1, float x2, float y2, float x3, f
 bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 
 	INITCHECK;
+
+	disableVertexBuffer();
 
 #ifdef __HAVE_GL2__
 
@@ -2121,6 +2149,8 @@ bool MMSFBGL::stretchBlit3D(GLuint src_tex, float sx1, float sy1, float sx2, flo
 								  float dx4, float dy4, float dz4) {
 
 	INITCHECK;
+
+	disableVertexBuffer();
 
 	// setup blitting
 	enableTexture2D(src_tex);
@@ -2196,6 +2226,8 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 										  float dx1, float dy1, float dx2, float dy2) {
 
 	INITCHECK;
+
+	disableVertexBuffer();
 
 	// setup blitting
 	enableTexture2D(src_tex);
@@ -2379,6 +2411,8 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 		return false;
 	}
 
+	disableVertexBuffer();
+
 #ifdef __HAVE_GL2__
 
 	// load the vertices
@@ -2542,7 +2576,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	// bind the vertices
 	if (vertices && vertices->bo) {
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glBindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+		bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
 		glVertexPointer(vertices->eSize, GL_FLOAT, 0, (const GLvoid*)vertices->offs);
 	}
 	else {
@@ -2555,7 +2589,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 	// bind the vertices
 	if (vertices && vertices->bo) {
-		glBindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+		bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
 		glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
 							   GL_FALSE, 0, (const GLvoid*)vertices->offs);
 		ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
@@ -2571,12 +2605,12 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 #endif
 
 	// bind the indices
-	if (indices && indices->bo) {
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->bo);
+/*	if (indices && indices->bo) {
+		bindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->bo);
 	}
 	else {
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+		bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}*/
 
 	// draw elements
 	// note: MMS3D_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
@@ -2653,12 +2687,6 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_LOOP,...)");
 			break;
 		}
-
-
-if (vertices && vertices->bo) {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 	}
 
 	return true;
