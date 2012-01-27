@@ -963,7 +963,7 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 			// but do NOT wait until all queued commands are finished by the OpenGL server
 //			glFlush();
 //			ERROR_CHECK_BOOL("glFlush()");
-printf("this->bound_vbo = %d\n",this->bound_vbo);
+//printf("this->bound_vbo = %d\n",this->bound_vbo);
 			// activate buffer
 			glBindBuffer(target, this->bound_vbo);
 			ERROR_CHECK_BOOL("glBindBuffer(GL_ARRAY_BUFFER...)");

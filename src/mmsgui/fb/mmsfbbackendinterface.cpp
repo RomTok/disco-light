@@ -618,12 +618,13 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMS
 
 		extkey->vbo_size = 256*1024;
 		extkey->vbo_used = 0;
-
-		vertex_bo->bo = extkey->vbo;
 	}
+
+	vertex_bo->bo = extkey->vbo;
 
 	unsigned int vbo_offset = 0;
 	if (extkey->reserveVertexArray(size, &vbo_offset)) {
+//printf("extkey->vbo_used = %d\n", extkey->vbo_used);
 		// fill GPU buffer
 		for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
 			MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
