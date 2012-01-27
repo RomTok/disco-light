@@ -88,6 +88,62 @@ class MMSFBBuffer {
 			unsigned short int	num_buffers;
 		} VERTEX_BUFFER_OBJECT;
 
+    	//! extkey description
+    	class EXTKEY {
+			public:
+				//! is extkey initialized?
+				bool initialized;
+
+				//! use count
+				unsigned int	use_count;
+
+				//! own key
+				unsigned int	key;
+
+#ifdef __HAVE_OPENGL__
+				//! OpenGL's buffer object which contains indices
+				unsigned int	ibo;
+				unsigned int	ibo_size;
+				unsigned int	ibo_used;
+
+				//! OpenGL's buffer object which contains vertices
+				unsigned int	vbo;
+				unsigned int	vbo_size;
+				unsigned int	vbo_used;
+#endif
+
+				EXTKEY(unsigned int key) : initialized(false), use_count(1) {
+					this->key = key;
+#ifdef __HAVE_OPENGL__
+					this->ibo = 0;
+					this->ibo_size = 0;
+					this->ibo_used = 0;
+					this->vbo = 0;
+					this->vbo_size = 0;
+					this->vbo_used = 0;
+#endif
+				}
+				~EXTKEY() {
+#ifdef __HAVE_OPENGL__
+					printf("have to delete ibo %d and vbo %d\n", this->ibo, this->vbo);
+#endif
+				}
+				bool reserveIndexArray(unsigned int requested_size, unsigned int *offset) {
+					if (!this->ibo) return false;
+					if (this->ibo_used + requested_size > this->ibo_size) return false;
+					*offset = this->ibo_used;
+					this->ibo_used+= requested_size;
+					return true;
+				}
+				bool reserveVertexArray(unsigned int requested_size, unsigned int *offset) {
+					if (!this->vbo) return false;
+					if (this->vbo_used + requested_size > this->vbo_size) return false;
+					*offset = this->vbo_used;
+					this->vbo_used+= requested_size;
+					return true;
+				}
+    	};
+
     	//! buffer description
     	class BUFFER {
 			public:
@@ -160,22 +216,32 @@ class MMSFBBuffer {
 
 	private:
 
-    	//! defines mapping between external ID of buffer and content
-		typedef std::map<std::string, MMSFBBuffer::BUFFER*> BUFFER_INDEX;
+		//! external ID of buffer (64bit, extkey + subkey)
+		unsigned long long ext_id;
+
+    	//! defines mapping between extkey of buffer and content
+		typedef std::map<unsigned int, MMSFBBuffer::EXTKEY*> EXTKEY_INDEX;
+
+		//! static key index
+		static EXTKEY_INDEX extkey_index;
+
+		//! pointer to extkey content
+		EXTKEY *extkey;
+
+		//! defines mapping between external ID of buffer and content
+		typedef std::map<unsigned long long, MMSFBBuffer::BUFFER*> BUFFER_INDEX;
 
 		//! static buffer index
-		static BUFFER_INDEX index;
-
-		//! external ID of buffer
-		string ext_id;
+		static BUFFER_INDEX buffer_index;
 
 		//! pointer to buffer content
 		BUFFER *buffer;
 
 	public:
-        MMSFBBuffer(string ext_id);
+        MMSFBBuffer(unsigned int extkey, unsigned int subkey);
         ~MMSFBBuffer();
         bool isInitialized();
+        bool getExtKey(MMSFBBuffer::EXTKEY **extkey);
         bool initBuffer(INDEX_BUFFER index_buffer, VERTEX_BUFFER vertex_buffer);
         bool getBuffer(MMSFBBuffer::BUFFER **buffer);
 };

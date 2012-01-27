@@ -32,33 +32,62 @@
 
 #include "mmsgui/fb/mmsfbbuffer.h"
 
-MMSFBBuffer::BUFFER_INDEX MMSFBBuffer::index;
+MMSFBBuffer::EXTKEY_INDEX MMSFBBuffer::extkey_index;
+MMSFBBuffer::BUFFER_INDEX MMSFBBuffer::buffer_index;
 
-MMSFBBuffer::MMSFBBuffer(string ext_id) {
-	this->ext_id = ext_id;
+MMSFBBuffer::MMSFBBuffer(unsigned int extkey, unsigned int subkey) {
+	// allocate new or use existing extkey
+	EXTKEY_INDEX::iterator extkey_it = this->extkey_index.find(extkey);
+	if (extkey_it == this->extkey_index.end()) {
+		// new extkey
+		this->extkey = new EXTKEY(extkey);
+		this->extkey_index.insert(make_pair(extkey, this->extkey));
+	}
+	else {
+		// use existing extkey
+		this->extkey = extkey_it->second;
+		this->extkey->use_count++;
+	}
 
-	BUFFER_INDEX::iterator it = this->index.find(this->ext_id);
-	if (it == this->index.end()) {
+	// build external id
+	this->ext_id = (((unsigned long long)extkey) << 32) + (unsigned long long)subkey;
+
+	// allocate new or use existing buffer
+	BUFFER_INDEX::iterator buffer_it = this->buffer_index.find(this->ext_id);
+	if (buffer_it == this->buffer_index.end()) {
 		// new buffer
-		this->buffer = new BUFFER;
-		this->index.insert(make_pair(this->ext_id, this->buffer));
+		this->buffer = new BUFFER();
+		this->buffer_index.insert(make_pair(this->ext_id, this->buffer));
 	}
 	else {
 		// use existing buffer
-		this->buffer = it->second;
+		this->buffer = buffer_it->second;
 		this->buffer->use_count++;
 	}
 }
 
 MMSFBBuffer::~MMSFBBuffer() {
-	BUFFER_INDEX::iterator it = this->index.find(this->ext_id);
-	if (it != this->index.end()) {
+	// reduce use count of buffer
+	BUFFER_INDEX::iterator buffer_it = this->buffer_index.find(this->ext_id);
+	if (buffer_it != this->buffer_index.end()) {
 		// reduce use counter
-		it->second->use_count--;
-		if (it->second->use_count == 0) {
+		buffer_it->second->use_count--;
+		if (buffer_it->second->use_count == 0) {
 			// buffer is unused, free all resources
-			delete it->second;
-			this->index.erase(it);
+			delete buffer_it->second;
+			this->buffer_index.erase(buffer_it);
+		}
+	}
+
+	// reduce use count of extkey
+	EXTKEY_INDEX::iterator extkey_it = this->extkey_index.find(this->extkey->key);
+	if (extkey_it != this->extkey_index.end()) {
+		// reduce use counter
+		extkey_it->second->use_count--;
+		if (extkey_it->second->use_count == 0) {
+			// extkey is unused, free all resources
+			delete extkey_it->second;
+			this->extkey_index.erase(extkey_it);
 		}
 	}
 }
@@ -66,6 +95,12 @@ MMSFBBuffer::~MMSFBBuffer() {
 bool MMSFBBuffer::isInitialized() {
 	if (!this->buffer) return false;
 	return this->buffer->initialized;
+}
+
+bool MMSFBBuffer::getExtKey(MMSFBBuffer::EXTKEY **extkey) {
+	if (!isInitialized()) return false;
+	if (extkey) *extkey = this->extkey;
+	return true;
 }
 
 bool MMSFBBuffer::initBuffer(INDEX_BUFFER index_buffer, VERTEX_BUFFER vertex_buffer) {

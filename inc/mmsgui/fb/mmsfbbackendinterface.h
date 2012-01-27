@@ -240,13 +240,14 @@ private:
 	void oglBindSurface(MMSFBSurface *surface, int nearZ, int farZ, bool central_projection = false);
 
 	//! internal: allocate and initialize buffer objects for indices
-	bool oglInitIndexBuffer(MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer);
+	bool oglInitIndexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer);
 
 	//! internal: allocate and initialize buffer objects for vertices
-	bool oglInitVertexBuffer(MMSFBBuffer::VERTEX_BUFFER_OBJECT *vertex_bo, MMSFBBuffer::VERTEX_BUFFER *vertex_buffer);
+	bool oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSFBBuffer::VERTEX_BUFFER_OBJECT *vertex_bo, MMSFBBuffer::VERTEX_BUFFER *vertex_buffer);
 
 	//! internal: draw arrays of OpenGL primitives
-	bool oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
+	bool oglDrawBuffer(MMSFBBuffer::EXTKEY *extkey,
+					   MMSFBBuffer::BUFFER *buffer,
 					   MMSFBBuffer::INDEX_BUFFER *index_buffer = NULL,
 					   MMSFBBuffer::VERTEX_BUFFER *vertex_buffer = NULL);
 

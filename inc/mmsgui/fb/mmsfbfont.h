@@ -98,6 +98,18 @@ class MMSFBFont {
         //! font file
         string 	filename;
 
+    	//! defines mapping between filename and font id
+		typedef std::map<std::string, unsigned int> MMSFBFONT_MAP;
+
+		//! static index
+		static MMSFBFONT_MAP index;
+
+		//! static index position
+		static unsigned int index_pos;
+
+		//! id of font
+		unsigned int font_id;
+
 #if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
         //! scale coefficient
         float	scale_coeff;

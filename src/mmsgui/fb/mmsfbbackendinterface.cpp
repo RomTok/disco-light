@@ -540,7 +540,7 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 	}
 }
 
-bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer) {
+bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer) {
 return false;
 	if (!index_bo || !index_buffer) return false;
 
@@ -572,7 +572,7 @@ return false;
 	return true;
 }
 
-bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::VERTEX_BUFFER_OBJECT *vertex_bo, MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
+bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSFBBuffer::VERTEX_BUFFER_OBJECT *vertex_bo, MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
 
 	if (!vertex_bo || !vertex_buffer) return false;
 
@@ -599,40 +599,46 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::VERTEX_BUFFER_OBJEC
 		size+= sizeof(float) * array->eSize * array->eNum;
 	}
 
-	// generate new buffer object
-	if (!mmsfbgl.genBuffer(&vertex_bo->bo)) {
-		// failed
-		::free(vertex_bo->buffers);
-		return false;
-	}
-
-	// allocate GPU buffer
-	if (!mmsfbgl.initVertexBuffer(vertex_bo->bo, size)) {
-		// failed
-		mmsfbgl.deleteBuffer(vertex_bo->bo);
-		vertex_bo->bo = 0;
-		::free(vertex_bo->buffers);
-		return false;
-	}
-
-	// fill GPU buffer
-	for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
-		MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
-		unsigned int size = sizeof(float) * array->eSize * array->eNum;
-		vertex_bo->buffers[i].bo = vertex_bo->bo;
-		if (!mmsfbgl.initVertexSubBuffer(vertex_bo->buffers[i].bo, vertex_bo->buffers[i].offs, size, array->buf)) {
+	if (!extkey->vbo) {
+		// generate new buffer object
+		if (!mmsfbgl.genBuffer(&extkey->vbo)) {
 			// failed
-			mmsfbgl.deleteBuffer(vertex_bo->bo);
-			vertex_bo->bo = 0;
 			::free(vertex_bo->buffers);
 			return false;
+		}
+
+		// allocate GPU buffer
+		if (!mmsfbgl.initVertexBuffer(extkey->vbo, 256*1024)) {
+			// failed
+			mmsfbgl.deleteBuffer(extkey->vbo);
+			extkey->vbo = 0;
+			::free(vertex_bo->buffers);
+			return false;
+		}
+
+		extkey->vbo_size = 256*1024;
+		extkey->vbo_used = 0;
+
+		vertex_bo->bo = extkey->vbo;
+	}
+
+	unsigned int vbo_offset = 0;
+	if (extkey->reserveVertexArray(size, &vbo_offset)) {
+		// fill GPU buffer
+		for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
+			MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
+			unsigned int size = sizeof(float) * array->eSize * array->eNum;
+			vertex_bo->buffers[i].bo = vertex_bo->bo;
+			vertex_bo->buffers[i].offs+= vbo_offset;
+			mmsfbgl.initVertexSubBuffer(vertex_bo->buffers[i].bo, vertex_bo->buffers[i].offs, size, array->buf);
 		}
 	}
 
 	return true;
 }
 
-bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
+bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::EXTKEY *extkey,
+										  MMSFBBuffer::BUFFER *buffer,
 										  MMSFBBuffer::INDEX_BUFFER *index_buffer,
 										  MMSFBBuffer::VERTEX_BUFFER *vertex_buffer) {
 	if (!buffer) return false;
@@ -648,13 +654,13 @@ bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::BUFFER *buffer,
 	// check num_buffers instead of buf because we try to init buffer object only once
 	if (!buffer->index_bo.num_buffers) {
 		// no buffers in GPU memory, so try to allocate new buffer object(s)
-		if (!oglInitIndexBuffer(&buffer->index_bo, index_buffer)) {
+		if (!oglInitIndexBuffer(extkey, &buffer->index_bo, index_buffer)) {
 			// failed to allocate buffer object
 			buffer->index_bo.bo = 0;
 			buffer->vertex_bo.bo = 0;
 		}
 		else
-		if (!oglInitVertexBuffer(&buffer->vertex_bo, vertex_buffer)) {
+		if (!oglInitVertexBuffer(extkey, &buffer->vertex_bo, vertex_buffer)) {
 			// failed to allocate buffer object
 			buffer->vertex_bo.bo = 0;
 		}
@@ -1392,9 +1398,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				dx1_save = dx1;
 				dy1_save = dy1;
 
+				MMSFBBuffer::EXTKEY *extkey;
 				MMSFBBuffer::BUFFER *buffer;
 
-				if (glyph.outline && glyph.outline->getBuffer(&buffer)) {
+				if (glyph.outline && glyph.outline->getExtKey(&extkey) && glyph.outline->getBuffer(&buffer)) {
 					MMSFBBuffer::INDEX_BUFFER *index_buffer;
 					MMSFBBuffer::VERTEX_BUFFER *vertex_buffer;
 					if (buffer->getBuffers(&index_buffer, &vertex_buffer)) {
@@ -1406,7 +1413,7 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 							mmsfbgl.setColor(color->r, color->g, color->b, color->a >> 1);
 
 							// draw primitives: glyph outline
-							oglDrawBuffer(buffer, index_buffer, vertex_buffer);
+							oglDrawBuffer(extkey, buffer, index_buffer, vertex_buffer);
 
 							// reset drawing flags and color
 							mmsfbgl.disableBlend();
@@ -1415,9 +1422,9 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 					}
 				}
 
-				if (glyph.meshes && glyph.meshes->getBuffer(&buffer)) {
+				if (glyph.meshes && glyph.meshes->getExtKey(&extkey) && glyph.meshes->getBuffer(&buffer)) {
 					// draw primitives: glyph meshes
-					oglDrawBuffer(buffer);
+					oglDrawBuffer(extkey, buffer);
 				}
 #endif
 

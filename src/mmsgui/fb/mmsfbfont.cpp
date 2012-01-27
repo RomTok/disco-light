@@ -45,6 +45,10 @@ pthread_mutex_t	globalLock = PTHREAD_MUTEX_INITIALIZER;
 void *MMSFBFont::ft_library = NULL;
 unsigned int MMSFBFont::numReferences = 0;
 
+MMSFBFont::MMSFBFONT_MAP MMSFBFont::index;
+unsigned int MMSFBFont::index_pos = 0;
+
+
 #define INITCHECK  if(!this->isInitialized()){MMSFB_SetError(0,"MMSFBFont is not initialized");return false;}
 
 MMSFBFont::MMSFBFont(string filename, int w, int h) :
@@ -57,6 +61,22 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 	ascender(0),
 	descender(0),
 	height(0) {
+
+	// get index
+	pthread_mutex_lock(&globalLock);
+	MMSFBFONT_MAP::iterator it = this->index.find(this->filename);
+	if (it == this->index.end()) {
+		// new id
+		this->index_pos++;
+		this->font_id = this->index_pos;
+		this->index.insert(make_pair(this->filename, this->font_id));
+	}
+	else {
+		// use existing id
+		this->font_id = it->second;
+	}
+	pthread_mutex_unlock(&globalLock);
+
 
     if (mmsfb->backend == MMSFB_BE_DFB) {
 #ifdef  __HAVE_DIRECTFB__
@@ -492,9 +512,8 @@ bool with_outline = true;
 	glyph->outline = NULL;
 
 	// my mesh id
-	string my_mesh_id = iToStr(glyph->character) + "_mesh_" + this->filename;
-//	printf("MMSFBFont: my_mesh_id = %s\n", my_mesh_id.c_str());
-	glyph->meshes = new MMSFBBuffer(my_mesh_id);
+	unsigned int subkey_mesh = glyph->character;
+	glyph->meshes = new MMSFBBuffer(this->font_id, subkey_mesh);
 
 	if (!with_outline) {
 		// without outline
@@ -506,9 +525,8 @@ bool with_outline = true;
 	}
 	else {
 		// my outline id
-		string my_outline_id = iToStr(glyph->character) + "_outline_" + this->filename;
-//		printf("MMSFBFont: my_outline_id = %s\n", my_outline_id.c_str());
-		glyph->outline = new MMSFBBuffer(my_outline_id);
+		unsigned int subkey_outline = 0x80000000 | glyph->character;
+		glyph->outline = new MMSFBBuffer(this->font_id, subkey_outline);
 
 		if (glyph->meshes->isInitialized() && glyph->outline->isInitialized()) {
 			// meshes and outline already initialized
