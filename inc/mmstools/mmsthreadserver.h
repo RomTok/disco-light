@@ -45,6 +45,9 @@ You can use the onProcessData() callback if you do not want to derive your own c
 */
 class MMSThreadServer : public MMSThread {
 	private:
+		//! id of the server thread
+		pthread_t server_tid;
+
 		//! describes one item/request in the queue
 		typedef struct {
 			//! variable for conditional handling
