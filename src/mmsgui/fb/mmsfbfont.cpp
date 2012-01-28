@@ -462,19 +462,7 @@ bool MMSFBFont::setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph 
 	glyph->texture = 0;
 	mmsfb->bei->createAlphaTexture(&glyph->texture, glyph->buffer,
 							glyph->pitch, glyph->height);
-/*TODO: createAlphaTexture() can block the application
-	glGenTextures(1, &glyph->texture);
-	glBindTexture(GL_TEXTURE_2D, glyph->texture);
-	glTexImage2D(GL_TEXTURE_2D,
-		0,
-		GL_ALPHA,
-		glyph->pitch,
-		glyph->height,
-		0,
-		GL_ALPHA,
-		GL_UNSIGNED_BYTE,
-		glyph->buffer);
-*/
+
 	return true;
 #endif
 
