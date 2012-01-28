@@ -123,11 +123,7 @@ class MMSFBBuffer {
 					this->vbo_used = 0;
 #endif
 				}
-				~EXTKEY() {
-#ifdef __HAVE_OPENGL__
-					printf("have to delete ibo %d and vbo %d\n", this->ibo, this->vbo);
-#endif
-				}
+				~EXTKEY();
 				bool reserveIndexArray(unsigned int requested_size, unsigned int *offset) {
 					if (!this->ibo) return false;
 					if (this->ibo_used + requested_size > this->ibo_size) return false;
@@ -197,6 +193,11 @@ class MMSFBBuffer {
 					default:
 						break;
 					}
+
+					if (this->index_bo.buffers)
+						free(this->index_bo.buffers);
+					if (this->vertex_bo.buffers)
+						free(this->vertex_bo.buffers);
 				}
 				bool getBuffers(MMSFBBuffer::INDEX_BUFFER **index_buffer, MMSFBBuffer::VERTEX_BUFFER **vertex_buffer) {
 					if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;

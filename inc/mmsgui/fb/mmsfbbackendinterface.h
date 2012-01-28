@@ -63,7 +63,8 @@ private:
 		BEI_REQUEST_TYPE_DELETETEXTURE,
 		BEI_REQUEST_TYPE_DRAWSTRING,
 		BEI_REQUEST_TYPE_RENDERSCENE,
-		BEI_REQUEST_TYPE_MERGE
+		BEI_REQUEST_TYPE_MERGE,
+		BEI_REQUEST_TYPE_DELETEBUFFER
 	} BEI_REQUEST_TYPE;
 
 	typedef struct {
@@ -198,6 +199,11 @@ private:
 		MMSFBMergingMode	mergingmode;
 	} BEI_MERGE;
 
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		unsigned int		buffer;
+	} BEI_DELETEBUFFER;
+
 #ifdef __HAVE_OPENGL__
 
 	//! access to the OpenGL wrapper class
@@ -271,10 +277,9 @@ private:
 	void processCreateAlphaTexture(BEI_CREATEALPHATEXTURE *req);
 	void processDeleteTexture(BEI_DELETETEXTURE *req);
 	void processDrawString(BEI_DRAWSTRING *req);
-
 	void processRenderScene(BEI_RENDERSCENE *req);
 	void processMerge(BEI_MERGE *req);
-
+	void processDeleteBuffer(BEI_DELETEBUFFER *req);
 
 public:
 
@@ -301,19 +306,17 @@ public:
 				    int src_width, int src_height, MMSFBRectangle &src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
 	void stretchBlitBuffer(MMSFBSurface *surface, MMSFBSurfacePlanes *src_planes, MMSFBSurfacePixelFormat src_pixelformat,
 						   int src_width, int src_height, MMSFBRectangle &src_rect, MMSFBRectangle &dst_rect, MMSFBBlittingFlags blittingflags);
-
 	void createAlphaTexture(unsigned int *texture, unsigned char *buffer, int width, int height);
 	void deleteTexture(unsigned int texture);
 	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);
-
 	void renderScene(MMSFBSurface *surface,
 					 MMS3D_VERTEX_ARRAY	**varrays,
 					 MMS3D_INDEX_ARRAY	**iarrays,
 					 MMS3D_MATERIAL		*materials,
 					 MMSFBSurface		**texsurfaces,
 					 MMS3D_OBJECT		**objects);
-
 	void merge(MMSFBSurface *surface, MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMergingMode mergingmode);
+	void deleteBuffer(unsigned int buffer);
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */

@@ -157,6 +157,7 @@ class MMSFB {
     friend class MMSFBFont;
     friend class MMSInputX11Handler;
     friend class MMSInputLISHandler;
+    friend class MMSFBBuffer;
 };
 
 /* access to global mmsfb */

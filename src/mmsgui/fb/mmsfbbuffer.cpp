@@ -31,6 +31,18 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbbuffer.h"
+#include "mmsgui/fb/mmsfb.h"
+
+MMSFBBuffer::EXTKEY::~EXTKEY() {
+#ifdef __HAVE_OPENGL__
+	if (mmsfb->bei) {
+		// delete OpenGL's index and vertex buffer
+		if (this->ibo) mmsfb->bei->deleteBuffer(this->ibo);
+		if (this->vbo) mmsfb->bei->deleteBuffer(this->vbo);
+	}
+#endif
+}
+
 
 MMSFBBuffer::EXTKEY_INDEX MMSFBBuffer::extkey_index;
 MMSFBBuffer::BUFFER_INDEX MMSFBBuffer::buffer_index;

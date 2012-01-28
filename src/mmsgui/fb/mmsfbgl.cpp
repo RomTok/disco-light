@@ -932,8 +932,8 @@ bool MMSFBGL::deleteBuffer(GLuint bo) {
 
 	if (bo) {
 		// finishing all operations
-		glFinish();
-		ERROR_CHECK_BOOL("glFinish()");
+//		glFinish();
+//		ERROR_CHECK_BOOL("glFinish()");
 
 		// detach buffers
 		bindBuffer(GL_ARRAY_BUFFER, 0);

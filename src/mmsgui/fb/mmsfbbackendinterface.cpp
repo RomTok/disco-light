@@ -311,6 +311,9 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_MERGE:
 		processMerge((BEI_MERGE *)in_data);
 		break;
+	case BEI_REQUEST_TYPE_DELETEBUFFER:
+		processDeleteBuffer((BEI_DELETEBUFFER *)in_data);
+		break;
 	default:
 		break;
 	}
@@ -541,7 +544,7 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 }
 
 bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer) {
-return false;
+//return false;
 	if (!index_bo || !index_buffer) return false;
 
 	// prepare index buffer object
@@ -608,23 +611,22 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMS
 		}
 
 		// allocate GPU buffer
-		if (!mmsfbgl.initVertexBuffer(extkey->vbo, 256*1024)) {
+		extkey->vbo_size = 256*1024;
+		extkey->vbo_used = 0;
+		if (!mmsfbgl.initVertexBuffer(extkey->vbo, extkey->vbo_size)) {
 			// failed
 			mmsfbgl.deleteBuffer(extkey->vbo);
 			extkey->vbo = 0;
+			extkey->vbo_size = 0;
 			::free(vertex_bo->buffers);
 			return false;
 		}
-
-		extkey->vbo_size = 256*1024;
-		extkey->vbo_used = 0;
 	}
 
 	vertex_bo->bo = extkey->vbo;
 
 	unsigned int vbo_offset = 0;
 	if (extkey->reserveVertexArray(size, &vbo_offset)) {
-//printf("extkey->vbo_used = %d\n", extkey->vbo_used);
 		// fill GPU buffer
 		for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
 			MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
@@ -1304,7 +1306,6 @@ void MMSFBBackEndInterface::drawString(MMSFBSurface *surface, string &text, int 
 	trigger((void*)&req, sizeof(req));
 }
 
-
 void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 #ifdef  __HAVE_OPENGL__
 
@@ -1724,4 +1725,20 @@ void MMSFBBackEndInterface::processMerge(BEI_MERGE *req) {
 #endif
 }
 
+
+void MMSFBBackEndInterface::deleteBuffer(unsigned int buffer) {
+	BEI_DELETEBUFFER req;
+	req.type	= BEI_REQUEST_TYPE_DELETEBUFFER;
+	req.buffer	= buffer;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// delete a buffer object
+	mmsfbgl.deleteBuffer(req->buffer);
+
+#endif
+}
 
