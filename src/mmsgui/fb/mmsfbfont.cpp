@@ -435,6 +435,14 @@ bool MMSFBFont::setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph 
 			glyph->left, glyph->width, glyph->advanceX, glyph->top, glyph->height, this->height, g->advance.y / 64);
 	*/
 
+	if (!g->bitmap.pitch) {
+		// glyph has no bitmap (e.g. space char)
+		glyph->pitch = 0;
+		glyph->buffer = NULL;
+		glyph->texture = 0;
+		return true;
+	}
+
 	// add glyph to charmap, we use a pitch which is a multiple of 4 needed e.g. for OGL textures
 	if(mmsfb->bei && (g->bitmap.pitch & 3)) {
 		glyph->pitch = (g->bitmap.pitch & ~3) + 4;

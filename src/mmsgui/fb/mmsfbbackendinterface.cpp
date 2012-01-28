@@ -1390,10 +1390,12 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int sx2 = src_w - 1;
 				int sy2 = src_h - 1;
 
-				// blit glyph texture to the destination
-				mmsfbgl.stretchBliti(glyph.texture,
-										sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
-										dx1, dy1, dx2, dy2);
+				if (glyph.texture) {
+					// blit glyph texture to the destination
+					mmsfbgl.stretchBliti(glyph.texture,
+											sx1, sy1, sx2, sy2, src_pitch_pix, src_h,
+											dx1, dy1, dx2, dy2);
+				}
 #else
 				// move to correct position
 				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
