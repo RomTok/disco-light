@@ -549,6 +549,7 @@ bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSF
 
 	// prepare index buffer object
 	index_bo->num_buffers = index_buffer->num_arrays;
+//index_bo->num_buffers=0;
 	if (index_bo->num_buffers == 0) {
 		// no buffers, mark buffer object as failed to allocate
 		index_bo->bo = 0;
