@@ -30,20 +30,26 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
+/**
+ * @file mmsfile.cpp
+ *
+ * Implementation of MMSFile class.
+ *
+ * @ingroup mmstools
+ */
+
 #include <cstdio>
 #include <stdlib.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstring>
-
-#ifdef __HAVE_CURL__
-#include <curl/curl.h>
-#endif
 
 #include "mmstools/mmsfile.h"
 #include "mmstools/tools.h"
 
 #ifdef __HAVE_CURL__
-/* curl calls this c-routine to transfer data to the object */
+/**
+ * Curl calls this c-routine to transfer data to the object.
+ */
 size_t c_write_cb(char *buffer, size_t size, size_t nitems, void *outstream) {
     if (outstream)
         return ((MMSFile *)outstream)->write_cb(buffer, size, nitems, outstream);

@@ -33,6 +33,14 @@
 #ifndef MMSFILE_H_
 #define MMSFILE_H_
 
+/**
+ * @file mmsfile.h
+ *
+ * Header file for MMSFile class.
+ *
+ * @ingroup mmstools
+ */
+
 #ifdef __HAVE_CURL__
 #include <curl/curl.h>
 #endif
@@ -303,8 +311,9 @@ class MMSFile {
         bool writeBuffer(void *ptr, size_t *ritems, size_t size, size_t nitems);
 
 
-        /*noch implementieren!!!!!!!!!!!
-        flush();*/
+        /**
+         * TODO: have to implement!!!!!!!!!!! flush();
+        */
 };
 
 #endif /*MMSFILE_H_*/

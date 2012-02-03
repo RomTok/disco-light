@@ -33,6 +33,14 @@
 #ifndef BASE_H_
 #define BASE_H_
 
+/**
+ * @file base.h
+ *
+ * Common includes that are often used in disko.
+ *
+ * @ingroup mmstools
+ */
+
 using namespace std;
 
 #include <string>

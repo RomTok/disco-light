@@ -30,6 +30,14 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
+/**
+ * @file mmsfilesearch.cpp
+ *
+ * Implementation of MMSFileSearch class.
+ *
+ * @ingroup mmstools
+ */
+
 #include "mmstools/mmsfilesearch.h"
 #include <sys/types.h>
 #include <sys/stat.h>

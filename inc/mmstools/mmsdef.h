@@ -33,6 +33,14 @@
 #ifndef MMSDEF_H_
 #define MMSDEF_H_
 
+/**
+ * @file mmsdef.h
+ *
+ * Common macros that are often used in disko.
+ *
+ * @ingroup mmstools
+ */
+
 /* quantums */
 #define ALL -1
 #define YES  1

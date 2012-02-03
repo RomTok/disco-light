@@ -30,17 +30,15 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
+/**
+ * @file mmserror.cpp
+ *
+ * Implementation of MMSError class.
+ *
+ * @ingroup mmstools
+ */
+
 #include "mmstools/mmserror.h"
-
-
-MMSError::MMSError(int code, string message) {
-    this->code = code;
-    this->message = message;
-}
-
-MMSError::~MMSError() {
-
-}
 
 int MMSError::getCode() {
     return this->code;
