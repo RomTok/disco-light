@@ -2554,14 +2554,14 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 		switch (texcoords->dtype) {
 		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
 			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
-								   GL_FALSE, 0, texcoords->buf);
+								   GL_FALSE, 0, texcoords->data);
 			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_FLOAT,GL_FALSE,...)");
 			enable = true;
 			break;
 #ifdef GL_HALF_FLOAT_OES
 		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
 			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_HALF_FLOAT_OES,
-								   GL_FALSE, 0, texcoords->buf);
+								   GL_FALSE, 0, texcoords->data);
 			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
 			enable = true;
 			break;
