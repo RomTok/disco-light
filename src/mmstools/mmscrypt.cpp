@@ -138,19 +138,25 @@ unsigned char* MMSCrypt::encrypt(unsigned char *in, unsigned int size, bool useM
         throw MMSCryptError(0, "not enough memory available");
 
     for(int i = 0; i < inl / 128; i++) {
-        if(!EVP_EncryptUpdate(ctx, &out[ol], &tmp, &in[ol], 128))
+        if(!EVP_EncryptUpdate(ctx, &out[ol], &tmp, &in[ol], 128)) {
+        	free(out);
             throw MMSCryptError(0, "error while encrypting data");
+        }
         ol += tmp;
     }
 
     if(inl % 128) {
-        if(!EVP_EncryptUpdate(ctx, &out[ol], &tmp, &in[ol], inl % 128))
+        if(!EVP_EncryptUpdate(ctx, &out[ol], &tmp, &in[ol], inl % 128)) {
+        	free(out);
             throw MMSCryptError(0, "error while encrypting data");
+        }
         ol += tmp;
     }
 
-    if(!EVP_EncryptFinal_ex(ctx, &out[ol], &tmp))
+    if(!EVP_EncryptFinal_ex(ctx, &out[ol], &tmp)) {
+        free(out);
         throw MMSCryptError(0, "error while encrypting data");
+    }
 
     return out;
 }

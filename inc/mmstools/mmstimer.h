@@ -37,8 +37,8 @@
 #include <csignal>
 extern "C"
 {
-#include "sys/types.h"
-#include "unistd.h"
+#include <sys/types.h>
+#include <unistd.h>
 }
 #include "mmstools/mmsthread.h"
 

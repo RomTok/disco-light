@@ -98,13 +98,15 @@ bool MMSTCPClient::disconnectFromServer() {
 
 bool MMSTCPClient::sendString(string rbuf) {
 	//char 	mybuf[128000+1];
-	char 	*mybuf = (char *)malloc(rbuf.size() +1);
+	char 	*mybuf;
 	int		len, from;
 
 	if (!isConnected()) {
 		WRITE_ERR("MMSTCPClient", "in send not connected");
 		return false;
 	}
+
+	mybuf = (char *)malloc(rbuf.size() +1);
 
 	// send request
 	from = 0;
@@ -122,10 +124,12 @@ bool MMSTCPClient::sendString(string rbuf) {
 }
 
 bool MMSTCPClient::receiveString(string *abuf) {
-	char 	*mybuf = (char *)malloc(128000 +1);
+	char 	*mybuf;
 	int		len;
 
 	if (!isConnected()) return false;
+
+	mybuf = (char *)malloc(128000 +1);
 
 	// receive answer
 	*abuf = "";
@@ -148,7 +152,7 @@ bool MMSTCPClient::receiveString(string *abuf, int buflen) {
 
 	if (!isConnected()) return false;
 
-	mybuf = new char[buflen+1];
+	mybuf = (char*)malloc(buflen+1);
 
 	memset(mybuf,0,buflen+1);
 
@@ -163,8 +167,9 @@ bool MMSTCPClient::receiveString(string *abuf, int buflen) {
 		}
 	} while(received < buflen);
 
-	*abuf= mybuf;
-	delete mybuf;
+	*abuf= string(mybuf);
+	free(mybuf);
+
 	return true;
 }
 

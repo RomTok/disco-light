@@ -32,10 +32,6 @@
 
 #ifdef __HAVE_GSTREAMER__
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#endif
-
 #include <string.h>
 #include <signal.h>
 #ifdef HAVE_UNISTD_H

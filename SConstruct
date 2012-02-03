@@ -13,6 +13,7 @@
 #   . scons check         perform dependency checking
 #   . scons install       install library and include files
 #   . scons doc           build documentation for the project (Doxygen)
+#   . scons cppcheck      run cppcheck tool (http://cppcheck.sourceforge.net)
 #
 
 import os, sys, string, re, SCons
@@ -64,6 +65,7 @@ Help("Type: 'scons [options]' to build disko.\n" +
      "      'scons [options] check' to check the requirements for building disko.\n" +
      "      'scons -c' to clean.\n" +
      "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
+     "      'scons cppcheck' to execute cppcheck (has to be installed).\n" +
      "      'scons install' to install disko.\n\n" +
      "The following options are available:\n")
 
@@ -493,7 +495,7 @@ def printSummary():
 #######################################################################
 # Check dependencies                                                  #
 #######################################################################
-if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv):
+if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' in sys.argv):
 	conf = Configure(env,
                      custom_tests = {'checkOptions' : checkOptions,
                                      'checkPKGConfig' : checkPKGConfig,
@@ -906,13 +908,46 @@ env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
 Clean('lib', 'disko.pc')
 
 #######################################################################
-#  Documentation                                                      #
+# Documentation                                                       #
 #######################################################################
 doxygenBuilder = Builder(action = 'doxygen $SOURCE')
 env.Append(BUILDERS = { 'DoxygenDoc' : doxygenBuilder })
 doxygenDocPath = '(doc)'
 env.DoxygenDoc(doxygenDocPath, 'doc/conf/disko.conf')
 env.Alias('doc', doxygenDocPath)
+
+#######################################################################
+# CPPCheck (http://cppcheck.sourceforge.net)                          #
+#######################################################################
+env.Command('cppcheck', ['inc/disko.h'],
+ 'cppcheck \
+  -q \
+  -I./inc \
+  -D__HAVE_CURL__ \
+  -D__HAVE_DL__ \
+  -D__HAVE_DIRECTFB__ \
+  -D__HAVE_FBDEV__ \
+  -D__HAVE_XLIB__ \
+  -D__HAVE_XVSHM__ \
+  -D__HAVE_OPENGL__ \
+  -D__HAVE_GLES2__ \
+  -D__HAVE_PF_ALL__ \
+  -D__ENABLE_MMSFB_X11_CORE__ \
+  -D__ENABLE_MMSFBSURFACE_X11_CORE__ \
+  -D__HAVE_PNG__ \
+  -D__HAVE_JPEG__ \
+  -D__HAVE_TIFF__ \
+  -D__HAVE_XINE__ \
+  -D__HAVE_GSTREAMER__ \
+  -D__HAVE_MMSMEDIA__ \
+  -D__HAVE_MIXER__ \
+  -D__ENABLE_SQLITE__ \
+  -D__ENABLE_MYSQL__ \
+  -D__ENABLE_FREETDS__ \
+  -D__HAVE_MMSCRYPT__ \
+  -D__HAVE_MMSFLASH__ \
+  -D__HAVE_VMIME__ \
+  src')
 
 #######################################################################
 # Building disko                                                      #

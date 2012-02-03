@@ -34,8 +34,19 @@
 #include "mmstools/tools.h"
 #include <stdlib.h>
 
-MMSDateTime::MMSDateTime() {
-	MMSDateTime(time(NULL));
+MMSDateTime::MMSDateTime() :
+	timest(time(NULL)) {
+
+	struct tm mytime;
+
+	localtime_r(&(this->timest),&mytime);
+	this->daynum = mytime.tm_mday;
+	this->monthnum = mytime.tm_mon;
+	this->yearnum = 1900 + mytime.tm_year;
+	this->dayofweek = mytime.tm_wday;
+	this->hour = mytime.tm_hour;
+	this->minute = mytime.tm_min;
+	this->seconds = mytime.tm_sec;
 }
 
 MMSDateTime::MMSDateTime(string timestr, string format) {
@@ -60,10 +71,9 @@ MMSDateTime::MMSDateTime(string timestr, string format) {
 	this->timest = mktime(&mytime);
 }
 
-MMSDateTime::MMSDateTime(time_t stamp) {
-	this->timest = stamp;
+MMSDateTime::MMSDateTime(time_t stamp) :
+	timest(stamp) {
 	struct tm mytime;
-
 
 	localtime_r(&(this->timest),&mytime);
 	this->daynum = mytime.tm_mday;
@@ -73,7 +83,6 @@ MMSDateTime::MMSDateTime(time_t stamp) {
 	this->hour = mytime.tm_hour;
 	this->minute = mytime.tm_min;
 	this->seconds = mytime.tm_sec;
-
 }
 
 MMSDateTime::~MMSDateTime() {

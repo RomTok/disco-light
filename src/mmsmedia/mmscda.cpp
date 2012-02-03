@@ -326,9 +326,10 @@ void MMSCDA::checktoc() {
 	struct cdrom_tochdr hdr;
 	if(ioctl(fd_cd, CDROMREADTOCHDR, &hdr) == -1) {
 		this->titlecount=-1;
-		return;
 	} else {
 		DEBUGMSG("MMSMedia", "tochdr cdth_trk0: " + iToStr(hdr.cdth_trk0) + " cdth_trk1: " + iToStr(hdr.cdth_trk1));
 		this->titlecount = hdr.cdth_trk1;
 	}
+
+	close(fd_cd);
 }

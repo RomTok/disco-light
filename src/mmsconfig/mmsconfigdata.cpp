@@ -87,11 +87,11 @@ const string MMSConfigData::getPrefix() {
     if(stream!=NULL) {
         if(fgets(prefix,1024,stream)!=NULL) {
             prefix[strlen(prefix)-1]='/';
-            fclose(stream);
+            pclose(stream);
             this->global.prefix = prefix;
             return this->global.prefix;
         }
-
+        pclose(stream);
     }
 
     /* check prefix from mmstools.pc (big_lib = n) */
@@ -99,11 +99,11 @@ const string MMSConfigData::getPrefix() {
     if(stream!=NULL) {
         if(fgets(prefix,1024,stream)!=NULL) {
             prefix[strlen(prefix)-1]='/';
-            fclose(stream);
+            pclose(stream);
             this->global.prefix = prefix;
             return this->global.prefix;
         }
-
+        pclose(stream);
     }
 
     /* check if there is the diskoappctrl tool installed */
