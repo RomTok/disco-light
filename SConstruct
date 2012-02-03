@@ -493,7 +493,7 @@ def printSummary():
 #######################################################################
 # Check dependencies                                                  #
 #######################################################################
-if not ('-c' in sys.argv or '-h' in sys.argv):
+if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv):
 	conf = Configure(env,
                      custom_tests = {'checkOptions' : checkOptions,
                                      'checkPKGConfig' : checkPKGConfig,
