@@ -1035,104 +1035,6 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 
 
 
-// -15 stored using a single precision bias of 127
-const unsigned int HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP = 0x38000000;
-// max exponent value in single precision that will be converted
-// to Inf or Nan when stored as a half-float
-const unsigned int HALF_FLOAT_MAX_BIASED_EXP_AS_SINGLE_FP_EXP = 0x47800000;
-// 255 is the max exponent biased value
-const unsigned int FLOAT_MAX_BIASED_EXP = (0xFF << 23);
-const unsigned int HALF_FLOAT_MAX_BIASED_EXP = (0x1F << 10);
-typedef unsigned short hfloat;
-
-hfloat convertFloatToHFloat(float *f) {
-	unsigned int x = *(unsigned int *)f;
-	unsigned int sign = (unsigned short)(x >> 31);
-	unsigned int mantissa;
-	unsigned int exp;
-	hfloat hf;
-
-	// get mantissa
-	mantissa = x & ((1 << 23) - 1);
-
-	// get exponent bits
-	exp = x & FLOAT_MAX_BIASED_EXP;
-
-	if (exp >= HALF_FLOAT_MAX_BIASED_EXP_AS_SINGLE_FP_EXP) {
-		// check if the original single precision float number is a NaN
-		if (mantissa && (exp == FLOAT_MAX_BIASED_EXP)) {
-			// we have a single precision NaN
-			mantissa = (1 << 23) - 1;
-		}
-		else {
-			// 16-bit half-float representation stores number as Inf
-			mantissa = 0;
-		}
-
-		hf = (((hfloat)sign) << 15) | (hfloat)(HALF_FLOAT_MAX_BIASED_EXP) |
-		(hfloat)(mantissa >> 13);
-	}
-	// check if exponent is <= -15
-	else if (exp <= HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP) {
-		// store a denorm half-float value or zero
-		exp = (HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP - exp) >> 23;
-		mantissa >>= (14 + exp);
-		hf = (((hfloat)sign) << 15) | (hfloat)(mantissa);
-	}
-	else {
-		hf = (((hfloat)sign) << 15) |
-		(hfloat)((exp - HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP) >> 13) |
-		(hfloat)(mantissa >> 13);
-	}
-
-	return hf;
-}
-
-float convertHFloatToFloat(hfloat hf) {
-	unsigned int sign = (unsigned int)(hf >> 15);
-	unsigned int mantissa = (unsigned int)(hf & ((1 << 10) - 1));
-	unsigned int exp = (unsigned int)(hf & HALF_FLOAT_MAX_BIASED_EXP);
-	unsigned int f;
-
-	if (exp == HALF_FLOAT_MAX_BIASED_EXP) {
-		// we have a half-float NaN or Inf
-		// half-float NaNs will be converted to a single precision NaN
-		// half-float Infs will be converted to a single precision Inf
-		exp = FLOAT_MAX_BIASED_EXP;
-		if (mantissa)
-			mantissa = (1 << 23) - 1; // set all bits to indicate a NaN
-	}
-	else if (exp == 0x0) {
-		// convert half-float zero/denorm to single precision value
-		if (mantissa) {
-			mantissa <<= 1;
-			exp = HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP;
-
-			// check for leading 1 in denorm mantissa
-			while ((mantissa & (1 << 10)) == 0) {
-				// for every leading 0, decrement single precision exponent by 1
-				// and shift half-float mantissa value to the left
-				mantissa <<= 1;
-				exp -= (1 << 23);
-			}
-
-			// clamp the mantissa to 10-bits
-			mantissa &= ((1 << 10) - 1);
-			// shift left to generate single-precision mantissa of 23-bits
-			mantissa <<= 13;
-		}
-	}
-	else {
-		// shift left to generate single-precision mantissa of 23-bits
-		mantissa <<= 13;
-		// generate single precision biased exponent value
-		exp = (exp << 13) + HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP;
-	}
-
-	f = (sign << 31) | exp | mantissa;
-	return *((float *)&f);
-}
-
 
 bool MMSFBGL::initVertexBuffer(GLuint vbo, unsigned int size, const GLvoid *data) {
 
@@ -2562,8 +2464,15 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 	// load the vertices
 	if (vertices) {
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(vertices->eSize, GL_FLOAT, 0, vertices->buf);
+		switch (vertices->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(vertices->eSize, GL_FLOAT, 0, vertices->data);
+			break;
+		default:
+			glDisableClientState(GL_VERTEX_ARRAY);
+			break;
+		}
 	}
 	else {
 		glDisableClientState(GL_VERTEX_ARRAY);
@@ -2571,8 +2480,15 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 	// load the normals
 	if (normals) {
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT, 0, normals->buf);
+		switch (normals->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glEnableClientState(GL_NORMAL_ARRAY);
+			glNormalPointer(GL_FLOAT, 0, normals->data);
+			break;
+		default:
+			glDisableClientState(GL_NORMAL_ARRAY);
+			break;
+		}
 	}
 	else {
 		glDisableClientState(GL_NORMAL_ARRAY);
@@ -2580,8 +2496,15 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 	// load the texture coordinates
 	if (texcoords) {
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(texcoords->eSize, GL_FLOAT, 0, texcoords->buf);
+		switch (texcoords->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glTexCoordPointer(texcoords->eSize, GL_FLOAT, 0, texcoords->data);
+			break;
+		default:
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			break;
+		}
 	}
 	else {
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -2593,12 +2516,32 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 	// load the vertices
 	if (vertices) {
-		glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
-							   GL_FALSE, 0, vertices->buf);
-		ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
+		bool enable = false;
+		switch (vertices->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
+								   GL_FALSE, 0, vertices->data);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,,GL_FLOAT,GL_FALSE,...)");
+			enable = true;
+			break;
+#ifdef GL_HALF_FLOAT_OES
+		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_HALF_FLOAT_OES,
+								   GL_FALSE, 0, vertices->data);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
+			enable = true;
+			break;
+#endif
+		default:
+			glDisableVertexAttribArray(MMSFBGL_VSV_LOC);
+			ERROR_CHECK_BOOL("glDisableVertexAttribArray(MMSFBGL_VSV_LOC)");
+			break;
+		}
 
-		glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
-		ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+		if (enable) {
+			glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+			ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+		}
 	}
 	else {
 		glDisableVertexAttribArray(MMSFBGL_VSV_LOC);
@@ -2607,19 +2550,39 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 	// load the texture coordinates
 	if (texcoords) {
-		glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
-							   GL_FALSE, 0, texcoords->buf);
-		ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,...)");
+		bool enable = false;
+		switch (texcoords->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
+								   GL_FALSE, 0, texcoords->buf);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_FLOAT,GL_FALSE,...)");
+			enable = true;
+			break;
+#ifdef GL_HALF_FLOAT_OES
+		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_HALF_FLOAT_OES,
+								   GL_FALSE, 0, texcoords->buf);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
+			enable = true;
+			break;
+#endif
+		default:
+			glDisableVertexAttribArray(VSTexCoordLoc);
+			ERROR_CHECK_BOOL("glDisableVertexAttribArray(VSTexCoordLoc)");
+			break;
+		}
 
-		glEnableVertexAttribArray(VSTexCoordLoc);
-		ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
+		if (enable) {
+			glEnableVertexAttribArray(VSTexCoordLoc);
+			ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
 
-		// bind the texture unit0
-		glActiveTexture(GL_TEXTURE0);
-		ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
+			// bind the texture unit0
+			glActiveTexture(GL_TEXTURE0);
+			ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
 
-		glUniform1i(FSTextureLoc, 0);
-		ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc, 0)");
+			glUniform1i(FSTextureLoc, 0);
+			ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc, 0)");
+		}
 	}
 	else {
 		glDisableVertexAttribArray(VSTexCoordLoc);
@@ -2651,9 +2614,9 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 		break;
 	}
 
-	if (indices->eNum && indices->buf) {
+	if (indices->eNum && indices->data) {
 		// we have indices
-		glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, indices->buf);
+		glDrawElements(mode, indices->eNum, GL_UNSIGNED_INT, indices->data);
 
 		// print errors
 		switch (indices->type) {

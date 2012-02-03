@@ -1144,16 +1144,36 @@ MMSLanguage getMMSLanguageFromString(string lang);
 
 
 
+// -15 stored using a single precision bias of 127
+const unsigned int HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP = 0x38000000;
+
+// max exponent value in single precision that will be converted
+// to Inf or Nan when stored as a half-float
+const unsigned int HALF_FLOAT_MAX_BIASED_EXP_AS_SINGLE_FP_EXP = 0x47800000;
+
+// 255 is the max exponent biased value
+const unsigned int FLOAT_MAX_BIASED_EXP = (0xFF << 23);
+const unsigned int HALF_FLOAT_MAX_BIASED_EXP = (0x1F << 10);
+
+// half-float type
+typedef unsigned short MMS_HALF_FLOAT;
 
 
 
 
+//! type of vertex data
+typedef enum {
+	MMS3D_VERTEX_DATA_TYPE_FLOAT = 0,
+	MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT
+} MMS3D_VERTEX_DATA_TYPE;
 
 //! vertex array
 typedef struct {
-	//! array of floats
-	float	*buf;
-	//! number of floats per vertex
+	//! type of vertex data
+	MMS3D_VERTEX_DATA_TYPE	dtype;
+	//! vertex data
+	void	*data;
+	//! number of values per vertex
 	int		eSize;
 	//! number of vertices
 	int		eNum;
@@ -1186,7 +1206,7 @@ typedef struct {
 	//! element type
 	MMS3D_INDEX_ARRAY_TYPE	type;
 	//! array of unsigned ints
-	unsigned int	*buf;
+	unsigned int	*data;
 	//! number of indices
 	int				eNum;
 } MMS3D_INDEX_ARRAY;

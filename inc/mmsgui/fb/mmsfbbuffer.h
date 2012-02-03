@@ -181,12 +181,12 @@ class MMSFBBuffer {
 					case BUFFER_TYPE_INDEX_VERTEX:
 						if (this->index_buffer.arrays) {
 							for (unsigned int i = 0; i < this->index_buffer.num_arrays; i++)
-								if (this->index_buffer.arrays[i].buf) free(this->index_buffer.arrays[i].buf);
+								if (this->index_buffer.arrays[i].data) free(this->index_buffer.arrays[i].data);
 							free(this->index_buffer.arrays);
 						}
 						if (this->vertex_buffer.arrays) {
 							for (unsigned int i = 0; i < this->vertex_buffer.num_arrays; i++)
-								if (this->vertex_buffer.arrays[i].buf) free(this->vertex_buffer.arrays[i].buf);
+								if (this->vertex_buffer.arrays[i].data) free(this->vertex_buffer.arrays[i].data);
 							free(this->vertex_buffer.arrays);
 						}
 						break;

@@ -614,18 +614,20 @@ bool with_outline = true;
 				return false;
 			}
 			indices->eNum = 0;
-			indices->buf  = NULL;
+			indices->data = NULL;
 
 			// prepare vertices
 			vertices->eSize = 2;
 			vertices->eNum  = ftmesh->getVertexCount();
-			vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+			vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+			vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
 			// for all vertices in the polygon
 			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
 				const MMSFTVertex &vertex = ftmesh->getVertex(v);
-				vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
-				vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+				float *vdata = (float *)vertices->data;
+				vdata[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
+				vdata[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
 			}
 
 			// next mesh
@@ -672,17 +674,19 @@ bool with_outline = true;
 				// note: no need to allocate index buffer, because vertices are correctly sorted
 				indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
 				indices->eNum = 0;
-				indices->buf  = NULL;
+				indices->data = NULL;
 
 				// prepare vertices
 				vertices->eSize = 2;
 				vertices->eNum  = ftcontour->getVertexCount();
-				vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+				vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
 					const MMSFTVertex &vertex = ftcontour->Vertex(v);
-					vertices->buf[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
-					vertices->buf[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
+					float *vdata = (float *)vertices->data;
+					vdata[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
+					vdata[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
 				}
 
 				// next outline

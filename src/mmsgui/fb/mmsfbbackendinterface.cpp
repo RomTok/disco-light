@@ -634,7 +634,7 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMS
 			unsigned int size = sizeof(float) * array->eSize * array->eNum;
 			vertex_bo->buffers[i].bo = vertex_bo->bo;
 			vertex_bo->buffers[i].offs+= vbo_offset;
-			mmsfbgl.initVertexSubBuffer(vertex_bo->buffers[i].bo, vertex_bo->buffers[i].offs, size, array->buf);
+			mmsfbgl.initVertexSubBuffer(vertex_bo->buffers[i].bo, vertex_bo->buffers[i].offs, size, array->data);
 		}
 	}
 

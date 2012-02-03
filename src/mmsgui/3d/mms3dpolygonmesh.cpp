@@ -58,73 +58,80 @@ void MMS3DPolygonMesh::genRectangle(float width, float height,
 	// allocate memory for buffers
 	if (vertices) {
 		vertices->eSize = 2;
-		vertices->eNum = 4;
-		vertices->buf = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+		vertices->eNum  = 4;
+		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
-		normals->eNum = 4;
-		normals->buf = (float *)malloc(sizeof(float) * normals->eSize * normals->eNum);
+		normals->eNum  = 4;
+		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
-		texcoords->eNum = 4;
-		texcoords->buf = (float *)malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
+		texcoords->eNum  = 4;
+		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
 		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 		indices->eNum = 4;
-		indices->buf = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
 
 
 
 	// calculate buffers
 	if (vertices) {
-		vertices->buf[0*2 + 0] = -width/2;
-		vertices->buf[0*2 + 1] = -height/2;
-		vertices->buf[1*2 + 0] = width/2;
-		vertices->buf[1*2 + 1] = -height/2;
-		vertices->buf[2*2 + 0] = -width/2;
-		vertices->buf[2*2 + 1] = height/2;
-		vertices->buf[3*2 + 0] = width/2;
-		vertices->buf[3*2 + 1] = height/2;
+		float *vdata = (float *)vertices->data;
+		vdata[0*2 + 0] = -width/2;
+		vdata[0*2 + 1] = -height/2;
+		vdata[1*2 + 0] = width/2;
+		vdata[1*2 + 1] = -height/2;
+		vdata[2*2 + 0] = -width/2;
+		vdata[2*2 + 1] = height/2;
+		vdata[3*2 + 0] = width/2;
+		vdata[3*2 + 1] = height/2;
 	}
 
 	if (normals) {
-		normals->buf[0*3 + 0] = 0;
-		normals->buf[0*3 + 1] = 0;
-		normals->buf[0*3 + 2] = 1;
-		normals->buf[1*3 + 0] = 0;
-		normals->buf[1*3 + 1] = 0;
-		normals->buf[1*3 + 2] = 1;
-		normals->buf[2*3 + 0] = 0;
-		normals->buf[2*3 + 1] = 0;
-		normals->buf[2*3 + 2] = 1;
-		normals->buf[3*3 + 0] = 0;
-		normals->buf[3*3 + 1] = 0;
-		normals->buf[3*3 + 2] = 1;
+		float *ndata = (float *)normals->data;
+		ndata[0*3 + 0] = 0;
+		ndata[0*3 + 1] = 0;
+		ndata[0*3 + 2] = 1;
+		ndata[1*3 + 0] = 0;
+		ndata[1*3 + 1] = 0;
+		ndata[1*3 + 2] = 1;
+		ndata[2*3 + 0] = 0;
+		ndata[2*3 + 1] = 0;
+		ndata[2*3 + 2] = 1;
+		ndata[3*3 + 0] = 0;
+		ndata[3*3 + 1] = 0;
+		ndata[3*3 + 2] = 1;
 	}
 
 	if (texcoords) {
-		texcoords->buf[0*2 + 0] = 0;
-		texcoords->buf[0*2 + 1] = 0;
-		texcoords->buf[1*2 + 0] = 1;
-		texcoords->buf[1*2 + 1] = 0;
-		texcoords->buf[2*2 + 0] = 0;
-		texcoords->buf[2*2 + 1] = 1;
-		texcoords->buf[3*2 + 0] = 1;
-		texcoords->buf[3*2 + 1] = 1;
+		float *tdata = (float *)texcoords->data;
+		tdata[0*2 + 0] = 0;
+		tdata[0*2 + 1] = 0;
+		tdata[1*2 + 0] = 1;
+		tdata[1*2 + 1] = 0;
+		tdata[2*2 + 0] = 0;
+		tdata[2*2 + 1] = 1;
+		tdata[3*2 + 0] = 1;
+		tdata[3*2 + 1] = 1;
 	}
 
 	if (indices) {
-		indices->buf[0] = 0;
-		indices->buf[1] = 1;
-		indices->buf[2] = 2;
-		indices->buf[3] = 3;
+		unsigned int *idata = indices->data;
+		idata[0] = 0;
+		idata[1] = 1;
+		idata[2] = 2;
+		idata[3] = 3;
 	}
 }
 
@@ -143,69 +150,73 @@ void MMS3DPolygonMesh::genSphere(int numSlices, float radius,
 	// allocate memory for buffers
 	if (vertices) {
 		vertices->eSize = 3;
-		vertices->eNum = ( numParallels + 1 ) * ( numSlices + 1 );
-		vertices->buf = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+		vertices->eNum  = ( numParallels + 1 ) * ( numSlices + 1 );
+		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
-		normals->eNum = ( numParallels + 1 ) * ( numSlices + 1 );
-		normals->buf = (float *)malloc(sizeof(float) * normals->eSize * normals->eNum);
+		normals->eNum  = ( numParallels + 1 ) * ( numSlices + 1 );
+		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
-		texcoords->eNum = ( numParallels + 1 ) * ( numSlices + 1 );
-		texcoords->buf = (float *)malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
+		texcoords->eNum  = ( numParallels + 1 ) * ( numSlices + 1 );
+		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
 		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
 		indices->eNum = numParallels * numSlices * 6;
-		indices->buf = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
 
 
 	for ( i = 0; i < numParallels + 1; i++ ) {
-	  for ( j = 0; j < numSlices + 1; j++ ) {
-		 int vertex = ( i * (numSlices + 1) + j ) * vertices->eSize;
+		for ( j = 0; j < numSlices + 1; j++ ) {
+			int vertex = ( i * (numSlices + 1) + j ) * vertices->eSize;
 
-		 if (vertices) {
-			vertices->buf[vertex + 0] = radius * sinf ( angleStep * (float)i ) *
-											   sinf ( angleStep * (float)j );
-			vertices->buf[vertex + 1] = radius * cosf ( angleStep * (float)i );
-			vertices->buf[vertex + 2] = radius * sinf ( angleStep * (float)i ) *
-											   cosf ( angleStep * (float)j );
-		 }
+			if (vertices) {
+				float *vdata = (float *)vertices->data;
+				vdata[vertex + 0] = radius * sinf ( angleStep * (float)i ) * sinf ( angleStep * (float)j );
+				vdata[vertex + 1] = radius * cosf ( angleStep * (float)i );
+				vdata[vertex + 2] = radius * sinf ( angleStep * (float)i ) * cosf ( angleStep * (float)j );
+			}
 
-		 if (normals) {
-			normals->buf[vertex + 0] = vertices->buf[vertex + 0] / radius;
-			normals->buf[vertex + 1] = vertices->buf[vertex + 1] / radius;
-			normals->buf[vertex + 2] = vertices->buf[vertex + 2] / radius;
-		 }
+			if (normals) {
+				float *vdata = (float *)vertices->data;
+				float *ndata = (float *)normals->data;
+				ndata[vertex + 0] = vdata[vertex + 0] / radius;
+				ndata[vertex + 1] = vdata[vertex + 1] / radius;
+				ndata[vertex + 2] = vdata[vertex + 2] / radius;
+			}
 
-		 if (texcoords) {
-			int texIndex = ( i * (numSlices + 1) + j ) * texcoords->eSize;
-			texcoords->buf[texIndex + 0] = (float) j / (float) numSlices;
-			texcoords->buf[texIndex + 1] = ( 1.0f - (float) i ) / (float) (numParallels - 1 );
-		 }
-	  }
+			if (texcoords) {
+				float *tdata = (float *)texcoords->data;
+				int texIndex = ( i * (numSlices + 1) + j ) * texcoords->eSize;
+				tdata[texIndex + 0] = (float) j / (float) numSlices;
+				tdata[texIndex + 1] = ( 1.0f - (float) i ) / (float) (numParallels - 1 );
+			}
+		}
 	}
 
 	// generate the indices
 	if (indices) {
-	  unsigned int *indexBuf = indices->buf;
-	  for ( i = 0; i < numParallels ; i++) {
-		 for ( j = 0; j < numSlices; j++) {
-			*indexBuf++  = i * ( numSlices + 1 ) + j;
-			*indexBuf++ = ( i + 1 ) * ( numSlices + 1 ) + j;
-			*indexBuf++ = ( i + 1 ) * ( numSlices + 1 ) + ( j + 1 );
-
-			*indexBuf++ = i * ( numSlices + 1 ) + j;
-			*indexBuf++ = ( i + 1 ) * ( numSlices + 1 ) + ( j + 1 );
-			*indexBuf++ = i * ( numSlices + 1 ) + ( j + 1 );
-		 }
-	  }
+		unsigned int *idata = (unsigned int *)indices->data;
+		for ( i = 0; i < numParallels ; i++) {
+			for ( j = 0; j < numSlices; j++) {
+				*idata++ = i * ( numSlices + 1 ) + j;
+				*idata++ = ( i + 1 ) * ( numSlices + 1 ) + j;
+				*idata++ = ( i + 1 ) * ( numSlices + 1 ) + ( j + 1 );
+				*idata++ = i * ( numSlices + 1 ) + j;
+				*idata++ = ( i + 1 ) * ( numSlices + 1 ) + ( j + 1 );
+				*idata++ = i * ( numSlices + 1 ) + ( j + 1 );
+			}
+		}
 	}
 }
 
@@ -222,26 +233,29 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 	// allocate memory for buffers
 	if (vertices) {
 		vertices->eSize = 3;
-		vertices->eNum = eNum;
-		vertices->buf = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+		vertices->eNum  = eNum;
+		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
-		normals->eNum = eNum;
-		normals->buf = (float *)malloc(sizeof(float) * normals->eSize * normals->eNum);
+		normals->eNum  = eNum;
+		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
-		texcoords->eNum = eNum;
-		texcoords->buf = (float *)malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
+		texcoords->eNum  = eNum;
+		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
 		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 		indices->eNum = eNum;
-		indices->buf = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
 
 
@@ -271,19 +285,22 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 					float z = costheta * r;
 
 					if (normals) {
-						normals->buf[index * 3 + 0] = sintheta * cosphi;
-						normals->buf[index * 3 + 1] = sinphi;
-						normals->buf[index * 3 + 2] = costheta * cosphi;
+						float *ndata = (float *)normals->data;
+						ndata[index * 3 + 0] = sintheta * cosphi;
+						ndata[index * 3 + 1] = sinphi;
+						ndata[index * 3 + 2] = costheta * cosphi;
 					}
 
 					if (vertices) {
-						vertices->buf[index * 3 + 0] = x;
-						vertices->buf[index * 3 + 1] = y;
-						vertices->buf[index * 3 + 2] = z;
+						float *vdata = (float *)vertices->data;
+						vdata[index * 3 + 0] = x;
+						vdata[index * 3 + 1] = y;
+						vdata[index * 3 + 2] = z;
 					}
 
 					if (indices) {
-						indices->buf[index] = index;
+						float *idata = (float *)indices->data;
+						idata[index] = index;
 					}
 
 					index++;
@@ -311,26 +328,29 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	// allocate memory for buffers
 	if (vertices) {
 		vertices->eSize = 3;
-		vertices->eNum = eNum;
-		vertices->buf = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+		vertices->eNum  = eNum;
+		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
-		normals->eNum = eNum;
-		normals->buf = (float *)malloc(sizeof(float) * normals->eSize * normals->eNum);
+		normals->eNum  = eNum;
+		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
-		texcoords->eNum = eNum;
-		texcoords->buf = (float *)malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
+		texcoords->eNum  = eNum;
+		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
 		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 		indices->eNum = eNum;
-		indices->buf = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
 
 	// init buffer index
@@ -347,27 +367,31 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 		float y = radius * sin(a);
 
 		if (normals) {
-			normals->buf[index * 3 + 0] = normals->buf[index * 3 + 3] = x / radius;
-			normals->buf[index * 3 + 1] = normals->buf[index * 3 + 4] = y / radius;
-			normals->buf[index * 3 + 2] = normals->buf[index * 3 + 5] = 0;
+			float *ndata = (float *)normals->data;
+			ndata[index * 3 + 0] = ndata[index * 3 + 3] = x / radius;
+			ndata[index * 3 + 1] = ndata[index * 3 + 4] = y / radius;
+			ndata[index * 3 + 2] = ndata[index * 3 + 5] = 0;
 		}
 
 		if (vertices) {
-			vertices->buf[index * 3 + 0] = vertices->buf[index * 3 + 3] = x;
-			vertices->buf[index * 3 + 1] = vertices->buf[index * 3 + 4] = y;
-			vertices->buf[index * 3 + 2] = z0;
-			vertices->buf[index * 3 + 5] = z1;
+			float *vdata = (float *)vertices->data;
+			vdata[index * 3 + 0] = vdata[index * 3 + 3] = x;
+			vdata[index * 3 + 1] = vdata[index * 3 + 4] = y;
+			vdata[index * 3 + 2] = z0;
+			vdata[index * 3 + 5] = z1;
 		}
 
 		if (texcoords) {
-			texcoords->buf[index * 2 + 0] = texcoords->buf[index * 2 + 2] = j / (float) numSlices;
-			texcoords->buf[index * 2 + 1] = 0;
-			texcoords->buf[index * 2 + 3] = 1;
+			float *tdata = (float *)texcoords->data;
+			tdata[index * 2 + 0] = tdata[index * 2 + 2] = j / (float) numSlices;
+			tdata[index * 2 + 1] = 0;
+			tdata[index * 2 + 3] = 1;
 		}
 
 		if (indices) {
-			indices->buf[index]   = index;
-			indices->buf[index+1] = index+1;
+			float *idata = (float *)indices->data;
+			idata[index]   = index;
+			idata[index+1] = index+1;
 		}
 
 		index+=2;
@@ -542,23 +566,23 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier,
 	// copy buffers
 	if (item->vertices >= 0) {
 		*(this->varrays[item->vertices]) = *vertices;
-		this->varrays[item->vertices]->buf = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
-		memcpy(this->varrays[item->vertices]->buf, vertices->buf, sizeof(float) * vertices->eSize * vertices->eNum);
+		this->varrays[item->vertices]->data = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+		memcpy(this->varrays[item->vertices]->data, vertices->data, sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 	if (item->normals >= 0) {
 		*(this->varrays[item->normals]) = *normals;
-		this->varrays[item->normals]->buf = (float *)malloc(sizeof(float) * normals->eSize * normals->eNum);
-		memcpy(this->varrays[item->normals]->buf, normals->buf, sizeof(float) * normals->eSize * normals->eNum);
+		this->varrays[item->normals]->data = malloc(sizeof(float) * normals->eSize * normals->eNum);
+		memcpy(this->varrays[item->normals]->data, normals->data, sizeof(float) * normals->eSize * normals->eNum);
 	}
 	if (item->texcoords >= 0) {
 		*(this->varrays[item->texcoords]) = *texcoords;
-		this->varrays[item->texcoords]->buf = (float *)malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
-		memcpy(this->varrays[item->texcoords]->buf, texcoords->buf, sizeof(float) * texcoords->eSize * texcoords->eNum);
+		this->varrays[item->texcoords]->data = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
+		memcpy(this->varrays[item->texcoords]->data, texcoords->data, sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 	if (item->indices >= 0) {
 		*(this->iarrays[item->indices]) = *indices;
-		this->iarrays[item->indices]->buf = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
-		memcpy(this->iarrays[item->indices]->buf, indices->buf, sizeof(unsigned int) * indices->eNum);
+		this->iarrays[item->indices]->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
+		memcpy(this->iarrays[item->indices]->data, indices->data, sizeof(unsigned int) * indices->eNum);
 	}
 
 	return this->pm_items_cnt - 1;
