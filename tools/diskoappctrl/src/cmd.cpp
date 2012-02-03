@@ -638,6 +638,7 @@ void Cmd::handleRequest() {
             break;
         case VERSION :
         	executeVersion();
+        	break;
 		default:
 			cons.printError("no command found");
 			break;

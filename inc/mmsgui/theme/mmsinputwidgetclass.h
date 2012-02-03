@@ -107,6 +107,9 @@ class MMSInputWidgetClass : public MMSTextBaseClass {
         //! Constructor of class MMSInputWidgetClass.
         MMSInputWidgetClass();
 
+        //! Destructor of class MMSInputWidgetClass.
+        virtual ~MMSInputWidgetClass();
+
         //! Mark all attributes as not set.
         void unsetAll();
 

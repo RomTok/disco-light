@@ -993,6 +993,9 @@ class MMSTextBaseClass {
         //! Constructor of class MMSTextBaseClass.
         MMSTextBaseClass();
 
+        //! Destructor of class MMSTextBaseClass.
+        virtual ~MMSTextBaseClass();
+
         //! Mark all attributes as not set.
         virtual void unsetAll();
 
