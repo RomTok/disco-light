@@ -1667,6 +1667,7 @@ void MMSDialogManager::updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widge
                 // apply settings from node
                 ((MMSCheckBoxWidget*)widget)->updateFromThemeClass(&themeCls);
             }
+            break;
         case MMSWIDGETTYPE_CANVAS:
             {
                 // read attributes from node

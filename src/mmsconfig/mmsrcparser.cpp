@@ -326,6 +326,7 @@ void MMSRcParser::check_outputtype(MMSFBOutputType outputtype, xmlChar *parname,
 			break;
 		default:
 			WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_DFB, "-> this depends on backend=\"DFB\"");
+			break;
 		}
 	}
 	else
@@ -339,6 +340,7 @@ void MMSRcParser::check_outputtype(MMSFBOutputType outputtype, xmlChar *parname,
 			break;
 		default:
 			WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_X11, "-> this depends on backend=\"X11\"");
+			break;
 		}
 	}
 	else
@@ -353,6 +355,7 @@ void MMSRcParser::check_outputtype(MMSFBOutputType outputtype, xmlChar *parname,
 			break;
 		default:
 			WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_FBDEV, "-> this depends on backend=\"FBDEV\"");
+			break;
 		}
 	}
 }

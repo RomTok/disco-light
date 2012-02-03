@@ -914,6 +914,7 @@ string XMLencode( const string &source ) {
 
              default:
             	  dest += c;
+            	  break;
          }
     }
 

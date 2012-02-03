@@ -747,6 +747,7 @@ void MMSInputWidget::handleInput(MMSInputEvent *inputevent) {
 
 			default:
 				processed = false;
+				break;
 		}
 	}
 

@@ -4462,7 +4462,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
 	                    case MMSKEY_CURSOR_UP:
 	                        // set the arrow widgets
 	                        switchArrowWidgets();
-
+	                        break;
                         default:
                             break;
 	                }
