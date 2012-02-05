@@ -59,6 +59,10 @@
 #include <EGL/egl.h>
 #endif
 
+#ifdef GL_HALF_FLOAT_OES
+#define __HAVE_OGL_HALF_FLOAT__
+#endif
+
 //! Wrapper class for all supported Open GL versions.
 /*!
 \author Jens Schneider
@@ -309,4 +313,5 @@ class MMSFBGL {
 #endif
 
 #endif /* MMSFBGL_H_ */
+
 

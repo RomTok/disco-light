@@ -140,7 +140,7 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			int rh = h;
 			if (rw && rh) {
 				float ratio = (float)rw / (float)rh;
-				h = 100;
+				h = 200;
 				w = h * ratio;
 				if (w == h) w = 0;
 				this->scale_coeff = (float)rh / (float)h;
@@ -148,11 +148,11 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			else
 			if (rh) {
 				w = 0;
-				h = 100;
+				h = 200;
 				this->scale_coeff = (float)rh / (float)h;
 			}
 			else {
-				w = 100;
+				w = 200;
 				h = 0;
 				this->scale_coeff = (float)rw / (float)w;
 			}
@@ -183,14 +183,8 @@ MMSFBFont::MMSFBFont(string filename, int w, int h) :
 			return;
     	}
 
-/*#if (defined(__HAVE_OPENGL__) && defined(__HAVE_GLU__))
-    	this->ascender = (int)(((float)((FT_Face)this->ft_face)->size->metrics.ascender * this->scale_coeff + 32) / 64);
-    	this->descender = (int)(((float)abs(((FT_Face)this->ft_face)->size->metrics.descender) * this->scale_coeff + 32) / 64);
-#else*/
     	this->ascender = ((FT_Face)this->ft_face)->size->metrics.ascender / 64;
     	this->descender = abs(((FT_Face)this->ft_face)->size->metrics.descender / 64);
-//#endif
-
     	this->height = this->ascender + this->descender + 1;
 
 /*
@@ -616,7 +610,8 @@ bool with_outline = true;
 			indices->eNum = 0;
 			indices->data = NULL;
 
-			// prepare vertices
+#ifndef __HAVE_OGL_HALF_FLOAT__
+			// prepare vertices using normal 32bit floating point values
 			vertices->eSize = 2;
 			vertices->eNum  = ftmesh->getVertexCount();
 			vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
@@ -629,6 +624,21 @@ bool with_outline = true;
 				vdata[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
 				vdata[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
 			}
+#else
+			// prepare vertices using 16bit half floating point values
+			vertices->eSize = 2;
+			vertices->eNum  = ftmesh->getVertexCount();
+			vertices->dtype = MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT;
+			vertices->data  = malloc(sizeof(MMS_HALF_FLOAT) * vertices->eSize * vertices->eNum);
+
+			// for all vertices in the polygon
+			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
+				const MMSFTVertex &vertex = ftmesh->getVertex(v);
+				MMS_HALF_FLOAT *vdata = (MMS_HALF_FLOAT *)vertices->data;
+				vdata[v * vertices->eSize + 0] = convertFloat2HalfFloat((float)(vertex.X() - g->metrics.horiBearingX) / 64);
+				vdata[v * vertices->eSize + 1] = convertFloat2HalfFloat((float)(g->metrics.horiBearingY - vertex.Y()) / 64);
+			}
+#endif
 
 			// next mesh
 			index_buffer.num_arrays++;
@@ -676,7 +686,8 @@ bool with_outline = true;
 				indices->eNum = 0;
 				indices->data = NULL;
 
-				// prepare vertices
+#ifndef __HAVE_OGL_HALF_FLOAT__
+				// prepare vertices using normal 32bit floating point values
 				vertices->eSize = 2;
 				vertices->eNum  = ftcontour->getVertexCount();
 				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
@@ -688,7 +699,20 @@ bool with_outline = true;
 					vdata[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
 					vdata[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
 				}
+#else
+				// prepare vertices using 16bit half floating point values
+				vertices->eSize = 2;
+				vertices->eNum  = ftcontour->getVertexCount();
+				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT;
+				vertices->data  = malloc(sizeof(MMS_HALF_FLOAT) * vertices->eSize * vertices->eNum);
 
+				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
+					const MMSFTVertex &vertex = ftcontour->Vertex(v);
+					MMS_HALF_FLOAT *vdata = (MMS_HALF_FLOAT *)vertices->data;
+					vdata[v * vertices->eSize + 0] = convertFloat2HalfFloat((float)(vertex.X() - g->metrics.horiBearingX) / 64);
+					vdata[v * vertices->eSize + 1] = convertFloat2HalfFloat((float)(g->metrics.horiBearingY - vertex.Y()) / 64);
+				}
+#endif
 				// next outline
 				index_buffer.num_arrays++;
 				vertex_buffer.num_arrays++;
@@ -975,3 +999,4 @@ bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
 
 	return false;
 }
+

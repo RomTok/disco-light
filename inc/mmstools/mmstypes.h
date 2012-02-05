@@ -1158,6 +1158,8 @@ const unsigned int HALF_FLOAT_MAX_BIASED_EXP = (0x1F << 10);
 // half-float type
 typedef unsigned short MMS_HALF_FLOAT;
 
+MMS_HALF_FLOAT convertFloat2HalfFloat(float f);
+float convertHalfFloat2Float(MMS_HALF_FLOAT hf);
 
 
 
@@ -1312,4 +1314,5 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object);
 
 
 #endif /* MMSTYPES_H_ */
+
 

@@ -486,8 +486,8 @@ MMSLanguage getMMSLanguageFromString(string lang) {
 
 
 
-MMS_HALF_FLOAT convertFloat2HalfFloat(float *f) {
-	unsigned int x = *(unsigned int *)f;
+MMS_HALF_FLOAT convertFloat2HalfFloat(float f) {
+	unsigned int x = *(unsigned int *)&f;
 	unsigned int sign = (unsigned short)(x >> 31);
 	unsigned int mantissa;
 	unsigned int exp;
@@ -767,4 +767,5 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object) {
 	}
 	return true;
 }
+
 
