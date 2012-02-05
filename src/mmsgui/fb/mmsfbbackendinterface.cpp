@@ -596,11 +596,20 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMS
 	unsigned int size = 0;
 	for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
 		MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
-		vertex_bo->buffers[i].bo   = 0;
-		vertex_bo->buffers[i].offs = size;
-		vertex_bo->buffers[i].eSize= array->eSize;
-		vertex_bo->buffers[i].eNum = array->eNum;
-		size+= sizeof(float) * array->eSize * array->eNum;
+		vertex_bo->buffers[i].dtype = array->dtype;
+		vertex_bo->buffers[i].bo    = 0;
+		vertex_bo->buffers[i].offs  = size;
+		vertex_bo->buffers[i].eSize = array->eSize;
+		vertex_bo->buffers[i].eNum  = array->eNum;
+
+		switch (vertex_bo->buffers[i].dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+			size+= sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
+			break;
+		default:
+			size+= sizeof(float) * array->eSize * array->eNum;
+			break;
+		}
 	}
 
 	if (!extkey->vbo) {
@@ -631,9 +640,20 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMS
 		// fill GPU buffer
 		for (unsigned int i = 0; i < vertex_bo->num_buffers; i++) {
 			MMS3D_VERTEX_ARRAY *array = &vertex_buffer->arrays[i];
-			unsigned int size = sizeof(float) * array->eSize * array->eNum;
+
 			vertex_bo->buffers[i].bo = vertex_bo->bo;
 			vertex_bo->buffers[i].offs+= vbo_offset;
+
+			unsigned int size;
+			switch (vertex_bo->buffers[i].dtype) {
+			case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+				size = sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
+				break;
+			default:
+				size = sizeof(float) * array->eSize * array->eNum;
+				break;
+			}
+
 			mmsfbgl.initVertexSubBuffer(vertex_bo->buffers[i].bo, vertex_bo->buffers[i].offs, size, array->data);
 		}
 	}
@@ -1744,4 +1764,5 @@ void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
 
 #endif
 }
+
 

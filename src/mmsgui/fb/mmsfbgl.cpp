@@ -2463,7 +2463,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 #ifdef __HAVE_GL2__
 
 	// load the vertices
-	if (vertices) {
+	if (vertices && vertices->data) {
 		switch (vertices->dtype) {
 		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_VERTEX_ARRAY);
@@ -2479,7 +2479,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	}
 
 	// load the normals
-	if (normals) {
+	if (normals && normals->data) {
 		switch (normals->dtype) {
 		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_NORMAL_ARRAY);
@@ -2495,7 +2495,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	}
 
 	// load the texture coordinates
-	if (texcoords) {
+	if (texcoords && texcoords->data) {
 		switch (texcoords->dtype) {
 		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -2515,7 +2515,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 #ifdef __HAVE_GLES2__
 
 	// load the vertices
-	if (vertices) {
+	if (vertices && vertices->data) {
 		bool enable = false;
 		switch (vertices->dtype) {
 		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
@@ -2549,7 +2549,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	}
 
 	// load the texture coordinates
-	if (texcoords) {
+	if (texcoords && texcoords->data) {
 		bool enable = false;
 		switch (texcoords->dtype) {
 		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
@@ -2681,33 +2681,138 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 #ifdef __HAVE_GL2__
 
-	// bind the vertices
+	// load the vertices
 	if (vertices && vertices->bo) {
-		glEnableClientState(GL_VERTEX_ARRAY);
-		bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
-		glVertexPointer(vertices->eSize, GL_FLOAT, 0, (const GLvoid*)vertices->offs);
+		switch (vertices->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glEnableClientState(GL_VERTEX_ARRAY);
+			bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+			glVertexPointer(vertices->eSize, GL_FLOAT, 0, (const GLvoid*)vertices->offs);
+			break;
+		default:
+			glDisableClientState(GL_VERTEX_ARRAY);
+			break;
+		}
 	}
 	else {
 		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	// load the normals
+	if (normals && normals->bo) {
+		switch (normals->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glEnableClientState(GL_NORMAL_ARRAY);
+			bindBuffer(GL_ARRAY_BUFFER, normals->bo);
+			glNormalPointer(GL_FLOAT, 0, (const GLvoid*)normals->offs);
+			break;
+		default:
+			glDisableClientState(GL_NORMAL_ARRAY);
+			break;
+		}
+	}
+	else {
+		glDisableClientState(GL_NORMAL_ARRAY);
+	}
+
+	// load the texture coordinates
+	if (texcoords && texcoords->bo) {
+		switch (texcoords->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			bindBuffer(GL_ARRAY_BUFFER, texcoords->bo);
+			glTexCoordPointer(texcoords->eSize, GL_FLOAT, 0, (const GLvoid*)texcoords->offs);
+			break;
+		default:
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			break;
+		}
+	}
+	else {
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 
 #endif
 
 #ifdef __HAVE_GLES2__
 
-	// bind the vertices
+	// load the vertices
 	if (vertices && vertices->bo) {
-		bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
-		glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
-							   GL_FALSE, 0, (const GLvoid*)vertices->offs);
-		ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
+		bool enable = false;
+		switch (vertices->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
+								   GL_FALSE, 0, (const GLvoid*)vertices->offs);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,,GL_FLOAT,GL_FALSE,...)");
+			enable = true;
+			break;
+#ifdef GL_HALF_FLOAT_OES
+		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+			bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
+			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_HALF_FLOAT_OES,
+								   GL_FALSE, 0, (const GLvoid*)vertices->offs);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
+			enable = true;
+			break;
+#endif
+		default:
+			glDisableVertexAttribArray(MMSFBGL_VSV_LOC);
+			ERROR_CHECK_BOOL("glDisableVertexAttribArray(MMSFBGL_VSV_LOC)");
+			break;
+		}
 
-		glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
-		ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+		if (enable) {
+			glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+			ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+		}
 	}
 	else {
 		glDisableVertexAttribArray(MMSFBGL_VSV_LOC);
 		ERROR_CHECK_BOOL("glDisableVertexAttribArray(MMSFBGL_VSV_LOC)");
+	}
+
+	// load the texture coordinates
+	if (texcoords && texcoords->bo) {
+		bool enable = false;
+		switch (texcoords->dtype) {
+		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+			bindBuffer(GL_ARRAY_BUFFER, texcoords->bo);
+			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
+								   GL_FALSE, 0, (const GLvoid*)texcoords->offs);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_FLOAT,GL_FALSE,...)");
+			enable = true;
+			break;
+#ifdef GL_HALF_FLOAT_OES
+		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+			bindBuffer(GL_ARRAY_BUFFER, texcoords->bo);
+			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_HALF_FLOAT_OES,
+								   GL_FALSE, 0, (const GLvoid*)texcoords->offs);
+			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
+			enable = true;
+			break;
+#endif
+		default:
+			glDisableVertexAttribArray(VSTexCoordLoc);
+			ERROR_CHECK_BOOL("glDisableVertexAttribArray(VSTexCoordLoc)");
+			break;
+		}
+
+		if (enable) {
+			glEnableVertexAttribArray(VSTexCoordLoc);
+			ERROR_CHECK_BOOL("glEnableVertexAttribArray(VSTexCoordLoc)");
+
+			// bind the texture unit0
+			glActiveTexture(GL_TEXTURE0);
+			ERROR_CHECK_BOOL("glActiveTexture(GL_TEXTURE0)");
+
+			glUniform1i(FSTextureLoc, 0);
+			ERROR_CHECK_BOOL("glUniform1i(FSTextureLoc, 0)");
+		}
+	}
+	else {
+		glDisableVertexAttribArray(VSTexCoordLoc);
+		ERROR_CHECK_BOOL("glDisableVertexAttribArray(VSTexCoordLoc)");
 	}
 
 #endif
@@ -2802,5 +2907,6 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 
 #endif
+
 
 

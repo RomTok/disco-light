@@ -1181,6 +1181,8 @@ typedef struct {
 
 //! vertex buffer
 typedef struct {
+	//! type of vertex data
+	MMS3D_VERTEX_DATA_TYPE	dtype;
 	//! id of buffer object
 	unsigned int bo;
 	//! offset into the buffer object's data store where data replacement will begin
@@ -1310,3 +1312,4 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object);
 
 
 #endif /* MMSTYPES_H_ */
+

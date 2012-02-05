@@ -43,6 +43,7 @@
 #ifdef __HAVE_GL2__
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include <GL/glext.h>
 #endif
 
 #ifdef __HAVE_GLX__
@@ -51,6 +52,7 @@
 
 #ifdef __HAVE_GLES2__
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #endif
 
 #ifdef __HAVE_EGL__
@@ -307,3 +309,4 @@ class MMSFBGL {
 #endif
 
 #endif /* MMSFBGL_H_ */
+
