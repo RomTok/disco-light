@@ -595,6 +595,10 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
         this->config.shadow_bottom_color = this->config.color;
         this->config.shadow_left_color = this->config.color;
         this->config.shadow_right_color = this->config.color;
+        this->config.shadow_top_left_color = this->config.color;
+        this->config.shadow_top_right_color = this->config.color;
+        this->config.shadow_bottom_left_color = this->config.color;
+        this->config.shadow_bottom_right_color = this->config.color;
         this->config.clipped = false;
         this->config.iswinsurface = false;
         this->config.islayersurface = (this->parent && this->parent->isLayerSurface());
@@ -6474,7 +6478,18 @@ bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
 	bool bottom_right	= (this->config.shadow_bottom_right_color.a);
 	bool shadow = (top || bottom || left || right || top_left || top_right || bottom_left || bottom_right);
 
-	if (shadow) {
+	if (!shadow) {
+		// normal text output without shadow
+#ifdef __HAVE_OPENGL__
+		if (mmsfb->bei) {
+			mmsfb->bei->drawString(this, text, len, x, y);
+			return true;
+		}
+#endif
+		return blit_text(text, len, x, y);
+	}
+	else {
+		// draw text with shadow
 		// drawing color and flags will be temporary changed during the shadow blits
 		MMSFBColor savedcol = this->config.color;
 		MMSFBDrawingFlags saveddf = this->config.drawingflags;
@@ -6585,16 +6600,28 @@ bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
 		// restore drawing color and flags
 		this->config.color = savedcol;
 		this->config.drawingflags = saveddf;
-	}
 
-	// final blit
+		// for now we set this->config.color.a to 0xff!!!
+		this->config.color.a = 0xff;
+		this->setDrawingFlagsByAlpha(this->config.color.a);
+
+		// final draw
+		bool ret = false;
 #ifdef __HAVE_OPENGL__
-	if (mmsfb->bei) {
-		mmsfb->bei->drawString(this, text, len, x, y);
-		return true;
-	}
+		if (mmsfb->bei) {
+			mmsfb->bei->drawString(this, text, len, x, y);
+			ret = true;
+		}
+		else
 #endif
-	return blit_text(text, len, x, y);
+		ret = blit_text(text, len, x, y);
+
+		// restore drawing color and flags
+		this->config.color = savedcol;
+		this->config.drawingflags = saveddf;
+
+		return ret;
+	}
 }
 
 
@@ -9761,6 +9788,7 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
 
