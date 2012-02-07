@@ -6451,80 +6451,96 @@ bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
 			this->config.color = this->config.shadow_top_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x, y-1);
-#else
-			blit_text(text, len, x, y-1);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x, y-1);
+			}
+			else
 #endif
+			blit_text(text, len, x, y-1);
 		}
 		if (bottom) {
 			// draw shadow on the bottom
 			this->config.color = this->config.shadow_bottom_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x, y+1);
-#else
-			blit_text(text, len, x, y+1);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x, y+1);
+			}
+			else
 #endif
+			blit_text(text, len, x, y+1);
 		}
 		if (left) {
 			// draw shadow on the left
 			this->config.color = this->config.shadow_left_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x-1, y);
-#else
-			blit_text(text, len, x-1, y);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x-1, y);
+			}
+			else
 #endif
+			blit_text(text, len, x-1, y);
 		}
 		if (right) {
 			// draw shadow on the right
 			this->config.color = this->config.shadow_right_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x+1, y);
-#else
-			blit_text(text, len, x+1, y);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x+1, y);
+			}
+			else
 #endif
+			blit_text(text, len, x+1, y);
 		}
 		if (top_left) {
 			// draw shadow on the top-left
 			this->config.color = this->config.shadow_top_left_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x-1, y-1);
-#else
-			blit_text(text, len, x-1, y-1);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x-1, y-1);
+			}
+			else
 #endif
+			blit_text(text, len, x-1, y-1);
 		}
 		if (top_right) {
 			// draw shadow on the top-right
 			this->config.color = this->config.shadow_top_right_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x+1, y-1);
-#else
-			blit_text(text, len, x+1, y-1);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x+1, y-1);
+			}
+			else
 #endif
+			blit_text(text, len, x+1, y-1);
 		}
 		if (bottom_left) {
 			// draw shadow on the bottom-left
 			this->config.color = this->config.shadow_bottom_left_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x-1, y+1);
-#else
-			blit_text(text, len, x-1, y+1);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x-1, y+1);
+			}
+			else
 #endif
+			blit_text(text, len, x-1, y+1);
 		}
 		if (bottom_right) {
 			// draw shadow on the bottom-right
 			this->config.color = this->config.shadow_bottom_right_color;
 			this->setDrawingFlagsByAlpha(this->config.color.a);
 #ifdef __HAVE_OPENGL__
-			if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x+1, y+1);
-#else
-			blit_text(text, len, x+1, y+1);
+			if (mmsfb->bei) {
+				mmsfb->bei->drawString(this, text, len, x+1, y+1);
+			}
+			else
 #endif
+			blit_text(text, len, x+1, y+1);
 		}
 
 		// restore drawing color and flags
@@ -6534,11 +6550,12 @@ bool MMSFBSurface::blit_text_with_shadow(string &text, int len, int x, int y) {
 
 	// final blit
 #ifdef __HAVE_OPENGL__
-	if (mmsfb->bei) mmsfb->bei->drawString(this, text, len, x, y);
-	return true;
-#else
-	return blit_text(text, len, x, y);
+	if (mmsfb->bei) {
+		mmsfb->bei->drawString(this, text, len, x, y);
+		return true;
+	}
 #endif
+	return blit_text(text, len, x, y);
 }
 
 
@@ -9705,5 +9722,6 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
