@@ -6354,6 +6354,45 @@ bool MMSFBSurface::blit_text(string &text, int len, int x, int y) {
 		}
 		break;
 
+	case MMSFB_PF_RGB32:
+		// destination is RGB32
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				MMSFB_ROTATE_180_REGION(this, clipreg.x1, clipreg.y1, clipreg.x2, clipreg.y2);
+				MMSFB_ROTATE_180_RECT(this, x, y, 1, 1);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_rgb32(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
+				MMSFB_ROTATE_180_REGION(this, clipreg.x1, clipreg.y1, clipreg.x2, clipreg.y2);
+				MMSFB_ROTATE_180_RECT(this, x, y, 1, 1);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+			return false;
+		}
+		else
+		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND))
+			||(this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_BLEND|MMSFB_DRAW_SRC_PREMULTIPLY))) {
+			if (extendedLock(NULL, NULL, this, &dst_planes)) {
+				MMSFB_ROTATE_180_REGION(this, clipreg.x1, clipreg.y1, clipreg.x2, clipreg.y2);
+				MMSFB_ROTATE_180_RECT(this, x, y, 1, 1);
+				MMSFBPERF_START_MEASURING;
+					mmsfb_drawstring_blend_coloralpha_rgb32(
+							&dst_planes, this->config.font, clipreg,
+							text, len, x, y, color);
+				MMSFBPERF_STOP_MEASURING_DRAWSTRING(this, clipreg, text, len, x, y);
+				MMSFB_ROTATE_180_REGION(this, clipreg.x1, clipreg.y1, clipreg.x2, clipreg.y2);
+				MMSFB_ROTATE_180_RECT(this, x, y, 1, 1);
+				extendedUnlock(NULL, this);
+				return true;
+			}
+			return false;
+		}
+		break;
+
 	case MMSFB_PF_ARGB4444:
 		// destination is ARGB4444
 		if   ((this->config.drawingflags == (MMSFBDrawingFlags)(MMSFB_DRAW_NOFX))
@@ -9722,6 +9761,7 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
 
