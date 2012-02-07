@@ -1433,9 +1433,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 						// draw glyph outline
 						if (index_buffer->num_arrays) {
 							// setup special drawing flags
+							// glyph outline is used for soft-focus effect, we draw it with 1/3 alphachannel
 							mmsfbgl.enableBlend();
 							MMSFBColor *color = &req->surface->config.color;
-							mmsfbgl.setColor(color->r, color->g, color->b, color->a >> 1);
+							mmsfbgl.setColor(color->r, color->g, color->b, color->a / 3);
 
 							// draw primitives: glyph outline
 							oglDrawBuffer(extkey, buffer, index_buffer, vertex_buffer);
@@ -1764,5 +1765,6 @@ void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
 
 #endif
 }
+
 
 

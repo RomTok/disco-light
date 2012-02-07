@@ -722,87 +722,98 @@ bool with_outline = true;
 		}
 	}
 
-#ifdef sdsds // mit dreiecken zieht strom!!!
-	if (ftv->getContourCount() > 0) {
-		// add outline primitives
-		glyph->outline_max_lines = ftv->getContourCount();
 
-	    // allocate base buffer for vertices and indices
-		// we do not need to clear because all fields will be set separately
-		glyph->outline_indices = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * glyph->outline_max_lines);
-		glyph->outline_vertices = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * glyph->outline_max_lines);
+// Test mit dreiecken zieht strom!!! dazu kommt noch das Skalierungsproblem...
+/*	if (with_outline && ftv->getContourCount() > 0) {
+		if (!glyph->outline->isInitialized()) {
 
-	    // for all contours (outlines)
-		for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
-			// prepare access to vertices and indices of glyph
-			if (glyph->outline_lines >= glyph->outline_max_lines) {
-				printf("glyph->outline_max_lines(%u) reached\n", glyph->outline_max_lines);
-				break;
-			}
-			MMS3D_INDEX_ARRAY  *indices  = &glyph->outline_indices[glyph->outline_lines];
-			MMS3D_VERTEX_ARRAY *vertices = &glyph->outline_vertices[glyph->outline_lines];
+			glyph->top		+= 0;
+			glyph->width	+= 2;
+			glyph->height	+= 2;
+			glyph->advanceX	+= 2;
 
-			// get access to contour data
-			const MMSFTContour *ftcontour = ftv->getContour(c);
-			if (!ftcontour) continue;
 
-			// prepare indices
-			// note: no need to allocate index buffer, because vertices are correctly sorted
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
-			indices->eNum = 0;
-			indices->buf  = NULL;
+			// add outline primitives
+			unsigned short int max_outlines = ftv->getContourCount();
 
-			// prepare vertices
-			vertices->eSize = 2;
-			vertices->eNum  = ftcontour->getVertexCount() * 6;
-			vertices->buf   = (float *)malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+			// allocate base buffer for vertices and indices
+			// we do not need to clear because all fields will be set separately
+			MMSFBBuffer::INDEX_BUFFER index_buffer;
+			MMSFBBuffer::VERTEX_BUFFER vertex_buffer;
+			index_buffer.num_arrays = 0;
+			index_buffer.max_arrays = max_outlines;
+			index_buffer.arrays = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * index_buffer.max_arrays);
+			vertex_buffer.num_arrays = 0;
+			vertex_buffer.max_arrays = max_outlines;
+			vertex_buffer.arrays = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * vertex_buffer.max_arrays);
 
-			for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
-				const MMSFTVertex &vertex1 = ftcontour->Vertex(v);
-				const MMSFTVertex &outset1 = ftcontour->Outset(v);
-				const MMSFTVertex &vertex2 = ftcontour->Vertex((v+1 < ftcontour->getVertexCount()) ? v+1 : 0);
-				const MMSFTVertex &outset2 = ftcontour->Outset((v+1 < ftcontour->getVertexCount()) ? v+1 : 0);
-
-				unsigned int diffx = abs((vertex2.X() + outset2.X()) - (vertex1.X() + outset1.X()));
-				unsigned int diffy = abs((vertex2.Y() + outset2.Y()) - (vertex1.Y() + outset1.Y()));
-
-				unsigned int ggg=2;
-
-				if (diffx >= diffy) {
-					vertices->buf[v*6 * vertices->eSize + 0] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 1] = (float)(64+g->metrics.horiBearingY - (vertex1.Y() + outset1.Y()/ggg)) / 64;
-					vertices->buf[v*6 * vertices->eSize + 2] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 3] = (float)(64+g->metrics.horiBearingY - vertex1.Y()) / 64;
-					vertices->buf[v*6 * vertices->eSize + 4] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 5] = (float)(64+g->metrics.horiBearingY - vertex2.Y()) / 64;
-					vertices->buf[v*6 * vertices->eSize + 6] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 7] = (float)(64+g->metrics.horiBearingY - (vertex1.Y() + outset1.Y()/ggg)) / 64;
-					vertices->buf[v*6 * vertices->eSize + 8] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 9] = (float)(64+g->metrics.horiBearingY - (vertex2.Y() + outset2.Y()/ggg)) / 64;
-					vertices->buf[v*6 * vertices->eSize +10] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize +11] = (float)(64+g->metrics.horiBearingY - vertex2.Y()) / 64;
+			// for all contours (outlines)
+			for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
+				// prepare access to vertices and indices of glyph
+				if (index_buffer.num_arrays >= max_outlines) {
+					printf("max_outlines(%u) reached\n", max_outlines);
+					break;
 				}
-				else {
-					vertices->buf[v*6 * vertices->eSize + 0] = (float)(64+vertex1.X() - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 1] = (float)(64+g->metrics.horiBearingY - vertex1.Y() + outset1.Y()/ggg) / 64;
-					vertices->buf[v*6 * vertices->eSize + 2] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 3] = (float)(64+g->metrics.horiBearingY - vertex1.Y() + outset1.Y()/ggg) / 64;
-					vertices->buf[v*6 * vertices->eSize + 4] = (float)(64+vertex2.X() - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 5] = (float)(64+g->metrics.horiBearingY - vertex2.Y() + outset2.Y()/ggg) / 64;
-					vertices->buf[v*6 * vertices->eSize + 6] = (float)(64+vertex1.X() + outset1.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 7] = (float)(64+g->metrics.horiBearingY - vertex1.Y() + outset1.Y()/ggg) / 64;
-					vertices->buf[v*6 * vertices->eSize + 8] = (float)(64+vertex2.X() + outset2.X()/ggg - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize + 9] = (float)(64+g->metrics.horiBearingY - vertex2.Y() + outset2.Y()/ggg) / 64;
-					vertices->buf[v*6 * vertices->eSize +10] = (float)(64+vertex2.X() - g->metrics.horiBearingX) / 64;
-					vertices->buf[v*6 * vertices->eSize +11] = (float)(64+g->metrics.horiBearingY - vertex2.Y() + outset2.Y()) / 64;
+				MMS3D_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
+				MMS3D_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
+
+				// get access to contour data
+				const MMSFTContour *ftcontour = ftv->getContour(c);
+				if (!ftcontour) continue;
+
+				// prepare indices
+				// note: no need to allocate index buffer, because vertices are correctly sorted
+				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+				indices->eNum = 0;
+				indices->data = NULL;
+
+				// prepare vertices using normal 32bit floating point values
+				vertices->eSize = 2;
+				vertices->eNum  = ftcontour->getVertexCount() * 6;
+				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+				vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+printf("*********************\n");
+				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
+					const MMSFTVertex &vertex1 = ftcontour->Vertex(v);
+					const MMSFTVertex &outset1 = ftcontour->Outset(v);
+					const MMSFTVertex &vertex2 = ftcontour->Vertex((v+1 < ftcontour->getVertexCount()) ? v+1 : 0);
+					const MMSFTVertex &outset2 = ftcontour->Outset((v+1 < ftcontour->getVertexCount()) ? v+1 : 0);
+printf("v: %f,%f\n", vertex1.X(), vertex1.Y());
+printf("o: %f,%f\n", outset1.X(), outset1.Y());
+
+					float fac=3.0f;
+
+					float *vdata = (float *)vertices->data;
+
+
+					vdata[v*6 * vertices->eSize + 0] = (float)(vertex1.X() - g->metrics.horiBearingX) / 64;
+					vdata[v*6 * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex1.Y()) / 64;
+
+					vdata[v*6 * vertices->eSize + 2] = (float)(vertex1.X() + outset1.X() * fac - g->metrics.horiBearingX) / 64;
+					vdata[v*6 * vertices->eSize + 3] = (float)(g->metrics.horiBearingY - vertex1.Y() - outset1.Y() * fac) / 64;
+
+					vdata[v*6 * vertices->eSize + 4] = (float)(vertex2.X() - g->metrics.horiBearingX) / 64;
+					vdata[v*6 * vertices->eSize + 5] = (float)(g->metrics.horiBearingY - vertex2.Y()) / 64;
+
+					vdata[v*6 * vertices->eSize + 6] = (float)(vertex1.X() + outset1.X() * fac - g->metrics.horiBearingX) / 64;
+					vdata[v*6 * vertices->eSize + 7] = (float)(g->metrics.horiBearingY - vertex1.Y() - outset1.Y() * fac) / 64;
+
+					vdata[v*6 * vertices->eSize + 8] = (float)(vertex2.X() + outset2.X() * fac - g->metrics.horiBearingX) / 64;
+					vdata[v*6 * vertices->eSize + 9] = (float)(g->metrics.horiBearingY - vertex2.Y() - outset2.Y() * fac) / 64;
+
+					vdata[v*6 * vertices->eSize + 10]= (float)(vertex2.X() - g->metrics.horiBearingX) / 64;
+					vdata[v*6 * vertices->eSize + 11]= (float)(g->metrics.horiBearingY - vertex2.Y()) / 64;
 				}
+
+				// next outline
+				index_buffer.num_arrays++;
+				vertex_buffer.num_arrays++;
 			}
 
-			// next outline
-			glyph->outline_lines++;
+			glyph->outline->initBuffer(index_buffer, vertex_buffer);
 		}
 	}
-#endif
+*/
 
     // all is successfully done
 	delete ftv;
@@ -999,4 +1010,5 @@ bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
 
 	return false;
 }
+
 
