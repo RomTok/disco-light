@@ -555,6 +555,7 @@ void MMSFBBackEndInterface::oglBindSurface(MMSFBSurface *surface, int nearZ, int
 	}
 }
 
+/*
 bool MMSFBBackEndInterface::oglInitIndexBuffer(MMSFBBuffer::EXTKEY *extkey, MMSFBBuffer::INDEX_BUFFER_OBJECT *index_bo, MMSFBBuffer::INDEX_BUFFER *index_buffer) {
 //return false;
 	if (!index_bo || !index_buffer) return false;
@@ -671,7 +672,7 @@ bool MMSFBBackEndInterface::oglInitVertexBuffer(MMSFBBuffer::EXTKEY *extkey, MMS
 	}
 
 	return true;
-}
+}*/
 
 bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::EXTKEY *extkey,
 										  MMSFBBuffer::BUFFER *buffer,
@@ -686,7 +687,7 @@ bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::EXTKEY *extkey,
 
 	// check if we have index and vertex buffer
 	if (!index_buffer || !vertex_buffer) return false;
-
+/*
 	// check num_buffers instead of buf because we try to init buffer object only once
 	if (!buffer->index_bo.num_buffers) {
 		// no buffers in GPU memory, so try to allocate new buffer object(s)
@@ -701,7 +702,7 @@ bool MMSFBBackEndInterface::oglDrawBuffer(MMSFBBuffer::EXTKEY *extkey,
 			buffer->vertex_bo.bo = 0;
 		}
 	}
-
+*/
 	if (buffer->index_bo.bo && buffer->vertex_bo.bo) {
 		// index and vertex buffer objects are available
 		return true;
@@ -1893,6 +1894,7 @@ void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
 
 #endif
 }
+
 
 
 

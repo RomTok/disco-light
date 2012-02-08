@@ -114,6 +114,7 @@ class MMSFBBuffer {
 
 				EXTKEY(unsigned int key);
 				~EXTKEY();
+				bool allocVertexArray(unsigned int size);
 				bool reserveIndexArray(unsigned int requested_size, unsigned int *offset);
 				bool reserveVertexArray(unsigned int requested_size, unsigned int *offset);
     	};
@@ -146,6 +147,8 @@ class MMSFBBuffer {
 
 				BUFFER();
 				~BUFFER();
+				void initIndexBuffer(EXTKEY *extkey, INDEX_BUFFER index_buffer);
+				void initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_buffer);
 				bool getBuffers(MMSFBBuffer::INDEX_BUFFER **index_buffer, MMSFBBuffer::VERTEX_BUFFER **vertex_buffer);
 #ifdef __HAVE_OPENGL__
 				bool getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **index_bo, MMSFBBuffer::VERTEX_BUFFER_OBJECT **vertex_bo);
@@ -185,4 +188,5 @@ class MMSFBBuffer {
 };
 
 #endif /* MMSFBBUFFER_H_ */
+
 
