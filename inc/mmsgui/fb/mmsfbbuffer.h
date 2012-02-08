@@ -112,32 +112,10 @@ class MMSFBBuffer {
 				unsigned int	vbo_used;
 #endif
 
-				EXTKEY(unsigned int key) : initialized(false), use_count(1) {
-					this->key = key;
-#ifdef __HAVE_OPENGL__
-					this->ibo = 0;
-					this->ibo_size = 0;
-					this->ibo_used = 0;
-					this->vbo = 0;
-					this->vbo_size = 0;
-					this->vbo_used = 0;
-#endif
-				}
+				EXTKEY(unsigned int key);
 				~EXTKEY();
-				bool reserveIndexArray(unsigned int requested_size, unsigned int *offset) {
-					if (!this->ibo) return false;
-					if (this->ibo_used + requested_size > this->ibo_size) return false;
-					*offset = this->ibo_used;
-					this->ibo_used+= requested_size;
-					return true;
-				}
-				bool reserveVertexArray(unsigned int requested_size, unsigned int *offset) {
-					if (!this->vbo) return false;
-					if (this->vbo_used + requested_size > this->vbo_size) return false;
-					*offset = this->vbo_used;
-					this->vbo_used+= requested_size;
-					return true;
-				}
+				bool reserveIndexArray(unsigned int requested_size, unsigned int *offset);
+				bool reserveVertexArray(unsigned int requested_size, unsigned int *offset);
     	};
 
     	//! buffer description
@@ -166,52 +144,11 @@ class MMSFBBuffer {
 				VERTEX_BUFFER_OBJECT	vertex_bo;
 #endif
 
-				BUFFER() : initialized(false), use_count(1), type(BUFFER_TYPE_NOTSET) {
+				BUFFER();
+				~BUFFER();
+				bool getBuffers(MMSFBBuffer::INDEX_BUFFER **index_buffer, MMSFBBuffer::VERTEX_BUFFER **vertex_buffer);
 #ifdef __HAVE_OPENGL__
-					this->index_bo.bo = 0;
-					this->index_bo.buffers = NULL;
-					this->index_bo.num_buffers = 0;
-					this->vertex_bo.bo = 0;
-					this->vertex_bo.buffers = NULL;
-					this->vertex_bo.num_buffers = 0;
-#endif
-				}
-				~BUFFER() {
-					switch (this->type) {
-					case BUFFER_TYPE_INDEX_VERTEX:
-						if (this->index_buffer.arrays) {
-							for (unsigned int i = 0; i < this->index_buffer.num_arrays; i++)
-								if (this->index_buffer.arrays[i].data) free(this->index_buffer.arrays[i].data);
-							free(this->index_buffer.arrays);
-						}
-						if (this->vertex_buffer.arrays) {
-							for (unsigned int i = 0; i < this->vertex_buffer.num_arrays; i++)
-								if (this->vertex_buffer.arrays[i].data) free(this->vertex_buffer.arrays[i].data);
-							free(this->vertex_buffer.arrays);
-						}
-						break;
-					default:
-						break;
-					}
-
-					if (this->index_bo.buffers)
-						free(this->index_bo.buffers);
-					if (this->vertex_bo.buffers)
-						free(this->vertex_bo.buffers);
-				}
-				bool getBuffers(MMSFBBuffer::INDEX_BUFFER **index_buffer, MMSFBBuffer::VERTEX_BUFFER **vertex_buffer) {
-					if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;
-					if (index_buffer) *index_buffer = &this->index_buffer;
-					if (vertex_buffer) *vertex_buffer = &this->vertex_buffer;
-					return true;
-				}
-#ifdef __HAVE_OPENGL__
-				bool getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **index_bo, MMSFBBuffer::VERTEX_BUFFER_OBJECT **vertex_bo) {
-					if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;
-					if (index_bo) *index_bo = &this->index_bo;
-					if (vertex_bo) *vertex_bo = &this->vertex_bo;
-					return true;
-				}
+				bool getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **index_bo, MMSFBBuffer::VERTEX_BUFFER_OBJECT **vertex_bo);
 #endif
     	};
 
@@ -248,3 +185,4 @@ class MMSFBBuffer {
 };
 
 #endif /* MMSFBBUFFER_H_ */
+

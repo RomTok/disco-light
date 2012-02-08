@@ -33,16 +33,7 @@
 #include "mmsgui/fb/mmsfbbuffer.h"
 #include "mmsgui/fb/mmsfb.h"
 
-MMSFBBuffer::EXTKEY::~EXTKEY() {
-#ifdef __HAVE_OPENGL__
-	if (mmsfb->bei) {
-		// delete OpenGL's index and vertex buffer
-		if (this->ibo) mmsfb->bei->deleteBuffer(this->ibo);
-		if (this->vbo) mmsfb->bei->deleteBuffer(this->vbo);
-	}
-#endif
-}
-
+//////////////////////////////////////////////////////////////////////////////
 
 MMSFBBuffer::EXTKEY_INDEX MMSFBBuffer::extkey_index;
 MMSFBBuffer::BUFFER_INDEX MMSFBBuffer::buffer_index;
@@ -132,4 +123,98 @@ bool MMSFBBuffer::getBuffer(MMSFBBuffer::BUFFER **buffer) {
 	if (buffer) *buffer = this->buffer;
 	return true;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+MMSFBBuffer::EXTKEY::EXTKEY(unsigned int key) : initialized(false), use_count(1) {
+	this->key = key;
+#ifdef __HAVE_OPENGL__
+	this->ibo = 0;
+	this->ibo_size = 0;
+	this->ibo_used = 0;
+	this->vbo = 0;
+	this->vbo_size = 0;
+	this->vbo_used = 0;
+#endif
+}
+
+MMSFBBuffer::EXTKEY::~EXTKEY() {
+#ifdef __HAVE_OPENGL__
+	if (mmsfb->bei) {
+		// delete OpenGL's index and vertex buffer
+		if (this->ibo) mmsfb->bei->deleteBuffer(this->ibo);
+		if (this->vbo) mmsfb->bei->deleteBuffer(this->vbo);
+	}
+#endif
+}
+
+bool MMSFBBuffer::EXTKEY::reserveIndexArray(unsigned int requested_size, unsigned int *offset) {
+	if (!this->ibo) return false;
+	if (this->ibo_used + requested_size > this->ibo_size) return false;
+	*offset = this->ibo_used;
+	this->ibo_used+= requested_size;
+	return true;
+}
+
+bool MMSFBBuffer::EXTKEY::reserveVertexArray(unsigned int requested_size, unsigned int *offset) {
+	if (!this->vbo) return false;
+	if (this->vbo_used + requested_size > this->vbo_size) return false;
+	*offset = this->vbo_used;
+	this->vbo_used+= requested_size;
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+MMSFBBuffer::BUFFER::BUFFER() : initialized(false), use_count(1), type(BUFFER_TYPE_NOTSET) {
+#ifdef __HAVE_OPENGL__
+	this->index_bo.bo = 0;
+	this->index_bo.buffers = NULL;
+	this->index_bo.num_buffers = 0;
+	this->vertex_bo.bo = 0;
+	this->vertex_bo.buffers = NULL;
+	this->vertex_bo.num_buffers = 0;
+#endif
+}
+
+MMSFBBuffer::BUFFER::~BUFFER() {
+	switch (this->type) {
+	case BUFFER_TYPE_INDEX_VERTEX:
+		if (this->index_buffer.arrays) {
+			for (unsigned int i = 0; i < this->index_buffer.num_arrays; i++)
+				if (this->index_buffer.arrays[i].data) free(this->index_buffer.arrays[i].data);
+			free(this->index_buffer.arrays);
+		}
+		if (this->vertex_buffer.arrays) {
+			for (unsigned int i = 0; i < this->vertex_buffer.num_arrays; i++)
+				if (this->vertex_buffer.arrays[i].data) free(this->vertex_buffer.arrays[i].data);
+			free(this->vertex_buffer.arrays);
+		}
+		break;
+	default:
+		break;
+	}
+
+	if (this->index_bo.buffers)
+		free(this->index_bo.buffers);
+	if (this->vertex_bo.buffers)
+		free(this->vertex_bo.buffers);
+}
+
+bool MMSFBBuffer::BUFFER::getBuffers(MMSFBBuffer::INDEX_BUFFER **index_buffer, MMSFBBuffer::VERTEX_BUFFER **vertex_buffer) {
+	if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;
+	if (index_buffer) *index_buffer = &this->index_buffer;
+	if (vertex_buffer) *vertex_buffer = &this->vertex_buffer;
+	return true;
+}
+
+#ifdef __HAVE_OPENGL__
+bool MMSFBBuffer::BUFFER::getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **index_bo, MMSFBBuffer::VERTEX_BUFFER_OBJECT **vertex_bo) {
+	if (this->type != BUFFER_TYPE_INDEX_VERTEX) return false;
+	if (index_bo) *index_bo = &this->index_bo;
+	if (vertex_bo) *vertex_bo = &this->vertex_bo;
+	return true;
+}
+#endif
+
 
