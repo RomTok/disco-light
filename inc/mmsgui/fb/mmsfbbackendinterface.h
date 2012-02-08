@@ -64,6 +64,10 @@ private:
 		BEI_REQUEST_TYPE_DRAWSTRING,
 		BEI_REQUEST_TYPE_RENDERSCENE,
 		BEI_REQUEST_TYPE_MERGE,
+		BEI_REQUEST_TYPE_INITVERTEXBUFFER,
+		BEI_REQUEST_TYPE_INITVERTEXSUBBUFFER,
+		BEI_REQUEST_TYPE_INITINDEXBUFFER,
+		BEI_REQUEST_TYPE_INITINDEXSUBBUFFER,
 		BEI_REQUEST_TYPE_DELETEBUFFER
 	} BEI_REQUEST_TYPE;
 
@@ -201,6 +205,36 @@ private:
 
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
+		unsigned int		*buffer;
+		unsigned int 		size;
+		void				*data;
+	} BEI_INITVERTEXBUFFER;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		unsigned int		buffer;
+		unsigned int		offset;
+		unsigned int 		size;
+		void				*data;
+	} BEI_INITVERTEXSUBBUFFER;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		unsigned int		*buffer;
+		unsigned int 		size;
+		void				*data;
+	} BEI_INITINDEXBUFFER;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
+		unsigned int		buffer;
+		unsigned int		offset;
+		unsigned int 		size;
+		void				*data;
+	} BEI_INITINDEXSUBBUFFER;
+
+	typedef struct {
+		BEI_REQUEST_TYPE	type;
 		unsigned int		buffer;
 	} BEI_DELETEBUFFER;
 
@@ -279,6 +313,10 @@ private:
 	void processDrawString(BEI_DRAWSTRING *req);
 	void processRenderScene(BEI_RENDERSCENE *req);
 	void processMerge(BEI_MERGE *req);
+	void processInitVertexBuffer(BEI_INITVERTEXBUFFER *req);
+	void processInitVertexSubBuffer(BEI_INITVERTEXSUBBUFFER *req);
+	void processInitIndexBuffer(BEI_INITINDEXBUFFER *req);
+	void processInitIndexSubBuffer(BEI_INITINDEXSUBBUFFER *req);
 	void processDeleteBuffer(BEI_DELETEBUFFER *req);
 
 public:
@@ -316,7 +354,12 @@ public:
 					 MMSFBSurface		**texsurfaces,
 					 MMS3D_OBJECT		**objects);
 	void merge(MMSFBSurface *surface, MMSFBSurface *source1, MMSFBSurface *source2, MMSFBMergingMode mergingmode);
+	void initVertexBuffer(unsigned int *buffer, unsigned int size, void *data = NULL);
+	void initVertexSubBuffer(unsigned int buffer, unsigned int offset, unsigned int size, void *data);
+	void initIndexBuffer(unsigned int *buffer, unsigned int size, void *data = NULL);
+	void initIndexSubBuffer(unsigned int buffer, unsigned int offset, unsigned int size, void *data);
 	void deleteBuffer(unsigned int buffer);
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */
+

@@ -1034,8 +1034,6 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 }
 
 
-
-
 bool MMSFBGL::initVertexBuffer(GLuint vbo, unsigned int size, const GLvoid *data) {
 
 	INITCHECK;
@@ -1075,7 +1073,7 @@ bool MMSFBGL::initVertexSubBuffer(GLuint vbo, unsigned int offset, unsigned int 
 bool MMSFBGL::enableVertexBuffer(GLuint vbo) {
 
 	if (vbo) {
-		// bind source texture
+		// activate buffer
 		bindBuffer(GL_ARRAY_BUFFER, vbo);
 		return true;
 	}
@@ -1086,6 +1084,58 @@ bool MMSFBGL::enableVertexBuffer(GLuint vbo) {
 void MMSFBGL::disableVertexBuffer() {
 	// detach current buffer
 	bindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+bool MMSFBGL::initIndexBuffer(GLuint ibo, unsigned int size, const GLvoid *data) {
+
+	INITCHECK;
+
+	if (ibo) {
+		// activate buffer
+		bindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+		// initializing buffer
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		ERROR_CHECK_BOOL("glBufferData(GL_ELEMENT_BUFFER,...)");
+
+		return true;
+	}
+
+	return false;
+}
+
+bool MMSFBGL::initIndexSubBuffer(GLuint ibo, unsigned int offset, unsigned int size, const GLvoid *data) {
+
+	INITCHECK;
+
+	if (ibo) {
+		// activate buffer
+		bindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+		// initializing a part of buffer
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
+		ERROR_CHECK_BOOL("glBufferSubData(GL_ELEMENT_BUFFER,...)");
+
+		return true;
+	}
+
+	return false;
+}
+
+bool MMSFBGL::enableIndexBuffer(GLuint ibo) {
+
+	if (ibo) {
+		// activate buffer
+		bindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		return true;
+	}
+
+	return false;
+}
+
+void MMSFBGL::disableIndexBuffer() {
+	// detach current buffer
+	bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 bool MMSFBGL::genTexture(GLuint *tex) {
@@ -2907,6 +2957,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 
 #endif
+
 
 
 

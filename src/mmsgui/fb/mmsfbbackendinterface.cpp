@@ -311,6 +311,18 @@ void MMSFBBackEndInterface::processData(void *in_data, int in_data_len, void **o
 	case BEI_REQUEST_TYPE_MERGE:
 		processMerge((BEI_MERGE *)in_data);
 		break;
+	case BEI_REQUEST_TYPE_INITVERTEXBUFFER:
+		processInitVertexBuffer((BEI_INITVERTEXBUFFER *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_INITVERTEXSUBBUFFER:
+		processInitVertexSubBuffer((BEI_INITVERTEXSUBBUFFER *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_INITINDEXBUFFER:
+		processInitIndexBuffer((BEI_INITINDEXBUFFER *)in_data);
+		break;
+	case BEI_REQUEST_TYPE_INITINDEXSUBBUFFER:
+		processInitIndexSubBuffer((BEI_INITINDEXSUBBUFFER *)in_data);
+		break;
 	case BEI_REQUEST_TYPE_DELETEBUFFER:
 		processDeleteBuffer((BEI_DELETEBUFFER *)in_data);
 		break;
@@ -1750,6 +1762,122 @@ void MMSFBBackEndInterface::processMerge(BEI_MERGE *req) {
 }
 
 
+void MMSFBBackEndInterface::initVertexBuffer(unsigned int *buffer, unsigned int size, void *data) {
+	BEI_INITVERTEXBUFFER req;
+	req.type	= BEI_REQUEST_TYPE_INITVERTEXBUFFER;
+	req.buffer	= buffer;
+	req.size	= size;
+	req.data	= data;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processInitVertexBuffer(BEI_INITVERTEXBUFFER *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// buffer set?
+	if (!req->buffer) return;
+
+	// buffer already initialized?
+	if (*(req->buffer)) return;
+
+	// generate new buffer object
+	if (!mmsfbgl.genBuffer(req->buffer)) return;
+
+	// allocate new vertex buffer and fill it with given data
+	// if no data is given, the buffer will be allocated but not initialized
+	if (!mmsfbgl.initVertexBuffer(*(req->buffer), req->size, req->data)) {
+		// failed
+		mmsfbgl.deleteBuffer(*(req->buffer));
+		*(req->buffer) = 0;
+		return;
+	}
+
+#endif
+}
+
+
+void MMSFBBackEndInterface::initVertexSubBuffer(unsigned int buffer, unsigned int offset,
+												unsigned int size, void *data) {
+	BEI_INITVERTEXSUBBUFFER req;
+	req.type	= BEI_REQUEST_TYPE_INITVERTEXSUBBUFFER;
+	req.buffer	= buffer;
+	req.offset	= offset;
+	req.size	= size;
+	req.data	= data;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processInitVertexSubBuffer(BEI_INITVERTEXSUBBUFFER *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// buffer initialized?
+	if (!req->buffer) return;
+
+	// initialize a sub region of the vertex buffer
+	mmsfbgl.initVertexSubBuffer(req->buffer, req->offset, req->size, req->data);
+
+#endif
+}
+
+
+void MMSFBBackEndInterface::initIndexBuffer(unsigned int *buffer, unsigned int size, void *data) {
+	BEI_INITINDEXBUFFER req;
+	req.type	= BEI_REQUEST_TYPE_INITINDEXBUFFER;
+	req.buffer	= buffer;
+	req.size	= size;
+	req.data	= data;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processInitIndexBuffer(BEI_INITINDEXBUFFER *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// buffer set?
+	if (!req->buffer) return;
+
+	// buffer already initialized?
+	if (*(req->buffer)) return;
+
+	// generate new buffer object
+	if (!mmsfbgl.genBuffer(req->buffer)) return;
+
+	// allocate new index buffer and fill it with given data
+	// if no data is given, the buffer will be allocated but not initialized
+	if (!mmsfbgl.initIndexBuffer(*(req->buffer), req->size, req->data)) {
+		// failed
+		mmsfbgl.deleteBuffer(*(req->buffer));
+		*(req->buffer) = 0;
+		return;
+	}
+
+#endif
+}
+
+
+void MMSFBBackEndInterface::initIndexSubBuffer(unsigned int buffer, unsigned int offset,
+											   unsigned int size, void *data) {
+	BEI_INITINDEXSUBBUFFER req;
+	req.type	= BEI_REQUEST_TYPE_INITINDEXSUBBUFFER;
+	req.buffer	= buffer;
+	req.offset	= offset;
+	req.size	= size;
+	req.data	= data;
+	trigger((void*)&req, sizeof(req));
+}
+
+void MMSFBBackEndInterface::processInitIndexSubBuffer(BEI_INITINDEXSUBBUFFER *req) {
+#ifdef  __HAVE_OPENGL__
+
+	// buffer initialized?
+	if (!req->buffer) return;
+
+	// initialize a sub region of the index buffer
+	mmsfbgl.initIndexSubBuffer(req->buffer, req->offset, req->size, req->data);
+
+#endif
+}
+
+
 void MMSFBBackEndInterface::deleteBuffer(unsigned int buffer) {
 	BEI_DELETEBUFFER req;
 	req.type	= BEI_REQUEST_TYPE_DELETEBUFFER;
@@ -1765,6 +1893,7 @@ void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
 
 #endif
 }
+
 
 
 

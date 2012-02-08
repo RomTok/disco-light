@@ -215,6 +215,10 @@ class MMSFBGL {
         bool initVertexSubBuffer(GLuint vbo, unsigned int offset, unsigned int size, const GLvoid *data);
         bool enableVertexBuffer(GLuint vbo);
         void disableVertexBuffer();
+        bool initIndexBuffer(GLuint ibo, unsigned int size, const GLvoid *data = NULL);
+        bool initIndexSubBuffer(GLuint ibo, unsigned int offset, unsigned int size, const GLvoid *data);
+        bool enableIndexBuffer(GLuint ibo);
+        void disableIndexBuffer();
 
         bool genTexture(GLuint *tex);
         bool deleteTexture(GLuint tex);
@@ -313,5 +317,6 @@ class MMSFBGL {
 #endif
 
 #endif /* MMSFBGL_H_ */
+
 
 
