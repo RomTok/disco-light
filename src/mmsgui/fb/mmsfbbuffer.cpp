@@ -264,12 +264,31 @@ void MMSFBBuffer::BUFFER::initIndexBuffer(EXTKEY *extkey, INDEX_BUFFER index_buf
 	}
 
 	if (!this->index_bo.bo && size) {
-		// we need buffer object but it is not initialized
+		// we need a buffer object but it is not initialized
 		free(this->index_bo.buffers);
 		this->index_bo.bo = 0;
 		this->index_bo.buffers = NULL;
 		this->index_bo.num_buffers = 0;
 		return;
+	}
+
+	if (size) {
+		// try to reserve GPU buffer
+		unsigned int ibo_offset = 0;
+		if (extkey->reserveIndexArray(size, &ibo_offset)) {
+			// fill GPU buffer
+			for (unsigned int i = 0; i < this->index_bo.num_buffers; i++) {
+				MMS3D_INDEX_ARRAY *array = &this->index_buffer.arrays[i];
+
+				this->index_bo.buffers[i].bo = this->index_bo.bo;
+				this->index_bo.buffers[i].offs+= ibo_offset;
+
+				unsigned int size = sizeof(unsigned int) * array->eNum;
+
+				if (mmsfb->bei)
+					mmsfb->bei->initIndexSubBuffer(this->index_bo.buffers[i].bo, this->index_bo.buffers[i].offs, size, array->data);
+			}
+		}
 	}
 #endif
 }
@@ -320,7 +339,7 @@ void MMSFBBuffer::BUFFER::initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_
 	}
 
 	if (!this->vertex_bo.bo && size) {
-		// we need buffer object but it is not initialized
+		// we need a buffer object but it is not initialized
 		free(this->vertex_bo.buffers);
 		this->vertex_bo.bo = 0;
 		this->vertex_bo.buffers = NULL;
@@ -328,27 +347,30 @@ void MMSFBBuffer::BUFFER::initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_
 		return;
 	}
 
-	unsigned int vbo_offset = 0;
-	if (extkey->reserveVertexArray(size, &vbo_offset)) {
-		// fill GPU buffer
-		for (unsigned int i = 0; i < this->vertex_bo.num_buffers; i++) {
-			MMS3D_VERTEX_ARRAY *array = &this->vertex_buffer.arrays[i];
+	if (size) {
+		// try to reserve GPU buffer
+		unsigned int vbo_offset = 0;
+		if (extkey->reserveVertexArray(size, &vbo_offset)) {
+			// fill GPU buffer
+			for (unsigned int i = 0; i < this->vertex_bo.num_buffers; i++) {
+				MMS3D_VERTEX_ARRAY *array = &this->vertex_buffer.arrays[i];
 
-			this->vertex_bo.buffers[i].bo = this->vertex_bo.bo;
-			this->vertex_bo.buffers[i].offs+= vbo_offset;
+				this->vertex_bo.buffers[i].bo = this->vertex_bo.bo;
+				this->vertex_bo.buffers[i].offs+= vbo_offset;
 
-			unsigned int size;
-			switch (this->vertex_bo.buffers[i].dtype) {
-			case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
-				size = sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
-				break;
-			default:
-				size = sizeof(float) * array->eSize * array->eNum;
-				break;
+				unsigned int size;
+				switch (this->vertex_bo.buffers[i].dtype) {
+				case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+					size = sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
+					break;
+				default:
+					size = sizeof(float) * array->eSize * array->eNum;
+					break;
+				}
+
+				if (mmsfb->bei)
+					mmsfb->bei->initVertexSubBuffer(this->vertex_bo.buffers[i].bo, this->vertex_bo.buffers[i].offs, size, array->data);
 			}
-
-			if (mmsfb->bei)
-				mmsfb->bei->initVertexSubBuffer(this->vertex_bo.buffers[i].bo, this->vertex_bo.buffers[i].offs, size, array->data);
 		}
 	}
 #endif
@@ -369,6 +391,7 @@ bool MMSFBBuffer::BUFFER::getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **in
 	return true;
 }
 #endif
+
 
 
 
