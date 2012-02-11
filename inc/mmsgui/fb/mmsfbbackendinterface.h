@@ -117,7 +117,10 @@ private:
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
 		MMSFBSurface		*surface;
-		MMSFBRegion			region;
+		int					x1;
+		int					y1;
+		int					x2;
+		int					y2;
 	} BEI_DRAWLINE;
 
 	typedef struct {
@@ -328,7 +331,7 @@ public:
 	void clear(MMSFBSurface *surface, MMSFBColor &color);
 	void fillRectangle(MMSFBSurface *surface, MMSFBRectangle &rect, MMSFBDrawingFlags drawingflags);
 	void fillTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
-	void drawLine(MMSFBSurface *surface, MMSFBRegion &region);
+	void drawLine(MMSFBSurface *surface, int x1, int y1, int x2, int y2);
 	void drawRectangle(MMSFBSurface *surface, MMSFBRectangle &rect);
 	void drawTriangle(MMSFBSurface *surface, MMSFBTriangle &triangle);
 	void blit(MMSFBSurface *surface, MMSFBSurface *source, MMSFBRectangle &src_rect, int x, int y, MMSFBBlittingFlags blittingflags);
@@ -355,6 +358,7 @@ public:
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */
+
 
 
 

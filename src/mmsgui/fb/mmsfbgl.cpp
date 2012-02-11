@@ -44,7 +44,7 @@
 	printf("  %s = %x\n", str, value);
 
 
-#define OGL_CALC_COORD_MIDDLE(v1, v2) (((v1)<(v2)) ? (float)(v1) + 0.49 : (float)(v1) + 0.51)
+#define OGL_CALC_COORD_MIDDLE(v1, v2) (((v1)<=(v2)) ? (float)(v1) + 0.49f : (float)(v1) + 0.51f)
 
 #define OGL_CALC_COORD_F(v1, v2) (((v1)<(v2)) ? (float)(v1) : ((v1)>(v2)) ? (float)(v1) + 0.99f : (float)(v1))
 #define OGL_CALC_COORD_S(v1, v2) (((v1)<(v2)) ? (float)(v1) : ((v1)>(v2)) ? (float)(v1) + 0.99f : (float)(v1) + 0.99f)
@@ -2088,6 +2088,54 @@ bool MMSFBGL::setColor(unsigned char r, unsigned char g, unsigned char b, unsign
 }
 
 
+bool MMSFBGL::drawLine2D(float x1, float y1, float x2, float y2) {
+
+	INITCHECK;
+
+	disableVertexBuffer();
+
+#ifdef __HAVE_GL2__
+printf("drawline2d %f,%f,%f,%f\n", x1,y1,x2,y2);
+	glBegin(GL_LINES);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y2);
+	glEnd();
+	ERROR_CHECK_BOOL("glBegin(GL_LINES)");
+
+#endif
+
+#ifdef __HAVE_GLES2__
+
+	// configure generic vertex attribute array
+	GLfloat vertices[] = {x1,y1,x2,y2};
+	glEnableVertexAttribArray(MMSFBGL_VSV_LOC);
+	ERROR_CHECK_BOOL("glEnableVertexAttribArray(MMSFBGL_VSV_LOC)");
+
+	glVertexAttribPointer(MMSFBGL_VSV_LOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), vertices);
+	ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,...)");
+
+	// draw it
+	glDrawArrays(GL_LINES, 0, 3);
+	ERROR_CHECK_BOOL("glDrawArrays(GL_LINES,...)");
+
+#endif
+
+	return true;
+}
+
+
+bool MMSFBGL::drawLine2Di(int x1, int y1, int x2, int y2) {
+	if (x1 == x2 || y1 == y2) {
+		// horizontal or vertical line or only one pixel
+		return fillRectangle2Di(x1, y1, x2, y2);
+	}
+	else {
+		// change pixel based values to float values and draw it
+		return drawLine2D(OGL_CALC_COORD_MIDDLE(x1, x2), OGL_CALC_COORD_MIDDLE(y1, y2),
+						  OGL_CALC_COORD_MIDDLE(x2, x1), OGL_CALC_COORD_MIDDLE(y2, y1));
+	}
+}
+
 
 bool MMSFBGL::drawRectangle2D(float x1, float y1, float x2, float y2) {
 
@@ -2207,6 +2255,7 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 	disableVertexBuffer();
 
 #ifdef __HAVE_GL2__
+
 	glRectf(x1, y1, x2, y2);
 	ERROR_CHECK_BOOL("glRectf()");
 
@@ -2926,6 +2975,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 
 #endif
+
 
 
 

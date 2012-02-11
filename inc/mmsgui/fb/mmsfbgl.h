@@ -274,6 +274,9 @@ class MMSFBGL {
         bool clear(unsigned char r = 0x00, unsigned char g = 0x00, unsigned char b = 0x00, unsigned char a = 0x00);
         bool setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
+        bool drawLine2D(float x1, float y1, float x2, float y2);
+        bool drawLine2Di(int x1, int y1, int x2, int y2);
+
         bool drawRectangle2D(float x1, float y1, float x2, float y2);
         bool drawRectangle2Di(int x1, int y1, int x2, int y2);
 
@@ -317,6 +320,7 @@ class MMSFBGL {
 #endif
 
 #endif /* MMSFBGL_H_ */
+
 
 
 

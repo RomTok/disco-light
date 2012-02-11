@@ -127,20 +127,24 @@
 
 
 #define ENABLE_OGL_DEPTHTEST(surface, readonly) \
-		if (!readonly && surface->config.surface_buffer) \
-			if (!surface->is_sub_surface) \
+		if (!readonly && surface->config.surface_buffer) { \
+			if (!surface->is_sub_surface) { \
 				surface->config.surface_buffer->ogl_unchanged_depth_buffer = false; \
-			else \
+			} else { \
 				surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer = surface->config.surface_buffer->ogl_unchanged_depth_buffer = false; \
+			} \
+		} \
 		mmsfbgl.enableDepthTest(readonly);
 
 
 #define DISABLE_OGL_DEPTHTEST(surface, mark_as_unchanged) \
-		if (mark_as_unchanged && surface->config.surface_buffer) \
-			if (!surface->is_sub_surface) \
+		if (mark_as_unchanged && surface->config.surface_buffer) { \
+			if (!surface->is_sub_surface) { \
 				surface->config.surface_buffer->ogl_unchanged_depth_buffer = true; \
-			else \
+			} else { \
 				surface->root_parent->config.surface_buffer->ogl_unchanged_depth_buffer = surface->config.surface_buffer->ogl_unchanged_depth_buffer = true; \
+			} \
+		} \
 		mmsfbgl.disableDepthTest();
 
 
@@ -698,10 +702,10 @@ void MMSFBBackEndInterface::processFillRectangle(BEI_FILLRECTANGLE *req) {
 	OGL_SCISSOR(req->surface, req->rect.x, req->rect.y, req->rect.w, req->rect.h);
 
 	// fill rectangle
-	OGL_FILL_RECTANGLE(req->rect.x,
-					   req->rect.y,
-					   req->rect.x + req->rect.w - 1,
-					   req->rect.y + req->rect.h - 1);
+	mmsfbgl.fillRectangle2Di(req->rect.x,
+							 req->rect.y,
+							 req->rect.x + req->rect.w - 1,
+							 req->rect.y + req->rect.h - 1);
 #endif
 }
 
@@ -763,25 +767,22 @@ void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 #endif
 }
 
-void MMSFBBackEndInterface::drawLine(MMSFBSurface *surface, MMSFBRegion &region) {
+void MMSFBBackEndInterface::drawLine(MMSFBSurface *surface, int x1, int y1, int x2, int y2) {
 	BEI_DRAWLINE req;
 	req.type	= BEI_REQUEST_TYPE_DRAWLINE;
 	req.surface	= surface;
-	req.region	= region;
+	req.x1	= x1;
+	req.y1	= y1;
+	req.x2	= x2;
+	req.y2	= y2;
 	trigger((void*)&req, sizeof(req));
 }
 
 void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
-#ifdef  __HAVE_GL2__
+#ifdef  __HAVE_OPENGL__
 	// lock destination fbo and prepare it
 	oglBindSurface(req->surface);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
 
-/*	printf("%08x, %dx%d, %d,%d,%d,%d DISKO: processDrawLine\n",
-			req->surface,
-			req->surface->config.color.r,req->surface->config.color.g,req->surface->config.color.b,req->surface->config.color.a);
-*/
 	// setup drawing
 	INIT_OGL_DRAWING(req->surface, req->surface->config.drawingflags);
 
@@ -791,33 +792,30 @@ void MMSFBBackEndInterface::processDrawLine(BEI_DRAWLINE *req) {
 	// set the clip to ogl
 	MMSFBRectangle crect;
 	int x, y, w, h;
-	if (req->region.x2 >= req->region.x1) {
-		x = req->region.x1;
-		w = req->region.x2 - req->region.x1 + 1;
+	if (req->x2 >= req->x1) {
+		x = req->x1;
+		w = req->x2 - req->x1 + 1;
 	}
 	else {
-		x = req->region.x2;
-		w = req->region.x1 - req->region.x2 + 1;
+		x = req->x2;
+		w = req->x1 - req->x2 + 1;
 	}
-	if (req->region.y2 >= req->region.y1) {
-		y = req->region.y1;
-		h = req->region.y2 - req->region.y1 + 1;
+	if (req->y2 >= req->y1) {
+		y = req->y1;
+		h = req->y2 - req->y1 + 1;
 	}
 	else {
-		y = req->region.y2;
-		h = req->region.y1 - req->region.y2 + 1;
+		y = req->y2;
+		h = req->y1 - req->y2 + 1;
 	}
 
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
 
 		// draw line
-		OGL_DRAW_LINE(req->region.x1 + xoff,
-					  req->region.y1 + yoff,
-					  req->region.x2 + xoff,
-					  req->region.y2 + yoff);
+		mmsfbgl.drawLine2Di(req->x1 + xoff, req->y1 + yoff,
+							req->x2 + xoff, req->y2 + yoff);
 	}
 #endif
 }
@@ -1275,13 +1273,13 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 				int dx = req->x + glyph.left;
 				int dy = req->y + DY - glyph.top;
 
+#ifndef __HAVE_GLU__
 				// get destination region
 				int dx1 = dx + xoff;
 				int dy1 = dy + yoff;
 				int dx2 = dx + src_w - 1 + xoff;
 				int dy2 = dy + src_h - 1 + yoff;
 
-#ifndef __HAVE_GLU__
 				// get source region
 				int sx1 = 0;
 				int sy1 = 0;
@@ -1295,6 +1293,10 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 											dx1, dy1, dx2, dy2);
 				}
 #else
+				// get destination offset
+				int dx1 = dx + xoff;
+				int dy1 = dy + yoff;
+
 				// move to correct position
 				mmsfbgl.translateCurrentMatrix(dx1 - dx1_save, dy1 - dy1_save, 0);
 				dx1_save = dx1;
@@ -1757,6 +1759,7 @@ void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
 
 #endif
 }
+
 
 
 

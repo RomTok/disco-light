@@ -1821,11 +1821,21 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
 
 	// check if we can use fill rectangle
 	if (x1 == x2) {
-		return fillRectangle(x1, y1, 1, y2-y1+1);
+		if (y1 <= y2) {
+			return fillRectangle(x1, y1, 1, y2-y1+1);
+		}
+		else {
+			return fillRectangle(x1, y2, 1, y1-y2+1);
+		}
 	}
 	else
 	if (y1 == y2) {
-		return fillRectangle(x1, y1, x2-x1+1, 1);
+		if (x1 <= x2) {
+			return fillRectangle(x1, y1, x2-x1+1, 1);
+		}
+		else {
+			return fillRectangle(x2, y1, x1-x2+1, 1);
+		}
 	}
 
     MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
@@ -1881,16 +1891,14 @@ bool MMSFBSurface::drawLine(int x1, int y1, int x2, int y2) {
 #ifdef  __HAVE_OPENGL__
 		if (!this->is_sub_surface) {
 
-			MMSFBRegion region = MMSFBRegion(x1, y1, x2, y2);
-			mmsfb->bei->drawLine(this, region);
+			mmsfb->bei->drawLine(this, x1, y1, x2, y2);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			MMSFBRegion region = MMSFBRegion(x1, y1, x2, y2);
-			mmsfb->bei->drawLine(this, region);
+			mmsfb->bei->drawLine(this, x1, y1, x2, y2);
 
 			UNCLIPSUBSURFACE
 
@@ -9788,6 +9796,7 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
 
