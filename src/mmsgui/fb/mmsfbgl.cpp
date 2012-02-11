@@ -44,11 +44,13 @@
 	printf("  %s = %x\n", str, value);
 
 
-#define OGL_CALC_COORD(v1, v2) (((v1)<(v2)) ? (float)(v1) : (float)(v1) + 0.99)
-#define OGL_CALC_2X_N(v1, v2, width)	(OGL_CALC_COORD(v1, v2) / (width))
-#define OGL_CALC_2Y_N(v1, v2, height)	(OGL_CALC_COORD(v1, v2) / (height))
-
 #define OGL_CALC_COORD_MIDDLE(v1, v2) (((v1)<(v2)) ? (float)(v1) + 0.49 : (float)(v1) + 0.51)
+
+#define OGL_CALC_COORD_F(v1, v2) (((v1)<(v2)) ? (float)(v1) : ((v1)>(v2)) ? (float)(v1) + 0.99f : (float)(v1))
+#define OGL_CALC_COORD_S(v1, v2) (((v1)<(v2)) ? (float)(v1) : ((v1)>(v2)) ? (float)(v1) + 0.99f : (float)(v1) + 0.99f)
+
+#define OGL_CALC_TEXCOORD_F(v1, v2, size)	(((v1)>(v2)&&(v1==size)) ? 1.0f : OGL_CALC_COORD_F(v1, v2) / (size))
+#define OGL_CALC_TEXCOORD_S(v1, v2, size)	(((v1)>(v2)&&(v1==size)) ? 1.0f : OGL_CALC_COORD_S(v1, v2) / (size))
 
 
 MMSFBGL::MMSFBGL() {
@@ -2205,7 +2207,6 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 	disableVertexBuffer();
 
 #ifdef __HAVE_GL2__
-
 	glRectf(x1, y1, x2, y2);
 	ERROR_CHECK_BOOL("glRectf()");
 
@@ -2233,8 +2234,8 @@ bool MMSFBGL::fillRectangle2D(float x1, float y1, float x2, float y2) {
 
 bool MMSFBGL::fillRectangle2Di(int x1, int y1, int x2, int y2) {
 	// change pixel based values to float values and draw it
-	return fillRectangle2D(OGL_CALC_COORD(x1, x2), OGL_CALC_COORD(y1, y2),
-							OGL_CALC_COORD(x2, x1), OGL_CALC_COORD(y2, y1));
+	return fillRectangle2D(OGL_CALC_COORD_F(x1, x2), OGL_CALC_COORD_F(y1, y2),
+						   OGL_CALC_COORD_S(x2, x1), OGL_CALC_COORD_S(y2, y1));
 }
 
 
@@ -2396,48 +2397,16 @@ bool MMSFBGL::stretchBlit(GLuint src_tex, float sx1, float sy1, float sx2, float
 bool MMSFBGL::stretchBliti(GLuint src_tex, int sx1, int sy1, int sx2, int sy2, int sw, int sh,
 							int dx1, int dy1, int dx2, int dy2) {
 
-	if (dx1 != dx2 && dy1 != dy2) {
-		return stretchBlit(src_tex,
-							OGL_CALC_2X_N(sx1, sx2, sw),
-							OGL_CALC_2Y_N(sy1, sy2, sh),
-							OGL_CALC_2X_N(sx2, sx1, sw),
-							OGL_CALC_2Y_N(sy2, sy1, sh),
-							OGL_CALC_COORD(dx1, dx2),
-							OGL_CALC_COORD(dy1, dy2),
-							OGL_CALC_COORD(dx2, dx1),
-							OGL_CALC_COORD(dy2, dy1));
-	} else if (dy1 != dy2) {
-		return stretchBlit(src_tex,
-							OGL_CALC_2X_N(sx1, sx2, sw),
-							OGL_CALC_2Y_N(sy1, sy2, sh),
-							OGL_CALC_2X_N(sx2, sx1, sw),
-							OGL_CALC_2Y_N(sy2, sy1, sh),
-							(float)(dx1),
-							OGL_CALC_COORD(dy1, dy2),
-							(float)(dx1) + 0.99,
-							OGL_CALC_COORD(dy2, dy1));
-	} else if (dx1 != dx2) {
-		return stretchBlit(src_tex,
-							OGL_CALC_2X_N(sx1, sx2, sw),
-							OGL_CALC_2Y_N(sy1, sy2, sh),
-							OGL_CALC_2X_N(sx2, sx1, sw),
-							OGL_CALC_2Y_N(sy2, sy1, sh),
-							OGL_CALC_COORD(dx1, dx2),
-							(float)(dy1),
-							OGL_CALC_COORD(dx2, dx1),
-							(float)(dy1) + 0.99);
-
-	} else {
-		return stretchBlit(src_tex,
-							OGL_CALC_2X_N(sx1, sx2, sw),
-							OGL_CALC_2Y_N(sy1, sy2, sh),
-							OGL_CALC_2X_N(sx2, sx1, sw),
-							OGL_CALC_2Y_N(sy2, sy1, sh),
-							(float)(dx1),
-							(float)(dy1),
-							(float)(dx1) + 0.99,
-							(float)(dy1) + 0.99);
-	}
+	// change pixel based values to float values and blit it
+	return stretchBlit(src_tex,
+						OGL_CALC_TEXCOORD_F(sx1, sx2, sw),
+						OGL_CALC_TEXCOORD_F(sy1, sy2, sh),
+						OGL_CALC_TEXCOORD_S(sx2, sx1, sw),
+						OGL_CALC_TEXCOORD_S(sy2, sy1, sh),
+						OGL_CALC_COORD_F(dx1, dx2),
+						OGL_CALC_COORD_F(dy1, dy2),
+						OGL_CALC_COORD_S(dx2, dx1),
+						OGL_CALC_COORD_S(dy2, dy1));
 }
 
 
@@ -2957,6 +2926,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 
 #endif
+
 
 
 
