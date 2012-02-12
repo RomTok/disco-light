@@ -60,7 +60,7 @@ void MMS3DMatrixStack::clear() {
 	this->result_matrix_set = false;
 }
 
-void MMS3DMatrixStack::setBaseMatrix(MMS3DMatrix base_matrix) {
+void MMS3DMatrixStack::setBaseMatrix(MMSMatrix base_matrix) {
 	if (this->base_matrix_set) {
 		if (equalMatrix(this->base_matrix, base_matrix)) {
 			// this base matrix has been already set
@@ -74,7 +74,7 @@ void MMS3DMatrixStack::setBaseMatrix(MMS3DMatrix base_matrix) {
 	this->result_matrix_set = false;
 }
 
-bool MMS3DMatrixStack::getResultMatrix(MMS3DMatrix result_matrix) {
+bool MMS3DMatrixStack::getResultMatrix(MMSMatrix result_matrix) {
 	if (!this->base_matrix_set) return false;
 
 	if (!this->result_matrix_set) {
@@ -124,5 +124,6 @@ bool MMS3DMatrixStack::rotate(float angle, float x, float y, float z) {
 	this->result_matrix_set = false;
 	return add(MOP_ROTATE, angle, x, y, z);
 }
+
 
 

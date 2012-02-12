@@ -576,8 +576,8 @@ float convertHalfFloat2Float(MMS_HALF_FLOAT hf) {
 
 
 
-void multiplyMatrix(MMS3DMatrix result, MMS3DMatrix srcA, MMS3DMatrix srcB) {
-    MMS3DMatrix    tmp;
+void multiplyMatrix(MMSMatrix result, MMSMatrix srcA, MMSMatrix srcB) {
+    MMSMatrix    tmp;
 
 	for (int i = 0; i < 4; i++) {
 		tmp[i][0] =	(srcA[i][0] * srcB[0][0]) +
@@ -600,22 +600,22 @@ void multiplyMatrix(MMS3DMatrix result, MMS3DMatrix srcA, MMS3DMatrix srcB) {
 					(srcA[i][2] * srcB[2][3]) +
 					(srcA[i][3] * srcB[3][3]);
 	}
-    memcpy(result, tmp, sizeof(MMS3DMatrix));
+    memcpy(result, tmp, sizeof(MMSMatrix));
 }
 
 
-void copyMatrix(MMS3DMatrix result, MMS3DMatrix src) {
-    memcpy(result, src, sizeof(MMS3DMatrix));
+void copyMatrix(MMSMatrix result, MMSMatrix src) {
+    memcpy(result, src, sizeof(MMSMatrix));
 }
 
-bool equalMatrix(MMS3DMatrix result, MMS3DMatrix src) {
-    return (memcmp(result, src, sizeof(MMS3DMatrix)) == 0);
+bool equalMatrix(MMSMatrix result, MMSMatrix src) {
+    return (memcmp(result, src, sizeof(MMSMatrix)) == 0);
 }
 
 
 
-void loadIdentityMatrix(MMS3DMatrix result) {
-    memset(result, 0x0, sizeof(MMS3DMatrix));
+void loadIdentityMatrix(MMSMatrix result) {
+    memset(result, 0x0, sizeof(MMSMatrix));
     result[0][0] = 1.0f;
     result[1][1] = 1.0f;
     result[2][2] = 1.0f;
@@ -623,7 +623,7 @@ void loadIdentityMatrix(MMS3DMatrix result) {
 }
 
 
-void scaleMatrix(MMS3DMatrix result, float sx, float sy, float sz) {
+void scaleMatrix(MMSMatrix result, float sx, float sy, float sz) {
     result[0][0] *= sx;
     result[0][1] *= sx;
     result[0][2] *= sx;
@@ -641,7 +641,7 @@ void scaleMatrix(MMS3DMatrix result, float sx, float sy, float sz) {
 }
 
 
-void translateMatrix(MMS3DMatrix result, float tx, float ty, float tz) {
+void translateMatrix(MMSMatrix result, float tx, float ty, float tz) {
     result[3][0] += (result[0][0] * tx + result[1][0] * ty + result[2][0] * tz);
     result[3][1] += (result[0][1] * tx + result[1][1] * ty + result[2][1] * tz);
     result[3][2] += (result[0][2] * tx + result[1][2] * ty + result[2][2] * tz);
@@ -649,16 +649,16 @@ void translateMatrix(MMS3DMatrix result, float tx, float ty, float tz) {
 }
 
 
-void rotateMatrix(MMS3DMatrix result, float angle, float x, float y, float z) {
+void rotateMatrix(MMSMatrix result, float angle, float x, float y, float z) {
    float sinAngle, cosAngle;
    float mag = sqrtf(x * x + y * y + z * z);
 
-   sinAngle = sinf (angle * MMS3D_PI / 180.0f);
-   cosAngle = cosf (angle * MMS3D_PI / 180.0f);
+   sinAngle = sinf (angle * MMS_PI / 180.0f);
+   cosAngle = cosf (angle * MMS_PI / 180.0f);
    if (mag > 0.0f) {
       float xx, yy, zz, xy, yz, zx, xs, ys, zs;
       float oneMinusCos;
-      MMS3DMatrix rotMat;
+      MMSMatrix rotMat;
 
       x /= mag;
       y /= mag;
@@ -700,7 +700,7 @@ void rotateMatrix(MMS3DMatrix result, float angle, float x, float y, float z) {
 }
 
 
-void frustumMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+void frustumMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
     float	deltaX = right - left;
     float	deltaY = top - bottom;
     float	deltaZ = farZ - nearZ;
@@ -709,7 +709,7 @@ void frustumMatrix(MMS3DMatrix result, float left, float right, float bottom, fl
          (deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f) )
          return;
 
-    MMS3DMatrix frust;
+    MMSMatrix frust;
     frust[0][0] = 2.0f * nearZ / deltaX;
     frust[0][1] = frust[0][2] = frust[0][3] = 0.0f;
 
@@ -728,16 +728,16 @@ void frustumMatrix(MMS3DMatrix result, float left, float right, float bottom, fl
 }
 
 
-void perspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ) {
+void perspectiveMatrix(MMSMatrix result, float fovy, float aspect, float nearZ, float farZ) {
    float frustumW, frustumH;
 
-   frustumH = tanf(fovy / 360.0f * MMS3D_PI) * nearZ;
+   frustumH = tanf(fovy / 360.0f * MMS_PI) * nearZ;
    frustumW = frustumH * aspect;
 
    frustumMatrix(result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ);
 }
 
-void orthoMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+void orthoMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
     float       deltaX = right - left;
     float       deltaY = top - bottom;
     float       deltaZ = farZ - nearZ;
@@ -745,7 +745,7 @@ void orthoMatrix(MMS3DMatrix result, float left, float right, float bottom, floa
     if ((deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f))
         return;
 
-    MMS3DMatrix ortho;
+    MMSMatrix ortho;
     loadIdentityMatrix(ortho);
     ortho[0][0] = 2.0f / deltaX;
     ortho[3][0] = -(right + left) / deltaX;
@@ -767,5 +767,6 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object) {
 	}
 	return true;
 }
+
 
 

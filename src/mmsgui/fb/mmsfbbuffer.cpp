@@ -242,7 +242,7 @@ void MMSFBBuffer::BUFFER::initIndexBuffer(EXTKEY *extkey, INDEX_BUFFER index_buf
 		this->index_bo.num_buffers = 0;
 		return;
 	}
-	this->index_bo.buffers = (MMS3D_INDEX_BUFFER *)malloc(sizeof(MMS3D_INDEX_BUFFER) * this->index_bo.num_buffers);
+	this->index_bo.buffers = (MMS_INDEX_BUFFER *)malloc(sizeof(MMS_INDEX_BUFFER) * this->index_bo.num_buffers);
 	if (!this->index_bo.buffers) {
 		// no mem
 		this->index_bo.bo = 0;
@@ -255,7 +255,7 @@ void MMSFBBuffer::BUFFER::initIndexBuffer(EXTKEY *extkey, INDEX_BUFFER index_buf
 	// calculate size of whole new buffer object and setup several buffers
 	unsigned int size = 0;
 	for (unsigned int i = 0; i < this->index_bo.num_buffers; i++) {
-		MMS3D_INDEX_ARRAY *array = &this->index_buffer.arrays[i];
+		MMS_INDEX_ARRAY *array = &this->index_buffer.arrays[i];
 		this->index_bo.buffers[i].bo   = 0;
 		this->index_bo.buffers[i].offs = size;
 		this->index_bo.buffers[i].type = array->type;
@@ -278,7 +278,7 @@ void MMSFBBuffer::BUFFER::initIndexBuffer(EXTKEY *extkey, INDEX_BUFFER index_buf
 		if (extkey->reserveIndexArray(size, &ibo_offset)) {
 			// fill GPU buffer
 			for (unsigned int i = 0; i < this->index_bo.num_buffers; i++) {
-				MMS3D_INDEX_ARRAY *array = &this->index_buffer.arrays[i];
+				MMS_INDEX_ARRAY *array = &this->index_buffer.arrays[i];
 
 				this->index_bo.buffers[i].bo = this->index_bo.bo;
 				this->index_bo.buffers[i].offs+= ibo_offset;
@@ -308,7 +308,7 @@ void MMSFBBuffer::BUFFER::initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_
 		this->vertex_bo.num_buffers = 0;
 		return;
 	}
-	this->vertex_bo.buffers = (MMS3D_VERTEX_BUFFER *)malloc(sizeof(MMS3D_VERTEX_BUFFER) * this->vertex_bo.num_buffers);
+	this->vertex_bo.buffers = (MMS_VERTEX_BUFFER *)malloc(sizeof(MMS_VERTEX_BUFFER) * this->vertex_bo.num_buffers);
 	if (!this->vertex_bo.buffers) {
 		// no mem
 		this->vertex_bo.bo = 0;
@@ -321,7 +321,7 @@ void MMSFBBuffer::BUFFER::initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_
 	// calculate size of whole new buffer object and setup several buffers
 	unsigned int size = 0;
 	for (unsigned int i = 0; i < this->vertex_bo.num_buffers; i++) {
-		MMS3D_VERTEX_ARRAY *array = &this->vertex_buffer.arrays[i];
+		MMS_VERTEX_ARRAY *array = &this->vertex_buffer.arrays[i];
 		this->vertex_bo.buffers[i].dtype = array->dtype;
 		this->vertex_bo.buffers[i].bo    = 0;
 		this->vertex_bo.buffers[i].offs  = size;
@@ -329,7 +329,7 @@ void MMSFBBuffer::BUFFER::initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_
 		this->vertex_bo.buffers[i].eNum  = array->eNum;
 
 		switch (this->vertex_bo.buffers[i].dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
 			size+= sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
 			break;
 		default:
@@ -353,14 +353,14 @@ void MMSFBBuffer::BUFFER::initVertexBuffer(EXTKEY *extkey, VERTEX_BUFFER vertex_
 		if (extkey->reserveVertexArray(size, &vbo_offset)) {
 			// fill GPU buffer
 			for (unsigned int i = 0; i < this->vertex_bo.num_buffers; i++) {
-				MMS3D_VERTEX_ARRAY *array = &this->vertex_buffer.arrays[i];
+				MMS_VERTEX_ARRAY *array = &this->vertex_buffer.arrays[i];
 
 				this->vertex_bo.buffers[i].bo = this->vertex_bo.bo;
 				this->vertex_bo.buffers[i].offs+= vbo_offset;
 
 				unsigned int size;
 				switch (this->vertex_bo.buffers[i].dtype) {
-				case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+				case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
 					size = sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
 					break;
 				default:
@@ -391,6 +391,7 @@ bool MMSFBBuffer::BUFFER::getBufferObjects(MMSFBBuffer::INDEX_BUFFER_OBJECT **in
 	return true;
 }
 #endif
+
 
 
 

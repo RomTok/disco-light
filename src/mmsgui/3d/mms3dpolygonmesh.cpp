@@ -49,36 +49,36 @@ MMS3DPolygonMesh::MMS3DPolygonMesh() {
 }
 
 void MMS3DPolygonMesh::genRectangle(float width, float height,
-					MMS3D_VERTEX_ARRAY	*vertices,
-					MMS3D_VERTEX_ARRAY	*normals,
-					MMS3D_VERTEX_ARRAY	*texcoords,
-					MMS3D_INDEX_ARRAY		*indices) {
+					MMS_VERTEX_ARRAY	*vertices,
+					MMS_VERTEX_ARRAY	*normals,
+					MMS_VERTEX_ARRAY	*texcoords,
+					MMS_INDEX_ARRAY		*indices) {
 
 
 	// allocate memory for buffers
 	if (vertices) {
 		vertices->eSize = 2;
 		vertices->eNum  = 4;
-		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
 		normals->eNum  = 4;
-		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
 		texcoords->eNum  = 4;
-		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
-		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+		indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 		indices->eNum = 4;
 		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
@@ -136,14 +136,14 @@ void MMS3DPolygonMesh::genRectangle(float width, float height,
 }
 
 void MMS3DPolygonMesh::genSphere(int numSlices, float radius,
-				MMS3D_VERTEX_ARRAY	*vertices,
-				MMS3D_VERTEX_ARRAY	*normals,
-				MMS3D_VERTEX_ARRAY	*texcoords,
-				MMS3D_INDEX_ARRAY		*indices) {
+				MMS_VERTEX_ARRAY	*vertices,
+				MMS_VERTEX_ARRAY	*normals,
+				MMS_VERTEX_ARRAY	*texcoords,
+				MMS_INDEX_ARRAY		*indices) {
 	int i;
 	int j;
 	int numParallels = numSlices / 2;
-	float angleStep = (2.0f * MMS3D_PI) / ((float) numSlices);
+	float angleStep = (2.0f * MMS_PI) / ((float) numSlices);
 
 
 
@@ -151,26 +151,26 @@ void MMS3DPolygonMesh::genSphere(int numSlices, float radius,
 	if (vertices) {
 		vertices->eSize = 3;
 		vertices->eNum  = ( numParallels + 1 ) * ( numSlices + 1 );
-		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
 		normals->eNum  = ( numParallels + 1 ) * ( numSlices + 1 );
-		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
 		texcoords->eNum  = ( numParallels + 1 ) * ( numSlices + 1 );
-		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
-		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+		indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
 		indices->eNum = numParallels * numSlices * 6;
 		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
@@ -221,10 +221,10 @@ void MMS3DPolygonMesh::genSphere(int numSlices, float radius,
 }
 
 void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius, float minorradius,
-				MMS3D_VERTEX_ARRAY	*vertices,
-				MMS3D_VERTEX_ARRAY	*normals,
-				MMS3D_VERTEX_ARRAY	*texcoords,
-				MMS3D_INDEX_ARRAY		*indices) {
+				MMS_VERTEX_ARRAY	*vertices,
+				MMS_VERTEX_ARRAY	*normals,
+				MMS_VERTEX_ARRAY	*texcoords,
+				MMS_INDEX_ARRAY		*indices) {
 
 
 	// we use triangle strip, so same number of elements for all buffers
@@ -234,26 +234,26 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 	if (vertices) {
 		vertices->eSize = 3;
 		vertices->eNum  = eNum;
-		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
 		normals->eNum  = eNum;
-		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
 		texcoords->eNum  = eNum;
-		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
-		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+		indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 		indices->eNum = eNum;
 		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
@@ -263,7 +263,7 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 	int index = 0;
 
 	// calculate it
-	float PI2 = 2.0f * MMS3D_PI;
+	float PI2 = 2.0f * MMS_PI;
 	bool final = false;
 	while (1) {
 		for (int i = 0; i < numwraps; i++) {
@@ -316,10 +316,10 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 }
 
 void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
-					MMS3D_VERTEX_ARRAY	*vertices,
-					MMS3D_VERTEX_ARRAY	*normals,
-					MMS3D_VERTEX_ARRAY	*texcoords,
-					MMS3D_INDEX_ARRAY		*indices) {
+					MMS_VERTEX_ARRAY	*vertices,
+					MMS_VERTEX_ARRAY	*normals,
+					MMS_VERTEX_ARRAY	*texcoords,
+					MMS_INDEX_ARRAY		*indices) {
 
 
 	// we use triangle strip, so same number of elements for all buffers
@@ -329,26 +329,26 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	if (vertices) {
 		vertices->eSize = 3;
 		vertices->eNum  = eNum;
-		vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 	}
 
 	if (normals) {
 		normals->eSize = 3;
 		normals->eNum  = eNum;
-		normals->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		normals->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		normals->data  = malloc(sizeof(float) * normals->eSize * normals->eNum);
 	}
 
 	if (texcoords) {
 		texcoords->eSize = 2;
 		texcoords->eNum  = eNum;
-		texcoords->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+		texcoords->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 		texcoords->data  = malloc(sizeof(float) * texcoords->eSize * texcoords->eNum);
 	}
 
 	if (indices) {
-		indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+		indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 		indices->eNum = eNum;
 		indices->data = (unsigned int *)malloc(sizeof(unsigned int) * indices->eNum);
 	}
@@ -357,7 +357,7 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	int index = 0;
 
 	// calculate it
-	float angleStep = 2.0f * MMS3D_PI / ((float) numSlices);
+	float angleStep = 2.0f * MMS_PI / ((float) numSlices);
 	float z0 = 0.5 * height;
 	float z1 = z0 - height;
 
@@ -512,8 +512,8 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier, in
 }
 
 int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier,
-								MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
-								MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices) {
+								MMS_VERTEX_ARRAY *vertices, MMS_VERTEX_ARRAY *normals,
+								MMS_VERTEX_ARRAY *texcoords, MMS_INDEX_ARRAY *indices) {
 	if (this->pm_items_cnt >= MMS3DPM_ITEM_MAX) {
 		// no more space
 		return -1;
@@ -588,13 +588,13 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier,
 	return this->pm_items_cnt - 1;
 }
 
-void MMS3DPolygonMesh::getArrays(MMS3D_VERTEX_ARRAY ***varrays, MMS3D_INDEX_ARRAY ***iarrays) {
+void MMS3DPolygonMesh::getArrays(MMS_VERTEX_ARRAY ***varrays, MMS_INDEX_ARRAY ***iarrays) {
 	*varrays = this->varrays;
 	*iarrays = this->iarrays;
 }
 
-bool MMS3DPolygonMesh::setPrimitives(string id, MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
-									 MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices) {
+bool MMS3DPolygonMesh::setPrimitives(string id, MMS_VERTEX_ARRAY *vertices, MMS_VERTEX_ARRAY *normals,
+									 MMS_VERTEX_ARRAY *texcoords, MMS_INDEX_ARRAY *indices) {
 	MMS3DPM_MESHID identifier;
 	memset(&identifier[0], 0, sizeof(identifier));
 	int len = id.size();
@@ -659,4 +659,5 @@ bool MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	}
 	return true;
 }
+
 

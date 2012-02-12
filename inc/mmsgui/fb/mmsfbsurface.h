@@ -441,8 +441,8 @@ class MMSFBSurface {
 							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 							   MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
 
-        bool renderScene(MMS3D_VERTEX_ARRAY	**varrays,
-						 MMS3D_INDEX_ARRAY	**iarrays,
+        bool renderScene(MMS_VERTEX_ARRAY	**varrays,
+						 MMS_INDEX_ARRAY	**iarrays,
 						 MMS3D_MATERIAL		*materials,
 						 MMSFBSurface		**textures,
 						 MMS3D_OBJECT		**objects);
@@ -844,3 +844,4 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 								 MMSFBSurfacePixelFormat pixelformat);
 
 #endif /*MMSFBSURFACE_H_*/
+

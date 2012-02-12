@@ -1347,8 +1347,8 @@ void MMSFBBackEndInterface::processDrawString(BEI_DRAWSTRING *req) {
 }
 
 void MMSFBBackEndInterface::renderScene(MMSFBSurface *surface,
-										MMS3D_VERTEX_ARRAY	**varrays,
-										MMS3D_INDEX_ARRAY	**iarrays,
+										MMS_VERTEX_ARRAY	**varrays,
+										MMS_INDEX_ARRAY		**iarrays,
 										MMS3D_MATERIAL		*materials,
 										MMSFBSurface		**texsurfaces,
 										MMS3D_OBJECT		**objects) {
@@ -1759,6 +1759,7 @@ void MMSFBBackEndInterface::processDeleteBuffer(BEI_DELETEBUFFER *req) {
 
 #endif
 }
+
 
 
 

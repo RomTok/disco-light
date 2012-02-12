@@ -1821,7 +1821,7 @@ bool MMSFBGL::useShaderProgram4ModulateBlittingFromAlpha() {
 }
 
 
-bool MMSFBGL::setCurrentMatrix(MMS3DMatrix matrix) {
+bool MMSFBGL::setCurrentMatrix(MMSMatrix matrix) {
 
 	INITCHECK;
 
@@ -1859,7 +1859,7 @@ bool MMSFBGL::setCurrentMatrix(MMS3DMatrix matrix) {
 }
 
 
-bool MMSFBGL::getCurrentMatrix(MMS3DMatrix matrix) {
+bool MMSFBGL::getCurrentMatrix(MMSMatrix matrix) {
 
 	INITCHECK;
 
@@ -1897,12 +1897,12 @@ bool MMSFBGL::rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z
 
 
 
-bool MMSFBGL::getParallelProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+bool MMSFBGL::getParallelProjectionMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
-	MMS3DMatrix matrix;
+	MMSMatrix matrix;
 	loadIdentityMatrix(matrix);
 	orthoMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 
@@ -1913,12 +1913,12 @@ bool MMSFBGL::getParallelProjectionMatrix(MMS3DMatrix result, float left, float 
 }
 
 
-bool MMSFBGL::getCentralProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
+bool MMSFBGL::getCentralProjectionMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
-	MMS3DMatrix matrix;
+	MMSMatrix matrix;
 	loadIdentityMatrix(matrix);
 	frustumMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 
@@ -1929,12 +1929,12 @@ bool MMSFBGL::getCentralProjectionMatrix(MMS3DMatrix result, float left, float r
 }
 
 
-bool MMSFBGL::getPerspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ) {
+bool MMSFBGL::getPerspectiveMatrix(MMSMatrix result, float fovy, float aspect, float nearZ, float farZ) {
 
 	INITCHECK;
 
 	// calculate the new matrix
-	MMS3DMatrix matrix;
+	MMSMatrix matrix;
 	loadIdentityMatrix(matrix);
 	perspectiveMatrix(matrix, fovy, aspect, nearZ, farZ);
 
@@ -1951,7 +1951,7 @@ bool MMSFBGL::setParallelProjection(float left, float right, float bottom, float
 	INITCHECK;
 
 	// set the model view matrix for the shader
-	MMS3DMatrix matrix;
+	MMSMatrix matrix;
 	getParallelProjectionMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
 	ERROR_CHECK_BOOL("glViewport()");
@@ -1964,7 +1964,7 @@ bool MMSFBGL::setCentralProjection(float left, float right, float bottom, float 
 	INITCHECK;
 
 	// set the projection matrix for the shader
-	MMS3DMatrix matrix;
+	MMSMatrix matrix;
 	getCentralProjectionMatrix(matrix, left, right, bottom, top, nearZ, farZ);
 	glViewport(0, 0, (left<right)?right-left:left-right, (bottom<top)?top-bottom:bottom-top);
 	ERROR_CHECK_BOOL("glViewport()");
@@ -1977,10 +1977,10 @@ bool MMSFBGL::setPerspective(float fovy, float aspect, float nearZ, float farZ) 
 	INITCHECK;
 
 	// set the perspective (based on projection matrix) for the shader
-	MMS3DMatrix matrix;
+	MMSMatrix matrix;
 	getPerspectiveMatrix(matrix, fovy, aspect, nearZ, farZ);
 	GLfloat w, h;
-	h = tanf(fovy / 360.0f * MMS3D_PI) * nearZ;
+	h = tanf(fovy / 360.0f * MMS_PI) * nearZ;
 	w = h * aspect;
 	glViewport(0, 0, w*2, h*2);
 	ERROR_CHECK_BOOL("glViewport()");
@@ -2003,7 +2003,7 @@ bool MMSFBGL::popCurrentMatrix() {
 
 	if (this->matrix_stack.size() > 0) {
 		// restore current matrix from stack
-		MMS3DMatrix matrix;
+		MMSMatrix matrix;
 		this->matrix_stack.top().getMatrix(matrix);
 		this->matrix_stack.pop();
 		setCurrentMatrix(matrix);
@@ -2516,8 +2516,8 @@ bool MMSFBGL::blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int
 }
 
 
-bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals, MMS3D_VERTEX_ARRAY *texcoords,
-						   MMS3D_INDEX_ARRAY *indices) {
+bool MMSFBGL::drawElements(MMS_VERTEX_ARRAY *vertices, MMS_VERTEX_ARRAY *normals, MMS_VERTEX_ARRAY *texcoords,
+						   MMS_INDEX_ARRAY *indices) {
 
 	INITCHECK;
 
@@ -2533,7 +2533,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	// load the vertices
 	if (vertices && vertices->data) {
 		switch (vertices->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(vertices->eSize, GL_FLOAT, 0, vertices->data);
 			break;
@@ -2549,7 +2549,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	// load the normals
 	if (normals && normals->data) {
 		switch (normals->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_NORMAL_ARRAY);
 			glNormalPointer(GL_FLOAT, 0, normals->data);
 			break;
@@ -2565,7 +2565,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	// load the texture coordinates
 	if (texcoords && texcoords->data) {
 		switch (texcoords->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			glTexCoordPointer(texcoords->eSize, GL_FLOAT, 0, texcoords->data);
 			break;
@@ -2586,14 +2586,14 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	if (vertices && vertices->data) {
 		bool enable = false;
 		switch (vertices->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
 								   GL_FALSE, 0, vertices->data);
 			ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,,GL_FLOAT,GL_FALSE,...)");
 			enable = true;
 			break;
 #ifdef GL_HALF_FLOAT_OES
-		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
 			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_HALF_FLOAT_OES,
 								   GL_FALSE, 0, vertices->data);
 			ERROR_CHECK_BOOL("glVertexAttribPointer(MMSFBGL_VSV_LOC,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
@@ -2620,14 +2620,14 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	if (texcoords && texcoords->data) {
 		bool enable = false;
 		switch (texcoords->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
 								   GL_FALSE, 0, texcoords->data);
 			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_FLOAT,GL_FALSE,...)");
 			enable = true;
 			break;
 #ifdef GL_HALF_FLOAT_OES
-		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
 			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_HALF_FLOAT_OES,
 								   GL_FALSE, 0, texcoords->data);
 			ERROR_CHECK_BOOL("glVertexAttribPointer(VSTexCoordLoc,,GL_HALF_FLOAT_OES,GL_FALSE,...)");
@@ -2660,22 +2660,22 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 #endif
 
 	// draw elements
-	// note: MMS3D_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
+	// note: MMS_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
 	GLenum mode = GL_TRIANGLES;
 	switch (indices->type) {
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+	case MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 		mode = GL_TRIANGLE_STRIP;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+	case MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 		mode = GL_TRIANGLE_FAN;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_LINES:
+	case MMS_INDEX_ARRAY_TYPE_LINES:
 		mode = GL_LINES;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+	case MMS_INDEX_ARRAY_TYPE_LINES_STRIP:
 		mode = GL_LINE_STRIP;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+	case MMS_INDEX_ARRAY_TYPE_LINES_LOOP:
 		mode = GL_LINE_LOOP;
 		break;
 	default:
@@ -2688,22 +2688,22 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 		// print errors
 		switch (indices->type) {
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+		case MMS_INDEX_ARRAY_TYPE_LINES:
 			ERROR_CHECK_BOOL("glDrawElements(GL_LINES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_STRIP:
 			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_LOOP:
 			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_LOOP,...)");
 			break;
 		}
@@ -2714,22 +2714,22 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 
 		// print errors
 		switch (indices->type) {
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+		case MMS_INDEX_ARRAY_TYPE_LINES:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_STRIP:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_LOOP:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_LOOP,...)");
 			break;
 		}
@@ -2738,8 +2738,8 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *nor
 	return true;
 }
 
-bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *normals, MMS3D_VERTEX_BUFFER *texcoords,
-						   MMS3D_INDEX_BUFFER *indices) {
+bool MMSFBGL::drawElements(MMS_VERTEX_BUFFER *vertices, MMS_VERTEX_BUFFER *normals, MMS_VERTEX_BUFFER *texcoords,
+						   MMS_INDEX_BUFFER *indices) {
 	INITCHECK;
 
 	if (!vertices || !indices) {
@@ -2752,7 +2752,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	// load the vertices
 	if (vertices && vertices->bo) {
 		switch (vertices->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_VERTEX_ARRAY);
 			bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
 			glVertexPointer(vertices->eSize, GL_FLOAT, 0, (const GLvoid*)vertices->offs);
@@ -2769,7 +2769,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	// load the normals
 	if (normals && normals->bo) {
 		switch (normals->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_NORMAL_ARRAY);
 			bindBuffer(GL_ARRAY_BUFFER, normals->bo);
 			glNormalPointer(GL_FLOAT, 0, (const GLvoid*)normals->offs);
@@ -2786,7 +2786,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	// load the texture coordinates
 	if (texcoords && texcoords->bo) {
 		switch (texcoords->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			bindBuffer(GL_ARRAY_BUFFER, texcoords->bo);
 			glTexCoordPointer(texcoords->eSize, GL_FLOAT, 0, (const GLvoid*)texcoords->offs);
@@ -2808,7 +2808,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	if (vertices && vertices->bo) {
 		bool enable = false;
 		switch (vertices->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
 			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_FLOAT,
 								   GL_FALSE, 0, (const GLvoid*)vertices->offs);
@@ -2816,7 +2816,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 			enable = true;
 			break;
 #ifdef GL_HALF_FLOAT_OES
-		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
 			bindBuffer(GL_ARRAY_BUFFER, vertices->bo);
 			glVertexAttribPointer(MMSFBGL_VSV_LOC, vertices->eSize, GL_HALF_FLOAT_OES,
 								   GL_FALSE, 0, (const GLvoid*)vertices->offs);
@@ -2844,7 +2844,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	if (texcoords && texcoords->bo) {
 		bool enable = false;
 		switch (texcoords->dtype) {
-		case MMS3D_VERTEX_DATA_TYPE_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_FLOAT:
 			bindBuffer(GL_ARRAY_BUFFER, texcoords->bo);
 			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_FLOAT,
 								   GL_FALSE, 0, (const GLvoid*)texcoords->offs);
@@ -2852,7 +2852,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 			enable = true;
 			break;
 #ifdef GL_HALF_FLOAT_OES
-		case MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT:
+		case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
 			bindBuffer(GL_ARRAY_BUFFER, texcoords->bo);
 			glVertexAttribPointer(VSTexCoordLoc, texcoords->eSize, GL_HALF_FLOAT_OES,
 								   GL_FALSE, 0, (const GLvoid*)texcoords->offs);
@@ -2894,22 +2894,22 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 	}*/
 
 	// draw elements
-	// note: MMS3D_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
+	// note: MMS_INDEX_ARRAY uses indices with type unsigned int (GL_UNSIGNED_INT)
 	GLenum mode = GL_TRIANGLES;
 	switch (indices->type) {
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+	case MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 		mode = GL_TRIANGLE_STRIP;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+	case MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 		mode = GL_TRIANGLE_FAN;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_LINES:
+	case MMS_INDEX_ARRAY_TYPE_LINES:
 		mode = GL_LINES;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+	case MMS_INDEX_ARRAY_TYPE_LINES_STRIP:
 		mode = GL_LINE_STRIP;
 		break;
-	case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+	case MMS_INDEX_ARRAY_TYPE_LINES_LOOP:
 		mode = GL_LINE_LOOP;
 		break;
 	default:
@@ -2923,22 +2923,22 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 		// print errors
 		switch (indices->type) {
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 			ERROR_CHECK_BOOL("glDrawElements(GL_TRIANGLE_FAN,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+		case MMS_INDEX_ARRAY_TYPE_LINES:
 			ERROR_CHECK_BOOL("glDrawElements(GL_LINES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_STRIP:
 			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_LOOP:
 			ERROR_CHECK_BOOL("glDrawElements(GL_LINE_LOOP,...)");
 			break;
 		}
@@ -2949,22 +2949,22 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 		// print errors
 		switch (indices->type) {
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
+		case MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_TRIANGLE_FAN,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES:
+		case MMS_INDEX_ARRAY_TYPE_LINES:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINES,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_STRIP:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_STRIP,...)");
 			break;
-		case MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP:
+		case MMS_INDEX_ARRAY_TYPE_LINES_LOOP:
 			ERROR_CHECK_BOOL("glDrawArrays(GL_LINE_LOOP,...)");
 			break;
 		}
@@ -2975,6 +2975,7 @@ bool MMSFBGL::drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *n
 
 
 #endif
+
 
 
 

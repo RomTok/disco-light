@@ -569,10 +569,10 @@ bool with_outline = true;
 		MMSFBBuffer::VERTEX_BUFFER vertex_buffer;
 		index_buffer.num_arrays = 0;
 		index_buffer.max_arrays = max_meshes;
-		index_buffer.arrays = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * index_buffer.max_arrays);
+		index_buffer.arrays = (MMS_INDEX_ARRAY*)malloc(sizeof(MMS_INDEX_ARRAY) * index_buffer.max_arrays);
 		vertex_buffer.num_arrays = 0;
 		vertex_buffer.max_arrays = max_meshes;
-		vertex_buffer.arrays = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * vertex_buffer.max_arrays);
+		vertex_buffer.arrays = (MMS_VERTEX_ARRAY*)malloc(sizeof(MMS_VERTEX_ARRAY) * vertex_buffer.max_arrays);
 
 		// for all meshes
 		for (unsigned int m = 0; m < ftglyph->getMeshCount(); m++) {
@@ -581,8 +581,8 @@ bool with_outline = true;
 				printf("max_meshes(%u) reached\n", max_meshes);
 				break;
 			}
-			MMS3D_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
-			MMS3D_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
+			MMS_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
+			MMS_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
 
 			// get access to polygon data
 			const MMSFTMesh *ftmesh = ftglyph->getMesh(m);
@@ -590,16 +590,16 @@ bool with_outline = true;
 
 			// prepare indices
 			// note: no need to allocate index buffer, because vertices are correctly sorted
-			indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+			indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
 			switch (ftmesh->getMeshType()) {
 			case GL_TRIANGLES:
-				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
 				break;
 			case GL_TRIANGLE_STRIP:
-				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
 				break;
 			case GL_TRIANGLE_FAN:
-				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN;
+				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN;
 				break;
 			default:
 				// unsupported type
@@ -614,7 +614,7 @@ bool with_outline = true;
 			// prepare vertices using normal 32bit floating point values
 			vertices->eSize = 2;
 			vertices->eNum  = ftmesh->getVertexCount();
-			vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+			vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 			vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
 			// for all vertices in the polygon
@@ -628,7 +628,7 @@ bool with_outline = true;
 			// prepare vertices using 16bit half floating point values
 			vertices->eSize = 2;
 			vertices->eNum  = ftmesh->getVertexCount();
-			vertices->dtype = MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT;
+			vertices->dtype = MMS_VERTEX_DATA_TYPE_HALF_FLOAT;
 			vertices->data  = malloc(sizeof(MMS_HALF_FLOAT) * vertices->eSize * vertices->eNum);
 
 			// for all vertices in the polygon
@@ -661,10 +661,10 @@ bool with_outline = true;
 			MMSFBBuffer::VERTEX_BUFFER vertex_buffer;
 			index_buffer.num_arrays = 0;
 			index_buffer.max_arrays = max_outlines;
-			index_buffer.arrays = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * index_buffer.max_arrays);
+			index_buffer.arrays = (MMS_INDEX_ARRAY*)malloc(sizeof(MMS_INDEX_ARRAY) * index_buffer.max_arrays);
 			vertex_buffer.num_arrays = 0;
 			vertex_buffer.max_arrays = max_outlines;
-			vertex_buffer.arrays = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * vertex_buffer.max_arrays);
+			vertex_buffer.arrays = (MMS_VERTEX_ARRAY*)malloc(sizeof(MMS_VERTEX_ARRAY) * vertex_buffer.max_arrays);
 
 			// for all contours (outlines)
 			for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
@@ -673,8 +673,8 @@ bool with_outline = true;
 					printf("max_outlines(%u) reached\n", max_outlines);
 					break;
 				}
-				MMS3D_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
-				MMS3D_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
+				MMS_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
+				MMS_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
 
 				// get access to contour data
 				const MMSFTContour *ftcontour = ftv->getContour(c);
@@ -682,7 +682,7 @@ bool with_outline = true;
 
 				// prepare indices
 				// note: no need to allocate index buffer, because vertices are correctly sorted
-				indices->type = MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP;
+				indices->type = MMS_INDEX_ARRAY_TYPE_LINES_LOOP;
 				indices->eNum = 0;
 				indices->data = NULL;
 
@@ -690,7 +690,7 @@ bool with_outline = true;
 				// prepare vertices using normal 32bit floating point values
 				vertices->eSize = 2;
 				vertices->eNum  = ftcontour->getVertexCount();
-				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+				vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 				vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
@@ -703,7 +703,7 @@ bool with_outline = true;
 				// prepare vertices using 16bit half floating point values
 				vertices->eSize = 2;
 				vertices->eNum  = ftcontour->getVertexCount();
-				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT;
+				vertices->dtype = MMS_VERTEX_DATA_TYPE_HALF_FLOAT;
 				vertices->data  = malloc(sizeof(MMS_HALF_FLOAT) * vertices->eSize * vertices->eNum);
 
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
@@ -742,10 +742,10 @@ bool with_outline = true;
 			MMSFBBuffer::VERTEX_BUFFER vertex_buffer;
 			index_buffer.num_arrays = 0;
 			index_buffer.max_arrays = max_outlines;
-			index_buffer.arrays = (MMS3D_INDEX_ARRAY*)malloc(sizeof(MMS3D_INDEX_ARRAY) * index_buffer.max_arrays);
+			index_buffer.arrays = (MMS_INDEX_ARRAY*)malloc(sizeof(MMS_INDEX_ARRAY) * index_buffer.max_arrays);
 			vertex_buffer.num_arrays = 0;
 			vertex_buffer.max_arrays = max_outlines;
-			vertex_buffer.arrays = (MMS3D_VERTEX_ARRAY*)malloc(sizeof(MMS3D_VERTEX_ARRAY) * vertex_buffer.max_arrays);
+			vertex_buffer.arrays = (MMS_VERTEX_ARRAY*)malloc(sizeof(MMS_VERTEX_ARRAY) * vertex_buffer.max_arrays);
 
 			// for all contours (outlines)
 			for (unsigned int c = 0; c < ftv->getContourCount(); c++) {
@@ -754,8 +754,8 @@ bool with_outline = true;
 					printf("max_outlines(%u) reached\n", max_outlines);
 					break;
 				}
-				MMS3D_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
-				MMS3D_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
+				MMS_INDEX_ARRAY  *indices  = &index_buffer.arrays[index_buffer.num_arrays];
+				MMS_VERTEX_ARRAY *vertices = &vertex_buffer.arrays[vertex_buffer.num_arrays];
 
 				// get access to contour data
 				const MMSFTContour *ftcontour = ftv->getContour(c);
@@ -763,14 +763,14 @@ bool with_outline = true;
 
 				// prepare indices
 				// note: no need to allocate index buffer, because vertices are correctly sorted
-				indices->type = MMS3D_INDEX_ARRAY_TYPE_TRIANGLES;
+				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
 				indices->eNum = 0;
 				indices->data = NULL;
 
 				// prepare vertices using normal 32bit floating point values
 				vertices->eSize = 2;
 				vertices->eNum  = ftcontour->getVertexCount() * 6;
-				vertices->dtype = MMS3D_VERTEX_DATA_TYPE_FLOAT;
+				vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
 				vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
 printf("*********************\n");
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
@@ -1010,5 +1010,6 @@ bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
 
 	return false;
 }
+
 
 

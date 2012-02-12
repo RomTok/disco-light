@@ -151,7 +151,7 @@ class MMSFBGL {
     	bool VSTexCoordLoc_initialized;
 
     	//! current matrix
-    	MMS3DMatrix	current_matrix;
+    	MMSMatrix	current_matrix;
 
     	//! current color
     	unsigned char	current_color_r;
@@ -161,12 +161,12 @@ class MMSFBGL {
 
     	class MMSFBGLStackMatrix {
     	public:
-    		MMS3DMatrix matrix;
-    		MMSFBGLStackMatrix(MMS3DMatrix matrix) {
-    			memcpy(this->matrix, matrix, sizeof(MMS3DMatrix));
+    		MMSMatrix matrix;
+    		MMSFBGLStackMatrix(MMSMatrix matrix) {
+    			memcpy(this->matrix, matrix, sizeof(MMSMatrix));
     		}
-    		void getMatrix(MMS3DMatrix matrix) {
-    			memcpy(matrix, this->matrix, sizeof(MMS3DMatrix));
+    		void getMatrix(MMSMatrix matrix) {
+    			memcpy(matrix, this->matrix, sizeof(MMSMatrix));
     		}
     	};
 
@@ -254,15 +254,15 @@ class MMSFBGL {
 		void setTexEnvModulate(GLenum format);
 		void disableArrays();
 
-        bool setCurrentMatrix(MMS3DMatrix matrix);
-        bool getCurrentMatrix(MMS3DMatrix matrix);
+        bool setCurrentMatrix(MMSMatrix matrix);
+        bool getCurrentMatrix(MMSMatrix matrix);
         bool scaleCurrentMatrix(GLfloat sx, GLfloat sy, GLfloat sz);
         bool translateCurrentMatrix(GLfloat tx, GLfloat ty, GLfloat tz);
         bool rotateCurrentMatrix(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 
-        bool getParallelProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-        bool getCentralProjectionMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-        bool getPerspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ);
+        bool getParallelProjectionMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getCentralProjectionMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+        bool getPerspectiveMatrix(MMSMatrix result, float fovy, float aspect, float nearZ, float farZ);
 
         bool setParallelProjection(float left, float right, float bottom, float top, float nearZ, float farZ);
         bool setCentralProjection(float left, float right, float bottom, float top, float nearZ, float farZ);
@@ -310,16 +310,17 @@ class MMSFBGL {
 
         bool blitBuffer2Texture(GLuint dst_tex, bool realloc, void *buffer, int sw, int sh);
 
-        bool drawElements(MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals, MMS3D_VERTEX_ARRAY *texcoords,
-						  MMS3D_INDEX_ARRAY *indices);
+        bool drawElements(MMS_VERTEX_ARRAY *vertices, MMS_VERTEX_ARRAY *normals, MMS_VERTEX_ARRAY *texcoords,
+						  MMS_INDEX_ARRAY *indices);
 
-        bool drawElements(MMS3D_VERTEX_BUFFER *vertices, MMS3D_VERTEX_BUFFER *normals, MMS3D_VERTEX_BUFFER *texcoords,
-						  MMS3D_INDEX_BUFFER *indices);
+        bool drawElements(MMS_VERTEX_BUFFER *vertices, MMS_VERTEX_BUFFER *normals, MMS_VERTEX_BUFFER *texcoords,
+						  MMS_INDEX_BUFFER *indices);
 };
 
 #endif
 
 #endif /* MMSFBGL_H_ */
+
 
 
 

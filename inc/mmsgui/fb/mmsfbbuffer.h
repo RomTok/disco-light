@@ -43,7 +43,7 @@ class MMSFBBuffer {
 		//! list of index arrays
 		typedef struct {
 			//! index data
-			MMS3D_INDEX_ARRAY	*arrays;
+			MMS_INDEX_ARRAY	*arrays;
 			//! maximum number of arrays
 			unsigned short int	max_arrays;
 			//! arrays which are initialized
@@ -53,7 +53,7 @@ class MMSFBBuffer {
     	//! list of vertex arrays
     	typedef struct {
 			//! vertex data
-			MMS3D_VERTEX_ARRAY	*arrays;
+			MMS_VERTEX_ARRAY	*arrays;
 			//! maximum number of arrays
 			unsigned short int	max_arrays;
 			//! arrays which are initialized
@@ -73,7 +73,7 @@ class MMSFBBuffer {
 			//! OpenGL's buffer object
 			unsigned int		bo;
 			//! index data description
-			MMS3D_INDEX_BUFFER	*buffers;
+			MMS_INDEX_BUFFER	*buffers;
 			//! number of buffers
 			unsigned short int	num_buffers;
 		} INDEX_BUFFER_OBJECT;
@@ -83,7 +83,7 @@ class MMSFBBuffer {
 			//! OpenGL's buffer object
 			unsigned int		bo;
 			//! vertex data description
-			MMS3D_VERTEX_BUFFER	*buffers;
+			MMS_VERTEX_BUFFER	*buffers;
 			//! number of buffers
 			unsigned short int	num_buffers;
 		} VERTEX_BUFFER_OBJECT;
@@ -188,5 +188,6 @@ class MMSFBBuffer {
 };
 
 #endif /* MMSFBBUFFER_H_ */
+
 
 

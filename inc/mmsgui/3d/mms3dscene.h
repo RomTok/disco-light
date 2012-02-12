@@ -62,20 +62,20 @@ private:
 
 	MMS3D_OBJECT *getObject(int object);
 
-	bool getResultMatrix(MMS3DMatrix result);
+	bool getResultMatrix(MMSMatrix result);
 
 public:
 
 	MMS3DScene();
 
-	bool setPrimitives(string id, MMS3D_VERTEX_ARRAY *vertices, MMS3D_VERTEX_ARRAY *normals,
-					   MMS3D_VERTEX_ARRAY *texcoords, MMS3D_INDEX_ARRAY *indices);
+	bool setPrimitives(string id, MMS_VERTEX_ARRAY *vertices, MMS_VERTEX_ARRAY *normals,
+					   MMS_VERTEX_ARRAY *texcoords, MMS_INDEX_ARRAY *indices);
 
-	void getMeshArrays(MMS3D_VERTEX_ARRAY ***varrays, MMS3D_INDEX_ARRAY ***iarrays);
+	void getMeshArrays(MMS_VERTEX_ARRAY ***varrays, MMS_INDEX_ARRAY ***iarrays);
 
 	void getObjects(MMS3D_OBJECT ***objects);
 
-	void setBaseMatrix(MMS3DMatrix matrix);
+	void setBaseMatrix(MMSMatrix matrix);
 
 	void reset();
 
@@ -96,3 +96,4 @@ public:
 };
 
 #endif /* MMS3DSCENE_H_ */
+

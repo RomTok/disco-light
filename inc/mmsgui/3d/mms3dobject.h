@@ -55,9 +55,9 @@ private:
 	vector<MMS3DObject*> children;
 
 
-	void setBaseMatrix(MMS3DMatrix matrix);
+	void setBaseMatrix(MMSMatrix matrix);
 
-	bool getResultMatrix(MMS3DMatrix result);
+	bool getResultMatrix(MMSMatrix result);
 
 	bool genMatrices();
 
@@ -92,3 +92,4 @@ public:
 };
 
 #endif /* MMS3DOBJECT_H_ */
+

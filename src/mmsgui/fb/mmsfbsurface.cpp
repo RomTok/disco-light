@@ -4306,8 +4306,8 @@ bool MMSFBSurface::extendedAccelDrawLine(int x1, int y1, int x2, int y2) {
 
 
 
-bool MMSFBSurface::renderScene(MMS3D_VERTEX_ARRAY	**varrays,
-							   MMS3D_INDEX_ARRAY	**iarrays,
+bool MMSFBSurface::renderScene(MMS_VERTEX_ARRAY	**varrays,
+							   MMS_INDEX_ARRAY	**iarrays,
 							   MMS3D_MATERIAL		*materials,
 							   MMSFBSurface			**textures,
 							   MMS3D_OBJECT			**objects) {
@@ -9796,6 +9796,7 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
 

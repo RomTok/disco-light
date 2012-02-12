@@ -1165,26 +1165,26 @@ float convertHalfFloat2Float(MMS_HALF_FLOAT hf);
 
 //! type of vertex data
 typedef enum {
-	MMS3D_VERTEX_DATA_TYPE_FLOAT = 0,
-	MMS3D_VERTEX_DATA_TYPE_HALF_FLOAT
-} MMS3D_VERTEX_DATA_TYPE;
+	MMS_VERTEX_DATA_TYPE_FLOAT = 0,
+	MMS_VERTEX_DATA_TYPE_HALF_FLOAT
+} MMS_VERTEX_DATA_TYPE;
 
 //! vertex array
 typedef struct {
 	//! type of vertex data
-	MMS3D_VERTEX_DATA_TYPE	dtype;
+	MMS_VERTEX_DATA_TYPE	dtype;
 	//! vertex data
 	void	*data;
 	//! number of values per vertex
 	int		eSize;
 	//! number of vertices
 	int		eNum;
-} MMS3D_VERTEX_ARRAY;
+} MMS_VERTEX_ARRAY;
 
 //! vertex buffer
 typedef struct {
 	//! type of vertex data
-	MMS3D_VERTEX_DATA_TYPE	dtype;
+	MMS_VERTEX_DATA_TYPE	dtype;
 	//! id of buffer object
 	unsigned int bo;
 	//! offset into the buffer object's data store where data replacement will begin
@@ -1193,39 +1193,39 @@ typedef struct {
 	int		eSize;
 	//! number of vertices
 	int		eNum;
-} MMS3D_VERTEX_BUFFER;
+} MMS_VERTEX_BUFFER;
 
 //! element type
 typedef enum {
-	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES = 0,
-	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_STRIP,
-	MMS3D_INDEX_ARRAY_TYPE_TRIANGLES_FAN,
-	MMS3D_INDEX_ARRAY_TYPE_LINES,
-	MMS3D_INDEX_ARRAY_TYPE_LINES_STRIP,
-	MMS3D_INDEX_ARRAY_TYPE_LINES_LOOP
-} MMS3D_INDEX_ARRAY_TYPE;
+	MMS_INDEX_ARRAY_TYPE_TRIANGLES = 0,
+	MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP,
+	MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN,
+	MMS_INDEX_ARRAY_TYPE_LINES,
+	MMS_INDEX_ARRAY_TYPE_LINES_STRIP,
+	MMS_INDEX_ARRAY_TYPE_LINES_LOOP
+} MMS_INDEX_ARRAY_TYPE;
 
 //! index array
 typedef struct {
 	//! element type
-	MMS3D_INDEX_ARRAY_TYPE	type;
+	MMS_INDEX_ARRAY_TYPE	type;
 	//! array of unsigned ints
 	unsigned int	*data;
 	//! number of indices
 	int				eNum;
-} MMS3D_INDEX_ARRAY;
+} MMS_INDEX_ARRAY;
 
 //! index buffer
 typedef struct {
 	//! element type
-	MMS3D_INDEX_ARRAY_TYPE	type;
+	MMS_INDEX_ARRAY_TYPE	type;
 	//! id of buffer object
 	unsigned int	bo;
 	//! offset into the buffer object's data store where data replacement will begin
 	unsigned int	offs;
 	//! number of indices
 	int				eNum;
-} MMS3D_INDEX_BUFFER;
+} MMS_INDEX_BUFFER;
 
 typedef struct {
 	float r;
@@ -1256,20 +1256,20 @@ typedef union {
 
 
 
-#define MMS3D_PI 3.1415926535897932384626433832795f
+#define MMS_PI 3.1415926535897932384626433832795f
 
-typedef float MMS3DMatrix[4][4];
+typedef float MMSMatrix[4][4];
 
-void multiplyMatrix(MMS3DMatrix result, MMS3DMatrix srcA, MMS3DMatrix srcB);
-void copyMatrix(MMS3DMatrix result, MMS3DMatrix src);
-bool equalMatrix(MMS3DMatrix result, MMS3DMatrix src);
-void loadIdentityMatrix(MMS3DMatrix result);
-void scaleMatrix(MMS3DMatrix result, float sx, float sy, float sz);
-void translateMatrix(MMS3DMatrix result, float tx, float ty, float tz);
-void rotateMatrix(MMS3DMatrix result, float angle, float x, float y, float z);
-void frustumMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
-void perspectiveMatrix(MMS3DMatrix result, float fovy, float aspect, float nearZ, float farZ);
-void orthoMatrix(MMS3DMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+void multiplyMatrix(MMSMatrix result, MMSMatrix srcA, MMSMatrix srcB);
+void copyMatrix(MMSMatrix result, MMSMatrix src);
+bool equalMatrix(MMSMatrix result, MMSMatrix src);
+void loadIdentityMatrix(MMSMatrix result);
+void scaleMatrix(MMSMatrix result, float sx, float sy, float sz);
+void translateMatrix(MMSMatrix result, float tx, float ty, float tz);
+void rotateMatrix(MMSMatrix result, float angle, float x, float y, float z);
+void frustumMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
+void perspectiveMatrix(MMSMatrix result, float fovy, float aspect, float nearZ, float farZ);
+void orthoMatrix(MMSMatrix result, float left, float right, float bottom, float top, float nearZ, float farZ);
 
 
 //! decribes a 3D object which can be rendered
@@ -1302,7 +1302,7 @@ typedef struct _bei_object {
 	bool	cullface;
 
 	//! matrix of the object
-	MMS3DMatrix 	matrix;
+	MMSMatrix 	matrix;
 } MMS3D_OBJECT;
 
 
@@ -1314,5 +1314,6 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object);
 
 
 #endif /* MMSTYPES_H_ */
+
 
 

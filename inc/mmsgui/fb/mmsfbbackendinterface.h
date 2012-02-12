@@ -191,8 +191,8 @@ private:
 	typedef struct {
 		BEI_REQUEST_TYPE	type;
 		MMSFBSurface		*surface;
-		MMS3D_VERTEX_ARRAY	**varrays;
-		MMS3D_INDEX_ARRAY	**iarrays;
+		MMS_VERTEX_ARRAY	**varrays;
+		MMS_INDEX_ARRAY		**iarrays;
 		MMS3D_MATERIAL		*materials;
 		MMSFBSurface		**texsurfaces;
 		MMS3D_OBJECT		**objects;
@@ -344,8 +344,8 @@ public:
 	void deleteTexture(unsigned int texture);
 	void drawString(MMSFBSurface *surface, string &text, int len, int x, int y);
 	void renderScene(MMSFBSurface *surface,
-					 MMS3D_VERTEX_ARRAY	**varrays,
-					 MMS3D_INDEX_ARRAY	**iarrays,
+					 MMS_VERTEX_ARRAY	**varrays,
+					 MMS_INDEX_ARRAY	**iarrays,
 					 MMS3D_MATERIAL		*materials,
 					 MMSFBSurface		**texsurfaces,
 					 MMS3D_OBJECT		**objects);
@@ -358,6 +358,7 @@ public:
 };
 
 #endif /* MMSFBBACKENDINTERFACE_H_ */
+
 
 
 
