@@ -590,16 +590,15 @@ bool with_outline = true;
 
 			// prepare indices
 			// note: no need to allocate index buffer, because vertices are correctly sorted
-			indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
 			switch (ftmesh->getMeshType()) {
 			case GL_TRIANGLES:
-				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
+				initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLES);
 				break;
 			case GL_TRIANGLE_STRIP:
-				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP;
+				initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP);
 				break;
 			case GL_TRIANGLE_FAN:
-				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN;
+				initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_FAN);
 				break;
 			default:
 				// unsupported type
@@ -607,15 +606,10 @@ bool with_outline = true;
 				delete ftv;
 				return false;
 			}
-			indices->eNum = 0;
-			indices->data = NULL;
 
 #ifndef __HAVE_OGL_HALF_FLOAT__
 			// prepare vertices using normal 32bit floating point values
-			vertices->eSize = 2;
-			vertices->eNum  = ftmesh->getVertexCount();
-			vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
-			vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+			initVertexArray(vertices, 2, ftmesh->getVertexCount(), MMS_VERTEX_DATA_TYPE_FLOAT);
 
 			// for all vertices in the polygon
 			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
@@ -626,10 +620,7 @@ bool with_outline = true;
 			}
 #else
 			// prepare vertices using 16bit half floating point values
-			vertices->eSize = 2;
-			vertices->eNum  = ftmesh->getVertexCount();
-			vertices->dtype = MMS_VERTEX_DATA_TYPE_HALF_FLOAT;
-			vertices->data  = malloc(sizeof(MMS_HALF_FLOAT) * vertices->eSize * vertices->eNum);
+			initVertexArray(vertices, 2, ftmesh->getVertexCount(), MMS_VERTEX_DATA_TYPE_HALF_FLOAT);
 
 			// for all vertices in the polygon
 			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
@@ -682,16 +673,11 @@ bool with_outline = true;
 
 				// prepare indices
 				// note: no need to allocate index buffer, because vertices are correctly sorted
-				indices->type = MMS_INDEX_ARRAY_TYPE_LINES_LOOP;
-				indices->eNum = 0;
-				indices->data = NULL;
+				initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_LINE_LOOP);
 
 #ifndef __HAVE_OGL_HALF_FLOAT__
 				// prepare vertices using normal 32bit floating point values
-				vertices->eSize = 2;
-				vertices->eNum  = ftcontour->getVertexCount();
-				vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
-				vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+				initVertexArray(vertices, 2, ftcontour->getVertexCount(), MMS_VERTEX_DATA_TYPE_FLOAT);
 
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
 					const MMSFTVertex &vertex = ftcontour->Vertex(v);
@@ -701,10 +687,7 @@ bool with_outline = true;
 				}
 #else
 				// prepare vertices using 16bit half floating point values
-				vertices->eSize = 2;
-				vertices->eNum  = ftcontour->getVertexCount();
-				vertices->dtype = MMS_VERTEX_DATA_TYPE_HALF_FLOAT;
-				vertices->data  = malloc(sizeof(MMS_HALF_FLOAT) * vertices->eSize * vertices->eNum);
+				initVertexArray(vertices, 2, ftcontour->getVertexCount(), MMS_VERTEX_DATA_TYPE_HALF_FLOAT);
 
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
 					const MMSFTVertex &vertex = ftcontour->Vertex(v);
@@ -763,15 +746,10 @@ bool with_outline = true;
 
 				// prepare indices
 				// note: no need to allocate index buffer, because vertices are correctly sorted
-				indices->type = MMS_INDEX_ARRAY_TYPE_TRIANGLES;
-				indices->eNum = 0;
-				indices->data = NULL;
+				initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLES);
 
 				// prepare vertices using normal 32bit floating point values
-				vertices->eSize = 2;
-				vertices->eNum  = ftcontour->getVertexCount() * 6;
-				vertices->dtype = MMS_VERTEX_DATA_TYPE_FLOAT;
-				vertices->data  = malloc(sizeof(float) * vertices->eSize * vertices->eNum);
+				initVertexArray(vertices, 2, ftcontour->getVertexCount() * 6, MMS_VERTEX_DATA_TYPE_FLOAT);
 printf("*********************\n");
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
 					const MMSFTVertex &vertex1 = ftcontour->Vertex(v);
@@ -1010,6 +988,7 @@ bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
 
 	return false;
 }
+
 
 
 

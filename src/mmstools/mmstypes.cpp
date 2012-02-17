@@ -34,6 +34,7 @@
 #include "mmstools/tools.h"
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 
 
 string getMMSFBBackendString(MMSFBBackend be) {
@@ -574,6 +575,81 @@ float convertHalfFloat2Float(MMS_HALF_FLOAT hf) {
 
 
 
+bool initVertexArray(MMS_VERTEX_ARRAY *array, int eSize, int eNum,
+					 MMS_VERTEX_DATA_TYPE dtype, void *data) {
+	if (!array) return false;
+	array->dtype = dtype;
+	array->data = data;
+	if (eSize <= 0 || eNum <= 0) {
+		array->eSize = 0;
+		array->eNum = 0;
+		return false;
+	}
+	array->eSize = eSize;
+	array->eNum = eNum;
+
+	if (!array->data) {
+		// allocate space for vertex data
+		unsigned int len = getVertexArraySize(array);
+		if (!len) return false;
+		array->data = malloc(len);
+	}
+
+	return true;
+}
+
+void freeVertexArray(MMS_VERTEX_ARRAY *array) {
+	if (array && array->data) {
+		free(array->data);
+		array->data = NULL;
+	}
+}
+
+unsigned int getVertexArraySize(MMS_VERTEX_ARRAY *array) {
+	switch (array->dtype) {
+	case MMS_VERTEX_DATA_TYPE_FLOAT:
+		return sizeof(float) * array->eSize * array->eNum;
+	case MMS_VERTEX_DATA_TYPE_HALF_FLOAT:
+		return sizeof(MMS_HALF_FLOAT) * array->eSize * array->eNum;
+	default:
+		return 0;
+	}
+}
+
+
+bool initIndexArray(MMS_INDEX_ARRAY *array, MMS_INDEX_ARRAY_TYPE type, int eNum, unsigned int *data) {
+	if (!array) return false;
+	array->type = type;
+	array->data = data;
+	if (eNum < 0) {
+		array->eNum = 0;
+		return false;
+	}
+	array->eNum = eNum;
+
+	if (!array->data) {
+		// allocate space for index data
+		// note: it is possible to have an index array size of 0
+		//       this means, that no index data is needed to draw primitives specified with array->type
+		unsigned int len = getIndexArraySize(array);
+		if (len) {
+			array->data = (unsigned int *)malloc(len);
+		}
+	}
+
+	return true;
+}
+
+void freeIndexArray(MMS_INDEX_ARRAY *array) {
+	if (array && array->data) {
+		free(array->data);
+		array->data = NULL;
+	}
+}
+
+unsigned int getIndexArraySize(MMS_INDEX_ARRAY *array) {
+	return sizeof(unsigned int) * array->eNum;
+}
 
 
 void multiplyMatrix(MMSMatrix result, MMSMatrix srcA, MMSMatrix srcB) {
@@ -767,6 +843,7 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object) {
 	}
 	return true;
 }
+
 
 
 

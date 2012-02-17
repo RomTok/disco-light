@@ -1198,11 +1198,11 @@ typedef struct {
 //! element type
 typedef enum {
 	MMS_INDEX_ARRAY_TYPE_TRIANGLES = 0,
-	MMS_INDEX_ARRAY_TYPE_TRIANGLES_STRIP,
-	MMS_INDEX_ARRAY_TYPE_TRIANGLES_FAN,
+	MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP,
+	MMS_INDEX_ARRAY_TYPE_TRIANGLE_FAN,
 	MMS_INDEX_ARRAY_TYPE_LINES,
-	MMS_INDEX_ARRAY_TYPE_LINES_STRIP,
-	MMS_INDEX_ARRAY_TYPE_LINES_LOOP
+	MMS_INDEX_ARRAY_TYPE_LINE_STRIP,
+	MMS_INDEX_ARRAY_TYPE_LINE_LOOP
 } MMS_INDEX_ARRAY_TYPE;
 
 //! index array
@@ -1226,6 +1226,46 @@ typedef struct {
 	//! number of indices
 	int				eNum;
 } MMS_INDEX_BUFFER;
+
+
+//! Initialize a MMS_VERTEX_ARRAY.
+/*!
+\param array	MMS_VERTEX_ARRAY to initialize
+\param eSize	number of values per vertex
+\param eNum		number of vertices
+\param dtype	type of vertex data, default is MMS_VERTEX_DATA_TYPE_FLOAT
+\param data		pointer to existing vertex data or NULL, default is NULL
+\return true if the array is successfully initialized
+\note If no data pointer is given by the caller, the function will allocate new space for vertex data.
+*/
+bool initVertexArray(MMS_VERTEX_ARRAY *array, int eSize, int eNum,
+					 MMS_VERTEX_DATA_TYPE dtype = MMS_VERTEX_DATA_TYPE_FLOAT, void *data = NULL);
+
+//! Release allocated space of a MMS_VERTEX_ARRAY.
+void freeVertexArray(MMS_VERTEX_ARRAY *array);
+
+//! Get size of a MMS_VERTEX_ARRAY in bytes.
+unsigned int getVertexArraySize(MMS_VERTEX_ARRAY *array);
+
+
+//! Initialize a MMS_INDEX_ARRAY.
+/*!
+\param array	MMS_INDEX_ARRAY to initialize
+\param type		specifies what kind of primitives to render
+\param eNum		number of indices or 0, default is 0
+\param data		pointer to existing index data or NULL, default is NULL
+\return true if the array is successfully initialized
+\note It is possible to have an index array with 0 indices.
+\note If no data pointer is given by the caller, the function will allocate new space for index data.
+*/
+bool initIndexArray(MMS_INDEX_ARRAY *array, MMS_INDEX_ARRAY_TYPE type, int eNum = 0, unsigned int *data = NULL);
+
+//! Release allocated space of a MMS_INDEX_ARRAY.
+void freeIndexArray(MMS_INDEX_ARRAY *array);
+
+//! Get size of a MMS_INDEX_ARRAY in bytes.
+unsigned int getIndexArraySize(MMS_INDEX_ARRAY *array);
+
 
 typedef struct {
 	float r;
@@ -1314,6 +1354,7 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object);
 
 
 #endif /* MMSTYPES_H_ */
+
 
 
 
