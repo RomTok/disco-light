@@ -61,46 +61,23 @@ void MMS3DPolygonMesh::genRectangle(float width, float height,
 	initVertexArray(texcoords,	2, 4);
 	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP, 4);
 
-	// calculate buffers
-	if (vertices) {
-		float *vdata = (float *)vertices->data;
-		vdata[0*2 + 0] = -width/2;
-		vdata[0*2 + 1] = -height/2;
-		vdata[1*2 + 0] = width/2;
-		vdata[1*2 + 1] = -height/2;
-		vdata[2*2 + 0] = -width/2;
-		vdata[2*2 + 1] = height/2;
-		vdata[3*2 + 0] = width/2;
-		vdata[3*2 + 1] = height/2;
-	}
+	// vertices
+	MMS_VA_SET_VERTEX_2v(vertices, 0, -width/2,	-height/2);
+	MMS_VA_SET_VERTEX_2v(vertices, 1, width/2,	-height/2);
+	MMS_VA_SET_VERTEX_2v(vertices, 2, -width/2,	height/2);
+	MMS_VA_SET_VERTEX_2v(vertices, 3, width/2,	height/2);
 
-	if (normals) {
-		float *ndata = (float *)normals->data;
-		ndata[0*3 + 0] = 0;
-		ndata[0*3 + 1] = 0;
-		ndata[0*3 + 2] = 1;
-		ndata[1*3 + 0] = 0;
-		ndata[1*3 + 1] = 0;
-		ndata[1*3 + 2] = 1;
-		ndata[2*3 + 0] = 0;
-		ndata[2*3 + 1] = 0;
-		ndata[2*3 + 2] = 1;
-		ndata[3*3 + 0] = 0;
-		ndata[3*3 + 1] = 0;
-		ndata[3*3 + 2] = 1;
-	}
+	// normals
+	MMS_VA_SET_VERTEX_3v(normals, 0, 0, 0, 1);
+	MMS_VA_SET_VERTEX_3v(normals, 1, 0, 0, 1);
+	MMS_VA_SET_VERTEX_3v(normals, 2, 0, 0, 1);
+	MMS_VA_SET_VERTEX_3v(normals, 3, 0, 0, 1);
 
-	if (texcoords) {
-		float *tdata = (float *)texcoords->data;
-		tdata[0*2 + 0] = 0;
-		tdata[0*2 + 1] = 0;
-		tdata[1*2 + 0] = 1;
-		tdata[1*2 + 1] = 0;
-		tdata[2*2 + 0] = 0;
-		tdata[2*2 + 1] = 1;
-		tdata[3*2 + 0] = 1;
-		tdata[3*2 + 1] = 1;
-	}
+	// texcoords
+	MMS_VA_SET_VERTEX_2v(texcoords, 0, 0, 0);
+	MMS_VA_SET_VERTEX_2v(texcoords, 1, 1, 0);
+	MMS_VA_SET_VERTEX_2v(texcoords, 2, 0, 1);
+	MMS_VA_SET_VERTEX_2v(texcoords, 3, 1, 1);
 
 	if (indices) {
 		unsigned int *idata = indices->data;
@@ -129,29 +106,27 @@ void MMS3DPolygonMesh::genSphere(int numSlices, float radius,
 
 	for ( i = 0; i < numParallels + 1; i++ ) {
 		for ( j = 0; j < numSlices + 1; j++ ) {
-			int vertex = ( i * (numSlices + 1) + j ) * vertices->eSize;
+			int v = ( i * (numSlices + 1) + j );
 
+			// vertices
+			MMS_VA_SET_VERTEX_3v(vertices, v,
+								 radius * sinf ( angleStep * (float)i ) * sinf ( angleStep * (float)j ),
+								 radius * cosf ( angleStep * (float)i ),
+								 radius * sinf ( angleStep * (float)i ) * cosf ( angleStep * (float)j ));
+
+			// normals
 			if (vertices) {
 				float *vdata = (float *)vertices->data;
-				vdata[vertex + 0] = radius * sinf ( angleStep * (float)i ) * sinf ( angleStep * (float)j );
-				vdata[vertex + 1] = radius * cosf ( angleStep * (float)i );
-				vdata[vertex + 2] = radius * sinf ( angleStep * (float)i ) * cosf ( angleStep * (float)j );
+				MMS_VA_SET_VERTEX_3v(normals, v,
+									 vdata[v * vertices->eSize + 0] / radius,
+									 vdata[v * vertices->eSize + 1] / radius,
+									 vdata[v * vertices->eSize + 2] / radius);
 			}
 
-			if (normals) {
-				float *vdata = (float *)vertices->data;
-				float *ndata = (float *)normals->data;
-				ndata[vertex + 0] = vdata[vertex + 0] / radius;
-				ndata[vertex + 1] = vdata[vertex + 1] / radius;
-				ndata[vertex + 2] = vdata[vertex + 2] / radius;
-			}
-
-			if (texcoords) {
-				float *tdata = (float *)texcoords->data;
-				int texIndex = ( i * (numSlices + 1) + j ) * texcoords->eSize;
-				tdata[texIndex + 0] = (float) j / (float) numSlices;
-				tdata[texIndex + 1] = ( 1.0f - (float) i ) / (float) (numParallels - 1 );
-			}
+			// texcoords
+			MMS_VA_SET_VERTEX_2v(texcoords, v,
+								 (float) j / (float) numSlices,
+								 ( 1.0f - (float) i ) / (float) (numParallels - 1 ));
 		}
 	}
 
@@ -212,19 +187,14 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 					float x = sintheta * r;
 					float z = costheta * r;
 
-					if (normals) {
-						float *ndata = (float *)normals->data;
-						ndata[index * 3 + 0] = sintheta * cosphi;
-						ndata[index * 3 + 1] = sinphi;
-						ndata[index * 3 + 2] = costheta * cosphi;
-					}
+					// normals
+					MMS_VA_SET_VERTEX_3v(normals, index,
+										 sintheta * cosphi,
+										 sinphi,
+										 costheta * cosphi);
 
-					if (vertices) {
-						float *vdata = (float *)vertices->data;
-						vdata[index * 3 + 0] = x;
-						vdata[index * 3 + 1] = y;
-						vdata[index * 3 + 2] = z;
-					}
+					// vertices
+					MMS_VA_SET_VERTEX_3v(vertices, index, x, y, z);
 
 					if (indices) {
 						float *idata = (float *)indices->data;
@@ -561,6 +531,7 @@ bool MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	}
 	return true;
 }
+
 
 
 

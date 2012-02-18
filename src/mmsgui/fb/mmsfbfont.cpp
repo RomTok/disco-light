@@ -610,26 +610,17 @@ bool with_outline = true;
 #ifndef __HAVE_OGL_HALF_FLOAT__
 			// prepare vertices using normal 32bit floating point values
 			initVertexArray(vertices, 2, ftmesh->getVertexCount(), MMS_VERTEX_DATA_TYPE_FLOAT);
-
-			// for all vertices in the polygon
-			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
-				const MMSFTVertex &vertex = ftmesh->getVertex(v);
-				float *vdata = (float *)vertices->data;
-				vdata[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
-				vdata[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
-			}
 #else
 			// prepare vertices using 16bit half floating point values
 			initVertexArray(vertices, 2, ftmesh->getVertexCount(), MMS_VERTEX_DATA_TYPE_HALF_FLOAT);
-
+#endif
 			// for all vertices in the polygon
 			for (unsigned int v = 0; v < ftmesh->getVertexCount(); v++) {
 				const MMSFTVertex &vertex = ftmesh->getVertex(v);
-				MMS_HALF_FLOAT *vdata = (MMS_HALF_FLOAT *)vertices->data;
-				vdata[v * vertices->eSize + 0] = convertFloat2HalfFloat((float)(vertex.X() - g->metrics.horiBearingX) / 64);
-				vdata[v * vertices->eSize + 1] = convertFloat2HalfFloat((float)(g->metrics.horiBearingY - vertex.Y()) / 64);
+				MMS_VA_SET_VERTEX_2v(vertices, v,
+									 (float)(vertex.X() - g->metrics.horiBearingX) / 64,
+									 (float)(g->metrics.horiBearingY - vertex.Y()) / 64);
 			}
-#endif
 
 			// next mesh
 			index_buffer.num_arrays++;
@@ -678,24 +669,18 @@ bool with_outline = true;
 #ifndef __HAVE_OGL_HALF_FLOAT__
 				// prepare vertices using normal 32bit floating point values
 				initVertexArray(vertices, 2, ftcontour->getVertexCount(), MMS_VERTEX_DATA_TYPE_FLOAT);
-
-				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
-					const MMSFTVertex &vertex = ftcontour->Vertex(v);
-					float *vdata = (float *)vertices->data;
-					vdata[v * vertices->eSize + 0] = (float)(vertex.X() - g->metrics.horiBearingX) / 64;
-					vdata[v * vertices->eSize + 1] = (float)(g->metrics.horiBearingY - vertex.Y()) / 64;
-				}
 #else
 				// prepare vertices using 16bit half floating point values
 				initVertexArray(vertices, 2, ftcontour->getVertexCount(), MMS_VERTEX_DATA_TYPE_HALF_FLOAT);
-
+#endif
+				// for all vertices in the polygon
 				for (unsigned int v = 0; v < ftcontour->getVertexCount(); v++) {
 					const MMSFTVertex &vertex = ftcontour->Vertex(v);
-					MMS_HALF_FLOAT *vdata = (MMS_HALF_FLOAT *)vertices->data;
-					vdata[v * vertices->eSize + 0] = convertFloat2HalfFloat((float)(vertex.X() - g->metrics.horiBearingX) / 64);
-					vdata[v * vertices->eSize + 1] = convertFloat2HalfFloat((float)(g->metrics.horiBearingY - vertex.Y()) / 64);
+					MMS_VA_SET_VERTEX_2v(vertices, v,
+										 (float)(vertex.X() - g->metrics.horiBearingX) / 64,
+										 (float)(g->metrics.horiBearingY - vertex.Y()) / 64);
 				}
-#endif
+
 				// next outline
 				index_buffer.num_arrays++;
 				vertex_buffer.num_arrays++;
@@ -988,6 +973,7 @@ bool MMSFBFont::getScaleCoeff(float *scale_coeff) {
 
 	return false;
 }
+
 
 
 

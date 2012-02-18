@@ -1181,6 +1181,30 @@ typedef struct {
 	int		eNum;
 } MMS_VERTEX_ARRAY;
 
+#define MMS_VA_SET_VERTEX_2v(va, idx, val0, val1)	\
+			if (va) { \
+				if (va->dtype == MMS_VERTEX_DATA_TYPE_HALF_FLOAT) { \
+					((MMS_HALF_FLOAT*)va->data)[(idx) * va->eSize + 0] = convertFloat2HalfFloat((float)(val0)); \
+					((MMS_HALF_FLOAT*)va->data)[(idx) * va->eSize + 1] = convertFloat2HalfFloat((float)(val1)); \
+				} else { \
+					((float*)va->data)[(idx) * va->eSize + 0] = (float)(val0); \
+					((float*)va->data)[(idx) * va->eSize + 1] = (float)(val1); \
+				} \
+			}
+
+#define MMS_VA_SET_VERTEX_3v(va, idx, val0, val1, val2)	\
+			if (va) { \
+				if (va->dtype == MMS_VERTEX_DATA_TYPE_HALF_FLOAT) { \
+					((MMS_HALF_FLOAT*)va->data)[(idx) * va->eSize + 0] = convertFloat2HalfFloat((float)(val0)); \
+					((MMS_HALF_FLOAT*)va->data)[(idx) * va->eSize + 1] = convertFloat2HalfFloat((float)(val1)); \
+					((MMS_HALF_FLOAT*)va->data)[(idx) * va->eSize + 2] = convertFloat2HalfFloat((float)(val2)); \
+				} else { \
+					((float*)va->data)[(idx) * va->eSize + 0] = (float)(val0); \
+					((float*)va->data)[(idx) * va->eSize + 1] = (float)(val1); \
+					((float*)va->data)[(idx) * va->eSize + 2] = (float)(val2); \
+				} \
+			}
+
 //! vertex buffer
 typedef struct {
 	//! type of vertex data
@@ -1354,6 +1378,7 @@ bool isMMS3DObjectShown(MMS3D_OBJECT *object);
 
 
 #endif /* MMSTYPES_H_ */
+
 
 
 
