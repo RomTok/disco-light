@@ -1459,26 +1459,43 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
 
-	    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= false;
-		MMSFBSURFACE_WRITE_BUFFER(this).transparent	= false;
+	    // save opaque/transparent status
+	    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
+	    bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
 
-	    if (!this->is_sub_surface) {
+	    // get final rectangle and new opaque/transparent status
+	    MMSFBRectangle crect;
+	    MMSFBDrawingFlags drawingflags;
+	    MMSFBColor color = MMSFBColor(r, g, b, a);
+	    if (!checkDrawingStatus(0, 0, this->config.w, this->config.h, crect, drawingflags, &color)) {
+	    	// nothing to draw
+	    	ret = true;
+	    }
+	    else {
+			if (!this->is_sub_surface) {
 
-			MMSFBColor color = MMSFBColor(r, g, b, a);
-			mmsfb->bei->clear(this, color);
+				mmsfb->bei->clear(this, color);
 
-			ret = true;
+				ret = true;
+			}
+			else {
+				CLIPSUBSURFACE
+
+				mmsfb->bei->clear(this, color);
+
+				UNCLIPSUBSURFACE
+
+				ret = true;
+			}
+
+	    }
+
+		if (!ret) {
+			// restore opaque/transparent status
+		    MMSFBSURFACE_WRITE_BUFFER(this).opaque		= opaque_saved;
+		    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 		}
-		else {
-			CLIPSUBSURFACE
 
-			MMSFBColor color = MMSFBColor(r, g, b, a);
-			mmsfb->bei->clear(this, color);
-
-			UNCLIPSUBSURFACE
-
-			ret = true;
-		}
 #endif
 	}
 	else {
@@ -1985,9 +2002,14 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
 }
 
 bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
-									  MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags) {
+									  MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags,
+									  MMSFBColor *color) {
 
-	if (this->config.color.a == 0x00) {
+	if (!color) {
+		color = &this->config.color;
+	}
+
+	if (color->a == 0x00) {
     	// fill color is full transparent
     	if (this->config.drawingflags & MMSFB_DRAW_BLEND) {
     		// nothing to draw
@@ -2015,7 +2037,7 @@ bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
 
     // set new opaque/transparent status and get drawing flags for it
     drawingflags = this->config.drawingflags;
-    switch (this->config.color.a) {
+    switch (color->a) {
     case 0x00:
     	// fill color is full transparent
     	switch (drawingflags) {
@@ -4466,6 +4488,9 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
          src.h = source->config.h;
     }
 
+	// finalize previous clear for source surface
+	source->finClear();
+
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
     bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
@@ -4738,6 +4763,8 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     // check if initialized
     INITCHECK;
 
+	// finalize previous clear for source surface
+	source->finClear();
 
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
@@ -4932,14 +4959,14 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
 
 		if (!this->is_sub_surface) {
 
-			mmsfb->bei->stretchBlit(this, source, src, dst, this->config.blittingflags);
+			mmsfb->bei->stretchBlit(this, source, src, dst, blittingflags);
 
 			ret = true;
 		}
 		else {
 			CLIPSUBSURFACE
 
-			mmsfb->bei->stretchBlit(this, source, src, dst, this->config.blittingflags);
+			mmsfb->bei->stretchBlit(this, source, src, dst, blittingflags);
 
 			UNCLIPSUBSURFACE
 
@@ -9796,6 +9823,7 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
 

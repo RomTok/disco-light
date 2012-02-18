@@ -245,7 +245,8 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
         bool checkDrawingStatus(int x, int y, int w, int h,
-								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags);
+								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags,
+								MMSFBColor *color = NULL);
         bool checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
         						 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
         bool checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
@@ -844,4 +845,5 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 								 MMSFBSurfacePixelFormat pixelformat);
 
 #endif /*MMSFBSURFACE_H_*/
+
 
