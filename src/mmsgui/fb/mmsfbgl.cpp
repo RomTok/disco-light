@@ -110,32 +110,33 @@ void MMSFBGL::printImplementationInformation() {
 
 	printf("\nOpenGL Implementation Information:\n");
 	printf("----------------------------------------------------------------------\n");
-	printf("Vendor                              : %s\n", glGetString(GL_VENDOR));
-	printf("Renderer                            : %s\n", glGetString(GL_RENDERER));
-	printf("Version                             : %s\n", glGetString(GL_VERSION));
-	printf("Version of Shading Language         : %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	printf("Vendor..............................: %s\n", glGetString(GL_VENDOR));
+	printf("Renderer............................: %s\n", glGetString(GL_RENDERER));
+	printf("Version.............................: %s\n", glGetString(GL_VERSION));
+	printf("Version of Shading Language.........: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, int_params);
-	printf("GL_NUM_COMPRESSED_TEXTURE_FORMATS   : %d\n", int_params[0]);
+	printf("GL_NUM_COMPRESSED_TEXTURE_FORMATS...: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, int_params);
-	printf("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS : %d\n", int_params[0]);
+	printf("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS.: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, int_params);
-	printf("GL_MAX_CUBE_MAP_TEXTURE_SIZE        : %d\n", int_params[0]);
+	printf("GL_MAX_CUBE_MAP_TEXTURE_SIZE........: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, int_params);
-	printf("GL_MAX_TEXTURE_IMAGE_UNITS          : %d\n", int_params[0]);
+	printf("GL_MAX_TEXTURE_IMAGE_UNITS..........: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, int_params);
-	printf("GL_MAX_TEXTURE_SIZE                 : %d\n", int_params[0]);
+	printf("GL_MAX_TEXTURE_SIZE.................: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, int_params);
-	printf("GL_MAX_VERTEX_ATTRIBS               : %d\n", int_params[0]);
+	printf("GL_MAX_VERTEX_ATTRIBS...............: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, int_params);
-	printf("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS   : %d\n", int_params[0]);
+	printf("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS...: %d\n", int_params[0]);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, int_params);
-	printf("GL_MAX_VIEWPORT_DIMS                : %dx%d\n", int_params[0], int_params[1]);
+	printf("GL_MAX_VIEWPORT_DIMS................: %dx%d\n", int_params[0], int_params[1]);
 
 	// prepare extension string and print it
+	printf("Extensions..........................: ");
+	unsigned int linelen = 38;
 	char buffer[32768];
 	char *bufptr = buffer;
 	char *extstr = (char*)glGetString(GL_EXTENSIONS);
-	unsigned int linelen = 0;
 	while (*extstr) {
 		// get next value
 		char *start = extstr;
@@ -161,7 +162,8 @@ void MMSFBGL::printImplementationInformation() {
 		linelen+= vlen;
 	}
 	*bufptr = 0;
-	printf("Extensions...\n%s\n", buffer);
+	printf(buffer);
+	printf("\n");
 	printf("----------------------------------------------------------------------\n\n");
 }
 
@@ -2975,6 +2977,7 @@ bool MMSFBGL::drawElements(MMS_VERTEX_BUFFER *vertices, MMS_VERTEX_BUFFER *norma
 
 
 #endif
+
 
 
 
