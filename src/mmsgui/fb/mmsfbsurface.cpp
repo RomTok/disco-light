@@ -1519,7 +1519,7 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 }
 
 
-void MMSFBSurface::finClear(MMSFBRectangle *check_rect) {
+bool MMSFBSurface::finClear(MMSFBRectangle *check_rect, bool test) {
 
 	// block other threads
 	lock();
@@ -1529,10 +1529,13 @@ void MMSFBSurface::finClear(MMSFBRectangle *check_rect) {
 
 	if (!clear_req->set) {
 		unlock();
-		return;
+		return false;
 	}
 
-	clear_req->set = false;
+	if (!test) {
+		// NOT in test mode: reset the clear flag
+		clear_req->set = false;
+	}
 
 //printf("finClear\n");
 
@@ -1554,8 +1557,14 @@ void MMSFBSurface::finClear(MMSFBRectangle *check_rect) {
 //printf(">>>>>finClear rect %d,%d,%d,%d  >>> skipped\n", check_rect->x, check_rect->y, check_rect->w, check_rect->h);
 
 			unlock();
-			return;
+			return false;
 		}
+	}
+
+	if (test) {
+		// test mode: return true if we have to clear
+		unlock();
+		return true;
 	}
 
 	// we have to clear, set clip
@@ -1589,6 +1598,7 @@ void MMSFBSurface::finClear(MMSFBRectangle *check_rect) {
 	}
 
 	unlock();
+	return true;
 }
 
 bool MMSFBSurface::clear(unsigned char r, unsigned char g,
@@ -1610,20 +1620,19 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 	CLEAR_REQUEST *clear_req = &this->clear_request;
 	if (this->is_sub_surface) clear_req = &this->root_parent->clear_request;
 
-	if (clear_req->set) {
-		// finalize previous clear
-		if (r != clear_req->color.r || g != clear_req->color.g || b != clear_req->color.b || a != clear_req->color.a) {
-			// we cannot skip previous clear, because requested color is different
-			finClear();
-		}
-		else {
-			// it can be possible to skip previous clear
-			// so we have to put affected rectangle to finClear() method, preparing the decision
-			MMSFBRegion clip;
-			getClip(&clip);
-			MMSFBRectangle rect = MMSFBRectangle(clip.x1, clip.y1, clip.x1 + clip.x2 + 1, clip.y1 + clip.y2 + 1);
-			finClear(&rect);
-		}
+	// checking for previous clear...
+	// it can be possible to skip previous clear
+	// so we have to put affected rectangle to finClear() method, preparing the decision
+	MMSFBRegion clip;
+	getClip(&clip);
+	MMSFBRectangle rect = MMSFBRectangle(clip.x1, clip.y1, clip.x1 + clip.x2 + 1, clip.y1 + clip.y2 + 1);
+	if (finClear(&rect, true)) {
+		// there is a previous clear which we have to finalize
+		finClear();
+	}
+	else {
+		// there is no previous clear OR new clear command will full overlap previous clear
+		// so we can skip previous clear
 	}
 
 	// save clear request
@@ -2004,18 +2013,22 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
 bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
 									  MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags,
 									  MMSFBColor *color) {
-
 	if (!color) {
 		color = &this->config.color;
+
+		if (color->a == 0x00) {
+	    	// fill color is full transparent
+	    	if (this->config.drawingflags & MMSFB_DRAW_BLEND) {
+	    		// nothing to draw
+	    		return false;
+	    	}
+	    }
+	}
+	else {
+		// if color is set by the caller, we do not check for alpha == 0x00
+		// note: doClear() will need this to force cleaning the surface
 	}
 
-	if (color->a == 0x00) {
-    	// fill color is full transparent
-    	if (this->config.drawingflags & MMSFB_DRAW_BLEND) {
-    		// nothing to draw
-    		return false;
-    	}
-    }
 
     // check clipping region and calculate final rectangle
 	if (!this->is_sub_surface) {
@@ -2115,6 +2128,23 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     // check if initialized
     INITCHECK;
 
+	if ((this->config.drawingflags & MMSFB_DRAW_BLEND) && this->config.color.a == 0x00) {
+    	// nothing to draw
+    	return true;
+	}
+
+	if (((this->config.drawingflags & MMSFB_DRAW_BLEND) == 0) || this->config.color.a == 0xff) {
+		// we can write color directly to destination without blending
+		// so we can use clear method instead of fill rectangle
+		MMSFBRegion clip;
+		if (getClip(&clip)) {
+			if (x <= clip.x1 && y <= clip.y1 && x + w - 1 >= clip.x2 && y + h - 1 >= clip.y2) {
+				// clear clipped region
+				return clear(this->config.color.r, this->config.color.g, this->config.color.b, this->config.color.a);
+			}
+		}
+	}
+
     if ((w <= 0) || (h <= 0)) {
     	// use full surface
     	x = 0;
@@ -2124,7 +2154,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     }
 
 	// finalize previous clear
-    // note: this is very important to do it here, because doClear() calls fillRectangle() too
+	// note: this is very important to do it here, because doClear() calls fillRectangle() too
 	finClear();
 
     // save opaque/transparent status
@@ -9823,6 +9853,7 @@ bool MMSFBSurface::fillRectangleBGR555(int dst_height, int dx, int dy, int dw, i
 
 	return false;
 }
+
 
 
 

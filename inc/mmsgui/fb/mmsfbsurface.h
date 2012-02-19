@@ -341,7 +341,7 @@ class MMSFBSurface {
 
         bool doClear(unsigned char r = 0, unsigned char g = 0,
                      unsigned char b = 0, unsigned char a = 0);
-        void finClear(MMSFBRectangle *check_rect = NULL);
+        bool finClear(MMSFBRectangle *check_rect = NULL, bool test = false);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);
@@ -845,5 +845,6 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 								 MMSFBSurfacePixelFormat pixelformat);
 
 #endif /*MMSFBSURFACE_H_*/
+
 
 
