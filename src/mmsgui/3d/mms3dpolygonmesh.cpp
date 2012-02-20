@@ -54,12 +54,13 @@ void MMS3DPolygonMesh::genRectangle(float width, float height,
 					MMS_VERTEX_ARRAY	*texcoords,
 					MMS_INDEX_ARRAY		*indices) {
 
-
 	// allocate memory for buffers
 	initVertexArray(vertices,	2, 4);
 	initVertexArray(normals,	3, 4);
 	initVertexArray(texcoords,	2, 4);
-	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP, 4);
+
+	// we do NOT need an index array data buffer, because all elements are in correctly sequence
+	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP);
 
 	// vertices
 	MMS_VA_SET_VERTEX_2v(vertices, 0, -width/2,	-height/2);
@@ -78,14 +79,6 @@ void MMS3DPolygonMesh::genRectangle(float width, float height,
 	MMS_VA_SET_VERTEX_2v(texcoords, 1, 1, 0);
 	MMS_VA_SET_VERTEX_2v(texcoords, 2, 0, 1);
 	MMS_VA_SET_VERTEX_2v(texcoords, 3, 1, 1);
-
-	if (indices) {
-		unsigned int *idata = indices->data;
-		idata[0] = 0;
-		idata[1] = 1;
-		idata[2] = 2;
-		idata[3] = 3;
-	}
 }
 
 void MMS3DPolygonMesh::genSphere(int numSlices, float radius,
@@ -160,7 +153,9 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 	initVertexArray(vertices,	3, eNum);
 	initVertexArray(normals,	3, eNum);
 	initVertexArray(texcoords,	2, eNum);
-	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP, eNum);
+
+	// we do NOT need an index array data buffer, because all elements are in correctly sequence
+	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP);
 
 	// init buffer index
 	int index = 0;
@@ -196,11 +191,6 @@ void MMS3DPolygonMesh::genTorus(int numwraps, int numperwrap, float majorradius,
 					// vertices
 					MMS_VA_SET_VERTEX_3v(vertices, index, x, y, z);
 
-					if (indices) {
-						float *idata = (float *)indices->data;
-						idata[index] = index;
-					}
-
 					index++;
 				}
 
@@ -227,7 +217,9 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	initVertexArray(vertices,	3, eNum);
 	initVertexArray(normals,	3, eNum);
 	initVertexArray(texcoords,	2, eNum);
-	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP, eNum);
+
+	// we do NOT need an index array data buffer, because all elements are in correctly sequence
+	initIndexArray(indices, MMS_INDEX_ARRAY_TYPE_TRIANGLE_STRIP);
 
 	// init buffer index
 	int index = 0;
@@ -242,33 +234,17 @@ void MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 		float x = radius * cos(a);
 		float y = radius * sin(a);
 
-		if (normals) {
-			float *ndata = (float *)normals->data;
-			ndata[index * 3 + 0] = ndata[index * 3 + 3] = x / radius;
-			ndata[index * 3 + 1] = ndata[index * 3 + 4] = y / radius;
-			ndata[index * 3 + 2] = ndata[index * 3 + 5] = 0;
-		}
+		// normals
+		MMS_VA_SET_VERTEX_3v(normals, index,	x / radius, y / radius, 0);
+		MMS_VA_SET_VERTEX_3v(normals, index+1,	x / radius, y / radius, 0);
 
-		if (vertices) {
-			float *vdata = (float *)vertices->data;
-			vdata[index * 3 + 0] = vdata[index * 3 + 3] = x;
-			vdata[index * 3 + 1] = vdata[index * 3 + 4] = y;
-			vdata[index * 3 + 2] = z0;
-			vdata[index * 3 + 5] = z1;
-		}
+		// vertices
+		MMS_VA_SET_VERTEX_3v(vertices, index,	x, y, z0);
+		MMS_VA_SET_VERTEX_3v(vertices, index+1,	x, y, z1);
 
-		if (texcoords) {
-			float *tdata = (float *)texcoords->data;
-			tdata[index * 2 + 0] = tdata[index * 2 + 2] = j / (float) numSlices;
-			tdata[index * 2 + 1] = 0;
-			tdata[index * 2 + 3] = 1;
-		}
-
-		if (indices) {
-			float *idata = (float *)indices->data;
-			idata[index]   = index;
-			idata[index+1] = index+1;
-		}
+		// texcoords
+		MMS_VA_SET_VERTEX_2v(texcoords, index,		j / (float) numSlices, 0);
+		MMS_VA_SET_VERTEX_2v(texcoords, index+1,	j / (float) numSlices, 1);
 
 		index+=2;
 	}
@@ -531,7 +507,6 @@ bool MMS3DPolygonMesh::genCylinder(int numSlices, float height, float radius,
 	}
 	return true;
 }
-
 
 
 
