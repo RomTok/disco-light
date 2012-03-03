@@ -1455,9 +1455,7 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 		}
 #endif
 	}
-	else
-	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
-#ifdef  __HAVE_OPENGL__
+	else {
 
 	    // save opaque/transparent status
 	    bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
@@ -1467,27 +1465,33 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 	    MMSFBRectangle crect;
 	    MMSFBDrawingFlags drawingflags;
 	    MMSFBColor color = MMSFBColor(r, g, b, a);
-	    if (!checkDrawingStatus(0, 0, this->config.w, this->config.h, crect, drawingflags, &color)) {
+	    if (!checkDrawingStatus(0, 0, this->config.w, this->config.h, crect, drawingflags, &color, true)) {
 	    	// nothing to draw
 	    	ret = true;
 	    }
 	    else {
-			if (!this->is_sub_surface) {
+	    	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
+#ifdef  __HAVE_OPENGL__
+				if (!this->is_sub_surface) {
 
-				mmsfb->bei->clear(this, color);
+					mmsfb->bei->clear(this, color);
 
-				ret = true;
-			}
+					ret = true;
+				}
+				else {
+					CLIPSUBSURFACE
+
+					mmsfb->bei->clear(this, color);
+
+					UNCLIPSUBSURFACE
+
+					ret = true;
+				}
+#endif
+	    	}
 			else {
-				CLIPSUBSURFACE
-
-				mmsfb->bei->clear(this, color);
-
-				UNCLIPSUBSURFACE
-
-				ret = true;
+				ret = extendedAccelFillRectangle(crect.x, crect.y, crect.w, crect.h, drawingflags, &color);
 			}
-
 	    }
 
 		if (!ret) {
@@ -1496,24 +1500,7 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 		    MMSFBSURFACE_WRITE_BUFFER(this).transparent	= transparent_saved;
 		}
 
-#endif
 	}
-	else {
-		MMSFBColor *col = &this->config.color;
-		MMSFBColor savedcol = *col;
-		col->r = r;
-		col->g = g;
-		col->b = b;
-		col->a = a;
-		MMSFBDrawingFlags saveddf = this->config.drawingflags;
-		this->config.drawingflags = MMSFB_DRAW_SRC_PREMULTIPLY;
-
-		ret = fillRectangle(0, 0, this->config.w, this->config.h);
-
-		*col = savedcol;
-		this->config.drawingflags = saveddf;
-	}
-
 
     return ret;
 }
@@ -2012,10 +1999,12 @@ bool MMSFBSurface::drawRectangle(int x, int y, int w, int h) {
 
 bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
 									  MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags,
-									  MMSFBColor *color) {
+									  MMSFBColor *color, bool force_cleaning) {
 	if (!color) {
 		color = &this->config.color;
+	}
 
+	if (!force_cleaning) {
 		if (color->a == 0x00) {
 	    	// fill color is full transparent
 	    	if (this->config.drawingflags & MMSFB_DRAW_BLEND) {
@@ -2025,7 +2014,7 @@ bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
 	    }
 	}
 	else {
-		// if color is set by the caller, we do not check for alpha == 0x00
+		// if force_cleaning is set by the caller, we do not check for alpha == 0x00
 		// note: doClear() will need this to force cleaning the surface
 	}
 
@@ -2049,7 +2038,14 @@ bool MMSFBSurface::checkDrawingStatus(int x, int y, int w, int h,
 	}
 
     // set new opaque/transparent status and get drawing flags for it
-    drawingflags = this->config.drawingflags;
+	if (!force_cleaning) {
+		// starting with drawingflags from config
+		drawingflags = this->config.drawingflags;
+	}
+	else {
+		// starting with special drawing flags for cleaning surface
+		drawingflags = MMSFB_DRAW_SRC_PREMULTIPLY;
+	}
     switch (color->a) {
     case 0x00:
     	// fill color is full transparent
@@ -2153,10 +2149,6 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	h = this->config.h;
     }
 
-	// finalize previous clear
-	// note: this is very important to do it here, because doClear() calls fillRectangle() too
-	finClear();
-
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
     bool transparent_saved	= MMSFBSURFACE_WRITE_BUFFER(this).transparent;
@@ -2168,6 +2160,9 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	// nothing to draw
     	return true;
     }
+
+	// finalize previous clear
+	finClear();
 
 	if (this->allocated_by == MMSFBSurfaceAllocatedBy_dfb) {
 #ifdef  __HAVE_DIRECTFB__
@@ -3996,7 +3991,8 @@ bool MMSFBSurface::extendedAccelStretchBlitBuffer(MMSFBSurfacePlanes *src_planes
 
 
 
-bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags) {
+bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h,
+												MMSFBDrawingFlags drawingflags, MMSFBColor *col) {
 
 	// a few help and clipping values
 	MMSFBSurfacePlanes dst_planes;
@@ -4007,7 +4003,7 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSF
 	int dst_height = (!this->root_parent)?this->config.h:this->root_parent->config.h;
 
 	// calculate the color
-	MMSFBColor color = this->config.color;
+	MMSFBColor color = (!col) ? this->config.color : *col;
 	if (drawingflags & (MMSFBDrawingFlags)MMSFB_DRAW_SRC_PREMULTIPLY) {
 		// pre-multiplication needed
 		if (color.a != 0xff) {
@@ -4209,13 +4205,14 @@ bool MMSFBSurface::extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSF
 }
 
 
-bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags) {
+bool MMSFBSurface::extendedAccelFillRectangle(int x, int y, int w, int h,
+											  MMSFBDrawingFlags drawingflags, MMSFBColor *color) {
 
 	// extended acceleration on?
 	if (!this->extendedaccel)
 		return false;
 
-	if (!extendedAccelFillRectangleEx(x, y, w, h, drawingflags))
+	if (!extendedAccelFillRectangleEx(x, y, w, h, drawingflags, color))
 		return printMissingCombination("extendedAccelFillRectangle()");
 	else
 		return true;

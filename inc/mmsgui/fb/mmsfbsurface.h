@@ -246,7 +246,7 @@ class MMSFBSurface {
 
         bool checkDrawingStatus(int x, int y, int w, int h,
 								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags,
-								MMSFBColor *color = NULL);
+								MMSFBColor *color = NULL, bool force_cleaning = false);
         bool checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
         						 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
         bool checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
@@ -280,8 +280,8 @@ class MMSFBSurface {
 											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 											MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
 
-        bool extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags);
-        bool extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags);
+        bool extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags, MMSFBColor *col);
+        bool extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags, MMSFBColor *color = NULL);
 
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
