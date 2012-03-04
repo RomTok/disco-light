@@ -1,0 +1,8 @@
+#-------------------------------------------------------------------------------
+# Unit tests
+
+Import('testEnv')
+
+testEnv.AppendUnique(CPPPATH = 'inc')
+testEnv.PrependENVPath('LD_LIBRARY_PATH', testEnv.Dir('../../lib').abspath)
+testEnv.addUnitTest('mmstools', Glob('src/mmstools/*.cpp'))
