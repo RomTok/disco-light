@@ -47,6 +47,10 @@ MMSInputWidgetClass::MMSInputWidgetClass() {
     unsetAll();
 }
 
+MMSInputWidgetClass::~MMSInputWidgetClass() {
+
+}
+
 void MMSInputWidgetClass::unsetAll() {
     this->className = "";
     unsetCursorState();

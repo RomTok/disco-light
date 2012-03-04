@@ -37,6 +37,10 @@ MMSTextBaseClass::MMSTextBaseClass() {
     unsetAll();
 }
 
+MMSTextBaseClass::~MMSTextBaseClass() {
+
+}
+
 void MMSTextBaseClass::unsetAll() {
     unsetFontPath();
     unsetFontSize();
