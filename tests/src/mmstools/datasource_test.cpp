@@ -1,3 +1,11 @@
+/**
+ * @file datasource_test.cpp
+ *
+ * Unit tests of DataSource class.
+ *
+ * @ingroup cppunit
+ */
+
 #include "mmstools/datasource_test.h"
 #include "mmstools/datasource.h"
 

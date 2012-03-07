@@ -750,6 +750,9 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 	if conf.checkBacktrace():
 		conf.env['CCFLAGS'].extend(['-D__HAVE_BACKTRACE__'])
 
+	if 'test' in BUILD_TARGETS:
+		conf.checkSimpleLib(['cppunit'], ['cppunit/TestCase.h'])
+
 	env2 = conf.Finish()
 	if env2:
 		env = env2
@@ -990,7 +993,7 @@ SConscript(Split(toolList), options = opts)
 
 #######################################################################
 # Unit-Tests                                                          #
-#######################################################################
+#######################################################################	
 testEnv = env.Clone()
 testEnv.AppendUnique(LIBPATH = '../../lib')
 testEnv.Tool('utest',
