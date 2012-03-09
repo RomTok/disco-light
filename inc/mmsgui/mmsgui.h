@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -43,6 +43,7 @@
 
 #include "mmsgui/mmswidgets.h"
 
+#include "mmsgui/3d/mms3dprimitives.h"
 #include "mmsgui/3d/mms3dcylinder.h"
 #include "mmsgui/3d/mms3drectangle.h"
 #include "mmsgui/3d/mms3dsphere.h"

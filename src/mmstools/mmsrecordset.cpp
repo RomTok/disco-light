@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *

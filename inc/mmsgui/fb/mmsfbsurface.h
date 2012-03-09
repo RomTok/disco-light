@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -245,7 +245,8 @@ class MMSFBSurface {
         bool setLayerSurface(bool islayersurface = true);
 
         bool checkDrawingStatus(int x, int y, int w, int h,
-								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags);
+								MMSFBRectangle &crect, MMSFBDrawingFlags &drawingflags,
+								MMSFBColor *color = NULL, bool force_cleaning = false);
         bool checkBlittingStatus(bool src_opaque, bool src_transparent, int x, int y, int w, int h,
         						 MMSFBRectangle &crect, MMSFBBlittingFlags &blittingflags);
         bool checkBlittingStatus(MMSFBSurface *source, int x, int y, int w, int h,
@@ -279,8 +280,8 @@ class MMSFBSurface {
 											MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 											MMSFBRectangle *real_dest_rect, bool calc_dest_rect);
 
-        bool extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags);
-        bool extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags);
+        bool extendedAccelFillRectangleEx(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags, MMSFBColor *col);
+        bool extendedAccelFillRectangle(int x, int y, int w, int h, MMSFBDrawingFlags drawingflags, MMSFBColor *color = NULL);
 
         bool extendedAccelDrawLineEx(int x1, int y1, int x2, int y2);
         bool extendedAccelDrawLine(int x1, int y1, int x2, int y2);
@@ -340,7 +341,7 @@ class MMSFBSurface {
 
         bool doClear(unsigned char r = 0, unsigned char g = 0,
                      unsigned char b = 0, unsigned char a = 0);
-        void finClear(MMSFBRectangle *check_rect = NULL);
+        bool finClear(MMSFBRectangle *check_rect = NULL, bool test = false);
 
     public:
         MMSFBSurface(int w, int h, MMSFBSurfacePixelFormat pixelformat, int backbuffer=0, bool systemonly=true);
@@ -441,8 +442,8 @@ class MMSFBSurface {
 							   MMSFBRectangle *src_rect, MMSFBRectangle *dest_rect,
 							   MMSFBRectangle *real_dest_rect = NULL, bool calc_dest_rect = false);
 
-        bool renderScene(MMS3D_VERTEX_ARRAY	**varrays,
-						 MMS3D_INDEX_ARRAY	**iarrays,
+        bool renderScene(MMS_VERTEX_ARRAY	**varrays,
+						 MMS_INDEX_ARRAY	**iarrays,
 						 MMS3D_MATERIAL		*materials,
 						 MMSFBSurface		**textures,
 						 MMS3D_OBJECT		**objects);
@@ -844,3 +845,6 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 								 MMSFBSurfacePixelFormat pixelformat);
 
 #endif /*MMSFBSURFACE_H_*/
+
+
+

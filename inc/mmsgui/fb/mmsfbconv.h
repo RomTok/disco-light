@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -1026,9 +1026,9 @@ if (!AA) { \
 //! used for text output
 #define MMSFBSURFACE_BLIT_TEXT_END_RENDER \
 	if (!MMSFBBase_rotate180) \
-		x+=glyph.advanceX >> 6; \
+		x+=glyph.advanceX; \
 	else \
-		x-=glyph.advanceX >> 6;	}
+		x-=glyph.advanceX;	}
 
 
 //! calculate region if screen is rotated by 180°
@@ -2152,6 +2152,28 @@ void mmsfb_drawstring_blend_coloralpha_argb(MMSFBSurfacePlanes *dst_planes, MMSF
 // ---------------------------------------------------- DRAW STRING TO ARGB ---
 
 
+// --- DRAW STRING TO RGB32 ---------------------------------------------------
+// ----------------------------------------------------------------------------
+
+//! Draw string with alpha blending RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawstring_blend_rgb32(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
+								  MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+
+
+//! Draw string with alpha blending with alpha from color RGB32.
+/*!
+\author Jens Schneider
+*/
+void mmsfb_drawstring_blend_coloralpha_rgb32(MMSFBSurfacePlanes *dst_planes, MMSFBFont *font,
+											 MMSFBRegion &clipreg, string &text, int len, int x, int y, MMSFBColor &color);
+
+// ----------------------------------------------------------------------------
+// --------------------------------------------------- DRAW STRING TO RGB32 ---
+
+
 // --- DRAW STRING TO ARGB4444 ------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -2188,3 +2210,4 @@ void mmsfb_drawstring_blend_coloralpha_rgb16(MMSFBSurfacePlanes *dst_planes, MMS
 
 
 #endif /* MMSFBCONV_H_ */
+

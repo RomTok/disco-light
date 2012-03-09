@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -329,7 +329,7 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeo
 
 	        if (((dw > dh)&&(!fh))||(fw)) {
 	        	/* change image height */
-	            int t = (10000 * surfaceGeom->w + 5000) / ratio;
+	        	int t = ((10000 * (surfaceGeom->w+0.0) + 5000) / ratio) + 0.5;
 
 	            /* work with alignment */
 	            MMSALIGNMENT alignment = getAlignment();
@@ -371,7 +371,7 @@ void MMSImageWidget::workWithRatio(MMSFBSurface *suf, MMSFBRectangle *surfaceGeo
 	        }
 	        else {
 	        	/* change image width */
-	            int t = (surfaceGeom->h * ratio + 5000) / 10000;
+	        	int t = (((surfaceGeom->h+0.0) * ratio + 5000) / 10000) + 0.5;
 
 	            /* work with alignment */
 	            MMSALIGNMENT alignment = getAlignment();

@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -45,6 +45,9 @@ You can use the onProcessData() callback if you do not want to derive your own c
 */
 class MMSThreadServer : public MMSThread {
 	private:
+		//! id of the server thread
+		pthread_t server_tid;
+
 		//! describes one item/request in the queue
 		typedef struct {
 			//! variable for conditional handling

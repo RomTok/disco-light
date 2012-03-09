@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -1979,8 +1979,9 @@ bool MMSWidget::setSelected(bool set, bool refresh, bool *changed, bool joined) 
 			this->da->joinedWidget->getJoinedWigdets(caller_stack);
 			int i = 16;
 			while (i-- > 1) {
-				if (caller_stack[i])
+				if (caller_stack[i]) {
 					caller_stack[i]->setSelected(set, refresh, NULL, true);
+				}
 			}
 		}
 	}
@@ -3441,6 +3442,8 @@ bool MMSWidget::setJoinedWidget(string joinedwidget) {
     this->da->joinedWidget = NULL;
     if ((this->rootwindow)&&(!joinedwidget.empty()))
         this->da->joinedWidget = this->rootwindow->findWidget(joinedwidget);
+
+
     return true;
 }
 

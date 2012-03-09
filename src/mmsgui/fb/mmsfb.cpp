@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -94,7 +94,7 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
     // save arguments
     this->argc = argc;
     this->argv = argv;
-    this->bin = (argv ? argv[0] : "");
+    this->bin = ((argc && argv) ? argv[0] : "");
     this->appliconname = appl_icon_name;
     this->applname = appl_name;
     this->fullscreen = fullscreen;

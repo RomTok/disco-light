@@ -10,7 +10,7 @@
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
  *      Matthias Hardt     <matthias.hardt@diskohq.org>,                   *
- *      Jens Schneider     <pupeider@gmx.de>,                              *
+ *      Jens Schneider     <jens.schneider@diskohq.org>,                   *
  *      Guido Madaus       <guido.madaus@diskohq.org>,                     *
  *      Patrick Helterhoff <patrick.helterhoff@diskohq.org>,               *
  *      René Bählkow       <rene.baehlkow@diskohq.org>                     *
@@ -55,9 +55,9 @@ private:
 	vector<MMS3DObject*> children;
 
 
-	void setBaseMatrix(MMS3DMatrix matrix);
+	void setBaseMatrix(MMSMatrix matrix);
 
-	bool getResultMatrix(MMS3DMatrix result);
+	bool getResultMatrix(MMSMatrix result);
 
 	bool genMatrices();
 
@@ -88,6 +88,8 @@ public:
 	friend class MMS3DSphere;
 	friend class MMS3DTorus;
 	friend class MMS3DCylinder;
+	friend class MMS3DPrimitives;
 };
 
 #endif /* MMS3DOBJECT_H_ */
+
