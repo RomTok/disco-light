@@ -141,14 +141,14 @@ void MMSTextBoxWidget::loadFont(MMSTextBoxWidget *widget) {
 			widget->fontname = fontname;
 			widget->fontsize = fontsize;
 			widget->font = this->rootwindow->fm->getFont(widget->fontpath, widget->fontname, widget->fontsize);
-			if (this->font) this->load_font = false;
+			if (widget->font) widget->load_font = false;
 
 			// reset last displayed text, so calcWordGeom() can do recalculation
-			this->lasttext = "";
+			widget->lasttext = "";
     	}
     	else {
     		// font parameter not changed, so we do not reload it
-            this->load_font = false;
+    		widget->load_font = false;
     	}
     }
 }
@@ -512,7 +512,7 @@ bool MMSTextBoxWidget::prepareText(int *width, int *height, bool recalc) {
 
 		// language specific conversions
 		MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
-		if (targetlang == MMSLANG_IL) {
+		if ((targetlang == MMSLANG_IL) || (targetlang == MMSLANG_AR)) {
 			if (convBidiString(this->translated_text, this->translated_text)) {
 				// bidirectional conversion successful, swap alignment horizontal
 				this->swap_left_right = true;

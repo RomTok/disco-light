@@ -58,7 +58,7 @@ class MMSError {
 		 * @param code		error code (currently not used)
 		 * @param message	error message which describes the exception more detailed
 		 */
-        MMSError(int code, string message) : code(code), message(message) {};
+        MMSError(int code, string message) : message(message), code(code) {};
 
         /**
          * Destructor.

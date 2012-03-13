@@ -205,8 +205,10 @@ MMSFBFont::~MMSFBFont() {
 
 		MMSFBFont_Glyph *glyph = &it->second;
 
-		if (glyph->buffer)
+		if (glyph->buffer) {
 			free(glyph->buffer);
+			glyph->buffer = NULL;
+		}
 
 #ifdef  __HAVE_OPENGL__
 #ifndef __HAVE_GLU__
@@ -216,12 +218,16 @@ MMSFBFont::~MMSFBFont() {
 				mmsfb->bei->deleteTexture(glyph->texture);
 #else
 		// release mesh memory
-		if (glyph->meshes)
+		if (glyph->meshes) {
 			delete glyph->meshes;
+			glyph->meshes = NULL;
+		}
 
 		// release outline memory
-		if (glyph->outline)
+		if (glyph->outline) {
 			delete glyph->outline;
+			glyph->outline = NULL;
+		}
 #endif
 #endif
 
@@ -231,6 +237,7 @@ MMSFBFont::~MMSFBFont() {
 	if(mmsfb->backend != MMSFB_BE_DFB) {
 		if(this->ft_face) {
 			FT_Done_Face((FT_Face)this->ft_face);
+			this->ft_face = NULL;
 		}
 	}
 
@@ -404,6 +411,15 @@ bool MMSFBFont::setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph 
 		glyph->height	= g->bitmap.rows;
 		glyph->advanceX	= g->advance.x / 64;
 		glyph->pitch	= g->bitmap.pitch;
+
+#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_GLU__
+		glyph->meshes = NULL;
+		glyph->outline = NULL;
+#else
+		glyph->textures = 0;
+#endif
+#endif
 		glyph->buffer	= (unsigned char*)calloc(1, glyph->pitch * glyph->height);
 		memcpy(glyph->buffer, g->bitmap.buffer, glyph->pitch * glyph->height);
 
