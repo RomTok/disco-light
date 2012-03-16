@@ -282,6 +282,12 @@ bool MMSInputWidget::draw(bool *backgroundFilled) {
 
             string text = getText();
 
+        	// language specific conversions
+        	MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
+        	if ((targetlang == MMSLANG_IL) || (targetlang == MMSLANG_AR)) {
+        		convBidiString(text, text);
+        	}
+
             // get width and height of the string to be drawn
             this->font->getStringWidth(text, -1, &width);
             this->font->getHeight(&height);
