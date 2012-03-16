@@ -32,6 +32,7 @@
 #include "mmsgui/mmstextboxwidget.h"
 #include "mmsgui/mmstextbase.h"
 #include <cstdlib>
+#include <vector>
 
 MMSTextBoxWidget::MMSTextBoxWidget(MMSWindow *root, string className, MMSTheme *theme) : MMSWidget() {
     create(root, className, theme);
@@ -423,17 +424,17 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
     }
 
     // go through the list and calculate vertical text alignment
-    if (fontHeight * (*lines) > *realHeight)
+    if (fontHeight * (*lines) > *realHeight) {
         *realHeight = fontHeight * (*lines);
-    else
-    if (fontHeight * (*lines) < *realHeight) {
+    } else if (fontHeight * (*lines) < *realHeight) {
         if   ((alignment == MMSALIGNMENT_CENTER)||(alignment == MMSALIGNMENT_LEFT)
             ||(alignment == MMSALIGNMENT_RIGHT)||(alignment == MMSALIGNMENT_JUSTIFY)) {
         	// vertical centered
             unsigned int diff = (*realHeight - fontHeight * (*lines)) / 2;
-            if (diff > 0)
-                for (unsigned int i = 0; i < wordgeom.size(); i++)
-                    wordgeom.at(i)->geom.y += diff;
+            if (diff > 0) {
+					for (unsigned int i = 0; i < wordgeom.size(); i++)
+						wordgeom.at(i)->geom.y += diff;
+            }
         }
         else
         if   ((alignment == MMSALIGNMENT_BOTTOM_CENTER)||(alignment == MMSALIGNMENT_BOTTOM_LEFT)
@@ -445,6 +446,34 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
                     wordgeom.at(i)->geom.y += diff;
         }
     }
+    if(this->swap_left_right) {
+		/* quick fix line ordering... that is not yet the real deal!!!! */
+		std::vector<int> mylines;
+		int linepos = (*wordgeom.begin())->geom.y;
+		mylines.push_back(linepos);
+		for (unsigned int i = 0; i < wordgeom.size(); i++) {
+			if(linepos != wordgeom.at(i)->geom.y) {
+				linepos = wordgeom.at(i)->geom.y;
+				mylines.push_back(linepos);
+			}
+		}
+		for(vector<int>::iterator it = mylines.begin(); it != mylines.end(); it++) {
+			printf("%d\n", *it);
+		}
+
+		linepos = (*wordgeom.begin())->geom.y;
+		vector<int>::reverse_iterator it = mylines.rbegin();
+		for (unsigned int i = 0; i < wordgeom.size(); i++) {
+			if(linepos != wordgeom.at(i)->geom.y) {
+				linepos = wordgeom.at(i)->geom.y;
+				it++;
+			}
+			wordgeom.at(i)->geom.y = *it;
+		}
+
+    }
+
+
 
     return true;
 }
