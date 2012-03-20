@@ -175,18 +175,22 @@ bool MMSFBBuffer::EXTKEY::allocVertexArray(unsigned int size) {
 
 
 bool MMSFBBuffer::EXTKEY::reserveIndexArray(unsigned int requested_size, unsigned int *offset) {
+#ifdef __HAVE_OPENGL__
 	if (!this->ibo) return false;
 	if (this->ibo_used + requested_size > this->ibo_size) return false;
 	*offset = this->ibo_used;
 	this->ibo_used+= requested_size;
+#endif
 	return true;
 }
 
 bool MMSFBBuffer::EXTKEY::reserveVertexArray(unsigned int requested_size, unsigned int *offset) {
+#ifdef __HAVE_OPENGL__
 	if (!this->vbo) return false;
 	if (this->vbo_used + requested_size > this->vbo_size) return false;
 	*offset = this->vbo_used;
 	this->vbo_used+= requested_size;
+#endif
 	return true;
 }
 
@@ -204,6 +208,7 @@ MMSFBBuffer::BUFFER::BUFFER() : initialized(false), use_count(1), type(BUFFER_TY
 }
 
 MMSFBBuffer::BUFFER::~BUFFER() {
+#ifdef __HAVE_OPENGL__
 	switch (this->type) {
 	case BUFFER_TYPE_INDEX_VERTEX:
 		if (this->index_buffer.arrays) {
@@ -225,6 +230,7 @@ MMSFBBuffer::BUFFER::~BUFFER() {
 		free(this->index_bo.buffers);
 	if (this->vertex_bo.buffers)
 		free(this->vertex_bo.buffers);
+#endif
 }
 
 void MMSFBBuffer::BUFFER::initIndexBuffer(EXTKEY *extkey, INDEX_BUFFER index_buffer) {
