@@ -417,7 +417,7 @@ bool MMSFBFont::setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph 
 		glyph->meshes = NULL;
 		glyph->outline = NULL;
 #else
-		glyph->textures = 0;
+		glyph->texture = 0;
 #endif
 #endif
 		glyph->buffer	= (unsigned char*)calloc(1, glyph->pitch * glyph->height);
