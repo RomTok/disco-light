@@ -4936,6 +4936,9 @@ void MMSWindow::targetLangChanged(MMSLanguage lang, bool refresh) {
         case MMSWIDGETTYPE_TEXTBOX:
         	((MMSTextBoxWidget *)this->children.at(i))->targetLangChanged(lang);
         	break;
+        case MMSWIDGETTYPE_INPUT:
+        	((MMSInputWidget *)this->children.at(i))->targetLangChanged(lang);
+        	break;
         default:
         	break;
         }

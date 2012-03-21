@@ -95,6 +95,9 @@ class MMSInputWidget : public MMSWidget {
         bool draw(bool *backgroundFilled = NULL);
         void drawCursor(bool cursor_on);
 
+        //! Internal method: Inform the widget, that the language has changed.
+		void targetLangChanged(MMSLanguage lang);
+
     public:
         MMSInputWidget(MMSWindow *root, string className, MMSTheme *theme = NULL);
         ~MMSInputWidget();
@@ -181,6 +184,7 @@ class MMSInputWidget : public MMSWidget {
 
         void updateFromThemeClass(MMSInputWidgetClass *themeClass);
 
+    friend class MMSWindow;
     friend class MMSInputWidgetThread;
 };
 

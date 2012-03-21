@@ -451,6 +451,13 @@ void MMSInputWidget::drawCursor(bool cursor_on) {
 	}
 }
 
+void MMSInputWidget::targetLangChanged(MMSLanguage lang) {
+    this->load_font = true;
+
+    // recalculate content size for dynamic widgets, because new language can result in new widget size
+    // note: DO NOT REFRESH at this point
+    recalcContentSize(false);
+}
 
 void MMSInputWidget::setCursorPos(int cursor_pos, bool refresh) {
 	if (cursor_pos < 0) {
