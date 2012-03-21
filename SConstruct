@@ -595,7 +595,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 					if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
 						conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
 		else:
-			conf.env['graphics_outputtype'].remove('gl2')
+			try:
+				conf.env['graphics_outputtype'].remove('gl2')
+			except ValueError:
+				pass
 	
 	# check if OpenGL 2.0 and OpenGL ES are both activated
 	if 'gl2' in conf.env['graphics_outputtype'] and 'gles2' in conf.env['graphics_outputtype']:
