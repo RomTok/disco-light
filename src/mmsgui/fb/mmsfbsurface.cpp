@@ -1613,6 +1613,9 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 	MMSFBRegion clip;
 	getClip(&clip);
 	MMSFBRectangle rect = MMSFBRectangle(clip.x1, clip.y1, clip.x1 + clip.x2 + 1, clip.y1 + clip.y2 + 1);
+
+	unlock();  // unlock for lock in finClear
+
 	if (finClear(&rect, true)) {
 		// there is a previous clear which we have to finalize
 		finClear();
@@ -1621,6 +1624,8 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 		// there is no previous clear OR new clear command will full overlap previous clear
 		// so we can skip previous clear
 	}
+
+	lock();
 
 	// save clear request
 	clear_req->set = true;
@@ -4516,7 +4521,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
     }
 
 	// finalize previous clear for source surface
-	source->finClear();
+	//source->finClear();
 
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
@@ -4791,7 +4796,7 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     INITCHECK;
 
 	// finalize previous clear for source surface
-	source->finClear();
+	//source->finClear();
 
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
