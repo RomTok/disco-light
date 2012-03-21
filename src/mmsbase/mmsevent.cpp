@@ -32,6 +32,14 @@
 
 #include "mmsbase/mmsevent.h"
 
+/**
+ * @file mmsevent.cpp
+ *
+ * Implementation of MMSEvent class.
+ *
+ * @ingroup mmsbase
+ */
+
 MMSEvent::MMSEvent(string heading) {
     this->heading = heading;
 }
