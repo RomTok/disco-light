@@ -1472,6 +1472,9 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 	    else {
 	    	if (this->allocated_by == MMSFBSurfaceAllocatedBy_ogl) {
 #ifdef  __HAVE_OPENGL__
+	    	    MMSFBSURFACE_WRITE_BUFFER(this).opaque      = false;
+	    	    MMSFBSURFACE_WRITE_BUFFER(this).transparent = false;
+
 				if (!this->is_sub_surface) {
 
 					mmsfb->bei->clear(this, color);
