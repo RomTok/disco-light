@@ -753,6 +753,9 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 	if conf.checkBacktrace():
 		conf.env['CCFLAGS'].extend(['-D__HAVE_BACKTRACE__'])
 
+	if 'test' in BUILD_TARGETS:
+		conf.checkSimpleLib(['cppunit'], ['cppunit/TestCase.h'])
+
 	env2 = conf.Finish()
 	if env2:
 		env = env2
@@ -908,6 +911,7 @@ env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/disko.h')
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/diskoversion.h')
 env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
+Clean('lib', 'build')
 Clean('lib', 'disko.pc')
 
 #######################################################################
@@ -993,3 +997,16 @@ if env['static_lib']:
 VariantDir('build/tools', 'tools', duplicate = 0)
 SConscript(Split(toolList), options = opts)
 
+#######################################################################
+# Unit-Tests                                                          #
+#######################################################################	
+testEnv = env.Clone()
+testEnv.AppendUnique(LIBPATH = '../../lib')
+testEnv.Tool('utest',
+    toolpath=['scons'],
+    UTEST_MAIN_SRC=File('build/tests/src/test.cpp'),
+    LIBS=['disko', 'cppunit']
+        )
+Export('testEnv')
+VariantDir('build/tests', 'tests', duplicate = 0)
+SConscript('build/tests/SConscript', options = opts)
