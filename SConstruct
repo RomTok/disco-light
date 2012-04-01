@@ -14,6 +14,7 @@
 #   . scons install       install library and include files
 #   . scons doc           build documentation for the project (Doxygen)
 #   . scons cppcheck      run cppcheck tool (http://cppcheck.sourceforge.net)
+#   . scons test          run cppunit tests (http://sourceforge.net/projects/cppunit)
 #
 
 import os, sys, string, re, SCons
@@ -61,12 +62,16 @@ sconsVersion = GetSconsVersion()
 #######################################################################
 # Help text                                                           #
 #######################################################################
-Help("Type: 'scons [options]' to build disko.\n" +
+Help("Type: 'scons [options]'       to build disko.\n" +
      "      'scons [options] check' to check the requirements for building disko.\n" +
-     "      'scons -c' to clean.\n" +
-     "      'scons doc' to create the API reference (doxygen has to be installed).\n" +
-     "      'scons cppcheck' to execute cppcheck (has to be installed).\n" +
-     "      'scons install' to install disko.\n\n" +
+     "      'scons -c'              to clean.\n" +
+     "      'scons doc'             to create the API reference\n" +
+     "                              (doxygen has to be installed).\n" +
+     "      'scons cppcheck'        to execute cppcheck\n" +
+     "                              (cppcheck has to be installed).\n" +
+     "      'scons test'            to execute cppunit tests\n" +
+     "                              (libcppunit has to be installed).\n" +
+     "      'scons install'         to install disko.\n\n" +
      "The following options are available:\n")
 
 
@@ -793,16 +798,10 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', libpng >= 1.2'
 
 	if 'jpeg' in env['images']:
-		if(env['static_lib']):
-			disko_pc_libs += ' -ljpeg'
-		else:
-			disko_pc_libs_private += ' -ljpeg'
+		disko_pc_libs += ' -ljpeg'
 
 	if 'tiff' in env['images']:
-		if(env['static_lib']):
-			disko_pc_libs += ' -ltiff'
-		else:
-			disko_pc_libs_private += ' -ltiff'
+		disko_pc_libs += ' -ltiff'
 
 	if env.has_key('libdl'):
 		disko_pc_libs_private += ' -ldl'
