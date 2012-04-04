@@ -186,7 +186,7 @@ void print_trace(char *prefix);
 \return true if successfully converted
 \note in_str and out_str can be the same
 */
-bool convBidiString(const string &in_str, string &out_str);
+bool convBidiString(const string &in_str, string &out_str, bool bArabic=false);
 
 string XMLencode( const string &Source );
 

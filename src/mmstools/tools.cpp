@@ -839,7 +839,7 @@ void print_trace(char *prefix) {
 
 
 
-bool convBidiString(const string &in_str, string &out_str) {
+bool convBidiString(const string &in_str, string &out_str, bool bArabic) {
 #ifdef __HAVE_FRIBIDI__
 	bool ret = false;
 	const char *char_set = "UTF-8";
@@ -873,6 +873,48 @@ bool convBidiString(const string &in_str, string &out_str) {
 		// create a bidi visual string
 		FriBidiCharType base = FRIBIDI_TYPE_ON;
 		if ((ret = fribidi_log2vis(logical, len, &base, visual, NULL, NULL, NULL))) {
+
+			if (bArabic) {
+				FriBidiLevel *embedding_levels = (FriBidiLevel *)malloc(sizeof(FriBidiLevel) * len);
+				if (!embedding_levels) {
+					printf("DISKO: FriBidi error, embedding_levels malloc failed\n");
+					ret = false;
+				}
+
+				FriBidiCharType ctype = FRIBIDI_TYPE_AL;
+				FriBidiParType ptype = FRIBIDI_PAR_ON;
+
+				if (ret) {
+					if (!fribidi_get_par_embedding_levels(&ctype, len, &ptype, embedding_levels)) {
+						printf("DISKO: FriBidi error, fribidi_get_par_embedding_levels() failed\n");
+						ret = false;
+					}
+				}
+
+				FriBidiJoiningType *join_types = NULL;
+				if (ret) {
+					join_types = (FriBidiJoiningType *) malloc(sizeof(FriBidiJoiningType) * len);
+					if (!join_types) {
+						printf("DISKO: FriBidi error, join_types malloc failed\n");
+						ret = false;
+					}
+				}
+
+				if (ret) {
+					fribidi_get_joining_types(visual, len, join_types);
+
+					fribidi_join_arabic(&ctype, len, embedding_levels, join_types);
+
+					/* Actually modify the string */
+					fribidi_shape(FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC,
+							embedding_levels, len, join_types, visual);
+				}
+
+				/* clean up */
+				if (embedding_levels) free(embedding_levels);
+				if (join_types) free(join_types);
+			}
+
 			// convert it back to output string
 			FriBidiStrIndex new_len = fribidi_unicode_to_charset(char_set_num, visual, len, ostr);
 			if (new_len <= 0) {

@@ -220,7 +220,7 @@ bool MMSLabelWidget::prepareText(int *width, int *height, bool recalc) {
 		// language specific conversions
 		MMSLanguage targetlang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
 		if ((targetlang == MMSLANG_IL) || (targetlang == MMSLANG_AR)) {
-			if (convBidiString(this->translated_text, this->translated_text)) {
+			if (convBidiString(this->translated_text, this->translated_text), (targetlang == MMSLANG_AR) ? true : false) {
 				// bidirectional conversion successful, swap alignment horizontal
 				this->swap_left_right = true;
 			}
