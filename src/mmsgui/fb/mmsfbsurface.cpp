@@ -34,6 +34,11 @@
 #include "mmsgui/fb/mmsfb.h"
 #include "mmsgui/fb/mmsfbsurfacemanager.h"
 
+//#define DEBUG_LOCK_OUTPUT
+#ifdef DEBUG_LOCK_OUTPUT
+#include <sys/syscall.h>
+#endif
+
 #ifdef __ENABLE_ACTMON__
 #include "mmscore/mmsperf.h"
 #endif
@@ -892,7 +897,7 @@ bool MMSFBSurface::clipSubSurface(MMSFBRegion *region, bool regionset, MMSFBRegi
 			this->root_parent->setClip(tmp);
 		else
 			this->root_parent->setClip(NULL);
-		this->root_parent->unlock();
+//		this->root_parent->unlock();
 		return true;
 	}
 
@@ -943,7 +948,7 @@ bool MMSFBSurface::clipSubSurface(MMSFBRegion *region, bool regionset, MMSFBRegi
 		return this->parent->clipSubSurface(region, true, tmp, tmpset);
 
 	/* i am the root, set clip now */
-	lock();
+//	lock();
 	if (this->config.clipped) {
 		getClip(tmp);
 		*tmpset=true;
@@ -1512,13 +1517,13 @@ printf("doClear with clip %d,%d,%d,%d (%d,%d,%d,%d)\n", clip.x1, clip.y1, clip.x
 bool MMSFBSurface::finClear(MMSFBRectangle *check_rect, bool test) {
 
 	// block other threads
-	lock();
+//	lock();
 
 	CLEAR_REQUEST *clear_req = &this->clear_request;
 	if (this->is_sub_surface) clear_req = &this->root_parent->clear_request;
 
 	if (!clear_req->set) {
-		unlock();
+//		unlock();
 		return false;
 	}
 
@@ -1546,14 +1551,14 @@ bool MMSFBSurface::finClear(MMSFBRectangle *check_rect, bool test) {
 			// skip clear request
 //printf(">>>>>finClear rect %d,%d,%d,%d  >>> skipped\n", check_rect->x, check_rect->y, check_rect->w, check_rect->h);
 
-			unlock();
+//			unlock();
 			return false;
 		}
 	}
 
 	if (test) {
 		// test mode: return true if we have to clear
-		unlock();
+//		unlock();
 		return true;
 	}
 
@@ -1587,7 +1592,7 @@ bool MMSFBSurface::finClear(MMSFBRectangle *check_rect, bool test) {
 			clear_req->surface->setClip(NULL);
 	}
 
-	unlock();
+//	unlock();
 	return true;
 }
 
@@ -1604,7 +1609,7 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 */
 
     // block other threads
-    lock();
+//    lock();
 
 	// get access to previous clear request
 	CLEAR_REQUEST *clear_req = &this->clear_request;
@@ -1617,8 +1622,6 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 	getClip(&clip);
 	MMSFBRectangle rect = MMSFBRectangle(clip.x1, clip.y1, clip.x1 + clip.x2 + 1, clip.y1 + clip.y2 + 1);
 
-	unlock();  // unlock for lock in finClear
-
 	if (finClear(&rect, true)) {
 		// there is a previous clear which we have to finalize
 		finClear();
@@ -1627,8 +1630,6 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 		// there is no previous clear OR new clear command will full overlap previous clear
 		// so we can skip previous clear
 	}
-
-	lock();
 
 	// save clear request
 	clear_req->set = true;
@@ -1648,7 +1649,7 @@ printf("------real %d,%d,%d,%d\n",clip.x1+sub_surface_xoff, clip.y1+sub_surface_
 	}
 
 	// all right
-	unlock();
+//	unlock();
 	return true;
 }
 
@@ -4524,7 +4525,7 @@ bool MMSFBSurface::blit(MMSFBSurface *source, MMSFBRectangle *src_rect, int x, i
     }
 
 	// finalize previous clear for source surface
-	//source->finClear();
+    source->finClear();
 
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
@@ -4799,7 +4800,8 @@ bool MMSFBSurface::stretchBlit(MMSFBSurface *source, MMSFBRectangle *src_rect, M
     INITCHECK;
 
 	// finalize previous clear for source surface
-	//source->finClear();
+
+    source->finClear();
 
     // save opaque/transparent status
     bool opaque_saved		= MMSFBSURFACE_WRITE_BUFFER(this).opaque;
@@ -6048,8 +6050,6 @@ bool MMSFBSurface::resize(int w, int h) {
 
     if (!this->is_sub_surface) {
         // normal surface
-	    lock();
-
 	    // create a copy
 	    MMSFBSurface *dstsurface;
 	    createCopy(&dstsurface, w, h, true, true);
@@ -6088,7 +6088,6 @@ bool MMSFBSurface::resize(int w, int h) {
 	    // free dstsurface
 	    delete dstsurface;
 
-	    unlock();
 	    return true;
     }
     else  {
@@ -6843,6 +6842,9 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes, bool p
         }
         else {
             // another thread has already locked this surface, waiting for...
+#ifdef DEBUG_LOCK_OUTPUT
+        	printf("surface try lock - (%lu), cnt: %d surf: %p\n", (pid_t) syscall (SYS_gettid), tolock->Lock_cnt, tolock);
+#endif
         	tolock->Lock.lock();
         	tolock->TID = pthread_self();
         	tolock->Lock_cnt = 1;
@@ -6922,6 +6924,41 @@ void MMSFBSurface::lock(MMSFBLockFlags flags, void **ptr, int *pitch) {
 
 void MMSFBSurface::lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes) {
 	lock(flags, planes, true);
+}
+
+bool MMSFBSurface::tryToLock() {
+
+	// which surface is to lock?
+	MMSFBSurface *tolock = this;
+	if (this->root_parent)
+		tolock = this->root_parent;
+	else
+	if (this->parent)
+		tolock = this->parent;
+
+    if (tolock->Lock.trylock() == 0) {
+        // I have got the lock the first time
+    	tolock->TID = pthread_self();
+    	tolock->Lock_cnt = 1;
+    }
+    else {
+        if ((tolock->TID == pthread_self())&&(tolock->Lock_cnt > 0)) {
+            // I am the thread which has already locked this surface
+        	tolock->Lock_cnt++;
+        }
+        else {
+            // another thread has already locked this surface, waiting for...
+#ifdef DEBUG_LOCK_OUTPUT
+        	printf("surface locked from other thread - (%lu), cnt: %d surf: %p\n", (pid_t) syscall (SYS_gettid), tolock->Lock_cnt, tolock);
+#endif
+        	return false;
+//        	tolock->Lock.lock();
+//        	tolock->TID = pthread_self();
+//        	tolock->Lock_cnt = 1;
+        }
+    }
+
+    return true;
 }
 
 void MMSFBSurface::unlock(bool pthread_unlock) {
@@ -7038,11 +7075,11 @@ bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
     if (!this->is_sub_surface)
 		return false;
 
-    lock();
+//    lock();
 
     if (memcmp(rect, &(this->sub_surface_rect), sizeof(this->sub_surface_rect)) == 0) {
     	/* nothing changed */
-    	unlock();
+//    	unlock();
     	return false;
     }
 
@@ -7052,7 +7089,7 @@ bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
     IDirectFBSurface *subsuf = NULL;
     if ((dfbres=this->parent->dfb_surface->GetSubSurface(this->parent->dfb_surface, rect, &subsuf)) != DFB_OK) {
         MMSFB_SetError(dfbres, "IDirectFBSurface::GetSubSurface() failed");
-        unlock();
+//        unlock();
         return false;
     }
 
@@ -7071,7 +7108,7 @@ bool MMSFBSurface::setSubSurface(MMSFBRectangle *rect) {
 
 #endif
 
-    unlock();
+//    unlock();
 
     return true;
 }

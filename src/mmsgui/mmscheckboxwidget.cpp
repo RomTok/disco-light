@@ -343,8 +343,10 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
 					// prepare for blitting
 					this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, (col.a)?col.a:255, opacity);
 
+					suf->lock();
 					// fill background
 					surface->stretchBlit(suf, NULL, &surfaceGeom);
+					suf->unlock();
 					*backgroundFilled = true;
 
 					// go out of the loop
@@ -412,6 +414,7 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
 
 				if (widget) {
 					// drawable parent found, calculate rectangle to copy
+					widget->surface->lock();
 					MMSFBRectangle srcrect = widget->getVisibleSurfaceArea();
 					srcrect.x+= this->innerGeom.x - widget->innerGeom.x;
 					srcrect.y+= this->innerGeom.y - widget->innerGeom.y;
@@ -421,6 +424,7 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
 					// copy background from parent
 					this->surface->setBlittingFlags(MMSFB_BLIT_NOFX);
 					this->surface->blit(widget->surface, &srcrect, 0, 0);
+					widget->surface->unlock();
 				}
 				else {
 					// no parent found, use background from window
@@ -438,6 +442,8 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
 							// draw background with a part of window bgimage
 							MMSFBRectangle src, dst;
 							int sw, sh;
+
+							this->rootwindow->bgimage->lock();
 
 							// get width and height of windows background image
 							this->rootwindow->bgimage->getSize(&sw, &sh);
@@ -461,6 +467,8 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
 							// copy background from window's bgimage
 							this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
 							this->surface->stretchBlit(this->rootwindow->bgimage, &src, &dst);
+
+							this->rootwindow->bgimage->unlock();
 						}
 					}
 				}

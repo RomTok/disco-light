@@ -37,6 +37,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+//#define DEBUG_LOCK_OUTPUT
+#ifdef DEBUG_LOCK_OUTPUT
+#include <sys/syscall.h>
+#define PRINT_LOCK(msg...) printf("%s (%lu)\n", ((string)(msg)).c_str(), (pid_t) syscall (SYS_gettid))
+#else
+#define PRINT_LOCK(msg...)
+#endif
+
 /* initialize the mmsfb object */
 MMSFB *mmsfb = new MMSFB();
 
@@ -229,11 +237,14 @@ MMSFBBackend MMSFB::getBackend() {
 }
 
 bool MMSFB::lock() {
+	PRINT_LOCK("mmsfb::lock");
 	this->Lock.lock();
 	return true;
 }
 
 bool MMSFB::unlock() {
+	PRINT_LOCK("mmsfb::unlock");
+
 	if(this->Lock.unlock() == 0)
 		return true;
 	else

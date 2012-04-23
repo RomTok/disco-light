@@ -142,11 +142,11 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
     else
         backgroundFilled = &myBackgroundFilled;
 
+    // lock
+    this->surface->lock();
+
     // draw widget basics
     if (MMSWidget::draw(backgroundFilled)) {
-
-        // lock
-        this->surface->lock();
 
         // draw my things
         MMSFBRectangle surfaceGeom = getSurfaceGeometry();
@@ -215,12 +215,12 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
             }
         }
 
-        /* unlock */
-        this->surface->unlock();
-
         /* update window surface with an area of surface */
         updateWindowSurfaceWithSurface(!*backgroundFilled);
     }
+
+    /* unlock */
+    this->surface->unlock();
 
     /* draw widgets debug frame */
     return MMSWidget::drawDebug();

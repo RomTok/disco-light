@@ -527,11 +527,15 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 	            /* get surface geometry */
                 surfaceGeom = getSurfaceGeometry();
 
+                suf->lock();
+
                 /* work with aspect ratio */
 	            workWithRatio(suf, &surfaceGeom);
 
 	            /* normal stretchblit */
 	            this->surface->stretchBlit(suf, NULL, &surfaceGeom);
+
+	            suf->unlock();
 	        }
 		}
 		else {
@@ -551,11 +555,15 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 	            /* get surface geometry */
                 surfaceGeom = getSurfaceGeometry();
 
+                suf->lock();
+
                 /* work with aspect ratio */
                 workWithRatio(suf, &surfaceGeom);
 
 	            /* normal stretchblit */
 	            this->surface->stretchBlit(suf, NULL, &surfaceGeom);
+
+	            suf->unlock();
 	        }
 
 	        /* foreground image which will blended */
@@ -566,11 +574,15 @@ bool MMSImageWidget::draw(bool *backgroundFilled) {
 	            /* get surface geometry */
                 surfaceGeom = getSurfaceGeometry();
 
+                suf2->lock();
+
                 /* work with aspect ratio */
 	            workWithRatio(suf2, &surfaceGeom);
 
 	            /* normal stretchblit */
 	            this->surface->stretchBlit(suf2, NULL, &surfaceGeom);
+
+	            suf2->unlock();
 	        }
 		}
 

@@ -437,7 +437,9 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSF
                 	wgeom.x-=scrolling_offset;
             }
 			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, 255, opacity);
+			selimage->lock();
 			this->surface->stretchBlit(selimage, NULL, &wgeom);
+			selimage->unlock();
 		}
 	}
 

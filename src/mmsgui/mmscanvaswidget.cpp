@@ -98,9 +98,13 @@ bool MMSCanvasWidget::draw(bool *backgroundFilled) {
 
 	canvasSurface = this->surface;
 
+	this->surface->lock();
+
 	if (MMSWidget::draw(backgroundFilled)) {
     	drawingFunc(this->surface, this->surfaceGeom, backgroundFilled);
     }
+
+	this->surface->unlock();
 
 	/* draw widgets debug frame */
 	return MMSWidget::drawDebug();

@@ -363,16 +363,20 @@ bool MMSSliderWidget::draw(bool *backgroundFilled) {
 			// blit the bar image, prepare for blitting
 			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
 
+			barsuf->lock();
 			// blit
 			this->surface->stretchBlit(barsuf, &src_barGeom, &dst_barGeom);
+			barsuf->unlock();
 		}
 
         if (suf) {
         	// blit the slider image, prepare for blitting
             this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(this->brightness, 255, opacity);
 
+            suf->lock();
             // blit
             this->surface->stretchBlit(suf, NULL, &surfaceGeom);
+            suf->unlock();
         }
 
         // unlock

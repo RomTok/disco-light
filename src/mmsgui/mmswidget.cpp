@@ -495,6 +495,8 @@ bool MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
             this->surface = NULL;
         }
 
+        this->windowSurface->lock();
+
         if (this->has_own_surface) {
         	// has own surface, create it
         	this->windowSurface->createCopy(&(this->surface), this->surfaceGeom.w, this->surfaceGeom.h);
@@ -503,6 +505,8 @@ bool MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
         	// get sub surface
         	this->surface = this->windowSurface->getSubSurface(&(this->innerGeom));
         }
+
+        this->windowSurface->unlock();
 
         // dimension has changed
         return true;
@@ -514,7 +518,9 @@ bool MMSWidget::setSurfaceGeometry(unsigned int width, unsigned int height) {
     		    this->surfaceGeom = mygeom;
 
     		    // move the sub surface
+    		    this->surface->lock();
     		    this->surface->moveTo(this->innerGeom.x, this->innerGeom.y);
+    		    this->surface->unlock();
         	}
         }
 
@@ -911,11 +917,13 @@ void MMSWidget::updateWindowSurfaceWithSurface(bool useAlphaChannel) {
 
 	    /* lock */
 	    this->windowSurface->lock();
+	    this->surface->lock();
 
 	    this->windowSurface->setBlittingFlags(MMSFB_BLIT_NOFX);
 	    this->windowSurface->blit(this->surface, &area, innerGeom.x, innerGeom.y);
 
 	    /* unlock */
+	    this->surface->unlock();
 	    this->windowSurface->unlock();
 	}
 }
@@ -1296,7 +1304,9 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                 this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, (col.a)?col.a:255, opacity);
 
                 /* fill background */
+                suf->lock();
                 surface->stretchBlit(suf, NULL, &surfaceGeom);
+                suf->unlock();
                 *backgroundFilled = true;
 
                 /* go out of the loop */
@@ -1383,6 +1393,8 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                 srcrect.w = this->innerGeom.w;
                 srcrect.h = this->innerGeom.h;
 
+                widget->surface->lock();
+
                 if (this->drawable) {
                     /* copy background from parent */
                 	this->surface->setBlittingFlags(MMSFB_BLIT_NOFX);
@@ -1393,6 +1405,8 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                     this->windowSurface->setBlittingFlags(MMSFB_BLIT_NOFX);
                     this->windowSurface->blit(widget->surface, &srcrect, innerGeom.x, innerGeom.y);
                 }
+
+                widget->surface->unlock();
             }
             else {
                 /* no parent found, use background from window */
@@ -1416,6 +1430,8 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                         /* draw background with a part of window bgimage */
                         MMSFBRectangle src, dst;
                         int sw, sh;
+
+                        this->rootwindow->bgimage->lock();
 
                         /* get width and height of windows background image */
                         this->rootwindow->bgimage->getSize(&sw, &sh);
@@ -1452,6 +1468,8 @@ bool MMSWidget::draw(bool *backgroundFilled) {
                             this->windowSurface->setBlittingFlagsByBrightnessAlphaAndOpacity(255, (bgcolor.a)?bgcolor.a:255, 255);
                             this->windowSurface->stretchBlit(this->rootwindow->bgimage, &src, &dst);
                         }
+
+                        this->rootwindow->bgimage->unlock();
                     }
                 }
             }

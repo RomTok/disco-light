@@ -1318,8 +1318,10 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface, bool clear) {
 
         if (clear) {
     		// clear the display
+        	this->surface->lock();
 			this->surface->clear();
 			this->surface->flip();
+			this->surface->unlock();
     	}
 
     	return true;
@@ -1464,6 +1466,7 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface, bool clear) {
     this->surface = *surface;
 
     if (this->surface) {
+    	this->surface->lock();
     	// mark this surface as a layer surface
     	this->surface->setLayerSurface();
 
@@ -1476,6 +1479,8 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface, bool clear) {
 	    // initialize the flip flags for the layer surface
 	    this->surface->setFlipFlags(this->flipflags);
 
+	    this->surface->unlock();
+
 	    return true;
     }
 
@@ -1486,8 +1491,11 @@ bool MMSFBLayer::setFlipFlags(MMSFBFlipFlags flags) {
 	this->flipflags = flags;
 
 	/* if the layer surface does exist, update it */
-	if (this->surface)
+	if (this->surface) {
+		this->surface->lock();
 	    this->surface->setFlipFlags(this->flipflags);
+	    this->surface->unlock();
+	}
 
 	return true;
 }

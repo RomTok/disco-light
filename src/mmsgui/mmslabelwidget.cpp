@@ -193,13 +193,19 @@ bool MMSLabelWidget::release() {
 
 bool MMSLabelWidget::prepareText(int *width, int *height, bool recalc) {
 	// check if we have to (re)load the font
+	this->surface->lock();
+
 	loadFont();
 
-    if (!this->font)
+    if (!this->font) {
+    	this->surface->unlock();
     	return false;
+    }
 
 	// font available, use it for this surface
 	this->surface->setFont(this->font);
+
+	this->surface->unlock();
 
 	if (!this->translated) {
 		// text changed and have to be translated
