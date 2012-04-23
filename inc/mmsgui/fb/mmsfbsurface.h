@@ -483,6 +483,7 @@ class MMSFBSurface {
 
         void lock(MMSFBLockFlags flags = MMSFB_LOCK_NONE, void **ptr = NULL, int *pitch = NULL);
         void lock(MMSFBLockFlags flags, MMSFBSurfacePlanes *planes);
+        bool tryToLock();
         void unlock();
 
         unsigned int getNumberOfSubSurfaces();

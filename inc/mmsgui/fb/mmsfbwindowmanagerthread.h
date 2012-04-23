@@ -36,6 +36,7 @@
 #include "mmstools/mmsthread.h"
 #include "mmsgui/fb/mmsfbsurface.h"
 #include <sigc++/sigc++.h>
+#include <queue>
 
 class MMSFBWindowManagerThread : public MMSThread {
     private:
@@ -46,6 +47,14 @@ class MMSFBWindowManagerThread : public MMSThread {
 
         void threadMain();
     public:
+        typedef struct {
+        	MMSFBSurface *surface;
+        	MMSFBRegion *region;
+        	bool refresh;
+        } FLIP_STRUCT;
+
+        queue<FLIP_STRUCT> flipQueue;
+
         MMSFBWindowManagerThread(MMSFBSurface **high_freq_surface,
                                  MMSFBSurface **high_freq_saved_surface,
                                  int *high_freq_lastflip,
