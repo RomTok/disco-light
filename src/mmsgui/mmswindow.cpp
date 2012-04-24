@@ -2482,8 +2482,6 @@ bool MMSWindow::stretch(double left, double up, double right, double down) {
 bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
 	bool rc = false;
 	mmsfb->lock();
-    // lock during show
-    lock();
 	switch (this->pulser_mode) {
 	case MMSWINDOW_PULSER_MODE_SHOW:
 		PRINT_LOCK("enter beforeShowAction");
@@ -2491,20 +2489,15 @@ bool MMSWindow::onBeforeAnimation(MMSPulser *pulser) {
 		PRINT_LOCK("leave beforeShowAction");
 		PRINT_LOCK("mmsfb unlock");
 		mmsfb->unlock();
-		if (!rc)
-			unlock();
 		return rc;
 	case MMSWINDOW_PULSER_MODE_HIDE:
 		rc = beforeHideAction(pulser);
 		PRINT_LOCK("mmsfb unlock");
 		mmsfb->unlock();
-		if (!rc)
-			unlock();
 		return rc;
 	}
 
 	PRINT_LOCK("mmsfb unlock");
-    unlock();
 	mmsfb->unlock();
 
 	return false;
@@ -2520,20 +2513,15 @@ bool MMSWindow::onAnimation(MMSPulser *pulser) {
 		PRINT_LOCK("leave showAction");
 		PRINT_LOCK("mmsfb unlock");
 		mmsfb->unlock();
-		if (!rc)
-			unlock();
 		return rc;
 	case MMSWINDOW_PULSER_MODE_HIDE:
 		rc = hideAction(pulser);
 		PRINT_LOCK("mmsfb unlock");
 		mmsfb->unlock();
-		if (!rc)
-			unlock();
 		return rc;
 	}
 	PRINT_LOCK("mmsfb unlock");
 	mmsfb->unlock();
-	unlock();
 	return false;
 }
 
@@ -2552,7 +2540,6 @@ void MMSWindow::onAfterAnimation(MMSPulser *pulser) {
 	}
 
 	PRINT_LOCK("mmsfb unlock");
-	unlock();
 	mmsfb->unlock();
 }
 
