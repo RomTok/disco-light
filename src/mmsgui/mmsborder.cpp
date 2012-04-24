@@ -409,7 +409,7 @@ pixelformat=DSPF_ALUT44;
 
                 /* blit the first time */
                 surface->stretchBlit(borderimages[6], NULL, &bordergeom[6]);
-                borderimages[6]->lock();
+                borderimages[6]->unlock();
             }
         }
 
