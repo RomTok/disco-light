@@ -75,7 +75,9 @@ void MMSEventSignup::add(string subscription) {
 }
 
 void MMSEventSignup::executeSignup() {
-    this->manager->signup(this);
+	if (this->manager) {
+		this->manager->signup(this);
+	}
 }
 
 MMSPluginData MMSEventSignup::getPluginData() {
