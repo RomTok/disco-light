@@ -330,7 +330,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
     	        DEBUGMSG("Core", "windowmanager initialization done");
             }
-            if(flags  & MMSINIT_INPUTS) {
+/*            if(flags  & MMSINIT_INPUTS) {
     			DEBUGMSG("Core", "creating input manager");
     			inputs = new MMSInputManager(config->getSysConfig() + "/inputmap.xml", config->getInputMap());
     			inputs->setWindowManager((IMMSWindowManager*)windowmanager);
@@ -341,7 +341,7 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
     			DEBUGMSG("Core", "creating master subscription");
     			MMSInputSubscription sub1(inputs);
-            }
+            }*/
         }
 
         if(flags & MMSINIT_PLUGINMANAGER) {
@@ -394,9 +394,19 @@ bool mmsInit(MMSINIT_FLAGS flags, int argc, char *argv[], string configfile,
 
 		/* here must be a barrier implemented */
         if((flags & MMSINIT_INPUTS) && (flags & MMSINIT_GRAPHICS)) {
+
+			DEBUGMSG("Core", "creating input manager");
+			inputs = new MMSInputManager(config->getSysConfig() + "/inputmap.xml", config->getInputMap());
+			inputs->setWindowManager((IMMSWindowManager*)windowmanager);
+
+			DEBUGMSG("Core", "add input device");
+			inputs->addDevice(MMS_INPUT_KEYBOARD, config->getInputInterval());
+
+			DEBUGMSG("Core", "creating master subscription");
+			MMSInputSubscription sub1(inputs);
+
             DEBUGMSG("Core", "wait for inputs");
             inputs->startListen();
-
         }
 
     	atexit(on_exit);
