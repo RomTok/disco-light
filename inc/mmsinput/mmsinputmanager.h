@@ -36,6 +36,7 @@
 #include "mmsinput/mmsinputthread.h"
 #include "mmsgui/interfaces/immswindowmanager.h"
 #include "mmsinput/mmsinputmapper.h"
+#include "mmsbase/interfaces/immsevent.h"
 
 #include <vector>
 
@@ -67,6 +68,8 @@ class MMSInputManager  {
 		short       oldx;
 		short		oldy;
 		struct      timespec lastinput;
+
+		void onEvent(_IMMSEvent *event);
 
 	friend class MMSInputThread;
 };
